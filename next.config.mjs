@@ -1,4 +1,4 @@
-const withTM = require('next-transpile-modules')(['@aws-sdk']);
+import withTM from 'next-transpile-modules';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -66,4 +66,4 @@ const nextConfig = {
   },
 };
 
-module.exports = withTM(nextConfig);
+export default withTM(['@aws-sdk'])(nextConfig);
