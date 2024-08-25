@@ -43,6 +43,9 @@ const nextConfig = {
       },
     ],
   },
+  sassOptions: {
+    includePaths: [path.join(__dirname, 'styles')],
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: '3mb', // Set the limit to 3 MB
