@@ -2,7 +2,16 @@
  * any routes that are public and should be accessible without authentication
  * @type {string[]}
  */
-export const publicRoutes = ['/'];
+export const publicRoutes = [
+  '/',
+  '/about',
+  '/contact',
+  '/search ',
+  '/archive',
+  '/subscription',
+  '/single',
+  '/_not-found ',
+];
 /**
  * any routes that are protected and should be accessible only if the user is authenticated
  * @type {string[]}
