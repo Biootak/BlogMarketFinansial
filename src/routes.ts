@@ -9,7 +9,7 @@ export const publicRoutes = [
   '/search ',
   '/archive',
   '/subscription',
-  '/single/[[slug]]',
+  '/single/[[...slug]]',
   '/_not-found ',
 ];
 /**
