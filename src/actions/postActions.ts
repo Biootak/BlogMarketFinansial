@@ -281,6 +281,14 @@ export async function updatePostStatus(
 ): Promise<ActionResult<PostWithRelations>> {
   const session = await checkRole(['ADMIN', 'AUTHOR']);
 
+  if (!session || !session.user) {
+    return {
+      success: false,
+      message: 'غیر مجاز',
+      error: 'شما مجاز به انجام این عملیات نیستید.',
+    };
+  }
+
   try {
     const post = await prisma.post.findUnique({
       where: { id: postId },
@@ -351,7 +359,6 @@ export async function updatePostStatus(
     };
   }
 }
-
 export async function deletePost(postId: string): Promise<ActionResult> {
   await checkRole(['ADMIN', 'AUTHOR']);
 
