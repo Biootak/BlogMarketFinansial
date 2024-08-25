@@ -1,3 +1,5 @@
+const path = require('node:path');
+
 const withTM = require('next-transpile-modules')([
   '@aws-sdk/client-s3',
   '@aws-sdk/s3-request-presigner',
