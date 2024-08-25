@@ -1,4 +1,7 @@
-const withTM = require('next-transpile-modules')(['@aws-sdk']);
+const withTM = require('next-transpile-modules')([
+  '@aws-sdk/client-s3',
+  '@aws-sdk/s3-request-presigner',
+]);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
