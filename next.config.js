@@ -1,12 +1,13 @@
-const path = require('node:path');
-
-const withTM = require('next-transpile-modules')([
-  '@aws-sdk/client-s3',
-  '@aws-sdk/s3-request-presigner',
-]);
+// biome-ignore lint/style/useNodejsImportProtocol: <explanation>
+const path = require('path');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: true,
+  poweredByHeader: false,
+  typescript: {
+    ignoreBuildErrors: false,
+  },
   images: {
     remotePatterns: [
       {
@@ -45,18 +46,10 @@ const nextConfig = {
       },
     ],
   },
-  sassOptions: {
-    includePaths: [path.join(__dirname, 'styles')],
-  },
   experimental: {
     serverActions: {
-      bodySizeLimit: '3mb', // Set the limit to 3 MB
+      bodySizeLimit: '3mb',
     },
-  },
-  reactStrictMode: true,
-  poweredByHeader: false,
-  typescript: {
-    ignoreBuildErrors: false,
   },
   env: {
     NEXTAUTH_URL: 'http://localhost:3000',
@@ -72,6 +65,10 @@ const nextConfig = {
     }
     return config;
   },
+  sassOptions: {
+    includePaths: [path.join(__dirname, 'styles')],
+  },
+  transpilePackages: ['@aws-sdk/client-s3', '@aws-sdk/s3-request-presigner'],
 };
 
-module.exports = withTM(nextConfig);
+module.exports = nextConfig;
