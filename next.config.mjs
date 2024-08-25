@@ -1,3 +1,5 @@
+const withTM = require('next-transpile-modules')(['@aws-sdk']);
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -51,6 +53,17 @@ const nextConfig = {
   env: {
     NEXTAUTH_URL: 'http://localhost:3000',
   },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
+    return config;
+  },
 };
 
-export default nextConfig;
+module.exports = withTM(nextConfig);
