@@ -1,0 +1,55 @@
+.custom-switch {
+  $switch-width: 44px;
+  $switch-height: 24px;
+  $thumb-size: 20px;
+
+  display: inline-flex;
+  height: $switch-height;
+  width: $switch-width;
+  cursor: pointer;
+  border-radius: $switch-height;
+  background-color: rgb(var(--c-neutral-300));
+  transition: background-color 0.2s ease-in-out;
+  position: relative;
+
+  &[data-state="checked"] {
+    background-color: rgb(var(--c-primary-600));
+  }
+
+  .thumb {
+    display: block;
+    width: $thumb-size;
+    height: $thumb-size;
+    background-color: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: transform 0.2s ease-in-out;
+    position: absolute;
+    top: ($switch-height - $thumb-size) / 2;
+    right: 2px; // Changed from left to right for RTL
+  }
+
+  &[data-state="checked"] .thumb {
+    transform: translateX(-($switch-width - $thumb-size - 4px)); // Negative value for RTL
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgb(var(--c-primary-400));
+    outline-offset: 2px;
+  }
+}
+
+// Dark mode styles
+.dark {
+  .custom-switch {
+    background-color: rgb(var(--c-neutral-700));
+
+    &[data-state="checked"] {
+      background-color: rgb(var(--c-primary-400));
+    }
+
+    .thumb {
+      background-color: rgb(var(--c-neutral-200));
+    }
+  }
+}

@@ -1,0 +1,47 @@
+# Directories
+/.next/
+.cache/
+node_modules/
+public/build/
+.pnp/
+.pnp.js/
+.yarn/
+.yarnrc.yml/
+.env*
+.DS_Store
+*.log
+*.swp
+coverage/
+jest/
+temp/
+yarn-error.log
+npm-debug.log
+yarn-debug.log*
+yarn-error.log*
+
+# Files
+package-lock.json
+yarn.lock
+
+# TypeScript Files
+*.ts-buildinfo
+*.tgz
+*.cache
+*.d.ts
+*.js.map
+
+# Next.js Files
+.next/serverless/pages/
+.next/serverless/chunks/
+
+# VSCode Files
+.vscode/
+settings.json
+tasks.json
+launch.json
+
+# Git Files
+GITIGNORE_INSTRUCTIONS.md
+
+.env.local
+.aider*

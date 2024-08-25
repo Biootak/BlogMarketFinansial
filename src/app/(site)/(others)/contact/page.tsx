@@ -1,0 +1,83 @@
+import React from "react";
+import ButtonPrimary from "@/components/Button/ButtonPrimary";
+import Input from "@/components/Input/Input";
+import Label from "@/components/Label/Label";
+import SocialsList from "@/components/SocialsList/SocialsList";
+import Textarea from "@/components/Textarea/Textarea";
+import Heading2 from "@/components/Heading/Heading2";
+
+// Define info outside the component to avoid recalculating on each render
+const info = [
+  {
+    title: "🗺 آدرس",
+    desc: "غرفه عکس، منشور تاتو شده، هودی پورتلند تایکی، ماشین تحریر نوتر",
+  },
+  {
+    title: "💌 ایمیل",
+    desc: "nc.example@example.com",
+  },
+  {
+    title: "☎ تلفن",
+    desc: "000-123-456-7890",
+  },
+];
+
+const PageContact = () => {
+  return (
+    <div className="rtl">
+      <header className="text-center max-w-2xl mx-auto - mb-14 sm:mb-16 lg:mb-28 ">
+        <Heading2>تماس با ما</Heading2>
+        <span className="block text-sm mt-2 text-neutral-700 sm:text-base dark:text-neutral-200">
+          پیام خود را برای ما ارسال کنید، ما با شما تماس خواهیم گرفت.
+        </span>
+      </header>
+
+      <div className="grid gap-8 lg:grid-cols-2">
+        <div className="max-w-sm space-y-6">
+          {info.map((item) => (
+            <div key={item.title}> 
+              {/* Use a unique and stable key for better performance */}
+              <h3 className="uppercase font-semibold text-sm dark:text-neutral-200 tracking-wider">
+                {item.title}
+              </h3>
+              <span className="block mt-2 text-neutral-500 dark:text-neutral-400">
+                {item.desc}
+              </span>
+            </div>
+          ))}
+          <div>
+            <h3 className="uppercase font-semibold text-sm dark:text-neutral-200 tracking-wider">
+              🌏 شبکه‌های اجتماعی
+            </h3>
+            <SocialsList className="mt-2" />
+          </div>
+        </div>
+        <div className="border border-neutral-100 dark:border-neutral-700 lg:hidden"></div>
+        <div>
+          {/* Remove unnecessary action and method attributes from the form */}
+          <form className="grid grid-cols-1 gap-6"> 
+            <label className="block">
+              <Label>نام کامل</Label>
+              <Input placeholder="مثال دویی" type="text" className="mt-1" />
+            </label>
+            <label className="block">
+              <Label>آدرس ایمیل</Label>
+              <Input
+                type="email"
+                placeholder="example@example.com"
+                className="mt-1"
+              />
+            </label>
+            <label className="block">
+              <Label>پیام</Label>
+              <Textarea className="mt-1" rows={6} />
+            </label>
+            <ButtonPrimary type="submit">ارسال پیام</ButtonPrimary>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PageContact;

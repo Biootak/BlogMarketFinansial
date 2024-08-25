@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer utilities {
+    .scrollbar-custom {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(var(--c-primary-500), 0.5) rgba(var(--c-neutral-200), 0.5);
+    }
+    
+    .scrollbar-custom::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .scrollbar-custom::-webkit-scrollbar-track {
+      background: rgba(var(--c-neutral-200), 0.5);
+      border-radius: 4px;
+    }
+    
+    .scrollbar-custom::-webkit-scrollbar-thumb {
+      background-color: rgba(var(--c-primary-500), 0.5);
+      border-radius: 4px;
+      border: 2px solid rgba(var(--c-neutral-200), 0.5);
+    }
+    
+    .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(var(--c-primary-600), 0.7);
+    }
+  }

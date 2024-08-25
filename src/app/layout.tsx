@@ -1,0 +1,37 @@
+import { Vazirmatn } from 'next/font/google';
+import type { Metadata } from 'next';
+import { SessionProvider } from 'next-auth/react';
+import { Toaster } from '@/components/ui/toaster';
+
+import '@/app/globals.css';
+import '@/styles/index.scss';
+import { auth } from '@/auth';
+
+export const metadata: Metadata = {
+  title: 'Biotak',
+  description: 'بازارهای مالی',
+};
+
+const vazirmatn = Vazirmatn({
+  subsets: ['arabic'],
+  display: 'swap',
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-vazirmatn',
+  preload: true,
+});
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth();
+  return (
+    <html lang="fa-IR" dir="rtl" className={`${vazirmatn.variable} rtl`}>
+      <body className={vazirmatn.className}>
+        <SessionProvider session={session}>
+          <div className="bg-[#f8f8f8] text-base dark:bg-neutral-900/95 text-neutral-900 dark:text-neutral-200">
+            {children}
+            <Toaster />
+          </div>
+        </SessionProvider>
+      </body>
+    </html>
+  );
+}

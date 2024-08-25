@@ -1,0 +1,12 @@
+'use client';
+
+import React, { type FC } from 'react';
+import Button, { type ButtonProps } from './Button';
+
+export interface Props extends ButtonProps {}
+
+const ButtonPrimary: FC<Props> = (props) => {
+  return <Button {...props} pattern="primary" />;
+};
+
+export default ButtonPrimary;
