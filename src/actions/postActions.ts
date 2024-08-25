@@ -21,7 +21,6 @@ export async function createPost(
   data: FormData | CreatePostInput,
 ): Promise<ActionResult<PostWithRelations>> {
   const session = await checkRole(['ADMIN', 'AUTHOR']);
-  const userId = session.user?.id;
 
   try {
     let validatedData: CreatePostInput;
@@ -75,7 +74,9 @@ export async function createPost(
         featuredImage: validatedData.featuredImage,
         galleryImages: validatedData.galleryImages,
         status: validatedData.status || PostStatus.DRAFT,
-        author: userId ? { connect: { id: userId } } : undefined,
+        author: {
+          connect: { id: session.user?.id },
+        },
         categories: {
           connectOrCreate: validatedData.categories.map((name) => ({
             where: { name },
