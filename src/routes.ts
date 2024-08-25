@@ -10,6 +10,7 @@ export const publicRoutes = [
   '/archive',
   '/subscription',
   '/single/[[...slug]]',
+  '/dashboard/admin/posts ',
   '/_not-found ',
 ];
 /**
