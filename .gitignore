@@ -28,6 +28,7 @@ yarn.lock
 *.tgz
 *.cache
 *.d.ts
+!next-auth.d.ts
 *.js.map
 
 # Next.js Files
