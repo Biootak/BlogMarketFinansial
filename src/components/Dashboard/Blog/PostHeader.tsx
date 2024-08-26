@@ -41,11 +41,7 @@ export default function PostHeader() {
         <div className="flex items-center justify-between gap-6">
           <div className="flex items-center space-x-4 space-x-reverse">
             <div className="relative">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setIsSearchOpen(!isSearchOpen)}
-              >
+              <Button variant="outline" size="icon" onClick={() => setIsSearchOpen(!isSearchOpen)}>
                 <HiMagnifyingGlass className="h-4 w-4" />
               </Button>
               {isSearchOpen && (
@@ -56,8 +52,8 @@ export default function PostHeader() {
             </div>
             <FilterDropdown onFilter={handleFilter} />
           </div>
-          <Link href="/dashboard/admin/posts/create-post" className="w-auto">
-          <ButtonPrimary
+          <Link href="/dashboard/admin/posts/create" className="w-auto">
+            <ButtonPrimary
               aria-label="افزودن پست جدید"
               className="bg-gradient-to-l from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 text-white font-medium py-2 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 group"
             >
@@ -65,9 +61,7 @@ export default function PostHeader() {
                 className="inline-block ml-2 h-5 w-5 group-hover:rotate-90 transition-transform duration-300"
                 aria-hidden="true"
               />
-              <span className="group-hover:mr-2 transition-all duration-300">
-               افزودن پست جدید
-              </span>
+              <span className="group-hover:mr-2 transition-all duration-300">افزودن پست جدید</span>
             </ButtonPrimary>
           </Link>
         </div>
