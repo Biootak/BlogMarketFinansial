@@ -51,9 +51,7 @@ const nextConfig = {
       bodySizeLimit: '3mb',
     },
   },
-  env: {
-    NEXTAUTH_URL: 'http://localhost:3000',
-  },
+
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
