@@ -22,6 +22,8 @@ export default async function Home() {
   const latestLargeAd =
     adsResult.success && adsResult.data && adsResult.data.length > 0 ? adsResult.data[0] : null;
 
+  console.log('latestLargeAd', latestLargeAd);
+
   return (
     <div className="nc-HomePage relative">
       <div className="container relative">

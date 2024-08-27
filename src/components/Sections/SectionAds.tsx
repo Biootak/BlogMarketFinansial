@@ -10,7 +10,7 @@ interface SectionAdsProps {
 const SectionAds: React.FC<SectionAdsProps> = ({ className = '', ad }) => {
   return (
     <section className={`nc-SectionAds ${className}`}>
-      <p className="text-center text-xs text-neutral-500 mb-2">- Advertisement -</p>
+      <p className="text-center text-xs text-neutral-500 mb-2">- تبلیغات -</p>
       <LargeAd ad={ad} />
     </section>
   );
