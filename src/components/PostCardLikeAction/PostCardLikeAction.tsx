@@ -32,12 +32,18 @@ const PostCardLikeAction: FC<PostCardLikeActionProps> = ({
       setIsLiked(newLikeState);
       setLikeCount((prevCount) => (newLikeState ? prevCount + 1 : Math.max(0, prevCount - 1)));
 
-      const result = await likeItem(postId, 'post');
-      if (!result.success) {
+      try {
+        const result = await likeItem(postId, 'post');
+        if (!result || !result.success) {
+          throw new Error(result?.message || 'خطا در عملیات لایک');
+        }
+      } catch (error) {
+        console.error('Error in liking post:', error);
         // Revert the optimistic update if the server action fails
         setIsLiked(!newLikeState);
         setLikeCount((prevCount) => (newLikeState ? Math.max(0, prevCount - 1) : prevCount + 1));
         // You might want to show an error message here
+        // For example: toast.error('خطا در ثبت لایک. لطفاً دوباره تلاش کنید.');
       }
     });
   }, [postId, isLiked]);
