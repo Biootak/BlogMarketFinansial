@@ -1,16 +1,16 @@
-import React from 'react';
+import React, { Suspense } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 import SectionLargeSlider from './SectionLargeSlider';
 import SectionSliderNewCategories from '@/components/SectionSliderNewCategories/SectionSliderNewCategories';
 import SectionMagazine1 from '@/components/Sections/SectionMagazine1';
 import SectionAds from '@/components/Sections/SectionAds';
 import SectionMagazine7 from '@/components/Sections/SectionMagazine7';
-
 import SectionGridAuthorBox from '@/components/SectionGridAuthorBox/SectionGridAuthorBox';
 import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
-
 import { getPosts } from '@/actions/getPosts';
 import { getTopAuthors } from '@/actions/getTopAuthors';
 import { getActiveAdvertisements } from '@/actions/advertisementActions';
+import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
 
 export default async function Home() {
   const [posts, topAuthors, adsResult] = await Promise.all([
@@ -22,12 +22,12 @@ export default async function Home() {
   const latestLargeAd =
     adsResult.success && adsResult.data && adsResult.data.length > 0 ? adsResult.data[0] : null;
 
-  console.log('latestLargeAd', latestLargeAd);
-
   return (
     <div className="nc-HomePage relative">
       <div className="container relative">
-        <SectionLargeSlider />
+      <Suspense fallback={<CardLarge1Skeleton/>}>
+          <SectionLargeSlider />
+        </Suspense>
         <SectionSliderNewCategories
           className="relative pb-16"
           heading="موضوعات پرطرفدار"
@@ -35,12 +35,31 @@ export default async function Home() {
           categoryCardType="card2"
         />
         <SectionMagazine1 className="py-16 lg:py-28" />
-        {latestLargeAd && <SectionAds className="pb-16 lg:pb-28" ad={latestLargeAd} />}
-        <SectionMagazine7 className="py-16 lg:py-28" posts={posts} />
+        {latestLargeAd ? (
+          <SectionAds className="pb-16 lg:pb-28" ad={latestLargeAd} />
+        ) : (
+          <Skeleton className="pb-16 lg:pb-28 h-64 rounded-md" />
+        )}
+        {posts.length > 0 ? (
+          <SectionMagazine7 className="py-16 lg:py-28" posts={posts} />
+        ) : (
+          <div className="py-16 lg:py-28 space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <Skeleton key={i} className="h-64 rounded-md" />
+            ))}
+          </div>
+        )}
       </div>
       <div className="container">
-        {/* <SectionMagazine8 className="py-16 lg:py-28" posts={DEMO_POSTS_AUDIO.slice(0, 6)} /> */}
-        <SectionGridAuthorBox className="py-16 lg:py-28" authors={topAuthors} />
+        {topAuthors.length > 0 ? (
+          <SectionGridAuthorBox className="py-16 lg:py-28" authors={topAuthors} />
+        ) : (
+          <div className="py-16 lg:py-28 grid grid-cols-5 gap-4">
+            {[...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="h-48 rounded-md" />
+            ))}
+          </div>
+        )}
         <SectionSubscribe2 className="pt-16 lg:pt-28" />
       </div>
     </div>

@@ -4,6 +4,7 @@ import { useRef, useEffect, useCallback, useMemo, useState } from 'react';
 import CardLarge1 from '@/components/CardLarge1/CardLarge1';
 import type { PostWithRelations } from '@/types/types';
 import CardSkeleton from '@/components/Skeletons/CardSkeleton';
+import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
 
 type SectionLargeSliderProps = {
   initialPosts: PostWithRelations[];
@@ -109,7 +110,7 @@ export default function SectionLargeSliderClient({
             onKeyDown={handleKeyDown}
           />
         ) : (
-          <CardSkeleton />
+          <CardLarge1Skeleton />
         )}
       </div>
     </section>
