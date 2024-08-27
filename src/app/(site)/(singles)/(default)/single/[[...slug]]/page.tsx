@@ -5,6 +5,8 @@ import SingleContent from '@/app/(site)/(singles)/SingleContent';
 import { getPostBySlug } from '@/actions/postActions';
 import { notFound } from 'next/navigation';
 import SingleRelatedPosts from '../../../SingleRelatedPosts';
+import { getRelatedPosts } from '@/actions/getRelatedPosts';
+import { getMoreFromAuthor } from '@/actions/getMoreFromAuthor';
 
 export interface PageProps {
   params: { slug: string[] };
@@ -12,13 +14,17 @@ export interface PageProps {
 
 export default async function PageSingle({ params }: PageProps) {
   const postSlug = params.slug?.join('/') || '';
-  const result = await getPostBySlug(postSlug);
+  const { data: post, success } = await getPostBySlug(postSlug);
 
-  if (!result.success || !result.data) {
+  if (!success || !post) {
     notFound();
   }
 
-  const post = result.data;
+  const { data: relatedPosts } = await getRelatedPosts(
+    post.id,
+    post.categories.map((cat) => cat.id),
+  );
+  const { data: moreFromAuthor } = await getMoreFromAuthor(post.authorId, post.id);
 
   return (
     <div className={'nc-PageSingle pt-8 lg:pt-16'}>
@@ -42,7 +48,11 @@ export default async function PageSingle({ params }: PageProps) {
 
       <div className="container mt-10">
         <SingleContent post={post} />
-        <SingleRelatedPosts post={post} />
+        <SingleRelatedPosts
+          post={post}
+          relatedPosts={relatedPosts || []}
+          moreFromAuthor={moreFromAuthor || []}
+        />
       </div>
     </div>
   );
