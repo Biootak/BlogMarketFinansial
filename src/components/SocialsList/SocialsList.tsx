@@ -1,43 +1,36 @@
-import React, { type FC, memo } from "react";
-import { type SocialType, SOCIALS_DATA } from "@/components/SocialsShare/SocialsShare";
+import React from 'react';
+import type { SocialType } from '@/types/types';
 
-export interface SocialsListProps {
+interface SocialsListProps {
   className?: string;
   itemClass?: string;
   socials?: SocialType[];
 }
 
-export const SOCIALS_2 = SOCIALS_DATA;
-
-const SocialsList: FC<SocialsListProps> = memo(({
-  className = "",
-  itemClass = "block",
-  socials = SOCIALS_2,
+const SocialsList: React.FC<SocialsListProps> = ({
+  className = '',
+  itemClass = '',
+  socials = [],
 }) => {
   return (
-    <nav
-      className={`nc-SocialsList flex space-x-3 text-2xl text-neutral-6000 dark:text-neutral-300 ${className}`}
-    >
-      {socials.map((item, i) => (
-        <a
-          key={i}
-          className={`${itemClass}`}
-          href={item.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          title={item.name}
-        >
-          {typeof item.icon === 'string' ? (
-            <span dangerouslySetInnerHTML={{ __html: item.icon }} />
-          ) : (
-            item.icon
-          )}
-        </a>
-      ))}
+    <nav className={`flex flex-row-reverse gap-2 text-2xl ${className}`}>
+      {socials.map((item) => {
+        const Icon = item.icon;
+        return (
+          <a
+            key={item.id}
+            className={`${itemClass} rounded-full transition-colors hover:bg-gray-100  dark:hover:bg-neutral-700`}
+            href={item.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={item.name}
+          >
+            <Icon className="w-6 h-6" style={{ color: item.color }} />
+          </a>
+        );
+      })}
     </nav>
   );
-});
+};
 
-SocialsList.displayName = 'SocialsList';
-
-export default SocialsList;
+export default React.memo(SocialsList);

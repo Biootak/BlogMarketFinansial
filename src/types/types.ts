@@ -10,6 +10,8 @@ import type {
   RegisterSchema,
 } from '@/schemas';
 
+import type { IconType } from 'react-icons';
+
 // Prisma Exact Types
 const userWithRelations = Prisma.validator<Prisma.UserDefaultArgs>()({
   include: {
@@ -246,6 +248,13 @@ export type Advertisement = {
   updatedAt: Date;
 };
 
+export interface SocialType {
+  id: string;
+  name: string;
+  icon: IconType;
+  href: string;
+  color: string;
+}
 export type Action =
   | { type: 'FETCH_POSTS_START' }
   | { type: 'FETCH_POSTS_SUCCESS'; payload: { posts: PostWithRelations[]; hasNextPage: boolean } }

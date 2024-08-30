@@ -1,5 +1,3 @@
-import { SOCIALS_2 } from '@/components/SocialsList/SocialsList';
-import type { SocialType } from '@/components/SocialsShare/SocialsShare';
 import React from 'react';
 import Link from 'next/link';
 
