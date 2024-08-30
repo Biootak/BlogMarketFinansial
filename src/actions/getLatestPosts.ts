@@ -15,8 +15,6 @@ export async function getLatestPosts({
   skip = 0,
   category,
 }: GetLatestPostsParams = {}): Promise<PostWithRelations[]> {
-  console.log(`Fetching posts with params: count=${count}, skip=${skip}, category=${category}`);
-
   try {
     const whereClause = {
       status: PostStatus.PUBLISHED,

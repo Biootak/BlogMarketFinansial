@@ -44,10 +44,6 @@ export default function ClientSidePosts({ initialPosts, initialAds }: ClientSide
     }
   }, [posts.length, isLoading, hasMore]);
 
-  useEffect(() => {
-    console.log('Posts state updated:', posts);
-  }, [posts]);
-
   return (
     <div className="space-y-8">
       <h2 className="text-3xl font-bold">آخرین مقالات</h2>
