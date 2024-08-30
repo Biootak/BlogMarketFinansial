@@ -8,6 +8,7 @@ import ModalHideAuthor from './ModalHideAuthor';
 import type { NcDropDownItem } from '@/types/types';
 import { HiOutlineClipboard, HiOutlineEyeSlash, HiOutlineFlag } from 'react-icons/hi2';
 
+// تعریف پراپ‌های کامپوننت
 export interface AccountActionDropdownProps {
   containerClassName?: string;
   iconClass?: string;
@@ -19,79 +20,77 @@ const AccountActionDropdown: FC<AccountActionDropdownProps> = ({
   iconClass = 'h-6 w-6',
   dropdownPositon = 'down',
 }) => {
-  let actions: NcDropDownItem[] = [
+  // تعریف آیتم‌های منوی دراپ‌داون
+  const initialActions: NcDropDownItem[] = [
     {
       id: 'copylink',
-      name: 'Copy link',
+      name: 'کپی لینک',
       icon: HiOutlineClipboard,
     },
     {
       id: 'hideThisAuthor',
-      name: 'Hide this author',
+      name: 'مخفی کردن این نویسنده',
       icon: HiOutlineEyeSlash,
     },
     {
       id: 'reportThisArticle',
-      name: 'Report this author',
+      name: 'گزارش این نویسنده',
       icon: HiOutlineFlag,
     },
   ];
 
-  //
+  // تعریف state‌های کامپوننت
+  const [actions, setActions] = useState<NcDropDownItem[]>(initialActions);
   const [isReporting, setIsReporting] = useState(false);
   const [showModalHideAuthor, setShowModalHideAuthor] = useState(false);
+  // biome-ignore lint/correctness/noUnusedVariables: <explanation>
   const [isCopied, setIsCopied] = useState(false);
 
+  // توابع مربوط به مدال‌ها
   const openModalReportPost = () => setIsReporting(true);
   const closeModalReportPost = () => setIsReporting(false);
-
   const openModalHideAuthor = () => setShowModalHideAuthor(true);
   const onCloseModalHideAuthor = () => setShowModalHideAuthor(false);
 
-  const hanldeClickDropDown = (item: (typeof actions)[number]) => {
-    if (item.id === 'copylink') {
-      navigator.clipboard.writeText(window.location.origin + '/author/this-is-slug');
-      setIsCopied(true);
-      setTimeout(() => {
-        setIsCopied(false);
-      }, 1000);
-      return;
+  // تابع برای هندل کردن کلیک روی آیتم‌های دراپ‌داون
+  const handleClickDropDown = (item: NcDropDownItem) => {
+    switch (item.id) {
+      case 'copylink':
+        navigator.clipboard.writeText(window.location.origin + '/author/this-is-slug');
+        setIsCopied(true);
+        setActions((prevActions) =>
+          prevActions.map((action) =>
+            action.id === 'copylink' ? { ...action, name: 'لینک کپی شد' } : action,
+          ),
+        );
+        setTimeout(() => {
+          setIsCopied(false);
+          setActions(initialActions);
+        }, 1000);
+        break;
+      case 'reportThisArticle':
+        openModalReportPost();
+        break;
+      case 'hideThisAuthor':
+        openModalHideAuthor();
+        break;
     }
-    if (item.id === 'reportThisArticle') {
-      return openModalReportPost();
-    }
-    if (item.id === 'hideThisAuthor') {
-      return openModalHideAuthor();
-    }
-
-    return;
   };
 
-  const renderMenu = () => {
-    if (isCopied) {
-      actions = actions.map((item) => {
-        if (item.id !== 'copylink') return item;
-        return {
-          ...item,
-          name: 'Link Copied',
-        };
-      });
-    }
-    return (
-      <NcDropDown
-        className={`text-neutral-500 dark:text-neutral-400 flex items-center justify-center rounded-full ${containerClassName} ${twFocusClass()}`}
-        triggerIconClass={iconClass}
-        data={actions}
-        panelMenusClass={dropdownPositon === 'up' ? 'origin-bottom-right bottom-0' : undefined}
-        onClick={hanldeClickDropDown}
-      />
-    );
-  };
+  // رندر کردن منوی دراپ‌داون
+  const renderMenu = () => (
+    <NcDropDown
+      className={`text-neutral-500 dark:text-neutral-400 flex items-center justify-center rounded-full ${containerClassName} ${twFocusClass()}`}
+      triggerIconClass={iconClass}
+      data={actions}
+      panelMenusClass={dropdownPositon === 'up' ? 'origin-bottom-right bottom-0' : undefined}
+      onClick={handleClickDropDown}
+    />
+  );
 
   return (
     <div>
       {renderMenu()}
-
       <ModalReportItem show={isReporting} onCloseModalReportItem={closeModalReportPost} />
       <ModalHideAuthor show={showModalHideAuthor} onCloseModalHideAuthor={onCloseModalHideAuthor} />
     </div>
