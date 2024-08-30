@@ -7,14 +7,12 @@ interface SocialsShareProps {
   itemClass?: string;
 }
 
-const socials: SocialType[] = [
+export const SOCIALS_DATA: SocialType[] = [
   { id: 'Facebook', name: 'فیسبوک', icon: FaFacebook, href: '#', color: '#1877F2' },
   { id: 'Twitter', name: 'توییتر', icon: FaTwitter, href: '#', color: '#1DA1F2' },
   { id: 'Telegram', name: 'تلگرام', icon: FaTelegram, href: '#', color: '#0088cc' },
   { id: 'Instagram', name: 'اینستاگرام', icon: FaInstagram, href: '#', color: '#E4405F' },
 ];
-
-export const SOCIALS_DATA = socials;
 
 const SocialsShare: React.FC<SocialsShareProps> = ({ className = '', itemClass = '' }) => {
   return (
@@ -22,7 +20,7 @@ const SocialsShare: React.FC<SocialsShareProps> = ({ className = '', itemClass =
       className={`nc-SocialsShare flex flex-row-reverse gap-4 ${className}`}
       data-nc-id="SocialsShare"
     >
-      {socials.map((item) => {
+      {SOCIALS_DATA.map((item) => {
         const Icon = item.icon;
         return (
           <a

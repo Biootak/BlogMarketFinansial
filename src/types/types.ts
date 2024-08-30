@@ -255,6 +255,13 @@ export interface SocialType {
   href: string;
   color: string;
 }
+
+export interface NcDropDownItem {
+  id: string;
+  name: string;
+  icon: IconType;
+  onClick?: () => void;
+}
 export type Action =
   | { type: 'FETCH_POSTS_START' }
   | { type: 'FETCH_POSTS_SUCCESS'; payload: { posts: PostWithRelations[]; hasNextPage: boolean } }

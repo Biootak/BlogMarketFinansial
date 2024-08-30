@@ -1,4 +1,4 @@
-import type { PostWithRelations, Role } from '@/types/types';
+import type { NcDropDownItem, PostWithRelations, Role, SocialType } from '@/types/types';
 import { type ClassValue, clsx } from 'clsx';
 import type { Session } from 'next-auth';
 import { twMerge } from 'tailwind-merge';
@@ -39,3 +39,13 @@ export async function checkRole(requiredRoles: Role[]) {
   }
   return session;
 }
+
+export const socialToDropdownItem = (
+  social: SocialType,
+  onClickHandler: (platform: string) => void,
+): NcDropDownItem => ({
+  id: social.id,
+  name: social.name,
+  icon: social.icon,
+  onClick: () => onClickHandler(social.id.toLowerCase()),
+});

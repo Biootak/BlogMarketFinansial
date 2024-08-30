@@ -4,12 +4,7 @@ import { HiEllipsisHorizontal } from 'react-icons/hi2';
 import React, { type FC, Fragment, type ReactNode } from 'react';
 import { Menu, Transition } from '@headlessui/react';
 import { cn } from '@/lib/utils';
-
-export interface NcDropDownItem {
-  id: string;
-  name: string;
-  icon: ReactNode; // Changed to ReactNode
-}
+import type { NcDropDownItem } from '@/types/types';
 
 export interface NcDropDownProps {
   className?: string;
@@ -55,21 +50,23 @@ const NcDropDown: FC<NcDropDownProps> = ({
           <div className="px-1 py-3 text-sm text-neutral-600 dark:text-neutral-300">
             {data.map((item) => (
               <Menu.Item
-                as={'div'}
                 key={item.id}
+                as={'div'}
                 onClick={() => onClick(item)}
                 data-menu-item-id={item.id}
               >
-                {() =>
-                  renderItem && typeof renderItem(item) !== 'undefined' ? (
+                {({ active }) =>
+                  renderItem ? (
                     renderItem(item)
                   ) : (
                     <button
                       type="button"
-                      className="flex items-center rounded-xl w-full px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-100 truncate"
+                      className={`flex items-center rounded-xl w-full px-3 py-2 ${
+                        active ? 'bg-neutral-100 dark:bg-neutral-800' : ''
+                      }`}
                     >
-                      {item.icon && <span className="mr-1 w-7 text-base">{item.icon}</span>}
-                      <span className="ms-3">{item.name}</span>
+                      {item.icon && <item.icon className="mr-2 h-5 w-5" />}
+                      <span>{item.name}</span>
                     </button>
                   )
                 }
