@@ -12,20 +12,14 @@ export interface CardAuthor2Props {
 
 const CardAuthor2: FC<CardAuthor2Props> = ({ className = '', post, hoverReadingTime = true }) => {
   if (!post) {
-    console.error('Post is undefined in CardAuthor2');
     return null;
   }
   const { author, createdAt } = post;
 
-  console.log('CardAuthor2 post:', post);
   const { name: displayName, id: authorId, image: avatar } = author;
   const href = `/author/${authorId}`;
 
-  // اگر می‌خواهید زمان خواندن را محاسبه کنید، می‌توانید از محتوای پست استفاده کنید
-  // این فقط یک مثال ساده است و ممکن است نیاز به تنظیم داشته باشد
   const readingTime = Math.ceil(post.content.split(' ').length / 200);
-
-  // فرض بر این است که هر 200 کلمه 1 دقیقه زمان خواندن نیاز دارد
 
   return (
     <Link href={href} className={`nc-CardAuthor2 relative inline-flex items-center ${className}`}>

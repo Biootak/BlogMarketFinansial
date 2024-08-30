@@ -3,7 +3,6 @@
 import { useRef, useEffect, useCallback, useMemo, useState } from 'react';
 import CardLarge1 from '@/components/CardLarge1/CardLarge1';
 import type { PostWithRelations } from '@/types/types';
-import CardSkeleton from '@/components/Skeletons/CardSkeleton';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
 
 type SectionLargeSliderProps = {
@@ -90,6 +89,19 @@ export default function SectionLargeSliderClient({
     [goToNextSlide, goToPrevSlide, handleInteraction],
   );
 
+  const cardLarge1 = useMemo(() => {
+    if (!activePost) return <CardLarge1Skeleton />;
+    return (
+      <CardLarge1
+        key={activePost.id}
+        onClickNext={goToNextSlide}
+        onClickPrev={goToPrevSlide}
+        post={activePost}
+        onKeyDown={handleKeyDown}
+      />
+    );
+  }, [activePost, goToNextSlide, goToPrevSlide, handleKeyDown]);
+
   return (
     <section
       ref={sliderRef}
@@ -101,17 +113,7 @@ export default function SectionLargeSliderClient({
         اسلاید {indexActive + 1} از {initialPosts.length}
       </div>
       <div onMouseEnter={handleInteraction} onMouseLeave={() => setIsPaused(false)}>
-        {activePost ? (
-          <CardLarge1
-            key={activePost.id}
-            onClickNext={goToNextSlide}
-            onClickPrev={goToPrevSlide}
-            post={activePost}
-            onKeyDown={handleKeyDown}
-          />
-        ) : (
-          <CardLarge1Skeleton />
-        )}
+        {cardLarge1}
       </div>
     </section>
   );
