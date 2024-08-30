@@ -2,7 +2,7 @@
 
 import React, { type FC, useRef, useState } from 'react';
 import Avatar from '@/components/Avatar/Avatar';
-import NcDropDown, { type NcDropDownItem } from '@/components/NcDropDown/NcDropDown';
+import NcDropDown from '@/components/NcDropDown/NcDropDown';
 import twFocusClass from '@/utils/twFocusClass';
 import ModalEditComment from './ModalEditComment';
 import ModalDeleteComment from './ModalDeleteComment';
@@ -12,10 +12,11 @@ import SingleCommentForm from '@/app/(site)/(singles)/SingleCommentForm';
 import CommentCardLikeReply from '../CommentCardLikeReply/CommentCardLikeReply';
 import { useSession } from 'next-auth/react';
 import { formatDate } from '@/utils/formatDate';
-import type { CommentWithRelationsAndLikes } from '@/types/types';
+import type { CommentWithRelationsAndLikes, NcDropDownItem } from '@/types/types';
 import { likeItem } from '@/actions/postActions';
 import { useToast } from '@/components/ui/use-toast';
 import { useCommentStore } from '@/hooks/useCommentStore';
+import { HiOutlinePencil, HiOutlineReply, HiOutlineFlag, HiOutlineTrash } from 'react-icons/hi';
 
 export interface CommentCardProps {
   className?: string;
@@ -38,22 +39,22 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
     {
       id: 'edit',
       name: 'ویرایش',
-      icon: 'las la-edit',
+      icon: HiOutlinePencil,
     },
     {
       id: 'reply',
       name: 'پاسخ',
-      icon: 'las la-reply',
+      icon: HiOutlineReply,
     },
     {
       id: 'report',
       name: 'گزارش تخلف',
-      icon: 'las la-flag',
+      icon: HiOutlineFlag,
     },
     {
       id: 'delete',
       name: 'حذف',
-      icon: 'las la-trash-alt',
+      icon: HiOutlineTrash,
     },
   ];
 
@@ -219,13 +220,13 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
         </div>
       </div>
 
-      {/* <ModalEditComment
+      <ModalEditComment
         show={isEditing}
         onCloseModalEditComment={closeModalEditComment}
         comment={comment}
       />
       <ModalReportItem show={isReporting} onCloseModalReportItem={closeModalReportComment} />
-      <ModalDeleteComment show={isDeleting} onCloseModalDeleteComment={closeModalDeleteComment} /> */}
+      <ModalDeleteComment show={isDeleting} onCloseModalDeleteComment={closeModalDeleteComment} />
     </>
   );
 };
