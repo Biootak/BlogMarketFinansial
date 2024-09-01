@@ -5,7 +5,7 @@ import authConfig from '@/auth.config';
 
 import prisma from '@/lib/db';
 import { getUserById, getUserByEmail } from '@/data/user';
-import type { Role } from '@/types/types';
+import type { Role, UserProfile } from '@/types/types';
 import Resend from 'next-auth/providers/resend';
 import Credentials from 'next-auth/providers/credentials';
 
@@ -40,33 +40,27 @@ export const {
   },
   callbacks: {
     async session({ token, session }) {
-      if (token.sub && session.user) {
-        session.user.id = token.sub;
-      }
-
-      if (token.role && session.user) {
-        session.user.role = token.role as Role;
-      }
-
       if (session.user) {
-        session.user.email = token.email as string;
-        session.user.name = token.name;
+        session.user.id = token.sub as string;
+        session.user.role = token.role as Role;
+        session.user.profile = token.profile as UserProfile | undefined;
       }
       return session;
     },
 
-    async jwt({ token }) {
-      if (!token.sub) return token;
-
-      const existingUser = await getUserById(token.sub);
-
-      if (!existingUser) {
-        return token;
+    async jwt({ token, user }) {
+      if (user) {
+        token.role = user.role as Role;
+        token.profile = (user as { profile?: UserProfile }).profile;
       }
-      token.id = existingUser.id;
-      token.email = existingUser.email;
-      token.name = existingUser.name;
-      token.role = existingUser.role;
+
+      if (token.sub) {
+        const existingUser = await getUserById(token.sub);
+        if (existingUser) {
+          token.role = existingUser.role;
+          token.profile = existingUser.profile;
+        }
+      }
 
       return token;
     },
