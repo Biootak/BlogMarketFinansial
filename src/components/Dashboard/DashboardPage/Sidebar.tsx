@@ -1,123 +1,193 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import {
-  HiOutlineChartBar,
-  HiOutlineDocumentText,
-  HiOutlineChatBubbleLeftEllipsis,
-  HiOutlineTag,
-  HiOutlineUserGroup,
-  HiOutlineCog6Tooth,
-  HiOutlineArrowRightOnRectangle,
-} from 'react-icons/hi2';
+import { usePathname, useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 
-interface MenuItem {
-  href: string;
-  icon: React.ReactNode;
-  pageName: string;
-}
+import { logout } from '@/actions/auth-actions';
+import { useToast } from '@/components/ui/use-toast';
+import Logo from '@/components/Logo/Logo';
+import { MdMenuOpen, MdOutlineDashboard } from 'react-icons/md';
+import { IoHomeOutline, IoExitOutline } from 'react-icons/io5';
+import { FaProductHunt, FaUsers, FaUserCircle } from 'react-icons/fa';
+import { CiSettings } from 'react-icons/ci';
+import { SiGoogleads } from 'react-icons/si';
+import { useSidebarStore } from '@/hooks/sidebarStore';
 
-const menuItems: MenuItem[] = [
-  {
-    href: '/dashboard/admin',
-    icon: <HiOutlineChartBar className="w-5 h-5" />,
-    pageName: 'داشبورد',
-  },
-  {
-    href: '/dashboard/admin/posts',
-    icon: <HiOutlineDocumentText className="w-5 h-5" />,
-    pageName: 'پست ها',
-  },
-  {
-    href: '/dashboard/admin/advertisements',
-    icon: <HiOutlineChatBubbleLeftEllipsis className="w-5 h-5" />,
-    pageName: 'تبلیغات',
-  },
+const menuItems = [
+  { href: '/dashboard/admin', icon: <IoHomeOutline size={24} />, label: 'داشبورد' },
+  { href: '/dashboard/admin/posts', icon: <FaProductHunt size={24} />, label: 'پست ها' },
   {
     href: '/dashboard/admin/categories',
-    icon: <HiOutlineTag className="w-5 h-5" />,
-    pageName: 'دسته‌بندی‌ها',
+    icon: <MdOutlineDashboard size={24} />,
+    label: 'دسته بندی',
   },
-  {
-    href: '/dashboard/admin/users',
-    icon: <HiOutlineUserGroup className="w-5 h-5" />,
-    pageName: 'کاربران',
-  },
+  { href: '/dashboard/admin/advertisements', icon: <SiGoogleads size={24} />, label: 'تبلیغات' },
+  { href: '/dashboard/admin/users', icon: <FaUsers size={24} />, label: 'کاربران' },
+  { href: '/dashboard/admin/edit-profile', icon: <CiSettings size={24} />, label: 'تنظیمات' },
 ];
-
-const managementItems: MenuItem[] = [
-  {
-    href: '/dashboard/settings',
-    icon: <HiOutlineCog6Tooth className="w-5 h-5" />,
-    pageName: 'تنظیمات',
-  },
-  {
-    href: '/dashboard/profile',
-    icon: <HiOutlineUserGroup className="w-5 h-5" />,
-    pageName: 'پروفایل',
-  },
-];
-
-const SidebarItem: React.FC<MenuItem> = ({ href, icon, pageName }) => {
-  const pathname = usePathname();
-  const isActive = pathname === href;
-
-  return (
-    <li>
-      <Link
-        className={`px-4 py-2 rounded-lg flex items-center transition-all ${
-          isActive
-            ? 'bg-indigo-100 text-indigo-700 font-semibold shadow-sm'
-            : 'text-gray-700 hover:bg-gray-100 hover:text-indigo-600'
-        }`}
-        href={href}
-      >
-        <span
-          className={`ml-3 transition-colors ${isActive ? 'text-indigo-600' : 'text-gray-500'}`}
-        >
-          {icon}
-        </span>
-        <span className="text-sm">{pageName}</span>
-      </Link>
-    </li>
-  );
-};
 
 const Sidebar: React.FC = () => {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { toast } = useToast();
+  const { isOpen, setIsOpen, isMobile } = useSidebarStore();
+
+  const handleLogout = async () => {
+    try {
+      const result = await logout();
+      if (result.success) {
+        toast({
+          title: 'خروج موفق',
+          description: 'شما با موفقیت از حساب کاربری خود خارج شدید.',
+          variant: 'default',
+        });
+        router.push('/login');
+      } else {
+        toast({
+          title: 'خطا در خروج',
+          description:
+            result.message || 'مشکلی در خروج از حساب کاربری پیش آمد. لطفا دوباره تلاش کنید.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+      toast({
+        title: 'خطای سیستمی',
+        description: 'مشکلی در سیستم رخ داده است. لطفا بعدا دوباره تلاش کنید.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const sidebarVariants = {
+    open: { width: isMobile ? '100%' : '240px', transition: { duration: 0.3 } },
+    closed: { width: isMobile ? '0' : '60px', transition: { duration: 0.3 } },
+  };
+
   return (
-    <aside className="hidden md:flex w-64 bg-white dark:bg-gray-800 shadow-xl flex-col">
-      <div className="p-4 border-b dark:border-gray-700">
-        <h1 className="text-xl font-bold text-indigo-600 dark:text-indigo-400">داشبورد وبلاگ</h1>
-      </div>
-      <div className="p-4 flex-grow overflow-y-auto">
-        <nav>
-          <h2 className="text-xs font-semibold text-gray-400 dark:text-gray-500 mb-2">
-            مدیریت محتوا
-          </h2>
-          <ul className="space-y-1 mb-6">
-            {menuItems.map((item, index) => (
-              <SidebarItem key={index} {...item} />
+    <>
+      <motion.nav
+        dir="rtl"
+        initial={false}
+        animate={isOpen ? 'open' : 'closed'}
+        variants={sidebarVariants}
+        className={`fixed top-0 right-0 h-full bg-blue-600 dark:bg-gray-800 text-white shadow-lg z-40 
+                    overflow-hidden transition-all duration-300`}
+      >
+        <div className="h-full flex flex-col p-2">
+          <div className="flex justify-between items-center mb-10">
+            <AnimatePresence>
+              {isOpen && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Logo className="w-10 rounded-md" />
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <button type="button" onClick={() => setIsOpen(!isOpen)} className="p-2">
+              <MdMenuOpen
+                size={24}
+                className={`transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
+          </div>
+
+          <ul className="space-y-4 flex-grow">
+            {menuItems.map((item) => (
+              <li key={item.href}>
+                <Link href={item.href}>
+                  <span
+                    className={`flex items-center p-2 rounded-md transition-colors duration-200
+                                ${
+                                  pathname === item.href
+                                    ? 'bg-blue-700 dark:bg-gray-700 text-white'
+                                    : 'text-blue-100 dark:text-gray-300 hover:bg-blue-700 dark:hover:bg-gray-700'
+                                }`}
+                  >
+                    <div className="w-6 h-6 flex items-center justify-center">{item.icon}</div>
+                    <AnimatePresence>
+                      {isOpen && (
+                        <motion.span
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -10 }}
+                          transition={{ duration: 0.2 }}
+                          className="mr-4"
+                        >
+                          {item.label}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </span>
+                </Link>
+              </li>
             ))}
           </ul>
-          <h2 className="text-xs font-semibold text-gray-400 dark:text-gray-500 mb-2">تنظیمات</h2>
-          <ul className="space-y-1">
-            {managementItems.map((item, index) => (
-              <SidebarItem key={index} {...item} />
-            ))}
-          </ul>
-        </nav>
-      </div>
-      <div className="p-4 border-t dark:border-gray-700">
-        <button
-          type="button"
-          className="w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center shadow-sm"
-        >
-          <HiOutlineArrowRightOnRectangle className="w-5 h-5 ml-2" />
-          خروج
-        </button>
-      </div>
-    </aside>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center w-full p-2 rounded-md text-blue-100 dark:text-gray-300 hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors duration-200"
+          >
+            <div className="w-6 h-6 flex items-center justify-center">
+              <IoExitOutline size={24} />
+            </div>
+            <AnimatePresence>
+              {isOpen && (
+                <motion.span
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="mr-4"
+                >
+                  خروج
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </button>
+
+          <div className="mt-4 flex items-center p-2 bg-blue-700 dark:bg-gray-700 rounded-md">
+            <div className="w-6 h-6 flex items-center justify-center">
+              <FaUserCircle size={24} />
+            </div>
+            <AnimatePresence>
+              {isOpen && (
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="mr-4"
+                >
+                  <p className="font-medium">Saheb</p>
+                  <p className="text-sm text-blue-200 dark:text-gray-400">saheb@gmail.com</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </motion.nav>
+
+      {isMobile && isOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-30"
+          onClick={() => setIsOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setIsOpen(false);
+            }
+          }}
+        />
+      )}
+    </>
   );
 };
 

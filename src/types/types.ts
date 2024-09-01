@@ -8,6 +8,7 @@ import type {
   UpdatePostSchema,
   PostSchema,
   RegisterSchema,
+  UpdateProfileSchema,
 } from '@/schemas';
 
 import type { IconType } from 'react-icons';
@@ -171,6 +172,9 @@ export type UserWithProfile = Omit<UserBase, '_count'> & {
 };
 export type CategoryWithPostCount = Prisma.CategoryGetPayload<typeof categoryWithPostCount>;
 export type TagWithPostCount = Prisma.TagGetPayload<typeof tagWithPostCount>;
+export type UpdateProfileInput = z.infer<typeof UpdateProfileSchema> & {
+  password?: string;
+};
 
 export type TwMainColor =
   | 'pink'

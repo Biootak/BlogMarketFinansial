@@ -1,15 +1,15 @@
-import type { ReactNode } from 'react';
+import { auth } from '@/auth';
 import Header from '@/components/Dashboard/DashboardPage/Header';
 import MainContent from '@/components/Dashboard/DashboardPage/MainContent';
 import Sidebar from '@/components/Dashboard/DashboardPage/Sidebar';
-import { auth } from '@/auth';
+import SidebarInitializer from '@/components/Dashboard/DashboardPage/SidebarInitializer';
 import { redirect } from 'next/navigation';
 
-interface LayoutProps {
-  children: ReactNode;
-}
-
-export default async function Layout({ children }: LayoutProps) {
+export default async function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const session = await auth();
 
   if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'AUTHOR')) {
@@ -17,15 +17,18 @@ export default async function Layout({ children }: LayoutProps) {
   }
 
   return (
-    <div
-      className="flex h-screen w-full bg-gray-50 dark:bg-gray-900 transition-colors duration-200"
-      dir="rtl"
-    >
-      <Sidebar />
-      <div className="flex flex-col flex-1">
-        <Header />
-        <MainContent>{children}</MainContent>
+    <>
+      <SidebarInitializer />
+      <div
+        className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900 transition-colors duration-200"
+        dir="rtl"
+      >
+        <Sidebar />
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <Header />
+          <MainContent>{children}</MainContent>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

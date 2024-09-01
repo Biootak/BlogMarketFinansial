@@ -51,7 +51,9 @@ const Avatar: FC<AvatarProps> = ({
       {!isCustomImage && (
         <>
           <div className="absolute inset-0 bg-black bg-opacity-30" />
-          <span className={`relative z-10 ${fontSize} font-bold tracking-wider drop-shadow-md`}>
+          <span
+            className={`relative z-10 ${fontSize} font-bold tracking-wider drop-shadow-md items-center justify-center text-white uppercase`}
+          >
             {initial}
           </span>
         </>

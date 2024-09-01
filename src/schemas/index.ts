@@ -88,3 +88,32 @@ export const PostSchema = BasePostSchema.extend({
   likes: z.number().int().nonnegative(),
   savedCount: z.number().int().nonnegative(),
 });
+
+export const UpdateProfileSchema = z
+  .object({
+    name: z.string().min(2, 'نام باید حداقل 2 حرف باشد').optional(),
+    email: z.string().email('ایمیل نامعتبر است').optional(),
+    bio: z.string().max(500, 'بیوگرافی نمی‌تواند بیشتر از 500 کاراکتر باشد').optional(),
+    imageUrl: z.string().url('آدرس تصویر نامعتبر است').optional(),
+    currentPassword: z.string().min(6, 'رمز عبور باید حداقل 6 کاراکتر باشد').optional(),
+    newPassword: z.string().min(6, 'رمز عبور جدید باید حداقل 6 کاراکتر باشد').optional(),
+    confirmNewPassword: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.currentPassword && !data.newPassword) {
+        return false;
+      }
+      if (!data.currentPassword && data.newPassword) {
+        return false;
+      }
+      if (data.newPassword !== data.confirmNewPassword) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: 'رمز عبور جدید و تکرار آن باید یکسان باشند',
+      path: ['confirmNewPassword'],
+    },
+  );

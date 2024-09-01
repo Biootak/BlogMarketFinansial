@@ -1,7 +1,6 @@
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import { Role } from '@prisma/client';
-import { redirect } from 'next/navigation';
 
 export async function getTopAuthors(limit = 5) {
   const topAuthors = await prisma.user.findMany({

@@ -1,5 +1,5 @@
 import { logout } from '@/actions/auth-actions';
-import { LogoutIcon } from '../Icons';
+import { IoExitOutline } from 'react-icons/io5';
 
 const Logout = () => {
   return (
@@ -8,7 +8,7 @@ const Logout = () => {
         type="submit"
         className="flex items-center w-full p-2 transition duration-150 ease-in-out rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50"
       >
-        <LogoutIcon
+        <IoExitOutline
           className="flex-shrink-0 w-6 h-6 text-neutral-500 dark:text-neutral-300"
           title="خروج"
         />

@@ -20,7 +20,7 @@ const Page404: React.FC = () => (
           </div>
         </div>
 
-        <p className="text-xl text-neutral-800 dark:text-neutral-200 leading-relaxed">
+        <p className="text-lg text-neutral-800 dark:text-neutral-200 leading-relaxed">
           متأسفانه صفحه‌ای که به دنبال آن بودید پیدا نشد.
           <br />
           ممکن است آدرس تغییر کرده یا صفحه حذف شده باشد.
