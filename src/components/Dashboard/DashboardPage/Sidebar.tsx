@@ -13,6 +13,7 @@ import { FaProductHunt, FaUsers, FaUserCircle } from 'react-icons/fa';
 import { CiSettings } from 'react-icons/ci';
 import { SiGoogleads } from 'react-icons/si';
 import { useSidebarStore } from '@/hooks/sidebarStore';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 const menuItems = [
   { href: '/dashboard/admin', icon: <IoHomeOutline size={24} />, label: 'داشبورد' },
@@ -33,6 +34,8 @@ const Sidebar: React.FC = () => {
   const { toast } = useToast();
   const { isOpen, setIsOpen, isMobile } = useSidebarStore();
 
+  const user = useCurrentUser();
+
   const handleLogout = async () => {
     try {
       const result = await logout();
@@ -42,7 +45,7 @@ const Sidebar: React.FC = () => {
           description: 'شما با موفقیت از حساب کاربری خود خارج شدید.',
           variant: 'default',
         });
-        router.push('/login');
+        router.push('/signin');
       } else {
         toast({
           title: 'خطا در خروج',
@@ -166,8 +169,8 @@ const Sidebar: React.FC = () => {
                   transition={{ duration: 0.2 }}
                   className="mr-4"
                 >
-                  <p className="font-medium">Saheb</p>
-                  <p className="text-sm text-blue-200 dark:text-gray-400">saheb@gmail.com</p>
+                  <p className="font-medium">{user?.name}</p>
+                  <p className="text-sm text-blue-200 dark:text-gray-400">{user?.email}</p>
                 </motion.div>
               )}
             </AnimatePresence>

@@ -44,15 +44,16 @@ const BlogStatCard: React.FC<BlogStatCardProps> = ({
   return (
     <div className="relative">
       <motion.div
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.98 }}
         transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-        className="bg-white dark:bg-gray-800 pr-8 pl-8 py-8 rounded-2xl shadow-lg 
-                   border border-gray-100 dark:border-gray-700 cursor-pointer"
+        className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-lg 
+                   border border-gray-100 dark:border-gray-700 cursor-pointer
+                   hover:shadow-xl transition-all duration-300"
         onClick={() => setIsExpanded((prev) => !prev)}
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-reverse space-x-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
+          <div className="flex items-center space-x-reverse space-x-4 sm:space-x-6">
             <motion.div
               whileHover={{ rotate: 15 }}
               className={`p-3 rounded-xl text-white shadow-md 
@@ -66,7 +67,7 @@ const BlogStatCard: React.FC<BlogStatCardProps> = ({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="text-2xl font-bold text-gray-800 dark:text-white"
+                className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 dark:text-white"
               >
                 {value}
               </motion.span>
@@ -77,7 +78,7 @@ const BlogStatCard: React.FC<BlogStatCardProps> = ({
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
-              className={`text-sm font-medium flex items-center space-x-reverse space-x-1 ${trendColor}`}
+              className={`text-sm sm:text-base font-medium flex items-center space-x-reverse space-x-1 ${trendColor}`}
             >
               <span>{trendIcons[trend]}</span>
               <span>{percentage}%</span>
@@ -92,7 +93,9 @@ const BlogStatCard: React.FC<BlogStatCardProps> = ({
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="absolute top-full right-0 left-0 mt-2 pr-4 pl-4 py-4 bg-white dark:bg-gray-800 rounded-xl shadow-lg z-10 overflow-hidden"
+            className="absolute top-full right-0 left-0 mt-2 p-4 sm:p-6 
+                       bg-white dark:bg-gray-800 rounded-xl shadow-lg z-10 
+                       overflow-hidden border border-gray-100 dark:border-gray-700"
           >
             {detailedInfo}
           </motion.div>

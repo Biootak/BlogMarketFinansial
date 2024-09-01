@@ -1,28 +1,42 @@
+'use client';
+
 import React from 'react';
-import { auth } from '@/auth';
 import Avatar from '@/components/Avatar/Avatar';
 import NewPostButton from './NewPostButton';
+import { motion } from 'framer-motion';
 
-export default async function WelcomeSectionContent() {
-  const session = await auth();
+import { useCurrentUser } from '@/hooks/useCurrentUser';
+
+export default function WelcomeSectionContent() {
+  const user = useCurrentUser();
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl p-6 text-white">
-      <div className="relative z-10 flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">خوش آمدید، {session?.user?.name}</h2>
-          <p className="text-gray-200 mt-2">
-            به داشبورد وبلاگ خود خوش آمدید. آماده نوشتن مطالب جدید هستید؟
-          </p>
-          <NewPostButton />
-        </div>
+    <div className="relative z-10 flex flex-col items-center sm:flex-row sm:items-start sm:justify-between">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.4 }}
+        className="mb-4 sm:mb-0 sm:order-last"
+      >
         <Avatar
-          imgUrl={session?.user?.image}
-          userName={session?.user?.name}
-          sizeClass="h-24 w-24"
-          containerClassName="border-4 border-white"
+          imgUrl={(user?.profile?.avatar || user?.image) ?? undefined}
+          userName={user?.name ?? undefined}
+          sizeClass="h-20 w-20 sm:h-24 sm:w-24"
+          containerClassName="border-4 border-white shadow-lg"
         />
-      </div>
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="text-center sm:text-right"
+      >
+        <h2 className="text-2xl sm:text-3xl font-bold mb-2"> {user?.name ?? 'کاربر'}</h2>
+        <p className="text-neutral-200 mb-4">
+          به داشبورد وبلاگ خود خوش آمدید. آماده نوشتن مطالب جدید هستید؟
+        </p>
+        <NewPostButton />
+      </motion.div>
     </div>
   );
 }

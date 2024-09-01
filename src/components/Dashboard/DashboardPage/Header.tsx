@@ -1,17 +1,13 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
-import {
-  RiMenu4Line,
-  RiNotification3Line,
-  RiSearch2Line,
-} from 'react-icons/ri';
+import { RiMenu4Line, RiNotification3Line, RiSearch2Line } from 'react-icons/ri';
 import SwitchDarkMode from '@/components/SwitchDarkMode/SwitchDarkMode';
 import Avatar from '@/components/Avatar/Avatar';
 import { useSidebarStore } from '@/hooks/sidebarStore';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 const Header: React.FC = () => {
-  const { data: session } = useSession();
+  const user = useCurrentUser();
   const { isOpen, setIsOpen, isMobile } = useSidebarStore();
 
   const iconClass =
@@ -46,8 +42,8 @@ const Header: React.FC = () => {
               aria-label="منوی کاربر"
             >
               <Avatar
-                imgUrl={session?.user?.image}
-                userName={session?.user?.name}
+                imgUrl={user?.profile?.avatar || user?.image}
+                userName={user?.name}
                 sizeClass="h-9 w-9 sm:h-10 sm:w-10"
                 containerClassName="border-2 border-indigo-500 hover:border-indigo-600 transition-colors duration-200 justify-center"
               />

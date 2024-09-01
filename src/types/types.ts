@@ -144,7 +144,7 @@ export type UserProfile = {
   bgImage: string | null;
   jobName: string | null;
   userId: string;
-};
+} | null;
 
 export type UserWithRelations = Prisma.UserGetPayload<typeof userWithRelations>;
 
