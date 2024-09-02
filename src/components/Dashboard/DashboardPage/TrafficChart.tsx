@@ -1,23 +1,9 @@
 'use client';
 
 import type React from 'react';
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 import { motion } from 'framer-motion';
-import { HiOutlineChartBar } from 'react-icons/hi2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  type ChartOptions,
-  type ChartData,
-} from 'chart.js';
-import { Line } from 'react-chartjs-2';
-
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface TrafficChartProps {
   data: number[];
@@ -25,83 +11,69 @@ interface TrafficChartProps {
 }
 
 const TrafficChart: React.FC<TrafficChartProps> = ({ data, labels }) => {
-  const options: ChartOptions<'line'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-        align: 'end' as const,
-        labels: {
-          color: 'rgba(75, 85, 99, 1)',
-          font: {
-            size: 12,
-            weight: 'bold',
-          },
-        },
-      },
-      title: {
-        display: false,
-      },
-    },
-    scales: {
-      x: {
-        reverse: true,
-        position: 'top' as const,
-        grid: {
-          color: 'rgba(75, 85, 99, 0.1)',
-        },
-        ticks: {
-          color: 'rgba(75, 85, 99, 0.8)',
-        },
-      },
-      y: {
-        position: 'right' as const,
-        grid: {
-          color: 'rgba(75, 85, 99, 0.1)',
-        },
-        ticks: {
-          color: 'rgba(75, 85, 99, 0.8)',
-        },
-      },
-    },
-  };
-
-  const chartData: ChartData<'line'> = {
-    labels,
-    datasets: [
-      {
-        label: 'بازدید',
-        data,
-        borderColor: 'rgb(129, 140, 248)',
-        backgroundColor: 'rgba(129, 140, 248, 0.5)',
-        borderWidth: 2,
-        pointBackgroundColor: 'rgb(129, 140, 248)',
-        pointBorderColor: '#fff',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: 'rgb(129, 140, 248)',
-      },
-    ],
-  };
+  const chartData = labels.map((label, index) => ({
+    name: label,
+    بازدید: data[index],
+  }));
 
   return (
-    <div
-      dir="rtl"
-      className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8  transition-all duration-300 hover:shadow-xl"
-    >
-      <h3 className="text-xl font-bold mb-6 dark:text-white flex items-center">
-        <HiOutlineChartBar className="w-7 h-7 ml-3 text-indigo-500" />
-        آمار بازدید
-      </h3>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="h-72 pt-4"
-      >
-        <Line options={options} data={chartData} />
-      </motion.div>
-    </div>
+    <Card className="w-full h-[400px] p-4 bg-white dark:bg-gray-800 transition-colors duration-200">
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+          نمودار ترافیک
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={chartData}>
+            <XAxis
+              dataKey="name"
+              stroke="currentColor"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
+              dy={10}
+              className="text-gray-600 dark:text-gray-400"
+            />
+            <YAxis
+              stroke="currentColor"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(value) => `${value}`}
+              dx={-10}
+              className="text-gray-600 dark:text-gray-400"
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: 'var(--background)',
+                border: 'none',
+                borderRadius: '8px',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+              }}
+              labelStyle={{ color: 'var(--foreground)' }}
+              itemStyle={{ color: 'var(--foreground)' }}
+            />
+            <Bar
+              dataKey="بازدید"
+              fill="rgb(var(--c-primary-500))"
+              radius={[4, 4, 0, 0]}
+              role="img"
+              aria-label="نمودار ستونی بازدید"
+            >
+              {chartData.map((entry, index) => (
+                <motion.rect
+                  key={`bar-${index}`}
+                  initial={{ y: 300, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
   );
 };
 

@@ -14,6 +14,7 @@ import { CiSettings } from 'react-icons/ci';
 import { SiGoogleads } from 'react-icons/si';
 import { useSidebarStore } from '@/hooks/sidebarStore';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useMemo } from 'react';
 
 const menuItems = [
   { href: '/dashboard/admin', icon: <IoHomeOutline size={24} />, label: 'داشبورد' },
@@ -64,16 +65,19 @@ const Sidebar: React.FC = () => {
     }
   };
 
-  const sidebarVariants = {
-    open: { width: isMobile ? '100%' : '240px', transition: { duration: 0.3 } },
-    closed: { width: isMobile ? '0' : '60px', transition: { duration: 0.3 } },
-  };
+  const sidebarVariants = useMemo(
+    () => ({
+      open: { width: isMobile ? '100%' : '240px', transition: { duration: 0.3 } },
+      closed: { width: isMobile ? '0' : '60px', transition: { duration: 0.3 } },
+    }),
+    [isMobile],
+  );
 
   return (
     <>
       <motion.nav
         dir="rtl"
-        initial={false}
+        initial="closed"
         animate={isOpen ? 'open' : 'closed'}
         variants={sidebarVariants}
         className={`fixed top-0 right-0 h-full bg-blue-600 dark:bg-gray-800 text-white shadow-lg z-40 
@@ -87,7 +91,7 @@ const Sidebar: React.FC = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
+                  transition={{ duration: 0.2, delay: 0.1 }}
                 >
                   <Logo className="w-10 rounded-md" />
                 </motion.div>
@@ -120,7 +124,7 @@ const Sidebar: React.FC = () => {
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: -10 }}
-                          transition={{ duration: 0.2 }}
+                          transition={{ duration: 0.2, delay: 0.1 }}
                           className="mr-4"
                         >
                           {item.label}
@@ -147,7 +151,7 @@ const Sidebar: React.FC = () => {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
-                  transition={{ duration: 0.2 }}
+                  transition={{ duration: 0.2, delay: 0.1 }}
                   className="mr-4"
                 >
                   خروج
@@ -166,7 +170,7 @@ const Sidebar: React.FC = () => {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
-                  transition={{ duration: 0.2 }}
+                  transition={{ duration: 0.2, delay: 0.1 }}
                   className="mr-4"
                 >
                   <p className="font-medium">{user?.name}</p>

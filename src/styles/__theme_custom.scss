@@ -155,8 +155,23 @@
 //
 
 //
-.menuIsNew_lv1 {
-  > a::before {
+
+.menuIsNew {
+  > a::after {
+    content: "New!";
+    display: inline-block;
+    padding: 0 5px;
+    line-height: 15px;
+    border-radius: 4px;
+    background-color: #f35656;
+    color: #fff;
+    font-size: 10px;
+    @apply ms-1.5;
+  }
+}
+.menuIsNew {
+  > .nc-menu-lv1 > a::before,
+  > button.nc-menu-lv1::before {
     content: "New!";
     position: absolute;
     top: -2px;
@@ -169,19 +184,6 @@
     color: #fff;
     font-size: 10px;
     font-weight: normal;
-  }
-}
-.menuIsNew {
-  > a::after {
-    content: "New!";
-    display: inline-block;
-    padding: 0 5px;
-    line-height: 15px;
-    border-radius: 4px;
-    background-color: #f35656;
-    color: #fff;
-    font-size: 10px;
-    @apply ms-1.5;
   }
 }
 
@@ -234,4 +236,16 @@
 .nc-custom-shadow-1 {
   box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px,
     rgba(17, 17, 26, 0.05) 0px 8px 32px;
+}
+
+@supports (font: -apple-system-body) and (-webkit-appearance: none) {
+  img[loading="lazy"] {
+    clip-path: inset(0.6px);
+  }
+}
+//
+
+.dark .react-loading-skeleton {
+  --base-color: #4b5563;
+  --highlight-color: #58626e;
 }

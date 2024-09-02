@@ -1,7 +1,5 @@
 /** @type {import('tailwindcss').Config} */
 
-const defaultTheme = require('tailwindcss/defaultTheme');
-
 // Custom color with css variable color in __theme_color.scss
 function customColors(cssVar) {
   return ({ opacityVariable, opacityValue }) => {

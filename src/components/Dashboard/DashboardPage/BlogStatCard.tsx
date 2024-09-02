@@ -14,11 +14,11 @@ export interface BlogStatCardProps {
 }
 
 const colorVariants = {
-  blue: 'from-blue-400 to-blue-600',
-  green: 'from-green-400 to-green-600',
-  purple: 'from-purple-400 to-purple-600',
-  red: 'from-red-400 to-red-600',
-  orange: 'from-orange-400 to-orange-600',
+  blue: 'from-blue-500 to-blue-700',
+  green: 'from-green-500 to-green-700',
+  purple: 'from-purple-500 to-purple-700',
+  red: 'from-red-500 to-red-700',
+  orange: 'from-orange-500 to-orange-700',
 };
 
 const trendIcons = {
@@ -39,21 +39,28 @@ const BlogStatCard: React.FC<BlogStatCardProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
 
   const trendColor =
-    trend === 'up' ? 'text-green-500' : trend === 'down' ? 'text-red-500' : 'text-gray-500';
+    trend === 'up'
+      ? 'text-green-500 dark:text-green-400'
+      : trend === 'down'
+        ? 'text-red-500 dark:text-red-400'
+        : 'text-gray-500 dark:text-gray-400';
 
   return (
-    <div className="relative">
+    <div className="relative h-full">
       <motion.div
-        whileHover={{ scale: 1.03 }}
+        whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-        className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-lg 
+        className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-lg 
                    border border-gray-100 dark:border-gray-700 cursor-pointer
-                   hover:shadow-xl transition-all duration-300"
+                   hover:shadow-xl transition-all duration-300 h-full"
         onClick={() => setIsExpanded((prev) => !prev)}
+        role="button"
+        aria-expanded={isExpanded}
+        aria-label={`${title} statistics`}
       >
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
-          <div className="flex items-center space-x-reverse space-x-4 sm:space-x-6">
+        <div className="flex flex-col justify-between h-full">
+          <div className="flex items-center justify-between mb-4">
             <motion.div
               whileHover={{ rotate: 15 }}
               className={`p-3 rounded-xl text-white shadow-md 
@@ -61,29 +68,29 @@ const BlogStatCard: React.FC<BlogStatCardProps> = ({
             >
               {icon}
             </motion.div>
-            <div>
-              <h3 className="text-gray-600 dark:text-gray-300 text-sm font-medium mb-2">{title}</h3>
-              <motion.span
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+            {trend && percentage && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5 }}
-                className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 dark:text-white"
+                className={`text-sm font-medium flex items-center space-x-1 ${trendColor}`}
               >
-                {value}
-              </motion.span>
-            </div>
+                <span aria-hidden="true">{trendIcons[trend]}</span>
+                <span>{percentage}%</span>
+              </motion.div>
+            )}
           </div>
-          {trend && percentage && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
+          <div>
+            <h3 className="text-gray-600 dark:text-gray-300 text-sm font-medium mb-1">{title}</h3>
+            <motion.span
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className={`text-sm sm:text-base font-medium flex items-center space-x-reverse space-x-1 ${trendColor}`}
+              className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white"
             >
-              <span>{trendIcons[trend]}</span>
-              <span>{percentage}%</span>
-            </motion.div>
-          )}
+              {value}
+            </motion.span>
+          </div>
         </div>
       </motion.div>
       <AnimatePresence>
@@ -93,7 +100,7 @@ const BlogStatCard: React.FC<BlogStatCardProps> = ({
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="absolute top-full right-0 left-0 mt-2 p-4 sm:p-6 
+            className="absolute top-full left-0 right-0 mt-2 p-4 
                        bg-white dark:bg-gray-800 rounded-xl shadow-lg z-10 
                        overflow-hidden border border-gray-100 dark:border-gray-700"
           >

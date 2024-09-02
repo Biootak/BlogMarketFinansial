@@ -6,6 +6,7 @@ import { notFound, redirect } from 'next/navigation';
 import { getStats, getScheduledPosts } from '@/actions/postActions';
 import { getPopularPosts } from '@/actions/getPopularPosts';
 import { getRecentDrafts } from '@/actions/getRecentDrafts';
+import { getViewStats } from '@/actions/getViewStats';
 import Loading from '@/components/Loading';
 
 export default async function Dashboard() {
@@ -15,14 +16,26 @@ export default async function Dashboard() {
     redirect('/signin');
   }
 
-  const [statsResult, scheduledPostsResult, popularPostsResult, recentDraftsResult] =
-    await Promise.all([getStats(), getScheduledPosts(), getPopularPosts(), getRecentDrafts()]);
+  const [
+    statsResult,
+    scheduledPostsResult,
+    popularPostsResult,
+    recentDraftsResult,
+    viewStatsResult,
+  ] = await Promise.all([
+    getStats(),
+    getScheduledPosts(),
+    getPopularPosts(),
+    getRecentDrafts(),
+    getViewStats(),
+  ]);
 
   if (
     !statsResult.success ||
     !scheduledPostsResult.success ||
     !popularPostsResult.success ||
-    !recentDraftsResult.success
+    !recentDraftsResult.success ||
+    !viewStatsResult.success
   ) {
     // Handle error
     return notFound();
@@ -32,7 +45,8 @@ export default async function Dashboard() {
     !statsResult.data ||
     !scheduledPostsResult.data ||
     !popularPostsResult.data ||
-    !recentDraftsResult.data
+    !recentDraftsResult.data ||
+    !viewStatsResult.data
   ) {
     return notFound();
   }
@@ -58,6 +72,7 @@ export default async function Dashboard() {
         scheduledPosts={scheduledPostsResult.data}
         popularPosts={popularPostsResult.data}
         recentDrafts={recentDraftsResult.data}
+        viewStats={viewStatsResult.data}
       />
     </Suspense>
   );
