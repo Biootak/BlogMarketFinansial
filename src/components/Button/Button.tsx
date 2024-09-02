@@ -1,6 +1,7 @@
 'use client';
 
-import React, { forwardRef, ButtonHTMLAttributes } from 'react';
+import type React from 'react';
+import { forwardRef, type ButtonHTMLAttributes } from 'react'
 import type { FC } from 'react';
 import type { Route } from '@/routers/types';
 import Link from 'next/link';
@@ -14,6 +15,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
   href?: Route;
   targetBlank?: boolean;
+  onClick?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
