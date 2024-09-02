@@ -44,7 +44,7 @@ const Sidebar: React.FC = () => {
         toast({
           title: 'خروج موفق',
           description: 'شما با موفقیت از حساب کاربری خود خارج شدید.',
-          variant: 'default',
+          variant: 'success',
         });
         router.push('/signin');
       } else {
