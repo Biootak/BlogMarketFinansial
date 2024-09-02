@@ -12,7 +12,9 @@ import { loginUser, sendMagicLink } from '@/actions/auth-actions';
 import { LoginSchema } from '@/schemas';
 import Loading from '../Button/Loading';
 import SocialProviders from '@/components/Auth/SocialProviders';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { DEFAULT_REDIRECT } from '@/routes';
+import { revalidatePath } from 'next/cache';
 
 type FormData = {
   email: string;
@@ -32,6 +34,7 @@ export default function SigninForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showEmailPassword, setShowEmailPassword] = useState(false);
   const [magicLinkEmail, setMagicLinkEmail] = useState('');
+  const router = useRouter();
 
   const searchParams = useSearchParams();
   const urlError =
@@ -64,6 +67,9 @@ export default function SigninForm() {
           error: null,
           success: result.message || '',
         });
+
+        router.push(DEFAULT_REDIRECT);
+        router.refresh();
       } else {
         setFormState({
           error: result.error || 'خطایی در ورود رخ داده است. لطفاً دوباره تلاش کنید.',

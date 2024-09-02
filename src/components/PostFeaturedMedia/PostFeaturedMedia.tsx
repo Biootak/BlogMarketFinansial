@@ -40,8 +40,6 @@ const PostFeaturedMedia: FC<PostFeaturedMediaProps> = ({
   const renderContent = useMemo(() => {
     // GALLERY
     if (postType === 'GALLERY' && galleryImages && galleryImages.length > 0) {
-      console.log('Rendering Gallery for post:', post.id);
-      console.log('Gallery Images:', galleryImages);
       return (
         <GallerySlider
           galleryImgs={galleryImages}

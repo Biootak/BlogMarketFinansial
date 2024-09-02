@@ -87,7 +87,7 @@ export async function loginUser(formData: FormData): Promise<AuthResult> {
     if (result?.ok) {
       // اگر ورود موفقیت‌آمیز بود، ریدایرکت می‌کنیم
       revalidatePath('/');
-      return redirect(DEFAULT_REDIRECT);
+      return { success: true, message: 'ورود موفقیت‌آمیز' };
     }
     // این خط احتمالاً هرگز اجرا نخواهد شد، اما برای اطمینان آن را نگه می‌داریم
     return { success: true, message: 'ورود موفقیت‌آمیز. در حال انتقال به صفحه اصلی...' };
