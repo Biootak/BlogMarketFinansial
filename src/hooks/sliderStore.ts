@@ -1,4 +1,4 @@
-import create from 'zustand';
+import { create } from 'zustand';
 import { getPostBySlug } from '@/actions/postActions';
 import type { PostWithRelations } from '@/types/types';
 
@@ -16,14 +16,13 @@ export const useSliderStore = create<SliderState>((set) => ({
   fetchSliderPosts: async () => {
     set({ isLoading: true });
     try {
-     
       const slugs = ['featured-post-1', 'featured-post-2', 'featured-post-3'];
-      const postsPromises = slugs.map(slug => getPostBySlug(slug));
+      const postsPromises = slugs.map((slug) => getPostBySlug(slug));
       const results = await Promise.all(postsPromises);
-      
+
       const validPosts = results
-        .filter(result => result.success && result.data)
-        .map(result => result.data as PostWithRelations);
+        .filter((result) => result.success && result.data)
+        .map((result) => result.data as PostWithRelations);
 
       set({ posts: validPosts, isLoading: false });
     } catch (error) {

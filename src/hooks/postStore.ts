@@ -1,4 +1,4 @@
-import create from 'zustand';
+import { create } from 'zustand';
 import { listAllPosts, deletePost, updatePostStatus } from '@/actions/postActions';
 import type { ActionResult, PostWithRelations, UpdatePostInput } from '@/types/types';
 

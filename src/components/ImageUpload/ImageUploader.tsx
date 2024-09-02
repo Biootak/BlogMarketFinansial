@@ -1,5 +1,3 @@
-
-
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import Image from 'next/image';
@@ -160,8 +158,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                   src={preview}
                   alt={`پیش‌نمایش ${index + 1}`}
                   fill
-                  style={{ objectFit: 'cover' }}
-                  className="rounded"
+                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                  className="rounded object-cover"
                 />
                 <button
                   type="button"

@@ -7,6 +7,7 @@ import { getStats, getScheduledPosts } from '@/actions/postActions';
 import { getPopularPosts } from '@/actions/getPopularPosts';
 import { getRecentDrafts } from '@/actions/getRecentDrafts';
 import { getViewStats } from '@/actions/getViewStats';
+import CircleLoading from '@/components/Loading';
 import Loading from '@/components/Loading';
 
 export default async function Dashboard() {
@@ -52,21 +53,7 @@ export default async function Dashboard() {
   }
 
   return (
-    <Suspense
-      fallback={
-        <div className="bg-neutral-100 dark:bg-neutral-800 p-6 space-y-6">
-          <Loading count={1} height="200px" className="mb-6" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Loading count={1} height="100px" />
-            <Loading count={1} height="100px" />
-            <Loading count={1} height="100px" />
-            <Loading count={1} height="100px" />
-            <Loading count={1} height="100px" />
-            <Loading count={1} height="100px" />
-          </div>
-        </div>
-      }
-    >
+    <Suspense fallback={<Loading />}>
       <DashboardPage
         stats={statsResult.data}
         scheduledPosts={scheduledPostsResult.data}

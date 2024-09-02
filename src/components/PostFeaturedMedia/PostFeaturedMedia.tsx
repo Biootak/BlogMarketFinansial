@@ -40,7 +40,16 @@ const PostFeaturedMedia: FC<PostFeaturedMediaProps> = ({
   const renderContent = useMemo(() => {
     // GALLERY
     if (postType === 'GALLERY' && galleryImages && galleryImages.length > 0) {
-      return renderGallerySlider;
+      console.log('Rendering Gallery for post:', post.id);
+      console.log('Gallery Images:', galleryImages);
+      return (
+        <GallerySlider
+          galleryImgs={galleryImages}
+          className="absolute inset-0 z-10"
+          galleryClass="absolute inset-0"
+          ratioClass="absolute inset-0"
+        />
+      );
     }
 
     // VIDEO

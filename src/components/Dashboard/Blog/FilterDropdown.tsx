@@ -35,19 +35,29 @@ export default function FilterDropdown({ onFilter }: FilterDropdownProps) {
   return (
     <DropdownMenu dir="rtl">
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
-          <HiAdjustmentsHorizontal className="h-4 w-4" />
+        <Button
+          variant="outline"
+          size="icon"
+          className="hover:bg-neutral-100 dark:hover:bg-neutral-700"
+        >
+          <HiAdjustmentsHorizontal className="h-5 w-5" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="w-56">
         {filterOptions.map((option) => (
           <DropdownMenuItem
             key={option.value}
             onClick={() => handleFilterChange(option.value)}
-            className={selectedFilter === option.value ? 'bg-primary-100 dark:bg-primary-800' : ''}
+            className={`flex items-center justify-between px-2 py-2 text-sm ${
+              selectedFilter === option.value
+                ? 'bg-primary-100 text-primary-900 dark:bg-primary-900 dark:text-primary-100'
+                : 'text-neutral-700 dark:text-neutral-300'
+            } hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors duration-150`}
           >
             {option.name}
-            {selectedFilter === option.value && <span className="mr-2">✓</span>}
+            {selectedFilter === option.value && (
+              <span className="text-primary-600 dark:text-primary-400">✓</span>
+            )}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

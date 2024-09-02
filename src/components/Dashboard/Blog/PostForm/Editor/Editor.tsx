@@ -1,7 +1,7 @@
 'use client';
 
+import type React from 'react';
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import dynamic from 'next/dynamic';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -31,17 +31,24 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import ImageUploader from '@/components/ImageUpload/ImageUploader'; // اضافه کردن این خط
+import ImageUploader from '@/components/ImageUpload/ImageUploader';
 
 interface TipTapEditorProps {
   content: string | undefined;
   onChange: (content: string) => void;
   isRTL?: boolean;
+  className?: string;
 }
 
-const TipTapEditor: React.FC<TipTapEditorProps> = ({ content, onChange, isRTL = false }) => {
+const TipTapEditor: React.FC<TipTapEditorProps> = ({
+  content,
+  onChange,
+  isRTL = false,
+  className = '',
+}) => {
   const [showImageUploader, setShowImageUploader] = useState(false);
   const [showLinkInput, setShowLinkInput] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const { toast } = useToast();
 
   const editor = useEditor({
@@ -52,38 +59,38 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({ content, onChange, isRTL = 
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Underline,
     ],
-    content,
+    editorProps: {
+      attributes: {
+        class: `prose max-w-none p-4 ${isRTL ? 'text-right' : 'text-left'}`,
+      },
+    },
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
       onChange(html);
       localStorage.setItem('editorContent', html);
     },
-    editorProps: {
-      attributes: {
-        class: `prose max-w-none p-4 min-h-[200px] ${isRTL ? 'text-right' : 'text-left'}`,
-      },
-    },
     immediatelyRender: false,
   });
 
   useEffect(() => {
-    if (editor) {
-      const savedContent = localStorage.getItem('editorContent');
-      if (savedContent && editor.isEmpty) {
-        editor.commands.setContent(savedContent);
-      }
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (editor && content && isMounted) {
+      editor.commands.setContent(content);
     }
-  }, [editor]);
+  }, [editor, content, isMounted]);
 
   const handleImageUpload = useCallback(
     (urls: string[]) => {
       if (editor) {
-        for (const url of urls) {
+        urls.forEach((url) => {
           editor.chain().focus().setImage({ src: url }).run();
-        }
+        });
         toast({
-          title: 'تصویر آپلود شد',
-          description: 'تصویر با موفقیت به ویرایشگر اضافه شد.',
+          title: 'Image uploaded',
+          description: 'The image was successfully added to the editor.',
           variant: 'success',
         });
       }
@@ -91,6 +98,7 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({ content, onChange, isRTL = 
     },
     [editor, toast],
   );
+
   const handleLinkSubmit = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
@@ -110,7 +118,12 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({ content, onChange, isRTL = 
       onClick,
       isActive = false,
       tooltip,
-    }: { icon: React.ElementType; onClick: () => void; isActive?: boolean; tooltip: string }) => (
+    }: {
+      icon: React.ElementType;
+      onClick: () => void;
+      isActive?: boolean;
+      tooltip: string;
+    }) => (
       <Tooltip>
         <TooltipTrigger asChild>
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -136,8 +149,8 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({ content, onChange, isRTL = 
     );
   }, []);
 
-  if (!editor) {
-    return null;
+  if (!isMounted || !editor) {
+    return null; // or a loading placeholder
   }
 
   return (
@@ -146,7 +159,9 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({ content, onChange, isRTL = 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className={`border border-neutral-300 dark:border-neutral-600 rounded-lg shadow-md ${isRTL ? 'rtl' : 'ltr'} w-full max-w-4xl mx-auto bg-white dark:bg-neutral-800 overflow-hidden`}
+        className={`border border-neutral-300 dark:border-neutral-600 rounded-lg shadow-md ${
+          isRTL ? 'rtl' : 'ltr'
+        } w-full mx-auto bg-white dark:bg-neutral-800 overflow-hidden ${className}`}
       >
         <div className="bg-neutral-50 dark:bg-neutral-900 p-2 border-b border-neutral-200 dark:border-neutral-700 flex flex-wrap gap-1 items-center">
           <div className="flex space-x-1 mr-2">
@@ -290,11 +305,11 @@ const TipTapEditor: React.FC<TipTapEditorProps> = ({ content, onChange, isRTL = 
         </AnimatePresence>
         <EditorContent
           editor={editor}
-          className="prose dark:prose-invert max-w-none p-4 min-h-[200px] bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
+          className="prose dark:prose-invert max-w-none p-4 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
         />
       </motion.div>
     </TooltipProvider>
   );
 };
 
-export default dynamic(() => Promise.resolve(TipTapEditor), { ssr: false });
+export default TipTapEditor;

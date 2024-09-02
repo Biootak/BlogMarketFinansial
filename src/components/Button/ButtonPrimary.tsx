@@ -1,12 +1,12 @@
 'use client';
 
-import React, { type FC } from 'react';
+import React, { forwardRef } from 'react';
 import Button, { type ButtonProps } from './Button';
 
-export interface Props extends ButtonProps {}
+const ButtonPrimary = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
+  return <Button {...props} pattern="primary" ref={ref} />;
+});
 
-const ButtonPrimary: FC<Props> = (props) => {
-  return <Button {...props} pattern="primary" />;
-};
+ButtonPrimary.displayName = 'ButtonPrimary';
 
 export default ButtonPrimary;

@@ -1,4 +1,4 @@
-import create from 'zustand';
+import { create } from 'zustand';
 import { addComment } from '@/actions/addComment';
 import type { ActionResult, CommentWithCustomRelations } from '@/types/types';
 

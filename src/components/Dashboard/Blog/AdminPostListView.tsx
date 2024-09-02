@@ -1,10 +1,9 @@
 import { Suspense } from 'react';
-
-import SkeletonLoader from '@/components/SkeletonLoader';
+import { listAllPosts } from '@/actions/postActions';
 import PostHeader from './PostHeader';
 import PostList from './PostList';
+import SkeletonLoader from '@/components/SkeletonLoader';
 import ErrorComponent from '@/components/ErrorComponent';
-import { listAllPosts } from '@/actions/postActions';
 import type { PostStatus } from '@/types/types';
 
 export default async function DashboardPosts({
@@ -23,17 +22,17 @@ export default async function DashboardPosts({
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-neutral-50 dark:bg-neutral-900 dark:text-white">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800">
       <PostHeader />
-      <div className="flex-grow p-4 sm:p-6 lg:p-8">
+      <main className="flex-grow p-4 sm:p-6 lg:p-8">
         <Suspense fallback={<SkeletonLoader variant="card" count={6} />}>
           <PostList
             initialPosts={result.data.posts}
             hasNextPage={page < result.data.pages}
-            // totalPages={result.data.pages}
+            totalPages={result.data.pages}
           />
         </Suspense>
-      </div>
+      </main>
     </div>
   );
 }

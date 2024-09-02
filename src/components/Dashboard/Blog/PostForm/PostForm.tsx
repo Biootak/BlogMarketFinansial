@@ -22,7 +22,9 @@ import { RiSendPlaneFill } from 'react-icons/ri';
 import { BiLoaderAlt } from 'react-icons/bi';
 
 import { Badge } from '@/components/ui/badge';
-import TipTapEditor from './Editor/Editor';
+const TipTapEditor = dynamic(() => import('@/components/Dashboard/Blog/PostForm/Editor/Editor'), {
+  ssr: false,
+});
 import Input from '@/components/Input/Input';
 import { Button } from '@/components/ui/button';
 import Textarea from '@/components/Textarea/Textarea';
@@ -40,6 +42,7 @@ import type { CreatePostInput, UpdatePostInput } from '@/types/types';
 
 import type { ZodSchema } from 'zod';
 import { Switch } from '@/components/ui/switch';
+import dynamic from 'next/dynamic';
 
 const MAX_CATEGORIES = 5;
 const MAX_TAGS = 10;
@@ -164,25 +167,28 @@ const PostForm: React.FC<PostFormProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 sm:p-10 rtl my-8"
+      className="mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 md:p-8 rtl my-4 sm:my-6 md:my-8 w-full max-w-[95%] sm:max-w-[90%] md:max-w-4xl"
     >
-      <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-center text-gray-800 dark:text-white">
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 md:mb-8 text-center text-gray-800 dark:text-white">
         {title}
       </h1>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+        <form
+          onSubmit={form.handleSubmit(handleSubmit)}
+          className="space-y-4 sm:space-y-6 md:space-y-8"
+        >
           <FormField
             control={form.control}
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
                   عنوان پست
                 </FormLabel>
                 <FormControl>
                   <Input
                     {...field}
-                    className="rtl text-lg p-3 border-2 border-gray-300 focus:border-primary-500 rounded-lg transition duration-200"
+                    className="rtl text-base sm:text-lg p-2 sm:p-3 border-2 border-gray-300 focus:border-primary-500 rounded-lg transition duration-200"
                     placeholder="عنوان پست را وارد کنید"
                   />
                 </FormControl>
@@ -196,7 +202,7 @@ const PostForm: React.FC<PostFormProps> = ({
             name="excerpt"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
                   خلاصه پست
                 </FormLabel>
                 <FormControl>
@@ -212,13 +218,13 @@ const PostForm: React.FC<PostFormProps> = ({
             )}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
             <FormField
               control={form.control}
               name="categories"
               render={() => (
                 <FormItem>
-                  <FormLabel className="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                  <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
                     دسته‌بندی‌ها
                   </FormLabel>
                   <div className="flex flex-wrap gap-2 mb-2">
@@ -226,13 +232,13 @@ const PostForm: React.FC<PostFormProps> = ({
                       <Badge
                         key={category}
                         variant="secondary"
-                        className="rtl bg-primary-100 text-primary-800 text-sm px-3 py-1"
+                        className="rtl bg-primary-100 text-primary-800 text-xs sm:text-sm px-2 sm:px-3 py-1"
                       >
                         {category}
                         <button
                           type="button"
                           onClick={() => removeItem(category, 'category')}
-                          className="mr-2 text-red-500 hover:text-red-700 transition duration-200"
+                          className="mr-1 sm:mr-2 text-red-500 hover:text-red-700 transition duration-200"
                         >
                           <FiX />
                         </button>
@@ -250,7 +256,7 @@ const PostForm: React.FC<PostFormProps> = ({
                             e.currentTarget.value = '';
                           }
                         }}
-                        className="rtl text-base p-3 border-2 border-gray-300 focus:border-primary-500 rounded-lg transition duration-200 flex-grow"
+                        className="rtl text-sm sm:text-base p-2 sm:p-3 border-2 border-gray-300 focus:border-primary-500 rounded-lg transition duration-200 flex-grow"
                       />
                       <Button
                         type="button"
@@ -261,10 +267,10 @@ const PostForm: React.FC<PostFormProps> = ({
                           addItem(input.value, 'category');
                           input.value = '';
                         }}
-                        className="mr-2 p-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition duration-200 flex items-center"
+                        className="mr-2 p-2 sm:p-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition duration-200 flex items-center"
                       >
                         <FiPlus className="ml-1" />
-                        <span>افزودن</span>
+                        <span className="hidden sm:inline">افزودن</span>
                       </Button>
                     </div>
                   </FormControl>
@@ -278,7 +284,7 @@ const PostForm: React.FC<PostFormProps> = ({
               name="tags"
               render={() => (
                 <FormItem>
-                  <FormLabel className="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                  <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
                     برچسب‌ها
                   </FormLabel>
                   <div className="flex flex-wrap gap-2 mb-2">
@@ -286,13 +292,13 @@ const PostForm: React.FC<PostFormProps> = ({
                       <Badge
                         key={tag}
                         variant="secondary"
-                        className="rtl bg-secondary-100 text-secondary-800 text-sm px-3 py-1"
+                        className="rtl bg-secondary-100 text-secondary-800 text-xs sm:text-sm px-2 sm:px-3 py-1"
                       >
                         {tag}
                         <button
                           type="button"
                           onClick={() => removeItem(tag, 'tag')}
-                          className="mr-2 text-red-500 hover:text-red-700 transition duration-200"
+                          className="mr-1 sm:mr-2 text-red-500 hover:text-red-700 transition duration-200"
                         >
                           <FiX />
                         </button>
@@ -310,7 +316,7 @@ const PostForm: React.FC<PostFormProps> = ({
                             e.currentTarget.value = '';
                           }
                         }}
-                        className="rtl text-base p-3 border-2 border-gray-300 focus:border-primary-500 rounded-lg transition duration-200 flex-grow"
+                        className="rtl text-sm sm:text-base p-2 sm:p-3 border-2 border-gray-300 focus:border-primary-500 rounded-lg transition duration-200 flex-grow"
                       />
                       <Button
                         type="button"
@@ -321,10 +327,10 @@ const PostForm: React.FC<PostFormProps> = ({
                           addItem(input.value, 'tag');
                           input.value = ' ';
                         }}
-                        className="mr-2 p-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition duration-200 flex items-center"
+                        className="mr-2 p-2 sm:p-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition duration-200 flex items-center"
                       >
                         <FiPlus className="ml-1" />
-                        <span>افزودن</span>
+                        <span className="hidden sm:inline">افزودن</span>
                       </Button>
                     </div>
                   </FormControl>
@@ -339,7 +345,7 @@ const PostForm: React.FC<PostFormProps> = ({
             name="featuredImage"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
                   تصویر شاخص پست
                 </FormLabel>
                 <FormControl>
@@ -361,7 +367,7 @@ const PostForm: React.FC<PostFormProps> = ({
             name="galleryImages"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
                   گالری تصاویر
                 </FormLabel>
                 <FormControl>
@@ -383,13 +389,12 @@ const PostForm: React.FC<PostFormProps> = ({
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="content"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
                   محتوای پست
                 </FormLabel>
                 <FormControl>
@@ -400,6 +405,7 @@ const PostForm: React.FC<PostFormProps> = ({
                       setEditorContent(newContent);
                     }}
                     isRTL={true}
+                    className="min-h-[200px] sm:min-h-[300px] md:min-h-[400px]"
                   />
                 </FormControl>
                 <FormMessage />
@@ -407,91 +413,105 @@ const PostForm: React.FC<PostFormProps> = ({
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-lg font-semibold text-gray-700 dark:text-gray-200">
-                  وضعیت پست
-                </FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger dir="rtl" className="w-full">
-                      <SelectValue placeholder="انتخاب وضعیت" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent dir="rtl">
-                    <SelectItem value="DRAFT">پیش‌نویس</SelectItem>
-                    <SelectItem value="PENDING_REVIEW">در انتظار بررسی</SelectItem>
-                    <SelectItem value="PUBLISHED">منتشر شده</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="postType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>نوع پست</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger dir="rtl">
-                      <SelectValue placeholder="انتخاب نوع پست" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent dir="rtl">
-                    <SelectItem value="STANDARD">استاندارد</SelectItem>
-                    <SelectItem value="VIDEO">ویدیو</SelectItem>
-                    <SelectItem value="GALLERY">گالری</SelectItem>
-                    <SelectItem value="AUDIO">صوتی</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
+                    وضعیت پست
+                  </FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger dir="rtl" className="w-full">
+                        <SelectValue placeholder="انتخاب وضعیت" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent dir="rtl">
+                      <SelectItem value="DRAFT">پیش‌نویس</SelectItem>
+                      <SelectItem value="PENDING_REVIEW">در انتظار بررسی</SelectItem>
+                      <SelectItem value="PUBLISHED">منتشر شده</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="postType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
+                    نوع پست
+                  </FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger dir="rtl">
+                        <SelectValue placeholder="انتخاب نوع پست" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent dir="rtl">
+                      <SelectItem value="STANDARD">استاندارد</SelectItem>
+                      <SelectItem value="VIDEO">ویدیو</SelectItem>
+                      <SelectItem value="GALLERY">گالری</SelectItem>
+                      <SelectItem value="AUDIO">صوتی</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
           {form.watch('postType') === 'VIDEO' && (
             <FormField
               control={form.control}
               name="videoUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>آدرس ویدیو</FormLabel>
+                  <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
+                    آدرس ویدیو
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder="آدرس ویدیو را وارد کنید" {...field} />
+                    <Input placeholder="آدرس ویدیو را وارد کنید" {...field} className="rtl" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           )}
+
           {form.watch('postType') === 'AUDIO' && (
             <FormField
               control={form.control}
               name="audioUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>آدرس فایل صوتی</FormLabel>
+                  <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
+                    آدرس فایل صوتی
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder="آدرس فایل صوتی را وارد کنید" {...field} />
+                    <Input placeholder="آدرس فایل صوتی را وارد کنید" {...field} className="rtl" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           )}
+
           <FormField
             control={form.control}
             name="isFeatured"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 sm:p-4">
                 <div className="space-y-0.5">
-                  <FormLabel className="text-base">پست ویژه</FormLabel>
-                  <FormDescription>این پست را به عنوان پست ویژه نمایش دهید</FormDescription>
+                  <FormLabel className="text-sm sm:text-base">پست ویژه</FormLabel>
+                  <FormDescription className="text-xs sm:text-sm">
+                    این پست را به عنوان پست ویژه نمایش دهید
+                  </FormDescription>
                 </div>
                 <FormControl>
                   <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -500,16 +520,19 @@ const PostForm: React.FC<PostFormProps> = ({
             )}
           />
 
-          <Button type="submit" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full sm:w-auto text-sm sm:text-base px-4 py-2 sm:px-6 sm:py-3"
+          >
             {isSubmitting ? (
               <>
-                {' '}
-                <BiLoaderAlt className="animate-spin h-5 w-5" />
+                <BiLoaderAlt className="animate-spin h-4 w-4 sm:h-5 sm:w-5" />
                 <span className="mr-2">در حال ارسال</span>
               </>
             ) : (
               <>
-                <RiSendPlaneFill />
+                <RiSendPlaneFill className="h-4 w-4 sm:h-5 sm:w-5" />
                 <span className="mr-2">{isEditing ? 'به‌روزرسانی پست' : 'ارسال پست'}</span>
               </>
             )}
