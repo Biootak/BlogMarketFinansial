@@ -1,22 +1,64 @@
-import { logout } from '@/actions/auth-actions';
+'use client';
+
+import { useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { IoExitOutline } from 'react-icons/io5';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
+import { cn } from '@/lib/utils';
+import { logout } from '@/actions/auth-actions';
+import Loading from '../Button/Loading';
 
 const Logout = () => {
+  const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    startTransition(async () => {
+      try {
+        await logout();
+        router.push('/signin');
+        router.refresh();
+        toast({
+          title: 'خروج موفق',
+          description: 'شما با موفقیت از حساب کاربری خود خارج شدید.',
+          variant: 'success',
+        });
+      } catch (error) {
+        console.error('Logout error:', error);
+        toast({
+          title: 'خطا',
+          description: 'مشکلی در خروج از حساب رخ داد. لطفاً دوباره تلاش کنید.',
+          variant: 'destructive',
+        });
+      }
+    });
+  };
+
   return (
-    <form action={logout} className="w-full">
-      <button
-        type="submit"
-        className="flex items-center w-full p-2 transition duration-150 ease-in-out rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50"
-      >
-        <IoExitOutline
-          className="flex-shrink-0 w-6 h-6 text-neutral-500 dark:text-neutral-300"
-          title="خروج"
-        />
-        <div className="ms-4">
-          <p className="text-sm font-medium">خروج</p>
-        </div>
-      </button>
-    </form>
+    <Button
+      onClick={handleLogout}
+      disabled={isPending}
+      variant="ghost"
+      className={cn(
+        'w-full justify-start text-right hover:bg-neutral-100 dark:hover:bg-neutral-800',
+        'focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2',
+        'transition-all duration-200 ease-in-out',
+      )}
+    >
+      {isPending ? (
+        <>
+          <Loading />
+          <span className="mr-2">در حال خروج</span>
+        </>
+      ) : (
+        <>
+          <IoExitOutline className="w-5 h-5 ml-2 text-neutral-500 dark:text-neutral-400" />
+          <span>خروج</span>
+        </>
+      )}
+    </Button>
   );
 };
 
