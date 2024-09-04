@@ -101,7 +101,11 @@ export async function createPost(
         categories: true,
         comments: {
           include: {
-            author: true,
+            author: {
+              include: {
+                profile: true,
+              },
+            },
             post: true,
             replies: true,
             likes: {
@@ -234,7 +238,11 @@ export async function updatePost(
         categories: true,
         comments: {
           include: {
-            author: true,
+            author: {
+              include: {
+                profile: true,
+              },
+            },
             post: true,
             replies: true,
             likes: {
@@ -319,7 +327,11 @@ export async function updatePostStatus(
         categories: true,
         comments: {
           include: {
-            author: true,
+            author: {
+              include: {
+                profile: true,
+              },
+            },
             post: true,
             replies: true,
             likes: {
@@ -393,7 +405,11 @@ export async function getPostById(postId: string): Promise<ActionResult<PostWith
         categories: true,
         comments: {
           include: {
-            author: true,
+            author: {
+              include: {
+                profile: true,
+              },
+            },
             post: true,
             replies: true,
             likes: {
@@ -466,7 +482,11 @@ export async function getPostBySlug(slug: string): Promise<
         categories: true,
         comments: {
           include: {
-            author: true,
+            author: {
+              include: {
+                profile: true,
+              },
+            },
             post: true,
             replies: {
               include: {
@@ -613,7 +633,11 @@ export async function listAllPosts(
           categories: true,
           comments: {
             include: {
-              author: true,
+              author: {
+                include: {
+                  profile: true,
+                },
+              },
               post: true,
               replies: true,
               likes: {

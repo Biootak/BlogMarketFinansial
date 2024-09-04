@@ -43,7 +43,11 @@ export async function getLatestPosts({
         categories: true,
         comments: {
           include: {
-            author: true,
+            author: {
+              include: {
+                profile: true,
+              },
+            },
             replies: true,
             likes: {
               include: {

@@ -39,6 +39,7 @@ export async function addComment(
             name: true,
             email: true,
             role: true,
+            profile: true,
             image: true,
             createdAt: true,
             updatedAt: true,

@@ -104,7 +104,7 @@ export type CommentWithCustomRelations = Prisma.CommentGetPayload<{
         email: true;
         role: true;
         image: true;
-        avatar: true;
+        profile: true;
         createdAt: true;
         updatedAt: true;
       };

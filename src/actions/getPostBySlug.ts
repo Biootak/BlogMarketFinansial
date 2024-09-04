@@ -25,7 +25,11 @@ export async function getPostBySlug(slug: string): Promise<ActionResult<PostWith
         categories: true,
         comments: {
           include: {
-            author: true,
+            author: {
+              include: {
+                profile: true,
+              },
+            },
             post: true,
             replies: {
               include: {
