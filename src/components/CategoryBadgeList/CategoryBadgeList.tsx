@@ -1,3 +1,5 @@
+'use client';
+
 import type React from 'react';
 import Badge from '@/components/Badge/Badge';
 import type { Category } from '@prisma/client';
@@ -20,7 +22,7 @@ const CategoryBadgeList: React.FC<CategoryBadgeListProps> = ({
           className={itemClass}
           key={item.id}
           name={item.name}
-          href={`/category/${item.slug}`}
+          href={`/archive?category=${item.id}`}
           color="blue"
         />
       ))}

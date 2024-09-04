@@ -11,10 +11,11 @@ export interface CardAuthorBox2Props {
 }
 
 const CardAuthorBox2: FC<CardAuthorBox2Props> = ({ className = '', author }) => {
-  const { name, id, image, profile, _count } = author;
+  const { name, id, image, _count } = author;
   const postCount = _count?.posts || 0;
-  const jobName = profile?.jobName || 'نویسنده';
+  const jobName = author.profile?.jobName || 'نویسنده';
   const bgImage = author.profile?.bgImage || '/images/placeholder-small.png';
+  const avatar = author.profile?.avatar || image;
 
   return (
     <Link
@@ -44,7 +45,7 @@ const CardAuthorBox2: FC<CardAuthorBox2Props> = ({ className = '', author }) => 
           containerClassName="ring-2 ring-white"
           sizeClass="w-16 h-16 text-2xl"
           radius="rounded-full"
-          imgUrl={image || '/images/default-avatar.png'}
+          imgUrl={avatar}
           userName={name}
         />
         <div className="mt-3 text-center">

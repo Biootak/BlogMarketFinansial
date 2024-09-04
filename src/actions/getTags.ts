@@ -4,12 +4,26 @@ import prisma from '@/lib/db';
 import type { ActionResult, TaxonomyType } from '@/types/types';
 
 export async function getTags(
-  limit = 10,
+  options: { limit?: number; page?: number; search?: string } = {},
 ): Promise<ActionResult<{ tags: TaxonomyType[]; totalCount: number }>> {
   try {
+    const { limit = 20, page = 1, search = '' } = options;
+    const skip = (page - 1) * limit;
+
+    const where = search
+      ? {
+          name: {
+            contains: search,
+            mode: 'insensitive' as const,
+          },
+        }
+      : {};
+
     const [tags, totalCount] = await Promise.all([
       prisma.tag.findMany({
+        where,
         take: limit,
+        skip: skip,
         include: {
           _count: {
             select: { posts: true },
@@ -21,7 +35,7 @@ export async function getTags(
           },
         },
       }),
-      prisma.tag.count(),
+      prisma.tag.count({ where }),
     ]);
 
     const formattedTags: TaxonomyType[] = tags.map((tag) => ({

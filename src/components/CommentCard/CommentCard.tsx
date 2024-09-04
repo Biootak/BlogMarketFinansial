@@ -179,7 +179,7 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
           sizeClass={`h-6 w-6 text-base ${size === 'large' ? 'sm:text-lg sm:h-8 sm:w-8' : ''}`}
           radius="rounded-full"
           containerClassName="mt-4"
-          imgUrl={author.image || undefined}
+          imgUrl={author.avatar || author.image}
         />
         <div className="flex-grow flex flex-col p-4 ms-2 text-sm border border-neutral-200 rounded-xl sm:ms-3 sm:text-base dark:border-neutral-700">
           <div className="relative flex items-center pe-6">

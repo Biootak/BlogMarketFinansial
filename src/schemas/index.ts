@@ -95,6 +95,8 @@ export const UpdateProfileSchema = z
     email: z.string().email('ایمیل نامعتبر است').optional(),
     bio: z.string().max(500, 'بیوگرافی نمی‌تواند بیشتر از 500 کاراکتر باشد').optional(),
     imageUrl: z.string().url('آدرس تصویر نامعتبر است').optional(),
+    bgImage: z.string().url('آدرس تصویر پس‌زمینه نامعتبر است').optional(),
+    jobName: z.string().max(100, 'نام شغل نمی‌تواند بیشتر از 100 کاراکتر باشد').optional(),
     currentPassword: z.string().min(6, 'رمز عبور باید حداقل 6 کاراکتر باشد').optional(),
     newPassword: z.string().min(6, 'رمز عبور جدید باید حداقل 6 کاراکتر باشد').optional(),
     confirmNewPassword: z.string().optional(),

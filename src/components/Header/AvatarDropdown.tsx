@@ -23,7 +23,7 @@ export default async function AvatarDropdown() {
             {/* اطلاعات کاربر */}
             <div className="flex items-center">
               <Avatar
-                imgUrl={user.image ?? undefined}
+                imgUrl={(user.profile?.avatar || user.image) ?? undefined}
                 userName={user.name ?? undefined}
                 fontSize="text-md"
                 sizeClass="h-10 w-10"
@@ -64,7 +64,7 @@ export default async function AvatarDropdown() {
 
             <div className="w-full border-b border-neutral-200 dark:border-neutral-700" />
 
-            <SwitchDarkMode2/>
+            <SwitchDarkMode2 />
 
             <Logout />
           </div>

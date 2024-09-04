@@ -48,7 +48,7 @@ const PageAuthor = ({}) => {
   };
 
   return (
-    <div className={`nc-PageAuthor `}>
+    <div className={'nc-PageAuthor '}>
       {/* HEADER */}
       <div className="w-full">
         <div className="relative w-full h-40 md:h-60 2xl:h-72">

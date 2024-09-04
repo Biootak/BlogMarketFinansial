@@ -30,7 +30,7 @@ const PostCardMetaV2: FC<PostCardMetaV2Props> = ({
           <Avatar
             radius="rounded-full"
             sizeClass={avatarSize}
-            imgUrl={author.image}
+            imgUrl={author.profile?.avatar || author.image}
             userName={author.name}
           />
         )}

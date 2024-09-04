@@ -1,8 +1,9 @@
-"use client";
-import React, { type FC, Fragment, type ReactNode, useEffect, useState } from "react";
-import { Dialog, Transition } from "@/app/headlessui";
-import Button from "../Button/Button";
-import ButtonClose from "../ButtonClose/ButtonClose";
+'use client';
+
+import React, { type FC, Fragment, type ReactNode, useEffect, useState } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import Button from '../Button/Button';
+import ButtonClose from '../ButtonClose/ButtonClose';
 
 export interface NcModalProps {
   renderContent: () => ReactNode;
@@ -18,24 +19,24 @@ export interface NcModalProps {
 const NcModal: FC<NcModalProps> = ({
   renderTrigger,
   renderContent,
-  contentExtraClass = "max-w-screen-xl",
-  contentPaddingClass = "py-4 px-6 md:py-5",
-  triggerText = "Open Modal",
-  modalTitle = "Modal title",
+  contentExtraClass = 'max-w-screen-xl',
+  contentPaddingClass = 'py-4 px-6 md:py-5',
+  triggerText = 'Open Modal',
+  modalTitle = 'Modal title',
   isOpenProp,
   onCloseModal,
 }) => {
   const [isOpen, setIsOpen] = useState(!!isOpenProp);
 
   function closeModal() {
-    if (typeof isOpenProp !== "boolean") {
+    if (typeof isOpenProp !== 'boolean') {
       setIsOpen(false);
     }
     onCloseModal?.();
   }
 
   function openModal() {
-    if (typeof isOpenProp !== "boolean") {
+    if (typeof isOpenProp !== 'boolean') {
       setIsOpen(true);
     }
   }
@@ -53,37 +54,30 @@ const NcModal: FC<NcModalProps> = ({
       )}
 
       <Transition appear show={isOpen} as={Fragment}>
-        <Dialog
-          as="div"
-          className="fixed inset-0 z-50 overflow-y-auto"
-          onClose={closeModal}
-        >
+        <Dialog as="div" className="fixed inset-0 z-50 overflow-y-auto" onClose={closeModal}>
           <div className="min-h-screen px-1 text-center md:px-4">
             <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-75"
+              as="div"
+              enter="ease-out duration-300"
               enterFrom="opacity-0"
               enterTo="opacity-100"
-              leave="ease-in duration-75"
+              leave="ease-in duration-200"
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-             
+              <div className="fixed inset-0 bg-black bg-opacity-40" aria-hidden="true" />
             </Transition.Child>
 
             {/* This element is to trick the browser into centering the modal contents. */}
-            <span
-              className="inline-block h-screen align-middle"
-              aria-hidden="true"
-            >
+            <span className="inline-block h-screen align-middle" aria-hidden="true">
               &#8203;
             </span>
             <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-75"
+              as="div"
+              enter="ease-out duration-300"
               enterFrom="opacity-0 scale-95"
               enterTo="opacity-100 scale-100"
-              leave="ease-in duration-75"
+              leave="ease-in duration-200"
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >

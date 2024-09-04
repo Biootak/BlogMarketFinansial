@@ -298,9 +298,10 @@ export default function UsersPage() {
                   className="border-b border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-750 transition-colors duration-150"
                 >
                   <TableCell className="py-3 px-4 sm:py-4 sm:px-6">
-                    <div className="flex items-center">
+                    <div className="flex items-center rounded-full">
                       <Image
                         src={
+                          user.profile?.avatar ||
                           user.image ||
                           `https://avatar.vercel.sh/${encodeURIComponent(user.name || '')}?size=80`
                         }

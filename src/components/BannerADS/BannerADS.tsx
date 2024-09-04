@@ -109,7 +109,7 @@ const BannerADS: React.FC<BannerADSProps> = ({
             : size === 'MEDIUM'
               ? 'w-24 h-24 sm:w-40 sm:h-40'
               : 'w-32 h-32 sm:w-56 sm:h-56'
-        } me-3 sm:me-5 rounded-2xl overflow-hidden z-0`}
+        } me-3 sm:me-5 rounded-2xl overflow-hidden z-0 `}
         target="_blank"
         rel="noopener noreferrer"
       >

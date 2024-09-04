@@ -34,7 +34,7 @@ const PostMeta2: FC<PostMeta2Props> = ({
         <Avatar
           radius={avatarRounded}
           sizeClass={size === 'normal' ? 'h-6 w-6 text-sm' : 'h-10 w-10 sm:h-11 sm:w-11 text-xl'}
-          imgUrl={author.image || ''}
+          imgUrl={author.profile?.avatar || author.image}
           userName={author.name || ''}
         />
       </Link>

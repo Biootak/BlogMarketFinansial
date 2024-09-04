@@ -1,4 +1,7 @@
+'use client';
+
 import type React from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Select,
   SelectContent,
@@ -9,30 +12,35 @@ import {
 
 export interface ArchiveFilterListBoxProps {
   className?: string;
-  lists: { name: string }[];
-  selected: { name: string };
-  onChange: (selected: { name: string }) => void;
+  filters: { name: string }[];
+  initialFilter: string;
 }
 
 const ArchiveFilterListBox: React.FC<ArchiveFilterListBoxProps> = ({
   className = '',
-  lists,
-  selected,
-  onChange,
+  filters,
+  initialFilter,
 }) => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const handleFilterChange = (value: string) => {
+    const current = new URLSearchParams(searchParams.toString());
+    current.set('filter', value);
+    const search = current.toString();
+    const query = search ? `?${search}` : '';
+    router.push(`/archive${query}`);
+  };
+
   return (
-    <div className={`nc-ArchiveFilterListBox flex-shrink-0 ${className}`}>
-      <Select
-        dir="rtl"
-        onValueChange={(value) => onChange({ name: value })}
-        defaultValue={selected.name}
-      >
-        <SelectTrigger className="w-[180px]">
+    <div className={`nc-ArchiveFilterListBox w-full ${className}`}>
+      <Select dir="rtl" onValueChange={handleFilterChange} defaultValue={initialFilter}>
+        <SelectTrigger className="w-full md:w-[180px] text-center">
           <SelectValue placeholder="انتخاب فیلتر" />
         </SelectTrigger>
-        <SelectContent>
-          {lists.map((item, index) => (
-            <SelectItem key={index} value={item.name}>
+        <SelectContent className="archive-filter-content text-center">
+          {filters.map((item) => (
+            <SelectItem key={item.name} value={item.name}>
               {item.name}
             </SelectItem>
           ))}

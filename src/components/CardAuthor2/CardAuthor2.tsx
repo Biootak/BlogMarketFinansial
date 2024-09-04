@@ -27,7 +27,7 @@ const CardAuthor2: FC<CardAuthor2Props> = ({ className = '', post, hoverReadingT
         sizeClass="h-10 w-10 text-base"
         containerClassName="flex-shrink-0 me-3"
         radius="rounded-full"
-        imgUrl={avatar || undefined}
+        imgUrl={author.profile?.avatar || avatar}
         userName={displayName || ''}
       />
       <div>

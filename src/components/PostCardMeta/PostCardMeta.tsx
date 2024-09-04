@@ -19,8 +19,6 @@ const PostCardMeta: FC<PostCardMetaProps> = ({
 }) => {
   const { createdAt, author } = meta;
 
- 
-
   return (
     <div
       className={`nc-PostCardMeta inline-flex items-center flex-wrap text-neutral-800 dark:text-neutral-200 ${className}`}
@@ -33,7 +31,7 @@ const PostCardMeta: FC<PostCardMetaProps> = ({
           <Avatar
             radius="rounded-full"
             sizeClass={avatarSize}
-            imgUrl={author.image}
+            imgUrl={author.profile?.avatar || author.image}
             userName={author.name}
           />
         )}

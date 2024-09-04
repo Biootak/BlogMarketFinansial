@@ -21,7 +21,9 @@ interface ProfileFormProps {
 
 const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
   const [isChangingAvatar, setIsChangingAvatar] = useState(false);
+  const [isChangingBgImage, setIsChangingBgImage] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState(initialData.profile?.avatar ?? '');
+  const [bgImagePreview, setBgImagePreview] = useState(initialData.profile?.bgImage ?? '');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   const {
@@ -29,25 +31,41 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
     handleSubmit,
     formState: { errors },
     setValue,
+    watch,
   } = useForm<UpdateProfileInput>({
     resolver: zodResolver(UpdateProfileSchema),
     defaultValues: {
       name: initialData.name ?? '',
       email: initialData.email ?? '',
       bio: initialData.profile?.bio ?? '',
+      jobName: initialData.profile?.jobName ?? '',
+      bgImage: initialData.profile?.bgImage ?? '',
     },
   });
 
-  const handleImageUpload = (urls: string[]) => {
+  const jobName = watch('jobName');
+  const bgImage = watch('bgImage');
+
+  const handleImageUpload = (urls: string[], type: 'avatar' | 'bgImage') => {
     if (urls.length > 0) {
-      setAvatarPreview(urls[0]);
-      setValue('imageUrl', urls[0]);
+      if (type === 'avatar') {
+        setAvatarPreview(urls[0]);
+        setValue('imageUrl', urls[0]);
+      } else {
+        setBgImagePreview(urls[0]);
+        setValue('bgImage', urls[0]);
+      }
     }
   };
 
-  const handleImageRemove = () => {
-    setAvatarPreview('');
-    setValue('imageUrl', '');
+  const handleImageRemove = (type: 'avatar' | 'bgImage') => {
+    if (type === 'avatar') {
+      setAvatarPreview('');
+      setValue('imageUrl', '');
+    } else {
+      setBgImagePreview('');
+      setValue('bgImage', '');
+    }
   };
 
   const onSubmit = async (data: UpdateProfileInput) => {
@@ -59,6 +77,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
     });
     if (avatarPreview !== initialData.profile?.avatar) {
       formData.append('imageUrl', avatarPreview);
+    }
+    if (bgImagePreview !== initialData.profile?.bgImage) {
+      formData.append('bgImage', bgImagePreview);
     }
 
     const result = await updateProfile(formData);
@@ -98,16 +119,52 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
           </Button>
         ) : (
           <ImageUploader
-            onImageUpload={handleImageUpload}
-            onImageRemove={handleImageRemove}
+            onImageUpload={(urls) => handleImageUpload(urls, 'avatar')}
+            onImageRemove={() => handleImageRemove('avatar')}
             initialPreviews={avatarPreview ? [avatarPreview] : []}
           />
         )}
       </div>
+
+      <div className="flex flex-col items-center space-y-4">
+        <div className="relative w-full h-48 rounded-lg overflow-hidden border-4 border-gray-200 dark:border-gray-700">
+          {bgImagePreview ? (
+            <Image
+              src={bgImagePreview}
+              alt="Background Image"
+              layout="fill"
+              objectFit="cover"
+              className="rounded-lg"
+              priority
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+              <span className="text-gray-500 dark:text-gray-400">بدون تصویر پس‌زمینه</span>
+            </div>
+          )}
+        </div>
+        {!isChangingBgImage ? (
+          <Button
+            type="button"
+            onClick={() => setIsChangingBgImage(true)}
+            className="dark:bg-gray-700 dark:text-white"
+          >
+            تغییر تصویر پس‌زمینه
+          </Button>
+        ) : (
+          <ImageUploader
+            onImageUpload={(urls) => handleImageUpload(urls, 'bgImage')}
+            onImageRemove={() => handleImageRemove('bgImage')}
+            initialPreviews={bgImagePreview ? [bgImagePreview] : []}
+          />
+        )}
+      </div>
+
       <div>
+        <Label htmlFor="name">نام</Label>
         <Input
+          id="name"
           {...register('name')}
-          placeholder="نام"
           className="dark:bg-gray-800 dark:text-white text-right"
         />
         {errors.name && (
@@ -116,10 +173,12 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
           </p>
         )}
       </div>
+
       <div>
+        <Label htmlFor="email">ایمیل</Label>
         <Input
+          id="email"
           {...register('email')}
-          placeholder="ایمیل"
           type="email"
           className="dark:bg-gray-800 dark:text-white text-right"
           dir="ltr"
@@ -130,10 +189,27 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
           </p>
         )}
       </div>
+
       <div>
+        <Label htmlFor="jobName">شغل</Label>
+        <Input
+          id="jobName"
+          {...register('jobName')}
+          className="dark:bg-gray-800 dark:text-white text-right"
+          placeholder="شغل خود را وارد کنید"
+        />
+        {errors.jobName && (
+          <p className="text-red-500 dark:text-red-400 text-sm mt-1 text-right">
+            {errors.jobName.message}
+          </p>
+        )}
+      </div>
+
+      <div>
+        <Label htmlFor="bio">بیوگرافی</Label>
         <Textarea
+          id="bio"
           {...register('bio')}
-          placeholder="بیوگرافی"
           className="dark:bg-gray-800 dark:text-white text-right"
         />
         {errors.bio && (
@@ -142,26 +218,29 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
           </p>
         )}
       </div>
+
       <div className="flex items-center space-x-2 space-x-reverse">
+        <Checkbox
+          id="changePassword"
+          checked={isChangingPassword}
+          onCheckedChange={(checked) => setIsChangingPassword(checked as boolean)}
+        />
         <Label
           htmlFor="changePassword"
           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
         >
           تغییر رمز عبور
         </Label>
-        <Checkbox
-          id="changePassword"
-          checked={isChangingPassword}
-          onCheckedChange={(checked) => setIsChangingPassword(checked as boolean)}
-        />
       </div>
+
       {isChangingPassword && (
         <>
           <div>
+            <Label htmlFor="currentPassword">رمز عبور فعلی</Label>
             <Input
+              id="currentPassword"
               {...register('currentPassword')}
               type="password"
-              placeholder="رمز عبور فعلی"
               className="dark:bg-gray-800 dark:text-white text-right"
             />
             {errors.currentPassword && (
@@ -171,10 +250,11 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
             )}
           </div>
           <div>
+            <Label htmlFor="newPassword">رمز عبور جدید</Label>
             <Input
+              id="newPassword"
               {...register('newPassword')}
               type="password"
-              placeholder="رمز عبور جدید"
               className="dark:bg-gray-800 dark:text-white text-right"
             />
             {errors.newPassword && (
@@ -184,10 +264,11 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
             )}
           </div>
           <div>
+            <Label htmlFor="confirmNewPassword">تکرار رمز عبور جدید</Label>
             <Input
+              id="confirmNewPassword"
               {...register('confirmNewPassword')}
               type="password"
-              placeholder="تکرار رمز عبور جدید"
               className="dark:bg-gray-800 dark:text-white text-right"
             />
             {errors.confirmNewPassword && (
@@ -198,6 +279,13 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
           </div>
         </>
       )}
+
+      {/* نمایش مقادیر فعلی برای اطمینان (می‌توانید بعداً این بخش را حذف کنید) */}
+      <div>
+        <p>مقدار فعلی شغل: {jobName}</p>
+        <p>مقدار فعلی تصویر پس‌زمینه: {bgImage}</p>
+      </div>
+
       <Button
         type="submit"
         className="w-full dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white"

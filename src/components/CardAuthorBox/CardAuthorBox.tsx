@@ -20,7 +20,7 @@ const CardAuthorBox: FC<CardAuthorBoxProps> = ({ className = '', author }) => {
       <Avatar
         sizeClass="w-20 h-20 text-2xl"
         radius="rounded-full"
-        imgUrl={image}
+        imgUrl={author.profile?.avatar || image}
         userName={name ?? ''}
       />
       <div className="mt-3">

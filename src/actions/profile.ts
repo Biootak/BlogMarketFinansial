@@ -19,9 +19,13 @@ export async function updateProfile(formData: FormData): Promise<ActionResult<vo
       };
     }
 
+    console.log('Received form data:', Object.fromEntries(formData));
+
     const validatedFields = UpdateProfileSchema.parse(
       Object.fromEntries(formData),
     ) as UpdateProfileInput;
+
+    console.log('Validated fields:', validatedFields);
 
     const updateData: Partial<UpdateProfileInput & { password?: string }> = {};
     if (validatedFields.name) updateData.name = validatedFields.name;
@@ -31,6 +35,8 @@ export async function updateProfile(formData: FormData): Promise<ActionResult<vo
     const profileUpdateData: any = {};
     if (validatedFields.bio) profileUpdateData.bio = validatedFields.bio;
     if (validatedFields.imageUrl) profileUpdateData.avatar = validatedFields.imageUrl;
+    if (validatedFields.bgImage) profileUpdateData.bgImage = validatedFields.bgImage;
+    if (validatedFields.jobName) profileUpdateData.jobName = validatedFields.jobName;
 
     if (validatedFields.currentPassword && validatedFields.newPassword) {
       const user = await prisma.user.findUnique({ where: { id: session.user.id } });
@@ -69,6 +75,12 @@ export async function updateProfile(formData: FormData): Promise<ActionResult<vo
       });
     }
 
+    const updatedUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: { profile: true },
+    });
+    console.log('Updated user data:', updatedUser);
+
     revalidatePath('/profile');
     return { success: true, message: 'پروفایل با موفقیت بروزرسانی شد', variant: 'success' };
   } catch (error) {
@@ -80,16 +92,4 @@ export async function updateProfile(formData: FormData): Promise<ActionResult<vo
   }
 }
 
-export async function getProfileData(): Promise<UserWithProfile | null> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return null;
-  }
 
-  return prisma.user.findUnique({
-    where: { id: session.user.id },
-    include: {
-      profile: true,
-    },
-  });
-}

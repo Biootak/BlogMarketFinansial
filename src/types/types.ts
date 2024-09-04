@@ -21,6 +21,7 @@ const userWithRelations = Prisma.validator<Prisma.UserDefaultArgs>()({
         jobName: true,
         userId: true,
         bgImage: true,
+        avatar: true,
       },
     },
     _count: {
@@ -103,6 +104,7 @@ export type CommentWithCustomRelations = Prisma.CommentGetPayload<{
         email: true;
         role: true;
         image: true;
+        avatar: true;
         createdAt: true;
         updatedAt: true;
       };
@@ -174,6 +176,7 @@ export type CategoryWithPostCount = Prisma.CategoryGetPayload<typeof categoryWit
 export type TagWithPostCount = Prisma.TagGetPayload<typeof tagWithPostCount>;
 export type UpdateProfileInput = z.infer<typeof UpdateProfileSchema> & {
   password?: string;
+  bgimageUrl?: string;
 };
 
 export type TwMainColor =
