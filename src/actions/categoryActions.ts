@@ -2,6 +2,7 @@
 import prisma from '@/lib/db';
 import { generateColor, generateSlug, sanitizeSlug, validateSlug } from '@/lib/utils';
 import type { ActionResult, TaxonomyType, CategoryWithPostCount } from '@/types/types';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 export async function getCategories(
   options: { limit?: number; page?: number; search?: string } = {},
@@ -42,6 +43,7 @@ export async function getCategories(
       ...category,
       taxonomy: 'category',
       color: generateColor(category.id),
+      count: category._count.posts,
     }));
 
     return {
@@ -80,7 +82,6 @@ export async function createCategory(data: FormData): Promise<ActionResult<Taxon
       };
     }
 
-    // بررسی وجود دسته‌بندی با نام مشابه
     const existingCategory = await prisma.category.findFirst({
       where: {
         name: name,
@@ -94,7 +95,6 @@ export async function createCategory(data: FormData): Promise<ActionResult<Taxon
       };
     }
 
-    // بررسی یکتا بودن اسلاگ
     let slugExists = await prisma.category.findUnique({ where: { slug } });
     let slugAttempt = 1;
     while (slugExists) {
@@ -124,6 +124,11 @@ export async function createCategory(data: FormData): Promise<ActionResult<Taxon
       color: generateColor(newCategory.id),
     };
 
+    // تازه‌سازی صفحات مرتبط
+    revalidatePath('/categories');
+    revalidatePath('/');
+    revalidateTag('categories');
+
     return {
       success: true,
       message: 'دسته‌بندی با موفقیت ایجاد شد.',
@@ -138,6 +143,7 @@ export async function createCategory(data: FormData): Promise<ActionResult<Taxon
     };
   }
 }
+
 export async function updateCategory(
   id: string,
   data: FormData,
@@ -159,7 +165,6 @@ export async function updateCategory(
       };
     }
 
-    // بررسی وجود دسته‌بندی با نام مشابه
     const existingCategory = await prisma.category.findFirst({
       where: {
         name: name,
@@ -176,7 +181,6 @@ export async function updateCategory(
       };
     }
 
-    // بررسی یکتا بودن اسلاگ جدید
     const currentCategory = await prisma.category.findUnique({ where: { id } });
     if (currentCategory && currentCategory.slug !== slug) {
       let slugExists = await prisma.category.findFirst({ where: { slug, NOT: { id } } });
@@ -210,6 +214,12 @@ export async function updateCategory(
       color: generateColor(updatedCategory.id),
     };
 
+    // تازه‌سازی صفحات مرتبط
+    revalidatePath('/categories');
+    revalidatePath(`/category/${slug}`);
+    revalidatePath('/');
+    revalidateTag('categories');
+
     return {
       success: true,
       message: 'دسته‌بندی با موفقیت به‌روزرسانی شد.',
@@ -224,11 +234,26 @@ export async function updateCategory(
     };
   }
 }
+
 export async function deleteCategory(id: string): Promise<ActionResult> {
   try {
+    const category = await prisma.category.findUnique({ where: { id } });
+    if (!category) {
+      return {
+        success: false,
+        message: 'دسته‌بندی مورد نظر یافت نشد.',
+      };
+    }
+
     await prisma.category.delete({
       where: { id },
     });
+
+    // تازه‌سازی صفحات مرتبط
+    revalidatePath('/categories');
+    revalidatePath(`/category/${category.slug}`);
+    revalidatePath('/');
+    revalidateTag('categories');
 
     return {
       success: true,

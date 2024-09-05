@@ -37,14 +37,16 @@ const NAVBAR_LINKS: readonly NavItem[] = [
   },
   {
     id: '2',
-    href: '/market',
+    href: '/news',
     name: 'اخبار',
     subItems: [
-      { id: '2-1', href: '/archive?category=technology', name: 'فناوری' },
-      { id: '2-2', href: '/archive?category=business', name: 'کسب و کار' },
-      { id: '2-3', href: '/archive?category=science', name: 'علم' },
-      { id: '2-4', href: '/archive?category=health', name: 'سلامت' },
-      { id: '2-5', href: '/archive?category=entertainment', name: 'سرگرمی' },
+      { id: '2-1', href: ' /archive?category=crypto-urgent', name: 'اخبار فوری ارز دیجیتال' },
+      { id: '2-2', href: ' /archive?category=bitcoin', name: 'اخبار بیت کوین' },
+      { id: '2-3', href: ' /archive?category=stock-market', name: 'اخبار بورس' },
+      { id: '2-4', href: ' /archive?category=ethereum', name: 'اخبار اتریوم' },
+      { id: '2-5', href: ' /archive?category=exchanges', name: 'اخبار صرافی ها' },
+      { id: '2-6', href: ' /archive?category=world', name: 'اخبار جهان' },
+      { id: '2-7', href: ' /archive?category=altcoins', name: 'اخبار الت کوین ها' },
     ],
   },
   {
@@ -71,7 +73,11 @@ const Navigation = ({ className = 'flex' }: NavigationProps): JSX.Element => {
 
     if (item.subItems) {
       return (
-        <DropdownMenu key={item.id} onOpenChange={(open) => setOpenDropdown(open ? item.id : null)}>
+        <DropdownMenu
+          dir="rtl"
+          key={item.id}
+          onOpenChange={(open) => setOpenDropdown(open ? item.id : null)}
+        >
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"

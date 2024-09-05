@@ -27,8 +27,17 @@ const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
     },
     {
       id: '2',
-      href: '/market',
-      name: 'مارکت',
+      href: '/news',
+      name: 'اخبار',
+      subItems: [
+        { id: '2-1', href: ' /archive?category=crypto-urgent', name: 'اخبار فوری ارز دیجیتال' },
+        { id: '2-2', href: ' /archive?category=bitcoin', name: 'اخبار بیت کوین' },
+        { id: '2-3', href: ' /archive?category=stock-market', name: 'اخبار بورس' },
+        { id: '2-4', href: ' /archive?category=ethereum', name: 'اخبار اتریوم' },
+        { id: '2-5', href: ' /archive?category=exchanges', name: 'اخبار صرافی ها' },
+        { id: '2-6', href: ' /archive?category=world', name: 'اخبار جهان' },
+        { id: '2-7', href: ' /archive?category=altcoins', name: 'اخبار الت کوین ها' },
+      ],
     },
     {
       id: '3',
@@ -62,9 +71,56 @@ const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
     </svg>
   );
 
-  const _renderItem = (item: { id: string; href: string; name: string }) => {
+  const _renderItem = (item: {
+    id: string;
+    href: string;
+    name: string;
+    subItems?: Array<{ id: string; href: string; name: string }>;
+  }) => {
+    if (item.subItems) {
+      return (
+        <Disclosure key={item.id} as="div" className="text-slate-900 dark:text-white">
+          {({ open }) => (
+            <>
+              <Disclosure.Button className="flex w-full items-center justify-between py-2.5 px-4 font-medium tracking-wide text-sm hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+                <span>{item.name}</span>
+                <svg
+                  className={`${open ? 'transform rotate-180' : ''} w-5 h-5`}
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </Disclosure.Button>
+              <Disclosure.Panel className="px-4 pt-2 pb-2 text-sm">
+                <ul className="space-y-1">
+                  {item.subItems?.map((subItem) => (
+                    <li key={subItem.id}>
+                      <Link
+                        href={subItem.href}
+                        className="block py-2 px-3 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
+                        onClick={onClickClose}
+                      >
+                        {subItem.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </Disclosure.Panel>
+            </>
+          )}
+        </Disclosure>
+      );
+    }
+
     return (
-      <Disclosure key={item.id} as="li" className="text-slate-900 dark:text-white">
+      <Disclosure key={item.id} as="div" className="text-slate-900 dark:text-white">
         <Link
           className="flex w-full items-center py-2.5 px-4 font-medium tracking-wide text-sm hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
           href={item.href}
