@@ -22,7 +22,7 @@ const CategoryBadgeList: React.FC<CategoryBadgeListProps> = ({
           className={itemClass}
           key={item.id}
           name={item.name}
-          href={`/archive?category=${item.id}`}
+          href={`/archive?category=${item.slug}`}
           color="blue"
         />
       ))}

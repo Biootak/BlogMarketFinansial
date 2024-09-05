@@ -687,20 +687,20 @@ export async function getArchivePosts(
   page = 1,
   limit = 12,
   filter?: string,
-  categoryId?: string,
-  tagId?: string,
-): Promise<ActionResult<{ posts: PostWithRelations[]; total: number; pages: number }>> {
+  categorySlug?: string,
+  tagSlug?: string,
+) {
   try {
     const skip = (page - 1) * limit;
     const whereCondition: Prisma.PostWhereInput = { status: 'PUBLISHED' };
     let orderBy: Prisma.PostOrderByWithRelationInput = { createdAt: 'desc' };
 
-    if (categoryId) {
-      whereCondition.categories = { some: { id: categoryId } };
+    if (categorySlug) {
+      whereCondition.categories = { some: { slug: categorySlug } };
     }
 
-    if (tagId) {
-      whereCondition.tags = { some: { id: tagId } };
+    if (tagSlug) {
+      whereCondition.tags = { some: { slug: tagSlug } };
     }
 
     switch (filter) {

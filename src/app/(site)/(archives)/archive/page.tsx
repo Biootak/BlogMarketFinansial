@@ -1,19 +1,17 @@
 import React from 'react';
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SlFire } from 'react-icons/sl';
 
 import { getArchivePosts } from '@/actions/postActions';
 import { getCategories } from '@/actions/categoryActions';
-import { getTags } from '@/actions/getTags';
+import Image from 'next/image';
 import { getTopAuthors } from '@/actions/getTopAuthors';
-
+import { getTags } from '@/actions/getTags';
 import ModalCategories from '../ModalCategories';
 import ModalTags from '../ModalTags';
 import ArchiveFilterListBox from '@/components/ArchiveFilterListBox/ArchiveFilterListBox';
-import type { PostWithRelations, TaxonomyType } from '@/types/types';
-import Card11 from '@/components/Card11/Card11';
+import AnimatedPostGrid from '../AnimatedPostGrid';
 import Pagination from '@/components/Pagination/Pagination';
 import BackgroundSection from '@/components/BackgroundSection/BackgroundSection';
 import DynamicCategories from '@/components/DynamicCategories';
@@ -44,15 +42,15 @@ type PageArchiveProps = {
 async function getPageData(searchParams: PageArchiveProps['searchParams']) {
   const currentPage = searchParams.page ? Number.parseInt(searchParams.page) : 1;
   const limit = 12;
-  const categoryId = searchParams.category;
-  const tagId = searchParams.tag;
+  const categorySlug = searchParams.category;
+  const tagSlug = searchParams.tag;
   const filter = searchParams.filter || FILTERS[0].name;
 
   const [postsResult, categoriesResult, tagsResult, topAuthorsResult] = await Promise.all([
-    getArchivePosts(currentPage, limit, filter, categoryId, tagId),
+    getArchivePosts(currentPage, limit, filter, categorySlug, tagSlug),
     getCategories({ limit: 10, page: 1 }),
     getTags({ limit: 10, page: 1 }),
-    getTopAuthors(10),
+    getTopAuthors(5),
   ]);
 
   return {
@@ -71,16 +69,16 @@ export default async function PageArchive({ searchParams }: PageArchiveProps) {
     await getPageData(searchParams);
 
   const selectedCategory = searchParams.category
-    ? categories.find((cat) => cat.id === searchParams.category)
+    ? categories.find((cat) => cat.slug === searchParams.category)
     : null;
-  const selectedTag = searchParams.tag ? tags.find((tag) => tag.id === searchParams.tag) : null;
+  const selectedTag = searchParams.tag ? tags.find((tag) => tag.slug === searchParams.tag) : null;
 
   const defaultImage = '/images/hero-right-2.png';
 
   return (
     <div className="nc-PageArchive">
       <div className="container mt-10 px-4 sm:px-6 lg:px-8">
-        <Card className="overflow-hidden bg-white dark:bg-gray-800">
+        <Card className="overflow-hidden bg-white dark:bg-gray-800 shadow-lg">
           <div className="flex flex-col md:flex-row items-center p-6 md:p-8">
             <div className="mb-6 md:mb-0 md:ml-8">
               <div className="w-48 h-48 overflow-hidden rounded-lg relative">
@@ -137,11 +135,7 @@ export default async function PageArchive({ searchParams }: PageArchiveProps) {
             </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 mt-8 lg:mt-10">
-            {posts.map((post: PostWithRelations) => (
-              <Card11 key={post.id} post={post} />
-            ))}
-          </div>
+          <AnimatedPostGrid posts={posts} />
 
           <div className="flex flex-col mt-12 lg:mt-16 space-y-5 sm:space-y-0 sm:space-x-3 sm:flex-row sm:justify-between sm:items-center">
             <Pagination

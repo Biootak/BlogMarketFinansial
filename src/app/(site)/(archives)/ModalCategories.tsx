@@ -48,12 +48,12 @@ const ModalCategories: React.FC<ModalCategoriesProps> = ({ initialCategories }) 
   });
 
   const handleCategorySelect = useCallback(
-    async (categoryId: string | null) => {
+    async (categorySlug: string | null) => {
       setIsFiltering(true);
       setIsOpen(false);
       const current = new URLSearchParams(Array.from(searchParams.entries()));
-      if (categoryId) {
-        current.set('category', categoryId);
+      if (categorySlug) {
+        current.set('category', categorySlug);
       } else {
         current.delete('category');
       }
@@ -62,14 +62,14 @@ const ModalCategories: React.FC<ModalCategoriesProps> = ({ initialCategories }) 
       const search = current.toString();
       const query = search ? `?${search}` : '';
       try {
-        await router.push(`/archive${query}`);
+        await router.push(`${pathname}${query}`);
       } catch (error) {
         console.error('Error during navigation:', error);
       } finally {
         setIsFiltering(false);
       }
     },
-    [router, searchParams, setIsFiltering],
+    [router, searchParams, pathname, setIsFiltering],
   );
 
   const handleAllArticles = useCallback(() => {
@@ -144,7 +144,7 @@ const ModalCategories: React.FC<ModalCategoriesProps> = ({ initialCategories }) 
                     key={category.id}
                     variant="ghost"
                     className="w-full justify-end text-right"
-                    onClick={() => handleCategorySelect(category.id)}
+                    onClick={() => handleCategorySelect(category.slug)}
                   >
                     {category.name} ({(category._count as { posts: number }).posts})
                   </Button>

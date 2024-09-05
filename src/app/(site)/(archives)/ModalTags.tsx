@@ -48,12 +48,12 @@ const ModalTags: React.FC<ModalTagsProps> = ({ initialTags }) => {
   });
 
   const handleTagSelect = useCallback(
-    async (tagId: string | null) => {
+    async (tagSlug: string | null) => {
       setIsFiltering(true);
       setIsOpen(false);
       const current = new URLSearchParams(Array.from(searchParams.entries()));
-      if (tagId) {
-        current.set('tag', tagId);
+      if (tagSlug) {
+        current.set('tag', tagSlug);
       } else {
         current.delete('tag');
       }
@@ -62,14 +62,14 @@ const ModalTags: React.FC<ModalTagsProps> = ({ initialTags }) => {
       const search = current.toString();
       const query = search ? `?${search}` : '';
       try {
-        await router.push(`/archive${query}`);
+        await router.push(`${pathname}${query}`);
       } catch (error) {
         console.error('Error during navigation:', error);
       } finally {
         setIsFiltering(false);
       }
     },
-    [router, searchParams, setIsFiltering],
+    [router, searchParams, pathname, setIsFiltering],
   );
 
   const handleAllTags = useCallback(() => {
@@ -142,7 +142,7 @@ const ModalTags: React.FC<ModalTagsProps> = ({ initialTags }) => {
                   key={tag.id}
                   variant="ghost"
                   className="w-full justify-end text-right"
-                  onClick={() => handleTagSelect(tag.id)}
+                  onClick={() => handleTagSelect(tag.slug)}
                 >
                   {tag.name} ({(tag._count as { posts: number }).posts})
                 </Button>
