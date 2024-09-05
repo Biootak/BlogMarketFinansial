@@ -5,17 +5,15 @@ import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/db';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import slugify from 'slugify';
+import { checkRole, generateSlug, generateUniqueId, sanitizeSlug, validateSlug } from '@/lib/utils';
 import type {
   ActionResult,
-  CommentWithCustomRelations,
   CreatePostInput,
   PostWithRelations,
   RelatedPostWithRelations,
   UpdatePostInput,
 } from '@/types/types';
 import { CreatePostSchema, UpdatePostSchema } from '@/schemas';
-import { checkRole } from '@/lib/utils';
 
 export async function createPost(
   data: FormData | CreatePostInput,
@@ -45,49 +43,52 @@ export async function createPost(
         galleryImages: Array.from(data.entries())
           .filter(([key]) => key.startsWith('galleryImages['))
           .map(([, value]) => value),
+        slug: data.get('slug'),
       });
     } else {
       validatedData = CreatePostSchema.parse(data);
     }
 
-    const baseSlug = slugify(validatedData.title, { lower: true });
-    let slug = baseSlug;
-    let counter = 0;
+    const id = generateUniqueId();
+    let slug = validatedData.slug
+      ? sanitizeSlug(validatedData.slug)
+      : generateSlug(validatedData.title);
 
-    while (true) {
-      const existingPost = await prisma.post.findUnique({ where: { slug } });
-      if (!existingPost) break;
-      counter++;
-      slug = `${baseSlug}-${counter}`;
+    if (!validateSlug(slug)) {
+      return {
+        success: false,
+        message: 'اسلاگ نامعتبر است. لطفاً فقط از حروف کوچک انگلیسی، اعداد و خط فاصله استفاده کنید.',
+      };
+    }
+
+    // بررسی یکتا بودن اسلاگ
+    let slugExists = await prisma.post.findUnique({ where: { slug } });
+    let slugAttempt = 1;
+    while (slugExists) {
+      slug = `${slug}-${slugAttempt}`;
+      slugExists = await prisma.post.findUnique({ where: { slug } });
+      slugAttempt++;
     }
 
     const post = await prisma.post.create({
       data: {
-        title: validatedData.title,
-        content: validatedData.content,
-        excerpt: validatedData.excerpt,
-        postType: validatedData.postType,
-        isFeatured: validatedData.isFeatured,
-        videoUrl: validatedData.videoUrl,
-        audioUrl: validatedData.audioUrl,
+        ...validatedData,
+        id,
         slug,
-        featuredImage: validatedData.featuredImage,
-        galleryImages: validatedData.galleryImages,
-        status: validatedData.status || PostStatus.DRAFT,
         author: {
           connect: { id: session.user?.id },
         },
         categories: {
           connectOrCreate: validatedData.categories.map((name) => ({
             where: { name },
-            create: { name, slug: slugify(name, { lower: true }) },
+            create: { name, slug: generateSlug(name) },
           })),
         },
         tags: validatedData.tags
           ? {
               connectOrCreate: validatedData.tags.map((name) => ({
                 where: { name },
-                create: { name, slug: slugify(name, { lower: true }) },
+                create: { name, slug: generateSlug(name) },
               })),
             }
           : undefined,
@@ -180,27 +181,39 @@ export async function updatePost(
         galleryImages: Array.from(data.entries())
           .filter(([key]) => key.startsWith('galleryImages['))
           .map(([, value]) => value),
+        slug: data.get('slug'),
       });
     } else {
       validatedData = UpdatePostSchema.parse(data);
     }
 
-    let slug = undefined;
-    if (validatedData.title) {
-      const baseSlug = slugify(validatedData.title, { lower: true });
-      slug = baseSlug;
-      let counter = 0;
+    let slug = validatedData.slug;
+    if (!slug && validatedData.title) {
+      slug = generateSlug(validatedData.title);
+    }
 
-      while (true) {
-        const existingPost = await prisma.post.findFirst({
-          where: {
-            slug,
-            id: { not: postId }, // اطمینان از عدم تداخل با پست فعلی
-          },
-        });
-        if (!existingPost) break;
-        counter++;
-        slug = `${baseSlug}-${counter}`;
+    if (slug) {
+      slug = sanitizeSlug(slug);
+      if (!validateSlug(slug)) {
+        return {
+          success: false,
+          message:
+            'اسلاگ نامعتبر است. لطفاً فقط از حروف کوچک انگلیسی، اعداد و خط فاصله استفاده کنید.',
+        };
+      }
+    }
+
+    // بررسی یکتا بودن اسلاگ جدید
+    if (slug) {
+      const currentPost = await prisma.post.findUnique({ where: { id: postId } });
+      if (currentPost && currentPost.slug !== slug) {
+        let slugExists = await prisma.post.findFirst({ where: { slug, NOT: { id: postId } } });
+        let slugAttempt = 1;
+        while (slugExists) {
+          slug = `${slug}-${slugAttempt}`;
+          slugExists = await prisma.post.findFirst({ where: { slug, NOT: { id: postId } } });
+          slugAttempt++;
+        }
       }
     }
 
@@ -209,13 +222,12 @@ export async function updatePost(
       data: {
         ...validatedData,
         slug,
-        status: validatedData.status,
         categories: validatedData.categories
           ? {
               set: [],
               connectOrCreate: validatedData.categories.map((name) => ({
                 where: { name },
-                create: { name, slug: slugify(name, { lower: true }) },
+                create: { name, slug: generateSlug(name) },
               })),
             }
           : undefined,
@@ -224,7 +236,7 @@ export async function updatePost(
               set: [],
               connectOrCreate: validatedData.tags.map((name) => ({
                 where: { name },
-                create: { name, slug: slugify(name, { lower: true }) },
+                create: { name, slug: generateSlug(name) },
               })),
             }
           : undefined,
@@ -282,7 +294,6 @@ export async function updatePost(
     };
   }
 }
-
 export async function updatePostStatus(
   postId: string,
   newStatus: PostStatus,

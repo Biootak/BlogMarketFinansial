@@ -193,6 +193,7 @@ export type TaxonomyType =
   | (CategoryWithPostCount & {
       taxonomy: 'category';
       color?: TwMainColor | string;
+      
     })
   | (TagWithPostCount & {
       taxonomy: 'tag';

@@ -12,6 +12,7 @@ import {
 } from '@/actions/categoryActions';
 import type { TaxonomyType } from '@/types/types';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { generateSlug, sanitizeSlug, validateSlug } from '@/lib/utils';
 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -47,6 +48,7 @@ import Loading from '@/components/Loading';
 
 type FormData = {
   name: string;
+  slug: string;
   thumbnail: string | null;
 };
 
@@ -69,6 +71,7 @@ export default function CategoriesPage() {
   const form = useForm<FormData>({
     defaultValues: {
       name: '',
+      slug: '',
       thumbnail: null,
     },
   });
@@ -119,6 +122,7 @@ export default function CategoriesPage() {
   const onSubmit = async (data: FormData) => {
     const formData = new FormData();
     formData.append('name', data.name);
+    formData.append('slug', data.slug);
     if (data.thumbnail) {
       formData.append('thumbnail', data.thumbnail);
     }
@@ -150,6 +154,7 @@ export default function CategoriesPage() {
     setEditingCategory(category);
     form.reset({
       name: category.name,
+      slug: category.slug,
       thumbnail: category.thumbnail || null,
     });
     setIsEditDialogOpen(true);
@@ -235,6 +240,9 @@ export default function CategoriesPage() {
                 <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   نام
                 </TableHead>
+                <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  اسلاگ
+                </TableHead>
                 <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300 hidden sm:table-cell">
                   تعداد پست‌ها
                 </TableHead>
@@ -272,6 +280,9 @@ export default function CategoriesPage() {
                   </TableCell>
                   <TableCell className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm text-neutral-800 dark:text-neutral-200">
                     {category.name}
+                  </TableCell>
+                  <TableCell className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400">
+                    {category.slug}
                   </TableCell>
                   <TableCell className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 hidden sm:table-cell">
                     {category._count?.posts ?? 0}
@@ -318,7 +329,7 @@ export default function CategoriesPage() {
             <div className="p-4 sm:p-6 pt-2">
               <CategoryForm form={form} onSubmit={onSubmit} />
             </div>
-          </div>{' '}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
@@ -334,6 +345,20 @@ function CategoryForm({ form, onSubmit }: CategoryFormProps) {
     form.setValue('thumbnail', null);
   };
 
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const name = e.target.value;
+    form.setValue('name', name);
+    if (!form.getValues('slug')) {
+      const slug = generateSlug(name);
+      form.setValue('slug', slug);
+    }
+  };
+
+  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newSlug = sanitizeSlug(e.target.value);
+    form.setValue('slug', newSlug);
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -346,7 +371,32 @@ function CategoryForm({ form, onSubmit }: CategoryFormProps) {
                 نام دسته‌بندی
               </FormLabel>
               <FormControl>
-                <Input placeholder="نام دسته‌بندی" {...field} className="text-sm" />
+                <Input
+                  placeholder="نام دسته‌بندی"
+                  {...field}
+                  onChange={handleNameChange}
+                  className="text-sm"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="slug"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                اسلاگ
+              </FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="اسلاگ"
+                  {...field}
+                  onChange={handleSlugChange}
+                  className="text-sm"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

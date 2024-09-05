@@ -1,3 +1,4 @@
+import { sanitizeSlug, validateSlug } from '@/lib/utils';
 import { PostStatus, PostType } from '@prisma/client';
 import { z } from 'zod';
 
@@ -66,12 +67,26 @@ const TagSchema = z.array(z.string()).max(10, 'حداکثر 10 برچسب می�
 export const CreatePostSchema = BasePostSchema.extend({
   categories: CategorySchema,
   tags: TagSchema,
+  slug: z
+    .string()
+    .optional()
+    .transform((val) => (val ? sanitizeSlug(val) : val))
+    .refine((val) => !val || validateSlug(val), {
+      message: 'فرمت اسلاگ نامعتبر است. فقط حروف کوچک انگلیسی، اعداد و خط فاصله مجاز هستند.',
+    }),
 });
 
 export const UpdatePostSchema = BasePostSchema.partial().extend({
   id: z.string().cuid('شناسه پست نامعتبر است').optional(),
   categories: CategorySchema.optional(),
   tags: TagSchema,
+  slug: z
+    .string()
+    .optional()
+    .transform((val) => (val ? sanitizeSlug(val) : val))
+    .refine((val) => !val || validateSlug(val), {
+      message: 'فرمت اسلاگ نامعتبر است. فقط حروف کوچک انگلیسی، اعداد و خط فاصله مجاز هستند.',
+    }),
 });
 
 const IdSchema = z.string().cuid();

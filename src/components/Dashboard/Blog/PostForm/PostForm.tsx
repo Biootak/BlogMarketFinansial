@@ -43,6 +43,8 @@ import type { CreatePostInput, UpdatePostInput } from '@/types/types';
 import type { ZodSchema } from 'zod';
 import { Switch } from '@/components/ui/switch';
 import dynamic from 'next/dynamic';
+import { generateSlug, sanitizeSlug } from '@/lib/utils';
+import { CreatePostSchema, UpdatePostSchema } from '@/schemas';
 
 const MAX_CATEGORIES = 5;
 const MAX_TAGS = 10;
@@ -57,7 +59,6 @@ interface PostFormProps {
 }
 
 const PostForm: React.FC<PostFormProps> = ({
-  schema,
   defaultValues,
   onSubmit,
   title,
@@ -70,11 +71,27 @@ const PostForm: React.FC<PostFormProps> = ({
   const [categories, setCategories] = useState<string[]>(defaultValues.categories || []);
   const [tags, setTags] = useState<string[]>(defaultValues.tags || []);
   const [editorContent, setEditorContent] = useState(defaultValues.content || '');
+  const [slug, setSlug] = useState(defaultValues.slug || '');
 
   const form = useForm<CreatePostInput | UpdatePostInput>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(isEditing ? UpdatePostSchema : CreatePostSchema),
     defaultValues,
   });
+
+  const generateSlugFromTitle = useCallback(
+    (title: string) => {
+      const generatedSlug = generateSlug(title);
+      setSlug(generatedSlug);
+      form.setValue('slug', generatedSlug);
+    },
+    [form],
+  );
+
+  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newSlug = sanitizeSlug(e.target.value);
+    setSlug(newSlug);
+    form.setValue('slug', newSlug);
+  };
 
   const resetForm = useCallback(() => {
     form.reset();
@@ -182,16 +199,40 @@ const PostForm: React.FC<PostFormProps> = ({
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
-                  عنوان پست
-                </FormLabel>
+                <FormLabel>عنوان پست</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
-                    className="rtl text-base sm:text-lg p-2 sm:p-3 border-2 border-gray-300 focus:border-primary-500 rounded-lg transition duration-200"
+                    onChange={(e) => {
+                      field.onChange(e);
+                      if (!isEditing && !slug) {
+                        generateSlugFromTitle(e.target.value);
+                      }
+                    }}
                     placeholder="عنوان پست را وارد کنید"
                   />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="slug"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>اسلاگ</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder="اسلاگ را وارد کنید"
+                    value={slug}
+                    onChange={handleSlugChange}
+                  />
+                </FormControl>
+                <FormDescription>
+                  اسلاگ به صورت خودکار ایجاد می‌شود، اما می‌توانید آن را تغییر دهید.
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}

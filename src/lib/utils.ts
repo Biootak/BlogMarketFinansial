@@ -4,6 +4,9 @@ import type { Session } from 'next-auth';
 import { twMerge } from 'tailwind-merge';
 import { auth } from '../auth';
 import { redirect } from 'next/navigation';
+import slugify from 'slugify';
+import { digitsEnToFa, digitsFaToEn, numberToWords } from '@persian-tools/persian-tools';
+import { customAlphabet } from 'nanoid';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -49,3 +52,89 @@ export const socialToDropdownItem = (
   icon: social.icon,
   onClick: () => onClickHandler(social.id.toLowerCase()),
 });
+
+export const transliteratePersian = (text: string): string => {
+  const transliterationMap: { [key: string]: string } = {
+    آ: 'a',
+    ا: 'a',
+    ب: 'b',
+    پ: 'p',
+    ت: 't',
+    ث: 's',
+    ج: 'j',
+    چ: 'ch',
+    ح: 'h',
+    خ: 'kh',
+    د: 'd',
+    ذ: 'z',
+    ر: 'r',
+    ز: 'z',
+    ژ: 'zh',
+    س: 's',
+    ش: 'sh',
+    ص: 's',
+    ض: 'z',
+    ط: 't',
+    ظ: 'z',
+    ع: 'a',
+    غ: 'gh',
+    ف: 'f',
+    ق: 'gh',
+    ک: 'k',
+    گ: 'g',
+    ل: 'l',
+    م: 'm',
+    ن: 'n',
+    و: 'v',
+    ه: 'h',
+    ی: 'y',
+    ئ: 'y',
+  };
+
+  return text
+    .split('')
+    .map((char) => transliterationMap[char] || char)
+    .join('')
+    .replace(/\s+/g, '-') // تبدیل فاصله به خط تیره
+    .replace(/[^a-z0-9-]/gi, '') // حذف کاراکترهای غیرمجاز
+    .toLowerCase();
+};
+
+export const generateUniqueId = customAlphabet('1234567890abcdef', 10);
+
+export const generateSlug = (title: string, id?: string): string => {
+  const transliteratedTitle = transliteratePersian(title);
+  let slug = slugify(transliteratedTitle, {
+    replacement: '-',
+    remove: /[*+~.()'"!:@]/g,
+    lower: true,
+    strict: true,
+    locale: 'en',
+    trim: true,
+  });
+
+  // If an ID is provided, append it to the slug
+  if (id) {
+    slug = `${slug}-${id}`;
+  }
+
+  // Limit the total slug length to 100 characters
+  return slug.slice(0, 100);
+};
+
+export function validateSlug(slug: string): boolean {
+  // این الگو اجازه می‌دهد اسلاگ با حروف کوچک، اعداد، و خط فاصله شروع شود
+  // و می‌تواند شامل خط فاصله در میان کلمات باشد، اما نباید با خط فاصله تمام شود
+  const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+  return slugRegex.test(slug);
+}
+
+export function sanitizeSlug(slug: string): string {
+  // حذف کاراکترهای غیرمجاز و تبدیل به حروف کوچک
+  let sanitized = slug.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+  // حذف خط فاصله‌های اضافی
+  sanitized = sanitized.replace(/-+/g, '-');
+  // حذف خط فاصله از ابتدا و انتهای رشته
+  sanitized = sanitized.replace(/^-+|-+$/g, '');
+  return sanitized;
+}

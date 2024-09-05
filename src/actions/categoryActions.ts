@@ -1,7 +1,8 @@
 'use server';
 import prisma from '@/lib/db';
-import { generateColor } from '@/lib/utils';
-import type { ActionResult, TaxonomyType } from '@/types/types';
+import { generateColor, generateSlug, sanitizeSlug, validateSlug } from '@/lib/utils';
+import type { ActionResult, TaxonomyType, CategoryWithPostCount } from '@/types/types';
+
 export async function getCategories(
   options: { limit?: number; page?: number; search?: string } = {},
 ): Promise<ActionResult<{ categories: TaxonomyType[]; totalCount: number }>> {
@@ -40,7 +41,6 @@ export async function getCategories(
     const formattedCategories: TaxonomyType[] = categories.map((category) => ({
       ...category,
       taxonomy: 'category',
-      count: category._count.posts,
       color: generateColor(category.id),
     }));
 
@@ -61,16 +61,55 @@ export async function getCategories(
     };
   }
 }
+
 export async function createCategory(data: FormData): Promise<ActionResult<TaxonomyType>> {
   try {
     const name = data.get('name') as string;
+    let slug = data.get('slug') as string;
+
+    if (!slug) {
+      slug = generateSlug(name);
+    } else {
+      slug = sanitizeSlug(slug);
+    }
+
+    if (!validateSlug(slug)) {
+      return {
+        success: false,
+        message: 'اسلاگ نامعتبر است. لطفاً فقط از حروف کوچک انگلیسی، اعداد و خط فاصله استفاده کنید.',
+      };
+    }
+
+    // بررسی وجود دسته‌بندی با نام مشابه
+    const existingCategory = await prisma.category.findFirst({
+      where: {
+        name: name,
+      },
+    });
+
+    if (existingCategory) {
+      return {
+        success: false,
+        message: 'دسته‌بندی با این نام قبلاً وجود دارد. لطفاً نام دیگری انتخاب کنید.',
+      };
+    }
+
+    // بررسی یکتا بودن اسلاگ
+    let slugExists = await prisma.category.findUnique({ where: { slug } });
+    let slugAttempt = 1;
+    while (slugExists) {
+      slug = `${slug}-${slugAttempt}`;
+      slugExists = await prisma.category.findUnique({ where: { slug } });
+      slugAttempt++;
+    }
+
     const thumbnail = data.get('thumbnail') as string | null;
 
     const newCategory = await prisma.category.create({
       data: {
         name,
+        slug,
         thumbnail,
-        slug: name.toLowerCase().replace(/ /g, '-'),
       },
       include: {
         _count: {
@@ -99,21 +138,64 @@ export async function createCategory(data: FormData): Promise<ActionResult<Taxon
     };
   }
 }
-
 export async function updateCategory(
   id: string,
   data: FormData,
 ): Promise<ActionResult<TaxonomyType>> {
   try {
     const name = data.get('name') as string;
+    let slug = data.get('slug') as string;
+
+    if (!slug) {
+      slug = generateSlug(name);
+    } else {
+      slug = sanitizeSlug(slug);
+    }
+
+    if (!validateSlug(slug)) {
+      return {
+        success: false,
+        message: 'اسلاگ نامعتبر است. لطفاً فقط از حروف کوچک انگلیسی، اعداد و خط فاصله استفاده کنید.',
+      };
+    }
+
+    // بررسی وجود دسته‌بندی با نام مشابه
+    const existingCategory = await prisma.category.findFirst({
+      where: {
+        name: name,
+        NOT: {
+          id: id,
+        },
+      },
+    });
+
+    if (existingCategory) {
+      return {
+        success: false,
+        message: 'دسته‌بندی با این نام قبلاً وجود دارد. لطفاً نام دیگری انتخاب کنید.',
+      };
+    }
+
+    // بررسی یکتا بودن اسلاگ جدید
+    const currentCategory = await prisma.category.findUnique({ where: { id } });
+    if (currentCategory && currentCategory.slug !== slug) {
+      let slugExists = await prisma.category.findFirst({ where: { slug, NOT: { id } } });
+      let slugAttempt = 1;
+      while (slugExists) {
+        slug = `${slug}-${slugAttempt}`;
+        slugExists = await prisma.category.findFirst({ where: { slug, NOT: { id } } });
+        slugAttempt++;
+      }
+    }
+
     const thumbnail = data.get('thumbnail') as string | null;
 
     const updatedCategory = await prisma.category.update({
       where: { id },
       data: {
         name,
+        slug,
         thumbnail,
-        slug: name.toLowerCase().replace(/ /g, '-'),
       },
       include: {
         _count: {
@@ -142,7 +224,6 @@ export async function updateCategory(
     };
   }
 }
-
 export async function deleteCategory(id: string): Promise<ActionResult> {
   try {
     await prisma.category.delete({
