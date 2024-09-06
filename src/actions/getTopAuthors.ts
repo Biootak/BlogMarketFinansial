@@ -13,12 +13,6 @@ export type TopAuthor = User & {
 };
 
 export const getTopAuthors = cache(async (limit: number): Promise<TopAuthor[]> => {
-  const session = await auth();
-
-  if (!session) {
-    throw new Error('Unauthorized');
-  }
-
   try {
     const topAuthors = await prisma.user.findMany({
       where: {
