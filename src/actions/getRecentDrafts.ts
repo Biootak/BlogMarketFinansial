@@ -1,3 +1,5 @@
+'use server';
+
 import prisma from '@/lib/db';
 import { checkRole } from '@/lib/utils';
 import type { ActionResult } from '@/types/types';

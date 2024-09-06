@@ -1,4 +1,5 @@
 'use server';
+
 import prisma from '@/lib/db';
 import { generateColor, generateSlug, sanitizeSlug, validateSlug } from '@/lib/utils';
 import type { ActionResult, TaxonomyType, CategoryWithPostCount } from '@/types/types';
