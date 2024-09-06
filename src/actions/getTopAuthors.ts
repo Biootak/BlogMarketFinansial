@@ -1,6 +1,5 @@
 'use server';
 
-import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import { Role, type User, type Profile } from '@prisma/client';
 import { cache } from 'react';

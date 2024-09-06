@@ -14,7 +14,7 @@ import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
 
 export default async function Home() {
   const [posts, topAuthors, adsResult] = await Promise.all([
-    getPosts(),
+    getPosts(6),
     getTopAuthors(5),
     getActiveAdvertisements({ limit: 1, size: 'LARGE' }),
   ]);

@@ -131,8 +131,6 @@ export async function createPost(
       },
     });
 
-    console.log(JSON.stringify(post, null, 2));
-
     revalidatePath('/dashboard/admin');
     return {
       success: true,

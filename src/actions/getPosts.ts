@@ -3,7 +3,7 @@
 import prisma from '@/lib/db';
 import type { PostWithRelations } from '@/types/types';
 
-export async function getPosts(limit = 6): Promise<PostWithRelations[]> {
+export async function getPosts(limit: number): Promise<PostWithRelations[]> {
   const posts = await prisma.post.findMany({
     take: limit,
     where: { status: 'PUBLISHED', postType: 'GALLERY' },
