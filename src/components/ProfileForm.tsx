@@ -31,7 +31,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
     handleSubmit,
     formState: { errors },
     setValue,
-    watch,
   } = useForm<UpdateProfileInput>({
     resolver: zodResolver(UpdateProfileSchema),
     defaultValues: {
@@ -42,9 +41,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
       bgImage: initialData.profile?.bgImage ?? '',
     },
   });
-
-  const jobName = watch('jobName');
-  const bgImage = watch('bgImage');
 
   const handleImageUpload = (urls: string[], type: 'avatar' | 'bgImage') => {
     if (urls.length > 0) {
@@ -279,12 +275,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
           </div>
         </>
       )}
-
-      {/* نمایش مقادیر فعلی برای اطمینان (می‌توانید بعداً این بخش را حذف کنید) */}
-      <div>
-        <p>مقدار فعلی شغل: {jobName}</p>
-        <p>مقدار فعلی تصویر پس‌زمینه: {bgImage}</p>
-      </div>
 
       <Button
         type="submit"
