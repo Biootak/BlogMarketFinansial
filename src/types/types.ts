@@ -22,6 +22,7 @@ const userWithRelations = Prisma.validator<Prisma.UserDefaultArgs>()({
         userId: true,
         bgImage: true,
         avatar: true,
+        bio: true,
       },
     },
     _count: {
@@ -166,7 +167,7 @@ export type MagicLinkInput = SchemaInfer<typeof MagicLinkSchema>;
 export type CreatePostInput = SchemaInfer<typeof CreatePostSchema>;
 export type UpdatePostInput = SchemaInfer<typeof UpdatePostSchema>;
 
-export type UserBase = Omit<UserWithRelations, 'password' | 'emailVerified'> & {
+export type UserBase = Omit<UserWithRelations, 'password'> & {
   _count?: UserWithRelations['_count'];
 };
 export type UserWithProfile = Omit<UserBase, '_count'> & {
@@ -193,7 +194,6 @@ export type TaxonomyType =
   | (CategoryWithPostCount & {
       taxonomy: 'category';
       color?: TwMainColor | string;
-      
     })
   | (TagWithPostCount & {
       taxonomy: 'tag';
