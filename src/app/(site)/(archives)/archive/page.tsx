@@ -88,7 +88,7 @@ export default async function PageArchive({ searchParams }: PageArchiveProps) {
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   style={{ objectFit: 'cover' }}
-                  priority
+                  priority={true}
                 />
               </div>
             </div>

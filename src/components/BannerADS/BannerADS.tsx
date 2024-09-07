@@ -119,7 +119,7 @@ const BannerADS: React.FC<BannerADSProps> = ({
           fill
           className="object-cover"
           sizes="(max-width: 640px) 80px, (max-width: 768px) 160px, 240px"
-          priority
+          priority={true}
         />
       </Link>
     </div>

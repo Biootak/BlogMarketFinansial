@@ -29,7 +29,7 @@ const Logo = ({
       className={`ttnc-logo inline-block text-primary-6000 flex-shrink-0 ${className}`}
     >
       {useImage ? (
-        <Image src={img} alt="Logo" width={150} height={50} priority className={className} />
+        <Image src={img} alt="Logo" width={150} height={50}  priority={true} className={className} />
       ) : (
         <LogoSvg className={className} />
       )}

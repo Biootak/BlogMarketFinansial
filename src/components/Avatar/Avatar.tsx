@@ -46,7 +46,7 @@ const Avatar: FC<AvatarProps> = ({
           className="absolute inset-0 w-full h-full object-cover"
           src={url}
           alt={name}
-          priority
+          priority={true}
         />
       )}
       {!isCustomImage && (

@@ -82,7 +82,7 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
               alt={title}
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
-              priority
+              priority={true}
             />
             <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black to-transparent opacity-50" />
             {postType && (
