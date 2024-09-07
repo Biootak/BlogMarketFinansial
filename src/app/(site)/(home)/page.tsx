@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import SectionLargeSlider from './SectionLargeSlider';
-import SectionSliderNewCategories from '@/components/SectionSliderNewCategories/SectionSliderNewCategories';
 import SectionMagazine1 from '@/components/Sections/SectionMagazine1';
 import SectionAds from '@/components/Sections/SectionAds';
 import SectionMagazine7 from '@/components/Sections/SectionMagazine7';
@@ -11,6 +10,7 @@ import { getPosts } from '@/actions/getPosts';
 import { getTopAuthors } from '@/actions/getTopAuthors';
 import { getActiveAdvertisements } from '@/actions/advertisementActions';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
+import SectionSliderNewCategories from '@/components/SectionSliderNewCategories/SectionSliderNewCategories';
 
 export default async function Home() {
   const [posts, topAuthors, adsResult] = await Promise.all([

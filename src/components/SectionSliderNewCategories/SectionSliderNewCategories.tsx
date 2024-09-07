@@ -1,7 +1,8 @@
+import type React from 'react';
 import Heading from '@/components/Heading/Heading';
 import type { TaxonomyType } from '@/types/types';
 import { getCategories } from '@/actions/categoryActions';
-import ClientSideSlider from './ClientSideSlider';
+import ClientInfiniteSlider from './ClientInfiniteSlider';
 
 export interface SectionSliderNewCategoriesProps {
   className?: string;
@@ -15,7 +16,6 @@ const SectionSliderNewCategories: React.FC<SectionSliderNewCategoriesProps> = as
   heading,
   subHeading,
   className = '',
-  itemPerRow = 5,
 }) => {
   const result = await getCategories();
   const categories = result.success && result.data?.categories ? result.data.categories : [];
@@ -25,7 +25,7 @@ const SectionSliderNewCategories: React.FC<SectionSliderNewCategoriesProps> = as
       <Heading desc={subHeading} isCenter>
         {heading}
       </Heading>
-      <ClientSideSlider categories={categories} itemPerRow={itemPerRow} />
+      <ClientInfiniteSlider categories={categories} />
     </div>
   );
 };

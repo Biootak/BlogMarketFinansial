@@ -15,7 +15,15 @@ const ClientSideSlider: React.FC<ClientSideSliderProps> = ({ categories, itemPer
     return <CardCategory2 key={item.id} taxonomy={item} index={topIndex} />;
   };
 
-  return <MySlider data={categories} renderItem={renderCard} itemPerRow={itemPerRow} />;
+  return (
+    <MySlider
+      data={categories}
+      renderItem={renderCard}
+      itemPerRow={itemPerRow}
+
+      autoPlayInterval={5000}
+    />
+  );
 };
 
 export default ClientSideSlider;
