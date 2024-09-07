@@ -1,4 +1,4 @@
-import { Prisma, type Role, type PostType, type PostStatus } from '@prisma/client';
+import { Prisma, type Role, type PostType, type PostStatus, type Category } from '@prisma/client';
 import type { z } from 'zod';
 import type {
   LoginSchema,
@@ -187,6 +187,7 @@ export type UserWithProfile = {
   };
 };
 export type CategoryWithPostCount = Prisma.CategoryGetPayload<typeof categoryWithPostCount>;
+export type CategoryWithStringId = Omit<Category, 'id'> & { id: string };
 export type TagWithPostCount = Prisma.TagGetPayload<typeof tagWithPostCount>;
 export type UpdateProfileInput = z.infer<typeof UpdateProfileSchema> & {
   password?: string;
@@ -195,12 +196,12 @@ export type UpdateProfileInput = z.infer<typeof UpdateProfileSchema> & {
 
 export type TwMainColor =
   | 'pink'
+  | 'blue'
   | 'green'
   | 'yellow'
   | 'red'
-  | 'indigo'
-  | 'blue'
   | 'purple'
+  | 'indigo'
   | 'gray';
 
 export type TaxonomyType =

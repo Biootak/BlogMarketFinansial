@@ -1,15 +1,15 @@
 'use client';
 
-import React, { type FC, useMemo, useState } from 'react';
-import PostCardSaveAction from '@/components/PostCardSaveAction/PostCardSaveAction';
+import type React from 'react';
+import { useState } from 'react';
+import Link from 'next/link';
 import type { PostWithRelations } from '@/types/types';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
 import PostCardLikeAndComment from '@/components/PostCardLikeAndComment/PostCardLikeAndComment';
 import PostCardMeta from '@/components/PostCardMeta/PostCardMeta';
 import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia';
-import Link from 'next/link';
-import { useSession } from 'next-auth/react';
 import BookmarkCheck from '../BookmarkCheck';
+import PostCardSaveAction from '@/components/PostCardSaveAction/PostCardSaveAction';
 
 export interface Card11Props {
   className?: string;
@@ -18,7 +18,7 @@ export interface Card11Props {
   hiddenAuthor?: boolean;
 }
 
-const Card11: FC<Card11Props> = ({
+const Card11: React.FC<Card11Props> = ({
   className = 'h-full',
   post,
   hiddenAuthor = false,
@@ -27,20 +27,17 @@ const Card11: FC<Card11Props> = ({
   const { title, categories, createdAt, slug } = post;
   const [isHover, setIsHover] = useState(false);
 
-  // Check if the post object exists and has necessary data
   if (!post || !post.slug) {
-    return null; // Render nothing
+    return null;
   }
 
   return (
     <div
-      className={`nc-Card11 relative flex flex-col group rounded-3xl overflow-hidden bg-white dark:bg-neutral-900 ${className}`}
+      className={`nc-Card11 relative flex flex-col group rounded-3xl overflow-hidden bg-white dark:bg-neutral-900 ${className} transition-all duration-300 hover:shadow-xl`}
       onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => setIsHover(false)}
     >
-      <div
-        className={`block flex-shrink-0 relative w-full rounded-t-3xl overflow-hidden z-10 ${ratio}`}
-      >
+      <div className={`block flex-shrink-0 relative w-full rounded-t-3xl overflow-hidden ${ratio}`}>
         <div>
           <PostFeaturedMedia post={post} isHover={isHover} />
         </div>
@@ -54,9 +51,11 @@ const Card11: FC<Card11Props> = ({
         {!hiddenAuthor ? (
           <PostCardMeta meta={post} />
         ) : (
-          <span className="text-xs text-neutral-500">{createdAt.toString()}</span>
+          <span className="text-xs text-neutral-500 dark:text-neutral-400">
+            {createdAt.toString()}
+          </span>
         )}
-        <h3 className="nc-card-title block text-base font-semibold text-neutral-900 dark:text-neutral-100">
+        <h3 className="nc-card-title block text-base font-semibold text-neutral-900 dark:text-neutral-100 transition-colors duration-300 hover:text-primary dark:hover:text-primary-dark">
           <span className="line-clamp-2" title={title}>
             {title}
           </span>
@@ -69,7 +68,7 @@ const Card11: FC<Card11Props> = ({
                 className="relative"
                 postId={post.id}
                 initialBookmarked={isBookmarked}
-                bookmarkClass="h-8 w-8 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+                bookmarkClass="h-8 w-8 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition-colors duration-300"
               />
             )}
           </BookmarkCheck>

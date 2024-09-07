@@ -22,7 +22,7 @@ export default function AuthorProfile({ author }: AuthorProfileProps) {
           src={author.profile?.bgImage || '/images/default-cover.jpg'}
           className="object-cover"
           fill
-          sizes="100vw"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           priority
         />
       </div>
@@ -65,7 +65,7 @@ export default function AuthorProfile({ author }: AuthorProfileProps) {
               sizeClass="px-4 py-1 md:py-2.5 h-8 md:!h-10 sm:px-6 lg:px-8"
             />
             <div className="mx-2">
-              <AccountActionDropdown  />
+              <AccountActionDropdown />
             </div>
           </div>
         </Card>
