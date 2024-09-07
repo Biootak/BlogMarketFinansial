@@ -22,7 +22,7 @@ const CardCategory2: FC<CardCategory2Props> = ({ className = '', taxonomy, index
         <Badge
           color={color as TwMainColor}
           name={index}
-          className="absolute -top-2 sm:top-3 left-3"
+          className="absolute top-2 sm:top-3 right-2 sm:right-3 z-10"
         />
       )}
       <NcImage
