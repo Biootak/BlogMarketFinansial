@@ -1,5 +1,8 @@
+'use server';
+
 import prisma from '@/lib/db';
 import type { PostWithRelations, ActionResult, PaginationParams } from '@/types/types';
+import type { Prisma } from '@prisma/client';
 
 interface GetPostsByAuthorParams extends PaginationParams {
   filter?: string;
@@ -12,8 +15,7 @@ export async function getPostsByAuthor(
   try {
     const skip = (page - 1) * limit;
 
-    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-    let orderBy: any = { createdAt: 'desc' };
+    let orderBy: Prisma.PostOrderByWithRelationInput = { createdAt: 'desc' };
     switch (filter) {
       case 'قدیمی‌ترین':
         orderBy = { createdAt: 'asc' };

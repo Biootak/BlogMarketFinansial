@@ -16,7 +16,7 @@ export interface AccountActionDropdownProps {
 }
 
 const AccountActionDropdown: FC<AccountActionDropdownProps> = ({
-  containerClassName = 'h-8 w-8 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700',
+  containerClassName = 'h-8 w-8 justify-end bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700',
   iconClass = 'h-6 w-6',
   dropdownPositon = 'down',
 }) => {
@@ -56,7 +56,7 @@ const AccountActionDropdown: FC<AccountActionDropdownProps> = ({
   const handleClickDropDown = (item: NcDropDownItem) => {
     switch (item.id) {
       case 'copylink':
-        navigator.clipboard.writeText(window.location.origin + '/author/this-is-slug');
+        navigator.clipboard.writeText(`${window.location.origin}/author/this-is-slug`);
         setIsCopied(true);
         setActions((prevActions) =>
           prevActions.map((action) =>
@@ -80,7 +80,7 @@ const AccountActionDropdown: FC<AccountActionDropdownProps> = ({
   // رندر کردن منوی دراپ‌داون
   const renderMenu = () => (
     <NcDropDown
-      className={`text-neutral-500 dark:text-neutral-400 flex items-center justify-center rounded-full ${containerClassName} ${twFocusClass()}`}
+      className={`text-neutral-500 dark:text-neutral-400 flex items-center justify-center rounded-full rtl:space-x-reverse ${containerClassName} ${twFocusClass()}`}
       triggerIconClass={iconClass}
       data={actions}
       panelMenusClass={dropdownPositon === 'up' ? 'origin-bottom-right bottom-0' : undefined}

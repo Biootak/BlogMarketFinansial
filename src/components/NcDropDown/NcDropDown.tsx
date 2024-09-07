@@ -20,7 +20,7 @@ export interface NcDropDownProps {
 const NcDropDown: FC<NcDropDownProps> = ({
   className = 'h-8 w-8 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center',
   triggerIconClass = 'h-6 w-6',
-  panelMenusClass = 'origin-top-right',
+  panelMenusClass = 'origin-top-left',
   title = 'More',
   renderTrigger,
   renderItem,
@@ -43,7 +43,7 @@ const NcDropDown: FC<NcDropDownProps> = ({
       >
         <Menu.Items
           className={cn(
-            'absolute right-0 w-56 mt-2 origin-top-right bg-white dark:bg-neutral-900 rounded-2xl divide-y divide-neutral-100 shadow-lg ring-1 ring-black dark:ring-white ring-opacity-5 dark:ring-opacity-10 focus:outline-none z-30',
+            'absolute left-0 w-56 mt-2 origin-top-left bg-white dark:bg-neutral-900 rounded-2xl divide-y divide-neutral-100 shadow-lg ring-1 ring-black dark:ring-white ring-opacity-5 dark:ring-opacity-10 focus:outline-none z-30',
             panelMenusClass,
           )}
         >
@@ -65,7 +65,7 @@ const NcDropDown: FC<NcDropDownProps> = ({
                         active ? 'bg-neutral-100 dark:bg-neutral-800' : ''
                       }`}
                     >
-                      {item.icon && <item.icon className="mr-2 h-5 w-5" />}
+                      {item.icon && <item.icon className="ml-2 h-5 w-5" />}
                       <span>{item.name}</span>
                     </button>
                   )

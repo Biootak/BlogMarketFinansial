@@ -1,3 +1,5 @@
+'use server';
+
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import type { UserWithProfile, ActionResult } from '@/types/types';
@@ -6,8 +8,20 @@ export async function getAuthorById(id: string): Promise<ActionResult<UserWithPr
   try {
     const author = await prisma.user.findUnique({
       where: { id },
-      include: {
-        profile: true,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        emailVerified: true,
+        image: true,
+        profile: {
+          select: {
+            bio: true,
+            avatar: true,
+            bgImage: true,
+            jobName: true,
+          },
+        },
         _count: {
           select: {
             posts: true,
@@ -23,13 +37,10 @@ export async function getAuthorById(id: string): Promise<ActionResult<UserWithPr
       };
     }
 
-    // حذف اطلاعات حساس
-    const { password, ...UserWithProfile } = author;
-
     return {
       success: true,
       message: 'اطلاعات نویسنده با موفقیت دریافت شد.',
-      data: UserWithProfile,
+      data: author,
     };
   } catch (error) {
     console.error('خطا در دریافت اطلاعات نویسنده:', error);

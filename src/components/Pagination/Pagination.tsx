@@ -1,5 +1,4 @@
 import type React from 'react';
-import twFocusClass from '@/utils/twFocusClass';
 import PaginationClient from './PaginationClient';
 
 export interface PaginationProps {
@@ -8,11 +7,7 @@ export interface PaginationProps {
   totalPages: number;
 }
 
-const PaginationServer: React.FC<PaginationProps> = ({
-  className = '',
-  currentPage,
-  totalPages,
-}) => {
+const Pagination: React.FC<PaginationProps> = ({ className = '', currentPage, totalPages }) => {
   const renderPageNumbers = () => {
     const pageNumbers = [];
     const maxVisiblePages = 5;
@@ -39,4 +34,4 @@ const PaginationServer: React.FC<PaginationProps> = ({
   );
 };
 
-export default PaginationServer;
+export default Pagination;

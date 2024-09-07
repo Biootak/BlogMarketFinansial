@@ -1,7 +1,9 @@
-import { HiPlusCircle } from "react-icons/hi2";
-import React, { type FC } from "react";
-import Button, { type ButtonProps } from "./Button/Button";
-import ButtonPrimary from "./Button/ButtonPrimary";
+'use client';
+
+import { HiPlusCircle } from 'react-icons/hi2';
+import React, { type FC } from 'react';
+import Button, { type ButtonProps } from './Button/Button';
+import ButtonPrimary from './Button/ButtonPrimary';
 
 export interface FollowButtonProps extends ButtonProps {
   isFollowing?: boolean;
@@ -22,7 +24,7 @@ const FollowButton: FC<FollowButtonProps> = ({
       fontSize={fontSize}
       onClick={() => setFollowing(true)}
     >
-      <HiPlusCircle  className="w-5 h-5 sm:-ms-2.5" />
+      <HiPlusCircle className="w-5 h-5 sm:-ms-2.5" />
       <span className="ms-2">Follow</span>
     </ButtonPrimary>
   ) : (

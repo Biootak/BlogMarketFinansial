@@ -170,8 +170,21 @@ export type UpdatePostInput = SchemaInfer<typeof UpdatePostSchema>;
 export type UserBase = Omit<UserWithRelations, 'password'> & {
   _count?: UserWithRelations['_count'];
 };
-export type UserWithProfile = Omit<UserBase, '_count'> & {
-  profile: UserProfile | null;
+export type UserWithProfile = {
+  id: string;
+  name: string | null;
+  email: string;
+  emailVerified: Date | null;
+  image: string | null;
+  profile: {
+    bio: string | null;
+    avatar: string | null;
+    bgImage: string | null;
+    jobName: string | null;
+  } | null;
+  _count: {
+    posts: number;
+  };
 };
 export type CategoryWithPostCount = Prisma.CategoryGetPayload<typeof categoryWithPostCount>;
 export type TagWithPostCount = Prisma.TagGetPayload<typeof tagWithPostCount>;
