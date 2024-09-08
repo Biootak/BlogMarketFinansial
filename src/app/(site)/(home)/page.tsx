@@ -11,6 +11,7 @@ import { getTopAuthors } from '@/actions/getTopAuthors';
 import { getActiveAdvertisements } from '@/actions/advertisementActions';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
 import SectionSliderNewCategories from '@/components/SectionSliderNewCategories/SectionSliderNewCategories';
+import { SectionExchangeRates } from '@/components/Sections/SectionExchangeRates';
 
 export default async function Home() {
   const [posts, topAuthors, adsResult] = await Promise.all([
@@ -25,6 +26,9 @@ export default async function Home() {
   return (
     <div className="nc-HomePage relative">
       <div className="container relative">
+        <Suspense fallback={<Skeleton className="h-[400px]" />}>
+          <SectionExchangeRates />
+        </Suspense>
         <Suspense fallback={<CardLarge1Skeleton />}>
           <SectionLargeSlider />
         </Suspense>

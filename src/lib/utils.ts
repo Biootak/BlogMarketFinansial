@@ -12,6 +12,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export function formatNumber(num: number): string {
+  return new Intl.NumberFormat('fa-IR').format(num);
+}
+
 export const toPersianNumber = (num: number | string): string => {
   const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
   return num.toString().replace(/\d/g, (x) => persianDigits[Number.parseInt(x)]);

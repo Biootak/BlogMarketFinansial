@@ -301,6 +301,20 @@ export type SearchResult = {
   avatar?: string | null;
 };
 
+export interface ExchangeRate {
+  symbol: string;
+  name: string;
+  rate: number;
+  change: number;
+}
+
+export interface ExchangeRatesResult {
+  success: boolean;
+  message: string;
+  data?: ExchangeRate[];
+  error?: string;
+}
+
 export type Action =
   | { type: 'FETCH_POSTS_START' }
   | { type: 'FETCH_POSTS_SUCCESS'; payload: { posts: PostWithRelations[]; hasNextPage: boolean } }

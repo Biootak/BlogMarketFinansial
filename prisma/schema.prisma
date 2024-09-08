@@ -229,3 +229,12 @@ model PageView {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model ExchangeRate {
+  id        String   @id @default(cuid())
+  symbol    String   @unique
+  name      String
+  rate      Float
+  change    Float
+  updatedAt DateTime @updatedAt
+}
