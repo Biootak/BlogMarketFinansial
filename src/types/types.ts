@@ -182,7 +182,7 @@ export type UserWithProfile = {
     bgImage: string | null;
     jobName: string | null;
   } | null;
-  _count: {
+  _count?: {
     posts: number;
   };
 };
