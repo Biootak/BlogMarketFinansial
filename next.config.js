@@ -13,26 +13,18 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'images.pexels.com',
-        port: '',
-        pathname: '/**',
       },
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
-        port: '',
-        pathname: '/**',
       },
       {
         protocol: 'https',
         hostname: 'biotak.storage.c2.liara.space',
-        port: '',
-        pathname: '/**',
       },
       {
         protocol: 'https',
         hostname: 'avatar.vercel.sh',
-        port: '',
-        pathname: '/**',
       },
       {
         protocol: 'https',
@@ -41,8 +33,10 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'avatars.githubusercontent.com',
-        port: '',
-        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.jsdelivr.net',
       },
     ],
   },

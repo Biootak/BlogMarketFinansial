@@ -11,12 +11,18 @@ interface ExchangeRateSliderProps {
 }
 
 const ExchangeRateSlider: React.FC<ExchangeRateSliderProps> = ({ rates, itemPerRow }) => {
-  const renderCard = (rate: ExchangeRate, index: number) => {
-    const topIndex = index < 3 ? `#${index + 1}` : undefined;
-    return <ExchangeRateCard key={rate.symbol} rate={rate} index={topIndex} />;
+  const renderCard = (rate: ExchangeRate) => {
+    return <ExchangeRateCard key={rate.symbol} rate={rate} />;
   };
 
-  return <MySlider data={rates} renderItem={renderCard} itemPerRow={itemPerRow} />;
+  return (
+    <MySlider
+      data={rates}
+      renderItem={renderCard}
+      itemPerRow={itemPerRow}
+      autoSlideInterval={5000}
+    />
+  );
 };
 
 export default ExchangeRateSlider;

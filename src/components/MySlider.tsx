@@ -1,7 +1,6 @@
 'use client';
 
-import React, { FC, type ReactNode, useEffect, useState } from 'react';
-
+import React, { FC, type ReactNode, useEffect, useState, useCallback } from 'react';
 import { useWindowSize } from 'react-use';
 import { useSwipeable } from 'react-swipeable';
 import { variants } from '@/utils/animationVariants';
@@ -15,6 +14,7 @@ export interface MySliderProps<T> {
   data: T[];
   renderItem?: (item: T, indx: number) => ReactNode;
   arrowBtnClass?: string;
+  autoSlideInterval?: number; // زمان تاخیر بین هر حرکت خودکار (به میلی‌ثانیه)
 }
 
 export default function MySlider<T>({
@@ -23,41 +23,56 @@ export default function MySlider<T>({
   data,
   renderItem = () => <div />,
   arrowBtnClass = 'top-1/2 -translate-y-1/2',
+  autoSlideInterval,
 }: MySliderProps<T>) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
-  const [numberOfItems, setNumberOfitem] = useState(0);
+  const [numberOfItems, setNumberOfItems] = useState(0);
 
-  const windowWidth = useWindowSize().width;
+  const windowSize = useWindowSize();
+
   useEffect(() => {
-    if (windowWidth <= 320) {
-      return setNumberOfitem(1);
-    }
-    if (windowWidth < 500) {
-      return setNumberOfitem(itemPerRow - 3 || 2);
-    }
-    if (windowWidth < 1024) {
-      return setNumberOfitem(itemPerRow - 2 || 3);
-    }
-    if (windowWidth < 1280) {
-      return setNumberOfitem(itemPerRow - 1);
-    }
-
-    setNumberOfitem(itemPerRow);
-  }, [itemPerRow, windowWidth]);
-
-  function changeItemId(newVal: number) {
-    if (newVal > currentIndex) {
-      setDirection(1);
+    const { width } = windowSize;
+    if (width <= 320) {
+      setNumberOfItems(1);
+    } else if (width < 500) {
+      setNumberOfItems(itemPerRow - 3 || 2);
+    } else if (width < 1024) {
+      setNumberOfItems(itemPerRow - 2 || 3);
+    } else if (width < 1280) {
+      setNumberOfItems(itemPerRow - 1);
     } else {
-      setDirection(-1);
+      setNumberOfItems(itemPerRow);
     }
-    setCurrentIndex(newVal);
-  }
+  }, [itemPerRow, windowSize]);
+
+  const changeItemId = useCallback(
+    (newVal: number) => {
+      setDirection(newVal > currentIndex ? 1 : -1);
+      setCurrentIndex(newVal);
+    },
+    [currentIndex],
+  );
+
+  const nextSlide = useCallback(() => {
+    if (data.length > currentIndex + numberOfItems) {
+      changeItemId(currentIndex + 1);
+    } else {
+      changeItemId(0); // برگشت به ابتدای اسلایدر
+    }
+  }, [currentIndex, data.length, numberOfItems, changeItemId]);
+
+  useEffect(() => {
+    if (!autoSlideInterval) return;
+
+    const intervalId = setInterval(nextSlide, autoSlideInterval);
+
+    return () => clearInterval(intervalId);
+  }, [autoSlideInterval, nextSlide]);
 
   const handlers = useSwipeable({
     onSwipedLeft: () => {
-      if (currentIndex < data?.length - 1) {
+      if (currentIndex < data.length - 1) {
         changeItemId(currentIndex + 1);
       }
     },
@@ -113,19 +128,19 @@ export default function MySlider<T>({
             </motion.ul>
           </div>
 
-          {currentIndex ? (
+          {currentIndex > 0 && (
             <PrevBtn
               onClick={() => changeItemId(currentIndex - 1)}
               className={`w-9 h-9 xl:w-12 xl:h-12 text-lg absolute -start-3 xl:-start-6 z-[1] ${arrowBtnClass}`}
             />
-          ) : null}
+          )}
 
-          {data.length > currentIndex + numberOfItems ? (
+          {data.length > currentIndex + numberOfItems && (
             <NextBtn
               onClick={() => changeItemId(currentIndex + 1)}
               className={`w-9 h-9 xl:w-12 xl:h-12 text-lg absolute -end-3 xl:-end-6 z-[1] ${arrowBtnClass}`}
             />
-          ) : null}
+          )}
         </div>
       </MotionConfig>
     </div>

@@ -10,7 +10,7 @@ export const SectionExchangeRates = async () => {
   }
 
   return (
-    <div className="nc-SectionExchangeRates">
+    <div className="nc-SectionExchangeRates pt-4  ">
       <ExchangeRateSlider rates={result.data} itemPerRow={5} />
     </div>
   );
