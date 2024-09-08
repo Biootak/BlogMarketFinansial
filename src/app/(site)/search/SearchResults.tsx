@@ -58,11 +58,7 @@ function SearchResults({ searchQuery, activeTab, page }: SearchResultsProps) {
         className="sm:space-x-2 rtl:space-x-reverse"
       >
         {TABS.map((item, index) => (
-          <NavItem
-            key={index}
-            isActive={item === activeTab}
-            href={`/search?q=${searchQuery}&tab=${item}`}
-          >
+          <NavItem key={index} isActive={item === activeTab}>
             {item}
           </NavItem>
         ))}

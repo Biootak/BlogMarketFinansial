@@ -165,12 +165,11 @@ export default function UsersPage() {
     form.reset({
       name: user.name || '',
       email: user.email,
-      role: user.role,
-      status: user.status,
+      role: user.role as Role,
+      status: user.status as string,
     });
     setIsEditDialogOpen(true);
   };
-
   const handleDelete = async (id: string) => {
     if (window.confirm('آیا مطمئن هستید که می‌خواهید این کاربر را حذف کنید؟')) {
       const result = await deleteUser(id);
@@ -315,9 +314,7 @@ export default function UsersPage() {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 hidden sm:table-cell">
-                    {user.phoneNumber}
-                  </TableCell>
+
                   <TableCell className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400">
                     {user.role === 'USER'
                       ? 'کاربر عادی'
