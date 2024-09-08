@@ -1,6 +1,6 @@
 'use client';
 
-import { type FC, Fragment, type ReactNode, useState } from 'react';
+import { type FC, Fragment, type ReactNode, useState, useCallback } from 'react';
 import { Combobox, Dialog, Transition } from '@headlessui/react';
 import {
   HiOutlineExclamationTriangle,
@@ -10,15 +10,11 @@ import {
   HiOutlineMagnifyingGlass,
 } from 'react-icons/hi2';
 import Image from 'next/image';
-import { DEMO_AUTHORS } from '@/data/authors';
-import { DEMO_CATEGORIES } from '@/data/taxonomies';
-import { DEMO_POSTS } from '@/data/posts';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-const categories = DEMO_CATEGORIES.filter((_, i) => i < 9);
-const posts = DEMO_POSTS.filter((_, i) => i < 5);
-const authors = DEMO_AUTHORS.filter((_, i) => i < 9);
+import type { PostWithRelations, CategoryWithPostCount, UserWithProfile } from '@/types/types';
+import { searchAuthors, searchCategories, searchPosts } from '@/actions/search';
 
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(' ');
@@ -30,32 +26,41 @@ interface Props {
 
 const SearchModal: FC<Props> = ({ renderTrigger }) => {
   const [open, setOpen] = useState(false);
-  const [rawQuery, setRawQuery] = useState('a');
+  const [rawQuery, setRawQuery] = useState('');
+  const [posts, setPosts] = useState<PostWithRelations[]>([]);
+  const [categories, setCategories] = useState<CategoryWithPostCount[]>([]);
+  const [authors, setAuthors] = useState<UserWithProfile[]>([]);
 
   const router = useRouter();
 
   const query = rawQuery.toLowerCase().replace(/^[#>]/, '');
 
-  const filteredPosts =
-    rawQuery === '#'
-      ? posts
-      : query === '' || rawQuery.startsWith('>')
-        ? []
-        : posts.filter((project) => project.title.toLowerCase().includes(query));
-
-  const filteredProjects =
-    rawQuery === '#'
-      ? categories
-      : query === '' || rawQuery.startsWith('>')
-        ? []
-        : categories.filter((project) => project.name.toLowerCase().includes(query));
-
-  const filteredUsers =
-    rawQuery === '>'
-      ? authors
-      : query === '' || rawQuery.startsWith('#')
-        ? []
-        : authors.filter((user) => user.displayName.toLowerCase().includes(query));
+  const handleSearch = useCallback(async (searchQuery: string) => {
+    if (searchQuery === '#') {
+      const categoriesResult = await searchCategories('');
+      if (categoriesResult.success && categoriesResult.data) {
+        setCategories(categoriesResult.data);
+      }
+    } else if (searchQuery === '>') {
+      const authorsResult = await searchAuthors('');
+      if (authorsResult.success && authorsResult.data) {
+        setAuthors(authorsResult.data);
+      }
+    } else if (searchQuery !== '') {
+      const [postsResult, categoriesResult, authorsResult] = await Promise.all([
+        searchPosts(searchQuery),
+        searchCategories(searchQuery),
+        searchAuthors(searchQuery),
+      ]);
+      if (postsResult.success && postsResult.data) setPosts(postsResult.data);
+      if (categoriesResult.success && categoriesResult.data) setCategories(categoriesResult.data);
+      if (authorsResult.success && authorsResult.data) setAuthors(authorsResult.data);
+    } else {
+      setPosts([]);
+      setCategories([]);
+      setAuthors([]);
+    }
+  }, []);
 
   return (
     <>
@@ -63,13 +68,16 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
         {renderTrigger ? (
           renderTrigger()
         ) : (
-          <button type='button' className="flex w-10 h-10 sm:w-12 sm:h-12 rounded-full text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none items-center justify-center">
+          <button
+            type="button"
+            className="flex w-10 h-10 sm:w-12 sm:h-12 rounded-full text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none items-center justify-center"
+          >
             <HiOutlineMagnifyingGlass className="w-6 h-6" />
           </button>
         )}
       </div>
 
-      <Transition.Root show={open} as={Fragment} afterLeave={() => setRawQuery('a')} appear>
+      <Transition.Root show={open} as={Fragment} afterLeave={() => setRawQuery('')} appear>
         <Dialog as="div" className="relative z-[99]" onClose={() => setOpen(false)}>
           <Transition.Child
             as={Fragment}
@@ -104,38 +112,50 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
               >
                 <Combobox
                   onChange={(item: any) => {
-                    router.push(item.href);
-                    setOpen(false);
+                    if (item?.href) {
+                      if (item.href.startsWith('/category/')) {
+                        // اگر یک دسته‌بندی انتخاب شده است
+                        const categorySlug = item.href.split('/').pop();
+                        router.push(`/archive?category=${categorySlug}`);
+                      } else {
+                        // برای سایر موارد (مثل پست‌ها یا نویسندگان)
+                        router.push(item.href);
+                      }
+                      setOpen(false);
+                    } else {
+                      console.error('آیتم یا href نامعتبر است:', item);
+                    }
                   }}
                   name="searchpallet"
                 >
                   <div className="relative">
                     <HiOutlineMagnifyingGlass
-                      className="pointer-events-none absolute top-3.5 left-4 h-5 w-5 text-gray-400"
+                      className="pointer-events-none absolute top-3.5 right-4 h-5 w-5 text-gray-400"
                       aria-hidden="true"
                     />
                     <Combobox.Input
-                      className="h-12 w-full border-0 bg-transparent pl-11 pr-4 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
-                      placeholder="Search..."
-                      onChange={(event) => setRawQuery(event.target.value)}
+                      className="h-12 w-full border-0 bg-transparent pr-11 pl-4 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm text-right"
+                      placeholder="جستجو..."
+                      onChange={(event) => {
+                        setRawQuery(event.target.value);
+                        handleSearch(event.target.value);
+                      }}
                     />
                   </div>
 
-                  {(filteredProjects.length > 0 ||
-                    filteredUsers.length > 0 ||
-                    filteredPosts.length > 0) && (
+                  {(posts.length > 0 || categories.length > 0 || authors.length > 0) && (
                     <Combobox.Options
                       static
                       className="max-h-80 scroll-py-10 scroll-pb-2 space-y-4 overflow-y-auto p-4 pb-2"
                     >
-                      {filteredPosts.length > 0 && (
+                      {posts.length > 0 && (
                         <li>
-                          <h2 className="text-xs font-semibold text-gray-900">Posts</h2>
+                          <h2 className="text-xs font-semibold text-gray-900">پست‌ها</h2>
                           <ul className="-mx-4 mt-2 text-sm text-gray-700">
-                            {filteredPosts.map((post) => (
+                            {posts.map((post) => (
                               <Combobox.Option
                                 key={post.id}
-                                value={post}
+                                value={{ href: `/post/${post.slug}`, ...post }}
                                 className={({ active }) =>
                                   classNames(
                                     'flex select-none items-center px-4 py-2',
@@ -152,7 +172,7 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                                       )}
                                       aria-hidden="true"
                                     />
-                                    <span className="ms-3 flex-auto truncate">{post.title}</span>
+                                    <span className="mr-3 flex-auto truncate">{post.title}</span>
                                   </>
                                 )}
                               </Combobox.Option>
@@ -161,14 +181,14 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                         </li>
                       )}
 
-                      {filteredProjects.length > 0 && (
+                      {categories.length > 0 && (
                         <li>
-                          <h2 className="text-xs font-semibold text-gray-900">Categories</h2>
+                          <h2 className="text-xs font-semibold text-gray-900">دسته‌بندی‌ها</h2>
                           <ul className="-mx-4 mt-2 text-sm text-gray-700">
-                            {filteredProjects.map((project) => (
+                            {categories.map((category) => (
                               <Combobox.Option
-                                key={project.id}
-                                value={project}
+                                key={category.id}
+                                value={{ href: `/category/${category.slug}`, ...category }}
                                 className={({ active }) =>
                                   classNames(
                                     'flex select-none items-center px-4 py-2',
@@ -185,7 +205,7 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                                       )}
                                       aria-hidden="true"
                                     />
-                                    <span className="ms-3 flex-auto truncate">{project.name}</span>
+                                    <span className="mr-3 flex-auto truncate">{category.name}</span>
                                   </>
                                 )}
                               </Combobox.Option>
@@ -194,14 +214,14 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                         </li>
                       )}
 
-                      {filteredUsers.length > 0 && (
+                      {authors.length > 0 && (
                         <li>
-                          <h2 className="text-xs font-semibold text-gray-900">Authors</h2>
+                          <h2 className="text-xs font-semibold text-gray-900">نویسندگان</h2>
                           <ul className="-mx-4 mt-2 text-sm text-gray-700">
-                            {filteredUsers.map((user) => (
+                            {authors.map((author) => (
                               <Combobox.Option
-                                key={user.id}
-                                value={user}
+                                key={author.id}
+                                value={{ href: `/author/${author.id}`, ...author }}
                                 className={({ active }) =>
                                   classNames(
                                     'flex select-none items-center px-4 py-2',
@@ -210,12 +230,15 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                                 }
                               >
                                 <Image
-                                  src={user.avatar}
-                                  alt="author"
+                                  src={author.image || '/default-avatar.png'}
+                                  alt={author.name || 'نویسنده'}
                                   className="h-6 w-6 flex-none rounded-full"
-                                  sizes="30px"
+                                  width={24}
+                                  height={24}
                                 />
-                                <span className="ms-3 flex-auto truncate">{user.displayName}</span>
+                                <span className="mr-3 flex-auto truncate">
+                                  {author.name || author.email}
+                                </span>
                               </Combobox.Option>
                             ))}
                           </ul>
@@ -230,33 +253,34 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                         className="mx-auto h-6 w-6 text-gray-400"
                         aria-hidden="true"
                       />
-                      <p className="mt-4 font-semibold text-gray-900">Help with searching</p>
+                      <p className="mt-4 font-semibold text-gray-900">راهنمای جستجو</p>
                       <p className="mt-2 text-gray-500">
-                        Use this tool to quickly search for users and projects across our entire
-                        platform. You can also use the search modifiers found in the footer below to
-                        limit the results to just users or projects.
+                        از این ابزار برای جستجوی سریع کاربران و پروژه‌ها در سراسر پلتفرم ما استفاده
+                        کنید. همچنین می‌توانید از تغییردهنده‌های جستجوی موجود در پاورقی زیر برای محدود
+                        کردن نتایج به کاربران یا پروژه‌ها استفاده کنید.
                       </p>
                     </div>
                   )}
 
                   {query !== '' &&
                     rawQuery !== '?' &&
-                    filteredProjects.length === 0 &&
-                    filteredUsers.length === 0 && (
+                    posts.length === 0 &&
+                    categories.length === 0 &&
+                    authors.length === 0 && (
                       <div className="py-14 px-6 text-center text-sm sm:px-14">
                         <HiOutlineExclamationTriangle
                           className="mx-auto h-6 w-6 text-gray-400"
                           aria-hidden="true"
                         />
-                        <p className="mt-4 font-semibold text-gray-900">No results found</p>
+                        <p className="mt-4 font-semibold text-gray-900">نتیجه‌ای یافت نشد</p>
                         <p className="mt-2 text-gray-500">
-                          We couldn’t find anything with that term. Please try again.
+                          ما نتوانستیم هیچ چیزی با این عبارت پیدا کنیم. لطفاً دوباره تلاش کنید.
                         </p>
                       </div>
                     )}
 
                   <div className="flex flex-wrap items-center bg-gray-50 py-2.5 px-4 text-xs text-gray-700">
-                    Type{' '}
+                    تایپ کنید{' '}
                     <kbd
                       className={classNames(
                         'mx-1 flex h-5 w-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2',
@@ -267,8 +291,8 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                     >
                       #
                     </kbd>{' '}
-                    <span className="sm:hidden">for projects,</span>
-                    <span className="hidden sm:inline">to access projects,</span>
+                    <span className="sm:hidden">برای دسته‌بندی‌ها،</span>
+                    <span className="hidden sm:inline">برای دسترسی به دسته‌بندی‌ها،</span>
                     <kbd
                       className={classNames(
                         'mx-1 flex h-5 w-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2',
@@ -279,7 +303,7 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                     >
                       &gt;
                     </kbd>{' '}
-                    for users,{' '}
+                    برای نویسندگان،{' '}
                     <kbd
                       className={classNames(
                         'mx-1 flex h-5 w-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2',
@@ -290,13 +314,13 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                     >
                       ?
                     </kbd>{' '}
-                    for help, or{' '}
+                    برای راهنما، یا{' '}
                     <Link
                       href={'/search'}
                       className="mx-1 flex h-5 px-1.5 items-center justify-center rounded border bg-white sm:mx-2 border-primary-6000 text-neutral-900"
                       onClick={() => setOpen(false)}
                     >
-                      Go to search page
+                      رفتن به صفحه جستجو
                     </Link>{' '}
                   </div>
                 </Combobox>

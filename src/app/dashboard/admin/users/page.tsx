@@ -165,7 +165,6 @@ export default function UsersPage() {
     form.reset({
       name: user.name || '',
       email: user.email,
-      phoneNumber: user.phoneNumber || '',
       role: user.role,
       status: user.status,
     });

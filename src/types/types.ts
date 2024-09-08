@@ -176,6 +176,8 @@ export type UserWithProfile = {
   email: string;
   emailVerified: Date | null;
   image: string | null;
+  role?: string;
+  status?: string;
   profile: {
     bio: string | null;
     avatar: string | null;
@@ -284,6 +286,21 @@ export interface NcDropDownItem {
   icon: IconType;
   onClick?: () => void;
 }
+
+export interface SearchParamsType {
+  q?: string;
+  tab?: string;
+  page?: string;
+}
+
+export type SearchResult = {
+  id: string;
+  title: string;
+  href: string;
+  type: 'post' | 'category' | 'author';
+  avatar?: string | null;
+};
+
 export type Action =
   | { type: 'FETCH_POSTS_START' }
   | { type: 'FETCH_POSTS_SUCCESS'; payload: { posts: PostWithRelations[]; hasNextPage: boolean } }

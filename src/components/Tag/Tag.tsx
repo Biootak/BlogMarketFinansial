@@ -1,6 +1,7 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { HiTag } from 'react-icons/hi2';
 import type { Tag as TagType } from '@prisma/client';
 
@@ -9,7 +10,7 @@ export interface TagProps {
   tag: TagType;
   hideCount?: boolean;
   postCount?: number;
-  onClick?: () => void; // اضافه کردن prop onClick
+  onClick?: () => void;
 }
 
 const Tag: React.FC<TagProps> = ({
@@ -17,20 +18,12 @@ const Tag: React.FC<TagProps> = ({
   tag,
   hideCount = false,
   postCount,
-  onClick, // اضافه کردن onClick به پارامترهای کامپوننت
+  onClick,
 }) => {
   const tagColor = 'rgb(var(--c-primary-500))';
 
-  // ایجاد یک wrapper برای اعمال onClick
-  const TagWrapper = onClick ? motion.div : React.Fragment;
-
   return (
-    <TagWrapper
-      onClick={onClick}
-      whileHover={onClick ? { scale: 1.05 } : undefined}
-      whileTap={onClick ? { scale: 0.95 } : undefined}
-      className={onClick ? 'inline-block cursor-pointer' : 'inline-block'}
-    >
+    <span className={onClick ? 'inline-block cursor-pointer' : 'inline-block'}>
       <Link
         className={`
           nc-Tag group flex items-center bg-white dark:bg-neutral-800 
@@ -57,7 +50,7 @@ const Tag: React.FC<TagProps> = ({
           </span>
         )}
       </Link>
-    </TagWrapper>
+    </span>
   );
 };
 
