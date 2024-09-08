@@ -9,8 +9,6 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
   images: {
-    domains: ['biotak.storage.c2.liara.space'],
-
     remotePatterns: [
       {
         protocol: 'https',

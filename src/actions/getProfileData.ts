@@ -14,6 +14,7 @@ export async function getProfileData(): Promise<UserWithProfile | null> {
     where: { id: session.user.id },
     include: {
       profile: true,
+      _count: true,
     },
   });
 }

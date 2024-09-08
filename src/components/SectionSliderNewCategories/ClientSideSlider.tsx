@@ -20,8 +20,6 @@ const ClientSideSlider: React.FC<ClientSideSliderProps> = ({ categories, itemPer
       data={categories}
       renderItem={renderCard}
       itemPerRow={itemPerRow}
-
-      autoPlayInterval={5000}
     />
   );
 };
