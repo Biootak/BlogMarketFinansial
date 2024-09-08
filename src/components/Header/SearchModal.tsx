@@ -155,7 +155,7 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                             {posts.map((post) => (
                               <Combobox.Option
                                 key={post.id}
-                                value={{ href: `/post/${post.slug}`, ...post }}
+                                value={{ href: `/single/${post.slug}`, ...post }}
                                 className={({ active }) =>
                                   classNames(
                                     'flex select-none items-center px-4 py-2',
