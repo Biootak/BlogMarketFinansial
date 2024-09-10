@@ -11,7 +11,10 @@ import { getTopAuthors } from '@/actions/getTopAuthors';
 import { getActiveAdvertisements } from '@/actions/advertisementActions';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
 import SectionSliderNewCategories from '@/components/SectionSliderNewCategories/SectionSliderNewCategories';
-import { SectionExchangeRates } from '@/components/Sections/SectionExchangeRates';
+import dynamic from 'next/dynamic';
+const SectionExchangeRates = dynamic(() => import('@/components/Sections/SectionExchangeRates'), {
+  ssr: false,
+});
 
 export default async function Home() {
   const [posts, topAuthors, adsResult] = await Promise.all([

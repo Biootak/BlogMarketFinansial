@@ -1,58 +1,53 @@
-import type React from 'react';
-import { useState, useEffect } from 'react';
+'use client';
+
+import type { FC } from 'react';
+import { memo, useState } from 'react';
 import Image from 'next/image';
-import GenericCryptoIcon from './GenericCryptoIcon';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
+import GenericCryptoIcon from '@/components/GenericCryptoIcon';
 
 interface CurrencyIconProps {
   symbol: string;
   className?: string;
 }
 
-// کش برای ذخیره وضعیت آیکون‌ها
-const iconCache: { [key: string]: boolean } = {};
+const CurrencyIcon: FC<CurrencyIconProps> = memo(({ symbol, className = 'w-6 h-6' }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
-const CurrencyIcon: React.FC<CurrencyIconProps> = ({ symbol, className = 'w-6 h-6' }) => {
-  const [iconExists, setIconExists] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    if (iconCache[symbol] !== undefined) {
-      setIconExists(iconCache[symbol]);
-    } else {
-      // بررسی وجود آیکون
-      fetch(
-        `https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@1a63530be6e374711a8554f31b17e4cb92c25fa5/32/color/${symbol.toLowerCase()}.png`,
-      )
-        .then((response) => {
-          const exists = response.ok;
-          iconCache[symbol] = exists;
-          setIconExists(exists);
-        })
-        .catch(() => {
-          iconCache[symbol] = false;
-          setIconExists(false);
-        });
-    }
-  }, [symbol]);
-
-  if (iconExists === null) {
-    // نمایش یک placeholder تا زمانی که وضعیت آیکون مشخص شود
-    return <div className={className} />;
-  }
-
-  if (!iconExists) {
-    return <GenericCryptoIcon className={className} />;
-  }
+  const handleLoad = () => setIsLoading(false);
+  const handleError = () => {
+    setIsLoading(false);
+    setHasError(true);
+  };
 
   return (
-    <div className={className}>
-      <Image
-        src={`https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@1a63530be6e374711a8554f31b17e4cb92c25fa5/32/color/${symbol.toLowerCase()}.png`}
-        alt={`${symbol} icon`}
-        width={24}
-        height={24}
-      />
-    </div>
+    <motion.div
+      className={cn('relative', className)}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
+      {isLoading && <Skeleton className={cn('absolute inset-0', className)} />}
+      {hasError ? (
+        <GenericCryptoIcon className={className} />
+      ) : (
+        <Image
+          src={`/images/crypto/${symbol.toLowerCase()}.svg`}
+          alt={`${symbol} icon`}
+          width={24}
+          height={24}
+          onLoad={handleLoad}
+          onError={handleError}
+          className={cn(isLoading ? 'invisible' : 'visible', className)}
+        />
+      )}
+    </motion.div>
   );
-};
+});
+
+CurrencyIcon.displayName = 'CurrencyIcon';
 
 export default CurrencyIcon;

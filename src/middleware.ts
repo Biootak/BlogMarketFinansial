@@ -11,18 +11,8 @@ export default auth((req) => {
   const isPublicRoutes = publicRoutes.includes(nextUrl.pathname);
   const isAuthRoutes = authRoutes.includes(nextUrl.pathname);
   const isApiAuthPrefix = nextUrl.pathname.startsWith(apiAuthPrefix);
-  const isCronRoute = nextUrl.pathname === '/api/cron'; // Add this line
 
   if (isApiAuthPrefix) {
-    return;
-  }
-
-  if (isCronRoute) {
-    // Add this block
-    const authHeader = req.headers.get('authorization');
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-      return new Response('Unauthorized', { status: 401 });
-    }
     return;
   }
 

@@ -7,11 +7,11 @@ interface ExchangeRateCardProps {
 }
 
 export const ExchangeRateCard: React.FC<ExchangeRateCardProps> = ({ rate }) => {
-  const { symbol, rate: value, change } = rate;
+  const { symbol, rate: value, irrPrice, change } = rate;
   const isPositive = change >= 0;
 
   // تبدیل ریال به تومان و فرمت‌بندی با جداکننده هزارگان
-  const formattedRate = Math.floor(value / 10).toLocaleString('fa-IR');
+  const formattedIrrPrice = Math.floor(irrPrice / 10).toLocaleString('fa-IR');
 
   return (
     <div className="flex items-center p-3 bg-white rounded-lg shadow-md">
@@ -24,7 +24,8 @@ export const ExchangeRateCard: React.FC<ExchangeRateCardProps> = ({ rate }) => {
             {change.toFixed(2)}%
           </p>
         </div>
-        <p className="text-xs text-gray-600 mt-1">{formattedRate} تومان</p>
+        <p className="text-xs text-gray-600 mt-1">${value.toFixed(2)}</p>
+        <p className="text-xs text-gray-600">{formattedIrrPrice} تومان</p>
       </div>
     </div>
   );

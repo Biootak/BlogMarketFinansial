@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 
 import '@/app/globals.css';
 import '@/styles/index.scss';
+
 import { auth } from '@/auth';
 
 export const metadata: Metadata = {
@@ -17,7 +18,6 @@ const vazirmatn = Vazirmatn({
   display: 'swap',
   weight: ['300', '400', '500', '600', '700'],
   variable: '--font-vazirmatn',
-  preload: true,
 });
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

@@ -8,6 +8,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+
   images: {
     remotePatterns: [
       {
@@ -43,6 +44,7 @@ const nextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: '3mb',
+      optimizeCss: true,
     },
   },
   webpack: (config, { isServer }) => {

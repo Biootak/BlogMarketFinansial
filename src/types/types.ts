@@ -303,8 +303,8 @@ export type SearchResult = {
 
 export interface ExchangeRate {
   symbol: string;
-  name: string;
   rate: number;
+  irrPrice: number;
   change: number;
 }
 
