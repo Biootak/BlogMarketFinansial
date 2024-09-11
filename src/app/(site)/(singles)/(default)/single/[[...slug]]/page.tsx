@@ -1,12 +1,13 @@
-import React from 'react';
-import NcImage from '@/components/NcImage/NcImage';
-import SingleHeader from '@/app/(site)/(singles)/SingleHeader';
-import SingleContent from '@/app/(site)/(singles)/SingleContent';
-import { getPostBySlug } from '@/actions/postActions';
+import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
-import SingleRelatedPosts from '../../../SingleRelatedPosts';
+import { getPostBySlug } from '@/actions/postActions';
 import { getRelatedPosts } from '@/actions/getRelatedPosts';
 import { getMoreFromAuthor } from '@/actions/getMoreFromAuthor';
+import SingleHeader from '@/app/(site)/(singles)/SingleHeader';
+import SingleContent from '@/app/(site)/(singles)/SingleContent';
+import SingleRelatedPosts from '@/app/(site)/(singles)/SingleRelatedPosts';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import NcImage from '@/components/NcImage/NcImage';
 
 export interface PageProps {
   params: { slug: string[] };
@@ -14,45 +15,54 @@ export interface PageProps {
 
 export default async function PageSingle({ params }: PageProps) {
   const postSlug = params.slug?.join('/') || '';
-  const { data: post, success } = await getPostBySlug(postSlug);
+  const result = await getPostBySlug(postSlug);
 
-  if (!success || !post) {
+  if (!result.success || !result.data) {
     notFound();
   }
 
-  const { data: relatedPosts } = await getRelatedPosts(
+  const post = result.data;
+
+  const relatedPostsPromise = getRelatedPosts(
     post.id,
     post.categories.map((cat) => cat.id),
   );
-  const { data: moreFromAuthor } = await getMoreFromAuthor(post.authorId, post.id);
+  const moreFromAuthorPromise = getMoreFromAuthor(post.authorId, post.id);
 
   return (
-    <div className={'nc-PageSingle pt-8 lg:pt-16'}>
-      <header className="container rounded-xl">
-        <div className="max-w-screen-md mx-auto">
-          <SingleHeader post={post} />
+    <div className="nc-PageSingle pt-8 lg:pt-16 bg-white dark:bg-gray-900">
+      <div className="container mx-auto px-4">
+        <header className="rounded-xl bg-gray-50 dark:bg-gray-800 shadow-sm p-6 mb-8">
+          <div className="max-w-screen-md mx-auto">
+            <SingleHeader post={post} />
+          </div>
+        </header>
+
+        <div className="relative aspect-video max-w-5xl mx-auto mb-12 rounded-xl overflow-hidden">
+          <NcImage
+            alt={post.title}
+            containerClassName="container my-10 sm:my-12"
+            className="w-full rounded-xl"
+            src={
+              post.featuredImage ||
+              'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg'
+            }
+            width={1260}
+            height={750}
+            sizes="(max-width: 1024px) 100vw, 1280px"
+          />
         </div>
-      </header>
 
-      <NcImage
-        alt={post.title}
-        containerClassName="container my-10 sm:my-12"
-        className="w-full rounded-xl"
-        src={
-          post.featuredImage || 'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg'
-        }
-        width={1260}
-        height={750}
-        sizes="(max-width: 1024px) 100vw, 1280px"
-      />
-
-      <div className="container mt-10">
-        <SingleContent post={post} />
-        <SingleRelatedPosts
-          post={post}
-          relatedPosts={relatedPosts || []}
-          moreFromAuthor={moreFromAuthor || []}
-        />
+        <div className="container mt-10">
+          <SingleContent post={post} />
+          <Suspense fallback={<LoadingSpinner />}>
+            <SingleRelatedPosts
+              post={post}
+              relatedPostsPromise={relatedPostsPromise}
+              moreFromAuthorPromise={moreFromAuthorPromise}
+            />
+          </Suspense>
+        </div>
       </div>
     </div>
   );

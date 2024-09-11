@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { SessionProvider } from 'next-auth/react';
 import { Toaster } from '@/components/ui/toaster';
 
-import '@/app/globals.css';
+import './globals.css';
 import '@/styles/index.scss';
 
 import { auth } from '@/auth';

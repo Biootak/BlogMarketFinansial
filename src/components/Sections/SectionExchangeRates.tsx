@@ -11,6 +11,9 @@ export const SectionExchangeRates = () => {
   const updateRates = useCallback(async () => {
     try {
       const response = await fetch('/api/exchange-rates');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const result = await response.json();
       if (result.success && result.data) {
         setRates(result.data);
@@ -19,6 +22,7 @@ export const SectionExchangeRates = () => {
         throw new Error(result.error || 'Failed to fetch exchange rates');
       }
     } catch (err) {
+      console.error('Error fetching exchange rates:', err);
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
     }
   }, []);

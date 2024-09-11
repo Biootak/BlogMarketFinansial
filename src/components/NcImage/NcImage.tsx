@@ -1,20 +1,21 @@
-import React, { type FC } from 'react';
+import type React from 'react';
 import Image, { type ImageProps } from 'next/image';
 
-export interface NcImageProps extends ImageProps {
+export interface NcImageProps extends Omit<ImageProps, 'alt'> {
   containerClassName?: string;
+  alt: string;
 }
 
-const NcImage: FC<NcImageProps> = ({
+const NcImage: React.FC<NcImageProps> = ({
   containerClassName = '',
-  alt = 'nc-imgs',
+  alt,
   className = 'object-cover w-full h-full',
   sizes = '(max-width: 600px) 480px, 800px',
   priority = false,
   ...args
 }) => {
   return (
-    <div className={containerClassName}>
+    <div className={`relative ${containerClassName}`}>
       <Image className={className} alt={alt} sizes={sizes} priority={priority} {...args} />
     </div>
   );

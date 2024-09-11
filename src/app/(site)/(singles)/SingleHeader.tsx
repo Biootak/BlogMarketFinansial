@@ -1,18 +1,18 @@
-import React, { type FC } from 'react';
+import type React from 'react';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
 import SingleTitle from './SingleTitle';
 import PostMeta2 from '@/components/PostMeta2/PostMeta2';
 import SingleMetaAction2 from './SingleMetaAction2';
 import type { PostWithRelations } from '@/types/types';
 
-export interface SingleHeaderProps {
+interface SingleHeaderProps {
   post: PostWithRelations;
   hiddenDesc?: boolean;
   titleMainClass?: string;
   className?: string;
 }
 
-const SingleHeader: FC<SingleHeaderProps> = ({
+const SingleHeader: React.FC<SingleHeaderProps> = ({
   post,
   titleMainClass,
   hiddenDesc = false,

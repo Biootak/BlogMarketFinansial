@@ -23,7 +23,7 @@ export default function AuthorProfile({ author }: AuthorProfileProps) {
           className="object-cover"
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          priority={true}
+         
         />
       </div>
       <div className="container -mt-10 lg:-mt-16">

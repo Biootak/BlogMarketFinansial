@@ -37,7 +37,7 @@ const BannerADS: React.FC<BannerADSProps> = ({
         className={`block w-full ${className}`}
       >
         <div className="relative w-full aspect-[21/9] sm:aspect-[21/6] md:aspect-[21/5] lg:aspect-[21/4]">
-          <Image src={imageUrl} alt={title} fill className="object-cover" sizes="100vw" priority />
+          <Image src={imageUrl} alt={title} fill className="object-cover" sizes="100vw" />
         </div>
       </Link>
     );
@@ -119,7 +119,6 @@ const BannerADS: React.FC<BannerADSProps> = ({
           fill
           className="object-cover"
           sizes="(max-width: 640px) 80px, (max-width: 768px) 160px, 240px"
-          priority={true}
         />
       </Link>
     </div>
