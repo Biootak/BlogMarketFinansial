@@ -12,7 +12,11 @@ interface ClientSideSliderProps {
 const ClientSideSlider: React.FC<ClientSideSliderProps> = ({ categories, itemPerRow }) => {
   const renderCard = (item: TaxonomyType, index: number) => {
     const topIndex = index < 3 ? `#${index + 1}` : undefined;
-    return <CardCategory2 key={item.id} taxonomy={item} index={topIndex} />;
+    return (
+      <div className="h-full" key={item.id}>
+        <CardCategory2 taxonomy={item} index={topIndex} className="h-full" />
+      </div>
+    );
   };
 
   return (
@@ -20,6 +24,7 @@ const ClientSideSlider: React.FC<ClientSideSliderProps> = ({ categories, itemPer
       data={categories}
       renderItem={renderCard}
       itemPerRow={itemPerRow}
+      className="h-full"
     />
   );
 };
