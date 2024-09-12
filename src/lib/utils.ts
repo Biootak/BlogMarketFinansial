@@ -8,6 +8,35 @@ import slugify from 'slugify';
 import { digitsEnToFa, digitsFaToEn, numberToWords } from '@persian-tools/persian-tools';
 import { customAlphabet } from 'nanoid';
 
+const coinMarketCapUrlMap: { [key: string]: string } = {
+  BTC: 'bitcoin',
+  ETH: 'ethereum',
+  LTC: 'litecoin',
+  USDT: 'tether',
+  XRP: 'xrp',
+  BCH: 'bitcoin-cash',
+  BNB: 'bnb',
+  EOS: 'eos',
+  XLM: 'stellar',
+  ETC: 'ethereum-classic',
+  TRX: 'tron',
+  FTM: 'fantom',
+  UNI: 'uniswap',
+  DAI: 'multi-collateral-dai',
+  LINK: 'chainlink',
+  DOT: 'polkadot-new',
+  AAVE: 'aave',
+  ADA: 'cardano',
+  MATIC: 'polygon',
+  AXS: 'axie-infinity',
+  MANA: 'decentraland',
+  SAND: 'the-sandbox',
+  AVAX: 'avalanche',
+  MKR: 'maker',
+  ATOM: 'cosmos',
+  TON: 'toncoin',
+};
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -155,4 +184,9 @@ export function debounce<F extends (...args: any[]) => any>(func: F, waitFor: nu
       timeout = setTimeout(() => resolve(func(...args)), waitFor);
     });
   };
+}
+
+export function getCoinMarketCapUrl(symbol: string): string {
+  const urlName = coinMarketCapUrlMap[symbol] || symbol.toLowerCase();
+  return `https://coinmarketcap.com/currencies/${urlName}/`;
 }

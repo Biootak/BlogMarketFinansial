@@ -306,6 +306,7 @@ export interface ExchangeRate {
   usdtPrice: number;
   irrPrice: number;
   change: number;
+  globalPrice?: number;
 }
 
 export interface ExchangeRatesResult {

@@ -1,6 +1,7 @@
 'use server';
 
 import { cache } from 'react';
+import type { ExchangeRate, ExchangeRatesResult } from '@/types/types';
 
 const CURRENCIES = [
   'BTC',
@@ -14,15 +15,13 @@ const CURRENCIES = [
   'XLM',
   'ETC',
   'TRX',
-  'PMN',
-  'DOGE',
+  'FTM',
   'UNI',
   'DAI',
   'LINK',
   'DOT',
   'AAVE',
   'ADA',
-  'SHIB',
   'FTM',
   'MATIC',
   'AXS',
@@ -30,15 +29,21 @@ const CURRENCIES = [
   'SAND',
   'AVAX',
   'MKR',
-  'GMT',
   'ATOM',
   'TON',
 ];
 
 interface MarketStats {
+  isClosed: boolean;
   bestSell: string;
   bestBuy: string;
+  volumeSrc: string;
+  volumeDst: string;
   latest: string;
+  dayLow: string;
+  dayHigh: string;
+  dayOpen: string;
+  dayClose: string;
   dayChange: string;
 }
 
@@ -49,18 +54,13 @@ interface NobitexLocalStatsResponse {
   };
 }
 
-interface GlobalMarketData {
-  kraken?: {
-    price: string;
-  };
-  binance?: {
-    price: string;
-  };
-}
-
 interface NobitexGlobalStatsResponse {
   status: string;
-  [key: string]: GlobalMarketData | string;
+  markets: {
+    binance: {
+      [key: string]: number;
+    };
+  };
 }
 
 async function fetchWithRetry(
@@ -72,7 +72,7 @@ async function fetchWithRetry(
     try {
       const response = await fetch(url, {
         ...options,
-        next: { revalidate: 60 }, // Revalidate every 60 seconds
+        next: { revalidate: 60 },
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       return response;
@@ -84,96 +84,65 @@ async function fetchWithRetry(
   throw new Error('Max retries reached');
 }
 
-export const getExchangeRates = cache(async () => {
+export const getExchangeRates = cache(async (): Promise<ExchangeRatesResult> => {
   try {
-    // Fetch local market data from Nobitex
-    const srcCurrencies = CURRENCIES.join(',').toLowerCase();
-    const localUrl = `https://api.nobitex.ir/market/stats?srcCurrency=${srcCurrencies}&dstCurrency=usdt,rls`;
-    const localResponse = await fetchWithRetry(localUrl);
+    const [localResponse, globalResponse] = await Promise.all([
+      fetchWithRetry(
+        `https://api.nobitex.ir/market/stats?srcCurrency=${CURRENCIES.join(',').toLowerCase()}&dstCurrency=usdt,rls`,
+      ),
+      fetchWithRetry('https://api.nobitex.ir/market/global-stats', { method: 'POST' }),
+    ]);
+
     const localData = (await localResponse.json()) as NobitexLocalStatsResponse;
-
-    if (localData.status !== 'ok') {
-      throw new Error(`Nobitex local API returned non-ok status: ${localData.status}`);
-    }
-
-    // Fetch global market data from Nobitex
-    const globalUrl = 'https://api.nobitex.ir/market/global-stats';
-    const globalResponse = await fetchWithRetry(globalUrl, {
-      method: 'POST',
-    });
-
     const globalData = (await globalResponse.json()) as NobitexGlobalStatsResponse;
 
-    if (globalData.status !== 'ok') {
-      throw new Error(`Nobitex global API returned non-ok status: ${globalData.status}`);
+    if (localData.status !== 'ok' || globalData.status !== 'ok') {
+      throw new Error('API returned non-ok status');
     }
 
-    console.log('Global market data:', globalData);
+    const rates: ExchangeRate[] = CURRENCIES.reduce((acc, currency) => {
+      const lowerCurrency = currency.toLowerCase();
+      const localUsdtStats = localData.stats[`${lowerCurrency}-usdt`];
+      const localIrrStats = localData.stats[`${lowerCurrency}-rls`];
+      const globalPrice = globalData.markets.binance[lowerCurrency];
 
-    const rates = CURRENCIES.reduce(
-      (
-        acc: {
-          symbol: string;
-          usdtPrice: number;
-          irrPrice: number;
-          change: number;
-          globalPrice?: number;
-        }[],
-        currency,
-      ) => {
-        const localUsdtStats = localData.stats[`${currency.toLowerCase()}-usdt`];
-        const localIrrStats = localData.stats[`${currency.toLowerCase()}-rls`];
-        const globalStats = globalData[currency.toLowerCase()] as GlobalMarketData | undefined;
-
-        if (!localUsdtStats && !localIrrStats && !globalStats) {
-          console.warn(`Missing data for ${currency}`);
-          return acc;
-        }
-
-        const usdtPrice =
-          globalStats?.kraken?.price ||
-          globalStats?.binance?.price ||
-          (localUsdtStats ? localUsdtStats.latest : '0');
-        const irrPrice = localIrrStats ? localIrrStats.latest : '0';
-        const change = localUsdtStats ? localUsdtStats.dayChange : '0';
-        const globalPrice = globalStats?.kraken?.price || globalStats?.binance?.price;
-
-        if (currency !== 'USDT' || (currency === 'USDT' && Number(irrPrice) > 0)) {
-          acc.push({
-            symbol: currency,
-            usdtPrice: currency === 'USDT' ? 1 : Number(usdtPrice),
-            irrPrice: Number(irrPrice),
-            change: Number(change),
-            globalPrice: globalPrice ? Number(globalPrice) : undefined,
-          });
-        }
-
+      if (!localUsdtStats && !localIrrStats && !globalPrice) {
         return acc;
-      },
-      [],
-    );
+      }
 
-    // Sort rates
+      const usdtPrice = localUsdtStats ? Number.parseFloat(localUsdtStats.latest) : 0;
+      const irrPrice = localIrrStats ? Number.parseFloat(localIrrStats.latest) : 0;
+      const change = localUsdtStats ? Number.parseFloat(localUsdtStats.dayChange) : 0;
+
+      if (currency !== 'USDT' || (currency === 'USDT' && irrPrice > 0)) {
+        acc.push({
+          symbol: currency,
+          usdtPrice: currency === 'USDT' ? 1 : usdtPrice,
+          irrPrice,
+          change,
+          globalPrice: globalPrice || undefined,
+        });
+      }
+
+      return acc;
+    }, [] as ExchangeRate[]);
+
     const sortedRates = [
       ...rates.filter((item) => ['BTC', 'ETH', 'TON'].includes(item.symbol)),
       ...rates.filter((item) => item.symbol === 'USDT'),
       ...rates.filter((item) => !['BTC', 'ETH', 'TON', 'USDT'].includes(item.symbol)),
     ];
 
-    console.log('Fetched rates:', sortedRates);
-
     return {
       success: true,
       data: sortedRates,
+      message: 'Exchange rates fetched successfully',
     };
   } catch (error) {
-    console.error('Error fetching exchange rates:', error);
     return {
       success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : 'An unknown error occurred while fetching exchange rates',
+      error: error instanceof Error ? error.message : 'An unknown error occurred',
+      message: 'Failed to fetch exchange rates',
     };
   }
 });
