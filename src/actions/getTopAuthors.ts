@@ -1,8 +1,9 @@
 'use server';
 
-import prisma from '@/lib/db';
-import { Role, type User, type Profile } from '@prisma/client';
 import { cache } from 'react';
+import { Role, type User, type Profile } from '@prisma/client';
+import { prisma } from '@/lib/db';
+import * as Sentry from '@sentry/nextjs';
 
 export type TopAuthor = User & {
   profile: Profile | null;
@@ -33,7 +34,27 @@ export const getTopAuthors = cache(async (limit: number): Promise<TopAuthor[]> =
 
     return topAuthors;
   } catch (error) {
+    Sentry.captureException(error, {
+      tags: { action: 'getTopAuthors' },
+      extra: { limit },
+    });
     console.error('Failed to fetch top authors:', error);
-    throw new Error('Failed to fetch top authors');
+    return [];
   }
 });
+
+export async function fetchTopAuthors(
+  limit: number,
+): Promise<{ data: TopAuthor[] | null; error: string | null }> {
+  try {
+    const authors = await getTopAuthors(limit);
+    return { data: authors, error: null };
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: { action: 'fetchTopAuthors' },
+      extra: { limit },
+    });
+    console.error('Error in fetchTopAuthors:', error);
+    return { data: null, error: 'Unable to fetch top authors. Please try again later.' };
+  }
+}
