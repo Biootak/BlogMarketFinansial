@@ -1,3 +1,5 @@
+'use client';
+
 import type React from 'react';
 import type { ExchangeRate } from '@/types/types';
 import CurrencyIcon from './CurrencyIcon';
@@ -7,11 +9,15 @@ interface ExchangeRateCardProps {
 }
 
 export const ExchangeRateCard: React.FC<ExchangeRateCardProps> = ({ rate }) => {
-  const { symbol, rate: value, irrPrice, change } = rate;
+  const { symbol, usdtPrice, irrPrice, change } = rate;
   const isPositive = change >= 0;
 
   // تبدیل ریال به تومان و فرمت‌بندی با جداکننده هزارگان
   const formattedIrrPrice = Math.floor(irrPrice / 10).toLocaleString('fa-IR');
+  const formattedUsdtPrice = usdtPrice.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 6,
+  });
 
   return (
     <div className="flex items-center p-3 bg-white rounded-lg shadow-md min-h-[88px] w-full">
@@ -27,7 +33,7 @@ export const ExchangeRateCard: React.FC<ExchangeRateCardProps> = ({ rate }) => {
           </p>
         </div>
         <div>
-          <p className="text-xs text-gray-600 truncate">${value.toFixed(2)}</p>
+          <p className="text-xs text-gray-600 truncate">${formattedUsdtPrice}</p>
           <p className="text-xs text-gray-600 truncate">{formattedIrrPrice} تومان</p>
         </div>
       </div>

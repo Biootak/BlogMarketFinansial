@@ -1,51 +1,81 @@
 'use server';
 
 import { cache } from 'react';
-import type { ExchangeRate } from '@/types/types';
 
-const PAIRS = [
-  'BTCUSDT',
-  'ETHUSDT',
-  'BNBUSDT',
-  'TONUSDT',
-  'ADAUSDT',
-  'DOGEUSDT',
-  'XRPUSDT',
-  'DOTUSDT',
-  'UNIUSDT',
-  'BCHUSDT',
-  'LTCUSDT',
-  'LINKUSDT',
-  'XLMUSDT',
-  'ETCUSDT',
-  'THETAUSDT',
-  'FILUSDT',
-  'TRXUSDT',
-  'USDTIRT',
-  'DASHUSDT',
-  'NEOUSDT',
+const CURRENCIES = [
+  'BTC',
+  'ETH',
+  'LTC',
+  'USDT',
+  'XRP',
+  'BCH',
+  'BNB',
+  'EOS',
+  'XLM',
+  'ETC',
+  'TRX',
+  'PMN',
+  'DOGE',
+  'UNI',
+  'DAI',
+  'LINK',
+  'DOT',
+  'AAVE',
+  'ADA',
+  'SHIB',
+  'FTM',
+  'MATIC',
+  'AXS',
+  'MANA',
+  'SAND',
+  'AVAX',
+  'MKR',
+  'GMT',
+  'ATOM',
+  'TON',
 ];
 
-interface OrderbookData {
-  lastTradePrice: string;
+interface MarketStats {
   bestSell: string;
   bestBuy: string;
-  volume24h: string;
-  price_change_24h: string;
+  latest: string;
+  dayChange: string;
 }
 
-interface NobitexResponse {
+interface NobitexLocalStatsResponse {
   status: string;
-  [key: string]: OrderbookData | string;
+  stats: {
+    [key: string]: MarketStats;
+  };
 }
 
-async function fetchWithRetry(url: string, retries = 3): Promise<Response> {
+interface GlobalMarketData {
+  kraken?: {
+    price: string;
+  };
+  binance?: {
+    price: string;
+  };
+}
+
+interface NobitexGlobalStatsResponse {
+  status: string;
+  [key: string]: GlobalMarketData | string;
+}
+
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit = {},
+  retries = 3,
+): Promise<Response> {
   for (let i = 0; i < retries; i++) {
     try {
-      return await fetch(url, {
-        next: { revalidate: 60 },
-        timeout: 10000,
+      const response = await fetch(url, {
+        ...options,
+        next: { revalidate: 60 }, // Revalidate every 60 seconds
       });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return response;
     } catch (error) {
       if (i === retries - 1) throw error;
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -56,59 +86,81 @@ async function fetchWithRetry(url: string, retries = 3): Promise<Response> {
 
 export const getExchangeRates = cache(async () => {
   try {
-    const response = await fetchWithRetry('https://api.nobitex.ir/v2/orderbook/all');
+    // Fetch local market data from Nobitex
+    const srcCurrencies = CURRENCIES.join(',').toLowerCase();
+    const localUrl = `https://api.nobitex.ir/market/stats?srcCurrency=${srcCurrencies}&dstCurrency=usdt,rls`;
+    const localResponse = await fetchWithRetry(localUrl);
+    const localData = (await localResponse.json()) as NobitexLocalStatsResponse;
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    if (localData.status !== 'ok') {
+      throw new Error(`Nobitex local API returned non-ok status: ${localData.status}`);
     }
 
-    const data = (await response.json()) as NobitexResponse;
+    // Fetch global market data from Nobitex
+    const globalUrl = 'https://api.nobitex.ir/market/global-stats';
+    const globalResponse = await fetchWithRetry(globalUrl, {
+      method: 'POST',
+    });
 
-    if (data.status !== 'ok') {
-      throw new Error(`Nobitex API returned non-ok status: ${data.status}`);
+    const globalData = (await globalResponse.json()) as NobitexGlobalStatsResponse;
+
+    if (globalData.status !== 'ok') {
+      throw new Error(`Nobitex global API returned non-ok status: ${globalData.status}`);
     }
 
-    const usdtIrtRate = Number((data.USDTIRT as OrderbookData)?.lastTradePrice) || 1;
+    console.log('Global market data:', globalData);
 
-    const rates: ExchangeRate[] = PAIRS.reduce((acc: ExchangeRate[], pairKey) => {
-      const stats = data[pairKey] as OrderbookData;
-      if (!stats) {
-        console.warn(`Missing data for ${pairKey}`);
+    const rates = CURRENCIES.reduce(
+      (
+        acc: {
+          symbol: string;
+          usdtPrice: number;
+          irrPrice: number;
+          change: number;
+          globalPrice?: number;
+        }[],
+        currency,
+      ) => {
+        const localUsdtStats = localData.stats[`${currency.toLowerCase()}-usdt`];
+        const localIrrStats = localData.stats[`${currency.toLowerCase()}-rls`];
+        const globalStats = globalData[currency.toLowerCase()] as GlobalMarketData | undefined;
+
+        if (!localUsdtStats && !localIrrStats && !globalStats) {
+          console.warn(`Missing data for ${currency}`);
+          return acc;
+        }
+
+        const usdtPrice =
+          globalStats?.kraken?.price ||
+          globalStats?.binance?.price ||
+          (localUsdtStats ? localUsdtStats.latest : '0');
+        const irrPrice = localIrrStats ? localIrrStats.latest : '0';
+        const change = localUsdtStats ? localUsdtStats.dayChange : '0';
+        const globalPrice = globalStats?.kraken?.price || globalStats?.binance?.price;
+
+        if (currency !== 'USDT' || (currency === 'USDT' && Number(irrPrice) > 0)) {
+          acc.push({
+            symbol: currency,
+            usdtPrice: currency === 'USDT' ? 1 : Number(usdtPrice),
+            irrPrice: Number(irrPrice),
+            change: Number(change),
+            globalPrice: globalPrice ? Number(globalPrice) : undefined,
+          });
+        }
+
         return acc;
-      }
+      },
+      [],
+    );
 
-      const symbol = pairKey.replace('USDT', '').replace('IRT', '');
-      const lastTradePrice = Number(stats.lastTradePrice);
-
-      let rateInUsdt, rateInToman;
-      if (pairKey === 'USDTIRT') {
-        rateInUsdt = 1;
-        rateInToman = lastTradePrice;
-      } else {
-        rateInUsdt = lastTradePrice;
-        rateInToman = lastTradePrice * usdtIrtRate;
-      }
-
-      const change = Number(stats.price_change_24h);
-
-      console.log(`${pairKey} - Last: ${lastTradePrice}, Change: ${change.toFixed(2)}%`);
-
-      acc.push({
-        symbol,
-        rate: Number(rateInUsdt.toFixed(8)),
-        irrPrice: Math.round(rateInToman),
-        change: Number(change.toFixed(2)),
-      });
-
-      return acc;
-    }, []);
-
-    // مرتب‌سازی نهایی
+    // Sort rates
     const sortedRates = [
       ...rates.filter((item) => ['BTC', 'ETH', 'TON'].includes(item.symbol)),
       ...rates.filter((item) => item.symbol === 'USDT'),
       ...rates.filter((item) => !['BTC', 'ETH', 'TON', 'USDT'].includes(item.symbol)),
     ];
+
+    console.log('Fetched rates:', sortedRates);
 
     return {
       success: true,
