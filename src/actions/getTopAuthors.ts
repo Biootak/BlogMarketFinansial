@@ -2,7 +2,8 @@
 
 import { cache } from 'react';
 import { Role, type User, type Profile } from '@prisma/client';
-import { prisma } from '@/lib/db';
+import prisma from '@/lib/db';
+
 import * as Sentry from '@sentry/nextjs';
 
 export type TopAuthor = User & {

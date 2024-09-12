@@ -303,7 +303,7 @@ export type SearchResult = {
 
 export interface ExchangeRate {
   symbol: string;
-  rate: number;
+  usdtPrice: number;
   irrPrice: number;
   change: number;
 }
@@ -314,7 +314,6 @@ export interface ExchangeRatesResult {
   data?: ExchangeRate[];
   error?: string;
 }
-
 export type Action =
   | { type: 'FETCH_POSTS_START' }
   | { type: 'FETCH_POSTS_SUCCESS'; payload: { posts: PostWithRelations[]; hasNextPage: boolean } }
