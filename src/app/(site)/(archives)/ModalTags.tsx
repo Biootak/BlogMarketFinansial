@@ -1,5 +1,6 @@
 'use client';
 
+import type React from 'react';
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -51,25 +52,19 @@ const ModalTags: React.FC<ModalTagsProps> = ({ initialTags }) => {
     async (tagSlug: string | null) => {
       setIsFiltering(true);
       setIsOpen(false);
-      const current = new URLSearchParams(Array.from(searchParams.entries()));
-      if (tagSlug) {
-        current.set('tag', tagSlug);
-      } else {
-        current.delete('tag');
-      }
-      current.delete('page');
-      current.delete('category');
-      const search = current.toString();
-      const query = search ? `?${search}` : '';
       try {
-        await router.push(`${pathname}${query}`);
+        if (tagSlug) {
+          await router.push(`/archive/tag/${tagSlug}`);
+        } else {
+          await router.push('/archive');
+        }
       } catch (error) {
         console.error('Error during navigation:', error);
       } finally {
         setIsFiltering(false);
       }
     },
-    [router, searchParams, pathname, setIsFiltering],
+    [router, setIsFiltering],
   );
 
   const handleAllTags = useCallback(() => {

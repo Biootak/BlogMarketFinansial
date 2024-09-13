@@ -125,9 +125,9 @@ export async function createCategory(data: FormData): Promise<ActionResult<Taxon
     };
 
     // تازه‌سازی صفحات مرتبط
-    revalidatePath('/categories');
+
     revalidatePath('/');
-    revalidateTag('categories');
+    revalidateTag('/archive');
 
     return {
       success: true,
@@ -215,10 +215,8 @@ export async function updateCategory(
     };
 
     // تازه‌سازی صفحات مرتبط
-    revalidatePath('/categories');
-    revalidatePath(`/category/${slug}`);
+
     revalidatePath('/');
-    revalidateTag('categories');
 
     return {
       success: true,
@@ -250,10 +248,8 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
     });
 
     // تازه‌سازی صفحات مرتبط
-    revalidatePath('/categories');
-    revalidatePath(`/category/${category.slug}`);
+
     revalidatePath('/');
-    revalidateTag('categories');
 
     return {
       success: true,

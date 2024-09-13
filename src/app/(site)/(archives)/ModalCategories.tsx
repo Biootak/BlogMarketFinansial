@@ -1,5 +1,6 @@
 'use client';
 
+import type React from 'react';
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -51,25 +52,19 @@ const ModalCategories: React.FC<ModalCategoriesProps> = ({ initialCategories }) 
     async (categorySlug: string | null) => {
       setIsFiltering(true);
       setIsOpen(false);
-      const current = new URLSearchParams(Array.from(searchParams.entries()));
-      if (categorySlug) {
-        current.set('category', categorySlug);
-      } else {
-        current.delete('category');
-      }
-      current.delete('page');
-      current.delete('tag');
-      const search = current.toString();
-      const query = search ? `?${search}` : '';
       try {
-        await router.push(`${pathname}${query}`);
+        if (categorySlug) {
+          await router.push(`/archive/category/${categorySlug}`);
+        } else {
+          await router.push('/archive');
+        }
       } catch (error) {
         console.error('Error during navigation:', error);
       } finally {
         setIsFiltering(false);
       }
     },
-    [router, searchParams, pathname, setIsFiltering],
+    [router, setIsFiltering],
   );
 
   const handleAllArticles = useCallback(() => {

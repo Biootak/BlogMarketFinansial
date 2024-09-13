@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SlFire } from 'react-icons/sl';
 
@@ -8,20 +9,37 @@ import { getCategories } from '@/actions/categoryActions';
 import Image from 'next/image';
 import { getTopAuthors } from '@/actions/getTopAuthors';
 import { getTags } from '@/actions/getTags';
-import ModalCategories from '../ModalCategories';
-import ModalTags from '../ModalTags';
+import ModalCategories from '../../ModalCategories';
+import ModalTags from '../../ModalTags';
 import ArchiveFilterListBox from '@/components/ArchiveFilterListBox/ArchiveFilterListBox';
-import AnimatedPostGrid from '../AnimatedPostGrid';
+import AnimatedPostGrid from '../../AnimatedPostGrid';
 import Pagination from '@/components/Pagination/Pagination';
 import BackgroundSection from '@/components/BackgroundSection/BackgroundSection';
 import DynamicCategories from '@/components/DynamicCategories';
 import SectionSliderNewAuthors from '@/components/SectionSliderNewAthors/SectionSliderNewAuthors';
 import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
+import Empty from '@/components/Empty';
 
-export const metadata: Metadata = {
-  title: 'گنجینه مقالات | دنیای دانش و الهام',
-  description: 'کاوش در مجموعه گسترده مقالات ما: از علم تا هنر، از فناوری تا فلسفه',
-};
+export async function generateMetadata({
+  params,
+}: { params: { slug?: string[] } }): Promise<Metadata> {
+  const [type, value] = params.slug || [];
+  let title = 'گنجینه مقالات | دنیای دانش و الهام';
+  let description = 'کاوش در مجموعه گسترده مقالات ما: از علم تا هنر، از فناوری تا فلسفه';
+
+  if (type === 'category') {
+    title = `مقالات دسته‌بندی ${value} | ${title}`;
+    description = `مطالب مرتبط با دسته‌بندی ${value}`;
+  } else if (type === 'tag') {
+    title = `مقالات با برچسب ${value} | ${title}`;
+    description = `مطالب مرتبط با برچسب ${value}`;
+  }
+
+  return {
+    title,
+    description,
+  };
+}
 
 const FILTERS = [
   { name: 'همه مقالات' },
@@ -31,47 +49,44 @@ const FILTERS = [
 ];
 
 type PageArchiveProps = {
+  params: { slug?: string[] };
   searchParams: {
     page?: string;
-    category?: string;
-    tag?: string;
     filter?: string;
   };
 };
 
-async function getPageData(searchParams: PageArchiveProps['searchParams']) {
+export default async function PageArchive({ params, searchParams }: PageArchiveProps) {
+  const [type, value] = params.slug || [];
   const currentPage = searchParams.page ? Number.parseInt(searchParams.page) : 1;
-  const limit = 12;
-  const categorySlug = searchParams.category;
-  const tagSlug = searchParams.tag;
   const filter = searchParams.filter || FILTERS[0].name;
+  const limit = 12;
+
+  if (type && !['category', 'tag'].includes(type)) {
+    notFound();
+  }
 
   const [postsResult, categoriesResult, tagsResult, topAuthorsResult] = await Promise.all([
-    getArchivePosts(currentPage, limit, filter, categorySlug, tagSlug),
+    getArchivePosts(
+      currentPage,
+      limit,
+      filter,
+      type === 'category' ? value : undefined,
+      type === 'tag' ? value : undefined,
+    ),
     getCategories({ limit: 10, page: 1 }),
     getTags({ limit: 10, page: 1 }),
     getTopAuthors(5),
   ]);
 
-  return {
-    posts: postsResult.data?.posts || [],
-    total: postsResult.data?.total || 0,
-    pages: postsResult.data?.pages || 0,
-    categories: categoriesResult.data?.categories || [],
-    totalCategories: categoriesResult.data?.totalCount || 0,
-    tags: tagsResult.data?.tags || [],
-    topAuthors: topAuthorsResult || [],
-  };
-}
+  const { posts, total, pages } = postsResult.data || { posts: [], total: 0, pages: 0 };
+  const categories = categoriesResult.data?.categories || [];
+  const tags = tagsResult.data?.tags || [];
+  const topAuthors = topAuthorsResult || [];
 
-export default async function PageArchive({ searchParams }: PageArchiveProps) {
-  const { posts, total, pages, categories, totalCategories, tags, topAuthors } =
-    await getPageData(searchParams);
-
-  const selectedCategory = searchParams.category
-    ? categories.find((cat) => cat.slug === searchParams.category)
-    : null;
-  const selectedTag = searchParams.tag ? tags.find((tag) => tag.slug === searchParams.tag) : null;
+  const selectedCategory =
+    type === 'category' ? categories.find((cat) => cat.slug === value) : null;
+  const selectedTag = type === 'tag' ? tags.find((tag) => tag.slug === value) : null;
 
   const defaultImage = '/images/hero-right-2.png';
 
@@ -127,26 +142,25 @@ export default async function PageArchive({ searchParams }: PageArchiveProps) {
               </div>
             </div>
             <div className="w-full md:w-auto ">
-              <ArchiveFilterListBox
-                filters={FILTERS}
-                initialFilter={searchParams.filter || FILTERS[0].name}
-              />
+              <ArchiveFilterListBox filters={FILTERS} initialFilter={filter} />
             </div>
           </div>
 
-          <AnimatedPostGrid posts={posts} />
+          {posts.length > 0 ? <AnimatedPostGrid posts={posts} /> : <Empty />}
 
-          <div className="flex flex-col mt-12 lg:mt-16 space-y-5 sm:space-y-0 sm:space-x-3 sm:flex-row sm:justify-between sm:items-center">
-            <Pagination
-              currentPage={searchParams.page ? Number.parseInt(searchParams.page) : 1}
-              totalPages={pages}
-            />
-          </div>
+          {posts.length > 0 && (
+            <div className="flex flex-col mt-12 lg:mt-16 space-y-5 sm:space-y-0 sm:space-x-3 sm:flex-row sm:justify-between sm:items-center">
+              <Pagination currentPage={currentPage} totalPages={pages} />
+            </div>
+          )}
         </div>
 
         <div className="relative py-16">
           <BackgroundSection />
-          <DynamicCategories initialCategories={categories} initialTotalCount={totalCategories} />
+          <DynamicCategories
+            initialCategories={categories}
+            initialTotalCount={categoriesResult.data?.totalCount || 0}
+          />
         </div>
 
         <SectionSliderNewAuthors

@@ -1,7 +1,7 @@
 'use client';
 
 import type React from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
   Select,
   SelectContent,
@@ -23,13 +23,15 @@ const ArchiveFilterListBox: React.FC<ArchiveFilterListBoxProps> = ({
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
 
   const handleFilterChange = (value: string) => {
-    const current = new URLSearchParams(searchParams.toString());
+    const current = new URLSearchParams(Array.from(searchParams.entries()));
     current.set('filter', value);
+    current.delete('page'); // Reset page when filter changes
     const search = current.toString();
     const query = search ? `?${search}` : '';
-    router.push(`/archive${query}`);
+    router.push(`${pathname}${query}`);
   };
 
   return (

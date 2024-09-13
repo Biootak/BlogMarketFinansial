@@ -14,8 +14,7 @@ const CardCategory2: FC<CardCategory2Props> = ({ className = '', taxonomy, index
   const { name, thumbnail, color, slug, count } = taxonomy;
   return (
     <Link
-      href={`/archive?category=${slug}`}
-      passHref
+      href={`/archive/category/${slug}`}
       className={`nc-CardCategory2 relative flex flex-col items-center justify-between text-center px-3 py-5 sm:p-6 bg-white dark:bg-neutral-900 rounded-3xl transition-colors h-full ${className}`}
     >
       <div className="flex flex-col items-center">

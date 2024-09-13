@@ -16,8 +16,9 @@ const SectionSliderNewCategories: React.FC<SectionSliderNewCategoriesProps> = as
   heading,
   subHeading,
   className = '',
+  itemPerRow = 5,
 }) => {
-  const result = await getCategories();
+  const result = await getCategories({ limit: 10 });
   const categories = result.success && result.data?.categories ? result.data.categories : [];
 
   return (
@@ -25,7 +26,7 @@ const SectionSliderNewCategories: React.FC<SectionSliderNewCategoriesProps> = as
       <Heading desc={subHeading} isCenter>
         {heading}
       </Heading>
-      <ClientSideSlider categories={categories} itemPerRow={5} />
+      <ClientSideSlider categories={categories} itemPerRow={itemPerRow} />
     </div>
   );
 };
