@@ -1,3 +1,5 @@
+// types.ts
+
 import { Prisma, type Role, type PostType, type PostStatus, type Category } from '@prisma/client';
 import type { z } from 'zod';
 import type {
@@ -10,7 +12,6 @@ import type {
   RegisterSchema,
   UpdateProfileSchema,
 } from '@/schemas';
-
 import type { IconType } from 'react-icons';
 
 // Prisma Exact Types
@@ -79,11 +80,19 @@ const fullPostWithRelations = Prisma.validator<Prisma.PostDefaultArgs>()({
   },
 });
 
-const categoryWithPostCount = Prisma.validator<Prisma.CategoryDefaultArgs>()({
+const categoryWithRelations = Prisma.validator<Prisma.CategoryDefaultArgs>()({
   include: {
     _count: {
       select: { posts: true },
     },
+    subCategories: {
+      include: {
+        _count: {
+          select: { posts: true },
+        },
+      },
+    },
+    parentCategory: true,
   },
 });
 
@@ -110,7 +119,6 @@ export type CommentWithCustomRelations = Prisma.CommentGetPayload<{
         updatedAt: true;
       };
     };
-
     replies: true;
     likes: true;
     _count: {
@@ -170,6 +178,7 @@ export type UpdatePostInput = SchemaInfer<typeof UpdatePostSchema>;
 export type UserBase = Omit<UserWithRelations, 'password'> & {
   _count?: UserWithRelations['_count'];
 };
+
 export type UserWithProfile = {
   id: string;
   name: string | null;
@@ -188,7 +197,8 @@ export type UserWithProfile = {
     posts: number;
   };
 };
-export type CategoryWithPostCount = Prisma.CategoryGetPayload<typeof categoryWithPostCount>;
+
+export type CategoryWithRelations = Prisma.CategoryGetPayload<typeof categoryWithRelations>;
 export type CategoryWithStringId = Omit<Category, 'id'> & { id: string };
 export type TagWithPostCount = Prisma.TagGetPayload<typeof tagWithPostCount>;
 export type UpdateProfileInput = z.infer<typeof UpdateProfileSchema> & {
@@ -206,15 +216,17 @@ export type TwMainColor =
   | 'indigo'
   | 'gray';
 
-export type TaxonomyType =
-  | (CategoryWithPostCount & {
-      taxonomy: 'category';
-      color?: TwMainColor | string;
-    })
-  | (TagWithPostCount & {
-      taxonomy: 'tag';
-      color?: TwMainColor | string;
-    });
+export type TaxonomyType = {
+  id: string;
+  name: string;
+  slug: string;
+  thumbnail: string | null;
+  taxonomy: 'category' | 'subcategory' | 'tag';
+  color?: TwMainColor | string;
+  count: number;
+  subCategories?: TaxonomyType[];
+  parentCategoryId?: string | null;
+};
 
 export type LikeWithUser = Prisma.LikeGetPayload<{
   include: { user: true };
@@ -224,13 +236,14 @@ export type CommentWithRelationsAndLikes = CommentWithCustomRelations & {
   likes?: LikeWithUser[];
 };
 
-export type ActionResult<T = void, E = string> = {
+export type ActionResult<T = void> = {
   success: boolean;
   message: string;
   data?: T;
-  error?: E;
-  variant?: 'success' | 'destructive' | 'warning' | 'info';
+  error?: string;
 };
+
+export type CategoryActionResult = ActionResult<TaxonomyType>;
 
 export type PaginationParams = {
   page: number;
@@ -315,6 +328,7 @@ export interface ExchangeRatesResult {
   data?: ExchangeRate[];
   error?: string;
 }
+
 export type Action =
   | { type: 'FETCH_POSTS_START' }
   | { type: 'FETCH_POSTS_SUCCESS'; payload: { posts: PostWithRelations[]; hasNextPage: boolean } }
@@ -322,3 +336,27 @@ export type Action =
   | { type: 'SET_SEARCH_TERM'; payload: string }
   | { type: 'DELETE_POST'; payload: string }
   | { type: 'UPDATE_POST_STATUS'; payload: { id: string; published: boolean } };
+
+export type CreateCategoryInput = {
+  name: string;
+  slug: string;
+  parentId: string | null;
+  thumbnail: string | null;
+};
+
+export type UpdateCategoryInput = CreateCategoryInput & {};
+
+export type CategoryWithPostCount = Prisma.CategoryGetPayload<{
+  include: {
+    _count: {
+      select: { posts: true };
+    };
+    subCategories: {
+      include: {
+        _count: {
+          select: { posts: true };
+        };
+      };
+    };
+  };
+}>;

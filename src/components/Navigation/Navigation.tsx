@@ -24,17 +24,17 @@ type NavigationProps = Readonly<{
   className?: string;
 }>;
 
-const NAVBAR_LINKS = [
+const NAVBAR_LINKS: NavItem[] = [
   { id: 'home', name: 'صفحه اصلی', href: '/' },
   {
     id: 'crypto',
     name: 'ارز دیجیتال',
     href: '/archive/category/crypto',
     subItems: [
-      { id: 'crypto-urgent', name: 'اخبار فوری', href: '/archive/category/crypto-urgent' },
-      { id: 'crypto-important', name: 'اخبار مهم', href: '/archive/category/crypto-important' },
-      { id: 'crypto-analysis', name: 'تحلیل', href: '/archive/category/crypto-analysis' },
-      { id: 'crypto-education', name: 'آموزش', href: '/archive/category/crypto-education' },
+      { id: 'crypto-urgent', name: 'اخبار فوری', href: '/archive/category/crypto/urgent' },
+      { id: 'crypto-important', name: 'اخبار مهم', href: '/archive/category/crypto/important' },
+      { id: 'crypto-analysis', name: 'تحلیل', href: '/archive/category/crypto/analysis' },
+      { id: 'crypto-education', name: 'آموزش', href: '/archive/category/crypto/education' },
     ],
   },
   {
@@ -42,10 +42,10 @@ const NAVBAR_LINKS = [
     name: 'طلا (اونس)',
     href: '/archive/category/gold',
     subItems: [
-      { id: 'gold-news', name: 'اخبار طلا', href: '/archive/category/gold-news' },
-      { id: 'gold-analysis', name: 'تحلیل', href: '/archive/category/gold-analysis' },
-      { id: 'gold-local', name: 'بازار داخلی', href: '/archive/category/gold-local' },
-      { id: 'gold-global', name: 'بازار جهانی', href: '/archive/category/gold-global' },
+      { id: 'gold-news', name: 'اخبار طلا', href: '/archive/category/gold/news' },
+      { id: 'gold-analysis', name: 'تحلیل', href: '/archive/category/gold/analysis' },
+      { id: 'gold-local', name: 'بازار داخلی', href: '/archive/category/gold/local' },
+      { id: 'gold-global', name: 'بازار جهانی', href: '/archive/category/gold/global' },
     ],
   },
   {
@@ -53,9 +53,13 @@ const NAVBAR_LINKS = [
     name: 'بازار جهانی',
     href: '/archive/category/global-market',
     subItems: [
-      { id: 'currency-pairs', name: 'جفت ارزها', href: '/archive/category/currency-pairs' },
-      { id: 'global-analysis', name: 'تحلیل', href: '/archive/category/global-market-analysis' },
-      { id: 'global-education', name: 'آموزش', href: '/archive/category/global-market-education' },
+      {
+        id: 'currency-pairs',
+        name: 'جفت ارزها',
+        href: '/archive/category/global-market/currency-pairs',
+      },
+      { id: 'global-analysis', name: 'تحلیل', href: '/archive/category/global-market/analysis' },
+      { id: 'global-education', name: 'آموزش', href: '/archive/category/global-market/education' },
     ],
   },
   { id: 'stock', name: 'بورس و سهام', href: '/archive/category/stock' },

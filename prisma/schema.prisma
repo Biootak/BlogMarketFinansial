@@ -168,11 +168,14 @@ model Like {
 }
 
 model Category {
-  id        String @id @default(cuid())
-  name      String @unique
-  thumbnail String?
-  slug      String @unique
-  posts     Post[]
+  id               String     @id @default(cuid())
+  name             String
+  slug             String     @unique
+  thumbnail        String?
+  posts            Post[]
+  parentCategory   Category?  @relation("SubCategories", fields: [parentId], references: [id])
+  parentId String?
+  subCategories    Category[] @relation("SubCategories")
 }
 
 model Tag {

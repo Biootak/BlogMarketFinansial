@@ -3,7 +3,7 @@ import { useEffect, useRef, useCallback } from 'react';
 export const useInfiniteScroll = (
   fetchNextPage: () => void,
   hasNextPage: boolean,
-  isLoading: boolean
+  isLoading: boolean,
 ) => {
   const observerRef = useRef<IntersectionObserver | null>(null);
   const elementRef = useRef<HTMLDivElement | null>(null);
@@ -15,7 +15,7 @@ export const useInfiniteScroll = (
         fetchNextPage();
       }
     },
-    [fetchNextPage, hasNextPage, isLoading]
+    [fetchNextPage, hasNextPage, isLoading],
   );
 
   useEffect(() => {

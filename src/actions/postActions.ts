@@ -696,20 +696,23 @@ export async function getArchivePosts(
   page = 1,
   limit = 12,
   filter?: string,
-  categorySlug?: string,
-  tagSlug?: string,
-) {
+  category?: string,
+  subcategory?: string,
+): Promise<ActionResult<{ posts: any[]; total: number; pages: number }>> {
   try {
     const skip = (page - 1) * limit;
     const whereCondition: Prisma.PostWhereInput = { status: 'PUBLISHED' };
     let orderBy: Prisma.PostOrderByWithRelationInput = { createdAt: 'desc' };
 
-    if (categorySlug) {
-      whereCondition.categories = { some: { slug: categorySlug } };
-    }
-
-    if (tagSlug) {
-      whereCondition.tags = { some: { slug: tagSlug } };
+    if (category) {
+      whereCondition.categories = { some: { slug: category } };
+      if (subcategory) {
+        whereCondition.categories = {
+          some: {
+            AND: [{ slug: category }, { childCategories: { some: { slug: subcategory } } }],
+          },
+        };
+      }
     }
 
     switch (filter) {
@@ -771,7 +774,6 @@ export async function getArchivePosts(
     };
   }
 }
-
 export async function likeItem(
   itemId: string,
   itemType: 'post' | 'comment',
