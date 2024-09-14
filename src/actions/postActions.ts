@@ -79,10 +79,13 @@ export async function createPost(
           connect: { id: session.user?.id },
         },
         categories: {
-          connectOrCreate: validatedData.categories.map((name) => ({
-            where: { name },
-            create: { name, slug: generateSlug(name) },
-          })),
+          connectOrCreate: validatedData.categories.map((name) => {
+            const slug = generateSlug(name);
+            return {
+              where: { slug },
+              create: { name, slug },
+            };
+          }),
         },
         tags: validatedData.tags
           ? {
@@ -222,11 +225,14 @@ export async function updatePost(
         slug,
         categories: validatedData.categories
           ? {
-              set: [],
-              connectOrCreate: validatedData.categories.map((name) => ({
-                where: { name },
-                create: { name, slug: generateSlug(name) },
-              })),
+              set: [], // حذف تمام دسته‌بندی‌های قبلی
+              connectOrCreate: validatedData.categories.map((name) => {
+                const slug = generateSlug(name);
+                return {
+                  where: { slug }, // استفاده از slug برای جستجو
+                  create: { name, slug }, // ایجاد دسته‌بندی جدید با name و slug
+                };
+              }),
             }
           : undefined,
         tags: validatedData.tags
@@ -828,7 +834,6 @@ export async function savePost(postId: string): Promise<ActionResult> {
   const session = await auth();
   if (!session?.user) {
     return {
-      variant: 'destructive',
       success: false,
       message: 'برای ذخیره پست باید وارد شوید.',
     };
@@ -859,14 +864,12 @@ export async function savePost(postId: string): Promise<ActionResult> {
 
     revalidatePath(`/post/${postId}`);
     return {
-      variant: 'success',
       success: true,
       message: existingSave ? 'پست از لیست ذخیره‌ها حذف شد.' : 'پست با موفقیت ذخیره شد.',
     };
   } catch (error) {
     console.error('خطا در ذخیره/حذف پست:', error);
     return {
-      variant: 'destructive',
       success: false,
       message: 'عملیات با خطا مواجه شد. لطفاً دوباره تلاش کنید.',
     };
