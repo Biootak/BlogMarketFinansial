@@ -75,6 +75,13 @@ export const searchCategories = cache(
           _count: {
             select: { posts: true },
           },
+          childCategories: {
+            include: {
+              _count: {
+                select: { posts: true },
+              },
+            },
+          },
         },
       });
 
@@ -94,7 +101,6 @@ export const searchCategories = cache(
     }
   },
 );
-
 export const searchAuthors = cache(
   async (query: string): Promise<ActionResult<UserWithProfile[]>> => {
     try {

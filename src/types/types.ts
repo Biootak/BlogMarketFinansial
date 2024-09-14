@@ -354,7 +354,7 @@ export type CategoryWithPostCount = Prisma.CategoryGetPayload<{
     _count: {
       select: { posts: true };
     };
-    subCategories: {
+    childCategories: {
       include: {
         _count: {
           select: { posts: true };
