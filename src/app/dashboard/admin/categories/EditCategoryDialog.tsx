@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useState, useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Form,
@@ -25,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { z } from 'zod';
 
 interface EditCategoryDialogProps {
   isOpen: boolean;
@@ -33,13 +35,14 @@ interface EditCategoryDialogProps {
   parentCategories: TaxonomyType[];
 }
 
-// Define a new type for the form data
-type CategoryFormData = {
-  name: string;
-  slug: string;
-  thumbnail: string | null;
-  parentId: string;
-};
+const categorySchema = z.object({
+  name: z.string().min(1, 'نام دسته‌بندی الزامی است'),
+  slug: z.string().min(1, 'اسلاگ الزامی است'),
+  thumbnail: z.string().nullable(),
+  parentIds: z.array(z.string()).default([]),
+});
+
+type CategoryFormData = z.infer<typeof categorySchema>;
 
 export default function EditCategoryDialog({
   isOpen,
@@ -52,20 +55,30 @@ export default function EditCategoryDialog({
   const router = useRouter();
 
   const form = useForm<CategoryFormData>({
+    resolver: zodResolver(categorySchema),
     defaultValues: {
       name: category.name,
       slug: category.slug,
       thumbnail: category.thumbnail || null,
-      parentId: category.parentCategoryId || '',
+      parentIds: category.parentCategories?.map((pc) => pc.id) || [],
     },
   });
+
+  useEffect(() => {
+    form.reset({
+      name: category.name,
+      slug: category.slug,
+      thumbnail: category.thumbnail || null,
+      parentIds: category.parentCategories?.map((pc) => pc.id) || [],
+    });
+  }, [category, form]);
 
   const onSubmit = async (data: CategoryFormData) => {
     setIsSubmitting(true);
     const updateData: UpdateCategoryInput = {
       name: data.name,
       slug: data.slug,
-      parentId: data.parentId === 'none' ? null : data.parentId,
+      parentIds: data.parentIds,
       thumbnail: data.thumbnail || null,
     };
 
@@ -123,20 +136,22 @@ export default function EditCategoryDialog({
                 </FormItem>
               )}
             />
-            <FormField
+            <Controller
+              name="parentIds"
               control={form.control}
-              name="parentId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>دسته‌بندی والد</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value || 'none'}>
+                  <FormLabel>دسته‌بندی‌های والد</FormLabel>
+                  <Select
+                    onValueChange={(value) => field.onChange([...field.value, value])}
+                    value={field.value[field.value.length - 1] || ''}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="انتخاب دسته‌بندی والد" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="none">بدون والد</SelectItem>
                       {parentCategories.map((parentCategory) => (
                         <SelectItem key={parentCategory.id} value={parentCategory.id}>
                           {parentCategory.name}
@@ -144,6 +159,28 @@ export default function EditCategoryDialog({
                       ))}
                     </SelectContent>
                   </Select>
+                  <div className="mt-2">
+                    {field.value.map((parentId) => {
+                      const parent = parentCategories.find((pc) => pc.id === parentId);
+                      return parent ? (
+                        <span
+                          key={parentId}
+                          className="inline-block bg-primary-100 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
+                        >
+                          {parent.name}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              field.onChange(field.value.filter((id) => id !== parentId))
+                            }
+                            className="mr-2 text-red-500 hover:text-red-700"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ) : null;
+                    })}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}

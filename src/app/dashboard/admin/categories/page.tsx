@@ -10,7 +10,7 @@ export default async function CategoriesPage({
 }: {
   searchParams: { search?: string; page?: string };
 }) {
-  noStore(); // Opt out of caching for this route
+  noStore();
 
   const search = searchParams.search || '';
   const page = Number(searchParams.page) || 1;

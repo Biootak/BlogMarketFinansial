@@ -72,7 +72,9 @@ export function CategoryList({
           category={category}
           level={level}
           parentCategories={parentCategories}
-        />
+        >
+          {category.childCategories && renderCategories(category.childCategories, level + 1)}
+        </CategoryItem>
       ));
     },
     [parentCategories],

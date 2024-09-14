@@ -173,9 +173,11 @@ model Category {
   slug             String     @unique
   thumbnail        String?
   posts            Post[]
-  parentCategory   Category?  @relation("SubCategories", fields: [parentId], references: [id])
-  parentId String?
-  subCategories    Category[] @relation("SubCategories")
+  parentCategories Category[] @relation("CategoryToParent")
+  childCategories  Category[] @relation("CategoryToParent")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Tag {
@@ -184,6 +186,9 @@ model Tag {
   slug      String @unique
   thumbnail String?
   posts     Post[]
+  
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
 }
 
 model SavedPost {

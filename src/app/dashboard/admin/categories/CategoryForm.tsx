@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Dialog,
@@ -44,7 +44,7 @@ const categorySchema = z.object({
   name: z.string().min(1, 'نام دسته‌بندی الزامی است'),
   slug: z.string().min(1, 'اسلاگ الزامی است'),
   thumbnail: z.string().nullable(),
-  parentId: z.string().nullable(),
+  parentIds: z.array(z.string()).default([]),
 });
 
 type CategoryFormData = z.infer<typeof categorySchema>;
@@ -58,6 +58,7 @@ interface CategoryFormProps {
 
 export function CategoryForm({ isOpen, onClose, category, parentCategories }: CategoryFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(isOpen);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -67,7 +68,7 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
       name: category?.name || '',
       slug: category?.slug || '',
       thumbnail: category?.thumbnail || null,
-      parentId: category?.parentCategoryId || null,
+      parentIds: category?.parentCategories?.map((pc) => pc.id) || [],
     },
   });
 
@@ -77,14 +78,14 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
         name: category.name,
         slug: category.slug,
         thumbnail: category.thumbnail || null,
-        parentId: category.parentCategoryId || null,
+        parentIds: category.parentCategories?.map((pc) => pc.id) || [],
       });
     } else {
       form.reset({
         name: '',
         slug: '',
         thumbnail: null,
-        parentId: null,
+        parentIds: [],
       });
     }
   }, [category, form]);
@@ -92,22 +93,19 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
   const onSubmit = useCallback(
     async (formData: CategoryFormData) => {
       setIsSubmitting(true);
-      let result: ActionResult<TaxonomyType>;
-
-      const baseData = {
-        name: formData.name,
-        slug: formData.slug,
-        parentId: formData.parentId === 'none' ? null : formData.parentId,
-        thumbnail: formData.thumbnail || null,
-      };
-
       try {
+        const actionData: CreateCategoryInput | UpdateCategoryInput = {
+          name: formData.name,
+          slug: formData.slug,
+          parentIds: formData.parentIds,
+          thumbnail: formData.thumbnail || null,
+        };
+
+        let result: ActionResult<TaxonomyType>;
         if (category) {
-          const updateData: UpdateCategoryInput = baseData;
-          result = await updateCategory(category.id, updateData);
+          result = await updateCategory(category.id, actionData as UpdateCategoryInput);
         } else {
-          const createData: CreateCategoryInput = baseData;
-          result = await createCategory(createData);
+          result = await createCategory(actionData as CreateCategoryInput);
         }
 
         if (result.success) {
@@ -117,7 +115,9 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
             variant: 'success',
           });
           router.refresh();
-          if (onClose) onClose();
+          form.reset(); // ریست کردن فرم
+          setDialogOpen(false); // بستن دیالوگ
+          if (onClose) onClose(); // فراخوانی تابع onClose اگر وجود داشته باشد
         } else {
           toast({
             title: 'خطا',
@@ -136,8 +136,16 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
         setIsSubmitting(false);
       }
     },
-    [category, toast, router, onClose],
+    [category, toast, router, form, onClose],
   );
+
+  const handleDialogOpenChange = (open: boolean) => {
+    setDialogOpen(open);
+    if (!open) {
+      form.reset();
+      if (onClose) onClose();
+    }
+  };
 
   const formContent = (
     <Form {...form}>
@@ -169,15 +177,15 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
           )}
         />
         <Controller
-          name="parentId"
+          name="parentIds"
           control={form.control}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>دسته‌بندی والد</FormLabel>
+              <FormLabel>دسته‌بندی‌های والد</FormLabel>
               <Select
                 dir="rtl"
-                onValueChange={(value) => field.onChange(value === 'none' ? null : value)}
-                value={field.value || 'none'}
+                onValueChange={(value) => field.onChange([...field.value, value])}
+                value={field.value[field.value.length - 1] || ''}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -185,7 +193,6 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="none">بدون والد</SelectItem>
                   {parentCategories.map((parentCategory) => (
                     <SelectItem key={parentCategory.id} value={parentCategory.id}>
                       {parentCategory.name}
@@ -193,6 +200,26 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
                   ))}
                 </SelectContent>
               </Select>
+              <div className="mt-2">
+                {field.value.map((parentId) => {
+                  const parent = parentCategories.find((pc) => pc.id === parentId);
+                  return parent ? (
+                    <span
+                      key={parentId}
+                      className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
+                    >
+                      {parent.name}
+                      <button
+                        type="button"
+                        onClick={() => field.onChange(field.value.filter((id) => id !== parentId))}
+                        className="mr-2 text-red-500 hover:text-red-700"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ) : null;
+                })}
+              </div>
               <FormMessage />
             </FormItem>
           )}
@@ -225,7 +252,7 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
 
   if (isOpen !== undefined && onClose) {
     return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
+      <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
         <DialogContent className="rtl">
           <DialogHeader>
             <DialogTitle>{category ? 'ویرایش دسته‌بندی' : 'افزودن دسته‌بندی جدید'}</DialogTitle>
@@ -237,7 +264,7 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
   }
 
   return (
-    <Dialog>
+    <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
       <DialogTrigger asChild>
         <Button className="bg-gradient-to-l from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 text-white font-medium py-2 px-4 sm:px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 group">
           <HiOutlinePlus

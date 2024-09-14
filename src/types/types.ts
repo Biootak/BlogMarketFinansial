@@ -82,17 +82,17 @@ const fullPostWithRelations = Prisma.validator<Prisma.PostDefaultArgs>()({
 
 const categoryWithRelations = Prisma.validator<Prisma.CategoryDefaultArgs>()({
   include: {
+    parentCategories: true,
     _count: {
       select: { posts: true },
     },
-    subCategories: {
+    childCategories: {
       include: {
         _count: {
           select: { posts: true },
         },
       },
     },
-    parentCategory: true,
   },
 });
 
@@ -224,8 +224,10 @@ export type TaxonomyType = {
   taxonomy: 'category' | 'subcategory' | 'tag';
   color?: TwMainColor | string;
   count: number;
-  subCategories?: TaxonomyType[];
-  parentCategoryId?: string | null;
+  childCategories?: TaxonomyType[];
+  parentCategories?: Omit<TaxonomyType, 'childCategories' | 'parentCategories'>[];
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type LikeWithUser = Prisma.LikeGetPayload<{
@@ -340,7 +342,7 @@ export type Action =
 export type CreateCategoryInput = {
   name: string;
   slug: string;
-  parentId: string | null;
+  parentIds: string[];
   thumbnail: string | null;
 };
 

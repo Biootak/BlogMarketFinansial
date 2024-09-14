@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
 import prisma from '@/lib/db';
 import { generateColor, generateSlug, sanitizeSlug, validateSlug } from '@/lib/utils';
 import type {
@@ -7,17 +9,15 @@ import type {
   TaxonomyType,
   CreateCategoryInput,
   UpdateCategoryInput,
-  CategoryWithParent,
 } from '@/types/types';
-import { revalidatePath, revalidateTag } from 'next/cache';
 
 export async function getCategories(
   options: { limit?: number; page?: number; search?: string } = {},
 ): Promise<ActionResult<{ categories: TaxonomyType[]; totalCount: number }>> {
-  try {
-    const { limit = 10, page = 1, search = '' } = options;
-    const skip = (page - 1) * limit;
+  const { limit = 10, page = 1, search = '' } = options;
+  const skip = (page - 1) * limit;
 
+  try {
     const where = search
       ? {
           name: {
@@ -36,14 +36,14 @@ export async function getCategories(
           _count: {
             select: { posts: true },
           },
-          subCategories: {
+          childCategories: {
             include: {
               _count: {
                 select: { posts: true },
               },
             },
           },
-          parentCategory: true,
+          parentCategories: true,
         },
         orderBy: {
           posts: {
@@ -55,16 +55,37 @@ export async function getCategories(
     ]);
 
     const formattedCategories: TaxonomyType[] = categories.map((category) => ({
-      ...category,
-      taxonomy: category.parentCategory ? 'subcategory' : 'category',
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      thumbnail: category.thumbnail,
+      taxonomy: category.parentCategories.length > 0 ? 'subcategory' : 'category',
       color: generateColor(category.id),
       count: category._count.posts,
-      subCategories: category.subCategories.map((subCategory) => ({
-        ...subCategory,
+      childCategories: category.childCategories.map((child) => ({
+        id: child.id,
+        name: child.name,
+        slug: child.slug,
+        thumbnail: child.thumbnail,
         taxonomy: 'subcategory',
-        color: generateColor(subCategory.id),
-        count: subCategory._count.posts,
+        color: generateColor(child.id),
+        count: child._count.posts,
+        createdAt: child.createdAt,
+        updatedAt: child.updatedAt,
       })),
+      parentCategories: category.parentCategories.map((parent) => ({
+        id: parent.id,
+        name: parent.name,
+        slug: parent.slug,
+        thumbnail: parent.thumbnail,
+        taxonomy: 'category',
+        color: generateColor(parent.id),
+        count: 0,
+        createdAt: parent.createdAt,
+        updatedAt: parent.updatedAt,
+      })),
+      createdAt: category.createdAt,
+      updatedAt: category.updatedAt,
     }));
 
     return {
@@ -89,7 +110,7 @@ export async function createCategory(
   data: CreateCategoryInput,
 ): Promise<ActionResult<TaxonomyType>> {
   try {
-    const { name, slug: providedSlug, thumbnail, parentId } = data;
+    const { name, slug: providedSlug, thumbnail, parentIds = [] } = data;
 
     if (!name) {
       return {
@@ -108,11 +129,9 @@ export async function createCategory(
       };
     }
 
-    // بررسی وجود دسته‌بندی با نام یا اسلاگ مشابه
     const existingCategory = await prisma.category.findFirst({
       where: {
         OR: [{ name }, { slug }],
-        parentId,
       },
     });
 
@@ -126,7 +145,6 @@ export async function createCategory(
       };
     }
 
-    // اگر اسلاگ تکراری باشد، یک اسلاگ جدید ایجاد می‌کنیم
     let uniqueSlug = slug;
     let slugCounter = 1;
     while (await prisma.category.findUnique({ where: { slug: uniqueSlug } })) {
@@ -139,25 +157,39 @@ export async function createCategory(
         name,
         slug: uniqueSlug,
         thumbnail,
-        parentId: parentId === 'none' ? null : parentId,
+        parentCategories: {
+          connect: Array.isArray(parentIds) ? parentIds.map((id) => ({ id })) : [],
+        },
       },
       include: {
         _count: {
           select: { posts: true },
         },
+        parentCategories: true,
+        childCategories: true,
       },
     });
 
     const formattedCategory: TaxonomyType = {
       ...newCategory,
-      taxonomy: parentId ? 'subcategory' : 'category',
+      taxonomy: newCategory.parentCategories.length > 0 ? 'subcategory' : 'category',
       color: generateColor(newCategory.id),
       count: 0,
-      subCategories: [],
+      childCategories: [],
+      parentCategories: newCategory.parentCategories.map((parent) => ({
+        id: parent.id,
+        name: parent.name,
+        slug: parent.slug,
+        thumbnail: parent.thumbnail,
+        taxonomy: 'category',
+        color: generateColor(parent.id),
+        count: 0,
+        createdAt: parent.createdAt,
+        updatedAt: parent.updatedAt,
+      })),
     };
 
     revalidatePath('/admin/categories');
-    revalidateTag('categories');
 
     return {
       success: true,
@@ -179,14 +211,7 @@ export async function updateCategory(
   data: UpdateCategoryInput,
 ): Promise<ActionResult<TaxonomyType>> {
   try {
-    if (!data) {
-      return {
-        success: false,
-        message: 'داده‌های به‌روزرسانی نامعتبر است.',
-      };
-    }
-
-    const { name, slug: providedSlug, thumbnail, parentId } = data;
+    const { name, slug: providedSlug, thumbnail, parentIds = [] } = data;
 
     if (!name) {
       return {
@@ -205,7 +230,6 @@ export async function updateCategory(
       };
     }
 
-    // بررسی وجود دسته‌بندی با نام یا اسلاگ مشابه (به جز دسته‌بندی فعلی)
     const existingCategory = await prisma.category.findFirst({
       where: {
         OR: [{ name }, { slug }],
@@ -223,7 +247,6 @@ export async function updateCategory(
       };
     }
 
-    // اگر اسلاگ تغییر کرده و تکراری باشد، یک اسلاگ جدید ایجاد می‌کنیم
     const currentCategory = await prisma.category.findUnique({ where: { id } });
     let uniqueSlug = slug;
     if (currentCategory && currentCategory.slug !== slug) {
@@ -234,25 +257,12 @@ export async function updateCategory(
       }
     }
 
-    // بررسی حلقه در ساختار درختی
-    if (parentId && parentId !== 'none') {
-      const parent = await prisma.category.findUnique({
-        where: { id: parentId },
-        include: { parentCategory: true },
-      });
-      if (parent) {
-        let currentParent: CategoryWithParent | null = parent as CategoryWithParent;
-        while (currentParent) {
-          if (currentParent.id === id) {
-            return {
-              success: false,
-              message: 'نمی‌توانید یک دسته‌بندی را به زیرمجموعه خودش تبدیل کنید.',
-              
-            };
-          }
-          currentParent = currentParent.parentCategory;
-        }
-      }
+    const isCircular = await checkCircularReference(id, parentIds);
+    if (isCircular) {
+      return {
+        success: false,
+        message: 'نمی‌توانید یک دسته‌بندی را به زیرمجموعه خودش تبدیل کنید.',
+      };
     }
 
     const updatedCategory = await prisma.category.update({
@@ -261,37 +271,55 @@ export async function updateCategory(
         name,
         slug: uniqueSlug,
         thumbnail,
-        parentId: parentId === 'none' ? null : parentId,
+        parentCategories: {
+          set: Array.isArray(parentIds) ? parentIds.map((id) => ({ id })) : [],
+        },
       },
       include: {
         _count: {
           select: { posts: true },
         },
-        subCategories: {
+        childCategories: {
           include: {
             _count: {
               select: { posts: true },
             },
           },
         },
+        parentCategories: true,
       },
     });
 
     const formattedCategory: TaxonomyType = {
       ...updatedCategory,
-      taxonomy: updatedCategory.parentId ? 'subcategory' : 'category',
+      taxonomy: updatedCategory.parentCategories.length > 0 ? 'subcategory' : 'category',
       color: generateColor(updatedCategory.id),
       count: updatedCategory._count.posts,
-      subCategories: updatedCategory.subCategories.map((subCategory) => ({
-        ...subCategory,
+      childCategories: updatedCategory.childCategories.map((subCategory) => ({
+        id: subCategory.id,
+        name: subCategory.name,
+        slug: subCategory.slug,
+        thumbnail: subCategory.thumbnail,
         taxonomy: 'subcategory',
         color: generateColor(subCategory.id),
         count: subCategory._count.posts,
+        createdAt: subCategory.createdAt,
+        updatedAt: subCategory.updatedAt,
+      })),
+      parentCategories: updatedCategory.parentCategories.map((parent) => ({
+        id: parent.id,
+        name: parent.name,
+        slug: parent.slug,
+        thumbnail: parent.thumbnail,
+        taxonomy: 'category',
+        color: generateColor(parent.id),
+        count: 0,
+        createdAt: parent.createdAt,
+        updatedAt: parent.updatedAt,
       })),
     };
 
     revalidatePath('/admin/categories');
-    revalidateTag('categories');
 
     return {
       success: true,
@@ -312,7 +340,7 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
   try {
     const category = await prisma.category.findUnique({
       where: { id },
-      include: { subCategories: true },
+      include: { childCategories: true },
     });
 
     if (!category) {
@@ -322,7 +350,7 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
       };
     }
 
-    if (category.subCategories.length > 0) {
+    if (category.childCategories.length > 0) {
       return {
         success: false,
         message: 'این دسته‌بندی دارای زیردسته‌بندی است و نمی‌تواند حذف شود.',
@@ -334,7 +362,6 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
     });
 
     revalidatePath('/admin/categories');
-    revalidateTag('categories');
 
     return {
       success: true,
@@ -352,34 +379,92 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
 
 export async function getAllParentCategories(): Promise<ActionResult<TaxonomyType[]>> {
   try {
-    const parentCategories = await prisma.category.findMany({
-      where: { parentId: null },
+    const allCategories = await prisma.category.findMany({
       include: {
         _count: {
-          select: { posts: true, subCategories: true },
+          select: { posts: true, childCategories: true },
+        },
+        parentCategories: true,
+        childCategories: {
+          include: {
+            _count: {
+              select: { posts: true },
+            },
+          },
         },
       },
     });
 
-    const formattedCategories: TaxonomyType[] = parentCategories.map((category) => ({
-      ...category,
-      taxonomy: 'category',
+    const formattedCategories: TaxonomyType[] = allCategories.map((category) => ({
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      thumbnail: category.thumbnail,
+      taxonomy: category.parentCategories.length > 0 ? 'subcategory' : 'category',
       color: generateColor(category.id),
       count: category._count.posts,
-      subCategoriesCount: category._count.subCategories,
+      childCategories: category.childCategories.map((child) => ({
+        id: child.id,
+        name: child.name,
+        slug: child.slug,
+        thumbnail: child.thumbnail,
+        taxonomy: 'subcategory',
+        color: generateColor(child.id),
+        count: child._count.posts,
+        createdAt: child.createdAt,
+        updatedAt: child.updatedAt,
+      })),
+      parentCategories: category.parentCategories.map((parent) => ({
+        id: parent.id,
+        name: parent.name,
+        slug: parent.slug,
+        thumbnail: parent.thumbnail,
+        taxonomy: 'category',
+        color: generateColor(parent.id),
+        count: 0,
+        createdAt: parent.createdAt,
+        updatedAt: parent.updatedAt,
+      })),
+      createdAt: category.createdAt,
+      updatedAt: category.updatedAt,
     }));
 
     return {
       success: true,
-      message: 'دسته‌بندی‌های والد با موفقیت بازیابی شدند.',
+      message: 'تمام دسته‌بندی‌ها با موفقیت بازیابی شدند.',
       data: formattedCategories,
     };
   } catch (error) {
-    console.error('خطا در بازیابی دسته‌بندی‌های والد:', error);
+    console.error('خطا در بازیابی دسته‌بندی‌ها:', error);
     return {
       success: false,
-      message: 'خطا در بازیابی دسته‌بندی‌های والد. لطفاً دوباره تلاش کنید.',
+      message: 'خطا در بازیابی دسته‌بندی‌ها. لطفاً دوباره تلاش کنید.',
       error: error instanceof Error ? error.message : String(error),
     };
   }
+}
+
+async function checkCircularReference(categoryId: string, parentIds: string[]): Promise<boolean> {
+  const queue = [...parentIds];
+  const visited = new Set<string>();
+
+  while (queue.length > 0) {
+    const currentId = queue.shift();
+    if (currentId === categoryId) {
+      return true; // حلقه پیدا شد
+    }
+
+    if (currentId && !visited.has(currentId)) {
+      visited.add(currentId);
+      const parent = await prisma.category.findUnique({
+        where: { id: currentId },
+        include: { parentCategories: true },
+      });
+      if (parent) {
+        queue.push(...parent.parentCategories.map((p) => p.id));
+      }
+    }
+  }
+
+  return false; // حلقه‌ای پیدا نشد
 }

@@ -20,9 +20,15 @@ interface CategoryItemProps {
   category: TaxonomyType;
   level: number;
   parentCategories: TaxonomyType[];
+  children?: React.ReactNode;
 }
 
-export default function CategoryItem({ category, level, parentCategories }: CategoryItemProps) {
+export default function CategoryItem({
+  category,
+  level,
+  parentCategories,
+  children,
+}: CategoryItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const { toast } = useToast();
@@ -79,7 +85,7 @@ export default function CategoryItem({ category, level, parentCategories }: Cate
             <span className={`font-medium ${level === 0 ? 'text-blue-600' : 'text-green-600'}`}>
               {category.name}
             </span>
-            {category.subCategories && category.subCategories.length > 0 && (
+            {category.childCategories && category.childCategories.length > 0 && (
               <button
                 type="button"
                 onClick={() => setIsExpanded(!isExpanded)}
@@ -123,16 +129,7 @@ export default function CategoryItem({ category, level, parentCategories }: Cate
           </div>
         </td>
       </tr>
-      {isExpanded &&
-        category.subCategories &&
-        category.subCategories.map((subCategory) => (
-          <CategoryItem
-            key={subCategory.id}
-            category={subCategory}
-            level={level + 1}
-            parentCategories={parentCategories}
-          />
-        ))}
+      {isExpanded && children}
       {isEditDialogOpen && (
         <CategoryForm
           isOpen={isEditDialogOpen}
