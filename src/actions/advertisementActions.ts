@@ -125,7 +125,7 @@ export async function createAdvertisement(
 ): Promise<ActionResult<Advertisement>> {
   try {
     const newAd = await prisma.advertisement.create({ data });
-    revalidatePath('/admin/advertisements');
+    revalidatePath('/advertisements');
     return {
       success: true,
       message: 'تبلیغ با موفقیت ایجاد شد.',
@@ -150,7 +150,7 @@ export async function updateAdvertisement(
       where: { id },
       data,
     });
-    revalidatePath('/admin/advertisements');
+    revalidatePath('/advertisements');
     return {
       success: true,
       message: 'تبلیغ با موفقیت به‌روزرسانی شد.',
@@ -169,7 +169,7 @@ export async function updateAdvertisement(
 export async function deleteAdvertisement(id: string): Promise<ActionResult> {
   try {
     await prisma.advertisement.delete({ where: { id } });
-    revalidatePath('/admin/advertisements');
+    revalidatePath('/advertisements');
     return {
       success: true,
       message: 'تبلیغ با موفقیت حذف شد.',

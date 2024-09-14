@@ -20,7 +20,7 @@ const PopularPostItem: React.FC<PopularPostItemProps> = ({ slug, title, publishD
         </h5>
 
         <Link
-          href={`/dashboard/admin/posts/edit/${slug}`}
+          href={`/dashboard/posts/edit/${slug}`}
           className="text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300"
         >
           <HiPencil className="w-5 h-5" />

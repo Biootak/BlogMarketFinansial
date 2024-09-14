@@ -131,7 +131,7 @@ export async function createPost(
       },
     });
 
-    revalidatePath('/dashboard/admin');
+    revalidatePath('/dashboard');
     return {
       success: true,
       message: 'پست با موفقیت ایجاد شد.',
@@ -277,7 +277,7 @@ export async function updatePost(
       },
     });
 
-    revalidatePath('/dashboard/admin');
+    revalidatePath('/dashboard');
     return {
       success: true,
       message: 'پست با موفقیت به‌روزرسانی شد.',
@@ -385,7 +385,7 @@ export async function deletePost(postId: string): Promise<ActionResult> {
 
   try {
     await prisma.post.delete({ where: { id: postId } });
-    revalidatePath('/dashboard/admin/posts');
+    revalidatePath('/dashboard/posts');
     return {
       success: true,
       message: 'پست با موفقیت حذف شد.',

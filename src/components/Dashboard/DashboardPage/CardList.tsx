@@ -118,7 +118,7 @@ const CardList: FC<CardListProps> = ({
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Link
-                  href={`/dashboard/admin/posts/edit/${id}`}
+                  href={`/dashboard/posts/edit/${id}`}
                   className="flex items-center w-full"
                 >
                   <HiPencil className="w-4 h-4 ml-2" />

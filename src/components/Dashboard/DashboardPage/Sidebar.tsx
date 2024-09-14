@@ -17,16 +17,16 @@ import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useMemo } from 'react';
 
 const menuItems = [
-  { href: '/dashboard/admin', icon: <IoHomeOutline size={24} />, label: 'داشبورد' },
-  { href: '/dashboard/admin/posts', icon: <FaProductHunt size={24} />, label: 'پست ها' },
+  { href: '/dashboard', icon: <IoHomeOutline size={24} />, label: 'داشبورد' },
+  { href: '/dashboard/posts', icon: <FaProductHunt size={24} />, label: 'پست ها' },
   {
-    href: '/dashboard/admin/categories',
+    href: '/dashboard/categories',
     icon: <MdOutlineDashboard size={24} />,
     label: 'دسته بندی',
   },
-  { href: '/dashboard/admin/advertisements', icon: <SiGoogleads size={24} />, label: 'تبلیغات' },
-  { href: '/dashboard/admin/users', icon: <FaUsers size={24} />, label: 'کاربران' },
-  { href: '/dashboard/admin/edit-profile', icon: <CiSettings size={24} />, label: 'تنظیمات' },
+  { href: '/dashboard/advertisements', icon: <SiGoogleads size={24} />, label: 'تبلیغات' },
+  { href: '/dashboard/users', icon: <FaUsers size={24} />, label: 'کاربران' },
+  { href: '/dashboard/edit-profile', icon: <CiSettings size={24} />, label: 'تنظیمات' },
 ];
 
 const Sidebar: React.FC = () => {

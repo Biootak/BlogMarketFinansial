@@ -18,7 +18,7 @@ const RecentDraftItem: React.FC<RecentDraftItemProps> = ({ id, title, date, auth
         </h5>
 
         <Link
-          href={`/dashboard/admin/posts/edit/${id}`}
+          href={`/dashboard/posts/edit/${id}`}
           className="text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300"
         >
           <HiPencil className="w-5 h-5" />

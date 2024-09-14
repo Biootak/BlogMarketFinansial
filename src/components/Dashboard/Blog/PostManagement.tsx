@@ -40,7 +40,7 @@ const PostManagement: React.FC<PostManagementProps> = ({ stats, popularPosts, re
           مدیریت پست‌ها
         </h3>
         <Link
-          href="/dashboard/admin/posts"
+          href="/dashboard/posts"
           className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 flex items-center transition-colors duration-200"
         >
           مشاهده همه پست‌ها

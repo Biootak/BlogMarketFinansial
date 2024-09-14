@@ -21,7 +21,7 @@ const RecentDrafts: React.FC<RecentDraftsProps> = ({ drafts }) => {
       <div className="flex justify-between items-center mb-6">
         <h4 className="font-bold text-xl dark:text-white">پیش‌نویس‌های اخیر</h4>
         <Link
-          href="/dashboard/admin/posts"
+          href="/dashboard/posts"
           className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 flex items-center text-sm font-medium transition-colors duration-200"
         >
           مشاهده همه

@@ -189,7 +189,7 @@ export async function createCategory(
       })),
     };
 
-    revalidatePath('/admin/categories');
+    revalidatePath('/categories');
 
     return {
       success: true,
@@ -319,7 +319,7 @@ export async function updateCategory(
       })),
     };
 
-    revalidatePath('/admin/categories');
+    revalidatePath('/categories');
 
     return {
       success: true,
@@ -361,7 +361,7 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
       where: { id },
     });
 
-    revalidatePath('/admin/categories');
+    revalidatePath('/categories');
 
     return {
       success: true,

@@ -99,7 +99,7 @@ export async function createUser(data: CreateUserData): Promise<ActionResult<Use
       },
     });
 
-    revalidatePath('/admin/users');
+    revalidatePath('/users');
 
     return {
       success: true,
@@ -143,7 +143,7 @@ export async function updateUser(
       },
     });
 
-    revalidatePath('/admin/users');
+    revalidatePath('/users');
 
     return {
       success: true,
@@ -166,7 +166,7 @@ export async function deleteUser(id: string): Promise<ActionResult> {
       where: { id },
     });
 
-    revalidatePath('/admin/users');
+    revalidatePath('/users');
 
     return {
       success: true,

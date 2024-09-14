@@ -105,7 +105,7 @@ const PostForm: React.FC<PostFormProps> = ({
       try {
         await onSubmit({ ...data, content: editorContent });
         resetForm();
-        router.push('/dashboard/admin/posts');
+        router.push('/dashboard/posts');
       } catch (error) {
         console.error('خطا در ایجاد/ویرایش پست:', error);
       } finally {
