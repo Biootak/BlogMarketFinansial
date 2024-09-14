@@ -11,7 +11,7 @@ export interface CardCategory1Props {
 }
 
 const CardCategory1: FC<CardCategory1Props> = ({ className = '', size = 'normal', taxonomy }) => {
-  const { _count, name, thumbnail } = taxonomy;
+  const { count, name, thumbnail } = taxonomy;
   return (
     <Link
       href={`/archives/${taxonomy.slug}`}
@@ -40,7 +40,7 @@ const CardCategory1: FC<CardCategory1Props> = ({ className = '', size = 'normal'
             size === 'large' ? 'text-sm' : 'text-xs'
           } block mt-[2px] text-neutral-500 dark:text-neutral-400`}
         >
-          {_count.posts} Articles
+          {count} مقاله ها
         </span>
       </div>
     </Link>
