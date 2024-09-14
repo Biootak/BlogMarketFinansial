@@ -1,4 +1,3 @@
-// app/actions/categoryActions.ts
 'use server';
 
 import prisma from '@/lib/db';
@@ -8,6 +7,7 @@ import type {
   TaxonomyType,
   CreateCategoryInput,
   UpdateCategoryInput,
+  CategoryWithParent,
 } from '@/types/types';
 import { revalidatePath, revalidateTag } from 'next/cache';
 
@@ -139,7 +139,7 @@ export async function createCategory(
         name,
         slug: uniqueSlug,
         thumbnail,
-        parentId,
+        parentId: parentId === 'none' ? null : parentId,
       },
       include: {
         _count: {
@@ -209,7 +209,6 @@ export async function updateCategory(
     const existingCategory = await prisma.category.findFirst({
       where: {
         OR: [{ name }, { slug }],
-        parentId,
         NOT: { id },
       },
     });
@@ -235,13 +234,34 @@ export async function updateCategory(
       }
     }
 
+    // بررسی حلقه در ساختار درختی
+    if (parentId && parentId !== 'none') {
+      const parent = await prisma.category.findUnique({
+        where: { id: parentId },
+        include: { parentCategory: true },
+      });
+      if (parent) {
+        let currentParent: CategoryWithParent | null = parent as CategoryWithParent;
+        while (currentParent) {
+          if (currentParent.id === id) {
+            return {
+              success: false,
+              message: 'نمی‌توانید یک دسته‌بندی را به زیرمجموعه خودش تبدیل کنید.',
+              
+            };
+          }
+          currentParent = currentParent.parentCategory;
+        }
+      }
+    }
+
     const updatedCategory = await prisma.category.update({
       where: { id },
       data: {
         name,
         slug: uniqueSlug,
         thumbnail,
-        parentId,
+        parentId: parentId === 'none' ? null : parentId,
       },
       include: {
         _count: {

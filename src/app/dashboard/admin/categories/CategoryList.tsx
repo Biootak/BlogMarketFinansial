@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import CategoryItem from './CategoryItem';
 import type { TaxonomyType } from '@/types/types';
 import { getCategories } from '@/actions/categoryActions';
@@ -30,7 +30,7 @@ export function CategoryList({
   const [hasNextPage, setHasNextPage] = useState(categories.length < initialData.totalCount);
   const { toast } = useToast();
 
-  const fetchNextPage = async () => {
+  const fetchNextPage = useCallback(async () => {
     if (isLoading || !hasNextPage) return;
     setIsLoading(true);
     try {
@@ -54,7 +54,7 @@ export function CategoryList({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isLoading, hasNextPage, search, page, categories.length, toast]);
 
   const elementRef = useInfiniteScroll(fetchNextPage, hasNextPage, isLoading);
 
@@ -64,16 +64,19 @@ export function CategoryList({
     setHasNextPage(initialData.categories.length < initialData.totalCount);
   }, [initialData]);
 
-  const renderCategories = (cats: TaxonomyType[], level = 0) => {
-    return cats.map((category) => (
-      <CategoryItem
-        key={category.id}
-        category={category}
-        level={level}
-        parentCategories={parentCategories}
-      />
-    ));
-  };
+  const renderCategories = useCallback(
+    (cats: TaxonomyType[], level = 0) => {
+      return cats.map((category) => (
+        <CategoryItem
+          key={category.id}
+          category={category}
+          level={level}
+          parentCategories={parentCategories}
+        />
+      ));
+    },
+    [parentCategories],
+  );
 
   if (categories.length === 0) {
     return <div>هیچ دسته‌بندی یافت نشد.</div>;

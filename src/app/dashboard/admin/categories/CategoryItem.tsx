@@ -1,8 +1,7 @@
-// app/admin/categories/CategoryItem.tsx
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   HiOutlinePencil,
   HiOutlineTrash,
@@ -15,6 +14,7 @@ import type { TaxonomyType } from '@/types/types';
 import { deleteCategory } from '@/actions/categoryActions';
 import { useToast } from '@/components/ui/use-toast';
 import { CategoryForm } from './CategoryForm';
+import { useRouter } from 'next/navigation';
 
 interface CategoryItemProps {
   category: TaxonomyType;
@@ -26,16 +26,18 @@ export default function CategoryItem({ category, level, parentCategories }: Cate
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (window.confirm('آیا مطمئن هستید که می‌خواهید این دسته‌بندی را حذف کنید؟')) {
       const result = await deleteCategory(category.id);
       if (result.success) {
         toast({
           title: 'موفقیت',
           description: result.message,
-          variant: 'default',
+          variant: 'success',
         });
+        router.refresh();
       } else {
         toast({
           title: 'خطا',
@@ -44,7 +46,7 @@ export default function CategoryItem({ category, level, parentCategories }: Cate
         });
       }
     }
-  };
+  }, [category.id, toast, router]);
 
   const CategoryIcon = level === 0 ? FaLayerGroup : FaFolder;
   const iconColor = level === 0 ? 'text-blue-500' : 'text-green-500';

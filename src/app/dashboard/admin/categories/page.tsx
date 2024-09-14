@@ -3,12 +3,15 @@ import { CategoryForm } from './CategoryForm';
 import SearchCategories from './SearchCategories';
 import { CategoryList } from './CategoryList';
 import { getCategories, getAllParentCategories } from '@/actions/categoryActions';
+import { unstable_noStore as noStore } from 'next/cache';
 
 export default async function CategoriesPage({
   searchParams,
 }: {
   searchParams: { search?: string; page?: string };
 }) {
+  noStore(); // Opt out of caching for this route
+
   const search = searchParams.search || '';
   const page = Number(searchParams.page) || 1;
   const limit = 10;

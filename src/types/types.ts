@@ -360,3 +360,12 @@ export type CategoryWithPostCount = Prisma.CategoryGetPayload<{
     };
   };
 }>;
+
+export type CategoryWithParent = {
+  id: string;
+  name: string;
+  slug: string;
+  thumbnail: string | null;
+  parentId: string | null;
+  parentCategory: CategoryWithParent | null;
+};

@@ -1,7 +1,6 @@
-// app/admin/categories/CategoryForm.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -45,7 +44,7 @@ const categorySchema = z.object({
   name: z.string().min(1, 'نام دسته‌بندی الزامی است'),
   slug: z.string().min(1, 'اسلاگ الزامی است'),
   thumbnail: z.string().nullable(),
-  parentId: z.string().optional(),
+  parentId: z.string().nullable(),
 });
 
 type CategoryFormData = z.infer<typeof categorySchema>;
@@ -68,7 +67,7 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
       name: category?.name || '',
       slug: category?.slug || '',
       thumbnail: category?.thumbnail || null,
-      parentId: category?.parentCategoryId || undefined,
+      parentId: category?.parentCategoryId || null,
     },
   });
 
@@ -77,71 +76,72 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
       form.reset({
         name: category.name,
         slug: category.slug,
-        thumbnail: category.thumbnail || undefined,
-        parentId: category?.parentCategoryId || undefined,
+        thumbnail: category.thumbnail || null,
+        parentId: category.parentCategoryId || null,
       });
     } else {
       form.reset({
         name: '',
         slug: '',
-        thumbnail: undefined,
-        parentId: undefined,
+        thumbnail: null,
+        parentId: null,
       });
     }
   }, [category, form]);
 
-  const onSubmit = async (formData: CategoryFormData) => {
-    setIsSubmitting(true);
-    let result: ActionResult<TaxonomyType>;
+  const onSubmit = useCallback(
+    async (formData: CategoryFormData) => {
+      setIsSubmitting(true);
+      let result: ActionResult<TaxonomyType>;
 
-    const baseData = {
-      name: formData.name,
-      slug: formData.slug,
-      parentId:
-        formData.parentId === 'none' || formData.parentId === undefined ? null : formData.parentId,
-      thumbnail: formData.thumbnail || null,
-    };
+      const baseData = {
+        name: formData.name,
+        slug: formData.slug,
+        parentId: formData.parentId === 'none' ? null : formData.parentId,
+        thumbnail: formData.thumbnail || null,
+      };
 
-    try {
-      if (category) {
-        // اگر در حال ویرایش هستیم
-        const updateData: UpdateCategoryInput = baseData;
-        result = await updateCategory(category.id, updateData);
-      } else {
-        // اگر در حال ایجاد دسته‌بندی جدید هستیم
-        const createData: CreateCategoryInput = baseData;
-        result = await createCategory(createData);
-      }
+      try {
+        if (category) {
+          const updateData: UpdateCategoryInput = baseData;
+          result = await updateCategory(category.id, updateData);
+        } else {
+          const createData: CreateCategoryInput = baseData;
+          result = await createCategory(createData);
+        }
 
-      if (result.success) {
-        toast({
-          title: 'موفقیت',
-          description: result.message,
-          variant: 'success',
-        });
-        router.refresh();
-        if (onClose) onClose();
-      } else {
+        if (result.success) {
+          toast({
+            title: 'موفقیت',
+            description: result.message,
+            variant: 'success',
+          });
+          router.refresh();
+          if (onClose) onClose();
+        } else {
+          toast({
+            title: 'خطا',
+            description: result.message,
+            variant: 'destructive',
+          });
+        }
+      } catch (error) {
+        console.error('خطا در ارسال فرم:', error);
         toast({
           title: 'خطا',
-          description: result.message,
+          description: 'مشکلی در ارسال اطلاعات رخ داد. لطفاً دوباره تلاش کنید.',
           variant: 'destructive',
         });
+      } finally {
+        setIsSubmitting(false);
       }
-    } catch (error) {
-      console.error('خطا در ارسال فرم:', error);
-      toast({
-        title: 'خطا',
-        description: 'مشکلی در ارسال اطلاعات رخ داد. لطفاً دوباره تلاش کنید.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    },
+    [category, toast, router, onClose],
+  );
+
   const formContent = (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" dir="rtl">
         <FormField
           control={form.control}
           name="name"
@@ -162,7 +162,7 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
             <FormItem>
               <FormLabel>اسلاگ</FormLabel>
               <FormControl>
-                <Input {...field} className="text-left" dir="ltr" />
+                <Input {...field} className="text-left" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -175,6 +175,7 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
             <FormItem>
               <FormLabel>دسته‌بندی والد</FormLabel>
               <Select
+                dir="rtl"
                 onValueChange={(value) => field.onChange(value === 'none' ? null : value)}
                 value={field.value || 'none'}
               >

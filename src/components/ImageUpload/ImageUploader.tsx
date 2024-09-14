@@ -55,6 +55,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     accept: {
       'image/jpeg': ['.jpg', '.jpeg'],
       'image/png': ['.png'],
+      'image/svg': ['.svg'],
       'image/gif': ['.gif'],
       'image/webp': ['.webp'],
       'image/avif': ['.avif'],
