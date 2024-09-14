@@ -139,7 +139,7 @@ const ModalTags: React.FC<ModalTagsProps> = ({ initialTags }) => {
                   className="w-full justify-end text-right"
                   onClick={() => handleTagSelect(tag.slug)}
                 >
-                  {tag.name} ({(tag._count as { posts: number }).posts})
+                  {tag.name} ({tag.count})
                 </Button>
               ))}
             </motion.div>
