@@ -238,11 +238,12 @@ export type CommentWithRelationsAndLikes = CommentWithCustomRelations & {
   likes?: LikeWithUser[];
 };
 
-export type ActionResult<T = void> = {
+export type ActionResult<T = void, E = string> = {
   success: boolean;
   message: string;
   data?: T;
-  error?: string;
+  error?: E;
+  variant?: 'success' | 'destructive' | 'warning' | 'info';
 };
 
 export type CategoryActionResult = ActionResult<TaxonomyType>;
