@@ -78,7 +78,7 @@ async function fetchWithRetry(
       return response;
     } catch (error) {
       if (i === retries - 1) throw error;
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 20000));
     }
   }
   throw new Error('Max retries reached');
