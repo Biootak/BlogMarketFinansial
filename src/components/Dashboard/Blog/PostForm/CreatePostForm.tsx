@@ -1,14 +1,17 @@
 'use client';
 
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { CreatePostSchema } from '@/schemas';
-import { usePostStore } from '@/hooks/postStore';
 import PostForm from './PostForm';
 import type { CreatePostInput, UpdatePostInput } from '@/types/types';
 import { useToast } from '@/components/ui/use-toast';
+import { createPost } from '@/actions/postActions';
 
 const CreatePostForm: React.FC = () => {
-  const createPost = usePostStore((state) => state.createPost);
+  const router = useRouter();
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const defaultValues: CreatePostInput = {
     title: '',
@@ -25,36 +28,37 @@ const CreatePostForm: React.FC = () => {
     tags: [],
   };
 
-  const handleCreatePost = async (data: CreatePostInput | UpdatePostInput) => {
-    // Ensure that data is of type CreatePostInput
-    if ('id' in data) {
-      throw new Error('Invalid data type for creating a post');
+  const handleCreatePost = async (data: CreatePostInput) => {
+    setIsSubmitting(true);
+    try {
+      const result = await createPost(data);
+      if (result.success) {
+        toast({
+          title: 'موفقیت',
+          description: 'پست با موفقیت ایجاد شد.',
+          variant: 'success',
+        });
+        router.push('/dashboard/posts');
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (error) {
+      toast({
+        title: 'خطا',
+        description: error instanceof Error ? error.message : 'خطا در ایجاد پست',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    // Ensure that data does not contain undefined values
-    const validatedData: CreatePostInput = {
-      title: data.title ?? '',
-      content: data.content ?? '',
-      excerpt: data.excerpt ?? '',
-      status: data.status ?? 'DRAFT',
-      isFeatured: data.isFeatured ?? false,
-      postType: data.postType ?? 'STANDARD',
-      videoUrl: data.videoUrl || undefined,
-      audioUrl: data.audioUrl || undefined,
-      featuredImage: data.featuredImage ?? undefined,
-      galleryImages: data.galleryImages ?? [],
-      categories: data.categories ?? [],
-      tags: data.tags ?? [],
-    };
-
-    await createPost(validatedData, toast);
   };
 
   return (
     <PostForm
       schema={CreatePostSchema}
       defaultValues={defaultValues}
-      onSubmit={handleCreatePost}
+      onSubmit={handleCreatePost as (data: CreatePostInput | UpdatePostInput) => Promise<void>}
+      isSubmitting={isSubmitting}
       title="ایجاد پست جدید"
     />
   );

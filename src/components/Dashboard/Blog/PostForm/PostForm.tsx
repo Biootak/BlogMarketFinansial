@@ -1,35 +1,22 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { toast, useToast } from '@/components/ui/use-toast';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
-
 import {
   Form,
-  FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
+  FormControl,
   FormMessage,
+  FormDescription,
 } from '@/components/ui/form';
-
-import { FiPlus, FiX } from 'react-icons/fi';
-import { RiSendPlaneFill } from 'react-icons/ri';
-import { BiLoaderAlt } from 'react-icons/bi';
-
-import { Badge } from '@/components/ui/badge';
-const TipTapEditor = dynamic(() => import('@/components/Dashboard/Blog/PostForm/Editor/Editor'), {
-  ssr: false,
-});
-import Input from '@/components/Input/Input';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import Textarea from '@/components/Textarea/Textarea';
-import ImageUploader from '../../../ImageUpload/ImageUploader';
-
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -37,14 +24,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-import type { CreatePostInput, UpdatePostInput } from '@/types/types';
-
-import type { ZodSchema } from 'zod';
-import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { FiPlus, FiX } from 'react-icons/fi';
+import { RiSendPlaneFill } from 'react-icons/ri';
+import { BiLoaderAlt } from 'react-icons/bi';
 import dynamic from 'next/dynamic';
+import ImageUploader from '@/components/ImageUpload/ImageUploader';
+import type { CreatePostInput, UpdatePostInput } from '@/types/types';
+import type { ZodSchema } from 'zod';
 import { generateSlug, sanitizeSlug } from '@/lib/utils';
-import { CreatePostSchema, UpdatePostSchema } from '@/schemas';
+
+const TipTapEditor = dynamic(() => import('@/components/Dashboard/Blog/PostForm/Editor/Editor'), {
+  ssr: false,
+});
 
 const MAX_CATEGORIES = 5;
 const MAX_TAGS = 10;
@@ -56,6 +48,7 @@ interface PostFormProps {
   onSubmit: (data: CreatePostInput | UpdatePostInput) => Promise<void>;
   title: string;
   isEditing?: boolean;
+  isSubmitting: boolean;
 }
 
 const PostForm: React.FC<PostFormProps> = ({
@@ -63,18 +56,16 @@ const PostForm: React.FC<PostFormProps> = ({
   onSubmit,
   title,
   isEditing = false,
+  schema,
+  isSubmitting,
 }) => {
-  const router = useRouter();
-  const { toast } = useToast();
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<string[]>(defaultValues.categories || []);
   const [tags, setTags] = useState<string[]>(defaultValues.tags || []);
-  const [editorContent, setEditorContent] = useState(defaultValues.content || '');
+  const [_editorContent, setEditorContent] = useState(defaultValues.content || '');
   const [slug, setSlug] = useState(defaultValues.slug || '');
 
   const form = useForm<CreatePostInput | UpdatePostInput>({
-    resolver: zodResolver(isEditing ? UpdatePostSchema : CreatePostSchema),
+    resolver: zodResolver(schema),
     defaultValues,
   });
 
@@ -93,71 +84,26 @@ const PostForm: React.FC<PostFormProps> = ({
     form.setValue('slug', newSlug);
   };
 
-  const resetForm = useCallback(() => {
-    form.reset();
-    setEditorContent('');
-    localStorage.removeItem('editorContent');
-  }, [form]);
-
-  const handleSubmit = useCallback(
-    async (data: CreatePostInput | UpdatePostInput) => {
-      setIsSubmitting(true);
-      try {
-        await onSubmit({ ...data, content: editorContent });
-        resetForm();
-        router.push('/dashboard/posts');
-      } catch (error) {
-        console.error('خطا در ایجاد/ویرایش پست:', error);
-      } finally {
-        setIsSubmitting(false);
-      }
-    },
-    [onSubmit, editorContent, resetForm, router],
-  );
-
   const addItem = useCallback(
     (item: string, type: 'category' | 'tag') => {
       const trimmedItem = item.trim();
-      if (trimmedItem) {
-        if (trimmedItem.length > MAX_LENGTH) {
-          toast({
-            title: 'خطا',
-            description: `${type === 'category' ? 'دسته‌بندی' : 'تگ'} نمی‌تواند بیشتر از ${MAX_LENGTH} کاراکتر باشد.`,
-            variant: 'destructive',
-          });
-          return;
-        }
-
-        if (type === 'category') {
-          if (categories.length >= MAX_CATEGORIES) {
-            toast({
-              title: 'خطا',
-              description: `نمی‌توانید بیش از ${MAX_CATEGORIES} دسته‌بندی اضافه کنید.`,
-              variant: 'destructive',
-            });
-            return;
-          }
+      if (trimmedItem && trimmedItem.length <= MAX_LENGTH) {
+        if (type === 'category' && categories.length < MAX_CATEGORIES) {
           if (!categories.includes(trimmedItem)) {
-            setCategories((prev) => [...prev, trimmedItem]);
-            form.setValue('categories', [...categories, trimmedItem]);
+            const newCategories = [...categories, trimmedItem];
+            setCategories(newCategories);
+            form.setValue('categories', newCategories);
           }
-        } else {
-          if (tags.length >= MAX_TAGS) {
-            toast({
-              title: 'خطا',
-              description: `نمی‌توانید بیش از ${MAX_TAGS} تگ اضافه کنید.`,
-              variant: 'destructive',
-            });
-            return;
-          }
+        } else if (type === 'tag' && tags.length < MAX_TAGS) {
           if (!tags.includes(trimmedItem)) {
-            setTags((prev) => [...prev, trimmedItem]);
-            form.setValue('tags', [...tags, trimmedItem]);
+            const newTags = [...tags, trimmedItem];
+            setTags(newTags);
+            form.setValue('tags', newTags);
           }
         }
       }
     },
-    [categories, tags, form, toast],
+    [categories, tags, form],
   );
 
   const removeItem = useCallback(
@@ -191,7 +137,7 @@ const PostForm: React.FC<PostFormProps> = ({
       </h1>
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(handleSubmit)}
+          onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-4 sm:space-y-6 md:space-y-8"
         >
           <FormField

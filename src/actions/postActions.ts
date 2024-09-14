@@ -1,10 +1,9 @@
 'use server';
 
-import { PostStatus, type Prisma, type Role } from '@prisma/client';
+import type { PostStatus, Prisma, Role } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/db';
 import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
 import { checkRole, generateSlug, generateUniqueId, sanitizeSlug, validateSlug } from '@/lib/utils';
 import type {
   ActionResult,
@@ -15,39 +14,11 @@ import type {
 } from '@/types/types';
 import { CreatePostSchema, UpdatePostSchema } from '@/schemas';
 
-export async function createPost(
-  data: FormData | CreatePostInput,
-): Promise<ActionResult<PostWithRelations>> {
+export async function createPost(data: CreatePostInput): Promise<ActionResult<PostWithRelations>> {
   const session = await checkRole(['ADMIN', 'AUTHOR']);
 
   try {
-    let validatedData: CreatePostInput;
-
-    if (data instanceof FormData) {
-      validatedData = CreatePostSchema.parse({
-        title: data.get('title'),
-        content: data.get('content'),
-        excerpt: data.get('excerpt'),
-        categories: data.getAll('categories'),
-        status: data.get('status') || PostStatus.DRAFT,
-        postType: data.get('postType') || 'STANDARD',
-        isFeatured: data.get('isFeatured') === 'true',
-        videoUrl: data.get('videoUrl'),
-        audioUrl: data.get('audioUrl'),
-        tags: data
-          .get('tags')
-          ?.toString()
-          .split(',')
-          .map((tag) => tag.trim()),
-        featuredImage: data.get('featuredImage'),
-        galleryImages: Array.from(data.entries())
-          .filter(([key]) => key.startsWith('galleryImages['))
-          .map(([, value]) => value),
-        slug: data.get('slug'),
-      });
-    } else {
-      validatedData = CreatePostSchema.parse(data);
-    }
+    const validatedData = CreatePostSchema.parse(data);
 
     const id = generateUniqueId();
     let slug = validatedData.slug
@@ -61,7 +32,7 @@ export async function createPost(
       };
     }
 
-    // بررسی یکتا بودن اسلاگ
+    // Check for unique slug
     let slugExists = await prisma.post.findUnique({ where: { slug } });
     let slugAttempt = 1;
     while (slugExists) {
@@ -79,13 +50,10 @@ export async function createPost(
           connect: { id: session.user?.id },
         },
         categories: {
-          connectOrCreate: validatedData.categories.map((name) => {
-            const slug = generateSlug(name);
-            return {
-              where: { slug },
-              create: { name, slug },
-            };
-          }),
+          connectOrCreate: validatedData.categories.map((name) => ({
+            where: { slug: generateSlug(name) },
+            create: { name, slug: generateSlug(name) },
+          })),
         },
         tags: validatedData.tags
           ? {
@@ -152,41 +120,10 @@ export async function createPost(
 
 export async function updatePost(
   postId: string,
-  data: Partial<UpdatePostInput>,
+  data: UpdatePostInput,
 ): Promise<ActionResult<PostWithRelations>> {
-  const session = await checkRole(['ADMIN', 'AUTHOR']);
-
-  if (!session) {
-    redirect('/unauthorized');
-  }
   try {
-    let validatedData: Partial<UpdatePostInput>;
-
-    if (data instanceof FormData) {
-      validatedData = UpdatePostSchema.parse({
-        title: data.get('title'),
-        content: data.get('content'),
-        excerpt: data.get('excerpt'),
-        postType: data.get('postType'),
-        isFeatured: data.get('isFeatured') === 'true',
-        videoUrl: data.get('videoUrl'),
-        audioUrl: data.get('audioUrl'),
-        status: data.get('status') || undefined,
-        categories: data.getAll('categories'),
-        tags: data
-          .get('tags')
-          ?.toString()
-          .split(',')
-          .map((tag) => tag.trim()),
-        featuredImage: data.get('featuredImage'),
-        galleryImages: Array.from(data.entries())
-          .filter(([key]) => key.startsWith('galleryImages['))
-          .map(([, value]) => value),
-        slug: data.get('slug'),
-      });
-    } else {
-      validatedData = UpdatePostSchema.parse(data);
-    }
+    const validatedData = UpdatePostSchema.parse(data);
 
     let slug = validatedData.slug;
     if (!slug && validatedData.title) {
@@ -204,7 +141,7 @@ export async function updatePost(
       }
     }
 
-    // بررسی یکتا بودن اسلاگ جدید
+    // Check for unique slug
     if (slug) {
       const currentPost = await prisma.post.findUnique({ where: { id: postId } });
       if (currentPost && currentPost.slug !== slug) {
@@ -225,14 +162,11 @@ export async function updatePost(
         slug,
         categories: validatedData.categories
           ? {
-              set: [], // حذف تمام دسته‌بندی‌های قبلی
-              connectOrCreate: validatedData.categories.map((name) => {
-                const slug = generateSlug(name);
-                return {
-                  where: { slug }, // استفاده از slug برای جستجو
-                  create: { name, slug }, // ایجاد دسته‌بندی جدید با name و slug
-                };
-              }),
+              set: [],
+              connectOrCreate: validatedData.categories.map((name) => ({
+                where: { slug: generateSlug(name) },
+                create: { name, slug: generateSlug(name) },
+              })),
             }
           : undefined,
         tags: validatedData.tags
@@ -298,6 +232,7 @@ export async function updatePost(
     };
   }
 }
+
 export async function updatePostStatus(
   postId: string,
   newStatus: PostStatus,
