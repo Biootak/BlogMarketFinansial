@@ -4,11 +4,16 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CreatePostSchema } from '@/schemas';
 import PostForm from './PostForm';
-import type { CreatePostInput, UpdatePostInput } from '@/types/types';
+import type { CreatePostInput, TaxonomyType } from '@/types/types';
 import { useToast } from '@/components/ui/use-toast';
 import { createPost } from '@/actions/postActions';
 
-const CreatePostForm: React.FC = () => {
+interface CreatePostFormProps {
+  initialCategories: TaxonomyType[];
+  initialTags: TaxonomyType[];
+}
+
+const CreatePostForm: React.FC<CreatePostFormProps> = ({ initialCategories, initialTags }) => {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,9 +62,11 @@ const CreatePostForm: React.FC = () => {
     <PostForm
       schema={CreatePostSchema}
       defaultValues={defaultValues}
-      onSubmit={handleCreatePost as (data: CreatePostInput | UpdatePostInput) => Promise<void>}
+      onSubmit={handleCreatePost}
       isSubmitting={isSubmitting}
       title="ایجاد پست جدید"
+      initialCategories={initialCategories}
+      initialTags={initialTags}
     />
   );
 };

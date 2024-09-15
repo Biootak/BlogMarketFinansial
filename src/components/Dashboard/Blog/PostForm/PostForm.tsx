@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
@@ -25,22 +25,22 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { FiPlus, FiX } from 'react-icons/fi';
+import { FiX } from 'react-icons/fi';
 import { RiSendPlaneFill } from 'react-icons/ri';
 import { BiLoaderAlt } from 'react-icons/bi';
 import dynamic from 'next/dynamic';
 import ImageUploader from '@/components/ImageUpload/ImageUploader';
-import type { CreatePostInput, UpdatePostInput } from '@/types/types';
+import type { CreatePostInput, UpdatePostInput, TaxonomyType } from '@/types/types';
 import type { ZodSchema } from 'zod';
 import { generateSlug, sanitizeSlug } from '@/lib/utils';
+import { CategorySelectDialog } from './CategorySelectDialog';
+import { TagSelectDialog } from './TagSelectDialog';
+import { getCategories } from '@/actions/categoryActions';
+import { getTags } from '@/actions/getTags';
 
 const TipTapEditor = dynamic(() => import('@/components/Dashboard/Blog/PostForm/Editor/Editor'), {
   ssr: false,
 });
-
-const MAX_CATEGORIES = 5;
-const MAX_TAGS = 10;
-const MAX_LENGTH = 50;
 
 interface PostFormProps {
   schema: ZodSchema<CreatePostInput | UpdatePostInput>;
@@ -49,6 +49,8 @@ interface PostFormProps {
   title: string;
   isEditing?: boolean;
   isSubmitting: boolean;
+  initialCategories: TaxonomyType[];
+  initialTags: TaxonomyType[];
 }
 
 const PostForm: React.FC<PostFormProps> = ({
@@ -58,11 +60,20 @@ const PostForm: React.FC<PostFormProps> = ({
   isEditing = false,
   schema,
   isSubmitting,
+  initialCategories,
+  initialTags,
 }) => {
-  const [categories, setCategories] = useState<string[]>(defaultValues.categories || []);
-  const [tags, setTags] = useState<string[]>(defaultValues.tags || []);
   const [_editorContent, setEditorContent] = useState(defaultValues.content || '');
   const [slug, setSlug] = useState(defaultValues.slug || '');
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
+  const [categories, setCategories] = useState(initialCategories);
+  const [tags, setTags] = useState(initialTags);
+  const [isPending, startTransition] = useTransition();
+  const [hasMoreCategories, setHasMoreCategories] = useState(true);
+  const [hasMoreTags, setHasMoreTags] = useState(true);
+  const [categoryPage, setCategoryPage] = useState(1);
+  const [tagPage, setTagPage] = useState(1);
 
   const form = useForm<CreatePostInput | UpdatePostInput>({
     resolver: zodResolver(schema),
@@ -84,46 +95,37 @@ const PostForm: React.FC<PostFormProps> = ({
     form.setValue('slug', newSlug);
   };
 
-  const addItem = useCallback(
-    (item: string, type: 'category' | 'tag') => {
-      const trimmedItem = item.trim();
-      if (trimmedItem && trimmedItem.length <= MAX_LENGTH) {
-        if (type === 'category' && categories.length < MAX_CATEGORIES) {
-          if (!categories.includes(trimmedItem)) {
-            const newCategories = [...categories, trimmedItem];
-            setCategories(newCategories);
-            form.setValue('categories', newCategories);
-          }
-        } else if (type === 'tag' && tags.length < MAX_TAGS) {
-          if (!tags.includes(trimmedItem)) {
-            const newTags = [...tags, trimmedItem];
-            setTags(newTags);
-            form.setValue('tags', newTags);
-          }
-        }
-      }
-    },
-    [categories, tags, form],
-  );
+  const handleSelectCategories = (selectedCategories: string[]) => {
+    form.setValue('categories', selectedCategories);
+  };
 
-  const removeItem = useCallback(
-    (item: string, type: 'category' | 'tag') => {
-      if (type === 'category') {
-        setCategories((prev) => prev.filter((c) => c !== item));
-        form.setValue(
-          'categories',
-          categories.filter((c) => c !== item),
-        );
-      } else {
-        setTags((prev) => prev.filter((t) => t !== item));
-        form.setValue(
-          'tags',
-          tags.filter((t) => t !== item),
-        );
+  const handleSelectTags = (selectedTags: string[]) => {
+    form.setValue('tags', selectedTags);
+  };
+
+  const loadMoreCategories = useCallback(() => {
+    startTransition(async () => {
+      const nextPage = categoryPage + 1;
+      const result = await getCategories({ limit: 10, page: nextPage });
+      if (result.success && result.data) {
+        setCategories((prev) => [...prev, ...result.data.categories]);
+        setCategoryPage(nextPage);
+        setHasMoreCategories(result.data.categories.length === 10);
       }
-    },
-    [categories, tags, form],
-  );
+    });
+  }, [categoryPage]);
+
+  const loadMoreTags = useCallback(() => {
+    startTransition(async () => {
+      const nextPage = tagPage + 1;
+      const result = await getTags({ limit: 10, page: nextPage });
+      if (result.success && result.data) {
+        setTags((prev) => [...prev, ...result.data.tags]);
+        setTagPage(nextPage);
+        setHasMoreTags(result.data.tags.length === 10);
+      }
+    });
+  }, [tagPage]);
 
   return (
     <motion.div
@@ -140,6 +142,7 @@ const PostForm: React.FC<PostFormProps> = ({
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-4 sm:space-y-6 md:space-y-8"
         >
+          {/* Title Field */}
           <FormField
             control={form.control}
             name="title"
@@ -162,6 +165,8 @@ const PostForm: React.FC<PostFormProps> = ({
               </FormItem>
             )}
           />
+
+          {/* Slug Field */}
           <FormField
             control={form.control}
             name="slug"
@@ -184,6 +189,7 @@ const PostForm: React.FC<PostFormProps> = ({
             )}
           />
 
+          {/* Excerpt Field */}
           <FormField
             control={form.control}
             name="excerpt"
@@ -205,17 +211,19 @@ const PostForm: React.FC<PostFormProps> = ({
             )}
           />
 
+          {/* Categories and Tags */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
+            {/* Categories Field */}
             <FormField
               control={form.control}
               name="categories"
-              render={() => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
                     دسته‌بندی‌ها
                   </FormLabel>
                   <div className="flex flex-wrap gap-2 mb-2">
-                    {categories.map((category) => (
+                    {field.value?.map((category) => (
                       <Badge
                         key={category}
                         variant="secondary"
@@ -224,7 +232,10 @@ const PostForm: React.FC<PostFormProps> = ({
                         {category}
                         <button
                           type="button"
-                          onClick={() => removeItem(category, 'category')}
+                          onClick={() => {
+                            const newCategories = field.value?.filter((c) => c !== category) || [];
+                            form.setValue('categories', newCategories);
+                          }}
                           className="mr-1 sm:mr-2 text-red-500 hover:text-red-700 transition duration-200"
                         >
                           <FiX />
@@ -233,49 +244,31 @@ const PostForm: React.FC<PostFormProps> = ({
                     ))}
                   </div>
                   <FormControl>
-                    <div className="flex items-center">
-                      <Input
-                        placeholder="دسته‌بندی جدید"
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            addItem(e.currentTarget.value, 'category');
-                            e.currentTarget.value = '';
-                          }
-                        }}
-                        className="rtl text-sm sm:text-base p-2 sm:p-3 border-2 border-gray-300 focus:border-primary-500 rounded-lg transition duration-200 flex-grow"
-                      />
-                      <Button
-                        type="button"
-                        onClick={() => {
-                          const input = document.querySelector(
-                            'input[placeholder="دسته‌بندی جدید"]',
-                          ) as HTMLInputElement;
-                          addItem(input.value, 'category');
-                          input.value = '';
-                        }}
-                        className="mr-2 p-2 sm:p-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition duration-200 flex items-center"
-                      >
-                        <FiPlus className="ml-1" />
-                        <span className="hidden sm:inline">افزودن</span>
-                      </Button>
-                    </div>
+                    <Button
+                      type="button"
+                      onClick={() => setIsCategoryDialogOpen(true)}
+                      className="w-full justify-center text-sm"
+                      variant="outline"
+                    >
+                      انتخاب دسته‌بندی‌ها
+                    </Button>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
+            {/* Tags Field */}
             <FormField
               control={form.control}
               name="tags"
-              render={() => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
                     برچسب‌ها
                   </FormLabel>
                   <div className="flex flex-wrap gap-2 mb-2">
-                    {tags.map((tag) => (
+                    {field.value?.map((tag) => (
                       <Badge
                         key={tag}
                         variant="secondary"
@@ -284,7 +277,10 @@ const PostForm: React.FC<PostFormProps> = ({
                         {tag}
                         <button
                           type="button"
-                          onClick={() => removeItem(tag, 'tag')}
+                          onClick={() => {
+                            const newTags = field.value?.filter((t) => t !== tag) || [];
+                            form.setValue('tags', newTags);
+                          }}
                           className="mr-1 sm:mr-2 text-red-500 hover:text-red-700 transition duration-200"
                         >
                           <FiX />
@@ -293,33 +289,14 @@ const PostForm: React.FC<PostFormProps> = ({
                     ))}
                   </div>
                   <FormControl>
-                    <div className="flex items-center">
-                      <Input
-                        placeholder="برچسب جدید"
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            addItem(e.currentTarget.value, 'tag');
-                            e.currentTarget.value = '';
-                          }
-                        }}
-                        className="rtl text-sm sm:text-base p-2 sm:p-3 border-2 border-gray-300 focus:border-primary-500 rounded-lg transition duration-200 flex-grow"
-                      />
-                      <Button
-                        type="button"
-                        onClick={() => {
-                          const input = document.querySelector(
-                            'input[placeholder="برچسب جدید"]',
-                          ) as HTMLInputElement;
-                          addItem(input.value, 'tag');
-                          input.value = ' ';
-                        }}
-                        className="mr-2 p-2 sm:p-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition duration-200 flex items-center"
-                      >
-                        <FiPlus className="ml-1" />
-                        <span className="hidden sm:inline">افزودن</span>
-                      </Button>
-                    </div>
+                    <Button
+                      type="button"
+                      onClick={() => setIsTagDialogOpen(true)}
+                      className="w-full justify-center text-sm"
+                      variant="outline"
+                    >
+                      انتخاب برچسب‌ها
+                    </Button>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -327,6 +304,7 @@ const PostForm: React.FC<PostFormProps> = ({
             />
           </div>
 
+          {/* Featured Image Field */}
           <FormField
             control={form.control}
             name="featuredImage"
@@ -349,6 +327,7 @@ const PostForm: React.FC<PostFormProps> = ({
             )}
           />
 
+          {/* Gallery Images Field */}
           <FormField
             control={form.control}
             name="galleryImages"
@@ -376,6 +355,8 @@ const PostForm: React.FC<PostFormProps> = ({
               </FormItem>
             )}
           />
+
+          {/* Content Field */}
           <FormField
             control={form.control}
             name="content"
@@ -400,7 +381,9 @@ const PostForm: React.FC<PostFormProps> = ({
             )}
           />
 
+          {/* Post Status and Type */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            {/* Post Status Field */}
             <FormField
               control={form.control}
               name="status"
@@ -426,6 +409,7 @@ const PostForm: React.FC<PostFormProps> = ({
               )}
             />
 
+            {/* Post Type Field */}
             <FormField
               control={form.control}
               name="postType"
@@ -453,6 +437,7 @@ const PostForm: React.FC<PostFormProps> = ({
             />
           </div>
 
+          {/* Video URL Field (Conditional) */}
           {form.watch('postType') === 'VIDEO' && (
             <FormField
               control={form.control}
@@ -471,6 +456,7 @@ const PostForm: React.FC<PostFormProps> = ({
             />
           )}
 
+          {/* Audio URL Field (Conditional) */}
           {form.watch('postType') === 'AUDIO' && (
             <FormField
               control={form.control}
@@ -489,6 +475,7 @@ const PostForm: React.FC<PostFormProps> = ({
             />
           )}
 
+          {/* Is Featured Field */}
           <FormField
             control={form.control}
             name="isFeatured"
@@ -507,6 +494,7 @@ const PostForm: React.FC<PostFormProps> = ({
             )}
           />
 
+          {/* Submit Button */}
           <Button
             type="submit"
             disabled={isSubmitting}
@@ -526,6 +514,29 @@ const PostForm: React.FC<PostFormProps> = ({
           </Button>
         </form>
       </Form>
+
+      {/* Category Select Dialog */}
+      <CategorySelectDialog
+        isOpen={isCategoryDialogOpen}
+        onClose={() => setIsCategoryDialogOpen(false)}
+        onSelectCategories={handleSelectCategories}
+        initialSelectedCategories={form.getValues('categories') || []}
+        categories={categories}
+        onLoadMore={loadMoreCategories}
+        isLoading={isPending}
+        hasNextPage={hasMoreCategories}
+      />
+
+      <TagSelectDialog
+        isOpen={isTagDialogOpen}
+        onClose={() => setIsTagDialogOpen(false)}
+        onSelectTags={handleSelectTags}
+        initialSelectedTags={form.getValues('tags') || []}
+        tags={tags}
+        onLoadMore={loadMoreTags}
+        isLoading={isPending}
+        hasNextPage={hasMoreTags}
+      />
     </motion.div>
   );
 };
