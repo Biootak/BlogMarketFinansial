@@ -1,5 +1,6 @@
 'use client';
 
+import type React from 'react';
 import { useState, useCallback, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -63,7 +64,7 @@ const PostForm: React.FC<PostFormProps> = ({
   initialCategories,
   initialTags,
 }) => {
-  const [_editorContent, setEditorContent] = useState(defaultValues.content || '');
+  const [editorContent, setEditorContent] = useState(defaultValues.content || '');
   const [slug, setSlug] = useState(defaultValues.slug || '');
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
@@ -108,7 +109,7 @@ const PostForm: React.FC<PostFormProps> = ({
       const nextPage = categoryPage + 1;
       const result = await getCategories({ limit: 10, page: nextPage });
       if (result.success && result.data) {
-        setCategories((prev) => [...prev, ...result.data.categories]);
+        setCategories((prev) => [...prev, ...(result.data?.categories || [])]);
         setCategoryPage(nextPage);
         setHasMoreCategories(result.data.categories.length === 10);
       }
@@ -120,7 +121,7 @@ const PostForm: React.FC<PostFormProps> = ({
       const nextPage = tagPage + 1;
       const result = await getTags({ limit: 10, page: nextPage });
       if (result.success && result.data) {
-        setTags((prev) => [...prev, ...result.data.tags]);
+        setTags((prev) => [...prev, ...(result.data?.tags || [])]);
         setTagPage(nextPage);
         setHasMoreTags(result.data.tags.length === 10);
       }
@@ -142,7 +143,6 @@ const PostForm: React.FC<PostFormProps> = ({
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-4 sm:space-y-6 md:space-y-8"
         >
-          {/* Title Field */}
           <FormField
             control={form.control}
             name="title"
@@ -166,7 +166,6 @@ const PostForm: React.FC<PostFormProps> = ({
             )}
           />
 
-          {/* Slug Field */}
           <FormField
             control={form.control}
             name="slug"
@@ -189,21 +188,34 @@ const PostForm: React.FC<PostFormProps> = ({
             )}
           />
 
-          {/* Excerpt Field */}
           <FormField
             control={form.control}
             name="excerpt"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
-                  خلاصه پست
-                </FormLabel>
+                <FormLabel>خلاصه پست</FormLabel>
                 <FormControl>
-                  <Textarea
-                    {...field}
-                    className="rtl border-2 border-gray-300 focus:border-primary-500 rounded-lg transition duration-200"
-                    placeholder="خلاصه‌ای از پست را وارد کنید"
-                    rows={4}
+                  <Textarea {...field} placeholder="خلاصه‌ای از پست را وارد کنید" rows={4} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="content"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>محتوای پست</FormLabel>
+                <FormControl>
+                  <TipTapEditor
+                    content={editorContent}
+                    onChange={(newContent) => {
+                      setEditorContent(newContent);
+                      field.onChange(newContent);
+                    }}
+                    isRTL={true}
                   />
                 </FormControl>
                 <FormMessage />
@@ -211,37 +223,37 @@ const PostForm: React.FC<PostFormProps> = ({
             )}
           />
 
-          {/* Categories and Tags */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
-            {/* Categories Field */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="categories"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
-                    دسته‌بندی‌ها
-                  </FormLabel>
+                  <FormLabel>دسته‌بندی‌ها</FormLabel>
                   <div className="flex flex-wrap gap-2 mb-2">
-                    {field.value?.map((category) => (
-                      <Badge
-                        key={category}
-                        variant="secondary"
-                        className="rtl bg-primary-100 text-primary-800 text-xs sm:text-sm px-2 sm:px-3 py-1"
-                      >
-                        {category}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const newCategories = field.value?.filter((c) => c !== category) || [];
-                            form.setValue('categories', newCategories);
-                          }}
-                          className="mr-1 sm:mr-2 text-red-500 hover:text-red-700 transition duration-200"
+                    {field.value?.map((categoryId) => {
+                      const category = categories.find((c) => c.id === categoryId);
+                      return category ? (
+                        <Badge
+                          key={categoryId}
+                          variant="secondary"
+                          className="bg-primary-100 text-primary-800 text-xs px-2 py-1"
                         >
-                          <FiX />
-                        </button>
-                      </Badge>
-                    ))}
+                          {category.name}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newCategories =
+                                field.value?.filter((id) => id !== categoryId) || [];
+                              form.setValue('categories', newCategories);
+                            }}
+                            className="mr-1 text-red-500 hover:text-red-700"
+                          >
+                            <FiX />
+                          </button>
+                        </Badge>
+                      ) : null;
+                    })}
                   </div>
                   <FormControl>
                     <Button
@@ -258,21 +270,18 @@ const PostForm: React.FC<PostFormProps> = ({
               )}
             />
 
-            {/* Tags Field */}
             <FormField
               control={form.control}
               name="tags"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
-                    برچسب‌ها
-                  </FormLabel>
+                  <FormLabel>برچسب‌ها</FormLabel>
                   <div className="flex flex-wrap gap-2 mb-2">
                     {field.value?.map((tag) => (
                       <Badge
                         key={tag}
                         variant="secondary"
-                        className="rtl bg-secondary-100 text-secondary-800 text-xs sm:text-sm px-2 sm:px-3 py-1"
+                        className="bg-secondary-100 text-secondary-800 text-xs px-2 py-1"
                       >
                         {tag}
                         <button
@@ -281,7 +290,7 @@ const PostForm: React.FC<PostFormProps> = ({
                             const newTags = field.value?.filter((t) => t !== tag) || [];
                             form.setValue('tags', newTags);
                           }}
-                          className="mr-1 sm:mr-2 text-red-500 hover:text-red-700 transition duration-200"
+                          className="mr-1 text-red-500 hover:text-red-700"
                         >
                           <FiX />
                         </button>
@@ -304,15 +313,12 @@ const PostForm: React.FC<PostFormProps> = ({
             />
           </div>
 
-          {/* Featured Image Field */}
           <FormField
             control={form.control}
             name="featuredImage"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
-                  تصویر شاخص پست
-                </FormLabel>
+                <FormLabel>تصویر شاخص پست</FormLabel>
                 <FormControl>
                   <ImageUploader
                     onImageUpload={(urls) => field.onChange(urls[0])}
@@ -327,15 +333,12 @@ const PostForm: React.FC<PostFormProps> = ({
             )}
           />
 
-          {/* Gallery Images Field */}
           <FormField
             control={form.control}
             name="galleryImages"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
-                  گالری تصاویر
-                </FormLabel>
+                <FormLabel>گالری تصاویر</FormLabel>
                 <FormControl>
                   <ImageUploader
                     onImageUpload={(urls) => {
@@ -356,49 +359,20 @@ const PostForm: React.FC<PostFormProps> = ({
             )}
           />
 
-          {/* Content Field */}
-          <FormField
-            control={form.control}
-            name="content"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
-                  محتوای پست
-                </FormLabel>
-                <FormControl>
-                  <TipTapEditor
-                    content={field.value}
-                    onChange={(newContent) => {
-                      field.onChange(newContent);
-                      setEditorContent(newContent);
-                    }}
-                    isRTL={true}
-                    className="min-h-[200px] sm:min-h-[300px] md:min-h-[400px]"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Post Status and Type */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-            {/* Post Status Field */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="status"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
-                    وضعیت پست
-                  </FormLabel>
+                  <FormLabel>وضعیت پست</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger dir="rtl" className="w-full">
+                      <SelectTrigger>
                         <SelectValue placeholder="انتخاب وضعیت" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent dir="rtl">
+                    <SelectContent>
                       <SelectItem value="DRAFT">پیش‌نویس</SelectItem>
                       <SelectItem value="PENDING_REVIEW">در انتظار بررسی</SelectItem>
                       <SelectItem value="PUBLISHED">منتشر شده</SelectItem>
@@ -409,22 +383,19 @@ const PostForm: React.FC<PostFormProps> = ({
               )}
             />
 
-            {/* Post Type Field */}
             <FormField
               control={form.control}
               name="postType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
-                    نوع پست
-                  </FormLabel>
+                  <FormLabel>نوع پست</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger dir="rtl">
+                      <SelectTrigger>
                         <SelectValue placeholder="انتخاب نوع پست" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent dir="rtl">
+                    <SelectContent>
                       <SelectItem value="STANDARD">استاندارد</SelectItem>
                       <SelectItem value="VIDEO">ویدیو</SelectItem>
                       <SelectItem value="GALLERY">گالری</SelectItem>
@@ -437,18 +408,15 @@ const PostForm: React.FC<PostFormProps> = ({
             />
           </div>
 
-          {/* Video URL Field (Conditional) */}
           {form.watch('postType') === 'VIDEO' && (
             <FormField
               control={form.control}
               name="videoUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
-                    آدرس ویدیو
-                  </FormLabel>
+                  <FormLabel>آدرس ویدیو</FormLabel>
                   <FormControl>
-                    <Input placeholder="آدرس ویدیو را وارد کنید" {...field} className="rtl" />
+                    <Input placeholder="آدرس ویدیو را وارد کنید" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -456,18 +424,15 @@ const PostForm: React.FC<PostFormProps> = ({
             />
           )}
 
-          {/* Audio URL Field (Conditional) */}
           {form.watch('postType') === 'AUDIO' && (
             <FormField
               control={form.control}
               name="audioUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-200">
-                    آدرس فایل صوتی
-                  </FormLabel>
+                  <FormLabel>آدرس فایل صوتی</FormLabel>
                   <FormControl>
-                    <Input placeholder="آدرس فایل صوتی را وارد کنید" {...field} className="rtl" />
+                    <Input placeholder="آدرس فایل صوتی را وارد کنید" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -475,17 +440,14 @@ const PostForm: React.FC<PostFormProps> = ({
             />
           )}
 
-          {/* Is Featured Field */}
           <FormField
             control={form.control}
             name="isFeatured"
             render={({ field }) => (
               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 sm:p-4">
                 <div className="space-y-0.5">
-                  <FormLabel className="text-sm sm:text-base">پست ویژه</FormLabel>
-                  <FormDescription className="text-xs sm:text-sm">
-                    این پست را به عنوان پست ویژه نمایش دهید
-                  </FormDescription>
+                  <FormLabel>پست ویژه</FormLabel>
+                  <FormDescription>این پست را به عنوان پست ویژه نمایش دهید</FormDescription>
                 </div>
                 <FormControl>
                   <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -494,7 +456,6 @@ const PostForm: React.FC<PostFormProps> = ({
             )}
           />
 
-          {/* Submit Button */}
           <Button
             type="submit"
             disabled={isSubmitting}
@@ -515,7 +476,6 @@ const PostForm: React.FC<PostFormProps> = ({
         </form>
       </Form>
 
-      {/* Category Select Dialog */}
       <CategorySelectDialog
         isOpen={isCategoryDialogOpen}
         onClose={() => setIsCategoryDialogOpen(false)}

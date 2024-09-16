@@ -9,7 +9,7 @@ import BackgroundSection from "@/components/BackgroundSection/BackgroundSection"
 
 const PageAbout = ({}) => {
   return (
-    <div className={`nc-PageAbout relative rtl`}>
+    <div className={'nc-PageAbout relative rtl'}>
       {/* ======== BG GLASS ======== */}
       <BgGlassmorphism />
 

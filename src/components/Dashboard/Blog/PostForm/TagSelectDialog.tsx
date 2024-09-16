@@ -1,14 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { TaxonomyType } from '@/types/types';
+import type { TaxonomyType } from '@/types/types';
 import { FiX, FiPlus } from 'react-icons/fi';
-import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
 interface TagSelectDialogProps {
   isOpen: boolean;
@@ -33,8 +32,8 @@ export function TagSelectDialog({
 }: TagSelectDialogProps) {
   const [selectedTags, setSelectedTags] = useState<string[]>(initialSelectedTags);
   const [newTag, setNewTag] = useState('');
-
-  const infiniteScrollRef = useInfiniteScroll(onLoadMore, hasNextPage, isLoading);
+  const [searchTerm, setSearchTerm] = useState('');
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
     setSelectedTags(initialSelectedTags);
@@ -63,6 +62,24 @@ export function TagSelectDialog({
     onClose();
   };
 
+  const filteredTags = tags.filter((tag) =>
+    tag.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
+  const lastTagCallback = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (isLoading) return;
+      if (observerRef.current) observerRef.current.disconnect();
+      observerRef.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasNextPage) {
+          onLoadMore();
+        }
+      });
+      if (node) observerRef.current.observe(node);
+    },
+    [isLoading, hasNextPage, onLoadMore],
+  );
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px] rtl">
@@ -78,6 +95,7 @@ export function TagSelectDialog({
             >
               {tag}
               <button
+                type="button"
                 onClick={() => handleRemoveTag(tag)}
                 className="mr-2 text-red-500 hover:text-red-700"
               >
@@ -97,19 +115,28 @@ export function TagSelectDialog({
             <FiPlus size={18} />
           </Button>
         </form>
-        <ScrollArea className="h-[200px] pl-4">
-          {tags.map((tag) => (
-            <Button
-              key={tag.id}
-              variant="ghost"
-              className="w-full justify-start mb-1 text-right"
-              onClick={() => handleAddTag(tag.name)}
-              disabled={selectedTags.includes(tag.name)}
-            >
-              {tag.name}
-            </Button>
+        <div className="mb-4">
+          <Input
+            type="text"
+            placeholder="جستجوی برچسب..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <ScrollArea className="h-[200px] pr-4" dir="rtl">
+          {filteredTags.map((tag, index) => (
+            <div key={tag.id} ref={index === filteredTags.length - 1 ? lastTagCallback : null}>
+              <Button
+                variant="ghost"
+                className={`w-full justify-start mb-1 text-right ${
+                  selectedTags.includes(tag.name) ? 'bg-secondary-100' : ''
+                }`}
+                onClick={() => handleAddTag(tag.name)}
+              >
+                {tag.name}
+              </Button>
+            </div>
           ))}
-          <div ref={infiniteScrollRef} />
           {isLoading && <div className="text-center py-2">در حال بارگیری...</div>}
         </ScrollArea>
         <div className="flex justify-start mt-4">

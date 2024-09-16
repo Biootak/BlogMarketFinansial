@@ -1,8 +1,11 @@
+// app/dashboard/posts/edit/[postId]/page.tsx
 import { Suspense } from 'react';
+import { notFound } from 'next/navigation';
 import EditPostForm from '@/components/Dashboard/Blog/PostForm/EditPostForm';
 import { getPostById } from '@/actions/postActions';
+import { getCategories } from '@/actions/categoryActions';
+import { getTags } from '@/actions/getTags';
 import SkeletonLoader from '@/components/SkeletonLoader';
-import { notFound } from 'next/navigation';
 
 interface EditPostPageProps {
   params: {
@@ -10,16 +13,26 @@ interface EditPostPageProps {
   };
 }
 
-export default async function EditPostPage({ params }: EditPostPageProps) {
-  const postResult = await getPostById(params.postId);
+export const revalidate = 0; // No caching for edit page
 
-  if (!postResult.success || !postResult.data) {
+export default async function EditPostPage({ params }: EditPostPageProps) {
+  const [postResult, categoriesResult, tagsResult] = await Promise.all([
+    getPostById(params.postId),
+    getCategories({ limit: 100, page: 1 }),
+    getTags({ limit: 100, page: 1 }),
+  ]);
+
+  if (!postResult.success || !postResult.data || !categoriesResult.success || !tagsResult.success) {
     return notFound();
   }
 
   return (
     <Suspense fallback={<SkeletonLoader variant="text" count={6} />}>
-      <EditPostForm initialData={postResult.data} />
+      <EditPostForm
+        initialData={postResult.data}
+        initialCategories={categoriesResult.data?.categories || []}
+        initialTags={tagsResult.data?.tags || []}
+      />
     </Suspense>
   );
 }

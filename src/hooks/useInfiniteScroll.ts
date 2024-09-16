@@ -22,7 +22,7 @@ export const useInfiniteScroll = (
     const options = {
       root: null,
       rootMargin: '20px',
-      threshold: 1.0,
+      threshold: 0.1,
     };
 
     observerRef.current = new IntersectionObserver(handleObserver, options);

@@ -4,15 +4,21 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { UpdatePostSchema } from '@/schemas';
 import PostForm from './PostForm';
-import type { UpdatePostInput, PostWithRelations } from '@/types/types';
+import type { UpdatePostInput, PostWithRelations, TaxonomyType } from '@/types/types';
 import { useToast } from '@/components/ui/use-toast';
 import { updatePost } from '@/actions/postActions';
 
 interface EditPostFormProps {
   initialData: PostWithRelations;
+  initialCategories: TaxonomyType[];
+  initialTags: TaxonomyType[];
 }
 
-const EditPostForm: React.FC<EditPostFormProps> = ({ initialData }) => {
+const EditPostForm: React.FC<EditPostFormProps> = ({
+  initialData,
+  initialCategories,
+  initialTags,
+}) => {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,6 +71,8 @@ const EditPostForm: React.FC<EditPostFormProps> = ({ initialData }) => {
       isSubmitting={isSubmitting}
       title="ویرایش پست"
       isEditing={true}
+      initialCategories={initialCategories}
+      initialTags={initialTags}
     />
   );
 };

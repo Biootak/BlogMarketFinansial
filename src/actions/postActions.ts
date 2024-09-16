@@ -50,10 +50,7 @@ export async function createPost(data: CreatePostInput): Promise<ActionResult<Po
           connect: { id: session.user?.id },
         },
         categories: {
-          connectOrCreate: validatedData.categories.map((name) => ({
-            where: { slug: generateSlug(name) },
-            create: { name, slug: generateSlug(name) },
-          })),
+          connect: validatedData.categories.map((categoryId) => ({ id: categoryId })),
         },
         tags: validatedData.tags
           ? {
@@ -117,7 +114,6 @@ export async function createPost(data: CreatePostInput): Promise<ActionResult<Po
     };
   }
 }
-
 export async function updatePost(
   postId: string,
   data: UpdatePostInput,
@@ -160,18 +156,13 @@ export async function updatePost(
       data: {
         ...validatedData,
         slug,
-        categories: validatedData.categories
-          ? {
-              set: [],
-              connectOrCreate: validatedData.categories.map((name) => ({
-                where: { slug: generateSlug(name) },
-                create: { name, slug: generateSlug(name) },
-              })),
-            }
-          : undefined,
+        categories: {
+          set: [], // ابتدا همه ارتباطات را حذف می‌کنیم
+          connect: validatedData.categories?.map((categoryId) => ({ id: categoryId })) ?? [],
+        },
         tags: validatedData.tags
           ? {
-              set: [],
+              set: [], // ابتدا همه ارتباطات را حذف می‌کنیم
               connectOrCreate: validatedData.tags.map((name) => ({
                 where: { name },
                 create: { name, slug: generateSlug(name) },
@@ -232,7 +223,6 @@ export async function updatePost(
     };
   }
 }
-
 export async function updatePostStatus(
   postId: string,
   newStatus: PostStatus,
