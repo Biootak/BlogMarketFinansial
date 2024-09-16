@@ -15,30 +15,52 @@ export interface NavMobileProps {
 
 const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
   const NAVBAR_LINKS = [
+    { id: 'home', name: 'صفحه اصلی', href: '/' },
     {
-      id: '0',
-      href: '/',
-      name: 'صفحه اصلی',
-    },
-    {
-      id: '1',
-      href: '/archive',
-      name: 'وبلاگ',
-    },
-    {
-      id: '2',
-      href: '/news',
-      name: 'اخبار',
+      id: 'crypto',
+      name: 'ارز دیجیتال',
+      href: '/archive/category/crypto',
       subItems: [
-        { id: '2-1', href: ' /archive?category=crypto-urgent', name: 'اخبار فوری ارز دیجیتال' },
-        { id: '2-2', href: ' /archive?category=bitcoin', name: 'اخبار بیت کوین' },
-        { id: '2-3', href: ' /archive?category=stock-market', name: 'اخبار بورس' },
-        { id: '2-4', href: ' /archive?category=ethereum', name: 'اخبار اتریوم' },
-        { id: '2-5', href: ' /archive?category=exchanges', name: 'اخبار صرافی ها' },
-        { id: '2-6', href: ' /archive?category=world', name: 'اخبار جهان' },
-        { id: '2-7', href: ' /archive?category=altcoins', name: 'اخبار الت کوین ها' },
+        { id: 'crypto-urgent', name: 'اخبار فوری', href: '/archive/category/crypto/urgent' },
+        { id: 'crypto-important', name: 'اخبار مهم', href: '/archive/category/crypto/important' },
+        { id: 'crypto-analysis', name: 'تحلیل', href: '/archive/category/crypto/analysis' },
+        { id: 'crypto-education', name: 'آموزش', href: '/archive/category/crypto/education' },
       ],
     },
+    {
+      id: 'gold',
+      name: 'طلا (اونس)',
+      href: '/archive/category/gold',
+      subItems: [
+        { id: 'gold-news', name: 'اخبار طلا', href: '/archive/category/gold/news' },
+        { id: 'gold-analysis', name: 'تحلیل', href: '/archive/category/gold/analysis' },
+        { id: 'gold-local', name: 'بازار داخلی', href: '/archive/category/gold/local' },
+        { id: 'gold-global', name: 'بازار جهانی', href: '/archive/category/gold/global' },
+      ],
+    },
+    {
+      id: 'global-market',
+      name: 'بازار جهانی',
+      href: '/archive/category/global-market',
+      subItems: [
+        {
+          id: 'currency-pairs',
+          name: 'جفت ارزها',
+          href: '/archive/category/global-market/currency-pairs',
+        },
+        { id: 'global-analysis', name: 'تحلیل', href: '/archive/category/global-market/analysis' },
+        {
+          id: 'global-education',
+          name: 'آموزش',
+          href: '/archive/category/global-market/education',
+        },
+      ],
+    },
+    { id: 'stock', name: 'بورس و سهام', href: '/archive/category/stock' },
+    { id: 'analysis', name: 'تحلیل', href: '/archive/category/analysis' },
+    { id: 'education', name: 'آموزش', href: '/archive/category/education' },
+    { id: 'money-transfer', name: 'حواله', href: '/services/money-transfer' },
+    { id: 'online-payment', name: 'پرداخت آنلاین', href: '/services/online-payment' },
     {
       id: '3',
       href: '/about',

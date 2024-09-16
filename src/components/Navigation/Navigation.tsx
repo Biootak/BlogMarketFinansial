@@ -58,8 +58,6 @@ const NAVBAR_LINKS: NavItem[] = [
         name: 'جفت ارزها',
         href: '/archive/category/global-market/currency-pairs',
       },
-      { id: 'global-analysis', name: 'تحلیل', href: '/archive/category/global-market/analysis' },
-      { id: 'global-education', name: 'آموزش', href: '/archive/category/global-market/education' },
     ],
   },
   { id: 'stock', name: 'بورس و سهام', href: '/archive/category/stock' },
