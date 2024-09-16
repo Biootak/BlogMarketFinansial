@@ -4,9 +4,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CreatePostSchema } from '@/schemas';
 import PostForm from './PostForm';
-import type { CreatePostInput, TaxonomyType } from '@/types/types';
+import type { PostStatus, PostType, TaxonomyType, UpdatePostInput } from '@/types/types';
 import { useToast } from '@/components/ui/use-toast';
 import { createPost } from '@/actions/postActions';
+import type { z } from 'zod';
+
+// تعریف نوع CreatePostInput بر اساس CreatePostSchema
+type CreatePostInput = z.infer<typeof CreatePostSchema>;
 
 interface CreatePostFormProps {
   initialCategories: TaxonomyType[];
@@ -22,18 +26,20 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ initialCategories, init
     title: '',
     content: '',
     excerpt: '',
-    status: 'DRAFT',
+    status: 'DRAFT' as PostStatus,
     isFeatured: false,
-    postType: 'STANDARD',
+    postType: 'STANDARD' as PostType,
     videoUrl: '',
     audioUrl: '',
-    featuredImage: undefined,
+    featuredImage: '',
     galleryImages: [],
     categories: [],
     tags: [],
+    slug: '',
   };
 
   const handleCreatePost = async (data: CreatePostInput) => {
+    console.log('Data to submit:', data);
     setIsSubmitting(true);
     try {
       const result = await createPost(data);
@@ -57,12 +63,11 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ initialCategories, init
       setIsSubmitting(false);
     }
   };
-
   return (
     <PostForm
       schema={CreatePostSchema}
       defaultValues={defaultValues}
-      onSubmit={handleCreatePost}
+      onSubmit={handleCreatePost as (data: CreatePostInput | UpdatePostInput) => Promise<void>}
       isSubmitting={isSubmitting}
       title="ایجاد پست جدید"
       initialCategories={initialCategories}

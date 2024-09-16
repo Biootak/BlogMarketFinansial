@@ -74,6 +74,7 @@ export const CreatePostSchema = BasePostSchema.extend({
     .refine((val) => !val || validateSlug(val), {
       message: 'فرمت اسلاگ نامعتبر است. فقط حروف کوچک انگلیسی، اعداد و خط فاصله مجاز هستند.',
     }),
+  status: z.nativeEnum(PostStatus),
 });
 
 export const UpdatePostSchema = BasePostSchema.partial().extend({

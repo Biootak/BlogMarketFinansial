@@ -172,8 +172,8 @@ export type RegisterInput = SchemaInfer<typeof RegisterSchema>;
 export type LoginInput = SchemaInfer<typeof LoginSchema>;
 export type ForgotPasswordInput = SchemaInfer<typeof ForgotPasswordSchema>;
 export type MagicLinkInput = SchemaInfer<typeof MagicLinkSchema>;
-export type CreatePostInput = SchemaInfer<typeof CreatePostSchema>;
-export type UpdatePostInput = SchemaInfer<typeof UpdatePostSchema>;
+export type CreatePostInput = z.infer<typeof CreatePostSchema>;
+export type UpdatePostInput = z.infer<typeof UpdatePostSchema>;
 
 export type UserBase = Omit<UserWithRelations, 'password'> & {
   _count?: UserWithRelations['_count'];

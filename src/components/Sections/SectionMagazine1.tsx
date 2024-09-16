@@ -9,8 +9,8 @@ export interface SectionMagazine1Props {
 
 export default async function SectionMagazine1({ className = '' }: SectionMagazine1Props) {
   const initialPosts = await getLatestPosts();
-  const mediumAdsResult = await getActiveAdvertisements({ limit: 10, size: 'MEDIUM' } ?? {});
-  const initialAds: Advertisement[] = mediumAdsResult.success ? mediumAdsResult.data ?? [] : [];
+  const mediumAdsResult = await getActiveAdvertisements({ limit: 10, size: 'MEDIUM' });
+  const initialAds: Advertisement[] = mediumAdsResult.success ? (mediumAdsResult.data ?? []) : [];
 
   return (
     <div className={`nc-SectionMagazine1 ${className}`}>

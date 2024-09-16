@@ -44,8 +44,8 @@ const TipTapEditor = dynamic(() => import('@/components/Dashboard/Blog/PostForm/
 });
 
 interface PostFormProps {
-  schema: ZodSchema<CreatePostInput | UpdatePostInput>;
-  defaultValues: CreatePostInput | UpdatePostInput;
+  schema: ZodSchema<CreatePostInput> | ZodSchema<UpdatePostInput>;
+  defaultValues: CreatePostInput | Partial<UpdatePostInput>;
   onSubmit: (data: CreatePostInput | UpdatePostInput) => Promise<void>;
   title: string;
   isEditing?: boolean;
@@ -80,7 +80,6 @@ const PostForm: React.FC<PostFormProps> = ({
     resolver: zodResolver(schema),
     defaultValues,
   });
-
   const generateSlugFromTitle = useCallback(
     (title: string) => {
       const generatedSlug = generateSlug(title);
