@@ -44,7 +44,6 @@ const NAVBAR_LINKS: NavItem[] = [
     subItems: [
       { id: 'gold-news', name: 'اخبار طلا', href: '/archive/category/gold/news' },
       { id: 'gold-analysis', name: 'تحلیل', href: '/archive/category/gold/analysis' },
-      { id: 'gold-local', name: 'بازار داخلی', href: '/archive/category/gold/local' },
       { id: 'gold-global', name: 'بازار جهانی', href: '/archive/category/gold/global' },
     ],
   },

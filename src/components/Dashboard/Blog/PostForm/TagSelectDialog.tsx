@@ -1,6 +1,8 @@
+// components/Dashboard/Blog/PostForm/TagSelectDialog.tsx
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import type React from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -8,6 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import type { TaxonomyType } from '@/types/types';
 import { FiX, FiPlus } from 'react-icons/fi';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { useToast } from '@/components/ui/use-toast';
 
 interface TagSelectDialogProps {
   isOpen: boolean;
@@ -15,7 +19,7 @@ interface TagSelectDialogProps {
   onSelectTags: (tags: string[]) => void;
   initialSelectedTags: string[];
   tags: TaxonomyType[];
-  onLoadMore: () => void;
+  onLoadMore: () => Promise<void>;
   isLoading: boolean;
   hasNextPage: boolean;
 }
@@ -33,51 +37,44 @@ export function TagSelectDialog({
   const [selectedTags, setSelectedTags] = useState<string[]>(initialSelectedTags);
   const [newTag, setNewTag] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  const infiniteScrollRef = useInfiniteScroll(onLoadMore, hasNextPage, isLoading);
 
   useEffect(() => {
     setSelectedTags(initialSelectedTags);
   }, [initialSelectedTags]);
 
-  const handleAddTag = (tagName: string) => {
-    if (!selectedTags.includes(tagName)) {
-      setSelectedTags((prev) => [...prev, tagName]);
-    }
-  };
+  const handleAddTag = useCallback(
+    (tagName: string) => {
+      if (!selectedTags.includes(tagName)) {
+        setSelectedTags((prev) => [...prev, tagName]);
+      }
+    },
+    [selectedTags],
+  );
 
-  const handleRemoveTag = (tagName: string) => {
+  const handleRemoveTag = useCallback((tagName: string) => {
     setSelectedTags((prev) => prev.filter((tag) => tag !== tagName));
-  };
+  }, []);
 
-  const handleNewTagSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newTag.trim() && !selectedTags.includes(newTag.trim())) {
-      handleAddTag(newTag.trim());
-      setNewTag('');
-    }
-  };
+  const handleNewTagSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      if (newTag.trim() && !selectedTags.includes(newTag.trim())) {
+        handleAddTag(newTag.trim());
+        setNewTag('');
+      }
+    },
+    [newTag, handleAddTag, selectedTags],
+  );
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     onSelectTags(selectedTags);
     onClose();
-  };
+  }, [selectedTags, onSelectTags, onClose]);
 
   const filteredTags = tags.filter((tag) =>
     tag.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
-
-  const lastTagCallback = useCallback(
-    (node: HTMLDivElement | null) => {
-      if (isLoading) return;
-      if (observerRef.current) observerRef.current.disconnect();
-      observerRef.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasNextPage) {
-          onLoadMore();
-        }
-      });
-      if (node) observerRef.current.observe(node);
-    },
-    [isLoading, hasNextPage, onLoadMore],
   );
 
   return (
@@ -124,20 +121,20 @@ export function TagSelectDialog({
           />
         </div>
         <ScrollArea className="h-[200px] pr-4" dir="rtl">
-          {filteredTags.map((tag, index) => (
-            <div key={tag.id} ref={index === filteredTags.length - 1 ? lastTagCallback : null}>
-              <Button
-                variant="ghost"
-                className={`w-full justify-start mb-1 text-right ${
-                  selectedTags.includes(tag.name) ? 'bg-secondary-100' : ''
-                }`}
-                onClick={() => handleAddTag(tag.name)}
-              >
-                {tag.name}
-              </Button>
-            </div>
+          {filteredTags.map((tag) => (
+            <Button
+              key={tag.id}
+              variant="ghost"
+              className={`w-full justify-start mb-1 text-right ${
+                selectedTags.includes(tag.name) ? 'bg-secondary-100' : ''
+              }`}
+              onClick={() => handleAddTag(tag.name)}
+            >
+              {tag.name}
+            </Button>
           ))}
-          {isLoading && <div className="text-center py-2">در حال بارگیری...</div>}
+          <div ref={infiniteScrollRef} style={{ height: '1px' }} />
+          {isLoading && <div className="text-center py-2">در حال بارگذاری...</div>}
         </ScrollArea>
         <div className="flex justify-start mt-4">
           <Button onClick={handleSave}>ذخیره</Button>

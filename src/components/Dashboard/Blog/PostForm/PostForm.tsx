@@ -1,8 +1,7 @@
 'use client';
 
-import type React from 'react';
-import { useState, useCallback, useTransition } from 'react';
-import { useForm } from 'react-hook-form';
+import { useState, useEffect, useCallback } from 'react';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import {
@@ -26,7 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { FiX } from 'react-icons/fi';
+import { FiX, FiPlus } from 'react-icons/fi';
 import { RiSendPlaneFill } from 'react-icons/ri';
 import { BiLoaderAlt } from 'react-icons/bi';
 import dynamic from 'next/dynamic';
@@ -38,6 +37,7 @@ import { CategorySelectDialog } from './CategorySelectDialog';
 import { TagSelectDialog } from './TagSelectDialog';
 import { getCategories } from '@/actions/categoryActions';
 import { getTags } from '@/actions/getTags';
+import { useToast } from '@/components/ui/use-toast';
 
 const TipTapEditor = dynamic(() => import('@/components/Dashboard/Blog/PostForm/Editor/Editor'), {
   ssr: false,
@@ -70,16 +70,33 @@ const PostForm: React.FC<PostFormProps> = ({
   const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
   const [categories, setCategories] = useState(initialCategories);
   const [tags, setTags] = useState(initialTags);
-  const [isPending, startTransition] = useTransition();
-  const [hasMoreCategories, setHasMoreCategories] = useState(true);
-  const [hasMoreTags, setHasMoreTags] = useState(true);
   const [categoryPage, setCategoryPage] = useState(1);
   const [tagPage, setTagPage] = useState(1);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+  const [isLoadingTags, setIsLoadingTags] = useState(false);
+  const [hasMoreCategories, setHasMoreCategories] = useState(true);
+  const [hasMoreTags, setHasMoreTags] = useState(true);
+  const { toast } = useToast();
 
   const form = useForm<CreatePostInput | UpdatePostInput>({
     resolver: zodResolver(schema),
     defaultValues,
   });
+
+  useEffect(() => {
+    if (isEditing && defaultValues.slug) {
+      setSlug(defaultValues.slug);
+    }
+  }, [isEditing, defaultValues.slug]);
+
+  useEffect(() => {
+    if (isEditing) {
+      form.reset(defaultValues);
+      setEditorContent(defaultValues.content || '');
+      setSlug(defaultValues.slug || '');
+    }
+  }, [isEditing, defaultValues, form]);
+
   const generateSlugFromTitle = useCallback(
     (title: string) => {
       const generatedSlug = generateSlug(title);
@@ -89,43 +106,83 @@ const PostForm: React.FC<PostFormProps> = ({
     [form],
   );
 
-  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newSlug = sanitizeSlug(e.target.value);
-    setSlug(newSlug);
-    form.setValue('slug', newSlug);
-  };
+  const handleSelectCategories = useCallback(
+    (selectedCategories: string[]) => {
+      form.setValue('categories', selectedCategories);
+    },
+    [form],
+  );
 
-  const handleSelectCategories = (selectedCategories: string[]) => {
-    form.setValue('categories', selectedCategories);
-  };
+  const handleSelectTags = useCallback(
+    (selectedTags: string[]) => {
+      form.setValue('tags', selectedTags);
+    },
+    [form],
+  );
 
-  const handleSelectTags = (selectedTags: string[]) => {
-    form.setValue('tags', selectedTags);
-  };
-
-  const loadMoreCategories = useCallback(() => {
-    startTransition(async () => {
-      const nextPage = categoryPage + 1;
-      const result = await getCategories({ limit: 10, page: nextPage });
+  const loadMoreCategories = useCallback(async () => {
+    if (isLoadingCategories || !hasMoreCategories) return;
+    setIsLoadingCategories(true);
+    try {
+      const result = await getCategories({ limit: 10, page: categoryPage + 1 });
       if (result.success && result.data) {
-        setCategories((prev) => [...prev, ...(result.data?.categories || [])]);
-        setCategoryPage(nextPage);
+        setCategories((prev) => [...prev, ...(result.data?.categories ?? [])]);
+        setCategoryPage((prevPage) => prevPage + 1);
         setHasMoreCategories(result.data.categories.length === 10);
       }
-    });
-  }, [categoryPage]);
+    } catch (error) {
+      console.error('Error loading more categories:', error);
+      toast({
+        title: 'خطا',
+        description: 'بارگذاری دسته‌بندی‌های بیشتر با مشکل مواجه شد.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoadingCategories(false);
+    }
+  }, [categoryPage, isLoadingCategories, hasMoreCategories, toast]);
 
-  const loadMoreTags = useCallback(() => {
-    startTransition(async () => {
-      const nextPage = tagPage + 1;
-      const result = await getTags({ limit: 10, page: nextPage });
+  const loadMoreTags = useCallback(async () => {
+    if (isLoadingTags || !hasMoreTags) return;
+    setIsLoadingTags(true);
+    try {
+      const result = await getTags({ limit: 10, page: tagPage + 1 });
       if (result.success && result.data) {
-        setTags((prev) => [...prev, ...(result.data?.tags || [])]);
-        setTagPage(nextPage);
+        setTags((prev) => [...prev, ...(result.data?.tags ?? [])]);
+        setTagPage((prevPage) => prevPage + 1);
         setHasMoreTags(result.data.tags.length === 10);
       }
-    });
-  }, [tagPage]);
+    } catch (error) {
+      console.error('Error loading more tags:', error);
+      toast({
+        title: 'خطا',
+        description: 'بارگذاری برچسب‌های بیشتر با مشکل مواجه شد.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoadingTags(false);
+    }
+  }, [tagPage, isLoadingTags, hasMoreTags, toast]);
+
+  const handleSubmit = async (data: CreatePostInput | UpdatePostInput) => {
+    try {
+      console.log('Form data before submission:', data);
+      await onSubmit({
+        ...data,
+        content: editorContent,
+        slug: slug,
+        categories: Array.isArray(data.categories) ? data.categories : [],
+        tags: Array.isArray(data.tags) ? data.tags : [],
+      });
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast({
+        title: 'خطا',
+        description: 'مشکلی در ارسال فرم رخ داد. لطفاً دوباره تلاش کنید.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   return (
     <motion.div
@@ -139,7 +196,7 @@ const PostForm: React.FC<PostFormProps> = ({
       </h1>
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(onSubmit)}
+          onSubmit={form.handleSubmit(handleSubmit)}
           className="space-y-4 sm:space-y-6 md:space-y-8"
         >
           <FormField
@@ -174,9 +231,13 @@ const PostForm: React.FC<PostFormProps> = ({
                 <FormControl>
                   <Input
                     {...field}
-                    placeholder="اسلاگ را وارد کنید"
                     value={slug}
-                    onChange={handleSlugChange}
+                    onChange={(e) => {
+                      const newSlug = sanitizeSlug(e.target.value);
+                      setSlug(newSlug);
+                      field.onChange(newSlug);
+                    }}
+                    placeholder="اسلاگ را وارد کنید"
                   />
                 </FormControl>
                 <FormDescription>
@@ -482,7 +543,7 @@ const PostForm: React.FC<PostFormProps> = ({
         initialSelectedCategories={form.getValues('categories') || []}
         categories={categories}
         onLoadMore={loadMoreCategories}
-        isLoading={isPending}
+        isLoading={isLoadingCategories}
         hasNextPage={hasMoreCategories}
       />
 
@@ -493,7 +554,7 @@ const PostForm: React.FC<PostFormProps> = ({
         initialSelectedTags={form.getValues('tags') || []}
         tags={tags}
         onLoadMore={loadMoreTags}
-        isLoading={isPending}
+        isLoading={isLoadingTags}
         hasNextPage={hasMoreTags}
       />
     </motion.div>

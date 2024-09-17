@@ -6,7 +6,7 @@ import SkeletonLoader from '@/components/SkeletonLoader';
 import { getCategories } from '@/actions/categoryActions';
 import { getTags } from '@/actions/getTags';
 
-export const revalidate = 3600; // Revalidate every hour
+export const revalidate = 3600;
 
 export default async function CreatePostPage() {
   const [categoriesResult, tagsResult] = await Promise.all([

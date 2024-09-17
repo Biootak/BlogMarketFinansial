@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import type { TaxonomyType } from '@/types/types';
 import { FiX } from 'react-icons/fi';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
 interface CategorySelectDialogProps {
   isOpen: boolean;
@@ -14,7 +16,7 @@ interface CategorySelectDialogProps {
   onSelectCategories: (categories: string[]) => void;
   initialSelectedCategories: string[];
   categories: TaxonomyType[];
-  onLoadMore: () => void;
+  onLoadMore: () => Promise<void>;
   isLoading: boolean;
   hasNextPage: boolean;
 }
@@ -31,40 +33,26 @@ export function CategorySelectDialog({
 }: CategorySelectDialogProps) {
   const [selectedCategories, setSelectedCategories] = useState<string[]>(initialSelectedCategories);
   const [searchTerm, setSearchTerm] = useState('');
-  const observerRef = useRef<IntersectionObserver | null>(null);
-
+ 
+  const infiniteScrollRef = useInfiniteScroll(onLoadMore, hasNextPage, isLoading);
 
   useEffect(() => {
     setSelectedCategories(initialSelectedCategories);
   }, [initialSelectedCategories]);
 
-  const handleToggleCategory = (categoryId: string) => {
+  const handleToggleCategory = useCallback((categoryId: string) => {
     setSelectedCategories((prev) =>
       prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId],
     );
-  };
+  }, []);
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     onSelectCategories(selectedCategories);
     onClose();
-  };
+  }, [selectedCategories, onSelectCategories, onClose]);
 
   const filteredCategories = categories.filter((category) =>
     category.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
-
-  const lastCategoryCallback = useCallback(
-    (node: HTMLDivElement | null) => {
-      if (isLoading) return;
-      if (observerRef.current) observerRef.current.disconnect();
-      observerRef.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasNextPage) {
-          onLoadMore();
-        }
-      });
-      if (node) observerRef.current.observe(node);
-    },
-    [isLoading, hasNextPage, onLoadMore],
   );
 
   return (
@@ -74,12 +62,11 @@ export function CategorySelectDialog({
           <DialogTitle className="text-right">انتخاب دسته‌بندی‌ها</DialogTitle>
         </DialogHeader>
         <div className="mb-4">
-          <input
+          <Input
             type="text"
             placeholder="جستجوی دسته‌بندی..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-md"
           />
         </div>
         <div className="flex flex-wrap gap-2 mb-4">
@@ -104,23 +91,20 @@ export function CategorySelectDialog({
           })}
         </div>
         <ScrollArea className="h-[300px] pr-4" dir="rtl">
-          {filteredCategories.map((category, index) => (
-            <div
+          {filteredCategories.map((category) => (
+            <Button
               key={category.id}
-              ref={index === filteredCategories.length - 1 ? lastCategoryCallback : null}
+              variant="ghost"
+              className={`w-full justify-start mb-1 text-right ${
+                selectedCategories.includes(category.id) ? 'bg-primary-100' : ''
+              }`}
+              onClick={() => handleToggleCategory(category.id)}
             >
-              <Button
-                variant="ghost"
-                className={`w-full justify-start mb-1 text-right ${
-                  selectedCategories.includes(category.id) ? 'bg-primary-100' : ''
-                }`}
-                onClick={() => handleToggleCategory(category.id)}
-              >
-                {category.name}
-              </Button>
-            </div>
+              {category.name}
+            </Button>
           ))}
-          {isLoading && <div className="text-center py-2">در حال بارگیری...</div>}
+          <div ref={infiniteScrollRef} style={{ height: '20px', marginTop: '10px' }} />
+          {isLoading && <div className="text-center py-2">در حال بارگذاری...</div>}
         </ScrollArea>
         <div className="flex justify-end mt-4">
           <Button onClick={handleSave}>ذخیره</Button>

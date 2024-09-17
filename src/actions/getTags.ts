@@ -1,3 +1,4 @@
+// actions/getTags.ts
 'use server';
 
 import prisma from '@/lib/db';
@@ -7,7 +8,7 @@ export async function getTags(
   options: { limit?: number; page?: number; search?: string } = {},
 ): Promise<ActionResult<{ tags: TaxonomyType[]; totalCount: number }>> {
   try {
-    const { limit = 20, page = 1, search = '' } = options;
+    const { limit = 10, page = 1, search = '' } = options;
     const skip = (page - 1) * limit;
 
     const where = search

@@ -1,3 +1,4 @@
+// components/Dashboard/Blog/PostForm/CategoryForm.tsx
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -115,9 +116,9 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
             variant: 'success',
           });
           router.refresh();
-          form.reset(); // ریست کردن فرم
-          setDialogOpen(false); // بستن دیالوگ
-          if (onClose) onClose(); // فراخوانی تابع onClose اگر وجود داشته باشد
+          form.reset();
+          setDialogOpen(false);
+          if (onClose) onClose();
         } else {
           toast({
             title: 'خطا',
@@ -179,50 +180,64 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
         <Controller
           name="parentIds"
           control={form.control}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>دسته‌بندی‌های والد</FormLabel>
-              <Select
-                dir="rtl"
-                onValueChange={(value) => field.onChange([...field.value, value])}
-                value={field.value[field.value.length - 1] || ''}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="انتخاب دسته‌بندی والد" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {parentCategories.map((parentCategory) => (
-                    <SelectItem key={parentCategory.id} value={parentCategory.id}>
-                      {parentCategory.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <div className="mt-2">
-                {field.value.map((parentId) => {
-                  const parent = parentCategories.find((pc) => pc.id === parentId);
-                  return parent ? (
-                    <span
-                      key={parentId}
-                      className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
-                    >
-                      {parent.name}
-                      <button
-                        type="button"
-                        onClick={() => field.onChange(field.value.filter((id) => id !== parentId))}
-                        className="mr-2 text-red-500 hover:text-red-700"
+          render={({ field }) => {
+            console.log('Current field value:', field.value); // لاگ مقدار فعلی فیلد
+            return (
+              <FormItem>
+                <FormLabel>دسته‌بندی‌های والد</FormLabel>
+                <Select
+                  dir="rtl"
+                  onValueChange={(value) => {
+                    console.log('Selected value:', value); // لاگ مقدار انتخاب شده
+                    const newValue = [...field.value, value];
+                    console.log('New field value:', newValue); // لاگ مقدار جدید فیلد
+                    field.onChange(newValue);
+                  }}
+                  value={field.value[field.value.length - 1] || ''}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="انتخاب دسته‌بندی والد" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {parentCategories.map((parentCategory) => (
+                      <SelectItem key={parentCategory.id} value={parentCategory.id}>
+                        {parentCategory.name} (ID: {parentCategory.id}){' '}
+                        {/* اضافه کردن ID به نمایش */}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="mt-2">
+                  {field.value.map((parentId) => {
+                    const parent = parentCategories.find((pc) => pc.id === parentId);
+                    console.log('Parent found for ID:', parentId, parent); // لاگ برای هر والد پیدا شده
+                    return parent ? (
+                      <span
+                        key={parentId}
+                        className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
                       >
-                        ×
-                      </button>
-                    </span>
-                  ) : null;
-                })}
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
+                        {parent.name} (ID: {parent.id}) {/* اضافه کردن ID به نمایش */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newValue = field.value.filter((id) => id !== parentId);
+                            console.log('Removing parent, new value:', newValue); // لاگ برای حذف والد
+                            field.onChange(newValue);
+                          }}
+                          className="mr-2 text-red-500 hover:text-red-700"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ) : null;
+                  })}
+                </div>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
         <FormField
           control={form.control}

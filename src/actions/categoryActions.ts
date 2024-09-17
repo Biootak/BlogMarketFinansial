@@ -14,10 +14,10 @@ import type {
 export async function getCategories(
   options: { limit?: number; page?: number; search?: string } = {},
 ): Promise<ActionResult<{ categories: TaxonomyType[]; totalCount: number }>> {
-  const { limit = 10, page = 1, search = '' } = options;
-  const skip = (page - 1) * limit;
-
   try {
+    const { limit = 10, page = 1, search = '' } = options;
+    const skip = (page - 1) * limit;
+
     const where = search
       ? {
           name: {
@@ -88,6 +88,8 @@ export async function getCategories(
       updatedAt: category.updatedAt,
     }));
 
+    revalidatePath('/categories');
+
     return {
       success: true,
       message: 'دسته‌بندی‌ها با موفقیت بازیابی شدند.',
@@ -105,7 +107,6 @@ export async function getCategories(
     };
   }
 }
-
 export async function createCategory(
   data: CreateCategoryInput,
 ): Promise<ActionResult<TaxonomyType>> {

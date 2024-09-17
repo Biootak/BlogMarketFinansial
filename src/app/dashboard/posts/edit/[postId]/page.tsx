@@ -18,8 +18,8 @@ export const revalidate = 0; // No caching for edit page
 export default async function EditPostPage({ params }: EditPostPageProps) {
   const [postResult, categoriesResult, tagsResult] = await Promise.all([
     getPostById(params.postId),
-    getCategories({ limit: 100, page: 1 }),
-    getTags({ limit: 100, page: 1 }),
+    getCategories({ limit: 10, page: 1 }),
+    getTags({ limit: 10, page: 1 }),
   ]);
 
   if (!postResult.success || !postResult.data || !categoriesResult.success || !tagsResult.success) {

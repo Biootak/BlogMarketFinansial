@@ -4,13 +4,15 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CreatePostSchema } from '@/schemas';
 import PostForm from './PostForm';
-import type { PostStatus, PostType, TaxonomyType, UpdatePostInput } from '@/types/types';
+import type {
+  CreatePostInput,
+  PostStatus,
+  PostType,
+  TaxonomyType,
+  UpdatePostInput,
+} from '@/types/types';
 import { useToast } from '@/components/ui/use-toast';
 import { createPost } from '@/actions/postActions';
-import type { z } from 'zod';
-
-// تعریف نوع CreatePostInput بر اساس CreatePostSchema
-type CreatePostInput = z.infer<typeof CreatePostSchema>;
 
 interface CreatePostFormProps {
   initialCategories: TaxonomyType[];
@@ -39,7 +41,6 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ initialCategories, init
   };
 
   const handleCreatePost = async (data: CreatePostInput) => {
-    console.log('Data to submit:', data);
     setIsSubmitting(true);
     try {
       const result = await createPost(data);

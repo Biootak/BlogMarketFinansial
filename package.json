@@ -96,7 +96,7 @@
     "zustand": "^4.5.4"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.8.3",
+    "@biomejs/biome": "1.9.1",
     "@types/axios": "^0.9.36",
     "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^2.4.6",

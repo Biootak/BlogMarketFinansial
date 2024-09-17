@@ -26,6 +26,7 @@ const EditPostForm: React.FC<EditPostFormProps> = ({
   const defaultValues: UpdatePostInput = {
     title: initialData.title,
     content: initialData.content || '',
+    slug: initialData.slug || '',
     excerpt: initialData.excerpt || '',
     isFeatured: initialData.isFeatured,
     postType: initialData.postType,
@@ -33,7 +34,7 @@ const EditPostForm: React.FC<EditPostFormProps> = ({
     audioUrl: initialData.audioUrl || '',
     featuredImage: initialData.featuredImage || '',
     galleryImages: initialData.galleryImages,
-    categories: initialData.categories.map((cat) => cat.name),
+    categories: initialData.categories.map((cat) => cat.id),
     tags: initialData.tags.map((tag) => tag.name),
     status: initialData.status,
   };
