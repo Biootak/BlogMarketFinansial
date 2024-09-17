@@ -1,6 +1,7 @@
+// components/Dashboard/Blog/PostForm/CategorySelectDialog.tsx
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -18,7 +19,7 @@ interface CategorySelectDialogProps {
   categories: TaxonomyType[];
   onLoadMore: () => Promise<void>;
   isLoading: boolean;
-  hasNextPage: boolean;
+  hasMoreItems: boolean;
 }
 
 export function CategorySelectDialog({
@@ -29,12 +30,10 @@ export function CategorySelectDialog({
   categories,
   onLoadMore,
   isLoading,
-  hasNextPage,
+  hasMoreItems,
 }: CategorySelectDialogProps) {
   const [selectedCategories, setSelectedCategories] = useState<string[]>(initialSelectedCategories);
   const [searchTerm, setSearchTerm] = useState('');
- 
-  const infiniteScrollRef = useInfiniteScroll(onLoadMore, hasNextPage, isLoading);
 
   useEffect(() => {
     setSelectedCategories(initialSelectedCategories);
@@ -50,6 +49,14 @@ export function CategorySelectDialog({
     onSelectCategories(selectedCategories);
     onClose();
   }, [selectedCategories, onSelectCategories, onClose]);
+
+  const handleLoadMore = useCallback(() => {
+    if (!isLoading && hasMoreItems) {
+      onLoadMore();
+    }
+  }, [isLoading, hasMoreItems, onLoadMore]);
+
+  const infiniteScrollRef = useInfiniteScroll(handleLoadMore, hasMoreItems, isLoading);
 
   const filteredCategories = categories.filter((category) =>
     category.name.toLowerCase().includes(searchTerm.toLowerCase()),

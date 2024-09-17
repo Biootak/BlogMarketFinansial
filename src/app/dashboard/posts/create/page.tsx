@@ -6,7 +6,7 @@ import SkeletonLoader from '@/components/SkeletonLoader';
 import { getCategories } from '@/actions/categoryActions';
 import { getTags } from '@/actions/getTags';
 
-export const revalidate = 3600;
+export const revalidate = 3600; // Revalidate every hour
 
 export default async function CreatePostPage() {
   const [categoriesResult, tagsResult] = await Promise.all([
@@ -20,10 +20,17 @@ export default async function CreatePostPage() {
 
   const initialCategories = categoriesResult.data?.categories ?? [];
   const initialTags = tagsResult.data?.tags ?? [];
+  const totalCategories = categoriesResult.data?.totalCount ?? 0;
+  const totalTags = tagsResult.data?.totalCount ?? 0;
 
   return (
     <Suspense fallback={<SkeletonLoader variant="text" count={6} />}>
-      <CreatePostForm initialCategories={initialCategories} initialTags={initialTags} />
+      <CreatePostForm
+        initialCategories={initialCategories}
+        initialTags={initialTags}
+        totalCategories={totalCategories}
+        totalTags={totalTags}
+      />
     </Suspense>
   );
 }

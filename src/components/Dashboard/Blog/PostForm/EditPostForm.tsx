@@ -1,27 +1,39 @@
+// components/Dashboard/Blog/PostForm/EditPostForm.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { UpdatePostSchema } from '@/schemas';
 import PostForm from './PostForm';
 import type { UpdatePostInput, PostWithRelations, TaxonomyType } from '@/types/types';
 import { useToast } from '@/components/ui/use-toast';
 import { updatePost } from '@/actions/postActions';
+import { getCategories } from '@/actions/categoryActions';
+import { getTags } from '@/actions/getTags';
 
 interface EditPostFormProps {
   initialData: PostWithRelations;
   initialCategories: TaxonomyType[];
   initialTags: TaxonomyType[];
+  totalCategories: number;
+  totalTags: number;
 }
 
 const EditPostForm: React.FC<EditPostFormProps> = ({
   initialData,
   initialCategories,
   initialTags,
+  totalCategories,
+  totalTags,
 }) => {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [categories, setCategories] = useState(initialCategories);
+  const [tags, setTags] = useState(initialTags);
+  const [categoryPage, setCategoryPage] = useState(1);
+  const [tagPage, setTagPage] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const defaultValues: UpdatePostInput = {
     title: initialData.title,
@@ -64,6 +76,48 @@ const EditPostForm: React.FC<EditPostFormProps> = ({
     }
   };
 
+const loadMoreCategories = useCallback(async () => {
+  if (isLoadingMore) return;
+  setIsLoadingMore(true);
+  try {
+    const result = await getCategories({ limit: 10, page: categoryPage + 1 });
+    if (result.success && result.data?.categories) {
+      setCategories(prev => [...prev, ...result.data.categories]);
+      setCategoryPage(prev => prev + 1);
+    }
+  } catch (error) {
+    console.error('Error loading more categories:', error);
+    toast({
+      title: 'خطا',
+      description: 'بارگذاری دسته‌بندی‌های بیشتر با مشکل مواجه شد.',
+      variant: 'destructive',
+    });
+  } finally {
+    setIsLoadingMore(false);
+  }
+}, [categoryPage, isLoadingMore, toast]);
+
+const loadMoreTags = useCallback(async () => {
+  if (isLoadingMore) return;
+  setIsLoadingMore(true);
+  try {
+    const result = await getTags({ limit: 10, page: tagPage + 1 });
+    if (result.success && result.data?.tags) {
+      setTags(prev => [...prev, ...result.data.tags]);
+      setTagPage(prev => prev + 1);
+    }
+  } catch (error) {
+    console.error('Error loading more tags:', error);
+    toast({
+      title: 'خطا',
+      description: 'بارگذاری برچسب‌های بیشتر با مشکل مواجه شد.',
+      variant: 'destructive',
+    });
+  } finally {
+    setIsLoadingMore(false);
+  }
+}, [tagPage, isLoadingMore, toast]);
+
   return (
     <PostForm
       schema={UpdatePostSchema}
@@ -72,8 +126,13 @@ const EditPostForm: React.FC<EditPostFormProps> = ({
       isSubmitting={isSubmitting}
       title="ویرایش پست"
       isEditing={true}
-      initialCategories={initialCategories}
-      initialTags={initialTags}
+      categories={categories}
+      tags={tags}
+      onLoadMoreCategories={loadMoreCategories}
+      onLoadMoreTags={loadMoreTags}
+      isLoadingMore={isLoadingMore}
+      totalCategories={totalCategories}
+      totalTags={totalTags}
     />
   );
 };

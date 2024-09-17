@@ -1,3 +1,4 @@
+// components/Dashboard/Blog/PostForm/PostForm.tsx
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -30,13 +31,11 @@ import { RiSendPlaneFill } from 'react-icons/ri';
 import { BiLoaderAlt } from 'react-icons/bi';
 import dynamic from 'next/dynamic';
 import ImageUploader from '@/components/ImageUpload/ImageUploader';
-import type { CreatePostInput, UpdatePostInput, TaxonomyType } from '@/types/types';
+import type { CreatePostInput, UpdatePostInput, TaxonomyType, PostType, PostStatus } from '@/types/types';
 import type { ZodSchema } from 'zod';
 import { generateSlug, sanitizeSlug } from '@/lib/utils';
 import { CategorySelectDialog } from './CategorySelectDialog';
 import { TagSelectDialog } from './TagSelectDialog';
-import { getCategories } from '@/actions/categoryActions';
-import { getTags } from '@/actions/getTags';
 import { useToast } from '@/components/ui/use-toast';
 
 const TipTapEditor = dynamic(() => import('@/components/Dashboard/Blog/PostForm/Editor/Editor'), {
@@ -50,8 +49,13 @@ interface PostFormProps {
   title: string;
   isEditing?: boolean;
   isSubmitting: boolean;
-  initialCategories: TaxonomyType[];
-  initialTags: TaxonomyType[];
+  categories: TaxonomyType[];
+  tags: TaxonomyType[];
+  onLoadMoreCategories: () => Promise<void>;
+  onLoadMoreTags: () => Promise<void>;
+  isLoadingMore: boolean;
+  totalCategories: number;
+  totalTags: number;
 }
 
 const PostForm: React.FC<PostFormProps> = ({
@@ -61,21 +65,18 @@ const PostForm: React.FC<PostFormProps> = ({
   isEditing = false,
   schema,
   isSubmitting,
-  initialCategories,
-  initialTags,
+  categories,
+  tags,
+  onLoadMoreCategories,
+  onLoadMoreTags,
+  isLoadingMore,
+  totalCategories,
+  totalTags,
 }) => {
   const [editorContent, setEditorContent] = useState(defaultValues.content || '');
   const [slug, setSlug] = useState(defaultValues.slug || '');
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
-  const [categories, setCategories] = useState(initialCategories);
-  const [tags, setTags] = useState(initialTags);
-  const [categoryPage, setCategoryPage] = useState(1);
-  const [tagPage, setTagPage] = useState(1);
-  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
-  const [isLoadingTags, setIsLoadingTags] = useState(false);
-  const [hasMoreCategories, setHasMoreCategories] = useState(true);
-  const [hasMoreTags, setHasMoreTags] = useState(true);
   const { toast } = useToast();
 
   const form = useForm<CreatePostInput | UpdatePostInput>({
@@ -119,50 +120,6 @@ const PostForm: React.FC<PostFormProps> = ({
     },
     [form],
   );
-
-  const loadMoreCategories = useCallback(async () => {
-    if (isLoadingCategories || !hasMoreCategories) return;
-    setIsLoadingCategories(true);
-    try {
-      const result = await getCategories({ limit: 10, page: categoryPage + 1 });
-      if (result.success && result.data) {
-        setCategories((prev) => [...prev, ...(result.data?.categories ?? [])]);
-        setCategoryPage((prevPage) => prevPage + 1);
-        setHasMoreCategories(result.data.categories.length === 10);
-      }
-    } catch (error) {
-      console.error('Error loading more categories:', error);
-      toast({
-        title: 'خطا',
-        description: 'بارگذاری دسته‌بندی‌های بیشتر با مشکل مواجه شد.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoadingCategories(false);
-    }
-  }, [categoryPage, isLoadingCategories, hasMoreCategories, toast]);
-
-  const loadMoreTags = useCallback(async () => {
-    if (isLoadingTags || !hasMoreTags) return;
-    setIsLoadingTags(true);
-    try {
-      const result = await getTags({ limit: 10, page: tagPage + 1 });
-      if (result.success && result.data) {
-        setTags((prev) => [...prev, ...(result.data?.tags ?? [])]);
-        setTagPage((prevPage) => prevPage + 1);
-        setHasMoreTags(result.data.tags.length === 10);
-      }
-    } catch (error) {
-      console.error('Error loading more tags:', error);
-      toast({
-        title: 'خطا',
-        description: 'بارگذاری برچسب‌های بیشتر با مشکل مواجه شد.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoadingTags(false);
-    }
-  }, [tagPage, isLoadingTags, hasMoreTags, toast]);
 
   const handleSubmit = async (data: CreatePostInput | UpdatePostInput) => {
     try {
@@ -542,9 +499,9 @@ const PostForm: React.FC<PostFormProps> = ({
         onSelectCategories={handleSelectCategories}
         initialSelectedCategories={form.getValues('categories') || []}
         categories={categories}
-        onLoadMore={loadMoreCategories}
-        isLoading={isLoadingCategories}
-        hasNextPage={hasMoreCategories}
+        onLoadMore={onLoadMoreCategories}
+        isLoading={isLoadingMore}
+        hasMoreItems={categories.length < totalCategories}
       />
 
       <TagSelectDialog
@@ -553,9 +510,9 @@ const PostForm: React.FC<PostFormProps> = ({
         onSelectTags={handleSelectTags}
         initialSelectedTags={form.getValues('tags') || []}
         tags={tags}
-        onLoadMore={loadMoreTags}
-        isLoading={isLoadingTags}
-        hasNextPage={hasMoreTags}
+        onLoadMore={onLoadMoreTags}
+        isLoading={isLoadingMore}
+        hasMoreItems={tags.length < totalTags}
       />
     </motion.div>
   );

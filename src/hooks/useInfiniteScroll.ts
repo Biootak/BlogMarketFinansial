@@ -1,3 +1,4 @@
+// hooks/useInfiniteScroll.ts
 import { useEffect, useRef, useCallback } from 'react';
 
 export const useInfiniteScroll = (
@@ -22,7 +23,7 @@ export const useInfiniteScroll = (
     const options = {
       root: null,
       rootMargin: '0px',
-      threshold: 1.0,
+      threshold: 0.1,
     };
 
     observerRef.current = new IntersectionObserver(handleObserver, options);

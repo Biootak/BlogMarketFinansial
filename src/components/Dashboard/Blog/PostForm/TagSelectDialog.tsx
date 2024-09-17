@@ -1,7 +1,6 @@
 // components/Dashboard/Blog/PostForm/TagSelectDialog.tsx
 'use client';
 
-import type React from 'react';
 import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -21,7 +20,7 @@ interface TagSelectDialogProps {
   tags: TaxonomyType[];
   onLoadMore: () => Promise<void>;
   isLoading: boolean;
-  hasNextPage: boolean;
+  hasMoreItems: boolean;
 }
 
 export function TagSelectDialog({
@@ -32,13 +31,12 @@ export function TagSelectDialog({
   tags,
   onLoadMore,
   isLoading,
-  hasNextPage,
+  hasMoreItems,
 }: TagSelectDialogProps) {
   const [selectedTags, setSelectedTags] = useState<string[]>(initialSelectedTags);
   const [newTag, setNewTag] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-
-  const infiniteScrollRef = useInfiniteScroll(onLoadMore, hasNextPage, isLoading);
+  const { toast } = useToast();
 
   useEffect(() => {
     setSelectedTags(initialSelectedTags);
@@ -63,15 +61,29 @@ export function TagSelectDialog({
       if (newTag.trim() && !selectedTags.includes(newTag.trim())) {
         handleAddTag(newTag.trim());
         setNewTag('');
+      } else if (selectedTags.includes(newTag.trim())) {
+        toast({
+          title: 'خطا',
+          description: 'این برچسب قبلاً اضافه شده است.',
+          variant: 'destructive',
+        });
       }
     },
-    [newTag, handleAddTag, selectedTags],
+    [newTag, handleAddTag, selectedTags, toast],
   );
 
   const handleSave = useCallback(() => {
     onSelectTags(selectedTags);
     onClose();
   }, [selectedTags, onSelectTags, onClose]);
+
+  const handleLoadMore = useCallback(() => {
+    if (!isLoading && hasMoreItems) {
+      onLoadMore();
+    }
+  }, [isLoading, hasMoreItems, onLoadMore]);
+
+  const infiniteScrollRef = useInfiniteScroll(handleLoadMore, hasMoreItems, isLoading);
 
   const filteredTags = tags.filter((tag) =>
     tag.name.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -136,7 +148,7 @@ export function TagSelectDialog({
           <div ref={infiniteScrollRef} style={{ height: '1px' }} />
           {isLoading && <div className="text-center py-2">در حال بارگذاری...</div>}
         </ScrollArea>
-        <div className="flex justify-start mt-4">
+        <div className="flex justify-end mt-4">
           <Button onClick={handleSave}>ذخیره</Button>
         </div>
       </DialogContent>

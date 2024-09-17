@@ -26,12 +26,19 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     return notFound();
   }
 
+  const initialCategories = categoriesResult.data?.categories ?? [];
+  const initialTags = tagsResult.data?.tags ?? [];
+  const totalCategories = categoriesResult.data?.totalCount ?? 0;
+  const totalTags = tagsResult.data?.totalCount ?? 0;
+
   return (
     <Suspense fallback={<SkeletonLoader variant="text" count={6} />}>
       <EditPostForm
         initialData={postResult.data}
-        initialCategories={categoriesResult.data?.categories || []}
-        initialTags={tagsResult.data?.tags || []}
+        initialCategories={initialCategories}
+        initialTags={initialTags}
+        totalCategories={totalCategories}
+        totalTags={totalTags}
       />
     </Suspense>
   );

@@ -1,36 +1,45 @@
+// components/Dashboard/Blog/PostForm/CreatePostForm.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { CreatePostSchema } from '@/schemas';
 import PostForm from './PostForm';
-import type {
-  CreatePostInput,
-  PostStatus,
-  PostType,
-  TaxonomyType,
-  UpdatePostInput,
-} from '@/types/types';
+import type { CreatePostInput, TaxonomyType, UpdatePostInput } from '@/types/types';
 import { useToast } from '@/components/ui/use-toast';
 import { createPost } from '@/actions/postActions';
+import { getCategories } from '@/actions/categoryActions';
+import { getTags } from '@/actions/getTags';
 
 interface CreatePostFormProps {
   initialCategories: TaxonomyType[];
   initialTags: TaxonomyType[];
+  totalCategories: number;
+  totalTags: number;
 }
 
-const CreatePostForm: React.FC<CreatePostFormProps> = ({ initialCategories, initialTags }) => {
+const CreatePostForm: React.FC<CreatePostFormProps> = ({
+  initialCategories,
+  initialTags,
+  totalCategories,
+  totalTags,
+}) => {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [categories, setCategories] = useState(initialCategories);
+  const [tags, setTags] = useState(initialTags);
+  const [categoryPage, setCategoryPage] = useState(1);
+  const [tagPage, setTagPage] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const defaultValues: CreatePostInput = {
     title: '',
     content: '',
     excerpt: '',
-    status: 'DRAFT' as PostStatus,
+    status: 'DRAFT',
     isFeatured: false,
-    postType: 'STANDARD' as PostType,
+    postType: 'STANDARD',
     videoUrl: '',
     audioUrl: '',
     featuredImage: '',
@@ -64,6 +73,49 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ initialCategories, init
       setIsSubmitting(false);
     }
   };
+
+  const loadMoreCategories = useCallback(async () => {
+    if (isLoadingMore) return;
+    setIsLoadingMore(true);
+    try {
+      const result = await getCategories({ limit: 10, page: categoryPage + 1 });
+      if (result.success && result.data?.categories) {
+        setCategories((prev) => [...prev, ...result.data.categories]);
+        setCategoryPage((prev) => prev + 1);
+      }
+    } catch (error) {
+      console.error('Error loading more categories:', error);
+      toast({
+        title: 'خطا',
+        description: 'بارگذاری دسته‌بندی‌های بیشتر با مشکل مواجه شد.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [categoryPage, isLoadingMore, toast]);
+
+  const loadMoreTags = useCallback(async () => {
+    if (isLoadingMore) return;
+    setIsLoadingMore(true);
+    try {
+      const result = await getTags({ limit: 10, page: tagPage + 1 });
+      if (result.success && result.data?.tags) {
+        setTags((prev) => [...prev, ...result.data.tags]);
+        setTagPage((prev) => prev + 1);
+      }
+    } catch (error) {
+      console.error('Error loading more tags:', error);
+      toast({
+        title: 'خطا',
+        description: 'بارگذاری برچسب‌های بیشتر با مشکل مواجه شد.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [tagPage, isLoadingMore, toast]);
+
   return (
     <PostForm
       schema={CreatePostSchema}
@@ -71,8 +123,13 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ initialCategories, init
       onSubmit={handleCreatePost as (data: CreatePostInput | UpdatePostInput) => Promise<void>}
       isSubmitting={isSubmitting}
       title="ایجاد پست جدید"
-      initialCategories={initialCategories}
-      initialTags={initialTags}
+      categories={categories}
+      tags={tags}
+      onLoadMoreCategories={loadMoreCategories}
+      onLoadMoreTags={loadMoreTags}
+      isLoadingMore={isLoadingMore}
+      totalCategories={totalCategories}
+      totalTags={totalTags}
     />
   );
 };
