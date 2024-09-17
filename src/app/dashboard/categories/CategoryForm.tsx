@@ -181,16 +181,14 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
           name="parentIds"
           control={form.control}
           render={({ field }) => {
-            console.log('Current field value:', field.value); // لاگ مقدار فعلی فیلد
             return (
               <FormItem>
                 <FormLabel>دسته‌بندی‌های والد</FormLabel>
                 <Select
                   dir="rtl"
                   onValueChange={(value) => {
-                    console.log('Selected value:', value); // لاگ مقدار انتخاب شده
                     const newValue = [...field.value, value];
-                    console.log('New field value:', newValue); // لاگ مقدار جدید فیلد
+
                     field.onChange(newValue);
                   }}
                   value={field.value[field.value.length - 1] || ''}
@@ -203,8 +201,7 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
                   <SelectContent>
                     {parentCategories.map((parentCategory) => (
                       <SelectItem key={parentCategory.id} value={parentCategory.id}>
-                        {parentCategory.name} (ID: {parentCategory.id}){' '}
-                        {/* اضافه کردن ID به نمایش */}
+                        {parentCategory.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -212,13 +209,13 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
                 <div className="mt-2">
                   {field.value.map((parentId) => {
                     const parent = parentCategories.find((pc) => pc.id === parentId);
-                    console.log('Parent found for ID:', parentId, parent); // لاگ برای هر والد پیدا شده
+
                     return parent ? (
                       <span
                         key={parentId}
                         className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
                       >
-                        {parent.name} (ID: {parent.id}) {/* اضافه کردن ID به نمایش */}
+                        {parent.name}
                         <button
                           type="button"
                           onClick={() => {

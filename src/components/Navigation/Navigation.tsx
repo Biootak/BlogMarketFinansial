@@ -31,8 +31,8 @@ const NAVBAR_LINKS: NavItem[] = [
     name: 'ارزهای دیجیتال',
     href: '/archive/category/crypto',
     subItems: [
-      { id: 'crypto-urgent', name: 'اخبار فوری', href: '/archive/category/crypto/urgent' },
-      { id: 'crypto-important', name: 'اخبار مهم', href: '/archive/category/crypto/important' },
+      { id: 'crypto-urgent', name: 'اخبار فوری', href: '/archive/category/crypto/news-urgent' },
+      { id: 'crypto-important', name: 'اخبار مهم', href: '/archive/category/crypto/news-important' },
       { id: 'crypto-analysis', name: 'تحلیل', href: '/archive/category/crypto/analysis' },
       { id: 'crypto-education', name: 'آموزش', href: '/archive/category/crypto/education' },
     ],
