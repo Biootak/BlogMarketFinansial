@@ -13,6 +13,7 @@ import type {
   UpdatePostInput,
 } from '@/types/types';
 import { CreatePostSchema, UpdatePostSchema } from '@/schemas';
+import { cache } from 'react';
 
 export async function createPost(data: CreatePostInput): Promise<ActionResult<PostWithRelations>> {
   const session = await checkRole(['ADMIN', 'AUTHOR']);
@@ -623,88 +624,122 @@ export async function listAllPosts(
   }
 }
 
-export async function getArchivePosts(
-  page = 1,
-  limit = 12,
-  filter?: string,
-  category?: string,
-  subcategory?: string,
-): Promise<ActionResult<{ posts: any[]; total: number; pages: number }>> {
-  try {
-    const skip = (page - 1) * limit;
-    const whereCondition: Prisma.PostWhereInput = { status: 'PUBLISHED' };
-    let orderBy: Prisma.PostOrderByWithRelationInput = { createdAt: 'desc' };
+export const getArchivePosts = cache(
+  async (
+    page = 1,
+    limit = 12,
+    filter?: string,
+    category?: string,
+    subcategory?: string,
+  ): Promise<ActionResult<{ posts: PostWithRelations[]; total: number; pages: number }>> => {
+    try {
+      const skip = (page - 1) * limit;
+      let whereCondition: Prisma.PostWhereInput = { status: 'PUBLISHED' };
+      let orderBy: Prisma.PostOrderByWithRelationInput = { createdAt: 'desc' };
 
-    if (category) {
-      whereCondition.categories = { some: { slug: category } };
-      if (subcategory) {
-        whereCondition.categories = {
-          some: {
-            AND: [{ slug: category }, { childCategories: { some: { slug: subcategory } } }],
-          },
-        };
+      if (category) {
+        if (subcategory) {
+          // اگر هم دسته‌بندی اصلی و هم زیردسته‌بندی داریم
+          whereCondition = {
+            ...whereCondition,
+            categories: {
+              some: {
+                slug: category,
+                childCategories: {
+                  some: {
+                    slug: subcategory,
+                  },
+                },
+              },
+            },
+            AND: [
+              {
+                categories: {
+                  some: {
+                    slug: subcategory,
+                  },
+                },
+              },
+            ],
+          };
+        } else {
+          // اگر فقط دسته‌بندی اصلی داریم
+          whereCondition = {
+            ...whereCondition,
+            categories: {
+              some: {
+                slug: category,
+              },
+            },
+          };
+        }
       }
-    }
 
-    switch (filter) {
-      case 'جدیدترین':
-        orderBy = { createdAt: 'desc' };
-        break;
-      case 'قدیمی‌ترین':
-        orderBy = { createdAt: 'asc' };
-        break;
-      case 'محبوب‌ترین':
-        orderBy = { likes: { _count: 'desc' } };
-        break;
-      default:
-        orderBy = { createdAt: 'desc' };
-    }
+      // اعمال فیلتر
+      switch (filter) {
+        case 'جدیدترین':
+          orderBy = { createdAt: 'desc' };
+          break;
+        case 'قدیمی‌ترین':
+          orderBy = { createdAt: 'asc' };
+          break;
+        case 'محبوب‌ترین':
+          orderBy = { likes: { _count: 'desc' } };
+          break;
+        default:
+          orderBy = { createdAt: 'desc' };
+      }
 
-    const [posts, total] = await prisma.$transaction([
-      prisma.post.findMany({
-        where: whereCondition,
-        take: limit,
-        skip: skip,
-        orderBy: orderBy,
-        include: {
-          author: {
-            include: {
-              profile: true,
+      const [posts, total] = await prisma.$transaction([
+        prisma.post.findMany({
+          where: whereCondition,
+          take: limit,
+          skip: skip,
+          orderBy: orderBy,
+          include: {
+            author: {
+              include: {
+                profile: true,
+              },
+            },
+            categories: {
+              include: {
+                childCategories: true,
+              },
+            },
+            tags: true,
+            _count: {
+              select: {
+                comments: true,
+                likes: true,
+                savedBy: true,
+                tags: true,
+              },
             },
           },
-          categories: true,
-          tags: true,
-          _count: {
-            select: {
-              comments: true,
-              likes: true,
-              savedBy: true,
-              tags: true,
-            },
-          },
+        }),
+        prisma.post.count({ where: whereCondition }),
+      ]);
+
+      return {
+        success: true,
+        message: 'پست‌ها با موفقیت بازیابی شدند.',
+        data: {
+          posts,
+          total,
+          pages: Math.ceil(total / limit),
         },
-      }),
-      prisma.post.count({ where: whereCondition }),
-    ]);
-
-    return {
-      success: true,
-      message: 'پست‌ها با موفقیت بازیابی شدند.',
-      data: {
-        posts,
-        total,
-        pages: Math.ceil(total / limit),
-      },
-    };
-  } catch (error) {
-    console.error('خطا در بازیابی پست‌ها:', error);
-    return {
-      success: false,
-      message: 'خطا در بازیابی پست‌ها. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
-    };
-  }
-}
+      };
+    } catch (error) {
+      console.error('خطا در بازیابی پست‌ها:', error);
+      return {
+        success: false,
+        message: 'خطا در بازیابی پست‌ها. لطفاً دوباره تلاش کنید.',
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+  },
+);
 export async function likeItem(
   itemId: string,
   itemType: 'post' | 'comment',

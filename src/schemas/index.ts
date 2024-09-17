@@ -37,24 +37,8 @@ export const ForgotPasswordSchema = z.object({ email: emailSchema });
 
 export const MagicLinkSchema = z.object({ email: emailSchema });
 
-// Post related schemas
-const BasePostSchema = z.object({
-  title: createStringSchema(
-    3,
-    100,
-    'عنوان باید حداقل 3 کاراکتر داشته باشد',
-    'عنوان نباید بیشتر از 100 کاراکتر باشد',
-  ),
-  content: z.string().min(10, 'محتوا باید حداقل 10 کاراکتر داشته باشد'),
-  excerpt: z.string().max(200, 'خلاصه نباید بیشتر از 200 کاراکتر باشد').optional(),
-  postType: z.nativeEnum(PostType).default(PostType.STANDARD),
-  isFeatured: z.boolean().default(false),
-  videoUrl: z.union([z.string().url('لطفاً آدرس ویدئو معتبر وارد کنید'), z.literal('')]).optional(),
-  audioUrl: z.union([z.string().url('لطفاً آدرس صوتی معتبر وارد کنید'), z.literal('')]).optional(),
-  featuredImage: z.string().url('لطفاً آدرس تصویر معتبر وارد کنید').optional(),
-  galleryImages: z.array(z.string().url('لطفاً آدرس تصویر معتبر وارد کنید')).optional(),
-  status: z.nativeEnum(PostStatus).default(PostStatus.DRAFT),
-});
+
+
 
 const CategorySchema = createArraySchema(
   1,
@@ -64,7 +48,23 @@ const CategorySchema = createArraySchema(
 );
 const TagSchema = z.array(z.string()).max(10, 'حداکثر 10 برچسب می‌توانید اضافه کنید').optional();
 
-export const CreatePostSchema = BasePostSchema.extend({
+
+export const CreatePostSchema = z.object({
+  title: createStringSchema(
+    3,
+    100,
+    'عنوان باید حداقل 3 کاراکتر داشته باشد',
+    'عنوان نباید بیشتر از 100 کاراکتر باشد',
+  ),
+  content: z.string().min(10, 'محتوا باید حداقل 10 کاراکتر داشته باشد'),
+  excerpt: z.string().max(200, 'خلاصه نباید بیشتر از 200 کاراکتر باشد').optional(),
+  postType: z.nativeEnum(PostType),
+  isFeatured: z.boolean(),
+  videoUrl: z.union([z.string().url('لطفاً آدرس ویدئو معتبر وارد کنید'), z.literal('')]).optional(),
+  audioUrl: z.union([z.string().url('لطفاً آدرس صوتی معتبر وارد کنید'), z.literal('')]).optional(),
+  featuredImage: z.string().url('لطفاً آدرس تصویر معتبر وارد کنید').optional(),
+  galleryImages: z.array(z.string().url('لطفاً آدرس تصویر معتبر وارد کنید')).optional(),
+  status: z.nativeEnum(PostStatus),
   categories: CategorySchema,
   tags: TagSchema,
   slug: z
@@ -74,25 +74,14 @@ export const CreatePostSchema = BasePostSchema.extend({
     .refine((val) => !val || validateSlug(val), {
       message: 'فرمت اسلاگ نامعتبر است. فقط حروف کوچک انگلیسی، اعداد و خط فاصله مجاز هستند.',
     }),
-  status: z.nativeEnum(PostStatus),
 });
 
-export const UpdatePostSchema = BasePostSchema.partial().extend({
-  id: z.string().cuid('شناسه پست نامعتبر است').optional(),
-  categories: CategorySchema.optional(),
-  tags: TagSchema,
-  slug: z
-    .string()
-    .optional()
-    .transform((val) => (val ? sanitizeSlug(val) : val))
-    .refine((val) => !val || validateSlug(val), {
-      message: 'فرمت اسلاگ نامعتبر است. فقط حروف کوچک انگلیسی، اعداد و خط فاصله مجاز هستند.',
-    }),
-});
+
+export const UpdatePostSchema = CreatePostSchema.partial()
 
 const IdSchema = z.string().cuid();
 
-export const PostSchema = BasePostSchema.extend({
+export const PostSchema = CreatePostSchema.extend({
   id: IdSchema,
   authorId: IdSchema,
   viewCount: z.number().int().nonnegative(),

@@ -28,7 +28,7 @@ const NAVBAR_LINKS: NavItem[] = [
   { id: 'home', name: 'صفحه اصلی', href: '/' },
   {
     id: 'crypto',
-    name: 'ارز دیجیتال',
+    name: 'ارزهای دیجیتال',
     href: '/archive/category/crypto',
     subItems: [
       { id: 'crypto-urgent', name: 'اخبار فوری', href: '/archive/category/crypto/urgent' },

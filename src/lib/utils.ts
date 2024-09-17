@@ -1,4 +1,10 @@
-import type { NcDropDownItem, PostWithRelations, Role, SocialType } from '@/types/types';
+import type {
+  ActionResult,
+  NcDropDownItem,
+  PostWithRelations,
+  Role,
+  SocialType,
+} from '@/types/types';
 import { type ClassValue, clsx } from 'clsx';
 import type { Session } from 'next-auth';
 import { twMerge } from 'tailwind-merge';
@@ -189,4 +195,10 @@ export function debounce<F extends (...args: any[]) => any>(func: F, waitFor: nu
 export function getCoinMarketCapUrl(symbol: string): string {
   const urlName = coinMarketCapUrlMap[symbol] || symbol.toLowerCase();
   return `https://coinmarketcap.com/currencies/${urlName}/`;
+}
+
+export function isSuccessResult<T>(
+  result: ActionResult<T>,
+): result is ActionResult<T> & { data: T } {
+  return result.success && result.data !== undefined;
 }

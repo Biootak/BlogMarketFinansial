@@ -42,10 +42,10 @@ const TipTapEditor = dynamic(() => import('@/components/Dashboard/Blog/PostForm/
   ssr: false,
 });
 
-interface PostFormProps {
-  schema: ZodSchema<CreatePostInput> | ZodSchema<UpdatePostInput>;
-  defaultValues: CreatePostInput | Partial<UpdatePostInput>;
-  onSubmit: (data: CreatePostInput | UpdatePostInput) => Promise<void>;
+interface PostFormProps<T extends CreatePostInput | UpdatePostInput> {
+  schema: ZodSchema<T>;
+  defaultValues: T;
+  onSubmit: (data: T) => Promise<void>;
   title: string;
   isEditing?: boolean;
   isSubmitting: boolean;
@@ -58,7 +58,7 @@ interface PostFormProps {
   totalTags: number;
 }
 
-const PostForm: React.FC<PostFormProps> = ({
+const PostForm = <T extends CreatePostInput | UpdatePostInput>({
   defaultValues,
   onSubmit,
   title,
@@ -72,7 +72,7 @@ const PostForm: React.FC<PostFormProps> = ({
   isLoadingMore,
   totalCategories,
   totalTags,
-}) => {
+}: PostFormProps<T>) => {
   const [editorContent, setEditorContent] = useState(defaultValues.content || '');
   const [slug, setSlug] = useState(defaultValues.slug || '');
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
@@ -121,16 +121,17 @@ const PostForm: React.FC<PostFormProps> = ({
     [form],
   );
 
-  const handleSubmit = async (data: CreatePostInput | UpdatePostInput) => {
+  const handleSubmit = async (formData: CreatePostInput | UpdatePostInput) => {
     try {
-      console.log('Form data before submission:', data);
-      await onSubmit({
-        ...data,
+      console.log('Form data before submission:', formData);
+      const submissionData = {
+        ...formData,
         content: editorContent,
         slug: slug,
-        categories: Array.isArray(data.categories) ? data.categories : [],
-        tags: Array.isArray(data.tags) ? data.tags : [],
-      });
+        categories: Array.isArray(formData.categories) ? formData.categories : [],
+        tags: Array.isArray(formData.tags) ? formData.tags : [],
+      } as T; 
+      await onSubmit(submissionData);
     } catch (error) {
       console.error('Error submitting form:', error);
       toast({

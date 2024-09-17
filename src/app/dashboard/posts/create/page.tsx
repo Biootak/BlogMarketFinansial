@@ -10,8 +10,8 @@ export const revalidate = 3600; // Revalidate every hour
 
 export default async function CreatePostPage() {
   const [categoriesResult, tagsResult] = await Promise.all([
-    getCategories({ limit: 10, page: 1 }),
-    getTags({ limit: 10, page: 1 }),
+    getCategories({ limit: 100, page: 1 }),
+    getTags({ limit: 100, page: 1 }),
   ]);
 
   if (!categoriesResult.success || !tagsResult.success) {

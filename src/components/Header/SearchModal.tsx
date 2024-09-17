@@ -116,7 +116,7 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                       if (item.href.startsWith('/category/')) {
                         // اگر یک دسته‌بندی انتخاب شده است
                         const categorySlug = item.href.split('/').pop();
-                        router.push(`/archive?category=${categorySlug}`);
+                        router.push(`/archive/category${categorySlug}`);
                       } else {
                         // برای سایر موارد (مثل پست‌ها یا نویسندگان)
                         router.push(item.href);

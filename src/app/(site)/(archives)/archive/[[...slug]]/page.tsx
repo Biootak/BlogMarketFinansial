@@ -1,3 +1,4 @@
+// PageArchive.tsx
 import React from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -6,9 +7,9 @@ import { SlFire } from 'react-icons/sl';
 
 import { getArchivePosts } from '@/actions/postActions';
 import { getCategories } from '@/actions/categoryActions';
-import Image from 'next/image';
-import { getTopAuthors } from '@/actions/getTopAuthors';
 import { getTags } from '@/actions/getTags';
+import { getTopAuthors } from '@/actions/getTopAuthors';
+import Image from 'next/image';
 import ModalCategories from '../../ModalCategories';
 import ModalTags from '../../ModalTags';
 import ArchiveFilterListBox from '@/components/ArchiveFilterListBox/ArchiveFilterListBox';
@@ -22,17 +23,24 @@ import Empty from '@/components/Empty';
 
 export async function generateMetadata({
   params,
-}: { params: { slug?: string[] } }): Promise<Metadata> {
-  const [type, value] = params.slug || [];
+}: {
+  params: { slug?: string[] };
+}): Promise<Metadata> {
+  const [type, category, subcategory] = params.slug || [];
   let title = 'گنجینه مقالات | دنیای دانش و الهام';
   let description = 'کاوش در مجموعه گسترده مقالات ما: از علم تا هنر، از فناوری تا فلسفه';
 
   if (type === 'category') {
-    title = `مقالات دسته‌بندی ${value} | ${title}`;
-    description = `مطالب مرتبط با دسته‌بندی ${value}`;
+    if (subcategory) {
+      title = `مقالات ${subcategory} در دسته‌بندی ${category} | ${title}`;
+      description = `مطالب مرتبط با ${subcategory} در دسته‌بندی ${category}`;
+    } else {
+      title = `مقالات دسته‌بندی ${category} | ${title}`;
+      description = `مطالب مرتبط با دسته‌بندی ${category}`;
+    }
   } else if (type === 'tag') {
-    title = `مقالات با برچسب ${value} | ${title}`;
-    description = `مطالب مرتبط با برچسب ${value}`;
+    title = `مقالات با برچسب ${category} | ${title}`;
+    description = `مطالب مرتبط با برچسب ${category}`;
   }
 
   return {
@@ -57,7 +65,7 @@ type PageArchiveProps = {
 };
 
 export default async function PageArchive({ params, searchParams }: PageArchiveProps) {
-  const [type, value] = params.slug || [];
+  const [type, category, subcategory] = params.slug || [];
   const currentPage = searchParams.page ? Number.parseInt(searchParams.page) : 1;
   const filter = searchParams.filter || FILTERS[0].name;
   const limit = 12;
@@ -71,8 +79,8 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
       currentPage,
       limit,
       filter,
-      type === 'category' ? value : undefined,
-      type === 'tag' ? value : undefined,
+      type === 'category' ? category : undefined,
+      subcategory,
     ),
     getCategories({ limit: 10, page: 1 }),
     getTags({ limit: 10, page: 1 }),
@@ -85,8 +93,11 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
   const topAuthors = topAuthorsResult || [];
 
   const selectedCategory =
-    type === 'category' ? categories.find((cat) => cat.slug === value) : null;
-  const selectedTag = type === 'tag' ? tags.find((tag) => tag.slug === value) : null;
+    type === 'category' ? categories.find((cat) => cat.slug === category) : null;
+  const selectedSubcategory = subcategory
+    ? selectedCategory?.childCategories?.find((sub) => sub.slug === subcategory)
+    : null;
+  const selectedTag = type === 'tag' ? tags.find((tag) => tag.slug === category) : null;
 
   const defaultImage = '/images/hero-right-2.png';
 
@@ -109,14 +120,19 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
             <div className="flex-1 md:ml-4 text-center md:text-right">
               <CardHeader className="p-0 mb-4">
                 <CardTitle className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                  {selectedCategory?.name || selectedTag?.name || 'گنجینه مقالات'}
+                  {selectedSubcategory?.name ||
+                    selectedCategory?.name ||
+                    selectedTag?.name ||
+                    'گنجینه مقالات'}
                 </CardTitle>
                 <CardDescription className="text-lg text-gray-600 dark:text-gray-300">
-                  {selectedCategory
-                    ? `مجموعه مقالات مرتبط با ${selectedCategory.name}`
-                    : selectedTag
-                      ? `مطالب مرتبط با برچسب ${selectedTag.name}`
-                      : 'کاوش در دنیای دانش و ایده‌های نو'}
+                  {selectedSubcategory
+                    ? `مطالب مرتبط با ${selectedSubcategory.name} در دسته‌بندی ${selectedCategory?.name}`
+                    : selectedCategory
+                      ? `مجموعه مقالات مرتبط با ${selectedCategory.name}`
+                      : selectedTag
+                        ? `مطالب مرتبط با برچسب ${selectedTag.name}`
+                        : 'کاوش در دنیای دانش و ایده‌های نو'}
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
