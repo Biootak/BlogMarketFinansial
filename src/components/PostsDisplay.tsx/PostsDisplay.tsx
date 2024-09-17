@@ -2,6 +2,7 @@
 import type { Advertisement, PostWithRelations } from '@/types/types';
 import PostsList from './PostsList';
 import LoadMoreButton from '../LoadMoreButton';
+import { notFound } from 'next/navigation';
 
 interface PostsDisplayProps {
   posts: PostWithRelations[];
@@ -19,7 +20,7 @@ export default function PostsDisplay({
   hasMore,
 }: PostsDisplayProps) {
   if (posts.length === 0) {
-    return null; // یا می‌توانید یک کامپوننت "محتوا یافت نشد" را نمایش دهید
+    return notFound();
   }
 
   return (
