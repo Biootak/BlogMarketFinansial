@@ -1,8 +1,8 @@
-import React, { type FC } from 'react';
-import Avatar from '@/components/Avatar/Avatar';
+import React from 'react';
 import Link from 'next/link';
+import Avatar from '@/components/Avatar/Avatar';
 import type { PostWithRelations } from '@/types/types';
-import { formatDate } from '@/utils/formatDate';
+import FormattedDate from '../FormattedDate';
 
 export interface CardAuthor2Props {
   className?: string;
@@ -10,7 +10,7 @@ export interface CardAuthor2Props {
   hoverReadingTime?: boolean;
 }
 
-const CardAuthor2: FC<CardAuthor2Props> = ({ className = '', post, hoverReadingTime = true }) => {
+const CardAuthor2 = ({ className = '', post, hoverReadingTime = true }: CardAuthor2Props) => {
   if (!post) {
     return null;
   }
@@ -39,22 +39,14 @@ const CardAuthor2: FC<CardAuthor2Props> = ({ className = '', post, hoverReadingT
           {displayName}
         </h2>
         <span className={'flex items-center mt-1 text-xs text-neutral-500 dark:text-neutral-400'}>
-          <span>{formatDate(createdAt)}</span>
-          {readingTime && (
+          <FormattedDate date={createdAt} />
+          {readingTime && hoverReadingTime && (
             <>
-              <span
-                className={`hidden lg:inline mx-1 transition-opacity ${
-                  hoverReadingTime ? 'opacity-0 group-hover:opacity-100' : ''
-                }`}
-              >
+              <span className="hidden lg:inline mx-1 transition-opacity opacity-0 group-hover:opacity-100">
                 ·
               </span>
-              <span
-                className={`hidden lg:inline transition-opacity ${
-                  hoverReadingTime ? 'opacity-0 group-hover:opacity-100' : ''
-                }`}
-              >
-                {readingTime} min read
+              <span className="hidden lg:inline transition-opacity opacity-0 group-hover:opacity-100">
+                {readingTime} دقیقه مطالعه
               </span>
             </>
           )}

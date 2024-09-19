@@ -17,6 +17,7 @@ import { likeItem } from '@/actions/postActions';
 import { useToast } from '@/components/ui/use-toast';
 import { useCommentStore } from '@/hooks/useCommentStore';
 import { HiOutlinePencil, HiOutlineReply, HiOutlineFlag, HiOutlineTrash } from 'react-icons/hi';
+import FormattedDate from '../FormattedDate';
 
 export interface CommentCardProps {
   className?: string;
@@ -198,7 +199,7 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
             </Link>
             <span className="mx-2">·</span>
             <span className="text-neutral-500 dark:text-neutral-400 text-xs line-clamp-1 sm:text-sm">
-              {formatDate(createdAt)}
+              <FormattedDate date={createdAt} />
             </span>
           </div>
 

@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 import PostStatusBadge from '../Blog/PostStatusBadge';
 
 import BookmarkCheck from '../../BookmarkCheck';
+import FormattedDate from '@/components/FormattedDate';
 
 export interface CardListProps {
   className?: string;
@@ -36,14 +37,6 @@ export interface CardListProps {
 const cardVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1 },
-};
-
-const formatDate = (date: Date): string => {
-  return new Intl.DateTimeFormat('fa-IR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(date);
 };
 
 const CardList: FC<CardListProps> = ({
@@ -117,10 +110,7 @@ const CardList: FC<CardListProps> = ({
                 )}
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Link
-                  href={`/dashboard/posts/edit/${id}`}
-                  className="flex items-center w-full"
-                >
+                <Link href={`/dashboard/posts/edit/${id}`} className="flex items-center w-full">
                   <HiPencil className="w-4 h-4 ml-2" />
                   <span>ویرایش</span>
                 </Link>
@@ -143,7 +133,10 @@ const CardList: FC<CardListProps> = ({
         {!hiddenAuthor ? (
           postMeta
         ) : (
-          <span className="text-xs text-neutral-500 rtl:text-right">{formatDate(createdAt)}</span>
+          <span className="text-xs text-neutral-500 rtl:text-right">
+            {' '}
+            <FormattedDate date={createdAt} />
+          </span>
         )}
         <h3 className="nc-card-title block text-base font-semibold text-neutral-900 dark:text-neutral-100 my-3">
           <span className="line-clamp-2" title={title}>

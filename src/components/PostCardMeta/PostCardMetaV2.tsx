@@ -4,6 +4,7 @@ import Avatar from '@/components/Avatar/Avatar';
 import Link from 'next/link';
 import type { PostWithRelations } from '@/types/types';
 import { formatDate } from '@/utils/formatDate';
+import FormattedDate from '../FormattedDate';
 
 export interface PostCardMetaV2Props {
   meta: Pick<PostWithRelations, 'createdAt' | 'author' | 'title'>;
@@ -47,7 +48,7 @@ const PostCardMetaV2: FC<PostCardMetaV2Props> = ({
             </span>
             <span className="text-neutral-500 dark:text-neutral-400 mx-[6px] font-medium">·</span>
             <span className="text-neutral-500 dark:text-neutral-400 font-normal">
-              {formatDate(createdAt)}
+              <FormattedDate date={createdAt} />
             </span>
           </Link>
         </div>
