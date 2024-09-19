@@ -1,5 +1,6 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import prisma from '@/lib/db';
 import { generateColor, generateSlug, sanitizeSlug, validateSlug } from '@/lib/utils';
@@ -86,6 +87,8 @@ export async function getCategories(
       createdAt: category.createdAt,
       updatedAt: category.updatedAt,
     }));
+
+    revalidatePath('/categories');
 
     return {
       success: true,
@@ -186,6 +189,8 @@ export async function createCategory(
         updatedAt: parent.updatedAt,
       })),
     };
+
+    revalidatePath('/categories');
 
     return {
       success: true,
@@ -315,6 +320,8 @@ export async function updateCategory(
       })),
     };
 
+    revalidatePath('/categories');
+
     return {
       success: true,
       message: 'دسته‌بندی با موفقیت به‌روزرسانی شد.',
@@ -354,6 +361,8 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
     await prisma.category.delete({
       where: { id },
     });
+
+    revalidatePath('/categories');
 
     return {
       success: true,
