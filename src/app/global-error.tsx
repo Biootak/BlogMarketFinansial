@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 
 const ErrorIcon = () => (
   <div className="flex justify-center items-center mb-4">
-    <Image src="/images/pixeltrue-error.svg" alt="خطا" width={150} height={150} />
+    <Image src="/images/Error-404.svg" alt="خطا" width={150} height={150} />
   </div>
 );
 
