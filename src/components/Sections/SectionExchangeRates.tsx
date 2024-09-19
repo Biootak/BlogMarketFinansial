@@ -7,7 +7,6 @@ async function ExchangeRatesContent() {
   const result = await getExchangeRates();
 
   if (!result.success || !result.data) {
-    console.error('Error in ExchangeRatesContent:', result.error);
     return (
       <div className="text-center text-red-500">
         <p>{result.error || 'خطا در دریافت نرخ‌های ارز'}</p>

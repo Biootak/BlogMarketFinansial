@@ -75,49 +75,46 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({
     }
   };
 
-
-
-const loadMoreCategories = useCallback(async () => {
-  if (isLoadingMore) return;
-  setIsLoadingMore(true);
-  try {
-    const result = await getCategories({ limit: 10, page: categoryPage + 1 });
-    if (isSuccessResult(result) && result.data.categories) {
-      setCategories((prev) => [...prev, ...result.data.categories]);
-      setCategoryPage((prev) => prev + 1);
+  const loadMoreCategories = useCallback(async () => {
+    if (isLoadingMore) return;
+    setIsLoadingMore(true);
+    try {
+      const result = await getCategories({ limit: 10, page: categoryPage + 1 });
+      if (isSuccessResult(result) && result.data.categories) {
+        setCategories((prev) => [...prev, ...result.data.categories]);
+        setCategoryPage((prev) => prev + 1);
+      }
+    } catch {
+      toast({
+        title: 'خطا',
+        description: 'بارگذاری دسته‌بندی‌های بیشتر با مشکل مواجه شد.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoadingMore(false);
     }
-  } catch (error) {
-    console.error('Error loading more categories:', error);
-    toast({
-      title: 'خطا',
-      description: 'بارگذاری دسته‌بندی‌های بیشتر با مشکل مواجه شد.',
-      variant: 'destructive',
-    });
-  } finally {
-    setIsLoadingMore(false);
-  }
-}, [categoryPage, isLoadingMore, toast]);
+  }, [categoryPage, isLoadingMore, toast]);
 
-const loadMoreTags = useCallback(async () => {
-  if (isLoadingMore) return;
-  setIsLoadingMore(true);
-  try {
-    const result = await getTags({ limit: 10, page: tagPage + 1 });
-    if (isSuccessResult(result) && result.data.tags) {
-      setTags((prev) => [...prev, ...result.data.tags]);
-      setTagPage((prev) => prev + 1);
+  const loadMoreTags = useCallback(async () => {
+    if (isLoadingMore) return;
+    setIsLoadingMore(true);
+    try {
+      const result = await getTags({ limit: 10, page: tagPage + 1 });
+      if (isSuccessResult(result) && result.data.tags) {
+        setTags((prev) => [...prev, ...result.data.tags]);
+        setTagPage((prev) => prev + 1);
+      }
+    } catch (error) {
+      console.error('Error loading more tags:', error);
+      toast({
+        title: 'خطا',
+        description: 'بارگذاری برچسب‌های بیشتر با مشکل مواجه شد.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoadingMore(false);
     }
-  } catch (error) {
-    console.error('Error loading more tags:', error);
-    toast({
-      title: 'خطا',
-      description: 'بارگذاری برچسب‌های بیشتر با مشکل مواجه شد.',
-      variant: 'destructive',
-    });
-  } finally {
-    setIsLoadingMore(false);
-  }
-}, [tagPage, isLoadingMore, toast]);
+  }, [tagPage, isLoadingMore, toast]);
 
   return (
     <PostForm

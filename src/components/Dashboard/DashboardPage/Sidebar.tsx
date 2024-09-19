@@ -55,8 +55,7 @@ const Sidebar: React.FC = () => {
           variant: 'destructive',
         });
       }
-    } catch (error) {
-      console.error('Error during logout:', error);
+    } catch {
       toast({
         title: 'خطای سیستمی',
         description: 'مشکلی در سیستم رخ داده است. لطفا بعدا دوباره تلاش کنید.',

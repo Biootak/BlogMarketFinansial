@@ -37,8 +37,7 @@ const PostCardLikeAction: FC<PostCardLikeActionProps> = ({
         if (!result || !result.success) {
           throw new Error(result?.message || 'خطا در عملیات لایک');
         }
-      } catch (error) {
-        console.error('Error in liking post:', error);
+      } catch {
         // Revert the optimistic update if the server action fails
         setIsLiked(!newLikeState);
         setLikeCount((prevCount) => (newLikeState ? Math.max(0, prevCount - 1) : prevCount + 1));

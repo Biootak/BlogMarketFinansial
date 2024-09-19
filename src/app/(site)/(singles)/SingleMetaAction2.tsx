@@ -13,7 +13,8 @@ import { sharePost } from '@/actions/shareAction';
 import { useShareStore } from '@/hooks/shareStore';
 import { SOCIALS_DATA } from '@/components/SocialsShare/SocialsShare';
 import { socialToDropdownItem } from '@/lib/utils';
-
+import BookmarkCheck from '@/components/BookmarkCheck';
+import PostCardSaveAction from '@/components/PostCardSaveAction/PostCardSaveAction';
 
 export interface SingleMetaAction2Props {
   className?: string;
@@ -21,14 +22,7 @@ export interface SingleMetaAction2Props {
 }
 
 const SingleMetaAction2: FC<SingleMetaAction2Props> = ({ className = '', post }) => {
-  const { savedBy } = post;
-  const { data: session } = useSession();
   const { isSharing, setIsSharing } = useShareStore();
-
-  const initialBookmarked = useMemo(() => {
-    if (!session?.user?.id) return false;
-    return (savedBy ?? []).some((save) => save.userId === session.user.id);
-  }, [savedBy, session?.user?.id]);
 
   const handleShare = async (platform: string) => {
     setIsSharing(true);
@@ -68,16 +62,21 @@ const SingleMetaAction2: FC<SingleMetaAction2Props> = ({ className = '', post })
           <div className="border-s border-neutral-200 dark:border-neutral-700 h-6" />
         </div>
 
-        <NcBookmark
-          containerClassName="h-9 w-9 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-neutral-200 rounded-full flex items-center justify-center"
-          postId={post.id}
-          initialBookmarked={initialBookmarked}
-        />
+        <BookmarkCheck post={post}>
+          {(isBookmarked) => (
+            <PostCardSaveAction
+              className="relative"
+              postId={post.id}
+              initialBookmarked={isBookmarked}
+              bookmarkClass="h-8 w-8 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition-colors duration-300"
+            />
+          )}
+        </BookmarkCheck>
         <NcDropDown
           className="flex-shrink-0 flex items-center justify-center focus:outline-none h-9 w-9 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 rounded-full"
           renderTrigger={() => <HiOutlineShare className="w-5 h-5" />}
           data={socialDropdownItems}
-          onClick={(item) => item.onClick && item.onClick()}
+          onClick={(item) => item.onClick?.()}
         />
         <PostActionDropdown
           containerClassName="h-9 w-9 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-full"

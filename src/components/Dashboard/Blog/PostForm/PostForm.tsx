@@ -31,7 +31,13 @@ import { RiSendPlaneFill } from 'react-icons/ri';
 import { BiLoaderAlt } from 'react-icons/bi';
 import dynamic from 'next/dynamic';
 import ImageUploader from '@/components/ImageUpload/ImageUploader';
-import type { CreatePostInput, UpdatePostInput, TaxonomyType, PostType, PostStatus } from '@/types/types';
+import type {
+  CreatePostInput,
+  UpdatePostInput,
+  TaxonomyType,
+  PostType,
+  PostStatus,
+} from '@/types/types';
 import type { ZodSchema } from 'zod';
 import { generateSlug, sanitizeSlug } from '@/lib/utils';
 import { CategorySelectDialog } from './CategorySelectDialog';
@@ -123,14 +129,13 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
 
   const handleSubmit = async (formData: CreatePostInput | UpdatePostInput) => {
     try {
-      console.log('Form data before submission:', formData);
       const submissionData = {
         ...formData,
         content: editorContent,
         slug: slug,
         categories: Array.isArray(formData.categories) ? formData.categories : [],
         tags: Array.isArray(formData.tags) ? formData.tags : [],
-      } as T; 
+      } as T;
       await onSubmit(submissionData);
     } catch (error) {
       console.error('Error submitting form:', error);

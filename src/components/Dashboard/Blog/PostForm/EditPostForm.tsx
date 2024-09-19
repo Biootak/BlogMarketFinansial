@@ -77,7 +77,6 @@ const EditPostForm: React.FC<EditPostFormProps> = ({
     }
   };
 
-
   const loadMoreCategories = useCallback(async () => {
     if (isLoadingMore) return;
     setIsLoadingMore(true);
@@ -87,8 +86,7 @@ const EditPostForm: React.FC<EditPostFormProps> = ({
         setCategories((prev) => [...prev, ...result.data.categories]);
         setCategoryPage((prev) => prev + 1);
       }
-    } catch (error) {
-      console.error('Error loading more categories:', error);
+    } catch {
       toast({
         title: 'خطا',
         description: 'بارگذاری دسته‌بندی‌های بیشتر با مشکل مواجه شد.',
@@ -98,7 +96,7 @@ const EditPostForm: React.FC<EditPostFormProps> = ({
       setIsLoadingMore(false);
     }
   }, [categoryPage, isLoadingMore, toast]);
-  
+
   const loadMoreTags = useCallback(async () => {
     if (isLoadingMore) return;
     setIsLoadingMore(true);
@@ -108,8 +106,7 @@ const EditPostForm: React.FC<EditPostFormProps> = ({
         setTags((prev) => [...prev, ...result.data.tags]);
         setTagPage((prev) => prev + 1);
       }
-    } catch (error) {
-      console.error('Error loading more tags:', error);
+    } catch {
       toast({
         title: 'خطا',
         description: 'بارگذاری برچسب‌های بیشتر با مشکل مواجه شد.',
