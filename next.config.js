@@ -3,7 +3,7 @@ const path = require('path');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false,
   poweredByHeader: false,
   typescript: {
     ignoreBuildErrors: false,
@@ -46,8 +46,8 @@ const nextConfig = {
       bodySizeLimit: '3mb',
     },
 
-    optimizeCss: true,
-    scrollRestoration: true,
+    // optimizeCss: true,
+    // scrollRestoration: true,
   },
   sassOptions: {
     includePaths: [path.join(__dirname, 'styles')],
