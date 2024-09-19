@@ -3,7 +3,7 @@ const path = require('path');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: false,
+  reactStrictMode: true,
   poweredByHeader: false,
   typescript: {
     ignoreBuildErrors: false,
@@ -44,10 +44,19 @@ const nextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: '3mb',
+      optimizeCss: true,
     },
-
-    // optimizeCss: true,
-    // scrollRestoration: true,
+  },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
+    return config;
   },
   sassOptions: {
     includePaths: [path.join(__dirname, 'styles')],
