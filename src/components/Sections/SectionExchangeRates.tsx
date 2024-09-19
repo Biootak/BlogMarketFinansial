@@ -25,9 +25,7 @@ async function ExchangeRatesContent() {
 export default function SectionExchangeRates() {
   return (
     <div className="nc-SectionExchangeRates pt-4">
-      <Suspense fallback={<Skeleton className="h-24" />}>
-        <ExchangeRatesContent />
-      </Suspense>
+      <ExchangeRatesContent />
     </div>
   );
 }
