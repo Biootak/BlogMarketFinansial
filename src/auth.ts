@@ -65,7 +65,6 @@ export const {
       return token;
     },
   },
-  trustHost: true,
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: 'jwt',
