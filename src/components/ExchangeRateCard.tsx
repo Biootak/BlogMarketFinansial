@@ -11,7 +11,6 @@ export function ExchangeRateCard({ rate }: ExchangeRateCardProps) {
   const { symbol, usdtPrice, irrPrice, change, globalPrice } = rate;
   const isPositive = change >= 0;
 
-  // تبدیل ریال به تومان و فرمت‌بندی با جداکننده هزارگان
   const formattedIrrPrice = Math.floor(irrPrice / 10).toLocaleString('fa-IR');
   const formatPrice = (price: number) =>
     price.toLocaleString('en-US', {
@@ -21,7 +20,6 @@ export function ExchangeRateCard({ rate }: ExchangeRateCardProps) {
 
   const displayPrice = globalPrice ? formatPrice(globalPrice) : formatPrice(usdtPrice);
 
-  // استفاده از تابع کمکی برای ایجاد URL صحیح
   const coinMarketCapUrl = getCoinMarketCapUrl(symbol);
 
   return (
