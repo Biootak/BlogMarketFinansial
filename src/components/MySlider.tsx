@@ -14,7 +14,7 @@ export interface MySliderProps<T> {
   data: T[];
   renderItem?: (item: T, indx: number) => ReactNode;
   arrowBtnClass?: string;
-  autoSlideInterval?: number; // زمان تاخیر بین هر حرکت خودکار (به میلی‌ثانیه)
+  autoSlideInterval?: number; 
 }
 
 export default function MySlider<T>({
@@ -58,7 +58,7 @@ export default function MySlider<T>({
     if (data.length > currentIndex + numberOfItems) {
       changeItemId(currentIndex + 1);
     } else {
-      changeItemId(0); // برگشت به ابتدای اسلایدر
+      changeItemId(0); 
     }
   }, [currentIndex, data.length, numberOfItems, changeItemId]);
 

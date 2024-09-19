@@ -50,6 +50,7 @@ export default async function PageSingle({ params }: PageProps) {
             width={1260}
             height={750}
             sizes="(max-width: 1024px) 100vw, 1280px"
+            fill={false}
           />
         </div>
 

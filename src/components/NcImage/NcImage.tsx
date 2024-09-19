@@ -9,14 +9,22 @@ export interface NcImageProps extends Omit<ImageProps, 'alt'> {
 const NcImage: React.FC<NcImageProps> = ({
   containerClassName = '',
   alt,
-  className = 'object-cover w-full h-full',
+  className = 'object-cover',
   sizes = '(max-width: 600px) 480px, 800px',
   priority = false,
-  ...args
+  fill = true,
+  ...props
 }) => {
   return (
     <div className={`relative ${containerClassName}`}>
-      <Image className={className} alt={alt} sizes={sizes} priority={priority} {...args} />
+      <Image 
+        className={className} 
+        alt={alt} 
+        sizes={sizes} 
+        priority={priority}
+        fill={fill}
+        {...props} 
+      />
     </div>
   );
 };

@@ -26,11 +26,8 @@ const CardCategory2: FC<CardCategory2Props> = ({ className = '', taxonomy, index
           />
         )}
         <NcImage
-          containerClassName={
-            'relative flex-shrink-0 w-20 h-20 rounded-full shadow-lg overflow-hidden z-0'
-          }
+          containerClassName="relative flex-shrink-0 w-20 h-20 rounded-full shadow-lg overflow-hidden z-0"
           src={thumbnail || '/images/placeholder-small.png'}
-          fill
           sizes="80px"
           alt={`دسته‌بندی ${name}`}
           className="object-cover"

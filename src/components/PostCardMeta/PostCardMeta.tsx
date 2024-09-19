@@ -1,8 +1,9 @@
-import React, { type FC } from 'react';
-import Avatar from '@/components/Avatar/Avatar';
+'use client';
+
+import { useState, useEffect } from 'react';
 import type { PostWithRelations } from '@/types/types';
 import Link from 'next/link';
-import { formatDate } from '@/utils/formatDate';
+import Avatar from '@/components/Avatar/Avatar';
 
 export interface PostCardMetaProps {
   className?: string;
@@ -11,13 +12,27 @@ export interface PostCardMetaProps {
   avatarSize?: string;
 }
 
-const PostCardMeta: FC<PostCardMetaProps> = ({
+const PostCardMeta: React.FC<PostCardMetaProps> = ({
   className = 'leading-none text-xs',
   meta,
   hiddenAvatar = false,
   avatarSize = 'h-7 w-7 text-sm',
 }) => {
   const { createdAt, author } = meta;
+  const [formattedDate, setFormattedDate] = useState<string>('');
+
+  useEffect(() => {
+    setFormattedDate(
+      new Intl.DateTimeFormat('fa-IR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: false,
+      }).format(new Date(createdAt)),
+    );
+  }, [createdAt]);
 
   return (
     <div
@@ -40,9 +55,7 @@ const PostCardMeta: FC<PostCardMetaProps> = ({
         </span>
       </Link>
       <span className="text-neutral-500 dark:text-neutral-400 mx-[6px] font-medium">·</span>
-      <span className="text-neutral-500 dark:text-neutral-400 font-normal">
-        {formatDate(createdAt)}
-      </span>
+      <span className="text-neutral-500 dark:text-neutral-400 font-normal">{formattedDate}</span>
     </div>
   );
 };
