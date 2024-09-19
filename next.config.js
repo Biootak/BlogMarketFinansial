@@ -49,52 +49,10 @@ const nextConfig = {
     optimizeCss: true,
     scrollRestoration: true,
   },
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
-      };
-    }
-    // اضافه کردن بهینه‌سازی‌های webpack
-    config.optimization.splitChunks.cacheGroups = {
-      ...config.optimization.splitChunks.cacheGroups,
-      commons: {
-        test: /[\\/]node_modules[\\/]/,
-        name: 'vendors',
-        chunks: 'all',
-      },
-    };
-    return config;
-  },
   sassOptions: {
     includePaths: [path.join(__dirname, 'styles')],
   },
   transpilePackages: ['@aws-sdk/client-s3', '@aws-sdk/s3-request-presigner'],
-  // اضافه کردن تنظیمات جدید
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
-          },
-        ],
-      },
-    ];
-  },
 };
 
 module.exports = nextConfig;
