@@ -12,8 +12,13 @@ export default async function DashboardLayout({
 }) {
   const session = await auth();
 
-  if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'AUTHOR')) {
+  if (
+    !session ||
+    !session.user ||
+    (session.user.role !== 'ADMIN' && session.user.role !== 'AUTHOR')
+  ) {
     redirect('/signin');
+    return null; // Return null to avoid rendering the layout if user is not authorized
   }
 
   return (

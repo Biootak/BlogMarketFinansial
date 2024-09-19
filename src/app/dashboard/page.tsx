@@ -7,7 +7,6 @@ import { getStats, getScheduledPosts } from '@/actions/postActions';
 import { getPopularPosts } from '@/actions/getPopularPosts';
 import { getRecentDrafts } from '@/actions/getRecentDrafts';
 import { getViewStats } from '@/actions/getViewStats';
-import CircleLoading from '@/components/Loading';
 import Loading from '@/components/Loading';
 
 export default async function Dashboard() {
