@@ -26,7 +26,7 @@ export default async function Home() {
   return (
     <div className="nc-HomePage relative">
       <div className="container relative">
-        {/* <SectionExchangeRates /> */}
+        <SectionExchangeRates />
         <SectionLargeSlider />
         <SectionSliderNewCategories
           className="relative pb-16"
