@@ -1,59 +1,58 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import Input from '@/components/Input/Input';
-import ButtonPrimary from '@/components/Button/ButtonPrimary';
-import NcLink from '@/components/NcLink/NcLink';
-import Logo from '@/components/Logo/Logo';
-
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { loginUser, sendMagicLink } from '@/actions/auth-actions';
 import { LoginSchema } from '@/schemas';
-import Loading from '../Button/Loading';
-import SocialProviders from '@/components/Auth/SocialProviders';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { DEFAULT_REDIRECT } from '@/routes';
-import { revalidatePath } from 'next/cache';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import Logo from '../Logo/Logo';
+import SocialProviders from './SocialProviders';
+import Loading from '../Button/Loading';
+import NcLink from '../NcLink/NcLink';
+import type { z } from 'zod';
 
-type FormData = {
-  email: string;
-  password: string;
-};
+type FormData = z.infer<typeof LoginSchema>;
 
 interface FormState {
   error: string | null;
   success: string | null;
 }
 
-export default function SigninForm() {
+export function SigninForm() {
   const [formState, setFormState] = useState<FormState>({
     error: null,
     success: null,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showEmailPassword, setShowEmailPassword] = useState(false);
-  const [magicLinkEmail, setMagicLinkEmail] = useState('');
   const router = useRouter();
-
   const searchParams = useSearchParams();
-  const urlError =
-    searchParams.get('error') === 'OAuthAccountNotLinked'
-      ? 'این ایمیل قبلاً با روش دیگری ثبت شده است. لطفاً از همان روش استفاده کنید.'
-      : '';
-
-  console.log('urlError:', urlError);
-  console.log('error param:', searchParams.get('error'));
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<FormData>({
     resolver: zodResolver(LoginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
   });
 
-  const onSubmit = async (data: FormData) => {
+  const urlError =
+    searchParams.get('error') === 'OAuthAccountNotLinked'
+      ? 'این ایمیل قبلاً با روش دیگری ثبت شده است. لطفاً از همان روش استفاده کنید.'
+      : '';
+
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsSubmitting(true);
     setFormState({ error: null, success: null });
 
@@ -67,7 +66,6 @@ export default function SigninForm() {
           error: null,
           success: result.message || '',
         });
-
         router.push(DEFAULT_REDIRECT);
         router.refresh();
       } else {
@@ -87,14 +85,13 @@ export default function SigninForm() {
     }
   };
 
-  const handleMagicLinkSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleMagicLinkSubmit: SubmitHandler<{ email: string }> = async (data) => {
     setIsSubmitting(true);
     setFormState({ error: null, success: null });
 
     try {
       const formData = new FormData();
-      formData.append('email', magicLinkEmail);
+      formData.append('email', data.email);
       await sendMagicLink(formData);
       setFormState({
         error: null,
@@ -113,100 +110,110 @@ export default function SigninForm() {
     }
   };
 
+  const toggleAuthMethod = () => {
+    setShowEmailPassword(!showEmailPassword);
+    reset();
+    setFormState({ error: null, success: null });
+  };
+
   return (
     <div className="signin">
       <div className="text-center max-w-2xl mx-auto mb-4 sm:mb-6">
         <div className="flex items-center justify-center mb-4 sm:mb-6">
           <Logo />
         </div>
-        <p className="text-xl font-medium">خوش آمدید</p>
-        <p className="text-small text-default-500">برای ادامه وارد حساب کاربری خود شوید</p>
+        <h1 className="text-2xl font-semibold">خوش آمدید</h1>
+        <p className="text-sm text-muted-foreground">برای ادامه وارد حساب کاربری خود شوید</p>
       </div>
 
       <div className="max-w-md mx-auto space-y-6">
-        <div className="grid gap-1">
-          <SocialProviders />
-        </div>
+        <SocialProviders />
+
         <div className="relative text-center">
-          <span className="relative z-10 inline-block px-4 font-medium text-sm bg-white dark:text-neutral-400 dark:bg-neutral-900">
+          <span className="relative z-10 inline-block px-4 font-medium text-sm bg-background">
             یا
           </span>
-          <div className="absolute left-0 w-full top-1/2 transform -translate-y-1/2 border border-neutral-100 dark:border-neutral-800" />
+          <div className="absolute left-0 w-full top-1/2 transform -translate-y-1/2 border-t" />
         </div>
 
         {!showEmailPassword ? (
-          <form onSubmit={handleMagicLinkSubmit} className="grid grid-cols-1 gap-4">
-            <label className="block">
-              <span className="text-neutral-800 dark:text-neutral-200">ایمیل</span>
+          <form onSubmit={handleSubmit(handleMagicLinkSubmit)} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="magic-link-email">ایمیل</Label>
               <Input
+                id="magic-link-email"
                 type="email"
-                name="email"
                 placeholder="ایمیل خود را وارد کنید"
-                className="mt-1"
-                value={magicLinkEmail}
-                onChange={(e) => setMagicLinkEmail(e.target.value)}
-                required
+                {...register('email')}
               />
-            </label>
-            <ButtonPrimary type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'در حال ارسال...' : 'ارسال لینک یکبار مصرف'}
-            </ButtonPrimary>
+              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+            </div>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? <Loading /> : 'ارسال لینک یکبار مصرف'}
+            </Button>
           </form>
         ) : (
-          <form className="grid grid-cols-1 gap-4" onSubmit={handleSubmit(onSubmit)}>
-            <label className="block">
-              <span className="text-neutral-800 dark:text-neutral-200">ایمیل</span>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">ایمیل</Label>
               <Input
-                {...register('email')}
+                id="email"
                 type="email"
                 placeholder="ایمیل خود را وارد کنید"
-                className="mt-1"
+                {...register('email')}
               />
-              {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
-            </label>
-            <label className="block">
-              <span className="flex justify-between items-center text-neutral-800 dark:text-neutral-200">
-                رمز عبور
+              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <Label htmlFor="password">رمز عبور</Label>
                 <NcLink href="/forgot-pass" className="text-sm underline">
                   فراموشی رمز عبور؟
                 </NcLink>
-              </span>
+              </div>
               <Input
-                {...register('password')}
+                id="password"
                 type="password"
                 placeholder="رمز عبور خود را وارد کنید"
-                className="mt-1"
+                {...register('password')}
               />
               {errors.password && (
-                <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+                <p className="text-sm text-destructive">{errors.password.message}</p>
               )}
-            </label>
+            </div>
 
-            <ButtonPrimary type="submit" disabled={isSubmitting}>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? <Loading /> : 'ورود'}
-            </ButtonPrimary>
+            </Button>
           </form>
         )}
 
-        {(formState.error || urlError) && (
-          <p className="text-red-500 text-center">{formState.error || urlError}</p>
+        {urlError && (
+          <Alert variant="warning">
+            <AlertDescription>{urlError}</AlertDescription>
+          </Alert>
         )}
-        {formState.success && <p className="text-green-500 text-center">{formState.success}</p>}
+        {formState.error && (
+          <Alert variant="destructive">
+            <AlertDescription>{formState.error}</AlertDescription>
+          </Alert>
+        )}
+        {formState.success && (
+          <Alert variant="success">
+            <AlertDescription>{formState.success}</AlertDescription>
+          </Alert>
+        )}
 
-        <button
-          type="button"
-          onClick={() => setShowEmailPassword(!showEmailPassword)}
-          className="text-sm text-blue-500 hover:underline cursor-pointer block mx-auto"
-        >
+        <Button variant="link" onClick={toggleAuthMethod} className="w-full">
           {showEmailPassword ? 'استفاده از لینک یکبار مصرف' : 'استفاده از ایمیل و رمز عبور'}
-        </button>
+        </Button>
 
-        <span className="block text-center text-neutral-700 dark:text-neutral-400">
-          حساب کاربری ندارید؟
-          <NcLink className="text-sm p-1" href="/signup">
+        <p className="text-center text-sm text-muted-foreground">
+          حساب کاربری ندارید؟{' '}
+          <NcLink href="/signup" className="underline">
             ثبت نام
           </NcLink>
-        </span>
+        </p>
       </div>
     </div>
   );

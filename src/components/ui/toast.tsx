@@ -30,10 +30,10 @@ const toastVariants = cva(
     variants: {
       variant: {
         default: 'bg-neutral-50 border-neutral-200 text-neutral-900',
-        destructive: 'bg-primary-50 border-primary-200 text-primary-900',
-        success: 'bg-secondary-50 border-secondary-200 text-secondary-900',
-        info: 'bg-neutral-100 border-neutral-300 text-neutral-800',
-        warning: 'bg-primary-100 border-primary-300 text-primary-800',
+        destructive: 'bg-destructive-50 border-destructive-200 text-destructive-900',
+        success: 'bg-success-50 border-success-200 text-success-900',
+        info: 'bg-info-50 border-info-200 text-info-900',
+        warning: 'bg-warning-50 border-warning-200 text-warning-900',
       },
     },
     defaultVariants: {
@@ -129,13 +129,13 @@ export {
 export const ToastIcon: React.FC<{ variant?: ToastVariant }> = ({ variant = 'default' }) => {
   switch (variant) {
     case 'success':
-      return <MdCheckCircle className="h-6 w-6 text-secondary-500" />;
+      return <MdCheckCircle className="h-6 w-6 text-success-500" />;
     case 'info':
-      return <MdInfo className="h-6 w-6 text-neutral-500" />;
+      return <MdInfo className="h-6 w-6 text-info-500" />;
     case 'warning':
-      return <MdWarning className="h-6 w-6 text-primary-500" />;
+      return <MdWarning className="h-6 w-6 text-warning-500" />;
     case 'destructive':
-      return <MdError className="h-6 w-6 text-primary-500" />;
+      return <MdError className="h-6 w-6 text-destructive-500" />;
     default:
       return <MdInfo className="h-6 w-6 text-neutral-500" />;
   }

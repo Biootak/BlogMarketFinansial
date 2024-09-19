@@ -1,5 +1,5 @@
 :root {
-  // PRIMARY COLOR
+  /* PRIMARY COLOR */
   --c-primary-50: 238, 242, 255;
   --c-primary-100: 224, 231, 255;
   --c-primary-200: 199, 210, 254;
@@ -11,7 +11,7 @@
   --c-primary-800: 55, 48, 163;
   --c-primary-900: 49, 46, 129;
 
-  // SECONDARY COLOR
+  /* SECONDARY COLOR */
   --c-secondary-50: 240, 253, 250;
   --c-secondary-100: 204, 251, 241;
   --c-secondary-200: 153, 246, 228;
@@ -23,7 +23,7 @@
   --c-secondary-800: 17, 94, 89;
   --c-secondary-900: 19, 78, 74;
 
-  // NEUTRAL COLOR
+  /* NEUTRAL COLOR */
   --c-neutral-50: 249, 250, 251;
   --c-neutral-100: 243, 244, 246;
   --c-neutral-200: 229, 231, 235;
@@ -34,4 +34,64 @@
   --c-neutral-700: 55, 65, 81;
   --c-neutral-800: 31, 41, 55;
   --c-neutral-900: 17, 24, 39;
+
+  /* ACCENT COLOR (تکمیلی برای primary) */
+  --c-accent-50: 255, 251, 235;
+  --c-accent-100: 254, 243, 199;
+  --c-accent-200: 253, 230, 138;
+  --c-accent-300: 252, 211, 77;
+  --c-accent-400: 251, 191, 36;
+  --c-accent-500: 245, 158, 11;
+  --c-accent-600: 217, 119, 6;
+  --c-accent-700: 180, 83, 9;
+  --c-accent-800: 146, 64, 14;
+  --c-accent-900: 120, 53, 15;
+
+  /* SUCCESS COLOR */
+  --c-success-50: 236, 253, 245;
+  --c-success-100: 209, 250, 229;
+  --c-success-200: 167, 243, 208;
+  --c-success-300: 110, 231, 183;
+  --c-success-400: 52, 211, 153;
+  --c-success-500: 16, 185, 129;
+  --c-success-600: 5, 150, 105;
+  --c-success-700: 4, 120, 87;
+  --c-success-800: 6, 95, 70;
+  --c-success-900: 6, 78, 59;
+
+  /* WARNING COLOR */
+  --c-warning-50: 255, 251, 235;
+  --c-warning-100: 254, 243, 199;
+  --c-warning-200: 253, 230, 138;
+  --c-warning-300: 252, 211, 77;
+  --c-warning-400: 251, 191, 36;
+  --c-warning-500: 245, 158, 11;
+  --c-warning-600: 217, 119, 6;
+  --c-warning-700: 180, 83, 9;
+  --c-warning-800: 146, 64, 14;
+  --c-warning-900: 120, 53, 15;
+
+  /* ERROR COLOR */
+  --c-destructive-50: 254, 242, 242;
+  --c-destructive-100: 254, 226, 226;
+  --c-destructive-200: 254, 202, 202;
+  --c-destructive-300: 252, 165, 165;
+  --c-destructive-400: 248, 113, 113;
+  --c-destructive-500: 239, 68, 68;
+  --c-destructive-600: 220, 38, 38;
+  --c-destructive-700: 185, 28, 28;
+  --c-destructive-800: 153, 27, 27;
+  --c-destructive-900: 127, 29, 29;
+
+  /* INFO COLOR */
+  --c-info-50: 239, 246, 255;
+  --c-info-100: 219, 234, 254;
+  --c-info-200: 191, 219, 254;
+  --c-info-300: 147, 197, 253;
+  --c-info-400: 96, 165, 250;
+  --c-info-500: 59, 130, 246;
+  --c-info-600: 37, 99, 235;
+  --c-info-700: 29, 78, 216;
+  --c-info-800: 30, 64, 175;
+  --c-info-900: 30, 58, 138;
 }

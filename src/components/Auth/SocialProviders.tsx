@@ -71,7 +71,7 @@ const SocialProviders: React.FC = () => {
       </div>
 
       {error && (
-        <p className="text-red-500 mt-2 text-center" role="alert">
+        <p className="text-red-500 mt-2 text-center" >
           {error}
         </p>
       )}
