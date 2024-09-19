@@ -1,7 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-import { cookies } from 'next/headers';
+import { cache } from 'react';
 import prisma from '@/lib/db';
 import { generateColor, generateSlug, sanitizeSlug, validateSlug } from '@/lib/utils';
 import type {
@@ -11,102 +10,111 @@ import type {
   UpdateCategoryInput,
 } from '@/types/types';
 
-export async function getCategories(
-  options: { limit?: number; page?: number; search?: string } = {},
-): Promise<ActionResult<{ categories: TaxonomyType[]; totalCount: number }>> {
-  try {
-    const { limit = 10, page = 1, search = '' } = options;
-    const skip = (page - 1) * limit;
+const callRevalidate = cache(async (path: string) => {
+  await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/revalidate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path }),
+  });
+});
 
-    const where = search
-      ? {
-          name: {
-            contains: search,
-            mode: 'insensitive' as const,
-          },
-        }
-      : {};
+export const getCategories = cache(
+  async (
+    options: { limit?: number; page?: number; search?: string } = {},
+  ): Promise<ActionResult<{ categories: TaxonomyType[]; totalCount: number }>> => {
+    try {
+      const { limit = 10, page = 1, search = '' } = options;
+      const skip = (page - 1) * limit;
 
-    const [categories, totalCount] = await Promise.all([
-      prisma.category.findMany({
-        where,
-        take: limit,
-        skip: skip,
-        include: {
-          _count: {
-            select: { posts: true },
-          },
-          childCategories: {
-            include: {
-              _count: {
-                select: { posts: true },
+      const where = search
+        ? {
+            name: {
+              contains: search,
+              mode: 'insensitive' as const,
+            },
+          }
+        : {};
+
+      const [categories, totalCount] = await Promise.all([
+        prisma.category.findMany({
+          where,
+          take: limit,
+          skip: skip,
+          include: {
+            _count: {
+              select: { posts: true },
+            },
+            childCategories: {
+              include: {
+                _count: {
+                  select: { posts: true },
+                },
               },
             },
+            parentCategories: true,
           },
-          parentCategories: true,
-        },
-        orderBy: {
-          posts: {
-            _count: 'desc',
+          orderBy: {
+            posts: {
+              _count: 'desc',
+            },
           },
+        }),
+        prisma.category.count({ where }),
+      ]);
+
+      const formattedCategories: TaxonomyType[] = categories.map((category) => ({
+        id: category.id,
+        name: category.name,
+        slug: category.slug,
+        thumbnail: category.thumbnail,
+        taxonomy: category.parentCategories.length > 0 ? 'subcategory' : 'category',
+        color: generateColor(category.id),
+        count: category._count.posts,
+        childCategories: category.childCategories.map((child) => ({
+          id: child.id,
+          name: child.name,
+          slug: child.slug,
+          thumbnail: child.thumbnail,
+          taxonomy: 'subcategory',
+          color: generateColor(child.id),
+          count: child._count.posts,
+          createdAt: child.createdAt,
+          updatedAt: child.updatedAt,
+        })),
+        parentCategories: category.parentCategories.map((parent) => ({
+          id: parent.id,
+          name: parent.name,
+          slug: parent.slug,
+          thumbnail: parent.thumbnail,
+          taxonomy: 'category',
+          color: generateColor(parent.id),
+          count: 0,
+          createdAt: parent.createdAt,
+          updatedAt: parent.updatedAt,
+        })),
+        createdAt: category.createdAt,
+        updatedAt: category.updatedAt,
+      }));
+
+      return {
+        success: true,
+        message: 'دسته‌بندی‌ها با موفقیت بازیابی شدند.',
+        data: {
+          categories: formattedCategories,
+          totalCount,
         },
-      }),
-      prisma.category.count({ where }),
-    ]);
+      };
+    } catch (error) {
+      console.error('خطا در بازیابی دسته‌بندی‌ها:', error);
+      return {
+        success: false,
+        message: 'خطا در بازیابی دسته‌بندی‌ها. لطفاً دوباره تلاش کنید.',
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+  },
+);
 
-    const formattedCategories: TaxonomyType[] = categories.map((category) => ({
-      id: category.id,
-      name: category.name,
-      slug: category.slug,
-      thumbnail: category.thumbnail,
-      taxonomy: category.parentCategories.length > 0 ? 'subcategory' : 'category',
-      color: generateColor(category.id),
-      count: category._count.posts,
-      childCategories: category.childCategories.map((child) => ({
-        id: child.id,
-        name: child.name,
-        slug: child.slug,
-        thumbnail: child.thumbnail,
-        taxonomy: 'subcategory',
-        color: generateColor(child.id),
-        count: child._count.posts,
-        createdAt: child.createdAt,
-        updatedAt: child.updatedAt,
-      })),
-      parentCategories: category.parentCategories.map((parent) => ({
-        id: parent.id,
-        name: parent.name,
-        slug: parent.slug,
-        thumbnail: parent.thumbnail,
-        taxonomy: 'category',
-        color: generateColor(parent.id),
-        count: 0,
-        createdAt: parent.createdAt,
-        updatedAt: parent.updatedAt,
-      })),
-      createdAt: category.createdAt,
-      updatedAt: category.updatedAt,
-    }));
-
-    revalidatePath('/categories');
-
-    return {
-      success: true,
-      message: 'دسته‌بندی‌ها با موفقیت بازیابی شدند.',
-      data: {
-        categories: formattedCategories,
-        totalCount,
-      },
-    };
-  } catch (error) {
-    console.error('خطا در بازیابی دسته‌بندی‌ها:', error);
-    return {
-      success: false,
-      message: 'خطا در بازیابی دسته‌بندی‌ها. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
-    };
-  }
-}
 export async function createCategory(
   data: CreateCategoryInput,
 ): Promise<ActionResult<TaxonomyType>> {
@@ -190,7 +198,7 @@ export async function createCategory(
       })),
     };
 
-    revalidatePath('/categories');
+    await callRevalidate('/categories');
 
     return {
       success: true,
@@ -320,7 +328,7 @@ export async function updateCategory(
       })),
     };
 
-    revalidatePath('/categories');
+    await callRevalidate('/categories');
 
     return {
       success: true,
@@ -362,7 +370,7 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
       where: { id },
     });
 
-    revalidatePath('/categories');
+    await callRevalidate('/categories');
 
     return {
       success: true,
@@ -378,7 +386,7 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
   }
 }
 
-export async function getAllParentCategories(): Promise<ActionResult<TaxonomyType[]>> {
+export const getAllParentCategories = cache(async (): Promise<ActionResult<TaxonomyType[]>> => {
   try {
     const allCategories = await prisma.category.findMany({
       include: {
@@ -443,7 +451,7 @@ export async function getAllParentCategories(): Promise<ActionResult<TaxonomyTyp
       error: error instanceof Error ? error.message : String(error),
     };
   }
-}
+});
 
 async function checkCircularReference(categoryId: string, parentIds: string[]): Promise<boolean> {
   const queue = [...parentIds];
