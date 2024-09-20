@@ -1,4 +1,4 @@
-"use client";
+
 
 const isSafariBrowser = () => {
   if (typeof navigator === "undefined" || !navigator) {

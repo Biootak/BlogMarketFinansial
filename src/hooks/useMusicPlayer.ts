@@ -1,5 +1,3 @@
-'use client';
-
 import type { PostWithRelations } from '@/types/types';
 import { createGlobalState } from 'react-hooks-global-state';
 

@@ -11,7 +11,6 @@ export const publicRoutes = [
   '/subscription',
   '/single/[[...slug]]',
   '/_not-found ',
-  '/api/exchange-rates',
 ];
 /**
  * any routes that are protected and should be accessible only if the user is authenticated
