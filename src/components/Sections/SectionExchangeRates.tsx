@@ -1,12 +1,13 @@
 import { Suspense } from 'react';
-import { getExchangeRates } from '@/actions/getExchangeRates';
+import { fetchExchangeRates } from '@/actions/fetchExchangeRates';
 import ExchangeRateSlider from '@/components/ExchangeRateSlider';
 import { Skeleton } from '@/components/ui/skeleton';
 
 async function ExchangeRatesContent() {
-  const result = await getExchangeRates();
+  const result = await fetchExchangeRates();
 
   if (!result.success || !result.data) {
+    console.log('data', result.data);
     return (
       <div className="text-center text-red-500">
         <p>{result.error || 'خطا در دریافت نرخ‌های ارز'}</p>
