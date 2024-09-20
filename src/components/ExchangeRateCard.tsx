@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import type { ExchangeRate } from '@/types/types';
 import CurrencyIcon from './CurrencyIcon';

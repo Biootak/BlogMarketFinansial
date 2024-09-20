@@ -1,5 +1,7 @@
+import { Suspense } from 'react';
 import { getExchangeRates } from '@/actions/getExchangeRates';
 import ExchangeRateSlider from '@/components/ExchangeRateSlider';
+import { Skeleton } from '@/components/ui/skeleton';
 
 async function ExchangeRatesContent() {
   const result = await getExchangeRates();
@@ -23,7 +25,9 @@ async function ExchangeRatesContent() {
 export default function SectionExchangeRates() {
   return (
     <div className="nc-SectionExchangeRates pt-4">
-      <ExchangeRatesContent />
+      <Suspense fallback={<Skeleton className="h-24" />}>
+        <ExchangeRatesContent />
+      </Suspense>
     </div>
   );
 }

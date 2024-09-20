@@ -49,7 +49,7 @@ export default async function Home() {
         ) : (
           <div className="py-16 lg:py-28 space-y-4">
             {[...Array(3)].map((_, i) => (
-              <Skeleton key={(i + 1).toString()} className="h-64 rounded-md" />
+              <Skeleton key={i.toString()} className="h-64 rounded-md" />
             ))}
           </div>
         )}
@@ -60,7 +60,7 @@ export default async function Home() {
         ) : (
           <div className="py-16 lg:py-28 grid grid-cols-5 gap-4">
             {[...Array(5)].map((_, i) => (
-              <Skeleton key={(i + 1).toString()} className="h-48 rounded-md" />
+              <Skeleton key={i.toString()} className="h-48 rounded-md" />
             ))}
           </div>
         )}
