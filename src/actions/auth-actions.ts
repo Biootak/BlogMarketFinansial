@@ -8,7 +8,7 @@ import { revalidatePath } from 'next/cache';
 import { AuthError } from 'next-auth';
 import { ForgotPasswordSchema, LoginSchema, MagicLinkSchema, RegisterSchema } from '@/schemas';
 import { getUserByEmail } from '@/data/user';
-import { DEFAULT_REDIRECT } from '@/routes';
+import { DEFAULT_REDIRECT } from '@/config/routes';
 import { redirect } from 'next/navigation';
 import { generateVerificationToken } from '@/lib/tokens';
 import { sendVerificationEmail } from '@/lib/mail';

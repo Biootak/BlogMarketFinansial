@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { loginUser, sendMagicLink } from '@/actions/auth-actions';
 import { LoginSchema } from '@/schemas';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { DEFAULT_REDIRECT } from '@/routes';
+import { DEFAULT_REDIRECT } from '@/config/routes';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import Logo from '../Logo/Logo';
