@@ -1,7 +1,7 @@
+import React from 'react';
 import type { PostWithRelations } from '@/types/types';
-import React, { type FC } from 'react';
 
-export interface PostTypeFeaturedIconProps {
+interface PostTypeFeaturedIconProps {
   className?: string;
   postType?: PostWithRelations['postType'];
   onClick?: () => void;
@@ -9,15 +9,15 @@ export interface PostTypeFeaturedIconProps {
   iconSize?: string;
 }
 
-const PostTypeFeaturedIcon: FC<PostTypeFeaturedIconProps> = ({
+const PostTypeFeaturedIcon: React.FC<PostTypeFeaturedIconProps> = ({
   className = '',
-  postType = 'standard',
+  postType = 'STANDARD',
   onClick,
   wrapSize = 'w-11 h-11',
   iconSize = 'w-6 h-6',
 }) => {
-  const iconPaths = {
-    video: (
+  const iconPaths: Record<string, React.ReactNode> = {
+    VIDEO: (
       <path
         d="M17.13 7.9799C20.96 10.1899 20.96 13.8099 17.13 16.0199L14.04 17.7999L10.95 19.5799C7.13 21.7899 4 19.9799 4 15.5599V11.9999V8.43989C4 4.01989 7.13 2.2099 10.96 4.4199L13.21 5.7199"
         stroke="currentColor"
@@ -27,7 +27,7 @@ const PostTypeFeaturedIcon: FC<PostTypeFeaturedIconProps> = ({
         strokeLinejoin="round"
       />
     ),
-    audio: (
+    AUDIO: (
       <>
         <path
           d="M6.28016 22C8.00328 22 9.40016 20.6031 9.40016 18.88C9.40016 17.1569 8.00328 15.76 6.28016 15.76C4.55703 15.76 3.16016 17.1569 3.16016 18.88C3.16016 20.6031 4.55703 22 6.28016 22Z"
@@ -66,7 +66,7 @@ const PostTypeFeaturedIcon: FC<PostTypeFeaturedIconProps> = ({
         />
       </>
     ),
-    gallery: (
+    GALLERY: (
       <>
         <path
           d="M2 12.99V15C2 20 4 22 9 22H15C20 22 22 20 22 15V9C22 4 20 2 15 2H9C4 2 2 4 2 9"
@@ -93,38 +93,34 @@ const PostTypeFeaturedIcon: FC<PostTypeFeaturedIconProps> = ({
     ),
   };
 
-  const renderMediaIcon = () => {
-    if (postType in iconPaths) {
-      return (
-        <svg
-          className={iconSize}
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <title>{postType}</title>
-          {iconPaths[postType as keyof typeof iconPaths]}
-        </svg>
-      );
-    }
-    return null;
-  };
-
-  if (postType === 'standard') return null;
+  if (postType === 'STANDARD') return null;
 
   return (
     <div
       className={`nc-PostTypeFeaturedIcon ${className}`}
       data-nc-id="PostTypeFeaturedIcon"
       onClick={onClick}
+      onKeyUp={onClick}
+      onKeyDown={onClick}
     >
       <span
-        className={`bg-neutral-900/-60 rounded-full flex items-center justify-center text-xl text-white border border-white ${wrapSize}`}
+        className={`bg-neutral-900 bg-opacity-60 rounded-full flex items-center justify-center text-xl text-white border border-white ${wrapSize}`}
       >
-        {renderMediaIcon()}
+        {postType in iconPaths && (
+          <svg
+            className={iconSize}
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-label={`${postType.toLowerCase()} post`}
+          >
+            {iconPaths[postType]}
+            <title>{postType.toLowerCase()} post</title>
+          </svg>
+        )}
       </span>
     </div>
   );
 };
 
-export default PostTypeFeaturedIcon;
+export default React.memo(PostTypeFeaturedIcon);
