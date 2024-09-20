@@ -26,8 +26,12 @@ export default async function Home() {
   return (
     <div className="nc-HomePage relative">
       <div className="container relative">
-        <SectionExchangeRates />
-        <SectionLargeSlider />
+        <Suspense fallback={<Skeleton className="h-[400px]" />}>
+          <SectionExchangeRates />
+        </Suspense>
+        <Suspense fallback={<CardLarge1Skeleton />}>
+          <SectionLargeSlider />
+        </Suspense>
         <SectionSliderNewCategories
           className="relative pb-16"
           heading="موضوعات پرطرفدار"
