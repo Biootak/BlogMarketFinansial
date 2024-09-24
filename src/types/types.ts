@@ -335,19 +335,13 @@ export interface ExchangeRatesResult {
 // for data money-transfer
 export interface ExchangeRateData {
   id: string;
-  service: string;
+  name: string;
   currency: string;
   buyRate: number;
   sellRate: number;
+  imageUrl: string | null;
   updatedAt: Date;
   createdAt: Date;
-}
-
-export interface ExchangeRateFormData {
-  [key: string]: {
-    buy: string;
-    sell: string;
-  };
 }
 
 export type Action =

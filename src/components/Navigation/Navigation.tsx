@@ -32,7 +32,11 @@ const NAVBAR_LINKS: NavItem[] = [
     href: '/archive/category/crypto',
     subItems: [
       { id: 'crypto-urgent', name: 'اخبار فوری', href: '/archive/category/crypto/news-urgent' },
-      { id: 'crypto-important', name: 'اخبار مهم', href: '/archive/category/crypto/news-important' },
+      {
+        id: 'crypto-important',
+        name: 'اخبار مهم',
+        href: '/archive/category/crypto/news-important',
+      },
       { id: 'crypto-analysis', name: 'تحلیل', href: '/archive/category/crypto/analysis' },
       { id: 'crypto-education', name: 'آموزش', href: '/archive/category/crypto/education' },
     ],
@@ -62,8 +66,8 @@ const NAVBAR_LINKS: NavItem[] = [
     ],
   },
   { id: 'stock', name: 'بورس و سهام', href: '/archive/category/stock' },
-  { id: 'money-transfer', name: 'حواله', href: '/services/money-transfer' },
-  { id: 'online-payment', name: 'پرداخت آنلاین', href: '/services/online-payment' },
+  { id: 'money-transfer', name: 'حواله', href: '/money-transfer' },
+  { id: 'online-payment', name: 'پرداخت آنلاین', href: '/online-payment' },
 ];
 
 const Navigation = ({ className = 'flex' }: NavigationProps): JSX.Element => {

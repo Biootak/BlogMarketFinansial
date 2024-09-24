@@ -240,12 +240,11 @@ model PageView {
 
 model ExchangeRate {
   id        String   @id @default(cuid())
-  service   String
+  name      String   @unique 
   currency  String
   buyRate   Float
   sellRate  Float
+  imageUrl  String?
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
-
-  @@unique([service, currency])
 }

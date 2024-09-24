@@ -12,6 +12,7 @@ import { IoHomeOutline, IoExitOutline } from 'react-icons/io5';
 import { FaProductHunt, FaUsers, FaUserCircle } from 'react-icons/fa';
 import { CiSettings } from 'react-icons/ci';
 import { SiGoogleads } from 'react-icons/si';
+import { MdCurrencyExchange } from 'react-icons/md';
 import { useSidebarStore } from '@/hooks/sidebarStore';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useMemo } from 'react';
@@ -25,6 +26,11 @@ const menuItems = [
     label: 'دسته بندی',
   },
   { href: '/dashboard/advertisements', icon: <SiGoogleads size={24} />, label: 'تبلیغات' },
+  {
+    href: '/dashboard/exchange-rates',
+    icon: <MdCurrencyExchange size={24} />,
+    label: 'نرخ ارز ها ',
+  },
   { href: '/dashboard/users', icon: <FaUsers size={24} />, label: 'کاربران' },
   { href: '/dashboard/edit-profile', icon: <CiSettings size={24} />, label: 'تنظیمات' },
 ];

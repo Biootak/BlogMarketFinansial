@@ -1,57 +1,60 @@
 import { Suspense } from 'react';
-import { getExchangeRates } from '@/lib/prisma/exchange-rates';
-import ExchangeRateTable from './ExchangeRateTable';
-import AdminEditButton from './AdminEditButton';
-import InfoCards from './InfoCards';
-import FAQ from './FAQ';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 
-import { FaCoins, FaChartLine, FaGlobe } from 'react-icons/fa';
-import { auth } from '@/auth';
+import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
+import ExchangeRateTable from './ExchangeRateTable';
+import InfoCards from './InfoCards';
+import FAQ from './FAQ';
+import { getExchangeRates } from '@/actions/exchange-rates';
 
 export const metadata: Metadata = {
-  title: 'حواله ارزی | خدمات مالی پیشرفته',
-  description:
-    'قیمت‌های به‌روز حواله‌های ارزی شامل پرفکت مانی، ترنسفروایز، پی‌پال و دیگر سرویس‌های پیشرو',
+  title: 'صرافی آنلاین | انتقال ارز سریع و مطمئن',
+  description: 'بهترین نرخ‌های حواله ارزی برای انتقال سریع و امن پول در سراسر جهان',
 };
 
 export default async function MoneyTransferPage() {
   const exchangeRates = await getExchangeRates();
-  const session = await auth();
-  const isAdmin = session?.user?.role === 'ADMIN';
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800">
       {/* Hero Section */}
-      <div className="bg-blue-600 text-white py-20">
-        <div className="container mx-auto px-4">
+      <section className="relative bg-blue-600 text-white py-32">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-800 opacity-75" />
+        <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="md:w-1/2 mb-10 md:mb-0">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">حواله‌های ارزی پیشرفته</h1>
-              <p className="text-xl mb-8">بهترین نرخ‌ها برای انتقال ارز در سراسر جهان</p>
+              <h1 className="text-5xl md:text-6xl font-bold mb-6">انتقال ارز سریع و مطمئن</h1>
+              <p className="text-xl mb-8">
+                بهترین نرخ‌ها برای حواله ارزی در سراسر جهان با امنیت بالا و کارمزد پایین
+              </p>
               <a
                 href="#rates"
-                className="bg-white text-blue-600 px-8 py-3 rounded-full text-lg font-semibold hover:bg-blue-100 transition-colors"
+                className="bg-white text-blue-600 px-8 py-3 rounded-full text-lg font-semibold hover:bg-blue-100 transition-colors duration-300"
               >
-                مشاهده نرخ‌ها
+                مشاهده نرخ‌های لحظه‌ای
               </a>
             </div>
             <div className="md:w-1/2">
               <Image
                 src="/images/currency-exchange.svg"
-                alt="Currency Exchange"
+                alt="انتقال ارز جهانی"
                 width={500}
                 height={400}
-                className="rounded-lg shadow-lg"
+                className="rounded-lg shadow-2xl"
               />
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       <div className="container mx-auto px-4 py-12">
-        <InfoCards />
+        <section id="services">
+          <h2 className="text-3xl font-bold mb-8 text-center text-gray-800 dark:text-gray-100">
+            خدمات ویژه ما
+          </h2>
+          <InfoCards />
+        </section>
 
         <main
           id="rates"
@@ -61,7 +64,7 @@ export default async function MoneyTransferPage() {
             <h2 className="text-3xl font-bold mb-6 text-center text-gray-800 dark:text-gray-100">
               نرخ‌های لحظه‌ای ارز
             </h2>
-            <Suspense fallback={<div className="text-center">در حال بارگذاری...</div>}>
+            <Suspense fallback={<div className="text-center">در حال بارگذاری نرخ‌های ارز...</div>}>
               <ExchangeRateTable exchangeRates={exchangeRates} />
             </Suspense>
           </div>
@@ -69,68 +72,40 @@ export default async function MoneyTransferPage() {
             <p className="text-sm text-gray-500 dark:text-gray-400">
               آخرین به‌روزرسانی: {new Date().toLocaleString('fa-IR')}
             </p>
-            {isAdmin && <AdminEditButton />}
           </div>
         </main>
 
-        <FAQ />
-
-        <section className="mt-16 text-center bg-gray-100 dark:bg-gray-800 py-12 rounded-lg">
-          <h2 className="text-3xl font-bold mb-8 text-gray-800 dark:text-gray-100">
-            شرکای تجاری ما
+        <section id="contact" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 my-12">
+          <h2 className="text-3xl font-bold mb-6 text-center text-gray-800 dark:text-gray-100">
+            ارتباط با پشتیبانی
           </h2>
-          <div className="flex flex-wrap justify-center items-center gap-8">
-            <Image
-              src="/images/partner1-logo.png"
-              alt="Partner 1"
-              width={150}
-              height={75}
-              className="bg-white p-4 rounded-lg"
-            />
-            <Image
-              src="/images/partner2-logo.png"
-              alt="Partner 2"
-              width={150}
-              height={75}
-              className="bg-white p-4 rounded-lg"
-            />
-            <Image
-              src="/images/partner3-logo.png"
-              alt="Partner 3"
-              width={150}
-              height={75}
-              className="bg-white p-4 rounded-lg"
-            />
+          <p className="text-center text-gray-600 dark:text-gray-300 mb-8">
+            برای ثبت سفارش و دریافت مشاوره رایگان، با کارشناسان ما در ارتباط باشید
+          </p>
+          <div className="flex flex-col md:flex-row justify-center items-center gap-2 space-y-4 md:space-y-0 md:space-x-8">
+            <a
+              href="https://t.me/Financial_Market_telegram"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center bg-blue-500 text-white px-6 py-3 rounded-full hover:bg-blue-600 transition-colors duration-300"
+            >
+              <FaTelegram className="ml-2" size={24} />
+              پشتیبانی تلگرام
+            </a>
+            <a
+              href="https://wa.me/1234567890"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center bg-green-500 text-white px-6 py-3 rounded-full hover:bg-green-600 transition-colors duration-300"
+            >
+              <FaWhatsapp className="ml-2" size={24} />
+              پشتیبانی واتساپ
+            </a>
           </div>
         </section>
 
-        <section className="mt-16 text-center">
-          <h2 className="text-3xl font-bold mb-8 text-gray-800 dark:text-gray-100">
-            چرا ما را انتخاب کنید؟
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-              <FaCoins className="text-4xl text-blue-500 mb-4 mx-auto" />
-              <h3 className="text-xl font-semibold mb-2">نرخ‌های رقابتی</h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                بهترین نرخ‌های ارز در بازار را به شما ارائه می‌دهیم.
-              </p>
-            </div>
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-              <FaChartLine className="text-4xl text-green-500 mb-4 mx-auto" />
-              <h3 className="text-xl font-semibold mb-2">سرعت بالا</h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                انتقال سریع ارز در کمترین زمان ممکن.
-              </p>
-            </div>
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-              <FaGlobe className="text-4xl text-purple-500 mb-4 mx-auto" />
-              <h3 className="text-xl font-semibold mb-2">پوشش جهانی</h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                امکان انتقال ارز به اکثر کشورهای جهان.
-              </p>
-            </div>
-          </div>
+        <section id="faq">
+          <FAQ />
         </section>
       </div>
     </div>

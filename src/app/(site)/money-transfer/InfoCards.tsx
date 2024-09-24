@@ -24,12 +24,14 @@ export default function InfoCards() {
       {infoCards.map((card, index) => (
         <div
           key={index}
-          className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1"
+          className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
         >
           <div className="flex flex-col items-center text-center">
-            {card.icon}
-            <h3 className="mt-4 text-xl font-semibold text-gray-800 dark:text-gray-100">{card.title}</h3>
-            <p className="mt-2 text-gray-600 dark:text-gray-300">{card.description}</p>
+            <div className="mb-4 bg-gray-100 dark:bg-gray-700 p-4 rounded-full">
+              {card.icon}
+            </div>
+            <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-3">{card.title}</h3>
+            <p className="text-gray-600 dark:text-gray-300">{card.description}</p>
           </div>
         </div>
       ))}
