@@ -332,6 +332,24 @@ export interface ExchangeRatesResult {
   error?: string;
 }
 
+// for data money-transfer
+export interface ExchangeRateData {
+  id: string;
+  service: string;
+  currency: string;
+  buyRate: number;
+  sellRate: number;
+  updatedAt: Date;
+  createdAt: Date;
+}
+
+export interface ExchangeRateFormData {
+  [key: string]: {
+    buy: string;
+    sell: string;
+  };
+}
+
 export type Action =
   | { type: 'FETCH_POSTS_START' }
   | { type: 'FETCH_POSTS_SUCCESS'; payload: { posts: PostWithRelations[]; hasNextPage: boolean } }

@@ -61,7 +61,7 @@ const nextConfig = {
   sassOptions: {
     includePaths: [path.join(__dirname, 'styles')],
   },
-  transpilePackages: ['@aws-sdk/client-s3', '@aws-sdk/s3-request-presigner'],
+  transpilePackages: ['@aws-sdk/client-s3', '@aws-sdk/s3-request-presigner', 'framer-motion'],
 };
 
 module.exports = nextConfig;
