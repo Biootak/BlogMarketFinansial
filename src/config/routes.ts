@@ -12,6 +12,8 @@ export const publicRoutes = [
   '/subscription',
   '/single',
   '/_not-found',
+  '/money-transfer',
+  '/online-payment',
 ];
 
 /**
