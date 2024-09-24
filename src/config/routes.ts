@@ -8,7 +8,7 @@ export const publicRoutes = [
   '/contact',
   '/search',
   '/archive',
-  '/archive/[[...slug]]',
+  '/archive/[[...slug]]/',
   '/subscription',
   '/single',
   '/_not-found',
