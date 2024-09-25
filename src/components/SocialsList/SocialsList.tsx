@@ -1,4 +1,5 @@
 import React from 'react';
+import * as motion from 'framer-motion/client';
 import type { SocialType } from '@/types/types';
 
 interface SocialsListProps {
@@ -13,20 +14,25 @@ const SocialsList: React.FC<SocialsListProps> = ({
   socials = [],
 }) => {
   return (
-    <nav className={`flex flex-row-reverse gap-2 text-2xl ${className}`}>
-      {socials.map((item) => {
+    <nav className={`flex flex-wrap gap-3 ${className}`}>
+      {socials.map((item, index) => {
         const Icon = item.icon;
         return (
-          <a
+          <motion.a
             key={item.id}
-            className={`${itemClass} rounded-full transition-colors hover:bg-gray-100  dark:hover:bg-neutral-700`}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className={`${itemClass} rounded-full p-2 transition-all duration-300 ease-in-out bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl`}
             href={item.href}
             target="_blank"
             rel="noopener noreferrer"
             title={item.name}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.1 }}
           >
             <Icon className="w-6 h-6" style={{ color: item.color }} />
-          </a>
+          </motion.a>
         );
       })}
     </nav>
