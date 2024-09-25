@@ -52,7 +52,7 @@ const OnlinePaymentHero: FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          {['PayPal', 'Mastercard', 'Visa', 'Bank Transfer'].map((method) => (
+          {['PayPal', 'Mastercard', 'Visa', 'BankTransfer'].map((method) => (
             <motion.div
               key={method}
               whileHover={{ scale: 1.1, rotate: 5 }}
