@@ -23,8 +23,6 @@ export const SOCIALS_DATA: SocialType[] = [
   { id: 'Twitter', name: 'توییتر', icon: FaTwitter, href: '#', color: '#1DA1F2' },
   { id: 'Telegram', name: 'تلگرام', icon: FaTelegram, href: '#', color: '#0088cc' },
   { id: 'Instagram', name: 'اینستاگرام', icon: FaInstagram, href: '#', color: '#E4405F' },
-  { id: 'LinkedIn', name: 'لینکدین', icon: FaLinkedinIn, href: '#', color: '#0A66C2' },
-  { id: 'WhatsApp', name: 'واتساپ', icon: FaWhatsapp, href: '#', color: '#25D366' },
 ];
 
 const SocialsShare: React.FC<SocialsShareProps> = ({

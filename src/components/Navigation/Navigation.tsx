@@ -68,6 +68,7 @@ const NAVBAR_LINKS: NavItem[] = [
   { id: 'stock', name: 'بورس و سهام', href: '/archive/category/stock' },
   { id: 'money-transfer', name: 'حواله', href: '/money-transfer' },
   { id: 'online-payment', name: 'پرداخت آنلاین', href: '/online-payment' },
+  { id: 'terms', name: 'قوانین', href: '/terms' },
 ];
 
 const Navigation = ({ className = 'flex' }: NavigationProps): JSX.Element => {
