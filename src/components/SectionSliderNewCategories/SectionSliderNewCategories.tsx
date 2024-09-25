@@ -1,8 +1,9 @@
-import type React from 'react';
+import type { FC } from 'react';
 import Heading from '@/components/Heading/Heading';
-import type { TaxonomyType } from '@/types/types';
 import { getCategories } from '@/actions/categoryActions';
 import ClientSideSlider from './ClientSideSlider';
+import { Suspense } from 'react';
+import Empty from '../Empty';
 
 export interface SectionSliderNewCategoriesProps {
   className?: string;
@@ -12,7 +13,7 @@ export interface SectionSliderNewCategoriesProps {
   itemPerRow?: 4 | 5;
 }
 
-const SectionSliderNewCategories: React.FC<SectionSliderNewCategoriesProps> = async ({
+const SectionSliderNewCategories: FC<SectionSliderNewCategoriesProps> = async ({
   heading,
   subHeading,
   className = '',
@@ -22,13 +23,29 @@ const SectionSliderNewCategories: React.FC<SectionSliderNewCategoriesProps> = as
   const categories = result.success && result.data?.categories ? result.data.categories : [];
 
   return (
-    <div className={`nc-SectionSliderNewCategories ${className}`}>
+    <section
+      className={`nc-SectionSliderNewCategories ${className} p-5 bg-gray-50 dark:bg-gray-800 rounded-xl`}
+    >
       <Heading desc={subHeading} isCenter>
         {heading}
       </Heading>
-      <ClientSideSlider categories={categories} itemPerRow={itemPerRow} />
-    </div>
+      <Suspense fallback={<LoadingSlider />}>
+        {categories.length > 0 ? (
+          <ClientSideSlider categories={categories} itemPerRow={itemPerRow} />
+        ) : (
+          <Empty />
+        )}
+      </Suspense>
+    </section>
   );
 };
+
+const LoadingSlider: FC = () => (
+  <div className="animate-pulse flex space-x-4 overflow-hidden">
+    {[...Array(5)].map((_, i) => (
+      <div key={i} className="w-1/5 h-32 bg-gray-300 dark:bg-gray-700 rounded-lg" />
+    ))}
+  </div>
+);
 
 export default SectionSliderNewCategories;
