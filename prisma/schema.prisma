@@ -51,6 +51,7 @@ model User {
   savedPosts    SavedPost[]
   profile       Profile?
   notifications Notification[]
+  newsletter    Newsletter[]
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -249,4 +250,14 @@ model ExchangeRate {
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
   
+}
+
+model Newsletter {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  isActive  Boolean  @default(true)
+  userId    String?  @unique
+  user      User?    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
