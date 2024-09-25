@@ -13,17 +13,17 @@ const currentDate = new Date().toLocaleDateString('fa-IR');
 const FOUNDER_DEMO: Statistic[] = [
   {
     id: '1',
-    heading: '۱۰ میلیون',
-    subHeading: `مقاله در سراسر جهان منتشر شده است (تا ${currentDate})`,
+    heading: '50',
+    subHeading: `مقاله  منتشر شده است (تا ${currentDate})`,
   },
   {
     id: '2',
-    heading: '۱۰۰,۰۰۰',
+    heading: '۱۰۰۰',
     subHeading: `حساب کاربری ثبت شده (تا ${currentDate})`,
   },
   {
     id: '3',
-    heading: '۲۲۰+',
+    heading: '۲',
     subHeading: `کشور و منطقه حضور ما را دارند (تا ${currentDate})`,
   },
 ];
