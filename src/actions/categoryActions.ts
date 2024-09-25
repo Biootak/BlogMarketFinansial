@@ -10,14 +10,6 @@ import type {
   UpdateCategoryInput,
 } from '@/types/types';
 
-const callRevalidate = cache(async (path: string) => {
-  await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/revalidate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ path }),
-  });
-});
-
 export const getCategories = cache(
   async (
     options: { limit?: number; page?: number; search?: string } = {},
@@ -198,8 +190,6 @@ export async function createCategory(
       })),
     };
 
-    await callRevalidate('/categories');
-
     return {
       success: true,
       message: 'دسته‌بندی با موفقیت ایجاد شد.',
@@ -328,8 +318,6 @@ export async function updateCategory(
       })),
     };
 
-    await callRevalidate('/categories');
-
     return {
       success: true,
       message: 'دسته‌بندی با موفقیت به‌روزرسانی شد.',
@@ -369,8 +357,6 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
     await prisma.category.delete({
       where: { id },
     });
-
-    await callRevalidate('/categories');
 
     return {
       success: true,
