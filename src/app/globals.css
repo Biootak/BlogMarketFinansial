@@ -2,52 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
-
 @layer utilities {
-    .scrollbar-custom {
-      scrollbar-width: thin;
-      scrollbar-color: rgba(var(--c-primary-500), 0.5) rgba(var(--c-neutral-200), 0.5);
-    }
-    
-    .scrollbar-custom::-webkit-scrollbar {
-      width: 8px;
-    }
-    
-    .scrollbar-custom::-webkit-scrollbar-track {
-      background: rgba(var(--c-neutral-200), 0.5);
-      border-radius: 4px;
-    }
-    
-    .scrollbar-custom::-webkit-scrollbar-thumb {
-      background-color: rgba(var(--c-primary-500), 0.5);
-      border-radius: 4px;
-      border: 2px solid rgba(var(--c-neutral-200), 0.5);
-    }
-    
-    .scrollbar-custom::-webkit-scrollbar-thumb:hover {
-      background-color: rgba(var(--c-primary-600), 0.7);
-    }
+  .scrollbar-custom {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(var(--c-primary-500), 0.5) rgba(var(--c-neutral-200), 0.5);
   }
 
-  .aspect-w-3 {
-    position: relative;
-    padding-bottom: calc(var(--tw-aspect-h) / var(--tw-aspect-w) * 100%);
+  .scrollbar-custom::-webkit-scrollbar {
+    width: 8px;
   }
-  .aspect-w-3 > * {
-    position: absolute;
-    height: 100%;
-    width: 100%;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
+
+  .scrollbar-custom::-webkit-scrollbar-track {
+    background: rgba(var(--c-neutral-200), 0.5);
+    border-radius: 4px;
   }
-  .aspect-h-3 {
-    --tw-aspect-h: 3;
+
+  .scrollbar-custom::-webkit-scrollbar-thumb {
+    background-color: rgba(var(--c-primary-500), 0.5);
+    border-radius: 4px;
+    border: 2px solid rgba(var(--c-neutral-200), 0.5);
   }
-  .aspect-h-4 {
-    --tw-aspect-h: 4;
+
+  .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(var(--c-primary-600), 0.7);
   }
-  .aspect-w-3 {
-    --tw-aspect-w: 3;
+}
+
+.aspect-w-3 {
+  position: relative;
+  padding-bottom: calc(var(--tw-aspect-h) / var(--tw-aspect-w) * 100%);
+}
+.aspect-w-3 > * {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+.aspect-h-3 {
+  --tw-aspect-h: 3;
+}
+.aspect-h-4 {
+  --tw-aspect-h: 4;
+}
+.aspect-w-3 {
+  --tw-aspect-w: 3;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
   }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 5s ease infinite;
+}
