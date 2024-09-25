@@ -28,7 +28,7 @@ const FOUNDER_DEMO: Statistic[] = [
   },
 ];
 
-const SectionStatistic = ({}) => {
+const SectionStatistic = () => {
   return (
     <div className={'nc-SectionStatistic relative rtl'}>
       <Heading desc="ما بی‌طرف و مستقل هستیم و هر روز تلاش می‌کنیم تا برنامه‌ها و محتوای متمایز و در سطح جهانی ایجاد کنیم.">
