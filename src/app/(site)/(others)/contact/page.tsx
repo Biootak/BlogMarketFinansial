@@ -1,24 +1,25 @@
-import React from "react";
-import ButtonPrimary from "@/components/Button/ButtonPrimary";
-import Input from "@/components/Input/Input";
-import Label from "@/components/Label/Label";
-import SocialsList from "@/components/SocialsList/SocialsList";
-import Textarea from "@/components/Textarea/Textarea";
-import Heading2 from "@/components/Heading/Heading2";
+import React from 'react';
+import ButtonPrimary from '@/components/Button/ButtonPrimary';
+import Input from '@/components/Input/Input';
+import Label from '@/components/Label/Label';
+import SocialsList from '@/components/SocialsList/SocialsList';
+import Textarea from '@/components/Textarea/Textarea';
+import Heading2 from '@/components/Heading/Heading2';
+import { SOCIALS_DATA } from '@/components/SocialsShare/SocialsShare';
 
 // Define info outside the component to avoid recalculating on each render
 const info = [
   {
-    title: "🗺 آدرس",
-    desc: "غرفه عکس، منشور تاتو شده، هودی پورتلند تایکی، ماشین تحریر نوتر",
+    title: ' آدرس',
+    desc: 'تهران ',
   },
   {
-    title: "💌 ایمیل",
-    desc: "nc.example@example.com",
+    title: ' ایمیل',
+    desc: 'support@financialmarket.com',
   },
   {
-    title: "☎ تلفن",
-    desc: "000-123-456-7890",
+    title: ' موبایل',
+    desc: '۰۹۳۸۰۹۲۹۶۰۶',
   },
 ];
 
@@ -35,38 +36,32 @@ const PageContact = () => {
       <div className="grid gap-8 lg:grid-cols-2">
         <div className="max-w-sm space-y-6">
           {info.map((item) => (
-            <div key={item.title}> 
+            <div key={item.title}>
               {/* Use a unique and stable key for better performance */}
               <h3 className="uppercase font-semibold text-sm dark:text-neutral-200 tracking-wider">
                 {item.title}
               </h3>
-              <span className="block mt-2 text-neutral-500 dark:text-neutral-400">
-                {item.desc}
-              </span>
+              <span className="block mt-2 text-neutral-500 dark:text-neutral-400">{item.desc}</span>
             </div>
           ))}
           <div>
             <h3 className="uppercase font-semibold text-sm dark:text-neutral-200 tracking-wider">
-              🌏 شبکه‌های اجتماعی
+              شبکه‌های اجتماعی
             </h3>
-            <SocialsList className="mt-2" />
+            <SocialsList className="mt-2" socials={SOCIALS_DATA} />
           </div>
         </div>
-        <div className="border border-neutral-100 dark:border-neutral-700 lg:hidden"></div>
+        <div className="border border-neutral-100 dark:border-neutral-700 lg:hidden" />
         <div>
           {/* Remove unnecessary action and method attributes from the form */}
-          <form className="grid grid-cols-1 gap-6"> 
+          <form className="grid grid-cols-1 gap-6">
             <label className="block">
               <Label>نام کامل</Label>
-              <Input placeholder="مثال دویی" type="text" className="mt-1" />
+              <Input placeholder="نام خود را وارد کنید" className="mt-1" />
             </label>
             <label className="block">
               <Label>آدرس ایمیل</Label>
-              <Input
-                type="email"
-                placeholder="example@example.com"
-                className="mt-1"
-              />
+              <Input type="email" placeholder="ایمیل خود را وارد کنید" className="mt-1" />
             </label>
             <label className="block">
               <Label>پیام</Label>
