@@ -17,7 +17,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 interface SubscribeFormProps {
-  onSubmit: (email: string) => Promise<void>;
+  onSubmit: (email: string) => Promise<{ success: boolean; message: string }>;
 }
 
 const SubscribeForm: FC<SubscribeFormProps> = ({ onSubmit }) => {
@@ -33,13 +33,21 @@ const SubscribeForm: FC<SubscribeFormProps> = ({ onSubmit }) => {
   const handleFormSubmit = async (data: FormData) => {
     setIsLoading(true);
     try {
-      await onSubmit(data.email);
-      toast({
-        title: 'موفقیت',
-        description: 'شما با موفقیت در خبرنامه عضو شدید!',
-        variant: 'default',
-        className: 'bg-green-500 text-white',
-      });
+      const result = await onSubmit(data.email);
+      if (result.success) {
+        toast({
+          title: 'موفقیت',
+          description: result.message,
+          variant: 'default',
+          className: 'bg-green-500 text-white',
+        });
+      } else {
+        toast({
+          title: 'خطا',
+          description: result.message,
+          variant: 'destructive',
+        });
+      }
     } catch {
       toast({
         title: 'خطا',
@@ -67,7 +75,9 @@ const SubscribeForm: FC<SubscribeFormProps> = ({ onSubmit }) => {
         disabled={isLoading}
       />
       {errors.email && (
-        <p className="text-red-500 text-sm mt-1 absolute -bottom-6 right-0">{errors.email.message}</p>
+        <p className="text-red-500 text-sm mt-1 absolute -bottom-6 right-0">
+          {errors.email.message}
+        </p>
       )}
       <Button
         type="submit"
