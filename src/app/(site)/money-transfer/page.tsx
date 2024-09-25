@@ -2,11 +2,11 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 
-import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
 import ExchangeRateTable from './ExchangeRateTable';
 import InfoCards from './InfoCards';
 import FAQ from './FAQ';
 import { getExchangeRates } from '@/actions/exchange-rates';
+import ContactCTA from '@/components/online-payment/ContactCTA';
 
 export const metadata: Metadata = {
   title: 'صرافی آنلاین | انتقال ارز سریع و مطمئن',
@@ -49,16 +49,16 @@ export default async function MoneyTransferPage() {
       </section>
 
       <div className="container mx-auto px-4 py-12">
-        <section id="services">
+        <section id="services" className="mb-16">
           <h2 className="text-3xl font-bold mb-8 text-center text-gray-800 dark:text-gray-100">
             خدمات ویژه ما
           </h2>
           <InfoCards />
         </section>
 
-        <main
+        <section
           id="rates"
-          className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden my-12"
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden mb-16"
         >
           <div className="p-8">
             <h2 className="text-3xl font-bold mb-6 text-center text-gray-800 dark:text-gray-100">
@@ -73,35 +73,10 @@ export default async function MoneyTransferPage() {
               آخرین به‌روزرسانی: {new Date().toLocaleString('fa-IR')}
             </p>
           </div>
-        </main>
+        </section>
 
-        <section id="contact" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 my-12">
-          <h2 className="text-3xl font-bold mb-6 text-center text-gray-800 dark:text-gray-100">
-            ارتباط با پشتیبانی
-          </h2>
-          <p className="text-center text-gray-600 dark:text-gray-300 mb-8">
-            برای ثبت سفارش و دریافت مشاوره رایگان، با کارشناسان ما در ارتباط باشید
-          </p>
-          <div className="flex flex-col md:flex-row justify-center items-center gap-2 space-y-4 md:space-y-0 md:space-x-8">
-            <a
-              href="https://t.me/Financial_Market_telegram"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center bg-blue-500 text-white px-6 py-3 rounded-full hover:bg-blue-600 transition-colors duration-300"
-            >
-              <FaTelegram className="ml-2" size={24} />
-              پشتیبانی تلگرام
-            </a>
-            <a
-              href="https://wa.me/1234567890"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center bg-green-500 text-white px-6 py-3 rounded-full hover:bg-green-600 transition-colors duration-300"
-            >
-              <FaWhatsapp className="ml-2" size={24} />
-              پشتیبانی واتساپ
-            </a>
-          </div>
+        <section id="contact" className="mb-16">
+          <ContactCTA />
         </section>
 
         <section id="faq">

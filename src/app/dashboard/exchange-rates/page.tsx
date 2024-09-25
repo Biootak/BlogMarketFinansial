@@ -38,6 +38,7 @@ interface ExchangeRateFormValues {
   buyRate: number;
   sellRate: number;
   imageUrl: string | null;
+  minimumAmount: number;
 }
 
 const ExchangeRatesPage: React.FC = () => {
@@ -159,6 +160,7 @@ const ExchangeRatesPage: React.FC = () => {
             <TableHead>ارز</TableHead>
             <TableHead>نرخ خرید</TableHead>
             <TableHead>نرخ فروش</TableHead>
+            <TableHead>حداقل مبلغ</TableHead>
             <TableHead>عملیات</TableHead>
           </TableRow>
         </TableHeader>
@@ -178,6 +180,7 @@ const ExchangeRatesPage: React.FC = () => {
               <TableCell>{exchangeRate.currency}</TableCell>
               <TableCell>{exchangeRate.buyRate}</TableCell>
               <TableCell>{exchangeRate.sellRate}</TableCell>
+              <TableCell>{exchangeRate.minimumAmount}</TableCell>
               <TableCell className="flex items-center space-x-2">
                 <Button
                   variant="ghost"
@@ -254,6 +257,19 @@ const ExchangeRatesPage: React.FC = () => {
               {errors.sellRate && <p className="text-red-500 text-sm">{errors.sellRate.message}</p>}
             </div>
             <div className="space-y-2">
+              <Label htmlFor="minimumAmount">حداقل مبلغ</Label>
+              <Input
+                id="minimumAmount"
+                type="number"
+                {...register('minimumAmount', {
+                  required: 'حداقل مبلغ الزامی است',
+                  valueAsNumber: true,
+                })}
+                placeholder=" حداقل مبلغ"
+              />
+              {errors.sellRate && <p className="text-red-500 text-sm">{errors.sellRate.message}</p>}
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="imageUrl">تصویر</Label>
               <ImageUploader onImageUpload={handleImageUpload} onImageRemove={handleImageRemove} />
             </div>
@@ -319,6 +335,21 @@ const ExchangeRatesPage: React.FC = () => {
                     valueAsNumber: true,
                   })}
                   placeholder="نرخ فروش"
+                />
+                {errors.sellRate && (
+                  <p className="text-red-500 text-sm">{errors.sellRate.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="minimumAmount">حداقل مبلغ</Label>
+                <Input
+                  id="minimumAmount"
+                  type="number"
+                  {...register('minimumAmount', {
+                    required: 'حداقل مبلغ الزامی است',
+                    valueAsNumber: true,
+                  })}
+                  placeholder=" حداقل مبلغ"
                 />
                 {errors.sellRate && (
                   <p className="text-red-500 text-sm">{errors.sellRate.message}</p>
