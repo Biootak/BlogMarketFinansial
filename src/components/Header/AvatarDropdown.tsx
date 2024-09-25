@@ -1,4 +1,3 @@
-// components/AvatarDropdown.tsx
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { ProfileIcon, PostIcon, ThemeIcon } from '@/components/Icons';
@@ -7,6 +6,12 @@ import Avatar from '../Avatar/Avatar';
 import getCurrentUser from '@/lib/current-user';
 import LogoutButton from '../Auth/LogoutButton';
 import DarkModeSwitch from '../SwitchDarkMode/SwitchDarkMode2';
+import type { Role } from '@prisma/client';
+
+// Helper function to check if user is admin or author
+const isAdminOrAuthor = (userRole: Role | undefined) => {
+  return userRole === 'ADMIN' || userRole === 'AUTHOR';
+};
 
 export default async function AvatarDropdown() {
   const user = await getCurrentUser();
@@ -14,6 +19,8 @@ export default async function AvatarDropdown() {
   if (!user) {
     return null;
   }
+
+  const canAccessPosts = isAdminOrAuthor(user.role);
 
   return (
     <div className="AvatarDropdown">
@@ -35,7 +42,9 @@ export default async function AvatarDropdown() {
             </div>
 
             <MenuItem href="/profile" icon={ProfileIcon} text="پروفایل" />
-            <MenuItem href="/my-posts" icon={PostIcon} text="پست‌های من" />
+            {canAccessPosts && (
+              <MenuItem href="/dashboard/posts" icon={PostIcon} text="پست‌های من" />
+            )}
 
             <div className="w-full my-2 border-t border-neutral-200 dark:border-neutral-700" />
 

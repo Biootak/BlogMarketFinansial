@@ -6,8 +6,8 @@ import { getMoreFromAuthor } from '@/actions/getMoreFromAuthor';
 import SingleHeader from '@/app/(site)/(singles)/SingleHeader';
 import SingleContent from '@/app/(site)/(singles)/SingleContent';
 import SingleRelatedPosts from '@/app/(site)/(singles)/SingleRelatedPosts';
-import LoadingSpinner from '@/components/LoadingSpinner';
 import NcImage from '@/components/NcImage/NcImage';
+import Loading from '@/components/Loading';
 
 export interface PageProps {
   params: { slug: string[] };
@@ -56,7 +56,7 @@ export default async function PageSingle({ params }: PageProps) {
 
         <div className="container mt-10">
           <SingleContent post={post} />
-          <Suspense fallback={<LoadingSpinner />}>
+          <Suspense fallback={<Loading />}>
             <SingleRelatedPosts
               post={post}
               relatedPostsPromise={relatedPostsPromise}
