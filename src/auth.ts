@@ -68,7 +68,8 @@ export const {
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: 'jwt',
-    maxAge: 24 * 60 * 60,
+    maxAge: 3 * 24 * 60 * 60,
+    updateAge: 24 * 60 * 60,
   },
   providers: [
     Resend({

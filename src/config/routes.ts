@@ -33,3 +33,5 @@ export const apiAuthPrefix = '/api/auth';
  * @type {string}
  */
 export const DEFAULT_REDIRECT = '/';
+
+export const adminRoutes = ['/dahsboard'];

@@ -7,6 +7,7 @@ import { getCategories } from '@/actions/categoryActions';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useToast } from '@/components/ui/use-toast';
 import LoadingMore from '@/components/LoadingMore';
+import Empty from '@/components/Empty';
 
 interface CategoryListProps {
   initialData:
@@ -81,7 +82,7 @@ export function CategoryList({
   );
 
   if (categories.length === 0) {
-    return <div>هیچ دسته‌بندی یافت نشد.</div>;
+    return <Empty />;
   }
 
   return (

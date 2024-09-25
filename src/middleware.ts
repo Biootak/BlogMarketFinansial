@@ -1,6 +1,12 @@
 import NextAuth from 'next-auth';
 import authConfig from './auth.config';
-import { apiAuthPrefix, authRoutes, DEFAULT_REDIRECT, publicRoutes } from './config/routes';
+import {
+  apiAuthPrefix,
+  authRoutes,
+  DEFAULT_REDIRECT,
+  publicRoutes,
+  adminRoutes,
+} from './config/routes';
 
 const { auth } = NextAuth(authConfig);
 
@@ -25,6 +31,7 @@ export default auth((req) => {
   const isPublicRoute = matchRoute(nextUrl.pathname, publicRoutes);
   const isAuthRoute = matchRoute(nextUrl.pathname, authRoutes);
   const isApiAuthPrefix = nextUrl.pathname.startsWith(apiAuthPrefix);
+  const isAdminRoute = matchRoute(nextUrl.pathname, adminRoutes);
 
   if (isApiAuthPrefix) {
     return;
@@ -39,6 +46,12 @@ export default auth((req) => {
 
   if (!isLoggedIn && !isPublicRoute) {
     return Response.redirect(new URL('/signin', nextUrl));
+  }
+
+  // Check user role for admin routes
+  if (isAdminRoute && req.auth?.user?.role !== 'ADMIN' && req.auth?.user?.role !== 'AUTHOR') {
+    console.log(`Unauthorized admin access attempt by user ${req.auth?.user?.id}`);
+    return Response.redirect(new URL('/unauthorized', nextUrl));
   }
 });
 
