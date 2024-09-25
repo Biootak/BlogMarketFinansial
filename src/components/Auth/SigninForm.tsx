@@ -168,7 +168,7 @@ export function SigninForm() {
               <div className="flex justify-between items-center">
                 <Label htmlFor="password">رمز عبور</Label>
                 <NcLink href="/forgot-pass" className="text-sm underline">
-                  فراموشی رمز عبور؟
+                  فراموشی رمز عبور
                 </NcLink>
               </div>
               <Input
