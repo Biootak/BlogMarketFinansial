@@ -1,93 +1,61 @@
-'use client';
-
-import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
+import * as motion from 'framer-motion/client';
 import type { ExchangeRateData } from '@/types/types';
 
 export default function ExchangeRateTable({
-  exchangeRates: initialRates,
+  exchangeRates,
 }: {
   exchangeRates: ExchangeRateData[];
 }) {
-  const [rates, setRates] = useState(initialRates);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const fetchRates = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch('/api/exchange-rates');
-        const newRates = await response.json();
-        setRates(newRates);
-      } catch (error) {
-        console.error('Failed to fetch exchange rates:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const interval = setInterval(fetchRates, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <AnimatePresence>
-        {rates.map((rate, index) => (
-          <motion.div
-            key={rate.id}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ duration: 0.3, delay: index * 0.05 }}
-            className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-          >
-            <div className="p-4 flex items-center space-x-4 rtl:space-x-reverse">
-              {rate.imageUrl && (
-                <Image
-                  src={rate.imageUrl}
-                  alt={rate.name}
-                  width={48}
-                  height={48}
-                  className="rounded-full object-cover"
-                />
-              )}
-              <div>
-                <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-100">
-                  {rate.name}
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{rate.currency}</p>
-              </div>
+      {exchangeRates.map((rate, index) => (
+        <motion.div
+          key={rate.id}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3, delay: index * 0.05 }}
+          className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+        >
+          <div className="p-4 flex items-center space-x-4 rtl:space-x-reverse">
+            {rate.imageUrl && (
+              <Image
+                src={rate.imageUrl}
+                alt={rate.name}
+                width={48}
+                height={48}
+                className="rounded-full object-cover"
+              />
+            )}
+            <div>
+              <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-100">
+                {rate.name}
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{rate.currency}</p>
             </div>
-            <div className="bg-gray-50 dark:bg-gray-700 p-4">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-gray-600 dark:text-gray-400">خرید:</span>
-                <span className="font-bold text-green-600 dark:text-green-400">
-                  {rate.buyRate.toLocaleString()} تومان
-                </span>
-              </div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-gray-600 dark:text-gray-400">فروش:</span>
-                <span className="font-bold text-red-600 dark:text-red-400">
-                  {rate.sellRate.toLocaleString()} تومان
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600 dark:text-gray-400">حداقل مبلغ:</span>
-                <span className="font-medium text-blue-600 dark:text-blue-400">
-                  {rate.minimumAmount.toLocaleString()} {rate.currency}
-                </span>
-              </div>
+          </div>
+          <div className="bg-gray-50 dark:bg-gray-700 p-4">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm text-gray-600 dark:text-gray-400">خرید:</span>
+              <span className="font-bold text-green-600 dark:text-green-400">
+                {rate.buyRate.toLocaleString()} تومان
+              </span>
             </div>
-          </motion.div>
-        ))}
-      </AnimatePresence>
-      {loading && (
-        <div className="col-span-full flex justify-center mt-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white" />
-        </div>
-      )}
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm text-gray-600 dark:text-gray-400">فروش:</span>
+              <span className="font-bold text-red-600 dark:text-red-400">
+                {rate.sellRate.toLocaleString()} تومان
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600 dark:text-gray-400">حداقل مبلغ:</span>
+              <span className="font-medium text-blue-600 dark:text-blue-400">
+                {rate.minimumAmount.toLocaleString()} {rate.currency}
+              </span>
+            </div>
+          </div>
+        </motion.div>
+      ))}
     </div>
   );
 }

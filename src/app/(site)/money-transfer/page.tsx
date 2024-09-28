@@ -1,17 +1,18 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Image from 'next/image';
-
-import ExchangeRateTable from './ExchangeRateTable';
-import InfoCards from './InfoCards';
-import FAQ from './FAQ';
 import { getExchangeRates } from '@/actions/exchange-rates';
+import InfoCards from './InfoCards';
+import ExchangeRateTable from './ExchangeRateTable';
 import ContactCTA from '@/components/online-payment/ContactCTA';
+import FAQ from './FAQ';
 
 export const metadata: Metadata = {
   title: 'صرافی آنلاین | انتقال ارز سریع و مطمئن',
   description: 'بهترین نرخ‌های حواله ارزی برای انتقال سریع و امن پول در سراسر جهان',
 };
+
+export const revalidate = 1800; // revalidate every 30 minutes
 
 export default async function MoneyTransferPage() {
   const exchangeRates = await getExchangeRates();
