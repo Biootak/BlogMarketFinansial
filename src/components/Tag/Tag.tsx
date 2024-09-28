@@ -33,7 +33,7 @@ const Tag: React.FC<TagProps> = ({
           transition-colors duration-300 
           ${className}
         `}
-        href={onClick ? '#' : `/tag/${tag.slug}`}
+        href={onClick ? '#' : `/archive/tag/${tag.slug}`}
         style={{ borderLeft: `3px solid ${tagColor}` }}
         onClick={(e) => {
           if (onClick) {

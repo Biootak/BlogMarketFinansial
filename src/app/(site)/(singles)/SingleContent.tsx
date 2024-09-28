@@ -67,7 +67,7 @@ const SingleContent: React.FC<SingleContentProps> = ({ post }) => {
   const currentUserId = session?.user?.id;
 
   const isLiked = currentUserId
-    ? post.likes?.some((like) => like.userId === currentUserId) ?? false
+    ? (post.likes?.some((like) => like.userId === currentUserId) ?? false)
     : false;
 
   const likeCount = post._count?.likes ?? 0;
@@ -96,7 +96,7 @@ const SingleContent: React.FC<SingleContentProps> = ({ post }) => {
 
         <div className="max-w-screen-md mx-auto flex flex-wrap gap-2">
           {post.tags.map((tag) => (
-            <Tag key={tag.id} tag={tag} postCount={post._count?.tags} />
+            <Tag key={tag.id} tag={tag} postCount={post._count?.tags} hideCount={true} />
           ))}
         </div>
 
