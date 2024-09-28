@@ -40,7 +40,7 @@ const PostActionDropdown: FC<PostActionDropdownProps> = ({
   const onCloseModalHideAuthor = useCallback(() => setShowModalHideAuthor(false), []);
 
   const copyLink = useCallback(() => {
-    navigator.clipboard.writeText(`${window.location.origin}/post/${post.slug}`);
+    navigator.clipboard.writeText(`${window.location.origin}/single/${post.slug}`);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
   }, [post.slug]);
