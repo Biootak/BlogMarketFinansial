@@ -30,7 +30,7 @@ import { FiX, FiPlus } from 'react-icons/fi';
 import { RiSendPlaneFill } from 'react-icons/ri';
 import { BiLoaderAlt } from 'react-icons/bi';
 import dynamic from 'next/dynamic';
-import ImageUploader from '@/components/ImageUpload/ImageUploader';
+
 import type {
   CreatePostInput,
   UpdatePostInput,
@@ -44,6 +44,7 @@ import { CategorySelectDialog } from './CategorySelectDialog';
 import { TagSelectDialog } from './TagSelectDialog';
 import { useToast } from '@/components/ui/use-toast';
 import Editor from '@/components/editor/editor';
+import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
 
 interface PostFormProps<T extends CreatePostInput | UpdatePostInput> {
   schema: ZodSchema<T>;
@@ -230,10 +231,10 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                 <FormLabel>محتوای پست</FormLabel>
                 <FormControl>
                   <Editor
-                    content={editorContent}
-                    onChange={(newContent) => {
-                      setEditorContent(newContent);
-                      field.onChange(newContent);
+                    initialValue={editorContent}
+                    onChange={(content: string) => {
+                      setEditorContent(content);
+                      field.onChange(content);
                     }}
                     isRTL={true}
                   />

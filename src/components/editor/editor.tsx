@@ -1,30 +1,28 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   EditorCommand,
   EditorCommandEmpty,
   EditorCommandItem,
   EditorCommandList,
   EditorContent,
-  type EditorInstance,
   EditorRoot,
   type JSONContent,
 } from 'novel';
 import { ImageResizer, handleCommandNavigation } from 'novel/extensions';
 import { handleImageDrop, handleImagePaste } from 'novel/plugins';
-import { slashCommand, suggestionItems } from '@/components/editor/slash-command';
-import EditorMenu from '@/components/editor/editor-menu';
-import { defaultExtensions } from '@/components/editor/extensions';
-import { TextButtons } from '@/components/editor/selectors/text-buttons';
-import { LinkSelector } from '@/components/editor/selectors/link-selector';
-import { NodeSelector } from '@/components/editor/selectors/node-selector';
-import { MathSelector } from '@/components/editor/selectors/math-selector';
-import { ColorSelector } from '@/components/editor/selectors/color-selector';
-import { Separator } from '@/components/ui/separator';
-
-import { toast } from '@/components/ui/use-toast';
-import ImageUploader from '../ImageUpload/ImageUploader';
+import { slashCommand, suggestionItems } from './slash-command';
+import EditorMenu from './editor-menu';
+import { Separator } from '../ui/separator';
+import { NodeSelector } from './selectors/node-selector';
+import { LinkSelector } from './selectors/link-selector';
+import { MathSelector } from './selectors/math-selector';
+import { TextButtons } from './selectors/text-buttons';
+import { ColorSelector } from './selectors/color-selector';
+import { AlignmentSelector } from './selectors/alignment-selector';
+import { defaultExtensions } from './extensions';
+import { ImageUploaderClass } from '../ImageUpload/ImageUploader';
 
 const hljs = require('highlight.js');
 
@@ -41,20 +39,31 @@ export const defaultEditorContent = {
 };
 
 interface EditorProps {
-  initialValue?: JSONContent;
+  initialValue?: JSONContent | string;
   onChange: (content: string) => void;
+  isRTL?: boolean;
 }
 
-export default function Editor({ initialValue, onChange }: EditorProps) {
+export default function Editor({ initialValue, onChange, isRTL = false }: EditorProps) {
   const [openNode, setOpenNode] = useState(false);
   const [openColor, setOpenColor] = useState(false);
   const [openLink, setOpenLink] = useState(false);
   const [openAI, setOpenAI] = useState(false);
+  const [openAlignment, setOpenAlignment] = useState(false);
 
-  // New function to handle image upload using ImageUploader
+  const [editorContent, setEditorContent] = useState<JSONContent | undefined>(() => {
+    if (typeof initialValue === 'string') {
+      return {
+        type: 'doc',
+        content: [{ type: 'paragraph', content: [{ type: 'text', text: initialValue }] }],
+      };
+    }
+    return initialValue;
+  });
+
   const uploadFn = useCallback((file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
-      const uploader = new ImageUploader({
+      const uploader = new ImageUploaderClass({
         onImageUpload: (urls) => {
           if (urls.length > 0) {
             resolve(urls[0]);
@@ -80,11 +89,11 @@ export default function Editor({ initialValue, onChange }: EditorProps) {
   };
 
   return (
-    <div className="relative w-full max-w-screen-lg">
+    <div className="relative w-full max-w-screen-lg" dir={isRTL ? 'rtl' : 'ltr'}>
       <EditorRoot>
         <EditorContent
           immediatelyRender={false}
-          initialContent={initialValue}
+          initialContent={editorContent}
           extensions={extensions}
           className="min-h-96 rounded-xl border p-4"
           editorProps={{
@@ -95,8 +104,10 @@ export default function Editor({ initialValue, onChange }: EditorProps) {
             handleDrop: (view, event, _slice, moved) =>
               handleImageDrop(view, event, moved, uploadFn),
             attributes: {
-              class:
-                'prose dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full',
+              class: `prose dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full ${
+                isRTL ? 'text-right' : 'text-left'
+              }`,
+              dir: isRTL ? 'rtl' : 'ltr',
             },
           }}
           onUpdate={({ editor }) => {
@@ -131,18 +142,16 @@ export default function Editor({ initialValue, onChange }: EditorProps) {
           <EditorMenu open={openAI} onOpenChange={setOpenAI}>
             <Separator orientation="vertical" />
             <NodeSelector open={openNode} onOpenChange={setOpenNode} />
-
             <Separator orientation="vertical" />
             <LinkSelector open={openLink} onOpenChange={setOpenLink} />
-
             <Separator orientation="vertical" />
             <MathSelector />
-
             <Separator orientation="vertical" />
             <TextButtons />
-
             <Separator orientation="vertical" />
             <ColorSelector open={openColor} onOpenChange={setOpenColor} />
+            <Separator orientation="vertical" />
+            <AlignmentSelector open={openAlignment} onOpenChange={setOpenAlignment} />
           </EditorMenu>
         </EditorContent>
       </EditorRoot>

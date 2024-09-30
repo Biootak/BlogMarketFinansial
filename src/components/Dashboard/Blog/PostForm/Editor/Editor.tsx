@@ -31,7 +31,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import ImageUploader from '@/components/ImageUpload/ImageUploader';
+import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
 
 interface TipTapEditorProps {
   content: string | undefined;

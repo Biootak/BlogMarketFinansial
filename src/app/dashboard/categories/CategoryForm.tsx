@@ -23,7 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { createCategory, updateCategory } from '@/actions/categoryActions';
-import ImageUploader from '@/components/ImageUpload/ImageUploader';
+import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
 import { useRouter } from 'next/navigation';
 import {
   Select,

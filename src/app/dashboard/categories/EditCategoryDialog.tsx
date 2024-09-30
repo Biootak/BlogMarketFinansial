@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import type { TaxonomyType, UpdateCategoryInput } from '@/types/types';
 import { updateCategory } from '@/actions/categoryActions';
-import ImageUploader from '@/components/ImageUpload/ImageUploader';
+import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
 import { useRouter } from 'next/navigation';
 import {
   Select,

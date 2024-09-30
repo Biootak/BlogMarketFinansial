@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/use-toast';
 import type { UpdateProfileInput, UserWithProfile } from '@/types/types';
 import { UpdateProfileSchema } from '@/schemas';
-import ImageUploader from '@/components/ImageUpload/ImageUploader';
+import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
 import Image from 'next/image';
 
 interface ProfileFormProps {

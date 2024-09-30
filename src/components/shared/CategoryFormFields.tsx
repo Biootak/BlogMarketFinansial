@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import ImageUploader from '@/components/ImageUpload/ImageUploader';
+import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
 import type { TaxonomyType } from '@/types/types';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -39,7 +39,12 @@ interface CategoryFormFieldsProps {
   isSubmitting: boolean;
 }
 
-export function CategoryFormFields({ category, parentCategories, onSubmit, isSubmitting }: CategoryFormFieldsProps) {
+export function CategoryFormFields({
+  category,
+  parentCategories,
+  onSubmit,
+  isSubmitting,
+}: CategoryFormFieldsProps) {
   const form = useForm<CategoryFormData>({
     resolver: zodResolver(categorySchema),
     defaultValues: {

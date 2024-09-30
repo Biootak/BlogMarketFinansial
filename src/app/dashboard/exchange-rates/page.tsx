@@ -11,7 +11,7 @@ import {
 } from '@/actions/exchange-rates';
 import type { ExchangeRateData } from '@/types/types';
 import { useToast } from '@/components/ui/use-toast';
-import ImageUploader from '@/components/ImageUpload/ImageUploader';
+import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
 import {
   Table,
   TableBody,

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import Image from 'next/image';
 import { getPresignedUrl } from '@/actions/S3Actions';
@@ -14,6 +14,74 @@ interface ImageUploaderProps {
   maxFiles?: number;
   multiple?: boolean;
   initialPreviews?: string[];
+}
+
+class ImageUploaderClass {
+  private props: ImageUploaderProps;
+  private fileInputRef: React.RefObject<HTMLInputElement>;
+
+  constructor(props: ImageUploaderProps) {
+    this.props = props;
+    this.fileInputRef = React.createRef();
+  }
+
+  open() {
+    if (this.fileInputRef.current) {
+      this.fileInputRef.current.click();
+    }
+  }
+
+  async uploadFiles(files: File[]) {
+    try {
+      const uploadedUrls = await Promise.all(
+        files.map(async (file) => {
+          const presignedUrl = await getPresignedUrl(file.name, file.type);
+
+          await fetch(presignedUrl, {
+            method: 'PUT',
+            body: file,
+            headers: {
+              'Content-Type': file.type,
+            },
+          });
+
+          return new URL(presignedUrl).origin + new URL(presignedUrl).pathname;
+        }),
+      );
+
+      this.props.onImageUpload(uploadedUrls);
+      toast({
+        title: 'موفقیت',
+        description: 'تصاویر با موفقیت آپلود شدند',
+        variant: 'success',
+      });
+    } catch (error) {
+      console.error('خطا در آپلود تصاویر:', error);
+      toast({
+        title: 'خطا',
+        description: 'آپلود تصاویر با مشکل مواجه شد',
+        variant: 'destructive',
+      });
+    }
+  }
+
+  render() {
+    return (
+      <input
+        type="file"
+        ref={this.fileInputRef}
+        style={{ display: 'none' }}
+        accept="image/*"
+        multiple={this.props.multiple}
+        onChange={(e) => {
+          const files = e.target.files;
+          if (files) {
+            this.uploadFiles(Array.from(files));
+          }
+        }}
+      />
+    );
+  }
 }
 
 const ImageUploader: React.FC<ImageUploaderProps> = ({
@@ -55,10 +123,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     accept: {
       'image/jpeg': ['.jpg', '.jpeg'],
       'image/png': ['.png'],
-      'image/svg': ['.svg'],
+      'image/svg+xml': ['.svg'],
       'image/gif': ['.gif'],
       'image/webp': ['.webp'],
-      'image/avif': ['.avif'],
     },
     maxFiles: multiple ? maxFiles : 1,
     multiple,
@@ -185,7 +252,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                   ? 'برای انتخاب تصاویر، فایل‌ها را اینجا بکشید و رها کنید یا کلیک کنید'
                   : 'برای انتخاب تصویر، فایل را اینجا بکشید و رها کنید یا کلیک کنید'}
             </p>
-            <p className="text-sm text-neutral-500 mt-2">فرمت‌های مجاز: JPG, PNG, GIF, WebP</p>
+            <p className="text-sm text-neutral-500 mt-2">فرمت‌های مجاز: JPG, PNG, GIF, WebP, SVG</p>
           </div>
         )}
       </div>
@@ -226,4 +293,4 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   );
 };
 
-export default ImageUploader;
+export { ImageUploader, ImageUploaderClass };
