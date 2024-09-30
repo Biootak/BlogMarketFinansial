@@ -43,7 +43,9 @@ import { generateSlug, sanitizeSlug } from '@/lib/utils';
 import { CategorySelectDialog } from './CategorySelectDialog';
 import { TagSelectDialog } from './TagSelectDialog';
 import { useToast } from '@/components/ui/use-toast';
-import Editor from '@/components/editor/editor';
+const Editor = dynamic(() => import('@/components/editor/editor'), {
+  ssr: false,
+});
 import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
 
 interface PostFormProps<T extends CreatePostInput | UpdatePostInput> {
@@ -98,7 +100,6 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
     if (isEditing) {
       form.reset(defaultValues);
       setEditorContent(defaultValues.content || '');
-      setSlug(defaultValues.slug || '');
     }
   }, [isEditing, defaultValues, form]);
 

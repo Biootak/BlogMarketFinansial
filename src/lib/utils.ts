@@ -13,6 +13,8 @@ import { redirect } from 'next/navigation';
 import slugify from 'slugify';
 import { digitsEnToFa, digitsFaToEn, numberToWords } from '@persian-tools/persian-tools';
 import { customAlphabet } from 'nanoid';
+import DOMPurify from 'dompurify';
+import type { JSONContent } from 'novel';
 
 const coinMarketCapUrlMap: { [key: string]: string } = {
   BTC: 'bitcoin',
@@ -201,4 +203,74 @@ export function isSuccessResult<T>(
   result: ActionResult<T>,
 ): result is ActionResult<T> & { data: T } {
   return result.success && result.data !== undefined;
+}
+
+export function sanitizeHtml(html: string): string {
+  const clean = DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      'p',
+      'br',
+      'strong',
+      'em',
+      'u',
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'h6',
+      'ol',
+      'ul',
+      'li',
+      'a',
+      'img',
+    ],
+    ALLOWED_ATTR: ['href', 'target', 'src', 'alt', 'class', 'width', 'height'],
+  });
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(clean, 'text/html');
+  return doc.body.innerHTML;
+}
+
+export function htmlToEditorContent(html: string): JSONContent {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+
+  function parseNode(node: Node): JSONContent {
+    if (node.nodeType === Node.TEXT_NODE) {
+      return { type: 'text', text: node.textContent || '' };
+    }
+
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const element = node as Element;
+      const content: JSONContent[] = [];
+
+      element.childNodes.forEach((child) => {
+        content.push(parseNode(child));
+      });
+
+      switch (element.tagName.toLowerCase()) {
+        case 'p':
+          return { type: 'paragraph', content };
+        case 'img':
+          return {
+            type: 'image',
+            attrs: {
+              src: element.getAttribute('src') || '',
+              alt: element.getAttribute('alt') || '',
+              title: element.getAttribute('title') || '',
+            },
+          };
+        // Add more cases for other element types as needed
+        default:
+          return { type: 'paragraph', content };
+      }
+    }
+
+    return { type: 'paragraph', content: [] };
+  }
+
+  const content = Array.from(doc.body.childNodes).map(parseNode);
+  return { type: 'doc', content };
 }
