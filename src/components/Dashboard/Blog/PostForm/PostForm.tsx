@@ -43,10 +43,7 @@ import { generateSlug, sanitizeSlug } from '@/lib/utils';
 import { CategorySelectDialog } from './CategorySelectDialog';
 import { TagSelectDialog } from './TagSelectDialog';
 import { useToast } from '@/components/ui/use-toast';
-
-const TipTapEditor = dynamic(() => import('@/components/Dashboard/Blog/PostForm/Editor/Editor'), {
-  ssr: false,
-});
+import Editor from '@/components/editor/editor';
 
 interface PostFormProps<T extends CreatePostInput | UpdatePostInput> {
   schema: ZodSchema<T>;
@@ -232,7 +229,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
               <FormItem>
                 <FormLabel>محتوای پست</FormLabel>
                 <FormControl>
-                  <TipTapEditor
+                  <Editor
                     content={editorContent}
                     onChange={(newContent) => {
                       setEditorContent(newContent);

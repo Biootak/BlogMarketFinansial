@@ -87,13 +87,13 @@ export const reducer = (state: State, action: Action): State => {
     case 'DISMISS_TOAST': {
       const { toastId } = action;
 
-     if (toastId) {
-  addToRemoveQueue(toastId);
-} else {
-  for (const toast of state.toasts) {
-    addToRemoveQueue(toast.id);
-  }
-}
+      if (toastId) {
+        addToRemoveQueue(toastId);
+      } else {
+        for (const toast of state.toasts) {
+          addToRemoveQueue(toast.id);
+        }
+      }
       return {
         ...state,
         toasts: state.toasts.map((t) =>
