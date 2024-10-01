@@ -54,7 +54,8 @@ export default function EditorMenu({
     >
       <EditorBubble
         tippyOptions={{
-          placement: open ? (isRTL ? 'bottom-start' : 'bottom-end') : 'top',
+          placement: isRTL ? 'bottom-end' : 'bottom-start',
+          offset: [0, 10],
           onHidden: () => {
             onOpenChange(false);
             editor?.chain().unsetHighlight().run();
