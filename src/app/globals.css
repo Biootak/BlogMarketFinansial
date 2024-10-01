@@ -67,3 +67,19 @@
   background-size: 200% 200%;
   animation: gradient 5s ease infinite;
 }
+.novel-editor-command {
+  position: absolute !important;
+  width: auto !important;
+  min-width: 300px !important;
+  max-width: 400px !important;
+}
+
+.novel-editor-command-rtl {
+  left: auto !important;
+  right: 0 !important;
+}
+
+.novel-editor-command-ltr {
+  left: 0 !important;
+  right: auto !important;
+}

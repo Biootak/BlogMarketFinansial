@@ -44,21 +44,6 @@ const tiptapLink = TiptapLink.configure({
   },
 });
 
-const tiptapImage = TiptapImage.extend({
-  addProseMirrorPlugins() {
-    return [
-      UploadImagesPlugin({
-        imageClass: cn('opacity-40 rounded-lg border border-neutral-200 dark:border-neutral-800'),
-      }),
-    ];
-  },
-}).configure({
-  allowBase64: true,
-  HTMLAttributes: {
-    class: cn('rounded-lg border border-neutral-200 dark:border-neutral-800'),
-  },
-});
-
 const textAlign = TextAlign.configure({
   types: ['heading', 'paragraph'],
   alignments: ['left', 'center', 'right'],
@@ -118,6 +103,7 @@ const horizontalRule = HorizontalRule.configure({
 });
 
 const starterKit = StarterKit.configure({
+  // سایر تنظیمات را نگه دارید
   bulletList: {
     HTMLAttributes: {
       class: cn('list-disc list-outside leading-3 -mt-2 pr-4'),
@@ -138,13 +124,6 @@ const starterKit = StarterKit.configure({
       class: cn('border-r-4 border-primary-500 pr-4'),
     },
   },
-  codeBlock: {
-    HTMLAttributes: {
-      class: cn(
-        'rounded-md bg-neutral-100 text-neutral-800 border p-5 font-mono font-medium dark:bg-neutral-900 dark:text-neutral-200',
-      ),
-    },
-  },
   code: {
     HTMLAttributes: {
       class: cn('rounded-md bg-neutral-100 px-1.5 py-1 font-mono font-medium dark:bg-neutral-900'),
@@ -157,6 +136,7 @@ const starterKit = StarterKit.configure({
     width: 4,
   },
   gapcursor: false,
+  codeBlock: false,
 });
 
 const codeBlockLowlight = CodeBlockLowlight.configure({
@@ -194,7 +174,6 @@ export const defaultExtensions = [
   starterKit,
   placeholder,
   tiptapLink,
-  tiptapImage,
   updatedImage,
   taskList,
   taskItem,

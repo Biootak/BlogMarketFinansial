@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import type React from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   EditorCommand,
   EditorCommandEmpty,
@@ -24,7 +25,7 @@ import { AlignmentSelector } from './selectors/alignment-selector';
 import { defaultExtensions } from './extensions';
 import { ImageUploaderClass } from '../ImageUpload/ImageUploader';
 import { useEditorStore } from '@/hooks/editorStore';
-import { cn, htmlToEditorContent, sanitizeHtml } from '@/lib/utils';
+import { cn, htmlToEditorContent } from '@/lib/utils';
 import { useDebouncedCallback } from 'use-debounce';
 import DOMPurify from 'dompurify';
 
@@ -102,6 +103,8 @@ export default function Editor({ initialValue, onChange, isRTL = false }: Editor
     onChange(processedContent);
   }, 300);
 
+  const commandRef = useRef<HTMLDivElement | null>(null);
+
   const handleImageUpload = useCallback((file: File) => {
     return new Promise<string>((resolve, reject) => {
       const uploader = new ImageUploaderClass({
@@ -127,6 +130,13 @@ export default function Editor({ initialValue, onChange, isRTL = false }: Editor
       setEditorContent(htmlToEditorContent(initialValue));
     }
   }, [initialValue]);
+
+  useEffect(() => {
+    if (commandRef.current) {
+      commandRef.current.classList.toggle('novel-editor-command-rtl', isRTL);
+      commandRef.current.classList.toggle('novel-editor-command-ltr', !isRTL);
+    }
+  }, [isRTL]);
 
   return (
     <div className={cn('relative w-full max-w-screen-lg', isRTL ? 'rtl' : 'ltr')}>
@@ -155,23 +165,36 @@ export default function Editor({ initialValue, onChange, isRTL = false }: Editor
             debouncedOnChange(html);
           }}
           slotAfter={<ImageResizer />}
+          immediatelyRender={false}
         >
-          <EditorCommand className="z-50 h-auto max-h-[330px] overflow-y-auto rounded-md border border-neutral-200 bg-white px-1 py-2 shadow-md transition-all dark:border-neutral-800 dark:bg-neutral-900">
+          <EditorCommand
+            ref={commandRef as React.Ref<HTMLDivElement>}
+            className={cn(
+              'novel-editor-command',
+              'z-50 overflow-y-auto rounded-md border border-neutral-200 bg-white shadow-md transition-all dark:border-neutral-800 dark:bg-neutral-900',
+              'h-auto max-h-[50vh] sm:max-h-[40vh] md:max-h-[330px] ',
+              'px-1 py-2',
+              isRTL ? 'text-right' : 'text-left',
+            )}
+          >
             <EditorCommandEmpty className="px-2 text-neutral-500 dark:text-neutral-400">
-              No results
+              نتیجه‌ای یافت نشد
             </EditorCommandEmpty>
             <EditorCommandList>
               {suggestionItems.map((item) => (
                 <EditorCommandItem
                   value={item.title}
                   onCommand={(val) => item.command?.(val)}
-                  className="flex w-full items-center space-x-2 rounded-md px-2 py-1 text-left text-sm hover:bg-neutral-100 aria-selected:bg-neutral-100 dark:hover:bg-neutral-800 dark:aria-selected:bg-neutral-800"
+                  className={cn(
+                    'flex w-full items-center space-x-2 rounded-md px-2 py-1 text-sm hover:bg-neutral-100 aria-selected:bg-neutral-100 dark:hover:bg-neutral-800 dark:aria-selected:bg-neutral-800',
+                    isRTL ? ' space-x-reverse' : 'flex-row',
+                  )}
                   key={item.title}
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded-md border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
                     {item.icon}
                   </div>
-                  <div>
+                  <div className={isRTL ? 'text-right' : 'text-left'}>
                     <p className="font-medium">{item.title}</p>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400">
                       {item.description}
@@ -182,7 +205,7 @@ export default function Editor({ initialValue, onChange, isRTL = false }: Editor
             </EditorCommandList>
           </EditorCommand>
 
-          <EditorMenu open={openAI} onOpenChange={setOpenAI}>
+          <EditorMenu open={openAI} onOpenChange={setOpenAI} isRTL={isRTL}>
             <Separator orientation="vertical" />
             <NodeSelector open={openNode} onOpenChange={setOpenNode} />
             <Separator orientation="vertical" />

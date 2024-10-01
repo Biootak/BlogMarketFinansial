@@ -6,6 +6,9 @@ import {
   BsTextLeft,
   BsListOl,
   BsBlockquoteLeft,
+  BsTypeBold,
+  BsTypeItalic,
+  BsTypeUnderline,
 } from 'react-icons/bs';
 import { AiOutlineOrderedList, AiOutlineUnorderedList } from 'react-icons/ai';
 import { TbH1, TbH2, TbH3 } from 'react-icons/tb';
@@ -52,6 +55,24 @@ const items: SelectorItem[] = [
     icon: TbH3,
     command: (editor) => editor?.chain().focus().clearNodes().toggleHeading({ level: 3 }).run(),
     isActive: (editor) => (editor ? editor.isActive('heading', { level: 3 }) : false),
+  },
+  {
+    name: 'Bold',
+    icon: BsTypeBold,
+    command: (editor) => editor?.chain().focus().toggleBold().run(),
+    isActive: (editor) => (editor ? editor.isActive('bold') : false),
+  },
+  {
+    name: 'Italic',
+    icon: BsTypeItalic,
+    command: (editor) => editor?.chain().focus().toggleItalic().run(),
+    isActive: (editor) => (editor ? editor.isActive('italic') : false),
+  },
+  {
+    name: 'Underline',
+    icon: BsTypeUnderline,
+    command: (editor) => editor?.chain().focus().toggleUnderline().run(),
+    isActive: (editor) => (editor ? editor.isActive('underline') : false),
   },
   {
     name: 'To-do List',
@@ -101,14 +122,18 @@ export const NodeSelector = ({ open, onOpenChange }: NodeSelectorProps) => {
     <Popover modal={true} open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger
         asChild
-        className="gap-2 rounded-none border-none hover:bg-accent focus:ring-0"
+        className="gap-2 rounded-none border-none hover:bg-accent-100 focus:ring-0"
       >
-        <Button size="sm" variant="ghost" className="gap-2">
+        <Button size="sm" variant="ghost" className="gap-2 text-neutral-700 hover:text-neutral-900">
           <span className="whitespace-nowrap text-sm">{activeItem.name}</span>
           <BsChevronDown className="h-4 w-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent sideOffset={5} align="start" className="w-48 p-1">
+      <PopoverContent
+        sideOffset={5}
+        align="start"
+        className="w-48 p-1 bg-white border border-neutral-200"
+      >
         {items.map((item) => (
           <EditorBubbleItem
             key={item.name}
@@ -116,15 +141,15 @@ export const NodeSelector = ({ open, onOpenChange }: NodeSelectorProps) => {
               item.command(editor);
               onOpenChange(false);
             }}
-            className="flex cursor-pointer items-center justify-between rounded-sm px-2 py-1 text-sm hover:bg-accent"
+            className="flex cursor-pointer items-center justify-between rounded-sm px-2 py-1 text-sm hover:bg-accent-50 text-neutral-700 hover:text-neutral-900"
           >
-            <div className="flex items-center space-x-2">
-              <div className="rounded-sm border p-1">
+            <div className="flex items-center space-x-reverse space-x-2">
+              <div className="rounded-sm border border-neutral-300 p-1 text-neutral-500">
                 <item.icon />
               </div>
               <span>{item.name}</span>
             </div>
-            {activeItem.name === item.name && <BsCheck className="h-4 w-4" />}
+            {activeItem.name === item.name && <BsCheck className="h-4 w-4 text-primary-500" />}
           </EditorBubbleItem>
         ))}
       </PopoverContent>

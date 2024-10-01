@@ -214,7 +214,6 @@ export const suggestionItems = createSuggestionItems([
     searchTerms: ['چپ', 'تراز'],
     icon: <RiAlignLeft size={18} />,
     command: ({ editor, range }) => {
-    
       editor.chain().focus().deleteRange(range).setTextAlign('left').run();
     },
   },

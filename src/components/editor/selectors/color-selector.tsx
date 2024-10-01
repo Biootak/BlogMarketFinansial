@@ -120,11 +120,13 @@ export const ColorSelector = ({ open, onOpenChange }: ColorSelectorProps) => {
 
       <PopoverContent
         sideOffset={5}
-        className="my-1 flex max-h-80 w-48 flex-col overflow-hidden overflow-y-auto rounded border p-1 shadow-xl"
+        className="my-1 flex max-h-80 w-48 flex-col overflow-hidden overflow-y-auto rounded border p-1 shadow-xl bg-neutral-50 dark:bg-neutral-900"
         align="start"
       >
         <div className="flex flex-col">
-          <div className="my-1 px-2 text-sm font-semibold text-muted-foreground">Color</div>
+          <div className="my-1 px-2 text-sm font-semibold text-neutral-500 dark:text-neutral-400">
+            Color
+          </div>
           {TEXT_COLORS.map(({ name, color }) => (
             <EditorBubbleItem
               key={name}
@@ -138,7 +140,7 @@ export const ColorSelector = ({ open, onOpenChange }: ColorSelectorProps) => {
                     .run();
                 onOpenChange(false);
               }}
-              className="flex cursor-pointer items-center justify-between px-2 py-1 text-sm hover:bg-accent"
+              className="flex cursor-pointer items-center justify-between px-2 py-1 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800"
             >
               <div className="flex items-center gap-2">
                 <div className="rounded-sm border px-2 py-px font-medium" style={{ color }}>
@@ -146,11 +148,14 @@ export const ColorSelector = ({ open, onOpenChange }: ColorSelectorProps) => {
                 </div>
                 <span>{name}</span>
               </div>
+              {editor.isActive('textStyle', { color }) && <LuCheck className="h-4 w-4" />}
             </EditorBubbleItem>
           ))}
         </div>
         <div>
-          <div className="my-1 px-2 text-sm font-semibold text-muted-foreground">Background</div>
+          <div className="my-1 px-2 text-sm font-semibold text-neutral-500 dark:text-neutral-400">
+            Background
+          </div>
           {HIGHLIGHT_COLORS.map(({ name, color }) => (
             <EditorBubbleItem
               key={name}
@@ -159,7 +164,7 @@ export const ColorSelector = ({ open, onOpenChange }: ColorSelectorProps) => {
                 name !== 'Default' && editor.chain().focus().setHighlight({ color }).run();
                 onOpenChange(false);
               }}
-              className="flex cursor-pointer items-center justify-between px-2 py-1 text-sm hover:bg-accent"
+              className="flex cursor-pointer items-center justify-between px-2 py-1 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800"
             >
               <div className="flex items-center gap-2">
                 <div
