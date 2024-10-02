@@ -1,7 +1,7 @@
 import React, { memo, useCallback } from 'react';
 import type { Editor } from '@tiptap/core';
-import { Toolbar } from '../ui/toolbar';
-import { Icon } from '../ui/icon';
+import { Toolbar } from '../../ui/toolbar';
+import { Icon } from '../../ui/icon';
 import isTextSelected from '../lib/editor';
 
 interface MenuButtonLinkProps {
@@ -17,8 +17,8 @@ export const MenuButtonLink = ({ editor }: MenuButtonLinkProps) => {
   }, [editor]);
 
   return (
-    <Toolbar.Button tooltip='Link' onClick={onLink}>
-      <Icon name='Link2' />
+    <Toolbar.Button tooltip="Link" onClick={onLink}>
+      <Icon name="Link2" />
     </Toolbar.Button>
   );
 };

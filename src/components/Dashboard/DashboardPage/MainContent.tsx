@@ -1,6 +1,5 @@
 'use client';
 
-
 import { useSidebarStore } from '@/hooks/sidebarStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -25,7 +24,7 @@ const MainContent: React.FC<MainContentProps> = ({ children }) => {
 
   return (
     <main
-      className={'flex-1 overflow-auto p-4 sm:p-6 lg:p-8 bg-gray-50 dark:bg-gray-900 transition-all duration-300'}
+      className={'flex-1 overflow-auto bg-gray-50 dark:bg-gray-900 transition-all duration-300'}
       style={{
         marginRight: isMobile ? 0 : isOpen ? '240px' : '60px',
       }}

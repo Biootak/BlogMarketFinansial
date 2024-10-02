@@ -156,10 +156,10 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
             <FormItem>
               <FormControl>
                 <Editor
-                  wrapperClassName="flex flex-col h-full "
+                  wrapperClassName="flex flex-col h-full mb-2"
                   contentClassName="h-full overflow-auto"
                   toolBarClassName="z-50 inset-x-0 w-full bg-toolbar sticky top-0"
-                  footerClassName="bg-toolbar"
+                  footerClassName="bg-toolbar sticky "
                   content={editorContent}
                   editorProps={{
                     attributes: {

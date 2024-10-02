@@ -1,14 +1,9 @@
 import React, { memo, useMemo } from 'react';
-import { Toolbar } from '../ui/toolbar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from '../ui/dropdown-menu';
+import { Toolbar } from '../../ui/toolbar';
 import type { Editor } from '@tiptap/core';
-import { Icon } from '../ui/icon';
+import { Icon } from '../../ui/icon';
 import { useActive } from '../hooks/use-active';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 type MenuSelectTextAlign = {
   editor: Editor;
@@ -17,20 +12,20 @@ type MenuSelectTextAlign = {
 const options = [
   {
     value: 'left',
-    label: <Icon name='AlignLeft' />
+    label: <Icon name="AlignLeft" />,
   },
   {
     value: 'center',
-    label: <Icon name='AlignCenter' />
+    label: <Icon name="AlignCenter" />,
   },
   {
     value: 'right',
-    label: <Icon name='AlignRight' />
+    label: <Icon name="AlignRight" />,
   },
   {
     value: 'justify',
-    label: <Icon name='AlignJustify' />
-  }
+    label: <Icon name="AlignJustify" />,
+  },
 ] as const;
 
 const MenuSelectTextAlign = ({ editor }: MenuSelectTextAlign) => {
@@ -59,24 +54,17 @@ const MenuSelectTextAlign = ({ editor }: MenuSelectTextAlign) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Toolbar.Button
-          isDropdown={true}
-          className='px-2'
-          tooltip={'Text Align'}
-        >
+        <Toolbar.Button isDropdown={true} className="px-2" tooltip={'Text Align'}>
           {current.label}
         </Toolbar.Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        align='start'
-        className='min-w-fit'
+        align="start"
+        className="min-w-fit"
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
         {options.map((option) => (
-          <DropdownMenuItem
-            key={option.value}
-            onSelect={onAlignSelect(option.value)}
-          >
+          <DropdownMenuItem key={option.value} onSelect={onAlignSelect(option.value)}>
             {option.label}
           </DropdownMenuItem>
         ))}

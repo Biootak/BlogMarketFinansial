@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from 'react';
-import { Toolbar } from '../ui/toolbar';
-import { Icon } from '../ui/icon';
+import { Toolbar } from '../../ui/toolbar';
+import { Icon } from '../../ui/icon';
 import type { Editor } from '@tiptap/core';
 import { useActive } from '../hooks/use-active';
 
@@ -11,7 +11,7 @@ interface MenuButtonBoldProps {
 const MenuButtonBold = ({ editor }: MenuButtonBoldProps) => {
   const isBoldActive = useActive(editor, 'bold');
   const onBold = useCallback(
-    (e: { stopPropagation: () => void; }) => {
+    (e: { stopPropagation: () => void }) => {
       e.stopPropagation();
       editor.chain().focus().toggleBold().run();
     },

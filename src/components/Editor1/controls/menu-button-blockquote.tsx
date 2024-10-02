@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from 'react';
-import { Toolbar } from '../ui/toolbar';
-import { Icon } from '../ui/icon';
+import { Toolbar } from '../../ui/toolbar';
+import { Icon } from '../../ui/icon';
 import { useActive } from '../hooks/use-active';
 import type { Editor } from '@tiptap/core';
 
@@ -10,19 +10,16 @@ interface MenuButtonQuoteProps {
 
 const MenuButtonBlockquote = ({ editor }: MenuButtonQuoteProps) => {
   const isBlockquoteActive = useActive(editor, 'blockquote');
-  const onBlockquote = useCallback(
-    () => editor.chain().focus().toggleBlockquote().run(),
-    [editor]
-  );
+  const onBlockquote = useCallback(() => editor.chain().focus().toggleBlockquote().run(), [editor]);
 
   return (
     <Toolbar.Button
-      tooltip='Blockquote'
+      tooltip="Blockquote"
       tooltipShortcut={['Mod', 'Shift', 'B']}
       active={isBlockquoteActive}
       onClick={onBlockquote}
     >
-      <Icon name='Quote' />
+      <Icon name="Quote" />
     </Toolbar.Button>
   );
 };

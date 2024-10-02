@@ -1,10 +1,10 @@
 import type { Editor } from '@tiptap/core';
 import React, { useCallback } from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import { Toolbar } from '../ui/toolbar';
-import { Icon } from '../ui/icon';
+import { Toolbar } from '../../ui/toolbar';
+import { Icon } from '../../ui/icon';
 import { ColorPicker } from '../components/color-picker';
 import { useAttributes } from '../hooks/use-attributes';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 type MenuButtonHighlightProps = {
   editor: Editor;
@@ -15,17 +15,17 @@ const MenuButtonHighlight = ({ editor }: MenuButtonHighlightProps) => {
     editor,
     'highlight',
     { color: undefined },
-    (attr) => attr.color
+    (attr) => attr.color,
   );
 
   const onResetHighlight = useCallback(
     () => editor.chain().focus().unsetHighlight().run(),
-    [editor]
+    [editor],
   );
 
   const onHighlightChange = useCallback(
     (color: string) => editor.chain().setHighlight({ color }).run(),
-    [editor]
+    [editor],
   );
 
   return (
@@ -33,7 +33,7 @@ const MenuButtonHighlight = ({ editor }: MenuButtonHighlightProps) => {
       <PopoverTrigger asChild>
         <Toolbar.Button tooltip={'Text Color'} active={Boolean(highlightColor)}>
           <Icon
-            name='Highlighter'
+            name="Highlighter"
             className={
               '[&>path:not(:first-child)]:text-black [&>path:not(:first-child)]:dark:text-slate-400 [&>path:not(:first-child)]:fill-transparent'
             }
@@ -42,7 +42,7 @@ const MenuButtonHighlight = ({ editor }: MenuButtonHighlightProps) => {
         </Toolbar.Button>
       </PopoverTrigger>
 
-      <PopoverContent align='start' side='top' className='w-auto'>
+      <PopoverContent align="start" side="top" className="w-auto">
         <ColorPicker
           color={highlightColor}
           onChange={onHighlightChange}

@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from 'react';
-import { Toolbar } from '../ui/toolbar';
-import { Icon } from '../ui/icon';
+import { Toolbar } from '../../ui/toolbar';
+import { Icon } from '../../ui/icon';
 import type { Editor } from '@tiptap/core';
 import { useActive } from '../hooks/use-active';
 
@@ -10,19 +10,16 @@ interface MenuButtonUnderlineProps {
 
 const MenuButtonUnderline = ({ editor }: MenuButtonUnderlineProps) => {
   const isUnderlineActive = useActive(editor, 'underline');
-  const onUnderline = useCallback(
-    () => editor.chain().focus().toggleUnderline().run(),
-    [editor]
-  );
+  const onUnderline = useCallback(() => editor.chain().focus().toggleUnderline().run(), [editor]);
 
   return (
     <Toolbar.Button
-      tooltip='Underline'
+      tooltip="Underline"
       tooltipShortcut={['Mod', 'U']}
       active={isUnderlineActive}
       onClick={onUnderline}
     >
-      <Icon name='Underline' />
+      <Icon name="Underline" />
     </Toolbar.Button>
   );
 };

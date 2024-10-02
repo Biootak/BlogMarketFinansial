@@ -1,6 +1,6 @@
 'use client';
 
-import React, { forwardRef, useEffect, useImperativeHandle } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useCallback } from 'react';
 import { EditorContent, type EditorOptions, useEditor } from '@tiptap/react';
 import { extensions as builtInExtensions } from './extensions';
 import FixedMenu from './components/fixed-menu';
@@ -9,6 +9,7 @@ import type { EditorInstance } from '.';
 import { getToCItems, type TocItem } from './lib/table-of-contents';
 
 import './styles/index.scss';
+
 export interface EditorProps extends Partial<EditorOptions> {
   toolBarClassName?: string;
   wrapperClassName?: string;
@@ -19,19 +20,19 @@ export interface EditorProps extends Partial<EditorOptions> {
 }
 
 export type EditorRef = {
-  getEditor: () => EditorInstance;
+  getEditor: () => EditorInstance | null;
 };
 
 export const Editor = forwardRef<EditorRef, EditorProps>(
   (
     {
-      wrapperClassName,
-      toolBarClassName,
-      contentClassName,
-      footerClassName,
+      wrapperClassName = '',
+      toolBarClassName = '',
+      contentClassName = '',
+      footerClassName = '',
       extensions = [],
       editable = true,
-      editorProps,
+      editorProps = {},
       content,
       displayWordsCount = true,
       onUpdateToC,
@@ -46,7 +47,8 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
         content,
         editorProps: {
           attributes: {
-            class: 'py-6 px-8 prose prose-base prose-blue prose-headings:scroll-mt-[80px]',
+            class:
+              'py-4 px-4 sm:py-6 sm:px-6 lg:py-8 lg:px-8 prose prose-sm sm:prose-base lg:prose-lg prose-primary prose-headings:scroll-mt-[80px] focus:outline-none',
           },
           ...editorProps,
         },
@@ -55,18 +57,20 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
       [],
     );
 
+    const getEditorInstance = useCallback(() => {
+      if (!editor) {
+        console.warn('Editor instance is not available');
+        return null;
+      }
+      return editor;
+    }, [editor]);
+
     useImperativeHandle(ref, () => ({
-      getEditor: () => editor,
+      getEditor: getEditorInstance,
     }));
 
-    // Update editable state if/when it changes
     useEffect(() => {
-      if (!editor || editor.isDestroyed || editor.isEditable === editable) {
-        return;
-      }
-      // We use queueMicrotask to avoid any flushSync console errors as
-      // mentioned here (though setEditable shouldn't trigger them in practice)
-      // https://github.com/ueberdosis/tiptap/issues/3764#issuecomment-1546854730
+      if (!editor || editor.isDestroyed || editor.isEditable === editable) return;
       queueMicrotask(() => editor.setEditable(editable));
     }, [editable, editor]);
 
@@ -74,41 +78,45 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
       if (!editor || editor.isDestroyed) return;
       const items = getToCItems(editor);
       onUpdateToC?.(items);
-    }, [editor]);
+    }, [editor, onUpdateToC]);
 
     useEffect(() => {
       return () => {
         editor?.destroy();
       };
-    }, []);
+    }, [editor]);
 
     if (!editor) return null;
 
     return (
-      <div className={wrapperClassName}>
+      <div className={`bg-neutral-50 max-w-7xl mx-auto ${wrapperClassName}`}>
         {editable && (
-          <>
-            <FixedMenu editor={editor} className={toolBarClassName} />
-            <LinkBubbleMenu editor={editor} />
-          </>
-        )}
-
-        <EditorContent
-          editor={editor}
-          className={contentClassName}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-        />
-
-        {editable && displayWordsCount && (
-          <div
-            className={`sticky bottom-0 text-sm font-bold border-t border-t-border px-4 py-3 text-right ${footerClassName}`}
-          >
-            {editor.storage.characterCount.words()} کلمه
+          <div className="sticky top-0 z-10">
+            <FixedMenu
+              editor={editor}
+              className={`bg-primary-100 border-b border-primary-200 p-2 sm:p-3 lg:p-4 ${toolBarClassName}`}
+            />
           </div>
         )}
+        <div className="rounded-lg shadow-md overflow-hidden">
+          <LinkBubbleMenu editor={editor} />
+          <EditorContent
+            editor={editor}
+            className={`bg-white text-neutral-900 min-h-[200px] sm:min-h-[300px] lg:min-h-[400px] ${contentClassName}`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          />
+          {editable && displayWordsCount && (
+            <div
+              className={`sticky bottom-0 text-xs sm:text-sm lg:text-base font-bold border-t border-primary-200 
+                          bg-primary-50 text-primary-800 px-3 py-2 sm:px-4 sm:py-3 lg:px-5 lg:py-4 text-right ${footerClassName}`}
+            >
+              {editor.storage.characterCount.words()} کلمه
+            </div>
+          )}
+        </div>
       </div>
     );
   },

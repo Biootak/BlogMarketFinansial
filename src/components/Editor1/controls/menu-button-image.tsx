@@ -1,7 +1,7 @@
-import React, { ChangeEvent, memo, useCallback, useRef } from 'react';
+import React, { type ChangeEvent, memo, useCallback, useRef } from 'react';
 import type { Editor } from '@tiptap/core';
-import { Toolbar } from '../ui/toolbar';
-import { Icon } from '../ui/icon';
+import { Toolbar } from '../../ui/toolbar';
+import { Icon } from '../../ui/icon';
 import { browserFileTable } from '../lib/browser-file-table';
 import UploadWidget from '@/components/cloudinary/upload-widget';
 import MediaLibrary from '@/components/cloudinary/media-library';

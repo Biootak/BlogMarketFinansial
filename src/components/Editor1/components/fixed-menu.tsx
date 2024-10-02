@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Editor } from '@tiptap/core';
-import { Toolbar } from '../ui/toolbar';
+import { Toolbar } from '../../ui/toolbar';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 
 // Import all your menu button components

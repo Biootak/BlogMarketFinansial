@@ -1,8 +1,8 @@
 import type { Editor } from '@tiptap/core';
 
 import React, { memo } from 'react';
-import { Toolbar } from '../ui/toolbar';
-import { Icon } from '../ui/icon';
+import { Toolbar } from '../../ui/toolbar';
+import { Icon } from '../../ui/icon';
 import { useActive } from '../hooks/use-active';
 
 interface MenuButtonCodeBlockProps {
@@ -15,12 +15,12 @@ const MenuButtonCodeBlock = ({ editor }: MenuButtonCodeBlockProps) => {
 
   return (
     <Toolbar.Button
-      tooltip='Code'
+      tooltip="Code"
       tooltipShortcut={['Mod', 'E']}
       active={isCodeBlockActive}
       onClick={onCodeBlock}
     >
-      <Icon name='Code' />
+      <Icon name="Code" />
     </Toolbar.Button>
   );
 };
