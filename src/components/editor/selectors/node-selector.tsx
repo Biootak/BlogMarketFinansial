@@ -4,7 +4,6 @@ import {
   BsChevronDown,
   BsCode,
   BsTextLeft,
-  BsListOl,
   BsBlockquoteLeft,
   BsTypeBold,
   BsTypeItalic,
@@ -27,10 +26,9 @@ export type SelectorItem = {
 
 const items: SelectorItem[] = [
   {
-    name: 'Text',
+    name: 'متن',
     icon: BsTextLeft,
     command: (editor) => editor?.chain().focus().clearNodes().run(),
-    // I feel like there has to be a more efficient way to do this – feel free to PR if you know how!
     isActive: (editor) =>
       editor
         ? editor.isActive('paragraph') &&
@@ -39,67 +37,67 @@ const items: SelectorItem[] = [
         : false,
   },
   {
-    name: 'Heading 1',
+    name: 'عنوان ۱',
     icon: TbH1,
     command: (editor) => editor?.chain().focus().clearNodes().toggleHeading({ level: 1 }).run(),
     isActive: (editor) => (editor ? editor.isActive('heading', { level: 1 }) : false),
   },
   {
-    name: 'Heading 2',
+    name: 'عنوان ۲',
     icon: TbH2,
     command: (editor) => editor?.chain().focus().clearNodes().toggleHeading({ level: 2 }).run(),
     isActive: (editor) => (editor ? editor.isActive('heading', { level: 2 }) : false),
   },
   {
-    name: 'Heading 3',
+    name: 'عنوان ۳',
     icon: TbH3,
     command: (editor) => editor?.chain().focus().clearNodes().toggleHeading({ level: 3 }).run(),
     isActive: (editor) => (editor ? editor.isActive('heading', { level: 3 }) : false),
   },
   {
-    name: 'Bold',
+    name: 'ضخیم',
     icon: BsTypeBold,
     command: (editor) => editor?.chain().focus().toggleBold().run(),
     isActive: (editor) => (editor ? editor.isActive('bold') : false),
   },
   {
-    name: 'Italic',
+    name: 'مورب',
     icon: BsTypeItalic,
     command: (editor) => editor?.chain().focus().toggleItalic().run(),
     isActive: (editor) => (editor ? editor.isActive('italic') : false),
   },
   {
-    name: 'Underline',
+    name: 'زیرخط‌دار',
     icon: BsTypeUnderline,
     command: (editor) => editor?.chain().focus().toggleUnderline().run(),
     isActive: (editor) => (editor ? editor.isActive('underline') : false),
   },
   {
-    name: 'To-do List',
+    name: 'لیست کارها',
     icon: BsCheckSquare,
     command: (editor) => editor?.chain().focus().clearNodes().toggleTaskList().run(),
     isActive: (editor) => (editor ? editor.isActive('taskItem') : false),
   },
   {
-    name: 'Bullet List',
+    name: 'لیست نقطه‌ای',
     icon: AiOutlineUnorderedList,
     command: (editor) => editor?.chain().focus().clearNodes().toggleBulletList().run(),
     isActive: (editor) => (editor ? editor.isActive('bulletList') : false),
   },
   {
-    name: 'Numbered List',
+    name: 'لیست شماره‌دار',
     icon: AiOutlineOrderedList,
     command: (editor) => editor?.chain().focus().clearNodes().toggleOrderedList().run(),
     isActive: (editor) => (editor ? editor.isActive('orderedList') : false),
   },
   {
-    name: 'Quote',
+    name: 'نقل قول',
     icon: BsBlockquoteLeft,
     command: (editor) => editor?.chain().focus().clearNodes().toggleBlockquote().run(),
     isActive: (editor) => (editor ? editor.isActive('blockquote') : false),
   },
   {
-    name: 'Code',
+    name: 'کد',
     icon: BsCode,
     command: (editor) => editor?.chain().focus().clearNodes().toggleCodeBlock().run(),
     isActive: (editor) => (editor ? editor.isActive('codeBlock') : false),
@@ -132,7 +130,7 @@ export const NodeSelector = ({ open, onOpenChange }: NodeSelectorProps) => {
       <PopoverContent
         sideOffset={5}
         align="start"
-        className="w-48 p-1 bg-white border border-neutral-200"
+        className="w-48 p-1 bg-white border border-neutral-200 max-h-[300px] overflow-y-auto"
       >
         {items.map((item) => (
           <EditorBubbleItem

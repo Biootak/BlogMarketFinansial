@@ -237,7 +237,7 @@ export function htmlToEditorContent(html: string): JSONContent {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
 
-  function parseNode(node: Node): JSONContent {
+  function parseNode(node: Node): JSONContent | JSONContent[] {
     if (node.nodeType === Node.TEXT_NODE) {
       return { type: 'text', text: node.textContent || '' };
     }
@@ -247,12 +247,52 @@ export function htmlToEditorContent(html: string): JSONContent {
       const content: JSONContent[] = [];
 
       element.childNodes.forEach((child) => {
-        content.push(parseNode(child));
+        const parsed = parseNode(child);
+        if (Array.isArray(parsed)) {
+          content.push(...parsed);
+        } else {
+          content.push(parsed);
+        }
       });
 
       switch (element.tagName.toLowerCase()) {
         case 'p':
           return { type: 'paragraph', content };
+        case 'h1':
+          return { type: 'heading', attrs: { level: 1 }, content };
+        case 'h2':
+          return { type: 'heading', attrs: { level: 2 }, content };
+        case 'h3':
+          return { type: 'heading', attrs: { level: 3 }, content };
+        case 'h4':
+          return { type: 'heading', attrs: { level: 4 }, content };
+        case 'h5':
+          return { type: 'heading', attrs: { level: 5 }, content };
+        case 'h6':
+          return { type: 'heading', attrs: { level: 6 }, content };
+        case 'strong':
+        case 'b':
+          return { type: 'bold', content };
+        case 'em':
+        case 'i':
+          return { type: 'italic', content };
+        case 'u':
+          return { type: 'underline', content };
+        case 's':
+        case 'strike':
+          return { type: 'strike', content };
+        case 'code':
+          return { type: 'code', content };
+        case 'a':
+          return {
+            type: 'link',
+            attrs: {
+              href: element.getAttribute('href') || '',
+              target: element.getAttribute('target') || '_blank',
+              rel: element.getAttribute('rel') || 'noopener noreferrer',
+            },
+            content,
+          };
         case 'img':
           return {
             type: 'image',
@@ -260,17 +300,84 @@ export function htmlToEditorContent(html: string): JSONContent {
               src: element.getAttribute('src') || '',
               alt: element.getAttribute('alt') || '',
               title: element.getAttribute('title') || '',
+              width: element.getAttribute('width') || null,
+              height: element.getAttribute('height') || null,
             },
           };
-        // Add more cases for other element types as needed
+        case 'blockquote':
+          return { type: 'blockquote', content };
+        case 'pre':
+          return { type: 'codeBlock', content };
+        case 'ul':
+          return { type: 'bulletList', content };
+        case 'ol':
+          return { type: 'orderedList', content };
+        case 'li':
+          return { type: 'listItem', content };
+        case 'hr':
+          return { type: 'horizontalRule' };
+        case 'br':
+          return { type: 'hardBreak' };
+        case 'table':
+          return { type: 'table', content: parseTableContent(element) };
+        case 'figure':
+          return parseFigure(element);
+        case 'div':
+          // Check for special classes or data attributes
+          if (element.classList.contains('math')) {
+            return {
+              type: 'math',
+              attrs: { tex: element.textContent || '' },
+            };
+          }
+        // Fallthrough to default case if no special handling
         default:
-          return { type: 'paragraph', content };
+          // For unknown elements, we'll wrap the content in a paragraph
+          return content;
       }
     }
 
     return { type: 'paragraph', content: [] };
   }
 
-  const content = Array.from(doc.body.childNodes).map(parseNode);
+  function parseTableContent(tableElement: Element): JSONContent[] {
+    const rows: JSONContent[] = [];
+    tableElement.querySelectorAll('tr').forEach((row) => {
+      const cells: JSONContent[] = [];
+      row.querySelectorAll('td, th').forEach((cell) => {
+        cells.push({
+          type: cell.tagName.toLowerCase() === 'th' ? 'tableHeader' : 'tableCell',
+          content: parseNode(cell) as JSONContent[],
+        });
+      });
+      rows.push({ type: 'tableRow', content: cells });
+    });
+    return rows;
+  }
+
+  function parseFigure(figureElement: Element): JSONContent {
+    const img = figureElement.querySelector('img');
+    const caption = figureElement.querySelector('figcaption');
+    return {
+      type: 'figure',
+      content: [
+        {
+          type: 'image',
+          attrs: {
+            src: img?.getAttribute('src') || '',
+            alt: img?.getAttribute('alt') || '',
+            title: img?.getAttribute('title') || '',
+            width: img?.getAttribute('width') || null,
+            height: img?.getAttribute('height') || null,
+          },
+        },
+        ...(caption
+          ? [{ type: 'paragraph', content: [{ type: 'text', text: caption.textContent || '' }] }]
+          : []),
+      ],
+    };
+  }
+
+  const content = Array.from(doc.body.childNodes).flatMap((node) => parseNode(node));
   return { type: 'doc', content };
 }

@@ -43,10 +43,11 @@ import { generateSlug, sanitizeSlug } from '@/lib/utils';
 import { CategorySelectDialog } from './CategorySelectDialog';
 import { TagSelectDialog } from './TagSelectDialog';
 import { useToast } from '@/components/ui/use-toast';
-const Editor = dynamic(() => import('@/components/editor/editor'), {
+import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
+
+const Editor = dynamic(() => import('@/components/Dashboard/Blog/PostForm/Editor/Editor'), {
   ssr: false,
 });
-import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
 
 interface PostFormProps<T extends CreatePostInput | UpdatePostInput> {
   schema: ZodSchema<T>;
@@ -100,6 +101,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
     if (isEditing) {
       form.reset(defaultValues);
       setEditorContent(defaultValues.content || '');
+      setSlug(defaultValues.slug || '');
     }
   }, [isEditing, defaultValues, form]);
 
@@ -232,10 +234,9 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                 <FormLabel>محتوای پست</FormLabel>
                 <FormControl>
                   <Editor
-                    initialValue={editorContent}
-                    onChange={(content: string) => {
-                      setEditorContent(content);
-                      field.onChange(content);
+                    content={editorContent}
+                    onChange={(newContent) => {
+                      field.onChange(newContent);
                     }}
                     isRTL={true}
                   />

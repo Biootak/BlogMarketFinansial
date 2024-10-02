@@ -1,17 +1,15 @@
-import { useEffect, useRef } from 'react';
-import { LuCheck, LuTrash } from 'react-icons/lu';
-import { useEditor } from 'novel';
 import { cn } from '@/lib/utils';
-
+import { useEditor } from 'novel';
+import { LuCheck, LuTrash } from 'react-icons/lu';
+import { type Dispatch, type FC, type SetStateAction, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { PopoverContent } from '@/components/ui/popover';
-import { Popover, PopoverTrigger } from '@radix-ui/react-popover';
+import { PopoverContent, Popover, PopoverTrigger } from '@/components/ui/popover';
 
 export function isValidUrl(url: string) {
   try {
     new URL(url);
     return true;
-  } catch (_e) {
+  } catch (e) {
     return false;
   }
 }
@@ -21,7 +19,7 @@ export function getUrlFromString(str: string) {
     if (str.includes('.') && !str.includes(' ')) {
       return new URL(`https://${str}`).toString();
     }
-  } catch (_e) {
+  } catch (e) {
     return null;
   }
 }
@@ -34,11 +32,24 @@ export const LinkSelector = ({ open, onOpenChange }: LinkSelectorProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const { editor } = useEditor();
 
-  // Autofocus on input by default
   useEffect(() => {
     inputRef.current?.focus();
   });
+
   if (!editor) return null;
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const target = e.currentTarget as HTMLFormElement;
+    const input = target[0] as HTMLInputElement;
+    const url = getUrlFromString(input.value);
+    if (url) {
+      editor.chain().focus().setLink({ href: url }).run();
+      onOpenChange(false);
+    }
+  };
 
   return (
     <Popover modal={true} open={open} onOpenChange={onOpenChange}>
@@ -55,20 +66,9 @@ export const LinkSelector = ({ open, onOpenChange }: LinkSelectorProps) => {
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-60 p-0" sideOffset={10}>
-        <form
-          onSubmit={(e) => {
-            const target = e.currentTarget as HTMLFormElement;
-            e.preventDefault();
-            const input = target[0] as HTMLInputElement;
-            const url = getUrlFromString(input.value);
-            if (url) {
-              editor.chain().focus().setLink({ href: url }).run();
-              onOpenChange(false);
-            }
-          }}
-          className="flex p-1"
-        >
+        <form onSubmit={handleSubmit} className="flex p-1">
           <input
+            dir="ltr"
             ref={inputRef}
             type="text"
             placeholder="Paste a link"
@@ -81,18 +81,17 @@ export const LinkSelector = ({ open, onOpenChange }: LinkSelectorProps) => {
               variant="outline"
               type="button"
               className="flex h-8 items-center rounded-sm p-1 text-red-600 transition-all hover:bg-red-100 dark:hover:bg-red-800"
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 editor.chain().focus().unsetLink().run();
-                if (inputRef.current) {
-                  inputRef.current.value = '';
-                }
                 onOpenChange(false);
               }}
             >
               <LuTrash className="h-4 w-4" />
             </Button>
           ) : (
-            <Button size="icon" className="h-8">
+            <Button size="icon" className="h-8" type="submit">
               <LuCheck className="h-4 w-4" />
             </Button>
           )}

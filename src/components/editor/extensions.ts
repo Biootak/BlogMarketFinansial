@@ -13,7 +13,6 @@ import {
   TaskItem,
   TaskList,
   TextStyle,
-  TiptapImage,
   TiptapLink,
   TiptapUnderline,
   Twitter,
@@ -29,6 +28,7 @@ import TableCell from '@tiptap/extension-table-cell';
 import TextAlign from '@tiptap/extension-text-align';
 import { common, createLowlight } from 'lowlight';
 import { cn } from '@/lib/utils';
+import { cx } from 'class-variance-authority';
 
 const aiHighlight = AIHighlight;
 
@@ -38,8 +38,8 @@ const placeholder = Placeholder.configure({
 
 const tiptapLink = TiptapLink.configure({
   HTMLAttributes: {
-    class: cn(
-      'text-primary-500 underline underline-offset-[3px] hover:text-primary-600 transition-colors cursor-pointer',
+    class: cx(
+      'text-muted-foreground underline underline-offset-[3px] hover:text-primary transition-colors cursor-pointer',
     ),
   },
 });

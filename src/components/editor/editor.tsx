@@ -1,8 +1,9 @@
 'use client';
 
 import type React from 'react';
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
+  EditorBubble,
   EditorCommand,
   EditorCommandEmpty,
   EditorCommandItem,
@@ -14,7 +15,6 @@ import {
 import { ImageResizer, handleCommandNavigation } from 'novel/extensions';
 import { handleImageDrop, handleImagePaste } from 'novel/plugins';
 import { slashCommand, suggestionItems } from './slash-command';
-import EditorMenu from './editor-menu';
 import { Separator } from '../ui/separator';
 import { NodeSelector } from './selectors/node-selector';
 import { LinkSelector } from './selectors/link-selector';
@@ -24,7 +24,6 @@ import { ColorSelector } from './selectors/color-selector';
 import { AlignmentSelector } from './selectors/alignment-selector';
 import { defaultExtensions } from './extensions';
 import { ImageUploaderClass } from '../ImageUpload/ImageUploader';
-import { useEditorStore } from '@/hooks/editorStore';
 import { cn, htmlToEditorContent } from '@/lib/utils';
 import { useDebouncedCallback } from 'use-debounce';
 import DOMPurify from 'dompurify';
@@ -50,18 +49,10 @@ interface EditorProps {
 }
 
 export default function Editor({ initialValue, onChange, isRTL = false }: EditorProps) {
-  const {
-    openNode,
-    setOpenNode,
-    openColor,
-    setOpenColor,
-    openLink,
-    setOpenLink,
-    openAI,
-    setOpenAI,
-    openAlignment,
-    setOpenAlignment,
-  } = useEditorStore();
+  const [openNode, setOpenNode] = useState(false);
+  const [openColor, setOpenColor] = useState(false);
+  const [openLink, setOpenLink] = useState(false);
+  const [openAlignment, setOpenAlignment] = useState(false);
 
   const [editorContent, setEditorContent] = useState<JSONContent>(() => {
     if (typeof initialValue === 'string') {
@@ -76,26 +67,75 @@ export default function Editor({ initialValue, onChange, isRTL = false }: Editor
     return textarea.value;
   }, []);
 
-  const highlightCodeblocks = useCallback((content: string) => {
+  //Apply Codeblock Highlighting on the HTML from editor.getHTML()
+  const highlightCodeblocks = (content: string) => {
     const doc = new DOMParser().parseFromString(content, 'text/html');
     doc.querySelectorAll('pre code').forEach((el) => {
+      // @ts-ignore
+      // https://highlightjs.readthedocs.io/en/latest/api.html?highlight=highlightElement#highlightelement
       hljs.highlightElement(el);
     });
-    return doc.body.innerHTML;
-  }, []);
+    return new XMLSerializer().serializeToString(doc);
+  };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   const processContent = useCallback(
     (content: string) => {
       const decodedContent = decodeHTMLEntities(content);
       const highlightedContent = highlightCodeblocks(decodedContent);
       return DOMPurify.sanitize(highlightedContent, {
-        ADD_TAGS: ['math', 'mrow', 'mi', 'mn', 'mo', 'msup', 'mfrac', 'img'],
-        ADD_ATTR: ['xmlns', 'src', 'alt', 'width', 'height'],
+        ADD_TAGS: ['math', 'mrow', 'mi', 'mn', 'mo', 'msup', 'mfrac', 'img', 'span', 'a'],
+        ADD_ATTR: [
+          'xmlns',
+          'src',
+          'alt',
+          'width',
+          'height',
+          'style',
+          'class',
+          'href',
+          'target',
+          'rel',
+        ],
         USE_PROFILES: { mathMl: true, html: true, svg: true },
         ALLOW_DATA_ATTR: true,
+        ALLOWED_TAGS: [
+          'p',
+          'br',
+          'strong',
+          'em',
+          'u',
+          's',
+          'code',
+          'pre',
+          'blockquote',
+          'ul',
+          'ol',
+          'li',
+          'h1',
+          'h2',
+          'h3',
+          'h4',
+          'h5',
+          'h6',
+          'hr',
+          'table',
+          'thead',
+          'tbody',
+          'tr',
+          'th',
+          'td',
+          'img',
+          'a',
+          'span',
+        ],
+        ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'class', 'style'],
+        ALLOW_UNKNOWN_PROTOCOLS: true,
+        KEEP_CONTENT: true,
+        FORCE_BODY: true,
       });
     },
-    [decodeHTMLEntities, highlightCodeblocks],
+    [decodeHTMLEntities],
   );
 
   const debouncedOnChange = useDebouncedCallback((content: string) => {
@@ -127,6 +167,7 @@ export default function Editor({ initialValue, onChange, isRTL = false }: Editor
 
   useEffect(() => {
     if (typeof initialValue === 'string') {
+      console.log('initialValue', initialValue);
       setEditorContent(htmlToEditorContent(initialValue));
     }
   }, [initialValue]);
@@ -205,7 +246,19 @@ export default function Editor({ initialValue, onChange, isRTL = false }: Editor
             </EditorCommandList>
           </EditorCommand>
 
-          <EditorMenu open={openAI} onOpenChange={setOpenAI} isRTL={isRTL}>
+          <EditorBubble
+            tippyOptions={{
+              placement: 'top',
+              appendTo: document.body,
+            }}
+            className={cn(
+              'flex overflow-hidden rounded-md border border-neutral-200 bg-white shadow-xl dark:border-neutral-800 dark:bg-neutral-900',
+              'w-fit max-w-[90vw]',
+              'sm:max-w-[70vw] md:max-w-[50vw] lg:max-w-[50vw]',
+              isRTL ? 'flex-row-reverse' : 'flex-row',
+              isRTL ? 'rtl' : 'ltr',
+            )}
+          >
             <Separator orientation="vertical" />
             <NodeSelector open={openNode} onOpenChange={setOpenNode} />
             <Separator orientation="vertical" />
@@ -218,7 +271,7 @@ export default function Editor({ initialValue, onChange, isRTL = false }: Editor
             <ColorSelector open={openColor} onOpenChange={setOpenColor} />
             <Separator orientation="vertical" />
             <AlignmentSelector open={openAlignment} onOpenChange={setOpenAlignment} isRTL={isRTL} />
-          </EditorMenu>
+          </EditorBubble>
         </EditorContent>
       </EditorRoot>
     </div>
