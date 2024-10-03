@@ -34,21 +34,21 @@ const Card11: React.FC<Card11Props> = ({
 
   return (
     <div
-      className={`nc-Card11 relative flex flex-col group rounded-3xl overflow-hidden bg-white dark:bg-neutral-900 ${className} transition-all duration-300 hover:shadow-xl`}
+      className={`nc-Card11 relative flex flex-col group rounded-2xl overflow-hidden bg-white dark:bg-neutral-800 ${className} transition-all duration-300 hover:shadow-lg hover:shadow-neutral-300/50 dark:hover:shadow-black/30 border border-neutral-200 dark:border-neutral-700`}
       onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => setIsHover(false)}
     >
-      <div className={`block flex-shrink-0 relative w-full rounded-t-3xl overflow-hidden ${ratio}`}>
+      <div className={`block flex-shrink-0 relative w-full rounded-t-2xl overflow-hidden ${ratio}`}>
         <div>
           <PostFeaturedMedia post={post} isHover={isHover} />
         </div>
       </div>
       <Link href={getPostLink(postType, slug)} className="absolute inset-0 z-0" />
-      <span className="absolute top-3 inset-x-3 z-10">
+      <span className="absolute top-4 left-4 z-10">
         <CategoryBadgeList categories={categories} />
       </span>
 
-      <div className="p-4 flex flex-col space-y-3">
+      <div className="p-5 flex flex-col space-y-4">
         {!hiddenAuthor ? (
           <PostCardMeta meta={post} />
         ) : (
@@ -56,12 +56,12 @@ const Card11: React.FC<Card11Props> = ({
             {createdAt.toString()}
           </span>
         )}
-        <h3 className="nc-card-title block text-base font-semibold text-neutral-900 dark:text-neutral-100 transition-colors duration-300 hover:text-primary dark:hover:text-primary-dark">
+        <h3 className="nc-card-title block text-lg font-semibold text-neutral-900 dark:text-neutral-100 transition-colors duration-300 hover:text-primary dark:hover:text-primary-dark">
           <span className="line-clamp-2" title={title}>
             {title}
           </span>
         </h3>
-        <div className="flex items-end justify-between mt-auto">
+        <div className="flex items-end justify-between mt-auto pt-4 border-t border-neutral-200 dark:border-neutral-700">
           <PostCardLikeAndComment className="relative" post={post} />
           <BookmarkCheck post={post}>
             {(isBookmarked) => (
@@ -69,7 +69,7 @@ const Card11: React.FC<Card11Props> = ({
                 className="relative"
                 postId={post.id}
                 initialBookmarked={isBookmarked}
-                bookmarkClass="h-8 w-8 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition-colors duration-300"
+                bookmarkClass="h-9 w-9 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition-colors duration-300 rounded-full"
               />
             )}
           </BookmarkCheck>
