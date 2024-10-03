@@ -26,7 +26,7 @@ const widgetMenus: WidgetFooterMenu[] = [
     id: 'company',
     title: 'شرکت',
     menus: [
-      { href: '/archive', label: 'اخبار' },
+      { href: '/archive', label: 'آرشیو اخبار' },
       { href: '/about', label: 'درباره ما' },
       { href: '/contact', label: 'تماس با ما' },
     ],
@@ -152,8 +152,8 @@ const Footer: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.5 }}
           className="mt-16 pt-8 border-t border-gray-200 dark:border-gray-700 text-center"
         >
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            © 2024 ما Financial Market. تمامی حقوق محفوظ است.
+          <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
+            <span dir="rtl">تمامی حقوق محفوظ است.</span> <span dir="ltr">© Financial Market</span>
           </p>
         </motion.div>
       </div>

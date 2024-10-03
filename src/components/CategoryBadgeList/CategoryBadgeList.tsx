@@ -13,7 +13,7 @@ export interface CategoryBadgeListProps {
 }
 
 const CategoryBadgeList: React.FC<CategoryBadgeListProps> = ({
-  className = 'flex flex-wrap gap-2',
+  className = 'flex flex-wrap',
   itemClass,
   categories,
 }) => {
@@ -42,7 +42,7 @@ const CategoryBadgeList: React.FC<CategoryBadgeListProps> = ({
     <div className={`nc-CategoryBadgeList ${className}`} data-nc-id="CategoryBadgeList">
       {categories.map((item) => (
         <Badge
-          className={`${itemClass} text-xs px-3 py-1 font-medium`}
+          className={`${itemClass} text-xs px-3 py-1 font-medium m-1`}
           key={item.id}
           name={item.name}
           color={categoryColors[item.id]}

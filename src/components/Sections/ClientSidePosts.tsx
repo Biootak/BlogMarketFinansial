@@ -3,7 +3,7 @@
 import React, { useState, useCallback } from 'react';
 import { getLatestPosts } from '@/actions/getLatestPosts';
 import type { Advertisement, PostWithRelations } from '@/types/types';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Empty from '../Empty';
 import PostsDisplay from '../PostsDisplay.tsx/PostsDisplay';
 
@@ -15,7 +15,11 @@ interface ClientSidePostsProps {
 
 const POSTS_PER_PAGE = 6;
 
-export default function ClientSidePosts({ initialPosts, initialAds, categories }: ClientSidePostsProps) {
+export default function ClientSidePosts({
+  initialPosts,
+  initialAds,
+  categories,
+}: ClientSidePostsProps) {
   const [posts, setPosts] = useState<Record<string, PostWithRelations[]>>(initialPosts);
   const [ads] = useState<Advertisement[]>(initialAds);
   const [isLoading, setIsLoading] = useState(false);
@@ -70,10 +74,10 @@ export default function ClientSidePosts({ initialPosts, initialAds, categories }
   }, [posts, isLoading, hasMore, activeCategory]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 ">
       <h2 className="text-3xl font-bold">آخرین مقالات</h2>
       {error && <div>Error: {error.message}</div>}
-      <Tabs defaultValue="همه" onValueChange={setActiveCategory} dir='rtl'>
+      <Tabs defaultValue="همه" onValueChange={setActiveCategory} dir="rtl">
         <TabsList>
           {categories.map((category) => (
             <TabsTrigger key={category} value={category}>

@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { likeItem } from '@/actions/postActions';
 import convertNumbThousand from '@/utils/convertNumbThousand';
 import { cn } from '@/lib/utils';
+import { Icon } from '../ui/icon';
 
 export interface PostCardLikeActionProps {
   className?: string;
@@ -15,7 +16,7 @@ export interface PostCardLikeActionProps {
 }
 
 const PostCardLikeAction: FC<PostCardLikeActionProps> = ({
-  className = 'px-2 h-8 text-xs',
+  className = '',
   postId,
   initialLikeCount,
   initialLiked,
@@ -38,61 +39,48 @@ const PostCardLikeAction: FC<PostCardLikeActionProps> = ({
           throw new Error(result?.message || 'خطا در عملیات لایک');
         }
       } catch {
-        // Revert the optimistic update if the server action fails
         setIsLiked(!newLikeState);
         setLikeCount((prevCount) => (newLikeState ? Math.max(0, prevCount - 1) : prevCount + 1));
-        // You might want to show an error message here
-        // For example: toast.error('خطا در ثبت لایک. لطفاً دوباره تلاش کنید.');
       }
     });
   }, [postId, isLiked]);
 
   return (
-    <motion.button
-      type="button"
-      className={cn(
-        'nc-PostCardLikeAction relative min-w-[40px] flex items-center rounded-full leading-none group transition-colors',
-        className,
-        isLiked
-          ? 'text-rose-600 bg-rose-50 dark:bg-rose-100'
-          : 'text-neutral-700 bg-neutral-50 dark:text-neutral-200 dark:bg-neutral-800 hover:bg-rose-50 dark:hover:bg-rose-100 hover:text-rose-600 dark:hover:text-rose-500',
-      )}
-      onClick={handleLikeClick}
-      title={isLiked ? 'برداشتن لایک' : 'لایک کردن'}
-      disabled={isPending}
-      whileTap={{ scale: 0.95 }}
-    >
-      <motion.svg
-        width="24"
-        height="24"
-        fill={isLiked ? 'currentColor' : 'none'}
-        viewBox="0 0 24 24"
-        animate={{ scale: isLiked ? [1, 1.2, 1] : 1 }}
-        transition={{ duration: 0.3 }}
+    <div className="relative">
+      <motion.button
+        type="button"
+        className={cn(
+          'nc-PostCardLikeAction w-10 h-10 flex items-center justify-center rounded-full transition-colors',
+          className,
+          isLiked
+            ? 'text-rose-600 bg-rose-50 dark:bg-rose-100'
+            : 'text-neutral-700 bg-neutral-50 dark:text-neutral-200 dark:bg-neutral-800 hover:bg-rose-50 dark:hover:bg-rose-100 hover:text-rose-600 dark:hover:text-rose-500',
+        )}
+        onClick={handleLikeClick}
+        title={isLiked ? 'برداشتن لایک' : 'لایک کردن'}
+        disabled={isPending}
+        whileTap={{ scale: 0.95 }}
       >
-        <path
-          fillRule="evenodd"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1"
-          d="M11.995 7.23319C10.5455 5.60999 8.12832 5.17335 6.31215 6.65972C4.49599 8.14609 4.2403 10.6312 5.66654 12.3892L11.995 18.25L18.3235 12.3892C19.7498 10.6312 19.5253 8.13046 17.6779 6.65972C15.8305 5.18899 13.4446 5.60999 11.995 7.23319Z"
-          clipRule="evenodd"
-        />
-        <title>لایک</title>
-      </motion.svg>
-
+        <motion.div animate={{ scale: isLiked ? [1, 1.2, 1] : 1 }} transition={{ duration: 0.3 }}>
+          <Icon
+            name={isLiked ? 'Heart' : 'Heart'}
+            className="size-5"
+            strokeWidth={isLiked ? 0 : 2}
+            style={{ fill: isLiked ? 'currentColor' : 'none' }}
+          />
+        </motion.div>
+      </motion.button>
       {likeCount > 0 && (
         <span
           className={cn(
-            'mr-1 rtl:ml-1 rtl:mr-0',
-            isLiked ? 'text-rose-600' : 'text-neutral-900 dark:text-neutral-200',
+            'absolute -top-2 -right-2 bg-rose-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center',
+            isLiked ? 'bg-rose-600' : 'bg-neutral-600',
           )}
         >
           {convertNumbThousand(likeCount)}
         </span>
       )}
-    </motion.button>
+    </div>
   );
 };
 

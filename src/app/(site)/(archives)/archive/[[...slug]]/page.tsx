@@ -1,4 +1,3 @@
-// PageArchive.tsx
 import React from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -102,12 +101,12 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
   const defaultImage = '/images/hero-right-2.png';
 
   return (
-    <div className="nc-PageArchive">
-      <div className="container mt-10 px-4 sm:px-6 lg:px-8">
+    <div className="nc-PageArchive max-w-full overflow-x-hidden">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 mt-8 sm:mt-10 lg:mt-12">
         <Card className="overflow-hidden bg-white dark:bg-gray-800 shadow-lg">
-          <div className="flex flex-col md:flex-row items-center p-6 md:p-8">
+          <div className="flex flex-col md:flex-row items-center p-4 sm:p-6 md:p-8">
             <div className="mb-6 md:mb-0 md:ml-8">
-              <div className="w-48 h-48 overflow-hidden rounded-lg relative">
+              <div className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 overflow-hidden rounded-lg relative">
                 <Image
                   src={selectedCategory?.thumbnail || selectedTag?.thumbnail || defaultImage}
                   alt={selectedCategory?.name || selectedTag?.name || 'تصویر مقالات'}
@@ -118,14 +117,14 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
               </div>
             </div>
             <div className="flex-1 md:ml-4 text-center md:text-right">
-              <CardHeader className="p-0 mb-4">
-                <CardTitle className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              <CardHeader className="p-0 mb-2 sm:mb-4">
+                <CardTitle className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
                   {selectedSubcategory?.name ||
                     selectedCategory?.name ||
                     selectedTag?.name ||
                     'گنجینه مقالات'}
                 </CardTitle>
-                <CardDescription className="text-lg text-gray-600 dark:text-gray-300">
+                <CardDescription className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
                   {selectedSubcategory
                     ? `مطالب مرتبط با ${selectedSubcategory.name} در دسته‌بندی ${selectedCategory?.name}`
                     : selectedCategory
@@ -136,7 +135,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="flex items-center justify-center md:justify-start text-2xl font-semibold text-gray-700 dark:text-gray-200">
+                <div className="flex items-center justify-center md:justify-start text-xl sm:text-2xl font-semibold text-gray-700 dark:text-gray-200">
                   <SlFire className="ml-2 text-orange-500" />
                   <span>{total} مقاله</span>
                 </div>
@@ -146,9 +145,9 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
         </Card>
       </div>
 
-      <div className="container pt-10 pb-16 lg:pb-28 lg:pt-20 space-y-16 lg:space-y-28">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 space-y-8 sm:space-y-12 lg:space-y-16">
         <div>
-          <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+          <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0 mb-6 sm:mb-8">
             <div className="flex flex-col w-full space-y-2 md:flex-row md:w-auto md:space-y-0 md:space-x-2.5 rtl:space-x-reverse">
               <div className="w-full md:w-auto">
                 <ModalCategories initialCategories={categories} />
@@ -157,7 +156,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
                 <ModalTags initialTags={tags} />
               </div>
             </div>
-            <div className="w-full md:w-auto ">
+            <div className="w-full md:w-auto">
               <ArchiveFilterListBox filters={FILTERS} initialFilter={filter} />
             </div>
           </div>
@@ -165,13 +164,13 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
           {posts.length > 0 ? <AnimatedPostGrid posts={posts} /> : <Empty />}
 
           {posts.length > 0 && (
-            <div className="flex flex-col mt-12 lg:mt-16 space-y-5 sm:space-y-0 sm:space-x-3 sm:flex-row sm:justify-between sm:items-center">
+            <div className="flex flex-col mt-8 sm:mt-10 lg:mt-12 space-y-5 sm:space-y-0 sm:space-x-3 sm:flex-row sm:justify-between sm:items-center">
               <Pagination currentPage={currentPage} totalPages={pages} />
             </div>
           )}
         </div>
 
-        <div className="relative py-16">
+        <div className="relative py-12 sm:py-16">
           <BackgroundSection />
           <DynamicCategories
             initialCategories={categories}

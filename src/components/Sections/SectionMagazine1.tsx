@@ -13,7 +13,7 @@ const CATEGORIES = ['همه', 'طلا', 'ارز دیجیتال', 'بازار ج�
 
 export default async function SectionMagazine1({ className = '' }: SectionMagazine1Props) {
   const [allPosts, mediumAdsResult] = await Promise.all([
-    getLatestPosts({ count: 24 }), // Fetch more posts initially
+    getLatestPosts({ count: 6 }),
     getActiveAdvertisements({ limit: 10, size: 'MEDIUM' }),
   ]);
 

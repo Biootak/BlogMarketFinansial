@@ -16,7 +16,7 @@ export interface PostCardLikeAndCommentProps {
 
 const PostCardLikeAndComment: FC<PostCardLikeAndCommentProps> = ({
   className = '',
-  itemClass = 'px-3 h-8 text-xs',
+  itemClass = 'w-10 h-10',
   hiddenCommentOnMobile = true,
   useOnSinglePage = false,
   post,
@@ -29,7 +29,7 @@ const PostCardLikeAndComment: FC<PostCardLikeAndCommentProps> = ({
   }
 
   const isLiked = currentUserId
-    ? post.likes?.some((like) => like.userId === currentUserId) ?? false
+    ? (post.likes?.some((like) => like.userId === currentUserId) ?? false)
     : false;
 
   const likeCount = post._count?.likes ?? 0;

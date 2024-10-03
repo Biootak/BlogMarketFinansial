@@ -5,6 +5,8 @@ import { useState, useTransition } from 'react';
 import { cn } from '@/lib/utils';
 import { savePost } from '@/actions/postActions';
 import { useToast } from '@/components/ui/use-toast';
+import { motion } from 'framer-motion';
+import { Icon } from '../ui/icon';
 
 export interface NcBookmarkProps {
   containerClassName?: string;
@@ -14,7 +16,7 @@ export interface NcBookmarkProps {
 }
 
 const NcBookmark: React.FC<NcBookmarkProps> = ({
-  containerClassName = 'h-8 w-8 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700',
+  containerClassName = '',
   postId,
   initialBookmarked,
   onBookmarkChange,
@@ -48,33 +50,40 @@ const NcBookmark: React.FC<NcBookmarkProps> = ({
   };
 
   return (
-    <button
-      type="button"
-      className={cn(
-        'nc-NcBookmark relative pb-1 rounded-full flex items-center justify-center',
-        containerClassName,
-        { 'opacity-50 cursor-not-allowed': isPending },
-      )}
-      onClick={handleClick}
-      disabled={isPending}
-      title="ذخیره در لیست خواندن"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        fill={isBookmarked ? 'currentColor' : 'none'}
-        stroke="currentColor"
-        className="w-[24px] h-[24px] dark:stroke-neutral-300"
+    <div className="relative">
+      <motion.button
+        type="button"
+        className={cn(
+          'nc-NcBookmark w-10 h-10 rounded-full flex items-center justify-center transition-colors',
+          containerClassName,
+          isBookmarked
+            ? 'text-blue-600 bg-blue-50 dark:bg-blue-900'
+            : 'text-neutral-700 bg-neutral-50 dark:text-neutral-200 dark:bg-neutral-800 hover:bg-blue-50 dark:hover:bg-blue-900 hover:text-blue-600 dark:hover:text-blue-400',
+          { 'opacity-50 cursor-not-allowed': isPending },
+        )}
+        onClick={handleClick}
+        disabled={isPending}
+        title={isBookmarked ? 'حذف از لیست خواندن' : 'ذخیره در لیست خواندن'}
+        whileTap={{ scale: 0.95 }}
       >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"
-        />
-        <title>{isBookmarked ? 'ذخیره شده' : 'ذخیره نشده'}</title>
-      </svg>
-    </button>
+        <motion.div
+          animate={{ scale: isBookmarked ? [1, 1.2, 1] : 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Icon
+            name="Bookmark"
+            className="size-5"
+            strokeWidth={isBookmarked ? 0 : 2}
+            style={{ fill: isBookmarked ? 'currentColor' : 'none' }}
+          />
+        </motion.div>
+      </motion.button>
+      {isBookmarked && (
+        <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+          ✓
+        </span>
+      )}
+    </div>
   );
 };
 
