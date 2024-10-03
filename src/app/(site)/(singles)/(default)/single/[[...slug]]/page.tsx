@@ -31,24 +31,6 @@ export default async function PageSingle({ params }: PageProps) {
   );
   const moreFromAuthorPromise = getMoreFromAuthor(post.authorId, post.id);
 
-  // تعریف تابع parseOptions برای مدیریت رنگ و هایلایت
-  const parseOptions = {
-    replace: (domNode: any) => {
-      if (domNode.attribs && domNode.name === 'span') {
-        const style = domNode.attribs.style || '';
-        const className = domNode.attribs.class || '';
-
-        if (style.includes('color:') || className.includes('highlight-')) {
-          return (
-            <span style={{ ...domNode.attribs.style }} className={className}>
-              {domNode.children[0].data}
-            </span>
-          );
-        }
-      }
-    },
-  };
-
   return (
     <div className="nc-PageSingle pt-8 lg:pt-16 bg-white dark:bg-gray-900">
       <div className="container mx-auto px-4">
@@ -75,10 +57,7 @@ export default async function PageSingle({ params }: PageProps) {
         </div>
 
         <div className="container mt-10">
-          {/* استفاده از پارسر HTML برای محتوای پست */}
-          <div className="nc-SingleContent prose prose-sm sm:prose lg:prose-lg mx-auto dark:prose-invert">
-            {parse(post.content, parseOptions)}
-          </div>
+          <SingleContent post={post} />
           <Suspense fallback={<Loading />}>
             <SingleRelatedPosts
               post={post}
