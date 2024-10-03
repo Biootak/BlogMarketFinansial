@@ -2,7 +2,7 @@
 
 import { cache } from 'react';
 import prisma from '@/lib/db';
-import { generateColor, generateSlug, sanitizeSlug, validateSlug } from '@/lib/utils';
+import { generateColor, generateSlug, validateSlug } from '@/lib/utils';
 import type {
   ActionResult,
   TaxonomyType,
@@ -121,7 +121,7 @@ export async function createCategory(
     }
 
     let slug = providedSlug || generateSlug(name);
-    slug = sanitizeSlug(slug);
+    slug = generateSlug(slug);
 
     if (!validateSlug(slug)) {
       return {
@@ -220,7 +220,7 @@ export async function updateCategory(
     }
 
     let slug = providedSlug || generateSlug(name);
-    slug = sanitizeSlug(slug);
+    slug = generateSlug(slug);
 
     if (!validateSlug(slug)) {
       return {

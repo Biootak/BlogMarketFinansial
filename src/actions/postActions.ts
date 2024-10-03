@@ -4,7 +4,7 @@ import type { PostStatus, Prisma, Role } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/db';
 import { auth } from '@/auth';
-import { checkRole, generateSlug, generateUniqueId, sanitizeSlug, validateSlug } from '@/lib/utils';
+import { checkRole, generateSlug, generateUniqueId, validateSlug } from '@/lib/utils';
 import type {
   ActionResult,
   CreatePostInput,
@@ -23,7 +23,7 @@ export async function createPost(data: CreatePostInput): Promise<ActionResult<Po
 
     const id = generateUniqueId();
     let slug = validatedData.slug
-      ? sanitizeSlug(validatedData.slug)
+      ? generateSlug(validatedData.slug)
       : generateSlug(validatedData.title);
 
     if (!validateSlug(slug)) {
@@ -128,7 +128,7 @@ export async function updatePost(
     }
 
     if (slug) {
-      slug = sanitizeSlug(slug);
+      slug = generateSlug(slug);
       if (!validateSlug(slug)) {
         return {
           success: false,
@@ -740,7 +740,6 @@ export const getArchivePosts = cache(
     }
   },
 );
-
 
 export async function likeItem(
   itemId: string,

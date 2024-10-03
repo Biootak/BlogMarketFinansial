@@ -1,4 +1,4 @@
-import { sanitizeSlug, validateSlug } from '@/lib/utils';
+import { generateSlug, validateSlug } from '@/lib/utils';
 import { PostStatus, PostType } from '@prisma/client';
 import { z } from 'zod';
 
@@ -70,7 +70,7 @@ export const CreatePostSchema = z.object({
   slug: z
     .string()
     .optional()
-    .transform((val) => (val ? sanitizeSlug(val) : val))
+    .transform((val) => (val ? generateSlug(val) : val))
     .refine((val) => !val || validateSlug(val), {
       message: 'فرمت اسلاگ نامعتبر است. فقط حروف کوچک انگلیسی، اعداد و خط فاصله مجاز هستند.',
     }),

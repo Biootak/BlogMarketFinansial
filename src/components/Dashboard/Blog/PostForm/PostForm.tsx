@@ -37,7 +37,7 @@ import type {
   PostStatus,
 } from '@/types/types';
 import type { ZodSchema } from 'zod';
-import { generateSlug, sanitizeSlug } from '@/lib/utils';
+import { generateSlug } from '@/lib/utils';
 import { CategorySelectDialog } from './CategorySelectDialog';
 import { TagSelectDialog } from './TagSelectDialog';
 import { useToast } from '@/components/ui/use-toast';
@@ -172,7 +172,6 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                     setEditorContent(html);
                     field.onChange(html);
                   }}
-                  
                 />
               </FormControl>
               <FormMessage />
@@ -213,16 +212,15 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>اسلاگ</FormLabel>
-                  <FormControl>
+                  <FormControl dir="ltr">
                     <Input
                       {...field}
                       value={slug}
                       onChange={(e) => {
-                        const newSlug = sanitizeSlug(e.target.value);
+                        const newSlug = generateSlug(e.target.value);
                         setSlug(newSlug);
                         field.onChange(newSlug);
                       }}
-                      placeholder="اسلاگ را وارد کنید"
                     />
                   </FormControl>
                   <FormDescription>

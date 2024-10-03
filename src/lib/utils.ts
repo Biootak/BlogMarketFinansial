@@ -11,9 +11,8 @@ import { twMerge } from 'tailwind-merge';
 import { auth } from '../auth';
 import { redirect } from 'next/navigation';
 import slugify from 'slugify';
-import { digitsEnToFa, digitsFaToEn, numberToWords } from '@persian-tools/persian-tools';
-import { customAlphabet } from 'nanoid';
 import DOMPurify from 'dompurify';
+import { customAlphabet } from 'nanoid';
 import type { JSONContent } from 'novel';
 
 const coinMarketCapUrlMap: { [key: string]: string } = {
@@ -94,73 +93,36 @@ export const socialToDropdownItem = (
   onClick: () => onClickHandler(social.id.toLowerCase()),
 });
 
-export const transliteratePersian = (text: string): string => {
-  const transliterationMap: { [key: string]: string } = {
-    آ: 'a',
-    ا: 'a',
-    ب: 'b',
-    پ: 'p',
-    ت: 't',
-    ث: 's',
-    ج: 'j',
-    چ: 'ch',
-    ح: 'h',
-    خ: 'kh',
-    د: 'd',
-    ذ: 'z',
-    ر: 'r',
-    ز: 'z',
-    ژ: 'zh',
-    س: 's',
-    ش: 'sh',
-    ص: 's',
-    ض: 'z',
-    ط: 't',
-    ظ: 'z',
-    ع: 'a',
-    غ: 'gh',
-    ف: 'f',
-    ق: 'gh',
-    ک: 'k',
-    گ: 'g',
-    ل: 'l',
-    م: 'm',
-    ن: 'n',
-    و: 'v',
-    ه: 'h',
-    ی: 'y',
-    ئ: 'y',
-  };
-
-  return text
-    .split('')
-    .map((char) => transliterationMap[char] || char)
-    .join('')
-    .replace(/\s+/g, '-') // تبدیل فاصله به خط تیره
-    .replace(/[^a-z0-9-]/gi, '') // حذف کاراکترهای غیرمجاز
-    .toLowerCase();
-};
-
 export const generateUniqueId = customAlphabet('1234567890abcdef', 10);
 
-export const generateSlug = (title: string, id?: string): string => {
-  const transliteratedTitle = transliteratePersian(title);
-  let slug = slugify(transliteratedTitle, {
+export const generateSlug = (title: string): string => {
+  const options: Parameters<typeof slugify>[1] = {
     replacement: '-',
     remove: /[*+~.()'"!:@]/g,
     lower: true,
     strict: true,
     locale: 'en',
-    trim: true,
-  });
+    trim: false,
+  };
 
-  // If an ID is provided, append it to the slug
-  if (id) {
-    slug = `${slug}-${id}`;
+  // حذف کاراکترهای غیر مجاز اضافی
+  const safeTitle = title.replace(/[^\w\s-]/g, '');
+
+  // ایجاد اسلاگ با استفاده از slugify
+  let slug = slugify(safeTitle, options);
+
+  // اطمینان از اینکه اسلاگ با عدد شروع نمی‌شود
+  slug = slug.replace(/^[0-9]+/, '');
+
+  // محدود کردن طول اسلاگ به 100 کاراکتر، با حفظ کلمات کامل و خط فاصله‌های بین آنها
+  if (slug.length > 100) {
+    slug = `${slug.slice(0, 100).split('-').slice(0, -1).join('-')}-`;
   }
 
-  // Limit the total slug length to 100 characters
-  return slug.slice(0, 100);
+  // حذف خط فاصله‌های اضافی از انتها
+  slug = slug.replace(/-+$/, '');
+
+  return slug;
 };
 
 export function validateSlug(slug: string): boolean {
@@ -168,16 +130,6 @@ export function validateSlug(slug: string): boolean {
   // و می‌تواند شامل خط فاصله در میان کلمات باشد، اما نباید با خط فاصله تمام شود
   const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
   return slugRegex.test(slug);
-}
-
-export function sanitizeSlug(slug: string): string {
-  // حذف کاراکترهای غیرمجاز و تبدیل به حروف کوچک
-  let sanitized = slug.toLowerCase().replace(/[^a-z0-9-]/g, '-');
-  // حذف خط فاصله‌های اضافی
-  sanitized = sanitized.replace(/-+/g, '-');
-  // حذف خط فاصله از ابتدا و انتهای رشته
-  sanitized = sanitized.replace(/^-+|-+$/g, '');
-  return sanitized;
 }
 
 export function debounce<F extends (...args: any[]) => any>(func: F, waitFor: number) {
