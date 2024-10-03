@@ -28,7 +28,7 @@ const ArchiveFilterListBox: React.FC<ArchiveFilterListBoxProps> = ({
   const handleFilterChange = (value: string) => {
     const current = new URLSearchParams(Array.from(searchParams.entries()));
     current.set('filter', value);
-    current.delete('page'); // Reset page when filter changes
+    current.delete('page');
     const search = current.toString();
     const query = search ? `?${search}` : '';
     router.push(`${pathname}${query}`);
@@ -36,18 +36,24 @@ const ArchiveFilterListBox: React.FC<ArchiveFilterListBoxProps> = ({
 
   return (
     <div className={`nc-ArchiveFilterListBox w-full ${className}`}>
-      <Select dir="rtl" onValueChange={handleFilterChange} defaultValue={initialFilter}>
-        <SelectTrigger className="w-full md:w-[180px] text-center">
-          <SelectValue placeholder="انتخاب فیلتر" />
-        </SelectTrigger>
-        <SelectContent className="archive-filter-content text-center">
-          {filters.map((item) => (
-            <SelectItem key={item.name} value={item.name}>
-              {item.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="flex items-center justify-center ">
+        <Select dir="rtl" onValueChange={handleFilterChange} defaultValue={initialFilter}>
+          <SelectTrigger className="w-full md:w-[180px] text-center relative">
+            <SelectValue className="absolute inset-0 flex items-center justify-center" />
+          </SelectTrigger>
+          <SelectContent className="w-full md:w-[180px]">
+            {filters.map((item) => (
+              <SelectItem
+                key={item.name}
+                value={item.name}
+                className="text-center flex items-center justify-center"
+              >
+                {item.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   );
 };
