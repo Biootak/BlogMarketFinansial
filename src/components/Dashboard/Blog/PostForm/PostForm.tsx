@@ -172,6 +172,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                     setEditorContent(html);
                     field.onChange(html);
                   }}
+                  
                 />
               </FormControl>
               <FormMessage />

@@ -23,7 +23,7 @@ import {
 } from 'react-icons/ri';
 import { createSuggestionItems } from 'novel/extensions';
 import { Command, renderItems } from 'novel/extensions';
-import { ImageUploaderClass } from '../ImageUpload/ImageUploader';
+// import { ImageUploaderClass } from '../ImageUpload/ImageUploader';
 
 export const suggestionItems = createSuggestionItems([
   {

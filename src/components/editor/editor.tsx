@@ -23,7 +23,7 @@ import { TextButtons } from './selectors/text-buttons';
 import { ColorSelector } from './selectors/color-selector';
 import { AlignmentSelector } from './selectors/alignment-selector';
 import { defaultExtensions } from './extensions';
-import { ImageUploaderClass } from '../ImageUpload/ImageUploader';
+import { ImageUploaderWithRef } from '../ImageUpload/ImageUploader';
 import { cn, htmlToEditorContent } from '@/lib/utils';
 import { useDebouncedCallback } from 'use-debounce';
 import DOMPurify from 'dompurify';
@@ -147,7 +147,7 @@ export default function Editor({ initialValue, onChange, isRTL = false }: Editor
 
   const handleImageUpload = useCallback((file: File) => {
     return new Promise<string>((resolve, reject) => {
-      const uploader = new ImageUploaderClass({
+      const uploader = new ImageUploaderWithRef({
         onImageUpload: (urls) => {
           if (urls.length > 0) {
             const imageUrl = urls[0];

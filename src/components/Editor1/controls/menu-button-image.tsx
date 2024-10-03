@@ -1,94 +1,49 @@
-import React, { type ChangeEvent, memo, useCallback, useRef } from 'react';
+import React, { memo, useCallback } from 'react';
 import type { Editor } from '@tiptap/core';
 import { Toolbar } from '../../ui/toolbar';
 import { Icon } from '../../ui/icon';
-import { browserFileTable } from '../lib/browser-file-table';
-import UploadWidget from '@/components/cloudinary/upload-widget';
-import MediaLibrary from '@/components/cloudinary/media-library';
+import { ImageUploaderWithRef, type ImageUploaderRef } from '@/components/ImageUpload/ImageUploader';
 
 interface MenuButtonImageProps {
   editor: Editor;
 }
 
-export const MenuButtonImage = ({ editor }: MenuButtonImageProps) => {
-  const fileInput = useRef<HTMLInputElement>(null);
-  const handleClick = useCallback(() => {
-    fileInput.current?.click();
+export const MenuButtonImage: React.FC<MenuButtonImageProps> = ({ editor }) => {
+  const imageUploaderRef = React.useRef<ImageUploaderRef>(null);
+
+  const handleImageUpload = useCallback(
+    (urls: string[]) => {
+      if (urls.length > 0) {
+        const url = urls[0]; // اگر چندین تصویر آپلود شده باشد، اولین تصویر را استفاده می‌کنیم
+        editor.chain().setImage({ src: url }).focus().run();
+      }
+    },
+    [editor],
+  );
+
+  const handleImageRemove = useCallback((_index: number) => {
+    // این تابع برای props های ImageUploader مورد نیاز است، اما نیازی به انجام کاری نداریم
+    // زیرا ما فقط از اولین تصویر آپلود شده استفاده می‌کنیم و بلافاصله آن را در ویرایشگر قرار می‌دهیم
   }, []);
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const target = e.target;
-    const file = target.files?.[0];
-    if (file?.type.startsWith('image/')) {
-      const url = URL.createObjectURL(file);
-      editor.chain().setImage({ src: url }).focus().run();
+  const handleButtonClick = useCallback(() => {
+    if (imageUploaderRef.current) {
+      imageUploaderRef.current.open();
     }
-  };
-
-  //   const onUpload = useCallback(
-  //     (e: ChangeEvent<HTMLInputElement>) => {
-  //       const target = e.target;
-  //       const file = target.files?.[0];
-  //       if (file?.type.startsWith('image/')) {
-  //         const url = URL.createObjectURL(file);
-  //         browserFileTable[url] = file;
-  //         editor.chain().setImage({ src: url }).focus().run();
-  //       }
-  //     },
-  //     [editor]
-  //   );
-
-  function handleOnInsert({ assets }: any) {
-    if (Array.isArray(assets)) {
-      const url = assets[0].url;
-      editor.chain().setImage({ src: url }).focus().run();
-    }
-  }
+  }, []);
 
   return (
     <React.Fragment>
-      {/* <Toolbar.Button tooltip="Insert Image" onClick={handleClick}>
+      <Toolbar.Button tooltip="درج تصویر" onClick={handleButtonClick}>
         <Icon name="Image" />
       </Toolbar.Button>
-      <input
-        className="w-0 h-0 overflow-hidden opacity-0"
-        type="file"
-        accept="image/*"
-        ref={fileInput}
-        onChange={onUpload}
-      /> */}
-
-      <UploadWidget
-        onSuccess={(result, widget) => {
-          const url = result.info.url;
-          editor.chain().setImage({ src: url }).focus().run();
-          widget.close();
-        }}
-      >
-        {({ open }) => {
-          return (
-            <Toolbar.Button tooltip="Insert Image" onClick={() => open()}>
-              <Icon name="Image" />
-            </Toolbar.Button>
-          );
-        }}
-      </UploadWidget>
-
-      {/* <MediaLibrary
-        onInsert={handleOnInsert}
-        options={{
-          insertCaption: 'Add Assets',
-          multiple: false
-        }}
-      >
-        {({ open }) => {
-          return (
-            <Toolbar.Button tooltip='Insert Image' onClick={() => open!()}>
-              <Icon name='Image' />
-            </Toolbar.Button>
-          );
-        }}
-      </MediaLibrary> */}
+      <ImageUploaderWithRef
+        ref={imageUploaderRef}
+        onImageUpload={handleImageUpload}
+        onImageRemove={handleImageRemove}
+        maxFiles={1}
+        multiple={false}
+      />
     </React.Fragment>
   );
 };

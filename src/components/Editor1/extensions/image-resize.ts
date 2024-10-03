@@ -9,7 +9,7 @@ export default BaseImage.extend({
       ...this.parent?.(),
       group: 'block',
       defining: true,
-      isolating: true
+      isolating: true,
     };
   },
 
@@ -20,38 +20,35 @@ export default BaseImage.extend({
         default: null,
         parseHTML: (element) => element.getAttribute('src'),
         renderHTML: (attributes) => ({
-          src: attributes.src
-        })
+          src: attributes.src,
+        }),
       },
       width: {
-        default: '100%'
+        default: '100%',
       },
       alt: {
         default: undefined,
         parseHTML: (element) => element.getAttribute('alt'),
         renderHTML: (attributes) => ({
-          alt: attributes.alt
-        })
-      }
+          alt: attributes.alt,
+        }),
+      },
     };
   },
 
   parseHTML() {
     return [
       {
-        tag: 'img[src]'
-      }
+        tag: 'img[src]',
+      },
     ];
   },
 
   renderHTML({ HTMLAttributes }) {
-    return [
-      'img',
-      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes)
-    ];
+    return ['img', mergeAttributes(this.options.HTMLAttributes, HTMLAttributes)];
   },
 
   addNodeView() {
     return ReactNodeViewRenderer(ResizeImage);
-  }
+  },
 });

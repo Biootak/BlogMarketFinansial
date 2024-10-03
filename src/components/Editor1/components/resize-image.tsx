@@ -44,14 +44,9 @@ const ResizeImage = ({ editor, node, updateAttributes }: ImageElementProps) => {
   const handleResize = useCallback(
     ({ delta, direction, finished, initialSize }: any) => {
       const wrapperWidth = wrapperRef.current!.offsetWidth;
-      const deltaFactor =
-        (textAlign === 'center' ? 2 : 1) * (direction === 'left' ? -1 : 1);
+      const deltaFactor = (textAlign === 'center' ? 2 : 1) * (direction === 'left' ? -1 : 1);
 
-      const newWidth = sizeClamp(
-        initialSize + delta * deltaFactor,
-        100,
-        wrapperWidth
-      );
+      const newWidth = sizeClamp(initialSize + delta * deltaFactor, 100, wrapperWidth);
 
       if (finished) {
         updateAttributes({ width: newWidth });
@@ -59,7 +54,7 @@ const ResizeImage = ({ editor, node, updateAttributes }: ImageElementProps) => {
         setWidth(newWidth);
       }
     },
-    [textAlign, setWidth, updateAttributes]
+    [textAlign, setWidth, updateAttributes],
   );
 
   const handleMouseDown =
@@ -89,12 +84,11 @@ const ResizeImage = ({ editor, node, updateAttributes }: ImageElementProps) => {
         delta,
         direction,
         finished,
-        initialSize
+        initialSize,
       });
     };
 
-    const handleMouseMove = (event: MouseEvent) =>
-      sendResizeEvent(event, false);
+    const handleMouseMove = (event: MouseEvent) => sendResizeEvent(event, false);
     const handleMouseUp = (event: MouseEvent) => {
       setIsResizing(false);
       sendResizeEvent(event, true);
@@ -110,30 +104,20 @@ const ResizeImage = ({ editor, node, updateAttributes }: ImageElementProps) => {
   }, [isResizing, direction, initialPosition, initialSize, handleResize]);
 
   return (
-    <NodeViewWrapper
-      ref={wrapperRef}
-      className='group relative'
-      style={{ textAlign }}
-    >
+    <NodeViewWrapper ref={wrapperRef} className="group relative" style={{ textAlign }}>
       {!isEditable ? (
-        <img className='inline-block' src={src} alt='' style={{ width }} />
+        <img className="inline-block" src={src} alt="" style={{ width }} />
       ) : (
-        <div className='relative inline-block' contentEditable={false}>
+        <div className="relative inline-block" contentEditable={false}>
           <div
             onMouseDown={handleMouseDown('left')}
             className="absolute z-40 h-full cursor-col-resize top-0 flex w-6 select-none flex-col justify-center after:flex after:h-12 after:w-[3px] after:rounded-[6px] after:bg-blue-500 after:opacity-0 after:content-['_'] group-hover:after:opacity-100 -left-2.5 -ml-3 pl-3"
-          ></div>
-          <img
-            className='inline-block'
-            src={src}
-            alt=''
-            style={{ width }}
-            data-drag-handle
           />
+          <img className="inline-block" src={src} alt="" style={{ width }} data-drag-handle />
           <div
             onMouseDown={handleMouseDown('right')}
             className="absolute z-40 h-full cursor-col-resize top-0 flex w-6 select-none flex-col justify-center after:flex after:h-12 after:w-[3px] after:rounded-[6px] after:bg-blue-500 after:opacity-0 after:content-['_'] group-hover:after:opacity-100 -right-2.5 -mr-3 items-end pr-3"
-          ></div>
+          />
         </div>
       )}
     </NodeViewWrapper>
