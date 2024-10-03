@@ -162,21 +162,88 @@ export async function updateUser(
 
 export async function deleteUser(id: string): Promise<ActionResult> {
   try {
-    await prisma.user.delete({
-      where: { id },
+    // ابتدا بررسی می‌کنیم که آیا کاربر وجود دارد
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      return {
+        success: false,
+        message: 'کاربر مورد نظر یافت نشد.',
+      };
+    }
+
+    // حذف داده‌های وابسته و خود کاربر در یک تراکنش
+    await prisma.$transaction(async (prisma) => {
+      // حذف SavedPosts
+      await prisma.savedPost.deleteMany({ where: { userId: id } });
+
+      // حذف Likes
+      await prisma.like.deleteMany({ where: { userId: id } });
+
+      // حذف Comments
+      await prisma.comment.deleteMany({ where: { authorId: id } });
+
+      // حذف Posts
+      await prisma.post.deleteMany({ where: { authorId: id } });
+
+      // حذف Notifications
+      await prisma.notification.deleteMany({ where: { userId: id } });
+
+      // حذف Profile
+      await prisma.profile.delete({ where: { userId: id } });
+
+      // حذف Sessions
+      await prisma.session.deleteMany({ where: { userId: id } });
+
+      // حذف Accounts
+      await prisma.account.deleteMany({ where: { userId: id } });
+
+      // در نهایت، حذف خود کاربر
+      await prisma.user.delete({ where: { id } });
     });
 
     revalidatePath('/users');
 
     return {
       success: true,
-      message: 'کاربر با موفقیت حذف شد.',
+      message: 'کاربر و تمام داده‌های مرتبط با موفقیت حذف شدند.',
     };
   } catch (error) {
     console.error('خطا در حذف کاربر:', error);
     return {
       success: false,
       message: 'خطا در حذف کاربر. لطفاً دوباره تلاش کنید.',
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+// اضافه کردن یک تابع جدید برای بازیابی یک کاربر خاص
+export async function getUser(id: string): Promise<ActionResult<UserWithProfile>> {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: {
+        profile: true,
+      },
+    });
+
+    if (!user) {
+      return {
+        success: false,
+        message: 'کاربر مورد نظر یافت نشد.',
+      };
+    }
+
+    return {
+      success: true,
+      message: 'کاربر با موفقیت بازیابی شد.',
+      data: user,
+    };
+  } catch (error) {
+    console.error('خطا در بازیابی کاربر:', error);
+    return {
+      success: false,
+      message: 'خطا در بازیابی کاربر. لطفاً دوباره تلاش کنید.',
       error: error instanceof Error ? error.message : String(error),
     };
   }
