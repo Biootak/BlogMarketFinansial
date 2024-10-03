@@ -1,21 +1,35 @@
-import React, { memo, useCallback } from 'react';
+import type React from 'react';
+import { memo, useCallback, useState, useRef } from 'react';
 import type { Editor } from '@tiptap/core';
 import { Toolbar } from '../../ui/toolbar';
 import { Icon } from '../../ui/icon';
-import { ImageUploaderWithRef, type ImageUploaderRef } from '@/components/ImageUpload/ImageUploader';
+import {
+  ImageUploaderWithRef,
+  type ImageUploaderRef,
+  type ImageUploaderProps,
+} from '@/components/ImageUpload/ImageUploader';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 interface MenuButtonImageProps {
   editor: Editor;
 }
 
 export const MenuButtonImage: React.FC<MenuButtonImageProps> = ({ editor }) => {
-  const imageUploaderRef = React.useRef<ImageUploaderRef>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const imageUploaderRef = useRef<ImageUploaderRef>(null);
 
   const handleImageUpload = useCallback(
     (urls: string[]) => {
       if (urls.length > 0) {
-        const url = urls[0]; // اگر چندین تصویر آپلود شده باشد، اولین تصویر را استفاده می‌کنیم
+        const url = urls[0];
         editor.chain().setImage({ src: url }).focus().run();
+        setIsOpen(false); // بستن دیالوگ پس از آپلود موفق
       }
     },
     [editor],
@@ -23,28 +37,35 @@ export const MenuButtonImage: React.FC<MenuButtonImageProps> = ({ editor }) => {
 
   const handleImageRemove = useCallback((_index: number) => {
     // این تابع برای props های ImageUploader مورد نیاز است، اما نیازی به انجام کاری نداریم
-    // زیرا ما فقط از اولین تصویر آپلود شده استفاده می‌کنیم و بلافاصله آن را در ویرایشگر قرار می‌دهیم
   }, []);
 
   const handleButtonClick = useCallback(() => {
-    if (imageUploaderRef.current) {
-      imageUploaderRef.current.open();
-    }
+    setIsOpen(true);
+    // اگر نیاز به اجرای متد خاصی در ImageUploader باشد، می‌توانیم از ref استفاده کنیم
+    // مثلا: imageUploaderRef.current?.open();
   }, []);
 
+  const imageUploaderProps: ImageUploaderProps = {
+    onImageUpload: handleImageUpload,
+    onImageRemove: handleImageRemove,
+    maxFiles: 1,
+    multiple: false,
+  };
+
   return (
-    <React.Fragment>
-      <Toolbar.Button tooltip="درج تصویر" onClick={handleButtonClick}>
-        <Icon name="Image" />
-      </Toolbar.Button>
-      <ImageUploaderWithRef
-        ref={imageUploaderRef}
-        onImageUpload={handleImageUpload}
-        onImageRemove={handleImageRemove}
-        maxFiles={1}
-        multiple={false}
-      />
-    </React.Fragment>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Toolbar.Button tooltip="درج تصویر" onClick={handleButtonClick}>
+          <Icon name="Image" />
+        </Toolbar.Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>آپلود تصویر</DialogTitle>
+        </DialogHeader>
+        <ImageUploaderWithRef ref={imageUploaderRef} {...imageUploaderProps} />
+      </DialogContent>
+    </Dialog>
   );
 };
 

@@ -19,26 +19,27 @@ export const extensions = [
     horizontalRule: false,
     codeBlock: false,
     hardBreak: false,
-    dropcursor: {}
+    dropcursor: {},
   }),
   Heading.configure({
-    levels: [1, 2, 3, 4, 5, 6]
+    levels: [1, 2, 3, 4, 5, 6],
   }),
   Underline,
   TextAlign.configure({
-    types: ['heading', 'paragraph', 'image']
+    types: ['heading', 'paragraph', 'image'],
   }),
   TextStyle,
   Color,
   Highlight.configure({
-    multicolor: true
+    multicolor: true,
   }),
   Link.configure({
-    openOnClick: false
+    openOnClick: false,
   }),
   Placeholder.configure({
-    placeholder: 'Type or paste your content here!'
+    showOnlyWhenEditable: true,
+    placeholder: 'متن مورد نظر خود را وارد کنید',
   }),
   CodeBlockLowlight,
-  CharacterCount
+  CharacterCount,
 ];

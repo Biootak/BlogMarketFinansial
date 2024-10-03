@@ -15,6 +15,7 @@ import MenuButtonBulletedList from '../controls/menu-button-bulleted-list';
 import MenuButtonOrderedList from '../controls/menu-button-ordered-list';
 import MenuButtonBlockquote from '../controls/menu-button-blockquote';
 import MenuButtonLink from '../controls/menu-button-link';
+import MenuButtonImage from '../controls/menu-button-image';
 import MenuButtonUndo from '../controls/menu-button-undo';
 import MenuButtonRedo from '../controls/menu-button-redo';
 import MenuButtonCodeblock from '../controls/menu-button-codeblock';
@@ -76,6 +77,7 @@ const FixedMenu = ({ editor, className }: FixedMenuProps) => {
             <MenuButtonLink editor={editor} />
             <MenuButtonBlockquote editor={editor} />
             <MenuButtonCodeblock editor={editor} />
+            <MenuButtonImage editor={editor} />
           </Toolbar.Group>
         </div>
       </Toolbar.Wrapper>
