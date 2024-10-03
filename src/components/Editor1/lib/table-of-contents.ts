@@ -19,7 +19,7 @@ export class TOC {
   constructor(
     private id: string,
     private text: string,
-    private node: Element
+    private node: Element,
   ) {}
 
   get level(): number {
@@ -51,7 +51,7 @@ export class TOC {
       text: this.text,
       level: this.level,
       node: this.node,
-      children: this.children.map((child) => child.toObject())
+      children: this.children.map((child) => child.toObject()),
     };
   }
 }
@@ -71,24 +71,24 @@ function fillEmpty(headings: any[]) {
 function createTree(headings: any[], depth: number) {
   fillEmpty(headings);
 
-  const tree = new TOC('', '', null);
+  const tree = new TOC('', '', document.createElement('div'));
   let current = tree;
 
   for (const heading of headings) {
-    while (current.level >= heading.level && current.parent)
-      current = current.parent;
+    while (current.level >= heading.level && current.parent) current = current.parent;
     current = current.addChild(heading.id, heading.text, heading.node);
   }
   return flatten(tree.flatten().toObject(), depth);
 }
 
 function flatten(toc: ToCObject, depth: number): TocItem[] {
-  const items = [];
+  const items: TocItem[] = [];
 
   for (const item of toc.children) {
-    if (item.level > depth) return;
+    if (item.level > depth) break;
     const { children, ...rest } = item;
-    items.push(rest, ...flatten(item, depth));
+    items.push(rest);
+    items.push(...flatten(item, depth));
   }
 
   return items;
@@ -106,7 +106,7 @@ export function getToCItems(editor: EditorInstance, depth: number = 3) {
 
         transaction.setNodeMarkup(pos, undefined, {
           ...node.attrs,
-          id: id
+          id: id,
         });
 
         transaction.setMeta('addToHistory', false);
@@ -118,7 +118,7 @@ export function getToCItems(editor: EditorInstance, depth: number = 3) {
         id,
         level: node.attrs.level,
         text: node.textContent,
-        node: editor.view.nodeDOM(pos)
+        node: editor.view.nodeDOM(pos),
       });
     }
   });
