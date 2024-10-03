@@ -20,11 +20,11 @@ const Heading: React.FC<HeadingProps> = ({
       className={`nc-Section-Heading relative flex flex-col sm:flex-row sm:items-end justify-between ${className}`}
     >
       <div className={isCenter ? 'text-center w-full max-w-2xl mx-auto ' : 'max-w-2xl'}>
-        <h2 className={'text-2xl md:text-3xl lg:text-4xl font-semibold'} {...args}>
+        <h2 className={'text-2xl sm:text-3xl lg:text-4xl font-semibold'} {...args}>
           {children || 'Section Heading'}
         </h2>
         {desc && (
-          <span className="mt-2 md:mt-3 font-normal block text-base sm:text-xl text-neutral-500 dark:text-neutral-400">
+          <span className="mt-2 md:mt-3 font-normal block text-base sm:text-lg text-neutral-600 dark:text-neutral-400">
             {desc}
           </span>
         )}

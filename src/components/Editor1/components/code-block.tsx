@@ -26,7 +26,7 @@ const CodeBlock = ({ node: { attrs, textContent } }: NodeViewProps) => {
   }, []);
 
   return (
-    <NodeViewWrapper className="relative group">
+    <NodeViewWrapper className="relative group" dir="ltr">
       <pre className="not-prose">
         <NodeViewContent as={'code'} className={`hljs language-${attrs.language}`} />
       </pre>
