@@ -40,7 +40,9 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
 
   return (
     <>
-      <div className="relative grid grid-cols-4 gap-2 my-10">
+      {/* اضافه کردن کلاس‌های ریسپانسیو به گرید اصلی */}
+      <div className="relative grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 my-10">
+        {/* اضافه کردن کلاس‌های ریسپانسیو به تصویر اصلی */}
         <div
           className="col-span-2 row-span-2 relative rounded-xl overflow-hidden cursor-pointer aspect-w-16 aspect-h-9"
           onClick={handleOpenModalImageGallery}
@@ -50,14 +52,16 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
             alt={post.title}
             src={IMAGES_GALLERY[0] || '/images/placeholder.png'}
             fill
-            sizes="(max-width: 768px) 100vw, 50vw"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="rounded-xl object-cover transition-transform duration-300 hover:scale-105"
           />
         </div>
         {IMAGES_GALLERY.slice(1, 5).map((item, index) => (
           <div
             key={index}
-            className={`relative rounded-xl overflow-hidden cursor-pointer aspect-w-4 aspect-h-3 ${index >= 2 ? 'hidden sm:block' : ''}`}
+            className={`relative rounded-xl overflow-hidden cursor-pointer aspect-w-4 aspect-h-3 ${
+              index >= 2 ? 'hidden sm:block' : ''
+            }`}
             onClick={handleOpenModalImageGallery}
             onKeyDown={handleOpenModalImageGallery}
           >
@@ -65,14 +69,15 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
               alt={`${post.title} - image ${index + 2}`}
               src={item || '/images/placeholder-small.png'}
               fill
-              sizes="(max-width: 768px) 50vw, 25vw"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               className="rounded-xl object-cover transition-transform duration-300 hover:scale-105"
             />
           </div>
         ))}
+        {/* اضافه کردن کلاس‌های دارک مود به دکمه */}
         <button
           type="button"
-          className="absolute right-4 bottom-4 px-4 py-2 rounded-lg bg-white bg-opacity-90 text-gray-800 font-semibold shadow-md hover:bg-opacity-100 transition-all duration-200 z-10"
+          className="absolute right-2 sm:right-4 bottom-2 sm:bottom-4 px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm md:text-base rounded-lg bg-white bg-opacity-90 dark:bg-gray-800 dark:bg-opacity-90 text-gray-800 dark:text-gray-200 font-semibold shadow-md hover:bg-opacity-100 dark:hover:bg-opacity-100 transition-all duration-200 z-10"
           onClick={handleOpenModalImageGallery}
         >
           نمایش همه تصاویر
@@ -90,7 +95,8 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-black bg-opacity-75" />
+            {/* اضافه کردن کلاس دارک مود به پس‌زمینه مودال */}
+            <div className="fixed inset-0 bg-black bg-opacity-75 dark:bg-opacity-90" />
           </Transition.Child>
 
           <div className="fixed inset-0 overflow-y-auto">
@@ -104,28 +110,31 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-4xl transform overflow-hidden rounded-2xl bg-white p-6 text-right align-middle shadow-xl transition-all">
+                {/* اضافه کردن کلاس‌های دارک مود به پنل مودال */}
+                <Dialog.Panel className="w-full max-w-4xl transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-right align-middle shadow-xl transition-all">
                   <Dialog.Title
                     as="h3"
-                    className="text-lg font-medium leading-6 text-gray-900 mb-4"
+                    className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4"
                   >
                     گالری
                   </Dialog.Title>
+                  {/* اضافه کردن کلاس‌های دارک مود به دکمه بستن */}
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="absolute top-4 left-4 text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                    className="absolute top-4 left-4 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-200"
                   >
                     <Icon name="X" className="w-6 h-6" />
                   </button>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {/* اضافه کردن کلاس‌های ریسپانسیو به گرید تصاویر در مودال */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {IMAGES_GALLERY.map((image, index) => (
                       <div key={index} className="relative aspect-w-16 aspect-h-9">
                         <Image
                           src={image || '/images/placeholder.png'}
                           alt={`${post.title} - image ${index + 1}`}
                           fill
-                          sizes="(max-width: 768px) 50vw, 33vw"
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                           className="rounded-lg object-cover transition-opacity duration-300 hover:opacity-90"
                         />
                       </div>

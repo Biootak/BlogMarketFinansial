@@ -52,7 +52,7 @@ export default async function PageSingle({ params }: PageProps) {
   return (
     <div className="nc-PageSingle pt-8 lg:pt-16 bg-white dark:bg-gray-900">
       <div className="container mx-auto px-4">
-        <header className="rounded-xl bg-gray-50 dark:bg-gray-800 shadow-sm p-6 mb-8">
+        <header className="rounded-xl  p-6 mb-8">
           <div className="max-w-screen-md mx-auto">
             <SingleHeader post={post} />
           </div>

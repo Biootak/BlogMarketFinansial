@@ -115,7 +115,6 @@ const PostTypeFeaturedIcon: React.FC<PostTypeFeaturedIconProps> = ({
             aria-label={`${postType.toLowerCase()} post`}
           >
             {iconPaths[postType]}
-            <title>{postType.toLowerCase()} post</title>
           </svg>
         )}
       </span>

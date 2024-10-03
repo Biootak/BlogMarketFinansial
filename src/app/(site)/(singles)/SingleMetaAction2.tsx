@@ -6,9 +6,8 @@ import { HiOutlineShare, HiOutlineBookmark } from 'react-icons/hi2';
 import PostActionDropdown from '@/components/PostActionDropdown/PostActionDropdown';
 import PostCardLikeAndComment from '@/components/PostCardLikeAndComment/PostCardLikeAndComment';
 import NcDropDown from '@/components/NcDropDown/NcDropDown';
-import NcBookmark from '@/components/NcBookmark/NcBookmark';
+
 import type { PostWithRelations, NcDropDownItem } from '@/types/types';
-import { useSession } from 'next-auth/react';
 import { sharePost } from '@/actions/shareAction';
 import { useShareStore } from '@/hooks/shareStore';
 import { SOCIALS_DATA } from '@/components/SocialsShare/SocialsShare';
@@ -38,6 +37,7 @@ const SingleMetaAction2: FC<SingleMetaAction2Props> = ({ className = '', post })
     }
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   const socialDropdownItems: NcDropDownItem[] = useMemo(
     () => SOCIALS_DATA.map((social) => socialToDropdownItem(social, handleShare)),
     [post.id],
@@ -51,14 +51,16 @@ const SingleMetaAction2: FC<SingleMetaAction2Props> = ({ className = '', post })
       transition={{ duration: 0.3 }}
     >
       <div className="flex flex-row space-x-2.5 rtl:space-x-reverse items-center">
-        <PostCardLikeAndComment
-          itemClass="px-4 h-9 text-sm"
-          hiddenCommentOnMobile
-          useOnSinglePage
-          className="!space-x-2.5 rtl:!space-x-reverse"
-          post={post}
-        />
-        <div className="px-1">
+        <div className="hidden sm:block">
+          <PostCardLikeAndComment
+            itemClass="px-4 h-9 text-sm"
+            hiddenCommentOnMobile
+            useOnSinglePage
+            className="!space-x-2.5 rtl:!space-x-reverse"
+            post={post}
+          />
+        </div>
+        <div className="hidden sm:block px-1">
           <div className="border-s border-neutral-200 dark:border-neutral-700 h-6" />
         </div>
 
