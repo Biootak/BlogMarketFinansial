@@ -8,6 +8,7 @@ import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeat
 import MediaAudio from './MediaAudio';
 import Link from 'next/link';
 import Image from 'next/image';
+import { getPostLink } from '@/lib/getPostLink';
 
 export interface PostFeaturedMediaProps {
   className?: string;
@@ -20,34 +21,29 @@ const PostFeaturedMedia: FC<PostFeaturedMediaProps> = ({
   post,
   isHover = false,
 }) => {
-  const { featuredImage, postType, videoUrl, galleryImages, audioUrl, id, slug } = post;
+  const { featuredImage, postType, videoUrl, galleryImages, audioUrl, slug } = post;
 
   const isPostMedia = useMemo(() => postType === 'VIDEO' || postType === 'AUDIO', [postType]);
+
+  const postLink = useMemo(() => getPostLink(postType, slug), [postType, slug]);
 
   const renderGallerySlider = useMemo(() => {
     if (!galleryImages || galleryImages.length === 0) return null;
     return (
       <GallerySlider
-        href={`/single/${slug}`}
+        href={postLink}
         galleryImgs={galleryImages}
         className="absolute inset-0 z-10"
         galleryClass="absolute inset-0"
         ratioClass="absolute inset-0"
       />
     );
-  }, [galleryImages, id]);
+  }, [galleryImages, postLink]);
 
   const renderContent = useMemo(() => {
     // GALLERY
-    if (postType === 'GALLERY' && galleryImages && galleryImages.length > 0) {
-      return (
-        <GallerySlider
-          galleryImgs={galleryImages}
-          className="absolute inset-0 z-10"
-          galleryClass="absolute inset-0"
-          ratioClass="absolute inset-0"
-        />
-      );
+    if (postType === 'GALLERY') {
+      return renderGallerySlider;
     }
 
     // VIDEO
@@ -69,11 +65,11 @@ const PostFeaturedMedia: FC<PostFeaturedMediaProps> = ({
         />
       </span>
     ) : null;
-  }, [postType, galleryImages, videoUrl, audioUrl, isHover, isPostMedia, post]);
+  }, [postType, videoUrl, audioUrl, isHover, isPostMedia, post, renderGallerySlider]);
 
   return (
     <div
-      className={`nc-PostFeaturedMedia relative ${className} dark:bg-neutral-800 rounded-3xl `}
+      className={`nc-PostFeaturedMedia relative ${className} dark:bg-neutral-800 rounded-3xl`}
       dir="rtl"
     >
       {postType !== 'GALLERY' && featuredImage && (
@@ -86,14 +82,14 @@ const PostFeaturedMedia: FC<PostFeaturedMediaProps> = ({
           alt="Featured"
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          className="object-cover "
+          className="object-cover"
         />
       )}
 
       {renderContent}
       {postType !== 'GALLERY' && (
         <Link
-          href={`/single/${slug}`}
+          href={postLink}
           className={`block absolute inset-0 ${
             postType === 'STANDARD'
               ? 'bg-black/20 transition-opacity opacity-0 group-hover:opacity-100'

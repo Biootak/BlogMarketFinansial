@@ -6,7 +6,6 @@ import { motion } from 'framer-motion';
 import { HiEllipsisVertical, HiPencil, HiTrash, HiEye, HiEyeSlash } from 'react-icons/hi2';
 import PostCardSaveAction from '@/components/PostCardSaveAction/PostCardSaveAction';
 import type { PostWithRelations } from '@/types/types';
-import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
 import PostCardLikeAndComment from '@/components/PostCardLikeAndComment/PostCardLikeAndComment';
 import PostCardMeta from '@/components/PostCardMeta/PostCardMeta';
 import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia';
@@ -24,6 +23,7 @@ import PostStatusBadge from '../Blog/PostStatusBadge';
 
 import BookmarkCheck from '../../BookmarkCheck';
 import FormattedDate from '@/components/FormattedDate';
+import { getPostLink } from '@/lib/getPostLink';
 
 export interface CardListProps {
   className?: string;
@@ -47,7 +47,7 @@ const CardList: FC<CardListProps> = ({
   onDelete,
   onStatusChange,
 }) => {
-  const { title, id, slug, createdAt } = post;
+  const { title, id, slug, createdAt, postType } = post;
   const [isHover, setIsHover] = useState(false);
 
   const handleDelete = useCallback(() => {
@@ -124,7 +124,7 @@ const CardList: FC<CardListProps> = ({
           </DropdownMenu>
         </div>
       </div>
-      <Link href={`/single/${slug}`} className="absolute inset-0 z-0" />
+      <Link href={getPostLink(postType, slug)} className="absolute inset-0 z-0" />
       <span className="absolute top-3 left-3 z-10">
         <PostStatusBadge status={post.status} />
       </span>

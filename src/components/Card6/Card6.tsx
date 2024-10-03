@@ -8,6 +8,7 @@ import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeat
 import Link from 'next/link';
 import Image from 'next/image';
 import BookmarkCheck from '../BookmarkCheck';
+import { getPostLink } from '@/lib/getPostLink';
 
 export interface Card6Props {
   className?: string;
@@ -21,12 +22,12 @@ const Card6 = ({ className = 'h-full', post }: Card6Props) => {
     <div
       className={`nc-Card6 relative flex group flex-row-reverse items-center sm:p-4 sm:rounded-3xl sm:bg-white sm:dark:bg-neutral-900 sm:border border-neutral-200 dark:border-neutral-700 ${className}`}
     >
-      <Link href={`/single/${slug}`} className="absolute inset-0 z-0" />
+      <Link href={getPostLink(postType, slug)} className="absolute inset-0 z-0" />
       <div className="flex flex-col flex-grow">
         <div className="space-y-3 mb-4">
           <CategoryBadgeList categories={categories} />
           <h2 className={'block font-semibold text-sm sm:text-base'}>
-            <Link href={`/single/${slug}`} className="line-clamp-2" title={title}>
+            <Link href={getPostLink(postType, slug)} className="line-clamp-2" title={title}>
               {title}
             </Link>
           </h2>
@@ -48,7 +49,7 @@ const Card6 = ({ className = 'h-full', post }: Card6Props) => {
       </div>
 
       <Link
-        href={`/single/${slug}`}
+        href={getPostLink(postType, slug)}
         className={
           'block relative flex-shrink-0 w-24 h-24 sm:w-40 sm:h-40 me-3 sm:me-5 rounded-2xl overflow-hidden z-0'
         }

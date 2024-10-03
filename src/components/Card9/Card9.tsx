@@ -8,6 +8,7 @@ import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia'
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
+import { getPostLink } from '@/lib/getPostLink';
 
 export interface Card9Props {
   className?: string;
@@ -74,7 +75,7 @@ const Card9: FC<Card9Props> = ({
             <PostFeaturedMedia post={post} />
           </div>
         ) : (
-          <Link href={`/single/${slug}`} className="relative w-full h-full block">
+          <Link href={getPostLink(postType, slug)} className="relative w-full h-full block">
             <div className="w-full h-full relative">
               <Image
                 fill
@@ -95,11 +96,11 @@ const Card9: FC<Card9Props> = ({
         )}
       </div>
       <Link
-        href={`/single/${slug}`}
+        href={getPostLink(postType, slug)}
         className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-black opacity-50"
       />
       <div className="absolute bottom-0 inset-x-0 p-4 flex flex-col flex-grow">
-        <Link href={`/single/${slug}`} className="absolute inset-0" />
+        <Link href={getPostLink(postType, slug)} className="absolute inset-0" />
         <div className="mb-3">
           <CategoryBadgeList categories={categories} />
         </div>

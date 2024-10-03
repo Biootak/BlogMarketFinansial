@@ -14,6 +14,7 @@ import ModalReportItem from '@/components/ModalReportItem/ModalReportItem';
 import ModalHideAuthor from './ModalHideAuthor';
 import type { PostWithRelations } from '@/types/types';
 import { twMerge } from 'tailwind-merge';
+import { getPostLink } from '@/lib/getPostLink';
 
 export interface PostActionDropdownProps {
   containerClassName?: string;
@@ -40,10 +41,11 @@ const PostActionDropdown: FC<PostActionDropdownProps> = ({
   const onCloseModalHideAuthor = useCallback(() => setShowModalHideAuthor(false), []);
 
   const copyLink = useCallback(() => {
-    navigator.clipboard.writeText(`${window.location.origin}/single/${post.slug}`);
+    const postLink = getPostLink(post.postType, post.slug);
+    navigator.clipboard.writeText(`${window.location.origin}${postLink}`);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
-  }, [post.slug]);
+  }, [post.postType, post.slug]);
 
   const actions = [
     {

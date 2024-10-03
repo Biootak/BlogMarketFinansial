@@ -12,6 +12,7 @@ import PostCardLikeAndComment from '../PostCardLikeAndComment/PostCardLikeAndCom
 import PostCardSaveAction from '../PostCardSaveAction/PostCardSaveAction';
 
 import BookmarkCheck from '../BookmarkCheck';
+import { getPostLink } from '@/lib/getPostLink';
 
 interface Card2Props {
   className?: string;
@@ -47,7 +48,7 @@ export default function Card2({ className = 'h-full', size = 'normal', post }: C
         />
       </div>
 
-      <Link href={`/single/${slug}`} className="absolute inset-0" />
+      <Link href={getPostLink(postType, slug)} className="absolute inset-0" />
 
       <div className="p-4 flex flex-col flex-grow">
         <div className="space-y-3 mb-4">
@@ -58,7 +59,7 @@ export default function Card2({ className = 'h-full', size = 'normal', post }: C
               size === 'large' ? 'text-base sm:text-lg md:text-xl' : 'text-base'
             }`}
           >
-            <Link href={`/single/${slug}`} className="line-clamp-2" title={title}>
+            <Link href={getPostLink(postType, slug)} className="line-clamp-2" title={title}>
               {title}
             </Link>
           </h2>

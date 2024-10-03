@@ -10,6 +10,7 @@ import PostCardMeta from '@/components/PostCardMeta/PostCardMeta';
 import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia';
 import BookmarkCheck from '../BookmarkCheck';
 import PostCardSaveAction from '@/components/PostCardSaveAction/PostCardSaveAction';
+import { getPostLink } from '@/lib/getPostLink';
 
 export interface Card11Props {
   className?: string;
@@ -24,7 +25,7 @@ const Card11: React.FC<Card11Props> = ({
   hiddenAuthor = false,
   ratio = 'aspect-w-4 aspect-h-3',
 }) => {
-  const { title, categories, createdAt, slug } = post;
+  const { title, categories, createdAt, slug, postType } = post;
   const [isHover, setIsHover] = useState(false);
 
   if (!post || !post.slug) {
@@ -42,7 +43,7 @@ const Card11: React.FC<Card11Props> = ({
           <PostFeaturedMedia post={post} isHover={isHover} />
         </div>
       </div>
-      <Link href={`/single/${slug}`} className="absolute inset-0 z-0" />
+      <Link href={getPostLink(postType, slug)} className="absolute inset-0 z-0" />
       <span className="absolute top-3 inset-x-3 z-10">
         <CategoryBadgeList categories={categories} />
       </span>

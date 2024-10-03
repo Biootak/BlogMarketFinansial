@@ -244,6 +244,12 @@ export type ActionResult<T = void, E = string> = {
   data?: T;
   error?: E;
   variant?: 'success' | 'destructive' | 'warning' | 'info';
+  meta?: {
+    currentPage: number;
+    pageSize: number;
+    totalPages: number;
+    totalItems: number;
+  };
 };
 
 export type CategoryActionResult = ActionResult<TaxonomyType>;

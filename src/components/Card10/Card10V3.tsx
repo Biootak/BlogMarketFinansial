@@ -9,6 +9,7 @@ import CardAuthor2 from '@/components/CardAuthor2/CardAuthor2';
 import Link from 'next/link';
 import type { PostWithRelations } from '@/types/types';
 import BookmarkCheck from '../BookmarkCheck';
+import { getPostLink } from '@/lib/getPostLink';
 
 interface Card10V3Props {
   className?: string;
@@ -20,20 +21,26 @@ const Card10V3: React.FC<Card10V3Props> = ({ className = 'h-full', post, gallery
   const { title, categories, postType, galleryImages, slug, id } = post;
   const [isHover, setIsHover] = useState(false);
 
-  const renderGalleryImage = useCallback((src: string, customClassName = '') => (
-    <NcImage
-      alt=""
-      fill
-      containerClassName={`relative ${customClassName}`}
-      className="absolute inset-0 object-cover w-full h-full"
-      src={src}
-    />
-  ), []);
+  const renderGalleryImage = useCallback(
+    (src: string, customClassName = '') => (
+      <NcImage
+        alt=""
+        fill
+        containerClassName={`relative ${customClassName}`}
+        className="absolute inset-0 object-cover w-full h-full"
+        src={src}
+      />
+    ),
+    [],
+  );
 
   const renderGallery = useMemo(() => {
     if (!galleryImages || galleryImages.length === 0) return null;
 
-    const images = [...galleryImages, ...galleryImages, ...galleryImages, ...galleryImages].slice(0, 4);
+    const images = [...galleryImages, ...galleryImages, ...galleryImages, ...galleryImages].slice(
+      0,
+      4,
+    );
 
     return galleryType === 1 ? (
       <div className="w-full h-full grid grid-cols-3 gap-2">
@@ -71,7 +78,7 @@ const Card10V3: React.FC<Card10V3Props> = ({ className = 'h-full', post, gallery
           renderGallery
         )}
         <Link
-          href={`single/${slug}`}
+          href={getPostLink(postType, slug)}
           className="absolute inset-0 bg-neutral-900 bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity"
         />
       </div>
@@ -90,7 +97,7 @@ const Card10V3: React.FC<Card10V3Props> = ({ className = 'h-full', post, gallery
       </div>
       <div className="space-y-2.5 mt-4 px-4">
         <h2 className="nc-card-title block sm:text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-          <Link href={`single/${slug}`} className="line-clamp-1" title={title}>
+          <Link href={getPostLink(postType, slug)} className="line-clamp-1" title={title}>
             {title}
           </Link>
         </h2>

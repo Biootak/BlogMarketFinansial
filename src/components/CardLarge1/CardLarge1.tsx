@@ -10,6 +10,7 @@ import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList'
 import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
 import CardSkeleton from '../Skeletons/CardSkeleton';
 import BookmarkCheck from '../BookmarkCheck';
+import { getPostLink } from '@/lib/getPostLink';
 
 export interface CardLarge1Props {
   className?: string;
@@ -49,7 +50,7 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
           <div className="nc-CardLarge1__left p-4 sm:p-8 xl:py-14 md:px-10 bg-white/40 dark:bg-neutral-900/40 backdrop-filter backdrop-blur-lg shadow-lg dark:shadow-2xl rounded-3xl space-y-3 sm:space-y-5">
             {categoryElement}
             <h2 className="nc-card-title text-base sm:text-xl lg:text-2xl font-semibold">
-              <Link href={`/single/${slug}`} className="line-clamp-2" title={title}>
+              <Link href={getPostLink(postType, slug)} className="line-clamp-2" title={title}>
                 {title}
               </Link>
             </h2>
@@ -77,7 +78,7 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
           </div>
         </div>
         <div className="w-full md:w-4/5 lg:w-2/3">
-          <Link href={`/single/${slug}`} className="nc-CardLarge1__right block relative">
+          <Link href={getPostLink(postType, slug)} className="nc-CardLarge1__right block relative">
             <NcImage
               containerClassName="aspect-w-16 aspect-h-16 sm:aspect-h-12 md:aspect-h-14 lg:aspect-h-10 2xl:aspect-h-9 relative"
               className="absolute inset-0 object-cover rounded-3xl"

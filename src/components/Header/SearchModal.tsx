@@ -15,6 +15,7 @@ import { useRouter } from 'next/navigation';
 
 import type { PostWithRelations, CategoryWithPostCount, UserWithProfile } from '@/types/types';
 import { searchAuthors, searchCategories, searchPosts } from '@/actions/search';
+import { getPostLink } from '@/lib/getPostLink';
 
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(' ');
@@ -155,7 +156,7 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                             {posts.map((post) => (
                               <Combobox.Option
                                 key={post.id}
-                                value={{ href: `/single/${post.slug}`, ...post }}
+                                value={{ href: getPostLink(post.postType, post.slug), ...post }}
                                 className={({ active }) =>
                                   classNames(
                                     'flex select-none items-center px-4 py-2',
@@ -180,7 +181,6 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                           </ul>
                         </li>
                       )}
-
                       {categories.length > 0 && (
                         <li>
                           <h2 className="text-xs font-semibold text-gray-900">دسته‌بندی‌ها</h2>
