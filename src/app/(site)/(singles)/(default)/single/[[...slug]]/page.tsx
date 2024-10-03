@@ -9,7 +9,6 @@ import SingleRelatedPosts from '@/app/(site)/(singles)/SingleRelatedPosts';
 import NcImage from '@/components/NcImage/NcImage';
 import Loading from '@/components/Loading';
 
-// اضافه کردن import برای پارسر HTML
 import parse from 'html-react-parser';
 
 export interface PageProps {

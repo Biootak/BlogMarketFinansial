@@ -1,6 +1,6 @@
 'use server';
 
-import type { PostStatus, Prisma, Role } from '@prisma/client';
+import { PostStatus, type Prisma, Role } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/db';
 import { auth } from '@/auth';
@@ -400,9 +400,7 @@ export async function getPostBySlug(slug: string): Promise<
     }
   >
 > {
-  console.log('getPostBySlug: Called with slug:', slug);
   if (!slug) {
-    console.log('getPostBySlug: Invalid slug');
     return {
       success: false,
       message: 'اسلاگ نامعتبر است.',
@@ -411,9 +409,8 @@ export async function getPostBySlug(slug: string): Promise<
   }
 
   try {
-    console.log('getPostBySlug: Querying database for post');
     const post = await prisma.post.findUnique({
-      where: { slug: slug },
+      where: { slug: slug, status: PostStatus.PUBLISHED },
       include: {
         author: {
           include: {
@@ -456,7 +453,6 @@ export async function getPostBySlug(slug: string): Promise<
       },
     });
     if (!post) {
-      console.log('getPostBySlug: No post found with slug:', slug);
       return { success: false, message: 'پست یافت نشد.', error: 'پست یافت نشد.' };
     }
 
@@ -515,14 +511,12 @@ export async function getPostBySlug(slug: string): Promise<
       },
     });
 
-    console.log('getPostBySlug: Post and related content found:', post.slug);
     return {
       success: true,
       message: 'پست و محتوای مرتبط با موفقیت بازیابی شد.',
       data: { ...post, relatedPosts, moreFromAuthor },
     };
   } catch (error) {
-    console.error('getPostBySlug: Error retrieving post:', error);
     return {
       success: false,
       message: 'خطا در بازیابی پست. لطفاً دوباره تلاش کنید.',

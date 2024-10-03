@@ -1,16 +1,16 @@
+'use server';
+
 import prisma from '@/lib/db';
 import type { ActionResult, PostWithRelations } from '@/types/types';
 import { PostType, PostStatus } from '@prisma/client';
 
-export async function getGalleryPosts(
-  page = 1,
-  pageSize = 10,
-): Promise<ActionResult<PostWithRelations[]>> {
+export async function getGalleryPostBySlug(
+  slug: string,
+): Promise<ActionResult<PostWithRelations | null>> {
   try {
-    const skip = (page - 1) * pageSize;
-
-    const posts = await prisma.post.findMany({
+    const post = await prisma.post.findUnique({
       where: {
+        slug: slug,
         postType: PostType.GALLERY,
         status: PostStatus.PUBLISHED,
       },
@@ -51,39 +51,30 @@ export async function getGalleryPosts(
             likes: true,
             savedBy: true,
             tags: true,
+            categories: true,
           },
         },
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      skip,
-      take: pageSize,
     });
 
-    const totalPosts = await prisma.post.count({
-      where: {
-        postType: PostType.GALLERY,
-        status: PostStatus.PUBLISHED,
-      },
-    });
+    if (!post) {
+      return {
+        success: false,
+        message: 'پست مورد نظر یافت نشد.',
+        data: null,
+      };
+    }
 
     return {
       success: true,
-      message: 'پست‌های گالری با موفقیت بازیابی شدند.',
-      data: posts,
-      meta: {
-        currentPage: page,
-        pageSize,
-        totalPages: Math.ceil(totalPosts / pageSize),
-        totalItems: totalPosts,
-      },
+      message: 'پست گالری با موفقیت بازیابی شد.',
+      data: post,
     };
   } catch (error) {
-    console.error('خطا در بازیابی پست‌های گالری:', error);
+    console.error('خطا در بازیابی پست گالری:', error);
     return {
       success: false,
-      message: 'خطا در بازیابی پست‌های گالری. لطفاً دوباره تلاش کنید.',
+      message: 'خطا در بازیابی پست گالری. لطفاً دوباره تلاش کنید.',
       error: error instanceof Error ? error.message : String(error),
     };
   }
