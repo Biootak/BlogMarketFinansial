@@ -31,6 +31,8 @@ export default async function PageSingle({ params }: PageProps) {
   );
   const moreFromAuthorPromise = getMoreFromAuthor(post.authorId, post.id);
 
+
+
   return (
     <div className="nc-PageSingle pt-8 lg:pt-16 bg-white dark:bg-gray-900">
       <div className="container mx-auto px-4">
