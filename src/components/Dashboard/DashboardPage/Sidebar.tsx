@@ -20,16 +20,12 @@ import { useMemo } from 'react';
 const menuItems = [
   { href: '/dashboard', icon: <IoHomeOutline size={24} />, label: 'داشبورد' },
   { href: '/dashboard/posts', icon: <FaProductHunt size={24} />, label: 'پست ها' },
-  {
-    href: '/dashboard/categories',
-    icon: <MdOutlineDashboard size={24} />,
-    label: 'دسته بندی',
-  },
+  { href: '/dashboard/categories', icon: <MdOutlineDashboard size={24} />, label: 'دسته بندی' },
   { href: '/dashboard/advertisements', icon: <SiGoogleads size={24} />, label: 'تبلیغات' },
   {
     href: '/dashboard/exchange-rates',
     icon: <MdCurrencyExchange size={24} />,
-    label: 'نرخ ارز ها ',
+    label: 'نرخ ارز ها',
   },
   { href: '/dashboard/users', icon: <FaUsers size={24} />, label: 'کاربران' },
   { href: '/dashboard/edit-profile', icon: <CiSettings size={24} />, label: 'تنظیمات' },
@@ -78,6 +74,12 @@ const Sidebar: React.FC = () => {
     [isMobile],
   );
 
+  const handleItemClick = () => {
+    if (isMobile) {
+      setIsOpen(false);
+    }
+  };
+
   return (
     <>
       <motion.nav
@@ -86,23 +88,29 @@ const Sidebar: React.FC = () => {
         animate={isOpen ? 'open' : 'closed'}
         variants={sidebarVariants}
         className={`fixed top-0 right-0 h-full bg-blue-600 dark:bg-gray-800 text-white shadow-lg z-40 
-                    overflow-hidden transition-all duration-300`}
+                    overflow-hidden transition-all duration-300 flex flex-col`}
       >
-        <div className="h-full flex flex-col p-2">
-          <div className="flex justify-between items-center mb-10">
+        <div className="flex-grow overflow-y-auto scrollbar-thin scrollbar-thumb-blue-400 scrollbar-track-blue-200 p-2">
+          <div className="flex justify-between items-center mb-6">
             <AnimatePresence>
               {isOpen && (
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2, delay: 0.1 }}
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.5 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex items-center"
                 >
-                  <Logo className="w-10 rounded-md" />
+                  <Logo className="w-10 h-10 rounded-md" />
                 </motion.div>
               )}
             </AnimatePresence>
-            <button type="button" onClick={() => setIsOpen(!isOpen)} className="p-2">
+            <button
+              type="button"
+              onClick={() => setIsOpen(!isOpen)}
+              className="p-2 hover:bg-blue-700 dark:hover:bg-gray-700 rounded-md transition-colors duration-200"
+              aria-label={isOpen ? 'بستن منو' : 'باز کردن منو'}
+            >
               <MdMenuOpen
                 size={24}
                 className={`transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
@@ -110,10 +118,10 @@ const Sidebar: React.FC = () => {
             </button>
           </div>
 
-          <ul className="space-y-4 flex-grow">
+          <ul className="space-y-2">
             {menuItems.map((item) => (
               <li key={item.href}>
-                <Link href={item.href}>
+                <Link href={item.href} onClick={handleItemClick}>
                   <span
                     className={`flex items-center p-2 rounded-md transition-colors duration-200
                                 ${
@@ -129,8 +137,8 @@ const Sidebar: React.FC = () => {
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           exit={{ opacity: 0, x: -10 }}
-                          transition={{ duration: 0.2, delay: 0.1 }}
-                          className="mr-4"
+                          transition={{ duration: 0.2 }}
+                          className="mr-3 font-medium"
                         >
                           {item.label}
                         </motion.span>
@@ -141,11 +149,13 @@ const Sidebar: React.FC = () => {
               </li>
             ))}
           </ul>
+        </div>
 
+        <div className="p-2 border-t border-blue-500 dark:border-gray-700">
           <button
             type="button"
             onClick={handleLogout}
-            className="flex items-center w-full p-2 rounded-md text-blue-100 dark:text-gray-300 hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors duration-200"
+            className="flex items-center w-full p-2 mb-4 rounded-md text-blue-100 dark:text-gray-300 hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors duration-200"
           >
             <div className="w-6 h-6 flex items-center justify-center">
               <IoExitOutline size={24} />
@@ -156,17 +166,16 @@ const Sidebar: React.FC = () => {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
-                  transition={{ duration: 0.2, delay: 0.1 }}
-                  className="mr-4"
+                  transition={{ duration: 0.2 }}
+                  className="mr-3 font-medium"
                 >
                   خروج
                 </motion.span>
               )}
             </AnimatePresence>
           </button>
-
-          <div className="mt-4 flex items-center p-2 bg-blue-700 dark:bg-gray-700 rounded-md">
-            <div className="w-6 h-6 flex items-center justify-center">
+          <div className="mb-4 flex items-center p-2 bg-blue-700 dark:bg-gray-700 rounded-md">
+            <div className="w-8 h-8 flex items-center justify-center bg-blue-800 dark:bg-gray-600 rounded-full">
               <FaUserCircle size={24} />
             </div>
             <AnimatePresence>
@@ -175,11 +184,11 @@ const Sidebar: React.FC = () => {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
-                  transition={{ duration: 0.2, delay: 0.1 }}
-                  className="mr-4"
+                  transition={{ duration: 0.2 }}
+                  className="mr-3 overflow-hidden"
                 >
-                  <p className="font-medium">{user?.name}</p>
-                  <p className="text-sm text-blue-200 dark:text-gray-400">{user?.email}</p>
+                  <p className="font-medium truncate">{user?.name}</p>
+                  <p className="text-sm text-blue-200 dark:text-gray-400 truncate">{user?.email}</p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -197,6 +206,9 @@ const Sidebar: React.FC = () => {
               setIsOpen(false);
             }
           }}
+          role="button"
+          tabIndex={0}
+          aria-label="بستن منو"
         />
       )}
     </>
