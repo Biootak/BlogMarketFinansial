@@ -10,13 +10,11 @@ interface ImageNodeAttributes {
   textAlign?: 'left' | 'right' | 'center';
 }
 
-interface ImageNode extends ProseMirrorNode {
-  attrs: ImageNodeAttributes;
-}
-
-interface ImageElementProps extends NodeViewProps {
-  node: ImageNode;
-}
+type ResizeImageProps = NodeViewProps & {
+  node: NodeViewProps['node'] & {
+    attrs: ImageNodeAttributes;
+  };
+};
 function sizeClamp(length: number, min: number, max: number) {
   if (min !== undefined) {
     length = Math.max(length, min);
@@ -28,7 +26,7 @@ function sizeClamp(length: number, min: number, max: number) {
   return length;
 }
 
-const ResizeImage = ({ editor, node, updateAttributes }: ImageElementProps) => {
+const ResizeImage = ({ editor, node, updateAttributes }: ResizeImageProps) => {
   const { src, textAlign, width: widthProps } = node.attrs;
 
   const isEditable = editor.isEditable;
