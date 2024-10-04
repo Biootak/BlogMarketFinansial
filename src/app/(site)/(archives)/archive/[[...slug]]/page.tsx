@@ -98,7 +98,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
     : null;
   const selectedTag = type === 'tag' ? tags.find((tag) => tag.slug === category) : null;
 
-  const defaultImage = '/images/hero-right-2.png';
+  const defaultImage = '/images/crypto/crypto.png';
 
   return (
     <div className="nc-PageArchive max-w-full overflow-x-hidden">
