@@ -371,7 +371,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                         field.onChange(newValue);
                       }}
                       multiple
-                      maxFiles={10}
+                      maxFiles={20}
                       initialPreviews={field.value ?? []}
                     />
                   </FormControl>

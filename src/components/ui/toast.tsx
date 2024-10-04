@@ -16,13 +16,14 @@ const ToastViewport = React.forwardRef<
   <ToastPrimitives.Viewport
     ref={ref}
     className={cn(
-      'fixed bottom-0 right-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:max-w-[420px]',
+      'fixed z-[100] flex flex-col-reverse p-4 gap-2',
+      'bottom-0 right-0 left-0 sm:left-auto sm:right-0 sm:top-auto',
+      'w-full sm:max-w-[420px] md:max-w-[480px]',
       className,
     )}
     {...props}
   />
 ));
-ToastViewport.displayName = ToastPrimitives.Viewport.displayName;
 
 const toastVariants = cva(
   'group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-6 pr-8 shadow-lg transition-all',

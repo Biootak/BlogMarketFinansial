@@ -114,9 +114,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
             <Image
               src={avatarPreview}
               alt="Avatar"
-              layout="fill"
-              objectFit="cover"
-              className="rounded-full"
+              fill
+              sizes="128px"
+              className="rounded-full object-cover"
             />
           ) : (
             <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
@@ -139,9 +139,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
             <Image
               src={bgImagePreview}
               alt="Background Image"
-              layout="fill"
-              objectFit="cover"
-              className="rounded-lg"
+              fill
+              sizes="100vw"
+              className="rounded-lg object-cover"
             />
           ) : (
             <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
