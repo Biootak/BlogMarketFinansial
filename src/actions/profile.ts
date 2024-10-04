@@ -81,7 +81,7 @@ export async function updateProfile(formData: FormData): Promise<ActionResult<vo
     });
     console.log('Updated user data:', updatedUser);
 
-    revalidatePath('/profile');
+    revalidatePath('/edit-profile');
     return { success: true, message: 'پروفایل با موفقیت بروزرسانی شد', variant: 'success' };
   } catch (error) {
     console.error('Error updating profile:', error);
@@ -91,5 +91,3 @@ export async function updateProfile(formData: FormData): Promise<ActionResult<vo
     return { success: false, message: 'خطایی در بروزرسانی پروفایل رخ داد', variant: 'destructive' };
   }
 }
-
-

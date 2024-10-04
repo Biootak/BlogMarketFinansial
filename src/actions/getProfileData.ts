@@ -1,6 +1,5 @@
 'use server';
 
-import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import { checkRole } from '@/lib/utils';
 import type { UserWithProfile } from '@/types/types';
@@ -15,4 +14,6 @@ export async function getProfileData(): Promise<UserWithProfile | null> {
       _count: true,
     },
   });
+
+
 }
