@@ -48,6 +48,12 @@ export default auth((req) => {
     return Response.redirect(new URL('/signin', nextUrl));
   }
 
+  // اگر کاربر لاگین شده اما نقش او 'USER' است (که نشان می‌دهد اطلاعاتش در دیتابیس یافت نشده)، او را به صفحه ورود هدایت کنید
+  if (isLoggedIn && req.auth?.user?.role === 'USER') {
+    console.log('User session is invalid. Redirecting to signin.');
+    return Response.redirect(new URL('/signin', nextUrl));
+  }
+
   // Check user role for admin routes
   if (isAdminRoute && req.auth?.user?.role !== 'ADMIN' && req.auth?.user?.role !== 'AUTHOR') {
     console.log(`Unauthorized admin access attempt by user ${req.auth?.user?.id}`);
@@ -58,9 +64,7 @@ export default auth((req) => {
 // Optionally, don't invoke Middleware on some paths
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
     '/(api|trpc)(.*)',
   ],
 };

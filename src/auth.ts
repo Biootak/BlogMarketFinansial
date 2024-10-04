@@ -21,8 +21,11 @@ export const {
     async signIn({ user, account }) {
       if (account?.provider !== 'credentials') return;
       const existingUser = await getUserById(user.id as string);
-      if (!existingUser?.emailVerified) {
-        throw new Error('ایمیل تأیید نشده تایید نشده است .');
+      if (!existingUser) {
+        throw new Error('کاربر در دیتابیس یافت نشد.');
+      }
+      if (!existingUser.emailVerified) {
+        throw new Error('ایمیل تأیید نشده است.');
       }
     },
     async linkAccount({ user }) {
@@ -34,28 +37,40 @@ export const {
   },
   callbacks: {
     async session({ token, session }) {
-      if (session.user) {
-        session.user.id = token.sub as string;
-        session.user.role = token.role as Role;
-        session.user.profile = token.profile as UserProfile | undefined;
+      if (token.sub) {
+        const user = await getUserById(token.sub);
+        if (user) {
+          session.user = {
+            ...session.user,
+            id: user.id,
+            role: user.role as Role,
+            profile: user.profile as UserProfile | undefined,
+          };
+        } else {
+          // اگر کاربر در دیتابیس یافت نشد، یک سشن با حداقل اطلاعات برگردانید
+          session.user = {
+            ...session.user,
+            id: token.sub,
+            role: 'USER' as Role,
+            profile: undefined,
+          };
+        }
       }
       return session;
     },
 
-    async jwt({ token, user }) {
-      if (user) {
-        token.role = user.role as Role;
-        token.profile = (user as { profile?: UserProfile }).profile;
-      }
-
+    async jwt({ token }) {
       if (token.sub) {
-        const existingUser = await getUserById(token.sub);
-        if (existingUser) {
-          token.role = existingUser.role;
-          token.profile = existingUser.profile;
+        const user = await getUserById(token.sub);
+        if (user) {
+          token.role = user.role as Role;
+          token.profile = user.profile as UserProfile | undefined;
+        } else {
+          // اگر کاربر در دیتابیس یافت نشد، اطلاعات پیش‌فرض را در توکن قرار دهید
+          token.role = 'USER' as Role;
+          token.profile = undefined;
         }
       }
-
       return token;
     },
   },
