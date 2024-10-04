@@ -1,0 +1,60 @@
+'use client';
+
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
+
+interface ImageUploadDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onImageUpload: (urls: string[]) => void;
+  onImageRemove: () => void;
+  initialPreview: string;
+  title: string;
+}
+
+const ImageUploadDialog: React.FC<ImageUploadDialogProps> = ({
+  isOpen,
+  onClose,
+  onImageUpload,
+  onImageRemove,
+  initialPreview,
+  title,
+}) => {
+  const [preview, setPreview] = useState(initialPreview);
+
+  const handleImageUpload = (urls: string[]) => {
+    if (urls.length > 0) {
+      setPreview(urls[0]);
+      onImageUpload(urls);
+    }
+  };
+
+  const handleImageRemove = () => {
+    setPreview('');
+    onImageRemove();
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        <div className="py-4">
+          <ImageUploader
+            onImageUpload={handleImageUpload}
+            onImageRemove={handleImageRemove}
+            initialPreviews={preview ? [preview] : []}
+          />
+        </div>
+        <div className="flex justify-end">
+          <Button onClick={onClose}>بستن</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default ImageUploadDialog;
