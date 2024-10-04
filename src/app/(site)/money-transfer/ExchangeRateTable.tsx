@@ -50,7 +50,7 @@ export default function ExchangeRateTable({
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600 dark:text-gray-400">حداقل مبلغ:</span>
               <span className="font-medium text-blue-600 dark:text-blue-400">
-                {rate.minimumAmount.toLocaleString()} {rate.currency}
+                {rate.minimumAmount?.toLocaleString() ?? 'نامشخص'}
               </span>
             </div>
           </div>
