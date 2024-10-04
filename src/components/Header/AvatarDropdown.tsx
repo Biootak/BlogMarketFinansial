@@ -40,10 +40,12 @@ export default async function AvatarDropdown() {
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">{user.email}</p>
               </div>
             </div>
-
-            <MenuItem href={'/edit-profile'} icon={ProfileIcon} text="پروفایل" />
             {canAccessPosts && (
-              <MenuItem href="/dashboard/posts" icon={PostIcon} text="پست‌های من" />
+              <>
+                <MenuItem href={'/dashboard/edit-profile'} icon={ProfileIcon} text="پروفایل" />
+
+                <MenuItem href="/dashboard/posts" icon={PostIcon} text="پست‌های من" />
+              </>
             )}
 
             <div className="w-full my-2 border-t border-neutral-200 dark:border-neutral-700" />
