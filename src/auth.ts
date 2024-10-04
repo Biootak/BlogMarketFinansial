@@ -19,17 +19,11 @@ export const {
 } = NextAuth({
   events: {
     async signIn({ user, account }) {
-      // برای provider های غیر از credentials، اجازه ورود می‌دهیم
       if (account?.provider !== 'credentials') return;
-
-      // برای provider credentials، بررسی می‌کنیم که آیا ایمیل تأیید شده است
       const existingUser = await getUserById(user.id as string);
       if (!existingUser?.emailVerified) {
-        // اگر ایمیل تأیید نشده باشد، ورود را رد می‌کنیم
         throw new Error('ایمیل تأیید نشده تایید نشده است .');
       }
-
-      // اگر به اینجا برسیم، یعنی ورود موفق بوده است
     },
     async linkAccount({ user }) {
       await prisma.user.update({

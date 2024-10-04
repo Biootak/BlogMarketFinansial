@@ -5,12 +5,6 @@ import ProfileForm from '@/components/ProfileForm';
 import { getProfileData } from '@/actions/getProfileData';
 
 export default async function ProfilePage() {
-  const session = await auth();
-
-  if (!session || !session.user) {
-    redirect('/signin');
-  }
-
   const profileData = await getProfileData();
 
   if (!profileData) {
