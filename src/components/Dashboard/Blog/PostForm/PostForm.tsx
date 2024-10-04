@@ -482,17 +482,19 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
               disabled={isSubmitting}
               className="w-full sm:w-auto text-sm sm:text-base px-4 py-2 sm:px-6 sm:py-3"
             >
-              {isSubmitting ? (
-                <>
-                  <BiLoaderAlt className="animate-spin h-4 w-4 sm:h-5 sm:w-5" />
-                  <span className="mr-2">در حال ارسال</span>
-                </>
-              ) : (
-                <>
-                  <RiSendPlaneFill className="h-4 w-4 sm:h-5 sm:w-5" />
-                  <span className="mr-2">{isEditing ? 'به‌روزرسانی پست' : 'ارسال پست'}</span>
-                </>
-              )}
+              <div className="flex items-center justify-center w-full">
+                {isSubmitting ? (
+                  <>
+                    <span className="ml-2">در حال ارسال</span>
+                    <BiLoaderAlt className="animate-spin h-4 w-4 sm:h-5 sm:w-5" />
+                  </>
+                ) : (
+                  <>
+                    <span className="ml-2">{isEditing ? 'به‌روزرسانی پست' : 'ارسال پست'}</span>
+                    <RiSendPlaneFill className="h-4 w-4 sm:h-5 sm:w-5" />
+                  </>
+                )}
+              </div>
             </Button>
           </form>
         </Form>

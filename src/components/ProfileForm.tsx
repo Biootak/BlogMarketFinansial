@@ -286,7 +286,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
         <div className="flex items-center justify-center w-full">
           {isSubmitting ? (
             <>
-              <span className="ml-2">درحال بروزرسانی...</span>
+              <span className="ml-2">در حال بروزرسانی ...</span>
               <Loading size="sm" variant="secondary" type="spinner" />
             </>
           ) : (

@@ -9,7 +9,7 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({ isSubmitting }) => {
   return (
     <div className="flex justify-center w-full mt-4">
       <Button variant="default" type="submit">
-        {isSubmitting ? 'در حال ارسال...' : 'ذخیره'}
+        {isSubmitting ? 'در حال ارسال ' + '...' : 'ذخیره'}
       </Button>
     </div>
   );
