@@ -41,7 +41,7 @@ export default async function AvatarDropdown() {
               </div>
             </div>
 
-            <MenuItem href="#" icon={ProfileIcon} text="پروفایل" />
+            <MenuItem href={'/edit-profile'} icon={ProfileIcon} text="پروفایل" />
             {canAccessPosts && (
               <MenuItem href="/dashboard/posts" icon={PostIcon} text="پست‌های من" />
             )}
