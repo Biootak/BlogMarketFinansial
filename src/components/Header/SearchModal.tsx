@@ -114,10 +114,10 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                 <Combobox
                   onChange={(item: any) => {
                     if (item?.href) {
-                      if (item.href.startsWith('/category/')) {
+                      if (item.href.startsWith('/category')) {
                         // اگر یک دسته‌بندی انتخاب شده است
-                        const categorySlug = item.href.split('/').pop();
-                        router.push(`/archive/category${categorySlug}`);
+                        const categorySlug = item.href;
+                        router.push(`/archive/${categorySlug}`);
                       } else {
                         // برای سایر موارد (مثل پست‌ها یا نویسندگان)
                         router.push(item.href);
