@@ -18,11 +18,10 @@ const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
     { id: 'home', name: 'صفحه اصلی', href: '/' },
     {
       id: 'crypto',
-      name: 'ارز دیجیتال',
+      name: 'ارزهای دیجیتال',
       href: '/archive/category/crypto',
       subItems: [
-        { id: 'crypto-urgent', name: 'اخبار فوری', href: '/archive/category/crypto/urgent' },
-        { id: 'crypto-important', name: 'اخبار مهم', href: '/archive/category/crypto/important' },
+        { id: 'crypto-urgent', name: 'اخبار فوری', href: '/archive/category/crypto/news-urgent' },
         { id: 'crypto-analysis', name: 'تحلیل', href: '/archive/category/crypto/analysis' },
         { id: 'crypto-education', name: 'آموزش', href: '/archive/category/crypto/education' },
       ],
@@ -34,7 +33,6 @@ const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
       subItems: [
         { id: 'gold-news', name: 'اخبار طلا', href: '/archive/category/gold/news' },
         { id: 'gold-analysis', name: 'تحلیل', href: '/archive/category/gold/analysis' },
-        { id: 'gold-local', name: 'بازار داخلی', href: '/archive/category/gold/local' },
         { id: 'gold-global', name: 'بازار جهانی', href: '/archive/category/gold/global' },
       ],
     },
@@ -57,20 +55,9 @@ const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
       ],
     },
     { id: 'stock', name: 'بورس و سهام', href: '/archive/category/stock' },
-    { id: 'analysis', name: 'تحلیل', href: '/archive/category/analysis' },
-    { id: 'education', name: 'آموزش', href: '/archive/category/education' },
     { id: 'money-transfer', name: 'حواله', href: '/money-transfer' },
     { id: 'online-payment', name: 'پرداخت آنلاین', href: '/online-payment' },
-    {
-      id: '3',
-      href: '/about',
-      name: 'درباره ما',
-    },
-    {
-      id: '4',
-      href: '/contact',
-      name: 'تماس با ما',
-    },
+    { id: 'urgent', name: 'اخبار فوری', href: '/archive/category/news-urgent' },
     { id: 'terms', name: 'قوانین', href: '/terms' },
   ];
 
