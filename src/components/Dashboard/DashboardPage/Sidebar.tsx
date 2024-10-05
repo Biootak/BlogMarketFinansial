@@ -90,7 +90,7 @@ const Sidebar: React.FC = () => {
         className={`fixed top-0 right-0 h-full bg-blue-600 dark:bg-gray-800 text-white shadow-lg z-40 
                     overflow-hidden transition-all duration-300 flex flex-col`}
       >
-        <div className="flex-grow overflow-y-auto scrollbar-thin scrollbar-thumb-blue-400 scrollbar-track-blue-200 p-2">
+        <div className="flex-shrink-0 p-2">
           <div className="flex justify-between items-center mb-6">
             <AnimatePresence>
               {isOpen && (
@@ -117,8 +117,10 @@ const Sidebar: React.FC = () => {
               />
             </button>
           </div>
+        </div>
 
-          <ul className="space-y-2">
+        <div className="flex-grow overflow-y-auto scrollbar-thin scrollbar-thumb-blue-400 scrollbar-track-blue-200">
+          <ul className="space-y-2 p-2">
             {menuItems.map((item) => (
               <li key={item.href}>
                 <Link href={item.href} onClick={handleItemClick}>
@@ -151,7 +153,7 @@ const Sidebar: React.FC = () => {
           </ul>
         </div>
 
-        <div className="p-2 border-t border-blue-500 dark:border-gray-700">
+        <div className="flex-shrink-0 p-2 border-t border-blue-500 dark:border-gray-700">
           <button
             type="button"
             onClick={handleLogout}
