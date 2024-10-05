@@ -13,7 +13,6 @@ import type {
   UpdatePostInput,
 } from '@/types/types';
 import { CreatePostSchema, UpdatePostSchema } from '@/schemas';
-import { cache } from 'react';
 
 export async function createPost(data: CreatePostInput): Promise<ActionResult<PostWithRelations>> {
   const session = await checkRole(['ADMIN', 'AUTHOR']);
@@ -101,6 +100,8 @@ export async function createPost(data: CreatePostInput): Promise<ActionResult<Po
     });
 
     revalidatePath('/dashboard');
+    revalidatePath('/archive');
+    revalidatePath('/');
     return {
       success: true,
       message: 'پست با موفقیت ایجاد شد.',
@@ -210,6 +211,8 @@ export async function updatePost(
     });
 
     revalidatePath('/dashboard');
+    revalidatePath('/archive');
+    revalidatePath('/');
     return {
       success: true,
       message: 'پست با موفقیت به‌روزرسانی شد.',
@@ -297,7 +300,9 @@ export async function updatePostStatus(
       },
     });
 
-    revalidatePath(`/post/${postId}`);
+    revalidatePath('/dashboard');
+    revalidatePath('/archive');
+    revalidatePath('/');
     return {
       success: true,
       message: 'وضعیت پست با موفقیت به‌روزرسانی شد.',
@@ -317,7 +322,9 @@ export async function deletePost(postId: string): Promise<ActionResult> {
 
   try {
     await prisma.post.delete({ where: { id: postId } });
-    revalidatePath('/dashboard/posts');
+    revalidatePath('/dashboard');
+    revalidatePath('/archive');
+    revalidatePath('/');
     return {
       success: true,
       message: 'پست با موفقیت حذف شد.',
@@ -618,122 +625,122 @@ export async function listAllPosts(
   }
 }
 
-export const getArchivePosts = cache(
-  async (
-    page = 1,
-    limit = 12,
-    filter?: string,
-    category?: string,
-    subcategory?: string,
-  ): Promise<ActionResult<{ posts: PostWithRelations[]; total: number; pages: number }>> => {
-    try {
-      const skip = (page - 1) * limit;
-      let whereCondition: Prisma.PostWhereInput = { status: 'PUBLISHED' };
-      let orderBy: Prisma.PostOrderByWithRelationInput = { createdAt: 'desc' };
+export const getArchivePosts = async (
+  page = 1,
+  limit = 12,
+  filter?: string,
+  category?: string,
+  subcategory?: string,
+): Promise<ActionResult<{ posts: PostWithRelations[]; total: number; pages: number }>> => {
+  try {
+    const skip = (page - 1) * limit;
+    let whereCondition: Prisma.PostWhereInput = { status: PostStatus.PUBLISHED };
+    let orderBy: Prisma.PostOrderByWithRelationInput = { createdAt: 'desc' };
 
-      if (category) {
-        if (subcategory) {
-          // اگر هم دسته‌بندی اصلی و هم زیردسته‌بندی داریم
-          whereCondition = {
-            ...whereCondition,
-            categories: {
-              some: {
-                slug: category,
-                childCategories: {
-                  some: {
-                    slug: subcategory,
-                  },
+    // اعمال فیلتر دسته‌بندی
+    if (category) {
+      if (subcategory) {
+        // اگر هم دسته‌بندی اصلی و هم زیردسته‌بندی داریم
+        whereCondition = {
+          ...whereCondition,
+          categories: {
+            some: {
+              slug: category,
+              childCategories: {
+                some: {
+                  slug: subcategory,
                 },
-              },
-            },
-            AND: [
-              {
-                categories: {
-                  some: {
-                    slug: subcategory,
-                  },
-                },
-              },
-            ],
-          };
-        } else {
-          // اگر فقط دسته‌بندی اصلی داریم
-          whereCondition = {
-            ...whereCondition,
-            categories: {
-              some: {
-                slug: category,
-              },
-            },
-          };
-        }
-      }
-
-      // اعمال فیلتر
-      switch (filter) {
-        case 'جدیدترین':
-          orderBy = { createdAt: 'desc' };
-          break;
-        case 'قدیمی‌ترین':
-          orderBy = { createdAt: 'asc' };
-          break;
-        case 'محبوب‌ترین':
-          orderBy = { likes: { _count: 'desc' } };
-          break;
-        default:
-          orderBy = { createdAt: 'desc' };
-      }
-
-      const [posts, total] = await prisma.$transaction([
-        prisma.post.findMany({
-          where: whereCondition,
-          take: limit,
-          skip: skip,
-          orderBy: orderBy,
-          include: {
-            author: {
-              include: {
-                profile: true,
-              },
-            },
-            categories: {
-              include: {
-                childCategories: true,
-              },
-            },
-            tags: true,
-            _count: {
-              select: {
-                comments: true,
-                likes: true,
-                savedBy: true,
-                tags: true,
               },
             },
           },
-        }),
-        prisma.post.count({ where: whereCondition }),
-      ]);
-
-      return {
-        success: true,
-        message: 'پست‌ها با موفقیت بازیابی شدند.',
-        data: {
-          posts,
-          total,
-          pages: Math.ceil(total / limit),
-        },
-      };
-    } catch (error) {
-      console.error('خطا در بازیابی پست‌ها:', error);
-      return {
-        success: false,
-        message: 'خطا در بازیابی پست‌ها. لطفاً دوباره تلاش کنید.',
-        error: error instanceof Error ? error.message : String(error),
-      };
+          AND: [
+            {
+              categories: {
+                some: {
+                  slug: subcategory,
+                },
+              },
+            },
+          ],
+        };
+      } else {
+        // اگر فقط دسته‌بندی اصلی داریم
+        whereCondition = {
+          ...whereCondition,
+          categories: {
+            some: {
+              slug: category,
+            },
+          },
+        };
+      }
     }
-  },
-);
+
+    // اعمال فیلتر مرتب‌سازی
+    switch (filter) {
+      case 'جدیدترین':
+        orderBy = { createdAt: 'desc' };
+        break;
+      case 'قدیمی‌ترین':
+        orderBy = { createdAt: 'asc' };
+        break;
+      case 'محبوب‌ترین':
+        orderBy = { likes: { _count: 'desc' } };
+        break;
+      default:
+        orderBy = { createdAt: 'desc' };
+    }
+
+    // استفاده از تراکنش برای اجرای همزمان دو کوئری
+    const [posts, total] = await prisma.$transaction([
+      prisma.post.findMany({
+        where: whereCondition,
+        take: limit,
+        skip: skip,
+        orderBy: orderBy,
+        include: {
+          author: {
+            include: {
+              profile: true,
+            },
+          },
+          categories: {
+            include: {
+              childCategories: true,
+            },
+          },
+          tags: true,
+          _count: {
+            select: {
+              comments: true,
+              likes: true,
+              savedBy: true,
+              tags: true,
+            },
+          },
+        },
+      }),
+      prisma.post.count({ where: whereCondition }),
+    ]);
+
+    return {
+      success: true,
+      message: 'پست‌ها با موفقیت بازیابی شدند.',
+      data: {
+        posts,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    };
+  } catch (error) {
+    console.error('خطا در بازیابی پست‌ها:', error);
+    return {
+      success: false,
+      message: 'خطا در بازیابی پست‌ها. لطفاً دوباره تلاش کنید.',
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+};
 
 export async function likeItem(
   itemId: string,
