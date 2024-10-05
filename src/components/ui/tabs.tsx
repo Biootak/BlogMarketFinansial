@@ -11,9 +11,9 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      'inline-flex h-14 items-center justify-center rounded-2xl p-1',
+      'inline-flex h-16 items-center justify-center rounded-3xl p-1.5',
       'bg-neutral-100 dark:bg-neutral-800',
-      'shadow-md',
+      'shadow-lg',
       className,
     )}
     {...props}
@@ -28,7 +28,7 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      'inline-flex items-center justify-center whitespace-nowrap rounded-xl px-5 py-2.5',
+      'inline-flex items-center justify-center whitespace-nowrap rounded-2xl px-6 py-3',
       'text-base font-medium',
       'transition-all duration-200 ease-in-out',
       'text-neutral-600 dark:text-neutral-300',
@@ -36,7 +36,8 @@ const TabsTrigger = React.forwardRef<
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2',
       'disabled:pointer-events-none disabled:opacity-50',
       'data-[state=active]:bg-primary-500 data-[state=active]:text-white',
-      'data-[state=active]:shadow-sm',
+      'data-[state=active]:shadow-md',
+      'mx-1', // Add horizontal margin between tabs
       className,
     )}
     {...props}
@@ -51,9 +52,9 @@ const TabsContent = React.forwardRef<
   <TabsPrimitive.Content
     ref={ref}
     className={cn(
-      'mt-6 rounded-2xl p-6',
+      'mt-8 rounded-3xl p-8',
       'bg-white dark:bg-neutral-900',
-      'shadow-lg',
+      'shadow-xl',
       'ring-1 ring-neutral-200 dark:ring-neutral-700',
       'transition-all duration-200 ease-in-out',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2',

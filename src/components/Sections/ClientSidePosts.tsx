@@ -23,13 +23,9 @@ export default function ClientSidePosts({
   const [posts, setPosts] = useState<Record<string, PostWithRelations[]>>(initialPosts);
   const [ads] = useState<Advertisement[]>(initialAds);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasMore, setHasMore] = useState<Record<string, boolean>>(() => {
-    const result: Record<string, boolean> = {};
-    for (const category of categories) {
-      result[category] = true;
-    }
-    return result;
-  });
+  const [hasMore, setHasMore] = useState<Record<string, boolean>>(
+    Object.fromEntries(categories.map((category) => [category, true])),
+  );
   const [error, setError] = useState<Error | null>(null);
   const [activeCategory, setActiveCategory] = useState('همه');
 
@@ -48,22 +44,16 @@ export default function ClientSidePosts({
       });
 
       if (newPosts.length === 0) {
-        setHasMore((prev) => {
-          const updated = Object.assign({}, prev);
-          updated[activeCategory] = false;
-          return updated;
-        });
+        setHasMore((prev) => ({ ...prev, [activeCategory]: false }));
       } else {
-        setPosts((prev) => {
-          const updated = Object.assign({}, prev);
-          updated[activeCategory] = currentPosts.concat(newPosts);
-          return updated;
-        });
-        setHasMore((prev) => {
-          const updated = Object.assign({}, prev);
-          updated[activeCategory] = newPosts.length === POSTS_PER_PAGE;
-          return updated;
-        });
+        setPosts((prev) => ({
+          ...prev,
+          [activeCategory]: [...currentPosts, ...newPosts],
+        }));
+        setHasMore((prev) => ({
+          ...prev,
+          [activeCategory]: newPosts.length === POSTS_PER_PAGE,
+        }));
       }
     } catch (error) {
       console.error('Error loading more posts:', error);
@@ -74,19 +64,30 @@ export default function ClientSidePosts({
   }, [posts, isLoading, hasMore, activeCategory]);
 
   return (
-    <div className="space-y-8 ">
-      <h2 className="text-3xl font-bold">آخرین مقالات</h2>
-      {error && <div>Error: {error.message}</div>}
+    <div className="space-y-8">
+      <h2 className="text-3xl font-bold text-center mb-6">آخرین مقالات</h2>
+      {error && <div className="text-red-500 text-center">Error: {error.message}</div>}
       <Tabs defaultValue="همه" onValueChange={setActiveCategory} dir="rtl">
-        <TabsList>
-          {categories.map((category) => (
-            <TabsTrigger key={category} value={category}>
-              {category}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center" aria-hidden="true">
+            <div className="w-full border-t border-gray-300" />
+          </div>
+          <div className="relative flex justify-center">
+            <TabsList className="inline-flex items-center bg-white px-4 py-2 rounded-full shadow-sm">
+              {categories.map((category) => (
+                <TabsTrigger
+                  key={category}
+                  value={category}
+                  className="px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  {category}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
+        </div>
         {categories.map((category) => (
-          <TabsContent key={category} value={category}>
+          <TabsContent key={category} value={category} className="mt-8">
             {posts[category] && posts[category].length > 0 ? (
               <PostsDisplay
                 posts={posts[category]}
