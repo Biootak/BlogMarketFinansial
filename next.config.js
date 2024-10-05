@@ -8,6 +8,11 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  output: 'standalone',
+  swcMinify: true,
+  compress: true,
+  productionBrowserSourceMaps: false,
+  optimizeFonts: true,
 
   images: {
     remotePatterns: [
@@ -40,13 +45,18 @@ const nextConfig = {
         hostname: 'cdn.jsdelivr.net',
       },
     ],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60,
   },
+
   experimental: {
     serverActions: {
       bodySizeLimit: '5mb',
-      optimizeCss: true,
     },
+    optimizeCss: true,
   },
+
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
@@ -58,10 +68,49 @@ const nextConfig = {
     }
     return config;
   },
+
   sassOptions: {
     includePaths: [path.join(__dirname, 'styles')],
   },
+
   transpilePackages: ['@aws-sdk/client-s3', '@aws-sdk/s3-request-presigner', 'framer-motion'],
+
+  // Security headers
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin',
+          },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains; preload',
+          },
+        ],
+      },
+    ];
+  },
+
+  // Redirects if needed
+  async redirects() {
+    return [];
+  },
+
+  // Rewrites if needed
+  async rewrites() {
+    return [];
+  },
 };
 
 module.exports = nextConfig;
