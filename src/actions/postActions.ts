@@ -631,6 +631,7 @@ export const getArchivePosts = async (
   filter?: string,
   category?: string,
   subcategory?: string,
+  tag?: string, // اضافه کردن پارامتر تگ
 ): Promise<ActionResult<{ posts: PostWithRelations[]; total: number; pages: number }>> => {
   try {
     const skip = (page - 1) * limit;
@@ -674,6 +675,18 @@ export const getArchivePosts = async (
           },
         };
       }
+    }
+
+    // اعمال فیلتر تگ
+    if (tag) {
+      whereCondition = {
+        ...whereCondition,
+        tags: {
+          some: {
+            slug: tag,
+          },
+        },
+      };
     }
 
     // اعمال فیلتر مرتب‌سازی

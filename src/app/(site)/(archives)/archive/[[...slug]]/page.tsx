@@ -80,6 +80,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
       filter,
       type === 'category' ? category : undefined,
       subcategory,
+      type === 'tag' ? category : undefined,
     ),
     getCategories({ limit: 10, page: 1 }),
     getTags({ limit: 10, page: 1 }),
