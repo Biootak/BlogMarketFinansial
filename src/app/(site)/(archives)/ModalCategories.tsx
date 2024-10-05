@@ -141,7 +141,7 @@ const ModalCategories: React.FC<ModalCategoriesProps> = ({ initialCategories }) 
                     className="w-full justify-end text-right"
                     onClick={() => handleCategorySelect(category.slug)}
                   >
-                    {category.name} ({(category.count)})
+                    {category.name} ({category.count})
                   </Button>
                 ))}
               </motion.div>

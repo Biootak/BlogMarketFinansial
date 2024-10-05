@@ -40,15 +40,6 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({ initialSearchQuery }) => {
             <h2 className="text-2xl sm:text-4xl font-semibold text-neutral-900 dark:text-neutral-100">
               {searchQuery}
             </h2>
-            <span className="block text-xs sm:text-sm mt-4 text-neutral-500 dark:text-neutral-300">
-              ما{' '}
-              <strong className="font-medium text-neutral-800 dark:text-neutral-100">1135</strong>{' '}
-              نتیجه برای{' '}
-              <strong className="font-medium text-neutral-800 dark:text-neutral-100">
-                {searchQuery}
-              </strong>{' '}
-              پیدا کردیم
-            </span>
             <form className="relative w-full mt-8 sm:mt-11 text-left" onSubmit={handleSubmit}>
               <label htmlFor="search-input" className="text-neutral-500 dark:text-neutral-300">
                 <span className="sr-only">جستجو در تمام آیکون‌ها</span>
@@ -69,6 +60,7 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({ initialSearchQuery }) => {
                   <HiArrowRight className="w-5 h-5 rtl:rotate-180" />
                 </ButtonCircle>
                 <span className="absolute start-5 top-1/2 transform -translate-y-1/2 text-2xl md:start-6">
+                  {/* biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
                   <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
                     <path
                       stroke="currentColor"
@@ -76,7 +68,7 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({ initialSearchQuery }) => {
                       strokeLinejoin="round"
                       strokeWidth="1.5"
                       d="M19.25 19.25L15.5 15.5M4.75 11C4.75 7.54822 7.54822 4.75 11 4.75C14.4518 4.75 17.25 7.54822 17.25 11C17.25 14.4518 14.4518 17.25 11 17.25C7.54822 17.25 4.75 14.4518 4.75 11Z"
-                    ></path>
+                    />
                   </svg>
                 </span>
               </label>

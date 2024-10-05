@@ -1,6 +1,15 @@
 // types.ts
 
-import { Prisma, type Role, type PostType, type PostStatus, type Category } from '@prisma/client';
+import {
+  Prisma,
+  type Role,
+  type PostType,
+  type PostStatus,
+  type Category,
+  type Post,
+  type Tag,
+  type User,
+} from '@prisma/client';
 import type { z } from 'zod';
 import type {
   LoginSchema,
@@ -391,3 +400,12 @@ export type CategoryWithParent = {
   parentId: string | null;
   parentCategory: CategoryWithParent | null;
 };
+
+type SearchResultItem = Post | Category | Tag | User;
+
+export interface SearchResultData {
+  posts: SearchResultItem[];
+  total: number;
+  pages: number;
+}
+export type SearchActionResult = ActionResult<SearchResultData>;
