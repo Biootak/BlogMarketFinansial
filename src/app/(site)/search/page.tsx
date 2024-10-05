@@ -4,14 +4,16 @@ import SearchHeader from './SearchHeader';
 import SearchResults from './SearchResults';
 import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
 import type { SearchParamsType } from '@/types/types';
+import { getSearchResults } from '@/actions/searchActions';
 
 export const metadata: Metadata = {
   title: 'جستجو | وبلاگ ما',
   description: 'نتایج جستجو در وبلاگ ما',
 };
 
-export default function PageSearch({ searchParams }: { searchParams: SearchParamsType }) {
+export default async function PageSearch({ searchParams }: { searchParams: SearchParamsType }) {
   const { q: searchQuery = '', tab = 'مقالات', page = '1' } = searchParams;
+  const result = await getSearchResults(searchQuery, tab, Number(page));
 
   return (
     <div className="nc-PageSearch">
@@ -19,7 +21,12 @@ export default function PageSearch({ searchParams }: { searchParams: SearchParam
       <div className="container py-16 lg:pb-28 lg:pt-20 space-y-16 lg:space-y-28">
         <main>
           <Suspense fallback={<div>در حال بارگذاری...</div>}>
-            <SearchResults searchQuery={searchQuery} activeTab={tab} page={Number(page)} />
+            <SearchResults
+              searchQuery={searchQuery}
+              activeTab={tab}
+              page={Number(page)}
+              searchResults={result}
+            />
           </Suspense>
         </main>
         <SectionSubscribe2 />
