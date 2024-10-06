@@ -14,6 +14,7 @@ import type { PostWithRelations } from '@/types/types';
 import { useSession } from 'next-auth/react';
 import MarkdownRenderer from './MarkdownRenderer';
 import Empty from '@/components/Empty';
+import { Button } from '@/components/ui/button';
 
 interface SingleContentProps {
   post: PostWithRelations;
@@ -143,19 +144,25 @@ const SingleContent: React.FC<SingleContentProps> = ({ post }) => {
           />
           <div className="border-s h-4 border-neutral-200 dark:border-neutral-700" />
 
-          <button
-            type="button"
-            className={`w-9 h-9 items-center justify-center ${
-              isShowScrollToTop ? 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100' : ''
+          <Button
+            variant="outline"
+            size="icon"
+            className={`w-9 h-9 p-0 flex items-center justify-center ${
+              isShowScrollToTop
+                ? 'bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700'
+                : ''
             } rounded-full`}
             onClick={() => isShowScrollToTop && window.scrollTo({ top: 0, behavior: 'smooth' })}
+            aria-label="Scroll to top"
           >
             {isShowScrollToTop ? (
               <HiArrowUp className="w-4 h-4" />
             ) : (
-              <span ref={progressRef}>%</span>
+              <span ref={progressRef} className="text-xs">
+                %
+              </span>
             )}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
