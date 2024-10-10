@@ -48,7 +48,7 @@ const PostCardLikeAndComment: FC<PostCardLikeAndCommentProps> = ({
       <PostCardCommentBtn
         className={`${hiddenCommentOnMobile ? 'hidden sm:flex' : 'flex'} ${itemClass}`}
         commentCount={commentCount}
-        postId={post.id}
+        postSlug={post.slug}
         isATagOnSingle={useOnSinglePage}
       />
     </div>

@@ -837,7 +837,7 @@ export async function savePost(postId: string): Promise<ActionResult> {
       });
     }
 
-    revalidatePath(`/post/${postId}`);
+    revalidatePath(`/posts/${postId}`);
     return {
       success: true,
       message: existingSave ? 'پست از لیست ذخیره‌ها حذف شد.' : 'پست با موفقیت ذخیره شد.',

@@ -139,7 +139,7 @@ const SingleContent: React.FC<SingleContentProps> = ({ post }) => {
           <PostCardCommentBtn
             isATagOnSingle
             className="flex px-3 h-9 text-xs"
-            postId={post.id}
+            postSlug={post.slug}
             commentCount={commentCount}
           />
           <div className="border-s h-4 border-neutral-200 dark:border-neutral-700" />

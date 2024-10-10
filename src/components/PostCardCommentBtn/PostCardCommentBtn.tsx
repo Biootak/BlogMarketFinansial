@@ -10,18 +10,18 @@ export interface PostCardCommentBtnProps {
   className?: string;
   isATagOnSingle?: boolean;
   commentCount: number;
-  postId: string;
+  postSlug: string;
 }
 
 const PostCardCommentBtn: FC<PostCardCommentBtnProps> = ({
   className = '',
   isATagOnSingle = false,
   commentCount,
-  postId,
+  postSlug,
 }) => {
-  if (!postId) return null;
+  if (!postSlug) return null;
 
-  const commentUrl = isATagOnSingle ? '#comments' : `/post/${postId}#comments`;
+  const commentUrl = isATagOnSingle ? '#comments' : `/single/${postSlug}#comments`;
 
   const commonClasses = cn(
     'nc-PostCardCommentBtn relative flex items-center justify-center',
