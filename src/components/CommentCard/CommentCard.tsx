@@ -11,13 +11,12 @@ import Link from 'next/link';
 import SingleCommentForm from '@/app/(site)/(singles)/SingleCommentForm';
 import CommentCardLikeReply from '../CommentCardLikeReply/CommentCardLikeReply';
 import { useSession } from 'next-auth/react';
-import { formatDate } from '@/utils/formatDate';
+import FormattedDate from '../FormattedDate';
 import type { CommentWithRelationsAndLikes, NcDropDownItem } from '@/types/types';
 import { likeItem } from '@/actions/postActions';
 import { useToast } from '@/components/ui/use-toast';
 import { useCommentStore } from '@/hooks/useCommentStore';
 import { HiOutlinePencil, HiOutlineReply, HiOutlineFlag, HiOutlineTrash } from 'react-icons/hi';
-import FormattedDate from '../FormattedDate';
 
 export interface CommentCardProps {
   className?: string;
@@ -26,7 +25,7 @@ export interface CommentCardProps {
 }
 
 const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'large' }) => {
-  const { addComment } = useCommentStore();
+  const { addComment, deleteComment, editComment } = useCommentStore();
   const { toast } = useToast();
   const { data: session } = useSession();
 
@@ -35,6 +34,7 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
     likes && likes.length > 0 ? likes.some((like) => like.userId === session?.user?.id) : false,
   );
   const [likeCount, setLikeCount] = useState(_count?.likes ?? 0);
+  const [commentContent, setCommentContent] = useState(content);
 
   const actions: NcDropDownItem[] = [
     {
@@ -161,6 +161,61 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
     }
   };
 
+  const handleDeleteComment = async () => {
+    if (!session) {
+      toast({
+        title: 'خطا',
+        description: 'برای حذف نظر باید وارد شوید.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const result = await deleteComment(id);
+    if (result.success) {
+      toast({
+        title: 'موفقیت',
+        description: 'نظر شما با موفقیت حذف شد.',
+        variant: 'default',
+      });
+      closeModalDeleteComment();
+    } else {
+      toast({
+        title: 'خطا',
+        description: result.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleEditComment = async (newContent: string) => {
+    if (!session) {
+      toast({
+        title: 'خطا',
+        description: 'برای ویرایش نظر باید وارد شوید.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const result = await editComment(id, newContent);
+    if (result.success) {
+      setCommentContent(newContent);
+      toast({
+        title: 'موفقیت',
+        description: 'نظر شما با موفقیت ویرایش شد.',
+        variant: 'default',
+      });
+      closeModalEditComment();
+    } else {
+      toast({
+        title: 'خطا',
+        description: result.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
   const renderCommentForm = () => {
     return (
       <SingleCommentForm
@@ -204,7 +259,7 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
           </div>
 
           <span className="block text-neutral-700 mt-2 mb-3 sm:mt-3 sm:mb-4 dark:text-neutral-300">
-            {content}
+            {commentContent}
           </span>
 
           {isReplying ? (
@@ -225,9 +280,14 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
         show={isEditing}
         onCloseModalEditComment={closeModalEditComment}
         comment={comment}
+        onEditComment={handleEditComment}
       />
       <ModalReportItem show={isReporting} onCloseModalReportItem={closeModalReportComment} />
-      <ModalDeleteComment show={isDeleting} onCloseModalDeleteComment={closeModalDeleteComment} />
+      <ModalDeleteComment
+        show={isDeleting}
+        onCloseModalDeleteComment={closeModalDeleteComment}
+        onConfirmDelete={handleDeleteComment}
+      />
     </>
   );
 };

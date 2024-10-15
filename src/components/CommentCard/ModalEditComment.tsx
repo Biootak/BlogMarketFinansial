@@ -1,60 +1,69 @@
 'use client';
 
-import React, { type FC, useEffect, useRef } from 'react';
-import NcModal from '@/components/NcModal/NcModal';
-import SingleCommentForm from '@/app/(site)/(singles)/SingleCommentForm';
+import type React from 'react';
+import { type FC, useEffect, useRef, useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import type { CommentWithRelationsAndLikes } from '@/types/types';
 
 export interface ModalEditCommentProps {
   show: boolean;
   onCloseModalEditComment: () => void;
   comment: CommentWithRelationsAndLikes;
+  onEditComment: (newContent: string) => Promise<void>;
 }
 
 const ModalEditComment: FC<ModalEditCommentProps> = ({
   show,
   onCloseModalEditComment,
   comment,
+  onEditComment,
 }) => {
+  const [content, setContent] = useState(comment.content);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    if (show) {
-      setTimeout(() => {
-        const element = textareaRef.current;
-        if (element) {
-          element.focus();
-          element.setSelectionRange(element.value.length, element.value.length);
-        }
-      }, 400);
+    if (show && textareaRef.current) {
+      textareaRef.current.focus();
     }
   }, [show]);
 
-  const renderContent = () => {
-    return (
-      <SingleCommentForm
-        className="mt-0"
-        onClickCancel={onCloseModalEditComment}
-        onClickSubmit={onCloseModalEditComment}
-        textareaRef={textareaRef}
-        postId={comment.postId}
-      />
-    );
-  };
-
-  const renderTrigger = () => {
-    return null;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await onEditComment(content);
+    onCloseModalEditComment();
   };
 
   return (
-    <NcModal
-      isOpenProp={show}
-      onCloseModal={onCloseModalEditComment}
-      contentExtraClass="max-w-screen-md"
-      renderContent={renderContent}
-      renderTrigger={renderTrigger}
-      modalTitle="Editing comment"
-    />
+    <Dialog open={show} onOpenChange={onCloseModalEditComment}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>ویرایش نظر</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit}>
+          <Textarea
+            ref={textareaRef}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="نظر خود را وارد کنید"
+            className="min-h-[100px]"
+          />
+          <DialogFooter className="mt-4">
+            <Button type="submit">ذخیره تغییرات</Button>
+            <Button type="button" variant="outline" onClick={onCloseModalEditComment}>
+              لغو
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };
 
