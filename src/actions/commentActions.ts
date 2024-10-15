@@ -76,7 +76,7 @@ export async function addComment(
     console.error('خطا در افزودن  کامنت:', error);
     return {
       success: false,
-      message: 'خطا در افزودن کامنت. لطفاً دوباره تلاش کنید.',
+      message: 'خطا در  افزودن کامنت. لطفاً دوباره تلاش کنید.',
       error: error instanceof Error ? error.message : String(error),
     };
   }
