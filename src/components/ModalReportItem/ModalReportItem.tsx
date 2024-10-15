@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import React, { type FC, useEffect, useRef, useState } from "react";
-import NcModal from "@/components/NcModal/NcModal";
-import Textarea from "@/components/Textarea/Textarea";
-import ButtonPrimary from "@/components/Button/ButtonPrimary";
-import ButtonSecondary from "@/components/Button/ButtonSecondary";
-import { RadioGroup } from "@/app/headlessui";
-import twFocusClass from "@/utils/twFocusClass";
-import ButtonThird from "../Button/ButtonThird";
+import React, { type FC, useEffect, useRef, useState } from 'react';
+import NcModal from '@/components/NcModal/NcModal';
+import Textarea from '@/components/Textarea/Textarea';
+import ButtonPrimary from '@/components/Button/ButtonPrimary';
+import ButtonSecondary from '@/components/Button/ButtonSecondary';
+import { RadioGroup } from '@/app/headlessui';
+import twFocusClass from '@/utils/twFocusClass';
+import ButtonThird from '../Button/ButtonThird';
 
 export interface ProblemPlan {
   name: string;
@@ -21,10 +21,10 @@ export interface ModalReportItemProps {
 }
 
 const problemPlansDemo = [
-  { name: "Violence", id: "Violence", label: "Violence" },
-  { name: "Trouble", id: "Trouble", label: "Trouble" },
-  { name: "Spam", id: "Spam", label: "Spam" },
-  { name: "Other", id: "Other", label: "Other" },
+  { name: 'Violence', id: 'Violence', label: 'خشونت' },
+  { name: 'Trouble', id: 'Trouble', label: 'مشکل‌ساز' },
+  { name: 'Spam', id: 'Spam', label: 'اسپم' },
+  { name: 'Other', id: 'Other', label: 'سایر موارد' },
 ];
 
 const ModalReportItem: FC<ModalReportItemProps> = ({
@@ -51,6 +51,7 @@ const ModalReportItem: FC<ModalReportItemProps> = ({
 
   const renderCheckIcon = () => {
     return (
+      // biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
         <circle cx={12} cy={12} r={12} fill="#fff" opacity="0.2" />
         <path
@@ -67,23 +68,19 @@ const ModalReportItem: FC<ModalReportItemProps> = ({
   const renderContent = () => {
     return (
       <form action="#">
-        {/* RADIO PROBLEM PLANS */}
         <RadioGroup value={problemSelected} onChange={setProblemSelected}>
-          <RadioGroup.Label className="sr-only">Problem Plans</RadioGroup.Label>
+          <RadioGroup.Label className="sr-only">طرح‌های مشکل</RadioGroup.Label>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
             {problemPlans.map((plan) => (
               <RadioGroup.Option
                 key={plan.name}
                 value={plan}
                 className={({ checked }) => {
-                  return (
-                    `${
-                      checked
-                        ? "bg-primary-6000 text-white dark:bg-primary-700"
-                        : "bg-white border-t border-neutral-50 "
-                    } relative shadow-lg rounded-lg px-3 py-3 cursor-pointer flex sm:px-5 sm:py-4 focus:outline-none ` +
-                    twFocusClass(true)
-                  );
+                  return `${
+                    checked
+                      ? 'bg-primary-6000 text-white dark:bg-primary-700'
+                      : 'bg-white border-t border-neutral-50 '
+                  } relative shadow-lg rounded-lg px-3 py-3 cursor-pointer flex sm:px-5 sm:py-4 focus:outline-none ${twFocusClass(true)}`;
                 }}
               >
                 {({ checked }) => (
@@ -93,7 +90,7 @@ const ModalReportItem: FC<ModalReportItemProps> = ({
                         <RadioGroup.Label
                           as="p"
                           className={`font-medium line-clamp-1 ${
-                            checked ? "text-white" : "text-neutral-900"
+                            checked ? 'text-white' : 'text-neutral-900'
                           }`}
                         >
                           {plan.label}
@@ -101,9 +98,7 @@ const ModalReportItem: FC<ModalReportItemProps> = ({
                       </div>
                     </div>
                     {checked && (
-                      <div className="flex-shrink-0 text-white">
-                        {renderCheckIcon()}
-                      </div>
+                      <div className="flex-shrink-0  text-white">{renderCheckIcon()}</div>
                     )}
                   </div>
                 )}
@@ -112,14 +107,11 @@ const ModalReportItem: FC<ModalReportItemProps> = ({
           </div>
         </RadioGroup>
 
-        {/* TEXAREA MESSAGER */}
         <div className="mt-4">
-          <h4 className="text-lg font-semibold text-neutral-700 dark:text-neutral-200">
-            Message
-          </h4>
+          <h4 className="text-lg font-semibold text-neutral-700 dark:text-neutral-200">پیام</h4>
           <span className="text-sm text-neutral-6000 dark:text-neutral-400">
-            Please provide any additional information or context that will help
-            us understand and handle the situation.
+            لطفاً هرگونه اطلاعات یا زمینه اضافی که به ما کمک می‌کند وضعیت را درک و رسیدگی کنیم، ارائه
+            دهید.
           </span>
           <Textarea
             placeholder="..."
@@ -132,10 +124,10 @@ const ModalReportItem: FC<ModalReportItemProps> = ({
         </div>
         <div className="mt-4 space-x-3 rtl:space-x-reverse">
           <ButtonPrimary onClick={handleClickSubmitForm} type="submit">
-            Submit
+            ارسال
           </ButtonPrimary>
           <ButtonThird type="button" onClick={onCloseModalReportItem}>
-            Cancel
+            لغو
           </ButtonThird>
         </div>
       </form>
@@ -153,7 +145,7 @@ const ModalReportItem: FC<ModalReportItemProps> = ({
       contentExtraClass="max-w-screen-md"
       renderContent={renderContent}
       renderTrigger={renderTrigger}
-      modalTitle="Report Abuse"
+      modalTitle="گزارش تخلف"
     />
   );
 };
