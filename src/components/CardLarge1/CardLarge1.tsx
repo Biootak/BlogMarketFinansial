@@ -79,7 +79,7 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
         </div>
         <div className="w-full md:w-4/5 lg:w-2/3">
           <Link href={getPostLink(postType, slug)} className="nc-CardLarge1__right block relative">
-            <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
+            <div className="relative w-full">
               <NcImage
                 containerClassName="absolute inset-0"
                 className="object-cover rounded-3xl"

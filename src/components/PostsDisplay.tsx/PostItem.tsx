@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import type { PostWithRelations } from '@/types/types';
 import Card2 from '@/components/Card2/Card2';
-import Card6 from '@/components/Card6/Card6';
+import Card6 from '../Card6/Card6';
 
 interface PostItemProps {
   post: PostWithRelations;

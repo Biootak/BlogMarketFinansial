@@ -20,53 +20,50 @@ const Card6 = ({ className = 'h-full', post }: Card6Props) => {
 
   return (
     <div
-      className={`nc-Card6 relative flex group flex-row-reverse items-center sm:p-4 sm:rounded-3xl sm:bg-white sm:dark:bg-neutral-900 sm:border border-neutral-200 dark:border-neutral-700 ${className}`}
+      dir="rtl"
+      className={`nc-Card6 relative flex flex-col sm:flex-row items-start sm:items-center p-4 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 shadow ${className}`}
     >
       <Link href={getPostLink(postType, slug)} className="absolute inset-0 z-0" />
-      <div className="flex flex-col flex-grow">
+      <Link
+        href={getPostLink(postType, slug)}
+        className="block relative flex-shrink-0 w-full h-48 mb-4 sm:w-56 sm:h-40 sm:mb-0 sm:ml-5 rounded-2xl overflow-hidden z-10"
+      >
+        <div className="w-full h-full relative">
+          <Image
+            sizes="(max-width: 600px) 100vw, 400px"
+            className="object-cover w-full h-full"
+            fill
+            src={featuredImage || '/placeholder.jpg'}
+            alt={title}
+          />
+        </div>
+        <span className="absolute bottom-1 right-1">
+          <PostTypeFeaturedIcon wrapSize="h-7 w-7" iconSize="h-4 w-4" postType={postType} />
+        </span>
+      </Link>
+      <div className="flex flex-col flex-grow w-full">
         <div className="space-y-3 mb-4">
           <CategoryBadgeList categories={categories} />
-          <h2 className={'block font-semibold text-sm sm:text-base'}>
+          <h2 className="block font-semibold text-base sm:text-lg">
             <Link href={getPostLink(postType, slug)} className="line-clamp-2" title={title}>
               {title}
             </Link>
           </h2>
           <PostCardMeta meta={post} />
         </div>
-        <div className="flex items-center flex-wrap justify-between mt-auto">
+        <div className="flex flex-row items-center justify-between mt-auto w-full">
           <BookmarkCheck post={post}>
             {(isBookmarked) => (
               <PostCardSaveAction
-                className="relative"
                 postId={post.id}
                 initialBookmarked={isBookmarked}
                 bookmarkClass="h-8 w-8 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700"
               />
             )}
           </BookmarkCheck>
-          <PostCardLikeAndComment className="relative" post={post} />
+          <PostCardLikeAndComment post={post} />
         </div>
       </div>
-
-      <Link
-        href={getPostLink(postType, slug)}
-        className={
-          'block relative flex-shrink-0 w-24 h-24 sm:w-40 sm:h-40 me-3 sm:me-5 rounded-2xl overflow-hidden z-0'
-        }
-      >
-        <div className="w-full h-full relative" style={{ aspectRatio: '1 / 1.5' }}>
-          <Image
-            sizes="(max-width: 600px) 180px, 400px"
-            className="object-cover"
-            fill
-            src={featuredImage || '/placeholder.jpg'}
-            alt={title}
-          />
-        </div>
-        <span className="absolute bottom-1 end-1">
-          <PostTypeFeaturedIcon wrapSize="h-7 w-7" iconSize="h-4 w-4" postType={postType} />
-        </span>
-      </Link>
     </div>
   );
 };
