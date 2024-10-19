@@ -24,11 +24,11 @@ const Card10V3: React.FC<Card10V3Props> = ({ className = 'h-full', post, gallery
   const renderGalleryImage = useCallback(
     (src: string, customClassName = '') => (
       <NcImage
-        alt=""
-        fill
-        containerClassName={`relative ${customClassName}`}
+        alt="Gallery image"
+        containerClassName={`relative w-full h-full ${customClassName}`}
         className="absolute inset-0 object-cover w-full h-full"
         src={src}
+        sizes="(max-width: 600px) 480px, 800px"
       />
     ),
     [],
@@ -44,22 +44,22 @@ const Card10V3: React.FC<Card10V3Props> = ({ className = 'h-full', post, gallery
 
     return galleryType === 1 ? (
       <div className="w-full h-full grid grid-cols-3 gap-2">
-        <div className="grid">{renderGalleryImage(images[0])}</div>
-        <div className="grid grid-rows-2 gap-2">
-          {renderGalleryImage(images[1])}
-          {renderGalleryImage(images[2])}
+        <div className="h-full">{renderGalleryImage(images[0])}</div>
+        <div className="flex flex-col gap-2 h-full">
+          <div className="flex-grow">{renderGalleryImage(images[1])}</div>
+          <div className="flex-grow">{renderGalleryImage(images[2])}</div>
         </div>
-        <div className="grid">{renderGalleryImage(images[3])}</div>
+        <div className="h-full">{renderGalleryImage(images[3])}</div>
       </div>
     ) : (
-      <div className="w-full h-full grid grid-rows-2 gap-2">
-        <div className="grid grid-cols-3 gap-2">
-          {renderGalleryImage(images[0], 'col-span-2')}
-          {renderGalleryImage(images[1])}
+      <div className="w-full h-full flex flex-col gap-2">
+        <div className="flex gap-2 h-1/2">
+          <div className="w-2/3 h-full">{renderGalleryImage(images[0])}</div>
+          <div className="w-1/3 h-full">{renderGalleryImage(images[1])}</div>
         </div>
-        <div className="grid grid-cols-3 gap-2">
-          {renderGalleryImage(images[2])}
-          {renderGalleryImage(images[3], 'col-span-2')}
+        <div className="flex gap-2 h-1/2">
+          <div className="w-1/3 h-full">{renderGalleryImage(images[2])}</div>
+          <div className="w-2/3 h-full">{renderGalleryImage(images[3])}</div>
         </div>
       </div>
     );
