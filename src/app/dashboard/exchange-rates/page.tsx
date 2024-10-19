@@ -38,7 +38,7 @@ interface ExchangeRateFormValues {
   buyRate: number;
   sellRate: number;
   imageUrl: string | null;
-  minimumAmount: string | null;
+  description: string | null;
 }
 
 const ExchangeRatesPage: React.FC = () => {
@@ -156,11 +156,11 @@ const ExchangeRatesPage: React.FC = () => {
         <TableHeader>
           <TableRow>
             <TableHead>تصویر</TableHead>
-            <TableHead>نام</TableHead>
-            <TableHead>ارز</TableHead>
+            <TableHead>نام ارز</TableHead>
+            <TableHead>نماد</TableHead>
             <TableHead>نرخ خرید</TableHead>
             <TableHead>نرخ فروش</TableHead>
-            <TableHead>حداقل مبلغ</TableHead>
+            <TableHead> توضیحات</TableHead>
             <TableHead>عملیات</TableHead>
           </TableRow>
         </TableHeader>
@@ -180,7 +180,7 @@ const ExchangeRatesPage: React.FC = () => {
               <TableCell>{exchangeRate.currency}</TableCell>
               <TableCell>{exchangeRate.buyRate}</TableCell>
               <TableCell>{exchangeRate.sellRate}</TableCell>
-              <TableCell>{exchangeRate.minimumAmount}</TableCell>
+              <TableCell>{exchangeRate.description}</TableCell>
               <TableCell className="flex items-center space-x-2">
                 <Button
                   variant="ghost"
@@ -213,20 +213,20 @@ const ExchangeRatesPage: React.FC = () => {
           </DialogHeader>
           <form onSubmit={handleSubmit(handleCreateSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">نام</Label>
+              <Label htmlFor="name">نام ارز</Label>
               <Input
                 id="name"
-                {...register('name', { required: 'نام الزامی است' })}
-                placeholder="نام"
+                {...register('name', { required: 'نام ارز الزامی است' })}
+                placeholder="نام ارز"
               />
               {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="currency">ارز</Label>
+              <Label htmlFor="currency">نماد</Label>
               <Input
                 id="currency"
-                {...register('currency', { required: 'ارز الزامی است' })}
-                placeholder="ارز"
+                {...register('currency', { required: 'نماد الزامی است' })}
+                placeholder="EUR/USD"
               />
               {errors.currency && <p className="text-red-500 text-sm">{errors.currency.message}</p>}
             </div>
@@ -257,14 +257,8 @@ const ExchangeRatesPage: React.FC = () => {
               {errors.sellRate && <p className="text-red-500 text-sm">{errors.sellRate.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="minimumAmount">حداقل مبلغ</Label>
-              <Input
-                id="minimumAmount"
-                {...register('minimumAmount', {
-                  required: 'حداقل مبلغ الزامی است',
-                })}
-                placeholder=" حداقل مبلغ"
-              />
+              <Label htmlFor="description">توضیحات</Label>
+              <Input id="description" {...register('description', {})} placeholder=" توضیحات" />
               {errors.sellRate && <p className="text-red-500 text-sm">{errors.sellRate.message}</p>}
             </div>
             <div className="space-y-2">
@@ -291,18 +285,18 @@ const ExchangeRatesPage: React.FC = () => {
                 <Input
                   id="name"
                   defaultValue={editingExchangeRate.name}
-                  {...register('name', { required: 'نام الزامی است' })}
-                  placeholder="نام"
+                  {...register('name', { required: 'نام ارز الزامی است' })}
+                  placeholder="نام ارز"
                 />
                 {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="currency">ارز</Label>
+                <Label htmlFor="currency">نماد</Label>
                 <Input
                   id="currency"
                   defaultValue={editingExchangeRate.currency}
-                  {...register('currency', { required: 'ارز الزامی است' })}
-                  placeholder="ارز"
+                  {...register('currency', { required: 'نماد الزامی است' })}
+                  placeholder="EUR/USD"
                 />
                 {errors.currency && (
                   <p className="text-red-500 text-sm">{errors.currency.message}</p>
@@ -339,14 +333,8 @@ const ExchangeRatesPage: React.FC = () => {
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="minimumAmount">حداقل مبلغ</Label>
-                <Input
-                  id="minimumAmount"
-                  {...register('minimumAmount', {
-                    required: 'حداقل مبلغ الزامی است',
-                  })}
-                  placeholder=" حداقل مبلغ"
-                />
+                <Label htmlFor="description">توضیحات</Label>
+                <Input id="description" {...register('description', {})} placeholder=" توضیحات" />
                 {errors.sellRate && (
                   <p className="text-red-500 text-sm">{errors.sellRate.message}</p>
                 )}

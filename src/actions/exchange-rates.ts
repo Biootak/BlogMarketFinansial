@@ -12,7 +12,7 @@ const exchangeRateSchema = z.object({
   buyRate: z.number(),
   sellRate: z.number(),
   imageUrl: z.string().optional(),
-  minimumAmount: z.string().optional(),
+  description: z.string().optional(),
 });
 
 // Get all exchange rates

@@ -47,12 +47,13 @@ export default function ExchangeRateTable({
                 {rate.sellRate.toLocaleString()} تومان
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600 dark:text-gray-400">حداقل مبلغ:</span>
-              <span className="font-medium text-blue-600 dark:text-blue-400">
-                {rate.minimumAmount?.toLocaleString() ?? 'نامشخص'}
-              </span>
-            </div>
+            {rate.description && (
+              <div className="flex justify-between items-center">
+                <span className="font-medium text-blue-600 dark:text-blue-400">
+                  {rate.description}
+                </span>
+              </div>
+            )}
           </div>
         </motion.div>
       ))}

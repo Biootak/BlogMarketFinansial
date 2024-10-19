@@ -357,7 +357,7 @@ export interface ExchangeRateData {
   imageUrl: string | null;
   updatedAt: Date;
   createdAt: Date;
-  minimumAmount: string | null;
+  description: string | null;
 }
 
 export type Action =
