@@ -21,7 +21,7 @@ const SingleAuthor: React.FC<SingleAuthorProps> = ({ author }) => {
     >
       <Link href={`/author/${author.id}`} className="flex-shrink-0">
         <Avatar
-          imgUrl={author.profile?.avatar || author.image || undefined}
+          imgUrl={author.profile?.avatar}
           userName={author.name}
           sizeClass="h-12 w-12 text-lg sm:h-24 sm:w-24 sm:text-xl"
         />

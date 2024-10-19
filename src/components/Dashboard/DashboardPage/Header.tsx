@@ -41,7 +41,7 @@ const Header: React.FC = () => {
               aria-label="منوی کاربر"
             >
               <Avatar
-                imgUrl={user?.profile?.avatar || user?.image || undefined}
+                imgUrl={user?.profile?.avatar}
                 userName={user?.name}
                 sizeClass="h-9 w-9 sm:h-10 sm:w-10"
                 containerClassName="border-2 border-indigo-500 hover:border-indigo-600 transition-colors duration-200 justify-center"
