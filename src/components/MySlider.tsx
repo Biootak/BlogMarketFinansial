@@ -14,7 +14,7 @@ export interface MySliderProps<T> {
   data: T[];
   renderItem?: (item: T, indx: number) => ReactNode;
   arrowBtnClass?: string;
-  autoSlideInterval?: number; 
+  autoSlideInterval?: number;
 }
 
 export default function MySlider<T>({
@@ -58,7 +58,7 @@ export default function MySlider<T>({
     if (data.length > currentIndex + numberOfItems) {
       changeItemId(currentIndex + 1);
     } else {
-      changeItemId(0); 
+      changeItemId(0);
     }
   }, [currentIndex, data.length, numberOfItems, changeItemId]);
 
@@ -72,13 +72,25 @@ export default function MySlider<T>({
 
   const handlers = useSwipeable({
     onSwipedLeft: () => {
-      if (currentIndex < data.length - 1) {
-        changeItemId(currentIndex + 1);
+      if (isRTL) {
+        if (currentIndex > 0) {
+          changeItemId(currentIndex - 1);
+        }
+      } else {
+        if (currentIndex < data.length - numberOfItems) {
+          changeItemId(currentIndex + 1);
+        }
       }
     },
     onSwipedRight: () => {
-      if (currentIndex > 0) {
-        changeItemId(currentIndex - 1);
+      if (isRTL) {
+        if (currentIndex < data.length - numberOfItems) {
+          changeItemId(currentIndex + 1);
+        }
+      } else {
+        if (currentIndex > 0) {
+          changeItemId(currentIndex - 1);
+        }
       }
     },
     trackMouse: true,
