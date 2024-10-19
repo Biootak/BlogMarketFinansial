@@ -16,14 +16,14 @@ const NcImage: React.FC<NcImageProps> = ({
   ...props
 }) => {
   return (
-    <div className={`relative ${containerClassName}`}>
-      <Image 
-        className={className} 
-        alt={alt} 
-        sizes={sizes} 
+    <div className={`relative ${containerClassName}`} style={{ aspectRatio: '16/9' }}>
+      <Image
+        className={className}
+        alt={alt}
+        sizes={sizes}
         priority={priority}
         fill={fill}
-        {...props} 
+        {...props}
       />
     </div>
   );

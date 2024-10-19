@@ -79,21 +79,24 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
         </div>
         <div className="w-full md:w-4/5 lg:w-2/3">
           <Link href={getPostLink(postType, slug)} className="nc-CardLarge1__right block relative">
-            <NcImage
-              containerClassName="aspect-w-16 aspect-h-16 sm:aspect-h-12 md:aspect-h-14 lg:aspect-h-10 2xl:aspect-h-9 relative"
-              className="absolute inset-0 object-cover rounded-3xl"
-              src={featuredImage || '/placeholder.jpg'}
-              alt={title}
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
-            <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black to-transparent opacity-50" />
-            {postType && (
-              <PostTypeFeaturedIcon
-                className="absolute top-3 start-3 w-8 h-8 md:w-10 md:h-10"
-                postType={postType}
+            <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
+              <NcImage
+                containerClassName="absolute inset-0"
+                className="object-cover rounded-3xl"
+                src={featuredImage || '/placeholder.jpg'}
+                alt={title}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
+                priority
               />
-            )}
+              <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black to-transparent opacity-50" />
+              {postType && (
+                <PostTypeFeaturedIcon
+                  className="absolute top-3 start-3 w-8 h-8 md:w-10 md:h-10"
+                  postType={postType}
+                />
+              )}
+            </div>
           </Link>
         </div>
       </div>
