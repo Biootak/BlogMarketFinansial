@@ -35,8 +35,8 @@ import Loading from '@/components/Loading';
 interface ExchangeRateFormValues {
   name: string;
   currency: string;
-  buyRate: number;
-  sellRate: number;
+  buyRate: string;
+  sellRate: string;
   imageUrl: string | null;
   description: string | null;
 }
@@ -68,22 +68,39 @@ const ExchangeRatesPage: React.FC = () => {
   }, []);
 
   const handleCreateSubmit: SubmitHandler<ExchangeRateFormValues> = async (data) => {
-    const result = await createExchangeRate(data);
+    try {
+      const result = await createExchangeRate(data);
 
-    if (result.success) {
-      toast({
-        title: 'موفقیت',
-        description: result.message,
-      });
-      setExchangeRates([...exchangeRates, result.data!]);
-      setShowCreateModal(false);
-      reset();
-    } else {
-      toast({
-        title: 'خطا',
-        description: result.message,
-        variant: 'destructive',
-      });
+      if (result.success) {
+        toast({
+          title: 'موفقیت',
+          description: result.message,
+        });
+        setExchangeRates([...exchangeRates, result.data!]);
+        setShowCreateModal(false);
+        reset();
+      } else {
+        toast({
+          title: 'خطا',
+          description: result.message,
+          variant: 'destructive',
+        });
+      }
+    } catch (error: any) {
+      if (error.code === 'P2002' && error.meta?.target?.includes('name')) {
+        toast({
+          title: 'خطا',
+          description: 'نام ارز تکراری است. لطفاً نام دیگری انتخاب کنید.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'خطا',
+          description: 'خطایی در ایجاد ارز رخ داد. لطفاً دوباره تلاش کنید.',
+          variant: 'destructive',
+        });
+      }
+      console.error('Error creating exchange rate:', error);
     }
   };
 
@@ -234,10 +251,8 @@ const ExchangeRatesPage: React.FC = () => {
               <Label htmlFor="buyRate">نرخ خرید</Label>
               <Input
                 id="buyRate"
-                type="number"
                 {...register('buyRate', {
                   required: 'نرخ خرید الزامی است',
-                  valueAsNumber: true,
                 })}
                 placeholder="نرخ خرید"
               />
@@ -247,10 +262,8 @@ const ExchangeRatesPage: React.FC = () => {
               <Label htmlFor="sellRate">نرخ فروش</Label>
               <Input
                 id="sellRate"
-                type="number"
                 {...register('sellRate', {
                   required: 'نرخ فروش الزامی است',
-                  valueAsNumber: true,
                 })}
                 placeholder="نرخ فروش"
               />
@@ -306,11 +319,9 @@ const ExchangeRatesPage: React.FC = () => {
                 <Label htmlFor="buyRate">نرخ خرید</Label>
                 <Input
                   id="buyRate"
-                  type="number"
                   defaultValue={editingExchangeRate.buyRate}
                   {...register('buyRate', {
                     required: 'نرخ خرید الزامی است',
-                    valueAsNumber: true,
                   })}
                   placeholder="نرخ خرید"
                 />
@@ -320,11 +331,9 @@ const ExchangeRatesPage: React.FC = () => {
                 <Label htmlFor="sellRate">نرخ فروش</Label>
                 <Input
                   id="sellRate"
-                  type="number"
                   defaultValue={editingExchangeRate.sellRate}
                   {...register('sellRate', {
                     required: 'نرخ فروش الزامی است',
-                    valueAsNumber: true,
                   })}
                   placeholder="نرخ فروش"
                 />

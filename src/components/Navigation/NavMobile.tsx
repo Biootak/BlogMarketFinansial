@@ -15,6 +15,7 @@ export interface NavMobileProps {
 
 const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
   const NAVBAR_LINKS = [
+    { id: 'urgent', name: 'اخبار فوری', href: '/archive/category/news-urgent' },
     { id: 'home', name: 'صفحه اصلی', href: '/' },
     {
       id: 'crypto',
@@ -57,7 +58,7 @@ const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
     { id: 'stock', name: 'بورس و سهام', href: '/archive/category/stock' },
     { id: 'money-transfer', name: 'حواله', href: '/money-transfer' },
     { id: 'online-payment', name: 'پرداخت آنلاین', href: '/online-payment' },
-    { id: 'urgent', name: 'اخبار فوری', href: '/archive/category/news-urgent' },
+
     { id: 'terms', name: 'قوانین', href: '/terms' },
   ];
 

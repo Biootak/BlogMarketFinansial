@@ -244,8 +244,8 @@ model ExchangeRate {
   id        String   @id @default(cuid())
   name      String   @unique 
   currency  String
-  buyRate   Float
-  sellRate  Float
+  buyRate   String
+  sellRate  String
   description String?
   imageUrl  String?
   updatedAt DateTime @updatedAt

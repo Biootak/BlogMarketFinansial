@@ -352,8 +352,8 @@ export interface ExchangeRateData {
   id: string;
   name: string;
   currency: string;
-  buyRate: number;
-  sellRate: number;
+  buyRate: string;
+  sellRate: string;
   imageUrl: string | null;
   updatedAt: Date;
   createdAt: Date;

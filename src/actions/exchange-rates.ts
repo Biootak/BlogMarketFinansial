@@ -9,8 +9,8 @@ import type { ActionResult, ExchangeRateData } from '@/types/types';
 const exchangeRateSchema = z.object({
   name: z.string(),
   currency: z.string(),
-  buyRate: z.number(),
-  sellRate: z.number(),
+  buyRate: z.string(),
+  sellRate: z.string(),
   imageUrl: z.string().optional(),
   description: z.string().optional(),
 });

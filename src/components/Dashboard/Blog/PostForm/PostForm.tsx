@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useForm, Controller, type FieldValues, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
@@ -42,7 +42,7 @@ import { CategorySelectDialog } from './CategorySelectDialog';
 import { TagSelectDialog } from './TagSelectDialog';
 import { useToast } from '@/components/ui/use-toast';
 import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
-import { Editor } from '@/components/Editor1';
+import { Editor, type EditorRef } from '@/components/Editor1';
 
 interface PostFormProps<T extends CreatePostInput | UpdatePostInput> {
   schema: ZodSchema<T>;
@@ -80,11 +80,45 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
   const { toast } = useToast();
+  const editorRef = useRef<EditorRef>(null);
+  const [featuredImage, setFeaturedImage] = useState<string | undefined>(
+    defaultValues.featuredImage,
+  );
+
+  // Create a unique key for local storage
+  const localStorageKey = isEditing ? `post-${defaultValues.slug}` : 'new-post';
 
   const form = useForm<CreatePostInput | UpdatePostInput>({
     resolver: zodResolver(schema),
     defaultValues,
   });
+
+  // Load data from local storage on component mount
+  useEffect(() => {
+    const savedData = localStorage.getItem(localStorageKey);
+    if (savedData) {
+      const parsedData = JSON.parse(savedData);
+      form.reset(parsedData);
+      setEditorContent(parsedData.content || '');
+      setSlug(parsedData.slug || '');
+    }
+  }, [localStorageKey, form]);
+
+  // Save form data to local storage
+  const saveToLocalStorage = useCallback(
+    (data: FieldValues) => {
+      localStorage.setItem(localStorageKey, JSON.stringify(data));
+    },
+    [localStorageKey],
+  );
+
+  // Update local storage when form values change
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      saveToLocalStorage({ ...value, content: editorContent, slug });
+    });
+    return () => subscription.unsubscribe();
+  }, [form, saveToLocalStorage, editorContent, slug]);
 
   useEffect(() => {
     if (isEditing) {
@@ -125,8 +159,13 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
         slug: slug,
         categories: Array.isArray(data.categories) ? data.categories : [],
         tags: Array.isArray(data.tags) ? data.tags : [],
+        featuredImage: featuredImage,
       } as T;
+      console.log('Submission data:', submissionData);
       await onSubmit(submissionData);
+      // Clear local storage after successful submission
+      localStorage.removeItem(localStorageKey);
+      editorRef.current?.clearLocalStorage();
     } catch (error) {
       console.error('Error submitting form:', error);
       toast({
@@ -156,11 +195,13 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
             <FormItem>
               <FormControl>
                 <Editor
+                  ref={editorRef}
                   wrapperClassName="flex flex-col h-full mb-2"
                   contentClassName="h-full overflow-auto"
                   toolBarClassName="z-50 inset-x-0 w-full bg-toolbar sticky top-0"
                   footerClassName="bg-toolbar sticky "
                   content={editorContent}
+                  localStorageKey={`${localStorageKey}-editor`}
                   editorProps={{
                     attributes: {
                       class:
@@ -171,6 +212,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                     const html = !editor.isEmpty ? editor.getHTML() : '';
                     setEditorContent(html);
                     field.onChange(html);
+                    saveToLocalStorage({ ...form.getValues(), content: html });
                   }}
                 />
               </FormControl>
@@ -342,11 +384,17 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                   <FormLabel>تصویر شاخص پست</FormLabel>
                   <FormControl>
                     <ImageUploader
-                      onImageUpload={(urls) => field.onChange(urls[0])}
-                      onImageRemove={() => field.onChange(undefined)}
+                      onImageUpload={(urls) => {
+                        setFeaturedImage(urls[0]);
+                        field.onChange(urls[0]);
+                      }}
+                      onImageRemove={() => {
+                        setFeaturedImage(undefined);
+                        field.onChange(undefined);
+                      }}
                       maxFiles={1}
                       multiple={false}
-                      initialPreviews={field.value ? [field.value] : []}
+                      initialPreviews={featuredImage ? [featuredImage] : []}
                     />
                   </FormControl>
                   <FormMessage />

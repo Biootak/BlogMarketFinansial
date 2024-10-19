@@ -17,10 +17,13 @@ export interface EditorProps extends Partial<EditorOptions> {
   footerClassName?: string;
   displayWordsCount?: boolean;
   onUpdateToC?: (items: TocItem[]) => void;
+  localStorageKey: string;
+  onContentChange?: (content: string) => void;
 }
 
 export type EditorRef = {
   getEditor: () => EditorInstance | null;
+  clearLocalStorage: () => void;
 };
 
 export const Editor = forwardRef<EditorRef, EditorProps>(
@@ -36,6 +39,8 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
       content,
       displayWordsCount = true,
       onUpdateToC,
+      localStorageKey,
+      onContentChange,
       ...rest
     },
     ref,
@@ -43,7 +48,6 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
     const editor = useEditor(
       {
         extensions: [...builtInExtensions, ...extensions],
-        immediatelyRender: false,
         content,
         editorProps: {
           attributes: {
@@ -52,9 +56,16 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
           },
           ...editorProps,
         },
+        onUpdate: ({ editor }) => {
+          const html = editor.getHTML();
+          const savedData = localStorage.getItem(localStorageKey);
+          const parsedData = savedData ? JSON.parse(savedData) : {};
+          localStorage.setItem(localStorageKey, JSON.stringify({ ...parsedData, content: html }));
+          onContentChange?.(html);
+        },
         ...rest,
       },
-      [],
+      [content],
     );
 
     const getEditorInstance = useCallback(() => {
@@ -65,8 +76,18 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
       return editor;
     }, [editor]);
 
+    const clearLocalStorage = useCallback(() => {
+      const savedData = localStorage.getItem(localStorageKey);
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        delete parsedData.content;
+        localStorage.setItem(localStorageKey, JSON.stringify(parsedData));
+      }
+    }, [localStorageKey]);
+
     useImperativeHandle(ref, () => ({
       getEditor: getEditorInstance,
+      clearLocalStorage,
     }));
 
     useEffect(() => {
@@ -79,6 +100,13 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
       const items = getToCItems(editor);
       onUpdateToC?.(items);
     }, [editor, onUpdateToC]);
+
+    // Update editor content when `content` prop changes
+    useEffect(() => {
+      if (editor && content !== undefined && editor.getHTML() !== content) {
+        editor.commands.setContent(content);
+      }
+    }, [editor, content]);
 
     useEffect(() => {
       return () => {
@@ -111,7 +139,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
           {editable && displayWordsCount && (
             <div
               className={`sticky bottom-0 text-xs sm:text-sm lg:text-base font-bold border-t border-primary-200 
-                          bg-primary-50 text-primary-800 px-3 py-2 sm:px-4 sm:py-3 lg:px-5 lg:py-4 text-right ${footerClassName}`}
+                              bg-primary-50 text-primary-800 px-3 py-2 sm:px-4 sm:py-3 lg:px-5 lg:py-4 text-right ${footerClassName}`}
             >
               {editor.storage.characterCount.words()} کلمه
             </div>
