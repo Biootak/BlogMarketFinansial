@@ -44,7 +44,7 @@ const Card6 = ({ className = 'h-full', post }: Card6Props) => {
       <div className="flex flex-col flex-grow w-full">
         <div className="space-y-3 mb-4">
           <CategoryBadgeList categories={categories} />
-          <h2 className="block font-semibold text-base sm:text-lg">
+          <h2 className="block font-semibold text-base sm:text-md">
             <Link href={getPostLink(postType, slug)} className="line-clamp-2" title={title}>
               {title}
             </Link>
