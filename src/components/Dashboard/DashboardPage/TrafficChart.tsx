@@ -3,28 +3,22 @@
 import type React from 'react';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 import { motion } from 'framer-motion';
+import useSWR from 'swr';
 
-interface TrafficChartProps {
-  data: number[];
-  labels: string[];
-  totalViews?: number;
-  todayViews?: number;
-}
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-const TrafficChart: React.FC<TrafficChartProps> = ({
-  data,
-  labels,
-  totalViews = 0,
-  todayViews = 0,
-}) => {
-  const chartData = labels.map((label, index) => ({
+const TrafficChart: React.FC = () => {
+  const { data: trafficStats, error } = useSWR('/api/traffic-stats', fetcher, {
+    refreshInterval: 60000, // Refresh every minute
+  });
+
+  if (error) return <div className="text-center py-4 text-red-500">خطا در بارگیری داده‌ها</div>;
+  if (!trafficStats) return <div className="text-center py-4">در حال بارگیری...</div>;
+
+  const chartData = trafficStats.labels.map((label: string, index: number) => ({
     name: label,
-    بازدید: data[index],
+    بازدید: trafficStats.data[index],
   }));
-
-  if (data.length === 0 || labels.length === 0) {
-    return <div className="text-center py-4">داده‌ای برای نمایش وجود ندارد.</div>;
-  }
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -66,7 +60,7 @@ const TrafficChart: React.FC<TrafficChartProps> = ({
               role="img"
               aria-label="نمودار ستونی بازدید"
             >
-              {chartData.map((entry, index) => (
+              {chartData.map((entry: any, index: number) => (
                 <motion.rect
                   key={`bar-${index}`}
                   initial={{ y: 300, opacity: 0 }}
@@ -89,7 +83,7 @@ const TrafficChart: React.FC<TrafficChartProps> = ({
           <p className="font-semibold">
             بازدید امروز:{' '}
             <span className="text-purple-600 dark:text-purple-400">
-              {(todayViews ?? 0).toLocaleString('fa-IR')}
+              {trafficStats.todayViews.toLocaleString('fa-IR')}
             </span>
           </p>
         </div>
@@ -97,7 +91,7 @@ const TrafficChart: React.FC<TrafficChartProps> = ({
           <p className="font-semibold">
             کل بازدیدها:{' '}
             <span className="text-purple-600 dark:text-purple-400">
-              {(totalViews ?? 0).toLocaleString('fa-IR')}
+              {trafficStats.totalViews.toLocaleString('fa-IR')}
             </span>
           </p>
         </div>

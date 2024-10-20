@@ -172,7 +172,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
             آمار بازدید
           </h2>
           <div className="h-[400px]">
-            <TrafficChart data={viewStats.data} labels={viewStats.labels} />
+            <TrafficChart />
           </div>
         </TabsContent>
         <TabsContent value="calendar" className="p-6">
