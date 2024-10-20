@@ -16,7 +16,6 @@ import PostManagement from '../Blog/PostManagement';
 import PublishingCalendar from '../Calendar/PublishingCalendar';
 import TrafficChart from './TrafficChart';
 import type { PostWithRelations } from '@/types/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface DashboardPageProps {
@@ -143,39 +142,46 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
       </div>
 
       <Tabs dir="rtl" defaultValue="traffic" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-neutral-100 dark:bg-neutral-800 rounded-lg">
+        <TabsList className="flex space-x-2 space-x-reverse mb-6 bg-transparent">
           <TabsTrigger
             value="traffic"
-            className="data-[state=active]:bg-primary-100 data-[state=active]:text-primary-900 dark:data-[state=active]:bg-primary-900 dark:data-[state=active]:text-primary-100"
+            className="px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200
+                       focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-opacity-50
+                       data-[state=active]:bg-primary-100 data-[state=active]:text-primary-900
+                       dark:data-[state=active]:bg-primary-900 dark:data-[state=active]:text-primary-100
+                       bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300
+                       hover:bg-neutral-100 dark:hover:bg-neutral-700"
           >
             آمار بازدید
           </TabsTrigger>
           <TabsTrigger
             value="calendar"
-            className="data-[state=active]:bg-primary-100 data-[state=active]:text-primary-900 dark:data-[state=active]:bg-primary-900 dark:data-[state=active]:text-primary-100"
+            className="px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200
+                       focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-opacity-50
+                       data-[state=active]:bg-primary-100 data-[state=active]:text-primary-900
+                       dark:data-[state=active]:bg-primary-900 dark:data-[state=active]:text-primary-100
+                       bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300
+                       hover:bg-neutral-100 dark:hover:bg-neutral-700"
           >
             تقویم انتشار
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="traffic">
-          <Card className="bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700">
-            <CardHeader>
-              <CardTitle className="text-primary-900 dark:text-primary-100">آمار بازدید</CardTitle>
-            </CardHeader>
-            <CardContent className="h-[400px]">
-              <TrafficChart data={viewStats.data} labels={viewStats.labels} />
-            </CardContent>
-          </Card>
+
+        <TabsContent value="traffic" className="p-6">
+          <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
+            آمار بازدید
+          </h2>
+          <div className="h-[400px]">
+            <TrafficChart data={viewStats.data} labels={viewStats.labels} />
+          </div>
         </TabsContent>
-        <TabsContent value="calendar">
-          <Card className="bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700">
-            <CardHeader>
-              <CardTitle className="text-primary-900 dark:text-primary-100">تقویم انتشار</CardTitle>
-            </CardHeader>
-            <CardContent className="h-[400px]">
-              <PublishingCalendar scheduledPosts={scheduledPosts} />
-            </CardContent>
-          </Card>
+        <TabsContent value="calendar" className="p-6">
+          <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
+            تقویم انتشار
+          </h2>
+          <div className="h-[400px]">
+            <PublishingCalendar scheduledPosts={scheduledPosts} />
+          </div>
         </TabsContent>
       </Tabs>
 
