@@ -160,7 +160,6 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
         tags: Array.isArray(data.tags) ? data.tags : [],
         featuredImage: featuredImage,
       } as T;
-      console.log('Submission data:', submissionData);
       await onSubmit(submissionData);
       // Clear local storage after successful submission
       localStorage.removeItem(localStorageKey);
