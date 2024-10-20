@@ -20,7 +20,7 @@ const Avatar: FC<AvatarProps> = ({
   userName,
   fontSize = 'text-sm',
 }) => {
-  const name = (userName != null ? String(userName).trim() : '') || 'کاربر ناشناس';
+  const name = userName != null ? String(userName).trim() : '';
   const initial = name.charAt(0).toUpperCase();
 
   const [url, setUrl] = useState<string | StaticImageData | null | undefined>(imgUrl);
@@ -46,7 +46,6 @@ const Avatar: FC<AvatarProps> = ({
           className="absolute inset-0 w-full h-full object-cover"
           src={url}
           alt={name}
-        
         />
       )}
       {!isCustomImage && (
