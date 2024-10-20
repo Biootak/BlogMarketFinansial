@@ -150,7 +150,6 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
     },
     [form],
   );
-
   const handleSubmit = async (data: FieldValues) => {
     try {
       const submissionData = {
@@ -165,7 +164,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
       await onSubmit(submissionData);
       // Clear local storage after successful submission
       localStorage.removeItem(localStorageKey);
-      editorRef.current?.clearLocalStorage();
+      localStorage.removeItem(`${localStorageKey}-editor`);
     } catch (error) {
       console.error('Error submitting form:', error);
       toast({
@@ -175,7 +174,6 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
       });
     }
   };
-
   return (
     <FormProvider {...form}>
       <motion.div
