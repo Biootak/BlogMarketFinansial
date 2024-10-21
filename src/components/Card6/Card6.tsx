@@ -15,28 +15,26 @@ export interface Card6Props {
   post: PostWithRelations;
 }
 
-const Card6 = ({ className = 'h-full', post }: Card6Props) => {
+export default function Component({ className = 'h-full', post }: Card6Props) {
   const { title, slug, featuredImage, categories, postType } = post;
 
   return (
     <div
       dir="rtl"
-      className={`nc-Card6 relative flex flex-col sm:flex-row items-start sm:items-center p-4 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 shadow ${className}`}
+      className={`nc-Card6 relative flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start sm:items-center lg:items-start xl:items-center p-4 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 shadow ${className}`}
     >
       <Link href={getPostLink(postType, slug)} className="absolute inset-0 z-0" />
       <Link
         href={getPostLink(postType, slug)}
-        className="block relative flex-shrink-0 w-full h-48 mb-4 sm:w-56 sm:h-40 sm:mb-0 sm:ml-5 rounded-2xl overflow-hidden z-10"
+        className="block relative flex-shrink-0 w-full h-48 sm:w-56 sm:h-40 lg:w-full lg:h-48 xl:w-56 xl:h-40 mb-4 sm:mb-0 lg:mb-4 xl:mb-0 sm:ml-5 lg:ml-0 xl:ml-5 rounded-2xl overflow-hidden z-10"
       >
-        <div className="w-full h-full relative">
-          <Image
-            sizes="(max-width: 600px) 100vw, 400px"
-            className="object-cover w-full h-full"
-            fill
-            src={featuredImage || '/placeholder.jpg'}
-            alt={title}
-          />
-        </div>
+        <Image
+          sizes="(max-width: 639px) 100vw, (min-width: 640px) and (max-width: 1023px) 224px, (min-width: 1024px) and (max-width: 1279px) 100vw, 224px"
+          className="object-cover"
+          fill
+          src={featuredImage || '/placeholder.jpg'}
+          alt={title}
+        />
         <span className="absolute bottom-1 right-1">
           <PostTypeFeaturedIcon wrapSize="h-7 w-7" iconSize="h-4 w-4" postType={postType} />
         </span>
@@ -66,6 +64,4 @@ const Card6 = ({ className = 'h-full', post }: Card6Props) => {
       </div>
     </div>
   );
-};
-
-export default Card6;
+}

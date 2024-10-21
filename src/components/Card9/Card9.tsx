@@ -76,15 +76,13 @@ const Card9: FC<Card9Props> = ({
           </div>
         ) : (
           <Link href={getPostLink(postType, slug)} className="relative w-full h-full block">
-            <div className="w-full h-full relative">
-              <Image
-                fill
-                alt={title}
-                className="object-cover rounded-3xl"
-                src={featuredImage || '/path/to/default-image.jpg'}
-                sizes="(max-width: 600px) 480px, 500px"
-              />
-            </div>
+            <Image
+              fill
+              alt={title}
+              className="object-cover rounded-3xl"
+              src={featuredImage || '/path/to/default-image.jpg'}
+              sizes="(max-width: 600px) 480px, 500px"
+            />
             <PostTypeFeaturedIcon
               className="absolute top-3 left-3 group-hover:hidden"
               postType={postType}
