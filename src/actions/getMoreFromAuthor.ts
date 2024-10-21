@@ -11,6 +11,7 @@ export async function getMoreFromAuthor(
     const moreFromAuthor = await prisma.post.findMany({
       where: {
         authorId: authorId,
+        status: 'PUBLISHED',
         id: { not: postId },
       },
       take: 4,

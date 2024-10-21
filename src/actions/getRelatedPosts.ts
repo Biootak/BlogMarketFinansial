@@ -11,6 +11,7 @@ export async function getRelatedPosts(
     const relatedPosts = await prisma.post.findMany({
       where: {
         id: { not: postId },
+        status: 'PUBLISHED',
         categories: {
           some: {
             id: { in: categoryIds },
