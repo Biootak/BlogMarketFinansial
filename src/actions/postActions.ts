@@ -340,7 +340,6 @@ export async function deletePost(postId: string): Promise<ActionResult> {
 }
 
 export async function getPostById(postId: string): Promise<ActionResult<PostWithRelations>> {
-  console.log('getPostById called with ID:', postId);
   try {
     const post = await prisma.post.findUnique({
       where: { id: postId },
@@ -381,8 +380,6 @@ export async function getPostById(postId: string): Promise<ActionResult<PostWith
         },
       },
     });
-
-    console.log('Post fetched from database:', post);
 
     if (!post) {
       return { success: false, message: 'پست یافت نشد.', error: 'پست یافت نشد.' };
