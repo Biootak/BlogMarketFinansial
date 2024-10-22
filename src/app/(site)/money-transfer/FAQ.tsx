@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaChevronDown } from 'react-icons/fa';
+import { ChevronDownIcon } from 'lucide-react';
 
 const faqs = [
   {
     question: 'مراحل انجام حواله ارزی چیست؟',
     answer:
-       'برای انجام حواله ارزی، ابتدا در سایت ثبت‌نام کنید. سپس از طریق پنل کاربری، درخواست حواله را ثبت کرده و مبلغ مورد نظر را به حساب اعلام شده واریز نمایید. پس از تأیید واریزی، حواله شما در اسرع وقت انجام خواهد شد. یا به پشتیبانی برا ثبت سفارش پیام دهید .',
+      'برای انجام حواله ارزی، ابتدا در سایت ثبت‌نام کنید. سپس از طریق پنل کاربری، درخواست حواله را ثبت کرده و مبلغ مورد نظر را به حساب اعلام شده واریز نمایید. پس از تأیید واریزی، حواله شما در اسرع وقت انجام خواهد شد. یا به پشتیبانی برا ثبت سفارش پیام دهید .',
   },
   {
     question: 'کدام ارزها برای حواله پشتیبانی می‌شوند؟',
@@ -37,15 +37,15 @@ const faqs = [
   },
 ];
 
-export default function FAQ() {
+export default function Component() {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   return (
-    <div className="mt-16">
-      <h2 className="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-gray-100">
+    <div className="mt-8 sm:mt-16 rtl" dir="rtl">
+      <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8 text-gray-800 dark:text-gray-100">
         سؤالات متداول
       </h2>
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {faqs.map((faq, index) => (
           <div
             key={index}
@@ -53,12 +53,14 @@ export default function FAQ() {
           >
             <button
               type="button"
-              className="flex justify-between items-center w-full p-4 text-left focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex justify-between items-center w-full p-3 sm:p-4 text-right focus:outline-none focus:ring-2 focus:ring-blue-500"
               onClick={() => setActiveIndex(activeIndex === index ? null : index)}
             >
-              <span className="font-medium text-gray-800 dark:text-gray-100">{faq.question}</span>
-              <FaChevronDown
-                className={`transform transition-transform duration-200 ${
+              <span className="font-medium text-sm sm:text-base text-gray-800 dark:text-gray-100">
+                {faq.question}
+              </span>
+              <ChevronDownIcon
+                className={`w-4 h-4 sm:w-5 sm:h-5 transform transition-transform duration-200 ${
                   activeIndex === index ? 'rotate-180' : ''
                 }`}
               />
@@ -75,7 +77,9 @@ export default function FAQ() {
                   }}
                   transition={{ duration: 0.3, ease: [0.04, 0.62, 0.23, 0.98] }}
                 >
-                  <div className="p-4 text-gray-600 dark:text-gray-300">{faq.answer}</div>
+                  <div className="p-3 sm:p-4 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+                    {faq.answer}
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
