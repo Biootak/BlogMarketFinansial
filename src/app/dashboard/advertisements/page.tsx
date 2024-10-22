@@ -227,7 +227,7 @@ export default function AdvertisementsPage() {
       </div>
 
       {isLoading && page === 1 ? (
-        <Loading className="items-center" />
+        <Loading />
       ) : (
         <div className="overflow-x-auto">
           <Table className="w-full bg-white dark:bg-neutral-800 shadow-md rounded-lg overflow-hidden">

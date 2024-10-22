@@ -172,13 +172,28 @@ const ExchangeRatesPage: React.FC = () => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>تصویر</TableHead>
-            <TableHead>نام ارز</TableHead>
-            <TableHead>نماد</TableHead>
-            <TableHead>نرخ خرید</TableHead>
-            <TableHead>نرخ فروش</TableHead>
-            <TableHead> توضیحات</TableHead>
-            <TableHead>عملیات</TableHead>
+            <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
+              تصویر
+            </TableHead>
+            <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
+              نام ارز
+            </TableHead>
+            <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
+              نماد
+            </TableHead>
+            <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
+              نرخ خرید
+            </TableHead>
+            <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
+              نرخ فروش
+            </TableHead>
+            <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
+              {' '}
+              توضیحات
+            </TableHead>
+            <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
+              عملیات
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

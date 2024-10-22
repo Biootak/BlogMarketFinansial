@@ -266,7 +266,7 @@ export default function UsersPage() {
       </div>
 
       {isLoading && page === 1 ? (
-        <Loading className="items-center" />
+        <Loading />
       ) : (
         <div className="overflow-x-auto">
           <Table className="w-full bg-white dark:bg-neutral-800 shadow-md rounded-lg overflow-hidden">
@@ -275,9 +275,7 @@ export default function UsersPage() {
                 <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   نام
                 </TableHead>
-                <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300 hidden sm:table-cell">
-                  شماره تلفن
-                </TableHead>
+
                 <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   نقش
                 </TableHead>

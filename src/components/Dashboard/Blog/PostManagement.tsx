@@ -101,7 +101,7 @@ const StatCard: React.FC<{
 const PopularPosts: React.FC<{ posts: PostManagementProps['popularPosts'] }> = ({ posts }) => (
   <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
     <div className="flex justify-between items-center mb-6">
-      <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center">
+      <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center">
         <HiOutlineChartBar className="w-6 h-6 ml-2 text-purple-500" />
         پست‌های محبوب
       </h2>
@@ -146,7 +146,7 @@ const PopularPosts: React.FC<{ posts: PostManagementProps['popularPosts'] }> = (
 const RecentDrafts: React.FC<{ drafts: PostManagementProps['recentDrafts'] }> = ({ drafts }) => (
   <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
     <div className="flex justify-between items-center mb-6">
-      <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center">
+      <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center">
         <HiOutlineClock className="w-6 h-6 ml-2 text-blue-500" />
         پیش‌نویس‌های اخیر
       </h2>
