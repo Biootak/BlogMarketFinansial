@@ -106,7 +106,7 @@ const SingleContent: React.FC<SingleContentProps> = ({ post }) => {
           <SingleAuthor author={post.author} />
         </div>
 
-        <div id="comments" className="scroll-mt-20 max-w-screen-md mx-auto pt-5">
+        <div id="comments" className="scroll-mt-20 max-w-screen-md mx-auto pt-4">
           <h3 className="text-xl font-semibold text-neutral-800 dark:text-neutral-200">
             نظرات ({post._count.comments})
           </h3>

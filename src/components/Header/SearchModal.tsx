@@ -1,6 +1,6 @@
 'use client';
 
-import { type FC, Fragment, type ReactNode, useState, useCallback } from 'react';
+import { type FC, Fragment, type ReactNode, useState, useCallback, useEffect } from 'react';
 import { Combobox, Dialog, Transition } from '@headlessui/react';
 import {
   HiOutlineExclamationTriangle,
@@ -12,6 +12,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import debounce from 'lodash/debounce';
 
 import type { PostWithRelations, CategoryWithPostCount, UserWithProfile } from '@/types/types';
 import { searchAuthors, searchCategories, searchPosts } from '@/actions/search';
@@ -31,37 +32,75 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
   const [posts, setPosts] = useState<PostWithRelations[]>([]);
   const [categories, setCategories] = useState<CategoryWithPostCount[]>([]);
   const [authors, setAuthors] = useState<UserWithProfile[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
 
-  const query = rawQuery.toLowerCase().replace(/^[#>]/, '');
-
   const handleSearch = useCallback(async (searchQuery: string) => {
-    if (searchQuery === '#') {
-      const categoriesResult = await searchCategories('');
-      if (categoriesResult.success && categoriesResult.data) {
-        setCategories(categoriesResult.data);
+    setIsLoading(true);
+    try {
+      if (searchQuery === '#') {
+        const categoriesResult = await searchCategories('');
+        if (categoriesResult.success && categoriesResult.data) {
+          setCategories(categoriesResult.data);
+        }
+      } else if (searchQuery === '>') {
+        const authorsResult = await searchAuthors('');
+        if (authorsResult.success && authorsResult.data) {
+          setAuthors(authorsResult.data);
+        }
+      } else if (searchQuery !== '') {
+        const [postsResult, categoriesResult, authorsResult] = await Promise.all([
+          searchPosts(searchQuery),
+          searchCategories(searchQuery),
+          searchAuthors(searchQuery),
+        ]);
+        if (postsResult.success && postsResult.data) setPosts(postsResult.data);
+        if (categoriesResult.success && categoriesResult.data) setCategories(categoriesResult.data);
+        if (authorsResult.success && authorsResult.data) setAuthors(authorsResult.data);
+      } else {
+        setPosts([]);
+        setCategories([]);
+        setAuthors([]);
       }
-    } else if (searchQuery === '>') {
-      const authorsResult = await searchAuthors('');
-      if (authorsResult.success && authorsResult.data) {
-        setAuthors(authorsResult.data);
-      }
-    } else if (searchQuery !== '') {
-      const [postsResult, categoriesResult, authorsResult] = await Promise.all([
-        searchPosts(searchQuery),
-        searchCategories(searchQuery),
-        searchAuthors(searchQuery),
-      ]);
-      if (postsResult.success && postsResult.data) setPosts(postsResult.data);
-      if (categoriesResult.success && categoriesResult.data) setCategories(categoriesResult.data);
-      if (authorsResult.success && authorsResult.data) setAuthors(authorsResult.data);
+    } catch (error) {
+      console.error('Search error:', error);
+      // Here you might want to set an error state and show an error message to the user
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const debouncedSearch = useCallback(debounce(handleSearch, 300), [handleSearch]);
+
+  useEffect(() => {
+    if (rawQuery) {
+      debouncedSearch(rawQuery);
     } else {
       setPosts([]);
       setCategories([]);
       setAuthors([]);
     }
-  }, []);
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [rawQuery, debouncedSearch]);
+
+  const handleItemSelect = useCallback(
+    (item: any) => {
+      if (item?.href) {
+        if (item.href.startsWith('/category')) {
+          router.push(`/archive/${item.href.split('/').pop()}`);
+        } else {
+          router.push(item.href);
+        }
+        setOpen(false);
+      } else {
+        console.error('Invalid item or href:', item);
+      }
+    },
+    [router],
+  );
 
   return (
     <>
@@ -102,33 +141,8 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-100"
             >
-              <Dialog.Panel
-                className="block mx-auto max-w-2xl transform divide-y divide-gray-100 overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-black ring-opacity-5 transition-all"
-                as="form"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  router.push('/search');
-                  setOpen(false);
-                }}
-              >
-                <Combobox
-                  onChange={(item: any) => {
-                    if (item?.href) {
-                      if (item.href.startsWith('/category')) {
-                        // اگر یک دسته‌بندی انتخاب شده است
-                        const categorySlug = item.href;
-                        router.push(`/archive/${categorySlug}`);
-                      } else {
-                        // برای سایر موارد (مثل پست‌ها یا نویسندگان)
-                        router.push(item.href);
-                      }
-                      setOpen(false);
-                    } else {
-                      console.error('آیتم یا href نامعتبر است:', item);
-                    }
-                  }}
-                  name="searchpallet"
-                >
+              <Dialog.Panel className="mx-auto max-w-2xl transform divide-y divide-gray-100 overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-black ring-opacity-5 transition-all">
+                <Combobox onChange={handleItemSelect}>
                   <div className="relative">
                     <HiOutlineMagnifyingGlass
                       className="pointer-events-none absolute top-3.5 right-4 h-5 w-5 text-gray-400"
@@ -137,114 +151,122 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                     <Combobox.Input
                       className="h-12 w-full border-0 bg-transparent pr-11 pl-4 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm text-right"
                       placeholder="جستجو..."
-                      onChange={(event) => {
-                        setRawQuery(event.target.value);
-                        handleSearch(event.target.value);
-                      }}
+                      onChange={(event) => setRawQuery(event.target.value)}
                     />
                   </div>
 
-                  {(posts.length > 0 || categories.length > 0 || authors.length > 0) && (
-                    <Combobox.Options
-                      static
-                      className="max-h-80 scroll-py-10 scroll-pb-2 space-y-4 overflow-y-auto p-4 pb-2"
-                    >
-                      {posts.length > 0 && (
-                        <li>
-                          <h2 className="text-xs font-semibold text-gray-900">پست‌ها</h2>
-                          <ul className="-mx-4 mt-2 text-sm text-gray-700">
-                            {posts.map((post) => (
-                              <Combobox.Option
-                                key={post.id}
-                                value={{ href: getPostLink(post.postType, post.slug), ...post }}
-                                className={({ active }) =>
-                                  classNames(
-                                    'flex select-none items-center px-4 py-2',
-                                    active && 'bg-indigo-600 text-white',
-                                  )
-                                }
-                              >
-                                {({ active }) => (
-                                  <>
-                                    <HiOutlineClock
-                                      className={classNames(
-                                        'h-6 w-6 flex-none',
-                                        active ? 'text-white' : 'text-gray-400',
-                                      )}
-                                      aria-hidden="true"
-                                    />
-                                    <span className="mr-3 flex-auto truncate">{post.title}</span>
-                                  </>
-                                )}
-                              </Combobox.Option>
-                            ))}
-                          </ul>
-                        </li>
-                      )}
-                      {categories.length > 0 && (
-                        <li>
-                          <h2 className="text-xs font-semibold text-gray-900">دسته‌بندی‌ها</h2>
-                          <ul className="-mx-4 mt-2 text-sm text-gray-700">
-                            {categories.map((category) => (
-                              <Combobox.Option
-                                key={category.id}
-                                value={{ href: `/category/${category.slug}`, ...category }}
-                                className={({ active }) =>
-                                  classNames(
-                                    'flex select-none items-center px-4 py-2',
-                                    active && 'bg-indigo-600 text-white',
-                                  )
-                                }
-                              >
-                                {({ active }) => (
-                                  <>
-                                    <HiOutlineHashtag
-                                      className={classNames(
-                                        'h-6 w-6 flex-none',
-                                        active ? 'text-white' : 'text-gray-400',
-                                      )}
-                                      aria-hidden="true"
-                                    />
-                                    <span className="mr-3 flex-auto truncate">{category.name}</span>
-                                  </>
-                                )}
-                              </Combobox.Option>
-                            ))}
-                          </ul>
-                        </li>
-                      )}
-
-                      {authors.length > 0 && (
-                        <li>
-                          <h2 className="text-xs font-semibold text-gray-900">نویسندگان</h2>
-                          <ul className="-mx-4 mt-2 text-sm text-gray-700">
-                            {authors.map((author) => (
-                              <Combobox.Option
-                                key={author.id}
-                                value={{ href: `/author/${author.id}`, ...author }}
-                                className={({ active }) =>
-                                  classNames(
-                                    'flex select-none items-center px-4 py-2',
-                                    active && 'bg-indigo-600 text-white',
-                                  )
-                                }
-                              >
-                                <Image
-                                  src={author.image || '/default-avatar.png'}
-                                  alt={author.name || 'نویسنده'}
-                                  className="h-6 w-6 flex-none rounded-full"
-                                  width={24}
-                                  height={24}
-                                />
-                                <span className="mr-3 flex-auto truncate">
-                                  {author.name || author.email}
-                                </span>
-                              </Combobox.Option>
-                            ))}
-                          </ul>
-                        </li>
-                      )}
-                    </Combobox.Options>
+                  {isLoading ? (
+                    <div className="py-14 px-6 text-center text-sm sm:px-14">
+                      <p className="mt-4 font-semibold text-gray-900">در حال جستجو...</p>
+                    </div>
+                  ) : (
+                    (posts.length > 0 || categories.length > 0 || authors.length > 0) && (
+                      <Combobox.Options
+                        static
+                        className="max-h-80 scroll-py-10 scroll-pb-2 space-y-4 overflow-y-auto p-4 pb-2"
+                      >
+                        {posts.length > 0 && (
+                          <li>
+                            <h2 className="text-xs font-semibold text-gray-900">پست‌ها</h2>
+                            <ul className="-mx-4 mt-2 text-sm text-gray-700">
+                              {posts.map((post) => (
+                                <Combobox.Option
+                                  key={post.id}
+                                  value={{ href: getPostLink(post.postType, post.slug), ...post }}
+                                  className={({ active }) =>
+                                    classNames(
+                                      'flex select-none items-center px-4 py-2',
+                                      active && 'bg-indigo-600 text-white',
+                                    )
+                                  }
+                                >
+                                  {({ active }) => (
+                                    <>
+                                      <HiOutlineClock
+                                        className={classNames(
+                                          'h-6 w-6 flex-none',
+                                          active ? 'text-white' : 'text-gray-400',
+                                        )}
+                                        aria-hidden="true"
+                                      />
+                                      <span className="mr-3 flex-auto truncate">{post.title}</span>
+                                    </>
+                                  )}
+                                </Combobox.Option>
+                              ))}
+                            </ul>
+                          </li>
+                        )}
+                        {categories.length > 0 && (
+                          <li>
+                            <h2 className="text-xs font-semibold text-gray-900">دسته‌بندی‌ها</h2>
+                            <ul className="-mx-4 mt-2 text-sm text-gray-700">
+                              {categories.map((category) => (
+                                <Combobox.Option
+                                  key={category.id}
+                                  value={{ href: `/category/${category.slug}`, ...category }}
+                                  className={({ active }) =>
+                                    classNames(
+                                      'flex select-none items-center px-4 py-2',
+                                      active && 'bg-indigo-600 text-white',
+                                    )
+                                  }
+                                >
+                                  {({ active }) => (
+                                    <>
+                                      <HiOutlineHashtag
+                                        className={classNames(
+                                          'h-6 w-6 flex-none',
+                                          active ? 'text-white' : 'text-gray-400',
+                                        )}
+                                        aria-hidden="true"
+                                      />
+                                      <span className="mr-3 flex-auto truncate">
+                                        {category.name}
+                                      </span>
+                                    </>
+                                  )}
+                                </Combobox.Option>
+                              ))}
+                            </ul>
+                          </li>
+                        )}
+                        {authors.length > 0 && (
+                          <li>
+                            <h2 className="text-xs font-semibold text-gray-900">نویسندگان</h2>
+                            <ul className="-mx-4 mt-2 text-sm text-gray-700">
+                              {authors.map((author) => (
+                                <Combobox.Option
+                                  key={author.id}
+                                  value={{ href: `/author/${author.id}`, ...author }}
+                                  className={({ active }) =>
+                                    classNames(
+                                      'flex select-none items-center px-4 py-2',
+                                      active && 'bg-indigo-600 text-white',
+                                    )
+                                  }
+                                >
+                                  {({ active }) => (
+                                    <>
+                                      <Image
+                                        src={author.image || '/default-avatar.png'}
+                                        alt={author.name || 'نویسنده'}
+                                        className="h-6 w-6 flex-none rounded-full"
+                                        width={24}
+                                        height={24}
+                                      />
+                                      <span className="mr-3 flex-auto truncate">
+                                        {author.name || author.email}
+                                      </span>
+                                    </>
+                                  )}
+                                </Combobox.Option>
+                              ))}
+                            </ul>
+                          </li>
+                        )}
+                      </Combobox.Options>
+                    )
                   )}
 
                   {rawQuery === '?' && (
@@ -261,23 +283,6 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                       </p>
                     </div>
                   )}
-
-                  {query !== '' &&
-                    rawQuery !== '?' &&
-                    posts.length === 0 &&
-                    categories.length === 0 &&
-                    authors.length === 0 && (
-                      <div className="py-14 px-6 text-center text-sm sm:px-14">
-                        <HiOutlineExclamationTriangle
-                          className="mx-auto h-6 w-6 text-gray-400"
-                          aria-hidden="true"
-                        />
-                        <p className="mt-4 font-semibold text-gray-900">نتیجه‌ای یافت نشد</p>
-                        <p className="mt-2 text-gray-500">
-                          ما نتوانستیم هیچ چیزی با این عبارت پیدا کنیم. لطفاً دوباره تلاش کنید.
-                        </p>
-                      </div>
-                    )}
 
                   <div className="flex flex-wrap items-center bg-gray-50 py-2.5 px-4 text-xs text-gray-700">
                     تایپ کنید{' '}

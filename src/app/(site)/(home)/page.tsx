@@ -33,21 +33,21 @@ export default async function Home() {
           <SectionLargeSlider />
         </Suspense>
         <SectionSliderNewCategories
-          className="relative pb-16"
+          className="relative pb-4"
           heading="موضوعات پرطرفدار"
           subHeading="کشف موضوعات"
           categoryCardType="card2"
         />
-        <SectionMagazine1 className="py-16 lg:py-28" />
+        <SectionMagazine1 className="py-6 " />
         {latestLargeAd ? (
-          <SectionAds className="pb-16 lg:pb-28" ad={latestLargeAd} />
+          <SectionAds className="pb-4 lg:pb-28" ad={latestLargeAd} />
         ) : (
-          <Skeleton className="pb-16 lg:pb-28 h-64 rounded-md" />
+          <Skeleton className="pb-4 lg:pb-28 h-64 rounded-md" />
         )}
         {posts.length > 0 ? (
-          <SectionMagazine7 className="py-16 lg:py-28" posts={posts} />
+          <SectionMagazine7 className="py-6" posts={posts} />
         ) : (
-          <div className="py-16 lg:py-28 space-y-4">
+          <div className="py-6 space-y-4">
             {[...Array(3)].map((_, i) => (
               <Skeleton key={i.toString()} className="h-64 rounded-md" />
             ))}
@@ -56,9 +56,9 @@ export default async function Home() {
       </div>
       <div className="container">
         {topAuthors.length > 0 ? (
-          <SectionGridAuthorBox className="py-16 lg:py-28" authors={topAuthors} />
+          <SectionGridAuthorBox className="py-6" authors={topAuthors} />
         ) : (
-          <div className="py-16 lg:py-28 grid grid-cols-5 gap-4">
+          <div className="py-6 grid grid-cols-5 gap-4">
             {[...Array(5)].map((_, i) => (
               <Skeleton key={i.toString()} className="h-48 rounded-md" />
             ))}

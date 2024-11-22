@@ -67,21 +67,6 @@ export default function Card2({ className = 'h-full', size = 'normal', post }: C
             {excerpt}
           </span>
         </div>
-        <div className="mt-auto pt-3 border-t border-neutral-200 dark:border-neutral-700">
-          <div className="flex items-center justify-between">
-            <BookmarkCheck post={post}>
-              {(isBookmarked) => (
-                <PostCardSaveAction
-                  className="relative"
-                  postId={post.id}
-                  initialBookmarked={isBookmarked}
-                  bookmarkClass="h-8 w-8 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700"
-                />
-              )}
-            </BookmarkCheck>
-            <PostCardLikeAndComment className="relative" post={post} />
-          </div>
-        </div>
       </div>
     </div>
   );

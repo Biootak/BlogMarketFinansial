@@ -1,13 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { Advertisement, PostWithRelations } from '@/types/types';
+import type { PostWithRelations } from '@/types/types';
 import PostItem from './PostItem';
-import AdItem from './AdItem';
 
 interface PostsListProps {
   posts: PostWithRelations[];
-  ads: Advertisement[];
 }
 
 interface ContentItem {
@@ -15,37 +13,17 @@ interface ContentItem {
   height: number;
 }
 
-export default function PostsList({ posts, ads }: PostsListProps) {
+export default function PostsList({ posts }: PostsListProps) {
   const [content, setContent] = useState<ContentItem[]>([]);
 
   useEffect(() => {
-    const newContent: ContentItem[] = [];
-    let adIndex = 0;
-
-    posts.forEach((post, index) => {
-      if (index === 0) {
-        newContent.push({
-          component: <PostItem key={`post-${post.id}`} post={post} isLarge={true} />,
-          height: 5 // استفاده از مقدار بیشتر برای پست اول که بزرگتر است
-        });
-      } else {
-        newContent.push({
-          component: <PostItem key={`post-${post.id}`} post={post} />,
-          height: 2
-        });
-      }
-
-      if ((index + 1) % 4 === 0 && adIndex < ads.length) {
-        newContent.push({
-          component: <AdItem key={`ad-${adIndex}`} ad={ads[adIndex]} />,
-          height: 2 // تنظیم ارتفاع مناسب برای تبلیغات
-        });
-        adIndex++;
-      }
-    });
+    const newContent: ContentItem[] = posts.map((post, index) => ({
+      component: <PostItem key={`post-${post.id}`} post={post} isLarge={index === 0} />,
+      height: index === 0 ? 5 : 2,
+    }));
 
     setContent(newContent);
-  }, [posts, ads]);
+  }, [posts]);
 
   const splitContentIntoColumns = (content: ContentItem[]) => {
     const column1: React.ReactNode[] = [];

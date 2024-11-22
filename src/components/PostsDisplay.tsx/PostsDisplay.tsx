@@ -14,7 +14,7 @@ interface PostsDisplayProps {
 
 export default function PostsDisplay({
   posts,
-  ads,
+
   onLoadMore,
   isLoading,
   hasMore,
@@ -25,7 +25,7 @@ export default function PostsDisplay({
 
   return (
     <div className="space-y-8">
-      <PostsList posts={posts} ads={ads} />
+      <PostsList posts={posts} />
       <LoadMoreButton onLoadMore={onLoadMore} isLoading={isLoading} hasMore={hasMore} />
     </div>
   );

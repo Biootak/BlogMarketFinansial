@@ -31,7 +31,7 @@ const SingleRelatedPosts: React.FC<SingleRelatedPostsProps> = ({
   }
 
   return (
-    <div className="relative py-16 lg:py-28 mt-16 lg:mt-28">
+    <div className="relative py-6 mt-16 lg:mt-28">
       <div className="container">
         {relatedPosts.length > 0 && (
           <div>

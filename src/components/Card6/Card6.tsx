@@ -15,51 +15,49 @@ export interface Card6Props {
   post: PostWithRelations;
 }
 
-export default function Component({ className = 'h-full', post }: Card6Props) {
+export default function Component({ className = '', post }: Card6Props) {
   const { title, slug, featuredImage, categories, postType } = post;
 
   return (
     <div
       dir="rtl"
-      className={`nc-Card6 relative flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start sm:items-center lg:items-start xl:items-center p-4 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 shadow ${className}`}
+      className={`nc-Card6 relative flex flex-row items-stretch p-2 sm:p-3 md:p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 shadow ${className}`}
     >
       <Link href={getPostLink(postType, slug)} className="absolute inset-0 z-0" />
       <Link
         href={getPostLink(postType, slug)}
-        className="block relative flex-shrink-0 w-full h-48 sm:w-56 sm:h-40 lg:w-full lg:h-48 xl:w-56 xl:h-40 mb-4 sm:mb-0 lg:mb-4 xl:mb-0 sm:ml-5 lg:ml-0 xl:ml-5 rounded-2xl overflow-hidden z-10"
+        className="block relative flex-shrink-0 w-1/3 aspect-[4/3] rounded-xl overflow-hidden z-10 ml-2 sm:ml-3 md:ml-4"
       >
         <Image
-          sizes="(max-width: 639px) 100vw, (min-width: 640px) and (max-width: 1023px) 224px, (min-width: 1024px) and (max-width: 1279px) 100vw, 224px"
+          sizes="(max-width: 639px) 33vw, (max-width: 1023px) 25vw, 20vw"
           className="object-cover"
           fill
           src={featuredImage || '/placeholder.jpg'}
           alt={title}
         />
         <span className="absolute bottom-1 right-1">
-          <PostTypeFeaturedIcon wrapSize="h-7 w-7" iconSize="h-4 w-4" postType={postType} />
+          <PostTypeFeaturedIcon
+            wrapSize="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6"
+            iconSize="h-2 w-2 sm:h-3 sm:w-3 md:h-3.5 md:w-3.5"
+            postType={postType}
+          />
         </span>
       </Link>
-      <div className="flex flex-col flex-grow w-full">
-        <div className="space-y-3 mb-4">
-          <CategoryBadgeList categories={categories} />
-          <h2 className="block font-semibold text-base sm:text-md">
+      <div className="flex flex-col flex-grow justify-between">
+        <div className="flex flex-col h-full">
+          <div className="hidden sm:block">
+            <CategoryBadgeList categories={categories} />
+          </div>
+          <h2 className="block font-semibold text-xs sm:text-sm md:text-base leading-snug mb-auto">
             <Link href={getPostLink(postType, slug)} className="line-clamp-2" title={title}>
               {title}
             </Link>
           </h2>
-          <PostCardMeta meta={post} />
-        </div>
-        <div className="flex flex-row items-center justify-between mt-auto w-full">
-          <BookmarkCheck post={post}>
-            {(isBookmarked) => (
-              <PostCardSaveAction
-                postId={post.id}
-                initialBookmarked={isBookmarked}
-                bookmarkClass="h-8 w-8 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700"
-              />
-            )}
-          </BookmarkCheck>
-          <PostCardLikeAndComment post={post} />
+          <PostCardMeta
+            hiddenAvatar={true}
+            meta={post}
+            className="text-[10px] sm:text-xs md:text-sm mt-1"
+          />
         </div>
       </div>
     </div>

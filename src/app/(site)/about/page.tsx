@@ -12,7 +12,7 @@ const PageAbout = () => {
       {/* ======== BG GLASS ======== */}
       <BgGlassmorphism />
 
-      <div className="container py-16 lg:py-28 space-y-16 lg:space-y-28">
+      <div className="container py-6 space-y-16 lg:space-y-28">
         <SectionHero
           rightImg={rightImg}
           heading="👋 درباره ما"
