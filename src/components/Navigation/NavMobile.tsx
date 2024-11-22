@@ -56,6 +56,7 @@ const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
       ],
     },
     { id: 'stock', name: 'بورس و سهام', href: '/archive/category/stock' },
+    { id: 'political-news', name: 'اخبار سیاسی', href: '/archive/category/political-news' },
     { id: 'money-transfer', name: 'حواله', href: '/money-transfer' },
     { id: 'online-payment', name: 'پرداخت آنلاین', href: '/online-payment' },
 
