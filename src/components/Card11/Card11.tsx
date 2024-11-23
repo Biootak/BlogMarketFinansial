@@ -36,7 +36,6 @@ const Card11: React.FC<Card11Props> = ({
           <PostFeaturedMedia post={post} />
         </div>
       </div>
-      <Link href={postLink} className="absolute inset-0 z-0" />
       <span className="absolute top-1 right-1">
         <CategoryBadgeList categories={categories} />
       </span>
@@ -49,14 +48,16 @@ const Card11: React.FC<Card11Props> = ({
             {createdAt.toString()}
           </span>
         )}
-        <h3 className="nc-card-title block text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-          <span className="line-clamp-2" title={title}>
-            {title}
-          </span>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2 mt-2">
+        <Link href={postLink} className="group">
+          <h3 className="nc-card-title block text-sm font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-primary-600 dark:group-hover:text-primary-500">
+            <span className="line-clamp-2" title={title}>
+              {title}
+            </span>
+          </h3>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2 mt-2 group-hover:text-neutral-600 dark:group-hover:text-neutral-300">
             {excerpt}
           </p>
-        </h3>
+        </Link>
       </div>
     </div>
   );
