@@ -1,5 +1,3 @@
-'use client';
-
 import type React from 'react';
 import { use } from 'react';
 import Heading from '@/components/Heading/Heading';
@@ -14,7 +12,6 @@ interface SingleRelatedPostsProps {
 }
 
 const SingleRelatedPosts: React.FC<SingleRelatedPostsProps> = ({
-  post,
   relatedPostsPromise,
   moreFromAuthorPromise,
 }) => {
@@ -30,13 +27,15 @@ const SingleRelatedPosts: React.FC<SingleRelatedPostsProps> = ({
     return null;
   }
 
+  const headingClasses = 'mb-6 text-base text-primary-700';
+
   return (
-    <div className="relative py-6 mt-16 lg:mt-28">
+    <div className="relative py-4 mt-6">
       <div className="container">
         {relatedPosts.length > 0 && (
           <div>
-            <Heading className="mb-10 text-neutral-900 dark:text-neutral-50" desc="">
-              پست‌های مرتبط
+            <Heading className={headingClasses} desc="">
+              مطالب مشابه
             </Heading>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
               {relatedPosts.map((relatedPost) => (
@@ -47,9 +46,9 @@ const SingleRelatedPosts: React.FC<SingleRelatedPostsProps> = ({
         )}
 
         {moreFromAuthor.length > 0 && (
-          <div className="mt-20">
-            <Heading className="mb-10 text-neutral-900 dark:text-neutral-50" desc="">
-              پست‌های بیشتر از {post.author.name}
+          <div className="mt-8">
+            <Heading className={headingClasses} desc="">
+              دیگر مطالب نویسنده
             </Heading>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
               {moreFromAuthor.map((authorPost) => (

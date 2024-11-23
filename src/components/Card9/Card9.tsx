@@ -25,15 +25,18 @@ const Card9: FC<Card9Props> = ({
   const renderMeta = () => (
     <div className="inline-flex items-center text-xs text-neutral-300">
       <div className="block">
-        <h2 className="block text-base  font-semibold text-white">
-          <span className="line-clamp-2" title={title}>
+        <h3 className="block text-sm font-semibold text-white dark:text-neutral-100 group-hover:text-primary-600 dark:group-hover:text-primary-500">
+          <Link href={getPostLink(postType, slug)} className="line-clamp-2" title={title}>
             {title}
-          </span>
-        </h2>
-        <Link href={`/author/${author.id}`} className="flex mt-2.5 relative">
-          <span className="block text-neutral-200 hover:text-white font-medium truncate">
+          </Link>
+        </h3>
+        <div className="flex mt-2.5 relative">
+          <Link
+            href={`/author/${author.id}`}
+            className="text-neutral-200 hover:text-white font-medium truncate"
+          >
             {author.name}
-          </span>
+          </Link>
           <span className="mx-[6px] font-medium">·</span>
           <span className="font-normal truncate">
             {new Date(createdAt).toLocaleDateString('fa-IR', {
@@ -42,7 +45,7 @@ const Card9: FC<Card9Props> = ({
               day: 'numeric',
             })}
           </span>
-        </Link>
+        </div>
       </div>
     </div>
   );
@@ -75,12 +78,8 @@ const Card9: FC<Card9Props> = ({
           </Link>
         )}
       </div>
-      <Link
-        href={getPostLink(postType, slug)}
-        className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-black opacity-50"
-      />
+      <div className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-black opacity-50" />
       <div className="absolute bottom-0 inset-x-0 p-4 flex flex-col flex-grow">
-        <Link href={getPostLink(postType, slug)} className="absolute inset-0" />
         <div className="mb-3">
           <CategoryBadgeList categories={categories} />
         </div>
