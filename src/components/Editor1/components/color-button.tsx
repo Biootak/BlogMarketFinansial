@@ -14,13 +14,12 @@ type ColorButtonProps = {
 
 export const ColorButton = ({
   color,
-  name,
   active,
   onColorChange,
   isBrightColor,
 }: ColorButtonProps) => {
   return (
-    <Tooltip title={name}>
+    <Tooltip>
       <button
         type="button"
         style={{ backgroundColor: color }}
