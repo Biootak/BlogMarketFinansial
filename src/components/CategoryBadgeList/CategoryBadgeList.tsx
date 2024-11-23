@@ -1,5 +1,3 @@
-'use client';
-
 import type React from 'react';
 import { useMemo } from 'react';
 import Badge from '@/components/Badge/Badge';
@@ -42,7 +40,7 @@ const CategoryBadgeList: React.FC<CategoryBadgeListProps> = ({
     <div className={`nc-CategoryBadgeList ${className}`} data-nc-id="CategoryBadgeList">
       {categories.map((item) => (
         <Badge
-          className={`${itemClass} text-xs px-3 py-1 font-medium m-1`}
+          className={`${itemClass} text-[10px]/[14px] px-3 py-1  m-1`}
           key={item.id}
           name={item.name}
           color={categoryColors[item.id]}

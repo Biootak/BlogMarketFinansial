@@ -23,7 +23,7 @@ const Badge: FC<BadgeProps> = ({ className = 'relative', name, color = 'blue', h
 
   const colorClass = colorClasses[color] || colorClasses.blue;
 
-  const CLASSES = `nc-Badge inline-flex px-2.5 py-1 rounded-full font-medium text-xs ${className} ${colorClass} transition-colors duration-300`;
+  const CLASSES = `nc-Badge inline-flex  px-2.5 py-1 rounded-full font-medium text-[10px]/[14px] ${className} ${colorClass} transition-colors duration-300`;
   
   return href ? (
     <Link href={href} className={CLASSES}>
