@@ -5,25 +5,25 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import type { ActionResult, ExchangeRateData } from '@/types/types';
 
-// Zod schema for validation
 const exchangeRateSchema = z.object({
   name: z.string(),
   currency: z.string(),
-  buyRate: z.string(),
-  sellRate: z.string(),
+  rateType: z.enum(['BUY_SELL', 'SINGLE_BULK']),
+  buyRate: z.string().optional(),
+  sellRate: z.string().optional(),
+  singleRate: z.string().optional(),
+  bulkRate: z.string().optional(),
   imageUrl: z.string().optional(),
   description: z.string().optional(),
 });
 
-// Get all exchange rates
 export async function getExchangeRates(): Promise<ExchangeRateData[]> {
   const exchangeRates = await prisma.exchangeRate.findMany({
-    orderBy: [{ name: 'asc' }],
+    orderBy: [{ createdAt: 'desc' }],
   });
   return exchangeRates;
 }
 
-// Create a new exchange rate
 export async function createExchangeRate(
   data: Omit<ExchangeRateData, 'id' | 'createdAt' | 'updatedAt'>,
 ): Promise<ActionResult<ExchangeRateData>> {
@@ -60,7 +60,6 @@ export async function createExchangeRate(
   }
 }
 
-// Update an existing exchange rate
 export async function updateExchangeRate(
   id: string,
   data: Partial<Omit<ExchangeRateData, 'id' | 'createdAt' | 'updatedAt'>>,
@@ -99,7 +98,6 @@ export async function updateExchangeRate(
   }
 }
 
-// Delete an exchange rate
 export async function deleteExchangeRate(id: string): Promise<ActionResult> {
   try {
     await prisma.exchangeRate.delete({ where: { id } });
@@ -107,14 +105,14 @@ export async function deleteExchangeRate(id: string): Promise<ActionResult> {
     return {
       success: true,
       variant: 'info',
-      message: 'ارز با موفقیت حذف شد.',
+      message: 'نرخ ارز با موفقیت حذف شد.',
     };
   } catch (error) {
-    console.error('خطا در حذف ارز:', error);
+    console.error('خطا در حذف نرخ ارز:', error);
     return {
       success: false,
       variant: 'destructive',
-      message: 'خطا در حذف ارز. لطفاً دوباره تلاش کنید.',
+      message: 'خطا در حذف نرخ ارز. لطفاً دوباره تلاش کنید.',
       error: error instanceof Error ? error.message : String(error),
     };
   }

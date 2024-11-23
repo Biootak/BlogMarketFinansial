@@ -4,12 +4,12 @@ import type React from 'react';
 import { useState, useEffect } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import {
-  getExchangeRates,
   createExchangeRate,
   updateExchangeRate,
   deleteExchangeRate,
+  getExchangeRates,
 } from '@/actions/exchange-rates';
-import type { ExchangeRateData } from '@/types/types';
+import type { ExchangeRateData, RateType } from '@/types/types';
 import { useToast } from '@/components/ui/use-toast';
 import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
 import {
@@ -30,13 +30,23 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import Loading from '@/components/Loading';
 
 interface ExchangeRateFormValues {
   name: string;
   currency: string;
+  rateType: RateType;
   buyRate: string;
   sellRate: string;
+  singleRate: string;
+  bulkRate: string;
   imageUrl: string | null;
   description: string | null;
 }
@@ -54,7 +64,10 @@ const ExchangeRatesPage: React.FC = () => {
     reset,
     formState: { errors },
     setValue,
+    watch,
   } = useForm<ExchangeRateFormValues>();
+
+  const rateType = watch('rateType');
 
   useEffect(() => {
     const fetchRates = async () => {
@@ -87,19 +100,11 @@ const ExchangeRatesPage: React.FC = () => {
         });
       }
     } catch (error: any) {
-      if (error.code === 'P2002' && error.meta?.target?.includes('name')) {
-        toast({
-          title: 'خطا',
-          description: 'نام ارز تکراری است. لطفاً نام دیگری انتخاب کنید.',
-          variant: 'destructive',
-        });
-      } else {
-        toast({
-          title: 'خطا',
-          description: 'خطایی در ایجاد ارز رخ داد. لطفاً دوباره تلاش کنید.',
-          variant: 'destructive',
-        });
-      }
+      toast({
+        title: 'خطا',
+        description: 'خطایی در ایجاد ارز رخ داد. لطفاً دوباره تلاش کنید.',
+        variant: 'destructive',
+      });
       console.error('Error creating exchange rate:', error);
     }
   };
@@ -172,28 +177,16 @@ const ExchangeRatesPage: React.FC = () => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
-              تصویر
-            </TableHead>
-            <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
-              نام ارز
-            </TableHead>
-            <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
-              نماد
-            </TableHead>
-            <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
-              نرخ خرید
-            </TableHead>
-            <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
-              نرخ فروش
-            </TableHead>
-            <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
-              {' '}
-              توضیحات
-            </TableHead>
-            <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
-              عملیات
-            </TableHead>
+            <TableHead className="text-right">تصویر</TableHead>
+            <TableHead className="text-right">نام ارز</TableHead>
+            <TableHead className="text-right">نماد</TableHead>
+            <TableHead className="text-right">نوع نرخ</TableHead>
+            <TableHead className="text-right">نرخ خرید</TableHead>
+            <TableHead className="text-right">نرخ فروش</TableHead>
+            <TableHead className="text-right">نرخ پرچون</TableHead>
+            <TableHead className="text-right">نرخ عمده</TableHead>
+            <TableHead className="text-right">توضیحات</TableHead>
+            <TableHead className="text-right">عملیات</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -210,8 +203,13 @@ const ExchangeRatesPage: React.FC = () => {
               </TableCell>
               <TableCell>{exchangeRate.name}</TableCell>
               <TableCell>{exchangeRate.currency}</TableCell>
+              <TableCell>
+                {exchangeRate.rateType === 'BUY_SELL' ? 'خرید/فروش' : 'پرچون/عمده'}
+              </TableCell>
               <TableCell>{exchangeRate.buyRate}</TableCell>
               <TableCell>{exchangeRate.sellRate}</TableCell>
+              <TableCell>{exchangeRate.singleRate}</TableCell>
+              <TableCell>{exchangeRate.bulkRate}</TableCell>
               <TableCell>{exchangeRate.description}</TableCell>
               <TableCell className="flex items-center space-x-2">
                 <Button
@@ -219,7 +217,7 @@ const ExchangeRatesPage: React.FC = () => {
                   size="sm"
                   onClick={() => {
                     setEditingExchangeRate(exchangeRate);
-                    reset(exchangeRate);
+                    reset();
                   }}
                 >
                   ویرایش
@@ -263,31 +261,47 @@ const ExchangeRatesPage: React.FC = () => {
               {errors.currency && <p className="text-red-500 text-sm">{errors.currency.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="buyRate">نرخ خرید</Label>
-              <Input
-                id="buyRate"
-                {...register('buyRate', {
-                  required: 'نرخ خرید الزامی است',
-                })}
-                placeholder="نرخ خرید"
-              />
-              {errors.buyRate && <p className="text-red-500 text-sm">{errors.buyRate.message}</p>}
+              <Label htmlFor="rateType">نوع نرخ</Label>
+              <Select
+                onValueChange={(value: RateType) => setValue('rateType', value)}
+                defaultValue="BUY_SELL"
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="انتخاب نوع نرخ" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="BUY_SELL">خرید/فروش</SelectItem>
+                  <SelectItem value="SINGLE_BULK">پرچون/عمده</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="sellRate">نرخ فروش</Label>
-              <Input
-                id="sellRate"
-                {...register('sellRate', {
-                  required: 'نرخ فروش الزامی است',
-                })}
-                placeholder="نرخ فروش"
-              />
-              {errors.sellRate && <p className="text-red-500 text-sm">{errors.sellRate.message}</p>}
-            </div>
+            {rateType === 'BUY_SELL' && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="buyRate">نرخ خرید</Label>
+                  <Input id="buyRate" {...register('buyRate')} placeholder="نرخ خرید" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="sellRate">نرخ فروش</Label>
+                  <Input id="sellRate" {...register('sellRate')} placeholder="نرخ فروش" />
+                </div>
+              </>
+            )}
+            {rateType === 'SINGLE_BULK' && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="singleRate">نرخ پرچون</Label>
+                  <Input id="singleRate" {...register('singleRate')} placeholder="نرخ پرچون" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="bulkRate">نرخ عمده</Label>
+                  <Input id="bulkRate" {...register('bulkRate')} placeholder="نرخ عمده" />
+                </div>
+              </>
+            )}
             <div className="space-y-2">
               <Label htmlFor="description">توضیحات</Label>
-              <Input id="description" {...register('description', {})} placeholder=" توضیحات" />
-              {errors.sellRate && <p className="text-red-500 text-sm">{errors.sellRate.message}</p>}
+              <Input id="description" {...register('description')} placeholder="توضیحات" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="imageUrl">تصویر</Label>
@@ -309,7 +323,7 @@ const ExchangeRatesPage: React.FC = () => {
           {editingExchangeRate && (
             <form onSubmit={handleSubmit(handleEditSubmit)} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">نام</Label>
+                <Label htmlFor="name">نام ارز</Label>
                 <Input
                   id="name"
                   defaultValue={editingExchangeRate.name}
@@ -331,37 +345,72 @@ const ExchangeRatesPage: React.FC = () => {
                 )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="buyRate">نرخ خرید</Label>
-                <Input
-                  id="buyRate"
-                  defaultValue={editingExchangeRate.buyRate}
-                  {...register('buyRate', {
-                    required: 'نرخ خرید الزامی است',
-                  })}
-                  placeholder="نرخ خرید"
-                />
-                {errors.buyRate && <p className="text-red-500 text-sm">{errors.buyRate.message}</p>}
+                <Label htmlFor="rateType">نوع نرخ</Label>
+                <Select
+                  onValueChange={(value: RateType) => setValue('rateType', value)}
+                  defaultValue={editingExchangeRate.rateType}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="انتخاب نوع نرخ" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="BUY_SELL">خرید/فروش</SelectItem>
+                    <SelectItem value="SINGLE_BULK">پرچون/عمده</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="sellRate">نرخ فروش</Label>
-                <Input
-                  id="sellRate"
-                  defaultValue={editingExchangeRate.sellRate}
-                  {...register('sellRate', {
-                    required: 'نرخ فروش الزامی است',
-                  })}
-                  placeholder="نرخ فروش"
-                />
-                {errors.sellRate && (
-                  <p className="text-red-500 text-sm">{errors.sellRate.message}</p>
-                )}
-              </div>
+              {rateType === 'BUY_SELL' && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="buyRate">نرخ خرید</Label>
+                    <Input
+                      id="buyRate"
+                      defaultValue={editingExchangeRate.buyRate || ''}
+                      {...register('buyRate')}
+                      placeholder="نرخ خرید"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="sellRate">نرخ فروش</Label>
+                    <Input
+                      id="sellRate"
+                      defaultValue={editingExchangeRate.sellRate || ''}
+                      {...register('sellRate')}
+                      placeholder="نرخ فروش"
+                    />
+                  </div>
+                </>
+              )}
+              {rateType === 'SINGLE_BULK' && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="singleRate">نرخ پرچون</Label>
+                    <Input
+                      id="singleRate"
+                      defaultValue={editingExchangeRate.singleRate || ''}
+                      {...register('singleRate')}
+                      placeholder="نرخ پرچون"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="bulkRate">نرخ عمده</Label>
+                    <Input
+                      id="bulkRate"
+                      defaultValue={editingExchangeRate.bulkRate || ''}
+                      {...register('bulkRate')}
+                      placeholder="نرخ عمده"
+                    />
+                  </div>
+                </>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="description">توضیحات</Label>
-                <Input id="description" {...register('description', {})} placeholder=" توضیحات" />
-                {errors.sellRate && (
-                  <p className="text-red-500 text-sm">{errors.sellRate.message}</p>
-                )}
+                <Input
+                  id="description"
+                  defaultValue={editingExchangeRate.description || ''}
+                  {...register('description')}
+                  placeholder="توضیحات"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="imageUrl">تصویر</Label>

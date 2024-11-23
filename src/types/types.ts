@@ -348,12 +348,17 @@ export interface ExchangeRatesResult {
 }
 
 // for data money-transfer
+export type RateType = 'BUY_SELL' | 'SINGLE_BULK';
+
 export interface ExchangeRateData {
   id: string;
   name: string;
   currency: string;
-  buyRate: string;
-  sellRate: string;
+  rateType: RateType;
+  buyRate: string | null;
+  sellRate: string | null;
+  singleRate: string | null;
+  bulkRate: string | null;
   imageUrl: string | null;
   updatedAt: Date;
   createdAt: Date;

@@ -241,16 +241,23 @@ model PageView {
 }
 
 model ExchangeRate {
-  id        String   @id @default(cuid())
-  name      String   @unique 
-  currency  String
-  buyRate   String
-  sellRate  String
+  id          String   @id @default(cuid())
+  name        String   @unique 
+  currency    String
+  rateType    RateType @default(BUY_SELL)
+  buyRate     String?
+  sellRate    String?
+  singleRate  String?
+  bulkRate    String?
   description String?
-  imageUrl  String?
-  updatedAt DateTime @updatedAt
-  createdAt DateTime @default(now())
-  
+  imageUrl    String?
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+}
+
+enum RateType {
+  BUY_SELL
+  SINGLE_BULK
 }
 
 model Newsletter {
