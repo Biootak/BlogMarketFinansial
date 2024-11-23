@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   description: 'بهترین نرخ‌های حواله ارزی برای انتقال سریع و امن پول در سراسر جهان',
 };
 
-export const revalidate = 1800; // revalidate every 30 minutes
+export const revalidate = 1800;
 
 export default async function MoneyTransferPage() {
   const exchangeRates = await getExchangeRates();
@@ -20,18 +20,18 @@ export default async function MoneyTransferPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800">
       {/* Hero Section */}
-      <section className="relative bg-blue-600 text-white py-32">
+      <section className="relative bg-blue-600 text-white py-6">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-800 opacity-75" />
         <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="md:w-1/2 mb-10 md:mb-0">
-              <h1 className="text-5xl md:text-6xl font-bold mb-6">انتقال ارز سریع و مطمئن</h1>
-              <p className="text-xl mb-8">
+              <h2 className="text-2xl md:text-6xl font-bold mb-4">انتقال ارز سریع و مطمئن</h2>
+              <p className="text-xl mb-6">
                 بهترین نرخ‌ها برای حواله ارزی در سراسر جهان با امنیت بالا و کارمزد پایین
               </p>
               <a
                 href="#rates"
-                className="bg-white text-blue-600 px-8 py-3 rounded-full text-lg font-semibold hover:bg-blue-100 transition-colors duration-300"
+                className="bg-white text-blue-600 px-6 py-3 rounded-full text-lg font-semibold hover:bg-blue-100 transition-colors duration-300"
               >
                 مشاهده نرخ‌های لحظه‌ای
               </a>
@@ -62,7 +62,7 @@ export default async function MoneyTransferPage() {
           className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden mb-16"
         >
           <div className="p-8">
-            <h2 className="text-3xl font-bold mb-6 text-center text-gray-800 dark:text-gray-100">
+            <h2 className="text-xl font-semibold mb-6 text-center text-gray-800 dark:text-gray-100">
               نرخ‌های لحظه‌ای ارز
             </h2>
             <Suspense fallback={<div className="text-center">در حال بارگذاری نرخ‌های ارز...</div>}>
