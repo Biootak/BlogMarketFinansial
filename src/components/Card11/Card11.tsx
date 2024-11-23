@@ -5,11 +5,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import type { PostWithRelations } from '@/types/types';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
-import PostCardLikeAndComment from '@/components/PostCardLikeAndComment/PostCardLikeAndComment';
 import PostCardMeta from '@/components/PostCardMeta/PostCardMeta';
 import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia';
-import BookmarkCheck from '../BookmarkCheck';
-import PostCardSaveAction from '@/components/PostCardSaveAction/PostCardSaveAction';
 import { getPostLink } from '@/lib/getPostLink';
 
 export interface Card11Props {
@@ -56,24 +53,11 @@ const Card11: React.FC<Card11Props> = ({
             {createdAt.toString()}
           </span>
         )}
-        <h3 className="nc-card-title block text-lg font-semibold text-neutral-900 dark:text-neutral-100 transition-colors duration-300 hover:text-primary dark:hover:text-primary-dark">
+        <h3 className="nc-card-title block text-base font-semibold text-neutral-900 dark:text-neutral-100 transition-colors duration-300 hover:text-primary dark:hover:text-primary-dark">
           <span className="line-clamp-2" title={title}>
             {title}
           </span>
         </h3>
-        <div className="flex items-end justify-between mt-auto pt-4 border-t border-neutral-200 dark:border-neutral-700">
-          <PostCardLikeAndComment className="relative" post={post} />
-          <BookmarkCheck post={post}>
-            {(isBookmarked) => (
-              <PostCardSaveAction
-                className="relative"
-                postId={post.id}
-                initialBookmarked={isBookmarked}
-                bookmarkClass="h-9 w-9 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 transition-colors duration-300 rounded-full"
-              />
-            )}
-          </BookmarkCheck>
-        </div>
       </div>
     </div>
   );
