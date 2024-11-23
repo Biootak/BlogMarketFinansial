@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useMemo, type FC } from 'react';
 import type { PostWithRelations } from '@/types/types';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
@@ -9,14 +11,21 @@ import { getPostLink } from '@/lib/getPostLink';
 
 export interface Card9Props {
   className?: string;
-  ratio?: string;
+  ratio?: 'portrait' | 'tall' | 'square';
   post: PostWithRelations;
   hoverClass?: string;
 }
 
+// نسبت‌های بهینه شده برای حالت عمودی
+const aspectRatioClasses = {
+  portrait: 'aspect-[3/4]', // نسبت کلاسیک پرتره
+  tall: 'aspect-[2/3]', // کمی کوتاه‌تر از پرتره
+  square: 'aspect-square', // مربع
+};
+
 const Card9: FC<Card9Props> = ({
   className = 'h-full',
-  ratio = 'aspect-w-3 aspect-h-3 sm:aspect-h-4',
+  ratio = 'portrait',
   post,
   hoverClass = '',
 }) => {
@@ -50,14 +59,17 @@ const Card9: FC<Card9Props> = ({
     </div>
   );
 
+  // کلاس نسبت تصویر را بر اساس پراپ ratio تعیین می‌کنیم
+  const imageRatioClass = aspectRatioClasses[ratio];
+
   return (
     <div
       className={`nc-Card9 relative flex flex-col group rounded-3xl overflow-hidden z-0 ${hoverClass} ${className} rtl`}
     >
-      <div className={`flex items-start relative w-full ${ratio}`}>
+      <div className={`flex items-start relative w-full ${imageRatioClass}`}>
         {postType === 'AUDIO' ? (
           <div className="absolute inset-0">
-            <PostFeaturedMedia post={post} />
+            <PostFeaturedMedia post={post} className="w-full h-full" />
           </div>
         ) : (
           <Link href={getPostLink(postType, slug)} className="relative w-full h-full block">
@@ -67,6 +79,7 @@ const Card9: FC<Card9Props> = ({
               className="object-cover rounded-3xl"
               src={featuredImage || '/path/to/default-image.jpg'}
               sizes="(max-width: 600px) 480px, 500px"
+              priority={true}
             />
             <PostTypeFeaturedIcon
               className="absolute top-3 left-3 group-hover:hidden"
@@ -78,7 +91,11 @@ const Card9: FC<Card9Props> = ({
           </Link>
         )}
       </div>
-      <div className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-black opacity-50" />
+
+      {/* Gradient overlay برای خوانایی متن */}
+      <div className="absolute bottom-0 inset-x-0 h-2/3 bg-gradient-to-t from-black/80 via-black/50 to-transparent" />
+
+      {/* Content overlay */}
       <div className="absolute bottom-0 inset-x-0 p-4 flex flex-col flex-grow">
         <div className="mb-3">
           <CategoryBadgeList categories={categories} />

@@ -87,7 +87,7 @@ const SingleContent: React.FC<SingleContentProps> = ({ post }) => {
           className="prose lg:prose-lg !max-w-screen-md mx-auto dark:prose-invert"
           ref={contentRef}
         >
-          <h1>{post.title}</h1>
+          <h3>{post.title}</h3>
           {post.content ? (
             <MarkdownRenderer content={post.content} />
           ) : (
@@ -116,9 +116,7 @@ const SingleContent: React.FC<SingleContentProps> = ({ post }) => {
         <div className="max-w-screen-md mx-auto">
           {post.comments && post.comments.length > 0 ? (
             <SingleCommentLists comments={post.comments} />
-          ) : (
-            <Empty />
-          )}
+          ) : null}
           <div ref={endedAnchorRef} />
         </div>
       </div>

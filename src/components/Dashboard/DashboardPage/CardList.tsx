@@ -138,7 +138,7 @@ const CardList: FC<CardListProps> = ({
             <FormattedDate date={createdAt} />
           </span>
         )}
-        <h3 className="nc-card-title block text-base font-semibold text-neutral-900 dark:text-neutral-100 my-3">
+        <h3 className="nc-card-title block text-sm font-semibold text-neutral-900 dark:text-neutral-100 my-3">
           <span className="line-clamp-2" title={title}>
             {title}
           </span>

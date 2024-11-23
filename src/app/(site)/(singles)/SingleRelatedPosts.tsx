@@ -37,9 +37,9 @@ const SingleRelatedPosts: React.FC<SingleRelatedPostsProps> = ({
             <Heading className={headingClasses} desc="">
               مطالب مشابه
             </Heading>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8  ">
               {relatedPosts.map((relatedPost) => (
-                <Card11 key={relatedPost.id} post={relatedPost} />
+                <Card11 key={relatedPost.id}  post={relatedPost} />
               ))}
             </div>
           </div>

@@ -14,12 +14,22 @@ export interface PostFeaturedMediaProps {
   className?: string;
   post: PostWithRelations;
   isHover?: boolean;
+  imageRatio?: 'portrait' | 'landscape' | 'square' | 'video' | 'cinema';
 }
+
+const aspectRatioClasses = {
+  portrait: 'aspect-[3/4]', // نسبت 3:4 برای تصاویر پرتره
+  landscape: 'aspect-[4/3]', // نسبت 4:3 برای تصاویر افقی
+  square: 'aspect-square', // نسبت 1:1 برای تصاویر مربعی
+  video: 'aspect-[16/9]', // نسبت 16:9 برای ویدیوها
+  cinema: 'aspect-[21/9]', // نسبت 21:9 برای نمایش سینمایی
+};
 
 const PostFeaturedMedia: FC<PostFeaturedMediaProps> = ({
   className = 'w-full h-full',
   post,
   isHover = false,
+  imageRatio = 'landscape',
 }) => {
   const { featuredImage, postType, videoUrl, galleryImages, audioUrl, slug } = post;
 
@@ -35,10 +45,10 @@ const PostFeaturedMedia: FC<PostFeaturedMediaProps> = ({
         galleryImgs={galleryImages}
         className="absolute inset-0 z-10"
         galleryClass="absolute inset-0"
-        ratioClass="absolute inset-0"
+        ratioClass={aspectRatioClasses[imageRatio]}
       />
     );
-  }, [galleryImages, postLink]);
+  }, [galleryImages, postLink, imageRatio]);
 
   const renderContent = useMemo(() => {
     // GALLERY
@@ -58,7 +68,7 @@ const PostFeaturedMedia: FC<PostFeaturedMediaProps> = ({
 
     // ICON
     return isPostMedia ? (
-      <span className="absolute inset-0 flex items-center justify-center ">
+      <span className="absolute inset-0 flex items-center justify-center">
         <PostTypeFeaturedIcon
           className="hover:scale-105 transform cursor-pointer transition-transform"
           postType={postType}
@@ -67,9 +77,12 @@ const PostFeaturedMedia: FC<PostFeaturedMediaProps> = ({
     ) : null;
   }, [postType, videoUrl, audioUrl, isHover, isPostMedia, post, renderGallerySlider]);
 
+  // Get the appropriate aspect ratio class
+  const ratioClass = aspectRatioClasses[postType === 'VIDEO' ? 'video' : imageRatio];
+
   return (
     <div
-      className={`nc-PostFeaturedMedia relative ${className} dark:bg-neutral-800 rounded-3xl`}
+      className={`nc-PostFeaturedMedia relative ${ratioClass} ${className} dark:bg-neutral-800 rounded-3xl overflow-hidden`}
       dir="rtl"
     >
       {postType !== 'GALLERY' && featuredImage && (
@@ -83,6 +96,7 @@ const PostFeaturedMedia: FC<PostFeaturedMediaProps> = ({
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover"
+          priority={true}
         />
       )}
 

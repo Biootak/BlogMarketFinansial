@@ -20,16 +20,13 @@ const SingleHeader: React.FC<SingleHeaderProps> = ({
 }) => {
   return (
     <div
-      className={`nc-SingleHeader ${className} text-right rtl p-4 sm:p-6 lg:p-8 bg-white dark:bg-gray-800 rounded-lg shadow-md`}
+      className={`nc-SingleHeader  ${className} text-right rtl p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md`}
     >
       <div className="space-y-4 sm:space-y-5 lg:space-y-6">
         <CategoryBadgeList itemClass="!px-3" categories={post.categories} />
-        <SingleTitle
-          mainClass={`${titleMainClass} text-xl sm:text-2xl lg:text-3xl font-bold`}
-          title={post.title}
-        />
+        <SingleTitle mainClass={`${titleMainClass} text-xl font-semibold`} title={post.title} />
         {!hiddenDesc && (
-          <span className="block text-sm sm:text-base lg:text-lg text-neutral-600 dark:text-neutral-300 pb-1">
+          <span className="block text-base  text-neutral-600 dark:text-neutral-300 pb-1">
             {post.excerpt}
           </span>
         )}
