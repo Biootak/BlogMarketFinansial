@@ -1,7 +1,4 @@
-'use client';
-
 import type React from 'react';
-import { useState } from 'react';
 import Link from 'next/link';
 import type { PostWithRelations } from '@/types/types';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
@@ -23,24 +20,23 @@ const Card11: React.FC<Card11Props> = ({
   ratio = 'aspect-w-4 aspect-h-3',
 }) => {
   const { title, categories, createdAt, slug, postType, excerpt } = post;
-  const [isHover, setIsHover] = useState(false);
 
   if (!post || !post.slug) {
     return null;
   }
 
+  const postLink = getPostLink(postType, slug);
+
   return (
     <div
       className={`nc-Card11 relative flex flex-col group rounded-2xl overflow-hidden bg-white dark:bg-neutral-800 ${className} transition-all duration-300 hover:shadow-lg hover:shadow-neutral-300/50 dark:hover:shadow-black/30 border border-neutral-200 dark:border-neutral-700`}
-      onMouseEnter={() => setIsHover(true)}
-      onMouseLeave={() => setIsHover(false)}
     >
       <div className={`block flex-shrink-0 relative w-full rounded-t-2xl overflow-hidden ${ratio}`}>
         <div>
-          <PostFeaturedMedia post={post} isHover={isHover} />
+          <PostFeaturedMedia post={post} />
         </div>
       </div>
-      <Link href={getPostLink(postType, slug)} className="absolute inset-0 z-0" />
+      <Link href={postLink} className="absolute inset-0 z-0" />
       <span className="absolute top-1 right-1">
         <CategoryBadgeList categories={categories} />
       </span>
@@ -53,7 +49,7 @@ const Card11: React.FC<Card11Props> = ({
             {createdAt.toString()}
           </span>
         )}
-        <h3 className="nc-card-title block text-base font-semibold text-neutral-900 dark:text-neutral-100 transition-colors duration-300 hover:text-primary dark:hover:text-primary-dark">
+        <h3 className="nc-card-title block text-sm font-semibold text-neutral-900 dark:text-neutral-100">
           <span className="line-clamp-2" title={title}>
             {title}
           </span>
