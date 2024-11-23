@@ -99,11 +99,7 @@ const ToolbarButton = forwardRef<HTMLButtonElement, ToolbarButtonProps>(
     );
 
     if (tooltip) {
-      return (
-        <Tooltip title={tooltip} shortcut={tooltipShortcut}>
-          {component}
-        </Tooltip>
-      );
+      return <Tooltip>{component}</Tooltip>;
     }
 
     return component;
