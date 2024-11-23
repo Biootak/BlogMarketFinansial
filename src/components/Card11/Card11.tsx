@@ -22,7 +22,7 @@ const Card11: React.FC<Card11Props> = ({
   hiddenAuthor = false,
   ratio = 'aspect-w-4 aspect-h-3',
 }) => {
-  const { title, categories, createdAt, slug, postType } = post;
+  const { title, categories, createdAt, slug, postType, excerpt } = post;
   const [isHover, setIsHover] = useState(false);
 
   if (!post || !post.slug) {
@@ -41,7 +41,7 @@ const Card11: React.FC<Card11Props> = ({
         </div>
       </div>
       <Link href={getPostLink(postType, slug)} className="absolute inset-0 z-0" />
-      <span className="absolute top-4 left-4 z-10">
+      <span className="absolute top-1 right-1">
         <CategoryBadgeList categories={categories} />
       </span>
 
@@ -57,6 +57,9 @@ const Card11: React.FC<Card11Props> = ({
           <span className="line-clamp-2" title={title}>
             {title}
           </span>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2 mt-2">
+            {excerpt}
+          </p>
         </h3>
       </div>
     </div>
