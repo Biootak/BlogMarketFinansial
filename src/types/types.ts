@@ -287,7 +287,21 @@ export interface State {
   error: string | null;
 }
 
-export type AdSize = 'SMALL' | 'MEDIUM' | 'LARGE';
+export type AdSize = 'SMALL' | 'MEDIUM' | 'LARGE' | 'CUSTOM';
+
+export type AdPosition =
+  | 'HEADER'
+  | 'FOOTER'
+  | 'SIDEBAR'
+  | 'IN_CONTENT'
+  | 'BETWEEN_POSTS'
+  | 'CUSTOM';
+
+export type CustomAdDimensions = {
+  width?: string;
+  height?: string;
+  aspectRatio?: string;
+};
 
 export type Advertisement = {
   id: string;
@@ -299,6 +313,10 @@ export type Advertisement = {
   endDate: Date;
   isActive: boolean;
   size: AdSize;
+  position: AdPosition;
+  customPosition: string | null;
+  order: number;
+  customDimensions: Prisma.JsonValue | null;
   createdAt: Date;
   updatedAt: Date;
 };

@@ -1,19 +1,24 @@
 'use server';
 
 import prisma from '@/lib/db';
-import type { ActionResult, Advertisement, AdSize } from '@/types/types';
+import type { ActionResult, Advertisement, AdSize, AdPosition } from '@/types/types';
+import type { Prisma } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
+
+
 
 export async function getActiveAdvertisements({
   limit = 10,
   page = 1,
   search = '',
   size,
+  position,
 }: {
   limit?: number;
   page?: number;
   search?: string;
   size?: AdSize;
+  position?: AdPosition;
 } = {}): Promise<ActionResult<Advertisement[]>> {
   try {
     const skip = (page - 1) * limit;
@@ -23,12 +28,13 @@ export async function getActiveAdvertisements({
         startDate: { lte: new Date() },
         endDate: { gte: new Date() },
         size: size ? { equals: size } : undefined,
+        position: position ? { equals: position } : undefined,
         OR: [
           { title: { contains: search, mode: 'insensitive' } },
           { description: { contains: search, mode: 'insensitive' } },
         ],
       },
-      orderBy: { startDate: 'desc' },
+      orderBy: { order: 'asc' },
       take: limit,
       skip: skip,
     });
@@ -121,10 +127,17 @@ export async function getAdvertisementById(id: string): Promise<ActionResult<Adv
 }
 
 export async function createAdvertisement(
-  data: Omit<Advertisement, 'id' | 'createdAt' | 'updatedAt'>,
+  data: Omit<Prisma.AdvertisementCreateInput, 'id' | 'createdAt' | 'updatedAt'>
 ): Promise<ActionResult<Advertisement>> {
   try {
-    const newAd = await prisma.advertisement.create({ data });
+    const newAd = await prisma.advertisement.create({
+      data: {
+        ...data,
+        customDimensions: data.customDimensions 
+          ? JSON.parse(JSON.stringify(data.customDimensions))
+          : null,
+      },
+    });
     revalidatePath('/advertisements');
     return {
       success: true,
@@ -140,15 +153,19 @@ export async function createAdvertisement(
     };
   }
 }
-
 export async function updateAdvertisement(
   id: string,
-  data: Partial<Omit<Advertisement, 'id' | 'createdAt' | 'updatedAt'>>,
+  data: Partial<Omit<Prisma.AdvertisementUpdateInput, 'id' | 'createdAt' | 'updatedAt'>>
 ): Promise<ActionResult<Advertisement>> {
   try {
     const updatedAd = await prisma.advertisement.update({
       where: { id },
-      data,
+      data: {
+        ...data,
+        customDimensions: data.customDimensions 
+          ? JSON.parse(JSON.stringify(data.customDimensions))
+          : undefined,
+      },
     });
     revalidatePath('/advertisements');
     return {
@@ -165,7 +182,6 @@ export async function updateAdvertisement(
     };
   }
 }
-
 export async function deleteAdvertisement(id: string): Promise<ActionResult> {
   try {
     await prisma.advertisement.delete({ where: { id } });

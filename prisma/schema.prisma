@@ -27,11 +27,7 @@ enum PostStatus {
   PUBLISHED
 }
 
-enum AdSize {
-  SMALL
-  MEDIUM
-  LARGE
-}
+
 
 model User {
   id            String    @id @default(cuid())
@@ -214,20 +210,42 @@ model Notification {
   createdAt DateTime @default(now())
 }
 
-model Advertisement {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  imageUrl    String
-  linkUrl     String
-  startDate   DateTime
-  endDate     DateTime
-  isActive    Boolean  @default(true)
-  size        AdSize   @default(MEDIUM)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+enum AdSize {
+  SMALL
+  MEDIUM
+  LARGE
+  CUSTOM
 }
+
+enum AdPosition {
+  HEADER
+  FOOTER
+  SIDEBAR
+  IN_CONTENT
+  BETWEEN_POSTS
+  CUSTOM
+}
+
+model Advertisement {
+  id               String       @id @default(cuid())
+  title            String
+  description      String?
+  imageUrl         String
+  linkUrl          String
+  startDate        DateTime
+  endDate          DateTime
+  isActive         Boolean      @default(true)
+  size             AdSize       @default(MEDIUM)
+  position         AdPosition   @default(IN_CONTENT)
+  customPosition   String?
+  order            Int          @default(0)
+  customDimensions Json?
+
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+}
+
+
 
 
 model PageView {

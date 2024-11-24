@@ -1,5 +1,6 @@
 import type {
   ActionResult,
+  CustomAdDimensions,
   NcDropDownItem,
   PostWithRelations,
   Role,
@@ -14,6 +15,7 @@ import slugify from 'slugify';
 import DOMPurify from 'dompurify';
 import { customAlphabet } from 'nanoid';
 import type { JSONContent } from 'novel';
+import { Prisma } from '@prisma/client';
 
 const coinMarketCapUrlMap: { [key: string]: string } = {
   BTC: 'bitcoin',
@@ -334,4 +336,7 @@ export function htmlToEditorContent(html: string): JSONContent {
   return { type: 'doc', content };
 }
 
-
+export function parseCustomDimensions(json: Prisma.JsonValue | null): CustomAdDimensions | null {
+  if (!json || typeof json !== 'object') return null;
+  return json as CustomAdDimensions;
+}

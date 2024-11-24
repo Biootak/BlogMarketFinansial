@@ -1,12 +1,12 @@
-import type React from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
-import type { Advertisement, AdSize } from '@/types/types';
+import Link from 'next/link';
+import { cn } from '@/lib/utils';
+import type { Advertisement, AdSize, CustomAdDimensions, AdPosition } from '@/types/types';
 
-export interface BannerADSProps {
+export interface BannerAdsProps {
   className?: string;
   ad: Advertisement;
-  size?: AdSize;
+  customDimensions?: CustomAdDimensions;
   showAdLabel?: boolean;
   showTitle?: boolean;
   showDescription?: boolean;
@@ -15,17 +15,86 @@ export interface BannerADSProps {
   imageOnly?: boolean;
 }
 
-const BannerADS: React.FC<BannerADSProps> = ({
+export default function BannerAds({
   className = '',
   ad,
+  customDimensions,
   showAdLabel = true,
   showTitle = true,
   showDescription = true,
   showButton = true,
   customButton,
   imageOnly = false,
-}) => {
-  const { title, description, imageUrl, linkUrl } = ad;
+}: BannerAdsProps) {
+  const { title, description, imageUrl, linkUrl, size, position } = ad;
+
+  const getPositionClass = (position: AdPosition) => {
+    switch (position) {
+      case 'HEADER':
+        return 'w-full';
+      case 'FOOTER':
+        return 'w-full';
+      case 'SIDEBAR':
+        return 'w-full lg:w-64';
+      case 'IN_CONTENT':
+        return 'w-full my-4';
+      case 'BETWEEN_POSTS':
+        return 'w-full my-8';
+      case 'CUSTOM':
+      default:
+        return '';
+    }
+  };
+
+  const getImageContainerStyle = () => {
+    if (size === 'CUSTOM' && customDimensions) {
+      return {
+        width: customDimensions.width || '100%',
+        height: customDimensions.height,
+        aspectRatio: customDimensions.aspectRatio,
+      };
+    }
+    return {};
+  };
+
+  const getImageContainerClass = () => {
+    if (size === 'CUSTOM') return '';
+    return cn('relative w-full', {
+      'aspect-[21/9] sm:aspect-[21/6] md:aspect-[21/5] lg:aspect-[21/4]': size === 'LARGE',
+      'aspect-[21/9] sm:aspect-[21/7] md:aspect-[21/6] lg:aspect-[21/5]': size === 'MEDIUM',
+      'aspect-[21/9] sm:aspect-[21/8] md:aspect-[21/7] lg:aspect-[21/6]': size === 'SMALL',
+    });
+  };
+
+  const getContentSize = () => {
+    switch (size) {
+      case 'LARGE':
+        return 'sm:p-6 md:p-8';
+      case 'MEDIUM':
+        return 'sm:p-5 md:p-6';
+      case 'SMALL':
+        return 'sm:p-4';
+      case 'CUSTOM':
+        return customDimensions?.width ? 'p-4' : 'sm:p-5 md:p-6';
+      default:
+        return 'sm:p-5 md:p-6';
+    }
+  };
+
+  const getImageSize = () => {
+    switch (size) {
+      case 'LARGE':
+        return 'w-full h-48 mb-4 sm:w-64 sm:h-48 sm:mb-0 sm:ml-6';
+      case 'MEDIUM':
+        return 'w-full h-40 mb-4 sm:w-56 sm:h-40 sm:mb-0 sm:ml-5';
+      case 'SMALL':
+        return 'w-full h-32 mb-3 sm:w-48 sm:h-32 sm:mb-0 sm:ml-4';
+      case 'CUSTOM':
+        return customDimensions?.width || 'w-full h-40 mb-4 sm:w-56 sm:h-40 sm:mb-0 sm:ml-5';
+      default:
+        return 'w-full h-40 mb-4 sm:w-56 sm:h-40 sm:mb-0 sm:ml-5';
+    }
+  };
 
   if (imageOnly) {
     return (
@@ -33,10 +102,19 @@ const BannerADS: React.FC<BannerADSProps> = ({
         href={linkUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className={`block w-full ${className}`}
+        className={cn('block', getPositionClass(position), className)}
       >
-        <div className="relative w-full aspect-[21/9] sm:aspect-[21/6] md:aspect-[21/5] lg:aspect-[21/4]">
-          <Image src={imageUrl} alt={title} fill className="object-cover" sizes="100vw" />
+        <div className={getImageContainerClass()} style={getImageContainerStyle()}>
+          <Image
+            src={imageUrl}
+            alt={title}
+            fill={size !== 'CUSTOM'}
+            width={size === 'CUSTOM' ? Number(customDimensions?.width) || undefined : undefined}
+            height={size === 'CUSTOM' ? Number(customDimensions?.height) || undefined : undefined}
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            priority
+          />
         </div>
       </Link>
     );
@@ -45,7 +123,13 @@ const BannerADS: React.FC<BannerADSProps> = ({
   return (
     <div
       dir="rtl"
-      className={`nc-BannerADS relative flex flex-col sm:flex-row items-start sm:items-center p-4 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 shadow ${className}`}
+      className={cn(
+        'nc-BannerADS relative flex flex-col sm:flex-row items-start sm:items-center p-4 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 shadow',
+        getContentSize(),
+        getPositionClass(position),
+        className,
+      )}
+      style={size === 'CUSTOM' ? { width: customDimensions?.width } : {}}
     >
       <Link
         href={linkUrl}
@@ -55,40 +139,50 @@ const BannerADS: React.FC<BannerADSProps> = ({
       />
       <Link
         href={linkUrl}
-        className="block relative flex-shrink-0 w-full h-48 mb-4 sm:w-56 sm:h-40 sm:mb-0 sm:ml-5 rounded-2xl overflow-hidden z-10"
+        className={cn(
+          'block relative flex-shrink-0 rounded-2xl overflow-hidden z-10',
+          getImageSize(),
+        )}
         target="_blank"
         rel="noopener noreferrer"
       >
         <Image
           src={imageUrl}
           alt={title}
-          fill
+          fill={size !== 'CUSTOM'}
+          width={size === 'CUSTOM' ? Number(customDimensions?.width) || undefined : undefined}
+          height={size === 'CUSTOM' ? Number(customDimensions?.height) || undefined : undefined}
           className="object-cover"
-          sizes="(max-width: 640px) 100vw, (max-width: 768px) 224px, 224px"
+          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
         />
       </Link>
       <div className="flex flex-col flex-grow w-full">
-        <div className="space-y-3 mb-4">
+        <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
           {showAdLabel && (
             <span className="inline-block px-2 py-1 rounded-full font-medium text-xs relative text-pink-800 bg-pink-100 dark:text-pink-100 dark:bg-pink-800">
               تبلیغات
             </span>
           )}
           {showTitle && (
-            <h2 className="block font-semibold text-base sm:text-md">
-              <Link
-                href={linkUrl}
-                className="line-clamp-2"
-                title={title}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+            <h2
+              className={cn('block font-semibold line-clamp-2', {
+                'text-lg sm:text-xl': size === 'LARGE',
+                'text-base sm:text-lg': size === 'MEDIUM' || size === 'CUSTOM',
+                'text-sm sm:text-base': size === 'SMALL',
+              })}
+            >
+              <Link href={linkUrl} title={title} target="_blank" rel="noopener noreferrer">
                 {title}
               </Link>
             </h2>
           )}
           {showDescription && (
-            <p className="text-neutral-500 dark:text-neutral-400 text-xs sm:text-sm line-clamp-2">
+            <p
+              className={cn('text-neutral-500 dark:text-neutral-400 line-clamp-2', {
+                'text-sm sm:text-base': size === 'LARGE',
+                'text-xs sm:text-sm': size === 'MEDIUM' || size === 'SMALL' || size === 'CUSTOM',
+              })}
+            >
               {description || ''}
             </p>
           )}
@@ -98,7 +192,15 @@ const BannerADS: React.FC<BannerADSProps> = ({
             {customButton || (
               <Link
                 href={linkUrl}
-                className="relative nc-Button flex items-center justify-center rounded-full transition-colors text-xs sm:text-sm font-medium px-3 py-1 sm:px-4 sm:py-1.5 ttnc-ButtonPrimary disabled:bg-opacity-70 bg-primary-6000 hover:bg-primary-700 text-neutral-50"
+                className={cn(
+                  'relative nc-Button flex items-center justify-center rounded-full transition-colors font-medium ttnc-ButtonPrimary disabled:bg-opacity-70 bg-primary-6000 hover:bg-primary-700 text-neutral-50',
+                  {
+                    'text-sm px-4 py-2 sm:px-5 sm:py-2.5': size === 'LARGE',
+                    'text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2':
+                      size === 'MEDIUM' || size === 'CUSTOM',
+                    'text-xs px-3 py-1 sm:px-3 sm:py-1.5': size === 'SMALL',
+                  },
+                )}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -110,6 +212,4 @@ const BannerADS: React.FC<BannerADSProps> = ({
       </div>
     </div>
   );
-};
-
-export default BannerADS;
+}

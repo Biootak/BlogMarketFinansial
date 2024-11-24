@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useForm, type UseFormReturn } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiMagnifyingGlass } from 'react-icons/hi2';
 import {
   getActiveAdvertisements,
@@ -10,7 +12,7 @@ import {
   deleteAdvertisement,
   getAllAdvertisements,
 } from '@/actions/advertisementActions';
-import type { Advertisement } from '@/types/types';
+import type { Advertisement, AdSize, AdPosition, CustomAdDimensions } from '@/types/types';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
 import { Input } from '@/components/ui/input';
@@ -52,11 +54,30 @@ import { PersianDatePicker } from '@/components/ui/PersianDatePicker';
 import SubmitButton from '@/components/SubmitButton';
 import LoadingMore from '@/components/LoadingMore';
 import Loading from '@/components/Loading';
+import { cn } from '@/lib/utils';
 
-interface AdvertisementFormProps {
-  form: UseFormReturn<Omit<Advertisement, 'id'>>;
-  onSubmit: (data: Omit<Advertisement, 'id'>) => Promise<void>;
-}
+const advertisementSchema = z.object({
+  title: z.string().min(1, 'عنوان الزامی است'),
+  description: z.string().optional(),
+  imageUrl: z.string().url('آدرس تصویر معتبر نیست'),
+  linkUrl: z.string().url('آدرس لینک معتبر نیست'),
+  startDate: z.date(),
+  endDate: z.date(),
+  isActive: z.boolean(),
+  size: z.enum(['SMALL', 'MEDIUM', 'LARGE', 'CUSTOM']),
+  position: z.enum(['HEADER', 'FOOTER', 'SIDEBAR', 'IN_CONTENT', 'BETWEEN_POSTS', 'CUSTOM']),
+  customPosition: z.string().optional(),
+  order: z.number().int().positive(),
+  customDimensions: z
+    .object({
+      width: z.string().optional(),
+      height: z.string().optional(),
+      aspectRatio: z.string().optional(),
+    })
+    .optional(),
+});
+
+type AdvertisementFormData = z.infer<typeof advertisementSchema>;
 
 export default function AdvertisementsPage() {
   const [ads, setAds] = useState<Advertisement[]>([]);
@@ -64,14 +85,22 @@ export default function AdvertisementsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [editingAd, setEditingAd] = useState<Advertisement | null>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
   const [page, setPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(true);
-  // biome-ignore lint/correctness/noUnusedVariables: <explanation>
-  const [totalCount, setTotalCount] = useState(0);
+  const [_totalCount, setTotalCount] = useState(0);
 
-  const form = useForm<Omit<Advertisement, 'id'>>();
+  const form = useForm<AdvertisementFormData>({
+    resolver: zodResolver(advertisementSchema),
+    defaultValues: {
+      size: 'MEDIUM',
+      position: 'IN_CONTENT',
+      isActive: true,
+      order: 1,
+      customDimensions: {},
+    },
+  });
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm), 500);
@@ -84,7 +113,6 @@ export default function AdvertisementsPage() {
     fetchAds(1, debouncedSearchTerm);
   }, [debouncedSearchTerm]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   const fetchAds = useCallback(
     async (pageNumber: number, search: string) => {
       setIsLoading(true);
@@ -97,7 +125,7 @@ export default function AdvertisementsPage() {
           setAds((prev) => [...prev, ...newAds]);
         }
         setTotalCount(totalCount);
-        setHasNextPage(page * 10 < totalCount);
+        setHasNextPage(pageNumber * 10 < totalCount);
       } else {
         toast({
           title: 'خطا',
@@ -119,7 +147,7 @@ export default function AdvertisementsPage() {
 
   const infiniteScrollRef = useInfiniteScroll(loadMore, hasNextPage, isLoading);
 
-  const onSubmit = async (data: Omit<Advertisement, 'id'>) => {
+  const onSubmit = async (data: AdvertisementFormData) => {
     const formattedData = {
       ...data,
       startDate: data.startDate ? new Date(data.startDate) : new Date(),
@@ -134,7 +162,7 @@ export default function AdvertisementsPage() {
       fetchAds(1, debouncedSearchTerm);
       form.reset();
       setEditingAd(null);
-      setIsEditDialogOpen(false);
+      setIsDialogOpen(false);
       toast({
         title: 'موفقیت',
         description: result.message,
@@ -151,14 +179,37 @@ export default function AdvertisementsPage() {
 
   const handleEdit = (ad: Advertisement) => {
     setEditingAd(ad);
+
+    // تابع کمکی برای بررسی اعتبار customDimensions
+    const validateCustomDimensions = (dimensions: any): CustomAdDimensions | undefined => {
+      if (typeof dimensions === 'object' && dimensions !== null) {
+        const { width, height, aspectRatio } = dimensions;
+        if (
+          (typeof width === 'string' || width === undefined) &&
+          (typeof height === 'string' || height === undefined) &&
+          (typeof aspectRatio === 'string' || aspectRatio === undefined)
+        ) {
+          return dimensions as CustomAdDimensions;
+        }
+      }
+      return undefined;
+    };
+
     form.reset({
-      ...ad,
+      title: ad.title,
+      description: ad.description ?? undefined,
+      imageUrl: ad.imageUrl,
+      linkUrl: ad.linkUrl,
       startDate: new Date(ad.startDate),
       endDate: new Date(ad.endDate),
+      isActive: ad.isActive,
+      size: ad.size,
+      position: ad.position,
+      customPosition: ad.customPosition ?? undefined,
+      order: ad.order,
+      customDimensions: validateCustomDimensions(ad.customDimensions),
     });
-    setIsEditDialogOpen(true);
   };
-
   const handleDelete = async (id: string) => {
     if (window.confirm('آیا مطمئن هستید که می‌خواهید این تبلیغ را حذف کنید؟')) {
       const result = await deleteAdvertisement(id);
@@ -186,10 +237,19 @@ export default function AdvertisementsPage() {
       </h1>
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 lg:mb-8 space-y-4 sm:space-y-0">
-        <Dialog>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <ButtonPrimary
-              aria-label="افزودن تبلیغ جدید"
+              onClick={() => {
+                setEditingAd(null);
+                form.reset({
+                  size: 'MEDIUM',
+                  position: 'IN_CONTENT',
+                  isActive: true,
+                  order: 1,
+                  customDimensions: {},
+                });
+              }}
               className="w-full sm:w-auto bg-gradient-to-l from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 text-white font-medium py-2 px-4 sm:px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 group"
             >
               <HiOutlinePlus
@@ -204,7 +264,7 @@ export default function AdvertisementsPage() {
           <DialogContent className="rtl sm:max-w-[425px] md:max-w-[600px] lg:max-w-[800px] xl:max-w-[1000px] h-auto max-h-[90vh] bg-white dark:bg-neutral-800 rounded-lg overflow-hidden shadow-xl">
             <DialogHeader className="p-4 sm:p-6 pb-2">
               <DialogTitle className="text-xl sm:text-2xl font-bold text-primary-700 dark:text-primary-300">
-                افزودن تبلیغ جدید
+                {editingAd ? 'ویرایش تبلیغ' : 'افزودن تبلیغ جدید'}
               </DialogTitle>
             </DialogHeader>
             <div className="overflow-y-auto max-h-[calc(90vh-100px)] scrollbar-custom">
@@ -240,10 +300,10 @@ export default function AdvertisementsPage() {
                   عنوان
                 </TableHead>
                 <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300 hidden sm:table-cell">
-                  تاریخ شروع
+                  اندازه
                 </TableHead>
                 <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300 hidden sm:table-cell">
-                  تاریخ پایان
+                  موقعیت
                 </TableHead>
                 <TableHead className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   عملیات
@@ -269,10 +329,10 @@ export default function AdvertisementsPage() {
                     {ad.title}
                   </TableCell>
                   <TableCell className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 hidden sm:table-cell">
-                    {new Date(ad.startDate).toLocaleDateString('fa-IR')}
+                    {ad.size}
                   </TableCell>
                   <TableCell className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 hidden sm:table-cell">
-                    {new Date(ad.endDate).toLocaleDateString('fa-IR')}
+                    {ad.position}
                   </TableCell>
                   <TableCell className="py-3 px-4 sm:py-4 sm:px-6">
                     <div className="flex justify-start space-x-2 space-x-reverse">
@@ -304,26 +364,14 @@ export default function AdvertisementsPage() {
           <div ref={infiniteScrollRef} style={{ height: '1px' }} />
         </div>
       )}
-
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="rtl sm:max-w-[425px] md:max-w-[600px] lg:max-w-[800px] xl:max-w-[1000px] h-auto max-h-[90vh] bg-white dark:bg-neutral-800 rounded-lg overflow-hidden shadow-xl">
-          <DialogHeader className="p-4 sm:p-6 pb-2">
-            <DialogTitle className="text-xl sm:text-2xl font-bold text-primary-700 dark:text-primary-300">
-              ویرایش تبلیغ
-            </DialogTitle>
-          </DialogHeader>
-          <div className="overflow-y-auto max-h-[calc(90vh-100px)] scrollbar-custom">
-            <div className="p-4 sm:p-6 pt-2">
-              <AdvertisementForm form={form} onSubmit={onSubmit} />
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
 
-function AdvertisementForm({ form, onSubmit }: AdvertisementFormProps) {
+function AdvertisementForm({
+  form,
+  onSubmit,
+}: { form: any; onSubmit: (data: AdvertisementFormData) => Promise<void> }) {
   const handleImageUpload = (urls: string[]) => {
     form.setValue('imageUrl', urls[0]);
   };
@@ -370,6 +418,7 @@ function AdvertisementForm({ form, onSubmit }: AdvertisementFormProps) {
                     <SelectItem value="SMALL">کوچک</SelectItem>
                     <SelectItem value="MEDIUM">متوسط</SelectItem>
                     <SelectItem value="LARGE">بزرگ</SelectItem>
+                    <SelectItem value="CUSTOM">سفارشی</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -377,6 +426,84 @@ function AdvertisementForm({ form, onSubmit }: AdvertisementFormProps) {
             )}
           />
         </div>
+
+        {form.watch('size') === 'CUSTOM' && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <FormField
+              control={form.control}
+              name="customDimensions.width"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                    عرض سفارشی
+                  </FormLabel>
+                  <FormControl>
+                    <Input placeholder="مثال: 300px یا 100%" {...field} className="text-sm" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="customDimensions.height"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                    ارتفاع سفارشی
+                  </FormLabel>
+                  <FormControl>
+                    <Input placeholder="مثال: 250px" {...field} className="text-sm" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="customDimensions.aspectRatio"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                    نسبت تصویر
+                  </FormLabel>
+                  <FormControl>
+                    <Input placeholder="مثال: 16/9" {...field} className="text-sm" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        )}
+
+        <FormField
+          control={form.control}
+          name="position"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                موقعیت تبلیغ
+              </FormLabel>
+              <Select dir="rtl" onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="انتخاب موقعیت تبلیغ" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="HEADER">سربرگ</SelectItem>
+                  <SelectItem value="FOOTER">پاورقی</SelectItem>
+                  <SelectItem value="SIDEBAR">نوار کناری</SelectItem>
+                  <SelectItem value="IN_CONTENT">داخل محتوا</SelectItem>
+                  <SelectItem value="BETWEEN_POSTS">بین پست‌ها</SelectItem>
+                  <SelectItem value="CUSTOM">سفارشی</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}
@@ -389,7 +516,6 @@ function AdvertisementForm({ form, onSubmit }: AdvertisementFormProps) {
               <FormControl>
                 <textarea
                   {...field}
-                  value={field.value || ''}
                   placeholder="توضیحات تبلیغ"
                   className="w-full px-3 py-2 text-sm rounded-md border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-100"
                   rows={4}
@@ -468,6 +594,45 @@ function AdvertisementForm({ form, onSubmit }: AdvertisementFormProps) {
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="isActive"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <input
+                  type="checkbox"
+                  checked={field.value}
+                  onChange={field.onChange}
+                  className="form-checkbox h-5 w-5 text-primary-600 transition duration-150 ease-in-out"
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  فعال
+                </FormLabel>
+              </div>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="order"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                ترتیب نمایش
+              </FormLabel>
+              <FormControl>
+                <Input type="number" {...field} className="text-sm" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <SubmitButton isSubmitting={form.formState.isSubmitting} />
       </form>
     </Form>
