@@ -58,11 +58,6 @@ export default function AuthorProfile({ author }: AuthorProfileProps) {
             </div>
           </div>
           <div className="absolute md:static start-5 end-5 top-4 sm:start-auto sm:top-5 sm:end-5 flex justify-end">
-            <FollowButton
-              isFollowing={false}
-              fontSize="text-sm md:text-base font-medium"
-              sizeClass="px-4 py-1 md:py-2.5 h-8 md:!h-10 sm:px-6 lg:px-8"
-            />
             <div className="mx-2">
               <AccountActionDropdown />
             </div>

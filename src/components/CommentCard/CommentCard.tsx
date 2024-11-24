@@ -29,11 +29,9 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
   const { toast } = useToast();
   const { data: session } = useSession();
 
-  const { id, content, createdAt, author, likes, _count, postId } = comment;
-  const [isLiked, setIsLiked] = useState(
-    likes && likes.length > 0 ? likes.some((like) => like.userId === session?.user?.id) : false,
-  );
-  const [likeCount, setLikeCount] = useState(_count?.likes ?? 0);
+  const { id, content, createdAt, author, postId } = comment;
+
+
   const [commentContent, setCommentContent] = useState(content);
 
   const actions: NcDropDownItem[] = [
@@ -97,40 +95,6 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
         return openModalDeleteComment();
       default:
         return;
-    }
-  };
-
-  const handleLikeClick = async () => {
-    if (!session) {
-      toast({
-        title: 'خطا',
-        description: 'برای لایک کردن باید وارد شوید.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const newIsLiked = !isLiked;
-    const newLikeCount = newIsLiked ? likeCount + 1 : likeCount - 1;
-
-    setIsLiked(newIsLiked);
-    setLikeCount(newLikeCount);
-
-    const result = await likeItem(id, 'comment');
-    if (!result.success) {
-      setIsLiked(!newIsLiked);
-      setLikeCount(likeCount);
-      toast({
-        title: 'خطا',
-        description: result.message,
-        variant: 'destructive',
-      });
-    } else {
-      toast({
-        title: 'موفقیت',
-        description: 'وضعیت لایک با موفقیت به‌روزرسانی شد.',
-        variant: 'default',
-      });
     }
   };
 
@@ -265,13 +229,7 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
           {isReplying ? (
             renderCommentForm()
           ) : (
-            <CommentCardLikeReply
-              className={className}
-              isLiked={isLiked}
-              likeCount={likeCount}
-              onClickReply={openReplyForm}
-              onClickLike={handleLikeClick}
-            />
+            <CommentCardLikeReply className={className} onClickReply={openReplyForm} />
           )}
         </div>
       </div>
