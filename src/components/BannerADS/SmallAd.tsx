@@ -8,13 +8,7 @@ interface SmallAdProps {
 }
 
 const SmallAd: React.FC<SmallAdProps> = ({ ad, className = '' }) => (
-  <BannerADS
-    ad={ad}
-    size="SMALL"
-    className={className}
-    showDescription={false}
-    showButton={false}
-  />
+  <BannerADS ad={ad} className={className} showDescription={false} showButton={false} />
 );
 
 export default SmallAd;

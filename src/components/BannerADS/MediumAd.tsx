@@ -8,11 +8,7 @@ interface MediumAdProps {
 }
 
 const MediumAd: React.FC<MediumAdProps> = ({ ad, className = '' }) => (
-  <BannerADS
-    ad={ad}
-    size="MEDIUM"
-    className={className}
-  />
+  <BannerADS ad={ad} className={className} />
 );
 
 export default MediumAd;
