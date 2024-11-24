@@ -43,7 +43,7 @@ export default async function PageSingle({ params }: PageProps) {
               <SingleHeader post={post} />
             </header>
 
-            <div className="relative aspect-video rounded-xl overflow-hidden my-6">
+            <div className="relative aspect-video rounded-xl overflow-hidden my-2">
               <NcImage
                 alt={post.title}
                 className="w-full rounded-xl"

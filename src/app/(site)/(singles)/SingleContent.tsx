@@ -87,7 +87,6 @@ const SingleContent: React.FC<SingleContentProps> = ({ post }) => {
           className="prose lg:prose-lg !max-w-screen-md mx-auto dark:prose-invert"
           ref={contentRef}
         >
-          <h3>{post.title}</h3>
           {post.content ? (
             <MarkdownRenderer content={post.content} />
           ) : (
@@ -106,8 +105,8 @@ const SingleContent: React.FC<SingleContentProps> = ({ post }) => {
           <SingleAuthor author={post.author} />
         </div>
 
-        <div id="comments" className="scroll-mt-20 max-w-screen-md mx-auto pt-4">
-          <h3 className="text-xl font-semibold text-neutral-800 dark:text-neutral-200">
+        <div id="comments" className="scroll-mt-20 max-w-screen-md mx-auto pt-2">
+          <h3 className="text-base font-semibold text-neutral-800 dark:text-neutral-200 mb-1">
             نظرات ({post._count.comments})
           </h3>
           <SingleCommentForm postId={post.id} onClickSubmit={handleCommentSubmit} />

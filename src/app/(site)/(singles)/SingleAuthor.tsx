@@ -30,9 +30,9 @@ const SingleAuthor: React.FC<SingleAuthorProps> = ({ author }) => {
         <p className="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">
           نویسنده مطلب
         </p>
-        <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-1">
+        <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-1">
           <Link href={`/author/${author.id}`}>{author.name}</Link>
-        </h2>
+        </h3>
         <p className="text-sm text-neutral-600 dark:text-neutral-300 line-clamp-2">
           {author.profile?.bio || 'این نویسنده هیچ توضیحی درباره آن ندارد'}
         </p>

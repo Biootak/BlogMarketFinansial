@@ -16,26 +16,32 @@ const SingleHeader: React.FC<SingleHeaderProps> = ({ post, titleMainClass, class
   const categories = post.categories.map((cat) => cat.name).join(' / ');
   const breadcrumb = `${siteName} / ${categories} / ${post.title}`;
 
+  // Calculate reading time (assuming 200 words per minute)
+  const wordCount = post.content.split(/\s+/).length;
+  const readingTime = Math.ceil(wordCount / 200);
+
   return (
     <div
-      className={`nc-SingleHeader  ${className} text-right rtl p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md`}
+      className={`nc-SingleHeader ${className} text-right rtl p-4 sm:p-5 lg:p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md`}
     >
       <div className="space-y-4 sm:space-y-5 lg:space-y-6">
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{breadcrumb}</p>
+        <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-400">{breadcrumb}</p>
 
-        <SingleTitle mainClass={`${titleMainClass} text-xl font-semibold`} title={post.title} />
+        <SingleTitle
+          mainClass={`${titleMainClass} text-xl sm:text-2xl lg:text-3xl font-semibold`}
+          title={post.title}
+        />
 
         <div className="w-full border-b border-neutral-200 dark:border-neutral-700" />
-        <div className="flex flex-row items-center justify-between gap-4">
+        <div className="flex flex-row items-center justify-between gap-2 sm:gap-4">
           <PostMeta2
             size="large"
             className="leading-none flex-shrink-0"
             hiddenCategories
-            avatarRounded="rounded-full shadow-inner"
             meta={{
-              author: post.author,
-              date: post.createdAt.toDateString(),
+              date: post.createdAt,
               categories: post.categories,
+              readingTime: readingTime,
             }}
           />
           <SingleMetaAction2 post={post} className="flex-shrink-0" />
