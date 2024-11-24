@@ -9,6 +9,7 @@ import NcImage from '@/components/NcImage/NcImage';
 import { getSidebarData } from '@/actions/sidebarActions';
 import type { PostWithRelations, ActionResult } from '@/types/types';
 import Sidebar from '../../../Sidebar';
+import { getActiveAdvertisements } from '@/actions/advertisementActions';
 
 export interface PageProps {
   params: { slug: string[] };
@@ -33,6 +34,13 @@ export default async function PageSingle({ params }: PageProps) {
     post.id,
   );
   const sidebarData = await getSidebarData();
+  const sidebarAdsResult = await getActiveAdvertisements({
+    limit: 3,
+    size: 'MEDIUM',
+    position: 'SIDEBAR',
+    orderBy: 'order',
+    orderDirection: 'desc',
+  });
 
   return (
     <div className="nc-PageSingle pt-4 bg-white dark:bg-gray-900">
@@ -63,6 +71,7 @@ export default async function PageSingle({ params }: PageProps) {
           <div className="w-full lg:w-1/3 mt-8 lg:mt-0">
             <div className="sticky top-24">
               <Sidebar
+                ads={sidebarAdsResult.success && sidebarAdsResult.data ? sidebarAdsResult.data : []}
                 className="space-y-6"
                 widgetPosts={sidebarData.recentPosts}
                 tags={sidebarData.popularTags}

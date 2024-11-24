@@ -19,10 +19,10 @@ export default function BannerAds({
   className = '',
   ad,
   customDimensions,
-  showAdLabel = true,
-  showTitle = true,
-  showDescription = true,
-  showButton = true,
+  showAdLabel = false,
+  showTitle = false,
+  showDescription = false,
+  showButton = false,
   customButton,
   imageOnly = false,
 }: BannerAdsProps) {
@@ -31,15 +31,12 @@ export default function BannerAds({
   const getPositionClass = (position: AdPosition) => {
     switch (position) {
       case 'HEADER':
-        return 'w-full';
       case 'FOOTER':
+      case 'IN_CONTENT':
+      case 'BETWEEN_POSTS':
         return 'w-full';
       case 'SIDEBAR':
         return 'w-full lg:w-64';
-      case 'IN_CONTENT':
-        return 'w-full my-4';
-      case 'BETWEEN_POSTS':
-        return 'w-full my-8';
       case 'CUSTOM':
       default:
         return '';
@@ -47,22 +44,31 @@ export default function BannerAds({
   };
 
   const getImageContainerStyle = () => {
-    if (size === 'CUSTOM' && customDimensions) {
+    if (customDimensions) {
       return {
         width: customDimensions.width || '100%',
         height: customDimensions.height,
         aspectRatio: customDimensions.aspectRatio,
       };
     }
-    return {};
+    switch (size) {
+      case 'LARGE':
+        return { width: '100%', height: '250px', aspectRatio: '300/250' };
+      case 'MEDIUM':
+        return { width: '100%', height: '100px', aspectRatio: '300/100' };
+      case 'SMALL':
+        return { width: '100%', height: '50px', aspectRatio: '300/50' };
+      default:
+        return {};
+    }
   };
 
   const getImageContainerClass = () => {
-    if (size === 'CUSTOM') return '';
+    if (customDimensions) return '';
     return cn('relative w-full', {
-      'aspect-[21/9] sm:aspect-[21/6] md:aspect-[21/5] lg:aspect-[21/4]': size === 'LARGE',
-      'aspect-[21/9] sm:aspect-[21/7] md:aspect-[21/6] lg:aspect-[21/5]': size === 'MEDIUM',
-      'aspect-[21/9] sm:aspect-[21/8] md:aspect-[21/7] lg:aspect-[21/6]': size === 'SMALL',
+      'aspect-[300/250]': size === 'LARGE',
+      'aspect-[300/100]': size === 'MEDIUM',
+      'aspect-[300/50]': size === 'SMALL',
     });
   };
 
@@ -84,15 +90,15 @@ export default function BannerAds({
   const getImageSize = () => {
     switch (size) {
       case 'LARGE':
-        return 'w-full h-48 mb-4 sm:w-64 sm:h-48 sm:mb-0 sm:ml-6';
+        return 'w-full h-[250px]';
       case 'MEDIUM':
-        return 'w-full h-40 mb-4 sm:w-56 sm:h-40 sm:mb-0 sm:ml-5';
+        return 'w-full h-[100px]';
       case 'SMALL':
-        return 'w-full h-32 mb-3 sm:w-48 sm:h-32 sm:mb-0 sm:ml-4';
+        return 'w-full h-[50px]';
       case 'CUSTOM':
-        return customDimensions?.width || 'w-full h-40 mb-4 sm:w-56 sm:h-40 sm:mb-0 sm:ml-5';
+        return customDimensions?.width || 'w-full h-[100px]';
       default:
-        return 'w-full h-40 mb-4 sm:w-56 sm:h-40 sm:mb-0 sm:ml-5';
+        return 'w-full h-[100px]';
     }
   };
 
@@ -108,9 +114,7 @@ export default function BannerAds({
           <Image
             src={imageUrl}
             alt={title}
-            fill={size !== 'CUSTOM'}
-            width={size === 'CUSTOM' ? Number(customDimensions?.width) || undefined : undefined}
-            height={size === 'CUSTOM' ? Number(customDimensions?.height) || undefined : undefined}
+            fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             priority
@@ -129,7 +133,7 @@ export default function BannerAds({
         getPositionClass(position),
         className,
       )}
-      style={size === 'CUSTOM' ? { width: customDimensions?.width } : {}}
+      style={customDimensions ? { width: customDimensions.width } : {}}
     >
       <Link
         href={linkUrl}
@@ -149,9 +153,7 @@ export default function BannerAds({
         <Image
           src={imageUrl}
           alt={title}
-          fill={size !== 'CUSTOM'}
-          width={size === 'CUSTOM' ? Number(customDimensions?.width) || undefined : undefined}
-          height={size === 'CUSTOM' ? Number(customDimensions?.height) || undefined : undefined}
+          fill
           className="object-cover"
           sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
         />

@@ -5,20 +5,22 @@ import type { ActionResult, Advertisement, AdSize, AdPosition } from '@/types/ty
 import type { Prisma } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 
-
-
 export async function getActiveAdvertisements({
   limit = 10,
   page = 1,
   search = '',
   size,
   position,
+  orderBy = 'order',
+  orderDirection = 'desc',
 }: {
   limit?: number;
   page?: number;
   search?: string;
   size?: AdSize;
   position?: AdPosition;
+  orderBy?: 'order' | 'createdAt' | 'startDate';
+  orderDirection?: 'asc' | 'desc';
 } = {}): Promise<ActionResult<Advertisement[]>> {
   try {
     const skip = (page - 1) * limit;
@@ -34,7 +36,7 @@ export async function getActiveAdvertisements({
           { description: { contains: search, mode: 'insensitive' } },
         ],
       },
-      orderBy: { order: 'asc' },
+      orderBy: { [orderBy]: orderDirection },
       take: limit,
       skip: skip,
     });
@@ -127,13 +129,13 @@ export async function getAdvertisementById(id: string): Promise<ActionResult<Adv
 }
 
 export async function createAdvertisement(
-  data: Omit<Prisma.AdvertisementCreateInput, 'id' | 'createdAt' | 'updatedAt'>
+  data: Omit<Prisma.AdvertisementCreateInput, 'id' | 'createdAt' | 'updatedAt'>,
 ): Promise<ActionResult<Advertisement>> {
   try {
     const newAd = await prisma.advertisement.create({
       data: {
         ...data,
-        customDimensions: data.customDimensions 
+        customDimensions: data.customDimensions
           ? JSON.parse(JSON.stringify(data.customDimensions))
           : null,
       },
@@ -155,14 +157,14 @@ export async function createAdvertisement(
 }
 export async function updateAdvertisement(
   id: string,
-  data: Partial<Omit<Prisma.AdvertisementUpdateInput, 'id' | 'createdAt' | 'updatedAt'>>
+  data: Partial<Omit<Prisma.AdvertisementUpdateInput, 'id' | 'createdAt' | 'updatedAt'>>,
 ): Promise<ActionResult<Advertisement>> {
   try {
     const updatedAd = await prisma.advertisement.update({
       where: { id },
       data: {
         ...data,
-        customDimensions: data.customDimensions 
+        customDimensions: data.customDimensions
           ? JSON.parse(JSON.stringify(data.customDimensions))
           : undefined,
       },

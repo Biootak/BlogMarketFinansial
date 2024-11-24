@@ -1,10 +1,10 @@
-import { CustomLink } from "@/data/types";
+import type { CustomLink } from "@/data/types";
 import Link from "next/link";
-import React, { FC } from "react";
+import React, { type FC, type ReactNode } from "react";
 
 export interface WidgetHeading1Props {
   className?: string;
-  title: string;
+  title: ReactNode;
   viewAll: CustomLink;
 }
 

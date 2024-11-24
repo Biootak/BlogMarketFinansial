@@ -3,7 +3,13 @@ import WidgetAuthors from '@/components/WidgetAuthors/WidgetAuthors';
 import WidgetCategories from '@/components/WidgetCategories/WidgetCategories';
 import WidgetPosts from '@/components/WidgetPosts/WidgetPosts';
 import WidgetTags from '@/components/WidgetTags/WidgetTags';
-import type { PostWithRelations, TaxonomyType, UserWithProfile } from '@/types/types';
+import type {
+  Advertisement,
+  PostWithRelations,
+  TaxonomyType,
+  UserWithProfile,
+} from '@/types/types';
+import WidgetAds from '@/components/WidgetAds/WidgetAds';
 
 export interface SidebarProps {
   className?: string;
@@ -11,6 +17,7 @@ export interface SidebarProps {
   tags: TaxonomyType[];
   categories: TaxonomyType[];
   authors: UserWithProfile[];
+  ads: Advertisement[];
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -18,14 +25,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
   widgetPosts,
   tags,
   categories,
-  authors,
+  ads,
+  // authors,
 }) => {
   return (
-    <div className={`nc-SingleSidebar ${className}`}>
-      <WidgetTags tags={tags} />
+    <div className={`nc-SingleSidebar bg-white ${className}`}>
+      <WidgetAds ads={ads} />
       <WidgetCategories categories={categories} />
-      <WidgetAuthors authors={authors} />
+      {/* <WidgetAuthors authors={authors} /> */}
       <WidgetPosts posts={widgetPosts} />
+      <WidgetTags tags={tags} />
     </div>
   );
 };
