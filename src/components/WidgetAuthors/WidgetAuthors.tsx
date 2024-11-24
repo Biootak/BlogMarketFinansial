@@ -1,27 +1,23 @@
-import CardAuthor from "@/components/CardAuthor/CardAuthor";
-import WidgetHeading1 from "@/components/WidgetHeading1/WidgetHeading1";
-import { DEMO_AUTHORS } from "@/data/authors";
-import type { PostAuthorType } from "@/data/types";
-import React, { type FC } from "react";
-
-const authorsDemo: PostAuthorType[] = DEMO_AUTHORS.filter((_, i) => i < 5);
+import type React from 'react';
+import WidgetHeading1 from '@/components/WidgetHeading1/WidgetHeading1';
+import type { UserWithProfile } from '@/types/types';
+import CardAuthor2 from '../CardAuthor2/CardAuthor2';
+import CardAuthor from '../CardAuthor/CardAuthor';
 
 export interface WidgetAuthorsProps {
   className?: string;
-  authors?: PostAuthorType[];
+  authors: UserWithProfile[];
 }
 
-const WidgetAuthors: FC<WidgetAuthorsProps> = ({
-  className = "bg-neutral-100 dark:bg-neutral-800",
-  authors = authorsDemo,
+const WidgetAuthors: React.FC<WidgetAuthorsProps> = ({
+  className = 'bg-neutral-100 dark:bg-neutral-800',
+  authors,
 }) => {
   return (
-    <div
-      className={`nc-WidgetAuthors rounded-3xl overflow-hidden ${className}`}
-    >
+    <div className={`nc-WidgetAuthors rounded-3xl overflow-hidden ${className}`}>
       <WidgetHeading1
         title="🎭 Discover Authors"
-        viewAll={{ label: "View all", href: "/#" }}
+        viewAll={{ label: 'View all', href: '/authors' }}
       />
       <div className="flow-root">
         <div className="flex flex-col divide-y divide-neutral-200 dark:divide-neutral-700">

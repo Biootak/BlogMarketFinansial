@@ -1,9 +1,11 @@
-import SingleRelatedPosts from '../SingleRelatedPosts';
-
-interface LayoutProps {
+export default function SinglePostLayout({
+  children,
+}: {
   children: React.ReactNode;
-}
-
-export default function Layout({ children }: LayoutProps) {
-  return <div>{children}</div>;
+}) {
+  return (
+    <div>
+      <main>{children}</main>
+    </div>
+  );
 }

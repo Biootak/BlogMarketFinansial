@@ -1,5 +1,4 @@
 import type React from 'react';
-import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
 import SingleTitle from './SingleTitle';
 import PostMeta2 from '@/components/PostMeta2/PostMeta2';
 import SingleMetaAction2 from './SingleMetaAction2';
@@ -12,24 +11,20 @@ interface SingleHeaderProps {
   className?: string;
 }
 
-const SingleHeader: React.FC<SingleHeaderProps> = ({
-  post,
-  titleMainClass,
-  hiddenDesc = false,
-  className = '',
-}) => {
+const siteName = 'بازار های مالی';
+const SingleHeader: React.FC<SingleHeaderProps> = ({ post, titleMainClass, className = '' }) => {
+  const categories = post.categories.map((cat) => cat.name).join(' / ');
+  const breadcrumb = `${siteName} / ${categories} / ${post.title}`;
+
   return (
     <div
       className={`nc-SingleHeader  ${className} text-right rtl p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md`}
     >
       <div className="space-y-4 sm:space-y-5 lg:space-y-6">
-        <CategoryBadgeList itemClass="!px-3" categories={post.categories} />
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{breadcrumb}</p>
+
         <SingleTitle mainClass={`${titleMainClass} text-xl font-semibold`} title={post.title} />
-        {!hiddenDesc && (
-          <span className="block text-base  text-neutral-600 dark:text-neutral-300 pb-1">
-            {post.excerpt}
-          </span>
-        )}
+
         <div className="w-full border-b border-neutral-200 dark:border-neutral-700" />
         <div className="flex flex-row items-center justify-between gap-4">
           <PostMeta2
