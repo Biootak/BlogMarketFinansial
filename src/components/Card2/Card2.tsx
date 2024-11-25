@@ -8,10 +8,6 @@ import PostCardMeta from '../PostCardMeta/PostCardMeta';
 
 import type { PostWithRelations } from '@/types/types';
 
-import PostCardLikeAndComment from '../PostCardLikeAndComment/PostCardLikeAndComment';
-import PostCardSaveAction from '../PostCardSaveAction/PostCardSaveAction';
-
-import BookmarkCheck from '../BookmarkCheck';
 import { getPostLink } from '@/lib/getPostLink';
 
 interface Card2Props {
@@ -22,12 +18,16 @@ interface Card2Props {
 
 export default function Card2({ className = 'h-full', size = 'normal', post }: Card2Props) {
   const { title, featuredImage, categories, postType, slug, excerpt } = post;
+  const postLink = getPostLink(postType, slug);
 
   return (
     <div
       className={`nc-Card2 group relative flex flex-col ${className} bg-white dark:bg-neutral-800 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 border border-neutral-200 dark:border-neutral-700`}
     >
-      <div className="block flex-shrink-0 flex-grow relative w-full h-0 pt-[75%] sm:pt-[55%] z-0 rounded-t-xl overflow-hidden">
+      <Link
+        href={postLink}
+        className="block flex-shrink-0 flex-grow relative w-full h-0 pt-[75%] sm:pt-[55%] z-0 rounded-t-xl overflow-hidden"
+      >
         <Image
           fill
           sizes="(max-width: 600px) 480px, 800px"
@@ -46,20 +46,22 @@ export default function Card2({ className = 'h-full', size = 'normal', post }: C
           itemClass="relative"
           categories={categories}
         />
-      </div>
-
-      <Link href={getPostLink(postType, slug)} className="absolute inset-0" />
+      </Link>
 
       <div className="p-4 flex flex-col flex-grow">
         <div className="space-y-3 mb-4">
           <PostCardMeta className="relative text-sm" avatarSize="h-8 w-8 text-sm" meta={post} />
 
           <h2
-            className={`nc-card-title block font-semibold text-neutral-900 dark:text-neutral-100 ${
+            className={`nc-card-title block font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-primary-900 dark:group-hover:text-primary-500 ${
               size === 'large' ? 'text-base sm:text-lg md:text-xl' : 'text-base'
             }`}
           >
-            <Link href={getPostLink(postType, slug)} className="line-clamp-2" title={title}>
+            <Link
+              href={postLink}
+              className=" text-base dark:text-neutral-100 group-hover:text-primary-600 line-clamp-2  font-semibold  group-hover:text-primary-600 dark:group-hover:text-primary-500  "
+              title={title}
+            >
               {title}
             </Link>
           </h2>

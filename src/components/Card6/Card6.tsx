@@ -1,13 +1,10 @@
 import React from 'react';
 import PostCardMeta from '@/components/PostCardMeta/PostCardMeta';
-import PostCardSaveAction from '@/components/PostCardSaveAction/PostCardSaveAction';
 import type { PostWithRelations } from '@/types/types';
-import PostCardLikeAndComment from '@/components/PostCardLikeAndComment/PostCardLikeAndComment';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
 import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
 import Link from 'next/link';
 import Image from 'next/image';
-import BookmarkCheck from '../BookmarkCheck';
 import { getPostLink } from '@/lib/getPostLink';
 
 export interface Card6Props {
@@ -17,15 +14,15 @@ export interface Card6Props {
 
 export default function Component({ className = '', post }: Card6Props) {
   const { title, slug, featuredImage, categories, postType } = post;
+  const postLink = getPostLink(postType, slug);
 
   return (
     <div
       dir="rtl"
-      className={`nc-Card6 relative flex flex-row items-stretch p-2 sm:p-3 md:p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 shadow ${className}`}
+      className={`nc-Card6 group relative flex flex-row items-stretch p-2 sm:p-3 md:p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 shadow ${className}`}
     >
-      <Link href={getPostLink(postType, slug)} className="absolute inset-0 z-0" />
       <Link
-        href={getPostLink(postType, slug)}
+        href={postLink}
         className="block relative flex-shrink-0 w-1/3 aspect-[4/3] rounded-xl overflow-hidden z-10 ml-2 sm:ml-3 md:ml-4"
       >
         <Image
@@ -48,8 +45,12 @@ export default function Component({ className = '', post }: Card6Props) {
           <div className="hidden sm:block">
             <CategoryBadgeList categories={categories} />
           </div>
-          <h2 className="block font-semibold text-xs sm:text-sm md:text-base leading-snug mb-auto">
-            <Link href={getPostLink(postType, slug)} className="line-clamp-2" title={title}>
+          <h2 className="block font-semibold text-base sm:text-sm md:text-base leading-snug mb-auto">
+            <Link
+              href={postLink}
+              className="line-clamp-2 text-neutral-900 dark:text-neutral-100 group-hover:text-primary-900 dark:group-hover:text-primary-500 transition-colors duration-300"
+              title={title}
+            >
               {title}
             </Link>
           </h2>
