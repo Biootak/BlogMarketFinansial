@@ -95,7 +95,7 @@ const PostFeaturedMedia: FC<PostFeaturedMediaProps> = ({
           alt="Featured"
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          className="object-cover"
+          className="object-fill"
           priority={true}
         />
       )}

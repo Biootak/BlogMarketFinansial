@@ -75,12 +75,17 @@ export default function BannerAds({
         rel="noopener noreferrer"
         className={cn('block w-full', getPositionClass(position), className)}
       >
-        <div className={cn('relative w-full h-full overflow-hidden', getImageContainerClass())}>
+        <div
+          className={cn(
+            'relative w-full h-full overflow-hidden rounded-lg',
+            getImageContainerClass(),
+          )}
+        >
           <Image
             src={imageUrl}
             alt={title}
             fill
-            className="object-cover w-full h-full rounded-lg"
+            className="object-cover w-full h-full "
             sizes="100vw"
             priority
           />
@@ -118,7 +123,7 @@ export default function BannerAds({
           src={imageUrl}
           alt={title}
           fill
-          className="object-cover w-full h-full rounded-lg "
+          className="object-cover w-full h-full  "
           sizes="100vw"
         />
       </div>
