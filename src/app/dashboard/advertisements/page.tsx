@@ -67,7 +67,7 @@ const advertisementSchema = z.object({
   size: z.enum(['SMALL', 'MEDIUM', 'LARGE', 'CUSTOM']),
   position: z.enum(['HEADER', 'FOOTER', 'SIDEBAR', 'IN_CONTENT', 'BETWEEN_POSTS', 'CUSTOM']),
   customPosition: z.string().optional(),
-  order: z.number().int().positive(),
+  order: z.coerce.number().int().positive(),
   customDimensions: z
     .object({
       width: z.string().optional(),
@@ -179,18 +179,16 @@ export default function AdvertisementsPage() {
 
   const handleEdit = (ad: Advertisement) => {
     setEditingAd(ad);
+    setIsDialogOpen(true);
 
-    // تابع کمکی برای بررسی اعتبار customDimensions
     const validateCustomDimensions = (dimensions: any): CustomAdDimensions | undefined => {
       if (typeof dimensions === 'object' && dimensions !== null) {
         const { width, height, aspectRatio } = dimensions;
-        if (
-          (typeof width === 'string' || width === undefined) &&
-          (typeof height === 'string' || height === undefined) &&
-          (typeof aspectRatio === 'string' || aspectRatio === undefined)
-        ) {
-          return dimensions as CustomAdDimensions;
-        }
+        return {
+          width: width ?? undefined,
+          height: height ?? undefined,
+          aspectRatio: aspectRatio ?? undefined,
+        };
       }
       return undefined;
     };
@@ -206,7 +204,7 @@ export default function AdvertisementsPage() {
       size: ad.size,
       position: ad.position,
       customPosition: ad.customPosition ?? undefined,
-      order: ad.order,
+      order: Number(ad.order),
       customDimensions: validateCustomDimensions(ad.customDimensions),
     });
   };
@@ -314,15 +312,11 @@ export default function AdvertisementsPage() {
               {ads.map((ad) => (
                 <TableRow
                   key={ad.id}
-                  className="border-b border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-750 transition-colors duration-150"
+                  className=" border-b border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-750 transition-colors duration-150"
                 >
-                  <TableCell className="py-3 px-4 sm:py-4 sm:px-6">
-                    <div className="w-8 h-8 sm:w-12 sm:h-12 relative overflow-hidden rounded-full">
-                      <img
-                        src={ad.imageUrl}
-                        alt={ad.title}
-                        className="w-full h-full object-cover"
-                      />
+                  <TableCell className="py-3 px-4 sm:py-4 sm:px-6 ">
+                    <div className="w-40 h-30 relative overflow-hidden rounded-md">
+                      <img src={ad.imageUrl} alt={ad.title} className="w-full h-full object-" />
                     </div>
                   </TableCell>
                   <TableCell className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm text-neutral-800 dark:text-neutral-200">
@@ -415,9 +409,9 @@ function AdvertisementForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="SMALL">کوچک</SelectItem>
-                    <SelectItem value="MEDIUM">متوسط</SelectItem>
-                    <SelectItem value="LARGE">بزرگ</SelectItem>
+                    <SelectItem value="SMALL">100% * 65 (کوچک و باریک)</SelectItem>
+                    <SelectItem value="MEDIUM">160 * 65 (متوسط)</SelectItem>
+                    <SelectItem value="LARGE">728 * 90 (بزرگ)</SelectItem>
                     <SelectItem value="CUSTOM">سفارشی</SelectItem>
                   </SelectContent>
                 </Select>
@@ -609,7 +603,7 @@ function AdvertisementForm({
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                <FormLabel className=" mr-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   فعال
                 </FormLabel>
               </div>

@@ -38,7 +38,7 @@ export default async function PageSingle({ params }: PageProps) {
     limit: 3,
     size: 'MEDIUM',
     position: 'SIDEBAR',
-    orderBy: 'order',
+    orderBy: 'createdAt',
     orderDirection: 'desc',
   });
 

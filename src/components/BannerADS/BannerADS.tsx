@@ -97,7 +97,7 @@ export default function BannerAds({
         'sm:flex-row sm:items-center',
         getContentSize(),
         getPositionClass(position),
-        className
+        className,
       )}
     >
       <Link
@@ -106,17 +106,19 @@ export default function BannerAds({
         target="_blank"
         rel="noopener noreferrer"
       />
-      <div className={cn('relative flex-shrink-0 rounded-2xl overflow-hidden z-10 w-full', {
-        'h-48 sm:h-48': size === 'LARGE',
-        'h-40 sm:h-40': size === 'MEDIUM',
-        'h-32 sm:h-32': size === 'SMALL',
-        [`h-${customDimensions?.height}`]: size === 'CUSTOM',
-      })}>
+      <div
+        className={cn('relative flex-shrink-0 rounded-2xl overflow-hidden z-10 w-full', {
+          'h-48 sm:h-48': size === 'LARGE',
+          'h-40 sm:h-40': size === 'MEDIUM',
+          'h-32 sm:h-32': size === 'SMALL',
+          [`h-${customDimensions?.height}`]: size === 'CUSTOM',
+        })}
+      >
         <Image
           src={imageUrl}
           alt={title}
           fill
-          className="object-cover w-full h-full rounded-lg"
+          className="object-cover w-full h-full rounded-lg "
           sizes="100vw"
         />
       </div>
@@ -163,7 +165,7 @@ export default function BannerAds({
                     'text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2':
                       size === 'MEDIUM' || size === 'CUSTOM',
                     'text-xs px-3 py-1 sm:px-3 sm:py-1.5': size === 'SMALL',
-                  }
+                  },
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -177,4 +179,3 @@ export default function BannerAds({
     </div>
   );
 }
-

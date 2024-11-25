@@ -38,6 +38,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import Loading from '@/components/Loading';
+import { HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi2';
 
 interface ExchangeRateFormValues {
   name: string;
@@ -211,22 +212,26 @@ const ExchangeRatesPage: React.FC = () => {
               <TableCell>{exchangeRate.singleRate}</TableCell>
               <TableCell>{exchangeRate.bulkRate}</TableCell>
               <TableCell>{exchangeRate.description}</TableCell>
-              <TableCell className="flex items-center space-x-2">
+              <TableCell className="flex justify-start space-x-2 space-x-reverse">
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
+                  className="text-primary-600 border-primary-600 hover:bg-primary-50 dark:text-primary-400 dark:border-primary-400 dark:hover:bg-primary-900 text-xs sm:text-sm px-2 sm:px-3 py-1"
                   onClick={() => {
                     setEditingExchangeRate(exchangeRate);
                     reset();
                   }}
                 >
+                  <HiOutlinePencil className="ml-1 hidden sm:inline" />
                   ویرایش
                 </Button>
                 <Button
-                  variant="destructive"
+                  variant="outline"
                   size="sm"
+                  className="text-red-600 border-red-600 hover:bg-red-50 dark:text-red-400 dark:border-red-400 dark:hover:bg-red-900 text-xs sm:text-sm px-2 sm:px-3 py-1"
                   onClick={() => handleDelete(exchangeRate.id)}
                 >
+                  <HiOutlineTrash className="ml-1 hidden sm:inline" />
                   حذف
                 </Button>
               </TableCell>
