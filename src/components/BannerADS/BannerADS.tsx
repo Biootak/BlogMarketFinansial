@@ -36,39 +36,19 @@ export default function BannerAds({
       case 'BETWEEN_POSTS':
         return 'w-full';
       case 'SIDEBAR':
-        return 'w-full lg:w-64';
+        return 'w-full';
       case 'CUSTOM':
       default:
         return '';
     }
   };
 
-  const getImageContainerStyle = () => {
-    if (customDimensions) {
-      return {
-        width: customDimensions.width || '100%',
-        height: customDimensions.height,
-        aspectRatio: customDimensions.aspectRatio,
-      };
-    }
-    switch (size) {
-      case 'LARGE':
-        return { width: '100%', height: '250px', aspectRatio: '300/250' };
-      case 'MEDIUM':
-        return { width: '100%', height: '100px', aspectRatio: '300/100' };
-      case 'SMALL':
-        return { width: '100%', height: '50px', aspectRatio: '300/50' };
-      default:
-        return {};
-    }
-  };
-
   const getImageContainerClass = () => {
-    if (customDimensions) return '';
-    return cn('relative w-full', {
-      'aspect-[300/250]': size === 'LARGE',
-      'aspect-[300/100]': size === 'MEDIUM',
-      'aspect-[300/50]': size === 'SMALL',
+    if (size === 'CUSTOM') return '';
+    return cn('relative w-full overflow-hidden', {
+      'aspect-[16/5]': size === 'LARGE',
+      'aspect-[16/6]': size === 'MEDIUM',
+      'aspect-[16/7]': size === 'SMALL',
     });
   };
 
@@ -87,36 +67,21 @@ export default function BannerAds({
     }
   };
 
-  const getImageSize = () => {
-    switch (size) {
-      case 'LARGE':
-        return 'w-full h-[250px]';
-      case 'MEDIUM':
-        return 'w-full h-[100px]';
-      case 'SMALL':
-        return 'w-full h-[50px]';
-      case 'CUSTOM':
-        return customDimensions?.width || 'w-full h-[100px]';
-      default:
-        return 'w-full h-[100px]';
-    }
-  };
-
   if (imageOnly) {
     return (
       <Link
         href={linkUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className={cn('block', getPositionClass(position), className)}
+        className={cn('block w-full', getPositionClass(position), className)}
       >
-        <div className={getImageContainerClass()} style={getImageContainerStyle()}>
+        <div className={cn('relative w-full h-full overflow-hidden', getImageContainerClass())}>
           <Image
             src={imageUrl}
             alt={title}
             fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover w-full h-full rounded-lg"
+            sizes="100vw"
             priority
           />
         </div>
@@ -128,12 +93,12 @@ export default function BannerAds({
     <div
       dir="rtl"
       className={cn(
-        'nc-BannerADS relative flex flex-col sm:flex-row items-start sm:items-center p-4 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 shadow',
+        'nc-BannerADS relative flex flex-col items-start p-4 rounded-3xl',
+        'sm:flex-row sm:items-center',
         getContentSize(),
         getPositionClass(position),
-        className,
+        className
       )}
-      style={customDimensions ? { width: customDimensions.width } : {}}
     >
       <Link
         href={linkUrl}
@@ -141,24 +106,21 @@ export default function BannerAds({
         target="_blank"
         rel="noopener noreferrer"
       />
-      <Link
-        href={linkUrl}
-        className={cn(
-          'block relative flex-shrink-0 rounded-2xl overflow-hidden z-10',
-          getImageSize(),
-        )}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
+      <div className={cn('relative flex-shrink-0 rounded-2xl overflow-hidden z-10 w-full', {
+        'h-48 sm:h-48': size === 'LARGE',
+        'h-40 sm:h-40': size === 'MEDIUM',
+        'h-32 sm:h-32': size === 'SMALL',
+        [`h-${customDimensions?.height}`]: size === 'CUSTOM',
+      })}>
         <Image
           src={imageUrl}
           alt={title}
           fill
-          className="object-cover"
-          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+          className="object-cover w-full h-full rounded-lg"
+          sizes="100vw"
         />
-      </Link>
-      <div className="flex flex-col flex-grow w-full">
+      </div>
+      <div className="flex flex-col flex-grow w-full sm:mr-4 mt-4 sm:mt-0">
         <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
           {showAdLabel && (
             <span className="inline-block px-2 py-1 rounded-full font-medium text-xs relative text-pink-800 bg-pink-100 dark:text-pink-100 dark:bg-pink-800">
@@ -201,7 +163,7 @@ export default function BannerAds({
                     'text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2':
                       size === 'MEDIUM' || size === 'CUSTOM',
                     'text-xs px-3 py-1 sm:px-3 sm:py-1.5': size === 'SMALL',
-                  },
+                  }
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -215,3 +177,4 @@ export default function BannerAds({
     </div>
   );
 }
+
