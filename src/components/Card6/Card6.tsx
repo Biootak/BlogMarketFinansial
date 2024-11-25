@@ -45,7 +45,7 @@ export default function Component({ className = '', post }: Card6Props) {
           <div className="hidden sm:block">
             <CategoryBadgeList categories={categories} />
           </div>
-          <h2 className="block font-semibold text-base sm:text-sm md:text-base leading-snug mb-auto">
+          <h2 className="block font-semibold text-base sm:text-sm md:text-sm leading-snug mb-auto">
             <Link
               href={postLink}
               className="line-clamp-2 text-neutral-900 dark:text-neutral-100 group-hover:text-primary-900 dark:group-hover:text-primary-500 transition-colors duration-300"
