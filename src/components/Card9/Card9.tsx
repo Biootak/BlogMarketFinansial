@@ -19,16 +19,11 @@ export interface Card9Props {
 // نسبت‌های بهینه شده برای حالت عمودی
 const aspectRatioClasses = {
   portrait: 'aspect-[3/4]', // نسبت کلاسیک پرتره
-  tall: 'aspect-[2/3]', // کمی کوتاه‌تر از پرتره
+  tall: 'aspect-[4/5]', // کمی کوتاه‌تر از پرتره
   square: 'aspect-square', // مربع
 };
 
-const Card9: FC<Card9Props> = ({
-  className = 'h-full',
-  ratio = 'portrait',
-  post,
-  hoverClass = '',
-}) => {
+const Card9: FC<Card9Props> = ({ className = 'h-full', ratio = 'tall', post, hoverClass = '' }) => {
   const { title, slug, featuredImage, categories, author, createdAt, postType } = post;
 
   const renderMeta = () => (
@@ -76,7 +71,7 @@ const Card9: FC<Card9Props> = ({
             <Image
               fill
               alt={title}
-              className="object-cover rounded-3xl"
+              className="object-fill rounded-3xl"
               src={featuredImage || '/path/to/default-image.jpg'}
               sizes="(max-width: 600px) 480px, 500px"
               priority={true}

@@ -30,7 +30,7 @@ export default function Component({ className = '', post }: Card6Props) {
       >
         <Image
           sizes="(max-width: 639px) 33vw, (max-width: 1023px) 25vw, 20vw"
-          className="object-cover"
+          className="object-fill"
           fill
           src={featuredImage || '/placeholder.jpg'}
           alt={title}

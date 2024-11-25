@@ -45,7 +45,7 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
             <div className="relative w-full">
               <NcImage
                 containerClassName="absolute inset-0"
-                className="object-cover rounded-3xl"
+                className="object-fill rounded-3xl"
                 src={featuredImage || '/placeholder.jpg'}
                 alt={title}
                 fill

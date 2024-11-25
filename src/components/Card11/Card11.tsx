@@ -33,7 +33,7 @@ const Card11: React.FC<Card11Props> = ({
     >
       <div className={`block flex-shrink-0 relative w-full rounded-t-2xl overflow-hidden ${ratio}`}>
         <div>
-          <PostFeaturedMedia post={post} imageRatio="video" />
+          <PostFeaturedMedia post={post} imageRatio="landscape" />
         </div>
       </div>
       <span className="absolute top-1 right-1">
