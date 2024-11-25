@@ -19,7 +19,7 @@ export interface Card9Props {
 // نسبت‌های بهینه شده برای حالت عمودی
 const aspectRatioClasses = {
   portrait: 'aspect-[3/4]', // نسبت کلاسیک پرتره
-  tall: 'aspect-[4/5]', // کمی کوتاه‌تر از پرتره
+  tall: 'aspect-[4/4.5]', // کمی کوتاه‌تر از پرتره
   square: 'aspect-square', // مربع
 };
 
