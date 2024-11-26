@@ -85,7 +85,7 @@ export default function BannerAds({
             src={imageUrl}
             alt={title}
             fill
-            className="object-cover w-full h-full "
+            className="object-fill w-full h-full "
             sizes="100vw"
             priority
           />
@@ -123,7 +123,7 @@ export default function BannerAds({
           src={imageUrl}
           alt={title}
           fill
-          className="object-cover w-full h-full  "
+          className="object-fill w-full h-full  "
           sizes="100vw"
         />
       </div>

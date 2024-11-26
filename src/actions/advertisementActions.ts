@@ -12,7 +12,7 @@ export async function getActiveAdvertisements({
   size,
   position,
   orderBy = 'order',
-  orderDirection = 'desc',
+  orderDirection = 'asc',
 }: {
   limit?: number;
   page?: number;

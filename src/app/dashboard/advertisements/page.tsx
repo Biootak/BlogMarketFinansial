@@ -409,9 +409,9 @@ function AdvertisementForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="SMALL">100% * 65 (کوچک و باریک)</SelectItem>
+                    <SelectItem value="SMALL">100% * 65 (کوچک )</SelectItem>
                     <SelectItem value="MEDIUM">160 * 65 (متوسط)</SelectItem>
-                    <SelectItem value="LARGE">728 * 90 (بزرگ)</SelectItem>
+                    <SelectItem value="LARGE">1280 * 250 (بزرگ)</SelectItem>
                     <SelectItem value="CUSTOM">سفارشی</SelectItem>
                   </SelectContent>
                 </Select>

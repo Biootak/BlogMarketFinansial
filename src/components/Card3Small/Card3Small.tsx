@@ -11,7 +11,7 @@ export interface Card3SmallProps {
 
 const Card3Small: React.FC<Card3SmallProps> = ({ className = 'h-full', post }) => {
   const { title, slug, featuredImage } = post;
-  const href = `/blog/${slug}`;
+  const href = `/single/${slug}`;
 
   return (
     <div

@@ -14,14 +14,34 @@ import SectionSliderNewCategories from '@/components/SectionSliderNewCategories/
 import SectionExchangeRates from '@/components/Sections/SectionExchangeRates';
 
 export default async function Home() {
-  const [posts, topAuthors, adsResult] = await Promise.all([
+  const [posts, topAuthors, firstAdResult, secondAdResult] = await Promise.all([
     getPosts(6),
     getTopAuthors(5),
-    getActiveAdvertisements({ limit: 1, size: 'LARGE' }),
+    getActiveAdvertisements({
+      limit: 1,
+      size: 'LARGE',
+      position: 'CUSTOM',
+      orderBy: 'order',
+      orderDirection: 'asc',
+    }),
+    getActiveAdvertisements({
+      limit: 1,
+      size: 'LARGE',
+      position: 'CUSTOM',
+      orderBy: 'order',
+      orderDirection: 'asc',
+      page: 2,
+    }),
   ]);
 
-  const latestLargeAd =
-    adsResult.success && adsResult.data && adsResult.data.length > 0 ? adsResult.data[0] : null;
+  const firstAd =
+    firstAdResult.success && firstAdResult.data && firstAdResult.data.length > 0
+      ? firstAdResult.data[0]
+      : null;
+  const secondAd =
+    secondAdResult.success && secondAdResult.data && secondAdResult.data.length > 0
+      ? secondAdResult.data[0]
+      : null;
 
   return (
     <div className="nc-HomePage relative">
@@ -39,8 +59,8 @@ export default async function Home() {
           categoryCardType="card2"
         />
         <SectionMagazine1 className="py-6 " />
-        {latestLargeAd ? (
-          <SectionAds className="pb-4 lg:pb-28" ad={latestLargeAd} />
+        {firstAd ? (
+          <SectionAds className="pb-4" ad={firstAd} />
         ) : (
           <Skeleton className="pb-4 lg:pb-28 h-64 rounded-md" />
         )}
@@ -55,6 +75,11 @@ export default async function Home() {
         )}
       </div>
       <div className="container">
+        {secondAd ? (
+          <SectionAds className="pb-4" ad={secondAd} />
+        ) : (
+          <Skeleton className="pb-4 lg:pb-28 h-64 rounded-md" />
+        )}
         {topAuthors.length > 0 ? (
           <SectionGridAuthorBox className="py-6" authors={topAuthors} />
         ) : (

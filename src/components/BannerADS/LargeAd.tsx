@@ -12,7 +12,12 @@ interface LargeAdProps {
 const LargeAd: React.FC<LargeAdProps> = ({ ad, className = '' }) => {
   return (
     <div className={`nc-LargeAd ${className}`}>
-      <BannerADS ad={ad}  className="w-full" showAdLabel={false} imageOnly={true} />
+      <BannerADS
+        ad={ad}
+        className="w-full lg:h-[250px] sm:h-[150px]"
+        showAdLabel={false}
+        imageOnly={true}
+      />
     </div>
   );
 };
