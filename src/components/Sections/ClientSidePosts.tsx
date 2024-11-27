@@ -65,7 +65,7 @@ export default function ClientSidePosts({
 
   return (
     <div className="space-y-8">
-      <h2 className="text-3xl font-bold text-center mb-6">آخرین مقالات</h2>
+      <h2 className="text-xl font-bold text-center mb-6">آخرین مقالات</h2>
       {error && <div className="text-red-500 text-center">Error: {error.message}</div>}
       <Tabs defaultValue="همه" onValueChange={setActiveCategory} dir="rtl">
         <div className="relative">

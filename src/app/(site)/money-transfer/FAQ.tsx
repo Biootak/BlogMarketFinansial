@@ -42,7 +42,7 @@ export default function Component() {
 
   return (
     <div className="mt-8 sm:mt-16 rtl" dir="rtl">
-      <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8 text-gray-800 dark:text-gray-100">
+      <h2 className="text-2xl sm:text-xl font-bold text-center mb-6 sm:mb-8 text-gray-800 dark:text-gray-100">
         سؤالات متداول
       </h2>
       <div className="space-y-3 sm:space-y-4">

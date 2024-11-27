@@ -38,7 +38,7 @@ export default function AuthorProfile({ author }: AuthorProfileProps) {
           </div>
           <div className="pt-4 md:pt-1 md:ml-6 xl:ml-12 flex-grow">
             <div className="max-w-screen-sm space-y-3.5">
-              <h2 className="inline-flex items-center text-2xl sm:text-3xl lg:text-4xl font-semibold">
+              <h2 className="inline-flex items-center text-2xl sm:text-xl lg:text-4xl font-semibold">
                 <span>{author.name}</span>
                 {author.emailVerified && <VerifyIcon className="mr-2" />}
               </h2>

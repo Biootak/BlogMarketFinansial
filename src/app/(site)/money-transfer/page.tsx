@@ -51,7 +51,7 @@ export default async function MoneyTransferPage() {
 
       <div className="container mx-auto px-4 py-12">
         <section id="services" className="mb-16">
-          <h2 className="text-3xl font-bold mb-8 text-center text-gray-800 dark:text-gray-100">
+          <h2 className="text-xl font-bold mb-8 text-center text-gray-800 dark:text-gray-100">
             خدمات ویژه ما
           </h2>
           <InfoCards />

@@ -1,20 +1,17 @@
-import CategoryBadgeList from "@/components/CategoryBadgeList/CategoryBadgeList";
-import React, { type FC } from "react";
-import SingleTitle from "./SingleTitle";
-import PostMeta2 from "@/components/PostMeta2/PostMeta2";
-import SingleMetaAction2 from "./SingleMetaAction2";
-import NcImage from "@/components/NcImage/NcImage";
-import { DEMO_CATEGORIES } from "@/data/taxonomies";
+import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
+import React, { type FC } from 'react';
+import SingleTitle from './SingleTitle';
+import PostMeta2 from '@/components/PostMeta2/PostMeta2';
+import SingleMetaAction2 from './SingleMetaAction2';
+import NcImage from '@/components/NcImage/NcImage';
+import { DEMO_CATEGORIES } from '@/data/taxonomies';
 
 export interface SingleHeader4Props {
   hiddenDesc?: boolean;
   className?: string;
 }
 
-const SingleHeader4: FC<SingleHeader4Props> = ({
-  hiddenDesc = false,
-  className = "",
-}) => {
+const SingleHeader4: FC<SingleHeader4Props> = ({ hiddenDesc = false, className = '' }) => {
   return (
     <>
       <div className={`nc-SingleHeader4 ${className}`}>
@@ -24,14 +21,13 @@ const SingleHeader4: FC<SingleHeader4Props> = ({
             categories={[DEMO_CATEGORIES[1]]}
           /> */}
           <SingleTitle
-            mainClass="text-neutral-900 font-bold text-3xl md:text-4xl md:!leading-[120%] lg:text-5xl 2xl:text-6xl dark:text-neutral-100"
-            title={"Trending web & landing page designs in 2023"}
+            mainClass="text-neutral-900 font-bold text-xl md:text-4xl md:!leading-[120%] lg:text-5xl 2xl:text-6xl dark:text-neutral-100"
+            title={'Trending web & landing page designs in 2023'}
           />
           {!hiddenDesc && (
             <span className="block text-base text-neutral-500 md:text-lg dark:text-neutral-400 pb-1">
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-              Perspiciatis tempora obcaecati error ipsum voluptatibus sed
-              adipisci ut maiores nesciunt quam.
+              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Perspiciatis tempora
+              obcaecati error ipsum voluptatibus sed adipisci ut maiores nesciunt quam.
             </span>
           )}
         </div>

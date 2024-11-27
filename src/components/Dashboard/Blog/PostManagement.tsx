@@ -87,7 +87,7 @@ const StatCard: React.FC<{
     <div className="flex items-center justify-between">
       <div>
         <p className="text-gray-500 dark:text-gray-400 text-sm mb-1">{title}</p>
-        <p className="text-3xl font-bold text-gray-800 dark:text-white">
+        <p className="text-xl font-bold text-gray-800 dark:text-white">
           {value.toLocaleString('fa-IR')}
         </p>
       </div>

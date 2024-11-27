@@ -31,7 +31,7 @@ export default function WelcomeSectionContent() {
         transition={{ delay: 0.2 }}
         className="text-center sm:text-right"
       >
-        <h2 className="text-2xl sm:text-3xl font-bold mb-2"> {user?.name ?? 'کاربر'}</h2>
+        <h2 className="text-2xl sm:text-xl font-bold mb-2"> {user?.name ?? 'کاربر'}</h2>
         <p className="text-neutral-200 mb-4">
           به داشبورد وبلاگ خود خوش آمدید. آماده نوشتن مطالب جدید هستید؟
         </p>

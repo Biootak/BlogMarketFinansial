@@ -4,7 +4,12 @@ import { Toolbar } from '../../ui/toolbar';
 import { cn } from '../lib/utils';
 import type { Editor } from '@tiptap/core';
 import { useActive } from '../hooks/use-active';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 type MenuSelectHeading = {
   editor: Editor;
@@ -19,7 +24,7 @@ const options = [
   {
     value: 1,
     label: 'Heading 1',
-    className: 'font-bold text-3xl',
+    className: 'font-bold text-xl',
   },
   {
     value: 2,

@@ -15,7 +15,7 @@ const SectionSubscribe2: FC<SectionSubscribe2Props> = async ({ className = '' })
       dir="rtl"
     >
       <div className="flex-shrink-0 w-full lg:w-2/5 mb-10 lg:mb-0 lg:ml-10">
-        <h2 className="font-bold text-3xl sm:text-4xl md:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 leading-tight">
+        <h2 className="font-bold text-xl sm:text-4xl md:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 leading-tight">
           به خبرنامه ما بپیوندید
         </h2>
         <p className="mt-4 sm:mt-6 text-gray-600 dark:text-gray-300 text-base sm:text-lg">

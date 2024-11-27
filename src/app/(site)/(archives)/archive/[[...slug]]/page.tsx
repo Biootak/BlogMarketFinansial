@@ -119,7 +119,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
             </div>
             <div className="flex-1 md:ml-4 text-center md:text-right">
               <CardHeader className="p-0 mb-2 sm:mb-4">
-                <CardTitle className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                <CardTitle className="text-2xl sm:text-xl font-bold text-gray-900 dark:text-white mb-2">
                   {selectedSubcategory?.name ||
                     selectedCategory?.name ||
                     selectedTag?.name ||

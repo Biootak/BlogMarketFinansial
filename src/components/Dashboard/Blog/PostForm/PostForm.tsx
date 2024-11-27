@@ -181,7 +181,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
         transition={{ duration: 0.5 }}
         className="mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 md:p-8 rtl my-4 sm:my-6 md:my-8 w-full max-w-[95%] sm:max-w-[90%] md:max-w-4xl"
       >
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 md:mb-8 text-center text-gray-800 dark:text-white">
+        <h1 className="text-2xl sm:text-xl md:text-4xl font-bold mb-4 sm:mb-6 md:mb-8 text-center text-gray-800 dark:text-white">
           {title}
         </h1>
         {/* Editor component outside the form */}

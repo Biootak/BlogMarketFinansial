@@ -28,7 +28,7 @@ const SingleHeader: React.FC<SingleHeaderProps> = ({ post, titleMainClass, class
         <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-400">{breadcrumb}</p>
 
         <SingleTitle
-          mainClass={`${titleMainClass} text-xl sm:text-2xl lg:text-3xl font-semibold`}
+          mainClass={`${titleMainClass} text-xl sm:text-2xl lg:text-xl font-semibold`}
           title={post.title}
         />
 

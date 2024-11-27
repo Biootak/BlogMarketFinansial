@@ -230,7 +230,7 @@ export default function AdvertisementsPage() {
 
   return (
     <div className="container mx-auto p-4 sm:p-6 lg:p-8 rtl">
-      <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 lg:mb-8 text-right text-primary-700 dark:text-primary-300">
+      <h1 className="text-2xl sm:text-xl font-bold mb-4 sm:mb-6 lg:mb-8 text-right text-primary-700 dark:text-primary-300">
         مدیریت تبلیغات
       </h1>
 

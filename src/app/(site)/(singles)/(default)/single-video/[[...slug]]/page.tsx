@@ -42,7 +42,7 @@ const PageSv = ({}) => {
 						categories={[DEMO_CATEGORIES[2]]}
 					/> */}
           <SingleTitle
-            mainClass="text-neutral-900 font-semibold text-3xl md:!leading-[120%] dark:text-neutral-100"
+            mainClass="text-neutral-900 font-semibold text-xl md:!leading-[120%] dark:text-neutral-100"
             title={'Julio Urías does it all as Dodgers sweep in San Francisco'}
           />
 
