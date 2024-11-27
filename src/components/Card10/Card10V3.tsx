@@ -26,7 +26,7 @@ const Card10V3: React.FC<Card10V3Props> = ({ className = 'h-full', post, gallery
       <NcImage
         alt="Gallery image"
         containerClassName={`relative w-full h-full ${customClassName}`}
-        className="absolute inset-0 object-fill w-full h-full"
+        className="absolute inset-0 object-cover w-full h-full"
         src={src}
         sizes="(max-width: 600px) 480px, 800px"
       />

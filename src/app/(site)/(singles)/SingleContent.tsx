@@ -76,7 +76,6 @@ const SingleContent: React.FC<SingleContentProps> = ({ post }) => {
 
   const handleCommentSubmit = (content: string) => {
     console.log('نظر جدید:', content);
-    // اینجا می‌توانید هر عملیات دیگری که پس از ارسال نظر نیاز دارید انجام دهید
   };
 
   return (
