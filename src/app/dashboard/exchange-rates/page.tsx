@@ -178,9 +178,9 @@ const ExchangeRatesPage: React.FC = () => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="text-right">تصویر</TableHead>
-            <TableHead className="text-right">نام ارز</TableHead>
             <TableHead className="text-right">نماد</TableHead>
+            <TableHead className="text-right">نام</TableHead>
+            <TableHead className="text-right">ارز</TableHead>
             <TableHead className="text-right">نوع نرخ</TableHead>
             <TableHead className="text-right">نرخ خرید</TableHead>
             <TableHead className="text-right">نرخ فروش</TableHead>
@@ -257,11 +257,11 @@ const ExchangeRatesPage: React.FC = () => {
               {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="currency">نماد</Label>
+              <Label htmlFor="currency">ارز</Label>
               <Input
                 id="currency"
-                {...register('currency', { required: 'نماد الزامی است' })}
-                placeholder="EUR/USD"
+                {...register('currency', { required: 'ارز الزامی است' })}
+                placeholder="تومان به افغانی"
               />
               {errors.currency && <p className="text-red-500 text-sm">{errors.currency.message}</p>}
             </div>
@@ -338,12 +338,12 @@ const ExchangeRatesPage: React.FC = () => {
                 {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="currency">نماد</Label>
+                <Label htmlFor="currency">ارز</Label>
                 <Input
                   id="currency"
                   defaultValue={editingExchangeRate.currency}
-                  {...register('currency', { required: 'نماد الزامی است' })}
-                  placeholder="EUR/USD"
+                  {...register('currency', { required: 'ارز الزامی است' })}
+                  placeholder="تومان به دلار"
                 />
                 {errors.currency && (
                   <p className="text-red-500 text-sm">{errors.currency.message}</p>
