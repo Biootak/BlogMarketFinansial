@@ -14,7 +14,7 @@ const CardCategory1: FC<CardCategory1Props> = ({ className = '', size = 'normal'
   const { count, name, thumbnail } = taxonomy;
   return (
     <Link
-      href={`/archives/${taxonomy.slug}`}
+      href={`/archive/category/${taxonomy.slug}`}
       className={`nc-CardCategory1 flex items-center ${className}`}
     >
       <NcImage

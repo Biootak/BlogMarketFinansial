@@ -21,7 +21,7 @@ const WidgetCategories: React.FC<WidgetCategoriesProps> = ({ className = '', cat
             موضوعات پرطرفدار
           </span>
         }
-        viewAll={{ label: 'مشاهده همه', href: '/categories' }}
+        viewAll={{ label: 'مشاهده همه', href: '/archive' }}
       />
       <div className="flow-root">
         <div className="flex flex-col divide-y divide-neutral-200 dark:divide-neutral-700">
