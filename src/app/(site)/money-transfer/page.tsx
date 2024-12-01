@@ -2,10 +2,12 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import { getExchangeRates } from '@/actions/exchange-rates';
+import { getRateLists } from '@/actions/rate-lists';
 import InfoCards from './InfoCards';
 import ExchangeRateTable from './ExchangeRateTable';
 import ContactCTA from '@/components/online-payment/ContactCTA';
 import FAQ from './FAQ';
+import RateListGrid from './RateListGrid';
 
 export const metadata: Metadata = {
   title: 'صرافی آنلاین | انتقال ارز سریع و مطمئن',
@@ -16,6 +18,8 @@ export const revalidate = 1800;
 
 export default async function MoneyTransferPage() {
   const exchangeRates = await getExchangeRates();
+  const rateLists = await getRateLists();
+  const activeRateLists = rateLists.filter(list => list.isActive);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800">
@@ -66,6 +70,30 @@ export default async function MoneyTransferPage() {
             <p className="text-sm text-gray-500 dark:text-gray-400">
               آخرین به‌روزرسانی: {new Date().toLocaleString('fa-IR')}
             </p>
+          </div>
+        </section>
+
+        {/* بخش لیست نرخ‌های ارز */}
+        <section className="mb-16">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-10">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-100">
+                لیست نرخ‌های ارز
+              </h2>
+              <p className="mt-3 text-gray-600 dark:text-gray-400">
+                نرخ‌های ویژه برای انواع ارزها و خدمات مختلف
+              </p>
+            </div>
+            
+            <Suspense fallback={<div className="text-center">در حال بارگذاری لیست نرخ‌ها...</div>}>
+              <RateListGrid rateLists={activeRateLists} initialCount={10} />
+            </Suspense>
+            
+            <div className="mt-8 text-center">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                نرخ‌ها به صورت دوره‌ای به‌روزرسانی می‌شوند
+              </p>
+            </div>
           </div>
         </section>
 

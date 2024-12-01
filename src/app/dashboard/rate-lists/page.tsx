@@ -19,12 +19,20 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { HiOutlinePencil, HiOutlineTrash, HiPlusCircle, HiMinusCircle } from 'react-icons/hi2';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { HiOutlineInformationCircle } from 'react-icons/hi2';
 
 export default function RateListsPage() {
   const [rateLists, setRateLists] = useState<RateListData[]>([]);
@@ -52,6 +60,84 @@ export default function RateListsPage() {
     name: 'rates',
   });
 
+  const handleRatePaste = (e: React.ClipboardEvent<HTMLInputElement>, index: number) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData('text');
+    const lines = pastedText.split(/[\n\r]+/).filter(line => line.trim());
+
+    if (lines.length > 1) {
+      // اگر بیش از یک خط پیست شده باشد
+      const newRates = lines.map(line => {
+        const { title, value } = extractTitleAndValue(line);
+        return { title, value };
+      }).filter(rate => rate.title || rate.value); // حذف موارد خالی
+
+      // جایگزینی همه نرخ‌های موجود با نرخ‌های جدید
+      replace(newRates);
+    } else {
+      // اگر فقط یک خط پیست شده باشد
+      const { title, value } = extractTitleAndValue(pastedText);
+      if (title || value) {
+        const currentField = fields[index];
+        if (!currentField.title && !currentField.value) {
+          // اگر فیلد خالی است، مقدار را در همان فیلد قرار می‌دهیم
+          replace(fields.map((field, i) => 
+            i === index ? { title, value } : field
+          ));
+        } else {
+          // اگر فیلد خالی نیست، یک فیلد جدید اضافه می‌کنیم
+          append({ title, value });
+        }
+      }
+    }
+  };
+
+  const extractTitleAndValue = (line: string): { title: string; value: string } => {
+    // حذف فاصله‌های اضافی از ابتدا و انتها
+    const trimmedLine = line.trim();
+    
+    // جدا کردن عنوان و مقدار با الگوهای مختلف
+    const patterns = [
+      // الگو: عنوان | مقدار
+      { regex: /^(.+?)\s*[\|:,]\s*([\d.,\/]+)\s*$/ },
+      // الگو: عنوان با چند نقطه و مقدار
+      { regex: /^(.+?)\.+\s*([\d.,\/]+)\s*$/ },
+      // الگو: عنوان و مقدار با فاصله
+      { regex: /^(.+?)\s+([\d.,\/]+)\s*$/ },
+    ];
+
+    for (const pattern of patterns) {
+      const matches = trimmedLine.match(pattern.regex);
+      if (matches) {
+        const title = matches[1].trim();
+        const value = extractValueFromText(matches[2]);
+        if (title && value) {
+          return { title, value };
+        }
+      }
+    }
+
+    // اگر هیچ الگویی مطابقت نداشت
+    return { title: trimmedLine, value: '' };
+  };
+
+  const extractValueFromText = (text: string): string => {
+    // تبدیل اعداد فارسی به انگلیسی
+    const persianToEnglish = (str: string) => {
+      const persianNumbers = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+      return str.replace(/[۰-۹]/g, d => persianNumbers.indexOf(d).toString());
+    };
+
+    // پاکسازی و نرمال‌سازی متن
+    const cleanText = persianToEnglish(text)
+      .replace(/[^\d.,]/g, '') // حذف همه کاراکترها به جز اعداد، نقطه و کاما
+      .replace(/,/g, '') // حذف کاما
+      .replace(/\.(?=.*\.)/g, '') // حذف همه نقطه‌ها به جز آخرین نقطه
+      .trim();
+
+    return cleanText || '';
+  };
+
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>, index: number) => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData('text');
@@ -59,8 +145,8 @@ export default function RateListsPage() {
     
     if (lines.length > 1) {
       const newRates = lines.map(line => {
-        const [title, value] = line.split(/[,\t:|]/).map(part => part.trim());
-        return { title: title || '', value: value || '' };
+        const { title, value } = extractTitleAndValue(line);
+        return { title, value };
       });
       
       // حذف ردیف فعلی و اضافه کردن ردیف‌های جدید
@@ -70,6 +156,27 @@ export default function RateListsPage() {
       toast({
         title: 'موفقیت',
         description: `${newRates.length} نرخ جدید اضافه شد`,
+      });
+    }
+  };
+
+  const handleTitlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text');
+    const titles = pastedData.split(/[\n\r]/).filter(line => line.trim());
+    
+    if (titles.length > 1) {
+      // اول همه نرخ‌های موجود رو پاک می‌کنیم
+      replace([]);
+      
+      // برای هر عنوان یک نرخ جدید اضافه می‌کنیم
+      titles.forEach(title => {
+        append({ title: title.trim(), value: '' });
+      });
+      
+      toast({
+        title: 'موفقیت',
+        description: `${titles.length} نرخ جدید اضافه شد`,
       });
     }
   };
@@ -177,6 +284,12 @@ export default function RateListsPage() {
     loadRateLists();
   }, []);
 
+  useEffect(() => {
+    if (fields.length === 0) {
+      append({ title: '', value: '' });
+    }
+  }, [append, fields.length]);
+
   if (isLoading) return <div>در حال بارگیری...</div>;
 
   return (
@@ -202,16 +315,18 @@ export default function RateListsPage() {
               {rateLists.map((rateList) => (
                 <TableRow key={rateList.id}>
                   <TableCell>{rateList.title}</TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      {rateList.rates.map((rate, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <span className="font-medium">{rate.title}:</span>
-                          <span>{rate.value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </TableCell>
+                 <TableCell>
+                   <div className="h-[100px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
+                     <div className="space-y-1 px-1">
+                       {rateList.rates.map((rate, index) => (
+                         <div key={index} className="flex items-center gap-2 text-sm">
+                           <span className="font-medium whitespace-nowrap">{rate.title}:</span>
+                           <span className="whitespace-nowrap">{rate.value}</span>
+                         </div>
+                       ))}
+                     </div>
+                   </div>
+                 </TableCell>
                   <TableCell>
                     <span
                       className={`px-2 py-1 rounded-full text-sm ${
@@ -276,6 +391,8 @@ export default function RateListsPage() {
                   id="title"
                   {...register('title', { required: 'عنوان لیست الزامی است' })}
                   className="mt-1"
+                  onPaste={handleTitlePaste}
+                  placeholder="مثل کردیت کارت یا نرخ بازار تهران "
                 />
                 {errors.title && (
                   <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>
@@ -283,52 +400,154 @@ export default function RateListsPage() {
               </div>
 
               <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <Label>نرخ‌ها</Label>
-                  <p className="text-sm text-gray-500">برای افزودن چندین نرخ، از اکسل کپی و در فیلد عنوان پیست کنید</p>
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-lg font-medium">نرخ‌ها</Label>
+                    <div className="hidden sm:block">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 hover:bg-blue-50"
+                              type="button"
+                            >
+                              <HiOutlineInformationCircle className="h-6 w-6 text-blue-500" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent 
+                            className="z-[9999] w-[280px] p-3 bg-white shadow-lg rounded-lg border border-blue-100" 
+                            side="bottom"
+                            sideOffset={5}
+                            align="start"
+                          >
+                            <div className="space-y-2 text-sm">
+                              <p className="font-medium border-b pb-1 text-blue-900">راهنمای درج سریع نرخ‌ها</p>
+                              <div className="space-y-1.5">
+                                <p>۱. از اکسل یا هر برنامه دیگر، لیست نرخ‌ها را کپی کنید</p>
+                                <p>۲. در فیلد نرخ پیست (Ctrl+V) کنید</p>
+                                <p>۳. هر خط به صورت خودکار به یک نرخ جدید تبدیل می‌شود</p>
+                              </div>
+                              <div className="bg-gray-50 p-2 rounded-md">
+                                <p className="font-medium mb-1.5">فرمت‌های قابل قبول:</p>
+                                <div className="space-y-1 pr-2 text-xs">
+                                  <p>- دلار | 50000</p>
+                                  <p>- دلار : 50000</p>
+                                  <p>- دلار , 50000</p>
+                                  <p>- دلار  50000</p>
+                                </div>
+                              </div>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+
+                    <div className="sm:hidden">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 hover:bg-blue-50"
+                            type="button"
+                          >
+                            <HiOutlineInformationCircle className="h-6 w-6 text-blue-500" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                          <DialogHeader>
+                            <DialogTitle className="text-right">راهنمای درج سریع نرخ‌ها</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4 mt-4">
+                            <div className="space-y-2">
+                              <p>۱. از اکسل یا هر برنامه دیگر، لیست نرخ‌ها را کپی کنید</p>
+                              <p>۲. در فیلد نرخ پیست (Ctrl+V) کنید</p>
+                              <p>۳. هر خط به صورت خودکار به یک نرخ جدید تبدیل می‌شود</p>
+                            </div>
+                            <div className="bg-gray-50 p-3 rounded-lg">
+                              <p className="font-medium mb-2">فرمت‌های قابل قبول:</p>
+                              <div className="space-y-1.5 pr-3">
+                                <p>- دلار | 50000</p>
+                                <p>- دلار : 50000</p>
+                                <p>- دلار , 50000</p>
+                                <p>- دلار  50000</p>
+                              </div>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        replace([]);
+                        append({ title: '', value: '' });
+                      }}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <HiOutlineTrash className="ml-1 h-4 w-4" />
+                      حذف همه
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => append({ title: '', value: '' })}
+                    >
+                      <HiPlusCircle className="ml-1 h-4 w-4" />
+                      افزودن نرخ
+                    </Button>
+                  </div>
                 </div>
-                <ScrollArea className="h-64 border rounded-lg p-4">
-                  <div className="space-y-2">
+                <ScrollArea className="h-[calc(100vh-25rem)] rounded-lg border bg-gray-50/50">
+                  <div className="space-y-2 p-3 min-h-[300px]">
                     {fields.map((field, index) => (
-                      <div key={field.id} className="flex items-center space-x-2 space-x-reverse">
+                      <div 
+                        key={field.id} 
+                        className="flex items-center gap-2 bg-white p-2 rounded-md shadow-sm border border-gray-100" 
+                        dir="rtl"
+                      >
                         <Input
                           {...register(`rates.${index}.title` as const, {
                             required: 'عنوان نرخ الزامی است',
                           })}
-                          placeholder="عنوان نرخ"
-                          className="flex-1"
-                          onPaste={(e) => handlePaste(e, index)}
+                          placeholder="مثال: دلار | 50000 یا دلار: 50000"
+                          className="flex-1 text-right bg-gray-50/50 focus:bg-white transition-colors"
+                          dir="rtl"
+                          onPaste={(e) => handleRatePaste(e, index)}
                         />
                         <Input
                           {...register(`rates.${index}.value` as const, {
                             required: 'مقدار نرخ الزامی است',
                           })}
                           placeholder="مقدار"
-                          className="flex-1"
+                          className="flex-1 text-right bg-gray-50/50 focus:bg-white transition-colors"
+                          dir="rtl"
                         />
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="ghost"
                           size="icon"
-                          onClick={() => remove(index)}
-                          className="flex-shrink-0"
+                          onClick={() => {
+                            remove(index);
+                            if (fields.length === 1) {
+                              append({ title: '', value: '' });
+                            }
+                          }}
+                          className="flex-shrink-0 text-gray-500 hover:text-red-600 hover:bg-red-50"
                         >
-                          <HiMinusCircle className="h-4 w-4" />
+                          <HiMinusCircle className="h-5 w-5" />
                         </Button>
                       </div>
                     ))}
                   </div>
                 </ScrollArea>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => append({ title: '', value: '' })}
-                  className="mt-2"
-                >
-                  <HiPlusCircle className="ml-1" />
-                  افزودن نرخ جدید
-                </Button>
               </div>
             </div>
 
