@@ -60,103 +60,147 @@ export default function RateListsPage() {
     name: 'rates',
   });
 
-  const handleRatePaste = (e: React.ClipboardEvent<HTMLInputElement>, index: number) => {
-    e.preventDefault();
-    const pastedText = e.clipboardData.getData('text');
-    const lines = pastedText.split(/[\n\r]+/).filter(line => line.trim());
+  // تعریف انواع ارز و عملیات
+  const CURRENCY_TYPES = {
+    'دالر': ['دلار', 'دلار امریکا', 'دالر آمریکا', 'امریکا'],
+    'یورو': ['یورو', 'یورو دالر'],
+    'پوند': ['پوند', 'پوند انگلیس', 'استرلینگ'],
+    'درهم': ['درهم', 'درهم امارات'],
+    'لیر': ['لیر', 'لیره', 'لیره ترکیه', 'لیر ترکیه'],
+    'افغانی': ['افغانی', 'افغانستان'],
+    'روبل': ['روبل', 'روبل روسیه'],
+    'کلدار': ['کلدار', 'کلدار هندی', 'روپیه', 'روپیه هند'],
+    'تومان': ['تومان', 'ریال'],
+    'فرانک': ['فرانک', 'فرانک سوئیس', 'فرانک سویس'],
+  } as const;
 
-    if (lines.length > 1) {
-      // اگر بیش از یک خط پیست شده باشد
-      const newRates = lines.map(line => {
-        const { title, value } = extractTitleAndValue(line);
-        return { title, value };
-      }).filter(rate => rate.title || rate.value); // حذف موارد خالی
-
-      // جایگزینی همه نرخ‌های موجود با نرخ‌های جدید
-      replace(newRates);
-    } else {
-      // اگر فقط یک خط پیست شده باشد
-      const { title, value } = extractTitleAndValue(pastedText);
-      if (title || value) {
-        const currentField = fields[index];
-        if (!currentField.title && !currentField.value) {
-          // اگر فیلد خالی است، مقدار را در همان فیلد قرار می‌دهیم
-          replace(fields.map((field, i) => 
-            i === index ? { title, value } : field
-          ));
-        } else {
-          // اگر فیلد خالی نیست، یک فیلد جدید اضافه می‌کنیم
-          append({ title, value });
-        }
-      }
-    }
-  };
-
-  const extractTitleAndValue = (line: string): { title: string; value: string } => {
-    // حذف فاصله‌های اضافی از ابتدا و انتها
-    const trimmedLine = line.trim();
+  const formatTitle = (rawTitle: string): string => {
+    // حذف عدد و علامت _ از ابتدا
+    let title = rawTitle.replace(/^[۰-۹0-9]*[_\s]*/, '');
     
-    // جدا کردن عنوان و مقدار با الگوهای مختلف
-    const patterns = [
-      // الگو: عنوان | مقدار
-      { regex: /^(.+?)\s*[\|:,]\s*([\d.,\/]+)\s*$/ },
-      // الگو: عنوان با چند نقطه و مقدار
-      { regex: /^(.+?)\.+\s*([\d.,\/]+)\s*$/ },
-      // الگو: عنوان و مقدار با فاصله
-      { regex: /^(.+?)\s+([\d.,\/]+)\s*$/ },
-    ];
-
-    for (const pattern of patterns) {
-      const matches = trimmedLine.match(pattern.regex);
-      if (matches) {
-        const title = matches[1].trim();
-        const value = extractValueFromText(matches[2]);
-        if (title && value) {
-          return { title, value };
+    // تشخیص نوع معامله (خرید/فروش)
+    const isBuy = title.includes('خرید');
+    const isSell = title.includes('فروش');
+    const tradeType = isBuy ? 'خرید' : (isSell ? 'فروش' : '');
+    
+    // حذف کلمه خرید/فروش از عنوان
+    title = title.replace(/(خرید|فروش)/g, '').trim();
+    
+    // نرمال‌سازی نام ارز
+    for (const [standardName, variants] of Object.entries(CURRENCY_TYPES)) {
+      for (const variant of variants) {
+        if (title.includes(variant)) {
+          title = title.replace(variant, standardName);
+          break;
         }
       }
     }
-
-    // اگر هیچ الگویی مطابقت نداشت
-    return { title: trimmedLine, value: '' };
+    
+    // حذف کلمات اضافی و فاصله‌های تکراری
+    title = title
+      .replace(/\s+/g, ' ')
+      .trim();
+    
+    // اضافه کردن نوع معامله
+    if (tradeType) {
+      title = `${title} ${tradeType}`;
+    }
+    
+    return title;
   };
 
-  const extractValueFromText = (text: string): string => {
+  const formatValue = (rawValue: string): string => {
     // تبدیل اعداد فارسی به انگلیسی
     const persianToEnglish = (str: string) => {
       const persianNumbers = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
       return str.replace(/[۰-۹]/g, d => persianNumbers.indexOf(d).toString());
     };
 
-    // پاکسازی و نرمال‌سازی متن
-    const cleanText = persianToEnglish(text)
-      .replace(/[^\d.,]/g, '') // حذف همه کاراکترها به جز اعداد، نقطه و کاما
+    // پاکسازی و نرمال‌سازی مقدار
+    return persianToEnglish(rawValue)
+      .replace(/[^\d.,\/]/g, '') // حذف همه کاراکترها به جز اعداد و علائم مجاز
       .replace(/,/g, '') // حذف کاما
-      .replace(/\.(?=.*\.)/g, '') // حذف همه نقطه‌ها به جز آخرین نقطه
+      .replace(/\//g, '.') // تبدیل / به .
       .trim();
-
-    return cleanText || '';
   };
 
-  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>, index: number) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData('text');
-    const lines = pastedData.split(/[\n\r]/).filter(line => line.trim());
+  const extractTitleAndValue = (line: string): { title: string; value: string } => {
+    const trimmedLine = line.trim();
     
+    // الگوهای مختلف برای تشخیص نرخ
+    const patterns = [
+      // الگو: عنوان با نقطه‌چین و مقدار
+      { regex: /^([^.]+)\.+\s*([\d.,\/]+)\s*$/ },
+      // الگو: عنوان : مقدار
+      { regex: /^([^:]+):\s*([\d.,\/]+)\s*$/ },
+      // الگو: عنوان = مقدار
+      { regex: /^([^=]+)=\s*([\d.,\/]+)\s*$/ },
+      // الگو: عنوان با فاصله و مقدار
+      { regex: /^(.+?)\s+([\d.,\/]+)\s*$/ },
+      // الگو: فقط مقدار عددی
+      { regex: /^([\d.,\/]+)\s*$/ },
+    ];
+
+    for (const pattern of patterns) {
+      const matches = trimmedLine.match(pattern.regex);
+      if (matches) {
+        const [_, titlePart = '', valuePart = ''] = matches;
+        
+        // اگر فقط مقدار عددی داریم
+        if (!titlePart && valuePart) {
+          return { title: '', value: formatValue(valuePart) };
+        }
+
+        const formattedTitle = formatTitle(titlePart);
+        const formattedValue = formatValue(valuePart);
+
+        if (formattedTitle || formattedValue) {
+          return { 
+            title: formattedTitle,
+            value: formattedValue
+          };
+        }
+      }
+    }
+
+    // اگر هیچ الگویی مطابقت نداشت، فقط عنوان را برمی‌گردانیم
+    return { title: formatTitle(trimmedLine), value: '' };
+  };
+
+  const handleRatePaste = (e: React.ClipboardEvent<HTMLInputElement>, index: number) => {
+    e.preventDefault();
+    const pastedText = e.clipboardData.getData('text');
+    const lines = pastedText.split(/[\n\r]+/).filter(line => line.trim());
+
     if (lines.length > 1) {
-      const newRates = lines.map(line => {
-        const { title, value } = extractTitleAndValue(line);
-        return { title, value };
-      });
-      
-      // حذف ردیف فعلی و اضافه کردن ردیف‌های جدید
-      remove(index);
-      replace(newRates);
-      
-      toast({
-        title: 'موفقیت',
-        description: `${newRates.length} نرخ جدید اضافه شد`,
-      });
+      const newRates = lines
+        .map(line => {
+          const { title, value } = extractTitleAndValue(line);
+          return title && value ? { title, value } : null;
+        })
+        .filter((rate): rate is { title: string; value: string } => 
+          rate !== null && rate.title !== '' && rate.value !== ''
+        );
+
+      if (newRates.length > 0) {
+        replace(newRates);
+        toast({
+          title: 'موفقیت',
+          description: `${newRates.length} نرخ جدید اضافه شد`,
+        });
+      }
+    } else {
+      const { title, value } = extractTitleAndValue(pastedText);
+      if (title && value) {
+        const currentField = fields[index];
+        if (!currentField.title && !currentField.value) {
+          replace(fields.map((field, i) => 
+            i === index ? { title, value } : field
+          ));
+        } else {
+          append({ title, value });
+        }
+      }
     }
   };
 
@@ -171,7 +215,7 @@ export default function RateListsPage() {
       
       // برای هر عنوان یک نرخ جدید اضافه می‌کنیم
       titles.forEach(title => {
-        append({ title: title.trim(), value: '' });
+        append({ title: formatTitle(title.trim()), value: '' });
       });
       
       toast({
