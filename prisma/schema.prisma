@@ -27,7 +27,26 @@ enum PostStatus {
   PUBLISHED
 }
 
+enum AdSize {
+  SMALL
+  MEDIUM
+  LARGE
+  CUSTOM
+}
 
+enum AdPosition {
+  HEADER
+  FOOTER
+  SIDEBAR
+  IN_CONTENT
+  BETWEEN_POSTS
+  CUSTOM
+}
+
+enum RateType {
+  BUY_SELL
+  SINGLE_BULK
+}
 
 model User {
   id            String    @id @default(cuid())
@@ -210,22 +229,6 @@ model Notification {
   createdAt DateTime @default(now())
 }
 
-enum AdSize {
-  SMALL
-  MEDIUM
-  LARGE
-  CUSTOM
-}
-
-enum AdPosition {
-  HEADER
-  FOOTER
-  SIDEBAR
-  IN_CONTENT
-  BETWEEN_POSTS
-  CUSTOM
-}
-
 model Advertisement {
   id               String       @id @default(cuid())
   title            String
@@ -245,19 +248,6 @@ model Advertisement {
   updatedAt        DateTime     @updatedAt
 }
 
-
-
-
-model PageView {
-  id        String   @id @default(cuid())
-  page      String
-  views     Int
-  date      DateTime @default(now())
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
 model ExchangeRate {
   id          String   @id @default(cuid())
   name        String   @unique 
@@ -273,9 +263,23 @@ model ExchangeRate {
   createdAt   DateTime @default(now())
 }
 
-enum RateType {
-  BUY_SELL
-  SINGLE_BULK
+model RateList {
+  id        String   @id @default(cuid())
+  title     String
+  rates     Json     // Array of { title: string, value: string }
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PageView {
+  id        String   @id @default(cuid())
+  page      String
+  views     Int
+  date      DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Newsletter {

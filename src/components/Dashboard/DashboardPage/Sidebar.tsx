@@ -8,24 +8,40 @@ import { logout } from '@/actions/auth-actions';
 import { useToast } from '@/components/ui/use-toast';
 import Logo from '@/components/Logo/Logo';
 import { MdMenuOpen, MdOutlineDashboard } from 'react-icons/md';
-import { IoHomeOutline, IoExitOutline } from 'react-icons/io5';
+import { IoHomeOutline, IoExitOutline, IoChevronDownOutline } from 'react-icons/io5';
 import { FaProductHunt, FaUsers, FaUserCircle } from 'react-icons/fa';
 import { CiSettings } from 'react-icons/ci';
 import { SiGoogleads } from 'react-icons/si';
 import { MdCurrencyExchange } from 'react-icons/md';
 import { useSidebarStore } from '@/hooks/sidebarStore';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
-const menuItems = [
+interface SubmenuItem {
+  href: string;
+  label: string;
+}
+
+interface MenuItem {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+  submenu?: SubmenuItem[];
+}
+
+const menuItems: MenuItem[] = [
   { href: '/dashboard', icon: <IoHomeOutline size={24} />, label: 'داشبورد' },
   { href: '/dashboard/posts', icon: <FaProductHunt size={24} />, label: 'پست ها' },
   { href: '/dashboard/categories', icon: <MdOutlineDashboard size={24} />, label: 'دسته بندی' },
   { href: '/dashboard/advertisements', icon: <SiGoogleads size={24} />, label: 'تبلیغات' },
   {
-    href: '/dashboard/exchange-rates',
+    href: '#',
     icon: <MdCurrencyExchange size={24} />,
-    label: 'نرخ ارز ها',
+    label: 'نرخ ارزها',
+    submenu: [
+      { href: '/dashboard/exchange-rates', label: 'نرخ تکی' },
+      { href: '/dashboard/rate-lists', label: 'نرخ لیستی' },
+    ],
   },
   { href: '/dashboard/users', icon: <FaUsers size={24} />, label: 'کاربران' },
   { href: '/dashboard/edit-profile', icon: <CiSettings size={24} />, label: 'تنظیمات' },
@@ -36,6 +52,7 @@ const Sidebar: React.FC = () => {
   const router = useRouter();
   const { toast } = useToast();
   const { isOpen, setIsOpen, isMobile } = useSidebarStore();
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
 
   const user = useCurrentUser();
 
@@ -64,6 +81,12 @@ const Sidebar: React.FC = () => {
         variant: 'destructive',
       });
     }
+  };
+
+  const toggleSubmenu = (label: string) => {
+    setExpandedItems((prev) =>
+      prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label]
+    );
   };
 
   const sidebarVariants = useMemo(
@@ -119,35 +142,99 @@ const Sidebar: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex-grow overflow-y-auto scrollbar-thin scrollbar-thumb-blue-400 scrollbar-track-blue-200">
+        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-700 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
           <ul className="space-y-2 p-2">
             {menuItems.map((item) => (
               <li key={item.href}>
-                <Link href={item.href} onClick={handleItemClick}>
-                  <span
-                    className={`flex items-center p-2 rounded-md transition-colors duration-200
+                {item.submenu ? (
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => toggleSubmenu(item.label)}
+                      className={`flex items-center w-full p-2 rounded-md transition-colors duration-200
+                                ${
+                                  pathname.startsWith(item.href.split('#')[0])
+                                    ? 'bg-blue-700 dark:bg-gray-700 text-white'
+                                    : 'text-blue-100 dark:text-gray-300 hover:bg-blue-700 dark:hover:bg-gray-700'
+                                }`}
+                    >
+                      <div className="w-6 h-6 flex items-center justify-center">{item.icon}</div>
+                      <AnimatePresence>
+                        {isOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -10 }}
+                            transition={{ duration: 0.2 }}
+                            className="mr-3 font-medium flex-1 flex items-center justify-between"
+                          >
+                            <span>{item.label}</span>
+                            <IoChevronDownOutline
+                              className={`transform transition-transform duration-200 ${
+                                expandedItems.includes(item.label) ? 'rotate-180' : ''
+                              }`}
+                            />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </button>
+                    <AnimatePresence>
+                      {isOpen && expandedItems.includes(item.label) && (
+                        <motion.ul
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="pr-6 mt-1 space-y-1"
+                        >
+                          {item.submenu.map((submenuItem) => (
+                            <li key={submenuItem.href}>
+                              <Link href={submenuItem.href} onClick={handleItemClick}>
+                                <span
+                                  className={`flex items-center p-2 rounded-md transition-colors duration-200
+                                    ${
+                                      pathname === submenuItem.href
+                                        ? 'bg-blue-700 dark:bg-gray-700 text-white'
+                                        : 'text-blue-100 dark:text-gray-300 hover:bg-blue-700 dark:hover:bg-gray-700'
+                                    }`}
+                                >
+                                  <div className="w-2 h-2 bg-blue-300 dark:bg-gray-400 rounded-full" />
+                                  <span className="mr-3 font-medium">{submenuItem.label}</span>
+                                </span>
+                              </Link>
+                            </li>
+                          ))}
+                        </motion.ul>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                ) : (
+                  <Link href={item.href} onClick={handleItemClick}>
+                    <span
+                      className={`flex items-center p-2 rounded-md transition-colors duration-200
                                 ${
                                   pathname === item.href
                                     ? 'bg-blue-700 dark:bg-gray-700 text-white'
                                     : 'text-blue-100 dark:text-gray-300 hover:bg-blue-700 dark:hover:bg-gray-700'
                                 }`}
-                  >
-                    <div className="w-6 h-6 flex items-center justify-center">{item.icon}</div>
-                    <AnimatePresence>
-                      {isOpen && (
-                        <motion.span
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -10 }}
-                          transition={{ duration: 0.2 }}
-                          className="mr-3 font-medium"
-                        >
-                          {item.label}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                  </span>
-                </Link>
+                    >
+                      <div className="w-6 h-6 flex items-center justify-center">{item.icon}</div>
+                      <AnimatePresence>
+                        {isOpen && (
+                          <motion.span
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -10 }}
+                            transition={{ duration: 0.2 }}
+                            className="mr-3 font-medium"
+                          >
+                            {item.label}
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </span>
+                  </Link>
+                )}
               </li>
             ))}
           </ul>

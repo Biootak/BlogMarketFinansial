@@ -432,3 +432,25 @@ export interface SearchResultData {
   pages: number;
 }
 export type SearchActionResult = ActionResult<SearchResultData>;
+
+// Rate List Types
+export interface RateItem {
+  title: string;
+  value: string;
+}
+
+export interface RateListData {
+  id?: string;
+  title: string;
+  rates: RateItem[];
+  isActive: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface Rate {
+  type: string;      // نوع ارز یا عنوان نرخ (مثلا "دلار"، "50 افغانی")
+  buyRate?: string;  // نرخ خرید (برای سرای شاهزاده)
+  sellRate?: string; // نرخ فروش (برای سرای شاهزاده)
+  value?: string;    // مقدار تکی (برای کردیت کارت و نرخ تهران)
+}
