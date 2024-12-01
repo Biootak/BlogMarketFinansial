@@ -50,13 +50,6 @@ export default async function MoneyTransferPage() {
       </section>
 
       <div className="container mx-auto px-4 py-12">
-        <section id="services" className="mb-16">
-          <h2 className="text-xl font-bold mb-8 text-center text-gray-800 dark:text-gray-100">
-            خدمات ویژه ما
-          </h2>
-          <InfoCards />
-        </section>
-
         <section
           id="rates"
           className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden mb-16"
@@ -78,6 +71,12 @@ export default async function MoneyTransferPage() {
 
         <section id="contact" className="mb-16">
           <ContactCTA />
+        </section>
+        <section id="services" className="mb-16">
+          <h2 className="text-xl font-bold mb-8 text-center text-gray-800 dark:text-gray-100">
+            خدمات ویژه ما
+          </h2>
+          <InfoCards />
         </section>
 
         <section id="faq">

@@ -66,7 +66,11 @@ const ExchangeRatesPage: React.FC = () => {
     formState: { errors },
     setValue,
     watch,
-  } = useForm<ExchangeRateFormValues>();
+  } = useForm<ExchangeRateFormValues>({
+    defaultValues: {
+      rateType: 'BUY_SELL',
+    },
+  });
 
   const rateType = watch('rateType');
 
@@ -161,6 +165,15 @@ const ExchangeRatesPage: React.FC = () => {
     setValue('imageUrl', null);
   };
 
+  const handleEdit = (exchangeRate: ExchangeRateData) => {
+    const sanitizedExchangeRate = Object.fromEntries(
+      Object.entries(exchangeRate).map(([key, value]) => [key, value === null ? '' : value]),
+    ) as ExchangeRateFormValues;
+
+    setEditingExchangeRate(exchangeRate);
+    reset(sanitizedExchangeRate);
+  };
+
   if (isLoading) {
     return <Loading />;
   }
@@ -217,10 +230,7 @@ const ExchangeRatesPage: React.FC = () => {
                   variant="outline"
                   size="sm"
                   className="text-primary-600 border-primary-600 hover:bg-primary-50 dark:text-primary-400 dark:border-primary-400 dark:hover:bg-primary-900 text-xs sm:text-sm px-2 sm:px-3 py-1"
-                  onClick={() => {
-                    setEditingExchangeRate(exchangeRate);
-                    reset();
-                  }}
+                  onClick={() => handleEdit(exchangeRate)}
                 >
                   <HiOutlinePencil className="ml-1 hidden sm:inline" />
                   ویرایش
@@ -268,7 +278,16 @@ const ExchangeRatesPage: React.FC = () => {
             <div className="space-y-2">
               <Label htmlFor="rateType">نوع نرخ</Label>
               <Select
-                onValueChange={(value: RateType) => setValue('rateType', value)}
+                onValueChange={(value: RateType) => {
+                  setValue('rateType', value);
+                  if (value === 'SINGLE_BULK') {
+                    setValue('buyRate', '');
+                    setValue('sellRate', '');
+                  } else {
+                    setValue('singleRate', '');
+                    setValue('bulkRate', '');
+                  }
+                }}
                 defaultValue="BUY_SELL"
               >
                 <SelectTrigger>
@@ -280,7 +299,7 @@ const ExchangeRatesPage: React.FC = () => {
                 </SelectContent>
               </Select>
             </div>
-            {rateType === 'BUY_SELL' && (
+            {rateType !== 'SINGLE_BULK' && (
               <>
                 <div className="space-y-2">
                   <Label htmlFor="buyRate">نرخ خرید</Label>
@@ -331,7 +350,6 @@ const ExchangeRatesPage: React.FC = () => {
                 <Label htmlFor="name">نام ارز</Label>
                 <Input
                   id="name"
-                  defaultValue={editingExchangeRate.name}
                   {...register('name', { required: 'نام ارز الزامی است' })}
                   placeholder="نام ارز"
                 />
@@ -341,7 +359,6 @@ const ExchangeRatesPage: React.FC = () => {
                 <Label htmlFor="currency">ارز</Label>
                 <Input
                   id="currency"
-                  defaultValue={editingExchangeRate.currency}
                   {...register('currency', { required: 'ارز الزامی است' })}
                   placeholder="تومان به دلار"
                 />
@@ -352,7 +369,16 @@ const ExchangeRatesPage: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="rateType">نوع نرخ</Label>
                 <Select
-                  onValueChange={(value: RateType) => setValue('rateType', value)}
+                  onValueChange={(value: RateType) => {
+                    setValue('rateType', value);
+                    if (value === 'SINGLE_BULK') {
+                      setValue('buyRate', '');
+                      setValue('sellRate', '');
+                    } else {
+                      setValue('singleRate', '');
+                      setValue('bulkRate', '');
+                    }
+                  }}
                   defaultValue={editingExchangeRate.rateType}
                 >
                   <SelectTrigger>
@@ -364,25 +390,15 @@ const ExchangeRatesPage: React.FC = () => {
                   </SelectContent>
                 </Select>
               </div>
-              {rateType === 'BUY_SELL' && (
+              {rateType !== 'SINGLE_BULK' && (
                 <>
                   <div className="space-y-2">
                     <Label htmlFor="buyRate">نرخ خرید</Label>
-                    <Input
-                      id="buyRate"
-                      defaultValue={editingExchangeRate.buyRate || ''}
-                      {...register('buyRate')}
-                      placeholder="نرخ خرید"
-                    />
+                    <Input id="buyRate" {...register('buyRate')} placeholder="نرخ خرید" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="sellRate">نرخ فروش</Label>
-                    <Input
-                      id="sellRate"
-                      defaultValue={editingExchangeRate.sellRate || ''}
-                      {...register('sellRate')}
-                      placeholder="نرخ فروش"
-                    />
+                    <Input id="sellRate" {...register('sellRate')} placeholder="نرخ فروش" />
                   </div>
                 </>
               )}
@@ -390,32 +406,17 @@ const ExchangeRatesPage: React.FC = () => {
                 <>
                   <div className="space-y-2">
                     <Label htmlFor="singleRate">نرخ پرچون</Label>
-                    <Input
-                      id="singleRate"
-                      defaultValue={editingExchangeRate.singleRate || ''}
-                      {...register('singleRate')}
-                      placeholder="نرخ پرچون"
-                    />
+                    <Input id="singleRate" {...register('singleRate')} placeholder="نرخ پرچون" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="bulkRate">نرخ عمده</Label>
-                    <Input
-                      id="bulkRate"
-                      defaultValue={editingExchangeRate.bulkRate || ''}
-                      {...register('bulkRate')}
-                      placeholder="نرخ عمده"
-                    />
+                    <Input id="bulkRate" {...register('bulkRate')} placeholder="نرخ عمده" />
                   </div>
                 </>
               )}
               <div className="space-y-2">
                 <Label htmlFor="description">توضیحات</Label>
-                <Input
-                  id="description"
-                  defaultValue={editingExchangeRate.description || ''}
-                  {...register('description')}
-                  placeholder="توضیحات"
-                />
+                <Input id="description" {...register('description')} placeholder="توضیحات" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="imageUrl">تصویر</Label>
