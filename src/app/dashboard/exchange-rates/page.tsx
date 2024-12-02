@@ -195,10 +195,7 @@ const ExchangeRatesPage: React.FC = () => {
             <TableHead className="text-right">نام</TableHead>
             <TableHead className="text-right">ارز</TableHead>
             <TableHead className="text-right">نوع نرخ</TableHead>
-            <TableHead className="text-right">نرخ خرید</TableHead>
-            <TableHead className="text-right">نرخ فروش</TableHead>
-            <TableHead className="text-right">نرخ پرچون</TableHead>
-            <TableHead className="text-right">نرخ عمده</TableHead>
+            <TableHead className="text-right">مقادیر نرخ</TableHead>
             <TableHead className="text-right">توضیحات</TableHead>
             <TableHead className="text-right">عملیات</TableHead>
           </TableRow>
@@ -220,10 +217,19 @@ const ExchangeRatesPage: React.FC = () => {
               <TableCell>
                 {exchangeRate.rateType === 'BUY_SELL' ? 'خرید/فروش' : 'پرچون/عمده'}
               </TableCell>
-              <TableCell>{exchangeRate.buyRate}</TableCell>
-              <TableCell>{exchangeRate.sellRate}</TableCell>
-              <TableCell>{exchangeRate.singleRate}</TableCell>
-              <TableCell>{exchangeRate.bulkRate}</TableCell>
+              <TableCell>
+                {exchangeRate.rateType === 'BUY_SELL' ? (
+                  <div className="flex flex-col space-y-1">
+                    <span>خرید: {exchangeRate.buyRate || '-'}</span>
+                    <span>فروش: {exchangeRate.sellRate || '-'}</span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col space-y-1">
+                    <span>پرچون: {exchangeRate.singleRate || '-'}</span>
+                    <span>عمده: {exchangeRate.bulkRate || '-'}</span>
+                  </div>
+                )}
+              </TableCell>
               <TableCell>{exchangeRate.description}</TableCell>
               <TableCell className="flex justify-start space-x-2 space-x-reverse">
                 <Button
