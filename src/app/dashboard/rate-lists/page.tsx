@@ -33,6 +33,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { HiOutlineInformationCircle } from 'react-icons/hi2';
+import Loading from '@/components/Loading';
 
 export default function RateListsPage() {
   const [rateLists, setRateLists] = useState<RateListData[]>([]);
@@ -334,7 +335,7 @@ export default function RateListsPage() {
     }
   }, [append, fields.length]);
 
-  if (isLoading) return <div>در حال بارگیری...</div>;
+  if (isLoading) return <Loading />;
 
   return (
     <div className="container mx-auto p-4 sm:p-6 lg:p-8 rtl" dir="rtl">
