@@ -1,15 +1,19 @@
 import { Suspense } from 'react';
 import DashboardPage from '@/components/Dashboard/DashboardPage/DashboardPage';
-import { auth } from '@/auth';
 import { notFound, redirect } from 'next/navigation';
+import { auth} from '@/auth';
 
 import { getStats, getScheduledPosts } from '@/actions/postActions';
 import { getPopularPosts } from '@/actions/getPopularPosts';
 import { getRecentDrafts } from '@/actions/getRecentDrafts';
 import { getViewStats } from '@/actions/getViewStats';
 import Loading from '@/components/Loading';
+import { checkRole } from '@/lib/auth';
 
 export default async function Dashboard() {
+  // Check user role before loading any data
+  await checkRole(['SUPER_ADMIN', 'ADMIN', 'AUTHOR']);
+
   const session = await auth();
 
   if (!session) {

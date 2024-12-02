@@ -77,6 +77,22 @@ const getMenuItems = (role: string) => {
     }
   ];
 
+  const superAdminItems = [
+    ...adminItems,
+    {
+      title: 'تنظیمات سیستم',
+      href: '/dashboard/settings',
+      icon: <CiSettings size={24} />,
+      label: 'تنظیمات سیستم'
+    },
+    {
+      title: 'گزارش‌ها',
+      href: '/dashboard/reports',
+      icon: <MdOutlineDashboard size={24} />,
+      label: 'گزارش‌ها'
+    }
+  ];
+
   const profileItem = {
     title: 'پروفایل من',
     href: '/dashboard/edit-profile',
@@ -86,6 +102,7 @@ const getMenuItems = (role: string) => {
 
   switch (role) {
     case 'SUPER_ADMIN':
+      return [...baseItems, postItem, ...superAdminItems, profileItem];
     case 'ADMIN':
       return [...baseItems, postItem, ...adminItems, profileItem];
     case 'AUTHOR':

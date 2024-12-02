@@ -37,17 +37,26 @@ export const DEFAULT_REDIRECT = '/';
 
 // Routes that require admin access (SUPER_ADMIN or ADMIN)
 export const adminRoutes = [
+  '/dashboard',
   '/dashboard/users',
+  '/dashboard/posts',
   '/dashboard/categories',
   '/dashboard/advertisements',
   '/dashboard/exchange-rates',
-  '/dashboard/rate-lists'
+  '/dashboard/rate-lists',
+  '/dashboard/edit-profile'
 ];
 
-// Routes that require author access (AUTHOR, ADMIN, SUPER_ADMIN)
+// Routes that only SUPER_ADMIN can access
+export const superAdminRoutes = [
+  '/dashboard/settings',
+  '/dashboard/reports',
+  '/dashboard/*'  // This ensures SUPER_ADMIN has access to all dashboard routes
+];
+
+// Routes that authors can access
 export const authorRoutes = [
   '/dashboard/posts',
-  '/dashboard/posts/*',
   '/dashboard/edit-profile'
 ];
 

@@ -1,8 +1,6 @@
-import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
+import { checkRole } from '@/lib/auth';
 import Header from '@/components/Dashboard/DashboardPage/Header';
 import Sidebar from '@/components/Dashboard/DashboardPage/Sidebar';
-import type { Role } from '@prisma/client';
 import SidebarInitializer from '@/components/Dashboard/DashboardPage/SidebarInitializer';
 import MainContent from '@/components/Dashboard/DashboardPage/MainContent';
 
@@ -11,18 +9,8 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
-  
-  if (!session?.user) {
-    redirect('/signin');
-  }
-
-  const userRole = session?.user?.role || 'USER';
-  const allowedRoles = ['SUPER_ADMIN', 'ADMIN', 'AUTHOR'];
-  
-  if (!allowedRoles.includes(userRole)) {
-    redirect('/');
-  }
+  // Check role at layout level to protect all dashboard routes
+  await checkRole(['SUPER_ADMIN', 'ADMIN', 'AUTHOR']);
 
   return (
     <div
