@@ -62,7 +62,7 @@ export default async function Home() {
         {firstAd ? (
           <SectionAds className="pb-4" ad={firstAd} />
         ) : (
-          <Skeleton className="pb-4 lg:pb-28 h-64 rounded-md" />
+          <Skeleton className="pb-4 lg:pb-8 h-64 rounded-md" />
         )}
         {posts.length > 0 ? (
           <SectionMagazine7 className="py-6" posts={posts} />

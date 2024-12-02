@@ -21,10 +21,10 @@ const NavItem: FC<NavItemProps> = ({
     <li className="nc-NavItem relative flex-shrink-0">
       {renderX && renderX}
       <button
-        className={`flex items-center justify-center font-medium ${className} ${radius} ${
+        className={`flex items-center justify-center font-medium transition-all duration-200 ${className} ${radius} ${
           isActive
-            ? "bg-neutral-900 text-neutral-50 dark:bg-neutral-100 dark:text-black"
-            : "text-neutral-500 dark:text-neutral-400 dark:hover:text-neutral-100 hover:text-neutral-900 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+            ? "bg-primary-600 text-white hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600"
+            : "text-neutral-600 hover:text-primary-700 hover:bg-primary-50/60 dark:text-neutral-300 dark:hover:text-primary-300 dark:hover:bg-primary-900/30"
         } `}
         onClick={onClick}
       >

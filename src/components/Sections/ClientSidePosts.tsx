@@ -64,8 +64,8 @@ export default function ClientSidePosts({
   }, [posts, isLoading, hasMore, activeCategory]);
 
   return (
-    <div className="space-y-8">
-      <h2 className="text-xl font-bold text-center mb-6">آخرین مقالات</h2>
+    <div className="space-y-4">
+      <h2 className="text-xl font-bold text-center mb-4">آخرین مقالات</h2>
       {error && <div className="text-red-500 text-center">Error: {error.message}</div>}
       <Tabs defaultValue="همه" onValueChange={setActiveCategory} dir="rtl">
         <div className="relative">
@@ -73,7 +73,7 @@ export default function ClientSidePosts({
             <div className="w-full border-t border-gray-300" />
           </div>
           <div className="relative flex justify-center">
-            <TabsList className="inline-flex items-center bg-white px-4 py-2 rounded-full shadow-sm">
+            <TabsList className="inline-flex items-center bg-white px-2 py-2 rounded-full shadow-sm">
               {categories.map((category) => (
                 <TabsTrigger
                   key={category}

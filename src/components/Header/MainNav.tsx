@@ -7,6 +7,7 @@ import NotifyDropdown from './NotifyDropdown';
 import SearchModal from './SearchModal';
 import { auth } from '@/auth';
 import Link from 'next/link';
+import { User } from 'lucide-react';
 
 export default async function MainNav() {
   const session = await auth();
@@ -19,7 +20,7 @@ export default async function MainNav() {
             <MenuBar />
           </div>
 
-          <div className="flex items-center">
+          <div className="flex-1 flex items-center justify-center lg:justify-start">
             <Logo variant="modern" />
           </div>
 
@@ -28,22 +29,35 @@ export default async function MainNav() {
           </div>
 
           <div className="flex items-center">
-            {!session?.user ? (
-              <div className="flex items-center space-x-4 gap-2">
+            {!session?.user && (
+              <div className="hidden sm:flex items-center space-x-4 gap-2">
                 <Link
                   href="/signin"
-                  className="nc-Button relative h-auto inline-flex items-center justify-center rounded-full transition-colors text-sm sm:text-base font-medium px-4 py-2 sm:px-6 ttnc-ButtonPrimary disabled:bg-opacity-70 bg-primary-6000 hover:bg-primary-700 text-neutral-50"
+                  className="nc-Button relative h-auto inline-flex items-center justify-center rounded-full transition-colors text-sm sm:text-base font-medium px-4 py-2 sm:px-6 disabled:bg-opacity-70 bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700 hover:from-primary-600 hover:via-primary-700 hover:to-primary-800 text-white shadow-sm"
                 >
                   ورود
                 </Link>
                 <Link
                   href="/signup"
-                  className="nc-Button relative h-auto inline-flex items-center justify-center rounded-full transition-colors text-sm sm:text-base font-medium px-4 py-2 sm:px-6 ttnc-ButtonSecondary border bg-white border-neutral-200 text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                  className="nc-Button relative h-auto inline-flex items-center justify-center rounded-full transition-colors text-sm sm:text-base font-medium px-4 py-2 sm:px-6 border bg-white hover:bg-primary-50 border-primary-500 text-primary-600 dark:bg-neutral-900 dark:text-primary-400 dark:border-primary-500 dark:hover:bg-neutral-800"
                 >
                   ثبت‌نام
                 </Link>
               </div>
-            ) : (
+            )}
+            {/* Mobile login/signup */}
+            {!session?.user && (
+              <div className="sm:hidden">
+                <Link
+                  href="/signin"
+                  className="p-1.5 inline-flex items-center justify-center rounded-full hover:bg-primary-50 dark:hover:bg-primary-950/50"
+                  aria-label="ورود به حساب کاربری"
+                >
+                  <User className="size-[26px] text-primary-600 dark:text-primary-400" strokeWidth={1.8} />
+                </Link>
+              </div>
+            )}
+            {session?.user && (
               <>
                 <SearchModal />
                 <NotifyDropdown />
