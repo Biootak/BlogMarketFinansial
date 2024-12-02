@@ -1,6 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { getSystemLogs } from '@/actions/reportActions';
+import { Loader2 } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -18,10 +21,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { AlertCircle, AlertTriangle, Info, Loader2 } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Info, Loader2 as Loader } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface SystemLog {
@@ -74,6 +76,36 @@ export default function SystemLogs() {
     search: '',
   });
 
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const result = await getSystemLogs();
+        if (result.success) {
+          setData(result.data);
+        } else {
+          toast({
+            variant: "destructive",
+            title: "خطا",
+            description: result.message || "خطا در دریافت لاگ‌های سیستم"
+          });
+        }
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "خطا",
+          description: error instanceof Error ? error.message : "خطا در دریافت لاگ‌های سیستم"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   useEffect(() => {
     // Get initial data from the server-rendered script tag
     const scriptTag = document.getElementById('system-logs-data');
@@ -108,10 +140,22 @@ export default function SystemLogs() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center p-4">
+        <Loader className="h-6 w-6 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!data) {
+    return <div className="text-red-500">خطا در دریافت لاگ‌های سیستم</div>;
+  }
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[200px]">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <Loader className="h-8 w-8 animate-spin" />
       </div>
     );
   }
@@ -268,6 +312,40 @@ export default function SystemLogs() {
             ))}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="space-y-4">
+        {data.map((log: any, index: number) => (
+          <div key={index} className="p-4 rounded-lg bg-white/50 backdrop-blur-sm border border-[rgb(var(--c-primary-100))]">
+            <div className="flex justify-between items-start">
+              <div>
+                <h4 className={`font-medium ${
+                  log.level === 'error' ? 'text-red-600' :
+                  log.level === 'warning' ? 'text-amber-600' :
+                  'text-[rgb(var(--c-primary-600))]'
+                }`}>
+                  {log.message}
+                </h4>
+                {log.details && (
+                  <p className="text-sm text-gray-600 mt-1">{log.details}</p>
+                )}
+              </div>
+              <div className="text-sm text-gray-500">
+                {new Date(log.timestamp).toLocaleDateString('fa-IR')}
+              </div>
+            </div>
+            <div className="mt-2 flex gap-2 text-sm">
+              <span className={`px-2 py-0.5 rounded-full ${
+                log.level === 'error' ? 'bg-red-100 text-red-800' :
+                log.level === 'warning' ? 'bg-amber-100 text-amber-800' :
+                'bg-[rgb(var(--c-primary-50))] text-[rgb(var(--c-primary-800))]'
+              }`}>
+                {log.level}
+              </span>
+              <span className="text-gray-500">{log.source}</span>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

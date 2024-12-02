@@ -1,129 +1,71 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
-import { useToast } from '@/components/ui/use-toast';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { AlertCircle, Loader2 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-
-interface Activity {
-  id: string;
-  action: string;
-  userId: string;
-  userEmail: string;
-  details: string;
-  createdAt: string;
-}
+import { useEffect, useState } from 'react';
+import { getActivityLog } from '@/actions/reportActions';
+import { Loader2 } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 export default function ActivityLog() {
-  const { toast } = useToast();
+  const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [activities, setActivities] = useState<Activity[]>([]);
 
   useEffect(() => {
-    const loadActivities = async () => {
+    const fetchData = async () => {
       try {
-        setLoading(true);
-        setError(null);
-        const response = await fetch('/api/activity-log');
-        
-        if (!response.ok) {
-          throw new Error('Failed to load activity log');
-        }
-        
-        const result = await response.json();
+        const result = await getActivityLog();
         if (result.success) {
-          setActivities(result.data);
+          setData(result.data);
         } else {
-          throw new Error(result.message || 'Failed to load activity log');
+          toast({
+            variant: "destructive",
+            title: "خطا",
+            description: result.message || "خطا در دریافت گزارش فعالیت‌ها"
+          });
         }
       } catch (error) {
-        console.error('Error loading activity log:', error);
-        setError('خطا در بارگذاری تاریخچه فعالیت‌ها');
         toast({
-          title: 'خطا',
-          description: 'خطا در بارگذاری تاریخچه فعالیت‌ها',
-          variant: 'destructive',
+          variant: "destructive",
+          title: "خطا",
+          description: error instanceof Error ? error.message : "خطا در دریافت گزارش فعالیت‌ها"
         });
       } finally {
         setLoading(false);
       }
     };
 
-    loadActivities();
+    fetchData();
   }, []);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+      <div className="flex justify-center items-center p-4">
+        <Loader2 className="h-6 w-6 animate-spin" />
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center space-y-4">
-          <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
-          <p className="text-sm text-muted-foreground">{error}</p>
-        </div>
-      </div>
-    );
+  if (!data) {
+    return <div className="text-red-500">خطا در دریافت گزارش فعالیت‌ها</div>;
   }
 
   return (
-    <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-4">تاریخچه فعالیت‌ها</h3>
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[150px]">کاربر</TableHead>
-              <TableHead className="w-[120px]">عملیات</TableHead>
-              <TableHead>جزئیات</TableHead>
-              <TableHead className="w-[180px] text-left">زمان</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {activities.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                  هیچ فعالیتی ثبت نشده است
-                </TableCell>
-              </TableRow>
-            ) : (
-              activities.map((activity) => (
-                <TableRow key={activity.id}>
-                  <TableCell className="font-medium">
-                    {activity.userEmail}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">
-                      {activity.action}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="whitespace-pre-wrap">
-                    {activity.details}
-                  </TableCell>
-                  <TableCell className="text-left font-mono text-xs">
-                    {new Date(activity.createdAt).toLocaleString('fa-IR')}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </Card>
+    <div className="space-y-4">
+      {data.map((activity: any) => (
+        <div key={activity.id} className="p-4 rounded-lg bg-white/50 backdrop-blur-sm border border-[rgb(var(--c-primary-100))]">
+          <div className="flex justify-between items-start">
+            <div>
+              <h4 className="font-medium text-[rgb(var(--c-primary-600))]">{activity.action}</h4>
+              <p className="text-sm text-gray-600">{activity.details}</p>
+            </div>
+            <div className="text-sm text-gray-500">
+              {new Date(activity.createdAt).toLocaleDateString('fa-IR')}
+            </div>
+          </div>
+          <div className="mt-2 text-sm text-gray-500">
+            {activity.userEmail}
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }

@@ -16,7 +16,10 @@ export async function GET(req: Request) {
   try {
     const session = await auth();
     if (!session?.user || session.user.role !== 'SUPER_ADMIN') {
-      return new NextResponse('Unauthorized', { status: 401 });
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized access' },
+        { status: 401 }
+      );
     }
 
     const url = new URL(req.url);
@@ -49,10 +52,16 @@ export async function GET(req: Request) {
       }
     });
 
-    return NextResponse.json({ success: true, data: logs });
+    return NextResponse.json({ 
+      success: true, 
+      logs 
+    });
   } catch (error) {
     console.error('[SYSTEM_LOGS_GET]', error);
-    return new NextResponse('Internal Error', { status: 500 });
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -60,7 +69,10 @@ export async function POST(req: Request) {
   try {
     const session = await auth();
     if (!session?.user || session.user.role !== 'SUPER_ADMIN') {
-      return new NextResponse('Unauthorized', { status: 401 });
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized access' },
+        { status: 401 }
+      );
     }
 
     const body = await req.json();
@@ -75,9 +87,15 @@ export async function POST(req: Request) {
       }
     });
 
-    return NextResponse.json({ success: true, data: log });
+    return NextResponse.json({ 
+      success: true, 
+      log 
+    });
   } catch (error) {
     console.error('[SYSTEM_LOGS_POST]', error);
-    return new NextResponse('Internal Error', { status: 500 });
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

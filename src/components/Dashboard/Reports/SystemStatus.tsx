@@ -6,52 +6,54 @@ import { useToast } from '@/components/ui/use-toast';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, CheckCircle2, Server, Database, HardDrive } from 'lucide-react';
+import { getSystemStatus } from '@/actions/reportActions';
 
 interface SystemStatus {
-  cpu: {
+  cpu?: {
     usage: number;
-    temperature: number;
+    temperature?: number;
   };
-  memory: {
+  memory?: {
     total: number;
     used: number;
     free: number;
   };
-  disk: {
+  disk?: {
     total: number;
     used: number;
     free: number;
   };
-  database: {
+  database?: {
     status: 'online' | 'offline' | 'error';
     connections: number;
     queryTime: number;
   };
-  cache: {
+  cache?: {
     status: 'online' | 'offline';
     hitRate: number;
   };
-  lastUpdate: string;
+  lastUpdate?: string;
 }
 
 export default function SystemStatus() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<SystemStatus | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadStatus = async () => {
       try {
-        const response = await fetch('/api/system-status');
-        const result = await response.json();
-        
+        const result = await getSystemStatus();
         if (result.success) {
           setStatus(result.data);
+          setError(null);
         } else {
-          throw new Error('Failed to load system status');
+          throw new Error(result.message || 'Failed to load system status');
         }
       } catch (error) {
         console.error('Error loading system status:', error);
+        setError('خطا در بارگذاری وضعیت سیستم');
         toast({
           title: 'خطا',
           description: 'خطا در بارگذاری وضعیت سیستم',
@@ -63,33 +65,55 @@ export default function SystemStatus() {
     };
 
     loadStatus();
-    // هر 30 ثانیه به‌روزرسانی شود
     const interval = setInterval(loadStatus, 30000);
     return () => clearInterval(interval);
   }, [toast]);
 
   const formatBytes = (bytes: number) => {
+    if (!bytes || isNaN(bytes)) return '0 بایت';
     const sizes = ['بایت', 'کیلوبایت', 'مگابایت', 'گیگابایت'];
-    if (bytes === 0) return '0 بایت';
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`;
   };
 
   if (loading) {
-    return <div>در حال بارگذاری...</div>;
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>خطا</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
   }
 
   if (!status) {
-    return <div>خطا در بارگذاری اطلاعات</div>;
+    return (
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>خطا</AlertTitle>
+        <AlertDescription>اطلاعات سیستم در دسترس نیست</AlertDescription>
+      </Alert>
+    );
   }
 
-  const memoryUsagePercent = (status.memory.used / status.memory.total) * 100;
-  const diskUsagePercent = (status.disk.used / status.disk.total) * 100;
+  const memoryUsagePercent = status.memory ? 
+    (status.memory.used / status.memory.total) * 100 : 0;
+
+  const diskUsagePercent = status.disk ? 
+    (status.disk.used / status.disk.total) * 100 : 0;
 
   return (
     <div className="space-y-6">
-      {/* هشدارهای سیستم */}
-      {status.cpu.temperature > 80 && (
+      {/* System Alerts */}
+      {status.cpu?.temperature && status.cpu.temperature > 80 && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>هشدار دمای CPU</AlertTitle>
@@ -99,162 +123,125 @@ export default function SystemStatus() {
         </Alert>
       )}
 
-      {memoryUsagePercent > 90 && (
-        <Alert variant="warning">
+      {status.memory && memoryUsagePercent > 90 && (
+        <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>هشدار مصرف حافظه</AlertTitle>
+          <AlertTitle>هشدار حافظه</AlertTitle>
           <AlertDescription>
-            مصرف حافظه به {memoryUsagePercent.toFixed(1)}% رسیده است.
+            استفاده از حافظه به {Math.round(memoryUsagePercent)}% رسیده است.
           </AlertDescription>
         </Alert>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* CPU و دما */}
+      {status.disk && diskUsagePercent > 90 && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>هشدار فضای دیسک</AlertTitle>
+          <AlertDescription>
+            استفاده از فضای دیسک به {Math.round(diskUsagePercent)}% رسیده است.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {/* CPU Status */}
         <Card className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">CPU</h3>
-            <Server className="h-5 w-5 text-muted-foreground" />
+          <div className="flex items-center gap-2 mb-4">
+            <Server className="h-4 w-4" />
+            <h3 className="font-medium">CPU</h3>
           </div>
-          <div className="space-y-2">
-            <div>
-              <div className="flex justify-between mb-1">
-                <span>مصرف CPU</span>
-                <span>{status.cpu.usage}%</span>
+          {status.cpu && (
+            <>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>استفاده</span>
+                  <span>{Math.round(status.cpu.usage)}%</span>
+                </div>
+                <Progress value={status.cpu.usage} />
               </div>
-              <Progress value={status.cpu.usage} />
-            </div>
-            <div>
-              <div className="flex justify-between mb-1">
-                <span>دما</span>
-                <span>{status.cpu.temperature}°C</span>
-              </div>
-              <Progress 
-                value={status.cpu.temperature} 
-                max={100}
-                className={status.cpu.temperature > 80 ? 'bg-red-200' : ''}
-              />
-            </div>
-          </div>
+              {status.cpu.temperature && (
+                <div className="mt-2 text-sm">
+                  <span>دما: {status.cpu.temperature}°C</span>
+                </div>
+              )}
+            </>
+          )}
         </Card>
 
-        {/* حافظه */}
+        {/* Memory Status */}
         <Card className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">حافظه</h3>
-            <Database className="h-5 w-5 text-muted-foreground" />
+          <div className="flex items-center gap-2 mb-4">
+            <Database className="h-4 w-4" />
+            <h3 className="font-medium">حافظه</h3>
           </div>
-          <div className="space-y-2">
-            <div className="flex justify-between mb-1">
-              <span>مصرف حافظه</span>
-              <span>{memoryUsagePercent.toFixed(1)}%</span>
-            </div>
-            <Progress value={memoryUsagePercent} />
-            <div className="grid grid-cols-3 gap-2 text-sm">
-              <div>
-                <div className="text-muted-foreground">کل</div>
-                <div>{formatBytes(status.memory.total)}</div>
+          {status.memory && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>استفاده</span>
+                <span>{Math.round(memoryUsagePercent)}%</span>
               </div>
-              <div>
-                <div className="text-muted-foreground">مصرف شده</div>
-                <div>{formatBytes(status.memory.used)}</div>
-              </div>
-              <div>
-                <div className="text-muted-foreground">آزاد</div>
-                <div>{formatBytes(status.memory.free)}</div>
+              <Progress value={memoryUsagePercent} />
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>کل: {formatBytes(status.memory.total)}</div>
+                <div>آزاد: {formatBytes(status.memory.free)}</div>
               </div>
             </div>
-          </div>
+          )}
         </Card>
 
-        {/* دیسک */}
+        {/* Disk Status */}
         <Card className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">فضای دیسک</h3>
-            <HardDrive className="h-5 w-5 text-muted-foreground" />
+          <div className="flex items-center gap-2 mb-4">
+            <HardDrive className="h-4 w-4" />
+            <h3 className="font-medium">دیسک</h3>
           </div>
-          <div className="space-y-2">
-            <div className="flex justify-between mb-1">
-              <span>فضای مصرف شده</span>
-              <span>{diskUsagePercent.toFixed(1)}%</span>
-            </div>
-            <Progress value={diskUsagePercent} />
-            <div className="grid grid-cols-3 gap-2 text-sm">
-              <div>
-                <div className="text-muted-foreground">کل</div>
-                <div>{formatBytes(status.disk.total)}</div>
+          {status.disk && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>استفاده</span>
+                <span>{Math.round(diskUsagePercent)}%</span>
               </div>
-              <div>
-                <div className="text-muted-foreground">مصرف شده</div>
-                <div>{formatBytes(status.disk.used)}</div>
-              </div>
-              <div>
-                <div className="text-muted-foreground">آزاد</div>
-                <div>{formatBytes(status.disk.free)}</div>
+              <Progress value={diskUsagePercent} />
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>کل: {formatBytes(status.disk.total)}</div>
+                <div>آزاد: {formatBytes(status.disk.free)}</div>
               </div>
             </div>
-          </div>
-        </Card>
-
-        {/* وضعیت دیتابیس */}
-        <Card className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">دیتابیس</h3>
-            <Database className="h-5 w-5 text-muted-foreground" />
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-center">
-              <div className={`w-2 h-2 rounded-full mr-2 ${
-                status.database.status === 'online' ? 'bg-green-500' :
-                status.database.status === 'error' ? 'bg-red-500' :
-                'bg-yellow-500'
-              }`} />
-              <span>{
-                status.database.status === 'online' ? 'آنلاین' :
-                status.database.status === 'error' ? 'خطا' :
-                'آفلاین'
-              }</span>
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>
-                <div className="text-muted-foreground">اتصال‌های فعال</div>
-                <div>{status.database.connections}</div>
-              </div>
-              <div>
-                <div className="text-muted-foreground">زمان پاسخ</div>
-                <div>{status.database.queryTime}ms</div>
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* وضعیت کش */}
-        <Card className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">کش</h3>
-            <Server className="h-5 w-5 text-muted-foreground" />
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-center">
-              <div className={`w-2 h-2 rounded-full mr-2 ${
-                status.cache.status === 'online' ? 'bg-green-500' : 'bg-red-500'
-              }`} />
-              <span>{status.cache.status === 'online' ? 'آنلاین' : 'آفلاین'}</span>
-            </div>
-            <div>
-              <div className="text-muted-foreground mb-1">نرخ موفقیت کش</div>
-              <div className="flex items-center">
-                <Progress value={status.cache.hitRate} className="flex-1 mr-2" />
-                <span>{status.cache.hitRate}%</span>
-              </div>
-            </div>
-          </div>
+          )}
         </Card>
       </div>
 
-      <div className="text-sm text-muted-foreground text-right">
-        آخرین به‌روزرسانی: {new Date(status.lastUpdate).toLocaleString('fa-IR')}
-      </div>
+      {/* Database Status */}
+      {status.database && (
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Database className="h-4 w-4" />
+              <h3 className="font-medium">وضعیت دیتابیس</h3>
+            </div>
+            <div className="flex items-center gap-2">
+              {status.database.status === 'online' ? (
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+              ) : (
+                <AlertCircle className="h-4 w-4 text-red-500" />
+              )}
+              <span className="text-sm">
+                {status.database.status === 'online' ? 'آنلاین' : 'آفلاین'}
+              </span>
+            </div>
+          </div>
+          <div className="mt-2 space-y-1 text-sm">
+            <div>اتصالات فعال: {status.database.connections}</div>
+            <div>زمان پاسخ: {status.database.queryTime}ms</div>
+          </div>
+        </Card>
+      )}
+
+      {status.lastUpdate && (
+        <div className="text-sm text-gray-500 dark:text-gray-400 text-center">
+          آخرین به‌روزرسانی: {new Date(status.lastUpdate).toLocaleString('fa-IR')}
+        </div>
+      )}
     </div>
   );
 }
