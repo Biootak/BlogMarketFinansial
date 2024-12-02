@@ -50,6 +50,7 @@ interface SettingsFormData {
     password: string;
     type: string;
     autoBackup: boolean;
+    rtl: boolean;
   };
   advanced: {
     debugMode: boolean;
@@ -61,6 +62,9 @@ interface SettingsFormData {
     errorLevel: string;
     logPath: string;
     apiKey: string;
+    cacheStorage: string;
+    rateLimit: number;
+    rtl: boolean;
   };
 }
 
@@ -98,6 +102,7 @@ export default function SettingsPage() {
       password: '',
       type: 'mysql',
       autoBackup: false,
+      rtl: false,
     },
     advanced: {
       debugMode: false,
@@ -109,6 +114,9 @@ export default function SettingsPage() {
       errorLevel: 'error',
       logPath: '',
       apiKey: '',
+      cacheStorage: 'memory',
+      rateLimit: 100,
+      rtl: false,
     },
   });
 
@@ -179,7 +187,7 @@ export default function SettingsPage() {
         </nav>
 
         {/* Tab Content */}
-        <div className="grid grid-cols-1 gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 gap-6">
           {activeTab === 'general' && (
             <div className="relative overflow-hidden rounded-2xl border border-[rgb(var(--c-primary-100))] bg-white/50 backdrop-blur-sm">
               <div className="absolute inset-0 bg-gradient-to-br from-[rgb(var(--c-primary-50))] to-transparent opacity-50" />
@@ -356,14 +364,14 @@ export default function SettingsPage() {
                         <p className="text-xs text-[rgb(var(--c-primary-600))]">فعال‌سازی احراز هویت دو مرحله‌ای برای افزایش امنیت</p>
                       </div>
                       <button
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full bg-[rgb(var(--c-primary-600))] transition-colors focus:outline-none focus:ring-2 focus:ring-[rgb(var(--c-primary-400))] focus:ring-offset-2 ${
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[rgb(var(--c-primary-400))] focus:ring-offset-2 ${
                           formData.security.twoFactorAuth ? 'bg-[rgb(var(--c-primary-600))]' : 'bg-[rgb(var(--c-primary-200))]'
                         }`}
                         onClick={() => handleInputChange('security', 'twoFactorAuth', !formData.security.twoFactorAuth)}
                       >
                         <span
                           className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            formData.security.twoFactorAuth ? 'translate-x-6' : 'translate-x-1'
+                            formData.security.twoFactorAuth ? '-translate-x-6' : '-translate-x-1'
                           }`}
                         />
                       </button>
@@ -375,14 +383,14 @@ export default function SettingsPage() {
                         <p className="text-xs text-[rgb(var(--c-primary-600))]">محدود کردن دسترسی به IP‌های مشخص</p>
                       </div>
                       <button
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full bg-[rgb(var(--c-primary-600))] transition-colors focus:outline-none focus:ring-2 focus:ring-[rgb(var(--c-primary-400))] focus:ring-offset-2 ${
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[rgb(var(--c-primary-400))] focus:ring-offset-2 ${
                           formData.security.ipRestriction ? 'bg-[rgb(var(--c-primary-600))]' : 'bg-[rgb(var(--c-primary-200))]'
                         }`}
                         onClick={() => handleInputChange('security', 'ipRestriction', !formData.security.ipRestriction)}
                       >
                         <span
                           className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            formData.security.ipRestriction ? 'translate-x-6' : 'translate-x-1'
+                            formData.security.ipRestriction ? '-translate-x-6' : '-translate-x-1'
                           }`}
                         />
                       </button>
@@ -395,7 +403,7 @@ export default function SettingsPage() {
                       <select
                         value={formData.security.minPasswordLength}
                         onChange={(e) => handleInputChange('security', 'minPasswordLength', parseInt(e.target.value))}
-                        className="w-full rounded-lg border border-[rgb(var(--c-primary-200))] bg-white/50 px-3 py-2 text-sm text-[rgb(var(--c-primary-900))] shadow-sm focus:border-[rgb(var(--c-primary-300))] focus:outline-none focus:ring-1 focus:ring-[rgb(var(--c-primary-300))]"
+                        className="w-full rounded-lg border border-[rgb(var(--c-primary-200))] bg-white/50 px-3 py-2 pr-8 text-sm text-[rgb(var(--c-primary-900))] shadow-sm focus:border-[rgb(var(--c-primary-300))] focus:outline-none focus:ring-1 focus:ring-[rgb(var(--c-primary-300))]"
                       >
                         <option value="6">6 کاراکتر</option>
                         <option value="8">8 کاراکتر</option>
@@ -411,12 +419,13 @@ export default function SettingsPage() {
                       <select
                         value={formData.security.sessionDuration}
                         onChange={(e) => handleInputChange('security', 'sessionDuration', parseInt(e.target.value))}
-                        className="w-full rounded-lg border border-[rgb(var(--c-primary-200))] bg-white/50 px-3 py-2 text-sm text-[rgb(var(--c-primary-900))] shadow-sm focus:border-[rgb(var(--c-primary-300))] focus:outline-none focus:ring-1 focus:ring-[rgb(var(--c-primary-300))]"
+                        className="w-full rounded-lg border border-[rgb(var(--c-primary-200))] bg-white/50 px-3 py-2 pr-8 text-sm text-[rgb(var(--c-primary-900))] shadow-sm focus:border-[rgb(var(--c-primary-300))] focus:outline-none focus:ring-1 focus:ring-[rgb(var(--c-primary-300))]"
                       >
                         <option value="30">30 دقیقه</option>
                         <option value="60">1 ساعت</option>
                         <option value="120">2 ساعت</option>
                         <option value="240">4 ساعت</option>
+                        <option value="480">8 ساعت</option>
                       </select>
                     </div>
                   </div>
@@ -630,7 +639,7 @@ export default function SettingsPage() {
                       <select
                         value={formData.database.type}
                         onChange={(e) => handleInputChange('database', 'type', e.target.value)}
-                        className="w-full rounded-lg border border-[rgb(var(--c-primary-200))] bg-white/50 px-3 py-2 text-sm text-[rgb(var(--c-primary-900))] shadow-sm focus:border-[rgb(var(--c-primary-300))] focus:outline-none focus:ring-1 focus:ring-[rgb(var(--c-primary-300))]"
+                        className="w-full rounded-lg border border-[rgb(var(--c-primary-200))] bg-white/50 px-3 py-2 pr-8 text-sm text-[rgb(var(--c-primary-900))] shadow-sm focus:border-[rgb(var(--c-primary-300))] focus:outline-none focus:ring-1 focus:ring-[rgb(var(--c-primary-300))]"
                       >
                         <option value="mysql">MySQL</option>
                         <option value="postgresql">PostgreSQL</option>
@@ -639,24 +648,31 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="text-sm font-medium text-[rgb(var(--c-primary-900))]">پشتیبان‌گیری خودکار</h4>
-                        <p className="text-xs text-[rgb(var(--c-primary-600))]">پشتیبان‌گیری روزانه از پایگاه داده</p>
-                      </div>
-                      <button
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full bg-[rgb(var(--c-primary-600))] transition-colors focus:outline-none focus:ring-2 focus:ring-[rgb(var(--c-primary-400))] focus:ring-offset-2 ${
-                          formData.database.autoBackup ? 'bg-[rgb(var(--c-primary-600))]' : 'bg-[rgb(var(--c-primary-200))]'
-                        }`}
-                        onClick={() => handleInputChange('database', 'autoBackup', !formData.database.autoBackup)}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            formData.database.autoBackup ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
+                  <div className="flex items-center justify-between space-x-4 space-x-reverse">
+                    <label className="text-sm font-medium text-[rgb(var(--c-primary-700))]">
+                      پشتیبان‌گیری خودکار
+                    </label>
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={formData.database.autoBackup}
+                        onChange={(e) => handleInputChange('database', 'autoBackup', e.target.checked)}
+                        className="h-4 w-4 ml-2 rounded border-[rgb(var(--c-primary-300))] text-[rgb(var(--c-primary-600))] focus:ring-[rgb(var(--c-primary-500))]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between space-x-4 space-x-reverse">
+                    <label className="text-sm font-medium text-[rgb(var(--c-primary-700))]">
+                      راست به چپ
+                    </label>
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={formData.database.rtl}
+                        onChange={(e) => handleInputChange('database', 'rtl', e.target.checked)}
+                        className="h-4 w-4 ml-2 rounded border-[rgb(var(--c-primary-300))] text-[rgb(var(--c-primary-600))] focus:ring-[rgb(var(--c-primary-500))]"
+                      />
                     </div>
                   </div>
 
@@ -698,14 +714,14 @@ export default function SettingsPage() {
                         <p className="text-xs text-[rgb(var(--c-primary-600))]">فعال‌سازی گزارش‌های خطا و اشکال‌زدایی</p>
                       </div>
                       <button
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full bg-[rgb(var(--c-primary-600))] transition-colors focus:outline-none focus:ring-2 focus:ring-[rgb(var(--c-primary-400))] focus:ring-offset-2 ${
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[rgb(var(--c-primary-400))] focus:ring-offset-2 ${
                           formData.advanced.debugMode ? 'bg-[rgb(var(--c-primary-600))]' : 'bg-[rgb(var(--c-primary-200))]'
                         }`}
                         onClick={() => handleInputChange('advanced', 'debugMode', !formData.advanced.debugMode)}
                       >
                         <span
                           className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            formData.advanced.debugMode ? 'translate-x-6' : 'translate-x-1'
+                            formData.advanced.debugMode ? '-translate-x-6' : '-translate-x-1'
                           }`}
                         />
                       </button>
@@ -717,14 +733,14 @@ export default function SettingsPage() {
                         <p className="text-xs text-[rgb(var(--c-primary-600))]">فعال‌سازی سیستم کش برای بهبود عملکرد</p>
                       </div>
                       <button
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full bg-[rgb(var(--c-primary-600))] transition-colors focus:outline-none focus:ring-2 focus:ring-[rgb(var(--c-primary-400))] focus:ring-offset-2 ${
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[rgb(var(--c-primary-400))] focus:ring-offset-2 ${
                           formData.advanced.cacheEnabled ? 'bg-[rgb(var(--c-primary-600))]' : 'bg-[rgb(var(--c-primary-200))]'
                         }`}
                         onClick={() => handleInputChange('advanced', 'cacheEnabled', !formData.advanced.cacheEnabled)}
                       >
                         <span
                           className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            formData.advanced.cacheEnabled ? 'translate-x-6' : 'translate-x-1'
+                            formData.advanced.cacheEnabled ? '-translate-x-6' : '-translate-x-1'
                           }`}
                         />
                       </button>
@@ -732,18 +748,18 @@ export default function SettingsPage() {
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="text-sm font-medium text-[rgb(var(--c-primary-900))]">API محدودیت درخواست</h4>
+                        <h4 className="text-sm font-medium text-[rgb(var(--c-primary-900))]">محدودیت درخواست API</h4>
                         <p className="text-xs text-[rgb(var(--c-primary-600))]">محدودیت تعداد درخواست‌های API</p>
                       </div>
                       <button
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full bg-[rgb(var(--c-primary-600))] transition-colors focus:outline-none focus:ring-2 focus:ring-[rgb(var(--c-primary-400))] focus:ring-offset-2 ${
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[rgb(var(--c-primary-400))] focus:ring-offset-2 ${
                           formData.advanced.apiRateLimit ? 'bg-[rgb(var(--c-primary-600))]' : 'bg-[rgb(var(--c-primary-200))]'
                         }`}
                         onClick={() => handleInputChange('advanced', 'apiRateLimit', !formData.advanced.apiRateLimit)}
                       >
                         <span
                           className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            formData.advanced.apiRateLimit ? 'translate-x-6' : 'translate-x-1'
+                            formData.advanced.apiRateLimit ? '-translate-x-6' : '-translate-x-1'
                           }`}
                         />
                       </button>
@@ -768,13 +784,16 @@ export default function SettingsPage() {
                       <label className="text-sm font-medium text-[rgb(var(--c-primary-700))]">
                         محدودیت درخواست API (در دقیقه)
                       </label>
-                      <input
-                        type="number"
-                        value={formData.advanced.apiRequestLimit}
-                        onChange={(e) => handleInputChange('advanced', 'apiRequestLimit', parseInt(e.target.value))}
-                        className="w-full rounded-lg border border-[rgb(var(--c-primary-200))] bg-white/50 px-3 py-2 text-sm text-[rgb(var(--c-primary-900))] shadow-sm focus:border-[rgb(var(--c-primary-300))] focus:outline-none focus:ring-1 focus:ring-[rgb(var(--c-primary-300))]"
-                        placeholder="100"
-                      />
+                      <select
+                        value={formData.advanced.rateLimit}
+                        onChange={(e) => handleInputChange('advanced', 'rateLimit', parseInt(e.target.value))}
+                        className="w-full rounded-lg border border-[rgb(var(--c-primary-200))] bg-white/50 px-3 py-2 pr-8 text-sm text-[rgb(var(--c-primary-900))] shadow-sm focus:border-[rgb(var(--c-primary-300))] focus:outline-none focus:ring-1 focus:ring-[rgb(var(--c-primary-300))]"
+                      >
+                        <option value="100">100  درخواست در دقیقه</option>
+                        <option value="500">500  درخواست در دقیقه</option>
+                        <option value="1000">1000  درخواست در دقیقه</option>
+                        <option value="5000">5000  درخواست در دقیقه</option>
+                      </select>
                     </div>
 
                     <div className="space-y-2">
@@ -797,7 +816,7 @@ export default function SettingsPage() {
                       <select
                         value={formData.advanced.errorLevel}
                         onChange={(e) => handleInputChange('advanced', 'errorLevel', e.target.value)}
-                        className="w-full rounded-lg border border-[rgb(var(--c-primary-200))] bg-white/50 px-3 py-2 text-sm text-[rgb(var(--c-primary-900))] shadow-sm focus:border-[rgb(var(--c-primary-300))] focus:outline-none focus:ring-1 focus:ring-[rgb(var(--c-primary-300))]"
+                        className="w-full rounded-lg border border-[rgb(var(--c-primary-200))] bg-white/50 px-3 py-2 pr-8 text-sm text-[rgb(var(--c-primary-900))] shadow-sm focus:border-[rgb(var(--c-primary-300))] focus:outline-none focus:ring-1 focus:ring-[rgb(var(--c-primary-300))]"
                       >
                         <option value="error">خطا</option>
                         <option value="warning">هشدار</option>
@@ -838,6 +857,37 @@ export default function SettingsPage() {
                           تولید کلید جدید
                         </button>
                       </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium text-[rgb(var(--c-primary-700))]">
+                        ذخیره‌سازی کش
+                      </label>
+                      <select
+                        value={formData.advanced.cacheStorage}
+                        onChange={(e) => handleInputChange('advanced', 'cacheStorage', e.target.value)}
+                        className="w-full rounded-lg border border-[rgb(var(--c-primary-200))] bg-white/50 px-3 py-2 pr-8 text-sm text-[rgb(var(--c-primary-900))] shadow-sm focus:border-[rgb(var(--c-primary-300))] focus:outline-none focus:ring-1 focus:ring-[rgb(var(--c-primary-300))]"
+                      >
+                        <option value="memory">حافظه  موقت</option>
+                        <option value="redis">Redis  کش</option>
+                        <option value="file">فایل  سیستم</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between space-x-4 space-x-reverse">
+                    <label className="text-sm font-medium text-[rgb(var(--c-primary-700))]">
+                      راست به چپ
+                    </label>
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={formData.advanced.rtl}
+                        onChange={(e) => handleInputChange('advanced', 'rtl', e.target.checked)}
+                        className="h-4 w-4 ml-2 rounded border-[rgb(var(--c-primary-300))] text-[rgb(var(--c-primary-600))] focus:ring-[rgb(var(--c-primary-500))]"
+                      />
                     </div>
                   </div>
 
