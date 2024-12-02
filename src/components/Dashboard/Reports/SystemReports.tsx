@@ -76,26 +76,32 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 export default function SystemReports() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<SystemReport | null>(null);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     const loadReports = async () => {
       try {
-        const response = await fetch('/api/reports');
-        const result = await response.json();
+        setLoading(true);
+        setError(null);
         
+        const response = await fetch('/api/system-reports');
+        if (!response.ok) {
+          throw new Error('Failed to load system reports');
+        }
+        
+        const result = await response.json();
         if (result.success) {
           setData(result.data);
         } else {
-          throw new Error('Failed to load reports');
+          throw new Error(result.message || 'Failed to load system reports');
         }
       } catch (error) {
-        console.error('Error loading reports:', error);
-        setError(error);
+        console.error('Error loading system reports:', error);
+        setError('خطا در بارگذاری گزارش‌های سیستم');
         toast({
           title: 'خطا',
-          description: 'خطا در بارگذاری گزارش‌ها',
+          description: 'خطا در بارگذاری گزارش‌های سیستم',
           variant: 'destructive',
         });
       } finally {
@@ -104,31 +110,29 @@ export default function SystemReports() {
     };
 
     loadReports();
-  }, [toast]);
+  }, []);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[600px] w-full" style={{ direction: 'rtl' }}>
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[600px] w-full gap-2" style={{ direction: 'rtl' }}>
-        <AlertCircle className="h-8 w-8 text-destructive" />
-        <p className="text-sm text-muted-foreground">خطا در دریافت اطلاعات</p>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
+          <p className="text-sm text-muted-foreground">{error}</p>
+        </div>
       </div>
     );
   }
 
   if (!data) {
-    return (
-      <div className="flex items-center justify-center min-h-[600px] w-full" style={{ direction: 'rtl' }}>
-        <p className="text-sm text-muted-foreground">داده‌ای برای نمایش وجود ندارد</p>
-      </div>
-    );
+    return null;
   }
 
   return (

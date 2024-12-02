@@ -2,16 +2,48 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import db from '@/lib/db';
 
-
-export async function GET() {
+/**
+ * GET /api/system-logs
+ * 
+ * Returns a list of system logs.
+ * 
+ * Query Parameters:
+ * - level: Filter by log level (all, debug, info, warn, error)
+ * - source: Filter by log source (all, api, web, etc.)
+ * - search: Search for logs containing the specified string
+ */
+export async function GET(req: Request) {
   try {
     const session = await auth();
     if (!session?.user || session.user.role !== 'SUPER_ADMIN') {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
+    const url = new URL(req.url);
+    const level = url.searchParams.get('level');
+    const source = url.searchParams.get('source');
+    const search = url.searchParams.get('search');
+
+    const where: any = {};
+    
+    if (level && level !== 'all') {
+      where.level = level;
+    }
+    
+    if (source && source !== 'all') {
+      where.source = source;
+    }
+    
+    if (search) {
+      where.message = {
+        contains: search,
+        mode: 'insensitive'
+      };
+    }
+
     const logs = await db.systemLog.findMany({
-      take: 100, // محدود کردن به 100 لاگ آخر
+      where,
+      take: 100,
       orderBy: {
         timestamp: 'desc'
       }

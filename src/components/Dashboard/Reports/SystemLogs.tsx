@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Table,
@@ -21,7 +21,8 @@ import {
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { AlertCircle, AlertTriangle, Info } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Info, Loader2 } from 'lucide-react';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface SystemLog {
   id: string;
@@ -31,180 +32,243 @@ interface SystemLog {
   timestamp: string;
 }
 
+interface SystemData {
+  system?: {
+    cpu?: {
+      usage: number;
+    };
+    memory?: {
+      usagePercentage: number;
+    };
+    os?: {
+      platform: string;
+    };
+  };
+  database?: {
+    status: string;
+    connections: number;
+    responseTime: number;
+  };
+  application?: {
+    users: number;
+    posts: number;
+    comments: number;
+    environment: string;
+  };
+}
+
+interface InitialData {
+  logs: SystemLog[];
+  status: SystemData;
+}
+
 export default function SystemLogs() {
   const { toast } = useToast();
   const [logs, setLogs] = useState<SystemLog[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [systemData, setSystemData] = useState<SystemData>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState({
     level: 'all',
     source: 'all',
     search: '',
   });
 
-  const loadLogs = async () => {
-    try {
-      const response = await fetch('/api/system-logs');
-      const result = await response.json();
-      
-      if (result.success) {
-        setLogs(result.data);
-      } else {
-        throw new Error('Failed to load system logs');
-      }
-    } catch (error) {
-      console.error('Error loading system logs:', error);
-      toast({
-        title: 'خطا',
-        description: 'خطا در بارگذاری لاگ‌های سیستم',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadLogs();
-    // هر 30 ثانیه به‌روزرسانی شود
-    const interval = setInterval(loadLogs, 30000);
-    return () => clearInterval(interval);
+    // Get initial data from the server-rendered script tag
+    const scriptTag = document.getElementById('system-logs-data');
+    if (scriptTag) {
+      try {
+        const initialData: InitialData = JSON.parse(scriptTag.textContent || '{}');
+        setLogs(initialData.logs);
+        setSystemData(initialData.status);
+        setIsLoading(false);
+      } catch (err) {
+        console.error('Error parsing initial data:', err);
+        setError('Failed to load initial data');
+      }
+    }
   }, []);
 
-  const getLevelIcon = (level: string) => {
-    switch (level.toUpperCase()) {
-      case 'ERROR':
-        return <AlertCircle className="h-4 w-4 text-red-500" />;
-      case 'WARNING':
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
-      case 'INFO':
-        return <Info className="h-4 w-4 text-blue-500" />;
-      default:
-        return null;
-    }
-  };
-
-  const getLevelColor = (level: string) => {
-    switch (level.toUpperCase()) {
-      case 'ERROR':
-        return 'bg-red-100 text-red-800';
-      case 'WARNING':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'INFO':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   const filteredLogs = logs.filter(log => {
-    const levelMatch = filter.level === 'all' || log.level.toLowerCase() === filter.level.toLowerCase();
-    const sourceMatch = filter.source === 'all' || log.source === filter.source;
-    const searchMatch = !filter.search || 
-      log.message.toLowerCase().includes(filter.search.toLowerCase()) ||
-      log.source.toLowerCase().includes(filter.search.toLowerCase());
-    
-    return levelMatch && sourceMatch && searchMatch;
+    if (filter.level !== 'all' && log.level !== filter.level) return false;
+    if (filter.source !== 'all' && log.source !== filter.source) return false;
+    if (filter.search && !log.message.toLowerCase().includes(filter.search.toLowerCase())) return false;
+    return true;
   });
 
-  const uniqueSources = Array.from(new Set(logs.map(log => log.source)));
+  const getLevelBadge = (level: string) => {
+    switch (level.toLowerCase()) {
+      case 'error':
+        return <Badge variant="destructive">{level}</Badge>;
+      case 'warning':
+        return <Badge variant="warning">{level}</Badge>;
+      default:
+        return <Badge variant="secondary">{level}</Badge>;
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[200px]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
-      <Card className="p-4">
-        <div className="flex flex-col md:flex-row gap-4 mb-4">
-          <div className="flex-1">
-            <Input
-              placeholder="جستجو در لاگ‌ها..."
-              value={filter.search}
-              onChange={(e) => setFilter(prev => ({ ...prev, search: e.target.value }))}
-              className="w-full"
-            />
-          </div>
-          <Select
-            value={filter.level}
-            onValueChange={(value) => setFilter(prev => ({ ...prev, level: value }))}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="سطح لاگ" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">همه</SelectItem>
-              <SelectItem value="error">خطا</SelectItem>
-              <SelectItem value="warning">هشدار</SelectItem>
-              <SelectItem value="info">اطلاعات</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select
-            value={filter.source}
-            onValueChange={(value) => setFilter(prev => ({ ...prev, source: value }))}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="منبع لاگ" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">همه</SelectItem>
-              {uniqueSources.map(source => (
-                <SelectItem key={source} value={source}>{source}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button
-            variant="outline"
-            onClick={loadLogs}
-            disabled={loading}
-          >
-            به‌روزرسانی
-          </Button>
-        </div>
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[100px]">سطح</TableHead>
-                <TableHead>پیام</TableHead>
-                <TableHead className="w-[150px]">منبع</TableHead>
-                <TableHead className="w-[180px]">زمان</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center">
-                    در حال بارگذاری...
-                  </TableCell>
-                </TableRow>
-              ) : filteredLogs.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center">
-                    لاگی یافت نشد
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredLogs.map((log) => (
-                  <TableRow key={log.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {getLevelIcon(log.level)}
-                        <Badge className={getLevelColor(log.level)}>
-                          {log.level}
-                        </Badge>
-                      </div>
-                    </TableCell>
-                    <TableCell>{log.message}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{log.source}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      {new Date(log.timestamp).toLocaleString('fa-IR')}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {/* System Info */}
+        <Card>
+          <CardHeader>
+            <CardTitle>System</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span>CPU Usage:</span>
+                <span>{systemData.system?.cpu?.usage}%</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Memory Usage:</span>
+                <span>{systemData.system?.memory?.usagePercentage}%</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Platform:</span>
+                <span>{systemData.system?.os?.platform}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Database Info */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Database</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span>Status:</span>
+                <Badge variant={systemData.database?.status === 'online' ? 'success' : 'destructive'}>
+                  {systemData.database?.status}
+                </Badge>
+              </div>
+              <div className="flex justify-between">
+                <span>Connections:</span>
+                <span>{systemData.database?.connections}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Response Time:</span>
+                <span>{systemData.database?.responseTime}ms</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Application Info */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Application</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span>Users:</span>
+                <span>{systemData.application?.users}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Posts:</span>
+                <span>{systemData.application?.posts}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Comments:</span>
+                <span>{systemData.application?.comments}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Environment:</span>
+                <Badge>{systemData.application?.environment}</Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="flex flex-wrap gap-4 items-center">
+        <div className="flex-1 min-w-[200px]">
+          <Input
+            placeholder="Search logs..."
+            value={filter.search}
+            onChange={(e) => setFilter({ ...filter, search: e.target.value })}
+          />
         </div>
-      </Card>
+        <Select
+          value={filter.level}
+          onValueChange={(value) => setFilter({ ...filter, level: value })}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select Level" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Levels</SelectItem>
+            <SelectItem value="info">Info</SelectItem>
+            <SelectItem value="warning">Warning</SelectItem>
+            <SelectItem value="error">Error</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select
+          value={filter.source}
+          onValueChange={(value) => setFilter({ ...filter, source: value })}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select Source" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Sources</SelectItem>
+            <SelectItem value="system">System</SelectItem>
+            <SelectItem value="auth">Authentication</SelectItem>
+            <SelectItem value="api">API</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button
+          variant="outline"
+          onClick={() => setFilter({ level: 'all', source: 'all', search: '' })}
+        >
+          Reset Filters
+        </Button>
+      </div>
+
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[100px]">Level</TableHead>
+              <TableHead>Message</TableHead>
+              <TableHead className="w-[150px]">Source</TableHead>
+              <TableHead className="w-[180px]">Timestamp</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredLogs.map((log) => (
+              <TableRow key={log.id}>
+                <TableCell>{getLevelBadge(log.level)}</TableCell>
+                <TableCell>{log.message}</TableCell>
+                <TableCell>{log.source}</TableCell>
+                <TableCell>{new Date(log.timestamp).toLocaleString()}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
