@@ -120,12 +120,14 @@ export const searchAuthors = cache(
           image: true,
           role: true,
           emailVerified: true,
+          phoneNumber: true,
           profile: {
             select: {
               bio: true,
               avatar: true,
               bgImage: true,
               jobName: true,
+              company: true,
             },
           },
           _count: {

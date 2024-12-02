@@ -1,10 +1,13 @@
 'use client';
-
+/**
+ * @format
+ * @file PostList by Id
+ * @author fe6 
+ */
 
 import { useCallback, useState } from 'react';
 
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
-
 
 
 import { listAllPosts, deletePost, updatePostStatus } from '@/actions/postActions';
@@ -14,7 +17,6 @@ import type { ActionResult, PostWithRelations } from '@/types/types';
 import LoadingMore from '@/components/LoadingMore';
 
 import CardList from '../DashboardPage/CardList';
-
 
 
 export default function PostList({
@@ -42,7 +44,6 @@ export default function PostList({
   const [page, setPage] = useState(2);
 
   const [hasNextPage, setHasNextPage] = useState(initialHasNextPage);
-
 
 
   const loadMore = useCallback(async () => {
@@ -74,9 +75,7 @@ export default function PostList({
   }, [hasNextPage, isLoading, page, totalPages]);
 
 
-
   const infiniteScrollRef = useInfiniteScroll(loadMore, hasNextPage, isLoading);
-
 
 
   const handleDelete = async (id: string) => {
@@ -92,23 +91,17 @@ export default function PostList({
   };
 
 
-
   const handleStatusChange = async (id: string, newStatus: PostWithRelations['status']) => {
-
     const result = await updatePostStatus(id, newStatus);
 
     if (result.success) {
-
       setPosts((prev) =>
-
-        prev.map((post) => (post.id === id ? { ...post, status: newStatus } : post)),
-
+        prev.map((post) => (post.id === id ? { ...post, status: newStatus } : post))
       );
-
+      return true;
     }
-
+    return false;
   };
-
 
 
   return (
@@ -144,4 +137,3 @@ export default function PostList({
   );
 
 }
-

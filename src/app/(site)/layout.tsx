@@ -1,9 +1,10 @@
 import Header from '@/components/Header/Header';
 import Footer from '@/components/Footer/Footer';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "Blog Market Financial",
-  description: "Your trusted platform for financial market analysis",
+  title: "Market Financial ",
+  description: "پلتفرم مورد اعتماد شمادر بازار مالی",
   icons: {
     icon: [
       {

@@ -163,6 +163,7 @@ export type UserProfile = {
   avatar: string | null;
   bgImage: string | null;
   jobName: string | null;
+  phoneNumber?: string | null;
   userId: string;
 } | null;
 
@@ -197,11 +198,13 @@ export type UserWithProfile = {
   image: string | null;
   role?: string;
   status?: string;
+  phoneNumber: string | null;
   profile: {
     bio: string | null;
     avatar: string | null;
     bgImage: string | null;
     jobName: string | null;
+    company: string | null;
   } | null;
   _count?: {
     posts: number;

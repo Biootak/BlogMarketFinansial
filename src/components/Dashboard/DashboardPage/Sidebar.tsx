@@ -36,14 +36,15 @@ const getMenuItems = (role: string) => {
       href: '/dashboard',
       icon: <IoHomeOutline size={24} />,
       label: 'داشبورد'
-    },
-    {
-      title: 'پست‌ها',
-      href: '/dashboard/posts',
-      icon: <FaProductHunt size={24} />,
-      label: 'پست ها'
     }
   ];
+
+  const postItem = {
+    title: 'پست‌ها',
+    href: '/dashboard/posts',
+    icon: <FaProductHunt size={24} />,
+    label: 'پست ها'
+  };
 
   const adminItems = [
     {
@@ -78,7 +79,7 @@ const getMenuItems = (role: string) => {
 
   const profileItem = {
     title: 'پروفایل من',
-    href: '/dashboard/profile',
+    href: '/dashboard/edit-profile',
     icon: <CiSettings size={24} />,
     label: 'پروفایل من'
   };
@@ -86,11 +87,11 @@ const getMenuItems = (role: string) => {
   switch (role) {
     case 'SUPER_ADMIN':
     case 'ADMIN':
-      return [...baseItems, ...adminItems, profileItem];
+      return [...baseItems, postItem, ...adminItems, profileItem];
     case 'AUTHOR':
-      return [...baseItems, profileItem];
+      return [postItem, profileItem];
     default:
-      return [profileItem];
+      return [];
   }
 };
 
@@ -101,7 +102,7 @@ const Sidebar: React.FC = () => {
   const { isOpen, setIsOpen, isMobile } = useSidebarStore();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const user = useCurrentUser();
-  const menuItems = getMenuItems(user?.role || 'USER');
+  const menuItems: MenuItem[] = getMenuItems(user?.role || 'USER');
 
   const handleLogout = async () => {
     try {

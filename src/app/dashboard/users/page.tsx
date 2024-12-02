@@ -145,13 +145,13 @@ export default function UsersPage() {
       email: user.email,
       role: user.role as Role,
       status: user.status as string,
-      phoneNumber: user.profile?.phoneNumber || '',
+      phoneNumber: user?.phoneNumber ?? '',
       company: user.profile?.company || '',
     });
     setIsEditDialogOpen(true);
   };
 
-  const handleDelete = async (id: string, userRole: Role) => {
+  const handleDelete = async (id: string, userRole?: Role) => {
     if (id === currentUserId) {
       toast({
         title: 'خطا',
@@ -161,7 +161,9 @@ export default function UsersPage() {
       return;
     }
 
-    if (!canManageUser({ id, role: userRole } as UserWithProfile)) {
+    const role = userRole || 'USER';
+
+    if (!canManageUser({ id, role } as UserWithProfile)) {
       toast({
         title: 'خطا',
         description: 'شما دسترسی لازم برای حذف این کاربر را ندارید',
@@ -402,7 +404,7 @@ export default function UsersPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleDelete(user.id, user.role)}
+                        onClick={() => handleDelete(user.id, user.role as Role)}
                         className="text-red-600 border-red-600 hover:bg-red-50 dark:text-red-400 dark:border-red-400 dark:hover:bg-red-900 text-xs sm:text-sm px-2 sm:px-3 py-1"
                       >
                         <HiOutlineTrash className="ml-1 hidden sm:inline" />

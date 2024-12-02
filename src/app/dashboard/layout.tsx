@@ -30,7 +30,7 @@ export default async function DashboardLayout({
       dir="rtl"
     >
       <SidebarInitializer />
-      <Sidebar userRole={userRole as Role} />
+      <Sidebar />
       <div className="flex flex-col flex-1 overflow-hidden">
         <Header />
         <MainContent>{children}</MainContent>

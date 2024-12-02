@@ -1,29 +1,45 @@
 //src\components\Dashboard\CardList.tsx
 'use client';
 
-import React, { type FC, useState, useCallback, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { HiEllipsisVertical, HiPencil, HiTrash, HiEye, HiEyeSlash } from 'react-icons/hi2';
+import { type FC, useState, useCallback, useMemo } from 'react';
+import { motion as Motion } from 'framer-motion';
+import type { PostStatus } from '@prisma/client';
+import { 
+  HiEllipsisVertical, 
+  HiPencil, 
+  HiTrash, 
+  HiEye, 
+  HiEyeSlash,
+  HiClipboard,
+  HiDocumentText
+} from 'react-icons/hi2';
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { useToast } from '@/components/ui/use-toast';
+
 import PostCardSaveAction from '@/components/PostCardSaveAction/PostCardSaveAction';
 import type { PostWithRelations } from '@/types/types';
 import PostCardLikeAndComment from '@/components/PostCardLikeAndComment/PostCardLikeAndComment';
 import PostCardMeta from '@/components/PostCardMeta/PostCardMeta';
-import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia';
-import Link from 'next/link';
+import PostStatusBadge from '../Blog/PostStatusBadge';
+import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
-
-import PostStatusBadge from '../Blog/PostStatusBadge';
 
 import BookmarkCheck from '../../BookmarkCheck';
 import FormattedDate from '@/components/FormattedDate';
 import { getPostLink } from '@/lib/getPostLink';
+import dynamic from 'next/dynamic';
+
+const PostFeaturedMedia = dynamic(() => import('@/components/PostFeaturedMedia/PostFeaturedMedia'), {
+  ssr: false
+});
 
 export interface CardListProps {
   className?: string;
@@ -31,7 +47,7 @@ export interface CardListProps {
   ratio?: string;
   hiddenAuthor?: boolean;
   onDelete: (id: string) => void;
-  onStatusChange: (id: string, newStatus: PostWithRelations['status']) => void;
+  onStatusChange: (id: string, newStatus: PostWithRelations['status']) => Promise<boolean>;
 }
 
 const cardVariants = {
@@ -47,8 +63,9 @@ const CardList: FC<CardListProps> = ({
   onDelete,
   onStatusChange,
 }) => {
-  const { title, id, slug, createdAt, postType } = post;
-  const [isHover, setIsHover] = useState(false);
+  const { data: session } = useSession();
+  const { toast } = useToast();
+  const { title, id, slug, createdAt, postType, authorId } = post;
 
   const handleDelete = useCallback(() => {
     if (window.confirm('آیا از حذف این پست اطمینان دارید؟')) {
@@ -56,15 +73,58 @@ const CardList: FC<CardListProps> = ({
     }
   }, [id, onDelete]);
 
-  const handleStatusChange = useCallback(() => {
-    const newStatus = post.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED';
-    onStatusChange(post.id, newStatus);
-  }, [post.id, post.status, onStatusChange]);
+  const handleStatusChange = useCallback(async () => {
+    let newStatus;
+    let confirmMessage;
+    
+    if (session?.user?.role === 'ADMIN' || session?.user?.role === 'SUPER_ADMIN') {
+      // Admins can change between all statuses
+      if (post.status === 'PUBLISHED') {
+        newStatus = 'PENDING_REVIEW';
+        confirmMessage = 'آیا از تغییر وضعیت پست به "در انتظار بررسی" اطمینان دارید؟';
+      } else if (post.status === 'PENDING_REVIEW') {
+        newStatus = 'PUBLISHED';
+        confirmMessage = 'آیا از انتشار این پست اطمینان دارید؟';
+      } else {
+        // From DRAFT
+        newStatus = 'PUBLISHED';
+        confirmMessage = 'آیا از انتشار این پیش‌نویس اطمینان دارید؟';
+      }
+    } else {
+      // Authors can only change between DRAFT and PENDING_REVIEW
+      if (post.status === 'PUBLISHED') {
+        newStatus = 'DRAFT' as PostWithRelations['status'];
+        confirmMessage = 'آیا از تبدیل پست به پیش‌نویس اطمینان دارید؟';
+      } else if (post.status === 'DRAFT') {
+        newStatus = 'PENDING_REVIEW' as PostWithRelations['status'];
+        confirmMessage = 'آیا از ارسال پیش‌نویس برای بررسی اطمینان دارید؟';
+      } else {
+        // From PENDING_REVIEW back to DRAFT
+        newStatus = 'DRAFT' as PostWithRelations['status'];
+        confirmMessage = 'آیا از برگرداندن پست به پیش‌نویس اطمینان دارید؟';
+      }
+    }
+
+    if (window.confirm(confirmMessage)) {
+      const success = await onStatusChange(post.id, newStatus as PostStatus);
+      if (success) {
+        toast({
+          title: 'موفقیت‌آمیز',
+          description: 'وضعیت پست با موفقیت تغییر کرد.',
+        });
+      }
+    }
+  }, [post.id, post.status, onStatusChange, session?.user?.role, toast]);
 
   const postMeta = useMemo(() => <PostCardMeta meta={post} />, [post]);
 
+  // Check if user has permission to edit/delete this post
+  const canEditPost = session?.user?.role === 'SUPER_ADMIN' || 
+                     session?.user?.role === 'ADMIN' || 
+                     (session?.user?.role === 'AUTHOR' && session?.user?.id === authorId);
+
   return (
-    <motion.div
+    <Motion.div
       variants={cardVariants}
       initial="hidden"
       animate="visible"
@@ -73,8 +133,6 @@ const CardList: FC<CardListProps> = ({
         'nc-Card11 relative flex flex-col group rounded-t-3xl overflow-hidden bg-dark-500 dark:bg-neutral-900 rtl',
         className,
       )}
-      onMouseEnter={() => setIsHover(true)}
-      onMouseLeave={() => setIsHover(false)}
     >
       <div
         className={cn(
@@ -83,46 +141,71 @@ const CardList: FC<CardListProps> = ({
         )}
       >
         <div>
-          <PostFeaturedMedia post={post} isHover={isHover} />
+          <PostFeaturedMedia post={post} />
         </div>
-        <div className="absolute top-3 left-3  rounded-full  z-20">
-          <DropdownMenu dir="rtl">
-            <DropdownMenuTrigger
-              className="focus:outline-none px-2 transition-colors duration-200"
-              aria-label="گزینه‌های بیشتر"
-            >
-              <div className="w-10 h-10 bg-white dark:bg-neutral-800 rounded-full flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-700">
-                <HiEllipsisVertical className="w-6 h-6 text-neutral-700 dark:text-neutral-300" />
-              </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem onClick={handleStatusChange}>
-                {post.status === 'PUBLISHED' ? (
+        {canEditPost && (
+          <div className="absolute top-3 left-3 rounded-full z-20">
+            <DropdownMenu dir="rtl">
+              <DropdownMenuTrigger
+                className="focus:outline-none px-2 transition-colors duration-200"
+                aria-label="گزینه‌های بیشتر"
+              >
+                <div className="w-10 h-10 bg-white dark:bg-neutral-800 rounded-full flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-700">
+                  <HiEllipsisVertical className="w-6 h-6 text-neutral-700 dark:text-neutral-300" />
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                {(session?.user?.role === 'ADMIN' || session?.user?.role === 'SUPER_ADMIN' || post.authorId === session?.user?.id) && (
                   <>
-                    <HiEyeSlash className="w-4 h-4 ml-2" />
-                    <span>تبدیل به پیش‌نویس</span>
-                  </>
-                ) : (
-                  <>
-                    <HiEye className="w-4 h-4 ml-2" />
-                    <span>انتشار پست</span>
+                    <DropdownMenuItem onClick={handleStatusChange}>
+                      {post.status === 'PUBLISHED' ? (
+                        <>
+                          <HiEyeSlash className="ml-2" />
+                          {session?.user?.role === 'ADMIN' || session?.user?.role === 'SUPER_ADMIN' 
+                            ? 'در انتظار بررسی' 
+                            : 'پیش‌نویس کردن'}
+                        </>
+                      ) : post.status === 'DRAFT' ? (
+                        <>
+                          <HiClipboard className="ml-2" />
+                          ارسال برای بررسی
+                        </>
+                      ) : (
+                        <>
+                          {session?.user?.role === 'ADMIN' || session?.user?.role === 'SUPER_ADMIN' ? (
+                            <>
+                              <HiEye className="ml-2" />
+                              انتشار
+                            </>
+                          ) : (
+                            <>
+                              <HiPencil className="ml-2" />
+                              برگشت به پیش‌نویس
+                            </>
+                          )}
+                        </>
+                      )}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href={`/dashboard/posts/edit/${post.id}`}>
+                        <HiPencil className="ml-2" />
+                        ویرایش
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleDelete}
+                      className="text-red-500 hover:text-red-600 dark:hover:text-red-400"
+                    >
+                      <HiTrash className="ml-2" />
+                      حذف
+                    </DropdownMenuItem>
                   </>
                 )}
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link href={`/dashboard/posts/edit/${id}`} className="flex items-center w-full">
-                  <HiPencil className="w-4 h-4 ml-2" />
-                  <span>ویرایش</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleDelete} className="text-red-500">
-                <HiTrash className="w-4 h-4 ml-2" />
-                <span>حذف</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
       </div>
       <Link href={getPostLink(postType, slug)} className="absolute inset-0 z-0" />
       <span className="absolute top-3 left-3 z-10">
@@ -157,7 +240,7 @@ const CardList: FC<CardListProps> = ({
           <PostCardLikeAndComment className="relative" post={post} />
         </div>
       </div>
-    </motion.div>
+    </Motion.div>
   );
 };
 

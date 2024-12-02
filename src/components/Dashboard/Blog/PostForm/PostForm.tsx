@@ -43,6 +43,7 @@ import { TagSelectDialog } from './TagSelectDialog';
 import { useToast } from '@/components/ui/use-toast';
 import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
 import { Editor, type EditorRef } from '@/components/Editor1';
+import { useSession } from 'next-auth/react';
 
 interface PostFormProps<T extends CreatePostInput | UpdatePostInput> {
   schema: ZodSchema<T>;
@@ -75,6 +76,9 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
   totalCategories,
   totalTags,
 }: PostFormProps<T>) => {
+  const { data: session } = useSession();
+  const isAuthor = session?.user?.role === 'AUTHOR';
+
   const [editorContent, setEditorContent] = useState(defaultValues.content || '');
   const [slug, setSlug] = useState(defaultValues.slug || '');
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
@@ -150,8 +154,22 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
     },
     [form],
   );
+
+  const [saveAsDraft, setSaveAsDraft] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleSubmit = async (data: FieldValues) => {
     try {
+      setIsLoading(true);
+
+      // Set initial status based on user role and save type
+      let initialStatus: PostStatus = 'PENDING_REVIEW';
+      if (session?.user?.role === 'AUTHOR' && saveAsDraft) {
+        initialStatus = 'DRAFT';
+      } else if (session?.user?.role === 'ADMIN' || session?.user?.role === 'SUPER_ADMIN') {
+        initialStatus = saveAsDraft ? 'DRAFT' : 'PUBLISHED';
+      }
+
       const submissionData = {
         ...data,
         content: editorContent,
@@ -159,8 +177,18 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
         categories: Array.isArray(data.categories) ? data.categories : [],
         tags: Array.isArray(data.tags) ? data.tags : [],
         featuredImage: featuredImage,
+        status: initialStatus,
       } as T;
+
       await onSubmit(submissionData);
+
+      toast({
+        title: 'موفقیت‌آمیز',
+        description: saveAsDraft
+          ? 'پست با موفقیت به عنوان پیش‌نویس ذخیره شد'
+          : 'پست با موفقیت ارسال شد',
+      });
+
       // Clear local storage after successful submission
       localStorage.removeItem(localStorageKey);
       localStorage.removeItem(`${localStorageKey}-editor`);
@@ -168,11 +196,14 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
       console.error('Error submitting form:', error);
       toast({
         title: 'خطا',
-        description: 'مشکلی در ارسال فرم رخ داد. لطفاً دوباره تلاش کنید.',
+        description: 'خطا در ارسال فرم. لطفاً دوباره تلاش کنید.',
         variant: 'destructive',
       });
+    } finally {
+      setIsLoading(false);
     }
   };
+
   return (
     <FormProvider {...form}>
       <motion.div
@@ -432,7 +463,11 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>وضعیت پست</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={isAuthor ? 'PENDING_REVIEW' : field.value}
+                      disabled={isAuthor}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="انتخاب وضعیت" />
@@ -441,9 +476,14 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                       <SelectContent>
                         <SelectItem value="DRAFT">پیش‌نویس</SelectItem>
                         <SelectItem value="PENDING_REVIEW">در انتظار بررسی</SelectItem>
-                        <SelectItem value="PUBLISHED">منتشر شده</SelectItem>
+                        {!isAuthor && <SelectItem value="PUBLISHED">منتشر شده</SelectItem>}
                       </SelectContent>
                     </Select>
+                    {isAuthor && (
+                      <FormDescription>
+                        پست‌های شما پس از ارسال به صورت خودکار در وضعیت "در انتظار بررسی" قرار می‌گیرند و پس از تأیید مدیر منتشر خواهند شد.
+                      </FormDescription>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -522,25 +562,35 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
               )}
             />
 
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full sm:w-auto text-sm sm:text-base px-4 py-2 sm:px-6 sm:py-3"
-            >
-              <div className="flex items-center justify-center w-full">
-                {isSubmitting ? (
-                  <>
-                    <span className="ml-2">در حال ارسال</span>
-                    <BiLoaderAlt className="animate-spin h-4 w-4 sm:h-5 sm:w-5" />
-                  </>
-                ) : (
-                  <>
-                    <span className="ml-2">{isEditing ? 'به‌روزرسانی پست' : 'ارسال پست'}</span>
-                    <RiSendPlaneFill className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </>
-                )}
+            <div className="flex items-center justify-between">
+              <div className="flex gap-2">
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  onClick={() => setSaveAsDraft(false)}
+                >
+                  {isLoading ? (
+                    <>
+                      <span className="ml-2">در حال ارسال</span>
+                      <BiLoaderAlt className="animate-spin h-4 w-4 sm:h-5 sm:w-5" />
+                    </>
+                  ) : (
+                    <>
+                      <span className="ml-2">{isEditing ? 'به‌روزرسانی پست' : 'ارسال پست'}</span>
+                      <RiSendPlaneFill className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </>
+                  )}
+                </Button>
+                <Button
+                  type="submit"
+                  variant="outline"
+                  disabled={isLoading}
+                  onClick={() => setSaveAsDraft(true)}
+                >
+                  ذخیره به عنوان پیش‌نویس
+                </Button>
               </div>
-            </Button>
+            </div>
           </form>
         </Form>
 

@@ -116,13 +116,14 @@ model VerificationToken {
 }
 
 model Profile {
-  id      String @id @default(cuid())
+  id      String  @id @default(cuid())
   bio     String?
   avatar  String?
   bgImage String?
   jobName String?
-  userId  String @unique
-  user    User   @relation(fields: [userId], references: [id])
+  company String?
+  userId  String  @unique
+  user    User    @relation(fields: [userId], references: [id])
 }
 
 model Post {

@@ -14,12 +14,15 @@ export async function getAuthorById(id: string): Promise<ActionResult<UserWithPr
         email: true,
         emailVerified: true,
         image: true,
+        phoneNumber: true,
         profile: {
           select: {
             bio: true,
             avatar: true,
             bgImage: true,
             jobName: true,
+            company: true,
+           
           },
         },
         _count: {

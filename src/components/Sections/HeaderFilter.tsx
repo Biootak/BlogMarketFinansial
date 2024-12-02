@@ -5,9 +5,10 @@ import { useState } from 'react';
 import Heading from '@/components/Heading/Heading';
 import Nav from '@/components/Nav/Nav';
 import NavItem from '@/components/NavItem/NavItem';
-import Button from '../Button/Button';
+
 import { HiArrowRight } from 'react-icons/hi2';
 import type { TaxonomyType, PostWithRelations } from '@/types/types';
+import { Button } from '../ui/button';
 
 export interface HeaderFilterProps {
   categories: TaxonomyType[] | undefined;
@@ -53,8 +54,8 @@ const HeaderFilter: React.FC<HeaderFilterProps> = ({
         </Nav>
         <Button 
           className="!hidden md:!flex hover:translate-x-0.5 rtl:hover:-translate-x-0.5 transition-transform" 
-          pattern="primary-outline"
-          sizeClass="px-6"
+         variant={'outline'}
+          
         >
           <span>مشاهده همه</span>
           <HiArrowRight className="ms-3 w-5 h-5 rtl:rotate-180" />

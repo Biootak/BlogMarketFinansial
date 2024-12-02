@@ -70,7 +70,7 @@ export default auth((req) => {
 
     // Handle AUTHOR role - only allow access to posts management and profile
     if (userRole === 'AUTHOR') {
-      const allowedPaths = ['/dashboard/posts', '/dashboard/profile', '/dashboard/edit-profile'];
+      const allowedPaths = ['/dashboard/posts', '/dashboard/edit-profile', '/dashboard/edit-profile'];
       const isAllowedPath = allowedPaths.some(path => nextUrl.pathname.startsWith(path));
       
       if (!isAllowedPath) {

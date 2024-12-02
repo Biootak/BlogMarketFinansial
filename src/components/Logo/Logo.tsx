@@ -27,40 +27,61 @@ const Logo: React.FC<LogoProps> = ({
   }
 
   const logoVariants = {
-    initial: { scale: 0.9, opacity: 0, rotate: -180 },
+    initial: { 
+      scale: 0,
+      opacity: 0,
+      rotate: -360,
+      filter: "blur(10px)"
+    },
     animate: {
       scale: 1,
       opacity: 1,
       rotate: 0,
+      filter: "blur(0px)",
       transition: {
-        type: 'spring',
-        stiffness: 260,
-        damping: 20,
-        duration: 0.8,
-      },
+        duration: 1.2,
+        ease: "easeOut",
+        scale: {
+          type: "spring",
+          damping: 12,
+          stiffness: 100,
+          restDelta: 0.001
+        }
+      }
     },
     hover: {
-      scale: 1.05,
-      rotate: 360,
+      scale: 1.1,
+      rotate: [0, 10, -10, 0],
+      filter: "brightness(1.2)",
       transition: {
-        type: 'spring',
-        stiffness: 300,
-        damping: 10,
-        duration: 1,
-      },
-    },
-    tap: { scale: 0.9 },
+        rotate: {
+          duration: 0.6,
+          ease: "easeInOut",
+          repeat: Infinity,
+          repeatType: "reverse"
+        },
+        scale: {
+          type: "spring",
+          damping: 5,
+          stiffness: 300,
+          restDelta: 0.001
+        }
+      }
+    }
   };
 
   return (
-    <Link href="/" className={`inline-block ${className}`}>
+    <Link href="/" className={className}>
       <motion.div
         variants={logoVariants}
         initial="initial"
         animate="animate"
         whileHover="hover"
-        whileTap="tap"
-        style={{ originX: 0.5, originY: 0.5 }}
+        style={{ 
+          originX: 0.5, 
+          originY: 0.5,
+          display: 'inline-block'
+        }}
       >
         {useImage ? (
           <Image

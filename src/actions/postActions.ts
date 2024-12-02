@@ -121,6 +121,44 @@ export async function updatePost(
   data: UpdatePostInput,
 ): Promise<ActionResult<PostWithRelations>> {
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return {
+        success: false,
+        message: 'شما باید وارد شوید.',
+      };
+    }
+
+    // Get the current post to check ownership
+    const currentPost = await prisma.post.findUnique({ 
+      where: { id: postId },
+      include: { author: true }
+    });
+
+    if (!currentPost) {
+      return {
+        success: false,
+        message: 'پست مورد نظر یافت نشد.',
+      };
+    }
+
+    // Check if user has permission to edit this post
+    if (session.user.role === 'AUTHOR' && currentPost.authorId !== session.user.id) {
+      return {
+        success: false,
+        message: 'شما فقط می‌توانید پست‌های خودتان را ویرایش کنید.',
+      };
+    }
+
+    // Only SUPER_ADMIN, ADMIN, and post owner (AUTHOR) can edit posts
+    if (!['SUPER_ADMIN', 'ADMIN'].includes(session.user.role) && 
+        !(session.user.role === 'AUTHOR' && currentPost.authorId === session.user.id)) {
+      return {
+        success: false,
+        message: 'شما دسترسی لازم برای ویرایش این پست را ندارید.',
+      };
+    }
+
     const validatedData = UpdatePostSchema.parse(data);
 
     let slug = validatedData.slug;
@@ -133,23 +171,23 @@ export async function updatePost(
       if (!validateSlug(slug)) {
         return {
           success: false,
-          message:
-            'اسلاگ نامعتبر است. لطفاً فقط از حروف کوچک انگلیسی، اعداد و خط فاصله استفاده کنید.',
+          message: 'اسلاگ نامعتبر است. لطفاً فقط از حروف کوچک انگلیسی، اعداد و خط فاصله استفاده کنید.',
         };
       }
-    }
 
-    // Check for unique slug
-    if (slug) {
-      const currentPost = await prisma.post.findUnique({ where: { id: postId } });
-      if (currentPost && currentPost.slug !== slug) {
-        let slugExists = await prisma.post.findFirst({ where: { slug, NOT: { id: postId } } });
-        let slugAttempt = 1;
-        while (slugExists) {
-          slug = `${slug}-${slugAttempt}`;
-          slugExists = await prisma.post.findFirst({ where: { slug, NOT: { id: postId } } });
-          slugAttempt++;
-        }
+      // Check for unique slug
+      const slugExists = await prisma.post.findFirst({ 
+        where: { 
+          slug, 
+          NOT: { id: postId } 
+        } 
+      });
+
+      if (slugExists) {
+        return {
+          success: false,
+          message: 'این اسلاگ قبلاً استفاده شده است. لطفاً یک اسلاگ دیگر انتخاب کنید.',
+        };
       }
     }
 
@@ -179,23 +217,6 @@ export async function updatePost(
           },
         },
         categories: true,
-        comments: {
-          include: {
-            author: {
-              include: {
-                profile: true,
-              },
-            },
-            post: true,
-            replies: true,
-            likes: {
-              include: {
-                user: true,
-              },
-            },
-            _count: true,
-          },
-        },
         tags: true,
         likes: true,
         savedBy: true,
@@ -213,6 +234,7 @@ export async function updatePost(
     revalidatePath('/dashboard');
     revalidatePath('/archive');
     revalidatePath('/');
+    
     return {
       success: true,
       message: 'پست با موفقیت به‌روزرسانی شد.',
@@ -231,7 +253,7 @@ export async function updatePostStatus(
   postId: string,
   newStatus: PostStatus,
 ): Promise<ActionResult<PostWithRelations>> {
-  const session = await checkRole(['ADMIN', 'AUTHOR']);
+  const session = await checkRole(['ADMIN', 'AUTHOR', 'SUPER_ADMIN']);
 
   if (!session || !session.user) {
     return {
@@ -244,21 +266,44 @@ export async function updatePostStatus(
   try {
     const post = await prisma.post.findUnique({
       where: { id: postId },
-      select: { authorId: true },
+      select: { authorId: true, status: true },
     });
 
     if (!post) {
       return { success: false, message: 'پست یافت نشد.', error: 'پست یافت نشد.' };
     }
 
-    if (post.authorId !== session.user.id && session.user.role !== 'ADMIN') {
-      return {
-        success: false,
-        message: 'غیر مجاز',
-        error: 'شما مجاز به به‌روزرسانی این پست نیستید.',
+    // Check permissions based on role
+    if (session.user.role === 'AUTHOR') {
+      // Authors can only modify their own posts
+      if (post.authorId !== session.user.id) {
+        return {
+          success: false,
+          message: 'غیر مجاز',
+          error: 'شما مجاز به به‌روزرسانی این پست نیستید.',
+        };
+      }
+      
+      // Authors can only:
+      // 1. Change PUBLISHED -> DRAFT
+      // 2. Change DRAFT -> PENDING_REVIEW
+      // 3. Change PENDING_REVIEW -> DRAFT
+      const validTransitions = {
+        PUBLISHED: ['DRAFT'],
+        DRAFT: ['PENDING_REVIEW'],
+        PENDING_REVIEW: ['DRAFT']
       };
+
+      if (!validTransitions[post.status]?.includes(newStatus)) {
+        return {
+          success: false,
+          message: 'تغییر وضعیت غیرمجاز',
+          error: 'شما مجاز به انجام این تغییر وضعیت نیستید.',
+        };
+      }
     }
 
+    // Admins can change to any status
     const updatedPost = await prisma.post.update({
       where: { id: postId },
       data: { status: newStatus },
@@ -567,33 +612,47 @@ export async function listAllPosts(
   searchTerm = '',
   filter: 'همه' | PostStatus = 'همه',
 ): Promise<ActionResult<{ posts: PostWithRelations[]; total: number; pages: number }>> {
-  await checkRole(['ADMIN', 'AUTHOR']);
-
-  const skip = (page - 1) * limit;
-
-  let whereCondition: Prisma.PostWhereInput = searchTerm
-    ? {
-        OR: [
-          { title: { contains: searchTerm, mode: 'insensitive' } },
-          { content: { contains: searchTerm, mode: 'insensitive' } },
-        ],
-      }
-    : {};
-
-  // اصلاح شده: شرط فیلتر
-  if (filter !== 'همه') {
-    whereCondition = {
-      ...whereCondition,
-      status: filter,
-    };
-  }
-
   try {
-    const [posts, total] = await prisma.$transaction([
+    const session = await auth();
+    if (!session?.user) {
+      return {
+        success: false,
+        message: 'شما باید وارد شوید.',
+      };
+    }
+
+    const skip = (page - 1) * limit;
+
+    let whereCondition: Prisma.PostWhereInput = searchTerm
+      ? {
+          OR: [
+            { title: { contains: searchTerm, mode: 'insensitive' } },
+            { content: { contains: searchTerm, mode: 'insensitive' } },
+          ],
+        }
+      : {};
+
+    // اگر نویسنده است، فقط پست‌های خودش را ببیند
+    if (session.user.role === 'AUTHOR') {
+      whereCondition = {
+        ...whereCondition,
+        authorId: session.user.id,
+      };
+    }
+
+    // اعمال فیلتر وضعیت
+    if (filter !== 'همه') {
+      whereCondition = {
+        ...whereCondition,
+        status: filter,
+      };
+    }
+
+    const [posts, total] = await Promise.all([
       prisma.post.findMany({
         where: whereCondition,
+        skip,
         take: limit,
-        skip: skip,
         orderBy: { createdAt: 'desc' },
         include: {
           author: {
@@ -635,14 +694,12 @@ export async function listAllPosts(
       prisma.post.count({ where: whereCondition }),
     ]);
 
+    const pages = Math.ceil(total / limit);
+
     return {
       success: true,
       message: 'پست‌ها با موفقیت بازیابی شدند.',
-      data: {
-        posts,
-        total,
-        pages: Math.ceil(total / limit),
-      },
+      data: { posts, total, pages },
     };
   } catch (error) {
     console.error('خطا در بازیابی پست‌ها:', error);

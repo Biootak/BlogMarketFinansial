@@ -29,7 +29,7 @@ interface PostsState {
     id: string,
     newStatus: PostWithRelations['status'],
     toast: (props: Toast) => void,
-  ) => Promise<void>;
+  ) => Promise<boolean>;
   setSearchTerm: (term: string) => void;
 
   resetPosts: () => void;
@@ -109,12 +109,14 @@ export const usePostStore = create<PostsState>((set, get) => ({
         description: result.message,
         variant: 'success',
       });
+      return true;
     } else {
       toast({
         title: 'خطا',
         description: result.message,
         variant: 'destructive',
       });
+      return false;
     }
   },
 
