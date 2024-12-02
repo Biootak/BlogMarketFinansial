@@ -1,5 +1,6 @@
 // biome-ignore lint/style/useNodejsImportProtocol: <explanation>
 const path = require('path');
+const TerserPlugin = require('terser-webpack-plugin');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -62,6 +63,18 @@ const nextConfig = {
     },
     optimizeCss: true,
     optimizePackageImports: ['@/components'],
+    turbo: {
+      rules: {
+        '*.svg': ['@svgr/webpack'],
+      },
+    },
+    scrollRestoration: true,
+    optimizeServerReact: true,
+  },
+
+  onDemandEntries: {
+    maxInactiveAge: 60 * 60 * 1000,
+    pagesBufferLength: 5,
   },
 
   webpack: (config, { isServer, dev }) => {
@@ -72,6 +85,8 @@ const nextConfig = {
         net: false,
         tls: false,
       };
+      
+      // Optimize CSS splitting
       config.optimization.splitChunks.cacheGroups.styles = {
         name: 'styles',
         test: /\.(css|scss)$/,
@@ -79,6 +94,21 @@ const nextConfig = {
         enforce: true,
         priority: 20,
       };
+
+      // Add Terser for better minification
+      config.optimization.minimize = true;
+      config.optimization.minimizer.push(
+        new TerserPlugin({
+          terserOptions: {
+            compress: {
+              drop_console: true,
+            },
+            output: {
+              comments: false,
+            },
+          },
+        })
+      );
     }
     return config;
   },

@@ -440,15 +440,17 @@ export interface RateItem {
 }
 
 export interface RateListData {
-  id?: string;
+  id: string;
   title: string;
   rates: RateItem[];
   isActive: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export interface Rate {
+export type RateList = RateListData;
+
+export type Rate = {
   type: string;      // نوع ارز یا عنوان نرخ (مثلا "دلار"، "50 افغانی")
   buyRate?: string;  // نرخ خرید (برای سرای شاهزاده)
   sellRate?: string; // نرخ فروش (برای سرای شاهزاده)
