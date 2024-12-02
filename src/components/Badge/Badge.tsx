@@ -7,9 +7,16 @@ export interface BadgeProps {
   name: ReactNode;
   color?: TwMainColor;
   href?: string;
+  isLink?: boolean;
 }
 
-const Badge: FC<BadgeProps> = ({ className = 'relative', name, color = 'blue', href }) => {
+const Badge: FC<BadgeProps> = ({ 
+  className = 'relative', 
+  name, 
+  color = 'blue', 
+  href,
+  isLink = true 
+}) => {
   const colorClasses: Record<TwMainColor, string> = {
     pink: 'text-pink-800 bg-pink-100 hover:bg-pink-800 hover:text-white',
     blue: 'text-blue-800 bg-blue-100 hover:bg-blue-800 hover:text-white',
@@ -23,14 +30,16 @@ const Badge: FC<BadgeProps> = ({ className = 'relative', name, color = 'blue', h
 
   const colorClass = colorClasses[color] || colorClasses.blue;
 
-  const CLASSES = `nc-Badge inline-flex  px-2.5 py-1 rounded-full font-medium text-[10px]/[14px] ${className} ${colorClass} transition-colors duration-300`;
+  const CLASSES = `nc-Badge inline-flex px-2.5 py-1 rounded-full font-medium text-[10px]/[14px] ${className} ${colorClass} transition-colors duration-300`;
   
-  return href ? (
+  if (!isLink || !href) {
+    return <span className={CLASSES}>{name}</span>;
+  }
+
+  return (
     <Link href={href} className={CLASSES}>
       {name}
     </Link>
-  ) : (
-    <span className={CLASSES}>{name}</span>
   );
 };
 

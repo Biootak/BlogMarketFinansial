@@ -8,12 +8,14 @@ export interface CategoryBadgeListProps {
   className?: string;
   itemClass?: string;
   categories: Category[];
+  disableLinks?: boolean;
 }
 
 const CategoryBadgeList: React.FC<CategoryBadgeListProps> = ({
   className = 'flex flex-wrap',
   itemClass,
   categories,
+  disableLinks = false,
 }) => {
   const colors: TwMainColor[] = [
     'pink',
@@ -32,19 +34,20 @@ const CategoryBadgeList: React.FC<CategoryBadgeListProps> = ({
         acc[category.id] = colors[index % colors.length];
         return acc;
       },
-      {} as Record<string | number, TwMainColor>,
+      {} as Record<string, TwMainColor>,
     );
   }, [categories]);
 
   return (
     <div className={`nc-CategoryBadgeList ${className}`} data-nc-id="CategoryBadgeList">
-      {categories.map((item) => (
+      {categories.map((category) => (
         <Badge
+          key={category.id}
           className={`${itemClass} text-[10px]/[14px] px-3 py-1  m-1`}
-          key={item.id}
-          name={item.name}
-          color={categoryColors[item.id]}
-          href={`/archive/category/${item.slug}`}
+          name={category.name}
+          color={categoryColors[category.id]}
+          href={disableLinks ? undefined : `/archive/category/${category.slug}`}
+          isLink={!disableLinks}
         />
       ))}
     </div>
