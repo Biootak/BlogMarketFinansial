@@ -29,23 +29,70 @@ interface MenuItem {
   submenu?: SubmenuItem[];
 }
 
-const menuItems: MenuItem[] = [
-  { href: '/dashboard', icon: <IoHomeOutline size={24} />, label: 'داشبورد' },
-  { href: '/dashboard/posts', icon: <FaProductHunt size={24} />, label: 'پست ها' },
-  { href: '/dashboard/categories', icon: <MdOutlineDashboard size={24} />, label: 'دسته بندی' },
-  { href: '/dashboard/advertisements', icon: <SiGoogleads size={24} />, label: 'تبلیغات' },
-  {
-    href: '#',
-    icon: <MdCurrencyExchange size={24} />,
-    label: 'نرخ ارزها',
-    submenu: [
-      { href: '/dashboard/exchange-rates', label: 'نرخ تکی' },
-      { href: '/dashboard/rate-lists', label: 'نرخ لیستی' },
-    ],
-  },
-  { href: '/dashboard/users', icon: <FaUsers size={24} />, label: 'کاربران' },
-  { href: '/dashboard/edit-profile', icon: <CiSettings size={24} />, label: 'تنظیمات' },
-];
+const getMenuItems = (role: string) => {
+  const baseItems = [
+    {
+      title: 'داشبورد',
+      href: '/dashboard',
+      icon: <IoHomeOutline size={24} />,
+      label: 'داشبورد'
+    },
+    {
+      title: 'پست‌ها',
+      href: '/dashboard/posts',
+      icon: <FaProductHunt size={24} />,
+      label: 'پست ها'
+    }
+  ];
+
+  const adminItems = [
+    {
+      title: 'کاربران',
+      href: '/dashboard/users',
+      icon: <FaUsers size={24} />,
+      label: 'کاربران'
+    },
+    {
+      title: 'دسته بندی',
+      href: '/dashboard/categories',
+      icon: <MdOutlineDashboard size={24} />,
+      label: 'دسته بندی'
+    },
+    {
+      title: 'تبلیغات',
+      href: '/dashboard/advertisements',
+      icon: <SiGoogleads size={24} />,
+      label: 'تبلیغات'
+    },
+    {
+      title: 'نرخ ارزها',
+      href: '#',
+      icon: <MdCurrencyExchange size={24} />,
+      label: 'نرخ ارزها',
+      submenu: [
+        { href: '/dashboard/exchange-rates', label: 'نرخ تکی' },
+        { href: '/dashboard/rate-lists', label: 'نرخ لیستی' }
+      ]
+    }
+  ];
+
+  const profileItem = {
+    title: 'پروفایل من',
+    href: '/dashboard/profile',
+    icon: <CiSettings size={24} />,
+    label: 'پروفایل من'
+  };
+
+  switch (role) {
+    case 'SUPER_ADMIN':
+    case 'ADMIN':
+      return [...baseItems, ...adminItems, profileItem];
+    case 'AUTHOR':
+      return [...baseItems, profileItem];
+    default:
+      return [profileItem];
+  }
+};
 
 const Sidebar: React.FC = () => {
   const pathname = usePathname();
@@ -53,8 +100,8 @@ const Sidebar: React.FC = () => {
   const { toast } = useToast();
   const { isOpen, setIsOpen, isMobile } = useSidebarStore();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
-
   const user = useCurrentUser();
+  const menuItems = getMenuItems(user?.role || 'USER');
 
   const handleLogout = async () => {
     try {
@@ -94,7 +141,7 @@ const Sidebar: React.FC = () => {
       open: { width: isMobile ? '100%' : '240px', transition: { duration: 0.3 } },
       closed: { width: isMobile ? '0' : '60px', transition: { duration: 0.3 } },
     }),
-    [isMobile],
+    [isMobile]
   );
 
   const handleItemClick = () => {

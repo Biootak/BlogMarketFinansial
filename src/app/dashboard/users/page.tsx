@@ -290,6 +290,9 @@ export default function UsersPage() {
               <SelectItem value="USER">کاربر عادی</SelectItem>
               <SelectItem value="AUTHOR">نویسنده</SelectItem>
               <SelectItem value="ADMIN">مدیر</SelectItem>
+              {currentUserRole === 'SUPER_ADMIN' && (
+                <SelectItem value="SUPER_ADMIN">سوپر ادمین</SelectItem>
+              )}
             </SelectContent>
           </Select>
 
@@ -359,7 +362,9 @@ export default function UsersPage() {
                       ? 'کاربر عادی'
                       : user.role === 'AUTHOR'
                         ? 'نویسنده'
-                        : 'مدیر'}
+                        : user.role === 'ADMIN'
+                          ? 'مدیر'
+                          : 'سوپر ادمین'}
                   </TableCell>
                   <TableCell className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 hidden md:table-cell">
                     <span
@@ -433,6 +438,9 @@ export default function UsersPage() {
 }
 
 function UserForm({ form, onSubmit }: UserFormProps) {
+  const { data: session } = useSession();
+  const currentUserRole = session?.user?.role;
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -522,7 +530,15 @@ function UserForm({ form, onSubmit }: UserFormProps) {
                 <SelectContent>
                   <SelectItem value="USER">کاربر عادی</SelectItem>
                   <SelectItem value="AUTHOR">نویسنده</SelectItem>
-                  <SelectItem value="ADMIN">مدیر</SelectItem>
+                  {currentUserRole === 'SUPER_ADMIN' && (
+                    <>
+                      <SelectItem value="ADMIN">مدیر</SelectItem>
+                      <SelectItem value="SUPER_ADMIN">سوپر ادمین</SelectItem>
+                    </>
+                  )}
+                  {currentUserRole === 'ADMIN' && (
+                    <SelectItem value="AUTHOR">نویسنده</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </FormItem>

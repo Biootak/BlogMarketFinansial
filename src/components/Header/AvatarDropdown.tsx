@@ -10,7 +10,7 @@ import type { Role } from '@prisma/client';
 
 // Helper function to check if user is admin or author
 const isAdminOrAuthor = (userRole: Role | undefined) => {
-  return userRole === 'ADMIN' || userRole === 'AUTHOR';
+  return userRole === 'ADMIN' || userRole === 'AUTHOR' || userRole === 'SUPER_ADMIN';
 };
 
 export default async function AvatarDropdown() {

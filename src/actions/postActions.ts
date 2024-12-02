@@ -318,9 +318,41 @@ export async function updatePostStatus(
   }
 }
 export async function deletePost(postId: string): Promise<ActionResult> {
-  await checkRole(['ADMIN', 'AUTHOR']);
-
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return { 
+        success: false, 
+        message: 'شما باید وارد شوید.' 
+      };
+    }
+
+    const post = await prisma.post.findUnique({ 
+      where: { id: postId } 
+    });
+
+    if (!post) {
+      return { 
+        success: false, 
+        message: 'پست مورد نظر یافت نشد.' 
+      };
+    }
+
+    if (session.user.role === 'AUTHOR' && post.authorId !== session.user.id) {
+      return { 
+        success: false, 
+        message: 'شما فقط می‌توانید پست‌های خودتان را حذف کنید.' 
+      };
+    }
+
+    if (!['SUPER_ADMIN', 'ADMIN'].includes(session.user.role) && 
+        !(session.user.role === 'AUTHOR' && post.authorId === session.user.id)) {
+      return { 
+        success: false, 
+        message: 'شما دسترسی لازم برای حذف این پست را ندارید.' 
+      };
+    }
+
     await prisma.post.delete({ where: { id: postId } });
     revalidatePath('/dashboard');
     revalidatePath('/archive');

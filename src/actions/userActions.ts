@@ -5,6 +5,7 @@ import prisma from '@/lib/db';
 import { hash } from 'bcryptjs';
 import type { ActionResult, UserWithProfile } from '@/types/types';
 import type { Prisma, Role } from '@prisma/client';
+import { auth } from '@/auth';
 
 type GetUsersParams = {
   limit?: number;
@@ -22,8 +23,14 @@ export async function getUsers({
   role,
 }: GetUsersParams): Promise<ActionResult<{ users: UserWithProfile[]; totalCount: number }>> {
   try {
-    const skip = (page - 1) * limit;
+    const session = await auth();
+    if (!session?.user) {
+      return { success: false, message: 'شما باید وارد شوید' };
+    }
 
+    const currentUserRole = session.user.role;
+    
+    // Filter users based on role hierarchy
     const where: Prisma.UserWhereInput = {
       OR: search
         ? [
@@ -35,6 +42,17 @@ export async function getUsers({
       status: status && status !== 'All' ? status : undefined,
       role: role && role !== 'All' ? (role as Role) : undefined,
     };
+
+    // Add role-based filtering
+    if (currentUserRole !== 'SUPER_ADMIN') {
+      if (currentUserRole === 'ADMIN') {
+        where.role = { not: { in: ['SUPER_ADMIN', 'ADMIN'] } };
+      } else {
+        return { success: false, message: 'شما دسترسی لازم را ندارید' };
+      }
+    }
+
+    const skip = (page - 1) * limit;
 
     const [users, totalCount] = await Promise.all([
       prisma.user.findMany({
@@ -80,6 +98,24 @@ type CreateUserData = {
 
 export async function createUser(data: CreateUserData): Promise<ActionResult<UserWithProfile>> {
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return { success: false, message: 'شما باید وارد شوید' };
+    }
+
+    const currentUserRole = session.user.role;
+    const roleHierarchy = {
+      'SUPER_ADMIN': 4,
+      'ADMIN': 3,
+      'AUTHOR': 2,
+      'USER': 1
+    };
+
+    // Check if user has permission to create users with the specified role
+    if (roleHierarchy[currentUserRole] <= roleHierarchy[data.role]) {
+      return { success: false, message: 'شما مجوز ایجاد کاربر با این نقش را ندارید' };
+    }
+
     const hashedPassword = await hash(data.password, 12);
 
     const newUser = await prisma.user.create({
@@ -123,6 +159,35 @@ export async function updateUser(
   data: UpdateUserData,
 ): Promise<ActionResult<UserWithProfile>> {
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return { success: false, message: 'شما باید وارد شوید' };
+    }
+
+    const currentUserRole = session.user.role;
+    const targetUser = await prisma.user.findUnique({ where: { id } });
+
+    if (!targetUser) {
+      return { success: false, message: 'کاربر یافت نشد' };
+    }
+
+    const roleHierarchy = {
+      'SUPER_ADMIN': 4,
+      'ADMIN': 3,
+      'AUTHOR': 2,
+      'USER': 1
+    };
+
+    // Check if user has permission to update this user
+    if (roleHierarchy[currentUserRole] <= roleHierarchy[targetUser.role]) {
+      return { success: false, message: 'شما مجوز ویرایش این کاربر را ندارید' };
+    }
+
+    // Check if user has permission to assign the new role
+    if (data.role && roleHierarchy[currentUserRole] <= roleHierarchy[data.role]) {
+      return { success: false, message: 'شما مجوز تغییر به این نقش را ندارید' };
+    }
+
     const updateData: Prisma.UserUpdateInput = {
       name: data.name,
       email: data.email,
@@ -160,8 +225,78 @@ export async function updateUser(
   }
 }
 
+export async function updateUserRole(userId: string, newRole: Role) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return { success: false, message: 'شما باید وارد شوید' };
+    }
+
+    const currentUserRole = session.user.role;
+    const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+
+    if (!targetUser) {
+      return { success: false, message: 'کاربر یافت نشد' };
+    }
+
+    // Check role hierarchy
+    const roleHierarchy = {
+      'SUPER_ADMIN': 4,
+      'ADMIN': 3,
+      'AUTHOR': 2,
+      'USER': 1
+    };
+
+    if (roleHierarchy[currentUserRole] <= roleHierarchy[targetUser.role]) {
+      return { success: false, message: 'شما مجوز تغییر نقش این کاربر را ندارید' };
+    }
+
+    if (roleHierarchy[currentUserRole] <= roleHierarchy[newRole]) {
+      return { success: false, message: 'شما نمی‌توانید این نقش را اعطا کنید' };
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { role: newRole },
+    });
+
+    return {
+      success: true,
+      message: 'نقش کاربر با موفقیت به‌روزرسانی شد',
+      data: updatedUser,
+    };
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    return { success: false, message: 'خطا در به‌روزرسانی نقش کاربر' };
+  }
+}
+
 export async function deleteUser(id: string): Promise<ActionResult> {
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return { success: false, message: 'شما باید وارد شوید' };
+    }
+
+    const currentUserRole = session.user.role;
+    const targetUser = await prisma.user.findUnique({ where: { id } });
+
+    if (!targetUser) {
+      return { success: false, message: 'کاربر یافت نشد' };
+    }
+
+    const roleHierarchy = {
+      'SUPER_ADMIN': 4,
+      'ADMIN': 3,
+      'AUTHOR': 2,
+      'USER': 1
+    };
+
+    // Check if user has permission to delete this user
+    if (roleHierarchy[currentUserRole] <= roleHierarchy[targetUser.role]) {
+      return { success: false, message: 'شما مجوز حذف این کاربر را ندارید' };
+    }
+
     await prisma.user.delete({
       where: { id },
     });

@@ -12,6 +12,7 @@ enum Role {
   USER
   AUTHOR
   ADMIN
+  SUPER_ADMIN
 }
 
 enum PostType {

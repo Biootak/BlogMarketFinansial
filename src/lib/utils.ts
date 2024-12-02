@@ -79,9 +79,21 @@ export function getInitials(name: string | null): string {
 
 export async function checkRole(requiredRoles: Role[]) {
   const session = await auth();
-  if (!session || !requiredRoles.includes(session.user.role as Role)) {
+  if (!session?.user) {
     redirect('/unauthorized');
   }
+
+  const userRole = session.user.role as Role;
+  
+  // SUPER_ADMIN has access to everything
+  if (userRole === 'SUPER_ADMIN') {
+    return session;
+  }
+
+  if (!requiredRoles.includes(userRole)) {
+    redirect('/unauthorized');
+  }
+  
   return session;
 }
 

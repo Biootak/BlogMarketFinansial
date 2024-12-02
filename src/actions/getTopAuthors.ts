@@ -15,7 +15,11 @@ export const getTopAuthors = cache(async (limit: number): Promise<TopAuthor[]> =
   try {
     const topAuthors = await prisma.user.findMany({
       where: {
-        OR: [{ role: Role.AUTHOR }, { role: Role.ADMIN }],
+        OR: [
+          { role: Role.AUTHOR }, 
+          { role: Role.ADMIN },
+          { role: Role.SUPER_ADMIN }
+        ],
       },
       take: limit,
       orderBy: {

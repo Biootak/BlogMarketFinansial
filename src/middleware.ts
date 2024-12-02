@@ -1,26 +1,25 @@
 import NextAuth from 'next-auth';
-import authConfig from './auth.config';
+
+import { NextResponse } from 'next/server';
 import {
-  apiAuthPrefix,
-  authRoutes,
   DEFAULT_REDIRECT,
+  apiAuthPrefix,
   publicRoutes,
+  authRoutes,
   adminRoutes,
 } from './config/routes';
+import authConfig from './auth.config';
 
 const { auth } = NextAuth(authConfig);
 
 // Helper function to check if a path matches a route pattern
 function matchRoute(path: string, routes: string[]): boolean {
   return routes.some((route) => {
-    // For simple routes, use direct comparison
-    if (!route.includes('[') && !route.includes(']')) {
-      return path === route;
+    if (route.includes('*')) {
+      const baseRoute = route.replace('*', '');
+      return path.startsWith(baseRoute);
     }
-    // For dynamic routes, use a regex
-    const pattern = route.replace(/\[\[\.\.\..*?\]\]/g, '.*').replace(/\[.*?\]/g, '[^/]+');
-    const regex = new RegExp(`^${pattern}$`);
-    return regex.test(path);
+    return path === route;
   });
 }
 
@@ -39,32 +38,70 @@ export default auth((req) => {
 
   if (isAuthRoute) {
     if (isLoggedIn) {
-      return Response.redirect(new URL(DEFAULT_REDIRECT, nextUrl));
+      return NextResponse.redirect(new URL(DEFAULT_REDIRECT, nextUrl));
     }
     return;
   }
 
   if (!isLoggedIn && !isPublicRoute) {
-    return Response.redirect(new URL('/signin', nextUrl));
+    return NextResponse.redirect(new URL('/signin', nextUrl));
   }
 
-  // اگر کاربر لاگین شده اما نقش او 'USER' است (که نشان می‌دهد اطلاعاتش در دیتابیس یافت نشده)، او را به صفحه ورود هدایت کنید
+  // اگر کاربر لاگین شده اما نقش او 'USER' است، او را به صفحه ورود هدایت کنید
   if (isLoggedIn && req.auth?.user?.role === 'USER') {
     console.log('User session is invalid. Redirecting to signin.');
-    return Response.redirect(new URL('/signin', nextUrl));
+    return NextResponse.redirect(new URL('/signin', nextUrl));
   }
 
   // Check user role for admin routes
-  if (isAdminRoute && req.auth?.user?.role !== 'ADMIN' && req.auth?.user?.role !== 'AUTHOR') {
-    console.log(`Unauthorized admin access attempt by user ${req.auth?.user?.id}`);
-    return Response.redirect(new URL('/unauthorized', nextUrl));
+  if (isAdminRoute) {
+    const userRole = req.auth?.user?.role;
+    
+    // SUPER_ADMIN has access to everything
+    if (userRole === 'SUPER_ADMIN') {
+      return;
+    }
+    
+    // Redirect normal users away from dashboard
+    if (userRole === 'USER' && nextUrl.pathname.startsWith('/dashboard')) {
+      console.log('User attempting to access dashboard');
+      return NextResponse.redirect(new URL('/', nextUrl));
+    }
+
+    // Handle AUTHOR role - only allow access to posts management and profile
+    if (userRole === 'AUTHOR') {
+      const allowedPaths = ['/dashboard/posts', '/dashboard/profile', '/dashboard/edit-profile'];
+      const isAllowedPath = allowedPaths.some(path => nextUrl.pathname.startsWith(path));
+      
+      if (!isAllowedPath) {
+        console.log(`Author attempting to access restricted route: ${nextUrl.pathname}`);
+        return NextResponse.redirect(new URL('/dashboard/posts', nextUrl));
+      }
+      return;
+    }
+
+    // Handle ADMIN role
+    if (userRole === 'ADMIN') {
+      // Admin can't access super-admin routes
+      const restrictedPaths = ['/dashboard/super-admin'];
+      const isRestrictedPath = restrictedPaths.some(path => nextUrl.pathname.startsWith(path));
+      
+      if (isRestrictedPath) {
+        console.log(`Admin attempting to access super-admin route: ${nextUrl.pathname}`);
+        return NextResponse.redirect(new URL('/unauthorized', nextUrl));
+      }
+      return;
+    }
+
+    // If not SUPER_ADMIN, ADMIN, or AUTHOR, redirect to unauthorized
+    if (!['SUPER_ADMIN', 'ADMIN', 'AUTHOR'].includes(userRole as string)) {
+      console.log(`Unauthorized admin access attempt by user ${req.auth?.user?.id} with role ${userRole}`);
+      return NextResponse.redirect(new URL('/unauthorized', nextUrl));
+    }
   }
 });
 
 // Optionally, don't invoke Middleware on some paths
 export const config = {
-  matcher: [
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    '/(api|trpc)(.*)',
-  ],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 };

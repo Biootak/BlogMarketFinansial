@@ -174,7 +174,8 @@ export type PostWithRelations = Prisma.PostGetPayload<typeof basePostWithRelatio
   savedBy?: Prisma.PostGetPayload<typeof fullPostWithRelations>['savedBy'];
 };
 
-export type { Role, PostType, PostStatus };
+export type { PostType, PostStatus,Role } from '@prisma/client';
+
 
 export type SchemaInfer<T extends z.ZodType<any, any>> = z.infer<T>;
 export type RegisterInput = SchemaInfer<typeof RegisterSchema>;
