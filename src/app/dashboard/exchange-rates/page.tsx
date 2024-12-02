@@ -195,7 +195,7 @@ const ExchangeRatesPage: React.FC = () => {
             <TableHead className="text-right">نام</TableHead>
             <TableHead className="text-right">ارز</TableHead>
             <TableHead className="text-right">نوع نرخ</TableHead>
-            <TableHead className="text-right">مقادیر نرخ</TableHead>
+            <TableHead className="text-right">مقادیر</TableHead>
             <TableHead className="text-right">توضیحات</TableHead>
             <TableHead className="text-right">عملیات</TableHead>
           </TableRow>
