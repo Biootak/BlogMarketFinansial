@@ -17,7 +17,7 @@ const MenuButtonOrderedList = ({ editor }: MenuButtonOrderedListProps) => {
 
   return (
     <Toolbar.Button active={isOrderedList} onClick={onOrderedList}>
-      <Icon name="ListOrdered" />
+      <Icon name="list-ordered" />
     </Toolbar.Button>
   );
 };

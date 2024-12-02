@@ -20,7 +20,7 @@ const MenuButtonCodeBlock = ({ editor }: MenuButtonCodeBlockProps) => {
       active={isCodeBlockActive}
       onClick={onCodeBlock}
     >
-      <Icon name="Code" />
+      <Icon name="code" />
     </Toolbar.Button>
   );
 };

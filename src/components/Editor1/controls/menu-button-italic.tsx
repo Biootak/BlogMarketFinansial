@@ -19,7 +19,7 @@ const MenuButtonItalic = ({ editor }: MenuButtonItalicProps) => {
       active={isItalicActive}
       onClick={onItalic}
     >
-      <Icon name="Italic" />
+      <Icon name="italic" />
     </Toolbar.Button>
   );
 };

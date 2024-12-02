@@ -19,7 +19,7 @@ const MenuButtonUnderline = ({ editor }: MenuButtonUnderlineProps) => {
       active={isUnderlineActive}
       onClick={onUnderline}
     >
-      <Icon name="Underline" />
+      <Icon name="underline" />
     </Toolbar.Button>
   );
 };

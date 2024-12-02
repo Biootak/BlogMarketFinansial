@@ -24,13 +24,10 @@ const MenuButtonColor = ({ editor }: MenuButtonColorProps) => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Toolbar.Button tooltip={'Text Color'}>
+        <Toolbar.Button tooltip={'Text Color'} active={Boolean(textColor)}>
           <Icon
-            name="Baseline"
+            name="palette"
             style={{ color: textColor }}
-            className={
-              ' [&>path:not(:first-child)]:text-black [&>path:not(:first-child)]:dark:text-slate-400'
-            }
           />
         </Toolbar.Button>
       </PopoverTrigger>

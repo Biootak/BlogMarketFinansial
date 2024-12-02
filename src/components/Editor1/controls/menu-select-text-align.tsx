@@ -12,19 +12,23 @@ type MenuSelectTextAlign = {
 const options = [
   {
     value: 'left',
-    label: <Icon name="AlignLeft" />,
+    label: <Icon name="align-left" />,
+    tooltip: 'Align Left',
   },
   {
     value: 'center',
-    label: <Icon name="AlignCenter" />,
+    label: <Icon name="align-center" />,
+    tooltip: 'Align Center',
   },
   {
     value: 'right',
-    label: <Icon name="AlignRight" />,
+    label: <Icon name="align-right" />,
+    tooltip: 'Align Right',
   },
   {
     value: 'justify',
-    label: <Icon name="AlignJustify" />,
+    label: <Icon name="align-justify" />,
+    tooltip: 'Align Justify',
   },
 ] as const;
 

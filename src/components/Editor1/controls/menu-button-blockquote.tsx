@@ -19,7 +19,7 @@ const MenuButtonBlockquote = ({ editor }: MenuButtonQuoteProps) => {
       active={isBlockquoteActive}
       onClick={onBlockquote}
     >
-      <Icon name="Quote" />
+      <Icon name="quote" />
     </Toolbar.Button>
   );
 };

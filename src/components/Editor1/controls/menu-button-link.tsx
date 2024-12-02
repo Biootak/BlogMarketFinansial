@@ -18,7 +18,7 @@ export const MenuButtonLink = ({ editor }: MenuButtonLinkProps) => {
 
   return (
     <Toolbar.Button tooltip="Link" onClick={onLink}>
-      <Icon name="Link2" />
+      <Icon name="link-2" />
     </Toolbar.Button>
   );
 };

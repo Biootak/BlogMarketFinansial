@@ -17,7 +17,7 @@ const MenuButtonUndo = ({ editor }: MenuButtonUndoProps) => {
       disabled={!editor.can().undo()}
       onClick={onUndo}
     >
-      <Icon name="Undo" />
+      <Icon name="undo-2" />
     </Toolbar.Button>
   );
 };

@@ -42,7 +42,7 @@ export const MenuButtonImage: React.FC<MenuButtonImageProps> = ({ editor }) => {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Toolbar.Button tooltip="درج تصویر" onClick={handleButtonClick}>
-          <Icon name="Image" />
+          <Icon name="image" />
         </Toolbar.Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">

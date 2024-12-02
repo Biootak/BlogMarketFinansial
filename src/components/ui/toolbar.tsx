@@ -74,7 +74,7 @@ const ToolbarButton = forwardRef<HTMLButtonElement, ToolbarButtonProps>(
       className,
       tooltip,
       tooltipShortcut,
-      activeClassname = 'bg-blue-500/10 text-blue-700 hover:text-blue-700 hover:bg-blue-500/20',
+      activeClassname = 'bg-primary-500/10 text-primary-600 hover:text-primary-700 hover:bg-primary-500/20',
       active,
       isDropdown,
       ...rest
@@ -82,11 +82,11 @@ const ToolbarButton = forwardRef<HTMLButtonElement, ToolbarButtonProps>(
     ref,
   ) => {
     const buttonClass = cn(
-      'min-w-8 w-auto h-8 bg-transparent rounded aria-expanded:bg-blue-500/10 aria-expanded:text-blue-700 focus-visible:ring-0',
+      'min-w-8 w-auto h-8 bg-transparent rounded aria-expanded:bg-primary-500/10 aria-expanded:text-primary-600 focus-visible:ring-0',
       className,
       {
         [`${activeClassname}`]: active,
-        'hover:bg-zinc-100 text-zinc-500 dark:text-slate-400 dark:hover:bg-slate-700': !active,
+        'hover:bg-primary-50 text-primary-500 dark:text-primary-400 dark:hover:bg-primary-900/20': !active,
         'my-1': isDropdown,
       },
     );

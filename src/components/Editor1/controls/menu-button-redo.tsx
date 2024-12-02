@@ -17,7 +17,7 @@ const MenuButtonRedo = ({ editor }: MenuButtonRedoProps) => {
       disabled={!editor.can().redo()}
       onClick={onRedo}
     >
-      <Icon name="Redo" />
+      <Icon name="redo-2" />
     </Toolbar.Button>
   );
 };

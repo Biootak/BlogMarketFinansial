@@ -9,6 +9,34 @@ import {
   MessageCircle,
   BarChart,
   AlertCircle,
+  Bold,
+  Italic,
+  Underline,
+  Code,
+  Quote,
+  List,
+  ListOrdered,
+  Link2,
+  Link,
+  Image,
+  Heading1,
+  Heading2,
+  Heading3,
+  Heading4,
+  Heading5,
+  Heading6,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
+  Undo2,
+  Redo2,
+  Pen,
+  Link2Off,
+  ChevronDown,
+  Text,
+  Palette,
+  Highlighter,
   type LucideIcon
 } from 'lucide-react';
 import { type CSSProperties, memo } from 'react';
@@ -25,6 +53,34 @@ const iconMap = {
   'message-circle': MessageCircle,
   'bar-chart': BarChart,
   'alert-circle': AlertCircle,
+  'bold': Bold,
+  'italic': Italic,
+  'underline': Underline,
+  'code': Code,
+  'quote': Quote,
+  'list': List,
+  'list-ordered': ListOrdered,
+  'link-2': Link2,
+  'link': Link,
+  'image': Image,
+  'heading-1': Heading1,
+  'heading-2': Heading2,
+  'heading-3': Heading3,
+  'heading-4': Heading4,
+  'heading-5': Heading5,
+  'heading-6': Heading6,
+  'align-left': AlignLeft,
+  'align-center': AlignCenter,
+  'align-right': AlignRight,
+  'align-justify': AlignJustify,
+  'undo-2': Undo2,
+  'redo-2': Redo2,
+  'pen': Pen,
+  'link-2-off': Link2Off,
+  'chevron-down': ChevronDown,
+  'text': Text,
+  'palette': Palette,
+  'highlighter': Highlighter,
 } as const;
 
 export type IconName = keyof typeof iconMap;
@@ -46,7 +102,7 @@ export const Icon = memo(({ name, className, strokeWidth, style }: IconProps) =>
   return (
     <IconComponent
       style={style}
-      className={cn('size-5', className)}
+      className={cn(`lucide lucide-${name}`, className)}
       strokeWidth={strokeWidth || 2}
     />
   );

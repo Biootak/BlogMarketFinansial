@@ -16,7 +16,7 @@ const LinkPanelPreview = ({ url, onEdit, onRemove }: LinkPanelPreviewProps) => {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm link  text-blue-500 underline font-medium"
+          className="text-sm link text-primary-600 hover:text-primary-700 underline font-medium"
         >
           <span className="min-w-[9rem] flex items-center w-full text-ellipsis overflow-hidden">
             {url}
@@ -25,10 +25,10 @@ const LinkPanelPreview = ({ url, onEdit, onRemove }: LinkPanelPreviewProps) => {
         <Toolbar.Divider className="h-full" />
         <Toolbar.Group>
           <Toolbar.Button onClick={onEdit}>
-            <Icon name="Pen" className="w-[18px] h-6" />
+            <Icon name="pen" className="w-[18px] h-6 text-primary-600" />
           </Toolbar.Button>
           <Toolbar.Button onClick={onRemove}>
-            <Icon name="Link2Off" className="w-[18px] h-6" />
+            <Icon name="link-2-off" className="w-[18px] h-6 text-primary-600" />
           </Toolbar.Button>
         </Toolbar.Group>
       </div>

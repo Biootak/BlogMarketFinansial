@@ -14,7 +14,7 @@ const MenuButtonBulletedList = ({ editor }: MenuButtonBulletListProps) => {
 
   return (
     <Toolbar.Button active={isBulletList} onClick={onBulletList}>
-      <Icon name="List" />
+      <Icon name="list" />
     </Toolbar.Button>
   );
 };

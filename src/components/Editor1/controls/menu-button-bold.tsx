@@ -25,7 +25,7 @@ const MenuButtonBold = ({ editor }: MenuButtonBoldProps) => {
       active={isBoldActive}
       onClick={onBold}
     >
-      <Icon name="Bold" />
+      <Icon name="bold" />
     </Toolbar.Button>
   );
 };

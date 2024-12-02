@@ -31,23 +31,23 @@ const FixedMenu = ({ editor, className }: FixedMenuProps) => {
   return (
     <TooltipProvider disableHoverableContent delayDuration={500} skipDelayDuration={0}>
       <Toolbar.Wrapper
-        className={`${className} sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-md transition-all duration-300 ease-in-out overflow-x-auto`}
+        className={`${className} sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-md transition-all duration-300 ease-in-out overflow-x-auto text-primary-600`}
       >
         <div className="flex flex-wrap items-center justify-start space-x-1 space-y-1 p-2">
-          <Toolbar.Group className="flex-shrink-0">
+          <Toolbar.Group className="flex-shrink-0 [&_svg]:text-primary-600 [&_svg]:stroke-primary-600">
             <MenuButtonUndo editor={editor} />
             <MenuButtonRedo editor={editor} />
           </Toolbar.Group>
 
           <Toolbar.Divider className="hidden sm:block" />
 
-          <Toolbar.Group className="flex-shrink-0">
+          <Toolbar.Group className="flex-shrink-0 [&_svg]:text-primary-600 [&_svg]:stroke-primary-600">
             <MenuSelectHeading editor={editor} />
           </Toolbar.Group>
 
           <Toolbar.Divider className="hidden sm:block" />
 
-          <Toolbar.Group className="flex-shrink-0">
+          <Toolbar.Group className="flex-shrink-0 [&_svg]:text-primary-600 [&_svg]:stroke-primary-600">
             <MenuButtonBold editor={editor} />
             <MenuButtonItalic editor={editor} />
             <MenuButtonUnderline editor={editor} />
@@ -55,27 +55,27 @@ const FixedMenu = ({ editor, className }: FixedMenuProps) => {
 
           <Toolbar.Divider className="hidden sm:block" />
 
-          <Toolbar.Group className="flex-shrink-0">
+          <Toolbar.Group className="flex-shrink-0 [&_svg]:text-primary-600 [&_svg]:stroke-primary-600">
             <MenuButtonColor editor={editor} />
             <MenuButtonHighlight editor={editor} />
           </Toolbar.Group>
 
           <Toolbar.Divider className="hidden sm:block" />
 
-          <Toolbar.Group className="flex-shrink-0">
+          <Toolbar.Group className="flex-shrink-0 [&_svg]:text-primary-600 [&_svg]:stroke-primary-600">
             <MenuSelectTextAlign editor={editor} />
           </Toolbar.Group>
 
           <Toolbar.Divider className="hidden sm:block" />
 
-          <Toolbar.Group className="flex-shrink-0">
+          <Toolbar.Group className="flex-shrink-0 [&_svg]:text-primary-600 [&_svg]:stroke-primary-600">
             <MenuButtonOrderedList editor={editor} />
             <MenuButtonBulletedList editor={editor} />
           </Toolbar.Group>
 
           <Toolbar.Divider className="hidden sm:block" />
 
-          <Toolbar.Group className="flex-shrink-0">
+          <Toolbar.Group className="flex-shrink-0 [&_svg]:text-primary-600 [&_svg]:stroke-primary-600">
             <MenuButtonLink editor={editor} />
             <MenuButtonBlockquote editor={editor} />
             <MenuButtonCodeblock editor={editor} />

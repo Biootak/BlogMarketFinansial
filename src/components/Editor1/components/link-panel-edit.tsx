@@ -37,12 +37,12 @@ const LinkPanelEdit = ({ initial, isOpen, onSetLink }: LinkPanelEditProps) => {
   return (
     <div className="bg-white rounded-md border bg-popover text-popover-foreground p-2 shadow-md">
       <form onSubmit={handleSubmit} className="flex items-center gap-2">
-        <label className="flex items-center gap-2 p-2 rounded-lg bg-neutral-100 cursor-text">
-          <Icon name="Link" className="flex-none text-black size-4" />
+        <label className="flex items-center gap-2 p-2 rounded-lg bg-primary-50 cursor-text">
+          <Icon name="link" className="flex-none text-primary-600 size-4" />
           <input
             ref={inputRef}
             type="url"
-            className="flex-1 bg-transparent outline-none text-black text-sm font-sans"
+            className="flex-1 bg-transparent outline-none text-primary-900 placeholder:text-primary-400 text-sm font-sans"
             placeholder="Enter URL"
             value={url}
             onChange={onChange}
