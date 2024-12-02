@@ -1,16 +1,43 @@
-import { icons } from 'lucide-react';
+import { 
+  Loader2,
+  Settings,
+  Mail,
+  Share2,
+  Save,
+  Users,
+  FileText,
+  MessageCircle,
+  BarChart,
+  AlertCircle,
+  type LucideIcon
+} from 'lucide-react';
 import { type CSSProperties, memo } from 'react';
-import { cn } from '../Editor1/lib/utils';
+import { cn } from '@/lib/utils';
+
+const iconMap = {
+  'loader-2': Loader2,
+  'settings': Settings,
+  'mail': Mail,
+  'share-2': Share2,
+  'save': Save,
+  'users': Users,
+  'file-text': FileText,
+  'message-circle': MessageCircle,
+  'bar-chart': BarChart,
+  'alert-circle': AlertCircle,
+} as const;
+
+export type IconName = keyof typeof iconMap;
 
 export type IconProps = {
-  name: keyof typeof icons;
+  name: IconName;
   className?: string;
   strokeWidth?: number;
   style?: CSSProperties;
 };
 
 export const Icon = memo(({ name, className, strokeWidth, style }: IconProps) => {
-  const IconComponent = icons[name];
+  const IconComponent = iconMap[name];
 
   if (!IconComponent) {
     return null;

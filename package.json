@@ -85,7 +85,7 @@
     "react-slick": "^0.30.2",
     "react-swipeable": "^7.0.1",
     "react-use": "^17.5.0",
-    "recharts": "^2.12.7",
+    "recharts": "^2.13.3",
     "rehype-highlight": "^7.0.0",
     "rehype-raw": "^7.0.0",
     "rehype-sanitize": "^6.0.0",

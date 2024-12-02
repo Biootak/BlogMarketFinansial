@@ -69,6 +69,7 @@ model User {
   profile       Profile?
   notifications Notification[]
   newsletter    Newsletter[]
+  activities    ActivityLog[]
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -154,6 +155,8 @@ model Post {
   updatedAt DateTime @updatedAt
 }
 
+
+
 model Comment {
   id       String @id @default(cuid())
   content  String
@@ -198,6 +201,8 @@ model Category {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+
 
 model Tag {
   id        String @id @default(cuid())
@@ -292,4 +297,43 @@ model Newsletter {
   user      User?    @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model SystemSettings {
+  id              String   @id @default(cuid())
+  siteName        String?
+  siteDescription String?
+  maintenanceMode Boolean  @default(false)
+  cacheEnabled    Boolean  @default(true)
+  smtpServer      String?
+  smtpPort        String?
+  smtpUsername    String?
+  smtpPassword    String?
+  telegram        String?
+  instagram       String?
+  twitter         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model SystemLog {
+  id        String   @id @default(cuid())
+  level     String   // ERROR, WARNING, INFO
+  message   String   @db.Text
+  source    String
+  timestamp DateTime @default(now())
+
+  @@index([timestamp])
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  action    String
+  details   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
