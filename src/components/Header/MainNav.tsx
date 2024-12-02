@@ -20,7 +20,7 @@ export default async function MainNav() {
           </div>
 
           <div className="flex items-center">
-            <Logo />
+            <Logo variant="modern" />
           </div>
 
           <div className="hidden lg:flex justify-center flex-grow mx-4">

@@ -12,6 +12,7 @@ interface LogoProps {
   imgLight?: StaticImageData;
   useImage?: boolean;
   className?: string;
+  variant?: 'default' | 'modern';
 }
 
 const Logo: React.FC<LogoProps> = ({
@@ -19,6 +20,7 @@ const Logo: React.FC<LogoProps> = ({
   imgLight = logoLightImg,
   useImage = false,
   className = '',
+  variant = 'default',
 }) => {
   if (!img || !imgLight) {
     throw new Error('Missing image URLs in Logo component');
@@ -47,30 +49,30 @@ const Logo: React.FC<LogoProps> = ({
         duration: 1,
       },
     },
+    tap: { scale: 0.9 },
   };
 
   return (
-    <Link
-      href="/"
-      className={`ttnc-logo inline-block text-primary-6000 flex-shrink-0 ${className}`}
-    >
+    <Link href="/" className={`inline-block ${className}`}>
       <motion.div
+        variants={logoVariants}
         initial="initial"
         animate="animate"
         whileHover="hover"
-        variants={logoVariants}
+        whileTap="tap"
         style={{ originX: 0.5, originY: 0.5 }}
       >
         {useImage ? (
           <Image
+            className="block dark:hidden"
             src={img}
             alt="Logo"
-            width={150}
-            height={50}
-            className={`${className} transition-all duration-300 hover:drop-shadow-lg`}
+            priority
           />
         ) : (
-          <LogoSvg className={`${className} transition-all duration-300 hover:drop-shadow-lg`} />
+          <div className="w-16 h-16">
+            <LogoSvg className="w-full h-full" />
+          </div>
         )}
       </motion.div>
     </Link>
