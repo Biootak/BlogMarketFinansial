@@ -45,7 +45,7 @@ type SettingsFormValues = z.infer<typeof settingsSchema>;
 export default function SystemSettings() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
@@ -74,10 +74,12 @@ export default function SystemSettings() {
         const data = await response.json();
         if (data.success) {
           form.reset(data.settings);
+        } else {
+          setError(data.message || 'Failed to load settings');
         }
       } catch (error) {
         console.error('Error loading settings:', error);
-        setError(error);
+        setError(error instanceof Error ? error.message : 'An error occurred while loading settings');
       } finally {
         setLoading(false);
       }
@@ -128,7 +130,7 @@ export default function SystemSettings() {
     return (
       <div className="flex flex-col items-center justify-center h-[400px] gap-2">
         <AlertCircle className="h-8 w-8 text-destructive" />
-        <p className="text-sm text-muted-foreground">خطا در دریافت تنظیمات</p>
+        <p className="text-sm text-muted-foreground">{error}</p>
       </div>
     );
   }
