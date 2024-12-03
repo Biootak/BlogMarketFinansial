@@ -7,7 +7,7 @@ import SystemLogs from '@/components/Dashboard/Reports/SystemLogs';
 import SystemLogsData from './SystemLogsData';
 import { Loader2 } from 'lucide-react';
 import ActivityLog from '@/components/Dashboard/Reports/ActivityLog';
-import { checkReportAccess } from '@/actions/reportActions';
+import { getSystemReports } from '@/actions/reportActions';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/components/ui/use-toast';
 
@@ -94,4 +94,7 @@ export default function ReportsPage() {
       </div>
     </div>
   );
+}
+function checkReportAccess() {
+  throw new Error('Function not implemented.');
 }

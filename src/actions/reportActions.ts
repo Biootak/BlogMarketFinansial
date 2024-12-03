@@ -1,11 +1,13 @@
 'use server';
 
 import { auth } from '@/auth';
+import db from '@/lib/db';
 import { revalidatePath } from 'next/cache';
-
+import { PostStatus, Role } from '@prisma/client';
 
 interface UserStats {
   total: number;
+  active: number;
   newThisMonth: number;
   roleDistribution: Array<{ name: string; value: number }>;
 }
@@ -13,18 +15,18 @@ interface UserStats {
 interface PostStats {
   total: number;
   published: number;
+  draft: number;
   monthlyPosts: Array<{ month: string; count: number }>;
 }
 
 interface CommentStats {
   total: number;
-  pending: number;
+  recent: number;
   monthly: Array<{ month: string; count: number }>;
 }
 
 interface ViewStats {
   total: number;
-  today: number;
   monthly: Array<{ month: string; count: number }>;
   topPosts: Array<{ title: string; views: number }>;
 }
@@ -71,7 +73,7 @@ interface Activity {
   createdAt: string;
 }
 
-interface ActionResult<T> {
+interface ActionResult<T = void> {
   success: boolean;
   data?: T;
   message?: string;
@@ -79,59 +81,149 @@ interface ActionResult<T> {
 
 export async function checkReportAccess() {
   const session = await auth();
-  
-  if (!session?.user?.role || session.user.role !== 'SUPER_ADMIN') {
-    throw new Error('شما دسترسی لازم برای مشاهده این بخش را ندارید');
+  if (!session?.user || session.user.role !== Role.SUPER_ADMIN) {
+    throw new Error('شما دسترسی لازم برای مشاهده گزارش‌ها را ندارید');
   }
-  
-  return true;
 }
 
 export async function getSystemReports(): Promise<ActionResult<SystemReport>> {
   try {
     await checkReportAccess();
+
+    // آمار کاربران
+    const userStats = await db.$transaction(async (tx) => {
+      const total = await tx.user.count();
+      const active = await tx.user.count({
+        where: { updatedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } }
+      });
+      const newThisMonth = await tx.user.count({
+        where: { createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } }
+      });
+      const roleDistribution = await tx.user.groupBy({
+        by: ['role'],
+        _count: true
+      });
+
+      return {
+        total,
+        active,
+        newThisMonth,
+        roleDistribution: roleDistribution.map(item => ({
+          name: item.role === Role.SUPER_ADMIN ? 'مدیر کل' :
+                item.role === Role.ADMIN ? 'مدیر' :
+                item.role === Role.AUTHOR ? 'نویسنده' : 'کاربر',
+          value: item._count
+        }))
+      };
+    });
+
+    // آمار مطالب
+    const postStats = await db.$transaction(async (tx) => {
+      const total = await tx.post.count();
+      const published = await tx.post.count({ where: { status: PostStatus.PUBLISHED } });
+      const draft = await tx.post.count({ where: { status: PostStatus.DRAFT } });
+      
+      // آمار ماهانه
+      const monthlyPosts = await tx.$queryRaw`
+        SELECT DATE_TRUNC('month', "createdAt") as month,
+               COUNT(*) as count
+        FROM "Post"
+        WHERE "createdAt" >= NOW() - INTERVAL '12 months'
+        GROUP BY DATE_TRUNC('month', "createdAt")
+        ORDER BY month DESC
+        LIMIT 12
+      `;
+
+      return {
+        total,
+        published,
+        draft,
+        monthlyPosts: (monthlyPosts as any[]).map(item => ({
+          month: new Date(item.month).toLocaleDateString('fa-IR', { month: 'short' }),
+          count: Number(item.count)
+        }))
+      };
+    });
+
+    // آمار نظرات
+    const commentStats = await db.$transaction(async (tx) => {
+      const total = await tx.comment.count();
+      const recent = await tx.comment.count({
+        where: {
+          createdAt: {
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
+          }
+        }
+      });
+      
+      const monthly = await tx.$queryRaw`
+        SELECT DATE_TRUNC('month', "createdAt") as month,
+               COUNT(*) as count
+        FROM "Comment"
+        WHERE "createdAt" >= NOW() - INTERVAL '12 months'
+        GROUP BY DATE_TRUNC('month', "createdAt")
+        ORDER BY month DESC
+        LIMIT 12
+      `;
+
+      return {
+        total,
+        recent,
+        monthly: (monthly as any[]).map(item => ({
+          month: new Date(item.month).toLocaleDateString('fa-IR', { month: 'short' }),
+          count: Number(item.count)
+        }))
+      };
+    });
+
+    // آمار بازدیدها
+    const viewStats = await db.$transaction(async (tx) => {
+      const total = await tx.post.aggregate({
+        _sum: {
+          viewCount: true
+        }
+      });
+      
+      const monthly = await tx.$queryRaw`
+        SELECT DATE_TRUNC('month', "createdAt") as month,
+               SUM("viewCount") as count
+        FROM "Post"
+        WHERE "createdAt" >= NOW() - INTERVAL '12 months'
+        GROUP BY DATE_TRUNC('month', "createdAt")
+        ORDER BY month DESC
+        LIMIT 12
+      `;
+
+      const topPosts = await tx.post.findMany({
+        where: { status: PostStatus.PUBLISHED },
+        select: {
+          title: true,
+          viewCount: true
+        },
+        orderBy: {
+          viewCount: 'desc'
+        },
+        take: 5
+      });
+
+      return {
+        total: total._sum.viewCount || 0,
+        monthly: (monthly as any[]).map(item => ({
+          month: new Date(item.month).toLocaleDateString('fa-IR', { month: 'short' }),
+          count: Number(item.count)
+        })),
+        topPosts: topPosts.map(post => ({
+          title: post.title,
+          views: post.viewCount
+        }))
+      };
+    });
+
     const data: SystemReport = {
-      userStats: {
-        total: 1250,
-        newThisMonth: 45,
-        roleDistribution: [
-          { name: 'کاربر عادی', value: 950 },
-          { name: 'نویسنده', value: 200 },
-          { name: 'مدیر', value: 100 }
-        ]
-      },
-      postStats: {
-        total: 324,
-        published: 300,
-        monthlyPosts: [
-          { month: 'فروردین', count: 28 },
-          { month: 'اردیبهشت', count: 32 },
-          { month: 'خرداد', count: 25 }
-        ]
-      },
-      commentStats: {
-        total: 1543,
-        pending: 23,
-        monthly: [
-          { month: 'فروردین', count: 156 },
-          { month: 'اردیبهشت', count: 142 },
-          { month: 'خرداد', count: 168 }
-        ]
-      },
-      viewStats: {
-        total: 25430,
-        today: 342,
-        monthly: [
-          { month: 'فروردین', count: 8245 },
-          { month: 'اردیبهشت', count: 7856 },
-          { month: 'خرداد', count: 9329 }
-        ],
-        topPosts: [
-          { title: 'راهنمای جامع سرمایه‌گذاری در بورس', views: 1245 },
-          { title: 'تحلیل تکنیکال چیست؟', views: 986 },
-          { title: 'معرفی بهترین صندوق‌های سرمایه‌گذاری', views: 854 }
-        ]
-      }
+      userStats,
+      postStats,
+      commentStats,
+      viewStats
     };
 
     revalidatePath('/dashboard/reports');

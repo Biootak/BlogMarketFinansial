@@ -37,7 +37,24 @@ import {
   Text,
   Palette,
   Highlighter,
-  type LucideIcon
+  type LucideIcon,
+  X,
+  Share,
+  Search,
+  Bell,
+  Menu,
+  Tag,
+  TrendingUp,
+  Hash,
+  Clock,
+  Calendar,
+  Heart,
+  MessageSquare,
+  Bookmark,
+  Undo,
+  Check,
+  CheckCheck,
+  Copy
 } from 'lucide-react';
 import { type CSSProperties, memo } from 'react';
 import { cn } from '@/lib/utils';
@@ -81,6 +98,29 @@ const iconMap = {
   'text': Text,
   'palette': Palette,
   'highlighter': Highlighter,
+  'x': X,
+  'Share': Share,
+  'Search': Search,
+  'Bell': Bell,
+  'Menu':Menu,
+  'Tag':Tag,
+  'TrendingUp': TrendingUp,
+  'Hash':Hash,
+  'Users':Users,
+  'ChevronDown': ChevronDown,
+  'Clock': Clock,
+  'Calendar': Calendar,
+  'Link':Link,
+  'Heart':Heart,
+  'MessageSquare': MessageSquare,
+  'Bookmark': Bookmark,
+  'Undo': Undo,
+  'Check':Check,
+  'CheckCheck': CheckCheck,
+  'Copy': Copy,
+
+  
+
 } as const;
 
 export type IconName = keyof typeof iconMap;

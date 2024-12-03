@@ -1,7 +1,7 @@
 import type { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { auth } from '@/auth';
-import { db } from '@/lib/db';
+import db from '@/lib/db';
 
 // لیست مسیرهایی که باید لاگ شوند
 const LOGGED_PATHS = [
@@ -76,9 +76,9 @@ export async function logActivityMiddleware(req: NextRequest) {
   }
 }
 
-export async function withActivityLogging(
+export function withActivityLogging(
   handler: (req: NextRequest) => Promise<NextResponse>
-) {
+): (req: NextRequest) => Promise<NextResponse> {
   return async function (req: NextRequest) {
     await logActivityMiddleware(req);
     return handler(req);

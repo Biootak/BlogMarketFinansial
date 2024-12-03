@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getSystemLogs } from '@/actions/reportActions';
+import { getActivityLog } from '@/actions/reportActions';
 import { Loader2 } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
+import { toast, useToast } from '@/components/ui/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -25,14 +25,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AlertCircle, AlertTriangle, Info, Loader2 as Loader } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-
-interface SystemLog {
-  id: string;
-  level: string;
-  message: string;
-  source: string;
-  timestamp: string;
-}
 
 interface SystemData {
   system?: {
@@ -60,19 +52,26 @@ interface SystemData {
 }
 
 interface InitialData {
-  logs: SystemLog[];
+  logs: ActivityLog[];
   status: SystemData;
+}
+
+interface ActivityLog {
+  id: string;
+  userEmail: string;
+  action: string;
+  details: string;
+  createdAt: string;
 }
 
 export default function SystemLogs() {
   const { toast } = useToast();
-  const [logs, setLogs] = useState<SystemLog[]>([]);
+  const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [systemData, setSystemData] = useState<SystemData>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState({
-    level: 'all',
-    source: 'all',
+    action: 'all',
     search: '',
   });
 
@@ -82,7 +81,26 @@ export default function SystemLogs() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const result = await getSystemLogs();
+        const result = await getActivityLog();
+        if (result.success && result.data) {
+          setLogs(result.data);
+        } else {
+          setError(result.message || "خطا در دریافت لاگ‌های سیستم");
+        }
+      } catch (error) {
+        setError(error instanceof Error ? error.message : "خطا در دریافت لاگ‌های سیستم");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const result = await getActivityLog();
         if (result.success) {
           setData(result.data);
         } else {
@@ -123,9 +141,8 @@ export default function SystemLogs() {
   }, []);
 
   const filteredLogs = logs.filter(log => {
-    if (filter.level !== 'all' && log.level !== filter.level) return false;
-    if (filter.source !== 'all' && log.source !== filter.source) return false;
-    if (filter.search && !log.message.toLowerCase().includes(filter.search.toLowerCase())) return false;
+    if (filter.action !== 'all' && log.action !== filter.action) return false;
+    if (filter.search && !log.details.toLowerCase().includes(filter.search.toLowerCase())) return false;
     return true;
   });
 
@@ -134,7 +151,7 @@ export default function SystemLogs() {
       case 'error':
         return <Badge variant="destructive">{level}</Badge>;
       case 'warning':
-        return <Badge variant="warning">{level}</Badge>;
+        return <Badge variant="default">{level}</Badge>;
       default:
         return <Badge variant="secondary">{level}</Badge>;
     }
@@ -154,22 +171,24 @@ export default function SystemLogs() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[200px]">
-        <Loader className="h-8 w-8 animate-spin" />
+      <div className="flex justify-center items-center p-4">
+        <Loader2 className="h-6 w-6 animate-spin" />
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>خطا</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
     );
   }
 
   return (
     <div className="space-y-4">
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {/* System Info */}
         <Card>
@@ -203,7 +222,7 @@ export default function SystemLogs() {
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span>Status:</span>
-                <Badge variant={systemData.database?.status === 'online' ? 'success' : 'destructive'}>
+                <Badge variant={systemData.database?.status === 'outline' ? 'default' : 'destructive'}>
                   {systemData.database?.status}
                 </Badge>
               </div>
@@ -256,36 +275,22 @@ export default function SystemLogs() {
           />
         </div>
         <Select
-          value={filter.level}
-          onValueChange={(value) => setFilter({ ...filter, level: value })}
+          value={filter.action}
+          onValueChange={(value) => setFilter({ ...filter, action: value })}
         >
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select Level" />
+            <SelectValue placeholder="Select Action" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Levels</SelectItem>
+            <SelectItem value="all">All Actions</SelectItem>
             <SelectItem value="info">Info</SelectItem>
             <SelectItem value="warning">Warning</SelectItem>
             <SelectItem value="error">Error</SelectItem>
           </SelectContent>
         </Select>
-        <Select
-          value={filter.source}
-          onValueChange={(value) => setFilter({ ...filter, source: value })}
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select Source" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Sources</SelectItem>
-            <SelectItem value="system">System</SelectItem>
-            <SelectItem value="auth">Authentication</SelectItem>
-            <SelectItem value="api">API</SelectItem>
-          </SelectContent>
-        </Select>
         <Button
           variant="outline"
-          onClick={() => setFilter({ level: 'all', source: 'all', search: '' })}
+          onClick={() => setFilter({ action: 'all', search: '' })}
         >
           Reset Filters
         </Button>
@@ -295,19 +300,21 @@ export default function SystemLogs() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">Level</TableHead>
-              <TableHead>Message</TableHead>
-              <TableHead className="w-[150px]">Source</TableHead>
-              <TableHead className="w-[180px]">Timestamp</TableHead>
+              <TableHead>زمان</TableHead>
+              <TableHead>کاربر</TableHead>
+              <TableHead>عملیات</TableHead>
+              <TableHead>جزئیات</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredLogs.map((log) => (
               <TableRow key={log.id}>
-                <TableCell>{getLevelBadge(log.level)}</TableCell>
-                <TableCell>{log.message}</TableCell>
-                <TableCell>{log.source}</TableCell>
-                <TableCell>{new Date(log.timestamp).toLocaleString()}</TableCell>
+                <TableCell>{new Date(log.createdAt).toLocaleString('fa-IR')}</TableCell>
+                <TableCell>{log.userEmail}</TableCell>
+                <TableCell>
+                  <Badge variant="secondary">{log.action}</Badge>
+                </TableCell>
+                <TableCell>{log.details}</TableCell>
               </TableRow>
             ))}
           </TableBody>

@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Settings, Mail, Shield, Share2, Database, Wrench } from 'lucide-react';
+import { Settings, Mail, Shield, Share2, Database, Wrench, type LucideIcon } from 'lucide-react';
 
 interface TabType {
   id: string;
   name: string;
-  icon: React.ComponentType;
+  icon: LucideIcon;
 }
 
 const tabs: TabType[] = [
@@ -168,7 +168,7 @@ export default function SettingsPage() {
         {/* Tabs Navigation */}
         <nav className="flex space-x-2 space-x-reverse overflow-x-auto">
           {tabs.map((tab) => {
-            const Icon = tab.icon;
+            const IconComponent = tab.icon;
             return (
               <button
                 key={tab.id}
@@ -179,7 +179,7 @@ export default function SettingsPage() {
                     : 'text-[rgb(var(--c-primary-600))] hover:bg-[rgb(var(--c-primary-50))]'
                 }`}
               >
-                <Icon className="h-4 w-4" />
+                <IconComponent className="h-4 w-4" />
                 <span className="mr-2">{tab.name}</span>
               </button>
             );

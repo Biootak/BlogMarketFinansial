@@ -1,25 +1,59 @@
-import { NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { checkReportAccess } from '@/actions/reportActions';
 import db from '@/lib/db';
+import { NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 
-export async function GET() {
+interface MonthlyStats {
+  month: Date;
+  count: string | number;
+}
+
+interface SystemReport {
+  userStats: {
+    total: number;
+    active: number;
+    newThisMonth: number;
+    roleDistribution: Array<{
+      name: string;
+      value: number;
+    }>;
+  };
+  postStats: {
+    total: number;
+    published: number;
+    monthlyPosts: Array<{
+      month: string;
+      count: number;
+    }>;
+  };
+  viewStats: {
+    total: number;
+    monthly: Array<{
+      month: string;
+      count: number;
+    }>;
+    topPosts: Array<{
+      title: string;
+      views: number;
+    }>;
+  };
+}
+
+export async function GET(): Promise<NextResponse<SystemReport | { error: string }>> {
   try {
-    const session = await auth();
-    if (!session?.user || session.user.role !== 'SUPER_ADMIN') {
-      return new NextResponse('Unauthorized', { status: 401 });
-    }
+    await checkReportAccess();
 
-    // Get user statistics
-    const userStats = await db.$transaction(async (tx) => {
+    const systemReport = await db.$transaction(async (tx) => {
+      // User Statistics
       const total = await tx.user.count();
       const active = await tx.user.count({
-        where: { isActive: true }
+        where: { status: 'Active' }
       });
-      
+
       const firstDayOfMonth = new Date();
       firstDayOfMonth.setDate(1);
       firstDayOfMonth.setHours(0, 0, 0, 0);
-      
+
       const newThisMonth = await tx.user.count({
         where: {
           createdAt: {
@@ -33,168 +67,91 @@ export async function GET() {
         _count: true
       });
 
-      return {
-        total,
-        active,
-        newThisMonth,
-        roleDistribution: roleDistribution.map(item => ({
-          name: item.role,
-          value: item._count
-        }))
-      };
-    });
-
-    // Get post statistics
-    const postStats = await db.$transaction(async (tx) => {
-      const total = await tx.post.count();
-      const published = await tx.post.count({
+      // Post Statistics
+      const totalPosts = await tx.post.count();
+      const publishedPosts = await tx.post.count({
         where: { status: 'PUBLISHED' }
       });
-      const draft = await tx.post.count({
-        where: { status: 'DRAFT' }
+
+      const monthlyPosts = await tx.$queryRaw<MonthlyStats[]>`
+        SELECT DATE_TRUNC('month', "createdAt") as month,
+               COUNT(*) as count
+        FROM "Post"
+        WHERE "createdAt" >= NOW() - INTERVAL '12 months'
+        GROUP BY DATE_TRUNC('month', "createdAt")
+        ORDER BY month DESC
+        LIMIT 12
+      `;
+
+      // View Statistics
+      const totalViews = await tx.post.aggregate({
+        _sum: {
+          viewCount: true
+        }
       });
 
-      // Get monthly post counts for the last 6 months
-      const sixMonthsAgo = new Date();
-      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-      
-      const monthlyPosts = await tx.post.groupBy({
-        by: ['createdAt'],
-        where: {
-          createdAt: {
-            gte: sixMonthsAgo
-          }
+      const monthlyViews = await tx.$queryRaw<MonthlyStats[]>`
+        SELECT DATE_TRUNC('month', "createdAt") as month,
+               SUM("viewCount") as count
+        FROM "Post"
+        WHERE "createdAt" >= NOW() - INTERVAL '12 months'
+        GROUP BY DATE_TRUNC('month', "createdAt")
+        ORDER BY month DESC
+        LIMIT 12
+      `;
+
+      const topPosts = await tx.post.findMany({
+        where: { status: 'PUBLISHED' },
+        select: {
+          title: true,
+          viewCount: true
         },
-        _count: true
-      });
-
-      const categoryDistribution = await tx.post.groupBy({
-        by: ['categoryId'],
-        _count: true
-      });
-
-      const categories = await tx.category.findMany({
-        where: {
-          id: {
-            in: categoryDistribution.map(item => item.categoryId)
-          }
-        }
-      });
-
-      return {
-        total,
-        published,
-        draft,
-        monthlyPosts: monthlyPosts.map(item => ({
-          month: new Date(item.createdAt).toLocaleDateString('fa-IR', { month: 'short' }),
-          count: item._count
-        })),
-        categoryDistribution: categoryDistribution.map(item => {
-          const category = categories.find(c => c.id === item.categoryId);
-          return {
-            name: category?.name || 'نامشخص',
-            value: item._count
-          };
-        })
-      };
-    });
-
-    // Get comment statistics
-    const commentStats = await db.$transaction(async (tx) => {
-      const total = await tx.comment.count();
-      const approved = await tx.comment.count({
-        where: { status: 'APPROVED' }
-      });
-      const pending = await tx.comment.count({
-        where: { status: 'PENDING' }
-      });
-      const spam = await tx.comment.count({
-        where: { status: 'SPAM' }
-      });
-
-      // Get daily comment counts for the last 30 days
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      
-      const dailyComments = await tx.comment.groupBy({
-        by: ['createdAt'],
-        where: {
-          createdAt: {
-            gte: thirtyDaysAgo
-          }
+        orderBy: {
+          viewCount: 'desc'
         },
-        _count: true
+        take: 5
       });
 
-      return {
-        total,
-        approved,
-        pending,
-        spam,
-        dailyComments: dailyComments.map(item => ({
-          date: new Date(item.createdAt).toLocaleDateString('fa-IR'),
-          count: item._count
-        }))
-      };
-    });
-
-    // Get subscription statistics
-    const subscriptionStats = await db.$transaction(async (tx) => {
-      const total = await tx.subscription.count();
-      const active = await tx.subscription.count({
-        where: { 
-          endDate: {
-            gte: new Date()
-          }
-        }
-      });
-      const expired = await tx.subscription.count({
-        where: {
-          endDate: {
-            lt: new Date()
-          }
-        }
-      });
-
-      const planDistribution = await tx.subscription.groupBy({
-        by: ['planId'],
-        _count: true
-      });
-
-      const plans = await tx.plan.findMany({
-        where: {
-          id: {
-            in: planDistribution.map(item => item.planId)
-          }
-        }
-      });
-
-      return {
-        total,
-        active,
-        expired,
-        planDistribution: planDistribution.map(item => {
-          const plan = plans.find(p => p.id === item.planId);
-          return {
-            name: plan?.name || 'نامشخص',
+      const report: SystemReport = {
+        userStats: {
+          total,
+          active,
+          newThisMonth,
+          roleDistribution: roleDistribution.map(item => ({
+            name: item.role,
             value: item._count
-          };
-        })
+          }))
+        },
+        postStats: {
+          total: totalPosts,
+          published: publishedPosts,
+          monthlyPosts: monthlyPosts.map(item => ({
+            month: new Date(item.month).toLocaleDateString('fa-IR', { month: 'short' }),
+            count: Number(item.count)
+          }))
+        },
+        viewStats: {
+          total: totalViews._sum.viewCount || 0,
+          monthly: monthlyViews.map(item => ({
+            month: new Date(item.month).toLocaleDateString('fa-IR', { month: 'short' }),
+            count: Number(item.count)
+          })),
+          topPosts: topPosts.map(post => ({
+            title: post.title,
+            views: post.viewCount
+          }))
+        }
       };
+
+      return report;
     });
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        userStats,
-        postStats,
-        commentStats,
-        subscriptionStats
-      }
-    });
-
+    return NextResponse.json(systemReport);
   } catch (error) {
-    console.error('[SYSTEM_REPORTS_GET]', error);
-    return new NextResponse('Internal Error', { status: 500 });
+    console.error('Error in system-reports:', error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'خطا در دریافت گزارش‌های سیستم' },
+      { status: 500 }
+    );
   }
 }

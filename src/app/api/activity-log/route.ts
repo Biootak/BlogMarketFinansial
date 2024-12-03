@@ -43,12 +43,16 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
     const body = await req.json();
     const { action, details } = body;
+
+    if (!action || !details) {
+      return new NextResponse('Missing required fields', { status: 400 });
+    }
 
     const activity = await db.activityLog.create({
       data: {

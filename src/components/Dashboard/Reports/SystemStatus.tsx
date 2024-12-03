@@ -38,14 +38,14 @@ interface SystemStatus {
 export default function SystemStatus() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState<SystemStatus | null>(null);
+  const [status, setStatus] = useState<SystemStatus | null | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadStatus = async () => {
       try {
         const result = await getSystemStatus();
-        if (result.success) {
+        if (result.success && result.data) {
           setStatus(result.data);
           setError(null);
         } else {
@@ -70,10 +70,10 @@ export default function SystemStatus() {
   }, [toast]);
 
   const formatBytes = (bytes: number) => {
-    if (!bytes || isNaN(bytes)) return '0 بایت';
+    if (!bytes || Number.isNaN(bytes)) return '0 بایت';
     const sizes = ['بایت', 'کیلوبایت', 'مگابایت', 'گیگابایت'];
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`;
+    return `${(bytes / 1024 ** i).toFixed(1)} ${sizes[i]}`;
   };
 
   if (loading) {
@@ -151,7 +151,7 @@ export default function SystemStatus() {
             <h3 className="font-medium">CPU</h3>
           </div>
           {status.cpu && (
-            <>
+            <div>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>استفاده</span>
@@ -164,7 +164,7 @@ export default function SystemStatus() {
                   <span>دما: {status.cpu.temperature}°C</span>
                 </div>
               )}
-            </>
+            </div>
           )}
         </Card>
 
