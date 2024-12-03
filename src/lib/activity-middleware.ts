@@ -47,7 +47,7 @@ const LOGGED_PATHS = [
 export async function logActivityMiddleware(req: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return;
     }
 
