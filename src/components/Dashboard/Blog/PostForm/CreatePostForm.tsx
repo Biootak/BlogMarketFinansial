@@ -7,10 +7,12 @@ import { CreatePostSchema } from '@/schemas';
 import PostForm from './PostForm';
 import type { CreatePostInput, TaxonomyType } from '@/types/types';
 import { useToast } from '@/components/ui/use-toast';
+import { Button } from '@/components/ui/button';
 import { createPost } from '@/actions/postActions';
 import { getCategories } from '@/actions/categoryActions';
 import { getTags } from '@/actions/getTags';
 import { isSuccessResult } from '@/lib/utils';
+import { clearAllCache } from '@/lib/cacheManager';
 
 interface CreatePostFormProps {
   initialCategories: TaxonomyType[];
@@ -55,6 +57,8 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({
     try {
       const result = await createPost(data);
       if (result.success) {
+        // پاک کردن کش بعد از ایجاد پست
+        clearAllCache();
         toast({
           title: 'موفقیت',
           description: 'پست با موفقیت ایجاد شد.',

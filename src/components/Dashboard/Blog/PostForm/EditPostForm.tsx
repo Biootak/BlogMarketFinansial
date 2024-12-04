@@ -11,6 +11,7 @@ import { updatePost } from '@/actions/postActions';
 import { getCategories } from '@/actions/categoryActions';
 import { getTags } from '@/actions/getTags';
 import { isSuccessResult } from '@/lib/utils';
+import { clearAllCache } from '@/lib/cacheManager';
 
 interface EditPostFormProps {
   initialData: PostWithRelations;
@@ -57,6 +58,8 @@ const EditPostForm: React.FC<EditPostFormProps> = ({
     try {
       const result = await updatePost(initialData.id, data);
       if (result.success) {
+        // پاک کردن کش بعد از ویرایش پست
+        clearAllCache();
         toast({
           title: 'موفقیت',
           description: 'پست با موفقیت به‌روزرسانی شد.',

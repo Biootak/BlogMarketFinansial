@@ -10,7 +10,8 @@ import { useCallback, useState } from 'react';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
 
-import { listAllPosts, deletePost, updatePostStatus } from '@/actions/postActions';
+import { deletePost, listAllPosts, updatePostStatus } from '@/actions/postActions';
+import { clearAllCache } from '@/lib/cacheManager';
 
 import type { ActionResult, PostWithRelations } from '@/types/types';
 
@@ -83,7 +84,8 @@ export default function PostList({
     const result = await deletePost(id);
 
     if (result.success) {
-
+      // پاک کردن کش بعد از حذف پست
+      clearAllCache();
       setPosts((prev) => prev.filter((post) => post.id !== id));
 
     }
@@ -95,6 +97,8 @@ export default function PostList({
     const result = await updatePostStatus(id, newStatus);
 
     if (result.success) {
+      // پاک کردن کش بعد از تغییر وضعیت
+      clearAllCache();
       setPosts((prev) =>
         prev.map((post) => (post.id === id ? { ...post, status: newStatus } : post))
       );
