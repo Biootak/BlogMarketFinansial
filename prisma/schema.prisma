@@ -312,6 +312,7 @@ model SystemSettings {
   smtpPassword    String?
   telegram        String?
   instagram       String?
+  whatsapp        String?
   twitter         String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
