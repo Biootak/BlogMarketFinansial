@@ -11,7 +11,8 @@ import Loading from '@/components/Button/Loading';
 import { getSession } from 'next-auth/react';
 import { CacheService } from '@/services/cacheService';
 import { useRouter } from 'next/router';
-import { toast } from '@/components/ui/toast';
+import { toast } from '../ui/use-toast';
+
 
 const SocialProviders: React.FC = () => {
   const [isLoadingGoogle, setIsLoadingGoogle] = useState(false);
@@ -21,6 +22,15 @@ const SocialProviders: React.FC = () => {
 
   const handleSocialLogin = async (provider: string) => {
     try {
+      setError(null); // Reset error state before attempting login
+      
+      // Set loading state based on provider
+      if (provider === 'google') {
+        setIsLoadingGoogle(true);
+      } else if (provider === 'github') {
+        setIsLoadingGithub(true);
+      }
+
       const result = await signIn(provider, { redirect: false });
       
       if (result?.ok) {
@@ -31,13 +41,14 @@ const SocialProviders: React.FC = () => {
         }
 
         router.push(DEFAULT_REDIRECT);
-        router.refresh();
+        router.push(router.asPath);
         toast({
           title: 'موفقیت',
           description: 'شما با موفقیت وارد شدید',
           variant: 'success',
         });
       } else {
+        setError('مشکلی در ورود با حساب اجتماعی رخ داد');
         toast({
           title: 'خطا',
           description: 'مشکلی در ورود با حساب اجتماعی رخ داد',
@@ -45,12 +56,20 @@ const SocialProviders: React.FC = () => {
         });
       }
     } catch (error) {
+      setError('مشکلی در ورود با حساب اجتماعی رخ داد. لطفاً دوباره تلاش کنید.');
       console.error('خطا در ورود با حساب اجتماعی:', error);
       toast({
         title: 'خطا',
         description: 'مشکلی در ورود با حساب اجتماعی رخ داد. لطفاً دوباره تلاش کنید.',
         variant: 'destructive',
       });
+    } finally {
+      // Reset loading states
+      if (provider === 'google') {
+        setIsLoadingGoogle(false);
+      } else if (provider === 'github') {
+        setIsLoadingGithub(false);
+      }
     }
   };
 

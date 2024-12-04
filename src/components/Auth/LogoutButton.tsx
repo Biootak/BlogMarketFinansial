@@ -12,7 +12,6 @@ import Loading from '../Button/Loading';
 const LogoutButton = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const router = useRouter();
 
   const handleLogout = async () => {
     setIsLoading(true);

@@ -18,7 +18,9 @@ import Loading from '../Button/Loading';
 import NcLink from '../NcLink/NcLink';
 import type { z } from 'zod';
 import { CacheService } from '@/services/cacheService';
-import { toast } from '@/components/ui/toast';
+
+import { auth } from '@/auth';
+import { toast } from '../ui/use-toast';
 
 type FormData = z.infer<typeof LoginSchema>;
 
@@ -58,11 +60,14 @@ export function SigninForm() {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsSubmitting(true);
     try {
-      const result = await loginUser(data);
+      const formData = new FormData();
+      formData.append('email', data.email);
+      formData.append('password', data.password);
+      const result = await loginUser(formData);
 
       if (result.success) {
         // پاک کردن کش کاربر بعد از لاگین
-        const session = await getSession();
+        const session = await auth();
         if (session?.user?.id) {
           await CacheService.invalidateUserProfile(session.user.id);
         }

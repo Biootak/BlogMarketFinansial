@@ -26,7 +26,7 @@ export interface CommentCardProps {
 }
 
 const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'large' }) => {
-  const { addComment, deleteComment, editComment, likeComment } = useCommentStore();
+  const { addComment, deleteComment, editComment } = useCommentStore();
   const { toast } = useToast();
   const { data: session } = useSession();
 
@@ -148,23 +148,6 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
     }
   };
 
-  const handleLikeComment = async () => {
-    try {
-      const result = await likeComment(id);
-      if (result.success) {
-        // پاک کردن کش نظرات پست
-        await CacheService.invalidateComments(postId);
-      }
-    } catch (error) {
-      console.error('خطا در لایک نظر:', error);
-      toast({
-        title: 'خطا',
-        description: 'مشکلی در ثبت لایک رخ داد',
-        variant: 'destructive',
-      });
-    }
-  };
-
   const handleEditComment = async (newContent: string) => {
     if (!session) {
       toast({
@@ -242,7 +225,7 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
           {isReplying ? (
             renderCommentForm()
           ) : (
-            <CommentCardLikeReply className={className} onClickReply={openReplyForm} onClickLike={handleLikeComment} />
+            <CommentCardLikeReply className={className} onClickReply={openReplyForm} />
           )}
         </div>
       </div>

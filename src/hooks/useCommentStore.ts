@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { addComment, deleteComment, editComment, likeComment as likeCommentAction } from '@/actions/commentActions';
+import { addComment, deleteComment, editComment } from '@/actions/commentActions';
 import type { ActionResult, CommentWithCustomRelations } from '@/types/types';
 
 interface CommentState {
@@ -14,7 +14,6 @@ interface CommentState {
     commentId: string,
     content: string,
   ) => Promise<ActionResult<CommentWithCustomRelations>>;
-  likeComment: (commentId: string) => Promise<ActionResult<void>>;
 }
 
 export const useCommentStore = create<CommentState>((set) => ({
@@ -43,19 +42,6 @@ export const useCommentStore = create<CommentState>((set) => ({
       set((state) => ({
         comments: state.comments.map((comment) =>
           comment.id === commentId ? { ...comment, content: content } : comment,
-        ),
-      }));
-    }
-    return result;
-  },
-  likeComment: async (commentId) => {
-    const result = await likeCommentAction(commentId);
-    if (result.success) {
-      set((state) => ({
-        comments: state.comments.map((comment) =>
-          comment.id === commentId
-            ? { ...comment, likes: comment.likes + 1, isLiked: true }
-            : comment
         ),
       }));
     }
