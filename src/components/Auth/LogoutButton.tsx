@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -7,6 +6,7 @@ import { IoExitOutline } from 'react-icons/io5';
 import { useToast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
 import { logout } from '@/actions/auth-actions';
+import { clearAllCache } from '@/lib/cacheManager';
 import Loading from '../Button/Loading';
 
 const LogoutButton = () => {
@@ -18,6 +18,8 @@ const LogoutButton = () => {
     setIsLoading(true);
     try {
       await logout();
+      // پاک کردن کش قبل از خروج
+      clearAllCache();
       router.push('/signin');
       router.refresh();
       toast({

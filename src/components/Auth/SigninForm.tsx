@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { loginUser, sendMagicLink } from '@/actions/auth-actions';
 import { LoginSchema } from '@/schemas';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { clearAllCache } from '@/lib/cacheManager';
 import { DEFAULT_REDIRECT } from '@/config/routes';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -62,6 +63,8 @@ export function SigninForm() {
       const result = await loginUser(formData);
 
       if (result.success) {
+        // پاک کردن کش قبل از ریدایرکت
+        clearAllCache();
         setFormState({
           error: null,
           success: result.message || '',

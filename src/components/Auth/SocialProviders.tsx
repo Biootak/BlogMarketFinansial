@@ -8,6 +8,7 @@ import { FcGoogle } from 'react-icons/fc';
 import { FaGithub } from 'react-icons/fa';
 import { DEFAULT_REDIRECT } from '@/config/routes';
 import Loading from '@/components/Button/Loading';
+import { clearAllCache } from '@/lib/cacheManager';
 
 const SocialProviders: React.FC = () => {
   const [isLoadingGoogle, setIsLoadingGoogle] = useState(false);
@@ -27,6 +28,9 @@ const SocialProviders: React.FC = () => {
 
       if (result?.error) {
         setError(`خطا در ورود با ${provider === 'google' ? 'گوگل' : 'گیتهاب'}`);
+      } else {
+        // پاک کردن کش بعد از لاگین موفق
+        clearAllCache();
       }
     } catch (err) {
       setError('خطای غیرمنتظره رخ داد');
