@@ -11,11 +11,12 @@ import Link from 'next/link';
 import SingleCommentForm from '@/app/(site)/(singles)/SingleCommentForm';
 import CommentCardLikeReply from '../CommentCardLikeReply/CommentCardLikeReply';
 import { useSession } from 'next-auth/react';
+import { useToast } from '@/components/ui/use-toast';
+import { useCommentStore } from '@/hooks/useCommentStore';
+import { clearAllCache } from '@/lib/cacheManager';
 import FormattedDate from '../FormattedDate';
 import type { CommentWithRelationsAndLikes, NcDropDownItem } from '@/types/types';
 import { likeItem } from '@/actions/postActions';
-import { useToast } from '@/components/ui/use-toast';
-import { useCommentStore } from '@/hooks/useCommentStore';
 import { HiOutlinePencil, HiOutlineReply, HiOutlineFlag, HiOutlineTrash } from 'react-icons/hi';
 
 export interface CommentCardProps {
@@ -30,7 +31,6 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
   const { data: session } = useSession();
 
   const { id, content, createdAt, author, postId } = comment;
-
 
   const [commentContent, setCommentContent] = useState(content);
 
@@ -137,6 +137,8 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
 
     const result = await deleteComment(id);
     if (result.success) {
+      // پاک کردن کش بعد از حذف نظر
+      clearAllCache();
       toast({
         title: 'موفقیت',
         description: 'نظر شما با موفقیت حذف شد.',

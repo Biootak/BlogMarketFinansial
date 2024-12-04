@@ -40,6 +40,7 @@ import type {
 } from '@/types/types';
 import { z } from 'zod';
 import { HiOutlinePlus } from 'react-icons/hi2';
+import { clearAllCache } from '@/lib/cacheManager';
 
 const categorySchema = z.object({
   name: z.string().min(1, 'نام دسته‌بندی الزامی است'),
@@ -110,6 +111,8 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
         }
 
         if (result.success) {
+          // پاک کردن کش بعد از تغییر در دسته‌بندی
+          clearAllCache();
           toast({
             title: 'موفقیت',
             description: result.message,
