@@ -9,15 +9,16 @@ import { useCallback, useState } from 'react';
 
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
-
 import { deletePost, listAllPosts, updatePostStatus } from '@/actions/postActions';
-import { clearAllCache } from '@/lib/cacheManager';
+import { CacheService } from '@/services/cacheService';
 
 import type { ActionResult, PostWithRelations } from '@/types/types';
 
 import LoadingMore from '@/components/LoadingMore';
 
 import CardList from '../DashboardPage/CardList';
+import { toast } from '@/components/ui/use-toast';
+
 
 
 export default function PostList({
@@ -79,30 +80,54 @@ export default function PostList({
   const infiniteScrollRef = useInfiniteScroll(loadMore, hasNextPage, isLoading);
 
 
-  const handleDelete = async (id: string) => {
-
-    const result = await deletePost(id);
-
-    if (result.success) {
-      // پاک کردن کش بعد از حذف پست
-      clearAllCache();
-      setPosts((prev) => prev.filter((post) => post.id !== id));
-
+  const handleDeletePost = async (postId: string) => {
+    try {
+      const result = await deletePost(postId);
+      if (result.success) {
+        // پاک کردن کش پست و لیست پست‌ها
+        await CacheService.invalidatePost(postId);
+        await CacheService.invalidatePost('list');
+        setPosts((prev) => prev.filter((post) => post.id !== postId));
+        toast({
+          title: 'موفقیت',
+          description: 'پست با موفقیت حذف شد',
+          variant: 'success',
+        });
+      }
+    } catch (error) {
+      console.error('خطا در حذف پست:', error);
+      toast({
+        title: 'خطا',
+        description: 'مشکلی در حذف پست رخ داد',
+        variant: 'destructive',
+      });
     }
-
   };
 
-
-  const handleStatusChange = async (id: string, newStatus: PostWithRelations['status']) => {
-    const result = await updatePostStatus(id, newStatus);
-
-    if (result.success) {
-      // پاک کردن کش بعد از تغییر وضعیت
-      clearAllCache();
-      setPosts((prev) =>
-        prev.map((post) => (post.id === id ? { ...post, status: newStatus } : post))
-      );
-      return true;
+  const handleChangeStatus = async (postId: string, newStatus: PostWithRelations['status']): Promise<boolean> => {
+    try {
+        const result = await updatePostStatus(postId, newStatus);
+        if (result.success) {
+            // پاک کردن کش پست و لیست پست‌ها
+            await CacheService.invalidatePost(postId);
+            await CacheService.invalidatePost('list');
+            setPosts((prev) =>
+              prev.map((post) => (post.id === postId ? { ...post, status: newStatus } : post))
+            );
+            toast({
+              title: 'موفقیت',
+              description: 'وضعیت پست با موفقیت تغییر کرد',
+              variant: 'success',
+            });
+            return true;
+        }
+    } catch (error) {
+        console.error('خطا در تغییر وضعیت پست:', error);
+        toast({
+          title: 'خطا',
+          description: 'مشکلی در تغییر وضعیت پست رخ داد',
+          variant: 'destructive',
+        });
     }
     return false;
   };
@@ -122,9 +147,9 @@ export default function PostList({
 
             post={post}
 
-            onDelete={handleDelete}
+            onDelete={handleDeletePost}
 
-            onStatusChange={handleStatusChange}
+            onStatusChange={handleChangeStatus}
 
           />
 

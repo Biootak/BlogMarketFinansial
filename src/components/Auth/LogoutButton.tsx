@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { IoExitOutline } from 'react-icons/io5';
 import { useToast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
-import { logout } from '@/actions/auth-actions';
-import { clearAllCache } from '@/lib/cacheManager';
+import { getSession, signOut } from 'next-auth/react';
+import { CacheService } from '@/services/cacheService';
 import Loading from '../Button/Loading';
 
 const LogoutButton = () => {
@@ -17,21 +17,23 @@ const LogoutButton = () => {
   const handleLogout = async () => {
     setIsLoading(true);
     try {
-      await logout();
-      // پاک کردن کش قبل از خروج
-      clearAllCache();
-      router.push('/signin');
-      router.refresh();
+      // پاک کردن کش کاربر قبل از خروج
+      const session = await getSession();
+      if (session?.user?.id) {
+        await CacheService.invalidateUserProfile(session.user.id);
+      }
+
+      await signOut({ redirect: true, callbackUrl: '/' });
       toast({
-        title: 'خروج موفق',
-        description: 'شما با موفقیت از حساب کاربری خود خارج شدید.',
-        variant: 'info',
+        title: 'موفقیت',
+        description: 'شما با موفقیت خارج شدید',
+        variant: 'success',
       });
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('خطا در خروج:', error);
       toast({
         title: 'خطا',
-        description: 'مشکلی در خروج از حساب رخ داد. لطفاً دوباره تلاش کنید.',
+        description: 'مشکلی در خروج رخ داد. لطفاً دوباره تلاش کنید.',
         variant: 'destructive',
       });
     } finally {

@@ -17,6 +17,8 @@ import SocialProviders from './SocialProviders';
 import Loading from '../Button/Loading';
 import NcLink from '../NcLink/NcLink';
 import type { z } from 'zod';
+import { CacheService } from '@/services/cacheService';
+import { toast } from '@/components/ui/toast';
 
 type FormData = z.infer<typeof LoginSchema>;
 
@@ -55,33 +57,36 @@ export function SigninForm() {
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsSubmitting(true);
-    setFormState({ error: null, success: null });
-
     try {
-      const formData = new FormData();
-      Object.entries(data).forEach(([key, value]) => formData.append(key, value));
-      const result = await loginUser(formData);
+      const result = await loginUser(data);
 
       if (result.success) {
-        // پاک کردن کش قبل از ریدایرکت
-        clearAllCache();
-        setFormState({
-          error: null,
-          success: result.message || '',
-        });
+        // پاک کردن کش کاربر بعد از لاگین
+        const session = await getSession();
+        if (session?.user?.id) {
+          await CacheService.invalidateUserProfile(session.user.id);
+        }
+        
         router.push(DEFAULT_REDIRECT);
         router.refresh();
+        toast({
+          title: 'موفقیت',
+          description: 'شما با موفقیت وارد شدید',
+          variant: 'success',
+        });
       } else {
-        setFormState({
-          error: result.error || 'خطایی در ورود رخ داده است. لطفاً دوباره تلاش کنید.',
-          success: null,
+        toast({
+          title: 'خطا',
+          description: result.message,
+          variant: 'destructive',
         });
       }
     } catch (error) {
-      console.error('Login error:', error);
-      setFormState({
-        error: error instanceof Error ? error.message : 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.',
-        success: null,
+      console.error('خطا در ورود:', error);
+      toast({
+        title: 'خطا',
+        description: 'مشکلی در ورود رخ داد. لطفاً دوباره تلاش کنید.',
+        variant: 'destructive',
       });
     } finally {
       setIsSubmitting(false);

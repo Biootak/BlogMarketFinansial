@@ -11,7 +11,7 @@ import { updatePost } from '@/actions/postActions';
 import { getCategories } from '@/actions/categoryActions';
 import { getTags } from '@/actions/getTags';
 import { isSuccessResult } from '@/lib/utils';
-import { clearAllCache } from '@/lib/cacheManager';
+import { CacheService } from '@/services/cacheService';
 
 interface EditPostFormProps {
   initialData: PostWithRelations;
@@ -58,21 +58,25 @@ const EditPostForm: React.FC<EditPostFormProps> = ({
     try {
       const result = await updatePost(initialData.id, data);
       if (result.success) {
-        // پاک کردن کش بعد از ویرایش پست
-        clearAllCache();
+        // پاک کردن کش پست‌ها
+        await CacheService.invalidatePost(initialData.id);
+        await CacheService.invalidatePost('list');
+        
         toast({
           title: 'موفقیت',
           description: 'پست با موفقیت به‌روزرسانی شد.',
           variant: 'success',
         });
-        router.push('/dashboard/posts');
+        router.push("/dashboard/posts");
+        router.refresh();
       } else {
         throw new Error(result.message);
       }
     } catch (error) {
+      console.error('خطا در به‌روزرسانی پست:', error);
       toast({
         title: 'خطا',
-        description: error instanceof Error ? error.message : 'خطا در به‌روزرسانی پست',
+        description: 'مشکلی در به‌روزرسانی پست رخ داد. لطفاً دوباره تلاش کنید.',
         variant: 'destructive',
       });
     } finally {

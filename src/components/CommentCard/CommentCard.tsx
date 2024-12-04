@@ -13,7 +13,7 @@ import CommentCardLikeReply from '../CommentCardLikeReply/CommentCardLikeReply';
 import { useSession } from 'next-auth/react';
 import { useToast } from '@/components/ui/use-toast';
 import { useCommentStore } from '@/hooks/useCommentStore';
-import { clearAllCache } from '@/lib/cacheManager';
+import { CacheService } from '@/services/cacheService';
 import FormattedDate from '../FormattedDate';
 import type { CommentWithRelationsAndLikes, NcDropDownItem } from '@/types/types';
 import { likeItem } from '@/actions/postActions';
@@ -26,7 +26,7 @@ export interface CommentCardProps {
 }
 
 const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'large' }) => {
-  const { addComment, deleteComment, editComment } = useCommentStore();
+  const { addComment, deleteComment, editComment, likeComment } = useCommentStore();
   const { toast } = useToast();
   const { data: session } = useSession();
 
@@ -126,29 +126,40 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
   };
 
   const handleDeleteComment = async () => {
-    if (!session) {
+    try {
+      const result = await deleteComment(id);
+      if (result.success) {
+        // پاک کردن کش نظرات پست
+        await CacheService.invalidateComments(postId);
+        toast({
+          title: 'موفقیت',
+          description: 'نظر با موفقیت حذف شد',
+          variant: 'success',
+        });
+        closeModalDeleteComment();
+      }
+    } catch (error) {
+      console.error('خطا در حذف نظر:', error);
       toast({
         title: 'خطا',
-        description: 'برای حذف نظر باید وارد شوید.',
+        description: 'مشکلی در حذف نظر رخ داد',
         variant: 'destructive',
       });
-      return;
     }
+  };
 
-    const result = await deleteComment(id);
-    if (result.success) {
-      // پاک کردن کش بعد از حذف نظر
-      clearAllCache();
-      toast({
-        title: 'موفقیت',
-        description: 'نظر شما با موفقیت حذف شد.',
-        variant: 'default',
-      });
-      closeModalDeleteComment();
-    } else {
+  const handleLikeComment = async () => {
+    try {
+      const result = await likeComment(id);
+      if (result.success) {
+        // پاک کردن کش نظرات پست
+        await CacheService.invalidateComments(postId);
+      }
+    } catch (error) {
+      console.error('خطا در لایک نظر:', error);
       toast({
         title: 'خطا',
-        description: result.message,
+        description: 'مشکلی در ثبت لایک رخ داد',
         variant: 'destructive',
       });
     }
@@ -231,7 +242,7 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
           {isReplying ? (
             renderCommentForm()
           ) : (
-            <CommentCardLikeReply className={className} onClickReply={openReplyForm} />
+            <CommentCardLikeReply className={className} onClickReply={openReplyForm} onClickLike={handleLikeComment} />
           )}
         </div>
       </div>

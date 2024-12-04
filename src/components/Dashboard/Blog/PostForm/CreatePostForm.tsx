@@ -12,7 +12,7 @@ import { createPost } from '@/actions/postActions';
 import { getCategories } from '@/actions/categoryActions';
 import { getTags } from '@/actions/getTags';
 import { isSuccessResult } from '@/lib/utils';
-import { clearAllCache } from '@/lib/cacheManager';
+import { CacheService } from '@/services/cacheService';
 
 interface CreatePostFormProps {
   initialCategories: TaxonomyType[];
@@ -57,21 +57,27 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({
     try {
       const result = await createPost(data);
       if (result.success) {
-        // پاک کردن کش بعد از ایجاد پست
-        clearAllCache();
+        // پاک کردن کش پست‌ها
+        await CacheService.invalidatePost('list');
         toast({
           title: 'موفقیت',
-          description: 'پست با موفقیت ایجاد شد.',
+          description: 'پست با موفقیت ایجاد شد',
           variant: 'success',
         });
-        router.push('/dashboard/posts');
+        router.push("/dashboard/posts");
+        router.refresh();
       } else {
-        throw new Error(result.message);
+        toast({
+          title: 'خطا',
+          description: result.message,
+          variant: 'destructive',
+        });
       }
     } catch (error) {
+      console.error('خطا در ایجاد پست:', error);
       toast({
         title: 'خطا',
-        description: error instanceof Error ? error.message : 'خطا در ایجاد پست',
+        description: 'مشکلی در ایجاد پست رخ داد. لطفاً دوباره تلاش کنید.',
         variant: 'destructive',
       });
     } finally {

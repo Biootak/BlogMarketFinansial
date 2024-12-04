@@ -8,35 +8,49 @@ import { FcGoogle } from 'react-icons/fc';
 import { FaGithub } from 'react-icons/fa';
 import { DEFAULT_REDIRECT } from '@/config/routes';
 import Loading from '@/components/Button/Loading';
-import { clearAllCache } from '@/lib/cacheManager';
+import { getSession } from 'next-auth/react';
+import { CacheService } from '@/services/cacheService';
+import { useRouter } from 'next/router';
+import { toast } from '@/components/ui/toast';
 
 const SocialProviders: React.FC = () => {
   const [isLoadingGoogle, setIsLoadingGoogle] = useState(false);
   const [isLoadingGithub, setIsLoadingGithub] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-  const handleLogin = async (provider: 'google' | 'github') => {
-    const setLoading = provider === 'google' ? setIsLoadingGoogle : setIsLoadingGithub;
+  const handleSocialLogin = async (provider: string) => {
     try {
-      setLoading(true);
-      setError(null);
+      const result = await signIn(provider, { redirect: false });
+      
+      if (result?.ok) {
+        // پاک کردن کش کاربر بعد از لاگین
+        const session = await getSession();
+        if (session?.user?.id) {
+          await CacheService.invalidateUserProfile(session.user.id);
+        }
 
-      const result = await signIn(provider, {
-        redirect: false,
-        callbackUrl: DEFAULT_REDIRECT,
-      });
-
-      if (result?.error) {
-        setError(`خطا در ورود با ${provider === 'google' ? 'گوگل' : 'گیتهاب'}`);
+        router.push(DEFAULT_REDIRECT);
+        router.refresh();
+        toast({
+          title: 'موفقیت',
+          description: 'شما با موفقیت وارد شدید',
+          variant: 'success',
+        });
       } else {
-        // پاک کردن کش بعد از لاگین موفق
-        clearAllCache();
+        toast({
+          title: 'خطا',
+          description: 'مشکلی در ورود با حساب اجتماعی رخ داد',
+          variant: 'destructive',
+        });
       }
-    } catch (err) {
-      setError('خطای غیرمنتظره رخ داد');
-      console.error(`خطا در ورود با ${provider}:`, err);
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error('خطا در ورود با حساب اجتماعی:', error);
+      toast({
+        title: 'خطا',
+        description: 'مشکلی در ورود با حساب اجتماعی رخ داد. لطفاً دوباره تلاش کنید.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -46,7 +60,7 @@ const SocialProviders: React.FC = () => {
         <Button
           variant="outline"
           size="lg"
-          onClick={() => handleLogin('google')}
+          onClick={() => handleSocialLogin('google')}
           disabled={isLoadingGoogle}
           aria-label="ورود با گوگل"
           className="w-full"
@@ -61,7 +75,7 @@ const SocialProviders: React.FC = () => {
         <Button
           variant="outline"
           size="lg"
-          onClick={() => handleLogin('github')}
+          onClick={() => handleSocialLogin('github')}
           disabled={isLoadingGithub}
           aria-label="ورود با گیتهاب"
           className="w-full"
