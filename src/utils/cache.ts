@@ -1,13 +1,7 @@
 import { LRUCache } from 'lru-cache';
 import { CACHE_CONFIG } from '@/config/cacheConfig';
 
-// تنظیمات پیش‌فرض کش
-const DEFAULT_CACHE_OPTIONS = {
-  max: 1000, // حداکثر تعداد آیتم‌ها
-  ttl: 1000 * 60 * 60, // مدت زمان نگهداری: 1 ساعت
-  updateAgeOnGet: true, // به‌روزرسانی زمان در هنگام دریافت
-  allowStale: false, // عدم استفاده از داده‌های منقضی شده
-};
+
 
 class CacheManager {
   private cache: LRUCache<string, any>;

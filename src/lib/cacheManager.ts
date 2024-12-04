@@ -1,3 +1,4 @@
+import type { CACHE_CONFIG } from '@/config/cacheConfig';
 import cacheManager from '@/utils/cache';
 
 let CACHE_ENABLED = true;
@@ -12,20 +13,20 @@ export function getCacheStatus(): boolean {
 }
 
 // کش کردن داده‌ها با کلید
-export function cacheData<T>(key: string, data: T, ttl?: number) {
-  if (!isCacheKey(key)) { throw new Error('Invalid key provided'); }
-  cacheManager.set(key, data, ttl);
+export function cacheData<T>(key: 'POSTS' | 'CATEGORIES' | 'COMMENTS' | 'USER_PROFILE', data: T, category?: keyof typeof CACHE_CONFIG.TTL) {
+  if (!isValidCacheKey(key)) { throw new Error('Invalid key provided'); }
+  cacheManager.set(key, data, category);
 }
 
 // دریافت داده‌های کش شده
-export function getCachedData<T>(key: string): T | undefined {
-  if (!isCacheKey(key)) { throw new Error('Invalid key provided'); }
+export function getCachedData<T>(key: 'POSTS' | 'CATEGORIES' | 'COMMENTS' | 'USER_PROFILE'): T | undefined {
+  if (!isValidCacheKey(key)) { throw new Error('Invalid key provided'); }
   return cacheManager.get<T>(key);
 }
 
 // پاک کردن یک کلید خاص از کش
-export function clearCacheKey(key: string) {
-  if (!isCacheKey(key)) { throw new Error('Invalid key provided'); }
+export function clearCacheKey(key: 'POSTS' | 'CATEGORIES' | 'COMMENTS' | 'USER_PROFILE') {
+  if (!isValidCacheKey(key)) { throw new Error('Invalid key provided'); }
   cacheManager.delete(key);
 }
 
@@ -43,6 +44,6 @@ function isCacheKey(key: string): key is 'POSTS' | 'CATEGORIES' | 'COMMENTS' | '
   return ['POSTS', 'CATEGORIES', 'COMMENTS', 'USER_PROFILE'].includes(key);
 }
 
-function isValidCacheKey(key: string): boolean {
+function isValidCacheKey(key: 'POSTS' | 'CATEGORIES' | 'COMMENTS' | 'USER_PROFILE'): boolean {
   return isCacheKey(key);
 }
