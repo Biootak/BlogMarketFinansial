@@ -81,14 +81,14 @@ interface ActionResult<T = any> {
 
 export async function checkReportAccess() {
   const session = await auth();
-  
-  if (!session?.user) {
-    throw new Error('لطفا وارد حساب کاربری خود شوید');
+
+  if (!session?.user?.email) {
+    throw new Error('No user email found');
   }
 
   const user = await db.user.findUnique({
     where: { email: session.user.email },
-    select: { role: true }
+    select: { role: true },
   });
 
   if (!user || !['SUPER_ADMIN', 'ADMIN'].includes(user.role)) {
@@ -98,7 +98,7 @@ export async function checkReportAccess() {
 
 export const getSystemReports = async (): Promise<ActionResult<SystemReport>> => {
   'use server';
-  
+
   try {
     await checkReportAccess();
 
@@ -106,26 +106,31 @@ export const getSystemReports = async (): Promise<ActionResult<SystemReport>> =>
     const userStats = await db.$transaction(async (tx) => {
       const total = await tx.user.count();
       const active = await tx.user.count({
-        where: { updatedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } }
+        where: { updatedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
       });
       const newThisMonth = await tx.user.count({
-        where: { createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } }
+        where: { createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
       });
       const roleDistribution = await tx.user.groupBy({
         by: ['role'],
-        _count: true
+        _count: true,
       });
 
       return {
         total,
         active,
         newThisMonth,
-        roleDistribution: roleDistribution.map(item => ({
-          name: item.role === Role.SUPER_ADMIN ? 'مدیر کل' :
-                item.role === Role.ADMIN ? 'مدیر' :
-                item.role === Role.AUTHOR ? 'نویسنده' : 'کاربر',
-          value: item._count
-        }))
+        roleDistribution: roleDistribution.map((item) => ({
+          name:
+            item.role === Role.SUPER_ADMIN
+              ? 'مدیر کل'
+              : item.role === Role.ADMIN
+                ? 'مدیر'
+                : item.role === Role.AUTHOR
+                  ? 'نویسنده'
+                  : 'کاربر',
+          value: item._count,
+        })),
       };
     });
 
@@ -134,7 +139,7 @@ export const getSystemReports = async (): Promise<ActionResult<SystemReport>> =>
       const total = await tx.post.count();
       const published = await tx.post.count({ where: { status: 'PUBLISHED' } });
       const draft = await tx.post.count({ where: { status: 'DRAFT' } });
-      
+
       // آمار ماهانه
       const monthlyPosts = await tx.$queryRaw`
         SELECT DATE_TRUNC('month', "createdAt") as month,
@@ -150,10 +155,10 @@ export const getSystemReports = async (): Promise<ActionResult<SystemReport>> =>
         total,
         published,
         draft,
-        monthlyPosts: (monthlyPosts as any[]).map(item => ({
+        monthlyPosts: (monthlyPosts as any[]).map((item) => ({
           month: new Date(item.month).toLocaleDateString('fa-IR', { month: 'short' }),
-          count: Number(item.count)
-        }))
+          count: Number(item.count),
+        })),
       };
     });
 
@@ -163,11 +168,11 @@ export const getSystemReports = async (): Promise<ActionResult<SystemReport>> =>
       const recent = await tx.comment.count({
         where: {
           createdAt: {
-            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
-          }
-        }
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days
+          },
+        },
       });
-      
+
       const monthly = await tx.$queryRaw`
         SELECT DATE_TRUNC('month', "createdAt") as month,
                COUNT(*) as count
@@ -181,10 +186,10 @@ export const getSystemReports = async (): Promise<ActionResult<SystemReport>> =>
       return {
         total,
         recent,
-        monthly: (monthly as any[]).map(item => ({
+        monthly: (monthly as any[]).map((item) => ({
           month: new Date(item.month).toLocaleDateString('fa-IR', { month: 'short' }),
-          count: Number(item.count)
-        }))
+          count: Number(item.count),
+        })),
       };
     });
 
@@ -192,10 +197,10 @@ export const getSystemReports = async (): Promise<ActionResult<SystemReport>> =>
     const viewStats = await db.$transaction(async (tx) => {
       const total = await tx.post.aggregate({
         _sum: {
-          viewCount: true
-        }
+          viewCount: true,
+        },
       });
-      
+
       const monthly = await tx.$queryRaw`
         SELECT DATE_TRUNC('month', "createdAt") as month,
                SUM("viewCount") as count
@@ -210,24 +215,24 @@ export const getSystemReports = async (): Promise<ActionResult<SystemReport>> =>
         where: { status: 'PUBLISHED' },
         select: {
           title: true,
-          viewCount: true
+          viewCount: true,
         },
         orderBy: {
-          viewCount: 'desc'
+          viewCount: 'desc',
         },
-        take: 5
+        take: 5,
       });
 
       return {
         total: total._sum.viewCount || 0,
-        monthly: (monthly as any[]).map(item => ({
+        monthly: (monthly as any[]).map((item) => ({
           month: new Date(item.month).toLocaleDateString('fa-IR', { month: 'short' }),
-          count: Number(item.count)
+          count: Number(item.count),
         })),
-        topPosts: topPosts.map(post => ({
+        topPosts: topPosts.map((post) => ({
           title: post.title,
-          views: post.viewCount
-        }))
+          views: post.viewCount,
+        })),
       };
     });
 
@@ -235,50 +240,50 @@ export const getSystemReports = async (): Promise<ActionResult<SystemReport>> =>
       userStats,
       postStats,
       commentStats,
-      viewStats
+      viewStats,
     };
 
     revalidatePath('/dashboard/reports');
     return { success: true, data };
   } catch (error) {
     console.error('Error in getSystemReports:', error);
-    return { 
-      success: false, 
-      message: error instanceof Error ? error.message : 'خطا در دریافت گزارش‌های سیستم' 
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'خطا در دریافت گزارش‌های سیستم',
     };
   }
-}
+};
 
 export const getSystemStatus = async (): Promise<ActionResult<SystemStatus>> => {
   'use server';
-  
+
   try {
     await checkReportAccess();
-    
+
     const status: SystemStatus = {
       cpu: {
         usage: Math.random() * 100, // این مقدار باید از سیستم واقعی خوانده شود
       },
       memory: {
         total: 16384, // 16GB
-        used: 8192,   // 8GB
-        free: 8192    // 8GB
+        used: 8192, // 8GB
+        free: 8192, // 8GB
       },
       disk: {
         total: 512000, // 500GB
-        used: 256000,  // 250GB
-        free: 256000   // 250GB
+        used: 256000, // 250GB
+        free: 256000, // 250GB
       },
       database: {
         status: 'online',
         connections: 5,
-        queryTime: 100
+        queryTime: 100,
       },
       cache: {
         status: 'online',
-        hitRate: 0.85
+        hitRate: 0.85,
       },
-      lastUpdate: new Date().toISOString()
+      lastUpdate: new Date().toISOString(),
     };
 
     return { success: true, data: status };
@@ -286,41 +291,41 @@ export const getSystemStatus = async (): Promise<ActionResult<SystemStatus>> => 
     console.error('Error in getSystemStatus:', error);
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'خطا در دریافت وضعیت سیستم'
+      message: error instanceof Error ? error.message : 'خطا در دریافت وضعیت سیستم',
     };
   }
-}
+};
 
 export const getActivityLog = async (): Promise<ActionResult<Activity[]>> => {
   'use server';
-  
+
   try {
     await checkReportAccess();
 
     const activities = await db.activity.findMany({
       orderBy: {
-        createdAt: 'desc'
+        createdAt: 'desc',
       },
       take: 100,
       select: {
         id: true,
         user: {
           select: {
-            email: true
-          }
+            email: true,
+          },
         },
         action: true,
         details: true,
-        createdAt: true
-      }
+        createdAt: true,
+      },
     });
 
-    const formattedActivities = activities.map(activity => ({
+    const formattedActivities = activities.map((activity) => ({
       id: activity.id,
       userEmail: activity.user.email,
       action: activity.action,
       details: activity.details,
-      createdAt: activity.createdAt.toISOString()
+      createdAt: activity.createdAt.toISOString(),
     }));
 
     return { success: true, data: formattedActivities };
@@ -328,7 +333,7 @@ export const getActivityLog = async (): Promise<ActionResult<Activity[]>> => {
     console.error('Error in getActivityLog:', error);
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'خطا در دریافت لاگ فعالیت‌ها'
+      message: error instanceof Error ? error.message : 'خطا در دریافت لاگ فعالیت‌ها',
     };
   }
-}
+};

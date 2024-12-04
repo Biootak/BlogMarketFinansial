@@ -29,27 +29,33 @@ export default function ReportsPage() {
         const result = await getSystemReports();
         if (!result.success) {
           toast({
-            variant: "destructive",
-            title: "خطا",
-            description: result.message || "خطا در دریافت اطلاعات"
+            variant: 'destructive',
+            title: 'خطا',
+            description: result.message || 'خطا در دریافت اطلاعات',
           });
           router.push('/dashboard');
         }
       } catch (error) {
         toast({
-          variant: "destructive",
-          title: "خطای دسترسی",
-          description: error instanceof Error ? error.message : "شما دسترسی لازم برای مشاهده این بخش را ندارید"
+          variant: 'destructive',
+          title: 'خطای دسترسی',
+          description:
+            error instanceof Error
+              ? error.message
+              : 'شما دسترسی لازم برای مشاهده این بخش را ندارید',
         });
         router.push('/dashboard');
       }
     };
-    
+
     fetchData();
   }, [router]);
 
   return (
-    <div className="container mx-auto p-4 md:p-6 lg:p-8 min-h-screen bg-gradient-to-br from-[rgb(var(--c-primary-50))] to-[rgb(var(--c-primary-100))]" dir="rtl">
+    <div
+      className="container mx-auto p-4 md:p-6 lg:p-8 min-h-screen bg-gradient-to-br from-[rgb(var(--c-primary-50))] to-[rgb(var(--c-primary-100))]"
+      dir="rtl"
+    >
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-[rgb(var(--c-primary-900))]">گزارش‌های سیستم</h2>
         <p className="text-[rgb(var(--c-primary-700))]">مشاهده وضعیت و گزارش‌های سیستم</p>
@@ -57,6 +63,7 @@ export default function ReportsPage() {
 
       <div className="flex flex-wrap gap-2 mb-6">
         <button
+          type="button"
           onClick={() => setActiveTab('overview')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
             activeTab === 'overview'
@@ -69,6 +76,7 @@ export default function ReportsPage() {
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab('activity')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
             activeTab === 'activity'
@@ -81,6 +89,7 @@ export default function ReportsPage() {
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab('logs')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
             activeTab === 'logs'
@@ -102,7 +111,4 @@ export default function ReportsPage() {
       </div>
     </div>
   );
-}
-function checkReportAccess() {
-  throw new Error('Function not implemented.');
 }
