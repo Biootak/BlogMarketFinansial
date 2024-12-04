@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import db from '@/lib/db';
-
+import { setCacheStatus } from '@/lib/cacheManager';
 
 export async function GET() {
   try {
@@ -39,6 +39,9 @@ export async function POST(req: Request) {
       instagram,
       twitter,
     } = body;
+
+    // Update cache status
+    setCacheStatus(cacheEnabled);
 
     // Get existing settings or create new
     let settings = await db.systemSettings.findFirst();

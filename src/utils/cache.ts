@@ -1,4 +1,5 @@
 import { LRUCache } from 'lru-cache';
+import { getCacheStatus } from '@/lib/cacheManager';
 
 const cache = new LRUCache<string, any>({
   max: 500, // Maximum size of cache
@@ -6,10 +7,12 @@ const cache = new LRUCache<string, any>({
 });
 
 export function getFromCache<T>(key: string): T | undefined {
+  if (!getCacheStatus()) return undefined;
   return cache.get(key) as T | undefined;
 }
 
 export function setInCache<T>(key: string, value: T): void {
+  if (!getCacheStatus()) return;
   cache.set(key, value);
 }
 
@@ -17,4 +20,4 @@ export function clearCache(): void {
   cache.clear();
 }
 
-export default cache;
+export { cache };
