@@ -1,23 +1,68 @@
 import { LRUCache } from 'lru-cache';
-import { getCacheStatus } from '@/lib/cacheManager';
 
-const cache = new LRUCache<string, any>({
-  max: 500, // Maximum size of cache
-  ttl: 1000 * 60 * 60, // Items live for 1 hour
-});
+// تنظیمات پیش‌فرض کش
+const DEFAULT_CACHE_OPTIONS = {
+  max: 1000, // حداکثر تعداد آیتم‌ها
+  ttl: 1000 * 60 * 60, // مدت زمان نگهداری: 1 ساعت
+  updateAgeOnGet: true, // به‌روزرسانی زمان در هنگام دریافت
+  allowStale: false, // عدم استفاده از داده‌های منقضی شده
+};
 
-export function getFromCache<T>(key: string): T | undefined {
-  if (!getCacheStatus()) return undefined;
-  return cache.get(key) as T | undefined;
+class CacheManager {
+  private cache: LRUCache<string, any>;
+  private enabled: boolean = true;
+
+  constructor() {
+    this.cache = new LRUCache(DEFAULT_CACHE_OPTIONS);
+  }
+
+  // فعال/غیرفعال کردن کش
+  setEnabled(status: boolean): void {
+    this.enabled = status;
+    if (!status) {
+      this.clear();
+    }
+  }
+
+  // بررسی وضعیت کش
+  isEnabled(): boolean {
+    return this.enabled;
+  }
+
+  // ذخیره داده در کش
+  set<T>(key: string, value: T, ttl?: number): void {
+    if (!this.enabled) return;
+    
+    const options = ttl ? { ttl } : undefined;
+    this.cache.set(key, value, options);
+  }
+
+  // دریافت داده از کش
+  get<T>(key: string): T | undefined {
+    if (!this.enabled) return undefined;
+    return this.cache.get(key) as T | undefined;
+  }
+
+  // حذف یک آیتم از کش
+  delete(key: string): void {
+    this.cache.delete(key);
+  }
+
+  // پاک کردن کل کش
+  clear(): void {
+    this.cache.clear();
+  }
+
+  // دریافت آمار کش
+  getStats() {
+    return {
+      size: this.cache.size,
+      max: this.cache.max,
+    };
+  }
 }
 
-export function setInCache<T>(key: string, value: T): void {
-  if (!getCacheStatus()) return;
-  cache.set(key, value);
-}
+// ایجاد یک نمونه singleton از مدیریت کش
+const cacheManager = new CacheManager();
 
-export function clearCache(): void {
-  cache.clear();
-}
-
-export { cache };
+export default cacheManager;
