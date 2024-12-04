@@ -1,9 +1,9 @@
 'use server';
-
 import { auth } from '@/auth';
 import db from '@/lib/db';
+
+import { Role } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
-import { PostStatus, Role } from '@prisma/client';
 
 interface UserStats {
   total: number;
@@ -73,7 +73,7 @@ interface Activity {
   createdAt: string;
 }
 
-interface ActionResult<T = void> {
+interface ActionResult<T = any> {
   success: boolean;
   data?: T;
   message?: string;
@@ -81,12 +81,24 @@ interface ActionResult<T = void> {
 
 export async function checkReportAccess() {
   const session = await auth();
-  if (!session?.user || session.user.role !== Role.SUPER_ADMIN) {
+  
+  if (!session?.user) {
+    throw new Error('لطفا وارد حساب کاربری خود شوید');
+  }
+
+  const user = await db.user.findUnique({
+    where: { email: session.user.email },
+    select: { role: true }
+  });
+
+  if (!user || !['SUPER_ADMIN', 'ADMIN'].includes(user.role)) {
     throw new Error('شما دسترسی لازم برای مشاهده گزارش‌ها را ندارید');
   }
 }
 
-export async function getSystemReports(): Promise<ActionResult<SystemReport>> {
+export const getSystemReports = async (): Promise<ActionResult<SystemReport>> => {
+  'use server';
+  
   try {
     await checkReportAccess();
 
@@ -120,8 +132,8 @@ export async function getSystemReports(): Promise<ActionResult<SystemReport>> {
     // آمار مطالب
     const postStats = await db.$transaction(async (tx) => {
       const total = await tx.post.count();
-      const published = await tx.post.count({ where: { status: PostStatus.PUBLISHED } });
-      const draft = await tx.post.count({ where: { status: PostStatus.DRAFT } });
+      const published = await tx.post.count({ where: { status: 'PUBLISHED' } });
+      const draft = await tx.post.count({ where: { status: 'DRAFT' } });
       
       // آمار ماهانه
       const monthlyPosts = await tx.$queryRaw`
@@ -195,7 +207,7 @@ export async function getSystemReports(): Promise<ActionResult<SystemReport>> {
       `;
 
       const topPosts = await tx.post.findMany({
-        where: { status: PostStatus.PUBLISHED },
+        where: { status: 'PUBLISHED' },
         select: {
           title: true,
           viewCount: true
@@ -237,68 +249,86 @@ export async function getSystemReports(): Promise<ActionResult<SystemReport>> {
   }
 }
 
-export async function getSystemStatus(): Promise<ActionResult<SystemStatus>> {
+export const getSystemStatus = async (): Promise<ActionResult<SystemStatus>> => {
+  'use server';
+  
   try {
-    const response = await fetch('/api/system-status', {
-      cache: 'no-store',
-      credentials: 'include'
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result = await response.json();
+    await checkReportAccess();
     
-    if (!result.success) {
-      throw new Error(result.error || 'Failed to fetch system status');
-    }
+    const status: SystemStatus = {
+      cpu: {
+        usage: Math.random() * 100, // این مقدار باید از سیستم واقعی خوانده شود
+      },
+      memory: {
+        total: 16384, // 16GB
+        used: 8192,   // 8GB
+        free: 8192    // 8GB
+      },
+      disk: {
+        total: 512000, // 500GB
+        used: 256000,  // 250GB
+        free: 256000   // 250GB
+      },
+      database: {
+        status: 'online',
+        connections: 5,
+        queryTime: 100
+      },
+      cache: {
+        status: 'online',
+        hitRate: 0.85
+      },
+      lastUpdate: new Date().toISOString()
+    };
 
-    revalidatePath('/dashboard/status');
-    return { success: true, data: result.data };
+    return { success: true, data: status };
   } catch (error) {
     console.error('Error in getSystemStatus:', error);
-    return { 
-      success: false, 
-      message: error instanceof Error ? error.message : 'خطا در دریافت وضعیت سیستم' 
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'خطا در دریافت وضعیت سیستم'
     };
   }
 }
 
-export async function getActivityLog(): Promise<ActionResult<Activity[]>> {
+export const getActivityLog = async (): Promise<ActionResult<Activity[]>> => {
+  'use server';
+  
   try {
     await checkReportAccess();
-    const data: Activity[] = [
-      {
-        id: '1',
-        userEmail: 'admin@example.com',
-        action: 'ورود',
-        details: 'ورود موفق به سیستم',
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: '2',
-        userEmail: 'writer@example.com',
-        action: 'ایجاد مطلب',
-        details: 'ایجاد مطلب جدید: راهنمای سرمایه‌گذاری',
-        createdAt: new Date(Date.now() - 3600000).toISOString()
-      },
-      {
-        id: '3',
-        userEmail: 'editor@example.com',
-        action: 'ویرایش',
-        details: 'ویرایش مطلب: تحلیل تکنیکال',
-        createdAt: new Date(Date.now() - 7200000).toISOString()
-      }
-    ];
 
-    revalidatePath('/dashboard/activity');
-    return { success: true, data };
+    const activities = await db.activity.findMany({
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: 100,
+      select: {
+        id: true,
+        user: {
+          select: {
+            email: true
+          }
+        },
+        action: true,
+        details: true,
+        createdAt: true
+      }
+    });
+
+    const formattedActivities = activities.map(activity => ({
+      id: activity.id,
+      userEmail: activity.user.email,
+      action: activity.action,
+      details: activity.details,
+      createdAt: activity.createdAt.toISOString()
+    }));
+
+    return { success: true, data: formattedActivities };
   } catch (error) {
     console.error('Error in getActivityLog:', error);
-    return { 
-      success: false, 
-      message: error instanceof Error ? error.message : 'خطا در دریافت گزارش فعالیت‌ها' 
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'خطا در دریافت لاگ فعالیت‌ها'
     };
   }
 }

@@ -70,6 +70,7 @@ model User {
   notifications Notification[]
   newsletter    Newsletter[]
   activities    ActivityLog[]
+  activity      Activity[]
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -334,6 +335,17 @@ model ActivityLog {
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  details   String
+  createdAt DateTime @default(now())
 
   @@index([userId])
 }

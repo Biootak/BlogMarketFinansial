@@ -24,9 +24,17 @@ export default function ReportsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const checkAccess = async () => {
+    const fetchData = async () => {
       try {
-        await checkReportAccess();
+        const result = await getSystemReports();
+        if (!result.success) {
+          toast({
+            variant: "destructive",
+            title: "خطا",
+            description: result.message || "خطا در دریافت اطلاعات"
+          });
+          router.push('/dashboard');
+        }
       } catch (error) {
         toast({
           variant: "destructive",
@@ -37,7 +45,7 @@ export default function ReportsPage() {
       }
     };
     
-    checkAccess();
+    fetchData();
   }, [router]);
 
   return (
