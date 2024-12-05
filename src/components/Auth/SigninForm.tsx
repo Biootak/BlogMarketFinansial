@@ -5,7 +5,7 @@ import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { loginUser, sendMagicLink } from '@/actions/auth-actions';
+import { signIn } from 'next-auth/react';
 import { LoginSchema } from '@/schemas';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { clearAllCache } from '@/lib/cacheManager';
@@ -60,18 +60,13 @@ export function SigninForm() {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsSubmitting(true);
     try {
-      const formData = new FormData();
-      formData.append('email', data.email);
-      formData.append('password', data.password);
-      const result = await loginUser(formData);
+      const result = await signIn('credentials', {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
 
-      if (result.success) {
-        // پاک کردن کش کاربر بعد از لاگین
-        const session = await auth();
-        if (session?.user?.id) {
-          await CacheService.invalidateUserProfile(session.user.id);
-        }
-        
+      if (result?.ok) {
         router.push(DEFAULT_REDIRECT);
         router.refresh();
         toast({
@@ -82,7 +77,7 @@ export function SigninForm() {
       } else {
         toast({
           title: 'خطا',
-          description: result.message,
+          description: 'ایمیل یا رمز عبور اشتباه است',
           variant: 'destructive',
         });
       }

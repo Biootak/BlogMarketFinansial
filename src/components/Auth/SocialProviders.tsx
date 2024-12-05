@@ -2,15 +2,14 @@
 
 import type React from 'react';
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { getSession, signIn } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { FcGoogle } from 'react-icons/fc';
 import { FaGithub } from 'react-icons/fa';
 import { DEFAULT_REDIRECT } from '@/config/routes';
 import Loading from '@/components/Button/Loading';
-import { getSession } from 'next-auth/react';
 import { CacheService } from '@/services/cacheService';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { toast } from '../ui/use-toast';
 
 
@@ -31,17 +30,14 @@ const SocialProviders: React.FC = () => {
         setIsLoadingGithub(true);
       }
 
-      const result = await signIn(provider, { redirect: false });
+      const result = await signIn(provider, { 
+        redirect: false,
+        callbackUrl: DEFAULT_REDIRECT 
+      });
       
       if (result?.ok) {
-        // پاک کردن کش کاربر بعد از لاگین
-        const session = await getSession();
-        if (session?.user?.id) {
-          await CacheService.invalidateUserProfile(session.user.id);
-        }
-
         router.push(DEFAULT_REDIRECT);
-        router.push(router.asPath);
+        router.refresh();
         toast({
           title: 'موفقیت',
           description: 'شما با موفقیت وارد شدید',
