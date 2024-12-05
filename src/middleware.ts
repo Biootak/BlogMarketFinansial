@@ -14,8 +14,7 @@ export default auth((req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
 
-  console.log("Middleware - Auth Status:", isLoggedIn);
-  console.log("Middleware - User:", req.auth);
+  
 
   // اگر مسیر API settings است و کاربر SUPER_ADMIN نیست، دسترسی رد شود
   if (nextUrl.pathname.startsWith('/api/settings')) {
