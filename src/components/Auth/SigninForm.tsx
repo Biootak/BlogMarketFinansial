@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { signIn } from 'next-auth/react';
 import { LoginSchema } from '@/schemas';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { clearAllCache } from '@/lib/cacheManager';
 import { DEFAULT_REDIRECT } from '@/config/routes';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -21,6 +20,7 @@ import { CacheService } from '@/services/cacheService';
 
 import { auth } from '@/auth';
 import { toast } from '../ui/use-toast';
+import { sendMagicLink } from '@/actions/auth-actions';
 
 type FormData = z.infer<typeof LoginSchema>;
 
