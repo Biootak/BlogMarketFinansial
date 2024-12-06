@@ -16,14 +16,6 @@ import SocialProviders from './SocialProviders';
 import Loading from '../Button/Loading';
 import NcLink from '../NcLink/NcLink';
 import type { z } from 'zod';
-<<<<<<< HEAD
-=======
-import { CacheService } from '@/services/cacheService';
-
-import { auth } from '@/auth';
-import { toast } from '../ui/use-toast';
-import { sendMagicLink } from '@/actions/auth-actions';
->>>>>>> 4c28b2bec45777582f4d6a2906b4824fcaee1054
 
 type FormData = z.infer<typeof LoginSchema>;
 
