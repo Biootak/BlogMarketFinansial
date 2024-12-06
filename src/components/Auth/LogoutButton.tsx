@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { IoExitOutline } from 'react-icons/io5';
 import { useToast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';

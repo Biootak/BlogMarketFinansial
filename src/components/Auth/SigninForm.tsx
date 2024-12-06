@@ -5,10 +5,9 @@ import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { signIn } from 'next-auth/react';
+import { loginUser, sendMagicLink } from '@/actions/auth-actions';
 import { LoginSchema } from '@/schemas';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { clearAllCache } from '@/lib/cacheManager';
 import { DEFAULT_REDIRECT } from '@/config/routes';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -17,10 +16,6 @@ import SocialProviders from './SocialProviders';
 import Loading from '../Button/Loading';
 import NcLink from '../NcLink/NcLink';
 import type { z } from 'zod';
-import { CacheService } from '@/services/cacheService';
-
-import { auth } from '@/auth';
-import { toast } from '../ui/use-toast';
 
 type FormData = z.infer<typeof LoginSchema>;
 
@@ -59,34 +54,31 @@ export function SigninForm() {
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsSubmitting(true);
-    try {
-      const result = await signIn('credentials', {
-        email: data.email,
-        password: data.password,
-        redirect: false,
-      });
+    setFormState({ error: null, success: null });
 
-      if (result?.ok) {
+    try {
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => formData.append(key, value));
+      const result = await loginUser(formData);
+
+      if (result.success) {
+        setFormState({
+          error: null,
+          success: result.message || '',
+        });
         router.push(DEFAULT_REDIRECT);
         router.refresh();
-        toast({
-          title: 'موفقیت',
-          description: 'شما با موفقیت وارد شدید',
-          variant: 'success',
-        });
       } else {
-        toast({
-          title: 'خطا',
-          description: 'ایمیل یا رمز عبور اشتباه است',
-          variant: 'destructive',
+        setFormState({
+          error: result.error || 'خطایی در ورود رخ داده است. لطفاً دوباره تلاش کنید.',
+          success: null,
         });
       }
     } catch (error) {
-      console.error('خطا در ورود:', error);
-      toast({
-        title: 'خطا',
-        description: 'مشکلی در ورود رخ داد. لطفاً دوباره تلاش کنید.',
-        variant: 'destructive',
+      console.error('Login error:', error);
+      setFormState({
+        error: error instanceof Error ? error.message : 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.',
+        success: null,
       });
     } finally {
       setIsSubmitting(false);
