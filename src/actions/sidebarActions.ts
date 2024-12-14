@@ -15,7 +15,30 @@ export const getRecentPosts = unstable_cache(
         take: limit,
         include: {
           author: {
-            include: { profile: true },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+              status: true,
+              createdAt: true,
+              updatedAt: true,
+              role: true,
+              password: true,
+              emailVerified: true,
+              phoneNumber: true,
+              profile: {
+                select: {
+                  bio: true,
+                  avatar: true,
+                  bgImage: true,
+                  jobName: true,
+                  company: true,
+                  userId: true,
+                  id: true
+                }
+              }
+            }
           },
           categories: true,
           tags: true,
@@ -156,8 +179,29 @@ export async function getSidebarData(): Promise<SidebarData> {
           take: 5,
           include: {
             author: {
-              include: {
-                profile: true
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+                status: true,
+                createdAt: true,
+                updatedAt: true,
+                role: true,
+                password: true,
+                emailVerified: true,
+                phoneNumber: true,
+                profile: {
+                  select: {
+                    bio: true,
+                    avatar: true,
+                    bgImage: true,
+                    jobName: true,
+                    company: true,
+                    userId: true,
+                    id: true
+                  }
+                }
               }
             },
             categories: true,
@@ -166,7 +210,8 @@ export async function getSidebarData(): Promise<SidebarData> {
               select: {
                 comments: true,
                 likes: true,
-                savedBy: true
+                savedBy: true,
+                tags: true
               }
             }
           }
@@ -178,6 +223,9 @@ export async function getSidebarData(): Promise<SidebarData> {
             id: true,
             name: true,
             slug: true,
+            thumbnail: true,
+            createdAt: true,
+            updatedAt: true,
             _count: {
               select: { posts: true }
             }
@@ -190,6 +238,9 @@ export async function getSidebarData(): Promise<SidebarData> {
             id: true, 
             name: true,
             slug: true,
+            thumbnail: true,
+            createdAt: true,
+            updatedAt: true,
             _count: {
               select: { posts: true }
             }
@@ -201,7 +252,19 @@ export async function getSidebarData(): Promise<SidebarData> {
           select: {
             id: true,
             name: true,
+            email: true,
+            emailVerified: true,
+            phoneNumber: true,
             image: true,
+            profile: {
+              select: {
+                bio: true,
+                avatar: true,
+                bgImage: true,
+                jobName: true,
+                company: true
+              }
+            },
             _count: {
               select: { posts: true }
             }
@@ -209,22 +272,63 @@ export async function getSidebarData(): Promise<SidebarData> {
         }),
         prisma.advertisement.findMany({
           where: { isActive: true },
-          take: 2,
           select: {
             id: true,
             title: true,
+            description: true,
             imageUrl: true,
-            linkUrl: true
-          }
+            linkUrl: true,
+            startDate: true,
+            endDate: true,
+            isActive: true,
+            size: true,
+            position: true,
+            customPosition: true,
+            order: true,
+            customDimensions: true,
+            createdAt: true,
+            updatedAt: true,
+            type: true,
+            status: true,
+            userId: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                emailVerified: true,
+                phoneNumber: true,
+                image: true,
+                profile: {
+                  select: {
+                    bio: true,
+                    avatar: true,
+                    bgImage: true,
+                    jobName: true,
+                    company: true
+                  }
+                }
+              }
+            }
+          },
+          orderBy: { order: 'asc' }
         })
       ]);
 
       return {
         recentPosts: posts,
-        popularTags: tags,
-        popularCategories: categories,
+        popularTags: tags.map(tag => ({
+          ...tag,
+          taxonomy: 'tag' as const,
+          count: tag._count.posts
+        })),
+        popularCategories: categories.map(category => ({
+          ...category,
+          taxonomy: 'category' as const,
+          count: category._count.posts
+        })),
         popularAuthors: authors,
-        ads
+        ads: ads
       };
     },
     ['sidebar-data'],
