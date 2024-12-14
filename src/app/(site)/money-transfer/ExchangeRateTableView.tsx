@@ -1,3 +1,5 @@
+'use client'
+
 import {
   Table,
   TableBody,
@@ -9,57 +11,81 @@ import {
 import type { ExchangeRateData } from '@/types/types';
 import Image from 'next/image';
 
-export function ExchangeRateTableView({ exchangeRates }: { exchangeRates: ExchangeRateData[] }) {
+interface ExchangeRateTableViewProps {
+  exchangeRates: ExchangeRateData[];
+}
+
+export function ExchangeRateTableView({ exchangeRates }: ExchangeRateTableViewProps) {
+  const formatDate = (date: string) => {
+    return new Intl.DateTimeFormat('fa-IR', {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric'
+    }).format(new Date(date))
+  };
+
   const buySellRates = exchangeRates.filter((rate) => rate.rateType === 'BUY_SELL');
   const singleBulkRates = exchangeRates.filter((rate) => rate.rateType !== 'BUY_SELL');
 
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">نرخ خرید و فروش</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base sm:text-xl font-bold text-gray-800 dark:text-gray-200">
+            نرخ خرید و فروش
+          </h2>
+          {buySellRates.length > 0 && (
+            <time className="text-xs text-gray-500 dark:text-gray-400" dateTime={typeof buySellRates[0].updatedAt === 'string' ? new Date(buySellRates[0].updatedAt).toISOString() : buySellRates[0].updatedAt.toISOString()}>
+              {formatDate(typeof buySellRates[0].updatedAt === 'string' ? new Date(buySellRates[0].updatedAt).toISOString() : buySellRates[0].updatedAt.toISOString())}
+            </time>
+          )}
+        </div>
+        
         <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-800">
-          <Table>
+          <Table className="min-w-[350px]">
             <TableHeader>
-              <TableRow className="bg-gray-50/80 dark:bg-gray-800/80">
-                <TableHead className="w-[80px]">نماد</TableHead>
-                <TableHead className="min-w-[140px]">نام</TableHead>
-                <TableHead className="min-w-[100px]">ارز</TableHead>
-                <TableHead className="min-w-[120px]">نرخ خرید</TableHead>
-                <TableHead className="min-w-[120px]">نرخ فروش</TableHead>
-                <TableHead className="min-w-[200px]">توضیحات</TableHead>
+              <TableRow className="bg-gray-50/50 dark:bg-gray-800/50">
+                <TableHead className="w-[36px] p-1">نماد</TableHead>
+                <TableHead className="w-[100px] p-1">نام</TableHead>
+                <TableHead className="w-[70px] p-1 text-center">خرید</TableHead>
+                <TableHead className="w-[70px] p-1 text-center">فروش</TableHead>
+                <TableHead className="hidden md:table-cell w-[150px] p-1">توضیحات</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {buySellRates.map((rate) => (
-                <TableRow 
-                  key={rate.id}
-                  className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors"
-                >
-                  <TableCell className="font-medium">
-                    <div className="w-10 h-10 rounded-full border-2 border-gray-100 dark:border-gray-700 overflow-hidden">
+                <TableRow key={rate.id} className="border-t border-gray-100 dark:border-gray-800">
+                  <TableCell className="p-1">
+                    <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full border border-gray-100 dark:border-gray-700 overflow-hidden">
                       <Image
                         src={rate.imageUrl || '/images/placeholder-small.png'}
                         alt={rate.name}
-                        width={40}
-                        height={40}
+                        width={32}
+                        height={32}
                         className="object-cover w-full h-full"
                       />
                     </div>
                   </TableCell>
-                  <TableCell className="font-medium text-gray-900 dark:text-gray-100">{rate.name}</TableCell>
-                  <TableCell className="text-gray-600 dark:text-gray-400">{rate.currency}</TableCell>
-                  <TableCell>
-                    <span className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
-                      {rate.buyRate}
-                    </span>
+                  <TableCell className="p-1">
+                    <div className="leading-tight">
+                      <p className="font-medium text-gray-900 dark:text-gray-100 text-[11px] sm:text-sm">
+                        {rate.name}
+                      </p>
+                      <p className="text-[10px] text-gray-500 dark:text-gray-400">
+                        {rate.currency}
+                      </p>
+                    </div>
                   </TableCell>
-                  <TableCell>
-                    <span className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
-                      {rate.sellRate}
-                    </span>
+                  <TableCell className="p-1 text-center">
+                    <span className="block text-[11px] sm:text-sm">{rate.buyRate}</span>
                   </TableCell>
-                  <TableCell className="text-gray-600 dark:text-gray-400 max-w-[200px] truncate">
-                    {rate.description}
+                  <TableCell className="p-1 text-center">
+                    <span className="block text-[11px] sm:text-sm">{rate.sellRate}</span>
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell p-1">
+                    <span className="text-[11px] sm:text-sm text-gray-600 dark:text-gray-400">
+                      {rate.description || 'قیمت لحظه‌ای خرید و فروش'}
+                    </span>
                   </TableCell>
                 </TableRow>
               ))}
@@ -69,50 +95,62 @@ export function ExchangeRateTableView({ exchangeRates }: { exchangeRates: Exchan
       </div>
 
       <div>
-        <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">نرخ پرچون و عمده</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base sm:text-xl font-bold text-gray-800 dark:text-gray-200">
+            نرخ پرچون و عمده
+          </h2>
+          {singleBulkRates.length > 0 && (
+            <time className="text-xs text-gray-500 dark:text-gray-400" dateTime={typeof singleBulkRates[0].updatedAt === 'string' ? new Date(singleBulkRates[0].updatedAt).toISOString() : singleBulkRates[0].updatedAt.toISOString()}>
+              {formatDate(typeof singleBulkRates[0].updatedAt === 'string' ? new Date(singleBulkRates[0].updatedAt).toISOString() : singleBulkRates[0].updatedAt.toISOString())}
+            </time>
+          )}
+        </div>
+
         <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-800">
-          <Table>
+          <Table className="min-w-[350px]">
             <TableHeader>
-              <TableRow className="bg-gray-50/80 dark:bg-gray-800/80">
-                <TableHead className="w-[80px]">نماد</TableHead>
-                <TableHead className="min-w-[140px]">نام</TableHead>
-                <TableHead className="min-w-[100px]">ارز</TableHead>
-                <TableHead className="min-w-[120px]">نرخ پرچون</TableHead>
-                <TableHead className="min-w-[120px]">نرخ عمده</TableHead>
-                <TableHead className="min-w-[200px]">توضیحات</TableHead>
+              <TableRow className="bg-gray-50/50 dark:bg-gray-800/50">
+                <TableHead className="w-[36px] p-1">نماد</TableHead>
+                <TableHead className="w-[100px] p-1">نام</TableHead>
+                <TableHead className="w-[70px] p-1 text-center">پرچون</TableHead>
+                <TableHead className="w-[70px] p-1 text-center">عمده</TableHead>
+                <TableHead className="hidden md:table-cell w-[150px] p-1">توضیحات</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {singleBulkRates.map((rate) => (
-                <TableRow 
-                  key={rate.id}
-                  className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors"
-                >
-                  <TableCell className="font-medium">
-                    <div className="w-10 h-10 rounded-full border-2 border-gray-100 dark:border-gray-700 overflow-hidden">
+                <TableRow key={rate.id} className="border-t border-gray-100 dark:border-gray-800">
+                  <TableCell className="p-1">
+                    <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-full border border-gray-100 dark:border-gray-700 overflow-hidden">
                       <Image
                         src={rate.imageUrl || '/images/placeholder-small.png'}
                         alt={rate.name}
-                        width={40}
-                        height={40}
+                        width={32}
+                        height={32}
                         className="object-cover w-full h-full"
                       />
                     </div>
                   </TableCell>
-                  <TableCell className="font-medium text-gray-900 dark:text-gray-100">{rate.name}</TableCell>
-                  <TableCell className="text-gray-600 dark:text-gray-400">{rate.currency}</TableCell>
-                  <TableCell>
-                    <span className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
-                      {rate.singleRate}
-                    </span>
+                  <TableCell className="p-1">
+                    <div className="leading-tight">
+                      <p className="font-medium text-gray-900 dark:text-gray-100 text-[11px] sm:text-sm">
+                        {rate.name}
+                      </p>
+                      <p className="text-[10px] text-gray-500 dark:text-gray-400">
+                        {rate.currency}
+                      </p>
+                    </div>
                   </TableCell>
-                  <TableCell>
-                    <span className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
-                      {rate.bulkRate}
-                    </span>
+                  <TableCell className="p-1 text-center">
+                    <span className="block text-[11px] sm:text-sm">{rate.singleRate}</span>
                   </TableCell>
-                  <TableCell className="text-gray-600 dark:text-gray-400 max-w-[200px] truncate">
-                    {rate.description}
+                  <TableCell className="p-1 text-center">
+                    <span className="block text-[11px] sm:text-sm">{rate.bulkRate}</span>
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell p-1">
+                    <span className="text-[11px] sm:text-sm text-gray-600 dark:text-gray-400">
+                      {rate.description || 'قیمت عمده و پرچون'}
+                    </span>
                   </TableCell>
                 </TableRow>
               ))}

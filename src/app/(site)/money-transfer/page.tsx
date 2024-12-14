@@ -19,7 +19,7 @@ export const revalidate = 1800;
 export default async function MoneyTransferPage() {
   const exchangeRates = await getExchangeRates();
   const rateLists = await getRateLists();
-  const activeRateLists = rateLists.filter(list => list.isActive);
+  const activeRateLists = rateLists.filter((list) => list.isActive);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800">
@@ -58,7 +58,7 @@ export default async function MoneyTransferPage() {
           id="rates"
           className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden mb-16"
         >
-          <div className="p-8">
+          <div className="pt-2">
             <h2 className="text-xl font-semibold mb-6 text-center text-gray-800 dark:text-gray-100">
               نرخ‌های لحظه‌ای ارز
             </h2>
@@ -66,9 +66,9 @@ export default async function MoneyTransferPage() {
               <ExchangeRateTable exchangeRates={exchangeRates} />
             </Suspense>
           </div>
-          <div className="bg-gray-50 dark:bg-gray-700 px-8 py-4 flex justify-between items-center">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              آخرین به‌روزرسانی: {new Date().toLocaleString('fa-IR')}
+          <div className="my-2 text-center">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              نرخ‌ها به صورت دوره‌ای به‌روزرسانی می‌شوند
             </p>
           </div>
         </section>
@@ -84,13 +84,13 @@ export default async function MoneyTransferPage() {
                 نرخ‌های ویژه برای انواع ارزها و خدمات مختلف
               </p>
             </div>
-            
+
             <Suspense fallback={<div className="text-center">در حال بارگذاری لیست نرخ‌ها...</div>}>
               <RateListGrid rateLists={activeRateLists} initialCount={10} />
             </Suspense>
-            
+
             <div className="mt-8 text-center">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 نرخ‌ها به صورت دوره‌ای به‌روزرسانی می‌شوند
               </p>
             </div>
