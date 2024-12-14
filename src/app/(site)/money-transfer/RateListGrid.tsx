@@ -36,7 +36,7 @@ const formatDate = (date: string | Date) => {
 
 export default function RateListGrid({ rateLists, initialCount = 10 }: RateListGridProps) {
   const [displayCount, setDisplayCount] = useState(initialCount);
-  const [expandedCards, setExpandedCards] = useState<{ [key: string]: number }>([]);
+  const [expandedCards, setExpandedCards] = useState<{ [key: string]: number }>({});
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
   const hasMore = displayCount < rateLists.length;
