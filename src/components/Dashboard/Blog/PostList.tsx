@@ -18,6 +18,7 @@ import LoadingMore from '@/components/LoadingMore';
 
 import CardList from '../DashboardPage/CardList';
 import { toast } from '@/components/ui/use-toast';
+import { invalidateHomePageData, invalidatePostData } from '@/services/cacheService';
 
 export default function PostList({
   initialPosts,
@@ -68,8 +69,8 @@ export default function PostList({
       const result = await deletePost(postId);
       if (!result.error) {
         // Invalidate caches after successful deletion
-        await CacheService.invalidatePostData(postId);
-        await CacheService.invalidateHomePageData();
+        await invalidatePostData(postId);
+        await invalidateHomePageData();
         toast({
           title: 'موفقیت',
           description: 'پست با موفقیت حذف شد',
@@ -100,8 +101,8 @@ export default function PostList({
       const result = await updatePostStatus(postId, newStatus);
       if (!result.error) {
         // Invalidate caches after status update
-        await CacheService.invalidatePostData(postId);
-        await CacheService.invalidateHomePageData();
+        await invalidatePostData(postId);
+        await invalidateHomePageData();
         setPosts((prev) =>
           prev.map((post) => (post.id === postId ? { ...post, status: newStatus } : post)),
         );

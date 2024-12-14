@@ -16,8 +16,7 @@ import { getVerificationTokenByToken } from '@/data/verfication-token';
 import {
   invalidateUserProfile,
   invalidateDashboardCache,
-  invalidateUserRoleCache,
-  clearAllUserRelatedCaches
+  clearAllUserRelatedCaches,
 } from '@/services/cacheService';
 
 type AuthResult = {
@@ -108,10 +107,10 @@ export async function loginUser(formData: FormData): Promise<AuthResult> {
         '/dashboard/rate-lists',
         '/dashboard/settings',
         '/dashboard/reports',
-        '/dashboard/edit-profile'
+        '/dashboard/edit-profile',
       ];
 
-      dashboardPaths.forEach(path => revalidatePath(path));
+      dashboardPaths.forEach((path) => revalidatePath(path));
 
       // تازه‌سازی سایر مسیرهای اصلی
       revalidatePath('/');
@@ -120,13 +119,13 @@ export async function loginUser(formData: FormData): Promise<AuthResult> {
       revalidatePath('/portfolio');
 
       // بازگشت با هدایت مستقیم به داشبورد
-      return { 
-        success: true, 
+      return {
+        success: true,
         message: 'ورود موفقیت‌آمیز',
-        redirect: '/dashboard'  // اضافه کردن مسیر ریدایرکت
+        redirect: '/dashboard', // اضافه کردن مسیر ریدایرکت
       };
     }
-    
+
     return { success: true, message: 'ورود موفقیت‌آمیز. در حال انتقال به صفحه اصلی...' };
   } catch (error) {
     return handleAuthError(error);
@@ -198,7 +197,7 @@ export async function logout(): Promise<AuthResult> {
   try {
     const session = await auth();
     await signOut({ redirect: false });
-    
+
     // پاک کردن کامل کش‌های کاربر خارج شده
     if (session?.user?.id) {
       await clearAllUserRelatedCaches(session.user.id);
@@ -215,10 +214,10 @@ export async function logout(): Promise<AuthResult> {
       '/dashboard/rate-lists',
       '/dashboard/settings',
       '/dashboard/reports',
-      '/dashboard/edit-profile'
+      '/dashboard/edit-profile',
     ];
 
-    dashboardPaths.forEach(path => revalidatePath(path));
+    dashboardPaths.forEach((path) => revalidatePath(path));
 
     // تازه‌سازی سایر مسیرهای اصلی
     revalidatePath('/');
@@ -226,10 +225,10 @@ export async function logout(): Promise<AuthResult> {
     revalidatePath('/market');
     revalidatePath('/portfolio');
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       message: 'خروج موفقیت‌آمیز بود',
-      redirect: '/signin'  // هدایت به صفحه ورود
+      redirect: '/signin', // هدایت به صفحه ورود
     };
   } catch (error) {
     return handleAuthError(error);

@@ -8,7 +8,8 @@ import Textarea from '@/components/Textarea/Textarea';
 import { useSession } from 'next-auth/react';
 import { useToast } from '@/components/ui/use-toast';
 import { useCommentStore } from '@/hooks/useCommentStore';
-import { CacheService } from '@/services/cacheService';
+import { invalidateComments } from '@/services/cacheService';
+
 
 interface SingleCommentFormProps {
   textareaRef?: React.RefObject<HTMLTextAreaElement>;
@@ -47,7 +48,7 @@ const SingleCommentForm: FC<SingleCommentFormProps> = ({
       const result = await addComment(postId, content);
       if (result.success) {
         // پاک کردن کش نظرات پست
-        await CacheService.invalidateComments(postId);
+        await invalidateComments(postId);
         if (onClickSubmit) onClickSubmit(content);
         setContent('');
         toast({

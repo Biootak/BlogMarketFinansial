@@ -11,7 +11,8 @@ import { updatePost } from '@/actions/postActions';
 import { getCategories } from '@/actions/categoryActions';
 import { getTags } from '@/actions/getTags';
 import { isSuccessResult } from '@/lib/utils';
-import { CacheService } from '@/services/cacheService';
+import { invalidatePost } from '@/services/cacheService';
+
 
 interface EditPostFormProps {
   initialData: PostWithRelations;
@@ -59,8 +60,8 @@ const EditPostForm: React.FC<EditPostFormProps> = ({
       const result = await updatePost(initialData.id, data);
       if (result.success) {
         // پاک کردن کش پست‌ها
-        await CacheService.invalidatePost(initialData.id);
-        await CacheService.invalidatePost('list');
+        await invalidatePost(initialData.id);
+        await invalidatePost('list');
         
         toast({
           title: 'موفقیت',
