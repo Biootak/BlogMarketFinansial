@@ -35,10 +35,10 @@ export const getRecentPosts = unstable_cache(
                   jobName: true,
                   company: true,
                   userId: true,
-                  id: true
-                }
-              }
-            }
+                  id: true,
+                },
+              },
+            },
           },
           categories: true,
           tags: true,
@@ -62,8 +62,8 @@ export const getRecentPosts = unstable_cache(
   ['recent-posts'],
   {
     tags: ['recent-posts'],
-    revalidate: 3600 // Cache for 1 hour
-  }
+    revalidate: 3600, // Cache for 1 hour
+  },
 );
 
 export const getPopularTags = unstable_cache(
@@ -102,8 +102,8 @@ export const getPopularTags = unstable_cache(
   ['popular-tags'],
   {
     tags: ['popular-tags'],
-    revalidate: 3600 // Cache for 1 hour
-  }
+    revalidate: 3600, // Cache for 1 hour
+  },
 );
 
 export const getPopularCategories = unstable_cache(
@@ -143,8 +143,8 @@ export const getPopularCategories = unstable_cache(
   ['popular-categories'],
   {
     tags: ['popular-categories'],
-    revalidate: 3600 // Cache for 1 hour
-  }
+    revalidate: 3600, // Cache for 1 hour
+  },
 );
 
 export const getPopularAuthors = unstable_cache(
@@ -159,20 +159,14 @@ export const getPopularAuthors = unstable_cache(
   ['popular-authors'],
   {
     tags: ['popular-authors'],
-    revalidate: 3600 // Cache for 1 hour
-  }
+    revalidate: 3600, // Cache for 1 hour
+  },
 );
 
 export async function getSidebarData(): Promise<SidebarData> {
   return unstable_cache(
     async () => {
-      const [
-        posts,
-        tags,
-        categories,
-        authors,
-        ads
-      ] = await Promise.all([
+      const [posts, tags, categories, authors, ads] = await Promise.all([
         prisma.post.findMany({
           where: { status: 'PUBLISHED' },
           orderBy: { createdAt: 'desc' },
@@ -199,10 +193,10 @@ export async function getSidebarData(): Promise<SidebarData> {
                     jobName: true,
                     company: true,
                     userId: true,
-                    id: true
-                  }
-                }
-              }
+                    id: true,
+                  },
+                },
+              },
             },
             categories: true,
             tags: true,
@@ -211,10 +205,10 @@ export async function getSidebarData(): Promise<SidebarData> {
                 comments: true,
                 likes: true,
                 savedBy: true,
-                tags: true
-              }
-            }
-          }
+                tags: true,
+              },
+            },
+          },
         }),
         prisma.tag.findMany({
           take: 10,
@@ -227,24 +221,24 @@ export async function getSidebarData(): Promise<SidebarData> {
             createdAt: true,
             updatedAt: true,
             _count: {
-              select: { posts: true }
-            }
-          }
+              select: { posts: true },
+            },
+          },
         }),
         prisma.category.findMany({
           take: 10,
           orderBy: { posts: { _count: 'desc' } },
           select: {
-            id: true, 
+            id: true,
             name: true,
             slug: true,
             thumbnail: true,
             createdAt: true,
             updatedAt: true,
             _count: {
-              select: { posts: true }
-            }
-          }
+              select: { posts: true },
+            },
+          },
         }),
         prisma.user.findMany({
           where: { role: 'AUTHOR' },
@@ -262,13 +256,13 @@ export async function getSidebarData(): Promise<SidebarData> {
                 avatar: true,
                 bgImage: true,
                 jobName: true,
-                company: true
-              }
+                company: true,
+              },
             },
             _count: {
-              select: { posts: true }
-            }
-          }
+              select: { posts: true },
+            },
+          },
         }),
         prisma.advertisement.findMany({
           where: { isActive: true },
@@ -288,47 +282,25 @@ export async function getSidebarData(): Promise<SidebarData> {
             customDimensions: true,
             createdAt: true,
             updatedAt: true,
-            type: true,
-            status: true,
-            userId: true,
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                emailVerified: true,
-                phoneNumber: true,
-                image: true,
-                profile: {
-                  select: {
-                    bio: true,
-                    avatar: true,
-                    bgImage: true,
-                    jobName: true,
-                    company: true
-                  }
-                }
-              }
-            }
           },
-          orderBy: { order: 'asc' }
-        })
+          orderBy: { order: 'asc' },
+        }),
       ]);
 
       return {
         recentPosts: posts,
-        popularTags: tags.map(tag => ({
+        popularTags: tags.map((tag) => ({
           ...tag,
           taxonomy: 'tag' as const,
-          count: tag._count.posts
+          count: tag._count.posts,
         })),
-        popularCategories: categories.map(category => ({
+        popularCategories: categories.map((category) => ({
           ...category,
           taxonomy: 'category' as const,
-          count: category._count.posts
+          count: category._count.posts,
         })),
         popularAuthors: authors,
-        ads: ads
+        ads: ads,
       };
     },
     ['sidebar-data'],
@@ -336,12 +308,12 @@ export async function getSidebarData(): Promise<SidebarData> {
       tags: [
         'sidebar-data',
         'sidebar-posts',
-        'sidebar-tags', 
+        'sidebar-tags',
         'sidebar-categories',
         'sidebar-authors',
-        'sidebar-ads'
+        'sidebar-ads',
       ],
-      revalidate: 3600 // Cache for 1 hour
-    }
+      revalidate: 3600, // Cache for 1 hour
+    },
   )();
 }
