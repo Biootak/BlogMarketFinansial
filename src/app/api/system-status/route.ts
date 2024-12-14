@@ -32,7 +32,12 @@ export async function GET() {
       }
     } catch (diskError) {
       console.error('Error getting disk space:', diskError);
-      systemInfo.disk = { error: 'Failed to get disk space info' };
+      systemInfo.disk = {
+        total: 0,
+        free: 0,
+        used: 0,
+        usagePercentage: 0
+      };
     }
 
     // Check database status
