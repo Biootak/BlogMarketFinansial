@@ -151,7 +151,7 @@ export async function getSidebarData(): Promise<SidebarData> {
         ads
       ] = await Promise.all([
         prisma.post.findMany({
-          where: { published: true },
+          where: { status: 'PUBLISHED' },
           orderBy: { createdAt: 'desc' },
           take: 5,
           select: {
@@ -197,19 +197,21 @@ export async function getSidebarData(): Promise<SidebarData> {
             }
           }
         }),
-        prisma.ad.findMany({
-          where: { active: true },
+        prisma.advertisement.findMany({
+          where: { isActive: true },
           take: 2,
           select: {
             id: true,
             title: true,
-            image: true,
-            url: true
+            imageUrl: true,
+            linkUrl: true
           }
         })
       ]);
 
       return {
+        title: "Sidebar Title", 
+        link: "/sidebar-link", 
         recentPosts: posts,
         popularTags: tags,
         categories,

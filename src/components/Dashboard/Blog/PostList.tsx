@@ -10,7 +10,7 @@ import { useCallback, useState } from 'react';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
 import { deletePost, listAllPosts, updatePostStatus } from '@/actions/postActions';
-import { CacheService } from '@/services/cacheService';
+
 
 import type { ActionResult, PostWithRelations, PostStatus } from '@/types/types';
 

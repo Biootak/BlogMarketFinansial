@@ -18,8 +18,7 @@ export async function getCachedPost(postId: string) {
 }
 
 export async function invalidatePost(postId: string) {
-  revalidateTag('POSTS');
-  revalidateTag(`post-${postId}`);
+  await cacheManager.delete(CACHE_CONFIG.KEYS.POSTS.DETAIL(postId));
 }
 
 // مدیریت کش دسته‌بندی‌ها
@@ -32,8 +31,7 @@ export async function getCachedCategory(categoryId: string) {
 }
 
 export async function invalidateCategory(categoryId: string) {
-  revalidateTag('CATEGORIES');
-  await revalidateTag(`category-${categoryId}`);
+  await cacheManager.delete(CACHE_CONFIG.KEYS.CATEGORIES.DETAIL(categoryId));
 }
 
 // مدیریت کش نظرات
@@ -46,11 +44,10 @@ export async function getCachedComments(postId: string) {
 }
 
 export async function invalidateComments(postId: string) {
-  revalidateTag('COMMENTS');
-  await revalidateTag(`comments-${postId}`);
+  await cacheManager.delete(CACHE_CONFIG.KEYS.COMMENTS.BY_POST(postId));
 }
 
-// مدیریت کش کاربر
+// مدیریت کش پروفایل کاربر
 export async function cacheUserProfile(userId: string, data: any) {
   await cacheManager.set(CACHE_CONFIG.KEYS.USER.PROFILE(userId), data, 'USER_PROFILE');
 }
@@ -60,8 +57,7 @@ export async function getCachedUserProfile(userId: string) {
 }
 
 export async function invalidateUserProfile(userId: string) {
-  await revalidateTag('USER_PROFILE');
-  await revalidateTag(`user-${userId}`);
+  await cacheManager.delete(CACHE_CONFIG.KEYS.USER.PROFILE(userId));
 }
 
 // مدیریت کش داده‌های کاربر
@@ -88,18 +84,18 @@ export async function invalidatePostData(postId: string) {
 export async function invalidateRoleBasedCache(role: string) {
   // کش‌های مربوط به نقش نویسنده
   if (role === 'AUTHOR') {
-    await revalidateTag('author-posts');
-    await revalidateTag('author-dashboard');
+    await cacheManager.delete('author-posts');
+    await cacheManager.delete('author-dashboard');
   }
   // کش‌های مربوط به نقش ادمین
   if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
-    await revalidateTag('admin-dashboard');
-    await revalidateTag('user-management');
-    await revalidateTag('site-settings');
+    await cacheManager.delete('admin-dashboard');
+    await cacheManager.delete('user-management');
+    await cacheManager.delete('site-settings');
   }
   // کش‌های عمومی که ممکن است تحت تأثیر نقش کاربر باشند
-  await revalidateTag('dashboard-data');
-  await revalidateTag('user-permissions');
+  await cacheManager.delete('dashboard-data');
+  await cacheManager.delete('user-permissions');
 }
 
 // پاک کردن تمام کش‌های مرتبط با کاربر

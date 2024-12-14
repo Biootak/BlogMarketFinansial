@@ -460,3 +460,10 @@ export type Rate = {
   sellRate?: string; // نرخ فروش (برای سرای شاهزاده)
   value?: string;    // مقدار تکی (برای کردیت کارت و نرخ تهران)
 }
+
+export interface SidebarData {
+  title: string;
+  icon?: string;
+  link: string;
+  subItems?: SidebarData[];
+}

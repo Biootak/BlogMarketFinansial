@@ -52,7 +52,7 @@ class CacheManager {
   }
 
   /**
-   * get gets a value from the cache.
+   * get retrieves a value from the cache.
    * @param key The cache key.
    * @returns A promise that resolves to the cached value or null if not found.
    */
@@ -64,7 +64,7 @@ class CacheManager {
   }
 
   /**
-   * delete deletes a value from the cache.
+   * delete removes a value from the cache.
    * @param key The cache key.
    * @returns A promise that resolves when the cache is deleted.
    */
@@ -79,12 +79,12 @@ class CacheManager {
    * @returns A promise that resolves when the cache is cleared.
    */
   async clearPattern(pattern: string): Promise<void> {
-    // در Next.js 14 می‌توانیم از تگ‌ها برای پاک کردن گروهی استفاده کنیم
-    // این قسمت در آینده پیاده‌سازی خواهد شد
+    // In Next.js 14, we can use tags for group clearing
+    // This part will be implemented in the future
   }
 
   /**
-   * getStats gets the cache statistics.
+   * getStats retrieves the cache statistics.
    * @returns An object with cache statistics.
    */
   getStats() {
@@ -98,7 +98,7 @@ class CacheManager {
   }
 }
 
-// ایجاد یک نمونه singleton از مدیریت کش
+// Create a singleton instance of the cache manager
 const cacheManager = new CacheManager();
 
 export default cacheManager;

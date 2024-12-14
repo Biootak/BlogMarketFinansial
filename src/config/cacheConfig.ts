@@ -31,5 +31,6 @@ export const CACHE_CONFIG = {
     CATEGORIES: 1000 * 60 * 60 * 24, // 24 ساعت
     COMMENTS: 1000 * 60 * 30, // 30 دقیقه
     USER_PROFILE: 1000 * 60 * 60 * 12, // 12 ساعت
+    EXCHANGE_RATES: 1000 * 60 * 60, // 1 hour
   }
 }
