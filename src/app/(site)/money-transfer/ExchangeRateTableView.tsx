@@ -34,9 +34,12 @@ export function ExchangeRateTableView({ exchangeRates }: ExchangeRateTableViewPr
           <h2 className="text-base sm:text-xl font-bold text-gray-800 dark:text-gray-200">
             نرخ خرید و فروش
           </h2>
-          {buySellRates.length > 0 && (
-            <time className="text-xs text-gray-500 dark:text-gray-400" dateTime={typeof buySellRates[0].updatedAt === 'string' ? new Date(buySellRates[0].updatedAt).toISOString() : buySellRates[0].updatedAt.toISOString()}>
-              {formatDate(typeof buySellRates[0].updatedAt === 'string' ? new Date(buySellRates[0].updatedAt).toISOString() : buySellRates[0].updatedAt.toISOString())}
+          {buySellRates && buySellRates.length > 0 && buySellRates[0]?.updatedAt && (
+            <time 
+              className="text-xs text-gray-500 dark:text-gray-400" 
+              dateTime={new Date(buySellRates[0].updatedAt).toISOString()}
+            >
+              {formatDate(new Date(buySellRates[0].updatedAt).toISOString())}
             </time>
           )}
         </div>
@@ -99,9 +102,12 @@ export function ExchangeRateTableView({ exchangeRates }: ExchangeRateTableViewPr
           <h2 className="text-base sm:text-xl font-bold text-gray-800 dark:text-gray-200">
             نرخ پرچون و عمده
           </h2>
-          {singleBulkRates.length > 0 && (
-            <time className="text-xs text-gray-500 dark:text-gray-400" dateTime={typeof singleBulkRates[0].updatedAt === 'string' ? new Date(singleBulkRates[0].updatedAt).toISOString() : singleBulkRates[0].updatedAt.toISOString()}>
-              {formatDate(typeof singleBulkRates[0].updatedAt === 'string' ? new Date(singleBulkRates[0].updatedAt).toISOString() : singleBulkRates[0].updatedAt.toISOString())}
+          {singleBulkRates && singleBulkRates.length > 0 && singleBulkRates[0]?.updatedAt && (
+            <time 
+              className="text-xs text-gray-500 dark:text-gray-400" 
+              dateTime={new Date(singleBulkRates[0].updatedAt).toISOString()}
+            >
+              {formatDate(new Date(singleBulkRates[0].updatedAt).toISOString())}
             </time>
           )}
         </div>
