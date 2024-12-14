@@ -154,11 +154,21 @@ export async function getSidebarData(): Promise<SidebarData> {
           where: { status: 'PUBLISHED' },
           orderBy: { createdAt: 'desc' },
           take: 5,
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-            createdAt: true
+          include: {
+            author: {
+              include: {
+                profile: true
+              }
+            },
+            categories: true,
+            tags: true,
+            _count: {
+              select: {
+                comments: true,
+                likes: true,
+                savedBy: true
+              }
+            }
           }
         }),
         prisma.tag.findMany({
@@ -210,12 +220,10 @@ export async function getSidebarData(): Promise<SidebarData> {
       ]);
 
       return {
-        title: "Sidebar Title", 
-        link: "/sidebar-link", 
         recentPosts: posts,
         popularTags: tags,
-        categories,
-        authors,
+        popularCategories: categories,
+        popularAuthors: authors,
         ads
       };
     },

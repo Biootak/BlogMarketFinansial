@@ -462,8 +462,16 @@ export type Rate = {
 }
 
 export interface SidebarData {
-  title: string;
-  icon?: string;
-  link: string;
-  subItems?: SidebarData[];
+  recentPosts: PostWithRelations[];
+  popularTags: TaxonomyType[];
+  popularCategories: TaxonomyType[];
+  popularAuthors: UserWithProfile[];
+  ads: Advertisement[];
+}
+
+export interface NcDropDownItem {
+  id: string;
+  name: string;
+  icon: IconType;
+  onClick?: () => void;
 }

@@ -38,22 +38,26 @@ const PostCardMeta: React.FC<PostCardMetaProps> = ({
     <div
       className={`nc-PostCardMeta inline-flex items-center flex-wrap text-neutral-800 dark:text-neutral-200 ${className}`}
     >
-      <Link
-        href={`/author/${author.id}`}
-        className="relative flex items-center space-x-2 rtl:space-x-reverse"
-      >
-        {!hiddenAvatar && (
-          <Avatar
-            radius="rounded-full"
-            sizeClass={avatarSize}
-            imgUrl={author.profile?.avatar || author.image}
-            userName={author.name}
-          />
-        )}
-        <span className="block text-neutral-700 hover:text-black dark:text-neutral-300 dark:hover:text-white font-medium transition-colors duration-300">
-          {author.name}
-        </span>
-      </Link>
+      {author && (
+        <Link
+          href={`/author/${author.id}`}
+          className="relative flex items-center space-x-2 rtl:space-x-reverse"
+        >
+          {!hiddenAvatar && (
+            <Avatar
+              radius="rounded-full"
+              sizeClass={avatarSize}
+              imgUrl={author.profile?.avatar || author.image}
+              userName={author.name}
+            />
+          )}
+          <div>
+            <h4 className={'text-sm font-medium'}>
+              {author.name || 'نویسنده ناشناس'}
+            </h4>
+          </div>
+        </Link>
+      )}
       <span className="text-neutral-500 dark:text-neutral-400 mx-[6px] font-medium">·</span>
       <span className="text-neutral-500 dark:text-neutral-400 font-normal">{formattedDate}</span>
     </div>
