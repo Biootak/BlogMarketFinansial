@@ -1,6 +1,6 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import * as os from 'os';
+import { exec } from 'node:child_process';
+import { promisify } from 'node:util';
+import * as os from 'node:os';
 import cacheManager from '@/utils/cache';
 
 const execAsync = promisify(exec);
@@ -10,14 +10,39 @@ interface DiskSpace {
   free: number;
 }
 
+interface SystemMetrics {
+  cpu: {
+    usage: number;
+    count: number;
+    model: string;
+  };
+  memory: {
+    total: number;
+    free: number;
+    used: number;
+    usagePercentage: number;
+  };
+  disk?: {
+    total: number;
+    free: number;
+    used: number;
+    usagePercentage: number;
+  };
+  os: {
+    platform: string;
+    release: string;
+    uptime: number;
+  };
+}
+
 // Cache key for system metrics
 const CACHE_KEY = 'system_metrics';
 
-export async function getSystemMetrics() {
+export async function getSystemMetrics(): Promise<SystemMetrics> {
   try {
     // Try to get cached metrics
-    const cachedMetrics = await cacheManager.get(CACHE_KEY);
-    if (cachedMetrics) {
+    const cachedMetrics = await cacheManager.get(CACHE_KEY) as SystemMetrics;
+    if (cachedMetrics && 'cpu' in cachedMetrics && 'memory' in cachedMetrics && 'os' in cachedMetrics) {
       return cachedMetrics;
     }
 
@@ -27,32 +52,32 @@ export async function getSystemMetrics() {
     const freeMem = os.freemem();
     const usedMem = totalMem - freeMem;
 
-    const metrics = {
+    const metrics: SystemMetrics = {
       cpu: {
         usage: Math.round(cpuUsage * 100) / 100,
-        cores: cpus.length,
+        count: cpus.length,
         model: cpus[0].model,
       },
       memory: {
         total: totalMem,
-        used: usedMem,
         free: freeMem,
+        used: usedMem,
         usagePercentage: Math.round((usedMem / totalMem) * 100)
       },
       os: {
         platform: process.platform,
-        version: os.release(),
+        release: os.release(),
         uptime: os.uptime()
       }
     };
 
     // Cache the metrics
-    await cacheManager.set(CACHE_KEY, metrics, 'SYSTEM_METRICS');
+    await cacheManager.set(CACHE_KEY, metrics, "PUBLIC_DATA"); // Cache using PUBLIC_DATA type
 
     return metrics;
   } catch (error) {
     console.error('Error getting system metrics:', error);
-    throw new Error('Failed to get system metrics');
+    throw error;
   }
 }
 
@@ -61,8 +86,8 @@ export async function checkDiskSpace(drive: string): Promise<DiskSpace | null> {
   
   try {
     // Try to get cached disk space
-    const cachedDiskSpace = await cacheManager.get(CACHE_KEY);
-    if (cachedDiskSpace) {
+    const cachedDiskSpace = await cacheManager.get(CACHE_KEY) as DiskSpace;
+    if (cachedDiskSpace && 'size' in cachedDiskSpace && 'free' in cachedDiskSpace) {
       return cachedDiskSpace;
     }
 
@@ -82,12 +107,12 @@ export async function checkDiskSpace(drive: string): Promise<DiskSpace | null> {
 
       if (values.Size && values.FreeSpace) {
         const diskSpace = {
-          size: parseInt(values.Size, 10),
-          free: parseInt(values.FreeSpace, 10)
+          size: Number.parseInt(values.Size, 10),
+          free: Number.parseInt(values.FreeSpace, 10)
         };
         
         // Cache the disk space
-        await cacheManager.set(CACHE_KEY, diskSpace, 'DISK_SPACE');
+        await cacheManager.set(CACHE_KEY, diskSpace, "PUBLIC_DATA");
 
         return diskSpace;
       }
@@ -100,12 +125,12 @@ export async function checkDiskSpace(drive: string): Promise<DiskSpace | null> {
       if (lines.length >= 2) {
         const [, size, , free] = lines[1].split(/\s+/);
         const diskSpace = {
-          size: parseInt(size, 10) * 1024, // Convert KB to bytes
-          free: parseInt(free, 10) * 1024
+          size: Number.parseInt(size, 10) * 1024, // Convert KB to bytes
+          free: Number.parseInt(free, 10) * 1024
         };
 
         // Cache the disk space
-        await cacheManager.set(CACHE_KEY, diskSpace, 'DISK_SPACE');
+        await cacheManager.set(CACHE_KEY, diskSpace, "PUBLIC_DATA");
 
         return diskSpace;
       }
