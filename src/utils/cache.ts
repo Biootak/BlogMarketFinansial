@@ -1,4 +1,4 @@
-import { unstable_cache } from 'next/cache';
+import { unstable_cache, revalidateTag } from 'next/cache';
 import { CACHE_CONFIG } from '@/config/cacheConfig';
 
 /**
@@ -18,15 +18,15 @@ class CacheManager {
     key: string,
     fn: () => Promise<T>,
     options?: {
-      tags?: string[];
       revalidate?: number;
+      tags?: string[];
     }
   ): Promise<T> {
     return unstable_cache(
       fn,
       [key],
       {
-        tags: options?.tags || [],
+        tags: options?.tags || [key],
         revalidate: options?.revalidate || CACHE_CONFIG.DEFAULT_TTL / 1000,
       }
     )();
@@ -37,16 +37,22 @@ class CacheManager {
    * @param key The cache key.
    * @param value The value to cache.
    * @param category The category of the cache.
+   * @param tags Optional tags for the cache.
    * @returns A promise that resolves to the cached value.
    */
-  async set<T>(key: string, value: T, category?: keyof typeof CACHE_CONFIG.TTL): Promise<T> {
+  async set<T>(
+    key: string,
+    value: T,
+    category?: keyof typeof CACHE_CONFIG.TTL,
+    tags?: string[]
+  ): Promise<T> {
     const ttl = category ? CACHE_CONFIG.TTL[category] : CACHE_CONFIG.DEFAULT_TTL;
     return this.cacheWrapper(
       key,
       async () => value,
       {
         revalidate: ttl / 1000,
-        tags: [category || 'default'],
+        tags: tags || [key, category || 'default']
       }
     );
   }
@@ -54,9 +60,17 @@ class CacheManager {
   /**
    * get retrieves a value from the cache.
    * @param key The cache key.
+   * @param fetcher Optional fetcher function to revalidate the cache.
    * @returns A promise that resolves to the cached value or null if not found.
    */
-  async get<T>(key: string): Promise<T | null> {
+  async get<T>(key: string, fetcher?: () => Promise<T>): Promise<T | null> {
+    if (fetcher) {
+      return this.cacheWrapper<T>(
+        key,
+        fetcher,
+        { tags: [key] }
+      );
+    }
     return this.cacheWrapper<T | null>(
       key,
       async () => null
@@ -69,8 +83,7 @@ class CacheManager {
    * @returns A promise that resolves when the cache is deleted.
    */
   async delete(key: string): Promise<void> {
-    // Next.js 14 handles cache invalidation through revalidation
-    await this.set(key, null, undefined);
+    await revalidateTag(key);
   }
 
   /**
@@ -79,21 +92,45 @@ class CacheManager {
    * @returns A promise that resolves when the cache is cleared.
    */
   async clearPattern(pattern: string): Promise<void> {
-    // In Next.js 14, we can use tags for group clearing
-    // This part will be implemented in the future
+    await revalidateTag(pattern);
+  }
+
+  /**
+   * getWithSWR retrieves a value from the cache with SWR.
+   * @param key The cache key.
+   * @param fetcher The fetcher function to revalidate the cache.
+   * @param options Optional options for caching.
+   * @returns A promise that resolves to the cached value.
+   */
+  async getWithSWR<T>(
+    key: string,
+    fetcher: () => Promise<T>,
+    options?: {
+      revalidate?: number;
+      tags?: string[];
+    }
+  ): Promise<T> {
+    const cached = await this.get<T>(key);
+    if (cached) {
+      // Revalidate in background
+      this.set(key, await fetcher(), undefined, options?.tags).catch(console.error);
+      return cached;
+    }
+    const fresh = await fetcher();
+    await this.set(key, fresh, undefined, options?.tags);
+    return fresh;
   }
 
   /**
    * getStats retrieves the cache statistics.
    * @returns An object with cache statistics.
    */
-  getStats() {
+  async getStats() {
     return {
-      keys: 0, // Next.js 14 handles cache stats internally
+      hits: 0, // Next.js 14 handles stats internally
+      misses: 0,
       size: 0,
       maxSize: CACHE_CONFIG.MAX_ITEMS,
-      hits: 0,
-      misses: 0,
     };
   }
 }

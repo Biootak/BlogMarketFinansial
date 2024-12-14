@@ -1,87 +1,150 @@
 import { revalidateTag } from 'next/cache';
 import cacheManager from '@/utils/cache';
 import { CACHE_CONFIG } from '@/config/cacheConfig';
-import {
-  invalidateUserCache,
-  invalidatePublicCache,
-  invalidateHomePageCache,
-  invalidatePostCache,
-} from '@/actions/cacheActions';
+
+// Types
+export interface Post {
+  id: string;
+  title: string;
+  content: string;
+  // سایر فیلدهای پست
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  // سایر فیلدهای دسته‌بندی
+}
+
+export interface Comment {
+  id: string;
+  content: string;
+  postId: string;
+  // سایر فیلدهای نظر
+}
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  // سایر فیلدهای پروفایل
+}
+
+export interface MarketData {
+  symbol: string;
+  price: number;
+  change: number;
+  volume: number;
+  // سایر فیلدهای داده‌های بازار
+}
+
+export type UserRole = 'USER' | 'AUTHOR' | 'ADMIN' | 'SUPER_ADMIN';
 
 // مدیریت کش پست‌ها
-export async function cachePost(postId: string, data: any) {
-  await cacheManager.set(CACHE_CONFIG.KEYS.POSTS.DETAIL(postId), data, 'POSTS');
+export async function cachePost(postId: string, data: Post): Promise<void> {
+  const tags = ['posts', `post-${postId}`];
+  await cacheManager.set(CACHE_CONFIG.KEYS.POSTS.DETAIL(postId), data, 'POSTS', tags);
 }
 
-export async function getCachedPost(postId: string) {
-  return cacheManager.get(CACHE_CONFIG.KEYS.POSTS.DETAIL(postId));
+export async function getCachedPost(postId: string, fetcher?: () => Promise<Post>): Promise<Post | null> {
+  if (fetcher) {
+    return cacheManager.getWithSWR(
+      CACHE_CONFIG.KEYS.POSTS.DETAIL(postId),
+      fetcher,
+      { tags: ['posts', `post-${postId}`] }
+    );
+  }
+  return cacheManager.get<Post>(CACHE_CONFIG.KEYS.POSTS.DETAIL(postId));
 }
 
-export async function invalidatePost(postId: string) {
-  await cacheManager.delete(CACHE_CONFIG.KEYS.POSTS.DETAIL(postId));
+export async function invalidatePost(postId: string): Promise<void> {
+  await revalidateTag(`post-${postId}`);
+}
+
+export async function invalidateAllPosts(): Promise<void> {
+  await revalidateTag('posts');
 }
 
 // مدیریت کش دسته‌بندی‌ها
-export async function cacheCategory(categoryId: string, data: any) {
-  await cacheManager.set(CACHE_CONFIG.KEYS.CATEGORIES.DETAIL(categoryId), data, 'CATEGORIES');
+export async function cacheCategory(categoryId: string, data: Category): Promise<void> {
+  const tags = ['categories', `category-${categoryId}`];
+  await cacheManager.set(
+    CACHE_CONFIG.KEYS.CATEGORIES.DETAIL(categoryId),
+    data,
+    'CATEGORIES',
+    tags
+  );
 }
 
-export async function getCachedCategory(categoryId: string) {
-  return cacheManager.get(CACHE_CONFIG.KEYS.CATEGORIES.DETAIL(categoryId));
+export async function getCachedCategory(categoryId: string, fetcher?: () => Promise<Category>): Promise<Category | null> {
+  if (fetcher) {
+    return cacheManager.getWithSWR(
+      CACHE_CONFIG.KEYS.CATEGORIES.DETAIL(categoryId),
+      fetcher,
+      { tags: ['categories', `category-${categoryId}`] }
+    );
+  }
+  return cacheManager.get<Category>(CACHE_CONFIG.KEYS.CATEGORIES.DETAIL(categoryId));
 }
 
-export async function invalidateCategory(categoryId: string) {
-  await cacheManager.delete(CACHE_CONFIG.KEYS.CATEGORIES.DETAIL(categoryId));
+export async function invalidateCategory(categoryId: string): Promise<void> {
+  await revalidateTag(`category-${categoryId}`);
+}
+
+export async function invalidateAllCategories(): Promise<void> {
+  await revalidateTag('categories');
 }
 
 // مدیریت کش نظرات
-export async function cacheComments(postId: string, data: any) {
+export async function cacheComments(postId: string, data: Comment[]): Promise<void> {
   await cacheManager.set(CACHE_CONFIG.KEYS.COMMENTS.BY_POST(postId), data, 'COMMENTS');
 }
 
-export async function getCachedComments(postId: string) {
-  return cacheManager.get(CACHE_CONFIG.KEYS.COMMENTS.BY_POST(postId));
+export async function getCachedComments(postId: string): Promise<Comment[] | null> {
+  return cacheManager.get<Comment[]>(CACHE_CONFIG.KEYS.COMMENTS.BY_POST(postId));
 }
 
-export async function invalidateComments(postId: string) {
+export async function invalidateComments(postId: string): Promise<void> {
   await cacheManager.delete(CACHE_CONFIG.KEYS.COMMENTS.BY_POST(postId));
 }
 
 // مدیریت کش پروفایل کاربر
-export async function cacheUserProfile(userId: string, data: any) {
+export async function cacheUserProfile(userId: string, data: UserProfile): Promise<void> {
   await cacheManager.set(CACHE_CONFIG.KEYS.USER.PROFILE(userId), data, 'USER_PROFILE');
 }
 
-export async function getCachedUserProfile(userId: string) {
-  return cacheManager.get(CACHE_CONFIG.KEYS.USER.PROFILE(userId));
+export async function getCachedUserProfile(userId: string): Promise<UserProfile | null> {
+  return cacheManager.get<UserProfile>(CACHE_CONFIG.KEYS.USER.PROFILE(userId));
 }
 
-export async function invalidateUserProfile(userId: string) {
+export async function invalidateUserProfile(userId: string): Promise<void> {
   await cacheManager.delete(CACHE_CONFIG.KEYS.USER.PROFILE(userId));
 }
 
 // مدیریت کش داده‌های کاربر
-export async function invalidateUserData(userId: string) {
-  await invalidateUserCache(userId);
+export async function invalidateUserData(userId: string): Promise<void> {
+  await cacheManager.delete(CACHE_CONFIG.KEYS.USER.DATA(userId));
 }
 
 // مدیریت کش داده‌های عمومی
-export async function invalidatePublicData() {
-  await invalidatePublicCache();
+export async function invalidatePublicData(): Promise<void> {
+  await cacheManager.delete(CACHE_CONFIG.KEYS.PUBLIC.DATA);
+  await cacheManager.delete(CACHE_CONFIG.KEYS.PUBLIC.META);
+  await cacheManager.delete(CACHE_CONFIG.KEYS.PUBLIC.SETTINGS);
 }
 
 // مدیریت کش داده‌های صفحه اصلی
-export async function invalidateHomePageData() {
-  await invalidateHomePageCache();
+export async function invalidateHomePageData(): Promise<void> {
+  await cacheManager.delete(CACHE_CONFIG.KEYS.HOME_PAGE.BASIC_DATA);
 }
 
 // مدیریت کش داده‌های پست
-export async function invalidatePostData(postId: string) {
-  await invalidatePostCache(postId);
+export async function invalidatePostData(postId: string): Promise<void> {
+  await cacheManager.delete(CACHE_CONFIG.KEYS.POSTS.DETAIL(postId));
 }
 
 // پاک کردن تمام کش‌های مربوط به نقش کاربر
-export async function invalidateRoleBasedCache(role: string) {
+export async function invalidateRoleBasedCache(role: UserRole): Promise<void> {
   // کش‌های مربوط به نقش نویسنده
   if (role === 'AUTHOR') {
     await cacheManager.delete('author-posts');
@@ -99,7 +162,7 @@ export async function invalidateRoleBasedCache(role: string) {
 }
 
 // پاک کردن تمام کش‌های مرتبط با کاربر
-export async function invalidateAllUserRelatedCache(userId: string, role: string) {
+export async function invalidateAllUserRelatedCache(userId: string, role: UserRole): Promise<void> {
   // کش‌های شخصی کاربر
   await invalidateUserData(userId);
   await invalidateUserProfile(userId);
@@ -115,4 +178,37 @@ export async function invalidateAllUserRelatedCache(userId: string, role: string
 // گرفتن آمار کش
 export function getStats() {
   return cacheManager.getStats();
+}
+
+// Market Data Caching
+export async function cacheMarketData(symbol: string, data: MarketData): Promise<void> {
+  const tags = ['market', `market-${symbol}`];
+  await cacheManager.set(
+    CACHE_CONFIG.KEYS.MARKET.DETAIL(symbol),
+    data,
+    'MARKET_DATA',
+    tags
+  );
+}
+
+export async function getCachedMarketData(
+  symbol: string,
+  fetcher?: () => Promise<MarketData>
+): Promise<MarketData | null> {
+  if (fetcher) {
+    return cacheManager.getWithSWR(
+      CACHE_CONFIG.KEYS.MARKET.DETAIL(symbol),
+      fetcher,
+      { tags: ['market', `market-${symbol}`] }
+    );
+  }
+  return cacheManager.get<MarketData>(CACHE_CONFIG.KEYS.MARKET.DETAIL(symbol));
+}
+
+export async function invalidateMarketData(symbol: string): Promise<void> {
+  await revalidateTag(`market-${symbol}`);
+}
+
+export async function invalidateAllMarketData(): Promise<void> {
+  await revalidateTag('market');
 }

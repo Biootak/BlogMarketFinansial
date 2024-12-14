@@ -22,6 +22,22 @@ export const CACHE_CONFIG = {
     USER: {
       PROFILE: (userId: string) => `user:${userId}`,
       PREFERENCES: (userId: string) => `user:preferences:${userId}`,
+      DATA: (userId: string) => `user:data:${userId}`,
+    },
+    PUBLIC: {
+      DATA: 'public:data',
+      META: 'public:meta',
+      SETTINGS: 'public:settings'
+    },
+    MARKET: {
+      LIST: 'market:list',
+      DETAIL: (symbol: string) => `market:${symbol}`,
+      WATCHLIST: (userId: string) => `market:watchlist:${userId}`,
+      ALERTS: (userId: string) => `market:alerts:${userId}`
+    },
+    HOME_PAGE: {
+      BASIC_DATA: 'home:data',
+      PAGE_DATA: 'home:page:data'
     }
   },
   
@@ -32,5 +48,7 @@ export const CACHE_CONFIG = {
     COMMENTS: 1000 * 60 * 30, // 30 دقیقه
     USER_PROFILE: 1000 * 60 * 60 * 12, // 12 ساعت
     EXCHANGE_RATES: 1000 * 60 * 60, // 1 hour
+    PUBLIC_DATA: 1000 * 60 * 60 * 24, // 24 ساعت
+    MARKET_DATA: 1000 * 60 * 5, // 5 دقیقه - برای داده‌های بازار
   }
 }

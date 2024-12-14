@@ -13,19 +13,19 @@ export function getCacheStatus(): boolean {
 }
 
 // کش کردن داده‌ها با کلید
-export function cacheData<T>(key: 'POSTS' | 'CATEGORIES' | 'COMMENTS' | 'USER_PROFILE', data: T, category?: keyof typeof CACHE_CONFIG.TTL) {
+export function cacheData<T>(key: 'POSTS' | 'CATEGORIES' | 'COMMENTS' | 'USER_PROFILE' | 'MARKET_DATA', data: T, category?: keyof typeof CACHE_CONFIG.TTL) {
   if (!isValidCacheKey(key)) { throw new Error('Invalid key provided'); }
   cacheManager.set(key, data, category);
 }
 
 // دریافت داده‌های کش شده
-export function getCachedData<T>(key: 'POSTS' | 'CATEGORIES' | 'COMMENTS' | 'USER_PROFILE'): T | undefined {
+export function getCachedData<T>(key: 'POSTS' | 'CATEGORIES' | 'COMMENTS' | 'USER_PROFILE' | 'MARKET_DATA'): T | undefined {
   if (!isValidCacheKey(key)) { throw new Error('Invalid key provided'); }
   return cacheManager.get<T>(key);
 }
 
 // پاک کردن یک کلید خاص از کش
-export function clearCacheKey(key: 'POSTS' | 'CATEGORIES' | 'COMMENTS' | 'USER_PROFILE') {
+export function clearCacheKey(key: 'POSTS' | 'CATEGORIES' | 'COMMENTS' | 'USER_PROFILE' | 'MARKET_DATA') {
   if (!isValidCacheKey(key)) { throw new Error('Invalid key provided'); }
   cacheManager.delete(key);
 }
@@ -40,10 +40,10 @@ export function getCacheStats() {
   return cacheManager.getStats();
 }
 
-function isCacheKey(key: string): key is 'POSTS' | 'CATEGORIES' | 'COMMENTS' | 'USER_PROFILE' {
-  return ['POSTS', 'CATEGORIES', 'COMMENTS', 'USER_PROFILE'].includes(key);
+function isCacheKey(key: string): key is 'POSTS' | 'CATEGORIES' | 'COMMENTS' | 'USER_PROFILE' | 'MARKET_DATA' {
+  return ['POSTS', 'CATEGORIES', 'COMMENTS', 'USER_PROFILE', 'MARKET_DATA'].includes(key);
 }
 
-function isValidCacheKey(key: 'POSTS' | 'CATEGORIES' | 'COMMENTS' | 'USER_PROFILE'): boolean {
+function isValidCacheKey(key: 'POSTS' | 'CATEGORIES' | 'COMMENTS' | 'USER_PROFILE' | 'MARKET_DATA'): boolean {
   return isCacheKey(key);
 }
