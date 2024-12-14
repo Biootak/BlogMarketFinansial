@@ -19,9 +19,10 @@ export function cacheData<T>(key: 'POSTS' | 'CATEGORIES' | 'COMMENTS' | 'USER_PR
 }
 
 // دریافت داده‌های کش شده
-export function getCachedData<T>(key: 'POSTS' | 'CATEGORIES' | 'COMMENTS' | 'USER_PROFILE' | 'MARKET_DATA'): T | undefined {
+export async function getCachedData<T>(key: 'POSTS' | 'CATEGORIES' | 'COMMENTS' | 'USER_PROFILE' | 'MARKET_DATA'): Promise<T | undefined> {
   if (!isValidCacheKey(key)) { throw new Error('Invalid key provided'); }
-  return cacheManager.get<T>(key);
+  const result = await cacheManager.get<T>(key);
+  return result ?? undefined;
 }
 
 // پاک کردن یک کلید خاص از کش

@@ -6,6 +6,24 @@ import { CACHE_CONFIG } from '@/config/cacheConfig';
  * It provides methods for setting, getting, deleting, and clearing cache.
  */
 class CacheManager {
+  private enabled: boolean = true;
+
+  /**
+   * Enable or disable the cache manager
+   * @param status The status to set
+   */
+  public setEnabled(status: boolean): void {
+    this.enabled = status;
+  }
+
+  /**
+   * Check if cache is enabled
+   * @returns boolean indicating if cache is enabled
+   */
+  public isEnabled(): boolean {
+    return this.enabled;
+  }
+
   /**
    * cacheWrapper is a private method that wraps the Next.js 14 caching feature.
    * It takes a key, a function that returns a promise, and options for caching.
@@ -37,44 +55,30 @@ class CacheManager {
    * @param key The cache key.
    * @param value The value to cache.
    * @param category The category of the cache.
-   * @param tags Optional tags for the cache.
-   * @returns A promise that resolves to the cached value.
+   * @returns A promise that resolves to void.
    */
-  async set<T>(
-    key: string,
-    value: T,
-    category?: keyof typeof CACHE_CONFIG.TTL,
-    tags?: string[]
-  ): Promise<T> {
+  public async set<T>(key: string, value: T, category?: keyof typeof CACHE_CONFIG.TTL): Promise<void> {
+    if (!this.enabled) return;
+    
     const ttl = category ? CACHE_CONFIG.TTL[category] : CACHE_CONFIG.DEFAULT_TTL;
-    return this.cacheWrapper(
-      key,
-      async () => value,
-      {
-        revalidate: ttl / 1000,
-        tags: tags || [key, category || 'default']
-      }
-    );
+    await this.cacheWrapper(key, async () => value, { revalidate: ttl / 1000 });
   }
 
   /**
    * get retrieves a value from the cache.
    * @param key The cache key.
-   * @param fetcher Optional fetcher function to revalidate the cache.
    * @returns A promise that resolves to the cached value or null if not found.
    */
-  async get<T>(key: string, fetcher?: () => Promise<T>): Promise<T | null> {
-    if (fetcher) {
-      return this.cacheWrapper<T>(
-        key,
-        fetcher,
-        { tags: [key] }
-      );
+  public async get<T>(key: string): Promise<T | null> {
+    if (!this.enabled) return null;
+    
+    try {
+      return await this.cacheWrapper(key, async () => {
+        throw new Error('Cache miss');
+      });
+    } catch (error) {
+      return null;
     }
-    return this.cacheWrapper<T | null>(
-      key,
-      async () => null
-    );
   }
 
   /**
@@ -96,6 +100,18 @@ class CacheManager {
   }
 
   /**
+   * Clears all cached data
+   */
+  public clear(): void {
+    if (!this.enabled) return;
+    // Add tags for all cache types to ensure complete cache clearing
+    const allCacheTypes = Object.keys(CACHE_CONFIG.TTL);
+    allCacheTypes.forEach(tag => {
+      revalidateTag(tag);
+    });
+  }
+
+  /**
    * getWithSWR retrieves a value from the cache with SWR.
    * @param key The cache key.
    * @param fetcher The fetcher function to revalidate the cache.
@@ -113,11 +129,11 @@ class CacheManager {
     const cached = await this.get<T>(key);
     if (cached) {
       // Revalidate in background
-      this.set(key, await fetcher(), undefined, options?.tags).catch(console.error);
+      this.set(key, await fetcher(), undefined).catch(console.error);
       return cached;
     }
     const fresh = await fetcher();
-    await this.set(key, fresh, undefined, options?.tags);
+    await this.set(key, fresh, undefined);
     return fresh;
   }
 
