@@ -51,11 +51,16 @@ const nextConfig = {
   },
 
   experimental: {
+    // Enable new App Router cache
     serverActions: {
-      bodySizeLimit: '5mb',
+      bodySizeLimit: '3mb',
     },
+    optimizePackageImports: ['@radix-ui/react-icons'],
     optimizeCss: true,
   },
+
+  staticPageGenerationTimeout: 120,
+  output: 'standalone',
 
   webpack: (config, { isServer }) => {
     if (!isServer) {
@@ -79,8 +84,12 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/(.*)',
+        source: '/:path*',
         headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=3600, must-revalidate',
+          },
           {
             key: 'X-Frame-Options',
             value: 'DENY',
@@ -96,6 +105,24 @@ const nextConfig = {
           {
             key: 'Strict-Transport-Security',
             value: 'max-age=31536000; includeSubDomains; preload',
+          },
+        ],
+      },
+      {
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store',
+          },
+        ],
+      },
+      {
+        source: '/_next/image/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=86400, must-revalidate',
           },
         ],
       },

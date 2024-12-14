@@ -1,67 +1,122 @@
+import { revalidateTag } from 'next/cache';
 import cacheManager from '@/utils/cache';
 import { CACHE_CONFIG } from '@/config/cacheConfig';
+import {
+  invalidateUserCache,
+  invalidatePublicCache,
+  invalidateHomePageCache,
+  invalidatePostCache,
+} from '@/actions/cacheActions';
 
-export class CacheService {
-  // مدیریت کش پست‌ها
-  static async cachePost(postId: string, data: any) {
-    cacheManager.set(CACHE_CONFIG.KEYS.POSTS.DETAIL(postId), data, 'POSTS');
-  }
+// مدیریت کش پست‌ها
+export async function cachePost(postId: string, data: any) {
+  await cacheManager.set(CACHE_CONFIG.KEYS.POSTS.DETAIL(postId), data, 'POSTS');
+}
 
-  static async getPost(postId: string) {
-    return cacheManager.get(CACHE_CONFIG.KEYS.POSTS.DETAIL(postId));
-  }
+export async function getCachedPost(postId: string) {
+  return cacheManager.get(CACHE_CONFIG.KEYS.POSTS.DETAIL(postId));
+}
 
-  static async invalidatePost(postId: string) {
-    cacheManager.delete(CACHE_CONFIG.KEYS.POSTS.DETAIL(postId));
-    cacheManager.clearPattern('posts:list'); // پاک کردن همه لیست‌های پست
-  }
+export async function invalidatePost(postId: string) {
+  revalidateTag('POSTS');
+  revalidateTag(`post-${postId}`);
+}
 
-  // مدیریت کش دسته‌بندی‌ها
-  static async cacheCategory(categoryId: string, data: any) {
-    cacheManager.set(CACHE_CONFIG.KEYS.CATEGORIES.DETAIL(categoryId), data, 'CATEGORIES');
-  }
+// مدیریت کش دسته‌بندی‌ها
+export async function cacheCategory(categoryId: string, data: any) {
+  await cacheManager.set(CACHE_CONFIG.KEYS.CATEGORIES.DETAIL(categoryId), data, 'CATEGORIES');
+}
 
-  static async getCategory(categoryId: string) {
-    return cacheManager.get(CACHE_CONFIG.KEYS.CATEGORIES.DETAIL(categoryId));
-  }
+export async function getCachedCategory(categoryId: string) {
+  return cacheManager.get(CACHE_CONFIG.KEYS.CATEGORIES.DETAIL(categoryId));
+}
 
-  static async invalidateCategory(categoryId: string) {
-    cacheManager.delete(CACHE_CONFIG.KEYS.CATEGORIES.DETAIL(categoryId));
-    cacheManager.delete(CACHE_CONFIG.KEYS.CATEGORIES.LIST);
-    // پاک کردن پست‌های مرتبط با این دسته‌بندی
-    cacheManager.clearPattern(`posts:category:${categoryId}`);
-  }
+export async function invalidateCategory(categoryId: string) {
+  revalidateTag('CATEGORIES');
+  await revalidateTag(`category-${categoryId}`);
+}
 
-  // مدیریت کش نظرات
-  static async cacheComments(postId: string, data: any) {
-    cacheManager.set(CACHE_CONFIG.KEYS.COMMENTS.BY_POST(postId), data, 'COMMENTS');
-  }
+// مدیریت کش نظرات
+export async function cacheComments(postId: string, data: any) {
+  await cacheManager.set(CACHE_CONFIG.KEYS.COMMENTS.BY_POST(postId), data, 'COMMENTS');
+}
 
-  static async getComments(postId: string) {
-    return cacheManager.get(CACHE_CONFIG.KEYS.COMMENTS.BY_POST(postId));
-  }
+export async function getCachedComments(postId: string) {
+  return cacheManager.get(CACHE_CONFIG.KEYS.COMMENTS.BY_POST(postId));
+}
 
-  static async invalidateComments(postId: string) {
-    cacheManager.delete(CACHE_CONFIG.KEYS.COMMENTS.BY_POST(postId));
-    cacheManager.delete(CACHE_CONFIG.KEYS.COMMENTS.RECENT);
-  }
+export async function invalidateComments(postId: string) {
+  revalidateTag('COMMENTS');
+  await revalidateTag(`comments-${postId}`);
+}
 
-  // مدیریت کش کاربر
-  static async cacheUserProfile(userId: string, data: any) {
-    cacheManager.set(CACHE_CONFIG.KEYS.USER.PROFILE(userId), data, 'USER_PROFILE');
-  }
+// مدیریت کش کاربر
+export async function cacheUserProfile(userId: string, data: any) {
+  await cacheManager.set(CACHE_CONFIG.KEYS.USER.PROFILE(userId), data, 'USER_PROFILE');
+}
 
-  static async getUserProfile(userId: string) {
-    return cacheManager.get(CACHE_CONFIG.KEYS.USER.PROFILE(userId));
-  }
+export async function getCachedUserProfile(userId: string) {
+  return cacheManager.get(CACHE_CONFIG.KEYS.USER.PROFILE(userId));
+}
 
-  static async invalidateUserProfile(userId: string) {
-    cacheManager.delete(CACHE_CONFIG.KEYS.USER.PROFILE(userId));
-    cacheManager.delete(CACHE_CONFIG.KEYS.USER.PREFERENCES(userId));
-  }
+export async function invalidateUserProfile(userId: string) {
+  await revalidateTag('USER_PROFILE');
+  await revalidateTag(`user-${userId}`);
+}
 
-  // گرفتن آمار کش
-  static getStats() {
-    return cacheManager.getStats();
+// مدیریت کش داده‌های کاربر
+export async function invalidateUserData(userId: string) {
+  await invalidateUserCache(userId);
+}
+
+// مدیریت کش داده‌های عمومی
+export async function invalidatePublicData() {
+  await invalidatePublicCache();
+}
+
+// مدیریت کش داده‌های صفحه اصلی
+export async function invalidateHomePageData() {
+  await invalidateHomePageCache();
+}
+
+// مدیریت کش داده‌های پست
+export async function invalidatePostData(postId: string) {
+  await invalidatePostCache(postId);
+}
+
+// پاک کردن تمام کش‌های مربوط به نقش کاربر
+export async function invalidateRoleBasedCache(role: string) {
+  // کش‌های مربوط به نقش نویسنده
+  if (role === 'AUTHOR') {
+    await revalidateTag('author-posts');
+    await revalidateTag('author-dashboard');
   }
+  // کش‌های مربوط به نقش ادمین
+  if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
+    await revalidateTag('admin-dashboard');
+    await revalidateTag('user-management');
+    await revalidateTag('site-settings');
+  }
+  // کش‌های عمومی که ممکن است تحت تأثیر نقش کاربر باشند
+  await revalidateTag('dashboard-data');
+  await revalidateTag('user-permissions');
+}
+
+// پاک کردن تمام کش‌های مرتبط با کاربر
+export async function invalidateAllUserRelatedCache(userId: string, role: string) {
+  // کش‌های شخصی کاربر
+  await invalidateUserData(userId);
+  await invalidateUserProfile(userId);
+  
+  // کش‌های مربوط به نقش
+  await invalidateRoleBasedCache(role);
+  
+  // کش‌های عمومی
+  await invalidatePublicData();
+  await invalidateHomePageData();
+}
+
+// گرفتن آمار کش
+export function getStats() {
+  return cacheManager.getStats();
 }

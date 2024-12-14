@@ -5,7 +5,7 @@ import { IoExitOutline } from 'react-icons/io5';
 import { useToast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
 import { getSession, signOut } from 'next-auth/react';
-import { CacheService } from '@/services/cacheService';
+import { invalidateUserCache, invalidatePublicCache, invalidateDashboardCache } from '@/actions/cacheActions';
 import Loading from '../Button/Loading';
 
 const LogoutButton = () => {
@@ -18,8 +18,14 @@ const LogoutButton = () => {
       // پاک کردن کش کاربر قبل از خروج
       const session = await getSession();
       if (session?.user?.id) {
-        await CacheService.invalidateUserProfile(session.user.id);
+        await invalidateUserCache(session.user.id);
       }
+
+      // پاک کردن کش‌های عمومی و داشبورد
+      await Promise.all([
+        invalidatePublicCache(),
+        invalidateDashboardCache()
+      ]);
 
       await signOut({ redirect: true, callbackUrl: '/' });
       toast({
