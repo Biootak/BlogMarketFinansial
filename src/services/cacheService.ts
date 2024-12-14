@@ -212,3 +212,40 @@ export async function invalidateMarketData(symbol: string): Promise<void> {
 export async function invalidateAllMarketData(): Promise<void> {
   await revalidateTag('market');
 }
+
+// پاک کردن کش‌های داشبورد
+export async function invalidateDashboardCache(userId: string): Promise<void> {
+  // پاک کردن کش‌های مرتبط با داشبورد کاربر
+  await Promise.all([
+    revalidateTag(CACHE_CONFIG.KEYS.USER.PROFILE(userId)),
+    revalidateTag(CACHE_CONFIG.KEYS.USER.DATA(userId)),
+    revalidateTag(CACHE_CONFIG.KEYS.MARKET.WATCHLIST(userId)),
+    revalidateTag(CACHE_CONFIG.KEYS.MARKET.ALERTS(userId)),
+    revalidateTag(CACHE_CONFIG.KEYS.HOME_PAGE.PAGE_DATA)
+  ]);
+}
+
+// پاک کردن کش‌های نقش کاربر
+export async function invalidateUserRoleCache(userId: string): Promise<void> {
+  // پاک کردن کش‌های مرتبط با نقش کاربر
+  await Promise.all([
+    revalidateTag(CACHE_CONFIG.KEYS.USER.PROFILE(userId)),
+    revalidateTag(CACHE_CONFIG.KEYS.USER.DATA(userId)),
+    revalidateTag(`user:role:${userId}`), // تگ جدید برای نقش کاربر
+    revalidateTag('user:roles'), // تگ عمومی برای کش‌های نقش
+    revalidateTag('dashboard:menu'), // تگ جدید برای منوی داشبورد
+    revalidateTag('dashboard:access') // تگ جدید برای دسترسی‌های داشبورد
+  ]);
+}
+
+export async function clearAllUserRelatedCaches(userId: string): Promise<void> {
+  // پاک کردن کامل کش‌های مرتبط با کاربر
+  await Promise.all([
+    invalidateUserProfile(userId),
+    invalidateDashboardCache(userId),
+    invalidateUserRoleCache(userId),
+    revalidateTag(`user:full:${userId}`), // تگ کامل برای اطلاعات کاربر
+    revalidateTag('users'),
+    revalidateTag('user:sessions')
+  ]);
+}

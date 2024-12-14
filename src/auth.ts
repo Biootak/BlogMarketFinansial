@@ -36,42 +36,62 @@ export const {
     },
   },
   callbacks: {
-    async session({ token, session }) {
+    async jwt({ token, trigger, session, user }) {
+      // اگر کاربر جدید وارد می‌شود، اطلاعات کامل را به توکن اضافه کنید
+      if (user) {
+        return {
+          ...token,
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: (user as any).role || 'USER',
+          profile: (user as any).profile
+        };
+      }
+
+      // به‌روزرسانی توکن با اطلاعات جدید
+      if (trigger === 'update') {
+        return {
+          ...token,
+          ...session.user
+        };
+      }
+      
+      // بررسی اعتبار توکن و به‌روزرسانی اطلاعات
       if (token.sub) {
-        const user = await getUserById(token.sub);
-        if (user) {
-          session.user = {
-            ...session.user,
-            id: user.id,
-            role: user.role as Role,
-            profile: user.profile as UserProfile | undefined,
-          };
-        } else {
-          // اگر کاربر در دیتابیس یافت نشد، یک سشن با حداقل اطلاعات برگردانید
-          session.user = {
-            ...session.user,
-            id: token.sub,
-            role: 'USER' as Role,
-            profile: undefined,
-          };
+        const existingUser = await getUserById(token.sub);
+        if (!existingUser) {
+          // اگر کاربر وجود ندارد، توکن را پاک کنید
+          return null;
         }
+
+        // به‌روزرسانی توکن با آخرین اطلاعات کاربر
+        return {
+          ...token,
+          id: existingUser.id,
+          name: existingUser.name,
+          email: existingUser.email,
+          role: existingUser.role,
+          profile: existingUser.profile,
+          emailVerified: existingUser.emailVerified
+        };
+      }
+      
+      return token;
+    },
+    async session({ token, session }) {
+      // اطمینان از وجود توکن و به‌روزرسانی کامل اطلاعات کاربر
+      if (token.sub) {
+        session.user = {
+          id: token.sub,
+          name: token.name || '',
+          email: token.email || '',
+          role: (token.role as Role) || 'USER',
+          profile: token.profile as UserProfile | undefined,
+          emailVerified: token.emailVerified ? new Date(token.emailVerified as string) : null
+        };
       }
       return session;
-    },
-
-    async jwt({ token }) {
-      if (token.sub) {
-        const user = await getUserById(token.sub);
-        if (user) {
-          token.role = user.role as Role;
-          token.profile = user.profile as UserProfile | undefined;
-        } else {
-          // اگر کاربر در دیتابیس یافت نشد، اطلاعات پیش‌فرض را در توکن قرار دهید
-          token.role = 'USER' as Role;
-          token.profile = undefined;
-        }
-      }
-      return token;
     },
   },
   adapter: PrismaAdapter(prisma),

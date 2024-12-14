@@ -2,9 +2,9 @@
 
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
-import { signIn, signOut } from '@/auth';
+import { auth, signIn, signOut } from '@/auth';
 import prisma from '@/lib/db';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { AuthError } from 'next-auth';
 import { ForgotPasswordSchema, LoginSchema, MagicLinkSchema, RegisterSchema } from '@/schemas';
 import { getUserByEmail } from '@/data/user';
@@ -13,11 +13,18 @@ import { redirect } from 'next/navigation';
 import { generateVerificationToken } from '@/lib/tokens';
 import { sendVerificationEmail } from '@/lib/mail';
 import { getVerificationTokenByToken } from '@/data/verfication-token';
+import {
+  invalidateUserProfile,
+  invalidateDashboardCache,
+  invalidateUserRoleCache,
+  clearAllUserRelatedCaches
+} from '@/services/cacheService';
 
 type AuthResult = {
   success: boolean;
   message?: string;
   error?: string;
+  redirect?: string;
 };
 
 function handleAuthError(error: unknown): AuthResult {
@@ -77,7 +84,7 @@ export async function loginUser(formData: FormData): Promise<AuthResult> {
     const result = await signIn('credentials', {
       email,
       password,
-      redirect: false, // مهم: redirect را false می‌کنیم
+      redirect: false,
     });
 
     if (result?.error) {
@@ -85,11 +92,41 @@ export async function loginUser(formData: FormData): Promise<AuthResult> {
     }
 
     if (result?.ok) {
-      // اگر ورود موفقیت‌آمیز بود، ریدایرکت می‌کنیم
+      // پاک کردن کامل کش‌های کاربر
+      if (existingUser.id) {
+        await clearAllUserRelatedCaches(existingUser.id);
+      }
+
+      // تازه‌سازی تمام مسیرهای داشبورد
+      const dashboardPaths = [
+        '/dashboard',
+        '/dashboard/posts',
+        '/dashboard/users',
+        '/dashboard/categories',
+        '/dashboard/advertisements',
+        '/dashboard/exchange-rates',
+        '/dashboard/rate-lists',
+        '/dashboard/settings',
+        '/dashboard/reports',
+        '/dashboard/edit-profile'
+      ];
+
+      dashboardPaths.forEach(path => revalidatePath(path));
+
+      // تازه‌سازی سایر مسیرهای اصلی
       revalidatePath('/');
-      return { success: true, message: 'ورود موفقیت‌آمیز' };
+      revalidatePath('/profile');
+      revalidatePath('/market');
+      revalidatePath('/portfolio');
+
+      // بازگشت با هدایت مستقیم به داشبورد
+      return { 
+        success: true, 
+        message: 'ورود موفقیت‌آمیز',
+        redirect: '/dashboard'  // اضافه کردن مسیر ریدایرکت
+      };
     }
-    // این خط احتمالاً هرگز اجرا نخواهد شد، اما برای اطمینان آن را نگه می‌داریم
+    
     return { success: true, message: 'ورود موفقیت‌آمیز. در حال انتقال به صفحه اصلی...' };
   } catch (error) {
     return handleAuthError(error);
@@ -109,7 +146,7 @@ export async function registerUser(formData: FormData): Promise<AuthResult> {
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
-    await prisma.user.create({
+    const newUser = await prisma.user.create({
       data: { name, email, password: hashedPassword },
     });
 
@@ -121,7 +158,17 @@ export async function registerUser(formData: FormData): Promise<AuthResult> {
       return loginResult;
     }
 
+    // پاک کردن کش کاربر جدید
+    if (newUser.id) {
+      await invalidateUserProfile(newUser.id);
+      await invalidateDashboardCache(newUser.id);
+    }
+
     revalidatePath('/');
+    revalidatePath('/dashboard');
+    revalidatePath('/profile');
+    revalidatePath('/market');
+    revalidatePath('/portfolio');
     return {
       success: true,
       message: 'ایمیل تایید برای شما ارسال شد. لطفاً ایمیل خود را بررسی کنید',
@@ -149,9 +196,41 @@ export async function sendMagicLink(formData: FormData): Promise<AuthResult> {
 
 export async function logout(): Promise<AuthResult> {
   try {
+    const session = await auth();
     await signOut({ redirect: false });
+    
+    // پاک کردن کامل کش‌های کاربر خارج شده
+    if (session?.user?.id) {
+      await clearAllUserRelatedCaches(session.user.id);
+    }
+
+    // تازه‌سازی تمام مسیرهای داشبورد
+    const dashboardPaths = [
+      '/dashboard',
+      '/dashboard/posts',
+      '/dashboard/users',
+      '/dashboard/categories',
+      '/dashboard/advertisements',
+      '/dashboard/exchange-rates',
+      '/dashboard/rate-lists',
+      '/dashboard/settings',
+      '/dashboard/reports',
+      '/dashboard/edit-profile'
+    ];
+
+    dashboardPaths.forEach(path => revalidatePath(path));
+
+    // تازه‌سازی سایر مسیرهای اصلی
     revalidatePath('/');
-    return { success: true, message: 'خروج موفقیت‌آمیز بود' };
+    revalidatePath('/profile');
+    revalidatePath('/market');
+    revalidatePath('/portfolio');
+
+    return { 
+      success: true, 
+      message: 'خروج موفقیت‌آمیز بود',
+      redirect: '/signin'  // هدایت به صفحه ورود
+    };
   } catch (error) {
     return handleAuthError(error);
   }
@@ -185,7 +264,7 @@ export async function newVerification(token: string): Promise<AuthResult> {
     };
   }
 
-  await prisma.user.update({
+  const updatedUser = await prisma.user.update({
     where: { id: existingUser.id },
     data: {
       emailVerified: new Date(),
@@ -196,6 +275,16 @@ export async function newVerification(token: string): Promise<AuthResult> {
     where: { id: existingToken.id },
   });
 
+  // پاک کردن کش کاربر تأیید شده
+  if (updatedUser.id) {
+    await invalidateUserProfile(updatedUser.id);
+  }
+
+  revalidatePath('/');
+  revalidatePath('/dashboard');
+  revalidatePath('/profile');
+  revalidatePath('/market');
+  revalidatePath('/portfolio');
   return { success: true, message: 'ایمیل با موفقیت تایید شد.' };
 }
 
