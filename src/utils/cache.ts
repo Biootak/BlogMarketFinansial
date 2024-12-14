@@ -55,13 +55,22 @@ class CacheManager {
    * @param key The cache key.
    * @param value The value to cache.
    * @param category The category of the cache.
+   * @param tags Additional cache tags for revalidation.
    * @returns A promise that resolves to void.
    */
-  public async set<T>(key: string, value: T, category?: keyof typeof CACHE_CONFIG.TTL): Promise<void> {
+  public async set<T>(
+    key: string, 
+    value: T, 
+    category?: keyof typeof CACHE_CONFIG.TTL,
+    tags?: string[]
+  ): Promise<void> {
     if (!this.enabled) return;
     
     const ttl = category ? CACHE_CONFIG.TTL[category] : CACHE_CONFIG.DEFAULT_TTL;
-    await this.cacheWrapper(key, async () => value, { revalidate: ttl / 1000 });
+    await this.cacheWrapper(key, async () => value, { 
+      revalidate: ttl / 1000,
+      tags: tags
+    });
   }
 
   /**
