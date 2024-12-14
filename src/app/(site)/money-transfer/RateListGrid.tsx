@@ -14,6 +14,7 @@ interface RateList {
   title: string;
   rates: Rate[];
   isActive: boolean;
+  updatedAt: string | Date;
 }
 
 interface RateListGridProps {
@@ -21,11 +22,23 @@ interface RateListGridProps {
   initialCount?: number;
 }
 
+const formatDate = (date: string | Date) => {
+  const d = new Date(date);
+  // تبدیل به تاریخ شمسی
+  const dateOptions: Intl.DateTimeFormatOptions = { 
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  };
+  
+  return new Intl.DateTimeFormat('fa-IR', dateOptions).format(d);
+};
+
 export default function RateListGrid({ rateLists, initialCount = 10 }: RateListGridProps) {
   const [displayCount, setDisplayCount] = useState(initialCount);
-  const [expandedCards, setExpandedCards] = useState<{ [key: string]: number }>({});
+  const [expandedCards, setExpandedCards] = useState<{ [key: string]: number }>([]);
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
-  
+
   const hasMore = displayCount < rateLists.length;
 
   const handleShowMore = (rateListId: string) => {
@@ -96,7 +109,7 @@ export default function RateListGrid({ rateLists, initialCount = 10 }: RateListG
                       {rateList.title}
                     </h3>
                     <span className="px-3 py-1 bg-white/10 rounded-full text-xs font-medium text-blue-100">
-                      {rateList.rates.length} نرخ فعال
+                      {formatDate(rateList.updatedAt)}
                     </span>
                   </div>
                 </motion.div>
@@ -162,10 +175,10 @@ export default function RateListGrid({ rateLists, initialCount = 10 }: RateListG
                 <div className="bg-gray-50/50 dark:bg-gray-700/30 px-5 py-3">
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-gray-500 dark:text-gray-400">
-                      آخرین به‌روزرسانی
+                      تعداد نرخ‌ها
                     </span>
                     <span className="text-gray-600 dark:text-gray-300 font-medium">
-                      {new Date().toLocaleDateString('fa-IR')}
+                      {rateList.rates.length} نرخ
                     </span>
                   </div>
                 </div>

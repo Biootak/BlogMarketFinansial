@@ -26,14 +26,23 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { HiOutlinePencil, HiOutlineTrash, HiPlusCircle, HiMinusCircle } from 'react-icons/hi2';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HiOutlineInformationCircle } from 'react-icons/hi2';
 import Loading from '@/components/Loading';
+
+const formatDate = (date: string | Date | undefined) => {
+  if (!date) return 'نامشخص';
+  const d = new Date(date);
+  // تبدیل به تاریخ شمسی
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  };
+  return new Intl.DateTimeFormat('fa-IR', options).format(d);
+};
 
 export default function RateListsPage() {
   const [rateLists, setRateLists] = useState<RateListData[]>([]);
@@ -63,30 +72,30 @@ export default function RateListsPage() {
 
   // تعریف انواع ارز و عملیات
   const CURRENCY_TYPES = {
-    'دالر': ['دلار', 'دلار امریکا', 'دالر آمریکا', 'امریکا'],
-    'یورو': ['یورو', 'یورو دالر'],
-    'پوند': ['پوند', 'پوند انگلیس', 'استرلینگ'],
-    'درهم': ['درهم', 'درهم امارات'],
-    'لیر': ['لیر', 'لیره', 'لیره ترکیه', 'لیر ترکیه'],
-    'افغانی': ['افغانی', 'افغانستان'],
-    'روبل': ['روبل', 'روبل روسیه'],
-    'کلدار': ['کلدار', 'کلدار هندی', 'روپیه', 'روپیه هند'],
-    'تومان': ['تومان', 'ریال'],
-    'فرانک': ['فرانک', 'فرانک سوئیس', 'فرانک سویس'],
+    دالر: ['دلار', 'دلار امریکا', 'دالر آمریکا', 'امریکا'],
+    یورو: ['یورو', 'یورو دالر'],
+    پوند: ['پوند', 'پوند انگلیس', 'استرلینگ'],
+    درهم: ['درهم', 'درهم امارات'],
+    لیر: ['لیر', 'لیره', 'لیره ترکیه', 'لیر ترکیه'],
+    افغانی: ['افغانی', 'افغانستان'],
+    روبل: ['روبل', 'روبل روسیه'],
+    کلدار: ['کلدار', 'کلدار هندی', 'روپیه', 'روپیه هند'],
+    تومان: ['تومان', 'ریال'],
+    فرانک: ['فرانک', 'فرانک سوئیس', 'فرانک سویس'],
   } as const;
 
   const formatTitle = (rawTitle: string): string => {
     // حذف عدد و علامت _ از ابتدا
     let title = rawTitle.replace(/^[۰-۹0-9]*[_\s]*/, '');
-    
+
     // تشخیص نوع معامله (خرید/فروش)
     const isBuy = title.includes('خرید');
     const isSell = title.includes('فروش');
-    const tradeType = isBuy ? 'خرید' : (isSell ? 'فروش' : '');
-    
+    const tradeType = isBuy ? 'خرید' : isSell ? 'فروش' : '';
+
     // حذف کلمه خرید/فروش از عنوان
     title = title.replace(/(خرید|فروش)/g, '').trim();
-    
+
     // نرمال‌سازی نام ارز
     for (const [standardName, variants] of Object.entries(CURRENCY_TYPES)) {
       for (const variant of variants) {
@@ -96,17 +105,15 @@ export default function RateListsPage() {
         }
       }
     }
-    
+
     // حذف کلمات اضافی و فاصله‌های تکراری
-    title = title
-      .replace(/\s+/g, ' ')
-      .trim();
-    
+    title = title.replace(/\s+/g, ' ').trim();
+
     // اضافه کردن نوع معامله
     if (tradeType) {
       title = `${title} ${tradeType}`;
     }
-    
+
     return title;
   };
 
@@ -114,7 +121,7 @@ export default function RateListsPage() {
     // تبدیل اعداد فارسی به انگلیسی
     const persianToEnglish = (str: string) => {
       const persianNumbers = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-      return str.replace(/[۰-۹]/g, d => persianNumbers.indexOf(d).toString());
+      return str.replace(/[۰-۹]/g, (d) => persianNumbers.indexOf(d).toString());
     };
 
     // پاکسازی و نرمال‌سازی مقدار
@@ -127,7 +134,7 @@ export default function RateListsPage() {
 
   const extractTitleAndValue = (line: string): { title: string; value: string } => {
     const trimmedLine = line.trim();
-    
+
     // الگوهای مختلف برای تشخیص نرخ
     const patterns = [
       // الگو: عنوان با نقطه‌چین و مقدار
@@ -146,7 +153,7 @@ export default function RateListsPage() {
       const matches = trimmedLine.match(pattern.regex);
       if (matches) {
         const [_, titlePart = '', valuePart = ''] = matches;
-        
+
         // اگر فقط مقدار عددی داریم
         if (!titlePart && valuePart) {
           return { title: '', value: formatValue(valuePart) };
@@ -156,9 +163,9 @@ export default function RateListsPage() {
         const formattedValue = formatValue(valuePart);
 
         if (formattedTitle || formattedValue) {
-          return { 
+          return {
             title: formattedTitle,
-            value: formattedValue
+            value: formattedValue,
           };
         }
       }
@@ -171,16 +178,17 @@ export default function RateListsPage() {
   const handleRatePaste = (e: React.ClipboardEvent<HTMLInputElement>, index: number) => {
     e.preventDefault();
     const pastedText = e.clipboardData.getData('text');
-    const lines = pastedText.split(/[\n\r]+/).filter(line => line.trim());
+    const lines = pastedText.split(/[\n\r]+/).filter((line) => line.trim());
 
     if (lines.length > 1) {
       const newRates = lines
-        .map(line => {
+        .map((line) => {
           const { title, value } = extractTitleAndValue(line);
           return title && value ? { title, value } : null;
         })
-        .filter((rate): rate is { title: string; value: string } => 
-          rate !== null && rate.title !== '' && rate.value !== ''
+        .filter(
+          (rate): rate is { title: string; value: string } =>
+            rate !== null && rate.title !== '' && rate.value !== '',
         );
 
       if (newRates.length > 0) {
@@ -195,9 +203,7 @@ export default function RateListsPage() {
       if (title && value) {
         const currentField = fields[index];
         if (!currentField.title && !currentField.value) {
-          replace(fields.map((field, i) => 
-            i === index ? { title, value } : field
-          ));
+          replace(fields.map((field, i) => (i === index ? { title, value } : field)));
         } else {
           append({ title, value });
         }
@@ -208,17 +214,17 @@ export default function RateListsPage() {
   const handleTitlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData('text');
-    const titles = pastedData.split(/[\n\r]/).filter(line => line.trim());
-    
+    const titles = pastedData.split(/[\n\r]/).filter((line) => line.trim());
+
     if (titles.length > 1) {
       // اول همه نرخ‌های موجود رو پاک می‌کنیم
       replace([]);
-      
+
       // برای هر عنوان یک نرخ جدید اضافه می‌کنیم
-      titles.forEach(title => {
+      titles.forEach((title) => {
         append({ title: formatTitle(title.trim()), value: '' });
       });
-      
+
       toast({
         title: 'موفقیت',
         description: `${titles.length} نرخ جدید اضافه شد`,
@@ -341,49 +347,86 @@ export default function RateListsPage() {
     <div className="container mx-auto p-4 sm:p-6 lg:p-8 rtl" dir="rtl">
       <h1 className="text-2xl font-bold mb-6">مدیریت لیست‌های نرخ</h1>
 
-      <div className="mb-4">
-        <Button onClick={() => setShowCreateModal(true)}>افزودن لیست نرخ جدید</Button>
+      {/* نمایش موبایل */}
+      <div className="md:hidden space-y-4">
+        {rateLists.map((rateList) => (
+          <div key={rateList.id} className="bg-white rounded-lg shadow-sm border p-4">
+            <div className="flex justify-between items-start mb-3">
+              <h3 className="font-semibold text-lg">{rateList.title}</h3>
+              <span className="text-xs text-gray-500">{formatDate(rateList.updatedAt)}</span>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-3 mb-3 max-h-[200px] overflow-y-auto">
+              {rateList.rates.map((rate, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center py-1.5 border-b border-gray-100 last:border-0"
+                >
+                  <span className="text-sm font-medium">{rate.title}</span>
+                  <span className="text-sm text-gray-600">{rate.value}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                onClick={() => {
+                  setEditingRateList(rateList);
+                  reset(rateList);
+                }}
+              >
+                <HiOutlinePencil className="ml-1 h-4 w-4" />
+                ویرایش
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                onClick={() => handleDelete(rateList.id!)}
+              >
+                <HiOutlineTrash className="ml-1 h-4 w-4" />
+                حذف
+              </Button>
+            </div>
+          </div>
+        ))}
       </div>
 
-      <div className="border rounded-lg" dir="rtl">
+      {/* نمایش دسکتاپ و تبلت */}
+      <div className="hidden md:block border rounded-lg">
         <ScrollArea className="h-[calc(100vh-16rem)]">
           <Table dir="rtl">
             <TableHeader>
               <TableRow>
-                <TableHead>عنوان</TableHead>
-                <TableHead>نرخ‌ها</TableHead>
-                <TableHead>وضعیت</TableHead>
-                <TableHead>عملیات</TableHead>
+                <TableHead className="w-1/4">عنوان</TableHead>
+                <TableHead className="w-2/4">نرخ‌ها</TableHead>
+                <TableHead className="w-1/4">آخرین به‌روزرسانی</TableHead>
+                <TableHead className="w-1/8">عملیات</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {rateLists.map((rateList) => (
                 <TableRow key={rateList.id}>
-                  <TableCell>{rateList.title}</TableCell>
-                 <TableCell>
-                   <div className="h-[100px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
-                     <div className="space-y-1 px-1">
-                       {rateList.rates.map((rate, index) => (
-                         <div key={index} className="flex items-center gap-2 text-sm">
-                           <span className="font-medium whitespace-nowrap">{rate.title}:</span>
-                           <span className="whitespace-nowrap">{rate.value}</span>
-                         </div>
-                       ))}
-                     </div>
-                   </div>
-                 </TableCell>
-                  <TableCell>
-                    <span
-                      className={`px-2 py-1 rounded-full text-sm ${
-                        rateList.isActive
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}
-                    >
-                      {rateList.isActive ? 'فعال' : 'غیرفعال'}
-                    </span>
+                  <TableCell className="align-top py-4">{rateList.title}</TableCell>
+                  <TableCell className="align-top py-4">
+                    <div className="max-h-[150px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400 pr-2">
+                      <div className="space-y-1.5">
+                        {rateList.rates.map((rate, index) => (
+                          <div key={index} className="flex items-center gap-2 text-sm">
+                            <span className="font-medium min-w-[100px]">{rate.title}:</span>
+                            <span>{rate.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="align-top py-4 text-sm text-gray-500">
+                    {formatDate(rateList.updatedAt)}
+                  </TableCell>
+                  <TableCell className="align-top py-4">
                     <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
@@ -393,7 +436,6 @@ export default function RateListsPage() {
                           reset(rateList);
                         }}
                       >
-                        
                         <HiOutlinePencil className="ml-1" />
                         ویرایش
                       </Button>
@@ -426,7 +468,9 @@ export default function RateListsPage() {
       >
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>{editingRateList ? 'ویرایش لیست نرخ' : 'افزودن لیست نرخ جدید'}</DialogTitle>
+            <DialogTitle>
+              {editingRateList ? 'ویرایش لیست نرخ' : 'افزودن لیست نرخ جدید'}
+            </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit(editingRateList ? handleEditSubmit : handleCreateSubmit)}>
             <div className="space-y-4">
@@ -452,23 +496,25 @@ export default function RateListsPage() {
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               className="h-8 w-8 hover:bg-blue-50"
                               type="button"
                             >
                               <HiOutlineInformationCircle className="h-6 w-6 text-blue-500" />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent 
-                            className="z-[9999] w-[280px] p-3 bg-white shadow-lg rounded-lg border border-blue-100" 
+                          <TooltipContent
+                            className="z-[9999] w-[280px] p-3 bg-white shadow-lg rounded-lg border border-blue-100"
                             side="bottom"
                             sideOffset={5}
                             align="start"
                           >
                             <div className="space-y-2 text-sm">
-                              <p className="font-medium border-b pb-1 text-blue-900">راهنمای درج سریع نرخ‌ها</p>
+                              <p className="font-medium border-b pb-1 text-blue-900">
+                                راهنمای درج سریع نرخ‌ها
+                              </p>
                               <div className="space-y-1.5">
                                 <p>۱. از اکسل یا هر برنامه دیگر، لیست نرخ‌ها را کپی کنید</p>
                                 <p>۲. در فیلد نرخ پیست (Ctrl+V) کنید</p>
@@ -480,7 +526,7 @@ export default function RateListsPage() {
                                   <p>- دلار | 50000</p>
                                   <p>- دلار : 50000</p>
                                   <p>- دلار , 50000</p>
-                                  <p>- دلار  50000</p>
+                                  <p>- دلار 50000</p>
                                 </div>
                               </div>
                             </div>
@@ -492,9 +538,9 @@ export default function RateListsPage() {
                     <div className="sm:hidden">
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-8 w-8 hover:bg-blue-50"
                             type="button"
                           >
@@ -517,7 +563,7 @@ export default function RateListsPage() {
                                 <p>- دلار | 50000</p>
                                 <p>- دلار : 50000</p>
                                 <p>- دلار , 50000</p>
-                                <p>- دلار  50000</p>
+                                <p>- دلار 50000</p>
                               </div>
                             </div>
                           </div>
@@ -553,9 +599,9 @@ export default function RateListsPage() {
                 <ScrollArea className="h-[calc(100vh-25rem)] rounded-lg border bg-gray-50/50">
                   <div className="space-y-2 p-3 min-h-[300px]">
                     {fields.map((field, index) => (
-                      <div 
-                        key={field.id} 
-                        className="flex items-center gap-2 bg-white p-2 rounded-md shadow-sm border border-gray-100" 
+                      <div
+                        key={field.id}
+                        className="flex items-center gap-2 bg-white p-2 rounded-md shadow-sm border border-gray-100"
                         dir="rtl"
                       >
                         <Input
