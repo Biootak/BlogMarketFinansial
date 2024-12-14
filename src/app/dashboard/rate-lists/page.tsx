@@ -100,9 +100,10 @@ const formatTitle = (rawTitle: string): string => {
 const extractTitleAndValue = (line: string): { title: string; value: string } => {
   const trimmedLine = line.trim();
   
-  // حذف ایموجی‌ها و پرچم‌ها
-  const cleanLine = trimmedLine.replace(/[\u{1F1E6}-\u{1F1FF}]|[\u{1F300}-\u{1F9FF}]/gu, '').trim();
-
+  // حذف ایموجی‌ها و پرچم‌ها با استفاده از یک الگوی ساده‌تر
+  const cleanLine = trimmedLine.replace(/[\u0000-\u007F]|[\u0080-\uFFFF]/g, (char) => {
+    return /[\u0000-\u007F]/.test(char) ? char : '';
+  }).trim();
   // الگوی اصلی برای تشخیص نرخ خرید و فروش
   const mainPattern = /^([^:]+?)(?:\s*\(([^)]+)\))?\s*:\s*(?:.*?خرید:\s*([\d,\.]+)\s*\|\s*فروش:\s*([\d,\.]+))?/;
   const matches = cleanLine.match(mainPattern);
@@ -155,7 +156,7 @@ const formatValue = (value: string): string => {
   
   // تبدیل اعداد انگلیسی به فارسی
   const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-  cleanValue = cleanValue.replace(/\d/g, d => persianDigits[parseInt(d)]);
+  cleanValue = cleanValue.replace(/\d/g, d => persianDigits[Number.parseInt(d)]);
   
   // اضافه کردن جداکننده هزارگان
   const parts = cleanValue.split('.');
