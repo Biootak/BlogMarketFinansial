@@ -31,9 +31,18 @@ let CURRENCIES = [
 ];
 
 const CHUNK_SIZE = 5;
-const CACHE_TTL = 60; // 60 seconds
+const CACHE_TTL = 300; // 5 minutes
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second
+
+const logger = {
+  error: (message: string, error?: any) => {
+    console.error(`[ExchangeRates Error] ${message}`, error);
+  },
+  info: (message: string) => {
+    console.info(`[ExchangeRates Info] ${message}`);
+  }
+};
 
 interface GlobalCurrencyData {
   binance?: {
@@ -77,7 +86,7 @@ async function fetchWithRetry(
       }
       return response;
     } catch (error) {
-      console.error(`Attempt ${i + 1} failed:`, error);
+      logger.error(`Attempt ${i + 1} failed:`, error);
       if (i === retries - 1) throw error;
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
@@ -167,13 +176,13 @@ export const getExchangeRates = cache(async (): Promise<ExchangeRatesResult> => 
           invalidCurrencies.push(currency);
         }
       } catch (error) {
-        console.error(`Error processing currency ${currency}:`, error);
+        logger.error(`Error processing currency ${currency}:`, error);
         invalidCurrencies.push(currency);
       }
     }
 
     if (invalidCurrencies.length > 0) {
-      console.warn('Invalid currencies:', invalidCurrencies);
+      logger.info('Invalid currencies:', invalidCurrencies);
       // حذف ارزهای نامعتبر از لیست اصلی
       CURRENCIES = CURRENCIES.filter((c) => !invalidCurrencies.includes(c));
     }
@@ -190,7 +199,7 @@ export const getExchangeRates = cache(async (): Promise<ExchangeRatesResult> => 
       message: 'Exchange rates fetched successfully',
     };
   } catch (error) {
-    console.error('Error in getExchangeRates:', error);
+    logger.error('Error in getExchangeRates:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'An unknown error occurred',
