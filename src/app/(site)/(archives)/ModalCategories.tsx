@@ -20,7 +20,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import type { TaxonomyType } from '@/types/types';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import Loading from '@/components/Button/Loading';
 import { useFilterStore } from '@/lib/store';
 
 const searchSchema = z.object({
@@ -99,7 +99,7 @@ const ModalCategories: React.FC<ModalCategoriesProps> = ({ initialCategories }) 
                 transition={{ repeat: Number.POSITIVE_INFINITY, duration: 1, ease: 'linear' }}
               />
             )}
-            {isFiltering ? <LoadingSpinner /> : 'انتخاب دسته‌بندی'}
+            {isFiltering ? <Loading size="sm" variant="secondary" type="spinner" /> : 'انتخاب دسته‌بندی'}
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px] md:max-w-[600px] lg:max-w-[800px] w-[90vw] max-h-[90vh] overflow-hidden flex flex-col">
