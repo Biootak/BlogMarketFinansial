@@ -1,5 +1,8 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { PrismaClient, Role } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export async function checkRole(allowedRoles: string[]) {
   const session = await auth();
@@ -56,4 +59,18 @@ export async function checkAuthor() {
   }
 
   return session.user;
+}
+
+export async function checkExistingSuperAdmin() {
+  try {
+    const existingAdmin = await prisma.user.findFirst({
+      where: {
+        role: Role.SUPER_ADMIN
+      }
+    });
+    return existingAdmin;
+  } catch (error) {
+    console.error('Error checking super admin:', error);
+    return null;
+  }
 }
