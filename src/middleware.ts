@@ -14,7 +14,14 @@ export default auth((req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
 
-  
+  // محافظت از مسیر setup در محیط تولید
+  if (nextUrl.pathname.startsWith('/setup')) {
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.redirect(new URL('/', nextUrl));
+    }
+    // در محیط توسعه اجازه دسترسی داده می‌شود
+    return;
+  }
 
   // اگر مسیر API settings است و کاربر SUPER_ADMIN نیست، دسترسی رد شود
   if (nextUrl.pathname.startsWith('/api/settings')) {

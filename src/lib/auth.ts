@@ -61,7 +61,7 @@ export async function checkAuthor() {
   return session.user;
 }
 
-export async function checkExistingSuperAdmin() {
+export async function checkExistingSuperAdmin(prisma: PrismaClient) {
   try {
     const existingAdmin = await prisma.user.findFirst({
       where: {

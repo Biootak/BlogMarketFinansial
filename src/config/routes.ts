@@ -15,13 +15,14 @@ export const publicRoutes = [
   '/money-transfer',
   '/online-payment',
   '/edit-profile',
+  '/setup',
 ];
 
 /**
  * Routes related to authentication
  * @type {string[]}
  */
-export const authRoutes = ['/signin', '/signup', '/error', '/verify-request']
+export const authRoutes = ['/signin', '/signup', '/error', '/verify-request'];
 
 /**
  * API prefix for authentication routes
@@ -44,23 +45,18 @@ export const adminRoutes = [
   '/dashboard/advertisements',
   '/dashboard/exchange-rates',
   '/dashboard/rate-lists',
-  '/dashboard/edit-profile'
+  '/dashboard/edit-profile',
 ];
 
 // Routes that only SUPER_ADMIN can access
 export const superAdminRoutes = [
   '/dashboard/settings',
   '/dashboard/reports',
-  '/dashboard/*'  // This ensures SUPER_ADMIN has access to all dashboard routes
+  '/dashboard/*', // This ensures SUPER_ADMIN has access to all dashboard routes
 ];
 
 // Routes that authors can access
-export const authorRoutes = [
-  '/dashboard/posts',
-  '/dashboard/edit-profile'
-];
+export const authorRoutes = ['/dashboard/posts', '/dashboard/edit-profile'];
 
 // Routes that don't require any special role
-export const basicDashboardRoutes = [
-  '/dashboard/edit-profile'
-];
+export const basicDashboardRoutes = ['/dashboard/edit-profile'];
