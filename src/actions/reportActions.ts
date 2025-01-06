@@ -73,6 +73,14 @@ interface Activity {
   createdAt: string;
 }
 
+interface SystemLog {
+  id: string;
+  level: string;
+  message: string;
+  source: string;
+  timestamp: Date;
+}
+
 interface ActionResult<T = any> {
   success: boolean;
   data?: T;
@@ -337,3 +345,37 @@ export const getActivityLog = async (): Promise<ActionResult<Activity[]>> => {
     };
   }
 };
+
+export async function getSystemLogs(
+  page: number = 1,
+  limit: number = 10,
+  level?: string
+): Promise<ActionResult<{ logs: SystemLog[]; total: number }>> {
+  try {
+    await checkReportAccess();
+
+    const skip = (page - 1) * limit;
+    const where = level ? { level } : {};
+
+    const [logs, total] = await Promise.all([
+      db.systemLog.findMany({
+        where,
+        orderBy: { timestamp: 'desc' },
+        take: limit,
+        skip,
+      }),
+      db.systemLog.count({ where }),
+    ]);
+
+    return {
+      success: true,
+      data: { logs, total },
+    };
+  } catch (error) {
+    console.error('Error fetching system logs:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'خطا در دریافت لاگ‌های سیستم',
+    };
+  }
+}
