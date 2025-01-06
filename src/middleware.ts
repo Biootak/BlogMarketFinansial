@@ -7,19 +7,46 @@ import {
   authRoutes,
 } from './config/routes';
 import authConfig from './auth.config';
+import { PrismaClient } from '@prisma/client';
 
 const { auth } = NextAuth(authConfig);
+const prisma = new PrismaClient();
 
-export default auth((req) => {
+export default auth(async (req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
 
-  // محافظت از مسیر setup در محیط تولید
+  // محافظت از مسیر setup
   if (nextUrl.pathname.startsWith('/setup')) {
-    if (process.env.NODE_ENV === 'production') {
-      return NextResponse.redirect(new URL('/', nextUrl));
+    try {
+      // بررسی وجود سوپر ادمین
+      const existingAdmin = await prisma.user.findFirst({
+        where: {
+          role: 'SUPER_ADMIN',
+        },
+      });
+
+      // اگر سوپر ادمین وجود داشت، ریدایرکت به صفحه اصلی
+      if (existingAdmin) {
+        return NextResponse.redirect(new URL(DEFAULT_REDIRECT, nextUrl));
+      }
+
+      // اگر سوپر ادمین وجود نداشت و در محیط تولید هستیم
+      if (process.env.NODE_ENV === 'production') {
+        // بررسی IP کاربر
+        const clientIp = (req.headers.get('x-forwarded-for') || req.ip || 'unknown').toString();
+        const allowedIps = process.env.ALLOWED_SETUP_IPS?.split(',') || [];
+        
+        // اگر IP کاربر در لیست مجاز نبود، ریدایرکت به صفحه اصلی
+        if (!allowedIps.includes(clientIp)) {
+          console.log(`Unauthorized setup access attempt from IP: ${clientIp}`);
+          return NextResponse.redirect(new URL(DEFAULT_REDIRECT, nextUrl));
+        }
+      }
+    } catch (error) {
+      console.error('Error in setup middleware:', error);
+      return NextResponse.redirect(new URL(DEFAULT_REDIRECT, nextUrl));
     }
-    // در محیط توسعه اجازه دسترسی داده می‌شود
     return;
   }
 

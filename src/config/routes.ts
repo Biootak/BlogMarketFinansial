@@ -15,7 +15,6 @@ export const publicRoutes = [
   '/money-transfer',
   '/online-payment',
   '/edit-profile',
-  '/setup',
 ];
 
 /**

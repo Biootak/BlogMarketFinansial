@@ -3,35 +3,73 @@
 import { PrismaClient, Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { checkExistingSuperAdmin } from '@/lib/auth';
+import { headers } from 'next/headers';
+import { z } from 'zod';
 
 const prisma = new PrismaClient();
+
+// اعتبارسنجی قوی‌تر با zod
+const superAdminSchema = z.object({
+  email: z.string().email('ایمیل نامعتبر است'),
+  password: z.string()
+    .min(12, 'رمز عبور باید حداقل 12 کاراکتر باشد')
+    .regex(/[A-Z]/, 'رمز عبور باید شامل حروف بزرگ باشد')
+    .regex(/[a-z]/, 'رمز عبور باید شامل حروف کوچک باشد')
+    .regex(/[0-9]/, 'رمز عبور باید شامل اعداد باشد')
+    .regex(/[^A-Za-z0-9]/, 'رمز عبور باید شامل کاراکترهای خاص باشد'),
+  name: z.string().min(2, 'نام باید حداقل 2 حرف داشته باشد'),
+  phoneNumber: z.string().regex(/^(\+98|0)?9\d{9}$/, 'شماره موبایل نامعتبر است'),
+  jobName: z.string().min(2, 'عنوان شغلی باید حداقل 2 حرف داشته باشد'),
+  company: z.string().min(2, 'نام شرکت باید حداقل 2 حرف داشته باشد'),
+  bio: z.string().min(10, 'بیوگرافی باید حداقل 10 حرف داشته باشد'),
+});
 
 export async function createSuperAdmin(formData: FormData) {
   try {
     console.log('Starting createSuperAdmin...');
-    // اطلاعات اصلی کاربر
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-    const name = formData.get('name') as string;
-    const phoneNumber = formData.get('phoneNumber') as string;
 
-    // اطلاعات پروفایل
-    const bio = formData.get('bio') as string;
-    const jobName = formData.get('jobName') as string;
-    const company = formData.get('company') as string;
+    // بررسی محیط اجرا
+    if (process.env.NODE_ENV === 'production') {
+      // بررسی IP در محیط تولید
+      const headersList = headers();
+      const clientIp = headersList.get('x-forwarded-for') || 'unknown';
+      const allowedIps = process.env.ALLOWED_SETUP_IPS?.split(',') || [];
+      
+      if (!allowedIps.includes(clientIp)) {
+        console.log(`Unauthorized setup attempt from IP: ${clientIp}`);
+        return {
+          success: false,
+          message: 'شما مجوز دسترسی به این بخش را ندارید',
+          errors: {},
+          existingAdmin: null,
+        };
+      }
+    }
 
-    console.log('Validating input data...');
-    // اعتبارسنجی داده‌های ورودی
-    if (!email || !password || !name) {
-      console.log('Missing required fields');
+    // استخراج داده‌ها از فرم
+    const formDataObj = {
+      email: formData.get('email') as string,
+      password: formData.get('password') as string,
+      name: formData.get('name') as string,
+      phoneNumber: formData.get('phoneNumber') as string,
+      jobName: formData.get('jobName') as string,
+      company: formData.get('company') as string,
+      bio: formData.get('bio') as string,
+    };
+
+    // اعتبارسنجی داده‌ها
+    const validationResult = superAdminSchema.safeParse(formDataObj);
+    if (!validationResult.success) {
+      console.log('Validation failed:', validationResult.error);
       return {
         success: false,
-        message: 'لطفاً تمام اطلاعات ضروری را تکمیل کنید',
-        errors: {},
+        message: 'لطفاً خطاهای فرم را برطرف کنید',
+        errors: validationResult.error.flatten().fieldErrors,
         existingAdmin: null,
       };
     }
 
+    // بررسی وجود سوپر ادمین
     console.log('Checking for existing admin...');
     const existingAdmin = await checkExistingSuperAdmin(prisma);
 
@@ -45,28 +83,38 @@ export async function createSuperAdmin(formData: FormData) {
       };
     }
 
-    console.log('Creating new admin...');
-    const hashedPassword = await bcrypt.hash(password, 12);
+    // رمزنگاری پسورد با سختی بیشتر
+    console.log('Hashing password...');
+    const hashedPassword = await bcrypt.hash(formDataObj.password, 12);
 
-    await prisma.user.create({
+    // ایجاد سوپر ادمین
+    console.log('Creating new admin...');
+    const user = await prisma.user.create({
       data: {
-        email,
-        name,
+        email: formDataObj.email,
         password: hashedPassword,
+        name: formDataObj.name,
+        phoneNumber: formDataObj.phoneNumber,
         role: Role.SUPER_ADMIN,
-        status: 'Active',
-        emailVerified: new Date(),
-        phoneNumber,
         profile: {
           create: {
-            bio,
-            jobName,
-            company,
+            jobName: formDataObj.jobName,
+            company: formDataObj.company,
+            bio: formDataObj.bio,
           },
         },
       },
       include: {
         profile: true,
+      },
+    });
+
+    // ثبت لاگ ایجاد سوپر ادمین
+    await prisma.systemLog.create({
+      data: {
+        level: 'INFO',
+        message: `Super admin account created: ${user.email} (ID: ${user.id}) at ${new Date().toISOString()}`,
+        source: 'SETUP',
       },
     });
 
@@ -79,6 +127,15 @@ export async function createSuperAdmin(formData: FormData) {
     };
   } catch (error: unknown) {
     console.error('Error in createSuperAdmin:', error);
+    // ثبت خطا در لاگ سیستم
+    await prisma.systemLog.create({
+      data: {
+        level: 'ERROR',
+        message: 'Failed to create super admin account',
+        source: 'SETUP',
+      },
+    });
+
     const errorMessage = error instanceof Error ? error.message : 'خطایی در پردازش اطلاعات رخ داده است';
     return {
       success: false,
