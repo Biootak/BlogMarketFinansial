@@ -1,48 +1,57 @@
 'use server';
 
 import db from '@/lib/db';
-import { checkReportAccess } from './auth';
-import type { ActionResult, Activity } from './types';
 
-export async function getActivityLogs(
-  page = 1,
-  limit = 20
-): Promise<ActionResult<{ activities: Activity[]; total: number }>> {
+export type Activity = {
+  id: string;
+  userId: string;
+  action: string;
+  details: string;
+  createdAt: Date;
+  user: {
+    name: string;
+    email: string;
+  };
+};
+
+export async function getActivityLog(page = 1, limit = 10) {
   try {
-    await checkReportAccess();
-
     const skip = (page - 1) * limit;
 
     const [activities, total] = await Promise.all([
       db.activityLog.findMany({
-        include: { user: true },
-        orderBy: { createdAt: 'desc' },
-        take: limit,
         skip,
+        take: limit,
+        orderBy: {
+          createdAt: 'desc'
+        },
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true
+            }
+          }
+        }
       }),
-      db.activityLog.count(),
+      db.activityLog.count()
     ]);
-
-    const formattedActivities = activities.map(activity => ({
-      id: activity.id,
-      userEmail: activity.user.email,
-      action: activity.action,
-      details: activity.details,
-      createdAt: activity.createdAt.toISOString(),
-    }));
 
     return {
       success: true,
       data: {
-        activities: formattedActivities,
-        total,
-      },
+        activities: activities.map(activity => ({
+          ...activity,
+          createdAt: activity.createdAt.toISOString()
+        })),
+        total
+      }
     };
   } catch (error) {
-    console.error('Error in getActivityLogs:', error);
+    console.error('خطا در دریافت لاگ‌های فعالیت:', error);
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'خطا در دریافت گزارش فعالیت‌ها',
+      message: error instanceof Error ? error.message : 'خطا در دریافت لاگ‌های فعالیت'
     };
   }
 }
