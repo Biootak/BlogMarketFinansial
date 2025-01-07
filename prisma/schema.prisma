@@ -164,6 +164,7 @@ model Comment {
   postId   String
   authorId String
   parentId String?
+  approved Boolean @default(false)
 
   post    Post     @relation(fields: [postId], references: [id])
   author  User     @relation(fields: [authorId], references: [id])

@@ -1,8 +1,8 @@
 'use server';
 import { auth } from '@/auth';
+import prisma from '@/lib/db';
 import db from '@/lib/db';
 
-import { Role } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 
 interface UserStats {
@@ -15,20 +15,21 @@ interface UserStats {
 interface PostStats {
   total: number;
   published: number;
-  draft: number;
-  monthlyPosts: Array<{ month: string; count: number }>;
+  draft?: number;
+  monthlyPosts?: Array<{ month: string; count: number }>;
 }
 
 interface CommentStats {
   total: number;
-  recent: number;
-  monthly: Array<{ month: string; count: number }>;
+  pending: number;
+  monthly?: Array<{ month: string; count: number }>;
 }
 
 interface ViewStats {
   total: number;
-  monthly: Array<{ month: string; count: number }>;
-  topPosts: Array<{ title: string; views: number }>;
+  today: number;
+  monthly?: Array<{ month: string; count: number }>;
+  topPosts?: Array<{ title: string; views: number }>;
 }
 
 interface SystemReport {
@@ -104,151 +105,121 @@ export async function checkReportAccess() {
   }
 }
 
-export const getSystemReports = async (): Promise<ActionResult<SystemReport>> => {
-  'use server';
-
+export async function getSystemReports(from?: Date, to?: Date) {
   try {
     await checkReportAccess();
 
-    // آمار کاربران
-    const userStats = await db.$transaction(async (tx) => {
-      const total = await tx.user.count();
-      const active = await tx.user.count({
-        where: { updatedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
-      });
-      const newThisMonth = await tx.user.count({
-        where: { createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
-      });
-      const roleDistribution = await tx.user.groupBy({
-        by: ['role'],
-        _count: true,
-      });
+    const dateFilter = from && to ? {
+      createdAt: {
+        gte: from,
+        lte: to
+      }
+    } : {};
 
-      return {
-        total,
-        active,
-        newThisMonth,
-        roleDistribution: roleDistribution.map((item) => ({
-          name:
-            item.role === Role.SUPER_ADMIN
-              ? 'مدیر کل'
-              : item.role === Role.ADMIN
-                ? 'مدیر'
-                : item.role === Role.AUTHOR
-                  ? 'نویسنده'
-                  : 'کاربر',
-          value: item._count,
-        })),
-      };
-    });
+    const [
+      userStats,
+      postStats,
+      commentStats,
+      viewStats
+    ] = await Promise.all([
+      // آمار کاربران
+      prisma.user.aggregate({
+        where: dateFilter,
+        _count: {
+          id: true
+        }
+      }).then(async (result) => {
+        const newThisMonth = await prisma.user.count({
+          where: {
+            createdAt: {
+              gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+            }
+          }
+        });
+        const active = await prisma.user.count({ where: { status: "Active" } });
+        const roleDistribution = await prisma.user.groupBy({
+          by: ['role'],
+          _count: { id: true }
+        }).then(roles => roles.map(r => ({
+          name: r.role,
+          value: r._count.id
+        })));
+        return {
+          total: result._count.id,
+          newThisMonth,
+          active,
+          roleDistribution
+        };
+      }),
 
-    // آمار مطالب
-    const postStats = await db.$transaction(async (tx) => {
-      const total = await tx.post.count();
-      const published = await tx.post.count({ where: { status: 'PUBLISHED' } });
-      const draft = await tx.post.count({ where: { status: 'DRAFT' } });
+      // آمار پست‌ها
+      prisma.post.aggregate({
+        where: dateFilter,
+        _count: {
+          id: true
+        }
+      }).then(async (result) => {
+        const published = await prisma.post.count({
+          where: {
+            ...dateFilter,
+            status: "PUBLISHED"
+          }
+        });
+        return {
+          total: result._count.id,
+          published,
+          draft: result._count.id - published
+        };
+      }),
 
-      // آمار ماهانه
-      const monthlyPosts = await tx.$queryRaw`
-        SELECT DATE_TRUNC('month', "createdAt") as month,
-               COUNT(*) as count
-        FROM "Post"
-        WHERE "createdAt" >= NOW() - INTERVAL '12 months'
-        GROUP BY DATE_TRUNC('month', "createdAt")
-        ORDER BY month DESC
-        LIMIT 12
-      `;
+      // آمار نظرات
+      prisma.comment.aggregate({
+        where: dateFilter,
+        _count: {
+          id: true
+        }
+      }).then(async (result) => {
+        const pending = await prisma.comment.count({
+          where: {
+            ...dateFilter,
+            approved: false
+          }
+        });
+        return {
+          total: result._count.id,
+          pending,
+          monthly: []
+        };
+      }),
 
-      return {
-        total,
-        published,
-        draft,
-        monthlyPosts: (monthlyPosts as any[]).map((item) => ({
-          month: new Date(item.month).toLocaleDateString('fa-IR', { month: 'short' }),
-          count: Number(item.count),
-        })),
-      };
-    });
-
-    // آمار نظرات
-    const commentStats = await db.$transaction(async (tx) => {
-      const total = await tx.comment.count();
-      const recent = await tx.comment.count({
-        where: {
-          createdAt: {
-            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days
-          },
-        },
-      });
-
-      const monthly = await tx.$queryRaw`
-        SELECT DATE_TRUNC('month', "createdAt") as month,
-               COUNT(*) as count
-        FROM "Comment"
-        WHERE "createdAt" >= NOW() - INTERVAL '12 months'
-        GROUP BY DATE_TRUNC('month', "createdAt")
-        ORDER BY month DESC
-        LIMIT 12
-      `;
-
-      return {
-        total,
-        recent,
-        monthly: (monthly as any[]).map((item) => ({
-          month: new Date(item.month).toLocaleDateString('fa-IR', { month: 'short' }),
-          count: Number(item.count),
-        })),
-      };
-    });
-
-    // آمار بازدیدها
-    const viewStats = await db.$transaction(async (tx) => {
-      const total = await tx.post.aggregate({
-        _sum: {
-          viewCount: true,
-        },
-      });
-
-      const monthly = await tx.$queryRaw`
-        SELECT DATE_TRUNC('month', "createdAt") as month,
-               SUM("viewCount") as count
-        FROM "Post"
-        WHERE "createdAt" >= NOW() - INTERVAL '12 months'
-        GROUP BY DATE_TRUNC('month', "createdAt")
-        ORDER BY month DESC
-        LIMIT 12
-      `;
-
-      const topPosts = await tx.post.findMany({
-        where: { status: 'PUBLISHED' },
-        select: {
-          title: true,
-          viewCount: true,
-        },
-        orderBy: {
-          viewCount: 'desc',
-        },
-        take: 5,
-      });
-
-      return {
-        total: total._sum.viewCount || 0,
-        monthly: (monthly as any[]).map((item) => ({
-          month: new Date(item.month).toLocaleDateString('fa-IR', { month: 'short' }),
-          count: Number(item.count),
-        })),
-        topPosts: topPosts.map((post) => ({
-          title: post.title,
-          views: post.viewCount,
-        })),
-      };
-    });
+      // آمار بازدید
+      prisma.pageView.aggregate({
+        where: dateFilter,
+        _count: {
+          id: true
+        }
+      }).then(async (result) => {
+        const today = await prisma.pageView.count({
+          where: {
+            createdAt: {
+              gte: new Date(new Date().setHours(0, 0, 0, 0))
+            }
+          }
+        });
+        return {
+          total: result._count.id,
+          today,
+          monthly: [],
+          topPosts: []
+        };
+      })
+    ]);
 
     const data: SystemReport = {
       userStats,
       postStats,
       commentStats,
-      viewStats,
+      viewStats
     };
 
     revalidatePath('/dashboard/reports');
@@ -257,7 +228,7 @@ export const getSystemReports = async (): Promise<ActionResult<SystemReport>> =>
     console.error('Error in getSystemReports:', error);
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'خطا در دریافت گزارش‌های سیستم',
+      message: error instanceof Error ? error.message : 'خطا در دریافت گزارش‌های سیستم'
     };
   }
 };
