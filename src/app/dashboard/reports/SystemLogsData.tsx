@@ -21,18 +21,18 @@ interface SystemLog {
   timestamp: Date;
 }
 
-export default function SystemLogsData() {
+function SystemLogsData() {
   const [logs, setLogs] = useState<SystemLog[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [level, setLevel] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(1);
+  const [total, setTotal] = useState<number>(0);
+  const [level, setLevel] = useState<string>('all');
   const limit = 10;
 
   const fetchLogs = useCallback(async () => {
     try {
       setLoading(true);
-      const result = await getSystemLogs(page, limit, level || undefined);
+      const result = await getSystemLogs(page, limit, level === 'all' ? undefined : level);
       if (result.success && result.data) {
         setLogs(result.data.logs);
         setTotal(result.data.total);
@@ -98,7 +98,7 @@ export default function SystemLogsData() {
             <SelectValue placeholder="فیلتر بر اساس سطح" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">همه</SelectItem>
+            <SelectItem value="all">همه</SelectItem>
             <SelectItem value="ERROR">خطا</SelectItem>
             <SelectItem value="WARNING">هشدار</SelectItem>
             <SelectItem value="INFO">اطلاعات</SelectItem>
@@ -166,3 +166,5 @@ export default function SystemLogsData() {
     </div>
   );
 }
+
+export default SystemLogsData;

@@ -1,6 +1,7 @@
 'use server';
 
 import db from '@/lib/db';
+import { revalidatePath } from 'next/cache';
 
 export type Activity = {
   id: string;
@@ -32,10 +33,20 @@ export async function getActivityLog(page = 1, limit = 10) {
               email: true
             }
           }
+        },
+        where: {
+          user: {
+            AND: [
+              { name: { not: '' } },
+              { email: { not: '' } }
+            ]
+          }
         }
       }),
       db.activityLog.count()
     ]);
+
+    revalidatePath('/dashboard/activity');
 
     return {
       success: true,
@@ -51,7 +62,7 @@ export async function getActivityLog(page = 1, limit = 10) {
     console.error('خطا در دریافت لاگ‌های فعالیت:', error);
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'خطا در دریافت لاگ‌های فعالیت'
+      message: 'خطا در دریافت لاگ‌های فعالیت'
     };
   }
 }

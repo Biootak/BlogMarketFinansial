@@ -1,23 +1,22 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { Activity, BarChart3, Terminal } from 'lucide-react';
-import SystemReports from '@/components/Dashboard/Reports/SystemReports';
-import SystemLogs from '@/components/Dashboard/Reports/SystemLogs';
-import SystemLogsData from './SystemLogsData';
-import { Loader2 } from 'lucide-react';
-import ActivityLog from '@/components/Dashboard/Reports/ActivityLog';
+import dynamic from 'next/dynamic';
+
+const SystemReports = dynamic(() => import('@/components/Dashboard/Reports/SystemReports'), {
+  loading: () => <div>در حال بارگذاری...</div>,
+});
+const ActivityLog = dynamic(() => import('@/components/Dashboard/Reports/ActivityLog'), {
+  loading: () => <div>در حال بارگذاری...</div>,
+});
+const SystemLogsData = dynamic(() => import('./SystemLogsData'), {
+  loading: () => <div>در حال بارگذاری...</div>,
+});
+
 import { getSystemReports } from '@/actions/reportActions';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/components/ui/use-toast';
-
-function LoadingFallback() {
-  return (
-    <div className="flex justify-center items-center p-4">
-      <Loader2 className="h-6 w-6 animate-spin" />
-    </div>
-  );
-}
 
 export default function ReportsPage() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -103,11 +102,9 @@ export default function ReportsPage() {
       </div>
 
       <div className="bg-white/30 backdrop-blur-sm rounded-lg p-4 md:p-6">
-        <Suspense fallback={<LoadingFallback />}>
-          {activeTab === 'overview' && <SystemReports />}
-          {activeTab === 'activity' && <ActivityLog />}
-          {activeTab === 'logs' && <SystemLogsData />}
-        </Suspense>
+        {activeTab === 'overview' && <SystemReports />}
+        {activeTab === 'activity' && <ActivityLog />}
+        {activeTab === 'logs' && <SystemLogsData />}
       </div>
     </div>
   );
