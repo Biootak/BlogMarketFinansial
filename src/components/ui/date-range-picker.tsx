@@ -1,9 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { addDays, format } from 'date-fns-jalali';
 import { Calendar as CalendarIcon } from 'lucide-react';
-import { DateRange } from 'react-day-picker';
+import type { DayRange } from '@hassanmojab/react-modern-calendar-datepicker';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -15,8 +14,8 @@ import {
 
 interface DatePickerWithRangeProps {
   className?: string;
-  date: DateRange;
-  onDateChange: (date: DateRange) => void;
+  date: DayRange | null;
+  onDateChange: (date: DayRange | null) => void;
 }
 
 export function DatePickerWithRange({
@@ -24,6 +23,10 @@ export function DatePickerWithRange({
   date,
   onDateChange,
 }: DatePickerWithRangeProps) {
+  const formatDate = (day: { year: number; month: number; day: number }) => {
+    return `${day.year}/${String(day.month).padStart(2, '0')}/${String(day.day).padStart(2, '0')}`;
+  };
+
   return (
     <div className={cn('grid gap-2', className)}>
       <Popover>
@@ -40,11 +43,10 @@ export function DatePickerWithRange({
             {date?.from ? (
               date.to ? (
                 <>
-                  {format(date.from, 'yyyy/MM/dd')} -{' '}
-                  {format(date.to, 'yyyy/MM/dd')}
+                  {formatDate(date.from)} - {formatDate(date.to)}
                 </>
               ) : (
-                format(date.from, 'yyyy/MM/dd')
+                formatDate(date.from)
               )
             ) : (
               <span>انتخاب بازه زمانی</span>
@@ -53,12 +55,9 @@ export function DatePickerWithRange({
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="end">
           <Calendar
-            initialFocus
             mode="range"
-            defaultMonth={date?.from}
             selected={date}
             onSelect={onDateChange}
-            numberOfMonths={2}
           />
         </PopoverContent>
       </Popover>

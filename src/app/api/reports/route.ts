@@ -1,0 +1,56 @@
+import { type NextRequest, NextResponse } from 'next/server';
+import { getSystemReports } from '@/actions/reportActions';
+import { auth } from '@/auth';
+
+export async function POST(req: NextRequest) {
+  try {
+    // بررسی دسترسی کاربر
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, message: 'دسترسی غیرمجاز' },
+        { status: 401 }
+      );
+    }
+
+    // دریافت و تبدیل تاریخ‌ها
+    const body = await req.json();
+    const fromDate = body.from ? new Date(body.from) : undefined;
+    const toDate = body.to ? new Date(body.to) : undefined;
+    
+    // دریافت گزارش‌ها
+    const result = await getSystemReports(fromDate, toDate);
+
+    // بازگرداندن نتیجه
+    if (result.success) {
+      const systemData = result.data;
+      return NextResponse.json({
+        success: true,
+        data: {
+          users: systemData?.userStats?.total || 0,
+          activeUsers: systemData?.userStats?.active || 0,
+          newUsers: systemData?.userStats?.newThisMonth || 0,
+          posts: systemData?.postStats?.total || 0,
+          publishedPosts: systemData?.postStats?.published || 0,
+          comments: systemData?.commentStats?.total || 0,
+          pendingComments: systemData?.commentStats?.pending || 0,
+          views: systemData?.viewStats?.total || 0,
+          todayViews: systemData?.viewStats?.today || 0
+        }
+      });
+    }
+    return NextResponse.json(
+      { success: false, message: result.message || 'خطا در دریافت گزارش‌ها' },
+      { status: 400 }
+    );
+  } catch (error) {
+    console.error('Error in /api/reports:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        message: error instanceof Error ? error.message : 'خطا در دریافت گزارش‌ها'
+      },
+      { status: 500 }
+    );
+  }
+}

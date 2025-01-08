@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { getSystemLogs } from '@/actions/reports/systemLogs';
-import { Loader2, AlertCircle, Info, AlertTriangle } from 'lucide-react';
+import { getSystemLogs } from '@/actions/reportActions';
+import { AlertCircle, Info, AlertTriangle } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
+import Loading from '@/components/Loading';
 
 interface SystemLog {
   id: string;
@@ -21,7 +22,7 @@ interface SystemLog {
   timestamp: Date;
 }
 
-function SystemLogsData() {
+export default function SystemLogsData() {
   const [logs, setLogs] = useState<SystemLog[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1);
@@ -33,6 +34,7 @@ function SystemLogsData() {
     try {
       setLoading(true);
       const result = await getSystemLogs(page, limit, level === 'all' ? undefined : level);
+      
       if (result.success && result.data) {
         setLogs(result.data.logs);
         setTotal(result.data.total);
@@ -44,6 +46,7 @@ function SystemLogsData() {
         });
       }
     } catch (error) {
+      console.error('Error fetching logs:', error);
       toast({
         variant: "destructive",
         title: "خطا",
@@ -58,82 +61,70 @@ function SystemLogsData() {
     fetchLogs();
   }, [fetchLogs]);
 
-  const getLevelIcon = (level: string) => {
-    switch (level.toUpperCase()) {
-      case 'ERROR':
-        return <AlertCircle className="w-4 h-4 text-red-500" />;
-      case 'WARNING':
-        return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
-      case 'INFO':
-        return <Info className="w-4 h-4 text-blue-500" />;
-      default:
-        return null;
-    }
-  };
-
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('fa-IR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(new Date(date));
-  };
-
   if (loading) {
-    return (
-      <div className="flex justify-center items-center p-8">
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
-    );
+    return <Loading text="در حال بارگذاری لاگ‌ها..." />;
   }
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">لاگ‌های سیستم</h3>
         <Select value={level} onValueChange={setLevel}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="فیلتر بر اساس سطح" />
+            <SelectValue placeholder="انتخاب سطح لاگ" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">همه</SelectItem>
-            <SelectItem value="ERROR">خطا</SelectItem>
-            <SelectItem value="WARNING">هشدار</SelectItem>
             <SelectItem value="INFO">اطلاعات</SelectItem>
+            <SelectItem value="WARNING">هشدار</SelectItem>
+            <SelectItem value="ERROR">خطا</SelectItem>
           </SelectContent>
         </Select>
+
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+          >
+            قبلی
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setPage(p => p + 1)}
+            disabled={page * limit >= total}
+          >
+            بعدی
+          </Button>
+        </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white/50 backdrop-blur-sm rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500">سطح</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500">پیام</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500">منبع</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500">زمان</th>
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-[rgb(var(--c-primary-200))]">
+                <th className="px-4 py-2 text-right">سطح</th>
+                <th className="px-4 py-2 text-right">پیام</th>
+                <th className="px-4 py-2 text-right">منبع</th>
+                <th className="px-4 py-2 text-right">زمان</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody>
               {logs.map((log) => (
-                <tr key={log.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
+                <tr
+                  key={log.id}
+                  className="border-b border-[rgb(var(--c-primary-100))] hover:bg-[rgb(var(--c-primary-50))]"
+                >
+                  <td className="px-4 py-2">
                     <div className="flex items-center gap-2">
                       {getLevelIcon(log.level)}
-                      <span className="text-sm">{log.level}</span>
+                      <span>{log.level}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900">{log.message}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{log.source}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(log.timestamp)}
+                  <td className="px-4 py-2">{log.message}</td>
+                  <td className="px-4 py-2">{log.source}</td>
+                  <td className="px-4 py-2">
+                    {new Date(log.timestamp).toLocaleString('fa-IR')}
                   </td>
                 </tr>
               ))}
@@ -142,29 +133,22 @@ function SystemLogsData() {
         </div>
       </div>
 
-      <div className="flex justify-between items-center mt-4">
-        <div className="text-sm text-gray-500">
-          نمایش {(page - 1) * limit + 1} تا {Math.min(page * limit, total)} از {total} مورد
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-          >
-            قبلی
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => setPage((p) => p + 1)}
-            disabled={page * limit >= total}
-          >
-            بعدی
-          </Button>
-        </div>
+      <div className="text-center text-sm text-[rgb(var(--c-primary-600))]">
+        نمایش {Math.min(page * limit, total)} از {total} مورد
       </div>
     </div>
   );
 }
 
-export default SystemLogsData;
+function getLevelIcon(level: string) {
+  switch (level.toUpperCase()) {
+    case 'ERROR':
+      return <AlertCircle className="w-4 h-4 text-red-500" />;
+    case 'WARNING':
+      return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
+    case 'INFO':
+      return <Info className="w-4 h-4 text-blue-500" />;
+    default:
+      return null;
+  }
+}

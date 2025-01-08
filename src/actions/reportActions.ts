@@ -37,6 +37,8 @@ interface SystemReport {
   postStats: PostStats;
   commentStats: CommentStats;
   viewStats: ViewStats;
+  systemStatus: SystemStatus;
+  activity?: Activity[];
 }
 
 interface SystemStatus {
@@ -117,18 +119,21 @@ export async function getSystemReports(from?: Date, to?: Date) {
     } : {};
 
     const [
-      userStats,
-      postStats,
-      commentStats,
-      viewStats
+      userStatsResult,
+      postStatsResult,
+      commentStatsResult,
+      viewStatsResult,
+      systemStatusResult
     ] = await Promise.all([
       // آمار کاربران
-      prisma.user.aggregate({
-        where: dateFilter,
-        _count: {
-          id: true
-        }
-      }).then(async (result) => {
+      (async () => {
+        const result = await prisma.user.aggregate({
+          where: dateFilter,
+          _count: {
+            id: true
+          }
+        });
+        
         const newThisMonth = await prisma.user.count({
           where: {
             createdAt: {
@@ -136,7 +141,9 @@ export async function getSystemReports(from?: Date, to?: Date) {
             }
           }
         });
+        
         const active = await prisma.user.count({ where: { status: "Active" } });
+        
         const roleDistribution = await prisma.user.groupBy({
           by: ['role'],
           _count: { id: true }
@@ -144,82 +151,104 @@ export async function getSystemReports(from?: Date, to?: Date) {
           name: r.role,
           value: r._count.id
         })));
+        
         return {
           total: result._count.id,
-          newThisMonth,
           active,
+          newThisMonth,
           roleDistribution
         };
-      }),
+      })(),
 
       // آمار پست‌ها
-      prisma.post.aggregate({
-        where: dateFilter,
-        _count: {
-          id: true
-        }
-      }).then(async (result) => {
-        const published = await prisma.post.count({
-          where: {
-            ...dateFilter,
-            status: "PUBLISHED"
+      (async () => {
+        const result = await prisma.post.aggregate({
+          where: dateFilter,
+          _count: {
+            id: true
           }
         });
+        
+        const published = await prisma.post.count({ 
+          where: { 
+            ...dateFilter,
+            status: "PUBLISHED" 
+          } 
+        });
+
         return {
           total: result._count.id,
-          published,
-          draft: result._count.id - published
+          published
         };
-      }),
+      })(),
 
       // آمار نظرات
-      prisma.comment.aggregate({
-        where: dateFilter,
-        _count: {
-          id: true
-        }
-      }).then(async (result) => {
-        const pending = await prisma.comment.count({
-          where: {
-            ...dateFilter,
-            approved: false
+      (async () => {
+        const result = await prisma.comment.aggregate({
+          where: dateFilter,
+          _count: {
+            id: true
           }
         });
+        
+        const pending = await prisma.comment.count({ 
+          where: { 
+            ...dateFilter,
+            approved: false
+          } 
+        });
+
         return {
           total: result._count.id,
-          pending,
-          monthly: []
+          pending
         };
-      }),
+      })(),
 
-      // آمار بازدید
-      prisma.pageView.aggregate({
-        where: dateFilter,
-        _count: {
-          id: true
-        }
-      }).then(async (result) => {
-        const today = await prisma.pageView.count({
+      // آمار بازدیدها
+      (async () => {
+        const result = await prisma.view.aggregate({
+          where: dateFilter,
+          _count: {
+            id: true
+          }
+        });
+        
+        const today = await prisma.view.count({
           where: {
             createdAt: {
               gte: new Date(new Date().setHours(0, 0, 0, 0))
             }
           }
         });
+
         return {
           total: result._count.id,
-          today,
-          monthly: [],
-          topPosts: []
+          today
         };
-      })
+      })(),
+
+      // وضعیت سیستم
+      getSystemStatus()
     ]);
+
+    const userStats = userStatsResult;
+    const postStats = postStatsResult;
+    const commentStats = commentStatsResult;
+    const viewStats = viewStatsResult;
+    const systemStatus = systemStatusResult.data || {
+      cpu: { usage: 0 },
+      memory: { total: 0, used: 0, free: 0 },
+      disk: { total: 0, used: 0, free: 0 },
+      database: { status: 'offline', connections: 0, queryTime: 0 },
+      cache: { status: 'offline', hitRate: 0 }
+    };
 
     const data: SystemReport = {
       userStats,
       postStats,
       commentStats,
-      viewStats
+      viewStats,
+      systemStatus
     };
 
     revalidatePath('/dashboard/reports');

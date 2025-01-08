@@ -151,12 +151,22 @@ model Post {
   tags       Tag[]
   likes      Like[]
   savedBy    SavedPost[]
+  views      View[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-
+model View {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  ip        String?
+  userAgent String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 
 model Comment {
   id       String @id @default(cuid())
@@ -203,8 +213,6 @@ model Category {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-
-
 
 model Tag {
   id        String @id @default(cuid())

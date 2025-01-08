@@ -1,161 +1,260 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { getSystemReports } from '@/actions/reportActions';
-import { Loader2, Download, Calendar } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Server, Database, Clock, Download, Loader2 } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { DatePickerWithRange } from '@/components/ui/date-range-picker';
+import type { DayRange } from '@hassanmojab/react-modern-calendar-datepicker';
 import {
+  ResponsiveContainer,
   BarChart,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
-  ResponsiveContainer
+  Tooltip
 } from 'recharts';
-import { addDays } from 'date-fns';
+import Loading from '@/components/Loading';
+import { Users, FileText, MessageSquare, Eye } from 'lucide-react';
+
+interface SystemReportData {
+  users: number;
+  activeUsers: number;
+  newUsers: number;
+  posts: number;
+  publishedPosts: number;
+  comments: number;
+  pendingComments: number;
+  views: number;
+  todayViews: number;
+}
+
+const defaultData: SystemReportData = {
+  users: 0,
+  activeUsers: 0,
+  newUsers: 0,
+  posts: 0,
+  publishedPosts: 0,
+  comments: 0,
+  pendingComments: 0,
+  views: 0,
+  todayViews: 0
+};
 
 export default function SystemReports() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<SystemReportData>(defaultData);
   const [loading, setLoading] = useState(true);
-  const [dateRange, setDateRange] = useState({
-    from: addDays(new Date(), -30),
-    to: new Date(),
-  });
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const result = await getSystemReports(dateRange.from, dateRange.to);
-        if (result.success) {
-          setData(result.data);
-        } else {
-          toast({
-            variant: "destructive",
-            title: "خطا",
-            description: result.message || "خطا در دریافت گزارش‌های سیستم"
-          });
-        }
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "خطا",
-          description: error instanceof Error ? error.message : "خطا در دریافت گزارش‌های سیستم"
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [dateRange]);
+  const [dateRange, setDateRange] = useState<DayRange | null>(null);
+  const [downloading, setDownloading] = useState(false);
 
   const handleDownload = async () => {
+    if (!dateRange?.from || !dateRange?.to) {
+      toast({
+        variant: "destructive",
+        title: "خطا",
+        description: "لطفاً بازه زمانی را انتخاب کنید",
+      });
+      return;
+    }
+
     try {
-      const response = await fetch('/api/reports/download', {
+      setDownloading(true);
+      const body = {
+        from: new Date(dateRange.from.year, dateRange.from.month - 1, dateRange.from.day).toISOString(),
+        to: new Date(dateRange.to.year, dateRange.to.month - 1, dateRange.to.day).toISOString()
+      };
+      
+      const response = await fetch('/api/reports/system/download', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(dateRange),
+        body: JSON.stringify(body)
       });
+      if (!response.ok) throw new Error('خطا در دانلود فایل');
+      
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `system-report-${dateRange.from.toISOString().split('T')[0]}-to-${dateRange.to.toISOString().split('T')[0]}.xlsx`;
+      a.download = `system-report-${body.from}-to-${body.to}.xlsx`;
       document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
     } catch (error) {
+      console.error('Error downloading file:', error);
       toast({
         variant: "destructive",
         title: "خطا",
-        description: "خطا در دانلود گزارش"
+        description: "خطا در دانلود فایل",
       });
+    } finally {
+      setDownloading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center p-4">
-        <Loader2 className="h-6 w-6 animate-spin" />
-      </div>
-    );
-  }
+  const fetchData = useCallback(async () => {
+    if (!dateRange?.from || !dateRange?.to) {
+      toast({
+        variant: "destructive",
+        title: "خطا",
+        description: "لطفاً بازه زمانی را انتخاب کنید",
+      });
+      return;
+    }
 
-  if (!data) {
-    return <div className="text-red-500">خطا در دریافت گزارش‌های سیستم</div>;
+    try {
+      setLoading(true);
+      const body = {
+        from: new Date(dateRange.from.year, dateRange.from.month - 1, dateRange.from.day).toISOString(),
+        to: new Date(dateRange.to.year, dateRange.to.month - 1, dateRange.to.day).toISOString()
+      };
+      
+      const response = await fetch('/api/reports/system', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+      if (!response.ok) throw new Error('خطا در دریافت اطلاعات');
+      
+      const result = await response.json();
+      setData(result);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      toast({
+        variant: "destructive",
+        title: "خطا",
+        description: "خطا در دریافت اطلاعات",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [dateRange]);
+
+  useEffect(() => {
+    if (dateRange?.from && dateRange?.to) {
+      fetchData();
+    }
+  }, [dateRange, fetchData]);
+
+  if (loading) {
+    return <Loading />;
   }
 
   const chartData = [
-    { name: 'کاربران', مقدار: data.userStats.total },
-    { name: 'مطالب', مقدار: data.postStats.total },
-    { name: 'نظرات', مقدار: data.commentStats.total },
-    { name: 'بازدید', مقدار: data.viewStats.total },
+    { name: 'کاربران', تعداد: data.users, فعال: data.activeUsers, جدید: data.newUsers },
+    { name: 'پست‌ها', تعداد: data.posts, منتشرشده: data.publishedPosts },
+    { name: 'نظرات', تعداد: data.comments, درانتظار: data.pendingComments },
+    { name: 'بازدیدها', تعداد: data.views, امروز: data.todayViews },
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <DatePickerWithRange 
-          date={dateRange}
-          onDateChange={setDateRange}
-        />
-        <Button onClick={handleDownload} variant="outline">
-          <Download className="mr-2 h-4 w-4" />
-          دانلود گزارش
-        </Button>
-      </div>
-
-      <div className="h-[300px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="مقدار" fill="rgb(var(--c-primary-500))" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="p-4 rounded-lg bg-white/50 backdrop-blur-sm border border-[rgb(var(--c-primary-100))]">
-          <h4 className="font-medium text-[rgb(var(--c-primary-600))]">آمار کاربران</h4>
-          <div className="mt-2 space-y-1">
-            <p>تعداد کل: {data.userStats.total}</p>
-            <p>کاربران جدید این ماه: {data.userStats.newThisMonth}</p>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-lg bg-white/50 backdrop-blur-sm border border-[rgb(var(--c-primary-100))]">
-          <h4 className="font-medium text-[rgb(var(--c-primary-600))]">آمار مطالب</h4>
-          <div className="mt-2 space-y-1">
-            <p>تعداد کل: {data.postStats.total}</p>
-            <p>منتشر شده: {data.postStats.published}</p>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-lg bg-white/50 backdrop-blur-sm border border-[rgb(var(--c-primary-100))]">
-          <h4 className="font-medium text-[rgb(var(--c-primary-600))]">آمار نظرات</h4>
-          <div className="mt-2 space-y-1">
-            <p>تعداد کل: {data.commentStats.total}</p>
-            <p>در انتظار تایید: {data.commentStats.pending}</p>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-lg bg-white/50 backdrop-blur-sm border border-[rgb(var(--c-primary-100))]">
-          <h4 className="font-medium text-[rgb(var(--c-primary-600))]">آمار بازدید</h4>
-          <div className="mt-2 space-y-1">
-            <p>تعداد کل: {data.viewStats.total}</p>
-            <p>امروز: {data.viewStats.today}</p>
-          </div>
+        <h2 className="text-2xl font-bold">گزارش‌های سیستم</h2>
+        <div className="flex items-center gap-4">
+          <DatePickerWithRange
+            date={dateRange}
+            onDateChange={setDateRange}
+          />
+          <Button
+            variant="outline"
+            onClick={handleDownload}
+            disabled={downloading || !dateRange?.from || !dateRange?.to}
+          >
+            {downloading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                در حال دانلود...
+              </>
+            ) : (
+              <>
+                <Download className="mr-2 h-4 w-4" />
+                دانلود گزارش
+              </>
+            )}
+          </Button>
         </div>
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">کاربران</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{data.users.toLocaleString()}</div>
+            <div className="flex items-center space-x-2 rtl:space-x-reverse">
+              <Badge variant="secondary">{data.activeUsers} فعال</Badge>
+              <Badge variant="secondary">{data.newUsers} جدید</Badge>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">پست‌ها</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{data.posts.toLocaleString()}</div>
+            <Badge variant="secondary">{data.publishedPosts} منتشر شده</Badge>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">نظرات</CardTitle>
+            <MessageSquare className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{data.comments.toLocaleString()}</div>
+            <Badge variant="secondary">{data.pendingComments} در انتظار تأیید</Badge>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">بازدیدها</CardTitle>
+            <Eye className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{data.views.toLocaleString()}</div>
+            <Badge variant="secondary">{data.todayViews} امروز</Badge>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>نمودار آماری</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="تعداد" fill="#3b82f6" />
+                <Bar dataKey="فعال" fill="#10b981" />
+                <Bar dataKey="جدید" fill="#f59e0b" />
+                <Bar dataKey="منتشرشده" fill="#8b5cf6" />
+                <Bar dataKey="درانتظار" fill="#ef4444" />
+                <Bar dataKey="امروز" fill="#ec4899" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

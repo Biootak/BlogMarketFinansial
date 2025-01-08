@@ -13,6 +13,7 @@
     "@auth/prisma-adapter": "^2.4.1",
     "@aws-sdk/client-s3": "^3.637.0",
     "@aws-sdk/s3-request-presigner": "^3.637.0",
+    "@hassanmojab/react-modern-calendar-datepicker": "^3.1.7",
     "@headlessui/react": "^2.1.1",
     "@hookform/resolvers": "^3.9.0",
     "@prisma/client": "^5.20.0",

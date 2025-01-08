@@ -1,8 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { PrismaClient, Role } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { type PrismaClient, Role } from '@prisma/client';
 
 export async function checkRole(allowedRoles: string[]) {
   const session = await auth();
