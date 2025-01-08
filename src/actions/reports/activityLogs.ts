@@ -3,7 +3,7 @@
 import db from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 
-export type Activity = {
+export type ActivityLog = {
   id: string;
   userId: string;
   action: string;

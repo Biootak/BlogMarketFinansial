@@ -6,12 +6,11 @@ import { cn } from '@/lib/utils';
 interface LoadingProps {
   className?: string;
   size?: 'sm' | 'md' | 'lg';
+  childClassName?: string;
+  titleText?: string;
 }
 
-const Loading: FC<LoadingProps> = ({
-  className,
-  size = 'lg',
-}) => {
+const Loading: FC<LoadingProps> = ({ className, size = 'lg', childClassName, titleText }) => {
   const sizeClasses = {
     sm: 'h-10 w-10',
     md: 'h-14 w-14',
@@ -21,8 +20,11 @@ const Loading: FC<LoadingProps> = ({
   return (
     <div className="w-full h-full min-h-[200px] flex items-center justify-center">
       <div className={cn('relative', className)}>
+        {titleText && <span className="block mb-2 text-center">{titleText}</span>}
         <svg
-          className={cn(sizeClasses[size])}
+          role="img"
+          aria-label={titleText || 'انیمیشن بارگذاری'}
+          className={cn(sizeClasses[size], childClassName)}
           viewBox="0 0 100 100"
           xmlns="http://www.w3.org/2000/svg"
         >
@@ -90,12 +92,7 @@ const Loading: FC<LoadingProps> = ({
           </circle>
 
           {/* نقطه مرکزی */}
-          <circle
-            cx="50"
-            cy="50"
-            r="3"
-            fill="rgb(var(--c-primary-600))"
-          >
+          <circle cx="50" cy="50" r="3" fill="rgb(var(--c-primary-600))">
             <animate
               attributeName="r"
               values="2;4;3;3"

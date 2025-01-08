@@ -1,10 +1,10 @@
 'use client';
 
-import type { Activity } from '@/actions/reports/activityLogs';
+import type { ActivityLog } from '@/actions/reports/activityLogs';
 import { Button } from "@/components/ui/button";
 
 interface ActivityTableProps {
-  activities: Activity[];
+  activities: ActivityLog[];
   loading: boolean;
   page: number;
   total: number;

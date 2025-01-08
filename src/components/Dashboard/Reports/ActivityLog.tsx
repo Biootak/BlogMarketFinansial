@@ -2,12 +2,13 @@
 
 import { useEffect, useState, useCallback, Suspense } from 'react';
 import { getActivityLog } from '@/actions/reports/activityLogs';
-import type { Activity } from '@/actions/reports/activityLogs';
+
 import dynamic from 'next/dynamic';
 import { Loader2 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from '@/components/ui/skeleton';
+import type { ActivityLog } from '@/actions/reports/activityLogs';
+import type { Activity } from '@/actions/reports/types';
 
 const ActivityTable = dynamic(() => import('@/components/Dashboard/Reports/ActivityTable'), {
   loading: () => (
@@ -22,8 +23,8 @@ const ActivityTable = dynamic(() => import('@/components/Dashboard/Reports/Activ
   ),
 });
 
-export default function ActivityLog() {
-  const [activities, setActivities] = useState<Activity[]>([]);
+export default function ActivityLogComponent() {
+  const [activities, setActivities] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -34,27 +35,30 @@ export default function ActivityLog() {
       setLoading(true);
       const result = await getActivityLog(page, limit);
       if (result.success && result.data) {
-        setActivities(result.data.activities.map(activity => ({
-          ...activity,
-          createdAt: new Date(activity.createdAt),
-          user: {
-            ...activity.user,
-            name: activity.user.name || 'کاربر ناشناس'
-          }
-        })));
+        setActivities(
+          result.data.activities.map((activity) => ({
+            ...activity,
+            createdAt: new Date(activity.createdAt),
+            userEmail: activity.user.email,
+            user: {
+              ...activity.user,
+              name: activity.user.name || 'کاربر ناشناس',
+            },
+          })),
+        );
         setTotal(result.data.total);
       } else {
         toast({
-          variant: "destructive",
-          title: "خطا",
-          description: result.message || "خطا در دریافت گزارش فعالیت‌ها"
+          variant: 'destructive',
+          title: 'خطا',
+          description: result.message || 'خطا در دریافت گزارش فعالیت‌ها',
         });
       }
     } catch (error) {
       toast({
-        variant: "destructive",
-        title: "خطا",
-        description: error instanceof Error ? error.message : "خطا در دریافت گزارش فعالیت‌ها"
+        variant: 'destructive',
+        title: 'خطا',
+        description: error instanceof Error ? error.message : 'خطا در دریافت گزارش فعالیت‌ها',
       });
     } finally {
       setLoading(false);
@@ -68,8 +72,14 @@ export default function ActivityLog() {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">گزارش فعالیت‌ها</h3>
-      <Suspense fallback={<div className="flex items-center justify-center p-4"><Loader2 className="animate-spin" /></div>}>
-        <ActivityTable 
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center p-4">
+            <Loader2 className="animate-spin" />
+          </div>
+        }
+      >
+        <ActivityTable
           activities={activities}
           loading={loading}
           page={page}

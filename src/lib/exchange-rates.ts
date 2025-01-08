@@ -182,7 +182,7 @@ export const getExchangeRates = cache(async (): Promise<ExchangeRatesResult> => 
     }
 
     if (invalidCurrencies.length > 0) {
-      logger.info('Invalid currencies:', invalidCurrencies);
+      logger.info(`Invalid currencies: ${invalidCurrencies.join(', ')}`);
       // حذف ارزهای نامعتبر از لیست اصلی
       CURRENCIES = CURRENCIES.filter((c) => !invalidCurrencies.includes(c));
     }

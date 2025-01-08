@@ -21,7 +21,7 @@ interface Activity {
   details: string;
   createdAt: string;
   user: {
-    name: string;
+    name: string | null;
     email: string;
   };
 }
@@ -38,7 +38,7 @@ export default function ActivityLogsData() {
     try {
       setIsLoading(true);
       const result = await getActivityLog(page, limit);
-      
+
       if (result.success && result.data) {
         setActivities(result.data.activities);
         setTotal(result.data.total);
@@ -49,7 +49,7 @@ export default function ActivityLogsData() {
           description: result.message || 'خطا در دریافت لاگ‌های فعالیت',
         });
       }
-    } catch (error) {
+    } catch (_) {
       toast({
         variant: 'destructive',
         title: 'خطا',

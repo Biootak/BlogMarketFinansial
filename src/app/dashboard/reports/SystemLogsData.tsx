@@ -34,23 +34,23 @@ export default function SystemLogsData() {
     try {
       setLoading(true);
       const result = await getSystemLogs(page, limit, level === 'all' ? undefined : level);
-      
+
       if (result.success && result.data) {
         setLogs(result.data.logs);
         setTotal(result.data.total);
       } else {
         toast({
-          variant: "destructive",
-          title: "خطا",
-          description: result.message || "خطا در دریافت لاگ‌ها",
+          variant: 'destructive',
+          title: 'خطا',
+          description: result.message || 'خطا در دریافت لاگ‌ها',
         });
       }
     } catch (error) {
       console.error('Error fetching logs:', error);
       toast({
-        variant: "destructive",
-        title: "خطا",
-        description: error instanceof Error ? error.message : "خطا در دریافت لاگ‌ها",
+        variant: 'destructive',
+        title: 'خطا',
+        description: error instanceof Error ? error.message : 'خطا در دریافت لاگ‌ها',
       });
     } finally {
       setLoading(false);
@@ -62,7 +62,7 @@ export default function SystemLogsData() {
   }, [fetchLogs]);
 
   if (loading) {
-    return <Loading text="در حال بارگذاری لاگ‌ها..." />;
+    return <Loading />;
   }
 
   return (
@@ -83,14 +83,14 @@ export default function SystemLogsData() {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={() => setPage(p => Math.max(1, p - 1))}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
           >
             قبلی
           </Button>
           <Button
             variant="outline"
-            onClick={() => setPage(p => p + 1)}
+            onClick={() => setPage((p) => p + 1)}
             disabled={page * limit >= total}
           >
             بعدی
@@ -123,9 +123,7 @@ export default function SystemLogsData() {
                   </td>
                   <td className="px-4 py-2">{log.message}</td>
                   <td className="px-4 py-2">{log.source}</td>
-                  <td className="px-4 py-2">
-                    {new Date(log.timestamp).toLocaleString('fa-IR')}
-                  </td>
+                  <td className="px-4 py-2">{new Date(log.timestamp).toLocaleString('fa-IR')}</td>
                 </tr>
               ))}
             </tbody>
