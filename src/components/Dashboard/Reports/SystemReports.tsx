@@ -31,7 +31,7 @@ const defaultData: SystemReportData = {
   comments: 0,
   pendingComments: 0,
   views: 0,
-  todayViews: 0
+  todayViews: 0,
 };
 
 export default function SystemReports() {
@@ -45,11 +45,11 @@ export default function SystemReports() {
       const response = await fetch('/api/system-reports/download', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
       });
       if (!response.ok) throw new Error('خطا در دانلود فایل');
-      
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -62,9 +62,9 @@ export default function SystemReports() {
     } catch (error) {
       console.error('Error downloading file:', error);
       toast({
-        variant: "destructive",
-        title: "خطا",
-        description: "خطا در دانلود فایل",
+        variant: 'destructive',
+        title: 'خطا',
+        description: 'خطا در دانلود فایل',
       });
     } finally {
       setDownloading(false);
@@ -77,7 +77,7 @@ export default function SystemReports() {
       const response = await fetch('/api/system-reports', {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
       });
       const result = await response.json();
@@ -90,14 +90,14 @@ export default function SystemReports() {
         comments: result.commentStats?.total || 0,
         pendingComments: result.commentStats?.pending || 0,
         views: result.viewStats.total,
-        todayViews: result.viewStats.today || 0
+        todayViews: result.viewStats.today || 0,
       });
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({
-        variant: "destructive",
-        title: "خطا",
-        description: "خطا در دریافت اطلاعات",
+        variant: 'destructive',
+        title: 'خطا',
+        description: 'خطا در دریافت اطلاعات',
       });
     } finally {
       setLoading(false);
@@ -113,7 +113,13 @@ export default function SystemReports() {
   }
 
   const chartData = [
-    { key: 'users', name: 'کاربران', تعداد: data.users, فعال: data.activeUsers, جدید: data.newUsers },
+    {
+      key: 'users',
+      name: 'کاربران',
+      تعداد: data.users,
+      فعال: data.activeUsers,
+      جدید: data.newUsers,
+    },
     { key: 'posts', name: 'پست‌ها', تعداد: data.posts, منتشرشده: data.publishedPosts },
     { key: 'comments', name: 'نظرات', تعداد: data.comments, درانتظار: data.pendingComments },
     { key: 'views', name: 'بازدیدها', تعداد: data.views, امروز: data.todayViews },
@@ -124,11 +130,7 @@ export default function SystemReports() {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">گزارش‌های سیستم</h2>
         <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            onClick={handleDownload}
-            disabled={downloading}
-          >
+          <Button variant="outline" onClick={handleDownload} disabled={downloading}>
             {downloading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -136,7 +138,7 @@ export default function SystemReports() {
               </>
             ) : (
               <>
-                <Download className="mr-2 h-4 w-4" />
+                <Download className="ml-2 h-4 w-4" />
                 دانلود گزارش
               </>
             )}
