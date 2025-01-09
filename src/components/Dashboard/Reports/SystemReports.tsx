@@ -6,17 +6,7 @@ import { Server, Database, Clock, Download, Loader2 } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
-import { DatePickerWithRange } from '@/components/ui/date-range-picker';
-import type { DayRange } from '@hassanmojab/react-modern-calendar-datepicker';
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip
-} from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import Loading from '@/components/Loading';
 import { Users, FileText, MessageSquare, Eye } from 'lucide-react';
 
@@ -47,31 +37,16 @@ const defaultData: SystemReportData = {
 export default function SystemReports() {
   const [data, setData] = useState<SystemReportData>(defaultData);
   const [loading, setLoading] = useState(true);
-  const [dateRange, setDateRange] = useState<DayRange | null>({
-    from: { year: 2025, month: 1, day: 1 },
-    to: { year: 2025, month: 1, day: 8 }
-  });
-  console.log('Initial dateRange:', dateRange);
   const [downloading, setDownloading] = useState(false);
 
   const handleDownload = async () => {
-    if (!dateRange?.from || !dateRange?.to) {
-      return;
-    }
-    
     try {
       setDownloading(true);
-      const body = {
-        from: new Date(dateRange.from.year, dateRange.from.month - 1, dateRange.from.day).toISOString(),
-        to: new Date(dateRange.to.year, dateRange.to.month - 1, dateRange.to.day).toISOString()
-      };
-      
       const response = await fetch('/api/system-reports/download', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(body)
       });
       if (!response.ok) throw new Error('خطا در دانلود فایل');
       
@@ -79,7 +54,7 @@ export default function SystemReports() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `system-report-${body.from}-to-${body.to}.xlsx`;
+      a.download = 'system-report.xlsx';
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -97,25 +72,15 @@ export default function SystemReports() {
   };
 
   const fetchData = useCallback(async () => {
-    console.log('fetchData called');
-    if (!dateRange?.from || !dateRange?.to) {
-      return;
-    }
-
     try {
       setLoading(true);
-      const url = `/api/system-reports?from=${new Date(dateRange.from.year, dateRange.from.month - 1, dateRange.from.day).toISOString()}&to=${new Date(dateRange.to.year, dateRange.to.month - 1, dateRange.to.day).toISOString()}`;
-      const response = await fetch(url, {
+      const response = await fetch('/api/system-reports', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
         },
       });
-      console.log('Response Status:', response.status);
       const result = await response.json();
-      console.log('Data received:', result);
-      if (!response.ok) throw new Error('خطا در دریافت اطلاعات');
-      
       setData({
         users: result.userStats.total,
         activeUsers: result.userStats.active,
@@ -137,24 +102,21 @@ export default function SystemReports() {
     } finally {
       setLoading(false);
     }
-  }, [dateRange]);
+  }, []);
 
   useEffect(() => {
-    console.log('useEffect called with dateRange:', dateRange);
-    if (dateRange?.from && dateRange?.to) {
-      fetchData();
-    }
-  }, [dateRange, fetchData]);
+    fetchData();
+  }, [fetchData]);
 
   if (loading) {
     return <Loading />;
   }
 
   const chartData = [
-    { name: 'کاربران', تعداد: data.users, فعال: data.activeUsers, جدید: data.newUsers },
-    { name: 'پست‌ها', تعداد: data.posts, منتشرشده: data.publishedPosts },
-    { name: 'نظرات', تعداد: data.comments, درانتظار: data.pendingComments },
-    { name: 'بازدیدها', تعداد: data.views, امروز: data.todayViews },
+    { key: 'users', name: 'کاربران', تعداد: data.users, فعال: data.activeUsers, جدید: data.newUsers },
+    { key: 'posts', name: 'پست‌ها', تعداد: data.posts, منتشرشده: data.publishedPosts },
+    { key: 'comments', name: 'نظرات', تعداد: data.comments, درانتظار: data.pendingComments },
+    { key: 'views', name: 'بازدیدها', تعداد: data.views, امروز: data.todayViews },
   ];
 
   return (
@@ -162,14 +124,10 @@ export default function SystemReports() {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">گزارش‌های سیستم</h2>
         <div className="flex items-center gap-4">
-          <DatePickerWithRange
-            date={dateRange}
-            onDateChange={setDateRange}
-          />
           <Button
             variant="outline"
             onClick={handleDownload}
-            disabled={downloading || !dateRange?.from || !dateRange?.to}
+            disabled={downloading}
           >
             {downloading ? (
               <>

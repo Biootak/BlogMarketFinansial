@@ -38,6 +38,7 @@ interface SystemReport {
     topPosts: Array<{
       title: string;
       views: number;
+      viewsFormatted: string;
     }>;
   };
 }
@@ -47,6 +48,7 @@ export async function GET(): Promise<NextResponse<SystemReport | { error: string
     await checkReportAccess();
 
     const systemReport = await db.$transaction(async (tx) => {
+      // Transaction with increased timeout and maxWait settings
       // User Statistics
       const total = await tx.user.count();
       const active = await tx.user.count({
@@ -76,34 +78,34 @@ export async function GET(): Promise<NextResponse<SystemReport | { error: string
         where: { status: 'PUBLISHED' }
       });
 
-      const monthlyPosts = await tx.$queryRaw<MonthlyStats[]>`
+        const monthlyPosts = await tx.$queryRaw<MonthlyStats[]>`
         SELECT DATE_TRUNC('month', "createdAt") as month,
-               COUNT(*) as count
+             COUNT(*) as count
         FROM "Post"
         WHERE "createdAt" >= NOW() - INTERVAL '12 months'
         GROUP BY DATE_TRUNC('month', "createdAt")
-        ORDER BY month DESC
+        ORDER BY month ASC
         LIMIT 12
-      `;
+        `;
 
-      // View Statistics
-      const totalViews = await tx.post.aggregate({
+        // View Statistics
+        const totalViews = await tx.post.aggregate({
         _sum: {
           viewCount: true
         }
-      });
+        });
 
-      const monthlyViews = await tx.$queryRaw<MonthlyStats[]>`
+        const monthlyViews = await tx.$queryRaw<MonthlyStats[]>`
         SELECT DATE_TRUNC('month', "createdAt") as month,
-               SUM("viewCount") as count
+             SUM("viewCount") as count
         FROM "Post"
         WHERE "createdAt" >= NOW() - INTERVAL '12 months'
         GROUP BY DATE_TRUNC('month', "createdAt")
-        ORDER BY month DESC
+        ORDER BY month ASC
         LIMIT 12
-      `;
+        `;
 
-      const topPosts = await tx.post.findMany({
+        const topPosts = await tx.post.findMany({
         where: { status: 'PUBLISHED' },
         select: {
           title: true,
@@ -113,45 +115,74 @@ export async function GET(): Promise<NextResponse<SystemReport | { error: string
           viewCount: 'desc'
         },
         take: 5
-      });
+        });
 
-      const report: SystemReport = {
+        const formatNumber = (num: number) => {
+        return new Intl.NumberFormat('fa-IR').format(num);
+        };
+
+        const formatDate = (date: Date) => {
+        return date.toLocaleDateString('fa-IR', {
+          year: 'numeric',
+          month: 'long'
+        });
+        };
+
+        const report: SystemReport = {
         userStats: {
           total,
           active,
           newThisMonth,
           roleDistribution: roleDistribution.map(item => ({
-            name: item.role,
-            value: item._count
+          name: item.role === 'ADMIN' ? 'مدیر' : 
+              item.role === 'USER' ? 'کاربر' : item.role,
+          value: item._count
           }))
         },
         postStats: {
           total: totalPosts,
           published: publishedPosts,
           monthlyPosts: monthlyPosts.map(item => ({
-            month: new Date(item.month).toLocaleDateString('fa-IR', { month: 'short' }),
-            count: Number(item.count)
+          month: formatDate(new Date(item.month)),
+          count: Number(item.count)
           }))
         },
         viewStats: {
           total: totalViews._sum.viewCount || 0,
           monthly: monthlyViews.map(item => ({
-            month: new Date(item.month).toLocaleDateString('fa-IR', { month: 'short' }),
-            count: Number(item.count)
+          month: formatDate(new Date(item.month)),
+          count: Number(item.count)
           })),
           topPosts: topPosts.map(post => ({
-            title: post.title,
-            views: post.viewCount
+          title: post.title,
+          views: post.viewCount,
+          viewsFormatted: formatNumber(post.viewCount)
           }))
         }
       };
 
-      return report;
-    });
+        return report;
+      }, {
+        timeout: 10000, // 10 seconds timeout
+        maxWait: 5000,  // 5 seconds maximum wait time
+      });
 
     return NextResponse.json(systemReport);
   } catch (error) {
-    console.error('Error in system-reports:', error);
+    console.error('System reports error:', error);
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      // Handle specific Prisma errors
+      return NextResponse.json(
+      { error: 'Database operation failed', code: error.code },
+      { status: 500 }
+      );
+    } else if (error instanceof Prisma.PrismaClientValidationError) {
+      // Handle validation errors
+      return NextResponse.json(
+      { error: 'Invalid data provided to database' },
+      { status: 400 }
+      );
+    }
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'خطا در دریافت گزارش‌های سیستم' },
       { status: 500 }
