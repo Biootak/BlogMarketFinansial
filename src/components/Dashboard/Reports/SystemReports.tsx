@@ -47,19 +47,18 @@ const defaultData: SystemReportData = {
 export default function SystemReports() {
   const [data, setData] = useState<SystemReportData>(defaultData);
   const [loading, setLoading] = useState(true);
-  const [dateRange, setDateRange] = useState<DayRange | null>(null);
+  const [dateRange, setDateRange] = useState<DayRange | null>({
+    from: { year: 2025, month: 1, day: 1 },
+    to: { year: 2025, month: 1, day: 8 }
+  });
+  console.log('Initial dateRange:', dateRange);
   const [downloading, setDownloading] = useState(false);
 
   const handleDownload = async () => {
     if (!dateRange?.from || !dateRange?.to) {
-      toast({
-        variant: "destructive",
-        title: "خطا",
-        description: "لطفاً بازه زمانی را انتخاب کنید",
-      });
       return;
     }
-
+    
     try {
       setDownloading(true);
       const body = {
@@ -67,7 +66,7 @@ export default function SystemReports() {
         to: new Date(dateRange.to.year, dateRange.to.month - 1, dateRange.to.day).toISOString()
       };
       
-      const response = await fetch('/api/reports/system/download', {
+      const response = await fetch('/api/system-reports/download', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -98,33 +97,36 @@ export default function SystemReports() {
   };
 
   const fetchData = useCallback(async () => {
+    console.log('fetchData called');
     if (!dateRange?.from || !dateRange?.to) {
-      toast({
-        variant: "destructive",
-        title: "خطا",
-        description: "لطفاً بازه زمانی را انتخاب کنید",
-      });
       return;
     }
 
     try {
       setLoading(true);
-      const body = {
-        from: new Date(dateRange.from.year, dateRange.from.month - 1, dateRange.from.day).toISOString(),
-        to: new Date(dateRange.to.year, dateRange.to.month - 1, dateRange.to.day).toISOString()
-      };
-      
-      const response = await fetch('/api/reports/system', {
-        method: 'POST',
+      const url = `/api/system-reports?from=${new Date(dateRange.from.year, dateRange.from.month - 1, dateRange.from.day).toISOString()}&to=${new Date(dateRange.to.year, dateRange.to.month - 1, dateRange.to.day).toISOString()}`;
+      const response = await fetch(url, {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(body)
       });
+      console.log('Response Status:', response.status);
+      const result = await response.json();
+      console.log('Data received:', result);
       if (!response.ok) throw new Error('خطا در دریافت اطلاعات');
       
-      const result = await response.json();
-      setData(result);
+      setData({
+        users: result.userStats.total,
+        activeUsers: result.userStats.active,
+        newUsers: result.userStats.newThisMonth,
+        posts: result.postStats.total,
+        publishedPosts: result.postStats.published,
+        comments: result.commentStats?.total || 0,
+        pendingComments: result.commentStats?.pending || 0,
+        views: result.viewStats.total,
+        todayViews: result.viewStats.today || 0
+      });
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({
@@ -138,6 +140,7 @@ export default function SystemReports() {
   }, [dateRange]);
 
   useEffect(() => {
+    console.log('useEffect called with dateRange:', dateRange);
     if (dateRange?.from && dateRange?.to) {
       fetchData();
     }
