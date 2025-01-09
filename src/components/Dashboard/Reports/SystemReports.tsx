@@ -80,6 +80,11 @@ export default function SystemReports() {
           'Content-Type': 'application/json',
         },
       });
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error details:', errorData);
+        throw new Error('خطا در دریافت اطلاعات');
+      }
       const result = await response.json();
       setData({
         users: result.userStats.total,
@@ -133,7 +138,7 @@ export default function SystemReports() {
           <Button variant="outline" onClick={handleDownload} disabled={downloading}>
             {downloading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="ml-2 h-4 w-4 animate-spin" />
                 در حال دانلود...
               </>
             ) : (
