@@ -138,11 +138,6 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
               color={card.color}
               trend={card.trend}
               percentage={card.percentage}
-              detailedInfo={
-                <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                  اطلاعات بیشتر درباره {card.title}
-                </p>
-              }
             />
           </motion.div>
         ))}

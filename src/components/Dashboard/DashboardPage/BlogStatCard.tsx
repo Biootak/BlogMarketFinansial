@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from 'react';
+import { motion } from 'framer-motion';
 
 export interface BlogStatCardProps {
   title: string;
@@ -10,7 +10,6 @@ export interface BlogStatCardProps {
   color: 'blue' | 'green' | 'purple' | 'red' | 'orange';
   trend?: 'up' | 'down' | 'neutral';
   percentage?: number;
-  detailedInfo?: React.ReactNode;
 }
 
 const colorVariants = {
@@ -34,10 +33,7 @@ const BlogStatCard: React.FC<BlogStatCardProps> = ({
   color,
   trend,
   percentage,
-  detailedInfo,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
   const trendColor =
     trend === 'up'
       ? 'text-green-500 dark:text-green-400'
@@ -51,63 +47,40 @@ const BlogStatCard: React.FC<BlogStatCardProps> = ({
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-        className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-lg 
-                   border border-gray-100 dark:border-gray-700 cursor-pointer
-                   hover:shadow-xl transition-all duration-300 h-full"
-        onClick={() => setIsExpanded((prev) => !prev)}
-        role="button"
-        aria-expanded={isExpanded}
-        aria-label={`${title} statistics`}
+        className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-lg h-full"
       >
-        <div className="flex flex-col justify-between h-full">
-          <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4">
+          <motion.div
+            whileHover={{ rotate: 15 }}
+            className={`p-3 rounded-xl text-white shadow-md 
+                      bg-gradient-to-br ${colorVariants[color]}`}
+          >
+            {icon}
+          </motion.div>
+          {trend && percentage && (
             <motion.div
-              whileHover={{ rotate: 15 }}
-              className={`p-3 rounded-xl text-white shadow-md 
-                          bg-gradient-to-br ${colorVariants[color]}`}
-            >
-              {icon}
-            </motion.div>
-            {trend && percentage && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5 }}
-                className={`text-sm font-medium flex items-center space-x-1 ${trendColor}`}
-              >
-                <span aria-hidden="true">{trendIcons[trend]}</span>
-                <span>{percentage}%</span>
-              </motion.div>
-            )}
-          </div>
-          <div>
-            <h3 className="text-gray-600 dark:text-gray-300 text-sm font-medium mb-1">{title}</h3>
-            <motion.span
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
-              className="text-2xl sm:text-xl font-bold text-gray-800 dark:text-white"
+              className={`text-sm font-medium flex items-center space-x-1 ${trendColor}`}
             >
-              {value}
-            </motion.span>
-          </div>
+              <span aria-hidden="true">{trendIcons[trend]}</span>
+              <span>{percentage}%</span>
+            </motion.div>
+          )}
+        </div>
+        <div>
+          <h3 className="text-gray-600 dark:text-gray-300 text-sm font-medium mb-1">{title}</h3>
+          <motion.span
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-2xl sm:text-xl font-bold text-gray-800 dark:text-white"
+          >
+            {typeof value === 'number' ? value.toLocaleString('fa-IR') : value}
+          </motion.span>
         </div>
       </motion.div>
-      <AnimatePresence>
-        {isExpanded && detailedInfo && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="absolute top-full left-0 right-0 mt-2 p-4 
-                       bg-white dark:bg-gray-800 rounded-xl shadow-lg z-10 
-                       overflow-hidden border border-gray-100 dark:border-gray-700"
-          >
-            {detailedInfo}
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
