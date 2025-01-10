@@ -118,7 +118,6 @@ export async function savePatternsGroupToDB(patterns: {
   multipliers?: Map<string, number>;
 }, retryCount = 0) {
   try {
-    const promises: Promise<boolean>[] = [];
     let successCount = 0;
     let failureCount = 0;
 
