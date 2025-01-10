@@ -1,6 +1,6 @@
 'use client';
 
-import type { FC } from 'react';
+import { useEffect, useState, type FC } from 'react';
 import { cn } from '@/lib/utils';
 
 interface LoadingProps {
@@ -11,11 +11,25 @@ interface LoadingProps {
 }
 
 const Loading: FC<LoadingProps> = ({ className, size = 'lg', childClassName, titleText }) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const sizeClasses = {
     sm: 'h-10 w-10',
     md: 'h-14 w-14',
     lg: 'h-16 w-16',
   };
+
+  // مسیرهای ثابت برای SVG
+  const paths = [
+    'M40,40 Q50,50 60,60',
+    'M35,45 Q50,50 65,55',
+    'M45,35 Q50,50 55,65',
+    'M50,40 Q50,50 50,60'
+  ];
 
   return (
     <div className="w-full h-full min-h-[200px] flex items-center justify-center">
@@ -24,7 +38,7 @@ const Loading: FC<LoadingProps> = ({ className, size = 'lg', childClassName, tit
         <svg
           role="img"
           aria-label={titleText || 'انیمیشن بارگذاری'}
-          className={cn(sizeClasses[size], childClassName)}
+          className={cn(sizeClasses[size], childClassName, 'animate-spin')}
           viewBox="0 0 100 100"
           xmlns="http://www.w3.org/2000/svg"
         >
@@ -35,82 +49,21 @@ const Loading: FC<LoadingProps> = ({ className, size = 'lg', childClassName, tit
             </linearGradient>
           </defs>
 
-          {/* مسیرهای اصلی - فقط 4 مسیر */}
-          {[...Array(4)].map((_, i) => (
+          {mounted && paths.map((d, i) => (
             <path
               key={i}
-              d={`M${30 + Math.random() * 40},${30 + Math.random() * 40} Q${50 + Math.random() * 20},${50 + Math.random() * 20} ${70 - Math.random() * 40},${70 - Math.random() * 40}`}
+              d={d}
               stroke="url(#arcGradient)"
               strokeWidth="3"
               fill="none"
               strokeLinecap="round"
-              className="opacity-80"
-            >
-              <animate
-                attributeName="d"
-                dur="1s"
-                repeatCount="indefinite"
-                values={`
-                  M${30 + Math.random() * 40},${30 + Math.random() * 40} Q${50 + Math.random() * 20},${50 + Math.random() * 20} ${70 - Math.random() * 40},${70 - Math.random() * 40};
-                  M${40},${40 + i * 5} Q50,50 ${60},${60 - i * 5};
-                  M${50 - i * 10},${50} Q50,50 ${50 + i * 10},${50};
-                  M50,${40 + i * 5} Q50,50 50,${60 - i * 5}
-                `}
-                calcMode="spline"
-                keyTimes="0;0.3;0.6;1"
-                keySplines="0.5 0 0.5 1; 0.5 0 0.5 1; 0.5 0 0.5 1"
-              />
-            </path>
+              className={cn(
+                'opacity-80',
+                'animate-pulse',
+                i % 2 === 0 ? 'animate-[pulse_1s_ease-in-out_infinite]' : 'animate-[pulse_1.5s_ease-in-out_infinite]'
+              )}
+            />
           ))}
-
-          {/* حلقه بیرونی */}
-          <circle
-            cx="50"
-            cy="50"
-            r="30"
-            stroke="url(#arcGradient)"
-            strokeWidth="2"
-            fill="none"
-            className="opacity-30"
-          >
-            <animate
-              attributeName="r"
-              values="35;30;25;30"
-              dur="1s"
-              repeatCount="indefinite"
-              calcMode="spline"
-              keyTimes="0;0.3;0.6;1"
-            />
-            <animate
-              attributeName="opacity"
-              values="0.2;0.4;0.6;0.4"
-              dur="1s"
-              repeatCount="indefinite"
-              calcMode="spline"
-              keyTimes="0;0.3;0.6;1"
-            />
-          </circle>
-
-          {/* نقطه مرکزی */}
-          <circle cx="50" cy="50" r="3" fill="rgb(var(--c-primary-600))">
-            <animate
-              attributeName="r"
-              values="2;4;3;3"
-              dur="1s"
-              repeatCount="indefinite"
-              calcMode="spline"
-              keyTimes="0;0.3;0.6;1"
-              keySplines="0.5 0 0.5 1; 0.5 0 0.5 1; 0.5 0 0.5 1"
-            />
-            <animate
-              attributeName="opacity"
-              values="0.6;0.8;1;1"
-              dur="1s"
-              repeatCount="indefinite"
-              calcMode="spline"
-              keyTimes="0;0.3;0.6;1"
-            />
-          </circle>
         </svg>
       </div>
     </div>
