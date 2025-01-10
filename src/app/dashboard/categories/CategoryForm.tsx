@@ -273,9 +273,9 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
   if (isOpen !== undefined && onClose) {
     return (
       <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
-        <DialogContent className="rtl">
+        <DialogContent className="rtl" aria-describedby="category-form-description">
           <DialogHeader>
-            <DialogTitle>{category ? 'ویرایش دسته‌بندی' : 'افزودن دسته‌بندی جدید'}</DialogTitle>
+            <DialogTitle>{category ? 'ویرایش دسته‌بندی' : 'ایجاد دسته‌بندی جدید'}</DialogTitle>
           </DialogHeader>
           {formContent}
         </DialogContent>
@@ -294,7 +294,7 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
           <span className="group-hover:mr-2 transition-all duration-300">افزودن دسته‌بندی جدید</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="rtl">
+      <DialogContent className="rtl" aria-describedby="category-form-description">
         <DialogHeader>
           <DialogTitle>افزودن دسته‌بندی جدید</DialogTitle>
         </DialogHeader>
