@@ -31,265 +31,58 @@ import { HiOutlineInformationCircle } from 'react-icons/hi2';
 import Loading from '@/components/Loading';
 import { loadPatternsFromDB, savePatternsGroupToDB } from '@/actions/currency-patterns';
 
-interface CurrencyPattern {
-  symbol: string;
-  names: string[];
-  output: string;
-}
-
-const CURRENCIES: Record<string, CurrencyPattern> = {
-  USD: {
-    symbol: '🇺🇲',
-    names: ['دلار آمریکا', 'دالر آمریکا', 'دلار امریکا', 'دالر امریکا', 'USD'],
-    output: 'دلار آمریکا'
-  },
-  EUR: {
-    symbol: '🇪🇺',
-    names: ['یورو', 'EUR'],
-    output: 'یورو'
-  },
-  GBP: {
-    symbol: '🇬🇧',
-    names: ['پوند بریتانیا', 'پوند انگلیس', 'GBP'],
-    output: 'پوند انگلیس'
-  },
-  AED: {
-    symbol: '🇦🇪',
-    names: ['درهم امارات', 'AED'],
-    output: 'درهم امارات'
-  },
-  TRY: {
-    symbol: '🇹🇷',
-    names: ['لیره ترکیه', 'لیر ترکیه', 'TRY'],
-    output: 'لیر ترکیه'
-  },
-  RUB: {
-    symbol: '🇷🇺',
-    names: ['روبل روسیه', 'RUB'],
-    output: 'روبل روسیه'
-  },
-  SAR: {
-    symbol: '🇸🇦',
-    names: ['ریال سعودی', 'SAR'],
-    output: 'ریال سعودی'
-  },
-  IRR: {
-    symbol: '🇮🇷',
-    names: ['تومان ایران', 'IRR'],
-    output: 'تومان ایران'
-  },
-  PKR: {
-    symbol: '🇵🇰',
-    names: ['کلدار پاکستانی', 'کلدار پاکستان', 'PKR'],
-    output: 'کلدار پاکستان'
-  },
-  INR: {
-    symbol: '🇮🇳',
-    names: ['کلدار هند', 'روپیه هند', 'INR'],
-    output: 'روپیه هند'
-  },
-  CHF: {
-    symbol: '🇨🇭',
-    names: ['فرانک سویس', 'فرانک سوئیس', 'CHF'],
-    output: 'فرانک سوئیس'
-  },
-  AUD: {
-    symbol: '🇦🇺',
-    names: ['دلار استرالیا', 'AUD'],
-    output: 'دلار استرالیا'
-  },
-  CAD: {
-    symbol: '🇨🇦',
-    names: ['دلار کانادا', 'CAD'],
-    output: 'دلار کانادا'
-  }
-};
-
-// تعریف نوع برای الگوهای یادگیری
-type LearnedPatternsType = {
-  currencies: string[];
-  formats: string[];
-  prefixes: string[];
-  suffixes: string[];
-  separators: string[];
-  multipliers: { [key: string]: number };
-};
-
-// مقادیر پیش‌فرض برای الگوها
-const defaultPatterns: LearnedPatternsType = {
-  currencies: ['دلار', 'یورو', 'پوند', 'درهم', 'لیر', 'روپیه', 'کلدار', 'تومان', 'افغانی', 'روبل', 'یوان', 'ین', 'وون'],
-  formats: [],
-  prefixes: [],
-  suffixes: [],
-  separators: ['/', '|', '-', '⇢', '⇠', '→', '←'],
-  multipliers: {
-    'هزار': 1000,
-    'میلیون': 1000000,
-    'k': 1000,
-    'm': 1000000
-  }
-};
-
-// تبدیل الگوها به Set و Map
-const convertToSetsAndMaps = (patterns: LearnedPatternsType) => {
-  return {
-    currencies: new Set<string>(patterns.currencies),
-    formats: new Set<string>(patterns.formats),
-    prefixes: new Set<string>(patterns.prefixes),
-    suffixes: new Set<string>(patterns.suffixes),
-    separators: new Set<string>(patterns.separators),
-    multipliers: new Map<string, number>(Object.entries(patterns.multipliers))
-  };
-};
-
-// تبدیل Set و Map به آبجکت ساده برای ذخیره‌سازی
-const convertToPlainObject = (patterns: any) => {
-  return {
-    currencies: Array.from(patterns.currencies),
-    formats: Array.from(patterns.formats),
-    prefixes: Array.from(patterns.prefixes),
-    suffixes: Array.from(patterns.suffixes),
-    separators: Array.from(patterns.separators),
-    multipliers: Object.fromEntries(patterns.multipliers)
-  };
-};
-
-// بارگذاری اولیه الگوها از دیتابیس
-let learnedPatterns: Awaited<ReturnType<typeof loadPatternsFromDB>>;
-
-const initializePatterns = async () => {
-  if (!learnedPatterns) {
-    learnedPatterns = await loadPatternsFromDB();
-  }
-  return learnedPatterns;
-};
-
-// تابع یادگیری از متن جدید
-const learnFromText = async (text: string) => {
-  // یادگیری از متن جدید
-  await initializePatterns();
-  
-  const lines = text.split('\n');
-  let patternsUpdated = false;
-
-  for (const line of lines) {
-    if (!line.trim()) continue;
-
-    // یادگیری جداکننده‌ها
-    const separators = line.match(/[^\w\s\d]+/g);
-    if (separators) {
-      separators.forEach(sep => {
-        if (!learnedPatterns.separators.has(sep)) {
-          learnedPatterns.separators.add(sep);
-          patternsUpdated = true;
-        }
-      });
-    }
-
-    // یادگیری پیشوندها و پسوندها
-    const words = line.split(/[\d.,]+/);
-    words.forEach(word => {
-      word = word.trim();
-      if (word && word.length > 1) {
-        if (word.includes('خرید') || word.includes('فروش')) {
-          if (line.indexOf(word) < line.search(/[\d.,]+/)) {
-            if (!learnedPatterns.prefixes.has(word)) {
-              learnedPatterns.prefixes.add(word);
-              patternsUpdated = true;
-            }
-          } else {
-            if (!learnedPatterns.suffixes.has(word)) {
-              learnedPatterns.suffixes.add(word);
-              patternsUpdated = true;
-            }
-          }
-        }
-      }
-    });
-
-    // یادگیری نام‌های ارز
-    const currencyMatch = line.match(/([آ-ی]+\s*[آ-ی]+)(?=.*?[\d.,]+)/);
-    if (currencyMatch) {
-      const possibleCurrency = currencyMatch[1].trim();
-      if (possibleCurrency.length > 2 && !possibleCurrency.includes('خرید') && !possibleCurrency.includes('فروش')) {
-        if (!learnedPatterns.currencies.has(possibleCurrency)) {
-          learnedPatterns.currencies.add(possibleCurrency);
-          patternsUpdated = true;
-        }
-      }
-    }
-
-    // یادگیری فرمت‌های عددی
-    const numberFormats = line.match(/[\d۰-۹]+[.,٫٬][\d۰-۹]+/g);
-    if (numberFormats) {
-      numberFormats.forEach(format => {
-        const pattern = format.replace(/[\d۰-۹]/g, '#');
-        if (!learnedPatterns.formats.has(pattern)) {
-          learnedPatterns.formats.add(pattern);
-          patternsUpdated = true;
-        }
-      });
-    }
-  }
-
-  // ذخیره الگوها اگر تغییری ایجاد شده باشد
-  if (patternsUpdated) {
-    console.log('الگوهای جدید یادگرفته شده:', convertToPlainObject(learnedPatterns));
-    await savePatternsGroupToDB(convertToPlainObject(learnedPatterns));
-  }
-};
-
 const parseCurrencyRates = async (text: string): Promise<RateItem[]> => {
   console.log('=== شروع پردازش متن ===');
   console.log('متن ورودی:', text);
-  
+
   const rates: RateItem[] = [];
   let currentTitle = '';
-  
+
   // تقسیم متن به خطوط و حذف خطوط خالی
-  const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
+  const lines = text
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
   console.log('تعداد خطوط:', lines.length);
-  
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     console.log(`\nپردازش خط ${i + 1}:`, line);
-    
+
     // تشخیص عنوان با استفاده از پرچم کشورها
-    if (line.match(/🇺🇲|🇪🇺|🇬🇧|🇨🇭|🇦🇺|🇨🇦|🇷🇺|🇦🇪|🇸🇦|🇹🇷|🇮🇷|🇮🇳|🇵🇰/)) {
+    const countryFlags = '🇺🇲|🇪🇺|🇬🇧|🇨🇭|🇦🇺|🇨🇦|🇷🇺|🇦🇪|🇸🇦|🇹🇷|🇮🇷|🇮🇳|🇵🇰';
+    if (new RegExp(countryFlags, 'u').test(line)) {
       // حذف ایموجی‌ها و دونقطه و تمیز کردن عنوان
-      currentTitle = line
-        .replace(/[🇺🇲🇪🇺🇬🇧🇨🇭🇦🇺🇨🇦🇷🇺🇦🇪🇸🇦🇹🇷🇮🇷🇮🇳🇵🇰]/g, '')
-        .replace(':', '')
-        .trim();
+      currentTitle = line.replace(new RegExp(countryFlags, 'gu'), '').replace(':', '').trim();
       console.log('عنوان جدید یافت شد:', currentTitle);
       continue;
     }
-    
+
     // تشخیص نرخ‌های خرید و فروش
     if (line.includes('خرید:') && line.includes('فروش:')) {
       try {
         console.log('خط حاوی نرخ یافت شد:', line);
-        
+
         // تبدیل اعداد فارسی به انگلیسی
         const persianToEnglish = (str: string) => {
-          return str.replace(/[۰-۹]/g, d => String.fromCharCode(d.charCodeAt(0) - 1728));
+          return str.replace(/[۰-۹]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 1728));
         };
-        
+
         // استخراج نرخ‌های خرید و فروش
         const buyMatch = line.match(/خرید:\s*([\d۰-۹\.,]+)/);
         const sellMatch = line.match(/فروش:\s*([\d۰-۹\.,]+)/);
-        
+
         if (buyMatch && sellMatch) {
           const buyRate = persianToEnglish(buyMatch[1].trim());
           const sellRate = persianToEnglish(sellMatch[1].trim());
-          
+
           console.log('نرخ خرید:', buyRate);
           console.log('نرخ فروش:', sellRate);
-          
+
           if (currentTitle && buyRate && sellRate) {
             const rateItem = {
               title: currentTitle,
-              value: `خرید: ${buyRate} | فروش: ${sellRate}`
+              value: `خرید: ${buyRate} | فروش: ${sellRate}`,
             };
             rates.push(rateItem);
             console.log('نرخ جدید اضافه شد:', rateItem);
@@ -304,35 +97,8 @@ const parseCurrencyRates = async (text: string): Promise<RateItem[]> => {
   console.log('=== پایان پردازش ===');
   console.log('تعداد نرخ‌های استخراج شده:', rates.length);
   console.log('نرخ‌های نهایی:', rates);
-  
-  return rates;
-};
 
-const formatNumber = (num: string): string => {
-  try {
-    // حذف کاراکترهای اضافی و تبدیل به عدد
-    const cleanNum = num.replace(/[^\d.]/g, '');
-    const number = parseFloat(cleanNum);
-    
-    if (isNaN(number)) {
-      console.error('عدد نامعتبر:', num);
-      return num;
-    }
-    
-    // تبدیل به فرمت فارسی
-    const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-    return number.toString()
-      .split('')
-      .map(d => {
-        if (d === '.') return '.';
-        return persianDigits[parseInt(d)] || d;
-      })
-      .join('')
-      .replace(/\B(?=(\d{3})+(?!\d))/g, '،');
-  } catch (error) {
-    console.error('خطا در فرمت‌بندی عدد:', error);
-    return num;
-  }
+  return rates;
 };
 
 const formatDate = (date: string | Date | undefined) => {
@@ -347,21 +113,6 @@ const formatDate = (date: string | Date | undefined) => {
     minute: '2-digit',
   };
   return new Intl.DateTimeFormat('fa-IR', options).format(d);
-};
-
-const formatValue = (value: string): string => {
-  // حذف همه کاراکترها به جز اعداد و علائم مجاز
-  let cleanValue = value.replace(/[^\d.,]/g, '');
-  
-  // تبدیل اعداد انگلیسی به فارسی
-  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-  cleanValue = cleanValue.replace(/\d/g, d => persianDigits[Number.parseInt(d)]);
-  
-  // اضافه کردن جداکننده هزارگان
-  const parts = cleanValue.split('.');
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  
-  return parts.join('.');
 };
 
 const RateListsPage = () => {
@@ -400,21 +151,21 @@ const RateListsPage = () => {
   const handleRatePaste = async (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
     const text = e.clipboardData.getData('text');
-    
+
     try {
       console.log('=== شروع پردازش پیست ===');
       console.log('متن ورودی:', text);
-      
+
       const rates = await parseCurrencyRates(text);
       console.log('نرخ‌های پردازش شده:', rates);
-      
+
       if (rates.length > 0) {
         console.log('در حال ذخیره نرخ‌ها...');
         replace(rates);
         toast({
           title: 'موفقیت',
           description: `${rates.length} نرخ ارز با موفقیت اضافه شد`,
-          variant: 'success'
+          variant: 'success',
         });
         console.log('نرخ‌ها با موفقیت ذخیره شدند');
       } else {
@@ -422,7 +173,7 @@ const RateListsPage = () => {
         toast({
           title: 'خطا',
           description: 'هیچ نرخ ارزی در متن یافت نشد',
-          variant: 'destructive'
+          variant: 'destructive',
         });
       }
     } catch (error) {
@@ -430,7 +181,7 @@ const RateListsPage = () => {
       toast({
         title: 'خطا',
         description: 'خطا در پردازش نرخ‌های ارز',
-        variant: 'destructive'
+        variant: 'destructive',
       });
     }
   };
@@ -551,40 +302,42 @@ const RateListsPage = () => {
     // فیلتر جستجو
     if (filterOptions.search) {
       const searchLower = filterOptions.search.toLowerCase();
-      result = result.filter(list => 
-        list.title.toLowerCase().includes(searchLower) ||
-        list.rates.some(rate => 
-          rate.title.toLowerCase().includes(searchLower) || 
-          rate.value.toLowerCase().includes(searchLower)
-        )
+      result = result.filter(
+        (list) =>
+          list.title.toLowerCase().includes(searchLower) ||
+          list.rates.some(
+            (rate) =>
+              rate.title.toLowerCase().includes(searchLower) ||
+              rate.value.toLowerCase().includes(searchLower),
+          ),
       );
     }
 
     // فیلتر نوع ارز
     if (filterOptions.currency !== 'all') {
       const currencyMap: { [key: string]: string[] } = {
-        'USD': ['دلار', 'دالر آمریکا', 'USD'],
-        'EUR': ['یورو', 'EUR'],
-        'GBP': ['پوند', 'GBP'],
-        'AED': ['درهم', 'AED'],
-        'TRY': ['لیر', 'لیره', 'TRY'],
-        'IRR': ['تومان', 'ریال', 'IRR'],
-        'PKR': ['کلدار', 'روپیه پاکستان', 'PKR'],
-        'INR': ['روپیه هند', 'INR'],
-        'RUB': ['روبل', 'RUB'],
-        'CHF': ['فرانک', 'CHF'],
-        'AUD': ['دلار استرالیا', 'AUD'],
-        'CAD': ['دلار کانادا', 'CAD'],
-        'SAR': ['ریال سعودی', 'SAR']
+        USD: ['دلار', 'دالر آمریکا', 'USD'],
+        EUR: ['یورو', 'EUR'],
+        GBP: ['پوند', 'GBP'],
+        AED: ['درهم', 'AED'],
+        TRY: ['لیر', 'لیره', 'TRY'],
+        IRR: ['تومان', 'ریال', 'IRR'],
+        PKR: ['کلدار', 'روپیه پاکستان', 'PKR'],
+        INR: ['روپیه هند', 'INR'],
+        RUB: ['روبل', 'RUB'],
+        CHF: ['فرانک', 'CHF'],
+        AUD: ['دلار استرالیا', 'AUD'],
+        CAD: ['دلار کانادا', 'CAD'],
+        SAR: ['ریال سعودی', 'SAR'],
       };
 
       const currencyKeywords = currencyMap[filterOptions.currency] || [];
-      const hasMatchingCurrency = result.some(list =>
-        list.rates.some(rate =>
-          currencyKeywords.some(keyword =>
-            rate.title.toLowerCase().includes(keyword.toLowerCase())
-          )
-        )
+      const hasMatchingCurrency = result.some((list) =>
+        list.rates.some((rate) =>
+          currencyKeywords.some((keyword) =>
+            rate.title.toLowerCase().includes(keyword.toLowerCase()),
+          ),
+        ),
       );
 
       if (!hasMatchingCurrency) {
@@ -614,7 +367,7 @@ const RateListsPage = () => {
         }
       };
       const dateLimit = getDateLimit();
-      result = result.filter(list => new Date(list.updatedAt || '') > dateLimit);
+      result = result.filter((list) => new Date(list.updatedAt || '') > dateLimit);
     }
 
     // مرتب‌سازی
@@ -649,8 +402,8 @@ const RateListsPage = () => {
     <div className="container mx-auto p-4 sm:p-6 lg:p-8 rtl" dir="rtl">
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-0 justify-between items-center mb-6">
         <h1 className="text-lg sm:text-2xl font-bold">مدیریت لیست‌های نرخ</h1>
-        <Button 
-          onClick={() => setShowCreateModal(true)} 
+        <Button
+          onClick={() => setShowCreateModal(true)}
           className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto text-sm sm:text-base"
         >
           <HiPlusCircle className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -664,16 +417,16 @@ const RateListsPage = () => {
           <Input
             placeholder="جستجو در عنوان و نرخ‌ها..."
             value={filterOptions.search}
-            onChange={(e) => setFilterOptions(prev => ({ ...prev, search: e.target.value }))}
+            onChange={(e) => setFilterOptions((prev) => ({ ...prev, search: e.target.value }))}
             className="w-full sm:w-64 text-right"
             dir="rtl"
           />
-          
+
           {/* فیلتر نوع ارز */}
           <select
             className="border rounded-md p-2 pl-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-right appearance-none relative bg-white"
             value={filterOptions.currency}
-            onChange={(e) => setFilterOptions(prev => ({ ...prev, currency: e.target.value }))}
+            onChange={(e) => setFilterOptions((prev) => ({ ...prev, currency: e.target.value }))}
             dir="rtl"
             style={{ backgroundPosition: '0.5rem center' }}
           >
@@ -697,7 +450,7 @@ const RateListsPage = () => {
           <select
             className="border rounded-md p-2 pl-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-right appearance-none relative bg-white"
             value={filterOptions.dateRange}
-            onChange={(e) => setFilterOptions(prev => ({ ...prev, dateRange: e.target.value }))}
+            onChange={(e) => setFilterOptions((prev) => ({ ...prev, dateRange: e.target.value }))}
             dir="rtl"
             style={{ backgroundPosition: '0.5rem center' }}
           >
@@ -711,7 +464,7 @@ const RateListsPage = () => {
           <select
             className="border rounded-md p-2 pl-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-right appearance-none relative bg-white"
             value={filterOptions.sortBy}
-            onChange={(e) => setFilterOptions(prev => ({ ...prev, sortBy: e.target.value }))}
+            onChange={(e) => setFilterOptions((prev) => ({ ...prev, sortBy: e.target.value }))}
             dir="rtl"
             style={{ backgroundPosition: '0.5rem center' }}
           >
