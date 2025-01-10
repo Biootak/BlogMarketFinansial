@@ -1,8 +1,10 @@
 'use server';
 
+import { auth } from '@/auth';
 import prisma from '@/lib/db';
-import { checkRole } from '@/lib/utils';
+
 import type { ActionResult } from '@/types/types';
+import type { Prisma } from '@prisma/client';
 
 export async function getRecentDrafts(): Promise<
   ActionResult<
@@ -14,13 +16,28 @@ export async function getRecentDrafts(): Promise<
     }>
   >
 > {
-  await checkRole(['ADMIN', 'AUTHOR']);
+  const session = await auth();
+  const user = session?.user;
+
+  if (!user) {
+    return {
+      success: false,
+      message: 'لطفاً وارد حساب کاربری خود شوید.',
+    };
+  }
 
   try {
+    const where: Prisma.PostWhereInput = {
+      status: 'DRAFT',
+    };
+
+    // اگر نویسنده است، فقط پست‌های خودش را ببیند
+    if (user.role === 'AUTHOR') {
+      where.authorId = user.id;
+    }
+
     const recentDrafts = await prisma.post.findMany({
-      where: {
-        status: 'DRAFT',
-      },
+      where,
       orderBy: {
         updatedAt: 'desc',
       },

@@ -947,9 +947,31 @@ export async function getStats(): Promise<
     drafts: { total: number; data: number[] };
   }>
 > {
-  await checkRole(['ADMIN', 'AUTHOR']);
+  const session = await auth();
+  const user = session?.user;
+
+  if (!user) {
+    return {
+      success: false,
+      message: 'لطفاً وارد حساب کاربری خود شوید.',
+    };
+  }
 
   try {
+    // شرط‌های پایه برای کوئری
+    const baseWhere: Prisma.PostWhereInput = {
+      OR: [
+        { status: 'DRAFT' },
+        { status: 'PENDING_REVIEW' },
+        { status: 'PUBLISHED' }
+      ]
+    };
+
+    // اگر نویسنده است، فقط پست‌های خودش را ببیند
+    if (user.role === 'AUTHOR') {
+      baseWhere.authorId = user.id;
+    }
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const weekAgo = new Date(today);
@@ -971,21 +993,27 @@ export async function getStats(): Promise<
     ] = await prisma.$transaction([
       prisma.post.aggregate({
         _sum: { viewCount: true },
-        where: { updatedAt: { gte: today } },
+        where: { ...baseWhere, updatedAt: { gte: today } },
       }),
       prisma.post.groupBy({
         by: ['updatedAt'],
         _sum: { viewCount: true },
-        where: { updatedAt: { gte: weekAgo } },
+        where: { ...baseWhere, updatedAt: { gte: weekAgo } },
         orderBy: { updatedAt: 'asc' },
       }),
       prisma.comment.count({
-        where: { createdAt: { gte: today } },
+        where: { 
+          postId: { not: undefined },
+          createdAt: { gte: today } 
+        },
       }),
       prisma.comment.groupBy({
         by: ['createdAt'],
         _count: true,
-        where: { createdAt: { gte: weekAgo } },
+        where: { 
+          postId: { not: undefined },
+          createdAt: { gte: weekAgo } 
+        },
         orderBy: { createdAt: 'asc' },
       }),
       prisma.savedPost.count(),
@@ -1003,21 +1031,21 @@ export async function getStats(): Promise<
         orderBy: { createdAt: 'asc' },
       }),
       prisma.post.count({
-        where: { status: 'PUBLISHED' },
+        where: { ...baseWhere, status: 'PUBLISHED' },
       }),
       prisma.post.groupBy({
         by: ['createdAt'],
         _count: true,
-        where: { status: 'PUBLISHED', createdAt: { gte: weekAgo } },
+        where: { ...baseWhere, status: 'PUBLISHED', createdAt: { gte: weekAgo } },
         orderBy: { createdAt: 'asc' },
       }),
       prisma.post.count({
-        where: { status: 'DRAFT' },
+        where: { ...baseWhere, status: 'DRAFT' },
       }),
       prisma.post.groupBy({
         by: ['createdAt'],
         _count: true,
-        where: { status: 'DRAFT', createdAt: { gte: weekAgo } },
+        where: { ...baseWhere, status: 'DRAFT', createdAt: { gte: weekAgo } },
         orderBy: { createdAt: 'asc' },
       }),
     ]);
@@ -1058,13 +1086,29 @@ export async function getStats(): Promise<
 }
 
 export async function getScheduledPosts(): Promise<ActionResult<PostWithRelations[]>> {
-  await checkRole(['ADMIN', 'AUTHOR']);
+  const session = await auth();
+  const user = session?.user;
+
+  if (!user) {
+    return {
+      success: false,
+      message: 'لطفاً وارد حساب کاربری خود شوید.',
+    };
+  }
 
   try {
-    const scheduledPosts = await prisma.post.findMany({
-      where: {
-        status: 'PENDING_REVIEW',
-      },
+    const where: Prisma.PostWhereInput = {
+      status: 'PUBLISHED',
+      updatedAt: { gt: new Date() },
+    };
+
+    // اگر نویسنده است، فقط پست‌های خودش را ببیند
+    if (user.role === 'AUTHOR') {
+      where.authorId = user.id;
+    }
+
+    const posts = await prisma.post.findMany({
+      where,
       include: {
         author: {
           include: {
@@ -1072,7 +1116,26 @@ export async function getScheduledPosts(): Promise<ActionResult<PostWithRelation
           },
         },
         categories: true,
+        comments: {
+          include: {
+            author: {
+              include: {
+                profile: true,
+              },
+            },
+            post: true,
+            replies: true,
+            likes: {
+              include: {
+                user: true,
+              },
+            },
+            _count: true,
+          },
+        },
         tags: true,
+        likes: true,
+        savedBy: true,
         _count: {
           select: {
             comments: true,
@@ -1082,22 +1145,19 @@ export async function getScheduledPosts(): Promise<ActionResult<PostWithRelation
           },
         },
       },
-      orderBy: {
-        createdAt: 'asc',
-      },
+      orderBy: { updatedAt: 'asc' },
     });
 
     return {
       success: true,
-      message: 'پست‌های زمان‌بندی شده با موفقیت بازیابی شدند.',
-      data: scheduledPosts,
+      message: 'پست‌های زمان‌بندی شده با موفقیت دریافت شدند',
+      data: posts,
     };
   } catch (error) {
-    console.error('خطا در بازیابی پست‌های زمان‌بندی شده:', error);
+    console.error('Error in getScheduledPosts:', error);
     return {
       success: false,
-      message: 'خطا در بازیابی پست‌های زمان‌بندی شده. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
+      message: 'خطا در دریافت پست‌های زمان‌بندی شده',
     };
   }
 }
