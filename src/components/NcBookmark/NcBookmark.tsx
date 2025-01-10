@@ -36,13 +36,13 @@ const NcBookmark: React.FC<NcBookmarkProps> = ({
         }
         toast({
           title: 'موفقیت',
-          description: result.message,
+          description: 'پست به علاقه‌مندی‌ها اضافه شد',
           variant: 'success',
         });
       } else {
         toast({
           title: 'خطا',
-          description: result.message,
+          description: 'خطا در افزودن به علاقه‌مندی‌ها',
           variant: 'destructive',
         });
       }

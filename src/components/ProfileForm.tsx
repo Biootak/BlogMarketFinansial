@@ -91,14 +91,14 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
       const result = await updateProfile(formData);
       toast({
         title: result.success ? 'موفقیت' : 'خطا',
-        description: result.message,
-        variant: result.success ? 'default' : 'destructive',
+        description: result.success ? 'پروفایل با موفقیت بروزرسانی شد' : 'خطا در بروزرسانی پروفایل',
+        variant: result.success ? 'success' : 'destructive',
       });
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
         title: 'خطا',
-        description: 'مشکلی در بروزرسانی پروفایل رخ داد. لطفا دوباره تلاش کنید.',
+        description: 'خطا در بروزرسانی پروفایل',
         variant: 'destructive',
       });
     } finally {

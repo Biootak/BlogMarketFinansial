@@ -48,6 +48,11 @@ export default function SystemStatus() {
         if (result.success && result.data) {
           setStatus(result.data);
           setError(null);
+          toast({
+            title: 'موفقیت',
+            description: 'وضعیت سیستم با موفقیت دریافت شد',
+            variant: 'success',
+          });
         } else {
           throw new Error(result.message || 'Failed to load system status');
         }
@@ -56,7 +61,7 @@ export default function SystemStatus() {
         setError('خطا در بارگذاری وضعیت سیستم');
         toast({
           title: 'خطا',
-          description: 'خطا در بارگذاری وضعیت سیستم',
+          description: 'خطا در دریافت وضعیت سیستم',
           variant: 'destructive',
         });
       } finally {

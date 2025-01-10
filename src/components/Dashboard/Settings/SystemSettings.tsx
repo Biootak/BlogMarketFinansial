@@ -104,6 +104,7 @@ export default function SystemSettings() {
         toast({
           title: 'موفقیت',
           description: 'تنظیمات با موفقیت ذخیره شد',
+          variant: 'success',
         });
       } else {
         throw new Error(data.message || 'خطا در ذخیره تنظیمات');
@@ -449,16 +450,11 @@ export default function SystemSettings() {
               className="w-full sm:w-auto"
             >
               {form.formState.isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 ml-2 animate-spin" />
-                  در حال ذخیره...
-                </>
+                <Loader2 className="h-4 w-4 ml-2 animate-spin" />
               ) : (
-                <>
-                  <Save className="h-4 w-4 ml-2" />
-                  ذخیره تنظیمات
-                </>
+                <Save className="h-4 w-4 ml-2" />
               )}
+              ذخیره تنظیمات
             </Button>
           </div>
         </form>

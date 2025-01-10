@@ -37,21 +37,20 @@ const SubscribeForm: FC<SubscribeFormProps> = ({ onSubmit }) => {
       if (result.success) {
         toast({
           title: 'موفقیت',
-          description: result.message,
-          variant: 'default',
-          className: 'bg-green-500 text-white',
+          description: 'اشتراک شما با موفقیت ثبت شد',
+          variant: 'success',
         });
       } else {
         toast({
           title: 'خطا',
-          description: result.message,
+          description: 'خطا در ثبت اشتراک',
           variant: 'destructive',
         });
       }
     } catch {
       toast({
         title: 'خطا',
-        description: 'مشکلی در عضویت پیش آمد. لطفاً دوباره تلاش کنید.',
+        description: 'لطفا ایمیل معتبر وارد کنید',
         variant: 'destructive',
       });
     } finally {

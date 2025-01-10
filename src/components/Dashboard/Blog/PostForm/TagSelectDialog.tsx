@@ -46,6 +46,11 @@ export function TagSelectDialog({
     (tagName: string) => {
       if (!selectedTags.includes(tagName)) {
         setSelectedTags((prev) => [...prev, tagName]);
+        toast({
+          title: 'موفقیت',
+          description: 'تگ با موفقیت اضافه شد',
+          variant: 'success',
+        });
       }
     },
     [selectedTags],

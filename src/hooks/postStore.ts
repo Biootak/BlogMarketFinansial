@@ -86,13 +86,13 @@ export const usePostStore = create<PostsState>((set, get) => ({
       }));
       toast({
         title: 'موفقیت',
-        description: result.message,
+        description: 'پست با موفقیت حذف شد',
         variant: 'success',
       });
     } else {
       toast({
         title: 'خطا',
-        description: result.message,
+        description: 'خطا در حذف پست',
         variant: 'destructive',
       });
     }
@@ -106,14 +106,14 @@ export const usePostStore = create<PostsState>((set, get) => ({
       }));
       toast({
         title: 'موفقیت',
-        description: result.message,
+        description: 'پست با موفقیت ذخیره شد',
         variant: 'success',
       });
       return true;
     } else {
       toast({
         title: 'خطا',
-        description: result.message,
+        description: 'خطا در ذخیره پست',
         variant: 'destructive',
       });
       return false;

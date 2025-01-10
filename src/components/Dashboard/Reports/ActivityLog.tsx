@@ -47,18 +47,23 @@ export default function ActivityLogComponent() {
           })),
         );
         setTotal(result.data.total);
+        toast({
+          title: 'موفقیت',
+          description: 'لاگ‌ها با موفقیت دریافت شدند',
+          variant: 'success',
+        });
       } else {
         toast({
-          variant: 'destructive',
           title: 'خطا',
           description: result.message || 'خطا در دریافت گزارش فعالیت‌ها',
+          variant: 'destructive',
         });
       }
     } catch (error) {
       toast({
-        variant: 'destructive',
         title: 'خطا',
         description: error instanceof Error ? error.message : 'خطا در دریافت گزارش فعالیت‌ها',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);

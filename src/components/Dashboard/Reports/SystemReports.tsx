@@ -59,12 +59,17 @@ export default function SystemReports() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      toast({
+        title: 'موفقیت',
+        description: 'گزارش با موفقیت دریافت شد',
+        variant: 'success',
+      });
     } catch (error) {
       console.error('Error downloading file:', error);
       toast({
-        variant: 'destructive',
         title: 'خطا',
         description: 'خطا در دانلود فایل',
+        variant: 'destructive',
       });
     } finally {
       setDownloading(false);
@@ -97,12 +102,17 @@ export default function SystemReports() {
         views: result.viewStats.total,
         todayViews: result.viewStats.today || 0,
       });
+      toast({
+        title: 'موفقیت',
+        description: 'گزارش با موفقیت دریافت شد',
+        variant: 'success',
+      });
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({
-        variant: 'destructive',
         title: 'خطا',
-        description: 'خطا در دریافت اطلاعات',
+        description: 'خطا در دریافت گزارش',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);

@@ -84,6 +84,11 @@ export default function SystemLogs() {
         const result = await getActivityLog();
         if (result.success && result.data) {
           setLogs(result.data);
+          toast({
+            title: 'موفقیت',
+            description: 'لاگ‌های سیستم با موفقیت دریافت شدند',
+            variant: 'success',
+          });
         } else {
           setError(result.message || "خطا در دریافت لاگ‌های سیستم");
         }
@@ -105,16 +110,16 @@ export default function SystemLogs() {
           setData(result.data);
         } else {
           toast({
-            variant: "destructive",
-            title: "خطا",
-            description: result.message || "خطا در دریافت لاگ‌های سیستم"
+            title: 'خطا',
+            description: result.message || "خطا در دریافت لاگ‌های سیستم",
+            variant: 'destructive',
           });
         }
       } catch (error) {
         toast({
-          variant: "destructive",
-          title: "خطا",
-          description: error instanceof Error ? error.message : "خطا در دریافت لاگ‌های سیستم"
+          title: 'خطا',
+          description: error instanceof Error ? error.message : "خطا در دریافت لاگ‌های سیستم",
+          variant: 'destructive',
         });
       } finally {
         setLoading(false);

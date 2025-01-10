@@ -113,7 +113,7 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
       toast({
         title: 'موفقیت',
         description: 'پاسخ شما با موفقیت ثبت شد.',
-        variant: 'default',
+        variant: 'success',
       });
       closeReplyForm();
     } else {
@@ -142,7 +142,7 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
       console.error('خطا در حذف نظر:', error);
       toast({
         title: 'خطا',
-        description: 'مشکلی در حذف نظر رخ داد',
+        description: 'خطا در حذف نظر',
         variant: 'destructive',
       });
     }
@@ -164,7 +164,7 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
       toast({
         title: 'موفقیت',
         description: 'نظر شما با موفقیت ویرایش شد.',
-        variant: 'default',
+        variant: 'success',
       });
       closeModalEditComment();
     } else {
