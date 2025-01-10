@@ -109,6 +109,7 @@ const CardList: FC<CardListProps> = ({
       const success = await onStatusChange(post.id, newStatus as PostStatus);
       if (success) {
         toast({
+          variant: 'success',
           title: 'موفقیت‌آمیز',
           description: 'وضعیت پست با موفقیت تغییر کرد.',
         });

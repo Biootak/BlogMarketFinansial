@@ -44,6 +44,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
 import { Editor, type EditorRef } from '@/components/Editor1';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 interface PostFormProps<T extends CreatePostInput | UpdatePostInput> {
   schema: ZodSchema<T>;
@@ -157,6 +158,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
 
   const [saveAsDraft, setSaveAsDraft] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (data: FieldValues) => {
     try {
@@ -183,6 +185,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
       await onSubmit(submissionData);
 
       toast({
+        variant: 'success',
         title: 'موفقیت‌آمیز',
         description: saveAsDraft
           ? 'پست با موفقیت به عنوان پیش‌نویس ذخیره شد'
@@ -192,6 +195,14 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
       // Clear local storage after successful submission
       localStorage.removeItem(localStorageKey);
       localStorage.removeItem(`${localStorageKey}-editor`);
+
+      // کمی صبر می‌کنیم تا revalidate انجام شود
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // ریدایرکت به صفحه لیست پست‌ها
+      router.push('/dashboard/posts');
+      router.refresh();
+
     } catch (error) {
       console.error('Error submitting form:', error);
       toast({
@@ -481,7 +492,8 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                     </Select>
                     {isAuthor && (
                       <FormDescription>
-                        پست‌های شما پس از ارسال به صورت خودکار در وضعیت "در انتظار بررسی" قرار می‌گیرند و پس از تأیید مدیر منتشر خواهند شد.
+                        پست‌های شما پس از ارسال به صورت خودکار در وضعیت "در انتظار بررسی" قرار
+                        می‌گیرند و پس از تأیید مدیر منتشر خواهند شد.
                       </FormDescription>
                     )}
                     <FormMessage />
@@ -564,11 +576,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
 
             <div className="flex items-center justify-between">
               <div className="flex gap-2">
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  onClick={() => setSaveAsDraft(false)}
-                >
+                <Button type="submit" disabled={isLoading} onClick={() => setSaveAsDraft(false)}>
                   {isLoading ? (
                     <>
                       <span className="ml-2">در حال ارسال</span>

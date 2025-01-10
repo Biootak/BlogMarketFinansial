@@ -1,7 +1,7 @@
 import { revalidateTag } from 'next/cache';
 import cacheManager from '@/utils/cache';
 import { CACHE_CONFIG } from '@/config/cacheConfig';
-import { revalidateCategoryCache } from '@/actions/revalidateActions';
+import { revalidateCategoryCache, revalidatePostCache } from '@/actions/revalidateActions';
 
 // Types
 export interface Post {
@@ -59,11 +59,16 @@ export async function getCachedPost(postId: string, fetcher?: () => Promise<Post
 }
 
 export async function invalidatePost(postId: string): Promise<void> {
-  await revalidateTag(`post-${postId}`);
+  await revalidatePostCache(postId);
 }
 
 export async function invalidateAllPosts(): Promise<void> {
-  await revalidateTag('posts');
+  await revalidatePostCache();
+}
+
+export async function invalidatePostData(postId: string): Promise<void> {
+  await revalidatePostCache(postId);
+  await cacheManager.delete(CACHE_CONFIG.KEYS.POSTS.DETAIL(postId));
 }
 
 // مدیریت کش دسته‌بندی‌ها
@@ -137,11 +142,6 @@ export async function invalidatePublicData(): Promise<void> {
 // مدیریت کش داده‌های صفحه اصلی
 export async function invalidateHomePageData(): Promise<void> {
   await cacheManager.delete(CACHE_CONFIG.KEYS.HOME_PAGE.BASIC_DATA);
-}
-
-// مدیریت کش داده‌های پست
-export async function invalidatePostData(postId: string): Promise<void> {
-  await cacheManager.delete(CACHE_CONFIG.KEYS.POSTS.DETAIL(postId));
 }
 
 // پاک کردن تمام کش‌های مربوط به نقش کاربر

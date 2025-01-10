@@ -14,6 +14,7 @@ import type {
   UpdatePostInput,
 } from '@/types/types';
 import { CreatePostSchema, UpdatePostSchema } from '@/schemas';
+import { invalidateHomePageData, invalidatePostData } from '@/services/cacheService';
 
 export async function createPost(data: CreatePostInput): Promise<ActionResult<PostWithRelations>> {
   const session = await checkRole(['ADMIN', 'AUTHOR']);
@@ -354,6 +355,32 @@ export async function updatePostStatus(
     };
   }
 }
+
+export async function updatePostStatusAndInvalidate(
+  postId: string,
+  newStatus: PostStatus
+): Promise<ActionResult<PostWithRelations>> {
+  try {
+    // آپدیت وضعیت پست
+    const result = await updatePostStatus(postId, newStatus);
+    
+    if (result.success) {
+      // پاک کردن کش‌ها در سمت سرور
+      await invalidatePostData(postId);
+      await invalidateHomePageData();
+    }
+    
+    return result;
+  } catch (error) {
+    console.error('Error updating post status:', error);
+    return {
+      success: false,
+      message: 'خطا در بروزرسانی وضعیت پست',
+      error: error instanceof Error ? error.message : 'خطای ناشناخته',
+    };
+  }
+}
+
 export async function deletePost(postId: string): Promise<ActionResult> {
   try {
     const session = await auth();
@@ -404,6 +431,30 @@ export async function deletePost(postId: string): Promise<ActionResult> {
       success: false,
       message: 'خطا در حذف پست. لطفاً دوباره تلاش کنید.',
       error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+export async function deletePostAndInvalidate(
+  postId: string
+): Promise<ActionResult> {
+  try {
+    // حذف پست
+    const result = await deletePost(postId);
+    
+    if (result.success) {
+      // پاک کردن کش‌ها در سمت سرور
+      await invalidatePostData(postId);
+      await invalidateHomePageData();
+    }
+    
+    return result;
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    return {
+      success: false,
+      message: 'خطا در حذف پست',
+      error: error instanceof Error ? error.message : 'خطای ناشناخته',
     };
   }
 }

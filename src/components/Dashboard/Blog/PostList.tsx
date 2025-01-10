@@ -9,8 +9,7 @@ import { useCallback, useState } from 'react';
 
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 
-import { deletePost, listAllPosts, updatePostStatus } from '@/actions/postActions';
-
+import { deletePostAndInvalidate, listAllPosts, updatePostStatusAndInvalidate } from '@/actions/postActions';
 
 import type { ActionResult, PostWithRelations, PostStatus } from '@/types/types';
 
@@ -18,7 +17,6 @@ import LoadingMore from '@/components/LoadingMore';
 
 import CardList from '../DashboardPage/CardList';
 import { toast } from '@/components/ui/use-toast';
-import { invalidateHomePageData, invalidatePostData } from '@/services/cacheService';
 
 export default function PostList({
   initialPosts,
@@ -66,11 +64,9 @@ export default function PostList({
 
   const handleDeletePost = useCallback(async (postId: string) => {
     try {
-      const result = await deletePost(postId);
-      if (!result.error) {
-        // Invalidate caches after successful deletion
-        await invalidatePostData(postId);
-        await invalidateHomePageData();
+      const result = await deletePostAndInvalidate(postId);
+      if (result.success) {
+        setPosts((prev) => prev.filter((post) => post.id !== postId));
         toast({
           title: 'موفقیت',
           description: 'پست با موفقیت حذف شد',
@@ -91,18 +87,15 @@ export default function PostList({
         variant: 'destructive',
       });
     }
-  }, [toast]);
+  }, []);
 
   const handleChangeStatus = useCallback(async (
     postId: string,
     newStatus: PostWithRelations['status'],
   ): Promise<boolean> => {
     try {
-      const result = await updatePostStatus(postId, newStatus);
-      if (!result.error) {
-        // Invalidate caches after status update
-        await invalidatePostData(postId);
-        await invalidateHomePageData();
+      const result = await updatePostStatusAndInvalidate(postId, newStatus);
+      if (result.success) {
         setPosts((prev) =>
           prev.map((post) => (post.id === postId ? { ...post, status: newStatus } : post)),
         );
@@ -128,7 +121,7 @@ export default function PostList({
       });
     }
     return false;
-  }, [toast]);
+  }, []);
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-10">
