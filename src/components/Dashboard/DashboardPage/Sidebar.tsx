@@ -29,6 +29,10 @@ interface MenuItem {
   submenu?: SubmenuItem[];
 }
 
+interface SidebarProps {
+  userRole: 'USER' | 'AUTHOR' | 'ADMIN' | 'SUPER_ADMIN';
+}
+
 const getMenuItems = (role: string) => {
   const baseItems = [
     {
@@ -122,14 +126,13 @@ const getMenuItems = (role: string) => {
   }
 };
 
-const Sidebar: React.FC = () => {
+const Sidebar = ({ userRole }: SidebarProps) => {
   const pathname = usePathname();
   const router = useRouter();
   const { toast } = useToast();
   const { isOpen, setIsOpen, isMobile } = useSidebarStore();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
-  const user = useCurrentUser();
-  const menuItems: MenuItem[] = getMenuItems(user?.role || 'USER');
+  const menuItems: MenuItem[] = getMenuItems(userRole);
 
   const handleLogout = async () => {
     try {
@@ -351,8 +354,8 @@ const Sidebar: React.FC = () => {
                   transition={{ duration: 0.2 }}
                   className="mr-3 overflow-hidden"
                 >
-                  <p className="font-medium truncate">{user?.name}</p>
-                  <p className="text-sm text-blue-200 dark:text-gray-400 truncate">{user?.email}</p>
+                  <p className="font-medium truncate">کاربر</p>
+                  <p className="text-sm text-blue-200 dark:text-gray-400 truncate">کاربر@example.com</p>
                 </motion.div>
               )}
             </AnimatePresence>
