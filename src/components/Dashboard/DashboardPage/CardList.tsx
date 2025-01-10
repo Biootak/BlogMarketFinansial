@@ -74,8 +74,8 @@ const CardList: FC<CardListProps> = ({
   }, [id, onDelete]);
 
   const handleStatusChange = useCallback(async () => {
-    let newStatus;
-    let confirmMessage;
+    let newStatus: PostWithRelations['status'] = 'DRAFT';
+    let confirmMessage: string;
     
     if (session?.user?.role === 'ADMIN' || session?.user?.role === 'SUPER_ADMIN') {
       // Admins can change between all statuses
