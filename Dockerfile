@@ -6,8 +6,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Install dependencies
-COPY package.json package-lock.json ./
-COPY prisma ./prisma/
+COPY . .
 RUN npm ci
 RUN npx prisma generate
 
@@ -54,5 +53,4 @@ EXPOSE 3000
 ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
-# Add prisma generate to startup
-CMD npx prisma generate && node server.js
+CMD ["node", "server.js"]
