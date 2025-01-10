@@ -29,6 +29,311 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HiOutlineInformationCircle } from 'react-icons/hi2';
 import Loading from '@/components/Loading';
+import { loadPatternsFromDB, savePatternsGroupToDB } from '@/actions/currency-patterns';
+
+interface CurrencyPattern {
+  symbol: string;
+  names: string[];
+  output: string;
+}
+
+const CURRENCIES: Record<string, CurrencyPattern> = {
+  USD: {
+    symbol: '🇺🇲',
+    names: ['دلار آمریکا', 'دالر آمریکا', 'دلار امریکا', 'دالر امریکا', 'USD'],
+    output: 'دلار آمریکا'
+  },
+  EUR: {
+    symbol: '🇪🇺',
+    names: ['یورو', 'EUR'],
+    output: 'یورو'
+  },
+  GBP: {
+    symbol: '🇬🇧',
+    names: ['پوند بریتانیا', 'پوند انگلیس', 'GBP'],
+    output: 'پوند انگلیس'
+  },
+  AED: {
+    symbol: '🇦🇪',
+    names: ['درهم امارات', 'AED'],
+    output: 'درهم امارات'
+  },
+  TRY: {
+    symbol: '🇹🇷',
+    names: ['لیره ترکیه', 'لیر ترکیه', 'TRY'],
+    output: 'لیر ترکیه'
+  },
+  RUB: {
+    symbol: '🇷🇺',
+    names: ['روبل روسیه', 'RUB'],
+    output: 'روبل روسیه'
+  },
+  SAR: {
+    symbol: '🇸🇦',
+    names: ['ریال سعودی', 'SAR'],
+    output: 'ریال سعودی'
+  },
+  IRR: {
+    symbol: '🇮🇷',
+    names: ['تومان ایران', 'IRR'],
+    output: 'تومان ایران'
+  },
+  PKR: {
+    symbol: '🇵🇰',
+    names: ['کلدار پاکستانی', 'کلدار پاکستان', 'PKR'],
+    output: 'کلدار پاکستان'
+  },
+  INR: {
+    symbol: '🇮🇳',
+    names: ['کلدار هند', 'روپیه هند', 'INR'],
+    output: 'روپیه هند'
+  },
+  CHF: {
+    symbol: '🇨🇭',
+    names: ['فرانک سویس', 'فرانک سوئیس', 'CHF'],
+    output: 'فرانک سوئیس'
+  },
+  AUD: {
+    symbol: '🇦🇺',
+    names: ['دلار استرالیا', 'AUD'],
+    output: 'دلار استرالیا'
+  },
+  CAD: {
+    symbol: '🇨🇦',
+    names: ['دلار کانادا', 'CAD'],
+    output: 'دلار کانادا'
+  }
+};
+
+// تعریف نوع برای الگوهای یادگیری
+type LearnedPatternsType = {
+  currencies: string[];
+  formats: string[];
+  prefixes: string[];
+  suffixes: string[];
+  separators: string[];
+  multipliers: { [key: string]: number };
+};
+
+// مقادیر پیش‌فرض برای الگوها
+const defaultPatterns: LearnedPatternsType = {
+  currencies: ['دلار', 'یورو', 'پوند', 'درهم', 'لیر', 'روپیه', 'کلدار', 'تومان', 'افغانی', 'روبل', 'یوان', 'ین', 'وون'],
+  formats: [],
+  prefixes: [],
+  suffixes: [],
+  separators: ['/', '|', '-', '⇢', '⇠', '→', '←'],
+  multipliers: {
+    'هزار': 1000,
+    'میلیون': 1000000,
+    'k': 1000,
+    'm': 1000000
+  }
+};
+
+// تبدیل الگوها به Set و Map
+const convertToSetsAndMaps = (patterns: LearnedPatternsType) => {
+  return {
+    currencies: new Set<string>(patterns.currencies),
+    formats: new Set<string>(patterns.formats),
+    prefixes: new Set<string>(patterns.prefixes),
+    suffixes: new Set<string>(patterns.suffixes),
+    separators: new Set<string>(patterns.separators),
+    multipliers: new Map<string, number>(Object.entries(patterns.multipliers))
+  };
+};
+
+// تبدیل Set و Map به آبجکت ساده برای ذخیره‌سازی
+const convertToPlainObject = (patterns: any) => {
+  return {
+    currencies: Array.from(patterns.currencies),
+    formats: Array.from(patterns.formats),
+    prefixes: Array.from(patterns.prefixes),
+    suffixes: Array.from(patterns.suffixes),
+    separators: Array.from(patterns.separators),
+    multipliers: Object.fromEntries(patterns.multipliers)
+  };
+};
+
+// بارگذاری اولیه الگوها از دیتابیس
+let learnedPatterns: Awaited<ReturnType<typeof loadPatternsFromDB>>;
+
+const initializePatterns = async () => {
+  if (!learnedPatterns) {
+    learnedPatterns = await loadPatternsFromDB();
+  }
+  return learnedPatterns;
+};
+
+// تابع یادگیری از متن جدید
+const learnFromText = async (text: string) => {
+  // یادگیری از متن جدید
+  await initializePatterns();
+  
+  const lines = text.split('\n');
+  let patternsUpdated = false;
+
+  for (const line of lines) {
+    if (!line.trim()) continue;
+
+    // یادگیری جداکننده‌ها
+    const separators = line.match(/[^\w\s\d]+/g);
+    if (separators) {
+      separators.forEach(sep => {
+        if (!learnedPatterns.separators.has(sep)) {
+          learnedPatterns.separators.add(sep);
+          patternsUpdated = true;
+        }
+      });
+    }
+
+    // یادگیری پیشوندها و پسوندها
+    const words = line.split(/[\d.,]+/);
+    words.forEach(word => {
+      word = word.trim();
+      if (word && word.length > 1) {
+        if (word.includes('خرید') || word.includes('فروش')) {
+          if (line.indexOf(word) < line.search(/[\d.,]+/)) {
+            if (!learnedPatterns.prefixes.has(word)) {
+              learnedPatterns.prefixes.add(word);
+              patternsUpdated = true;
+            }
+          } else {
+            if (!learnedPatterns.suffixes.has(word)) {
+              learnedPatterns.suffixes.add(word);
+              patternsUpdated = true;
+            }
+          }
+        }
+      }
+    });
+
+    // یادگیری نام‌های ارز
+    const currencyMatch = line.match(/([آ-ی]+\s*[آ-ی]+)(?=.*?[\d.,]+)/);
+    if (currencyMatch) {
+      const possibleCurrency = currencyMatch[1].trim();
+      if (possibleCurrency.length > 2 && !possibleCurrency.includes('خرید') && !possibleCurrency.includes('فروش')) {
+        if (!learnedPatterns.currencies.has(possibleCurrency)) {
+          learnedPatterns.currencies.add(possibleCurrency);
+          patternsUpdated = true;
+        }
+      }
+    }
+
+    // یادگیری فرمت‌های عددی
+    const numberFormats = line.match(/[\d۰-۹]+[.,٫٬][\d۰-۹]+/g);
+    if (numberFormats) {
+      numberFormats.forEach(format => {
+        const pattern = format.replace(/[\d۰-۹]/g, '#');
+        if (!learnedPatterns.formats.has(pattern)) {
+          learnedPatterns.formats.add(pattern);
+          patternsUpdated = true;
+        }
+      });
+    }
+  }
+
+  // ذخیره الگوها اگر تغییری ایجاد شده باشد
+  if (patternsUpdated) {
+    console.log('الگوهای جدید یادگرفته شده:', convertToPlainObject(learnedPatterns));
+    await savePatternsGroupToDB(convertToPlainObject(learnedPatterns));
+  }
+};
+
+const parseCurrencyRates = async (text: string): Promise<RateItem[]> => {
+  console.log('=== شروع پردازش متن ===');
+  console.log('متن ورودی:', text);
+  
+  const rates: RateItem[] = [];
+  let currentTitle = '';
+  
+  // تقسیم متن به خطوط و حذف خطوط خالی
+  const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
+  console.log('تعداد خطوط:', lines.length);
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    console.log(`\nپردازش خط ${i + 1}:`, line);
+    
+    // تشخیص عنوان با استفاده از پرچم کشورها
+    if (line.match(/🇺🇲|🇪🇺|🇬🇧|🇨🇭|🇦🇺|🇨🇦|🇷🇺|🇦🇪|🇸🇦|🇹🇷|🇮🇷|🇮🇳|🇵🇰/)) {
+      // حذف ایموجی‌ها و دونقطه و تمیز کردن عنوان
+      currentTitle = line
+        .replace(/[🇺🇲🇪🇺🇬🇧🇨🇭🇦🇺🇨🇦🇷🇺🇦🇪🇸🇦🇹🇷🇮🇷🇮🇳🇵🇰]/g, '')
+        .replace(':', '')
+        .trim();
+      console.log('عنوان جدید یافت شد:', currentTitle);
+      continue;
+    }
+    
+    // تشخیص نرخ‌های خرید و فروش
+    if (line.includes('خرید:') && line.includes('فروش:')) {
+      try {
+        console.log('خط حاوی نرخ یافت شد:', line);
+        
+        // تبدیل اعداد فارسی به انگلیسی
+        const persianToEnglish = (str: string) => {
+          return str.replace(/[۰-۹]/g, d => String.fromCharCode(d.charCodeAt(0) - 1728));
+        };
+        
+        // استخراج نرخ‌های خرید و فروش
+        const buyMatch = line.match(/خرید:\s*([\d۰-۹\.,]+)/);
+        const sellMatch = line.match(/فروش:\s*([\d۰-۹\.,]+)/);
+        
+        if (buyMatch && sellMatch) {
+          const buyRate = persianToEnglish(buyMatch[1].trim());
+          const sellRate = persianToEnglish(sellMatch[1].trim());
+          
+          console.log('نرخ خرید:', buyRate);
+          console.log('نرخ فروش:', sellRate);
+          
+          if (currentTitle && buyRate && sellRate) {
+            const rateItem = {
+              title: currentTitle,
+              value: `خرید: ${buyRate} | فروش: ${sellRate}`
+            };
+            rates.push(rateItem);
+            console.log('نرخ جدید اضافه شد:', rateItem);
+          }
+        }
+      } catch (error) {
+        console.error('خطا در پردازش خط:', error);
+      }
+    }
+  }
+
+  console.log('=== پایان پردازش ===');
+  console.log('تعداد نرخ‌های استخراج شده:', rates.length);
+  console.log('نرخ‌های نهایی:', rates);
+  
+  return rates;
+};
+
+const formatNumber = (num: string): string => {
+  try {
+    // حذف کاراکترهای اضافی و تبدیل به عدد
+    const cleanNum = num.replace(/[^\d.]/g, '');
+    const number = parseFloat(cleanNum);
+    
+    if (isNaN(number)) {
+      console.error('عدد نامعتبر:', num);
+      return num;
+    }
+    
+    // تبدیل به فرمت فارسی
+    const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+    return number.toString()
+      .split('')
+      .map(d => {
+        if (d === '.') return '.';
+        return persianDigits[parseInt(d)] || d;
+      })
+      .join('')
+      .replace(/\B(?=(\d{3})+(?!\d))/g, '،');
+  } catch (error) {
+    console.error('خطا در فرمت‌بندی عدد:', error);
+    return num;
+  }
+};
 
 const formatDate = (date: string | Date | undefined) => {
   if (!date) return 'نامشخص';
@@ -42,112 +347,6 @@ const formatDate = (date: string | Date | undefined) => {
     minute: '2-digit',
   };
   return new Intl.DateTimeFormat('fa-IR', options).format(d);
-};
-
-const formatTitle = (rawTitle: string): string => {
-  // حذف عدد و علامت _ از ابتدا
-  let title = rawTitle.replace(/^[۰-۹0-9]*[_\s]*/, '');
-
-  // نرمال‌سازی نام ارز
-  const currencyMap: { [key: string]: string[] } = {
-    'دلار': ['دلار', 'دالر', 'USD', 'دلار آمریکا', 'دالر آمریکا', 'دلار امریکا', 'دالر امریکا'],
-    'یورو': ['یورو', 'EUR', 'euro', 'یورو دلار'],
-    'پوند': ['پوند', 'GBP', 'پوند انگلیس', 'استرلینگ'],
-    'درهم': ['درهم', 'AED', 'درهم امارات'],
-    'لیر': ['لیر', 'لیره', 'TRY', 'لیره ترکیه', 'لیر ترکیه'],
-    'روبل': ['روبل', 'RUB', 'روبل روسیه'],
-    'کلدار': ['کلدار', 'PKR', 'روپیه', 'روپیه پاکستان', 'کلدار پاکستان'],
-    'روپیه هند': ['روپیه هند', 'INR', 'کلدار هند'],
-    'تومان': ['تومان', 'IRR', 'ریال'],
-    'فرانک': ['فرانک', 'CHF', 'فرانک سوئیس'],
-    'دلار استرالیا': ['دلار استرالیا', 'AUD'],
-    'دلار کانادا': ['دلار کانادا', 'CAD'],
-    'ریال سعودی': ['ریال سعودی', 'SAR'],
-    'افغانی': ['افغانی', 'AFN', 'افغانستان']
-  };
-
-  // تشخیص نوع ارز
-  let standardCurrency = '';
-  for (const [standard, variants] of Object.entries(currencyMap)) {
-    for (const variant of variants) {
-      if (title.toLowerCase().includes(variant.toLowerCase())) {
-        standardCurrency = standard;
-        // جایگزینی با نام استاندارد
-        title = title.replace(new RegExp(variant, 'gi'), standard);
-        break;
-      }
-    }
-    if (standardCurrency) break;
-  }
-
-  // تشخیص نوع معامله
-  const isBuy = title.includes('خرید');
-  const isSell = title.includes('فروش');
-
-  // حذف کلمات اضافی
-  title = title
-    .replace(/(خرید|فروش|نرخ|قیمت|امروز)/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-  // اضافه کردن نوع معامله در صورت وجود
-  if (isBuy) title += ' (خرید)';
-  if (isSell) title += ' (فروش)';
-
-  return title;
-};
-
-const extractTitleAndValue = (line: string): { title: string; value: string } => {
-  const trimmedLine = line.trim();
-  
-  // حذف ایموجی‌ها و پرچم‌ها با استفاده از یک الگوی ساده‌تر
-  const cleanLine = trimmedLine.replace(/[\u0000-\u007F]|[\u0080-\uFFFF]/g, (char) => {
-    return /[\u0000-\u007F]/.test(char) ? char : '';
-  }).trim();
-  // الگوی اصلی برای تشخیص نرخ خرید و فروش
-  const mainPattern = /^([^:]+?)(?:\s*\(([^)]+)\))?\s*:\s*(?:.*?خرید:\s*([\d,\.]+)\s*\|\s*فروش:\s*([\d,\.]+))?/;
-  const matches = cleanLine.match(mainPattern);
-
-  if (matches) {
-    const [_, title, code, buy, sell] = matches;
-    if (buy && sell) {
-      return {
-        title: formatTitle(`${title.trim()}${code ? ` (${code})` : ''}`),
-        value: `خرید: ${formatValue(buy)} | فروش: ${formatValue(sell)}`
-      };
-    }
-  }
-
-  // الگوهای جایگزین برای تشخیص نرخ
-  const alternativePatterns = [
-    // نرخ با جداکننده |
-    /^(.+?)\s*\|\s*([\d,\.]+)\s*$/,
-    // نرخ با دو نقطه
-    /^(.+?):\s*([\d,\.]+)\s*$/,
-    // نرخ با مساوی
-    /^(.+?)\s*=\s*([\d,\.]+)\s*$/,
-    // نرخ با نقطه‌چین
-    /^(.+?)\.+\s*([\d,\.]+)\s*$/,
-    // نرخ با فاصله ساده
-    /^(.+?)\s+([\d,\.]+)\s*$/
-  ];
-
-  for (const pattern of alternativePatterns) {
-    const matches = cleanLine.match(pattern);
-    if (matches) {
-      const [_, title, value] = matches;
-      return {
-        title: formatTitle(title),
-        value: formatValue(value)
-      };
-    }
-  }
-
-  // اگر هیچ الگویی مطابقت نداشت
-  return {
-    title: formatTitle(cleanLine),
-    value: ''
-  };
 };
 
 const formatValue = (value: string): string => {
@@ -198,59 +397,40 @@ const RateListsPage = () => {
     name: 'rates',
   });
 
-  const handleRatePaste = (e: React.ClipboardEvent<HTMLInputElement>, index: number) => {
+  const handleRatePaste = async (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const pastedText = e.clipboardData.getData('text');
-    const lines = pastedText.split(/[\n\r]+/).filter((line) => line.trim());
-
-    if (lines.length > 1) {
-      const newRates = lines
-        .map((line) => {
-          const { title, value } = extractTitleAndValue(line);
-          return title && value ? { title, value } : null;
-        })
-        .filter(
-          (rate): rate is { title: string; value: string } =>
-            rate !== null && rate.title !== '' && rate.value !== ''
-        );
-
-      if (newRates.length > 0) {
-        replace(newRates);
+    const text = e.clipboardData.getData('text');
+    
+    try {
+      console.log('=== شروع پردازش پیست ===');
+      console.log('متن ورودی:', text);
+      
+      const rates = await parseCurrencyRates(text);
+      console.log('نرخ‌های پردازش شده:', rates);
+      
+      if (rates.length > 0) {
+        console.log('در حال ذخیره نرخ‌ها...');
+        replace(rates);
         toast({
           title: 'موفقیت',
-          description: `${newRates.length} نرخ جدید اضافه شد`,
+          description: `${rates.length} نرخ ارز با موفقیت اضافه شد`,
+          variant: 'success'
+        });
+        console.log('نرخ‌ها با موفقیت ذخیره شدند');
+      } else {
+        console.log('هیچ نرخی یافت نشد');
+        toast({
+          title: 'خطا',
+          description: 'هیچ نرخ ارزی در متن یافت نشد',
+          variant: 'destructive'
         });
       }
-    } else {
-      const { title, value } = extractTitleAndValue(pastedText);
-      if (title && value) {
-        const currentField = fields[index];
-        if (!currentField.title && currentField.value === '') {
-          replace(fields.map((field, i) => (i === index ? { title, value } : field)));
-        } else {
-          append({ title, value });
-        }
-      }
-    }
-  };
-
-  const handleTitlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData('text');
-    const titles = pastedData.split(/[\n\r]/).filter((line) => line.trim());
-
-    if (titles.length > 1) {
-      // اول همه نرخ‌های موجود رو پاک می‌کنیم
-      replace([]);
-
-      // برای هر عنوان یک نرخ جدید اضافه می‌کنیم
-      titles.forEach((title) => {
-        append({ title, value: '' });
-      });
-
+    } catch (error) {
+      console.error('خطا در پردازش نرخ‌ها:', error);
       toast({
-        title: 'موفقیت',
-        description: `${titles.length} نرخ جدید اضافه شد`,
+        title: 'خطا',
+        description: 'خطا در پردازش نرخ‌های ارز',
+        variant: 'destructive'
       });
     }
   };
@@ -677,7 +857,6 @@ const RateListsPage = () => {
                   id="title"
                   {...register('title', { required: 'عنوان لیست الزامی است' })}
                   className="mt-1"
-                  onPaste={handleTitlePaste}
                   placeholder="مثل کردیت کارت یا نرخ بازار تهران "
                 />
                 {errors.title && (
@@ -808,7 +987,7 @@ const RateListsPage = () => {
                           placeholder="مثال: دلار | 50000 یا دلار: 50000"
                           className="flex-1 text-right bg-gray-50/50 focus:bg-white transition-colors"
                           dir="rtl"
-                          onPaste={(e) => handleRatePaste(e, index)}
+                          onPaste={(e) => handleRatePaste(e)}
                         />
                         <Input
                           {...register(`rates.${index}.value` as const, {

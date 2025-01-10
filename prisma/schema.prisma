@@ -359,3 +359,14 @@ model Activity {
 
   @@index([userId])
 }
+
+model CurrencyPattern {
+  id        String   @id @default(cuid())
+  type      String   // نوع الگو: currency, format, prefix, suffix, separator, multiplier
+  pattern   String   // الگوی ذخیره شده
+  value     Float?   // برای multiplier استفاده می‌شود
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([type, pattern])
+}
