@@ -24,16 +24,28 @@ const logger = {
   },
   error: (message: string, ...args: any[]) => {
     console.error(`[ERROR] ${message}`, ...args);
-  }
+  },
 };
 
 /**
  * مسیرهای API که نیاز به دسترسی ادمین دارند
  */
 const adminApiRoutes = [
-  '/api/system-reports',
   '/api/users',
-  '/api/categories',
+  '/api/advertisements',
+  '/api/exchange-rates',
+  '/api/rate-lists',
+];
+
+/**
+ * مسیرهای API که نیاز به دسترسی سوپر ادمین دارند
+ */
+const superAdminApiRoutes = [
+  '/api/system-reports',
+  '/api/system-logs',
+  '/api/system-performance',
+  '/api/system-backup',
+  '/api/system-updates',
   '/api/settings',
 ];
 
@@ -43,7 +55,7 @@ const adminApiRoutes = [
 const authorApiRoutes = [
   '/api/posts',
   '/api/comments',
-  '/api/categories', // اضافه کردن دسترسی به دسته‌بندی‌ها
+  '/api/categories',
 ];
 
 /**
@@ -81,7 +93,7 @@ const checkApiAccess = (pathname: string, role?: string) => {
 const hasPathAccess = (pathname: string, allowedPaths: string[]) => {
   logger.debug('Checking path access:', { pathname, allowedPaths });
 
-  return allowedPaths.some(path => {
+  return allowedPaths.some((path) => {
     if (path.includes('[')) {
       const basePath = path.split('[')[0];
       return pathname.startsWith(basePath);
@@ -128,11 +140,11 @@ const checkDashboardAccess = (pathname: string, role?: string) => {
 export default auth(async (req) => {
   const { nextUrl } = req;
   const pathname = nextUrl.pathname;
-  
+
   // دریافت توکن از درخواست
-  const token = await getToken({ 
+  const token = await getToken({
     req,
-    secret: process.env.AUTH_SECRET
+    secret: process.env.AUTH_SECRET,
   });
   const isLoggedIn = !!token;
   const role = token?.role as string | undefined;
@@ -143,7 +155,7 @@ export default auth(async (req) => {
     isLoggedIn,
     role,
     userId,
-    search: nextUrl.search
+    search: nextUrl.search,
   });
 
   // بررسی مسیرهای API
@@ -157,10 +169,9 @@ export default auth(async (req) => {
     // بررسی دسترسی به API
     if (!isLoggedIn) {
       logger.debug('API access denied: not logged in');
-      return new NextResponse(
-        JSON.stringify({ error: 'لطفا وارد حساب کاربری خود شوید' }),
-        { status: 401 }
-      );
+      return new NextResponse(JSON.stringify({ error: 'لطفا وارد حساب کاربری خود شوید' }), {
+        status: 401,
+      });
     }
 
     const hasApiAccess = checkApiAccess(pathname, role);
@@ -168,7 +179,7 @@ export default auth(async (req) => {
       logger.debug('API access denied:', { pathname, role });
       return new NextResponse(
         JSON.stringify({ error: 'شما دسترسی لازم برای این عملیات را ندارید' }),
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -177,7 +188,7 @@ export default auth(async (req) => {
   }
 
   // بررسی مسیرهای عمومی
-  if (publicRoutes.some(route => pathname === route || pathname.startsWith(`${route}/`))) {
+  if (publicRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`))) {
     logger.debug('Public route access granted:', pathname);
     return NextResponse.next();
   }
@@ -202,7 +213,7 @@ export default auth(async (req) => {
   // کنترل دسترسی به مسیرهای داشبورد
   if (pathname.startsWith('/dashboard')) {
     logger.debug('Checking dashboard route access');
-    
+
     const hasAccess = checkDashboardAccess(pathname, role);
     logger.debug('Dashboard access check result:', { hasAccess, role, pathname });
 
@@ -210,20 +221,25 @@ export default auth(async (req) => {
       let redirectUrl = '/';
       switch (role) {
         case 'AUTHOR':
-          redirectUrl = '/dashboard/posts';
+          redirectUrl = pathname.startsWith('/dashboard/posts') ? pathname : '/dashboard/posts';
           break;
         case 'ADMIN':
-          redirectUrl = '/dashboard';
+          redirectUrl = pathname.startsWith('/dashboard/users') ? pathname : '/dashboard/users';
           break;
+        case 'SUPER_ADMIN':
+          redirectUrl = '/dashboard/settings';
+          break;
+        default:
+          redirectUrl = '/';
       }
       logger.debug('Dashboard access denied, redirecting to:', redirectUrl);
       return NextResponse.redirect(new URL(redirectUrl, nextUrl));
     }
 
     // بررسی مالکیت پست برای مسیرهای خاص
-    if (role === 'AUTHOR' && postOwnershipRoutes.some(route => pathname.startsWith(route))) {
+    if (role === 'AUTHOR' && postOwnershipRoutes.some((route) => pathname.startsWith(route))) {
       const postId = nextUrl.searchParams.get('id');
-      
+
       if (!postId) {
         logger.debug('No post ID provided for ownership check');
         return NextResponse.redirect(new URL('/dashboard/posts', nextUrl));
@@ -231,9 +247,9 @@ export default auth(async (req) => {
 
       try {
         const post = await prisma.post.findUnique({
-          where: { 
+          where: {
             id: postId,
-            authorId: userId 
+            authorId: userId,
           },
         });
 
@@ -241,7 +257,7 @@ export default auth(async (req) => {
           logger.debug('Post ownership check failed:', { postId, userId });
           return NextResponse.redirect(new URL('/dashboard/posts', nextUrl));
         }
-        
+
         logger.debug('Post ownership verified:', { postId, userId });
       } catch (error) {
         logger.error('Error checking post ownership:', error);

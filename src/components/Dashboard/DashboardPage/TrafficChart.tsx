@@ -13,7 +13,8 @@ const TrafficChart: React.FC = () => {
   });
 
   if (error) return <div className="text-center py-4 text-red-500">خطا در بارگیری داده‌ها</div>;
-  if (!trafficStats) return <div className="text-center py-4">در حال بارگیری...</div>;
+  if (!trafficStats || !trafficStats.labels || !trafficStats.data) 
+    return <div className="text-center py-4">در حال بارگیری...</div>;
 
   const chartData = trafficStats.labels.map((label: string, index: number) => ({
     name: label,

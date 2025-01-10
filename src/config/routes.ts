@@ -35,7 +35,7 @@ export const apiAuthPrefix = '/api/auth';
 export const DEFAULT_REDIRECT = '/dashboard';
 
 /**
- * Routes that require admin access (SUPER_ADMIN or ADMIN)
+ * Routes that require admin access (ADMIN)
  * @type {string[]}
  */
 export const adminRoutes = [
@@ -44,8 +44,6 @@ export const adminRoutes = [
   '/dashboard/advertisements',
   '/dashboard/exchange-rates',
   '/dashboard/rate-lists',
-  '/dashboard/reports',
-  '/dashboard/statistics',
 ];
 
 /**
@@ -54,6 +52,13 @@ export const adminRoutes = [
  */
 export const superAdminRoutes = [
   '/dashboard/settings',
+  '/dashboard/reports',
+  '/dashboard/statistics',
+  '/dashboard/system',
+  '/dashboard/system/logs',
+  '/dashboard/system/performance',
+  '/dashboard/system/backup',
+  '/dashboard/system/updates',
 ];
 
 /**
@@ -61,11 +66,23 @@ export const superAdminRoutes = [
  * @type {string[]}
  */
 export const authorRoutes = [
+  '/dashboard',
   '/dashboard/posts',
+  '/dashboard/posts/create',
+  '/dashboard/posts/edit',
+  '/dashboard/posts/edit/[id]',
+  '/dashboard/posts/delete',
+  '/dashboard/posts/delete/[id]',
+  '/dashboard/posts/preview',
+  '/dashboard/posts/preview/[id]',
+  '/dashboard/posts/schedule',
+  '/dashboard/posts/schedule/[id]',
+  '/dashboard/posts/publish',
+  '/dashboard/posts/publish/[id]',
   '/dashboard/create-post',
   '/dashboard/edit-post',
   '/dashboard/delete-post',
-  '/dashboard/categories', // اضافه کردن دسترسی به صفحه دسته‌بندی‌ها
+  '/dashboard/categories',
 ];
 
 /**
