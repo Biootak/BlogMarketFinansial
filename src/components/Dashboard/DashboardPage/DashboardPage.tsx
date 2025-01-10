@@ -2,6 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
+import useSWR from 'swr';
 import {
   HiOutlineEye,
   HiOutlineChatBubbleLeftEllipsis,
@@ -46,12 +47,18 @@ interface DashboardPageProps {
 }
 
 const DashboardPage: React.FC<DashboardPageProps> = ({
-  stats,
-  scheduledPosts,
-  popularPosts,
-  recentDrafts,
-  viewStats,
+  stats: initialStats,
+  scheduledPosts: initialScheduledPosts,
+  popularPosts: initialPopularPosts,
+  recentDrafts: initialRecentDrafts,
+  viewStats: initialViewStats,
 }) => {
+  const { data: stats } = useSWR('/api/dashboard/stats', { fallbackData: initialStats, revalidateOnFocus: true });
+  const { data: scheduledPosts } = useSWR('/api/dashboard/scheduled-posts', { fallbackData: initialScheduledPosts });
+  const { data: popularPosts } = useSWR('/api/dashboard/popular-posts', { fallbackData: initialPopularPosts });
+  const { data: recentDrafts } = useSWR('/api/dashboard/recent-drafts', { fallbackData: initialRecentDrafts });
+  const { data: viewStats } = useSWR('/api/dashboard/view-stats', { fallbackData: initialViewStats });
+
   const blogStatCards = useMemo(
     () =>
       [

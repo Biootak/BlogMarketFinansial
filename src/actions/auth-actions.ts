@@ -91,10 +91,30 @@ export async function loginUser(formData: FormData): Promise<AuthResult> {
     }
 
     if (result?.ok) {
+      // به‌روزرسانی سشن با اطلاعات جدید کاربر
+      const session = await auth();
+      if (session) {
+        session.user = {
+          ...session.user,
+          role: existingUser.role,
+          id: existingUser.id,
+          email: existingUser.email,
+          name: existingUser.name,
+        };
+      }
+
       // پاک کردن کامل کش‌های کاربر
       if (existingUser.id) {
         await clearAllUserRelatedCaches(existingUser.id);
       }
+
+      // تازه‌سازی تگ‌های کش
+      revalidateTag('dashboard-stats');
+      revalidateTag('user-data');
+      revalidateTag('posts-data');
+      revalidateTag('current-user');
+      revalidateTag('user-role');
+      revalidateTag('user-permissions');
 
       // تازه‌سازی تمام مسیرهای داشبورد
       const dashboardPaths = [
