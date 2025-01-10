@@ -111,11 +111,16 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
         }
 
         if (result.success) {
-          // پاک کردن کش مربوط به دسته‌بندی
-          if (category) {
-            await invalidateCategory(category.id);
-          } else {
-            await invalidateCategory('list');
+          try {
+            // پاک کردن کش مربوط به دسته‌بندی
+            if (category) {
+              await invalidateCategory(category.id);
+            } else {
+              await invalidateCategory('list');
+            }
+          } catch (cacheError) {
+            console.error('خطا در بروزرسانی کش:', cacheError);
+            // ادامه اجرای برنامه حتی در صورت خطای کش
           }
 
           toast({

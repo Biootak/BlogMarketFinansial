@@ -1,6 +1,7 @@
 import { revalidateTag } from 'next/cache';
 import cacheManager from '@/utils/cache';
 import { CACHE_CONFIG } from '@/config/cacheConfig';
+import { revalidateCategoryCache } from '@/actions/revalidateActions';
 
 // Types
 export interface Post {
@@ -88,7 +89,7 @@ export async function getCachedCategory(categoryId: string, fetcher?: () => Prom
 }
 
 export async function invalidateCategory(categoryId: string): Promise<void> {
-  await revalidateTag(`category-${categoryId}`);
+  await revalidateCategoryCache(categoryId);
 }
 
 export async function invalidateAllCategories(): Promise<void> {
