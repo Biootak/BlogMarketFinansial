@@ -14,7 +14,6 @@ import { CiSettings } from 'react-icons/ci';
 import { SiGoogleads } from 'react-icons/si';
 import { MdCurrencyExchange } from 'react-icons/md';
 import { useSidebarStore } from '@/hooks/sidebarStore';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useMemo, useState } from 'react';
 
 interface SubmenuItem {
@@ -39,15 +38,15 @@ const getMenuItems = (role: string) => {
       title: 'داشبورد',
       href: '/dashboard',
       icon: <IoHomeOutline size={24} />,
-      label: 'داشبورد'
-    }
+      label: 'داشبورد',
+    },
   ];
 
   const postItem = {
     title: 'پست‌ها',
     href: '/dashboard/posts',
     icon: <FaProductHunt size={24} />,
-    label: 'پست ها'
+    label: 'پست ها',
   };
 
   const adminItems = [
@@ -55,19 +54,19 @@ const getMenuItems = (role: string) => {
       title: 'کاربران',
       href: '/dashboard/users',
       icon: <FaUsers size={24} />,
-      label: 'کاربران'
+      label: 'کاربران',
     },
     {
       title: 'دسته بندی',
       href: '/dashboard/categories',
       icon: <MdOutlineDashboard size={24} />,
-      label: 'دسته بندی'
+      label: 'دسته بندی',
     },
     {
       title: 'تبلیغات',
       href: '/dashboard/advertisements',
       icon: <SiGoogleads size={24} />,
-      label: 'تبلیغات'
+      label: 'تبلیغات',
     },
     {
       title: 'نرخ ارزها',
@@ -76,9 +75,9 @@ const getMenuItems = (role: string) => {
       label: 'نرخ ارزها',
       submenu: [
         { href: '/dashboard/exchange-rates', label: 'نرخ تکی' },
-        { href: '/dashboard/rate-lists', label: 'نرخ لیستی' }
-      ]
-    }
+        { href: '/dashboard/rate-lists', label: 'نرخ لیستی' },
+      ],
+    },
   ];
 
   const superAdminItems = [
@@ -87,21 +86,21 @@ const getMenuItems = (role: string) => {
       title: 'تنظیمات سیستم',
       href: '/dashboard/settings',
       icon: <CiSettings size={24} />,
-      label: 'تنظیمات سیستم'
+      label: 'تنظیمات سیستم',
     },
     {
       title: 'گزارش‌ها',
       href: '/dashboard/reports',
       icon: <MdOutlineDashboard size={24} />,
-      label: 'گزارش‌ها'
-    }
+      label: 'گزارش‌ها',
+    },
   ];
 
   const profileItem = {
     title: 'پروفایل من',
     href: '/dashboard/edit-profile',
     icon: <CiSettings size={24} />,
-    label: 'پروفایل من'
+    label: 'پروفایل من',
   };
 
   switch (role) {
@@ -117,9 +116,9 @@ const getMenuItems = (role: string) => {
           title: 'دسته بندی',
           href: '/dashboard/categories',
           icon: <MdOutlineDashboard size={24} />,
-          label: 'دسته بندی'
+          label: 'دسته بندی',
         },
-        profileItem
+        profileItem,
       ];
     default:
       return [];
@@ -163,7 +162,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
 
   const toggleSubmenu = (label: string) => {
     setExpandedItems((prev) =>
-      prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label]
+      prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label],
     );
   };
 
@@ -172,7 +171,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
       open: { width: isMobile ? '100%' : '240px', transition: { duration: 0.3 } },
       closed: { width: isMobile ? '0' : '60px', transition: { duration: 0.3 } },
     }),
-    [isMobile]
+    [isMobile],
   );
 
   const handleItemClick = () => {
@@ -355,7 +354,9 @@ const Sidebar = ({ userRole }: SidebarProps) => {
                   className="mr-3 overflow-hidden"
                 >
                   <p className="font-medium truncate">کاربر</p>
-                  <p className="text-sm text-blue-200 dark:text-gray-400 truncate">کاربر@example.com</p>
+                  <p className="text-sm text-blue-200 dark:text-gray-400 truncate">
+                    کاربر@example.com
+                  </p>
                 </motion.div>
               )}
             </AnimatePresence>
