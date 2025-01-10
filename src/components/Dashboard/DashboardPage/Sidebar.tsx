@@ -106,7 +106,17 @@ const getMenuItems = (role: string) => {
     case 'ADMIN':
       return [...baseItems, postItem, ...adminItems, profileItem];
     case 'AUTHOR':
-      return [postItem, profileItem];
+      return [
+        ...baseItems,
+        postItem,
+        {
+          title: 'دسته بندی',
+          href: '/dashboard/categories',
+          icon: <MdOutlineDashboard size={24} />,
+          label: 'دسته بندی'
+        },
+        profileItem
+      ];
     default:
       return [];
   }

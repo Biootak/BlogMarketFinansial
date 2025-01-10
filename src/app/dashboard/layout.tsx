@@ -9,8 +9,8 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Check role at layout level to protect all dashboard routes
-  await checkRole(['SUPER_ADMIN', 'ADMIN', 'AUTHOR']);
+  // فقط بررسی اولیه برای اطمینان از لاگین بودن کاربر
+  const user = await checkRole(['SUPER_ADMIN', 'ADMIN', 'AUTHOR']);
 
   return (
     <div
@@ -18,7 +18,7 @@ export default async function DashboardLayout({
       dir="rtl"
     >
       <SidebarInitializer />
-      <Sidebar />
+      <Sidebar userRole={user.role} />
       <div className="flex flex-col flex-1 overflow-hidden">
         <Header />
         <MainContent>{children}</MainContent>
