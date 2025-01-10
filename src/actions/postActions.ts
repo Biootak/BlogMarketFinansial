@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/db';
 import { auth } from '@/auth';
 import { checkRole, generateSlug, generateUniqueId, validateSlug } from '@/lib/utils';
+import { createUniqueSlug } from '@/lib/slugUtils';
 import type {
   ActionResult,
   CreatePostInput,
@@ -19,26 +20,17 @@ export async function createPost(data: CreatePostInput): Promise<ActionResult<Po
 
   try {
     const validatedData = CreatePostSchema.parse(data);
-
     const id = generateUniqueId();
-    let slug = validatedData.slug
-      ? generateSlug(validatedData.slug)
-      : generateSlug(validatedData.title);
+
+    // ایجاد اسلاگ یکتا
+    const baseSlug = validatedData.slug || validatedData.title;
+    const slug = await createUniqueSlug(baseSlug);
 
     if (!validateSlug(slug)) {
       return {
         success: false,
         message: 'اسلاگ نامعتبر است. لطفاً فقط از حروف کوچک انگلیسی، اعداد و خط فاصله استفاده کنید.',
       };
-    }
-
-    // Check for unique slug
-    let slugExists = await prisma.post.findUnique({ where: { slug } });
-    let slugAttempt = 1;
-    while (slugExists) {
-      slug = `${slug}-${slugAttempt}`;
-      slugExists = await prisma.post.findUnique({ where: { slug } });
-      slugAttempt++;
     }
 
     const post = await prisma.post.create({
