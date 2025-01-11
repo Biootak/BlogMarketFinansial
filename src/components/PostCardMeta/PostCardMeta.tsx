@@ -41,7 +41,7 @@ const PostCardMeta: React.FC<PostCardMetaProps> = ({
       {author && (
         <Link
           href={`/author/${author.id}`}
-          className="relative flex items-center space-x-2 rtl:space-x-reverse"
+          className="relative flex items-center space-x-2 rtl:space-x-reverse font-vazirmatn"
         >
           {!hiddenAvatar && (
             <Avatar
@@ -51,15 +51,11 @@ const PostCardMeta: React.FC<PostCardMetaProps> = ({
               userName={author.name}
             />
           )}
-          <div>
-            <h4 className={'text-sm font-medium'}>
-              {author.name || 'نویسنده ناشناس'}
-            </h4>
-          </div>
+          <span className="block font-medium">{author.name}</span>
         </Link>
       )}
-      <span className="text-neutral-500 dark:text-neutral-400 mx-[6px] font-medium">·</span>
-      <span className="text-neutral-500 dark:text-neutral-400 font-normal">{formattedDate}</span>
+      {author && formattedDate && <span className="text-neutral-500 dark:text-neutral-400 mx-[6px]">·</span>}
+      <span className="font-normal text-neutral-500 dark:text-neutral-400 font-vazirmatn">{formattedDate}</span>
     </div>
   );
 };

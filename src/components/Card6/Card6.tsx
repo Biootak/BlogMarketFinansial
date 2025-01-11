@@ -45,10 +45,10 @@ export default function Component({ className = '', post }: Card6Props) {
           <div className="hidden sm:block">
             <CategoryBadgeList categories={categories} />
           </div>
-          <h3 className="block pt-2 px-2  font-semibold text-[12px] sm:text-xs md:text-base leading-snug mb-auto">
+          <h3 className="block pt-2 px-2 font-semibold text-[12px] sm:text-xs md:text-base leading-snug mb-auto">
             <Link
               href={postLink}
-              className="line-clamp-2 dark:text-neutral-100 group-hover:text-primary-900 dark:group-hover:text-primary-500 transition-colors duration-300"
+              className="line-clamp-2 dark:text-neutral-100 group-hover:text-primary-900 dark:group-hover:text-primary-500 transition-colors duration-300 font-vazirmatn"
               title={title}
             >
               {title}
@@ -58,7 +58,7 @@ export default function Component({ className = '', post }: Card6Props) {
             hiddenAvatar={false}
             avatarSize="h-6 w-6 text-xs"
             meta={post}
-            className="text-[10px] sm:text-[11px] md:text-xs mt-1 px-2 font-medium text-neutral-700 dark:text-neutral-300"
+            className="text-[10px] sm:text-[11px] md:text-xs mt-1 px-2 font-medium text-neutral-700 dark:text-neutral-300 font-vazirmatn"
           />
         </div>
       </div>
