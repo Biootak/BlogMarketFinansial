@@ -11,9 +11,8 @@ import { updatePost } from '@/actions/postActions';
 import { getCategories } from '@/actions/categoryActions';
 import { getTags } from '@/actions/getTags';
 import { isSuccessResult } from '@/lib/utils';
-import { invalidatePost } from '@/services/cacheService';
 
-
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface EditPostFormProps {
   initialData: PostWithRelations;
   initialCategories: TaxonomyType[];
@@ -59,10 +58,6 @@ const EditPostForm: React.FC<EditPostFormProps> = ({
     try {
       const result = await updatePost(initialData.id, data);
       if (result.success) {
-        // پاک کردن کش پست‌ها
-        await invalidatePost(initialData.id);
-        await invalidatePost('list');
-        
         toast({
           title: 'موفقیت',
           description: 'پست با موفقیت به‌روزرسانی شد.',

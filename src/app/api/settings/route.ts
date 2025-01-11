@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import db from '@/lib/db';
-import { setCacheStatus } from '@/lib/cacheManager';
-
-const CACHE_KEY = 'system_settings';
 
 export async function GET() {
   try {
@@ -14,7 +11,7 @@ export async function GET() {
       console.log('Settings API [GET] - Unauthorized:', session?.user);
       return NextResponse.json(
         { success: false, message: 'شما دسترسی لازم را ندارید' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -22,17 +19,14 @@ export async function GET() {
     return NextResponse.json({ success: true, data: settings });
   } catch (error) {
     console.error('Settings API [GET] - Error:', error);
-    return NextResponse.json(
-      { success: false, message: 'خطای داخلی سرور' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: 'خطای داخلی سرور' }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
   try {
     console.log('Settings API [POST] - Request received');
-    
+
     const session = await auth();
     console.log('Settings API [POST] - Session:', session);
 
@@ -40,7 +34,7 @@ export async function POST(req: Request) {
       console.log('Settings API [POST] - Unauthorized:', session?.user);
       return NextResponse.json(
         { success: false, message: 'شما دسترسی لازم را ندارید' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -51,14 +45,14 @@ export async function POST(req: Request) {
     if (!body.siteName || !body.siteUrl) {
       return NextResponse.json(
         { success: false, message: 'لطفاً فیلدهای اجباری را پر کنید' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     try {
       // به‌روزرسانی یا ایجاد تنظیمات
       let settings = await db.systemSettings.findFirst();
-      
+
       if (settings) {
         settings = await db.systemSettings.update({
           where: { id: settings.id },
@@ -70,27 +64,21 @@ export async function POST(req: Request) {
         });
       }
 
-      // به‌روزرسانی وضعیت کش
-      setCacheStatus(body.enableCache ?? false);
-
       console.log('Settings API [POST] - Settings updated:', settings);
-      return NextResponse.json({ 
-        success: true, 
+      return NextResponse.json({
+        success: true,
         message: 'تنظیمات با موفقیت ذخیره شد',
-        data: settings 
+        data: settings,
       });
     } catch (dbError) {
       console.error('Settings API [POST] - Database error:', dbError);
       return NextResponse.json(
         { success: false, message: 'خطا در ذخیره تنظیمات در دیتابیس' },
-        { status: 500 }
+        { status: 500 },
       );
     }
   } catch (error) {
     console.error('Settings API [POST] - Error:', error);
-    return NextResponse.json(
-      { success: false, message: 'خطای داخلی سرور' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: 'خطای داخلی سرور' }, { status: 500 });
   }
 }

@@ -7,9 +7,7 @@ import { likeItem } from '@/actions/postActions';
 import convertNumbThousand from '@/utils/convertNumbThousand';
 import { cn } from '@/lib/utils';
 import { Icon } from '../ui/icon';
-import { useSession } from 'next-auth/react';
-import { useToast } from '@/components/ui/use-toast';
-import { clearAllCache } from '@/lib/cacheManager';
+
 
 export interface PostCardLikeActionProps {
   className?: string;
@@ -42,8 +40,6 @@ const PostCardLikeAction: FC<PostCardLikeActionProps> = ({
           throw new Error(result?.message || 'خطا در عملیات لایک');
         }
         if (result.success) {
-          // پاک کردن کش بعد از لایک/دیس‌لایک
-          clearAllCache();
           setIsLiked(!isLiked);
         }
       } catch {

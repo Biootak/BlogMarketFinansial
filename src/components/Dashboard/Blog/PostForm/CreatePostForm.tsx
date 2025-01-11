@@ -12,7 +12,7 @@ import { createPost } from '@/actions/postActions';
 import { getCategories } from '@/actions/categoryActions';
 import { getTags } from '@/actions/getTags';
 import { isSuccessResult } from '@/lib/utils';
-import { invalidateAllPosts } from '@/services/cacheService';
+
 
 interface CreatePostFormProps {
   initialCategories: TaxonomyType[];
@@ -57,8 +57,6 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({
     try {
       const result = await createPost(data);
       if (result.success) {
-        // پاک کردن کش پست‌ها
-        await invalidateAllPosts();
         toast({
           title: 'موفقیت',
           description: 'پست با موفقیت ایجاد شد',

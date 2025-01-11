@@ -17,7 +17,7 @@ import FormattedDate from '../FormattedDate';
 import type { CommentWithRelationsAndLikes, NcDropDownItem } from '@/types/types';
 import { likeItem } from '@/actions/postActions';
 import { HiOutlinePencil, HiOutlineReply, HiOutlineFlag, HiOutlineTrash } from 'react-icons/hi';
-import { invalidateComments } from '@/services/cacheService';
+
 
 export interface CommentCardProps {
   className?: string;
@@ -129,8 +129,6 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
     try {
       const result = await deleteComment(id);
       if (result.success) {
-        // پاک کردن کش نظرات پست
-        await invalidateComments(postId);
         toast({
           title: 'موفقیت',
           description: 'نظر با موفقیت حذف شد',

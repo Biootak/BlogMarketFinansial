@@ -40,7 +40,7 @@ import type {
 } from '@/types/types';
 import { z } from 'zod';
 import { HiOutlinePlus } from 'react-icons/hi2';
-import { invalidateCategory } from '@/services/cacheService';
+
 
 const categorySchema = z.object({
   name: z.string().min(1, 'نام دسته‌بندی الزامی است'),
@@ -111,18 +111,6 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
         }
 
         if (result.success) {
-          try {
-            // پاک کردن کش مربوط به دسته‌بندی
-            if (category) {
-              await invalidateCategory(category.id);
-            } else {
-              await invalidateCategory('list');
-            }
-          } catch (cacheError) {
-            console.error('خطا در بروزرسانی کش:', cacheError);
-            // ادامه اجرای برنامه حتی در صورت خطای کش
-          }
-
           toast({
             title: 'موفقیت',
             description: result.message,

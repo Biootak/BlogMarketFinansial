@@ -1,7 +1,6 @@
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
 import * as os from 'node:os';
-import cacheManager from '@/utils/cache';
 
 const execAsync = promisify(exec);
 
@@ -35,17 +34,8 @@ interface SystemMetrics {
   };
 }
 
-// Cache key for system metrics
-const CACHE_KEY = 'system_metrics';
-
 export async function getSystemMetrics(): Promise<SystemMetrics> {
   try {
-    // Try to get cached metrics
-    const cachedMetrics = await cacheManager.get(CACHE_KEY) as SystemMetrics;
-    if (cachedMetrics && 'cpu' in cachedMetrics && 'memory' in cachedMetrics && 'os' in cachedMetrics) {
-      return cachedMetrics;
-    }
-
     const cpus = os.cpus();
     const cpuUsage = os.loadavg()[0] * 100 / cpus.length;
     const totalMem = os.totalmem();
@@ -71,9 +61,6 @@ export async function getSystemMetrics(): Promise<SystemMetrics> {
       }
     };
 
-    // Cache the metrics
-    await cacheManager.set(CACHE_KEY, metrics, "PUBLIC_DATA"); // Cache using PUBLIC_DATA type
-
     return metrics;
   } catch (error) {
     console.error('Error getting system metrics:', error);
@@ -82,15 +69,7 @@ export async function getSystemMetrics(): Promise<SystemMetrics> {
 }
 
 export async function checkDiskSpace(drive: string): Promise<DiskSpace | null> {
-  const CACHE_KEY = `disk_space_${drive}`;
-  
   try {
-    // Try to get cached disk space
-    const cachedDiskSpace = await cacheManager.get(CACHE_KEY) as DiskSpace;
-    if (cachedDiskSpace && 'size' in cachedDiskSpace && 'free' in cachedDiskSpace) {
-      return cachedDiskSpace;
-    }
-
     // For Windows
     if (process.platform === 'win32') {
       const { stdout } = await execAsync(`wmic logicaldisk where "DeviceID='${drive}:'" get size,freespace /format:value`);
@@ -106,15 +85,10 @@ export async function checkDiskSpace(drive: string): Promise<DiskSpace | null> {
       });
 
       if (values.Size && values.FreeSpace) {
-        const diskSpace = {
+        return {
           size: Number.parseInt(values.Size, 10),
           free: Number.parseInt(values.FreeSpace, 10)
         };
-        
-        // Cache the disk space
-        await cacheManager.set(CACHE_KEY, diskSpace, "PUBLIC_DATA");
-
-        return diskSpace;
       }
     }
     
@@ -124,15 +98,10 @@ export async function checkDiskSpace(drive: string): Promise<DiskSpace | null> {
       const lines = stdout.trim().split('\n');
       if (lines.length >= 2) {
         const [, size, , free] = lines[1].split(/\s+/);
-        const diskSpace = {
+        return {
           size: Number.parseInt(size, 10) * 1024, // Convert KB to bytes
           free: Number.parseInt(free, 10) * 1024
         };
-
-        // Cache the disk space
-        await cacheManager.set(CACHE_KEY, diskSpace, "PUBLIC_DATA");
-
-        return diskSpace;
       }
     }
 
