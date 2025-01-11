@@ -19,7 +19,7 @@ export default function AuthorProfile({ author }: AuthorProfileProps) {
       <div className="relative w-full h-40 md:h-60 2xl:h-72">
         <Image
           alt={`تصویر پس زمینه ${author.name}`}
-          src={author.profile?.bgImage || '/placeholder/cover.jpg'}
+          src={author.profile?.bgImage || '/images/placeholder-large-h.png'}
           className="object-cover"
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
