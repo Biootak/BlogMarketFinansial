@@ -65,7 +65,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
   }, [posts, isLoading, hasMore, activeCategory]);
 
   return (
-    <div className="space-y-4 bg-white/10 dark:bg-neutral-800/10 backdrop-blur-lg backdrop-saturate-150 border border-white/20 dark:border-neutral-700/20 p-4 rounded-2xl">
+    <div className="space-y-4 bg-white/10 dark:bg-neutral-800/10 backdrop-blur-lg backdrop-saturate-150 border border-white/20 dark:border-neutral-700/20  rounded-2xl">
       <h2 className="text-xl font-bold text-center mb-4">آخرین مقالات</h2>
       {error && <div className="text-red-500 text-center">Error: {error.message}</div>}
       <Tabs defaultValue="همه" onValueChange={setActiveCategory} dir="rtl">
@@ -74,9 +74,11 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
             <div className="w-full border-t border-neutral-200 dark:border-neutral-700" />
           </div>
           <div className="relative flex justify-center">
-            <TabsList className="inline-flex items-center px-1 py-1 rounded-2xl
+            <TabsList
+              className="inline-flex items-center px-1 py-1 rounded-2xl
               bg-white/80 dark:bg-neutral-800/80 backdrop-blur-md
-              border border-white/20 dark:border-neutral-700/20">
+              border border-white/20 dark:border-neutral-700/20"
+            >
               {categories.map((category) => (
                 <TabsTrigger
                   key={category}
@@ -99,7 +101,11 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
           </div>
         </div>
         {categories.map((category) => (
-          <TabsContent key={category} value={category} className="mt-8 p-0 bg-transparent shadow-none ring-0">
+          <TabsContent
+            key={category}
+            value={category}
+            className="mt-8 p-0 bg-transparent shadow-none ring-0"
+          >
             {posts[category] && posts[category].length > 0 ? (
               <PostsDisplay
                 posts={posts[category]}
