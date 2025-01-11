@@ -8,12 +8,9 @@ const nextConfig = {
   compress: true, // فشرده‌سازی خودکار برای افزایش سرعت
   poweredByHeader: false, // حذف هدر اضافی برای امنیت بیشتر
   productionBrowserSourceMaps: false, // غیرفعال کردن source maps در تولید
-  swcMinify: true, // فعال کردن مینیفای SWC
-  generateEtags: true, // فعال کردن ETag برای کش بهتر
-  onDemandEntries: {
-    maxInactiveAge: 60 * 60 * 1000, // زمان نگهداری صفحات در حافظه
-    pagesBufferLength: 5, // تعداد صفحات در بافر
-  },
+ 
+ 
+ 
   images: {
     remotePatterns: [
       {
@@ -52,9 +49,6 @@ const nextConfig = {
       bodySizeLimit: '3mb',
     },
     optimizeCss: true, // بهینه‌سازی CSS
-    optimizeServerReact: true, // بهینه‌سازی رندر سمت سرور
-
-    optimisticClientCache: true, // بهبود کش سمت کلاینت
   },
 
   sassOptions: {
