@@ -37,14 +37,23 @@ const adminApiRoutes = [
   '/api/billing',
   '/api/subscription',
   '/api/posts',
-  '/api/traffic-stats',
   '/api/system-stats',
 ];
 
 /**
  * مسیرهای API که نیاز به دسترسی نویسنده دارند
  */
-const authorApiRoutes = ['/api/posts', '/api/comments', '/api/categories'];
+const authorApiRoutes = [
+  '/api/posts',
+  '/api/comments',
+  '/api/categories',
+  '/api/traffic-stats',
+  '/api/dashboard/view-stats',
+  '/api/dashboard/stats',
+  '/api/dashboard/scheduled-posts',
+  '/api/dashboard/popular-posts',
+  '/api/dashboard/recent-drafts'
+];
 
 /**
  * چک کردن دسترسی به API
@@ -84,14 +93,32 @@ const checkApiAccess = (pathname: string, role?: string): boolean => {
   // دسترسی نویسنده
   if (
     ['AUTHOR', 'ADMIN', 'SUPER_ADMIN'].includes(role) &&
-    authorApiRoutes.some((route) => pathname.startsWith(route))
+    authorApiRoutes.some((route) => {
+      const isMatch = pathname.startsWith(route);
+      logger.debug('Checking author route:', { route, pathname, isMatch });
+      return isMatch;
+    })
   ) {
-    logger.debug('Author API access granted');
+    logger.debug('Author API access granted for:', { pathname, role });
     return true;
   }
 
-  logger.debug('API access denied:', { pathname, role });
-  return false;
+  // اگر مسیر API باشد و به اینجا برسیم، یعنی دسترسی ندارد
+  if (pathname.startsWith('/api/')) {
+    logger.debug('API access denied. Details:', { 
+      pathname, 
+      role,
+      isAuthorRole: ['AUTHOR', 'ADMIN', 'SUPER_ADMIN'].includes(role),
+      authorRouteMatches: authorApiRoutes.map(route => ({
+        route,
+        matches: pathname.startsWith(route)
+      }))
+    });
+    return false;
+  }
+
+  // برای مسیرهای غیر API، دسترسی می‌دهیم
+  return true;
 };
 
 /**
@@ -103,7 +130,7 @@ const matchDynamicRoute = (pathname: string, pattern: string): boolean => {
     .replace(/\[\.\.\..*?\]/g, '.*') // برای [...slug]
     .replace(/\[.*?\]/g, '[^/]+') // برای [id]
     .replace(/\//g, '\\/');
-  
+
   const regex = new RegExp(`^${regexPattern}$`, 'i'); // اضافه کردن i برای case-insensitive
   return regex.test(pathname);
 };
@@ -185,7 +212,7 @@ export default auth(async (req) => {
     req,
     secret: process.env.AUTH_SECRET,
   });
-  
+
   // بررسی توکن منقضی شده
   if (token?.exp && Date.now() / 1000 > token.exp) {
     logger.debug('Token expired, redirecting to signin');
