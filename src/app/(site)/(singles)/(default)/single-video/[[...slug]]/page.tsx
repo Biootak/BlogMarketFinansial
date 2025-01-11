@@ -2,11 +2,7 @@
 
 import React, { Suspense, useEffect, useState } from 'react';
 import ReactPlayer from 'react-player';
-import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
-import PostMeta2 from '@/components/PostMeta2/PostMeta2';
-import { DEMO_CATEGORIES } from '@/data/taxonomies';
 import SingleTitle from '@/app/(site)/(singles)/SingleTitle';
-import SingleMetaAction2 from '@/app/(site)/(singles)/SingleMetaAction2';
 
 const PageSv = ({}) => {
   const [isRendered, setIsRendered] = useState(false);

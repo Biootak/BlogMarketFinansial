@@ -5,10 +5,7 @@ import Badge from '@/components/Badge/Badge';
 import iconPlaying from '@/images/icon-playing.gif';
 import featuredImageDemo from '@/images/podcast.jpg';
 import Image from 'next/image';
-import ButtonPlayMusicPlayer from '@/components/ButtonPlayMusicPlayer';
-import { DEMO_POSTS_AUDIO } from '@/data/posts';
 import SingleTitle from '@/app/(site)/(singles)/SingleTitle';
-import SingleMetaAction2 from '@/app/(site)/(singles)/SingleMetaAction2';
 
 const PageSingleAudio = ({}) => {
   const renderIcon = (playing: boolean) => {

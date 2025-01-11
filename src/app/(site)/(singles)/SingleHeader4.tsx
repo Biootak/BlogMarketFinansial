@@ -1,10 +1,8 @@
-import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
+
 import React, { type FC } from 'react';
 import SingleTitle from './SingleTitle';
-import PostMeta2 from '@/components/PostMeta2/PostMeta2';
-import SingleMetaAction2 from './SingleMetaAction2';
 import NcImage from '@/components/NcImage/NcImage';
-import { DEMO_CATEGORIES } from '@/data/taxonomies';
+
 
 export interface SingleHeader4Props {
   hiddenDesc?: boolean;

@@ -1,5 +1,4 @@
 import React, { type FC } from 'react';
-import type { PostAuthorType } from '@/data/types';
 import { HiArrowLeft } from 'react-icons/hi2';
 import Avatar from '@/components/Avatar/Avatar';
 import Link from 'next/link';

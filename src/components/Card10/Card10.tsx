@@ -2,7 +2,6 @@
 
 import React, { type FC, useState } from 'react';
 import PostCardSaveAction from '@/components/PostCardSaveAction/PostCardSaveAction';
-import { PostDataType } from '@/data/types';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
 import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia';
 import PostCardMetaV2 from '@/components/PostCardMeta/PostCardMetaV2';

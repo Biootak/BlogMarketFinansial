@@ -1,3 +1,5 @@
+'use server';
+
 import NextAuth from 'next-auth';
 import bcrypt from 'bcryptjs';
 import { PrismaAdapter } from '@auth/prisma-adapter';
@@ -17,9 +19,9 @@ export const {
   events: {
     async signIn({ user, account }) {
       if (account?.provider !== 'credentials') return;
-      
+
       const existingUser = await getUserById(user.id as string);
-      
+
       if (!existingUser) {
         throw new Error('کاربر در دیتابیس یافت نشد.');
       }
@@ -56,9 +58,13 @@ export const {
           ...session.user,
           id: token.sub || '',
           role: (token.role as Role) || 'USER',
-          emailVerified: token.emailVerified ? (token.emailVerified instanceof Date ? token.emailVerified : new Date(token.emailVerified)) : null,
+          emailVerified: token.emailVerified
+            ? token.emailVerified instanceof Date
+              ? token.emailVerified
+              : new Date(token.emailVerified)
+            : null,
           email: token.email || '',
-          name: token.name || ''
+          name: token.name || '',
         };
       }
       return session;
@@ -74,14 +80,14 @@ export const {
     Credentials({
       async authorize(credentials) {
         const validatedFields = LoginSchema.safeParse(credentials);
-        
+
         if (!validatedFields.success) {
           return null;
         }
 
         const { email, password } = validatedFields.data;
         const user = await getUserByEmail(email);
-        
+
         if (!user || !user.password) {
           return null;
         }
@@ -93,7 +99,7 @@ export const {
         }
 
         return user;
-      }
+      },
     }),
     ...authConfig.providers,
   ],

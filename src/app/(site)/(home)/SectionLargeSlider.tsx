@@ -1,9 +1,7 @@
 import { cache } from 'react';
 import { getFeaturedPosts } from '@/actions/getFeaturedPosts';
-
 import type { PostWithRelations, ActionResult } from '@/types/types';
 import SectionLargeSliderClient from './SectionLargeSliderClient';
-import { Skeleton } from '@/components/ui/skeleton';
 import Empty from '@/components/Empty';
 
 const getFeaturedPostsCached = cache(getFeaturedPosts);
