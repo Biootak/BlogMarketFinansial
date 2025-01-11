@@ -9,17 +9,34 @@ WORKDIR /app
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
 COPY prisma ./prisma
 
+# Set environment variables for binary downloads
+ENV PRISMA_ENGINES_MIRROR="https://registry.npmmirror.com/-/binary/prisma"
+ENV SHARP_DIST_BASE_URL="https://npmmirror.com/mirrors/sharp"
+ENV SHARP_LIBVIPS_BASE_URL="https://npmmirror.com/mirrors/sharp-libvips"
+ENV PRISMA_SKIP_POSTINSTALL_GENERATE=1
+
 # Use Iranian NPM mirror
 RUN npm config set registry https://registry.npmmirror.com/
-RUN \
-  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then yarn global add pnpm && pnpm i --frozen-lockfile; \
-  else echo "Lockfile not found." && exit 1; \
-  fi
 
-# Generate Prisma Client
-RUN npx prisma generate
+# Install dependencies with retry mechanism
+RUN for i in 1 2 3; do \
+    if [ -f yarn.lock ]; then \
+      yarn --frozen-lockfile || continue; \
+    elif [ -f package-lock.json ]; then \
+      npm ci || continue; \
+    elif [ -f pnpm-lock.yaml ]; then \
+      yarn global add pnpm && pnpm i --frozen-lockfile || continue; \
+    else \
+      echo "Lockfile not found." && exit 1; \
+    fi && break; \
+    done
+
+# Generate Prisma Client with retries and specific engine download
+RUN mkdir -p node_modules/.prisma/client && \
+    for i in 1 2 3; do \
+      npx prisma generate --schema=./prisma/schema.prisma && break || \
+      (echo "Retrying Prisma generate... Attempt $i" && sleep 5); \
+    done
 
 # Rebuild the source code only when needed
 FROM registry.docker.ir/node:20-alpine AS builder
