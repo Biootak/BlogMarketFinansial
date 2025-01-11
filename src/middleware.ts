@@ -15,15 +15,6 @@ import {
 import authConfig from './auth.config';
 import { auth } from './auth';
 
-const logger = {
-  debug: (message: string, ...args: any[]) => {
-    console.log(`[DEBUG] ${message}`, ...args);
-  },
-  error: (message: string, ...args: any[]) => {
-    console.error(`[ERROR] ${message}`, ...args);
-  },
-};
-
 /**
  * مسیرهای API که نیاز به دسترسی ادمین دارند
  */
@@ -59,8 +50,6 @@ const authorApiRoutes = [
  * چک کردن دسترسی به API
  */
 const checkApiAccess = (pathname: string, role?: string): boolean => {
-  logger.debug('Checking API access:', { pathname, role });
-
   // مسیرهای عمومی API
   if (pathname.startsWith('/api/public')) {
     return true;
@@ -72,7 +61,6 @@ const checkApiAccess = (pathname: string, role?: string): boolean => {
   }
 
   if (!role) {
-    logger.debug('API access denied: No role');
     return false;
   }
 
@@ -86,34 +74,19 @@ const checkApiAccess = (pathname: string, role?: string): boolean => {
     (role === 'ADMIN' || role === 'SUPER_ADMIN') &&
     adminApiRoutes.some((route) => pathname.startsWith(route))
   ) {
-    logger.debug('Admin API access granted');
     return true;
   }
 
   // دسترسی نویسنده
   if (
     ['AUTHOR', 'ADMIN', 'SUPER_ADMIN'].includes(role) &&
-    authorApiRoutes.some((route) => {
-      const isMatch = pathname.startsWith(route);
-      logger.debug('Checking author route:', { route, pathname, isMatch });
-      return isMatch;
-    })
+    authorApiRoutes.some((route) => pathname.startsWith(route))
   ) {
-    logger.debug('Author API access granted for:', { pathname, role });
     return true;
   }
 
   // اگر مسیر API باشد و به اینجا برسیم، یعنی دسترسی ندارد
   if (pathname.startsWith('/api/')) {
-    logger.debug('API access denied. Details:', { 
-      pathname, 
-      role,
-      isAuthorRole: ['AUTHOR', 'ADMIN', 'SUPER_ADMIN'].includes(role),
-      authorRouteMatches: authorApiRoutes.map(route => ({
-        route,
-        matches: pathname.startsWith(route)
-      }))
-    });
     return false;
   }
 
@@ -162,11 +135,8 @@ const isPublicApi = (pathname: string): boolean => {
  * چک کردن دسترسی به داشبورد
  */
 const checkDashboardAccess = (pathname: string, role?: string) => {
-  logger.debug('Checking dashboard access:', { pathname, role });
-
   // دسترسی به مسیرهای پایه داشبورد
   if (baseDashboardRoutes.some((route) => matchDynamicRoute(pathname, route))) {
-    logger.debug('Base dashboard route access granted');
     return true;
   }
 
@@ -175,7 +145,6 @@ const checkDashboardAccess = (pathname: string, role?: string) => {
     role === 'SUPER_ADMIN' &&
     superAdminRoutes.some((route) => matchDynamicRoute(pathname, route))
   ) {
-    logger.debug('Super admin route access granted');
     return true;
   }
 
@@ -184,7 +153,6 @@ const checkDashboardAccess = (pathname: string, role?: string) => {
     (role === 'ADMIN' || role === 'SUPER_ADMIN') &&
     adminRoutes.some((route) => matchDynamicRoute(pathname, route))
   ) {
-    logger.debug('Admin route access granted');
     return true;
   }
 
@@ -193,11 +161,9 @@ const checkDashboardAccess = (pathname: string, role?: string) => {
     ['AUTHOR', 'ADMIN', 'SUPER_ADMIN'].includes(role || '') &&
     authorRoutes.some((route) => matchDynamicRoute(pathname, route))
   ) {
-    logger.debug('Author route access granted');
     return true;
   }
 
-  logger.debug('Dashboard access denied');
   return false;
 };
 
@@ -215,7 +181,6 @@ export default auth(async (req) => {
 
   // بررسی توکن منقضی شده
   if (token?.exp && Date.now() / 1000 > token.exp) {
-    logger.debug('Token expired, redirecting to signin');
     return NextResponse.redirect(
       new URL(`/signin?callbackUrl=${encodeURIComponent(pathname)}`, nextUrl),
     );
@@ -225,41 +190,28 @@ export default auth(async (req) => {
   const role = session?.user?.role as string;
   const userId = session?.user?.id;
 
-  logger.debug('Middleware request:', {
-    pathname,
-    isLoggedIn,
-    role,
-    userId,
-    search,
-  });
-
   // اجازه دسترسی به فایل‌های استاتیک
   if (isStaticPath(pathname)) {
-    logger.debug('Static path access granted:', pathname);
     return NextResponse.next();
   }
 
   // اجازه دسترسی به API های عمومی
   if (isPublicApi(pathname)) {
-    logger.debug('Public API access granted:', pathname);
     return NextResponse.next();
   }
 
   // اجازه دسترسی به مسیرهای عمومی
   if (publicRoutes.some((route) => matchDynamicRoute(pathname, route))) {
-    logger.debug('Public route access granted');
     return NextResponse.next();
   }
 
   // اجازه دسترسی به مسیرهای احراز هویت
   if (authRoutes.some((route) => pathname.startsWith(route))) {
-    logger.debug('Auth route access granted');
     return NextResponse.next();
   }
 
   // بررسی لاگین برای مسیرهای محافظت شده
   if (!isLoggedIn && pathname.startsWith('/dashboard')) {
-    logger.debug('User not logged in, redirecting to signin');
     const callbackUrl = `${pathname}${search}`;
     return NextResponse.redirect(
       new URL(`/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`, nextUrl),
@@ -269,24 +221,19 @@ export default auth(async (req) => {
   // بررسی دسترسی به API های محافظت شده
   if (pathname.startsWith('/api') && !isPublicApi(pathname)) {
     if (checkApiAccess(pathname, role)) {
-      logger.debug('API access granted');
       return NextResponse.next();
     }
-    logger.debug('API access denied');
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
   }
 
   // بررسی دسترسی به داشبورد
   if (pathname.startsWith('/dashboard')) {
     if (checkDashboardAccess(pathname, role)) {
-      logger.debug('Dashboard access granted');
       return NextResponse.next();
     }
-    logger.debug('Dashboard access denied');
     return NextResponse.redirect(new URL('/dashboard', nextUrl));
   }
 
-  logger.debug('Access granted');
   return NextResponse.next();
 });
 
