@@ -1,21 +1,19 @@
-"use client";
+'use client';
 
-import React, { type FC, useEffect, useRef } from "react";
-import NcModal from "@/components/NcModal/NcModal";
-import ButtonPrimary from "@/components/Button/ButtonPrimary";
-import type { PostAuthorType } from "@/data/types";
-import { DEMO_AUTHORS } from "@/data/authors";
-import ButtonThird from "../Button/ButtonThird";
+import React, { type FC, useEffect, useRef } from 'react';
+import NcModal from '@/components/NcModal/NcModal';
+import ButtonPrimary from '@/components/Button/ButtonPrimary';
 
-const authorDemo = DEMO_AUTHORS[0];
+import ButtonThird from '../Button/ButtonThird';
+
 export interface ModalHideAuthorProps {
-  auhthor?: PostAuthorType;
+  auhthor?: any;
   show: boolean;
   onCloseModalHideAuthor: () => void;
 }
 
 const ModalHideAuthor: FC<ModalHideAuthorProps> = ({
-  auhthor = authorDemo,
+  auhthor = {},
   show,
   onCloseModalHideAuthor,
 }) => {
@@ -39,19 +37,13 @@ const ModalHideAuthor: FC<ModalHideAuthorProps> = ({
   const renderContent = () => {
     return (
       <form action="#">
-        <h3 className="text-lg font-semibold">
-          Hide stories from {auhthor.displayName}
-        </h3>
+        <h3 className="text-lg font-semibold">Hide stories from {auhthor.displayName}</h3>
         <span className="text-sm">
-          We will hide all articles from <strong>{auhthor.displayName}</strong>.
-          You will no longer see their articles?
+          We will hide all articles from <strong>{auhthor.displayName}</strong>. You will no longer
+          see their articles?
         </span>
         <div className="mt-4 space-x-3">
-          <ButtonPrimary
-            className="!bg-red-500"
-            onClick={handleClickSubmitForm}
-            type="submit"
-          >
+          <ButtonPrimary className="!bg-red-500" onClick={handleClickSubmitForm} type="submit">
             Hide this author
           </ButtonPrimary>
           <ButtonThird type="button" onClick={onCloseModalHideAuthor}>

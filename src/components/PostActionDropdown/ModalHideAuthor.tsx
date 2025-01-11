@@ -3,13 +3,11 @@
 import React, { type FC, useEffect, useRef } from "react";
 import NcModal from "@/components/NcModal/NcModal";
 import ButtonPrimary from "@/components/Button/ButtonPrimary";
-import type { PostAuthorType } from "@/data/types";
-import { DEMO_AUTHORS } from "@/data/authors";
 import ButtonThird from "../Button/ButtonThird";
 
-const authorDemo = DEMO_AUTHORS[0];
+const authorDemo = [0];
 export interface ModalHideAuthorProps {
-  auhthor?: PostAuthorType;
+  auhthor?: any;
   show: boolean;
   onCloseModalHideAuthor: () => void;
 }
