@@ -16,7 +16,8 @@ ENV SHARP_LIBVIPS_BASE_URL="https://npmmirror.com/mirrors/sharp-libvips"
 ENV PRISMA_SKIP_POSTINSTALL_GENERATE=1
 
 # Use Iranian NPM mirror
-RUN npm config set registry https://registry.npmmirror.com/
+RUN npm config set registry https://registry.npmjs.org/
+RUN npm config set strict-ssl false
 
 # Install dependencies with retry mechanism
 RUN for i in 1 2 3; do \
