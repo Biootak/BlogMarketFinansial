@@ -326,7 +326,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
           <button
             type="button"
             onClick={handleLogout}
-            className="flex items-center w-full p-2 mb-4 rounded-md text-blue-100 dark:text-gray-300 hover:bg-red-600 hover:text-white dark:hover:bg-red-700 transition-colors duration-200"
+            className="flex items-center w-full p-2 mb-4 rounded-md text-blue-100 dark:text-gray-300 hover:bg-blue-700 hover:text-white dark:hover:bg-gray-700 transition-colors duration-200"
           >
             <div className="w-6 h-6 flex items-center justify-center">
               <IoExitOutline size={24} />
