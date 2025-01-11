@@ -53,10 +53,7 @@ const nextConfig = {
     },
     optimizeCss: true, // بهینه‌سازی CSS
     optimizeServerReact: true, // بهینه‌سازی رندر سمت سرور
-    turbotrace: {
-      logLevel: "error",
-      memoryLimit: 6000
-    },
+
     optimisticClientCache: true, // بهبود کش سمت کلاینت
   },
 
