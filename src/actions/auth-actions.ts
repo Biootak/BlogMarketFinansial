@@ -4,7 +4,6 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { auth, signIn, signOut } from '@/auth';
 import prisma from '@/lib/db';
-import { revalidatePath, revalidateTag } from 'next/cache';
 import { AuthError } from 'next-auth';
 import { ForgotPasswordSchema, LoginSchema, MagicLinkSchema, RegisterSchema } from '@/schemas';
 import { getUserByEmail } from '@/data/user';
@@ -13,11 +12,6 @@ import { redirect } from 'next/navigation';
 import { generateVerificationToken } from '@/lib/tokens';
 import { sendVerificationEmail } from '@/lib/mail';
 import { getVerificationTokenByToken } from '@/data/verfication-token';
-import {
-  invalidateUserProfile,
-  invalidateDashboardCache,
-  clearAllUserRelatedCaches,
-} from '@/services/cacheService';
 
 type AuthResult = {
   success: boolean;
@@ -50,11 +44,11 @@ function handleAuthError(error: unknown): AuthResult {
   return { success: false, error: 'خطای ناشناخته' };
 }
 
-const processFormData = (formData: FormData) => {
+const processFormData = (formData: FormData): { name: string | null; email: string | null; password: string | null; } => {
   return {
-    name: formData.get('name'),
-    email: formData.get('email'),
-    password: formData.get('password'),
+    name: formData.get('name') as string | null,
+    email: formData.get('email') as string | null,
+    password: formData.get('password') as string | null,
   };
 };
 
@@ -103,46 +97,10 @@ export async function loginUser(formData: FormData): Promise<AuthResult> {
         };
       }
 
-      // پاک کردن کامل کش‌های کاربر
-      if (existingUser.id) {
-        await clearAllUserRelatedCaches(existingUser.id);
-      }
-
-      // تازه‌سازی تگ‌های کش
-      revalidateTag('dashboard-stats');
-      revalidateTag('user-data');
-      revalidateTag('posts-data');
-      revalidateTag('current-user');
-      revalidateTag('user-role');
-      revalidateTag('user-permissions');
-
-      // تازه‌سازی تمام مسیرهای داشبورد
-      const dashboardPaths = [
-        '/dashboard',
-        '/dashboard/posts',
-        '/dashboard/users',
-        '/dashboard/categories',
-        '/dashboard/advertisements',
-        '/dashboard/exchange-rates',
-        '/dashboard/rate-lists',
-        '/dashboard/settings',
-        '/dashboard/reports',
-        '/dashboard/edit-profile',
-      ];
-
-      dashboardPaths.forEach((path) => revalidatePath(path));
-
-      // تازه‌سازی سایر مسیرهای اصلی
-      revalidatePath('/');
-      revalidatePath('/profile');
-      revalidatePath('/market');
-      revalidatePath('/portfolio');
-
-      // بازگشت با هدایت مستقیم به داشبورد
       return {
         success: true,
         message: 'ورود موفقیت‌آمیز',
-        redirect: '/dashboard', // اضافه کردن مسیر ریدایرکت
+        redirect: '/dashboard',
       };
     }
 
@@ -165,7 +123,7 @@ export async function registerUser(formData: FormData): Promise<AuthResult> {
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
-    const newUser = await prisma.user.create({
+    await prisma.user.create({
       data: { name, email, password: hashedPassword },
     });
 
@@ -177,17 +135,6 @@ export async function registerUser(formData: FormData): Promise<AuthResult> {
       return loginResult;
     }
 
-    // پاک کردن کش کاربر جدید
-    if (newUser.id) {
-      await invalidateUserProfile(newUser.id);
-      await invalidateDashboardCache(newUser.id);
-    }
-
-    revalidatePath('/');
-    revalidatePath('/dashboard');
-    revalidatePath('/profile');
-    revalidatePath('/market');
-    revalidatePath('/portfolio');
     return {
       success: true,
       message: 'ایمیل تایید برای شما ارسال شد. لطفاً ایمیل خود را بررسی کنید',
@@ -215,40 +162,12 @@ export async function sendMagicLink(formData: FormData): Promise<AuthResult> {
 
 export async function logout(): Promise<AuthResult> {
   try {
-    const session = await auth();
     await signOut({ redirect: false });
-
-    // پاک کردن کامل کش‌های کاربر خارج شده
-    if (session?.user?.id) {
-      await clearAllUserRelatedCaches(session.user.id);
-    }
-
-    // تازه‌سازی تمام مسیرهای داشبورد
-    const dashboardPaths = [
-      '/dashboard',
-      '/dashboard/posts',
-      '/dashboard/users',
-      '/dashboard/categories',
-      '/dashboard/advertisements',
-      '/dashboard/exchange-rates',
-      '/dashboard/rate-lists',
-      '/dashboard/settings',
-      '/dashboard/reports',
-      '/dashboard/edit-profile',
-    ];
-
-    dashboardPaths.forEach((path) => revalidatePath(path));
-
-    // تازه‌سازی سایر مسیرهای اصلی
-    revalidatePath('/');
-    revalidatePath('/profile');
-    revalidatePath('/market');
-    revalidatePath('/portfolio');
 
     return {
       success: true,
       message: 'خروج موفقیت‌آمیز بود',
-      redirect: '/signin', // هدایت به صفحه ورود
+      redirect: '/signin',
     };
   } catch (error) {
     return handleAuthError(error);
@@ -283,54 +202,17 @@ export async function newVerification(token: string): Promise<AuthResult> {
     };
   }
 
-  const updatedUser = await prisma.user.update({
+  await prisma.user.update({
     where: { id: existingUser.id },
     data: {
       emailVerified: new Date(),
       email: existingToken.email,
     },
   });
+  
   await prisma.verificationToken.delete({
     where: { id: existingToken.id },
   });
 
-  // پاک کردن کش کاربر تأیید شده
-  if (updatedUser.id) {
-    await invalidateUserProfile(updatedUser.id);
-  }
-
-  revalidatePath('/');
-  revalidatePath('/dashboard');
-  revalidatePath('/profile');
-  revalidatePath('/market');
-  revalidatePath('/portfolio');
   return { success: true, message: 'ایمیل با موفقیت تایید شد.' };
 }
-
-// export async function forgotPassword(formData: FormData): Promise<AuthResult> {
-// 	try {
-// 		const { email } = await ForgotPasswordSchema.parseAsync(
-// 			processFormData(formData),
-// 		);
-
-// 		const user = await prisma.user.findUnique({ where: { email } });
-// 		if (!user) {
-// 			return {
-// 				success: true,
-// 				message:
-// 					"اگر این ایمیل در سیستم ما موجود باشد، لینک بازیابی ارسال خواهد شد.",
-// 			};
-// 		}
-
-// 		// TODO: ارسال ایمیل بازیابی رمز عبور
-// 		// await sendPasswordResetEmail(user.email);
-
-// 		revalidatePath("/forgot-password");
-// 		return {
-// 			success: true,
-// 			message: "لینک بازیابی رمز عبور به ایمیل شما ارسال شد.",
-// 		};
-// 	} catch (error) {
-// 		return handleAuthError(error);
-// 	}
-// }

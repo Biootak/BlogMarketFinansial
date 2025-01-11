@@ -14,7 +14,6 @@ import type {
   UpdatePostInput,
 } from '@/types/types';
 import { CreatePostSchema, UpdatePostSchema } from '@/schemas';
-import { invalidateHomePageData, invalidatePostData } from '@/services/cacheService';
 
 export async function createPost(data: CreatePostInput): Promise<ActionResult<PostWithRelations>> {
   const session = await checkRole(['ADMIN', 'AUTHOR']);
@@ -92,9 +91,10 @@ export async function createPost(data: CreatePostInput): Promise<ActionResult<Po
       },
     });
 
-    revalidatePath('/dashboard');
-    revalidatePath('/archive');
+    // Invalidate paths
     revalidatePath('/');
+    revalidatePath(`/blog/${post.id}`);
+    
     return {
       success: true,
       message: 'پست با موفقیت ایجاد شد.',
@@ -224,9 +224,9 @@ export async function updatePost(
       },
     });
 
-    revalidatePath('/dashboard');
-    revalidatePath('/archive');
+    // Invalidate paths
     revalidatePath('/');
+    revalidatePath(`/blog/${post.id}`);
     
     return {
       success: true,
@@ -338,9 +338,10 @@ export async function updatePostStatus(
       },
     });
 
-    revalidatePath('/dashboard');
-    revalidatePath('/archive');
+    // Invalidate paths
     revalidatePath('/');
+    revalidatePath(`/blog/${updatedPost.id}`);
+    
     return {
       success: true,
       message: 'وضعیت پست با موفقیت به‌روزرسانی شد.',
@@ -358,16 +359,16 @@ export async function updatePostStatus(
 
 export async function updatePostStatusAndInvalidate(
   postId: string,
-  newStatus: PostStatus
+  newStatus: PostStatus,
 ): Promise<ActionResult<PostWithRelations>> {
   try {
     // آپدیت وضعیت پست
     const result = await updatePostStatus(postId, newStatus);
     
     if (result.success) {
-      // پاک کردن کش‌ها در سمت سرور
-      await invalidatePostData(postId);
-      await invalidateHomePageData();
+      // Invalidate paths
+      revalidatePath('/');
+      revalidatePath(`/blog/${postId}`);
     }
     
     return result;
@@ -418,7 +419,8 @@ export async function deletePost(postId: string): Promise<ActionResult> {
     }
 
     await prisma.post.delete({ where: { id: postId } });
-    revalidatePath('/dashboard');
+    // Invalidate paths
+    revalidatePath('/');
     revalidatePath('/archive');
     revalidatePath('/');
     return {
@@ -443,9 +445,10 @@ export async function deletePostAndInvalidate(
     const result = await deletePost(postId);
     
     if (result.success) {
-      // پاک کردن کش‌ها در سمت سرور
-      await invalidatePostData(postId);
-      await invalidateHomePageData();
+      // Invalidate paths
+      revalidatePath('/');
+      revalidatePath('/archive');
+      revalidatePath('/');
     }
     
     return result;
