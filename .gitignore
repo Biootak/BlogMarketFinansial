@@ -1,51 +1,56 @@
-# Directories
-/.next/
-.cache/
-node_modules/
-public/build/
-.pnp/
-.pnp.js/
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
 .yarn/
-.yarnrc.yml/
-.env*
-.DS_Store
-*.log
-*.swp
-coverage/
-jest/
-temp/
-yarn-error.log
-npm-debug.log
-yarn-debug.log*
-yarn-error.log*
-
-# Files
+.yarnrc.yml
 package-lock.json
 yarn.lock
 
-# TypeScript Files
+# Next.js
+/.next/
+/out/
+.next/serverless/pages/
+.next/serverless/chunks/
+public/build/
+
+# Testing
+/coverage
+/jest
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment Variables
+.env*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.sentry-build-plugin
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# TypeScript
+*.tsbuildinfo
 *.ts-buildinfo
-*.tgz
-*.cache
 *.d.ts
 !next-auth.d.ts
 *.js.map
 
-# Next.js Files
-.next/serverless/pages/
-.next/serverless/chunks/
+# Cache
+.cache/
+temp/
 
-# VSCode Files
-.vscode/
-settings.json
-tasks.json
-launch.json
+# Build
+*.tgz
 
-# Git Files
-GITIGNORE_INSTRUCTIONS.md
-
-.env.local
+# Development tools
 .aider*
-
-# Sentry Config File
-.env.sentry-build-plugin
+GITIGNORE_INSTRUCTIONS.md
