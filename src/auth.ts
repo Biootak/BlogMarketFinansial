@@ -1,5 +1,3 @@
-'use server';
-
 import NextAuth from 'next-auth';
 import bcrypt from 'bcryptjs';
 import { PrismaAdapter } from '@auth/prisma-adapter';
