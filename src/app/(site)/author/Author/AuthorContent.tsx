@@ -92,7 +92,7 @@ export default function AuthorContent({
               <TabsTrigger
                 key={tab}
                 value={tab}
-                className="px-2 py-1 text-xs sm:text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:text-gray-300 dark:hover:text-gray-100 whitespace-nowrap"
+                className="px-2 py-1 text-xs sm:text-sm font-medium whitespace-nowrap"
               >
                 {tab}
               </TabsTrigger>

@@ -75,24 +75,12 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
           </div>
           <div className="relative flex justify-center">
             <TabsList
-              className="inline-flex items-center px-1 py-1 rounded-2xl
-              bg-white/80 dark:bg-neutral-800/80 backdrop-blur-md
-              border border-white/20 dark:border-neutral-700/20"
+              className="inline-flex items-center"
             >
               {categories.map((category) => (
                 <TabsTrigger
                   key={category}
                   value={category}
-                  className="inline-flex items-center justify-center whitespace-nowrap text-sm 
-                    ring-offset-background focus-visible:outline-none focus-visible:ring-2 
-                    focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none 
-                    disabled:opacity-50 h-10 font-medium px-4 sm:px-6 rounded-full
-                    transition-all duration-300 group
-                    text-neutral-600 dark:text-neutral-300
-                    data-[state=active]:bg-gradient-to-l data-[state=active]:from-primary-500 
-                    data-[state=active]:to-secondary-500 data-[state=active]:text-white
-                    data-[state=active]:hover:from-primary-600 data-[state=active]:hover:to-secondary-600
-                    data-[state=active]:shadow-lg data-[state=active]:hover:shadow-xl"
                 >
                   {category}
                 </TabsTrigger>

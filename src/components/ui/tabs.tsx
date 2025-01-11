@@ -52,10 +52,8 @@ const TabsContent = React.forwardRef<
   <TabsPrimitive.Content
     ref={ref}
     className={cn(
-      'mt-8 rounded-3xl p-8',
-      'bg-white dark:bg-neutral-900',
-      'shadow-xl',
-      'ring-1 ring-neutral-200 dark:ring-neutral-700',
+      'mt-8',
+      'bg-transparent',
       'transition-all duration-200 ease-in-out',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2',
       className,
