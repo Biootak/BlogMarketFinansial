@@ -48,6 +48,8 @@ export const {
         token.role = user.role || 'USER';
         token.id = user.id;
         token.emailVerified = user.emailVerified;
+        token.email = user.email;
+        token.name = user.name;
       }
 
       if (trigger === 'update' && session?.user) {
@@ -65,7 +67,9 @@ export const {
           ...session.user,
           id: token.sub || '',
           role: (token.role as Role) || 'USER',
-          emailVerified: token.emailVerified ? (token.emailVerified instanceof Date ? token.emailVerified : new Date(token.emailVerified)) : null
+          emailVerified: token.emailVerified ? (token.emailVerified instanceof Date ? token.emailVerified : new Date(token.emailVerified)) : null,
+          email: token.email || '',
+          name: token.name || ''
         };
         console.log('[AUTH] Updated session:', session);
       }

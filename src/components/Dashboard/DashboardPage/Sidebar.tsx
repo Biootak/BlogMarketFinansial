@@ -15,6 +15,8 @@ import { SiGoogleads } from 'react-icons/si';
 import { MdCurrencyExchange } from 'react-icons/md';
 import { useSidebarStore } from '@/hooks/sidebarStore';
 import { useMemo, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { FiLogOut } from 'react-icons/fi';
 
 interface SubmenuItem {
   href: string;
@@ -132,6 +134,9 @@ const Sidebar = ({ userRole }: SidebarProps) => {
   const { isOpen, setIsOpen, isMobile } = useSidebarStore();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const menuItems: MenuItem[] = getMenuItems(userRole);
+  const { data: session } = useSession();
+
+  const userInfo = session?.user;
 
   const handleLogout = async () => {
     try {
@@ -321,7 +326,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
           <button
             type="button"
             onClick={handleLogout}
-            className="flex items-center w-full p-2 mb-4 rounded-md text-blue-100 dark:text-gray-300 hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors duration-200"
+            className="flex items-center w-full p-2 mb-4 rounded-md text-blue-100 dark:text-gray-300 hover:bg-red-600 hover:text-white dark:hover:bg-red-700 transition-colors duration-200"
           >
             <div className="w-6 h-6 flex items-center justify-center">
               <IoExitOutline size={24} />
@@ -340,7 +345,8 @@ const Sidebar = ({ userRole }: SidebarProps) => {
               )}
             </AnimatePresence>
           </button>
-          <div className="mb-4 flex items-center p-2 bg-blue-700 dark:bg-gray-700 rounded-md">
+
+          <div className="flex items-center p-2 bg-blue-700 dark:bg-gray-700 rounded-md">
             <div className="w-8 h-8 flex items-center justify-center bg-blue-800 dark:bg-gray-600 rounded-full">
               <FaUserCircle size={24} />
             </div>
@@ -353,9 +359,9 @@ const Sidebar = ({ userRole }: SidebarProps) => {
                   transition={{ duration: 0.2 }}
                   className="mr-3 overflow-hidden"
                 >
-                  <p className="font-medium truncate">کاربر</p>
+                  <p className="font-medium truncate">{userInfo?.name || 'کاربر'}</p>
                   <p className="text-sm text-blue-200 dark:text-gray-400 truncate">
-                    کاربر@example.com
+                    {userInfo?.email || 'کاربر@example.com'}
                   </p>
                 </motion.div>
               )}
