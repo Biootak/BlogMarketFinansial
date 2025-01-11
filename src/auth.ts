@@ -2,13 +2,10 @@ import NextAuth from 'next-auth';
 import bcrypt from 'bcryptjs';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import authConfig from '@/auth.config';
-
 import prisma from '@/lib/db';
 import { getUserById, getUserByEmail } from '@/data/user';
 import type { Role, UserProfile } from '@/types/types';
-import Resend from 'next-auth/providers/resend';
 import Credentials from 'next-auth/providers/credentials';
-
 import { LoginSchema } from '@/schemas';
 
 export const {
@@ -37,57 +34,33 @@ export const {
   },
   callbacks: {
     async jwt({ token, trigger, session, user }) {
-      // اگر کاربر جدید وارد می‌شود، اطلاعات کامل را به توکن اضافه کنید
       if (user) {
-        return {
-          ...token,
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: (user as any).role || 'USER',
-          profile: (user as any).profile
-        };
+        token.role = user.role || 'USER';
+        token.id = user.id;
+        token.emailVerified = user.emailVerified;
+        return token;
       }
 
-      // به‌روزرسانی توکن با اطلاعات جدید
-      if (trigger === 'update') {
-        return {
-          ...token,
-          ...session.user
-        };
+      if (trigger === 'update' && session?.user) {
+        token.role = session.user.role;
+        return token;
       }
-      
-      // بررسی اعتبار توکن و به‌روزرسانی اطلاعات
-      if (token.sub) {
-        const existingUser = await getUserById(token.sub);
-        if (!existingUser) {
-          // اگر کاربر وجود ندارد، توکن را پاک کنید
-          return null;
-        }
 
-        // به‌روزرسانی توکن با آخرین اطلاعات کاربر
-        return {
-          ...token,
-          id: existingUser.id,
-          name: existingUser.name,
-          email: existingUser.email,
-          role: existingUser.role,
-          profile: existingUser.profile,
-          emailVerified: existingUser.emailVerified
-        };
+      const existingUser = await getUserById(token.sub as string);
+      if (!existingUser) {
+        return token;
       }
       
+      token.role = existingUser.role;
+      token.emailVerified = existingUser.emailVerified;
       return token;
     },
     async session({ token, session }) {
-      // اطمینان از وجود توکن و به‌روزرسانی کامل اطلاعات کاربر
-      if (token.sub) {
+      if (token) {
         session.user = {
+          ...session.user,
           id: token.sub,
-          name: token.name || '',
-          email: token.email || '',
           role: (token.role as Role) || 'USER',
-          profile: token.profile as UserProfile | undefined,
           emailVerified: token.emailVerified ? new Date(token.emailVerified as string) : null
         };
       }
@@ -97,34 +70,33 @@ export const {
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: 'jwt',
-    maxAge: 3 * 24 * 60 * 60,
-    updateAge: 24 * 60 * 60,
+    maxAge: 3 * 24 * 60 * 60, // 3 days
+    updateAge: 24 * 60 * 60, // 24 hours
   },
   providers: [
-    Resend({
-      from: 'onboarding@resend.dev',
-    }),
     Credentials({
-      name: 'Credentials',
-      credentials: {
-        email: { label: 'ایمیل', type: 'text' },
-        password: { label: 'رمز عبور', type: 'password' },
-      },
-
       async authorize(credentials) {
-        const validatedFields = await LoginSchema.safeParse(credentials);
-
-        if (validatedFields.success) {
-          const { email, password } = validatedFields.data;
-
-          const user = await getUserByEmail(email);
-          if (!user || !user.password) return null;
-
-          const passwordMatch = await bcrypt.compare(password, user.password);
-          if (passwordMatch) return user;
+        const validatedFields = LoginSchema.safeParse(credentials);
+        
+        if (!validatedFields.success) {
+          return null;
         }
-        return null;
-      },
+
+        const { email, password } = validatedFields.data;
+        const user = await getUserByEmail(email);
+        
+        if (!user || !user.password) {
+          return null;
+        }
+
+        const passwordsMatch = await bcrypt.compare(password, user.password);
+
+        if (!passwordsMatch) {
+          return null;
+        }
+
+        return user;
+      }
     }),
     ...authConfig.providers,
   ],

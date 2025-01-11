@@ -1,12 +1,12 @@
 import { Vazirmatn } from 'next/font/google';
 import type { Metadata } from 'next';
-import { SessionProvider } from 'next-auth/react';
 import { Toaster } from '@/components/ui/toaster';
 
 import './globals.css';
 import '@/styles/index.scss';
 
 import { auth } from '@/auth';
+import Providers from '@/components/providers';
 
 export const metadata: Metadata = {
   title: 'Biotak',
@@ -25,12 +25,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="fa-IR" dir="rtl" className={`${vazirmatn.variable} rtl`}>
       <body className={vazirmatn.className}>
-        <SessionProvider session={session}>
+        <Providers session={session}>
           <div className="bg-[#f8f8f8] text-base dark:bg-neutral-900/95 text-neutral-900 dark:text-neutral-200">
             {children}
             <Toaster />
           </div>
-        </SessionProvider>
+        </Providers>
       </body>
     </html>
   );

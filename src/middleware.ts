@@ -13,9 +13,7 @@ import {
   baseDashboardRoutes,
 } from './config/routes';
 import authConfig from './auth.config';
-import { PrismaClient } from '@prisma/client';
-
-const { auth } = NextAuth(authConfig);
+import { auth } from './auth';
 
 const logger = {
   debug: (message: string, ...args: any[]) => {
@@ -102,11 +100,11 @@ const checkApiAccess = (pathname: string, role?: string): boolean => {
 const matchDynamicRoute = (pathname: string, pattern: string): boolean => {
   // تبدیل الگو به یک عبارت منظم
   const regexPattern = pattern
-    .replace(/\[\.\.\..*?\]/g, '.*') // تطبیق [...slug] با هر متنی
-    .replace(/\[.*?\]/g, '[^/]+') // تطبیق [id] با هر متنی به جز /
-    .replace(/\//g, '\\/'); // escape کردن /
-
-  const regex = new RegExp(`^${regexPattern}$`);
+    .replace(/\[\.\.\..*?\]/g, '.*') // برای [...slug]
+    .replace(/\[.*?\]/g, '[^/]+') // برای [id]
+    .replace(/\//g, '\\/');
+  
+  const regex = new RegExp(`^${regexPattern}$`, 'i'); // اضافه کردن i برای case-insensitive
   return regex.test(pathname);
 };
 
@@ -182,13 +180,23 @@ export default auth(async (req) => {
   const search = nextUrl.search;
 
   // بررسی session و دریافت اطلاعات کاربر
-  const session = await getToken({
+  const session = await auth();
+  const token = await getToken({
     req,
     secret: process.env.AUTH_SECRET,
   });
+  
+  // بررسی توکن منقضی شده
+  if (token?.exp && Date.now() / 1000 > token.exp) {
+    logger.debug('Token expired, redirecting to signin');
+    return NextResponse.redirect(
+      new URL(`/signin?callbackUrl=${encodeURIComponent(pathname)}`, nextUrl),
+    );
+  }
+
   const isLoggedIn = !!session;
-  const role = session?.role as string;
-  const userId = session?.sub;
+  const role = session?.user?.role as string;
+  const userId = session?.user?.id;
 
   logger.debug('Middleware request:', {
     pathname,
