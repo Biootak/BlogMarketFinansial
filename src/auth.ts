@@ -45,24 +45,16 @@ export const {
 
       if (user) {
         console.log('[AUTH] New user login, updating token');
-        return {
-          ...token,
-          role: user.role,
-          id: user.id,
-          emailVerified: user.emailVerified,
-        };
+        token.role = user.role || 'USER';
+        token.id = user.id;
+        token.emailVerified = user.emailVerified;
       }
 
       if (trigger === 'update' && session?.user) {
         console.log('[AUTH] Updating token with session data');
-        return {
-          ...token,
-          role: session.user.role,
-        };
+        token.role = session.user.role || 'USER';
       }
 
-      // در Edge Runtime نمی‌توانیم از Prisma استفاده کنیم
-      // اطلاعات کاربر را از توکن استفاده می‌کنیم
       return token;
     },
     async session({ token, session }) {
@@ -71,9 +63,9 @@ export const {
       if (token) {
         session.user = {
           ...session.user,
-          id: token.sub,
+          id: token.sub || '',
           role: (token.role as Role) || 'USER',
-          emailVerified: token.emailVerified ? new Date(token.emailVerified as string) : null
+          emailVerified: token.emailVerified ? (token.emailVerified instanceof Date ? token.emailVerified : new Date(token.emailVerified)) : null
         };
         console.log('[AUTH] Updated session:', session);
       }
