@@ -2,7 +2,24 @@ import React from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { SlFire } from 'react-icons/sl';
+import { 
+  BookOpen, 
+  FolderOpen, 
+  Tag, 
+  Clock,
+  Flame,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  Home
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { FiFilter } from 'react-icons/fi';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { IoClose } from 'react-icons/io5';
+import { BsFolder2Open, BsTag } from 'react-icons/bs';
+import { IoTimeOutline } from 'react-icons/io5';
+import Link from 'next/link';
 
 import { getArchivePosts } from '@/actions/postActions';
 import { getCategories } from '@/actions/categoryActions';
@@ -49,7 +66,7 @@ export async function generateMetadata({
 }
 
 const FILTERS = [
-  { name: 'همه مقالات' },
+  { name: 'همه مقالات', className: 'text-center' },
   { name: 'جدیدترین' },
   { name: 'قدیمی‌ترین' },
   { name: 'محبوب‌ترین' },
@@ -103,63 +120,200 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
 
   return (
     <div className="nc-PageArchive max-w-full overflow-x-hidden">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 mt-8 sm:mt-10 lg:mt-12">
-        <Card className="overflow-hidden bg-white dark:bg-gray-800 shadow-lg">
-          <div className="flex flex-col md:flex-row items-center p-4 sm:p-6 md:p-8">
-            <div className="mb-6 md:mb-0 md:ml-8">
-              <div className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 overflow-hidden rounded-lg relative">
-                <Image
-                  src={selectedCategory?.thumbnail || selectedTag?.thumbnail || defaultImage}
-                  alt={selectedCategory?.name || selectedTag?.name || 'تصویر مقالات'}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  style={{ objectFit: 'cover' }}
-                />
+      {/* Breadcrumb */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
+        <nav className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
+          <Link href="/" className="hover:text-primary transition-colors">
+            <Home className="w-4 h-4" />
+          </Link>
+          <ChevronLeft className="w-4 h-4" />
+          <Link href="/archive" className="hover:text-primary transition-colors">آرشیو</Link>
+          {type && (
+            <>
+              <ChevronLeft className="w-4 h-4" />
+              <span>{type === 'category' ? 'دسته‌بندی' : 'برچسب'}</span>
+            </>
+          )}
+          {selectedCategory && (
+            <>
+              <ChevronLeft className="w-4 h-4" />
+              <Link href={`/archive/category/${selectedCategory.slug}`} className="hover:text-primary transition-colors">
+                {selectedCategory.name}
+              </Link>
+            </>
+          )}
+          {selectedSubcategory && (
+            <>
+              <ChevronLeft className="w-4 h-4" />
+              <span className="text-gray-900 dark:text-gray-100">{selectedSubcategory.name}</span>
+            </>
+          )}
+          {selectedTag && (
+            <>
+              <ChevronLeft className="w-4 h-4" />
+              <span className="text-gray-900 dark:text-gray-100">{selectedTag.name}</span>
+            </>
+          )}
+        </nav>
+      </div>
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-gray-800/95 shadow-xl backdrop-blur-xl">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent dark:from-primary/15">
+            <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0.5))]" />
+          </div>
+          
+          <div className="relative">
+            <div className="flex flex-col md:flex-row items-center p-4 sm:p-6 gap-4">
+              <div className="shrink-0">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 relative rounded-xl overflow-hidden shadow-lg ring-1 ring-primary/10 dark:ring-white/10">
+                  <Image
+                    src={selectedCategory?.thumbnail || selectedTag?.thumbnail || defaultImage}
+                    alt={selectedCategory?.name || selectedTag?.name || 'تصویر مقالات'}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-cover transform hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex-1 min-w-0 text-center md:text-right space-y-3">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-center md:justify-start gap-2 text-sm text-gray-600 dark:text-gray-400 flex-wrap">
+                    {/* نوع محتوا */}
+                    <span className="inline-flex items-center gap-1.5">
+                      {selectedCategory ? (
+                        <BsFolder2Open className="w-4 h-4 text-primary" />
+                      ) : selectedTag ? (
+                        <BsTag className="w-4 h-4 text-primary" />
+                      ) : (
+                        <FileText className="w-4 h-4 text-primary" />
+                      )}
+                      <span className="font-medium">
+                        {selectedCategory ? 'دسته‌بندی' : selectedTag ? 'برچسب' : 'همه مطالب'}
+                      </span>
+                    </span>
+
+                    {/* تعداد مقالات */}
+                    <span className="inline-flex items-center gap-1.5">
+                      <FileText className="w-4 h-4 text-primary" />
+                      <span>{total} مقاله</span>
+                    </span>
+
+                    {/* زیرگروه‌ها */}
+                    {!subcategory && selectedCategory?.childCategories && selectedCategory.childCategories.length > 0 && (
+                      <span className="inline-flex items-center gap-1.5">
+                        <BsFolder2Open className="w-4 h-4 text-primary" />
+                        <span>{selectedCategory.childCategories.length} زیرگروه</span>
+                      </span>
+                    )}
+
+                    {/* آخرین بروزرسانی */}
+                    <span className="inline-flex items-center gap-1.5">
+                      <IoTimeOutline className="w-4 h-4 text-primary" />
+                      <span>آخرین بروزرسانی: امروز</span>
+                    </span>
+                  </div>
+                  
+                  {/* عنوان اصلی */}
+                  <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white leading-tight">
+                    {selectedSubcategory
+                      ? selectedSubcategory.name
+                      : selectedCategory
+                        ? selectedCategory.name
+                        : selectedTag
+                          ? `مطالب مرتبط با ${selectedTag.name}`
+                          : 'همه مطالب'}
+                  </h1>
+
+                  {/* توضیحات */}
+                  <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                    {selectedSubcategory
+                      ? `مطالب مربوط به ${selectedSubcategory.name}`
+                      : selectedCategory
+                        ? `مجموعه مطالب ${selectedCategory.name}`
+                        : selectedTag
+                          ? `مطالبی که با ${selectedTag.name} برچسب‌گذاری شده‌اند`
+                          : 'همه مطالب و محتوای سایت در یک نگاه'}
+                  </p>
+                </div>
               </div>
             </div>
-            <div className="flex-1 md:ml-4 text-center md:text-right">
-              <CardHeader className="p-0 mb-2 sm:mb-4">
-                <CardTitle className="text-2xl sm:text-xl font-bold text-gray-900 dark:text-white mb-2">
-                  {selectedSubcategory?.name ||
-                    selectedCategory?.name ||
-                    selectedTag?.name ||
-                    'گنجینه مقالات'}
-                </CardTitle>
-                <CardDescription className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
-                  {selectedSubcategory
-                    ? `مطالب مرتبط با ${selectedSubcategory.name} در دسته‌بندی ${selectedCategory?.name}`
-                    : selectedCategory
-                      ? `مجموعه مقالات مرتبط با ${selectedCategory.name}`
-                      : selectedTag
-                        ? `مطالب مرتبط با برچسب ${selectedTag.name}`
-                        : 'کاوش در دنیای دانش و ایده‌های نو'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="flex items-center justify-center md:justify-start text-xl sm:text-2xl font-semibold text-gray-700 dark:text-gray-200">
-                  <SlFire className="ml-2 text-orange-500" />
-                  <span>{total} مقاله</span>
-                </div>
-              </CardContent>
-            </div>
           </div>
-        </Card>
+        </div>
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 space-y-8 sm:space-y-12 lg:space-y-16">
         <div>
-          <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0 mb-6 sm:mb-8">
-            <div className="flex flex-col w-full space-y-2 md:flex-row md:w-auto md:space-y-0 md:space-x-2.5 rtl:space-x-reverse">
-              <div className="w-full md:w-auto">
-                <ModalCategories initialCategories={categories} />
-              </div>
-              <div className="w-full md:w-auto">
-                <ModalTags initialTags={tags} />
-              </div>
+          {/* Desktop View */}
+          <div className="hidden md:flex md:flex-row md:items-center md:justify-between mb-6 sm:mb-8">
+            <div className="flex flex-row space-x-2.5 rtl:space-x-reverse">
+              <ModalCategories initialCategories={categories} />
+              <ModalTags initialTags={tags} />
             </div>
-            <div className="w-full md:w-auto">
+            <div>
               <ArchiveFilterListBox filters={FILTERS} initialFilter={filter} />
             </div>
+          </div>
+
+          {/* Mobile View */}
+          <div className="md:hidden fixed bottom-4 left-4 z-50">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <FiFilter className="w-5 h-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent 
+                side="right" 
+                className="w-full sm:w-[380px] bg-background/20 backdrop-blur-xl border-0 rtl [&>button]:hidden"
+              >
+                <div className="h-full flex flex-col">
+                  <SheetHeader className="mb-6 px-6 pt-6">
+                    <div className="flex items-center justify-between">
+                      <SheetTitle className="text-2xl font-bold">فیلترها</SheetTitle>
+                      <SheetClose className="h-10 w-10 rounded-full hover:bg-white/10 inline-flex items-center justify-center">
+                        <IoClose className="h-5 w-5" />
+                      </SheetClose>
+                    </div>
+                  </SheetHeader>
+
+                  <div className="flex-1 overflow-auto px-6">
+                    <div className="space-y-6">
+                      <div className="filter-section">
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="text-lg font-medium">دسته‌بندی‌ها</h3>
+                          <span className="text-sm text-muted-foreground/70">انتخاب کنید</span>
+                        </div>
+                        <div className="bg-white/5 hover:bg-white/10 transition-colors duration-200 rounded-xl p-4 shadow-sm text-center">
+                          <ModalCategories initialCategories={categories} />
+                        </div>
+                      </div>
+
+                      <div className="filter-section">
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="text-lg font-medium">برچسب‌ها</h3>
+                          <span className="text-sm text-muted-foreground/70">انتخاب کنید</span>
+                        </div>
+                        <div className="bg-white/5 hover:bg-white/10 transition-colors duration-200 rounded-xl p-4 shadow-sm text-center">
+                          <ModalTags initialTags={tags} />
+                        </div>
+                      </div>
+
+                      <div className="filter-section pb-6">
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="text-lg font-medium">مرتب‌سازی</h3>
+                          <span className="text-sm text-muted-foreground/70">{filter}</span>
+                        </div>
+                        <div className="bg-white/5 hover:bg-white/10 transition-colors duration-200 rounded-xl p-4 shadow-sm text-center">
+                          <ArchiveFilterListBox filters={FILTERS} initialFilter={filter} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
 
           {posts.length > 0 ? <AnimatedPostGrid posts={posts} /> : <Empty />}

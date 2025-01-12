@@ -35,7 +35,7 @@ const ArchiveFilterListBox: React.FC<ArchiveFilterListBoxProps> = ({
   };
 
   return (
-    <div className={`nc-ArchiveFilterListBox w-full ${className}`}>
+    <div className={`nc-ArchiveFilterListBox flex items-center justify-center ${className}`}>
       <div className="flex items-center justify-center ">
         <Select dir="rtl" onValueChange={handleFilterChange} defaultValue={initialFilter}>
           <SelectTrigger className="w-full md:w-[180px] text-center relative">
