@@ -78,11 +78,13 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
             {authorElement}
           </div>
           <div className="p-3 md:absolute md:bottom-0 md:end-0 md:translate-x-1/2">
-            <NextPrev
-              btnClassName="w-8 h-8 text-lg"
-              onClickNext={onClickPrev}
-              onClickPrev={onClickNext}
-            />
+            <div className="px-1 py-1 rounded-2xl bg-white/80 dark:bg-neutral-800/80 backdrop-blur-md border border-white/20 dark:border-neutral-700/20 inline-flex items-center transform-gpu">
+              <NextPrev
+                btnClassName="w-8 h-8 text-lg"
+                onClickNext={onClickPrev}
+                onClickPrev={onClickNext}
+              />
+            </div>
           </div>
         </div>
       </div>

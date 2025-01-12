@@ -104,13 +104,14 @@ export default function SectionLargeSliderClient({
 
   return (
     <section
-      ref={sliderRef}
-      className={`nc-SectionLargeSlider relative ${className}`}
-      aria-label="اسلایدر پست‌های ویژه"
-      aria-roledescription="carousel"
+      className={`nc-SectionLargeSlider relative pt-4 pb-3 md:py-5 lg:pt-5 min-h-[400px] md:min-h-[500px] lg:min-h-[600px] ${className}`}
+      data-nc-id="SectionLargeSlider"
     >
-      <div aria-live="polite" aria-atomic="true" className="sr-only">
-        اسلاید {indexActive + 1} از {initialPosts.length}
+      <div className="absolute top-1/2 -translate-y-1/2 w-full z-10">
+        <div className="container flex justify-between">
+          <div className="w-12 h-12 opacity-0">&#8203;</div> {/* Left placeholder */}
+          <div className="w-12 h-12 opacity-0">&#8203;</div> {/* Right placeholder */}
+        </div>
       </div>
       <div onMouseEnter={handleInteraction} onMouseLeave={() => setIsPaused(false)}>
         {cardLarge1}
