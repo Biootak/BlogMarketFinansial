@@ -5,6 +5,13 @@ import CardLarge1 from '@/components/CardLarge1/CardLarge1';
 import type { PostWithRelations } from '@/types/types';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
 
+// Optimize performance by moving constants outside component
+const PAUSE_DURATION = 5000;
+const SLIDE_DIRECTION = {
+  NEXT: 1,
+  PREV: -1
+} as const;
+
 type SectionLargeSliderProps = {
   initialPosts: PostWithRelations[];
   className?: string;
@@ -21,14 +28,19 @@ export default function SectionLargeSliderClient({
   const [indexActive, setIndexActive] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const sliderRef = useRef<HTMLElement>(null);
+  
+  // Memoize posts length to avoid recalculations
+  const postsLength = useMemo(() => initialPosts.length, [initialPosts]);
 
   const activePost = useMemo(() => {
-    if (initialPosts.length === 0 || indexActive >= initialPosts.length) {
-      return null;
-    }
+    if (postsLength === 0 || indexActive >= postsLength) return null;
     return initialPosts[indexActive];
-  }, [initialPosts, indexActive]);
+  }, [initialPosts, indexActive, postsLength]);
+
+  // Optimize slide calculation
+  const calculateNextIndex = useCallback((direction: typeof SLIDE_DIRECTION[keyof typeof SLIDE_DIRECTION]) => {
+    return (indexActive + direction + postsLength) % postsLength;
+  }, [indexActive, postsLength]);
 
   const resetTimer = useCallback(() => {
     if (timerRef.current) {
@@ -37,24 +49,19 @@ export default function SectionLargeSliderClient({
     }
     if (autoSlide && !isPaused) {
       timerRef.current = setTimeout(() => {
-        setIndexActive((prevIndex) => (prevIndex + 1) % initialPosts.length);
+        setIndexActive(prev => (prev + 1) % postsLength);
       }, autoSlideInterval);
     }
-  }, [autoSlide, autoSlideInterval, isPaused, initialPosts.length]);
+  }, [autoSlide, autoSlideInterval, isPaused, postsLength]);
 
-  const goToNextSlide = useCallback(() => {
-    setIndexActive((prevIndex) => (prevIndex + 1) % initialPosts.length);
+  const handleSlideChange = useCallback((direction: typeof SLIDE_DIRECTION[keyof typeof SLIDE_DIRECTION]) => {
+    setIndexActive(prev => calculateNextIndex(direction));
     resetTimer();
-  }, [initialPosts.length, resetTimer]);
-
-  const goToPrevSlide = useCallback(() => {
-    setIndexActive((prevIndex) => (prevIndex - 1 + initialPosts.length) % initialPosts.length);
-    resetTimer();
-  }, [initialPosts.length, resetTimer]);
+  }, [calculateNextIndex, resetTimer]);
 
   const handleInteraction = useCallback(() => {
     setIsPaused(true);
-    const timer = setTimeout(() => setIsPaused(false), 5000);
+    const timer = setTimeout(() => setIsPaused(false), PAUSE_DURATION);
     return () => clearTimeout(timer);
   }, []);
 
@@ -63,7 +70,7 @@ export default function SectionLargeSliderClient({
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [resetTimer, indexActive]);
+  }, [resetTimer]);
 
   useEffect(() => {
     const cleanup = handleInteraction();
@@ -76,31 +83,27 @@ export default function SectionLargeSliderClient({
     }
   }, [isPaused, resetTimer]);
 
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent) => {
-      if (event.key === 'ArrowRight') {
-        goToNextSlide();
-        handleInteraction();
-      } else if (event.key === 'ArrowLeft') {
-        goToPrevSlide();
-        handleInteraction();
-      }
-    },
-    [goToNextSlide, goToPrevSlide, handleInteraction],
-  );
+  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
+    const direction = event.key === 'ArrowRight' ? SLIDE_DIRECTION.NEXT : 
+                     event.key === 'ArrowLeft' ? SLIDE_DIRECTION.PREV : null;
+    if (direction !== null) {
+      handleSlideChange(direction);
+      handleInteraction();
+    }
+  }, [handleSlideChange, handleInteraction]);
 
   const cardLarge1 = useMemo(() => {
     if (!activePost) return <CardLarge1Skeleton />;
     return (
       <CardLarge1
         key={activePost.id}
-        onClickNext={goToNextSlide}
-        onClickPrev={goToPrevSlide}
+        onClickNext={() => handleSlideChange(SLIDE_DIRECTION.NEXT)}
+        onClickPrev={() => handleSlideChange(SLIDE_DIRECTION.PREV)}
         post={activePost}
         onKeyDown={handleKeyDown}
       />
     );
-  }, [activePost, goToNextSlide, goToPrevSlide, handleKeyDown]);
+  }, [activePost, handleSlideChange, handleKeyDown]);
 
   return (
     <section
