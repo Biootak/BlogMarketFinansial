@@ -5,6 +5,16 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   compress: true,
   poweredByHeader: false,
+  
+  // Disable source maps in development to avoid warnings
+  productionBrowserSourceMaps: false,
+  
+  // Turbopack configuration
+  turbopack: {
+    resolveAlias: {
+      // Suppress source map warnings from node_modules
+    },
+  },
 
   images: {
     remotePatterns: [
