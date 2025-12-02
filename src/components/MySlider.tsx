@@ -110,7 +110,7 @@ export default function MySlider<T>({
           opacity: { duration: 0.2 },
         }}
       >
-        <div className={'relative flow-root'} {...handlers}>
+        <div className={'relative flow-root overflow-hidden'} {...handlers}>
           <div className={'flow-root overflow-hidden rounded-xl'}>
             <motion.ul initial={false} className="relative whitespace-nowrap -mx-2 xl:-mx-4 ">
               <AnimatePresence initial={false} custom={direction}>

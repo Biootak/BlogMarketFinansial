@@ -5,9 +5,11 @@ export interface PaginationProps {
   className?: string;
   currentPage: number;
   totalPages: number;
+  onPageChange?: (page: number) => void;
+  baseUrl?: string;
 }
 
-const Pagination: React.FC<PaginationProps> = ({ className = '', currentPage, totalPages }) => {
+const Pagination: React.FC<PaginationProps> = ({ className = '', currentPage, totalPages, onPageChange, baseUrl }) => {
   const renderPageNumbers = () => {
     const pageNumbers = [];
     const maxVisiblePages = 5;
@@ -30,6 +32,8 @@ const Pagination: React.FC<PaginationProps> = ({ className = '', currentPage, to
       currentPage={currentPage}
       totalPages={totalPages}
       pageNumbers={renderPageNumbers()}
+      onPageChange={onPageChange}
+      baseUrl={baseUrl}
     />
   );
 };

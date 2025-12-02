@@ -26,7 +26,7 @@ export default async function MoneyTransferPage() {
       {/* Hero Section */}
       <section className="relative bg-blue-600 text-white py-6">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-800 opacity-75" />
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="container relative z-10">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="md:w-1/2 mb-10 md:mb-0">
               <h2 className="text-2xl md:text-6xl font-bold mb-4">انتقال ارز سریع و مطمئن</h2>
@@ -53,7 +53,7 @@ export default async function MoneyTransferPage() {
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-12">
+      <div className="container py-12">
         <section
           id="rates"
           className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden mb-16"

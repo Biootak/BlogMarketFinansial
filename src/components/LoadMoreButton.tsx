@@ -11,7 +11,7 @@ interface LoadMoreButtonProps {
 
 export default function LoadMoreButton({ onLoadMore, isLoading, hasMore }: LoadMoreButtonProps) {
   return (
-    <div className="flex justify-center space-x-4 rtl:space-x-reverse">
+    <div className="flex justify-center gap-4">
       {hasMore && (
         <Button onClick={onLoadMore} disabled={isLoading}>
           {isLoading ? 'در حال بارگذاری...' : 'بارگذاری بیشتر'}

@@ -11,11 +11,11 @@ export interface SectionSubscribe2Props {
 const SectionSubscribe2: FC<SectionSubscribe2Props> = async ({ className = '' }) => {
   return (
     <section
-      className={`nc-SectionSubscribe2 relative flex flex-col lg:flex-row mb-8 items-center ${className} p-4 sm:p-6 md:p-8 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-900 dark:to-gray-800 rounded-3xl shadow-2xl overflow-hidden`}
+      className={`nc-SectionSubscribe2 relative flex flex-col lg:flex-row mb-8 items-center ${className} p-4 sm:p-6 md:p-8 bg-gradient-to-r from-primary-50 to-primary-100 dark:from-gray-900 dark:to-gray-800 rounded-3xl shadow-2xl overflow-hidden`}
       dir="rtl"
     >
       <div className="flex-shrink-0 w-full lg:w-2/5 mb-10 lg:mb-0 lg:ml-10">
-        <h2 className="font-bold text-xl sm:text-4xl md:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 leading-tight">
+        <h2 className="font-bold text-xl sm:text-4xl md:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-primary-500 to-primary-700 dark:from-primary-400 dark:to-primary-600 leading-tight">
           به خبرنامه ما بپیوندید
         </h2>
         <p className="mt-4 sm:mt-6 text-gray-600 dark:text-gray-300 text-base sm:text-lg">
@@ -24,7 +24,7 @@ const SectionSubscribe2: FC<SectionSubscribe2Props> = async ({ className = '' })
         </p>
         <ul className="space-y-4 mt-6 sm:mt-8">
           <li className="flex items-center space-x-4 space-x-reverse">
-            <Badge variant="outline" className="text-purple-600 dark:text-purple-400 animate-pulse">
+            <Badge variant="outline" className="text-primary-600 dark:text-primary-400 animate-pulse">
               ۰۱
             </Badge>
             <span className="font-medium text-gray-700 dark:text-gray-200 text-sm sm:text-base">
@@ -32,7 +32,7 @@ const SectionSubscribe2: FC<SectionSubscribe2Props> = async ({ className = '' })
             </span>
           </li>
           <li className="flex items-center space-x-4 space-x-reverse">
-            <Badge variant="outline" className="text-pink-600 dark:text-pink-400 animate-pulse">
+            <Badge variant="outline" className="text-primary-600 dark:text-primary-400 animate-pulse">
               ۰۲
             </Badge>
             <span className="font-medium text-gray-700 dark:text-gray-200 text-sm sm:text-base">

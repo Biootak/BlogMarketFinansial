@@ -67,63 +67,65 @@ export default function AuthorContent({
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <Tabs dir="rtl" defaultValue="مقالات" className="w-full">
-        <div className="flex justify-between items-center mb-6">
-          <DropdownMenu dir="rtl">
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="sm:hidden">
-                <Filter className="h-4 w-4" />
-                <span className="sr-only">فیلتر</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56">
-              {FILTERS.map((filter) => (
-                <DropdownMenuItem
-                  key={filter.name}
-                  onSelect={() => handleFilterChange(filter.name)}
-                  className="text-sm"
-                >
-                  {filter.name}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <TabsList className="inline-flex items-center bg-white dark:bg-neutral-800 px-2 py-1 rounded-full shadow-sm overflow-x-auto max-w-full">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <TabsList className="inline-flex items-center bg-white/90 dark:bg-neutral-800/90 backdrop-blur-lg px-2 py-2 rounded-full shadow-lg hover:shadow-xl border border-primary-200/50 dark:border-primary-800/50 overflow-x-auto max-w-full transition-all duration-300">
             {TABS.map((tab) => (
               <TabsTrigger
                 key={tab}
                 value={tab}
-                className="px-2 py-1 text-xs sm:text-sm font-medium whitespace-nowrap"
+                className="px-4 sm:px-6 py-2 text-xs sm:text-sm font-semibold whitespace-nowrap transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary-400 data-[state=active]:to-primary-600 data-[state=active]:text-white data-[state=active]:shadow-lg hover:scale-105"
               >
                 {tab}
               </TabsTrigger>
             ))}
           </TabsList>
-          <DropdownMenu dir="rtl">
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="hidden sm:flex text-sm whitespace-nowrap">
-                {currentFilter}
-                <ChevronDown className="mr-2 h-4 w-4" />
-                <span className="sr-only">انتخاب فیلتر</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56">
-              {FILTERS.map((filter) => (
-                <DropdownMenuItem
-                  key={filter.name}
-                  onSelect={() => handleFilterChange(filter.name)}
-                  className="text-sm"
-                >
-                  {filter.name}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-3">
+            <DropdownMenu dir="rtl">
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="sm:hidden border-primary-200 dark:border-primary-800 hover:bg-primary-50 dark:hover:bg-primary-900/20">
+                  <Filter className="h-4 w-4" />
+                  <span className="sr-only">فیلتر</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56 bg-white/95 dark:bg-neutral-800/95 backdrop-blur-lg">
+                {FILTERS.map((filter) => (
+                  <DropdownMenuItem
+                    key={filter.name}
+                    onSelect={() => handleFilterChange(filter.name)}
+                    className="text-sm hover:bg-primary-50 dark:hover:bg-primary-900/20"
+                  >
+                    {filter.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu dir="rtl">
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="hidden sm:flex text-sm whitespace-nowrap border-primary-200 dark:border-primary-800 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-300">
+                  {currentFilter}
+                  <ChevronDown className="mr-2 h-4 w-4" />
+                  <span className="sr-only">انتخاب فیلتر</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56 bg-white/95 dark:bg-neutral-800/95 backdrop-blur-lg">
+                {FILTERS.map((filter) => (
+                  <DropdownMenuItem
+                    key={filter.name}
+                    onSelect={() => handleFilterChange(filter.name)}
+                    className="text-sm hover:bg-primary-50 dark:hover:bg-primary-900/20"
+                  >
+                    {filter.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         <TabsContent value="مقالات" className="mt-8">
           {isLoading ? (
-            <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
-              <p className="mt-2 text-neutral-600 dark:text-neutral-400">در حال بارگذاری...</p>
+            <div className="text-center py-16">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500" />
+              <p className="mt-4 text-neutral-600 dark:text-neutral-400 font-medium">در حال بارگذاری...</p>
             </div>
           ) : (
             <>
@@ -133,13 +135,14 @@ export default function AuthorContent({
                 ))}
               </div>
               {posts.length === 0 && <Empty />}
-              <div className="flex justify-center mt-12">
+              {totalPages > 1 && (
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}
                   className="text-sm sm:text-base"
+                  onPageChange={(page) => loadPosts(page, currentFilter)}
                 />
-              </div>
+              )}
             </>
           )}
         </TabsContent>

@@ -40,25 +40,23 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
         className={`nc-CardLarge1 relative flex flex-col md:flex-row-reverse ${className} py-2 md:py-3 lg:py-4`}
         onKeyDown={onKeyDown}
       >
-        <div className="relative w-full md:w-3/4 lg:w-2/3 overflow-hidden">
-          <Link href={getPostLink(postType, slug)} className="nc-CardLarge1__right block relative">
-            <div className="relative w-full">
-              <NcImage
-                containerClassName="absolute inset-0"
-                className="object-cover rounded-3xl"
-                src={featuredImage || '/placeholder.jpg'}
-                alt={title}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 66vw"
-                priority
+        <div className="relative w-full md:w-3/4 lg:w-2/3 overflow-hidden rounded-3xl">
+          <Link href={getPostLink(postType, slug)} className="nc-CardLarge1__right block relative aspect-[4/3] md:aspect-[16/10]">
+            <NcImage
+              containerClassName="absolute inset-0"
+              className="object-cover rounded-3xl"
+              src={featuredImage || '/placeholder.jpg'}
+              alt={title}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 66vw"
+              priority
+            />
+            {postType && (
+              <PostTypeFeaturedIcon
+                className="absolute top-3 end-3 w-6 h-6 md:w-8 md:h-8"
+                postType={postType}
               />
-              {postType && (
-                <PostTypeFeaturedIcon
-                  className="absolute top-3 end-3 w-6 h-6 md:w-8 md:h-8"
-                  postType={postType}
-                />
-              )}
-            </div>
+            )}
           </Link>
         </div>
 
