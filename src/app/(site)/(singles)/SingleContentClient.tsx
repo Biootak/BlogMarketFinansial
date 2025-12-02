@@ -26,12 +26,12 @@ const SingleContentClient = ({
   initialLikeCount,
   commentCount,
 }: SingleContentClientProps) => {
-  const endedAnchorRef = useRef<HTMLDivElement>(null);
+  const endedAnchorRef = useRef<HTMLDivElement>(null!);
   const contentRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLButtonElement>(null);
   const [isShowScrollToTop, setIsShowScrollToTop] = useState<boolean>(false);
 
-  const endedAnchorEntry = useIntersectionObserver(endedAnchorRef, {
+  const endedAnchorEntry = useIntersectionObserver(endedAnchorRef as React.RefObject<Element>, {
     threshold: 0,
     root: null,
     rootMargin: '0%',

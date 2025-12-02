@@ -12,11 +12,12 @@ import Sidebar from '../../../Sidebar';
 import { getActiveAdvertisements } from '@/actions/advertisementActions';
 
 export interface PageProps {
-  params: { slug: string[] };
+  params: Promise<{ slug: string[] }>;
 }
 
 export default async function PageSingle({ params }: PageProps) {
-  const postSlug = params.slug?.join('/') || '';
+  const { slug } = await params;
+  const postSlug = slug?.join('/') || '';
   const result = await getPostBySlug(postSlug);
 
   if (!result.success || !result.data) {

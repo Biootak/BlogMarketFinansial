@@ -31,7 +31,7 @@ export async function createSuperAdmin(formData: FormData) {
     // بررسی محیط اجرا
     if (process.env.NODE_ENV === 'production') {
       // بررسی IP در محیط تولید
-      const headersList = headers();
+      const headersList = await headers();
       const clientIp = headersList.get('x-forwarded-for') || 'unknown';
       const allowedIps = process.env.ALLOWED_SETUP_IPS?.split(',') || [];
       

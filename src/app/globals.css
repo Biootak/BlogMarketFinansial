@@ -1,146 +1,37 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* Custom theme configuration for Tailwind v4 */
-@theme {
-  /* Container */
-  --container-center: true;
-  --container-padding-default: 1rem;
-  --container-padding-2xl: 128px;
+@layer utilities {
+  .scrollbar-custom {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(var(--c-primary-500), 0.5) rgba(var(--c-neutral-200), 0.5);
+  }
 
-  /* Primary Colors */
-  --color-primary-50: rgb(var(--c-primary-50));
-  --color-primary-100: rgb(var(--c-primary-100));
-  --color-primary-200: rgb(var(--c-primary-200));
-  --color-primary-300: rgb(var(--c-primary-300));
-  --color-primary-400: rgb(var(--c-primary-400));
-  --color-primary-500: rgb(var(--c-primary-500));
-  --color-primary-600: rgb(var(--c-primary-600));
-  --color-primary-700: rgb(var(--c-primary-700));
-  --color-primary-800: rgb(var(--c-primary-800));
-  --color-primary-900: rgb(var(--c-primary-900));
+  .scrollbar-custom::-webkit-scrollbar {
+    width: 8px;
+  }
 
-  /* Secondary Colors */
-  --color-secondary-50: rgb(var(--c-secondary-50));
-  --color-secondary-100: rgb(var(--c-secondary-100));
-  --color-secondary-200: rgb(var(--c-secondary-200));
-  --color-secondary-300: rgb(var(--c-secondary-300));
-  --color-secondary-400: rgb(var(--c-secondary-400));
-  --color-secondary-500: rgb(var(--c-secondary-500));
-  --color-secondary-600: rgb(var(--c-secondary-600));
-  --color-secondary-700: rgb(var(--c-secondary-700));
-  --color-secondary-800: rgb(var(--c-secondary-800));
-  --color-secondary-900: rgb(var(--c-secondary-900));
+  .scrollbar-custom::-webkit-scrollbar-track {
+    background: rgba(var(--c-neutral-200), 0.5);
+    border-radius: 4px;
+  }
 
-  /* Neutral Colors */
-  --color-neutral-50: rgb(var(--c-neutral-50));
-  --color-neutral-100: rgb(var(--c-neutral-100));
-  --color-neutral-200: rgb(var(--c-neutral-200));
-  --color-neutral-300: rgb(var(--c-neutral-300));
-  --color-neutral-400: rgb(var(--c-neutral-400));
-  --color-neutral-500: rgb(var(--c-neutral-500));
-  --color-neutral-600: rgb(var(--c-neutral-600));
-  --color-neutral-700: rgb(var(--c-neutral-700));
-  --color-neutral-800: rgb(var(--c-neutral-800));
-  --color-neutral-900: rgb(var(--c-neutral-900));
+  .scrollbar-custom::-webkit-scrollbar-thumb {
+    background-color: rgba(var(--c-primary-500), 0.5);
+    border-radius: 4px;
+    border: 2px solid rgba(var(--c-neutral-200), 0.5);
+  }
 
-  /* Success Colors */
-  --color-success-50: rgb(var(--c-success-50));
-  --color-success-100: rgb(var(--c-success-100));
-  --color-success-200: rgb(var(--c-success-200));
-  --color-success-300: rgb(var(--c-success-300));
-  --color-success-400: rgb(var(--c-success-400));
-  --color-success-500: rgb(var(--c-success-500));
-  --color-success-600: rgb(var(--c-success-600));
-  --color-success-700: rgb(var(--c-success-700));
-  --color-success-800: rgb(var(--c-success-800));
-  --color-success-900: rgb(var(--c-success-900));
+  .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(var(--c-primary-600), 0.7);
+  }
 }
 
-
-@theme {
-  /* Destructive Colors */
-  --color-destructive-50: rgb(var(--c-destructive-50));
-  --color-destructive-100: rgb(var(--c-destructive-100));
-  --color-destructive-200: rgb(var(--c-destructive-200));
-  --color-destructive-300: rgb(var(--c-destructive-300));
-  --color-destructive-400: rgb(var(--c-destructive-400));
-  --color-destructive-500: rgb(var(--c-destructive-500));
-  --color-destructive-600: rgb(var(--c-destructive-600));
-  --color-destructive-700: rgb(var(--c-destructive-700));
-  --color-destructive-800: rgb(var(--c-destructive-800));
-  --color-destructive-900: rgb(var(--c-destructive-900));
-
-  /* Info Colors */
-  --color-info-50: rgb(var(--c-info-50));
-  --color-info-100: rgb(var(--c-info-100));
-  --color-info-200: rgb(var(--c-info-200));
-  --color-info-300: rgb(var(--c-info-300));
-  --color-info-400: rgb(var(--c-info-400));
-  --color-info-500: rgb(var(--c-info-500));
-  --color-info-600: rgb(var(--c-info-600));
-  --color-info-700: rgb(var(--c-info-700));
-  --color-info-800: rgb(var(--c-info-800));
-  --color-info-900: rgb(var(--c-info-900));
-
-  /* Warning Colors */
-  --color-warning-50: rgb(var(--c-warning-50));
-  --color-warning-100: rgb(var(--c-warning-100));
-  --color-warning-200: rgb(var(--c-warning-200));
-  --color-warning-300: rgb(var(--c-warning-300));
-  --color-warning-400: rgb(var(--c-warning-400));
-  --color-warning-500: rgb(var(--c-warning-500));
-  --color-warning-600: rgb(var(--c-warning-600));
-  --color-warning-700: rgb(var(--c-warning-700));
-  --color-warning-800: rgb(var(--c-warning-800));
-  --color-warning-900: rgb(var(--c-warning-900));
-
-  /* Accent Colors */
-  --color-accent-50: rgb(var(--c-accent-50));
-  --color-accent-100: rgb(var(--c-accent-100));
-  --color-accent-200: rgb(var(--c-accent-200));
-  --color-accent-300: rgb(var(--c-accent-300));
-  --color-accent-400: rgb(var(--c-accent-400));
-  --color-accent-500: rgb(var(--c-accent-500));
-  --color-accent-600: rgb(var(--c-accent-600));
-  --color-accent-700: rgb(var(--c-accent-700));
-  --color-accent-800: rgb(var(--c-accent-800));
-  --color-accent-900: rgb(var(--c-accent-900));
-
-  /* Animation */
-  --animate-spin-slow: spin 3s linear infinite;
-}
-
-/* Custom scrollbar utilities */
-@utility scrollbar-custom {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(var(--c-primary-500), 0.5) rgba(var(--c-neutral-200), 0.5);
-}
-
-.scrollbar-custom::-webkit-scrollbar {
-  width: 8px;
-}
-
-.scrollbar-custom::-webkit-scrollbar-track {
-  background: rgba(var(--c-neutral-200), 0.5);
-  border-radius: 4px;
-}
-
-.scrollbar-custom::-webkit-scrollbar-thumb {
-  background-color: rgba(var(--c-primary-500), 0.5);
-  border-radius: 4px;
-  border: 2px solid rgba(var(--c-neutral-200), 0.5);
-}
-
-.scrollbar-custom::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(var(--c-primary-600), 0.7);
-}
-
-/* Aspect ratio utilities */
 .aspect-w-3 {
   position: relative;
   padding-bottom: calc(var(--tw-aspect-h) / var(--tw-aspect-w) * 100%);
 }
-
 .aspect-w-3 > * {
   position: absolute;
   height: 100%;
@@ -150,20 +41,16 @@
   bottom: 0;
   left: 0;
 }
-
 .aspect-h-3 {
   --tw-aspect-h: 3;
 }
-
 .aspect-h-4 {
   --tw-aspect-h: 4;
 }
-
 .aspect-w-3 {
   --tw-aspect-w: 3;
 }
 
-/* Gradient animation */
 @keyframes gradient {
   0% {
     background-position: 0% 50%;
@@ -180,8 +67,6 @@
   background-size: 200% 200%;
   animation: gradient 5s ease infinite;
 }
-
-/* Novel editor styles */
 .novel-editor-command {
   position: absolute !important;
   width: auto !important;

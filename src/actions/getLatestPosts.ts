@@ -82,6 +82,6 @@ export const getLatestPosts = cache(
   },
 );
 
-export const invalidatePostsCache = () => {
+export const invalidatePostsCache = async () => {
   revalidatePath('/posts');
 };

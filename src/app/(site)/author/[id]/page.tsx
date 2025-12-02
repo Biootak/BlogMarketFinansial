@@ -13,16 +13,18 @@ import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2'
 import { Skeleton } from '@/components/ui/skeleton';
 
 type PageAuthorProps = {
-  params: { id: string };
-  searchParams: { [key: string]: string | string[] | undefined };
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export default async function PageAuthor({ params, searchParams }: PageAuthorProps) {
+  const { id } = await params;
+  const searchParamsData = await searchParams;
   const currentPage =
-    typeof searchParams.page === 'string' ? Number.parseInt(searchParams.page, 10) : 1;
-  const currentFilter = typeof searchParams.filter === 'string' ? searchParams.filter : 'جدیدترین';
+    typeof searchParamsData.page === 'string' ? Number.parseInt(searchParamsData.page, 10) : 1;
+  const currentFilter = typeof searchParamsData.filter === 'string' ? searchParamsData.filter : 'جدیدترین';
 
-  const authorResult = await getAuthorById(params.id);
+  const authorResult = await getAuthorById(id);
   if (!authorResult.success || !authorResult.data) {
     notFound();
   }

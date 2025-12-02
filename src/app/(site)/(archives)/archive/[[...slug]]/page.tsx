@@ -40,9 +40,10 @@ import Empty from '@/components/Empty';
 export async function generateMetadata({
   params,
 }: {
-  params: { slug?: string[] };
+  params: Promise<{ slug?: string[] }>;
 }): Promise<Metadata> {
-  const [type, category, subcategory] = params.slug || [];
+  const { slug } = await params;
+  const [type, category, subcategory] = slug || [];
   let title = 'گنجینه مقالات | دنیای دانش و الهام';
   let description = 'کاوش در مجموعه گسترده مقالات ما: از علم تا هنر، از فناوری تا فلسفه';
 
@@ -73,17 +74,19 @@ const FILTERS = [
 ];
 
 type PageArchiveProps = {
-  params: { slug?: string[] };
-  searchParams: {
+  params: Promise<{ slug?: string[] }>;
+  searchParams: Promise<{
     page?: string;
     filter?: string;
-  };
+  }>;
 };
 
 export default async function PageArchive({ params, searchParams }: PageArchiveProps) {
-  const [type, category, subcategory] = params.slug || [];
-  const currentPage = searchParams.page ? Number.parseInt(searchParams.page) : 1;
-  const filter = searchParams.filter || FILTERS[0].name;
+  const { slug } = await params;
+  const searchParamsData = await searchParams;
+  const [type, category, subcategory] = slug || [];
+  const currentPage = searchParamsData.page ? Number.parseInt(searchParamsData.page) : 1;
+  const filter = searchParamsData.filter || FILTERS[0].name;
   const limit = 12;
 
   if (type && !['category', 'tag'].includes(type)) {

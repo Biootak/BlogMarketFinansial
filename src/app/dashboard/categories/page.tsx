@@ -8,12 +8,13 @@ import { unstable_noStore as noStore } from 'next/cache';
 export default async function CategoriesPage({
   searchParams,
 }: {
-  searchParams: { search?: string; page?: string };
+  searchParams: Promise<{ search?: string; page?: string }>;
 }) {
   noStore();
 
-  const search = searchParams.search || '';
-  const page = Number(searchParams.page) || 1;
+  const searchParamsData = await searchParams;
+  const search = searchParamsData.search || '';
+  const page = Number(searchParamsData.page) || 1;
   const limit = 10;
 
   const categoriesPromise = getCategories({ search, page, limit });
