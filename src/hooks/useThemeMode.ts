@@ -1,49 +1,29 @@
-import { useEffect } from "react";
-import { createGlobalState } from "react-hooks-global-state";
+'use client';
 
-const initialState = { isDarkmode: false };
-const { useGlobalState } = createGlobalState(initialState);
+import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 
 export const useThemeMode = () => {
-  const [isDarkMode, setIsDarkMode] = useGlobalState("isDarkmode");
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Default to light theme if no preference is set
-    if (localStorage.theme === "dark") {
-      toDark();
-    } else {
-      toLight();
-      // Ensure light is set as default in localStorage
-      if (!localStorage.theme) {
-        localStorage.theme = "light";
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setMounted(true);
   }, []);
 
+  const isDarkMode = mounted ? resolvedTheme === 'dark' : false;
+
   const toDark = () => {
-    setIsDarkMode(true);
-    const root = document.querySelector("html");
-    if (!root) return;
-    !root.classList.contains("dark") && root.classList.add("dark");
-    localStorage.theme = "dark";
+    setTheme('dark');
   };
 
   const toLight = () => {
-    setIsDarkMode(false);
-    const root = document.querySelector("html");
-    if (!root) return;
-    root.classList.remove("dark");
-    localStorage.theme = "light";
+    setTheme('light');
   };
 
-  function _toogleDarkMode() {
-    if (localStorage.theme === "light") {
-      toDark();
-    } else {
-      toLight();
-    }
-  }
+  const _toogleDarkMode = () => {
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+  };
 
   return {
     isDarkMode,
