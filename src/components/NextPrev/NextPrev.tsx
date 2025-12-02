@@ -27,7 +27,7 @@ const NextPrev: FC<NextPrevProps> = ({
       {!onlyNext && (
         <button
           className={`${btnClassName} ${
-            !onlyPrev ? "mr-2" : ""
+            !onlyPrev ? "me-2" : ""
           } border-slate-200 dark:border-slate-600 rounded-full flex items-center justify-center ${
             focus === "left" ? "border-2" : ""
           }`}
@@ -36,6 +36,7 @@ const NextPrev: FC<NextPrevProps> = ({
             onClickPrev();
           }}
           title="Prev"
+          aria-label="قبلی"
           onMouseEnter={() => setFocus("left")}
         >
           <svg
@@ -72,6 +73,7 @@ const NextPrev: FC<NextPrevProps> = ({
             onClickNext();
           }}
           title="Next"
+          aria-label="بعدی"
           onMouseEnter={() => setFocus("right")}
         >
           <svg
