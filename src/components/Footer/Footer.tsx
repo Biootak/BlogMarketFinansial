@@ -35,7 +35,7 @@ const widgetMenus: WidgetFooterMenu[] = [
 
 const Footer: React.FC = () => {
   return (
-    <footer className="relative py-20 overflow-hidden bg-gradient-to-b from-indigo-100 to-purple-100 dark:from-gray-900 dark:to-indigo-900">
+    <footer className="relative py-20 overflow-hidden bg-gradient-to-b from-indigo-100 to-purple-100 dark:from-neutral-900 dark:to-indigo-900">
       <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0))]" />
       <div className="container relative z-10 mx-auto px-4">
         <motion.div
@@ -44,7 +44,7 @@ const Footer: React.FC = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-12"
         >
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
             ما را در شبکه‌های اجتماعی دنبال کنید
           </h3>
           <SocialsList
@@ -61,8 +61,8 @@ const Footer: React.FC = () => {
             className="space-y-6"
           >
             <Logo className="w-20 h-auto" />
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white"> Financial Market</h2>
-            <p className="text-base text-gray-600 dark:text-gray-300">
+            <h2 className="text-xl font-bold text-neutral-900 dark:text-white"> Financial Market</h2>
+            <p className="text-base text-neutral-600 dark:text-neutral-300">
               ارائه بهترین خدمات ارز دیجیتال و بازارهای مالی با امنیت و سرعت بالا. ما با استفاده از
               فناوری‌های پیشرفته و تیم متخصص، بهترین تجربه معاملاتی را برای شما فراهم می‌کنیم.
             </p>
@@ -76,7 +76,7 @@ const Footer: React.FC = () => {
               transition={{ duration: 0.5, delay: index * 0.1 }}
               className="space-y-6"
             >
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{menu.title}</h3>
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">{menu.title}</h3>
               <ul className="space-y-4">
                 {menu.menus.map((item, itemIndex) => (
                   <motion.li
@@ -86,7 +86,7 @@ const Footer: React.FC = () => {
                   >
                     <Link
                       href={item.href}
-                      className="text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400 transition-colors"
+                      className="text-neutral-600 hover:text-indigo-600 dark:text-neutral-300 dark:hover:text-indigo-400 transition-colors"
                     >
                       {item.label}
                     </Link>
@@ -102,7 +102,7 @@ const Footer: React.FC = () => {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="space-y-6"
           >
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">مسیر ارتباطی</h3>
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">مسیر ارتباطی</h3>
             <ul className="space-y-4">
               <li className="flex items-center gap-3">
                 <svg
@@ -120,7 +120,7 @@ const Footer: React.FC = () => {
                   />
                   <title>خرید و فروش ترون</title>
                 </svg>
-                <span className="text-gray-600 dark:text-gray-300">۰۹۳۸۰۹۲۹۶۰۶</span>
+                <span className="text-neutral-600 dark:text-neutral-300">۰۹۳۸۰۹۲۹۶۰۶</span>
               </li>
               <li className="flex items-center gap-3">
                 <svg
@@ -138,7 +138,7 @@ const Footer: React.FC = () => {
                   />
                   <title>تماس با ما</title>
                 </svg>
-                <span className="text-gray-600 dark:text-gray-300">
+                <span className="text-neutral-600 dark:text-neutral-300">
                   support@financialmarket.com
                 </span>
               </li>
@@ -150,9 +150,9 @@ const Footer: React.FC = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.5 }}
-          className="mt-16 pt-8 border-t border-gray-200 dark:border-gray-700 text-center"
+          className="mt-16 pt-8 border-t border-neutral-200 dark:border-neutral-700 text-center"
         >
-          <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
+          <p className="text-sm text-neutral-600 dark:text-neutral-400 text-center">
             <span dir="rtl">تمامی حقوق محفوظ است.</span> <span dir="ltr">© Financial Market</span>
           </p>
         </motion.div>
