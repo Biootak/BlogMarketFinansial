@@ -67,7 +67,7 @@ const NAVBAR_LINKS: NavItem[] = [
   { id: 'terms', name: 'قوانین', href: '/terms' },
 ];
 
-const Navigation = ({ className = 'flex' }: NavigationProps): JSX.Element => {
+const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement => {
   const pathname = usePathname();
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 

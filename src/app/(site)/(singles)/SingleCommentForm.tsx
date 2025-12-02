@@ -10,7 +10,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useCommentStore } from '@/hooks/useCommentStore';
 
 interface SingleCommentFormProps {
-  textareaRef?: React.RefObject<HTMLTextAreaElement>;
+  textareaRef?: React.RefObject<HTMLTextAreaElement | null>;
   onClickSubmit?: (content: string) => void;
   onClickCancel?: () => void;
   className?: string;

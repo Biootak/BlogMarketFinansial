@@ -1,4 +1,4 @@
-import { type NodeViewProps, ReactNodeViewRenderer } from '@tiptap/react';
+import { ReactNodeViewRenderer } from '@tiptap/react';
 import { mergeAttributes } from '@tiptap/core';
 import { Image as BaseImage } from '@tiptap/extension-image';
 import ResizeImage from '../components/resize-image';
@@ -49,6 +49,7 @@ export default BaseImage.extend({
   },
 
   addNodeView() {
-    return ReactNodeViewRenderer(ResizeImage as unknown as React.ComponentType<NodeViewProps>);
+    // biome-ignore lint/suspicious/noExplicitAny: TipTap React 19 compatibility
+    return ReactNodeViewRenderer(ResizeImage as any);
   },
 });

@@ -143,8 +143,8 @@ export default function EditCategoryDialog({
                 <FormItem>
                   <FormLabel>دسته‌بندی‌های والد</FormLabel>
                   <Select
-                    onValueChange={(value) => field.onChange([...field.value, value])}
-                    value={field.value[field.value.length - 1] || ''}
+                    onValueChange={(value) => field.onChange([...(field.value || []), value])}
+                    value={(field.value || [])[(field.value || []).length - 1] || ''}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -160,7 +160,7 @@ export default function EditCategoryDialog({
                     </SelectContent>
                   </Select>
                   <div className="mt-2">
-                    {field.value.map((parentId) => {
+                    {(field.value || []).map((parentId) => {
                       const parent = parentCategories.find((pc) => pc.id === parentId);
                       return parent ? (
                         <span
@@ -171,7 +171,7 @@ export default function EditCategoryDialog({
                           <button
                             type="button"
                             onClick={() =>
-                              field.onChange(field.value.filter((id) => id !== parentId))
+                              field.onChange((field.value || []).filter((id) => id !== parentId))
                             }
                             className="mr-2 text-red-500 hover:text-red-700"
                           >

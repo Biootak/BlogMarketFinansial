@@ -188,11 +188,12 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
                 <Select
                   dir="rtl"
                   onValueChange={(value) => {
-                    const newValue = [...field.value, value];
+                    const currentValue = field.value || [];
+                    const newValue = [...currentValue, value];
 
                     field.onChange(newValue);
                   }}
-                  value={field.value[field.value.length - 1] || ''}
+                  value={(field.value || [])[((field.value || []).length - 1)] || ''}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -208,7 +209,7 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
                   </SelectContent>
                 </Select>
                 <div className="mt-2">
-                  {field.value.map((parentId) => {
+                  {(field.value || []).map((parentId) => {
                     const parent = parentCategories.find((pc) => pc.id === parentId);
 
                     return parent ? (
@@ -220,7 +221,7 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
                         <button
                           type="button"
                           onClick={() => {
-                            const newValue = field.value.filter((id) => id !== parentId);
+                            const newValue = (field.value || []).filter((id) => id !== parentId);
                             console.log('Removing parent, new value:', newValue); // لاگ برای حذف والد
                             field.onChange(newValue);
                           }}

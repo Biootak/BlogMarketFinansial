@@ -91,8 +91,8 @@ export function CategoryFormFields({
             <FormItem>
               <FormLabel>دسته‌بندی‌های والد</FormLabel>
               <Select
-                onValueChange={(value) => field.onChange([...field.value, value])}
-                value={field.value[field.value.length - 1] || ''}
+                onValueChange={(value) => field.onChange([...(field.value || []), value])}
+                value={(field.value || [])[(field.value || []).length - 1] || ''}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -108,7 +108,7 @@ export function CategoryFormFields({
                 </SelectContent>
               </Select>
               <div className="mt-2">
-                {field.value.map((parentId) => {
+                {(field.value || []).map((parentId) => {
                   const parent = parentCategories.find((pc) => pc.id === parentId);
                   return parent ? (
                     <span
@@ -118,7 +118,7 @@ export function CategoryFormFields({
                       {parent.name}
                       <button
                         type="button"
-                        onClick={() => field.onChange(field.value.filter((id) => id !== parentId))}
+                        onClick={() => field.onChange((field.value || []).filter((id) => id !== parentId))}
                         className="mr-2 text-red-500 hover:text-red-700"
                       >
                         ×

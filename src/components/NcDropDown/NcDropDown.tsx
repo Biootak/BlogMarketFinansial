@@ -12,7 +12,7 @@ export interface NcDropDownProps {
   triggerIconClass?: string;
   data: NcDropDownItem[];
   renderTrigger?: () => ReactNode;
-  renderItem?: (item: NcDropDownItem) => JSX.Element;
+  renderItem?: (item: NcDropDownItem) => React.ReactElement;
   title?: string;
   onClick: (item: NcDropDownItem) => void;
 }

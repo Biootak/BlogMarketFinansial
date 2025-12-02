@@ -2,6 +2,7 @@ import type React from 'react';
 import Image, { type StaticImageData } from 'next/image';
 import Link from 'next/link';
 import * as motion from 'framer-motion/client';
+import type { Variants } from 'framer-motion';
 
 import logoImg from '@/images/logo.png';
 import logoLightImg from '@/images/logo-light.png';
@@ -26,7 +27,7 @@ const Logo: React.FC<LogoProps> = ({
     throw new Error('Missing image URLs in Logo component');
   }
 
-  const logoVariants = {
+  const logoVariants: Variants = {
     initial: { 
       scale: 0,
       opacity: 0,
@@ -40,9 +41,9 @@ const Logo: React.FC<LogoProps> = ({
       filter: "blur(0px)",
       transition: {
         duration: 1.2,
-        ease: "easeOut",
+        ease: "easeOut" as const,
         scale: {
-          type: "spring",
+          type: "spring" as const,
           damping: 12,
           stiffness: 100,
           restDelta: 0.001
@@ -56,12 +57,12 @@ const Logo: React.FC<LogoProps> = ({
       transition: {
         rotate: {
           duration: 0.6,
-          ease: "easeInOut",
-          repeat: Infinity,
-          repeatType: "reverse"
+          ease: "easeInOut" as const,
+          repeat: Number.POSITIVE_INFINITY,
+          repeatType: "reverse" as const
         },
         scale: {
-          type: "spring",
+          type: "spring" as const,
           damping: 5,
           stiffness: 300,
           restDelta: 0.001

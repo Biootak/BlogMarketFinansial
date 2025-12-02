@@ -14,7 +14,7 @@ import { redirect } from 'next/navigation';
 import slugify from 'slugify';
 import DOMPurify from 'dompurify';
 import { customAlphabet } from 'nanoid';
-import type { JSONContent } from 'novel';
+import type { JSONContent } from '@tiptap/core';
 import { Prisma } from '@prisma/client';
 
 const coinMarketCapUrlMap: { [key: string]: string } = {

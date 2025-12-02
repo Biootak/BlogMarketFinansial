@@ -18,7 +18,7 @@ interface ImageUploaderProps {
 
 class ImageUploaderClass {
   private props: ImageUploaderProps;
-  private fileInputRef: React.RefObject<HTMLInputElement>;
+  private fileInputRef: React.RefObject<HTMLInputElement | null>;
   constructor(props: ImageUploaderProps) {
     this.props = props;
     this.fileInputRef = React.createRef();

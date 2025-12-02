@@ -3,7 +3,7 @@
 
 import { useSidebarStore } from '@/hooks/sidebarStore';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type Variants, type Transition } from 'framer-motion';
 
 
 
@@ -21,7 +21,7 @@ const MainContent: React.FC<MainContentProps> = ({ children }) => {
 
 
 
-  const pageVariants = {
+  const pageVariants: Variants = {
 
     initial: { opacity: 0, y: 20 },
 
@@ -33,9 +33,9 @@ const MainContent: React.FC<MainContentProps> = ({ children }) => {
 
 
 
-  const pageTransition = {
+  const pageTransition: Transition = {
 
-    type: 'tween',
+    type: 'tween' as const,
 
     ease: 'anticipate',
 
