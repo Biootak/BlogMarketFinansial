@@ -59,7 +59,7 @@ const Card9: FC<Card9Props> = ({ className = 'h-full', ratio = 'tall', post, hov
 
   return (
     <div
-      className={`nc-Card9 relative flex flex-col group rounded-3xl overflow-hidden z-0 ${hoverClass} ${className} rtl`}
+      className={`nc-Card9 relative flex flex-col group rounded-3xl overflow-hidden z-0 transition-shadow duration-300 hover:shadow-xl ${hoverClass} ${className} rtl`}
     >
       <div className={`flex items-start relative w-full ${imageRatioClass}`}>
         {postType === 'AUDIO' ? (
