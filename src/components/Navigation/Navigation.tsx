@@ -140,7 +140,7 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
 
   return (
     <nav className="flex items-center justify-center">
-      <ul className={`nc-Navigation items-center ${className} space-x-1 rtl:space-x-reverse`}>
+      <ul className={`nc-Navigation items-center ${className} gap-1`}>
         {NAVBAR_LINKS.map(renderNavItem)}
       </ul>
     </nav>
