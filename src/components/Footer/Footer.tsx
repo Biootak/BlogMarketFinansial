@@ -48,7 +48,7 @@ const Footer: React.FC = () => {
             ما را در شبکه‌های اجتماعی دنبال کنید
           </h3>
           <SocialsList
-            className="flex justify-center space-x-4 rtl:space-x-reverse"
+            className="flex justify-center gap-4"
             socials={SOCIALS_DATA}
           />
         </motion.div>
@@ -104,7 +104,7 @@ const Footer: React.FC = () => {
           >
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">مسیر ارتباطی</h3>
             <ul className="space-y-4">
-              <li className="flex items-center space-x-3 rtl:space-x-reverse">
+              <li className="flex items-center gap-3">
                 <svg
                   className="w-5 h-5 text-indigo-500"
                   fill="none"
@@ -122,7 +122,7 @@ const Footer: React.FC = () => {
                 </svg>
                 <span className="text-gray-600 dark:text-gray-300">۰۹۳۸۰۹۲۹۶۰۶</span>
               </li>
-              <li className="flex items-center space-x-3 rtl:space-x-reverse">
+              <li className="flex items-center gap-3">
                 <svg
                   className="w-5 h-5 text-indigo-500"
                   fill="none"
