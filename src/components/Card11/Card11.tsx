@@ -48,7 +48,7 @@ const Card11: React.FC<Card11Props> = ({
             {createdAt.toString()}
           </span>
         )}
-        <Link href={postLink} className="group">
+        <Link href={postLink} className="group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-lg">
           <h3 className="nc-card-title block text-sm font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-primary-600 dark:group-hover:text-primary-500">
             <span className="line-clamp-2" title={title}>
               {title}
