@@ -31,7 +31,7 @@ export default function Card2({ className = 'h-full', size = 'normal', post }: C
         <Image
           fill
           sizes="(max-width: 600px) 480px, 800px"
-          className="object-fill"
+          className="object-cover"
           src={featuredImage || '/images/placeholder-small.jpg'}
           alt={title}
         />
