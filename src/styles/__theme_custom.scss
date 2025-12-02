@@ -11,7 +11,15 @@
 
 //
 .nc-card-title {
-  @apply transition-colors hover:text-primary-900 dark:hover:text-primary-300 duration-75;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 75ms;
+}
+.nc-card-title:hover {
+  color: rgb(30, 58, 138);
+}
+:is(.dark .nc-card-title):hover {
+  color: rgb(147, 197, 253);
 }
 
 //
@@ -40,7 +48,7 @@
 //
 .nc-PostFeaturedMedia {
   .glide__bullet--active {
-    @apply bg-white bg-opacity-100;
+    background-color: rgb(255, 255, 255);
   }
 }
 
@@ -143,7 +151,7 @@
 .nc-section-rounded-md {
   *[class*="rounded"],
   *[class*="nc-box"] {
-    @apply rounded-md #{!important};
+    border-radius: 0.375rem !important;
   }
 }
 
@@ -166,7 +174,7 @@
     background-color: #f35656;
     color: #fff;
     font-size: 10px;
-    @apply ms-1.5;
+    margin-inline-start: 0.375rem;
   }
 }
 .menuIsNew {
@@ -175,7 +183,7 @@
     content: "New!";
     position: absolute;
     top: -2px;
-    @apply end-0;
+    inset-inline-end: 0;
     display: inline-block;
     padding: 0 5px;
     line-height: 15px;

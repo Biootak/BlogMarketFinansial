@@ -5,10 +5,10 @@ import { revalidateTag } from 'next/cache';
 export async function revalidateCategoryCache(categoryId: string) {
   try {
     if (categoryId === 'list') {
-      await revalidateTag('categories');
-      await revalidateTag('category-list');
+      revalidateTag('categories', 'page');
+      revalidateTag('category-list', 'page');
     } else {
-      await revalidateTag(`category-${categoryId}`);
+      revalidateTag(`category-${categoryId}`, 'page');
     }
     return { success: true };
   } catch (error) {
@@ -21,14 +21,14 @@ export async function revalidatePostCache(postId?: string) {
   try {
     // اگر postId داده شده باشد، فقط همان پست را revalidate می‌کنیم
     if (postId) {
-      await revalidateTag(`post-${postId}`);
+      revalidateTag(`post-${postId}`, 'page');
     }
     
     // همیشه تگ‌های عمومی پست‌ها را revalidate می‌کنیم
-    await revalidateTag('posts');
-    await revalidateTag('post-list');
-    await revalidateTag('latest-posts');
-    await revalidateTag('featured-posts');
+    revalidateTag('posts', 'page');
+    revalidateTag('post-list', 'page');
+    revalidateTag('latest-posts', 'page');
+    revalidateTag('featured-posts', 'page');
     
     return { success: true };
   } catch (error) {

@@ -3,78 +3,78 @@
 import { revalidateTag, revalidatePath } from 'next/cache';
 
 export async function invalidateUserCache(userId: string) {
-  await revalidateTag(`user-${userId}`);
-  await revalidateTag('user-posts');
-  await revalidateTag('user-comments');
-  await revalidateTag('user-likes');
-  await revalidateTag('user-subscription');
-  await revalidateTag('user-billing');
+  revalidateTag(`user-${userId}`, 'page');
+  revalidateTag('user-posts', 'page');
+  revalidateTag('user-comments', 'page');
+  revalidateTag('user-likes', 'page');
+  revalidateTag('user-subscription', 'page');
+  revalidateTag('user-billing', 'page');
   // اضافه کردن کش داشبورد کاربر
-  await revalidateTag(`dashboard-user-${userId}`);
-  await revalidatePath('/dashboard');
-  await revalidatePath('/dashboard/edit-profile');
-  await revalidatePath('/dashboard/subscription');
-  await revalidatePath('/dashboard/billing-address');
+  revalidateTag(`dashboard-user-${userId}`, 'page');
+  revalidatePath('/dashboard');
+  revalidatePath('/dashboard/edit-profile');
+  revalidatePath('/dashboard/subscription');
+  revalidatePath('/dashboard/billing-address');
   await invalidateSidebarCache();
 }
 
 export async function invalidatePublicCache() {
-  await revalidateTag('posts');
-  await revalidateTag('categories');
-  await revalidateTag('tags');
-  await revalidateTag('comments');
+  revalidateTag('posts', 'page');
+  revalidateTag('categories', 'page');
+  revalidateTag('tags', 'page');
+  revalidateTag('comments', 'page');
   await invalidateSidebarCache();
 }
 
 export async function invalidateHomePageCache() {
-  await revalidateTag('featured-posts');
-  await revalidateTag('latest-posts');
-  await revalidateTag('popular-posts');
+  revalidateTag('featured-posts', 'page');
+  revalidateTag('latest-posts', 'page');
+  revalidateTag('popular-posts', 'page');
 }
 
 export async function invalidatePostCache(postId: string) {
-  await revalidateTag(`post-${postId}`);
-  await revalidateTag('posts');
-  await revalidateTag('comments');
+  revalidateTag(`post-${postId}`, 'page');
+  revalidateTag('posts', 'page');
+  revalidateTag('comments', 'page');
 }
 
 export async function invalidateSidebarCache() {
   // کش داده‌های ساید بار
-  await revalidateTag('sidebar-data');
-  await revalidateTag('sidebar-posts');
-  await revalidateTag('sidebar-tags');
-  await revalidateTag('sidebar-categories');
-  await revalidateTag('sidebar-authors');
-  await revalidateTag('sidebar-ads');
+  revalidateTag('sidebar-data', 'page');
+  revalidateTag('sidebar-posts', 'page');
+  revalidateTag('sidebar-tags', 'page');
+  revalidateTag('sidebar-categories', 'page');
+  revalidateTag('sidebar-authors', 'page');
+  revalidateTag('sidebar-ads', 'page');
 }
 
 export async function invalidateDashboardCache() {
   // کش صفحات داشبورد
-  await revalidateTag('dashboard');
-  await revalidateTag('dashboard-posts');
-  await revalidateTag('dashboard-categories');
-  await revalidateTag('dashboard-users');
-  await revalidateTag('dashboard-reports');
-  await revalidateTag('dashboard-settings');
-  await revalidateTag('dashboard-advertisements');
-  await revalidateTag('dashboard-exchange-rates');
-  await revalidateTag('dashboard-credit-rates');
-  await revalidateTag('dashboard-rate-lists');
-  await revalidateTag('dashboard-subscription');
+  revalidateTag('dashboard', 'page');
+  revalidateTag('dashboard-posts', 'page');
+  revalidateTag('dashboard-categories', 'page');
+  revalidateTag('dashboard-users', 'page');
+  revalidateTag('dashboard-reports', 'page');
+  revalidateTag('dashboard-settings', 'page');
+  revalidateTag('dashboard-advertisements', 'page');
+  revalidateTag('dashboard-exchange-rates', 'page');
+  revalidateTag('dashboard-credit-rates', 'page');
+  revalidateTag('dashboard-rate-lists', 'page');
+  revalidateTag('dashboard-subscription', 'page');
   
   // کش مسیرها
-  await revalidatePath('/dashboard');
-  await revalidatePath('/dashboard/posts');
-  await revalidatePath('/dashboard/categories');
-  await revalidatePath('/dashboard/users');
-  await revalidatePath('/dashboard/reports');
-  await revalidatePath('/dashboard/settings');
-  await revalidatePath('/dashboard/advertisements');
-  await revalidatePath('/dashboard/exchange-rates');
-  await revalidatePath('/dashboard/credit-rates');
-  await revalidatePath('/dashboard/rate-lists');
-  await revalidatePath('/dashboard/subscription');
-  await revalidatePath('/dashboard/billing-address');
-  await revalidatePath('/dashboard/edit-profile');
+  revalidatePath('/dashboard');
+  revalidatePath('/dashboard/posts');
+  revalidatePath('/dashboard/categories');
+  revalidatePath('/dashboard/users');
+  revalidatePath('/dashboard/reports');
+  revalidatePath('/dashboard/settings');
+  revalidatePath('/dashboard/advertisements');
+  revalidatePath('/dashboard/exchange-rates');
+  revalidatePath('/dashboard/credit-rates');
+  revalidatePath('/dashboard/rate-lists');
+  revalidatePath('/dashboard/subscription');
+  revalidatePath('/dashboard/billing-address');
+  revalidatePath('/dashboard/edit-profile');
   await invalidateSidebarCache();
 }

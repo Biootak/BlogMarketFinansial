@@ -39,10 +39,6 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  serverActions: {
-    bodySizeLimit: '3mb',
-  },
-
   sassOptions: {
     includePaths: [path.join(process.cwd(), 'styles')],
     silenceDeprecations: ['legacy-js-api'],
