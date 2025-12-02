@@ -1,8 +1,8 @@
+// Using @use instead of deprecated @import
+@use "./__theme_rtl" as *;
+@use "./__theme_colors" as *;
+@use "./__theme_font" as *;
+@use "./__theme_custom" as *;
 //
-@import "./_theme_rtl";
-@import "./_theme_colors";
-@import "./_theme_font";
-@import "./_theme_custom";
-//
-@import "./header";
-@import './custom-switch';
+@use "./header" as *;
+@use './custom-switch' as *;
