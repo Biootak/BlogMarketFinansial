@@ -123,7 +123,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
           <LinkBubbleMenu editor={editor} />
           <EditorContent
             editor={editor}
-            className={`bg-white text-neutral-900 min-h-[200px] sm:min-h-[300px] lg:min-h-[400px] ${contentClassName}`}
+            className={`bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 min-h-[200px] sm:min-h-[300px] lg:min-h-[400px] ${contentClassName}`}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
