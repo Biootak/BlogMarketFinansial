@@ -35,11 +35,12 @@ export default async function RootLayout({
               (function() {
                 try {
                   var theme = localStorage.getItem('theme');
-                  if (theme === 'dark') {
-                    document.documentElement.classList.add('dark');
-                  } else {
+                  // Default to light theme
+                  if (theme !== 'dark') {
                     document.documentElement.classList.remove('dark');
-                    if (!theme) localStorage.setItem('theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                  } else {
+                    document.documentElement.classList.add('dark');
                   }
                 } catch (e) {}
               })();
