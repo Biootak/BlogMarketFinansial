@@ -8,10 +8,15 @@ export const useThemeMode = () => {
   const [isDarkMode, setIsDarkMode] = useGlobalState("isDarkmode");
 
   useEffect(() => {
+    // Default to light theme if no preference is set
     if (localStorage.theme === "dark") {
       toDark();
     } else {
       toLight();
+      // Ensure light is set as default in localStorage
+      if (!localStorage.theme) {
+        localStorage.theme = "light";
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
