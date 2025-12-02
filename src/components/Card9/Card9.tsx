@@ -71,7 +71,7 @@ const Card9: FC<Card9Props> = ({ className = 'h-full', ratio = 'tall', post, hov
             <Image
               fill
               alt={title}
-              className="object-fill rounded-3xl"
+              className="object-cover rounded-3xl"
               src={featuredImage || '/path/to/default-image.jpg'}
               sizes="(max-width: 600px) 480px, 500px"
               priority={true}
