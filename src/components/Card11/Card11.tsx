@@ -17,7 +17,7 @@ const Card11: React.FC<Card11Props> = ({
   className = 'h-full',
   post,
   hiddenAuthor = false,
-  ratio = 'aspect-w-4 aspect-h-3',
+  ratio = 'aspect-[4/3]',
 }) => {
   const { title, categories, createdAt, slug, postType, excerpt } = post;
 
