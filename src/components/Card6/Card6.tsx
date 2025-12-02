@@ -27,12 +27,12 @@ export default function Component({ className = '', post }: Card6Props) {
       >
         <Image
           sizes="(max-width: 639px) 33vw, (max-width: 1023px) 25vw, 20vw"
-          className="object-fill"
+          className="object-cover"
           fill
           src={featuredImage || '/placeholder.jpg'}
           alt={title}
         />
-        <span className="absolute bottom-1 right-1">
+        <span className="absolute bottom-1 end-1">
           <PostTypeFeaturedIcon
             wrapSize="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6"
             iconSize="h-2 w-2 sm:h-3 sm:w-3 md:h-3.5 md:w-3.5"

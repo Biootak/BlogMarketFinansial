@@ -36,7 +36,7 @@ const Card11: React.FC<Card11Props> = ({
           <PostFeaturedMedia post={post} imageRatio="landscape" />
         </div>
       </div>
-      <span className="absolute top-1 right-1">
+      <span className="absolute top-1 end-1">
         <CategoryBadgeList categories={categories} />
       </span>
 

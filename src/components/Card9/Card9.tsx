@@ -77,7 +77,7 @@ const Card9: FC<Card9Props> = ({ className = 'h-full', ratio = 'tall', post, hov
               priority={true}
             />
             <PostTypeFeaturedIcon
-              className="absolute top-3 left-3 group-hover:hidden"
+              className="absolute top-3 start-3 group-hover:hidden"
               postType={postType}
               wrapSize="w-7 h-7"
               iconSize="w-4 h-4"

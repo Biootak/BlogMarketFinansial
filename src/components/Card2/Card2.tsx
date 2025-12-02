@@ -36,7 +36,7 @@ export default function Card2({ className = 'h-full', size = 'normal', post }: C
           alt={title}
         />
         <PostTypeFeaturedIcon
-          className="absolute bottom-2 right-2"
+          className="absolute bottom-2 end-2"
           postType={postType}
           wrapSize="w-8 h-8"
           iconSize="w-4 h-4"
