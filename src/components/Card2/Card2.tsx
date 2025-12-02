@@ -42,7 +42,7 @@ export default function Card2({ className = 'h-full', size = 'normal', post }: C
           iconSize="w-4 h-4"
         />
         <CategoryBadgeList
-          className="flex flex-wrap space-x-reverse space-x-2 absolute top-3 right-3"
+          className="flex flex-wrap gap-2 absolute top-3 end-3"
           itemClass="relative"
           categories={categories}
           disableLinks={true}
