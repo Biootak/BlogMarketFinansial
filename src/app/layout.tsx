@@ -20,7 +20,11 @@ const vazirmatn = Vazirmatn({
   variable: '--font-vazirmatn',
 });
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const session = await auth();
   return (
     <html lang="fa-IR" dir="rtl" className={`${vazirmatn.variable} rtl`}>
