@@ -31,13 +31,13 @@ const SwitchDarkMode: React.FC<SwitchDarkModeProps> = ({ className = '' }) => {
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
       onClick={handleToggle}
-      className={`p-2 rounded-full text-gray-400 hover:text-gray-500 dark:text-gray-400 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800 ${className}`}
+      className={`p-2 rounded-full text-neutral-400 hover:text-neutral-500 dark:text-neutral-400 dark:hover:text-neutral-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-neutral-800 ${className}`}
       aria-label={isDarkMode ? 'فعال کردن حالت روشن' : 'فعال کردن حالت تاریک'}
     >
       {isDarkMode ? (
         <RiSunLine className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-500 transition-transform duration-200 ease-in-out transform hover:scale-110" />
       ) : (
-        <RiMoonLine className="h-5 w-5 sm:h-6 sm:w-6 text-gray-500 hover:text-indigo-600 transition-transform duration-200 ease-in-out transform hover:scale-110" />
+        <RiMoonLine className="h-5 w-5 sm:h-6 sm:w-6 text-neutral-500 hover:text-primary-600 transition-transform duration-200 ease-in-out transform hover:scale-110" />
       )}
     </motion.button>
   );
