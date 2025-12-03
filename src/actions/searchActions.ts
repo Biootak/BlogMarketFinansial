@@ -1,7 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
-import type { ActionResult, SearchActionResult } from '@/types/types';
+import type { SearchActionResult } from '@/types/types';
 
 export async function getSearchResults(
   searchQuery: string,
@@ -12,101 +12,122 @@ export async function getSearchResults(
   const skip = (page - 1) * pageSize;
 
   try {
-    // biome-ignore lint/suspicious/noImplicitAnyLet: <explanation>
-    let posts;
-    // biome-ignore lint/suspicious/noImplicitAnyLet: <explanation>
-    let total;
+    let posts: unknown[];
+    let total: number;
 
     switch (activeTab) {
-      case 'مقالات':
+      case 'مقالات': {
+        const where = {
+          OR: [
+            { title: { contains: searchQuery, mode: 'insensitive' as const } },
+            { content: { contains: searchQuery, mode: 'insensitive' as const } },
+          ],
+          status: 'PUBLISHED' as const,
+        };
         [posts, total] = await Promise.all([
           prisma.post.findMany({
-            where: {
-              OR: [{ title: { contains: searchQuery } }, { content: { contains: searchQuery } }],
-              status: 'PUBLISHED',
-            },
-            include: {
-              author: { include: { profile: true } },
-              categories: true,
-              tags: true,
-              _count: {
-                select: { comments: true, likes: true, savedBy: true },
+            where,
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              excerpt: true,
+              featuredImage: true,
+              createdAt: true,
+              author: {
+                select: {
+                  id: true,
+                  name: true,
+                  profile: { select: { avatar: true } },
+                },
               },
+              categories: { select: { id: true, name: true, slug: true } },
+              tags: { select: { id: true, name: true, slug: true } },
+              _count: { select: { comments: true, likes: true, savedBy: true } },
             },
             skip,
             take: pageSize,
+            orderBy: { createdAt: 'desc' },
           }),
-          prisma.post.count({
-            where: {
-              OR: [{ title: { contains: searchQuery } }, { content: { contains: searchQuery } }],
-              status: 'PUBLISHED',
-            },
-          }),
+          prisma.post.count({ where }),
         ]);
         break;
-      case 'دسته‌بندی‌ها':
+      }
+      case 'دسته‌بندی‌ها': {
+        const where = { name: { contains: searchQuery, mode: 'insensitive' as const } };
         [posts, total] = await Promise.all([
           prisma.category.findMany({
-            where: { name: { contains: searchQuery } },
-            include: {
+            where,
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              thumbnail: true,
               _count: { select: { posts: true } },
             },
             skip,
             take: pageSize,
           }),
-          prisma.category.count({
-            where: { name: { contains: searchQuery } },
-          }),
+          prisma.category.count({ where }),
         ]);
         break;
-      case 'برچسب‌ها':
+      }
+      case 'برچسب‌ها': {
+        const where = { name: { contains: searchQuery, mode: 'insensitive' as const } };
         [posts, total] = await Promise.all([
           prisma.tag.findMany({
-            where: { name: { contains: searchQuery } },
-            include: {
+            where,
+            select: {
+              id: true,
+              name: true,
+              slug: true,
               _count: { select: { posts: true } },
             },
             skip,
             take: pageSize,
           }),
-          prisma.tag.count({
-            where: { name: { contains: searchQuery } },
-          }),
+          prisma.tag.count({ where }),
         ]);
         break;
-      case 'نویسندگان':
+      }
+      case 'نویسندگان': {
+        const where = { name: { contains: searchQuery, mode: 'insensitive' as const } };
         [posts, total] = await Promise.all([
           prisma.user.findMany({
-            where: { name: { contains: searchQuery } },
-            include: {
-              profile: true,
+            where,
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              profile: { select: { avatar: true, bio: true, jobName: true } },
               _count: { select: { posts: true } },
             },
             skip,
             take: pageSize,
           }),
-          prisma.user.count({
-            where: { name: { contains: searchQuery } },
-          }),
+          prisma.user.count({ where }),
         ]);
         break;
+      }
       default:
-        throw new Error('Invalid tab');
+        return {
+          success: false,
+          message: 'تب نامعتبر است',
+          error: 'Invalid tab',
+        };
     }
-
-    const pages = Math.ceil(total / pageSize);
 
     return {
       success: true,
-      message: 'Search results fetched successfully',
-      data: { posts, total, pages },
+      message: 'نتایج جستجو با موفقیت دریافت شد',
+      data: { posts, total, pages: Math.ceil(total / pageSize) },
     };
   } catch (error) {
     console.error('Error in getSearchResults:', error);
     return {
       success: false,
-      message: 'Failed to fetch search results',
-      error: error instanceof Error ? error.message : 'Unknown error occurred',
+      message: 'خطا در جستجو',
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }

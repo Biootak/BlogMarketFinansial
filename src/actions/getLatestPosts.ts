@@ -39,42 +39,43 @@ export const getLatestPosts = cache(
         orderBy: { createdAt: 'desc' },
         include: {
           author: {
-            include: {
-              profile: true,
-            },
-          },
-          categories: true,
-          comments: {
-            include: {
-              author: {
-                include: {
-                  profile: true,
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              profile: {
+                select: {
+                  avatar: true,
+                  jobName: true,
                 },
               },
-              replies: true,
-              likes: {
-                include: {
-                  user: true,
-                },
-              },
-              _count: true,
             },
           },
-          tags: true,
-          likes: true,
-          savedBy: true,
+          categories: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+          tags: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
           _count: {
             select: {
               comments: true,
               likes: true,
               savedBy: true,
-              tags: true,
             },
           },
         },
       });
 
-      return posts;
+      return posts as PostWithRelations[];
     } catch (error) {
       console.error('Error fetching posts:', error);
       throw new Error('Failed to fetch posts');

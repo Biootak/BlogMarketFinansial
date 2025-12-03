@@ -1,50 +1,70 @@
 'use server';
 
+import { cache } from 'react';
 import prisma from '@/lib/db';
 import type { ActionResult, PostWithRelations } from '@/types/types';
 
-export async function getMoreFromAuthor(
-  authorId: string,
-  postId: string,
-): Promise<ActionResult<PostWithRelations[]>> {
-  try {
-    const moreFromAuthor = await prisma.post.findMany({
-      where: {
-        authorId: authorId,
-        status: 'PUBLISHED',
-        id: { not: postId },
-      },
-      take: 4,
-      include: {
-        author: {
-          include: {
-            profile: true,
+export const getMoreFromAuthor = cache(
+  async (authorId: string, postId: string): Promise<ActionResult<PostWithRelations[]>> => {
+    try {
+      const moreFromAuthor = await prisma.post.findMany({
+        where: {
+          authorId,
+          status: 'PUBLISHED',
+          id: { not: postId },
+        },
+        take: 4,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              profile: {
+                select: {
+                  avatar: true,
+                  jobName: true,
+                },
+              },
+            },
+          },
+          categories: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+          tags: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+          _count: {
+            select: {
+              comments: true,
+              likes: true,
+              savedBy: true,
+            },
           },
         },
-        categories: true,
-        tags: true,
-        _count: {
-          select: {
-            comments: true,
-            likes: true,
-            savedBy: true,
-            tags: true,
-          },
-        },
-      },
-    });
+      });
 
-    return {
-      success: true,
-      message: 'پست‌های بیشتر از این نویسنده با موفقیت بازیابی شدند.',
-      data: moreFromAuthor,
-    };
-  } catch (error) {
-    console.error('Error retrieving more posts from author:', error);
-    return {
-      success: false,
-      message: 'خطا در بازیابی پست‌های بیشتر از این نویسنده. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
-    };
-  }
-}
+      return {
+        success: true,
+        message: 'پست‌های بیشتر از این نویسنده با موفقیت بازیابی شدند.',
+        data: moreFromAuthor as PostWithRelations[],
+      };
+    } catch (error) {
+      console.error('Error retrieving more posts from author:', error);
+      return {
+        success: false,
+        message: 'خطا در بازیابی پست‌های بیشتر از این نویسنده.',
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+  },
+);

@@ -22,26 +22,45 @@ export async function getArchivePosts(
       whereCondition.tags = { some: { slug: tagSlug } };
     }
 
-    const [posts, total] = await prisma.$transaction([
+    const [posts, total] = await Promise.all([
       prisma.post.findMany({
         where: whereCondition,
         take: limit,
-        skip: skip,
+        skip,
         orderBy: { createdAt: 'desc' },
         include: {
           author: {
-            include: {
-              profile: true,
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              profile: {
+                select: {
+                  avatar: true,
+                  jobName: true,
+                },
+              },
             },
           },
-          categories: true,
-          tags: true,
+          categories: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+          tags: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
           _count: {
             select: {
               comments: true,
               likes: true,
               savedBy: true,
-              tags: true,
             },
           },
         },
@@ -53,7 +72,7 @@ export async function getArchivePosts(
       success: true,
       message: 'پست‌ها با موفقیت بازیابی شدند.',
       data: {
-        posts,
+        posts: posts as PostWithRelations[],
         total,
         pages: Math.ceil(total / limit),
       },
@@ -62,7 +81,7 @@ export async function getArchivePosts(
     console.error('خطا در بازیابی پست‌ها:', error);
     return {
       success: false,
-      message: 'خطا در بازیابی پست‌ها. لطفاً دوباره تلاش کنید.',
+      message: 'خطا در بازیابی پست‌ها.',
       error: error instanceof Error ? error.message : String(error),
     };
   }
