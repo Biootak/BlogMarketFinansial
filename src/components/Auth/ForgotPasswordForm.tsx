@@ -1,99 +1,128 @@
-// "use client";
+'use client';
 
-// import React from "react";
-// import { useFormState } from 'react-dom';
-// import { zodResolver } from "@hookform/resolvers/zod";
-// import { useForm } from "react-hook-form";
-// import { forgotPassword } from "@/actions/auth-actions";
-// import Input from "@/components/Input/Input";
-// import ButtonPrimary from "@/components/Button/ButtonPrimary";
-// import NcLink from "@/components/NcLink/NcLink";
-// import Logo from "@/components/Logo/Logo";
-// import { usePathname } from 'next/navigation';
-// import { ForgotPasswordSchema } from "@/schemas";
+import { useState } from 'react';
+import { useForm, type SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { sendMagicLink } from '@/actions/auth-actions';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import Logo from '../Logo/Logo';
+import Loading from '../Button/Loading';
+import NcLink from '../NcLink/NcLink';
+import { z } from 'zod';
 
-// type FormData = {
-//   email: string;
-// };
+const ForgotPasswordSchema = z.object({
+  email: z.string().min(1, 'ایمیل الزامی است').email('فرمت ایمیل نامعتبر است'),
+});
 
-// const initialState = {
-//   success: false,
-//   message: null as string | null,
-// };
+type FormData = z.infer<typeof ForgotPasswordSchema>;
 
-// function SubmitButton({ isSubmitting }: { isSubmitting: boolean }) {
-//   return (
-//     <ButtonPrimary type="submit" disabled={isSubmitting}>
-//       {isSubmitting ? 'در حال ارسال...' : 'ارسال لینک بازیابی'}
-//     </ButtonPrimary>
-//   );
-// }
+interface FormState {
+  error: string | null;
+  success: string | null;
+}
 
-// function Message({ success, message }: { success: boolean, message: string | null }) {
-//   if (!message) return null;
-//   return <p className={`text-sm mt-2 font-semibold ${success ? 'text-green-500' : 'text-red-500'}`}>{message}</p>;
-// }
+export function ForgotPasswordForm() {
+  const [formState, setFormState] = useState<FormState>({
+    error: null,
+    success: null,
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-// export default function ForgotPasswordForm() {
-//   const [state, formAction] = useFormState(forgotPassword, initialState);
-//   const pathname = usePathname();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(ForgotPasswordSchema),
+    defaultValues: {
+      email: '',
+    },
+  });
 
-//   const {
-//     register,
-//     handleSubmit,
-//     formState: { errors, isSubmitting },
-//   } = useForm<FormData>({
-//     resolver: zodResolver(ForgotPasswordSchema),
-//   });
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
+    setIsSubmitting(true);
+    setFormState({ error: null, success: null });
 
-//   const onSubmit = (data: FormData) => {
-//     const formData = new FormData();
-//     formData.append('email', data.email);
-//     formAction(formData);
-//   };
+    try {
+      const formData = new FormData();
+      formData.append('email', data.email);
+      await sendMagicLink(formData);
+      setFormState({
+        error: null,
+        success: 'لینک بازیابی رمز عبور به ایمیل شما ارسال شد.',
+      });
+    } catch (error) {
+      setFormState({
+        error:
+          error instanceof Error
+            ? error.message
+            : 'متأسفانه خطایی رخ داده است. لطفاً دوباره تلاش کنید.',
+        success: null,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-//   return (
-//     <div className="forgot-password">
-//       <div className="text-center max-w-2xl mx-auto mb-4 sm:mb-6">
-//         <div className="flex items-center justify-center mb-4 sm:mb-6">
-//           <Logo />
-//         </div>
-//         <p className="text-xl font-medium">فراموشی رمز عبور</p>
-//         <p className="text-small text-default-500">
-//           ایمیل خود را برای بازیابی رمز عبور وارد کنید
-//         </p>
-//       </div>
+  return (
+    <div className="forgot-password">
+      <div className="text-center max-w-2xl mx-auto mb-4 sm:mb-6">
+        <div className="flex items-center justify-center mb-4 sm:mb-6">
+          <Logo />
+        </div>
+        <h1 className="text-2xl font-semibold">فراموشی رمز عبور</h1>
+        <p className="text-sm text-muted-foreground">
+          ایمیل خود را وارد کنید تا لینک بازیابی برایتان ارسال شود
+        </p>
+      </div>
 
-//       <div className="max-w-md mx-auto space-y-6">
-//         <form className="grid grid-cols-1 gap-4" onSubmit={handleSubmit(onSubmit)}>
-//           <label className="block">
-//             <span className="text-neutral-800 dark:text-neutral-200">
-//               ایمیل
-//             </span>
-//             <Input
-//               {...register("email")}
-//               type="email"
-//               placeholder="آدرس ایمیل خود را وارد کنید"
-//               className="mt-1"
-//             />
-//             {errors.email && (
-//               <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
-//             )}
-//           </label>
-//           <Message success={state.success} message={state.message} />
-//           <SubmitButton isSubmitting={isSubmitting} />
-//         </form>
-//         <span className="block text-center text-neutral-700 dark:text-neutral-400">
-//           بازگشت به |
-//           <NcLink className={`text-sm p-1 ${pathname === '/signin' ? 'font-bold' : ''}`} href="/signin">
-//             ورود
-//           </NcLink>
-//           {" / "}
-//           <NcLink className={`text-sm p-1 ${pathname === '/signup' ? 'font-bold' : ''}`} href="/signup">
-//             ثبت نام
-//           </NcLink>
-//         </span>
-//       </div>
-//     </div>
-//   );
-// }
+      <div className="max-w-md mx-auto space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">ایمیل</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="ایمیل خود را وارد کنید"
+              {...register('email')}
+              aria-invalid={errors.email ? 'true' : 'false'}
+              aria-describedby={errors.email ? 'email-error' : undefined}
+            />
+            {errors.email && (
+              <p id="email-error" className="text-sm text-destructive" role="alert">
+                {errors.email.message}
+              </p>
+            )}
+          </div>
+
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? <Loading /> : 'ارسال لینک بازیابی'}
+          </Button>
+        </form>
+
+        {formState.error && (
+          <Alert variant="destructive">
+            <AlertDescription>{formState.error}</AlertDescription>
+          </Alert>
+        )}
+        {formState.success && (
+          <Alert variant="success">
+            <AlertDescription>{formState.success}</AlertDescription>
+          </Alert>
+        )}
+
+        <p className="text-center text-sm text-muted-foreground">
+          به یاد آوردید؟{' '}
+          <NcLink href="/signin" className="underline">
+            ورود به حساب
+          </NcLink>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default ForgotPasswordForm;
