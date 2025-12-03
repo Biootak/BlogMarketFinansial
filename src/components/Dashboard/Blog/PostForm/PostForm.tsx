@@ -145,10 +145,13 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
   }, [isEditing, defaultValues, form, localStorageKey]);
 
   const generateSlugFromTitle = useCallback((title: string) => {
-    const generatedSlug = generateSlug(title);
-    setSlug(generatedSlug);
-    form.setValue('slug', generatedSlug);
-  }, [form]);
+    // فقط در حالت ایجاد پست جدید، اسلاگ خودکار ساخته بشه
+    if (!isEditing) {
+      const generatedSlug = generateSlug(title);
+      setSlug(generatedSlug);
+      form.setValue('slug', generatedSlug);
+    }
+  }, [form, isEditing]);
 
   const handleSelectCategories = useCallback((selectedCategories: string[]) => {
     form.setValue('categories', selectedCategories);
@@ -327,13 +330,35 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                     name="slug"
                     render={({ field }) => (
                       <FormItem className="p-5">
-                        <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                          <FiLink className="w-4 h-4 text-violet-500" />
-                          اسلاگ (URL)
-                        </FormLabel>
+                        <div className="flex items-center justify-between">
+                          <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                            <FiLink className="w-4 h-4 text-violet-500" />
+                            اسلاگ (URL)
+                          </FormLabel>
+                          <div className="flex items-center gap-2">
+                            {/* دکمه بازسازی از عنوان */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const currentTitle = form.getValues('title');
+                                if (currentTitle) {
+                                  const newSlug = generateSlug(currentTitle);
+                                  setSlug(newSlug);
+                                  form.setValue('slug', newSlug);
+                                }
+                              }}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                              </svg>
+                              از عنوان
+                            </button>
+                          </div>
+                        </div>
                         <FormControl dir="ltr">
-                          <div className="flex items-center gap-2 mt-2 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-                            <span className="text-sm text-slate-400">biotak.ir/post/</span>
+                          <div className="flex items-center gap-2 mt-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                            <span className="text-sm text-slate-400 whitespace-nowrap">biotak.ir/post/</span>
                             <Input
                               {...field}
                               value={slug}
@@ -342,10 +367,14 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                                 setSlug(newSlug);
                                 field.onChange(newSlug);
                               }}
-                              className="flex-1 border-0 bg-transparent p-0 h-auto focus-visible:ring-0 text-violet-600 dark:text-violet-400 font-mono"
+                              placeholder="اسلاگ را وارد کنید..."
+                              className="flex-1 border-0 bg-transparent p-0 h-auto focus-visible:ring-0 font-mono text-sm text-violet-600 dark:text-violet-400"
                             />
                           </div>
                         </FormControl>
+                        <FormDescription className="mt-2 text-xs">
+                          اسلاگ را می‌توانید دستی ویرایش کنید یا با دکمه "از عنوان" بازسازی کنید.
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
