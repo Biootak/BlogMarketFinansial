@@ -1,9 +1,8 @@
-import type React from 'react';
 import Link from 'next/link';
 import * as motion from 'framer-motion/client';
-import SocialsList from '@/components/SocialsList/SocialsList';
-import { SOCIALS_DATA } from '@/components/SocialsShare/SocialsShare';
+import DynamicSocialsList from '@/components/SocialsList/DynamicSocialsList';
 import Logo from '@/components/Logo/Logo';
+import { getSystemSettingsData } from '@/data/getSystemSettings';
 
 interface WidgetFooterMenu {
   id: string;
@@ -33,7 +32,9 @@ const widgetMenus: WidgetFooterMenu[] = [
   },
 ];
 
-const Footer: React.FC = () => {
+const Footer = async () => {
+  const settings = await getSystemSettingsData();
+  const siteName = settings.siteName || 'بیوتاک';
   return (
     <footer className="relative py-20 overflow-hidden bg-gradient-to-b from-indigo-100 to-purple-100 dark:from-neutral-900 dark:to-indigo-900">
       <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0))]" />
@@ -47,10 +48,7 @@ const Footer: React.FC = () => {
           <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
             ما را در شبکه‌های اجتماعی دنبال کنید
           </h3>
-          <SocialsList
-            className="flex justify-center gap-4"
-            socials={SOCIALS_DATA}
-          />
+          <DynamicSocialsList className="flex justify-center gap-4" />
         </motion.div>
 
         <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
@@ -61,7 +59,7 @@ const Footer: React.FC = () => {
             className="space-y-6"
           >
             <Logo className="w-20 h-auto" />
-            <h2 className="text-xl font-bold text-neutral-900 dark:text-white"> Financial Market</h2>
+            <h2 className="text-xl font-bold text-neutral-900 dark:text-white">{siteName}</h2>
             <p className="text-base text-neutral-600 dark:text-neutral-300">
               ارائه بهترین خدمات ارز دیجیتال و بازارهای مالی با امنیت و سرعت بالا. ما با استفاده از
               فناوری‌های پیشرفته و تیم متخصص، بهترین تجربه معاملاتی را برای شما فراهم می‌کنیم.
@@ -153,7 +151,7 @@ const Footer: React.FC = () => {
           className="mt-16 pt-8 border-t border-neutral-200 dark:border-neutral-700 text-center"
         >
           <p className="text-sm text-neutral-600 dark:text-neutral-400 text-center">
-            <span dir="rtl">تمامی حقوق محفوظ است.</span> <span dir="ltr">© Financial Market</span>
+            <span dir="rtl">تمامی حقوق محفوظ است.</span> <span dir="ltr">© {siteName}</span>
           </p>
         </motion.div>
       </div>

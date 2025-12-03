@@ -2,10 +2,9 @@ import React from 'react';
 import ButtonPrimary from '@/components/Button/ButtonPrimary';
 import Input from '@/components/Input/Input';
 import Label from '@/components/Label/Label';
-import SocialsList from '@/components/SocialsList/SocialsList';
+import DynamicSocialsList from '@/components/SocialsList/DynamicSocialsList';
 import Textarea from '@/components/Textarea/Textarea';
 import Heading2 from '@/components/Heading/Heading2';
-import { SOCIALS_DATA } from '@/components/SocialsShare/SocialsShare';
 
 // Define info outside the component to avoid recalculating on each render
 const info = [
@@ -48,7 +47,7 @@ const PageContact = () => {
             <h3 className="uppercase font-semibold text-sm dark:text-neutral-200 tracking-wider">
               شبکه‌های اجتماعی
             </h3>
-            <SocialsList className="mt-2" socials={SOCIALS_DATA} />
+            <DynamicSocialsList className="mt-2" />
           </div>
         </div>
         <div className="border border-neutral-100 dark:border-neutral-700 lg:hidden" />

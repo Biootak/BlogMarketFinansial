@@ -21,6 +21,7 @@ import {
   HiOutlineBars3,
 } from 'react-icons/hi2';
 import { useSidebarStore } from '@/hooks/sidebarStore';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Avatar from '@/components/Avatar/Avatar';
@@ -134,6 +135,12 @@ const getMenuItems = (role: string) => {
   }
 };
 
+// Site Name Component
+const SiteName = () => {
+  const siteName = useSiteSettings((state) => state.siteName);
+  return <span className="text-lg font-bold text-white">{siteName || 'داشبورد'}</span>;
+};
+
 const Sidebar = ({ userRole }: SidebarProps) => {
   const pathname = usePathname();
   const router = useRouter();
@@ -242,7 +249,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
                   <div className="absolute inset-0 bg-white/20 rounded-xl blur-lg" />
                   <Logo className="relative w-10 h-10 rounded-xl" />
                 </div>
-                <span className="text-lg font-bold text-white">بیوتاک</span>
+                <SiteName />
               </div>
             )}
             <button

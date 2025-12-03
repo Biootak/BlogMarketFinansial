@@ -4,10 +4,9 @@ import type React from 'react';
 import ButtonClose from '@/components/ButtonClose/ButtonClose';
 import Logo from '@/components/Logo/Logo';
 import { Disclosure } from '@/app/headlessui';
-import SocialsList from '@/components/SocialsList/SocialsList';
+import ClientSocialsList from '@/components/SocialsList/ClientSocialsList';
 import SwitchDarkMode from '@/components/SwitchDarkMode/SwitchDarkMode';
 import Link from 'next/link';
-import { SOCIALS_DATA } from '../SocialsShare/SocialsShare';
 
 export interface NavMobileProps {
   onClickClose?: () => void;
@@ -155,8 +154,7 @@ const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
 
           <div className="flex justify-between items-center mt-4">
             <SwitchDarkMode className="bg-neutral-100 dark:bg-neutral-800" />
-            <SocialsList
-              socials={SOCIALS_DATA}
+            <ClientSocialsList
               itemClass="w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center rounded-full text-xl"
             />
           </div>

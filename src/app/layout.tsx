@@ -9,8 +9,8 @@ import { auth } from '@/auth';
 import Providers from '@/components/providers';
 
 export const metadata: Metadata = {
-  title: 'Biotak',
-  description: 'بازارهای مالی',
+  title: 'بازارهای مالی',
+  description: 'پلتفرم مورد اعتماد شما در بازار مالی',
 };
 
 const vazirmatn = Vazirmatn({
