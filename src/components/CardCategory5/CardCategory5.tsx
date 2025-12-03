@@ -17,7 +17,7 @@ const CardCategory5: FC<CardCategory5Props> = ({ className = '', taxonomy }) => 
     <Link href={`/archive/category/${name}`} className={`nc-CardCategory5 relative block group ${className}`}>
       <div
         className={
-          'flex-shrink-0 relative w-full aspect-w-8 aspect-h-5 h-0 rounded-3xl overflow-hidden z-0 group'
+          'flex-shrink-0 relative w-full aspect-[8/5] rounded-3xl overflow-hidden z-0 group'
         }
       >
         <Image

@@ -40,7 +40,7 @@ export function ExchangeRateTableWrapper({ exchangeRates }: { exchangeRates: Exc
         </Button>
       </div>
 
-      <div className="container mx-auto px-4">
+      <div className="container">
         {view === 'table' ? (
           <ExchangeRateTableView exchangeRates={exchangeRates} />
         ) : (

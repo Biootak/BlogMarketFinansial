@@ -40,7 +40,7 @@ export default async function PageAuthor({ params, searchParams }: PageAuthorPro
     <div className="nc-PageAuthor bg-neutral-50 dark:bg-neutral-900">
       <AuthorProfile author={author} />
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:pb-28 lg:pt-20 space-y-16 lg:space-y-28">
+      <div className="container py-16 lg:pb-28 lg:pt-20 space-y-16 lg:space-y-28">
         <AuthorContent
           initialPosts={postsResult.data?.posts || []}
           totalPages={postsResult.data?.pages || 1}

@@ -13,7 +13,7 @@ const CardCategory3: FC<CardCategory3Props> = ({ className = '', taxonomy }) => 
   const { count, name, thumbnail } = taxonomy;
   return (
     <Link href={`/archive/category/${name}`} className={`nc-CardCategory3 flex flex-col ${className}`}>
-      <div className="flex-shrink-0 relative w-full aspect-w-5 aspect-h-5 h-0 rounded-2xl overflow-hidden group">
+      <div className="flex-shrink-0 relative w-full aspect-[1/1] rounded-2xl overflow-hidden group">
         <Image
           src={thumbnail || ''}
           className="object-cover w-full h-full rounded-2xl"

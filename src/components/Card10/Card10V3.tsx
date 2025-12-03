@@ -67,11 +67,11 @@ const Card10V3: React.FC<Card10V3Props> = ({ className = 'h-full', post, gallery
 
   return (
     <div
-      className={`nc-Card10V3 group relative flex flex-col ${className}`}
+      className={`nc-Card10V3 group relative flex flex-col transition-shadow duration-300 hover:shadow-lg ${className}`}
       onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => setIsHover(false)}
     >
-      <div className="block group rounded-3xl flex-shrink-0 relative w-full aspect-w-16 aspect-h-16 sm:aspect-h-9 overflow-hidden z-0">
+      <div className="block group rounded-3xl flex-shrink-0 relative w-full aspect-[16/16] sm:aspect-[16/9] overflow-hidden z-0">
         {postType !== 'GALLERY' || !galleryImages || galleryImages.length === 0 ? (
           <PostFeaturedMedia post={post} isHover={isHover} />
         ) : (
@@ -82,7 +82,7 @@ const Card10V3: React.FC<Card10V3Props> = ({ className = 'h-full', post, gallery
           className="absolute inset-0 bg-neutral-900 bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity"
         />
       </div>
-      <div className="absolute top-3 inset-x-3 flex justify-between items-start space-x-4 rtl:space-x-reverse">
+      <div className="absolute top-3 inset-x-3 flex justify-between items-start gap-4">
         <CategoryBadgeList categories={categories} />
         <BookmarkCheck post={post}>
           {(isBookmarked) => (

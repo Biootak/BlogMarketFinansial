@@ -74,6 +74,7 @@ const SelectContent = React.forwardRef<
         className,
       )}
       position={position}
+      dir="rtl"
       {...props}
     >
       <SelectScrollUpButton />

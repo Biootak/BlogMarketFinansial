@@ -41,7 +41,7 @@ const PostCardMeta: React.FC<PostCardMetaProps> = ({
       {author && (
         <Link
           href={`/author/${author.id}`}
-          className="relative flex items-center space-x-2 rtl:space-x-reverse font-vazirmatn"
+          className="relative flex items-center gap-2 font-vazirmatn"
         >
           {!hiddenAvatar && (
             <Avatar

@@ -97,9 +97,9 @@ export default function SetupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white shadow-xl rounded-2xl p-8">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-900 dark:to-neutral-800 py-12">
+      <div className="container">
+        <div className="max-w-2xl mx-auto bg-white dark:bg-neutral-800 shadow-xl rounded-2xl p-8">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-extrabold text-gray-900 mb-2">
               تنظیمات اولیه سیستم

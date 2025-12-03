@@ -56,6 +56,7 @@ export default function Design7({ initialPosts, className = '' }: Props) {
                     alt={post.title}
                     fill
                     sizes={isFirst ? '66vw' : '33vw'}
+                    priority={i < 3}
                   />
                 </Link>
 

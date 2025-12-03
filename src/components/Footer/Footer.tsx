@@ -37,7 +37,7 @@ const Footer: React.FC = () => {
   return (
     <footer className="relative py-20 overflow-hidden bg-gradient-to-b from-indigo-100 to-purple-100 dark:from-neutral-900 dark:to-indigo-900">
       <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0))]" />
-      <div className="container relative z-10 mx-auto px-4">
+      <div className="container relative z-10">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}

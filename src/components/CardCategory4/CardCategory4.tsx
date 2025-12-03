@@ -42,7 +42,7 @@ const CardCategory4: FC<CardCategory4Props> = ({
 
   return (
     <Link href={`/archive/category/${name}`} className={`nc-CardCategory4 flex flex-col ${className}`}>
-      <div className="flex-shrink-0 relative w-full aspect-w-7 aspect-h-5 h-0 rounded-3xl overflow-hidden group">
+      <div className="flex-shrink-0 relative w-full aspect-[7/5] rounded-3xl overflow-hidden group">
         <Image
           alt="taxonomies"
           fill

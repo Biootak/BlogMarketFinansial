@@ -19,7 +19,7 @@ export default function Component({ className = '', post }: Card6Props) {
   return (
     <div
       dir="rtl"
-      className={`nc-Card6 group relative flex flex-row items-stretch p-2 sm:p-3 md:p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 shadow gap-3 sm:gap-4 ${className}`}
+      className={`nc-Card6 group relative flex flex-row items-stretch p-2 sm:p-3 md:p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 shadow hover:shadow-lg transition-shadow duration-300 gap-3 sm:gap-4 ${className}`}
     >
       <Link
         href={postLink}

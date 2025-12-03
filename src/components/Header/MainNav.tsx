@@ -14,7 +14,7 @@ export default async function MainNav() {
 
   return (
     <nav className="nc-MainNav relative z-10 bg-white dark:bg-neutral-900 border-b border-slate-100 dark:border-slate-700">
-      <div className="container mx-auto px-4">
+      <div className="container">
         <div className="h-20 flex items-center justify-between">
           <div className="flex items-center lg:hidden">
             <MenuBar />
