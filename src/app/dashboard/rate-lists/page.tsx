@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HiOutlineInformationCircle } from 'react-icons/hi2';
-import Loading from '@/components/Loading';
+import { TableSkeleton, SkeletonBase } from '@/components/Skeletons';
 import {
   DashboardPageHeader,
   DashboardSearchInput,
@@ -278,7 +278,18 @@ const RateListsPage = () => {
 
   const inputClassName = 'h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80';
 
-  if (isLoading) return <Loading />;
+  if (isLoading) return (
+    <div className="min-h-screen p-4 sm:p-6 lg:p-8 space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <SkeletonBase className="h-7 w-44 rounded-lg" />
+          <SkeletonBase className="h-4 w-56 rounded-md" />
+        </div>
+        <SkeletonBase className="h-10 w-36 rounded-xl" />
+      </div>
+      <TableSkeleton rows={8} />
+    </div>
+  );
 
 
   return (

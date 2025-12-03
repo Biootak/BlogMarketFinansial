@@ -4,21 +4,21 @@ import { useState } from 'react';
 import { Activity, BarChart3, Terminal, RefreshCw, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import dynamic from 'next/dynamic';
-import Loading from '@/components/Loading';
+import { ReportsSkeleton } from '@/components/Skeletons';
 import { cn } from '@/lib/utils';
 
 const SystemReports = dynamic(() => import('@/components/Dashboard/Reports/SystemReports'), {
-  loading: () => <Loading />,
+  loading: () => <ReportsSkeleton />,
   ssr: false,
 });
 
 const ActivityLog = dynamic(() => import('@/components/Dashboard/Reports/ActivityLog'), {
-  loading: () => <Loading />,
+  loading: () => <ReportsSkeleton />,
   ssr: false,
 });
 
 const SystemLogsData = dynamic(() => import('./SystemLogsData'), {
-  loading: () => <Loading />,
+  loading: () => <ReportsSkeleton />,
   ssr: false,
 });
 

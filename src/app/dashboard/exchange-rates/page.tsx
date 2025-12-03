@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import Loading from '@/components/Loading';
+import { ExchangeRatesSkeleton } from '@/components/Skeletons';
 import {
   DashboardPageHeader,
   DashboardTableContainer,
@@ -122,7 +122,7 @@ const ExchangeRatesPage: React.FC = () => {
 
   const inputClassName = 'h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80';
 
-  if (isLoading) return <Loading />;
+  if (isLoading) return <ExchangeRatesSkeleton />;
 
 
   return (

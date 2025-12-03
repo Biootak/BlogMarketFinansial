@@ -14,7 +14,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import SubmitButton from '@/components/SubmitButton';
 import LoadingMore from '@/components/LoadingMore';
-import Loading from '@/components/Loading';
+import { UsersTableSkeleton } from '@/components/Skeletons';
 import { useSession } from 'next-auth/react';
 import {
   DashboardPageHeader,
@@ -276,7 +276,7 @@ export default function UsersPage() {
       </DashboardPageHeader>
 
       {isLoading && page === 1 ? (
-        <Loading />
+        <UsersTableSkeleton rows={8} />
       ) : users.length === 0 ? (
         <DashboardTableContainer>
           <EmptyState

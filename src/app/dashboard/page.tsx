@@ -7,7 +7,7 @@ import { getStats, getScheduledPosts } from '@/actions/postActions';
 import { getPopularPosts } from '@/actions/getPopularPosts';
 import { getRecentDrafts } from '@/actions/getRecentDrafts';
 import { getViewStats } from '@/actions/getViewStats';
-import Loading from '@/components/Loading';
+import { DashboardPageSkeleton } from '@/components/Skeletons';
 import { checkRole } from '@/lib/auth';
 
 export default async function Dashboard() {
@@ -56,7 +56,7 @@ export default async function Dashboard() {
   }
 
   return (
-    <Suspense fallback={<Loading />}>
+    <Suspense fallback={<DashboardPageSkeleton />}>
       <DashboardPage
         stats={statsResult.data}
         scheduledPosts={scheduledPostsResult.data}

@@ -7,7 +7,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
-import Loading from '@/components/Loading';
+import { ChartSkeleton, StatsCardSkeleton } from '@/components/Skeletons';
 import { cn } from '@/lib/utils';
 
 interface SystemReportData {
@@ -197,7 +197,16 @@ export default function SystemReports() {
   }, [fetchData]);
 
   if (loading) {
-    return <Loading />;
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <StatsCardSkeleton key={i} />
+          ))}
+        </div>
+        <ChartSkeleton />
+      </div>
+    );
   }
 
   const chartData = [

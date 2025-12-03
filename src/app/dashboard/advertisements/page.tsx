@@ -22,7 +22,7 @@ import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
 import { PersianDatePicker } from '@/components/ui/PersianDatePicker';
 import SubmitButton from '@/components/SubmitButton';
 import LoadingMore from '@/components/LoadingMore';
-import Loading from '@/components/Loading';
+import { AdvertisementsSkeleton } from '@/components/Skeletons';
 import {
   DashboardPageHeader,
   DashboardSearchInput,
@@ -249,7 +249,7 @@ export default function AdvertisementsPage() {
       </DashboardPageHeader>
 
       {isLoading && page === 1 ? (
-        <Loading />
+        <AdvertisementsSkeleton />
       ) : ads.length === 0 ? (
         <DashboardTableContainer>
           <EmptyState

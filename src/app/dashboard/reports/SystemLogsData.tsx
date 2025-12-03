@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
-import Loading from '@/components/Loading';
+import { ReportsSkeleton } from '@/components/Skeletons';
 import { cn } from '@/lib/utils';
 
 interface SystemLog {
@@ -102,7 +102,7 @@ export default function SystemLogsData() {
   const totalPages = Math.ceil(total / limit);
 
   if (loading) {
-    return <Loading />;
+    return <ReportsSkeleton />;
   }
 
   return (
