@@ -51,7 +51,7 @@ export default function ReportsPage() {
 
   return (
     <div
-      className="container mx-auto p-4 md:p-6 lg:p-8 min-h-screen bg-gradient-to-br from-[rgb(var(--c-primary-50))] to-[rgb(var(--c-primary-100))]"
+      className="container py-4 md:py-6 lg:py-8 min-h-screen bg-gradient-to-br from-[rgb(var(--c-primary-50))] to-[rgb(var(--c-primary-100))]"
       dir="rtl"
     >
       <div className="mb-6 flex justify-between items-center">

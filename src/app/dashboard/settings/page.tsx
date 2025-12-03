@@ -141,7 +141,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-6 lg:p-8 min-h-screen rtl bg-gradient-to-br from-[rgb(var(--c-primary-50))] to-[rgb(var(--c-primary-100))]" style={{ direction: 'rtl' }}>
+    <div className="container py-4 md:py-6 lg:py-8 min-h-screen rtl bg-gradient-to-br from-[rgb(var(--c-primary-50))] to-[rgb(var(--c-primary-100))]" style={{ direction: 'rtl' }}>
       <div className="flex flex-col space-y-8">
         {/* Header Section with Gradient */}
         <div className="relative overflow-hidden rounded-2xl border shadow-lg">

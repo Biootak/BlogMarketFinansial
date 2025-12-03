@@ -459,9 +459,9 @@ export default function AdvertisementsPage() {
 
   return (
 
-    <div className="container mx-auto p-4 sm:p-6 lg:p-8 rtl">
+    <div className="container py-4 sm:py-6 lg:py-8 rtl">
 
-      <h1 className="text-2xl sm:text-xl font-bold mb-4 sm:mb-6 lg:mb-8 text-right text-primary-700 dark:text-primary-300">
+      <h1 className="text-2xl sm:text-xl font-bold mb-4 sm:mb-6 lg:mb-8 text-end text-primary-700 dark:text-primary-300">
 
         مدیریت تبلیغات
 

@@ -399,7 +399,7 @@ const RateListsPage = () => {
   if (isLoading) return <Loading />;
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 lg:p-8 rtl" dir="rtl">
+    <div className="container py-4 sm:py-6 lg:py-8 rtl" dir="rtl">
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-0 justify-between items-center mb-6">
         <h1 className="text-lg sm:text-2xl font-bold">مدیریت لیست‌های نرخ</h1>
         <Button
