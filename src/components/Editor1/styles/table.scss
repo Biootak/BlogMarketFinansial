@@ -1,5 +1,6 @@
 /* Table Styles */
-.ProseMirror {
+.ProseMirror,
+.editor-content {
   table {
     border-collapse: collapse;
     margin: 1.5rem 0;
@@ -101,7 +102,8 @@
 }
 
 /* Dark mode support */
-.dark .ProseMirror {
+.dark .ProseMirror,
+.dark .editor-content {
   table {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 
@@ -122,10 +124,12 @@
 }
 
 /* Hover effect for table rows */
-.ProseMirror table tbody tr:hover {
+.ProseMirror table tbody tr:hover,
+.editor-content table tbody tr:hover {
   background-color: rgba(59, 130, 246, 0.05);
 }
 
-.dark .ProseMirror table tbody tr:hover {
+.dark .ProseMirror table tbody tr:hover,
+.dark .editor-content table tbody tr:hover {
   background-color: rgba(59, 130, 246, 0.1);
 }

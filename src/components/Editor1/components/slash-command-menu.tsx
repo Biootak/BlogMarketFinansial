@@ -65,6 +65,10 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
           return true;
         }
 
+        if (event.key === 'Escape') {
+          return true;
+        }
+
         return false;
       },
     }));

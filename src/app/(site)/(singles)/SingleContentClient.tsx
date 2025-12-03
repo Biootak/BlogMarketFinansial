@@ -13,6 +13,7 @@ import type { PostWithRelations } from '@/types/types';
 import MarkdownRenderer from './MarkdownRenderer';
 import EditorContentRenderer from '@/components/Editor1/EditorContentRenderer';
 import { Button } from '@/components/ui/button';
+import '@/components/Editor1/styles/renderer.scss';
 
 interface SingleContentClientProps {
   post: PostWithRelations;
@@ -80,22 +81,43 @@ const SingleContentClient = ({
       <div className="nc-SingleContent space-y-10">
         <div
           id="single-entry-content"
-          className="prose lg:prose-lg !max-w-screen-md mx-auto dark:prose-invert"
+          className="!max-w-screen-md mx-auto"
           ref={contentRef}
         >
           {post.content ? (
-            // Check if content is TipTap JSON or Markdown
+            // Check content format: JSON, HTML, or Markdown
             (() => {
+              const content = post.content as string;
+              
+              // Try to parse as JSON first (new format)
               try {
-                const parsed = typeof post.content === 'string' ? JSON.parse(post.content) : post.content;
+                const parsed = JSON.parse(content);
                 if (parsed && parsed.type === 'doc') {
                   // TipTap JSON content
                   return <EditorContentRenderer content={parsed} />;
                 }
               } catch {
-                // Not JSON, treat as Markdown
+                // Not JSON, continue to check other formats
               }
-              return <MarkdownRenderer content={post.content as string} />;
+              
+              // Check if it's HTML (starts with < tag)
+              if (content.trim().startsWith('<')) {
+                // HTML content - render directly with styles
+                return (
+                  <div 
+                    className="editor-content prose lg:prose-lg dark:prose-invert"
+                    // biome-ignore lint/security/noDangerouslySetInnerHtml: Legacy HTML content
+                    dangerouslySetInnerHTML={{ __html: content }}
+                  />
+                );
+              }
+              
+              // Markdown content
+              return (
+                <div className="prose lg:prose-lg dark:prose-invert">
+                  <MarkdownRenderer content={content} />
+                </div>
+              );
             })()
           ) : (
             <p>محتوایی برای نمایش وجود ندارد.</p>

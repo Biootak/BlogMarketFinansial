@@ -9,6 +9,8 @@ import { TooltipProvider } from '@radix-ui/react-tooltip';
 const MenuButtonUndo = dynamic(() => import('../controls/menu-button-undo'));
 const MenuButtonRedo = dynamic(() => import('../controls/menu-button-redo'));
 const MenuSelectHeading = dynamic(() => import('../controls/menu-select-heading'));
+const MenuSelectFontSize = dynamic(() => import('../controls/menu-select-font-size'));
+const MenuSelectFontFamily = dynamic(() => import('../controls/menu-select-font-family'));
 const MenuButtonBold = dynamic(() => import('../controls/menu-button-bold'));
 const MenuButtonItalic = dynamic(() => import('../controls/menu-button-italic'));
 const MenuButtonUnderline = dynamic(() => import('../controls/menu-button-underline'));
@@ -47,6 +49,8 @@ const FixedMenu = ({ editor, className }: FixedMenuProps) => {
 
           <Toolbar.Group className="flex-shrink-0 [&_svg]:text-primary-600 [&_svg]:stroke-primary-600">
             <MenuSelectHeading editor={editor} />
+            <MenuSelectFontFamily editor={editor} />
+            <MenuSelectFontSize editor={editor} />
           </Toolbar.Group>
 
           <Toolbar.Divider className="hidden sm:block" />

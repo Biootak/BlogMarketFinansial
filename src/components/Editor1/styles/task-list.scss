@@ -1,5 +1,6 @@
 /* Task List Styles */
-.ProseMirror {
+.ProseMirror,
+.editor-content {
   ul[data-type="taskList"] {
     list-style: none;
     padding: 0;
@@ -45,7 +46,8 @@
 }
 
 /* Dark mode support */
-.dark .ProseMirror {
+.dark .ProseMirror,
+.dark .editor-content {
   ul[data-type="taskList"] {
     li {
       > label {

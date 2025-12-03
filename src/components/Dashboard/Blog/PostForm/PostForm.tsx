@@ -248,10 +248,11 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                     },
                   }}
                   onUpdate={({ editor }) => {
-                    const html = !editor.isEmpty ? editor.getHTML() : '';
-                    setEditorContent(html);
-                    field.onChange(html);
-                    saveToLocalStorage({ ...form.getValues(), content: html });
+                    // ذخیره به صورت JSON برای حفظ همه استایل‌ها
+                    const json = !editor.isEmpty ? JSON.stringify(editor.getJSON()) : '';
+                    setEditorContent(json);
+                    field.onChange(json);
+                    saveToLocalStorage({ ...form.getValues(), content: json });
                   }}
                 />
               </FormControl>

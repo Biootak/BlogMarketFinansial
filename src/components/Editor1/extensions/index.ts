@@ -6,6 +6,8 @@ import TextStyle from '@tiptap/extension-text-style';
 import TextAlign from '@tiptap/extension-text-align';
 import Placeholder from '@tiptap/extension-placeholder';
 import CharacterCount from '@tiptap/extension-character-count';
+import Superscript from '@tiptap/extension-superscript';
+import Subscript from '@tiptap/extension-subscript';
 
 import Link from './link';
 import Image from './image-resize';
@@ -17,8 +19,13 @@ import { SlashCommands } from './slash-commands';
 import slashCommandsSuggestion from '../lib/slash-commands-suggestion';
 import { Callout } from './callout';
 import { Embed } from './embed';
-import Superscript from '@tiptap/extension-superscript';
-import Subscript from '@tiptap/extension-subscript';
+import { detailsExtensions } from './details';
+import { Math } from './math';
+import { Mention, mentionSuggestion } from './mention';
+import { FontSize } from './font-size';
+import { FontFamily } from './font-family';
+import { DragHandle } from './drag-handle';
+import { KeyboardShortcuts } from './keyboard-shortcuts';
 
 export const extensions = [
   Image,
@@ -63,4 +70,13 @@ export const extensions = [
   Embed,
   Superscript,
   Subscript,
+  ...detailsExtensions,
+  Math,
+  Mention.configure({
+    suggestion: mentionSuggestion,
+  }),
+  FontSize,
+  FontFamily,
+  DragHandle,
+  KeyboardShortcuts,
 ];

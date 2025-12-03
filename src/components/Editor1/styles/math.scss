@@ -1,0 +1,23 @@
+// Math/LaTeX Block Styles
+
+.ProseMirror,
+.editor-content {
+  [data-math] {
+    margin: 1rem 0;
+  }
+
+  .katex {
+    font-size: 1.125rem;
+  }
+
+  .katex-display {
+    margin: 1rem 0;
+    overflow-x: auto;
+  }
+}
+
+// KaTeX overrides for RTL support
+.katex {
+  direction: ltr;
+  text-align: center;
+}

@@ -1,13 +1,15 @@
 'use client';
 
-import React from 'react';
-import { generateHTML } from '@tiptap/html';
+import React, { useMemo } from 'react';
+import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import Color from '@tiptap/extension-color';
 import Highlight from '@tiptap/extension-highlight';
 import TextStyle from '@tiptap/extension-text-style';
 import TextAlign from '@tiptap/extension-text-align';
+import Superscript from '@tiptap/extension-superscript';
+import Subscript from '@tiptap/extension-subscript';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Table from '@tiptap/extension-table';
@@ -16,24 +18,26 @@ import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
-import Superscript from '@tiptap/extension-superscript';
-import Subscript from '@tiptap/extension-subscript';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { common, createLowlight } from 'lowlight';
-import { CalloutRender } from './extensions/callout-render';
-import { EmbedRender } from './extensions/embed-render';
+import { Callout } from './extensions/callout';
+import { Embed } from './extensions/embed';
+import { FontSize } from './extensions/font-size';
+import { FontFamily } from './extensions/font-family';
 
 import './styles/index.scss';
 
 const lowlight = createLowlight(common);
 
-// Extensions for rendering (without interactive features)
+// Extensions for read-only rendering (without interactive features)
 const renderExtensions = [
   StarterKit.configure({
     heading: {
       levels: [1, 2, 3, 4, 5, 6],
     },
     codeBlock: false,
+    dropcursor: false,
+    gapcursor: false,
   }),
   Underline,
   TextStyle,
@@ -65,8 +69,10 @@ const renderExtensions = [
   CodeBlockLowlight.configure({
     lowlight,
   }),
-  CalloutRender,
-  EmbedRender,
+  Callout,
+  Embed,
+  FontSize,
+  FontFamily,
 ];
 
 interface EditorContentRendererProps {
@@ -78,18 +84,51 @@ const EditorContentRenderer: React.FC<EditorContentRendererProps> = ({
   content, 
   className = '' 
 }) => {
-  // Parse content if it's a string
-  const jsonContent = typeof content === 'string' ? JSON.parse(content) : content;
+  // Parse content
+  const jsonContent = useMemo(() => {
+    try {
+      return typeof content === 'string' ? JSON.parse(content) : content;
+    } catch (error) {
+      console.error('Error parsing content:', error);
+      return null;
+    }
+  }, [content]);
 
-  // Generate HTML from TipTap JSON
-  const html = generateHTML(jsonContent, renderExtensions);
+  // Use TipTap editor in read-only mode
+  const editor = useEditor({
+    extensions: renderExtensions,
+    content: jsonContent,
+    editable: false,
+    immediatelyRender: false,
+    editorProps: {
+      attributes: {
+        class: 'py-4 px-4 prose prose-sm sm:prose-base lg:prose-lg prose-primary dark:prose-invert focus:outline-none',
+      },
+    },
+  }, []);
+
+  // Update content when it changes
+  React.useEffect(() => {
+    if (editor && jsonContent) {
+      editor.commands.setContent(jsonContent);
+    }
+  }, [editor, jsonContent]);
+
+  if (!jsonContent || typeof jsonContent !== 'object') {
+    return <div className={className}>محتوا نامعتبر است</div>;
+  }
+
+  if (!editor) {
+    return <div className={className}>در حال بارگذاری...</div>;
+  }
 
   return (
-    <div 
-      className={`ProseMirror prose lg:prose-lg dark:prose-invert max-w-none ${className}`}
-      // biome-ignore lint/security/noDangerouslySetInnerHtml: TipTap content is sanitized
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
+    <div className={`editor-content-renderer ${className}`}>
+      <EditorContent 
+        editor={editor} 
+        className="bg-transparent min-h-0 [&_.ProseMirror]:p-0"
+      />
+    </div>
   );
 };
 

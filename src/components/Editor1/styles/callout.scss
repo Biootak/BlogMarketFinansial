@@ -1,5 +1,6 @@
 /* Callout Styles */
-.ProseMirror {
+.ProseMirror,
+.editor-content {
   [data-callout] {
     margin: 1rem 0;
     padding: 1rem;
@@ -15,5 +16,45 @@
         margin-bottom: 0;
       }
     }
+  }
+
+  /* Callout types */
+  .callout-info {
+    background-color: #eff6ff;
+    border-color: #3b82f6;
+  }
+
+  .callout-warning {
+    background-color: #fffbeb;
+    border-color: #f59e0b;
+  }
+
+  .callout-error {
+    background-color: #fef2f2;
+    border-color: #ef4444;
+  }
+
+  .callout-success {
+    background-color: #f0fdf4;
+    border-color: #22c55e;
+  }
+}
+
+.dark .ProseMirror,
+.dark .editor-content {
+  .callout-info {
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+
+  .callout-warning {
+    background-color: rgba(245, 158, 11, 0.1);
+  }
+
+  .callout-error {
+    background-color: rgba(239, 68, 68, 0.1);
+  }
+
+  .callout-success {
+    background-color: rgba(34, 197, 94, 0.1);
   }
 }

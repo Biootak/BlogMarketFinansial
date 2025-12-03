@@ -45,6 +45,14 @@ export const defaultSlashCommands: SlashCommandItem[] = [
     category: 'basic',
     command: (editor) => editor.chain().focus().toggleHeading({ level: 3 }).run(),
   },
+  {
+    title: 'عنوان ۴',
+    description: 'عنوان خیلی کوچک',
+    icon: 'H4',
+    keywords: ['heading', 'h4', 'عنوان', 'تیتر'],
+    category: 'basic',
+    command: (editor) => editor.chain().focus().toggleHeading({ level: 4 }).run(),
+  },
   // Lists
   {
     title: 'لیست نقطه‌ای',
@@ -69,6 +77,33 @@ export const defaultSlashCommands: SlashCommandItem[] = [
     keywords: ['task', 'todo', 'checkbox', 'وظیفه', 'چک'],
     category: 'list',
     command: (editor) => editor.chain().focus().toggleTaskList().run(),
+  },
+  // Media
+  {
+    title: 'تصویر',
+    description: 'درج تصویر',
+    icon: '🖼️',
+    keywords: ['image', 'picture', 'تصویر', 'عکس'],
+    category: 'media',
+    command: (editor) => {
+      const url = window.prompt('آدرس تصویر را وارد کنید:');
+      if (url) {
+        editor.chain().focus().setImage({ src: url }).run();
+      }
+    },
+  },
+  {
+    title: 'ویدیو یوتیوب',
+    description: 'جاسازی ویدیو از یوتیوب',
+    icon: '▶️',
+    keywords: ['youtube', 'video', 'ویدیو', 'یوتیوب'],
+    category: 'media',
+    command: (editor) => {
+      const url = window.prompt('آدرس ویدیو یوتیوب را وارد کنید:');
+      if (url) {
+        editor.chain().focus().setEmbed({ src: url }).run();
+      }
+    },
   },
   // Advanced
   {
@@ -135,6 +170,22 @@ export const defaultSlashCommands: SlashCommandItem[] = [
     keywords: ['callout', 'error', 'خطا'],
     category: 'advanced',
     command: (editor) => editor.chain().focus().setCallout({ type: 'error' }).run(),
+  },
+  {
+    title: 'آکاردئون',
+    description: 'بلاک قابل باز و بسته شدن',
+    icon: '📂',
+    keywords: ['details', 'accordion', 'toggle', 'آکاردئون', 'جزئیات'],
+    category: 'advanced',
+    command: (editor) => editor.chain().focus().setDetails().run(),
+  },
+  {
+    title: 'فرمول ریاضی',
+    description: 'فرمول LaTeX',
+    icon: '∑',
+    keywords: ['math', 'latex', 'formula', 'equation', 'فرمول', 'ریاضی'],
+    category: 'advanced',
+    command: (editor) => editor.chain().focus().setMath().run(),
   },
 ];
 

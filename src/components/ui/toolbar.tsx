@@ -108,9 +108,40 @@ const ToolbarButton = forwardRef<HTMLButtonElement, ToolbarButtonProps>(
 
 ToolbarButton.displayName = 'ToolbarButton';
 
+export type ToolbarSelectProps = HTMLProps<HTMLSelectElement> & {
+  tooltip?: string;
+};
+
+const ToolbarSelect = forwardRef<HTMLSelectElement, ToolbarSelectProps>(
+  ({ children, className, tooltip, ...rest }, ref) => {
+    const selectClass = cn(
+      'h-8 px-2 text-sm bg-transparent border border-gray-200 dark:border-gray-700 rounded',
+      'hover:bg-primary-50 dark:hover:bg-primary-900/20',
+      'focus:outline-none focus:ring-1 focus:ring-primary-500',
+      'text-primary-600 dark:text-primary-400',
+      className,
+    );
+
+    const component = (
+      <select className={selectClass} ref={ref} {...rest}>
+        {children}
+      </select>
+    );
+
+    if (tooltip) {
+      return <Tooltip>{component}</Tooltip>;
+    }
+
+    return component;
+  },
+);
+
+ToolbarSelect.displayName = 'ToolbarSelect';
+
 export const Toolbar = {
   Wrapper: ToolbarWrapper,
   Button: ToolbarButton,
   Divider: ToolbarDivider,
   Group: ToolbarGroup,
+  Select: ToolbarSelect,
 };

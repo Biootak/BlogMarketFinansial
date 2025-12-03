@@ -1,0 +1,86 @@
+// Details/Accordion Block Styles
+
+.ProseMirror,
+.editor-content {
+  details {
+    margin: 1rem 0;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    overflow: hidden;
+
+    summary {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      background-color: #f9fafb;
+      cursor: pointer;
+      font-weight: 500;
+      color: #111827;
+      transition: background-color 0.2s;
+      list-style: none;
+
+      &::-webkit-details-marker {
+        display: none;
+      }
+
+      &::before {
+        content: '▶';
+        color: #6b7280;
+        font-size: 0.75rem;
+        transition: transform 0.2s;
+      }
+
+      &:hover {
+        background-color: #f3f4f6;
+      }
+    }
+
+    &[open] summary::before {
+      transform: rotate(90deg);
+    }
+
+    [data-details-content] {
+      padding: 0.75rem 1rem;
+      border-top: 1px solid #e5e7eb;
+    }
+  }
+
+  .details-summary {
+    display: inline;
+  }
+
+  .details-content {
+    p:first-child {
+      margin-top: 0;
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.dark .ProseMirror,
+.dark .editor-content {
+  details {
+    border-color: #374151;
+
+    summary {
+      background-color: #1f2937;
+      color: #f3f4f6;
+
+      &::before {
+        color: #9ca3af;
+      }
+
+      &:hover {
+        background-color: #374151;
+      }
+    }
+
+    [data-details-content] {
+      border-color: #374151;
+    }
+  }
+}

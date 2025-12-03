@@ -1,5 +1,6 @@
 /* Embed Styles */
-.ProseMirror {
+.ProseMirror,
+.editor-content {
   [data-embed] {
     margin: 1rem 0;
     
