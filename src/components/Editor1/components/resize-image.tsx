@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model';
 import { type NodeViewProps, NodeViewWrapper } from '@tiptap/react';
+import { AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
 
 interface ImageNodeAttributes {
   src: string;
@@ -101,12 +102,43 @@ const ResizeImage = ({ editor, node, updateAttributes }: ResizeImageProps) => {
     };
   }, [isResizing, direction, initialPosition, initialSize, handleResize]);
 
+  const handleAlignChange = (align: 'left' | 'center' | 'right') => {
+    updateAttributes({ textAlign: align });
+  };
+
   return (
     <NodeViewWrapper ref={wrapperRef} className="group relative" style={{ textAlign }}>
       {!isEditable ? (
         <img className="inline-block" src={src} alt="" style={{ width }} />
       ) : (
         <div className="relative inline-block" contentEditable={false}>
+          {/* Alignment buttons - show on hover */}
+          <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-50 flex gap-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button
+              type="button"
+              onClick={() => handleAlignChange('left')}
+              className={`p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 ${textAlign === 'left' ? 'bg-primary-100 text-primary-600' : 'text-gray-600 dark:text-gray-300'}`}
+              title="چپ‌چین"
+            >
+              <AlignLeft size={16} />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleAlignChange('center')}
+              className={`p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 ${textAlign === 'center' ? 'bg-primary-100 text-primary-600' : 'text-gray-600 dark:text-gray-300'}`}
+              title="وسط‌چین"
+            >
+              <AlignCenter size={16} />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleAlignChange('right')}
+              className={`p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 ${textAlign === 'right' ? 'bg-primary-100 text-primary-600' : 'text-gray-600 dark:text-gray-300'}`}
+              title="راست‌چین"
+            >
+              <AlignRight size={16} />
+            </button>
+          </div>
           <div
             onMouseDown={handleMouseDown('left')}
             className="absolute z-40 h-full cursor-col-resize top-0 flex w-6 select-none flex-col justify-center after:flex after:h-12 after:w-[3px] after:rounded-[6px] after:bg-blue-500 after:opacity-0 after:content-['_'] group-hover:after:opacity-100 -left-2.5 -ml-3 pl-3"

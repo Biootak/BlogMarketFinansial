@@ -33,6 +33,14 @@ export default BaseImage.extend({
           alt: attributes.alt,
         }),
       },
+      textAlign: {
+        default: 'center',
+        parseHTML: (element) => element.getAttribute('data-text-align') || element.style.textAlign || 'center',
+        renderHTML: (attributes) => ({
+          'data-text-align': attributes.textAlign,
+          style: `text-align: ${attributes.textAlign}`,
+        }),
+      },
     };
   },
 

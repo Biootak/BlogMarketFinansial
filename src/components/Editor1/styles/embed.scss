@@ -1,0 +1,16 @@
+/* Embed Styles */
+.ProseMirror {
+  [data-embed] {
+    margin: 1rem 0;
+    
+    iframe {
+      max-width: 100%;
+      border-radius: 0.5rem;
+    }
+    
+    .twitter-embed {
+      max-width: 550px;
+      margin: 0 auto;
+    }
+  }
+}

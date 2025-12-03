@@ -21,6 +21,10 @@ const MenuButtonLink = dynamic(() => import('../controls/menu-button-link'));
 const MenuButtonBlockquote = dynamic(() => import('../controls/menu-button-blockquote'));
 const MenuButtonCodeblock = dynamic(() => import('../controls/menu-button-codeblock'));
 const MenuButtonImage = dynamic(() => import('../controls/menu-button-image'));
+const MenuButtonTable = dynamic(() => import('../controls/menu-button-table'));
+const MenuButtonTaskList = dynamic(() => import('../controls/menu-button-task-list'));
+const MenuButtonSuperscript = dynamic(() => import('../controls/menu-button-superscript'));
+const MenuButtonSubscript = dynamic(() => import('../controls/menu-button-subscript'));
 
 export type FixedMenuProps = {
   editor: Editor;
@@ -51,6 +55,8 @@ const FixedMenu = ({ editor, className }: FixedMenuProps) => {
             <MenuButtonBold editor={editor} />
             <MenuButtonItalic editor={editor} />
             <MenuButtonUnderline editor={editor} />
+            <MenuButtonSuperscript editor={editor} />
+            <MenuButtonSubscript editor={editor} />
           </Toolbar.Group>
 
           <Toolbar.Divider className="hidden sm:block" />
@@ -71,6 +77,7 @@ const FixedMenu = ({ editor, className }: FixedMenuProps) => {
           <Toolbar.Group className="flex-shrink-0 [&_svg]:text-primary-600 [&_svg]:stroke-primary-600">
             <MenuButtonOrderedList editor={editor} />
             <MenuButtonBulletedList editor={editor} />
+            <MenuButtonTaskList editor={editor} />
           </Toolbar.Group>
 
           <Toolbar.Divider className="hidden sm:block" />
@@ -80,6 +87,7 @@ const FixedMenu = ({ editor, className }: FixedMenuProps) => {
             <MenuButtonBlockquote editor={editor} />
             <MenuButtonCodeblock editor={editor} />
             <MenuButtonImage editor={editor} />
+            <MenuButtonTable editor={editor} />
           </Toolbar.Group>
         </div>
       </Toolbar.Wrapper>

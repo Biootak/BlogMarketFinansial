@@ -5,6 +5,10 @@ import { EditorContent, type EditorOptions, useEditor } from '@tiptap/react';
 import { extensions as builtInExtensions } from './extensions';
 import FixedMenu from './components/fixed-menu';
 import LinkBubbleMenu from './components/link-bubble-menu';
+import TableContextMenu from './components/table-context-menu';
+import FloatingMenuComponent from './components/floating-menu';
+import TextBubbleMenu from './components/text-bubble-menu';
+import TableToolbar from './components/table-toolbar';
 import type { EditorInstance } from '.';
 import { getToCItems, type TocItem } from './lib/table-of-contents';
 
@@ -121,6 +125,10 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
         )}
         <div className="rounded-lg shadow-md overflow-hidden">
           <LinkBubbleMenu editor={editor} />
+          <TableContextMenu editor={editor} />
+          <FloatingMenuComponent editor={editor} />
+          <TextBubbleMenu editor={editor} />
+          <TableToolbar editor={editor} />
           <EditorContent
             editor={editor}
             className={`bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 min-h-[200px] sm:min-h-[300px] lg:min-h-[400px] ${contentClassName}`}

@@ -11,12 +11,24 @@ import Link from './link';
 import Image from './image-resize';
 import CodeBlockLowlight from './code-block-lowlight/code-block-lowlight';
 import Heading from './heading';
+import { tableExtensions } from './table';
+import { taskExtensions } from './task-list';
+import { SlashCommands } from './slash-commands';
+import slashCommandsSuggestion from '../lib/slash-commands-suggestion';
+import { Callout } from './callout';
+import { Embed } from './embed';
+import Superscript from '@tiptap/extension-superscript';
+import Subscript from '@tiptap/extension-subscript';
 
 export const extensions = [
   Image,
   StarterKit.configure({
     heading: false,
-    horizontalRule: false,
+    horizontalRule: {
+      HTMLAttributes: {
+        class: 'my-4 border-t-2 border-gray-300 dark:border-gray-600',
+      },
+    },
     codeBlock: false,
     hardBreak: false,
     dropcursor: {},
@@ -42,4 +54,13 @@ export const extensions = [
   }),
   CodeBlockLowlight,
   CharacterCount,
+  ...tableExtensions,
+  ...taskExtensions,
+  SlashCommands.configure({
+    suggestion: slashCommandsSuggestion,
+  }),
+  Callout,
+  Embed,
+  Superscript,
+  Subscript,
 ];
