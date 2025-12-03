@@ -58,7 +58,7 @@ const PaginationClient: React.FC<PaginationClientProps> = ({
   return (
     <div className="flex justify-center mt-12">
       <nav
-        className={`nc-Pagination inline-flex items-center gap-2 rtl:space-x-reverse text-base font-medium ${className}`}
+        className={`nc-Pagination inline-flex items-center gap-2 text-base font-medium ${className}`}
       >
         <button
           type="button"

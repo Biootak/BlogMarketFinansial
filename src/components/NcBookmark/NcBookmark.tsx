@@ -64,6 +64,7 @@ const NcBookmark: React.FC<NcBookmarkProps> = ({
         onClick={handleClick}
         disabled={isPending}
         title={isBookmarked ? 'حذف از لیست خواندن' : 'ذخیره در لیست خواندن'}
+        aria-label={isBookmarked ? 'حذف از لیست خواندن' : 'ذخیره در لیست خواندن'}
         whileTap={{ scale: 0.95 }}
       >
         <motion.div

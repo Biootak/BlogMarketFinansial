@@ -23,19 +23,19 @@ const SectionSubscribe2: FC<SectionSubscribe2Props> = async ({ className = '' })
           و خلاقیت.
         </p>
         <ul className="space-y-4 mt-6 sm:mt-8">
-          <li className="flex items-center space-x-4 space-x-reverse">
+          <li className="flex items-center gap-4">
             <Badge variant="outline" className="text-purple-600 dark:text-purple-400 animate-pulse">
               ۰۱
             </Badge>
-            <span className="font-medium text-gray-700 dark:text-gray-200 text-sm sm:text-base">
+            <span className="font-medium text-neutral-700 dark:text-neutral-200 text-sm sm:text-base">
               دسترسی به محتوای انحصاری
             </span>
           </li>
-          <li className="flex items-center space-x-4 space-x-reverse">
+          <li className="flex items-center gap-4">
             <Badge variant="outline" className="text-pink-600 dark:text-pink-400 animate-pulse">
               ۰۲
             </Badge>
-            <span className="font-medium text-gray-700 dark:text-gray-200 text-sm sm:text-base">
+            <span className="font-medium text-neutral-700 dark:text-neutral-200 text-sm sm:text-base">
               اطلاع از رویدادها و وبینارهای ویژه
             </span>
           </li>

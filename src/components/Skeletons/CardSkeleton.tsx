@@ -40,7 +40,7 @@ const CardSkeleton: React.FC<CardSkeletonProps> = ({
       )}
       <div className="p-4 flex flex-col flex-grow">
         {!hiddenAuthor && (
-          <div className="flex items-center space-x-3 mb-4">
+          <div className="flex items-center gap-3 mb-4">
             <Skeleton className="w-10 h-10 rounded-full bg-neutral-300 dark:bg-neutral-600" />
             <div className="flex-grow">
               <Skeleton className="h-3 w-24 mb-2 bg-neutral-200 dark:bg-neutral-700" />
@@ -58,7 +58,7 @@ const CardSkeleton: React.FC<CardSkeletonProps> = ({
           <Skeleton className="h-4 w-[75%] bg-neutral-100 dark:bg-neutral-800" />
         </div>
         <div className="flex items-center justify-between mt-auto">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <Skeleton className="w-8 h-8 rounded-full bg-neutral-300 dark:bg-neutral-600" />
             <Skeleton className="h-3 w-12 bg-neutral-200 dark:bg-neutral-700" />
           </div>

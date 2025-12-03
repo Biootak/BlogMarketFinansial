@@ -41,9 +41,9 @@ const SectionSliderNewCategories: FC<SectionSliderNewCategoriesProps> = async ({
 };
 
 const LoadingSlider: FC = () => (
-  <div className="animate-pulse flex space-x-4 overflow-hidden">
+  <div className="animate-pulse flex gap-4 overflow-hidden">
     {[...Array(5)].map((_, i) => (
-      <div key={i} className="w-1/5 h-32 bg-gray-300 dark:bg-gray-700 rounded-lg" />
+      <div key={i} className="w-1/5 h-32 bg-neutral-300 dark:bg-neutral-700 rounded-lg" />
     ))}
   </div>
 );

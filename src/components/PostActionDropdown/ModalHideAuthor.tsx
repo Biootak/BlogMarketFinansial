@@ -44,7 +44,7 @@ const ModalHideAuthor: FC<ModalHideAuthorProps> = ({
           We will hide all articles from <strong>{auhthor.displayName}</strong>.
           You will no longer see their articles?
         </span>
-        <div className="mt-4 space-x-3">
+        <div className="mt-4 flex gap-3">
           <ButtonPrimary
             className="!bg-red-500"
             onClick={handleClickSubmitForm}

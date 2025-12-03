@@ -30,7 +30,7 @@ export default async function MainNav() {
 
           <div className="flex items-center">
             {!session?.user && (
-              <div className="hidden sm:flex items-center space-x-4 gap-2">
+              <div className="hidden sm:flex items-center gap-2">
                 <Link
                   href="/signin"
                   className="nc-Button relative h-auto inline-flex items-center justify-center rounded-full transition-colors text-sm sm:text-base font-medium px-4 py-2 sm:px-6 disabled:bg-opacity-70 bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700 hover:from-primary-600 hover:via-primary-700 hover:to-primary-800 text-white shadow-sm"

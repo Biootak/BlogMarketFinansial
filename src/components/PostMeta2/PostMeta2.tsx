@@ -30,8 +30,8 @@ const PostMeta2: FC<PostMeta2Props> = ({
         size === 'normal' ? 'text-xs sm:text-sm' : 'text-xs'
       } ${className} rtl`}
     >
-      <div className="flex items-center space-s-4 mb-2 sm:mb-0">
-        <div className="flex items-center group space-x-1">
+      <div className="flex items-center gap-4 mb-2 sm:mb-0">
+        <div className="flex items-center group gap-1">
           <Icon
             name="Calendar"
             className="ml-1 size-4 sm:size-5 text-primary-400 transition-transform duration-300 ease-in-out group-hover:scale-110"

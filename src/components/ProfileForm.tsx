@@ -217,7 +217,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
         )}
       </div>
 
-      <div className="flex items-center space-x-2 space-x-reverse">
+      <div className="flex items-center gap-2">
         <Checkbox
           id="changePassword"
           checked={isChangingPassword}

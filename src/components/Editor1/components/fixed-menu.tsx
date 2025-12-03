@@ -39,7 +39,7 @@ const FixedMenu = ({ editor, className }: FixedMenuProps) => {
       <Toolbar.Wrapper
         className={`${className} sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-md transition-all duration-300 ease-in-out overflow-x-auto text-primary-600`}
       >
-        <div className="flex flex-wrap items-center justify-start space-x-1 space-y-1 p-2">
+        <div className="flex flex-wrap items-center justify-start gap-1 p-2">
           <Toolbar.Group className="flex-shrink-0 [&_svg]:text-primary-600 [&_svg]:stroke-primary-600">
             <MenuButtonUndo editor={editor} />
             <MenuButtonRedo editor={editor} />

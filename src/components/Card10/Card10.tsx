@@ -50,7 +50,7 @@ const Card10: FC<Card10Props> = ({ className = 'h-full', post }) => {
         </BookmarkCheck>
       </div>
 
-      <div className="space-y-2.5 rtl:space-x-reverse mt-4">
+      <div className="space-y-2.5 mt-4">
         <PostCardMetaV2 meta={post} />
       </div>
     </div>

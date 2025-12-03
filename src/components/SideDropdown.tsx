@@ -13,7 +13,10 @@ export default function ClientSideDropdown({ children }: ClientSideDropdownProps
     <Popover className="relative">
       {() => (
         <>
-          <Popover.Button className="w-10 h-10 sm:w-12 sm:h-12 rounded-full text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none flex items-center justify-center">
+          <Popover.Button 
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none flex items-center justify-center"
+            aria-label="منوی کاربری"
+          >
             <UserIcon title="آواتار" />
           </Popover.Button>
           <Transition
