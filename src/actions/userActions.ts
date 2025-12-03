@@ -6,6 +6,7 @@ import { hash } from 'bcryptjs';
 import type { ActionResult, UserWithProfile } from '@/types/types';
 import type { Prisma, Role } from '@prisma/client';
 import { auth } from '@/auth';
+import { logActivity } from '@/lib/activity-logger';
 
 type GetUsersParams = {
   limit?: number;
@@ -137,6 +138,9 @@ export async function createUser(data: CreateUserData): Promise<ActionResult<Use
 
     revalidatePath('/users');
 
+    // ثبت فعالیت
+    await logActivity('ایجاد کاربر', `کاربر "${newUser.name || newUser.email}" با نقش "${data.role}" ایجاد شد`);
+
     return {
       success: true,
       message: 'کاربر با موفقیت ایجاد شد.',
@@ -210,6 +214,9 @@ export async function updateUser(
 
     revalidatePath('/users');
 
+    // ثبت فعالیت
+    await logActivity('ویرایش کاربر', `کاربر "${updatedUser.name || updatedUser.email}" ویرایش شد`);
+
     return {
       success: true,
       message: 'کاربر با موفقیت به‌روزرسانی شد.',
@@ -260,6 +267,9 @@ export async function updateUserRole(userId: string, newRole: Role) {
       data: { role: newRole },
     });
 
+    // ثبت فعالیت
+    await logActivity('تغییر نقش کاربر', `نقش کاربر "${targetUser.name || targetUser.email}" به "${newRole}" تغییر کرد`);
+
     return {
       success: true,
       message: 'نقش کاربر با موفقیت به‌روزرسانی شد',
@@ -297,11 +307,16 @@ export async function deleteUser(id: string): Promise<ActionResult> {
       return { success: false, message: 'شما مجوز حذف این کاربر را ندارید' };
     }
 
+    const userName = targetUser.name || targetUser.email;
+    
     await prisma.user.delete({
       where: { id },
     });
 
     revalidatePath('/users');
+
+    // ثبت فعالیت
+    await logActivity('حذف کاربر', `کاربر "${userName}" حذف شد`);
 
     return {
       success: true,

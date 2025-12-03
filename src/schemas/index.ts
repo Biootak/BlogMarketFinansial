@@ -96,15 +96,15 @@ export const PostSchema = CreatePostSchema.extend({
 
 export const UpdateProfileSchema = z
   .object({
-    name: z.string().min(2, 'نام باید حداقل 2 حرف باشد').optional(),
-    email: z.string().email('ایمیل نامعتبر است').optional(),
-    bio: z.string().max(500, 'بیوگرافی نمی‌تواند بیشتر از 500 کاراکتر باشد').optional(),
-    imageUrl: z.string().url('آدرس تصویر نامعتبر است').optional(),
-    bgImage: z.string().url('آدرس تصویر پس‌زمینه نامعتبر است').optional(),
-    jobName: z.string().max(100, 'نام شغل نمی‌تواند بیشتر از 100 کاراکتر باشد').optional(),
-    currentPassword: z.string().min(6, 'رمز عبور باید حداقل 6 کاراکتر باشد').optional(),
-    newPassword: z.string().min(6, 'رمز عبور جدید باید حداقل 6 کاراکتر باشد').optional(),
-    confirmNewPassword: z.string().optional(),
+    name: z.string().min(2, 'نام باید حداقل 2 حرف باشد').optional().or(z.literal('')),
+    email: z.string().email('ایمیل نامعتبر است').optional().or(z.literal('')),
+    bio: z.string().max(500, 'بیوگرافی نمی‌تواند بیشتر از 500 کاراکتر باشد').optional().or(z.literal('')),
+    imageUrl: z.string().url('آدرس تصویر نامعتبر است').optional().or(z.literal('')),
+    bgImage: z.string().url('آدرس تصویر پس‌زمینه نامعتبر است').optional().or(z.literal('')),
+    jobName: z.string().max(100, 'نام شغل نمی‌تواند بیشتر از 100 کاراکتر باشد').optional().or(z.literal('')),
+    currentPassword: z.string().min(6, 'رمز عبور باید حداقل 6 کاراکتر باشد').optional().or(z.literal('')),
+    newPassword: z.string().min(6, 'رمز عبور جدید باید حداقل 6 کاراکتر باشد').optional().or(z.literal('')),
+    confirmNewPassword: z.string().optional().or(z.literal('')),
   })
   .refine(
     (data) => {

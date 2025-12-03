@@ -13,6 +13,17 @@ import { generateVerificationToken } from '@/lib/tokens';
 import { sendVerificationEmail } from '@/lib/mail';
 import { getVerificationTokenByToken } from '@/data/verfication-token';
 
+// تابع کمکی برای ثبت فعالیت ورود (بدون نیاز به session)
+async function logLoginActivity(userId: string, action: string, details: string) {
+  try {
+    await prisma.activityLog.create({
+      data: { userId, action, details },
+    });
+  } catch (error) {
+    console.error('Error logging activity:', error);
+  }
+}
+
 type AuthResult = {
   success: boolean;
   message?: string;
@@ -97,12 +108,18 @@ export async function loginUser(formData: FormData): Promise<AuthResult> {
         };
       }
 
+      // ثبت فعالیت ورود
+      await logLoginActivity(existingUser.id, 'ورود به سیستم', `کاربر "${existingUser.name || existingUser.email}" وارد سیستم شد`);
+
       return {
         success: true,
         message: 'ورود موفقیت‌آمیز',
         redirect: '/dashboard',
       };
     }
+
+    // ثبت فعالیت ورود
+    await logLoginActivity(existingUser.id, 'ورود به سیستم', `کاربر "${existingUser.name || existingUser.email}" وارد سیستم شد`);
 
     return { success: true, message: 'ورود موفقیت‌آمیز. در حال انتقال به صفحه اصلی...' };
   } catch (error) {
@@ -162,7 +179,17 @@ export async function sendMagicLink(formData: FormData): Promise<AuthResult> {
 
 export async function logout(): Promise<AuthResult> {
   try {
+    // دریافت اطلاعات کاربر قبل از خروج
+    const session = await auth();
+    const userId = session?.user?.id;
+    const userName = session?.user?.name || session?.user?.email;
+
     await signOut({ redirect: false });
+
+    // ثبت فعالیت خروج
+    if (userId) {
+      await logLoginActivity(userId, 'خروج از سیستم', `کاربر "${userName}" از سیستم خارج شد`);
+    }
 
     return {
       success: true,
