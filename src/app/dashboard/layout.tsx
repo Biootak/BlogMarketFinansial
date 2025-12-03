@@ -14,7 +14,7 @@ export default async function DashboardLayout({
 
   return (
     <div
-      className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900 transition-colors duration-200"
+      className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-300"
       dir="rtl"
     >
       <SidebarInitializer />

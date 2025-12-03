@@ -2,16 +2,34 @@
 
 import Avatar from '@/components/Avatar/Avatar';
 import NewPostButton from './NewPostButton';
-import { motion } from 'framer-motion';
-import { HiOutlineSparkles, HiOutlineBolt } from 'react-icons/hi2';
+import { motion, AnimatePresence } from 'framer-motion';
+import { HiOutlineSparkles, HiOutlineBolt, HiOutlineShieldCheck } from 'react-icons/hi2';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useState } from 'react';
+
+const roleLabels: Record<string, string> = {
+  SUPER_ADMIN: 'مدیر ارشد',
+  ADMIN: 'مدیر',
+  AUTHOR: 'نویسنده',
+  USER: 'کاربر',
+};
+
+const roleColors: Record<string, { bg: string; border: string; text: string }> = {
+  SUPER_ADMIN: { bg: 'from-rose-500 to-pink-600', border: 'border-rose-400/50', text: 'text-white' },
+  ADMIN: { bg: 'from-violet-500 to-purple-600', border: 'border-violet-400/50', text: 'text-white' },
+  AUTHOR: { bg: 'from-amber-500 to-orange-500', border: 'border-amber-400/50', text: 'text-white' },
+  USER: { bg: 'from-slate-500 to-gray-600', border: 'border-slate-400/50', text: 'text-white' },
+};
 
 export default function WelcomeSectionContent() {
   const user = useCurrentUser();
+  const [showRolePopup, setShowRolePopup] = useState(false);
+  const userRole = user?.role || 'USER';
+  const roleStyle = roleColors[userRole] || roleColors.USER;
 
   return (
     <div className="relative flex flex-col items-center sm:flex-row sm:items-center sm:justify-between gap-8">
-      {/* Avatar Section */}
+      {/* Avatar Section with Role Badge */}
       <motion.div 
         className="relative sm:order-last flex-shrink-0"
         initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
@@ -47,16 +65,47 @@ export default function WelcomeSectionContent() {
             containerClassName="relative border-[4px] border-white/20 shadow-2xl"
           />
           
-          {/* Online indicator with pulse */}
-          <motion.div 
-            className="absolute bottom-2 right-2 flex items-center justify-center"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
+          {/* Role Badge - Clickable */}
+          <motion.button
+            type="button"
+            className={`absolute -bottom-1 -right-1 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r ${roleStyle.bg} ${roleStyle.border} border shadow-lg cursor-pointer`}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.5, type: 'spring', stiffness: 500 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowRolePopup(!showRolePopup)}
           >
-            <span className="absolute w-6 h-6 bg-emerald-400/40 rounded-full animate-ping" />
-            <span className="relative w-5 h-5 bg-gradient-to-br from-emerald-400 to-green-500 rounded-full border-[3px] border-white shadow-lg" />
-          </motion.div>
+            <HiOutlineSparkles className="w-3.5 h-3.5 text-white/90" />
+            <span className={`text-xs font-bold ${roleStyle.text}`}>
+              {roleLabels[userRole]}
+            </span>
+          </motion.button>
+
+          {/* Role Popup */}
+          <AnimatePresence>
+            {showRolePopup && (
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                transition={{ duration: 0.2 }}
+                className="absolute -bottom-24 right-0 z-50 min-w-[180px] p-4 rounded-2xl bg-white/95 backdrop-blur-xl shadow-2xl border border-white/20"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-xl bg-gradient-to-r ${roleStyle.bg}`}>
+                    <HiOutlineShieldCheck className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-gray-500">سطح دسترسی</p>
+                    <p className="text-sm font-bold text-gray-800">{roleLabels[userRole]}</p>
+                  </div>
+                </div>
+                {/* Arrow */}
+                <div className="absolute -top-2 right-6 w-4 h-4 bg-white/95 rotate-45 border-t border-l border-white/20" />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </motion.div>
 
@@ -90,7 +139,7 @@ export default function WelcomeSectionContent() {
           </div>
         </motion.div>
 
-        {/* Greeting */}
+        {/* Greeting - Without "خوش آمدید" */}
         <motion.h2 
           className="text-3xl sm:text-4xl font-black mb-3 leading-tight"
           initial={{ opacity: 0, y: 20 }}
@@ -113,16 +162,14 @@ export default function WelcomeSectionContent() {
           </motion.span>
         </motion.h2>
         
-        {/* Description */}
+        {/* Description - Updated */}
         <motion.p 
-          className="text-white/75 mb-6 text-base sm:text-lg leading-relaxed font-light"
+          className="text-white/80 mb-6 text-base sm:text-lg leading-relaxed"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.35 }}
         >
-          به داشبورد وبلاگ خود خوش آمدید.
-          <br className="hidden sm:block" />
-          <span className="text-white/90 font-normal">آماده خلق محتوای جدید هستید؟</span>
+          <span className="text-white/90 font-medium">آماده خلق محتوای جدید هستید؟</span>
         </motion.p>
         
         {/* Action buttons */}

@@ -3,20 +3,27 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-
 import { logout } from '@/actions/auth-actions';
 import { useToast } from '@/components/ui/use-toast';
 import Logo from '@/components/Logo/Logo';
-import { MdMenuOpen, MdOutlineDashboard } from 'react-icons/md';
-import { IoHomeOutline, IoExitOutline, IoChevronDownOutline } from 'react-icons/io5';
-import { FaProductHunt, FaUsers, FaUserCircle } from 'react-icons/fa';
-import { CiSettings } from 'react-icons/ci';
-import { SiGoogleads } from 'react-icons/si';
-import { MdCurrencyExchange } from 'react-icons/md';
+import {
+  HiOutlineHome,
+  HiOutlineDocumentText,
+  HiOutlineUsers,
+  HiOutlineSquares2X2,
+  HiOutlineMegaphone,
+  HiOutlineCurrencyDollar,
+  HiOutlineCog6Tooth,
+  HiOutlineChartBarSquare,
+  HiOutlineUserCircle,
+  HiOutlineArrowRightOnRectangle,
+  HiOutlineChevronDown,
+  HiOutlineBars3,
+} from 'react-icons/hi2';
 import { useSidebarStore } from '@/hooks/sidebarStore';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { FiLogOut } from 'react-icons/fi';
+import Avatar from '@/components/Avatar/Avatar';
 
 interface SubmenuItem {
   href: string;
@@ -39,7 +46,7 @@ const getMenuItems = (role: string) => {
     {
       title: 'داشبورد',
       href: '/dashboard',
-      icon: <IoHomeOutline size={24} />,
+      icon: <HiOutlineHome className="w-5 h-5" />,
       label: 'داشبورد',
     },
   ];
@@ -47,7 +54,7 @@ const getMenuItems = (role: string) => {
   const postItem = {
     title: 'پست‌ها',
     href: '/dashboard/posts',
-    icon: <FaProductHunt size={24} />,
+    icon: <HiOutlineDocumentText className="w-5 h-5" />,
     label: 'پست ها',
   };
 
@@ -55,25 +62,25 @@ const getMenuItems = (role: string) => {
     {
       title: 'کاربران',
       href: '/dashboard/users',
-      icon: <FaUsers size={24} />,
+      icon: <HiOutlineUsers className="w-5 h-5" />,
       label: 'کاربران',
     },
     {
       title: 'دسته بندی',
       href: '/dashboard/categories',
-      icon: <MdOutlineDashboard size={24} />,
+      icon: <HiOutlineSquares2X2 className="w-5 h-5" />,
       label: 'دسته بندی',
     },
     {
       title: 'تبلیغات',
       href: '/dashboard/advertisements',
-      icon: <SiGoogleads size={24} />,
+      icon: <HiOutlineMegaphone className="w-5 h-5" />,
       label: 'تبلیغات',
     },
     {
       title: 'نرخ ارزها',
       href: '#',
-      icon: <MdCurrencyExchange size={24} />,
+      icon: <HiOutlineCurrencyDollar className="w-5 h-5" />,
       label: 'نرخ ارزها',
       submenu: [
         { href: '/dashboard/exchange-rates', label: 'نرخ تکی' },
@@ -87,13 +94,13 @@ const getMenuItems = (role: string) => {
     {
       title: 'تنظیمات سیستم',
       href: '/dashboard/settings',
-      icon: <CiSettings size={24} />,
+      icon: <HiOutlineCog6Tooth className="w-5 h-5" />,
       label: 'تنظیمات سیستم',
     },
     {
       title: 'گزارش‌ها',
       href: '/dashboard/reports',
-      icon: <MdOutlineDashboard size={24} />,
+      icon: <HiOutlineChartBarSquare className="w-5 h-5" />,
       label: 'گزارش‌ها',
     },
   ];
@@ -101,7 +108,7 @@ const getMenuItems = (role: string) => {
   const profileItem = {
     title: 'پروفایل من',
     href: '/dashboard/edit-profile',
-    icon: <CiSettings size={24} />,
+    icon: <HiOutlineUserCircle className="w-5 h-5" />,
     label: 'پروفایل من',
   };
 
@@ -117,7 +124,7 @@ const getMenuItems = (role: string) => {
         {
           title: 'دسته بندی',
           href: '/dashboard/categories',
-          icon: <MdOutlineDashboard size={24} />,
+          icon: <HiOutlineSquares2X2 className="w-5 h-5" />,
           label: 'دسته بندی',
         },
         profileItem,
@@ -151,15 +158,14 @@ const Sidebar = ({ userRole }: SidebarProps) => {
       } else {
         toast({
           title: 'خطا در خروج',
-          description:
-            result.message || 'مشکلی در خروج از حساب کاربری پیش آمد. لطفا دوباره تلاش کنید.',
+          description: result.message || 'مشکلی در خروج از حساب کاربری پیش آمد.',
           variant: 'destructive',
         });
       }
     } catch {
       toast({
         title: 'خطای سیستمی',
-        description: 'مشکلی در سیستم رخ داده است. لطفا بعدا دوباره تلاش کنید.',
+        description: 'مشکلی در سیستم رخ داده است.',
         variant: 'destructive',
       });
     }
@@ -171,208 +177,221 @@ const Sidebar = ({ userRole }: SidebarProps) => {
     );
   };
 
-  const sidebarVariants = useMemo(
-    () => ({
-      open: { width: isMobile ? '100%' : '240px', transition: { duration: 0.3 } },
-      closed: { width: isMobile ? '0' : '60px', transition: { duration: 0.3 } },
-    }),
-    [isMobile],
-  );
-
   const handleItemClick = () => {
     if (isMobile) {
       setIsOpen(false);
     }
   };
 
+  const isActiveRoute = (href: string) => {
+    if (href === '/dashboard') return pathname === href;
+    return pathname.startsWith(href);
+  };
+
+  // Calculate width based on state
+  const sidebarWidth = isMobile ? (isOpen ? 280 : 0) : (isOpen ? 260 : 76);
+
   return (
     <>
-      <motion.nav
+      {/* Custom scrollbar styles */}
+      <style jsx global>{`
+        .sidebar-scroll::-webkit-scrollbar {
+          width: 6px;
+        }
+        .sidebar-scroll::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .sidebar-scroll::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 3px;
+        }
+        .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.3);
+        }
+      `}</style>
+
+      <nav
         dir="rtl"
-        initial="closed"
-        animate={isOpen ? 'open' : 'closed'}
-        variants={sidebarVariants}
-        className={`fixed top-0 right-0 h-full bg-blue-600 dark:bg-gray-800 text-white shadow-lg z-40 
-                    overflow-hidden transition-all duration-300 flex flex-col`}
+        className="fixed top-0 right-0 h-full z-40 overflow-hidden flex flex-col transition-all duration-300 ease-out"
+        style={{
+          width: sidebarWidth,
+          background: 'linear-gradient(180deg, #1e1b4b 0%, #312e81 50%, #3730a3 100%)',
+          boxShadow: isOpen
+            ? '0 0 40px rgba(99, 102, 241, 0.2), -4px 0 15px rgba(0, 0, 0, 0.15)'
+            : '-2px 0 8px rgba(0, 0, 0, 0.08)',
+        }}
       >
-        <div className="flex-shrink-0 p-2">
-          <div className="flex justify-between items-center mb-6">
-            <AnimatePresence>
-              {isOpen && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.5 }}
-                  transition={{ duration: 0.3 }}
-                  className="flex items-center"
-                >
-                  <Logo className="w-10 h-10 rounded-md" />
-                </motion.div>
-              )}
-            </AnimatePresence>
+        {/* Background decorations */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div
+            className="absolute -top-20 -right-20 w-40 h-40 rounded-full opacity-20"
+            style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.5) 0%, transparent 70%)' }}
+          />
+          <div
+            className="absolute bottom-20 -left-10 w-32 h-32 rounded-full opacity-15"
+            style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.5) 0%, transparent 70%)' }}
+          />
+        </div>
+
+        {/* Header */}
+        <div className="relative flex-shrink-0 p-4">
+          <div className="flex justify-between items-center">
+            {isOpen && (
+              <div className="flex items-center gap-3 transition-opacity duration-200">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-white/20 rounded-xl blur-lg" />
+                  <Logo className="relative w-10 h-10 rounded-xl" />
+                </div>
+                <span className="text-lg font-bold text-white">بیوتاک</span>
+              </div>
+            )}
             <button
               type="button"
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 hover:bg-blue-700 dark:hover:bg-gray-700 rounded-md transition-colors duration-200"
+              className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-all duration-200 hover:scale-105 active:scale-95"
               aria-label={isOpen ? 'بستن منو' : 'باز کردن منو'}
             >
-              <MdMenuOpen
-                size={24}
-                className={`transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+              <HiOutlineBars3
+                className="w-5 h-5 transition-transform duration-300"
+                style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
               />
             </button>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-700 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent">
-          <ul className="space-y-2 p-2">
-            {menuItems.map((item) => (
-              <li key={item.href}>
-                {item.submenu ? (
-                  <div>
-                    <button
-                      type="button"
-                      onClick={() => toggleSubmenu(item.label)}
-                      className={`flex items-center w-full p-2 rounded-md transition-colors duration-200
-                                ${
-                                  pathname.startsWith(item.href.split('#')[0])
-                                    ? 'bg-blue-700 dark:bg-gray-700 text-white'
-                                    : 'text-blue-100 dark:text-gray-300 hover:bg-blue-700 dark:hover:bg-gray-700'
-                                }`}
-                    >
-                      <div className="w-6 h-6 flex items-center justify-center">{item.icon}</div>
-                      <AnimatePresence>
-                        {isOpen && (
-                          <motion.div
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -10 }}
-                            transition={{ duration: 0.2 }}
-                            className="mr-3 font-medium flex-1 flex items-center justify-between"
-                          >
-                            <span>{item.label}</span>
-                            <IoChevronDownOutline
-                              className={`transform transition-transform duration-200 ${
-                                expandedItems.includes(item.label) ? 'rotate-180' : ''
-                              }`}
-                            />
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </button>
-                    <AnimatePresence>
-                      {isOpen && expandedItems.includes(item.label) && (
-                        <motion.ul
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="pr-6 mt-1 space-y-1"
+        {/* Navigation */}
+        <div className="relative flex-1 overflow-y-auto sidebar-scroll px-3 py-2">
+          <ul className="space-y-1.5">
+            {menuItems.map((item) => {
+              const isActive = isActiveRoute(item.href);
+
+              return (
+                <li key={item.href}>
+                  {item.submenu ? (
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => toggleSubmenu(item.label)}
+                        className={`flex items-center w-full p-3 rounded-xl transition-all duration-200 hover:translate-x-1 ${
+                          isActive
+                            ? 'bg-white/20 text-white shadow-lg'
+                            : 'text-white/70 hover:bg-white/10 hover:text-white'
+                        }`}
+                      >
+                        <div
+                          className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors duration-200 ${
+                            isActive ? 'bg-white/20' : 'bg-white/5'
+                          }`}
                         >
+                          {item.icon}
+                        </div>
+                        {isOpen && (
+                          <div className="mr-3 flex-1 flex items-center justify-between">
+                            <span className="font-medium">{item.label}</span>
+                            <HiOutlineChevronDown
+                              className="w-4 h-4 transition-transform duration-200"
+                              style={{
+                                transform: expandedItems.includes(item.label) ? 'rotate(180deg)' : 'rotate(0deg)',
+                              }}
+                            />
+                          </div>
+                        )}
+                      </button>
+
+                      {isOpen && expandedItems.includes(item.label) && (
+                        <ul className="pr-12 mt-1.5 space-y-1 overflow-hidden">
                           {item.submenu.map((submenuItem) => (
                             <li key={submenuItem.href}>
                               <Link href={submenuItem.href} onClick={handleItemClick}>
                                 <span
-                                  className={`flex items-center p-2 rounded-md transition-colors duration-200
-                                    ${
-                                      pathname === submenuItem.href
-                                        ? 'bg-blue-700 dark:bg-gray-700 text-white'
-                                        : 'text-blue-100 dark:text-gray-300 hover:bg-blue-700 dark:hover:bg-gray-700'
-                                    }`}
+                                  className={`flex items-center gap-3 p-2.5 rounded-lg transition-all duration-200 hover:translate-x-1 ${
+                                    pathname === submenuItem.href
+                                      ? 'bg-white/15 text-white'
+                                      : 'text-white/60 hover:bg-white/10 hover:text-white'
+                                  }`}
                                 >
-                                  <div className="w-2 h-2 bg-blue-300 dark:bg-gray-400 rounded-full" />
-                                  <span className="mr-3 font-medium">{submenuItem.label}</span>
+                                  <span
+                                    className={`w-1.5 h-1.5 rounded-full transition-colors duration-200 ${
+                                      pathname === submenuItem.href ? 'bg-violet-300' : 'bg-white/40'
+                                    }`}
+                                  />
+                                  <span className="text-sm font-medium">{submenuItem.label}</span>
                                 </span>
                               </Link>
                             </li>
                           ))}
-                        </motion.ul>
+                        </ul>
                       )}
-                    </AnimatePresence>
-                  </div>
-                ) : (
-                  <Link href={item.href} onClick={handleItemClick}>
-                    <span
-                      className={`flex items-center p-2 rounded-md transition-colors duration-200
-                                ${
-                                  pathname === item.href
-                                    ? 'bg-blue-700 dark:bg-gray-700 text-white'
-                                    : 'text-blue-100 dark:text-gray-300 hover:bg-blue-700 dark:hover:bg-gray-700'
-                                }`}
-                    >
-                      <div className="w-6 h-6 flex items-center justify-center">{item.icon}</div>
-                      <AnimatePresence>
-                        {isOpen && (
-                          <motion.span
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -10 }}
-                            transition={{ duration: 0.2 }}
-                            className="mr-3 font-medium"
-                          >
-                            {item.label}
-                          </motion.span>
-                        )}
-                      </AnimatePresence>
-                    </span>
-                  </Link>
-                )}
-              </li>
-            ))}
+                    </div>
+                  ) : (
+                    <Link href={item.href} onClick={handleItemClick}>
+                      <span
+                        className={`flex items-center p-3 rounded-xl transition-all duration-200 hover:translate-x-1 ${
+                          isActive
+                            ? 'bg-white/20 text-white shadow-lg'
+                            : 'text-white/70 hover:bg-white/10 hover:text-white'
+                        }`}
+                      >
+                        <div
+                          className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors duration-200 ${
+                            isActive ? 'bg-white/20' : 'bg-white/5'
+                          }`}
+                        >
+                          {item.icon}
+                        </div>
+                        {isOpen && <span className="mr-3 font-medium">{item.label}</span>}
+                      </span>
+                    </Link>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </div>
 
-        <div className="flex-shrink-0 p-2 border-t border-blue-500 dark:border-gray-700">
+        {/* Footer */}
+        <div className="relative flex-shrink-0 p-3 border-t border-white/10">
+          {/* Logout button */}
           <button
             type="button"
             onClick={handleLogout}
-            className="flex items-center w-full p-2 mb-4 rounded-md text-blue-100 dark:text-gray-300 hover:bg-blue-700 hover:text-white dark:hover:bg-gray-700 transition-colors duration-200"
+            className="flex items-center w-full p-3 mb-3 rounded-xl text-white/70 hover:bg-rose-500/20 hover:text-rose-300 transition-all duration-200 hover:translate-x-1"
           >
-            <div className="w-6 h-6 flex items-center justify-center">
-              <IoExitOutline size={24} />
+            <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/5">
+              <HiOutlineArrowRightOnRectangle className="w-5 h-5" />
             </div>
-            <AnimatePresence>
-              {isOpen && (
-                <motion.span
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="mr-3 font-medium"
-                >
-                  خروج
-                </motion.span>
-              )}
-            </AnimatePresence>
+            {isOpen && <span className="mr-3 font-medium">خروج</span>}
           </button>
 
-          <div className="flex items-center p-2 bg-blue-700 dark:bg-gray-700 rounded-md">
-            <div className="w-8 h-8 flex items-center justify-center bg-blue-800 dark:bg-gray-600 rounded-full">
-              <FaUserCircle size={24} />
+          {/* User info */}
+          <div
+            className={`flex items-center p-3 rounded-xl bg-white/10 backdrop-blur-sm transition-all duration-200 ${
+              !isOpen ? 'justify-center' : ''
+            }`}
+          >
+            <div className="relative flex-shrink-0">
+              <Avatar
+                imgUrl={userInfo?.image}
+                userName={userInfo?.name}
+                sizeClass="w-10 h-10"
+                containerClassName="ring-2 ring-white/30"
+              />
+              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full ring-2 ring-indigo-900" />
             </div>
-            <AnimatePresence>
-              {isOpen && (
-                <motion.div
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="mr-3 overflow-hidden"
-                >
-                  <p className="font-medium truncate">{userInfo?.name || 'کاربر'}</p>
-                  <p className="text-sm text-blue-200 dark:text-gray-400 truncate">
-                    {userInfo?.email || 'کاربر@example.com'}
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {isOpen && (
+              <div className="mr-3 overflow-hidden">
+                <p className="font-semibold text-white truncate">{userInfo?.name || 'کاربر'}</p>
+                <p className="text-xs text-white/60 truncate">{userInfo?.email}</p>
+              </div>
+            )}
           </div>
         </div>
-      </motion.nav>
+      </nav>
 
+      {/* Mobile overlay */}
       {isMobile && isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-30"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 transition-opacity duration-300"
           onClick={() => setIsOpen(false)}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
