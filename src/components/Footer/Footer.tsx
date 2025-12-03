@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import * as motion from 'framer-motion/client';
-import DynamicSocialsList from '@/components/SocialsList/DynamicSocialsList';
+import SocialLinks from '@/components/SocialsList/SocialLinks';
 import Logo from '@/components/Logo/Logo';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
 
@@ -48,7 +48,7 @@ const Footer = async () => {
           <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">
             ما را در شبکه‌های اجتماعی دنبال کنید
           </h3>
-          <DynamicSocialsList className="flex justify-center gap-4" />
+          <SocialLinks className="flex justify-center gap-4" />
         </motion.div>
 
         <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">

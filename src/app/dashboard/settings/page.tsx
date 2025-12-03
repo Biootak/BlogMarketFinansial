@@ -19,12 +19,12 @@ import {
   getSystemSettings,
   updateGeneralSettings,
   updateEmailSettings,
-  updateSocialSettings,
   updateCacheSettings,
   testDatabaseConnection,
   testSmtpConnection,
   generateApiKey,
 } from '@/actions/settingsActions';
+import SocialLinksManager from '@/components/Dashboard/Settings/SocialLinksManager';
 
 interface TabType {
   id: string;
@@ -46,7 +46,7 @@ interface SettingsFormData {
   general: { siteTitle: string; siteDescription: string; contactEmail: string };
   email: { smtpServer: string; smtpPort: string; smtpUsername: string; smtpPassword: string };
   security: { twoFactorAuth: boolean; ipRestriction: boolean; minPasswordLength: number; sessionDuration: number };
-  social: { instagram: string; telegram: string; linkedin: string; twitter: string };
+  social: { instagram: string; telegram: string; whatsapp: string; twitter: string };
   database: { server: string; port: string; name: string; username: string; password: string; type: string; autoBackup: boolean };
   advanced: { debugMode: boolean; cacheEnabled: boolean; apiRateLimit: boolean; cacheDuration: number; maxUploadSize: number; errorLevel: string; logPath: string; apiKey: string; cacheStorage: string; rateLimit: number };
 }
@@ -148,7 +148,7 @@ export default function SettingsPage() {
     general: { siteTitle: '', siteDescription: '', contactEmail: '' },
     email: { smtpServer: '', smtpPort: '', smtpUsername: '', smtpPassword: '' },
     security: { twoFactorAuth: false, ipRestriction: false, minPasswordLength: 8, sessionDuration: 30 },
-    social: { instagram: '', telegram: '', linkedin: '', twitter: '' },
+    social: { instagram: '', telegram: '', whatsapp: '', twitter: '' },
     database: { server: '', port: '', name: '', username: '', password: '', type: 'postgresql', autoBackup: false },
     advanced: { debugMode: false, cacheEnabled: true, apiRateLimit: true, cacheDuration: 60, maxUploadSize: 10, errorLevel: 'error', logPath: '', apiKey: '', cacheStorage: 'memory', rateLimit: 100 },
   });
@@ -164,7 +164,7 @@ export default function SettingsPage() {
             ...prev,
             general: { ...prev.general, siteTitle: data.siteName || '', siteDescription: data.siteDescription || '' },
             email: { ...prev.email, smtpServer: data.smtpServer || '', smtpPort: data.smtpPort || '', smtpUsername: data.smtpUsername || '', smtpPassword: data.smtpPassword || '' },
-            social: { ...prev.social, instagram: data.instagram || '', telegram: data.telegram || '', twitter: data.twitter || '', linkedin: data.whatsapp || '' },
+            social: { ...prev.social, instagram: data.instagram || '', telegram: data.telegram || '', twitter: data.twitter || '', whatsapp: data.whatsapp || '' },
             advanced: { ...prev.advanced, cacheEnabled: data.cacheEnabled ?? true },
           }));
         }
@@ -205,23 +205,6 @@ export default function SettingsPage() {
       const result = await updateEmailSettings(formData.email);
       if (result.success) {
         toast({ title: 'موفق', description: 'تنظیمات ایمیل با موفقیت ذخیره شد' });
-      } else {
-        toast({ title: 'خطا', description: result.error, variant: 'destructive' });
-      }
-    } catch {
-      toast({ title: 'خطا', description: 'خطا در ذخیره تنظیمات', variant: 'destructive' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Save Social Settings
-  const handleSaveSocial = async () => {
-    setLoading(true);
-    try {
-      const result = await updateSocialSettings({ instagram: formData.social.instagram, telegram: formData.social.telegram, twitter: formData.social.twitter, whatsapp: formData.social.linkedin });
-      if (result.success) {
-        toast({ title: 'موفق', description: 'تنظیمات شبکه‌های اجتماعی با موفقیت ذخیره شد' });
       } else {
         toast({ title: 'خطا', description: result.error, variant: 'destructive' });
       }
@@ -299,16 +282,6 @@ export default function SettingsPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Connect Social Media
-  const handleConnectSocial = (platform: string) => {
-    const value = formData.social[platform as keyof typeof formData.social];
-    if (!value) {
-      toast({ title: 'خطا', description: `لطفاً نام کاربری ${platform} را وارد کنید`, variant: 'destructive' });
-      return;
-    }
-    toast({ title: 'موفق', description: `${platform} با موفقیت متصل شد` });
   };
 
   if (initialLoading) {
@@ -426,38 +399,8 @@ export default function SettingsPage() {
 
               {/* Social Settings */}
               {activeTab === 'social' && (
-                <CardSection title="شبکه‌های اجتماعی" description="حساب‌های شبکه‌های اجتماعی خود را متصل کنید">
-                  <div className="space-y-5">
-                    {[
-                      { key: 'instagram', label: 'اینستاگرام', placeholder: 'نام کاربری اینستاگرام' },
-                      { key: 'telegram', label: 'تلگرام', placeholder: 'نام کاربری تلگرام' },
-                      { key: 'linkedin', label: 'لینکدین', placeholder: 'آدرس پروفایل لینکدین' },
-                      { key: 'twitter', label: 'توییتر', placeholder: 'نام کاربری توییتر' },
-                    ].map((social) => (
-                      <div key={social.key} className="group space-y-2">
-                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">{social.label}</label>
-                        <div className="flex gap-3">
-                          <input
-                            type="text"
-                            value={formData.social[social.key as keyof typeof formData.social]}
-                            onChange={(e) => handleInputChange('social', social.key, e.target.value)}
-                            placeholder={social.placeholder}
-                            disabled={loading}
-                            className="flex-1 rounded-xl border-2 border-gray-200/80 bg-white/80 px-4 py-3 text-sm text-gray-900 transition-all duration-300 placeholder:text-gray-400 hover:border-[rgb(var(--c-primary-200))] focus:border-[rgb(var(--c-primary-400))] focus:outline-none focus:ring-4 focus:ring-[rgb(var(--c-primary-100))]/50 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800/80 dark:text-white"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleConnectSocial(social.key)}
-                            disabled={loading}
-                            className="shrink-0 rounded-xl px-5 py-3 text-sm font-semibold text-white bg-gradient-to-l from-[rgb(var(--c-primary-600))] to-[rgb(var(--c-primary-500))] shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-50 active:translate-y-0"
-                          >
-                            اتصال
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <ActionButtons loading={loading} onSubmit={handleSaveSocial} />
+                <CardSection title="شبکه‌های اجتماعی" description="مدیریت لینک‌های شبکه‌های اجتماعی سایت">
+                  <SocialLinksManager />
                 </CardSection>
               )}
 

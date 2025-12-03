@@ -370,3 +370,15 @@ model CurrencyPattern {
 
   @@unique([type, pattern])
 }
+
+model SocialLink {
+  id        String   @id @default(cuid())
+  name      String
+  url       String
+  icon      String?
+  color     String?
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

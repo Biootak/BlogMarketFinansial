@@ -1,4 +1,3 @@
-import { cache } from 'react';
 import prisma from '@/lib/db';
 
 export interface SiteSettings {
@@ -12,7 +11,8 @@ export interface SiteSettings {
   cacheEnabled: boolean;
 }
 
-export const getSystemSettingsData = cache(async (): Promise<SiteSettings> => {
+// Fetch settings from database - no cache to ensure fresh data
+export const getSystemSettingsData = async (): Promise<SiteSettings> => {
   try {
     const settings = await prisma.systemSettings.findFirst();
 
@@ -52,4 +52,4 @@ export const getSystemSettingsData = cache(async (): Promise<SiteSettings> => {
       cacheEnabled: true,
     };
   }
-});
+};
