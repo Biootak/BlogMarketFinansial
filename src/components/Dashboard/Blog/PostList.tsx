@@ -1,61 +1,57 @@
 'use client';
-/**
- * @format
- * @file PostList by Id
- * @author fe6
- */
 
 import { useCallback, useState } from 'react';
-
+import { motion } from 'framer-motion';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
-
 import { deletePostAndInvalidate, listAllPosts, updatePostStatusAndInvalidate } from '@/actions/postActions';
-
 import type { ActionResult, PostWithRelations, PostStatus } from '@/types/types';
-
 import LoadingMore from '@/components/LoadingMore';
-
 import CardList from '../DashboardPage/CardList';
 import { toast } from '@/components/ui/use-toast';
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const } 
+  },
+};
+
 export default function PostList({
   initialPosts,
-
   hasNextPage: initialHasNextPage,
-
   totalPages,
 }: {
   initialPosts: PostWithRelations[];
-
   hasNextPage: boolean;
-
   totalPages: number;
 }) {
   const [posts, setPosts] = useState(initialPosts);
-
   const [isLoading, setIsLoading] = useState(false);
-
   const [page, setPage] = useState(2);
-
   const [hasNextPage, setHasNextPage] = useState(initialHasNextPage);
 
   const loadMore = useCallback(async () => {
     if (hasNextPage && !isLoading) {
       setIsLoading(true);
-
       const result: ActionResult<{ posts: PostWithRelations[]; total: number; pages: number }> =
         await listAllPosts(page);
 
       if (result.success && result.data) {
         const newPosts = result.data.posts || [];
-
         setPosts((prev) => [...prev, ...newPosts]);
-
         setPage((prev) => prev + 1);
-
         setHasNextPage(page < totalPages);
       }
-
       setIsLoading(false);
     }
   }, [hasNextPage, isLoading, page, totalPages]);
@@ -124,21 +120,29 @@ export default function PostList({
   }, []);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-10">
-      {posts.map((post) => {
-        return (
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 py-8"
+    >
+      {posts.map((post) => (
+        <motion.div key={post.id} variants={itemVariants}>
           <CardList
-            key={post.id}
             post={post}
             onDelete={handleDeletePost}
             onStatusChange={handleChangeStatus}
           />
-        );
-      })}
+        </motion.div>
+      ))}
 
-      {isLoading && <LoadingMore message="در حال دریافت پست‌های بیشتر..." />}
+      {isLoading && (
+        <div className="col-span-full">
+          <LoadingMore message="در حال دریافت پست‌های بیشتر..." />
+        </div>
+      )}
 
-      <div ref={infiniteScrollRef} style={{ height: '1px' }} />
-    </div>
+      <div ref={infiniteScrollRef} className="col-span-full h-px" />
+    </motion.div>
   );
 }

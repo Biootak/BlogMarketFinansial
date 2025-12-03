@@ -2,8 +2,8 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { HiOutlinePlus } from 'react-icons/hi2';
-import ButtonPrimary from '@/components/Button/ButtonPrimary';
+import { motion } from 'framer-motion';
+import { HiOutlinePlus, HiOutlineSparkles, HiOutlineDocumentText } from 'react-icons/hi2';
 import FilterDropdown from './FilterDropdown';
 import type { PostStatus } from '@prisma/client';
 
@@ -22,28 +22,81 @@ export default function PostHeader() {
   };
 
   return (
-    <div className="sticky top-0 z-50 bg-white/80 dark:bg-neutral-800/80 backdrop-blur-lg transition-all duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex items-center justify-between gap-4 sm:gap-6">
-          <div className="flex items-center space-x-4 space-x-reverse">
+    <motion.div 
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="sticky top-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-slate-900/70 border-b border-slate-200/50 dark:border-slate-800/50"
+      style={{
+        boxShadow: '0 4px 30px rgba(0,0,0,0.03)',
+      }}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+          {/* Title Section */}
+          <motion.div 
+            className="flex items-center gap-4"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl blur-lg opacity-40" />
+              <div className="relative p-3.5 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-xl">
+                <HiOutlineDocumentText className="w-6 h-6" />
+              </div>
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+                پست‌ها
+              </h1>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                مدیریت و ویرایش محتوای وبلاگ
+              </p>
+            </div>
+          </motion.div>
+
+          {/* Actions */}
+          <motion.div 
+            className="flex items-center gap-3 w-full sm:w-auto"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
             <FilterDropdown onFilter={handleFilter} />
-          </div>
-          <Link href="/dashboard/posts/create" className="w-auto">
-            <ButtonPrimary
-              aria-label="افزودن پست جدید"
-              className="bg-transparent border border-primary-500 text-primary-500 hover:bg-primary-100 dark:hover:bg-primary-200 sm:bg-gradient-to-l sm:from-primary-500 sm:to-secondary-500 sm:hover:from-primary-600 sm:hover:to-secondary-600 sm:text-white font-medium py-2 px-3 sm:px-6 rounded-md sm:rounded-full shadow-lg hover:shadow-xl transition-all duration-300 group"
-            >
-              <HiOutlinePlus
-                className="inline-block ml-0 sm:ml-2 h-5 w-5 group-hover:rotate-90 transition-transform duration-300"
-                aria-hidden="true"
-              />
-              <span className="hidden sm:inline group-hover:mr-2 transition-all duration-300">
-                افزودن پست جدید
-              </span>
-            </ButtonPrimary>
-          </Link>
+            
+            <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }}>
+              <Link
+                href="/dashboard/posts/create"
+                className="group relative inline-flex items-center gap-2.5 px-5 py-3 rounded-2xl font-bold text-sm overflow-hidden transition-all duration-300"
+                style={{
+                  background: 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)',
+                  boxShadow: `
+                    0 0 0 1px rgba(124,58,237,0.5),
+                    0 4px 6px -1px rgba(0,0,0,0.1),
+                    0 10px 20px -5px rgba(124,58,237,0.4),
+                    inset 0 1px 0 rgba(255,255,255,0.2)
+                  `,
+                }}
+              >
+                {/* Hover overlay */}
+                <div className="absolute inset-0 bg-gradient-to-r from-violet-700 to-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                
+                {/* Icon */}
+                <span className="relative flex items-center justify-center w-6 h-6 rounded-lg bg-white/20 group-hover:rotate-90 transition-transform duration-300">
+                  <HiOutlinePlus className="w-4 h-4 text-white" />
+                </span>
+                
+                {/* Text */}
+                <span className="relative text-white hidden sm:inline">افزودن پست جدید</span>
+                
+                {/* Sparkle */}
+                <HiOutlineSparkles className="relative w-4 h-4 text-amber-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:block" />
+              </Link>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
