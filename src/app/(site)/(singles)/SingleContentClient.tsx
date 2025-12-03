@@ -11,6 +11,7 @@ import PostCardCommentBtn from '@/components/PostCardCommentBtn/PostCardCommentB
 import { HiArrowUp } from 'react-icons/hi2';
 import type { PostWithRelations } from '@/types/types';
 import MarkdownRenderer from './MarkdownRenderer';
+import EditorContentRenderer from '@/components/Editor1/EditorContentRenderer';
 import { Button } from '@/components/ui/button';
 
 interface SingleContentClientProps {
@@ -83,7 +84,19 @@ const SingleContentClient = ({
           ref={contentRef}
         >
           {post.content ? (
-            <MarkdownRenderer content={post.content} />
+            // Check if content is TipTap JSON or Markdown
+            (() => {
+              try {
+                const parsed = typeof post.content === 'string' ? JSON.parse(post.content) : post.content;
+                if (parsed && parsed.type === 'doc') {
+                  // TipTap JSON content
+                  return <EditorContentRenderer content={parsed} />;
+                }
+              } catch {
+                // Not JSON, treat as Markdown
+              }
+              return <MarkdownRenderer content={post.content as string} />;
+            })()
           ) : (
             <p>محتوایی برای نمایش وجود ندارد.</p>
           )}
