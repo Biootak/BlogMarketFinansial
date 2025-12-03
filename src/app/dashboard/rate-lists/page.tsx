@@ -32,25 +32,99 @@ import {
 
 const parseCurrencyRates = async (text: string): Promise<RateItem[]> => {
   const rates: RateItem[] = [];
+  const lines = text.split(/[\n\r]+/).map((l) => l.trim()).filter(Boolean);
+
+  // تبدیل اعداد فارسی/عربی به انگلیسی
+  const toEnglishNum = (str: string) =>
+    str.replace(/[۰-۹]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 1728))
+       .replace(/[٠-٩]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 1584));
+
+  // حذف ایموجی‌ها و پرچم‌ها
+  const cleanEmojis = (str: string) =>
+    str.replace(/[\u{1F1E0}-\u{1F1FF}]|[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
+
+  // استخراج همه اعداد از رشته
+  const extractNumbers = (str: string) => {
+    const nums = toEnglishNum(str).match(/[\d,\.]+/g);
+    return nums ? nums.map((n) => n.replace(/,/g, '')) : [];
+  };
+
+  // الگوهای مختلف برای تشخیص
+  const patterns = [
+    // الگو 1: "دلار: خرید 58000 فروش 59000" یا "دلار خرید: 58000 فروش: 59000"
+    /^(.+?)[\s:]+خرید[\s:]*([۰-۹٠-٩\d,\.]+)[\s\-\|]*فروش[\s:]*([۰-۹٠-٩\d,\.]+)/i,
+    // الگو 2: "خرید: 58000 فروش: 59000" بدون اسم (اسم از خط قبل)
+    /^خرید[\s:]*([۰-۹٠-٩\d,\.]+)[\s\-\|]*فروش[\s:]*([۰-۹٠-٩\d,\.]+)/i,
+    // الگو 3: "دلار 58000 / 59000" یا "دلار 58000 - 59000"
+    /^([^\d۰-۹٠-٩]+?)\s*([۰-۹٠-٩\d,\.]+)\s*[\/\-\|]\s*([۰-۹٠-٩\d,\.]+)$/,
+    // الگو 4: "دلار    58000    59000" (تب یا فاصله زیاد)
+    /^([^\d۰-۹٠-٩]+?)\s{2,}([۰-۹٠-٩\d,\.]+)\s+([۰-۹٠-٩\d,\.]+)$/,
+  ];
+
   let currentTitle = '';
-  const lines = text.split('\n').map((line) => line.trim()).filter(Boolean);
-  const countryFlags = '🇺🇲|🇪🇺|🇬🇧|🇨🇭|🇦🇺|🇨🇦|🇷🇺|🇦🇪|🇸🇦|🇹🇷|🇮🇷|🇮🇳|🇵🇰';
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (new RegExp(countryFlags, 'u').test(line)) {
-      currentTitle = line.replace(new RegExp(countryFlags, 'gu'), '').replace(':', '').trim();
-      continue;
-    }
-    if (line.includes('خرید:') && line.includes('فروش:')) {
-      const persianToEnglish = (str: string) => str.replace(/[۰-۹]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 1728));
-      const buyMatch = line.match(/خرید:\s*([\d۰-۹\.,]+)/);
-      const sellMatch = line.match(/فروش:\s*([\d۰-۹\.,]+)/);
-      if (buyMatch && sellMatch && currentTitle) {
-        rates.push({ title: currentTitle, value: `خرید: ${persianToEnglish(buyMatch[1].trim())} | فروش: ${persianToEnglish(sellMatch[1].trim())}` });
+    const line = cleanEmojis(lines[i]);
+    if (!line) continue;
+
+    let matched = false;
+
+    // تست الگوی 1 و 3 و 4 (با اسم)
+    for (const pattern of [patterns[0], patterns[2], patterns[3]]) {
+      const match = line.match(pattern);
+      if (match) {
+        const [, title, buy, sell] = match;
+        const cleanTitle = title.replace(/[:：\-\s]+$/g, '').trim();
+        if (cleanTitle) {
+          rates.push({
+            title: cleanTitle,
+            value: `خرید: ${toEnglishNum(buy).replace(/,/g, '')} | فروش: ${toEnglishNum(sell).replace(/,/g, '')}`,
+          });
+          matched = true;
+          currentTitle = '';
+          break;
+        }
       }
     }
+
+    if (matched) continue;
+
+    // تست الگوی 2 (بدون اسم - از خط قبل)
+    const pattern2Match = line.match(patterns[1]);
+    if (pattern2Match && currentTitle) {
+      const [, buy, sell] = pattern2Match;
+      rates.push({
+        title: currentTitle,
+        value: `خرید: ${toEnglishNum(buy).replace(/,/g, '')} | فروش: ${toEnglishNum(sell).replace(/,/g, '')}`,
+      });
+      currentTitle = '';
+      continue;
+    }
+
+    // اگه خط فقط متن بود (بدون عدد یا با عدد کم)، احتمالاً اسم ارزه
+    const numbers = extractNumbers(line);
+    const textPart = line.replace(/[\d۰-۹٠-٩,\.\s\-\/\|:：]+/g, '').trim();
+
+    if (numbers.length === 0 && textPart.length > 0 && textPart.length < 50) {
+      currentTitle = textPart.replace(/[:：]+$/g, '').trim();
+    }
+    // اگه دو عدد داریم و اسم قبلی هست
+    else if (numbers.length >= 2 && currentTitle) {
+      rates.push({
+        title: currentTitle,
+        value: `خرید: ${numbers[0]} | فروش: ${numbers[1]}`,
+      });
+      currentTitle = '';
+    }
+    // اگه دو عدد داریم و متن هم داریم
+    else if (numbers.length >= 2 && textPart.length > 0) {
+      rates.push({
+        title: textPart.replace(/[:：]+$/g, '').trim(),
+        value: `خرید: ${numbers[0]} | فروش: ${numbers[1]}`,
+      });
+    }
   }
+
   return rates;
 };
 
