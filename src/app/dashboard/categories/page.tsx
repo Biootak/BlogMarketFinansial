@@ -4,6 +4,7 @@ import SearchCategories from './SearchCategories';
 import { CategoryList } from './CategoryList';
 import { getCategories, getAllParentCategories } from '@/actions/categoryActions';
 import { unstable_noStore as noStore } from 'next/cache';
+import { DashboardPageHeader } from '@/components/Dashboard/shared/DashboardTableWrapper';
 
 export default async function CategoriesPage({
   searchParams,
@@ -29,17 +30,13 @@ export default async function CategoriesPage({
   const parentCategories = parentCategoriesResult.data || [];
 
   return (
-    <div className="container py-4 sm:py-6 lg:py-8 rtl">
-      <h1 className="text-2xl sm:text-xl font-bold mb-4 sm:mb-6 lg:mb-8 text-end text-primary-700 dark:text-primary-300">
-        مدیریت دسته‌بندی‌ها
-      </h1>
-
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 lg:mb-8 space-y-4 sm:space-y-0">
-        <CategoryForm parentCategories={parentCategories} />
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 p-4 sm:p-6 lg:p-8 dark:from-neutral-900 dark:via-neutral-900 dark:to-primary-950/20" dir="rtl">
+      <DashboardPageHeader title="مدیریت دسته‌بندی‌ها" description="مشاهده و مدیریت دسته‌بندی‌های محتوا">
         <SearchCategories />
-      </div>
+        <CategoryForm parentCategories={parentCategories} />
+      </DashboardPageHeader>
 
-      <Suspense fallback={<div>در حال بارگذاری دسته‌بندی‌ها...</div>}>
+      <Suspense fallback={<div className="flex items-center justify-center py-12 text-neutral-500">در حال بارگذاری دسته‌بندی‌ها...</div>}>
         <CategoryList
           initialData={categories}
           search={search}

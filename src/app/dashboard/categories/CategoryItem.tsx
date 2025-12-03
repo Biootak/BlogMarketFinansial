@@ -9,12 +9,16 @@ import {
   HiOutlineChevronDown,
 } from 'react-icons/hi2';
 import { FaLayerGroup, FaFolder } from 'react-icons/fa';
-import { Button } from '@/components/ui/button';
 import type { TaxonomyType } from '@/types/types';
 import { deleteCategory } from '@/actions/categoryActions';
 import { useToast } from '@/components/ui/use-toast';
 import { CategoryForm } from './CategoryForm';
 import { useRouter } from 'next/navigation';
+import {
+  DashboardTableRow,
+  DashboardTableCell,
+  ActionButton,
+} from '@/components/Dashboard/shared/DashboardTableWrapper';
 
 interface CategoryItemProps {
   category: TaxonomyType;
@@ -38,97 +42,81 @@ export default function CategoryItem({
     if (window.confirm('آیا مطمئن هستید که می‌خواهید این دسته‌بندی را حذف کنید؟')) {
       const result = await deleteCategory(category.id);
       if (result.success) {
-        toast({
-          title: 'موفقیت',
-          description: result.message,
-          variant: 'success',
-        });
+        toast({ title: 'موفقیت', description: result.message, variant: 'success' });
         router.refresh();
       } else {
-        toast({
-          title: 'خطا',
-          description: result.message,
-          variant: 'destructive',
-        });
+        toast({ title: 'خطا', description: result.message, variant: 'destructive' });
       }
     }
   }, [category.id, toast, router]);
 
   const CategoryIcon = level === 0 ? FaLayerGroup : FaFolder;
-  const iconColor = level === 0 ? 'text-blue-500' : 'text-green-500';
+  const iconColor = level === 0 ? 'text-primary-500' : 'text-emerald-500';
+  const textColor = level === 0 ? 'text-primary-600 dark:text-primary-400' : 'text-emerald-600 dark:text-emerald-400';
 
   return (
     <>
-      <tr className="border-b border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-750 transition-colors duration-150">
-        <td className="py-3 px-4 sm:py-4 sm:px-6">
-          <div className="w-8 h-8 sm:w-12 sm:h-12 relative overflow-hidden rounded-full">
+      <DashboardTableRow>
+        <DashboardTableCell>
+          <div className="relative h-10 w-10 overflow-hidden rounded-xl ring-2 ring-white shadow-md dark:ring-neutral-700">
             {category.thumbnail ? (
               <Image
                 src={category.thumbnail}
                 alt={category.name}
-                layout="fill"
-                objectFit="cover"
-                className="rounded-full"
+                fill
+                className="object-cover"
               />
             ) : (
-              <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400">
-                <span className="text-lg sm:text-2xl">
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-neutral-100 to-neutral-200 text-neutral-500 dark:from-neutral-700 dark:to-neutral-800 dark:text-neutral-400">
+                <span className="text-lg font-semibold">
                   {category.name && category.name.length > 0 ? category.name[0].toUpperCase() : '?'}
                 </span>
               </div>
             )}
           </div>
-        </td>
-        <td className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm text-neutral-800 dark:text-neutral-200">
-          <div className="flex items-center" style={{ paddingRight: `${level * 20}px` }}>
-            <CategoryIcon className={`ml-2 h-5 w-5 ${iconColor}`} />
-            <span className={`font-medium ${level === 0 ? 'text-blue-600' : 'text-green-600'}`}>
-              {category.name}
-            </span>
+        </DashboardTableCell>
+        <DashboardTableCell>
+          <div className="flex items-center gap-2" style={{ paddingRight: `${level * 24}px` }}>
+            <CategoryIcon className={`h-4 w-4 ${iconColor}`} />
+            <span className={`font-medium ${textColor}`}>{category.name}</span>
             {category.childCategories && category.childCategories.length > 0 && (
               <button
                 type="button"
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="mr-2 focus:outline-none"
+                className="rounded-md p-1 transition-colors duration-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
               >
                 {isExpanded ? (
-                  <HiOutlineChevronDown className="h-4 w-4" />
+                  <HiOutlineChevronDown className="h-4 w-4 text-neutral-500" />
                 ) : (
-                  <HiOutlineChevronLeft className="h-4 w-4" />
+                  <HiOutlineChevronLeft className="h-4 w-4 text-neutral-500" />
                 )}
               </button>
             )}
           </div>
-        </td>
-        <td className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400">
-          {category.slug}
-        </td>
-        <td className="text-right py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 hidden sm:table-cell">
-          {category.count}
-        </td>
-        <td className="py-3 px-4 sm:py-4 sm:px-6">
-          <div className="flex justify-end space-x-2 space-x-reverse">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsEditDialogOpen(true)}
-              className="text-primary-600 border-primary-600 hover:bg-primary-50 dark:text-primary-400 dark:border-primary-400 dark:hover:bg-primary-900 text-xs sm:text-sm px-2 sm:px-3 py-1"
-            >
-              <HiOutlinePencil className="ml-1 hidden sm:inline" />
-              ویرایش
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDelete}
-              className="text-red-600 border-red-600 hover:bg-red-50 dark:text-red-400 dark:border-red-400 dark:hover:bg-red-900 text-xs sm:text-sm px-2 sm:px-3 py-1"
-            >
-              <HiOutlineTrash className="ml-1 hidden sm:inline" />
-              حذف
-            </Button>
+        </DashboardTableCell>
+        <DashboardTableCell>
+          <code className="rounded-md bg-neutral-100 px-2 py-1 text-xs text-neutral-600 dark:bg-neutral-700 dark:text-neutral-400">
+            {category.slug}
+          </code>
+        </DashboardTableCell>
+        <DashboardTableCell hidden>
+          <span className="inline-flex items-center justify-center rounded-full bg-primary-50 px-2.5 py-0.5 text-xs font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-400">
+            {category.count} پست
+          </span>
+        </DashboardTableCell>
+        <DashboardTableCell>
+          <div className="flex items-center gap-2">
+            <ActionButton variant="edit" onClick={() => setIsEditDialogOpen(true)}>
+              <HiOutlinePencil className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">ویرایش</span>
+            </ActionButton>
+            <ActionButton variant="delete" onClick={handleDelete}>
+              <HiOutlineTrash className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">حذف</span>
+            </ActionButton>
           </div>
-        </td>
-      </tr>
+        </DashboardTableCell>
+      </DashboardTableRow>
       {isExpanded && children}
       {isEditDialogOpen && (
         <CategoryForm
