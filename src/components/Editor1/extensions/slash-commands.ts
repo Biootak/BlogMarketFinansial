@@ -1,6 +1,10 @@
 import { Extension } from '@tiptap/core';
 import Suggestion, { type SuggestionOptions } from '@tiptap/suggestion';
+import { PluginKey } from '@tiptap/pm/state';
 import type { Editor } from '@tiptap/react';
+
+// کلید یکتا برای پلاگین slash commands
+export const slashCommandsPluginKey = new PluginKey('slashCommands');
 
 export interface SlashCommandItem {
   title: string;
@@ -196,9 +200,14 @@ export const SlashCommands = Extension.create({
     return {
       suggestion: {
         char: '/',
+        pluginKey: slashCommandsPluginKey,
         command: ({ editor, range, props }: { editor: Editor; range: any; props: SlashCommandItem }) => {
-          props.command(editor);
+          // اول اسلش و متن جستجو رو پاک کن، بعد دستور رو اجرا کن
           editor.chain().focus().deleteRange(range).run();
+          // یک tick صبر کن تا deletion کامل بشه
+          requestAnimationFrame(() => {
+            props.command(editor);
+          });
         },
       } as Partial<SuggestionOptions>,
     };
@@ -208,6 +217,7 @@ export const SlashCommands = Extension.create({
     return [
       Suggestion({
         editor: this.editor,
+        pluginKey: slashCommandsPluginKey,
         ...this.options.suggestion,
       }),
     ];

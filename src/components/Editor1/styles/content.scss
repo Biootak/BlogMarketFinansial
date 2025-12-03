@@ -2,6 +2,23 @@
 
 .ProseMirror,
 .editor-content {
+  /* پاراگراف‌های خالی - حفظ فاصله‌ها */
+  p {
+    min-height: 1.5em; /* حداقل ارتفاع برای پاراگراف‌های خالی */
+    
+    &:empty::before {
+      content: '\00a0'; /* فاصله نامرئی برای حفظ پاراگراف خالی */
+    }
+    
+    &.is-empty::before {
+      content: '\00a0';
+    }
+  }
+
+  /* فاصله بین پاراگراف‌ها */
+  p + p {
+    margin-top: 0.5em;
+  }
   /* Text colors */
   [style*="color"] {
     color: inherit;
@@ -214,5 +231,67 @@
   ul li::marker,
   ol li::marker {
     color: #60a5fa;
+  }
+}
+
+
+/* Opacity Slider Styles */
+.opacity-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #3b82f6;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: transform 0.15s ease;
+    
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+  
+  &::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #3b82f6;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: transform 0.15s ease;
+    
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+  
+  &::-webkit-slider-runnable-track {
+    height: 100%;
+    border-radius: 8px;
+  }
+  
+  &::-moz-range-track {
+    height: 100%;
+    border-radius: 8px;
+  }
+}
+
+/* Dark mode opacity slider */
+.dark .opacity-slider {
+  &::-webkit-slider-thumb {
+    background: #1f2937;
+    border-color: #60a5fa;
+  }
+  
+  &::-moz-range-thumb {
+    background: #1f2937;
+    border-color: #60a5fa;
   }
 }

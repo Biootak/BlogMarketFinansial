@@ -80,6 +80,30 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
   const { data: session } = useSession();
   const isAuthor = session?.user?.role === 'AUTHOR';
 
+  // Parse content - پشتیبانی از JSON و HTML
+  const parseContent = (content: string | undefined) => {
+    if (!content) return '';
+
+    const trimmed = content.trim();
+
+    // اگر با < شروع می‌شود، HTML است - مستقیم برگردان
+    if (trimmed.startsWith('<')) {
+      return trimmed;
+    }
+
+    // اگر با { شروع می‌شود، JSON است
+    if (trimmed.startsWith('{')) {
+      try {
+        return JSON.parse(trimmed);
+      } catch {
+        return trimmed;
+      }
+    }
+
+    // در غیر این صورت، متن ساده است
+    return trimmed;
+  };
+
   const [editorContent, setEditorContent] = useState(defaultValues.content || '');
   const [slug, setSlug] = useState(defaultValues.slug || '');
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
@@ -99,15 +123,22 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
   });
 
   // Load data from local storage on component mount
+  // فقط برای پست جدید از localStorage استفاده کن، نه برای ویرایش
   useEffect(() => {
-    const savedData = localStorage.getItem(localStorageKey);
-    if (savedData) {
-      const parsedData = JSON.parse(savedData);
-      form.reset(parsedData);
-      setEditorContent(parsedData.content || '');
-      setSlug(parsedData.slug || '');
+    if (!isEditing) {
+      const savedData = localStorage.getItem(localStorageKey);
+      if (savedData) {
+        try {
+          const parsedData = JSON.parse(savedData);
+          form.reset(parsedData);
+          setEditorContent(parsedData.content || '');
+          setSlug(parsedData.slug || '');
+        } catch (e) {
+          console.error('Error parsing saved data:', e);
+        }
+      }
     }
-  }, [localStorageKey, form]);
+  }, [localStorageKey, form, isEditing]);
 
   // Save form data to local storage
   const saveToLocalStorage = useCallback(
@@ -125,13 +156,18 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
     return () => subscription.unsubscribe();
   }, [form, saveToLocalStorage, editorContent, slug]);
 
+  // وقتی در حالت ویرایش هستیم، محتوای اصلی از دیتابیس را بارگذاری کن
   useEffect(() => {
-    if (isEditing) {
+    if (isEditing && defaultValues.content) {
       form.reset(defaultValues);
-      setEditorContent(defaultValues.content || '');
+      // محتوا را همانطور که هست ذخیره کن (JSON string از دیتابیس)
+      setEditorContent(defaultValues.content);
       setSlug(defaultValues.slug || '');
+      // پاک کردن localStorage قدیمی برای این پست
+      localStorage.removeItem(localStorageKey);
+      localStorage.removeItem(`${localStorageKey}-editor`);
     }
-  }, [isEditing, defaultValues, form]);
+  }, [isEditing, defaultValues, form, localStorageKey]);
 
   const generateSlugFromTitle = useCallback(
     (title: string) => {
@@ -239,7 +275,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                   contentClassName="h-full overflow-auto"
                   toolBarClassName="z-50 inset-x-0 w-full bg-toolbar sticky top-0"
                   footerClassName="bg-toolbar sticky "
-                  content={editorContent}
+                  content={parseContent(editorContent)}
                   localStorageKey={`${localStorageKey}-editor`}
                   editorProps={{
                     attributes: {

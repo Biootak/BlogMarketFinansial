@@ -1,32 +1,39 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 
 import type { Editor } from '@tiptap/core';
 
-export const useActive = (editor: Editor, ...args: any) => {
+export const useActive = (editor: Editor, name: string, attributes?: Record<string, any>) => {
   const [active, setActive] = useState(false);
+  
+  // استفاده از ref برای جلوگیری از re-render بی‌نهایت
+  const nameRef = useRef(name);
+  const attributesRef = useRef(attributes);
+  
+  // به‌روزرسانی refs
+  nameRef.current = name;
+  attributesRef.current = attributes;
 
-  const toggleActive = useCallback((value: unknown = null) => {
-    if (value !== null && typeof value === 'boolean') {
-      setActive(value);
-    } else {
-      setActive((v) => !v);
-    }
-  }, []);
+  const checkActive = useCallback(() => {
+    const isActive = attributesRef.current 
+      ? editor.isActive(nameRef.current, attributesRef.current)
+      : editor.isActive(nameRef.current);
+    setActive(isActive);
+  }, [editor]);
 
   useEffect(() => {
+    // بررسی اولیه
+    checkActive();
+    
     const listener = () => {
-      // eslint-disable-next-line prefer-spread
-      toggleActive(editor.isActive.apply(editor, args));
+      checkActive();
     };
 
-    //  editor.on("selectionUpdate", listener);
     editor.on('transaction', listener);
 
     return () => {
-      // editor.off("selectionUpdate", listener);
       editor.off('transaction', listener);
     };
-  }, [editor, args, toggleActive]);
+  }, [editor, checkActive]);
 
   return active;
 };

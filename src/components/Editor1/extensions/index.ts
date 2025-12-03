@@ -26,20 +26,28 @@ import { FontSize } from './font-size';
 import { FontFamily } from './font-family';
 import { DragHandle } from './drag-handle';
 import { KeyboardShortcuts } from './keyboard-shortcuts';
+import { Paragraph } from './paragraph';
 
 export const extensions = [
   Image,
   StarterKit.configure({
     heading: false,
+    // غیرفعال کردن paragraph پیش‌فرض برای استفاده از نسخه سفارشی
+    paragraph: false,
     horizontalRule: {
       HTMLAttributes: {
         class: 'my-4 border-t-2 border-gray-300 dark:border-gray-600',
       },
     },
     codeBlock: false,
-    hardBreak: false,
+    // HardBreak فعال برای حفظ فاصله‌ها با Shift+Enter
+    hardBreak: {
+      keepMarks: true,
+    },
     dropcursor: {},
   }),
+  // Paragraph سفارشی برای حفظ پاراگراف‌های خالی
+  Paragraph,
   Heading.configure({
     levels: [1, 2, 3, 4, 5, 6],
   }),

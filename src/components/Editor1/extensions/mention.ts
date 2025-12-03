@@ -1,8 +1,12 @@
 import { mergeAttributes, Node } from '@tiptap/core';
 import { ReactRenderer } from '@tiptap/react';
 import Suggestion, { type SuggestionOptions } from '@tiptap/suggestion';
+import { PluginKey } from '@tiptap/pm/state';
 import tippy, { type Instance as TippyInstance } from 'tippy.js';
 import MentionList, { type MentionListRef } from '../components/mention-list';
+
+// کلید یکتا برای پلاگین mention
+export const mentionPluginKey = new PluginKey('mention');
 
 export interface MentionUser {
   id: string;
@@ -32,7 +36,6 @@ export const Mention = Node.create<MentionOptions>({
       HTMLAttributes: {},
       suggestion: {
         char: '@',
-        pluginKey: 'mention',
         command: ({ editor, range, props }) => {
           const nodeAfter = editor.view.state.selection.$to.nodeAfter;
           const overrideSpace = nodeAfter?.text?.startsWith(' ');
@@ -145,6 +148,7 @@ export const Mention = Node.create<MentionOptions>({
     return [
       Suggestion({
         editor: this.editor,
+        pluginKey: mentionPluginKey,
         ...this.options.suggestion,
       }),
     ];
@@ -161,6 +165,7 @@ const mockUsers: MentionUser[] = [
 ];
 
 export const mentionSuggestion: Partial<SuggestionOptions> = {
+  pluginKey: mentionPluginKey,
   items: ({ query }) => {
     return mockUsers
       .filter((user) =>

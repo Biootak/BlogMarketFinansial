@@ -6,6 +6,8 @@ import React, {
   useImperativeHandle,
   useState,
   useCallback,
+  useRef,
+  useMemo,
 } from 'react';
 import type { SlashCommandItem } from '../extensions/slash-commands';
 
@@ -21,24 +23,45 @@ interface SlashCommandMenuProps {
 const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
   ({ items, command }, ref) => {
     const [selectedIndex, setSelectedIndex] = useState(0);
+    const listRef = useRef<HTMLDivElement>(null);
+    const selectedRef = useRef<HTMLButtonElement>(null);
+
+    // ساخت لیست flat از آیتم‌ها با index صحیح
+    const flatItems = useMemo(() => {
+      const result: { item: SlashCommandItem; category: string }[] = [];
+      const grouped = items.reduce((acc, item) => {
+        if (!acc[item.category]) {
+          acc[item.category] = [];
+        }
+        acc[item.category].push(item);
+        return acc;
+      }, {} as Record<string, SlashCommandItem[]>);
+
+      for (const [category, categoryItems] of Object.entries(grouped)) {
+        for (const item of categoryItems) {
+          result.push({ item, category });
+        }
+      }
+      return result;
+    }, [items]);
 
     const selectItem = useCallback(
       (index: number) => {
-        const item = items[index];
-        if (item) {
-          command(item);
+        const entry = flatItems[index];
+        if (entry) {
+          command(entry.item);
         }
       },
-      [items, command]
+      [flatItems, command]
     );
 
     const upHandler = useCallback(() => {
-      setSelectedIndex((prev) => (prev + items.length - 1) % items.length);
-    }, [items.length]);
+      setSelectedIndex((prev) => (prev + flatItems.length - 1) % flatItems.length);
+    }, [flatItems.length]);
 
     const downHandler = useCallback(() => {
-      setSelectedIndex((prev) => (prev + 1) % items.length);
-    }, [items.length]);
+      setSelectedIndex((prev) => (prev + 1) % flatItems.length);
+    }, [flatItems.length]);
 
     const enterHandler = useCallback(() => {
       selectItem(selectedIndex);
@@ -47,6 +70,11 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
     useEffect(() => {
       setSelectedIndex(0);
     }, [items]);
+
+    // Scroll selected item into view
+    useEffect(() => {
+      selectedRef.current?.scrollIntoView({ block: 'nearest' });
+    }, [selectedIndex]);
 
     useImperativeHandle(ref, () => ({
       onKeyDown: ({ event }: { event: KeyboardEvent }) => {
@@ -75,13 +103,18 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
 
     if (items.length === 0) {
       return (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-3 text-gray-500 dark:text-gray-400 text-sm">
+        <div 
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 text-gray-500 dark:text-gray-400 text-sm text-center"
+          role="status"
+          aria-live="polite"
+        >
+          <span className="text-2xl block mb-2">🔍</span>
           نتیجه‌ای یافت نشد
         </div>
       );
     }
 
-    // Group items by category
+    // Group items by category for rendering
     const groupedItems = items.reduce((acc, item) => {
       if (!acc[item.category]) {
         acc[item.category] = [];
@@ -97,44 +130,75 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
       advanced: 'پیشرفته',
     };
 
+    const categoryOrder = ['basic', 'list', 'media', 'advanced'];
+    const sortedCategories = Object.keys(groupedItems).sort(
+      (a, b) => categoryOrder.indexOf(a) - categoryOrder.indexOf(b)
+    );
+
     let globalIndex = 0;
 
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 py-2 min-w-[220px] max-h-[300px] overflow-y-auto">
-        {Object.entries(groupedItems).map(([category, categoryItems]) => (
-          <div key={category}>
-            <div className="px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
-              {categoryLabels[category] || category}
+      <div 
+        ref={listRef}
+        className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 py-2 min-w-[260px] max-h-[360px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
+        role="listbox"
+        aria-label="منوی دستورات"
+        aria-activedescendant={`slash-item-${selectedIndex}`}
+      >
+        {sortedCategories.map((category) => {
+          const categoryItems = groupedItems[category];
+          return (
+            <div key={category} role="group" aria-labelledby={`category-${category}`}>
+              <div 
+                id={`category-${category}`}
+                className="px-3 py-2 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider sticky top-0 bg-white dark:bg-gray-800 z-10"
+              >
+                {categoryLabels[category] || category}
+              </div>
+              {categoryItems.map((item) => {
+                const currentIndex = globalIndex++;
+                const isSelected = currentIndex === selectedIndex;
+                return (
+                  <button
+                    key={item.title}
+                    id={`slash-item-${currentIndex}`}
+                    ref={isSelected ? selectedRef : null}
+                    type="button"
+                    role="option"
+                    aria-selected={isSelected}
+                    onClick={() => selectItem(currentIndex)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-right transition-all duration-150 ${
+                      isSelected
+                        ? 'bg-primary-100 dark:bg-primary-900/30 border-r-2 border-primary-500'
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 border-r-2 border-transparent'
+                    }`}
+                  >
+                    <span 
+                      className={`w-10 h-10 flex items-center justify-center rounded-xl text-lg flex-shrink-0 transition-all ${
+                        isSelected 
+                          ? 'bg-primary-500 text-white shadow-md' 
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                      }`}
+                      aria-hidden="true"
+                    >
+                      {item.icon}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className={`text-sm font-medium ${
+                        isSelected ? 'text-primary-700 dark:text-primary-300' : 'text-gray-900 dark:text-gray-100'
+                      }`}>
+                        {item.title}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                        {item.description}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
-            {categoryItems.map((item) => {
-              const currentIndex = globalIndex++;
-              return (
-                <button
-                  key={item.title}
-                  type="button"
-                  onClick={() => selectItem(currentIndex)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 text-right transition-colors ${
-                    currentIndex === selectedIndex
-                      ? 'bg-primary-100 dark:bg-primary-900/30'
-                      : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  <span className="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded text-lg">
-                    {item.icon}
-                  </span>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      {item.title}
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {item.description}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        ))}
+          );
+        })}
       </div>
     );
   }

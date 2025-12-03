@@ -86,13 +86,10 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
       onUpdateToC?.(items);
     }, [editor, onUpdateToC]);
 
+    // فقط ذخیره در localStorage، نه بارگذاری از آن
+    // بارگذاری محتوا از prop content انجام می‌شود
     useEffect(() => {
       if (!editor || !localStorageKey) return;
-
-      const savedContent = localStorage.getItem(localStorageKey);
-      if (savedContent) {
-        editor.commands.setContent(JSON.parse(savedContent));
-      }
 
       const saveContent = () => {
         localStorage.setItem(localStorageKey, JSON.stringify(editor.getJSON()));
@@ -104,6 +101,65 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
         editor.off('update', saveContent);
       };
     }, [editor, localStorageKey]);
+
+    // تشخیص نوع محتوا و parse کردن آن
+    const parseContent = useCallback((rawContent: string | object | undefined): string | object | null => {
+      if (!rawContent) return null;
+      
+      if (typeof rawContent !== 'string') {
+        return rawContent;
+      }
+
+      const trimmed = rawContent.trim();
+      if (!trimmed) return null;
+
+      // اگر با < شروع شود، HTML است
+      if (trimmed.startsWith('<')) {
+        return trimmed;
+      }
+
+      // اگر با { یا [ شروع شود، JSON است
+      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+        try {
+          return JSON.parse(trimmed);
+        } catch (error) {
+          console.warn('Failed to parse content as JSON:', error);
+          return trimmed;
+        }
+      }
+
+      return trimmed;
+    }, []);
+
+    // بارگذاری محتوای اولیه - فقط یک بار وقتی ادیتور آماده شد
+    const initialContentLoadedRef = React.useRef(false);
+    const contentRef = React.useRef(content);
+    
+    useEffect(() => {
+      // به‌روزرسانی ref برای مقایسه
+      contentRef.current = content;
+    }, [content]);
+
+    useEffect(() => {
+      if (!editor || editor.isDestroyed) return;
+      
+      // اگر قبلاً محتوا بارگذاری شده و محتوای جدید همان است، کاری نکن
+      if (initialContentLoadedRef.current && content === contentRef.current) return;
+      
+      // فقط یک بار محتوا را بارگذاری کن
+      if (!initialContentLoadedRef.current && content) {
+        initialContentLoadedRef.current = true;
+        const parsedContent = parseContent(content);
+        if (parsedContent) {
+          // استفاده از queueMicrotask برای جلوگیری از race condition
+          queueMicrotask(() => {
+            if (!editor.isDestroyed) {
+              editor.commands.setContent(parsedContent);
+            }
+          });
+        }
+      }
+    }, [editor, content, parseContent]);
 
     useEffect(() => {
       return () => {

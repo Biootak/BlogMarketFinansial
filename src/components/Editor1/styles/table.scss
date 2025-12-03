@@ -19,6 +19,7 @@
       position: relative;
       vertical-align: top;
       text-align: right;
+      cursor: cell;
 
       > * {
         margin-bottom: 0;
@@ -30,6 +31,10 @@
 
       p {
         margin: 0;
+      }
+
+      &:hover:not(.selectedCell) {
+        background-color: rgba(59, 130, 246, 0.05);
       }
     }
 
@@ -58,16 +63,19 @@
       }
     }
 
-    .selectedCell:after {
-      background: rgba(59, 130, 246, 0.15);
-      content: "";
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      pointer-events: none;
-      position: absolute;
-      z-index: 2;
+    .selectedCell {
+      &:after {
+        background: rgba(59, 130, 246, 0.2);
+        content: "";
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        pointer-events: none;
+        position: absolute;
+        z-index: 2;
+        border: 2px solid rgba(59, 130, 246, 0.5);
+      }
     }
 
     .column-resize-handle {
@@ -81,12 +89,10 @@
     }
   }
 
-  /* Ensure tables don't overlap */
   table + table {
     margin-top: 2rem;
   }
 
-  /* Table wrapper for better spacing */
   .tableWrapper {
     margin: 1.5rem 0;
     overflow-x: auto;
@@ -101,7 +107,7 @@
   }
 }
 
-/* Dark mode support */
+/* Dark mode */
 .dark .ProseMirror,
 .dark .editor-content {
   table {
@@ -110,6 +116,10 @@
     td,
     th {
       border-color: #374151;
+
+      &:hover:not(.selectedCell) {
+        background-color: rgba(59, 130, 246, 0.1);
+      }
     }
 
     th {
@@ -118,18 +128,8 @@
     }
 
     .selectedCell:after {
-      background: rgba(59, 130, 246, 0.25);
+      background: rgba(59, 130, 246, 0.3);
+      border-color: rgba(59, 130, 246, 0.6);
     }
   }
-}
-
-/* Hover effect for table rows */
-.ProseMirror table tbody tr:hover,
-.editor-content table tbody tr:hover {
-  background-color: rgba(59, 130, 246, 0.05);
-}
-
-.dark .ProseMirror table tbody tr:hover,
-.dark .editor-content table tbody tr:hover {
-  background-color: rgba(59, 130, 246, 0.1);
 }

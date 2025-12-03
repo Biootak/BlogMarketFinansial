@@ -1,16 +1,35 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react';
 
 // Dynamic import for KaTeX to avoid SSR issues
-let katex: any = null;
-if (typeof window !== 'undefined') {
-  import('katex').then((mod) => {
-    katex = mod.default;
-  });
-  import('katex/dist/katex.min.css');
-}
+let katex: typeof import('katex') | null = null;
+let katexLoaded = false;
+
+const loadKatex = async () => {
+  if (katexLoaded) return katex;
+  if (typeof window === 'undefined') return null;
+  
+  try {
+    const mod = await import('katex');
+    katex = mod.default as unknown as typeof import('katex');
+    katexLoaded = true;
+    
+    // Load CSS dynamically
+    if (!document.querySelector('link[href*="katex"]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css';
+      document.head.appendChild(link);
+    }
+    
+    return katex;
+  } catch (error) {
+    console.error('Failed to load KaTeX:', error);
+    return null;
+  }
+};
 
 const MathBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, selected }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -23,35 +42,37 @@ const MathBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, se
     setLatex(node.attrs.latex || '');
   }, [node.attrs.latex]);
 
-  useEffect(() => {
-    if (!latex.trim()) {
+  const renderMath = useCallback(async (latexStr: string, displayMode: boolean) => {
+    if (!latexStr.trim()) {
       setRenderedHtml('');
       setError(null);
       return;
     }
 
-    const renderMath = async () => {
-      try {
-        if (!katex) {
-          const mod = await import('katex');
-          katex = mod.default;
-        }
-        
-        const html = katex.renderToString(latex, {
-          displayMode: node.attrs.displayMode,
-          throwOnError: true,
-          strict: false,
-        });
-        setRenderedHtml(html);
-        setError(null);
-      } catch (err: any) {
-        setError(err.message || 'خطا در پردازش فرمول');
-        setRenderedHtml('');
+    try {
+      const katexModule = await loadKatex();
+      if (!katexModule) {
+        setError('کتابخانه KaTeX بارگذاری نشد');
+        return;
       }
-    };
+      
+      const html = (katexModule as any).renderToString(latexStr, {
+        displayMode,
+        throwOnError: true,
+        strict: false,
+      });
+      setRenderedHtml(html);
+      setError(null);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'خطا در پردازش فرمول';
+      setError(errorMessage);
+      setRenderedHtml('');
+    }
+  }, []);
 
-    renderMath();
-  }, [latex, node.attrs.displayMode]);
+  useEffect(() => {
+    renderMath(latex, node.attrs.displayMode);
+  }, [latex, node.attrs.displayMode, renderMath]);
 
   const handleSave = () => {
     updateAttributes({ latex });
