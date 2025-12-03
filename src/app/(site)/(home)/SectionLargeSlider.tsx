@@ -23,7 +23,6 @@ export default async function SectionLargeSlider() {
     <div>
       <SectionLargeSliderClient
         initialPosts={result.data}
-        autoSlide={true}
         className="pt-4 pb-3 md:py-5 lg:pt-5"
       />
     </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { useSidebarStore } from '@/hooks/sidebarStore';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import SwitchDarkMode from '@/components/SwitchDarkMode/SwitchDarkMode';
@@ -10,57 +11,90 @@ const Header: React.FC = () => {
   const user = useCurrentUser();
   const { isOpen, setIsOpen, isMobile } = useSidebarStore();
 
-  const iconClass = 'transition-transform duration-200 ease-in-out transform hover:scale-110';
-  const buttonClass =
-    'p-2 rounded-full text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800 transition-colors duration-200';
-
   return (
-    <header className="bg-white dark:bg-gray-800 shadow-sm">
-      <div className="max-w-full mx-auto py-2 px-4 sm:px-6 lg:px-8 flex flex-row-reverse justify-between items-center">
+    <header className="relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50">
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-violet-500/[0.02] via-transparent to-indigo-500/[0.02] pointer-events-none" />
+      
+      <div className="relative max-w-full mx-auto py-3 px-4 sm:px-6 lg:px-8 flex flex-row-reverse justify-between items-center">
         {/* Left side (User menu and actions) */}
-        <div className="flex items-center space-x-1 ">
+        <div className="flex items-center gap-1">
           {/* Search button - hidden on mobile */}
-          <button type="button" className={`hidden sm:block ${buttonClass}`} aria-label="جستجو">
-            <Icon name="Search" className={iconClass} aria-hidden="true" />
-          </button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            type="button"
+            className="hidden sm:flex items-center justify-center w-10 h-10 rounded-xl text-slate-500 hover:text-violet-600 dark:text-slate-400 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all duration-200"
+            aria-label="جستجو"
+          >
+            <Icon name="Search" className="w-5 h-5" aria-hidden="true" />
+          </motion.button>
 
           {/* Notification button */}
-          <button type="button" className={`${buttonClass} relative`} aria-label="اعلان‌ها">
-            <Icon name="Bell" className={iconClass} aria-hidden="true" />
-            <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500 ring-1 ring-white dark:ring-gray-800" />
-          </button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            type="button"
+            className="relative flex items-center justify-center w-10 h-10 rounded-xl text-slate-500 hover:text-violet-600 dark:text-slate-400 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all duration-200"
+            aria-label="اعلان‌ها"
+          >
+            <Icon name="Bell" className="w-5 h-5" aria-hidden="true" />
+            {/* Notification badge */}
+            <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500 ring-2 ring-white dark:ring-slate-900" />
+            </span>
+          </motion.button>
 
           {/* Dark mode switch */}
-          <SwitchDarkMode />
+          <div className="mx-1">
+            <SwitchDarkMode />
+          </div>
 
           {/* User menu */}
-          <div className="relative">
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="relative"
+          >
             <button
               type="button"
-              className="flex items-center focus:outline-none"
+              className="group flex items-center gap-3 p-1.5 pr-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 hover:bg-violet-50 dark:hover:bg-violet-900/20 border border-slate-200/50 dark:border-slate-700/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all duration-200"
               aria-label="منوی کاربر"
             >
-              <Avatar
-                imgUrl={user?.profile?.avatar}
-                userName={user?.name}
-                sizeClass="h-9 w-9 sm:h-10 sm:w-10"
-                containerClassName="border-2 border-indigo-500 hover:border-indigo-600 transition-colors duration-200 justify-center"
-              />
+              <div className="hidden sm:block text-right">
+                <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 group-hover:text-violet-700 dark:group-hover:text-violet-300 transition-colors">
+                  {user?.name || 'کاربر'}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {user?.role === 'SUPER_ADMIN' ? 'مدیر ارشد' : user?.role === 'ADMIN' ? 'مدیر' : 'نویسنده'}
+                </p>
+              </div>
+              <div className="relative">
+                <Avatar
+                  imgUrl={user?.profile?.avatar}
+                  userName={user?.name}
+                  sizeClass="h-9 w-9"
+                  containerClassName="ring-2 ring-violet-500/30 group-hover:ring-violet-500 transition-all duration-200"
+                />
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full ring-2 ring-white dark:ring-slate-900" />
+              </div>
             </button>
-            {/* You can add a dropdown menu here if needed */}
-          </div>
+          </motion.div>
         </div>
 
-        {/* Right side (Logo and mobile menu button) */}
+        {/* Right side (Mobile menu button) */}
         <div className="flex items-center">
           {isMobile && (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               type="button"
-              className={`${buttonClass} ml-2`}
+              className="flex items-center justify-center w-10 h-10 rounded-xl text-slate-500 hover:text-violet-600 dark:text-slate-400 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-all duration-200"
               onClick={() => setIsOpen(!isOpen)}
+              aria-label={isOpen ? 'بستن منو' : 'باز کردن منو'}
             >
-              <Icon name="Menu" className={iconClass} />
-            </button>
+              <Icon name="Menu" className="w-5 h-5" />
+            </motion.button>
           )}
         </div>
       </div>
