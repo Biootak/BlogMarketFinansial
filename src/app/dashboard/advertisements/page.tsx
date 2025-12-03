@@ -500,6 +500,7 @@ function AdvertisementForm({
                   onImageUpload={handleImageUpload}
                   onImageRemove={handleImageRemove}
                   initialPreviews={field.value ? [field.value] : []}
+                  folder="ads"
                 />
               </FormControl>
               <FormMessage />

@@ -295,8 +295,8 @@ export default function SocialLinksManager() {
       </div>
 
       {/* Image Upload Dialogs */}
-      <ImageUploadDialog isOpen={isIconDialogOpen} onClose={() => setIsIconDialogOpen(false)} onImageUpload={handleIconUpload} onImageRemove={() => setNewLink({ ...newLink, icon: '' })} initialPreview={newLink.icon} title="آپلود آیکون شبکه اجتماعی" />
-      <ImageUploadDialog isOpen={isEditIconDialogOpen} onClose={() => setIsEditIconDialogOpen(false)} onImageUpload={handleEditIconUpload} onImageRemove={() => setEditingData({ ...editingData, icon: '' })} initialPreview={editingData.icon || ''} title="آپلود آیکون شبکه اجتماعی" />
+      <ImageUploadDialog isOpen={isIconDialogOpen} onClose={() => setIsIconDialogOpen(false)} onImageUpload={handleIconUpload} onImageRemove={() => setNewLink({ ...newLink, icon: '' })} initialPreview={newLink.icon} title="آپلود آیکون شبکه اجتماعی" folder="general" />
+      <ImageUploadDialog isOpen={isEditIconDialogOpen} onClose={() => setIsEditIconDialogOpen(false)} onImageUpload={handleEditIconUpload} onImageRemove={() => setEditingData({ ...editingData, icon: '' })} initialPreview={editingData.icon || ''} title="آپلود آیکون شبکه اجتماعی" folder="general" />
     </div>
   );
 }

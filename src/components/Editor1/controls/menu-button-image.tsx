@@ -54,6 +54,7 @@ export const MenuButtonImage: React.FC<MenuButtonImageProps> = ({ editor }) => {
           onImageRemove={handleImageRemove}
           maxFiles={1}
           multiple={false}
+          folder="posts"
         />
       </DialogContent>
     </Dialog>

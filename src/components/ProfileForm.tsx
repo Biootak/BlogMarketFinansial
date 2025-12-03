@@ -199,8 +199,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
         {isSubmitting ? <div className="flex items-center justify-center gap-3"><Loading size="sm" variant="secondary" type="spinner" /><span>در حال بروزرسانی...</span></div> : <span className="flex items-center justify-center gap-2"><Check className="w-5 h-5" />بروزرسانی پروفایل</span>}
       </Button>
 
-      <ImageUploadDialog isOpen={isAvatarDialogOpen} onClose={() => setIsAvatarDialogOpen(false)} onImageUpload={(urls) => handleImageUpload(urls, 'avatar')} onImageRemove={() => handleImageRemove('avatar')} initialPreview={avatarPreview} title="تغییر آواتار" />
-      <ImageUploadDialog isOpen={isBgImageDialogOpen} onClose={() => setIsBgImageDialogOpen(false)} onImageUpload={(urls) => handleImageUpload(urls, 'bgImage')} onImageRemove={() => handleImageRemove('bgImage')} initialPreview={bgImagePreview} title="تغییر تصویر پس‌زمینه" />
+      <ImageUploadDialog isOpen={isAvatarDialogOpen} onClose={() => setIsAvatarDialogOpen(false)} onImageUpload={(urls) => handleImageUpload(urls, 'avatar')} onImageRemove={() => handleImageRemove('avatar')} initialPreview={avatarPreview} title="تغییر آواتار" folder="avatars" />
+      <ImageUploadDialog isOpen={isBgImageDialogOpen} onClose={() => setIsBgImageDialogOpen(false)} onImageUpload={(urls) => handleImageUpload(urls, 'bgImage')} onImageRemove={() => handleImageRemove('bgImage')} initialPreview={bgImagePreview} title="تغییر تصویر پس‌زمینه" folder="avatars" />
     </form>
   );
 };

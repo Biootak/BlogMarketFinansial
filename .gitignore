@@ -14,6 +14,11 @@ yarn.lock
 .next/serverless/chunks/
 public/build/
 
+# Uploaded files (keep .gitkeep files)
+public/uploads/*
+!public/uploads/.gitkeep
+!public/uploads/*/.gitkeep
+
 # Testing
 /coverage
 /jest

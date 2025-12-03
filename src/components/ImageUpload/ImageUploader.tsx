@@ -1,12 +1,12 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import Image from 'next/image';
-import { getPresignedUrl } from '@/actions/S3Actions';
 
 import { RiUploadCloud2Line, RiImageAddLine, RiCloseLine } from 'react-icons/ri';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
+import type { UploadFolder } from '@/actions/uploadActions';
 
 interface ImageUploaderProps {
   onImageUpload: (urls: string[]) => void;
@@ -14,68 +14,26 @@ interface ImageUploaderProps {
   maxFiles?: number;
   multiple?: boolean;
   initialPreviews?: string[];
+  folder?: UploadFolder;
 }
 
-class ImageUploaderClass {
-  private props: ImageUploaderProps;
-  private fileInputRef: React.RefObject<HTMLInputElement | null>;
-  constructor(props: ImageUploaderProps) {
-    this.props = props;
-    this.fileInputRef = React.createRef();
-  }
-  open() {
-    if (this.fileInputRef.current) {
-      this.fileInputRef.current.click();
-    }
-  }
-  async uploadFiles(files: File[]) {
-    try {
-      const uploadedUrls = await Promise.all(
-        files.map(async (file) => {
-          const presignedUrl = await getPresignedUrl(file.name, file.type);
+async function uploadToLocal(file: File, folder: UploadFolder): Promise<string> {
+  const formData = new FormData();
+  formData.append('files', file);
+  formData.append('folder', folder);
 
-          await fetch(presignedUrl, {
-            method: 'PUT',
-            body: file,
-            headers: {
-              'Content-Type': file.type,
-            },
-          });
-          return new URL(presignedUrl).origin + new URL(presignedUrl).pathname;
-        }),
-      );
-      this.props.onImageUpload(uploadedUrls);
-      toast({
-        title: 'موفقیت',
-        description: 'تصاویر با موفقیت آپلود شدند',
-        variant: 'success',
-      });
-    } catch (error) {
-      console.error('خطا در آپلود تصاویر:', error);
-      toast({
-        title: 'خطا',
-        description: 'آپلود تصاویر با مشکل مواجه شد',
-        variant: 'destructive',
-      });
-    }
+  const response = await fetch('/api/upload', {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'خطا در آپلود');
   }
-  render() {
-    return (
-      <input
-        type="file"
-        ref={this.fileInputRef}
-        style={{ display: 'none' }}
-        accept="image/*"
-        multiple={this.props.multiple}
-        onChange={(e) => {
-          const files = e.target.files;
-          if (files) {
-            this.uploadFiles(Array.from(files));
-          }
-        }}
-      />
-    );
-  }
+
+  const data = await response.json();
+  return data.files[0].url;
 }
 
 const ImageUploader: React.FC<ImageUploaderProps> = ({
@@ -84,11 +42,13 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   maxFiles = 1,
   multiple = false,
   initialPreviews = [],
+  folder = 'general',
 }) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>(initialPreviews);
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState<number[]>([]);
+
   const onDrop = useCallback(
     (acceptedFiles: File[], rejectedFiles: any[]) => {
       if (rejectedFiles.length > 0) {
@@ -109,6 +69,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     },
     [selectedFiles, multiple, maxFiles],
   );
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
@@ -121,39 +82,28 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     maxFiles: multiple ? maxFiles : 1,
     multiple,
   });
+
   const uploadFiles = async () => {
     if (selectedFiles.length === 0) return;
     setIsUploading(true);
     setProgress(new Array(selectedFiles.length).fill(0));
 
     try {
-      const uploadedUrls = await Promise.all(
-        selectedFiles.map(async (file, index) => {
-          const presignedUrl = await getPresignedUrl(file.name, file.type);
-          const xhr = new XMLHttpRequest();
-          xhr.open('PUT', presignedUrl, true);
-          xhr.setRequestHeader('Content-Type', file.type);
-          xhr.upload.onprogress = (event) => {
-            if (event.lengthComputable) {
-              const percentComplete = (event.loaded / event.total) * 100;
-              setProgress((prev) => {
-                const newProgress = [...prev];
-                newProgress[index] = percentComplete;
-                return newProgress;
-              });
-            }
-          };
-          await new Promise((resolve, reject) => {
-            xhr.onload = () =>
-              xhr.status === 200
-                ? resolve(null)
-                : reject(new Error(`آپلود با خطای ${xhr.status} مواجه شد`));
-            xhr.onerror = () => reject(new Error('آپلود با خطا مواجه شد'));
-            xhr.send(file);
-          });
-          return new URL(presignedUrl).origin + new URL(presignedUrl).pathname;
-        }),
-      );
+      const uploadedUrls: string[] = [];
+
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        const url = await uploadToLocal(file, folder);
+        uploadedUrls.push(url);
+        
+        // آپدیت progress
+        setProgress((prev) => {
+          const newProgress = [...prev];
+          newProgress[i] = 100;
+          return newProgress;
+        });
+      }
+
       onImageUpload(uploadedUrls);
       toast({
         title: 'موفقیت',
@@ -164,7 +114,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       console.error('خطا در آپلود تصاویر:', error);
       toast({
         title: 'خطا',
-        description: 'آپلود تصاویر با مشکل مواجه شد',
+        description: error instanceof Error ? error.message : 'آپلود تصاویر با مشکل مواجه شد',
         variant: 'destructive',
       });
     } finally {

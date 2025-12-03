@@ -272,7 +272,7 @@ const ExchangeRatesPage: React.FC = () => {
             </div>
             <div className="space-y-2">
               <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">تصویر</Label>
-              <ImageUploader onImageUpload={handleImageUpload} onImageRemove={handleImageRemove} />
+              <ImageUploader onImageUpload={handleImageUpload} onImageRemove={handleImageRemove} folder="general" />
             </div>
             <DialogFooter className="pt-4">
               <Button type="submit" className="w-full rounded-xl bg-gradient-to-l from-primary-500 to-primary-600 py-3 font-medium text-white shadow-lg">ایجاد ارز</Button>
@@ -342,7 +342,7 @@ const ExchangeRatesPage: React.FC = () => {
               </div>
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">تصویر</Label>
-                <ImageUploader onImageUpload={handleImageUpload} onImageRemove={handleImageRemove} initialPreviews={editingExchangeRate.imageUrl ? [editingExchangeRate.imageUrl] : []} />
+                <ImageUploader onImageUpload={handleImageUpload} onImageRemove={handleImageRemove} initialPreviews={editingExchangeRate.imageUrl ? [editingExchangeRate.imageUrl] : []} folder="general" />
               </div>
               <DialogFooter className="pt-4">
                 <Button type="submit" className="w-full rounded-xl bg-gradient-to-l from-primary-500 to-primary-600 py-3 font-medium text-white shadow-lg">ذخیره تغییرات</Button>

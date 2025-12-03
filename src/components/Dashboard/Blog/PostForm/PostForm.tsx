@@ -692,6 +692,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                             maxFiles={1}
                             multiple={false}
                             initialPreviews={featuredImage ? [featuredImage] : []}
+                            folder="posts"
                           />
                         </FormControl>
                         <FormMessage />
@@ -724,6 +725,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                               multiple
                               maxFiles={20}
                               initialPreviews={field.value ?? []}
+                              folder="posts"
                             />
                           </FormControl>
                           <FormMessage />

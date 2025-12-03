@@ -198,6 +198,7 @@ export default function EditCategoryDialog({
                       maxFiles={1}
                       multiple={false}
                       initialPreviews={field.value ? [field.value] : []}
+                      folder="categories"
                     />
                   </FormControl>
                   <FormMessage />
