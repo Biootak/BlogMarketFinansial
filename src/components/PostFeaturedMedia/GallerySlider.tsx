@@ -88,12 +88,13 @@ export default function GallerySlider({
                 className="absolute inset-0"
               >
                 <Image
-                  src={currentImage || ''}
+                  src={currentImage || '/images/placeholder-large.png'}
                   fill
                   alt="listing card gallery"
                   className={`object-cover ${imageClass}`}
                   onLoad={() => setLoaded(true)}
                   sizes="(max-width: 1025px) 100vw, 300px"
+                  loading="lazy"
                 />
               </motion.div>
             </AnimatePresence>

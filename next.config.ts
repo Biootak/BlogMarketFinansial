@@ -30,6 +30,16 @@ const nextConfig: NextConfig = {
   // Security headers
   async headers() {
     return [
+      // Cache headers برای تصاویر آپلود شده
+      {
+        source: '/uploads/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
       {
         source: '/(.*)',
         headers: [

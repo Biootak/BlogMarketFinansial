@@ -72,9 +72,9 @@ const Card9: FC<Card9Props> = ({ className = 'h-full', ratio = 'tall', post, hov
               fill
               alt={title}
               className="object-cover rounded-3xl"
-              src={featuredImage || '/path/to/default-image.jpg'}
+              src={featuredImage || '/images/placeholder.webp'}
               sizes="(max-width: 600px) 480px, 500px"
-              priority={true}
+              loading="lazy"
             />
             <PostTypeFeaturedIcon
               className="absolute top-3 start-3 group-hover:hidden"

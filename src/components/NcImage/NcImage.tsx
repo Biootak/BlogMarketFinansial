@@ -17,8 +17,14 @@ const NcImage: React.FC<NcImageProps> = ({
   ratio = '16/9',
   ...props
 }) => {
+  // اگر containerClassName شامل absolute یا inset باشه، aspectRatio رو اعمال نکن
+  const hasAbsolutePosition = containerClassName.includes('absolute') || containerClassName.includes('inset');
+  
   return (
-    <div className={`relative ${containerClassName}`} style={{ aspectRatio: ratio }}>
+    <div 
+      className={`relative ${containerClassName}`} 
+      style={hasAbsolutePosition ? undefined : { aspectRatio: ratio }}
+    >
       <Image
         className={className}
         alt={alt}
