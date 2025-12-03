@@ -1,11 +1,29 @@
 import type { NextConfig } from 'next';
 import path from 'path';
+import { withSentryConfig } from '@sentry/nextjs';
+
+// Content Security Policy
+const ContentSecurityPolicy = `
+  default-src 'self';
+  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net https://*.sentry.io;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  img-src 'self' blob: data: https: http:;
+  font-src 'self' https://fonts.gstatic.com;
+  connect-src 'self' https://*.sentry.io https://api.telegram.org wss: ws:;
+  frame-src 'self' https://www.youtube.com https://player.vimeo.com https://www.aparat.com;
+  media-src 'self' https: blob:;
+  object-src 'none';
+  base-uri 'self';
+  form-action 'self';
+  frame-ancestors 'self';
+  upgrade-insecure-requests;
+`.replace(/\s{2,}/g, ' ').trim();
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   compress: true,
   poweredByHeader: false,
-  
+
   // Disable source maps in development to avoid warnings
   productionBrowserSourceMaps: false,
 
@@ -43,11 +61,16 @@ const nextConfig: NextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()',
           },
+          // CSP Header - فعال کن وقتی تست کردی
+          // {
+          //   key: 'Content-Security-Policy',
+          //   value: ContentSecurityPolicy,
+          // },
         ],
       },
     ];
   },
-  
+
   // Turbopack configuration
   turbopack: {
     resolveAlias: {
@@ -96,4 +119,27 @@ const nextConfig: NextConfig = {
   transpilePackages: ['@aws-sdk/client-s3', '@aws-sdk/s3-request-presigner', 'framer-motion'],
 };
 
-export default nextConfig;
+// Sentry configuration
+const sentryWebpackPluginOptions = {
+  // سازمان و پروژه Sentry
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+
+  // فقط در production آپلود کن
+  silent: !process.env.CI,
+
+  // تنظیمات source maps
+  widenClientFileUpload: true,
+  hideSourceMaps: true,
+
+  // غیرفعال کردن در development
+  disableLogger: true,
+
+  // تنظیمات tunneling برای دور زدن ad blockers
+  tunnelRoute: '/monitoring',
+};
+
+// اگه Sentry DSN تنظیم شده، از withSentryConfig استفاده کن
+export default process.env.NEXT_PUBLIC_SENTRY_DSN
+  ? withSentryConfig(nextConfig, sentryWebpackPluginOptions)
+  : nextConfig;

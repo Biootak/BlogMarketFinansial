@@ -1,84 +1,78 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { auth } from '@/auth';
+import { checkRateLimit } from '@/lib/rate-limiter';
 
-// Rate limiting storage (در production از Redis استفاده کن)
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-
-function getRateLimitKey(request: NextRequest): string {
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || 
-             request.headers.get('x-real-ip') || 
-             'unknown';
-  return ip;
-}
-
-function checkRateLimit(key: string, limit: number, windowMs: number): boolean {
-  const now = Date.now();
-  const record = rateLimitMap.get(key);
-
-  if (!record || now > record.resetTime) {
-    rateLimitMap.set(key, { count: 1, resetTime: now + windowMs });
-    return true;
-  }
-
-  if (record.count >= limit) {
-    return false;
-  }
-
-  record.count++;
-  return true;
+function getClientIP(request: NextRequest): string {
+  return (
+    request.headers.get('x-forwarded-for')?.split(',')[0] ||
+    request.headers.get('x-real-ip') ||
+    'unknown'
+  );
 }
 
 // Security headers
 function addSecurityHeaders(response: NextResponse): NextResponse {
-  // XSS Protection
   response.headers.set('X-XSS-Protection', '1; mode=block');
-  
-  // Prevent MIME type sniffing
   response.headers.set('X-Content-Type-Options', 'nosniff');
-  
-  // Clickjacking protection
   response.headers.set('X-Frame-Options', 'SAMEORIGIN');
-  
-  // Referrer policy
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  
-  // Permissions policy
   response.headers.set(
     'Permissions-Policy',
     'camera=(), microphone=(), geolocation=(), interest-cohort=()'
   );
-
-  // Content Security Policy (تنظیم بر اساس نیاز)
-  // response.headers.set(
-  //   'Content-Security-Policy',
-  //   "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';"
-  // );
-
   return response;
 }
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const ip = getClientIP(request);
 
-  // 1. Rate limiting برای API routes
+  // 1. HTTPS redirect در production
+  if (
+    process.env.NODE_ENV === 'production' &&
+    request.headers.get('x-forwarded-proto') !== 'https'
+  ) {
+    const httpsUrl = new URL(request.url);
+    httpsUrl.protocol = 'https:';
+    return NextResponse.redirect(httpsUrl, 301);
+  }
+
+  // 2. Rate limiting برای API routes
   if (pathname.startsWith('/api/')) {
-    const key = getRateLimitKey(request);
-    const limit = pathname.includes('/upload') ? 30 : 100; // آپلود: 30/min, بقیه: 100/min
-    const windowMs = 60 * 1000;
+    const rateLimitType = pathname.includes('/upload')
+      ? 'upload'
+      : pathname.includes('/auth')
+        ? 'auth'
+        : pathname.includes('/pageview')
+          ? 'pageview'
+          : 'api';
 
-    if (!checkRateLimit(key, limit, windowMs)) {
+    const { success, remaining, reset } = await checkRateLimit(ip, rateLimitType);
+
+    if (!success) {
       return new NextResponse(
-        JSON.stringify({ error: 'تعداد درخواست‌ها بیش از حد مجاز است' }),
-        { status: 429, headers: { 'Content-Type': 'application/json' } }
+        JSON.stringify({
+          error: 'تعداد درخواست‌ها بیش از حد مجاز است',
+          retryAfter: Math.ceil((reset - Date.now()) / 1000),
+        }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': reset.toString(),
+            'Retry-After': Math.ceil((reset - Date.now()) / 1000).toString(),
+          },
+        }
       );
     }
   }
 
-  // 2. محافظت از dashboard
+  // 3. محافظت از dashboard
   if (pathname.startsWith('/dashboard')) {
     const session = await auth();
-    
+
     if (!session?.user) {
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('callbackUrl', pathname);
@@ -87,8 +81,8 @@ export async function middleware(request: NextRequest) {
 
     // چک کردن دسترسی ادمین برای برخی صفحات
     const adminOnlyPaths = ['/dashboard/users', '/dashboard/settings', '/dashboard/system-logs'];
-    const isAdminPath = adminOnlyPaths.some(p => pathname.startsWith(p));
-    
+    const isAdminPath = adminOnlyPaths.some((p) => pathname.startsWith(p));
+
     if (isAdminPath) {
       const userRole = (session.user as any).role;
       if (!['ADMIN', 'SUPER_ADMIN'].includes(userRole)) {
@@ -97,19 +91,14 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // 3. جلوگیری از دسترسی به فایل‌های حساس
-  const sensitivePatterns = [
-    /\.env/,
-    /\.git/,
-    /prisma\/.*\.prisma$/,
-    /\.config\./,
-  ];
+  // 4. جلوگیری از دسترسی به فایل‌های حساس
+  const sensitivePatterns = [/\.env/, /\.git/, /prisma\/.*\.prisma$/, /\.config\./];
 
-  if (sensitivePatterns.some(pattern => pattern.test(pathname))) {
+  if (sensitivePatterns.some((pattern) => pattern.test(pathname))) {
     return new NextResponse('Not Found', { status: 404 });
   }
 
-  // 4. اضافه کردن security headers
+  // 5. اضافه کردن security headers
   const response = NextResponse.next();
   return addSecurityHeaders(response);
 }
