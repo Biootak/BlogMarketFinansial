@@ -9,6 +9,17 @@ const createStringSchema = (min: number, max: number, minMessage: string, maxMes
 const createArraySchema = (min: number, max: number, minMessage: string, maxMessage: string) =>
   z.array(z.string()).min(min, minMessage).max(max, maxMessage);
 
+// Schema برای URL تصویر (هم URL کامل و هم path نسبی)
+const imageUrlSchema = (message: string) =>
+  z.string().refine(
+    (val) => {
+      if (!val) return true;
+      // قبول URL کامل یا path نسبی که با / شروع میشه
+      return val.startsWith('/') || val.startsWith('http://') || val.startsWith('https://');
+    },
+    { message },
+  );
+
 // Common schemas
 const emailSchema = z.string().email('لطفاً یک آدرس ایمیل معتبر وارد کنید');
 const passwordSchema = z
@@ -62,8 +73,8 @@ export const CreatePostSchema = z.object({
   isFeatured: z.boolean(),
   videoUrl: z.union([z.string().url('لطفاً آدرس ویدئو معتبر وارد کنید'), z.literal('')]).optional(),
   audioUrl: z.union([z.string().url('لطفاً آدرس صوتی معتبر وارد کنید'), z.literal('')]).optional(),
-  featuredImage: z.string().url('لطفاً آدرس تصویر معتبر وارد کنید').optional(),
-  galleryImages: z.array(z.string().url('لطفاً آدرس تصویر معتبر وارد کنید')).optional(),
+  featuredImage: imageUrlSchema('لطفاً آدرس تصویر معتبر وارد کنید').optional(),
+  galleryImages: z.array(imageUrlSchema('لطفاً آدرس تصویر معتبر وارد کنید')).optional(),
   status: z.nativeEnum(PostStatus),
   categories: CategorySchema,
   tags: TagSchema,

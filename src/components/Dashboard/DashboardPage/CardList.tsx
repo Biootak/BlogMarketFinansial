@@ -224,9 +224,6 @@ const CardList: FC<CardListProps> = ({
           )}
         </div>
 
-        {/* Link overlay */}
-        <Link href={getPostLink(postType, slug)} className="absolute inset-0 z-0" />
-
         {/* Content Section */}
         <div className="relative p-5 flex flex-col flex-grow">
           {/* Meta info */}
@@ -240,9 +237,13 @@ const CardList: FC<CardListProps> = ({
           
           {/* Title */}
           <h3 className="mt-3 mb-4 text-base font-bold text-slate-900 dark:text-white leading-relaxed group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors duration-300">
-            <span className="line-clamp-2" title={title}>
+            <Link 
+              href={getPostLink(postType, slug)} 
+              className="line-clamp-2 relative z-10 hover:underline" 
+              title={title}
+            >
               {title}
-            </span>
+            </Link>
           </h3>
           
           {/* Footer Actions */}

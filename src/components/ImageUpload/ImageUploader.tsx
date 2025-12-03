@@ -4,7 +4,6 @@ import Image from 'next/image';
 
 import { RiUploadCloud2Line, RiImageAddLine, RiCloseLine } from 'react-icons/ri';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import type { UploadFolder } from '@/actions/uploadActions';
 
@@ -49,12 +48,56 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState<number[]>([]);
 
+  // آپلود خودکار فایل‌ها
+  const autoUpload = useCallback(
+    async (files: File[]) => {
+      setIsUploading(true);
+      setProgress(new Array(files.length).fill(0));
+
+      try {
+        const uploadedUrls: string[] = [];
+
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const url = await uploadToLocal(file, folder);
+          uploadedUrls.push(url);
+
+          setProgress((prev) => {
+            const newProgress = [...prev];
+            newProgress[i] = 100;
+            return newProgress;
+          });
+        }
+
+        setPreviews(uploadedUrls);
+        onImageUpload(uploadedUrls);
+        toast({
+          title: 'موفقیت',
+          description: 'تصاویر با موفقیت آپلود شدند',
+          variant: 'success',
+        });
+      } catch (error) {
+        console.error('خطا در آپلود تصاویر:', error);
+        toast({
+          title: 'خطا',
+          description: error instanceof Error ? error.message : 'آپلود تصاویر با مشکل مواجه شد',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsUploading(false);
+        setProgress([]);
+        setSelectedFiles([]);
+      }
+    },
+    [folder, onImageUpload],
+  );
+
   const onDrop = useCallback(
-    (acceptedFiles: File[], rejectedFiles: any[]) => {
+    (acceptedFiles: File[], rejectedFiles: unknown[]) => {
       if (rejectedFiles.length > 0) {
         toast({
           title: 'خطا',
-          description: 'فقط فایل‌های تصویری مجاز هستند (JPG, PNG, GIF, WebP)',
+          description: 'فقط فایل‌های تصویری مجاز هستند (JPG, PNG, GIF, WebP, SVG)',
           variant: 'destructive',
         });
         return;
@@ -63,11 +106,17 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
       const newFiles = multiple
         ? [...selectedFiles, ...acceptedFiles].slice(0, maxFiles)
         : [acceptedFiles[0]];
+
       setSelectedFiles(newFiles);
-      const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
-      setPreviews(newPreviews);
+
+      // نمایش پیش‌نمایش موقت و شروع آپلود خودکار
+      const tempPreviews = newFiles.map((file) => URL.createObjectURL(file));
+      setPreviews(tempPreviews);
+
+      // آپلود خودکار
+      autoUpload(newFiles);
     },
-    [selectedFiles, multiple, maxFiles],
+    [selectedFiles, multiple, maxFiles, autoUpload],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -83,46 +132,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     multiple,
   });
 
-  const uploadFiles = async () => {
-    if (selectedFiles.length === 0) return;
-    setIsUploading(true);
-    setProgress(new Array(selectedFiles.length).fill(0));
-
-    try {
-      const uploadedUrls: string[] = [];
-
-      for (let i = 0; i < selectedFiles.length; i++) {
-        const file = selectedFiles[i];
-        const url = await uploadToLocal(file, folder);
-        uploadedUrls.push(url);
-        
-        // آپدیت progress
-        setProgress((prev) => {
-          const newProgress = [...prev];
-          newProgress[i] = 100;
-          return newProgress;
-        });
-      }
-
-      onImageUpload(uploadedUrls);
-      toast({
-        title: 'موفقیت',
-        description: 'تصاویر با موفقیت آپلود شدند',
-        variant: 'success',
-      });
-    } catch (error) {
-      console.error('خطا در آپلود تصاویر:', error);
-      toast({
-        title: 'خطا',
-        description: error instanceof Error ? error.message : 'آپلود تصاویر با مشکل مواجه شد',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsUploading(false);
-      setProgress([]);
-      setSelectedFiles([]);
-    }
-  };
   const removeImage = (index: number) => {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
     setPreviews((prev) => prev.filter((_, i) => i !== index));
@@ -188,41 +197,31 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           </div>
         )}
       </div>
-      {selectedFiles.length > 0 && (
+      {isUploading && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
+          className="space-y-2"
         >
-          <Button onClick={uploadFiles} disabled={isUploading} className="w-full">
-            {isUploading ? (
-              <span className="flex items-center">
-                <RiUploadCloud2Line className="ml-2" size={20} />
-                در حال آپلود...
-              </span>
-            ) : (
-              <span className="flex items-center">
-                <RiUploadCloud2Line className="ml-2" size={20} />
-                آپلود تصاویر
-              </span>
-            )}
-          </Button>
-          {isUploading &&
-            progress.map((p, index) => (
+          <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
+            <RiUploadCloud2Line className="animate-pulse" size={20} />
+            در حال آپلود...
+          </div>
+          {progress.map((p, index) => (
+            <div key={index} className="w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2">
               <motion.div
-                key={index}
-                className="w-full bg-neutral-200 rounded-full h-2.5 mt-2"
+                className="bg-gradient-to-r from-violet-500 to-purple-500 h-2 rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${p}%` }}
-                transition={{ duration: 0.5 }}
-              >
-                <div className="bg-secondary-600 h-2.5 rounded-full" />
-              </motion.div>
-            ))}
+                transition={{ duration: 0.3 }}
+              />
+            </div>
+          ))}
         </motion.div>
       )}
     </motion.div>
   );
 };
 
-export { ImageUploader, ImageUploaderClass };
+export { ImageUploader };
