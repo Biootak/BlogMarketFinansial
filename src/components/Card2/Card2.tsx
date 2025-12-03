@@ -50,13 +50,12 @@ export default function Card2({ className = 'h-full', size = 'normal', post }: C
       </Link>
 
       <div className="p-4 flex flex-col flex-grow">
-        <div className="space-y-3 mb-4">
+        <div className="flex flex-col gap-3 mb-4">
           <PostCardMeta className="relative text-sm" avatarSize="h-8 w-8 text-sm" meta={post} />
 
           <h2
-            className={`nc-card-title block font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-primary-900 dark:group-hover:text-primary-500 ${
-              size === 'large' ? 'text-base sm:text-lg md:text-xl' : 'text-base'
-            }`}
+            className={`nc-card-title block font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-primary-900 dark:group-hover:text-primary-500 ${size === 'large' ? 'text-base sm:text-lg md:text-xl' : 'text-base'
+              }`}
           >
             <Link
               href={postLink}

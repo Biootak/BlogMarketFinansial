@@ -45,7 +45,7 @@ export default async function PageSingle({ params }: PageProps) {
 
   return (
     <div className="nc-PageSingle pt-4 bg-white dark:bg-gray-900">
-      <div className="container">
+      <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="w-full lg:w-2/3 pr-0 lg:pr-6">
             <header className="rounded-xl p-2">

@@ -40,7 +40,7 @@ const Card11: React.FC<Card11Props> = ({
         <CategoryBadgeList categories={categories} />
       </span>
 
-      <div className="p-5 flex flex-col space-y-4">
+      <div className="p-5 flex flex-col gap-4">
         {!hiddenAuthor ? (
           <PostCardMeta meta={post} />
         ) : (

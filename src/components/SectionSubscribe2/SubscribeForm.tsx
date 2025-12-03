@@ -70,7 +70,7 @@ const SubscribeForm: FC<SubscribeFormProps> = ({ onSubmit }) => {
         {...register('email')}
         placeholder="ایمیل خود را وارد کنید"
         type="email"
-        className="pr-4 pl-12 py-3 rounded-full border-2 border-primary-300 focus:border-primary-500 transition-all duration-300 w-full"
+        className="pr-4 pl-12 py-3 rounded-full border-2 border-purple-300 focus:border-purple-500 transition-all duration-300 w-full"
         disabled={isLoading}
       />
       {errors.email && (
@@ -78,35 +78,14 @@ const SubscribeForm: FC<SubscribeFormProps> = ({ onSubmit }) => {
           {errors.email.message}
         </p>
       )}
-      <motion.div
-        className="absolute left-1 top-1/2 -translate-y-1/2 z-10"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
+      <Button
+        type="submit"
+        size="icon"
+        className="absolute left-1 top-1/2 -translate-y-1/2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-full transition-all duration-300"
+        disabled={isLoading}
       >
-        <Button
-          type="submit"
-          size="icon"
-          className="w-11 h-11 bg-gradient-to-r from-primary-400 to-primary-600 hover:from-primary-500 hover:to-primary-700 text-white rounded-full transition-all duration-300 shadow-lg hover:shadow-2xl hover:shadow-primary-500/50 disabled:opacity-50 disabled:cursor-not-allowed ring-2 ring-white/20 hover:ring-white/40"
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-              className="w-5 h-5"
-            >
-              <HiArrowRight className="w-5 h-5 rotate-180" />
-            </motion.div>
-          ) : (
-            <motion.div
-              whileHover={{ x: -2 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-            >
-              <HiArrowRight className="w-5 h-5 rotate-180" />
-            </motion.div>
-          )}
-        </Button>
-      </motion.div>
+        <HiArrowRight className="w-5 h-5 rotate-180" />
+      </Button>
     </motion.form>
   );
 };

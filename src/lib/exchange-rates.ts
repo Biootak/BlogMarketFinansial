@@ -31,11 +31,10 @@ let CURRENCIES = [
 ];
 
 const CHUNK_SIZE = 5;
-const CACHE_TTL = 300;
-const MAX_RETRIES = 2;
-const RETRY_DELAY = 500;
-const USE_MOCK_ON_FAILURE = true;
-const FORCE_MOCK = process.env.NODE_ENV !== 'production';
+const CACHE_TTL = 300; // 5 minutes
+const MAX_RETRIES = 2; // Reduced retries for faster fallback
+const RETRY_DELAY = 500; // 0.5 second
+const USE_MOCK_ON_FAILURE = true; // Enable mock data when API fails
 
 // Mock data for development/fallback when API is unavailable
 const MOCK_RATES: ExchangeRate[] = [
@@ -112,7 +111,7 @@ async function fetchWithRetry(
     } catch (error) {
       // Only log on first attempt to reduce noise
       if (i === 0) {
-        logger.error(`API request failed (will retry ${retries - 1} more times)`, error);
+        logger.error(`API request failed (will retry ${retries - 1} more times)`);
       }
       if (i === retries - 1) throw error;
       await new Promise((resolve) => setTimeout(resolve, delay));
@@ -169,15 +168,6 @@ function processExchangeRate(
 
 export const getExchangeRates = cache(async (): Promise<ExchangeRatesResult> => {
   try {
-    if (FORCE_MOCK) {
-      logger.info('Using mock data in development environment');
-      return {
-        success: true,
-        data: MOCK_RATES,
-        message: 'داده‌های نمونه (محیط توسعه)',
-      };
-    }
-
     const currencyChunks = [];
     for (let i = 0; i < CURRENCIES.length; i += CHUNK_SIZE) {
       currencyChunks.push(CURRENCIES.slice(i, i + CHUNK_SIZE));

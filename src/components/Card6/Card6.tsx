@@ -19,11 +19,11 @@ export default function Component({ className = '', post }: Card6Props) {
   return (
     <div
       dir="rtl"
-      className={`nc-Card6 group relative flex flex-row items-stretch p-2 sm:p-3 md:p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 shadow ${className}`}
+      className={`nc-Card6 group relative flex flex-row items-stretch p-2 sm:p-3 md:p-4 rounded-2xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 shadow gap-3 sm:gap-4 ${className}`}
     >
       <Link
         href={postLink}
-        className="block relative flex-shrink-0 w-1/3 aspect-[4/3] rounded-xl overflow-hidden z-10 ml-2 sm:ml-3 md:ml-4"
+        className="block relative flex-shrink-0 w-1/3 aspect-[4/3] rounded-xl overflow-hidden z-10"
       >
         <Image
           sizes="(max-width: 639px) 33vw, (max-width: 1023px) 25vw, 20vw"
@@ -45,7 +45,7 @@ export default function Component({ className = '', post }: Card6Props) {
           <div className="hidden sm:block">
             <CategoryBadgeList categories={categories} />
           </div>
-          <h3 className="block pt-2 px-2 font-semibold text-[12px] sm:text-xs md:text-base leading-snug mb-auto">
+          <h3 className="block pt-2 font-semibold text-[12px] sm:text-xs md:text-base leading-snug mb-auto">
             <Link
               href={postLink}
               className="line-clamp-2 dark:text-neutral-100 group-hover:text-primary-900 dark:group-hover:text-primary-500 transition-colors duration-300 font-vazirmatn"
@@ -58,7 +58,7 @@ export default function Component({ className = '', post }: Card6Props) {
             hiddenAvatar={false}
             avatarSize="h-6 w-6 text-xs"
             meta={post}
-            className="text-[10px] sm:text-[11px] md:text-xs mt-1 px-2 font-medium text-neutral-700 dark:text-neutral-300 font-vazirmatn"
+            className="text-[10px] sm:text-[11px] md:text-xs mt-1 font-medium text-neutral-700 dark:text-neutral-300 font-vazirmatn"
           />
         </div>
       </div>

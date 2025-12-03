@@ -4,6 +4,7 @@ import Image, { type ImageProps } from 'next/image';
 export interface NcImageProps extends Omit<ImageProps, 'alt'> {
   containerClassName?: string;
   alt: string;
+  ratio?: string;
 }
 
 const NcImage: React.FC<NcImageProps> = ({
@@ -13,10 +14,11 @@ const NcImage: React.FC<NcImageProps> = ({
   sizes = '(max-width: 600px) 480px, 800px',
   priority = false,
   fill = true,
+  ratio = '16/9',
   ...props
 }) => {
   return (
-    <div className={`relative ${containerClassName}`} style={{ aspectRatio: '16/9' }}>
+    <div className={`relative ${containerClassName}`} style={{ aspectRatio: ratio }}>
       <Image
         className={className}
         alt={alt}

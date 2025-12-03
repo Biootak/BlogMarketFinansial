@@ -8,9 +8,10 @@ export interface CardAuthor2Props {
   className?: string;
   post: PostWithRelations;
   hoverReadingTime?: boolean;
+  lightText?: boolean;
 }
 
-const CardAuthor2 = ({ className = '', post, hoverReadingTime = true }: CardAuthor2Props) => {
+const CardAuthor2 = ({ className = '', post, hoverReadingTime = true, lightText = false }: CardAuthor2Props) => {
   if (!post) {
     return null;
   }
@@ -20,6 +21,14 @@ const CardAuthor2 = ({ className = '', post, hoverReadingTime = true }: CardAuth
   const href = `/author/${authorId}`;
 
   const readingTime = Math.ceil(post.content.split(' ').length / 200);
+
+  const nameClass = lightText 
+    ? 'text-sm text-white hover:text-white/80 font-medium'
+    : 'text-sm text-neutral-700 hover:text-black dark:text-neutral-300 dark:hover:text-white font-medium';
+  
+  const dateClass = lightText
+    ? 'flex items-center mt-1 text-xs text-neutral-200'
+    : 'flex items-center mt-1 text-xs text-neutral-500 dark:text-neutral-400';
 
   return (
     <Link href={href} className={`nc-CardAuthor2 relative inline-flex items-center ${className}`}>
@@ -31,14 +40,10 @@ const CardAuthor2 = ({ className = '', post, hoverReadingTime = true }: CardAuth
         userName={displayName || ''}
       />
       <div>
-        <h2
-          className={
-            'text-sm text-neutral-700 hover:text-black dark:text-neutral-300 dark:hover:text-white font-medium'
-          }
-        >
+        <h2 className={nameClass}>
           {displayName}
         </h2>
-        <span className={'flex items-center mt-1 text-xs text-neutral-500 dark:text-neutral-400'}>
+        <span className={dateClass}>
           <FormattedDate date={createdAt} />
           {readingTime && hoverReadingTime && (
             <>

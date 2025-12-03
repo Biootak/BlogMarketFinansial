@@ -105,31 +105,6 @@
   --color-info-700: rgb(29, 78, 216);
   --color-info-800: rgb(30, 64, 175);
   --color-info-900: rgb(30, 58, 138);
-
-  /* GRADIENT COLORS - برای استفاده در gradient ها (رنگ‌های قابل تغییر) */
-  /* این رنگ‌ها بر اساس primary colors (آبی) تعریف شده‌اند */
-  /* برای تغییر، مقادیر RGB را ویرایش کنید */
-  --color-gradient-from-50: rgb(239, 246, 255);
-  --color-gradient-from-100: rgb(219, 234, 254);
-  --color-gradient-from-200: rgb(191, 219, 254);
-  --color-gradient-from-300: rgb(147, 197, 253);
-  --color-gradient-from-400: rgb(96, 165, 250);
-  --color-gradient-from-500: rgb(59, 130, 246);
-  --color-gradient-from-600: rgb(37, 99, 235);
-  --color-gradient-from-700: rgb(29, 78, 216);
-  --color-gradient-from-800: rgb(30, 64, 175);
-  --color-gradient-from-900: rgb(30, 58, 138);
-
-  --color-gradient-to-50: rgb(219, 234, 254);
-  --color-gradient-to-100: rgb(191, 219, 254);
-  --color-gradient-to-200: rgb(147, 197, 253);
-  --color-gradient-to-300: rgb(96, 165, 250);
-  --color-gradient-to-400: rgb(59, 130, 246);
-  --color-gradient-to-500: rgb(37, 99, 235);
-  --color-gradient-to-600: rgb(29, 78, 216);
-  --color-gradient-to-700: rgb(30, 64, 175);
-  --color-gradient-to-800: rgb(30, 58, 138);
-  --color-gradient-to-900: rgb(30, 58, 138);
 }
 
 
@@ -180,14 +155,6 @@
   --c-neutral-700: 55, 65, 81;
   --c-neutral-800: 31, 41, 55;
   --c-neutral-900: 17, 24, 39;
-
-  /* Gradient Colors - برای استفاده در gradient ها (بر اساس primary colors) */
-  --c-gradient-from-500: 59, 130, 246;
-  --c-gradient-from-600: 37, 99, 235;
-  --c-gradient-from-400: 96, 165, 250;
-  --c-gradient-to-500: 37, 99, 235;
-  --c-gradient-to-600: 29, 78, 216;
-  --c-gradient-to-400: 59, 130, 246;
 }
 
 .dark {
@@ -204,12 +171,6 @@
   --border: 55 65 81;
   --input: 55 65 81;
   --ring: 96 165 250;
-}
-
-/* Prevent horizontal overflow */
-html, body {
-  overflow-x: hidden;
-  max-width: 100vw;
 }
 
 @layer utilities {

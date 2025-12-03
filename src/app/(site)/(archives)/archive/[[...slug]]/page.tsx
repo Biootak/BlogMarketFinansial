@@ -125,7 +125,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
     <div className="nc-PageArchive max-w-full overflow-x-hidden">
       {/* Breadcrumb */}
       <div className="sticky top-0 z-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg border-b border-gray-200/80 dark:border-gray-700/80">
-        <div className="container mx-auto px-1">
+        <div className="container mx-auto px-2">
           <nav className="flex py-2" aria-label="مسیر">
             <ol className="flex flex-wrap items-center gap-0.5 min-w-0">
               {/* خانه */}
@@ -214,7 +214,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
         </div>
       </div>
 
-      <div className="container mx-auto px-1 sm:px-2 lg:px-3 mt-2">
+      <div className="container mx-auto px-2 sm:px-4 lg:px-6 mt-2">
         <div className="relative overflow-hidden rounded-xl bg-white dark:bg-gray-800/95 shadow-lg">
           {/* Mobile Layout */}
           <div className="md:hidden">
@@ -370,7 +370,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
         </div>
       </div>
 
-      <div className="container mx-auto px-1 sm:px-2 lg:px-3 py-2 sm:py-4 lg:py-6 space-y-4 sm:space-y-6 lg:space-y-8">
+      <div className="container mx-auto px-2 sm:px-4 lg:px-6 py-2 sm:py-4 lg:py-6 space-y-4 sm:space-y-6 lg:space-y-8">
         {/* Desktop View */}
         <div className="hidden md:flex md:flex-row md:items-center md:justify-between mb-6 sm:mb-8">
           <div className="flex flex-row space-x-2.5 rtl:space-x-reverse">
