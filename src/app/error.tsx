@@ -24,7 +24,16 @@ export default function Error({ error, reset }: ErrorProps) {
   const getErrorInfo = () => {
     const message = error.message?.toLowerCase() || '';
 
-    if (message.includes('network') || message.includes('fetch')) {
+    // خطاهای دیتابیس
+    if (message.includes('database') || message.includes('prisma') || message.includes("can't reach")) {
+      return {
+        title: 'خطای سرور',
+        description: 'سرور موقتاً در دسترس نیست. لطفاً چند لحظه صبر کنید و دوباره تلاش کنید.',
+        icon: '🔧',
+      };
+    }
+
+    if (message.includes('network') || message.includes('fetch') || message.includes('timeout')) {
       return {
         title: 'خطای اتصال',
         description: 'اتصال به سرور برقرار نشد. لطفاً اتصال اینترنت خود را بررسی کنید.',
@@ -76,8 +85,8 @@ export default function Error({ error, reset }: ErrorProps) {
           {errorInfo.description}
         </p>
 
-        {/* Error digest for debugging */}
-        {error.digest && (
+        {/* Error digest for debugging - فقط در development */}
+        {process.env.NODE_ENV === 'development' && error.digest && (
           <p className="text-xs text-neutral-400 dark:text-neutral-500 mb-4 font-mono">
             کد خطا: {error.digest}
           </p>

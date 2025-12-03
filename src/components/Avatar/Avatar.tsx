@@ -28,8 +28,10 @@ const Avatar: FC<AvatarProps> = ({
 
   useEffect(() => {
     if (!imgUrl) {
-      setUrl(`https://avatar.vercel.sh/${encodeURIComponent(name)}?size=80`);
-      setHasImage(true); // avatar.vercel.sh همیشه یک تصویر برمی‌گردونه
+      // اگه نام کاربر خالی باشه، از یک نام پیش‌فرض استفاده کن
+      const avatarName = name || 'user';
+      setUrl(`https://avatar.vercel.sh/${encodeURIComponent(avatarName)}?size=80`);
+      setHasImage(true);
     } else {
       setUrl(imgUrl);
       setHasImage(true);

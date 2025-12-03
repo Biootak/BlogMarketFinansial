@@ -77,8 +77,12 @@ export const getLatestPosts = cache(
 
       return posts as PostWithRelations[];
     } catch (error) {
-      console.error('Error fetching posts:', error);
-      throw new Error('Failed to fetch posts');
+      // لاگ فقط در development
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching posts:', error);
+      }
+      // برگرداندن آرایه خالی به جای throw کردن
+      return [];
     }
   },
 );

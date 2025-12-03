@@ -55,7 +55,7 @@ const CardList: FC<CardListProps> = ({
   onDelete,
   onStatusChange,
 }) => {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { toast } = useToast();
   const { title, id, slug, createdAt, postType, authorId } = post;
 
@@ -107,7 +107,10 @@ const CardList: FC<CardListProps> = ({
 
   const postMeta = useMemo(() => <PostCardMeta meta={post} />, [post]);
 
-  const canEditPost = session?.user?.role === 'SUPER_ADMIN' || 
+  // نشون دادن دکمه منو حتی وقتی session در حال لود شدنه (در داشبورد کاربر حتماً لاگین کرده)
+  const isSessionLoading = status === 'loading';
+  const canEditPost = isSessionLoading || 
+                     session?.user?.role === 'SUPER_ADMIN' || 
                      session?.user?.role === 'ADMIN' || 
                      (session?.user?.role === 'AUTHOR' && session?.user?.id === authorId);
 

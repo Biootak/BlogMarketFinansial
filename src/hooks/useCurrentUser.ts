@@ -2,16 +2,17 @@ import { useSession } from 'next-auth/react';
 import useSWR from 'swr';
 
 export function useCurrentUser() {
-  const { data: session, update } = useSession();
+  const { data: session, status, update } = useSession();
 
   const { data: user } = useSWR(
-    session ? '/api/user/current' : null,
+    // فقط وقتی session آماده هست fetch کن
+    session && status === 'authenticated' ? '/api/user/current' : null,
     async () => {
       try {
         const updatedSession = await update();
         return updatedSession?.user;
-      } catch (error) {
-        console.error('Error updating session:', error);
+      } catch {
+        // خطا رو نادیده بگیر و از session فعلی استفاده کن
         return session?.user;
       }
     },
@@ -21,6 +22,11 @@ export function useCurrentUser() {
       revalidateOnFocus: false,
       refreshInterval: 0,
       shouldRetryOnError: false,
+      errorRetryCount: 0,
+      dedupingInterval: 60000, // 1 minute
+      onError: () => {
+        // خطاها رو suppress کن
+      },
     },
   );
 
