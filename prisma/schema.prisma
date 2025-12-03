@@ -382,3 +382,51 @@ model SocialLink {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+
+enum ServiceRequestStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ServiceType {
+  INTERNATIONAL_TRANSFER
+  ONLINE_PAYMENT
+  TUITION_PAYMENT
+  FREELANCE_INCOME
+  SOFTWARE_PURCHASE
+  OTHER
+}
+
+enum RequestUrgency {
+  NORMAL
+  URGENT
+}
+
+model ServiceRequest {
+  id              String               @id @default(cuid())
+  trackingCode    String               @unique
+  fullName        String
+  phone           String
+  email           String?
+  serviceType     ServiceType
+  amount          String
+  currency        String
+  description     String?
+  urgency         RequestUrgency       @default(NORMAL)
+  contactMethod   String               // telegram or whatsapp
+  status          ServiceRequestStatus @default(PENDING)
+  adminNotes      String?
+  ipAddress       String?
+  userAgent       String?
+  
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@index([trackingCode])
+  @@index([phone])
+  @@index([status])
+  @@index([createdAt])
+}

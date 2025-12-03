@@ -26,8 +26,6 @@ const superAdminSchema = z.object({
 
 export async function createSuperAdmin(formData: FormData) {
   try {
-    console.log('Starting createSuperAdmin...');
-
     // بررسی محیط اجرا
     if (process.env.NODE_ENV === 'production') {
       // بررسی IP در محیط تولید
@@ -36,7 +34,6 @@ export async function createSuperAdmin(formData: FormData) {
       const allowedIps = process.env.ALLOWED_SETUP_IPS?.split(',') || [];
       
       if (!allowedIps.includes(clientIp)) {
-        console.log(`Unauthorized setup attempt from IP: ${clientIp}`);
         return {
           success: false,
           message: 'شما مجوز دسترسی به این بخش را ندارید',
@@ -60,7 +57,6 @@ export async function createSuperAdmin(formData: FormData) {
     // اعتبارسنجی داده‌ها
     const validationResult = superAdminSchema.safeParse(formDataObj);
     if (!validationResult.success) {
-      console.log('Validation failed:', validationResult.error);
       return {
         success: false,
         message: 'لطفاً خطاهای فرم را برطرف کنید',
@@ -70,11 +66,9 @@ export async function createSuperAdmin(formData: FormData) {
     }
 
     // بررسی وجود سوپر ادمین
-    console.log('Checking for existing admin...');
     const existingAdmin = await checkExistingSuperAdmin(prisma);
 
     if (existingAdmin) {
-      console.log('Admin already exists');
       return {
         success: false,
         message: 'تنظیمات اولیه قبلاً انجام شده است. لطفاً وارد سیستم شوید',
@@ -84,11 +78,9 @@ export async function createSuperAdmin(formData: FormData) {
     }
 
     // رمزنگاری پسورد با سختی بیشتر
-    console.log('Hashing password...');
     const hashedPassword = await bcrypt.hash(formDataObj.password, 12);
 
     // ایجاد سوپر ادمین
-    console.log('Creating new admin...');
     const user = await prisma.user.create({
       data: {
         email: formDataObj.email,
@@ -118,7 +110,6 @@ export async function createSuperAdmin(formData: FormData) {
       },
     });
 
-    console.log('Admin created successfully');
     return {
       success: true,
       message: 'تنظیمات اولیه با موفقیت انجام شد',

@@ -19,13 +19,9 @@ export async function updateProfile(formData: FormData): Promise<ActionResult<vo
       };
     }
 
-    console.log('Received form data:', Object.fromEntries(formData));
-
     const validatedFields = UpdateProfileSchema.parse(
       Object.fromEntries(formData),
     ) as UpdateProfileInput;
-
-    console.log('Validated fields:', validatedFields);
 
     const updateData: Partial<UpdateProfileInput & { password?: string }> = {};
     if (validatedFields.name) updateData.name = validatedFields.name;
@@ -74,12 +70,6 @@ export async function updateProfile(formData: FormData): Promise<ActionResult<vo
         create: { ...profileUpdateData, userId: session.user.id },
       });
     }
-
-    const updatedUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      include: { profile: true },
-    });
-    console.log('Updated user data:', updatedUser);
 
     revalidatePath('/edit-profile');
     return { success: true, message: 'پروفایل با موفقیت بروزرسانی شد', variant: 'success' };

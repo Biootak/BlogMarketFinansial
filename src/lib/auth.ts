@@ -4,7 +4,7 @@ import { type PrismaClient, Role } from '@prisma/client';
 
 export async function checkRole(allowedRoles: string[]) {
   const session = await auth();
-  
+
   if (!session || !session.user) {
     redirect('/signin');
   }

@@ -191,6 +191,9 @@ export const adminRoutes = [
   '/dashboard/subscription/[...slug]',
   '/dashboard/posts',
   '/dashboard/posts/[...slug]',
+  '/dashboard/service-requests',
+  '/dashboard/service-requests/[...slug]',
+  '/dashboard/test-page',
 ];
 
 /**

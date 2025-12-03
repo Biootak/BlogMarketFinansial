@@ -124,3 +124,35 @@ export const UpdateProfileSchema = z
       path: ['confirmNewPassword'],
     },
   );
+
+
+// Service Request Schema - for online payment and money transfer forms
+export const ServiceRequestSchema = z.object({
+  fullName: z
+    .string()
+    .min(3, 'نام و نام خانوادگی باید حداقل ۳ کاراکتر باشد')
+    .max(100, 'نام و نام خانوادگی نباید بیشتر از ۱۰۰ کاراکتر باشد'),
+  phone: z
+    .string()
+    .min(10, 'شماره تماس باید حداقل ۱۰ رقم باشد')
+    .max(15, 'شماره تماس نامعتبر است')
+    .regex(/^[0-9+]+$/, 'شماره تماس فقط می‌تواند شامل اعداد باشد'),
+  email: z.string().email('لطفاً یک ایمیل معتبر وارد کنید').optional().or(z.literal('')),
+  serviceType: z.enum([
+    'INTERNATIONAL_TRANSFER',
+    'ONLINE_PAYMENT',
+    'TUITION_PAYMENT',
+    'FREELANCE_INCOME',
+    'SOFTWARE_PURCHASE',
+    'OTHER',
+  ]),
+  amount: z.string().min(1, 'لطفاً مبلغ را وارد کنید').max(50, 'مبلغ نامعتبر است'),
+  currency: z.string().min(1, 'لطفاً واحد ارز را انتخاب کنید'),
+  destinationCountry: z.string().optional(),
+  bankName: z.string().optional(),
+  description: z.string().max(500, 'توضیحات نمی‌تواند بیشتر از ۵۰۰ کاراکتر باشد').optional(),
+  urgency: z.enum(['NORMAL', 'URGENT']).default('NORMAL'),
+  contactMethod: z.enum(['telegram', 'whatsapp']),
+});
+
+export type ServiceRequestFormData = z.infer<typeof ServiceRequestSchema>;

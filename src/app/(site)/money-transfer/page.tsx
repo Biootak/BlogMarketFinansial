@@ -104,7 +104,7 @@ export default async function MoneyTransferPage() {
 
         {/* Contact CTA Section */}
         <section id="contact">
-          <ContactCTA />
+          <ContactCTA defaultServiceType="INTERNATIONAL_TRANSFER" />
         </section>
 
         {/* Services Section */}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useSidebarStore } from '@/hooks/sidebarStore';
+import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence, type Variants, type Transition } from 'framer-motion';
 
 interface MainContentProps {
@@ -9,6 +10,7 @@ interface MainContentProps {
 
 const MainContent: React.FC<MainContentProps> = ({ children }) => {
   const { isOpen, isMobile } = useSidebarStore();
+  const pathname = usePathname();
 
   const pageVariants: Variants = {
     initial: { opacity: 0, y: 12 },
@@ -32,7 +34,7 @@ const MainContent: React.FC<MainContentProps> = ({ children }) => {
     >
       <AnimatePresence mode="wait">
         <motion.div
-          key="content"
+          key={pathname}
           initial="initial"
           animate="in"
           exit="out"

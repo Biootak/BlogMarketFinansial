@@ -169,7 +169,6 @@ export async function savePatternsGroupToDB(patterns: {
       }
     }
 
-    console.log(`نتیجه ذخیره‌سازی: ${successCount} موفق، ${failureCount} ناموفق`);
     return failureCount === 0;
 
   } catch (error) {
