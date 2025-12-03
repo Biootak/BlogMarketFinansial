@@ -131,11 +131,20 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
     }`;
   }, [textAlign]);
 
+  // تعیین کلاس‌های flexbox برای تراز
+  const alignmentClasses = useMemo(() => {
+    switch (textAlign) {
+      case 'left': return 'justify-start';
+      case 'right': return 'justify-end';
+      case 'center':
+      default: return 'justify-center';
+    }
+  }, [textAlign]);
+
   return (
     <NodeViewWrapper 
       ref={wrapperRef} 
-      className="group relative my-4" 
-      style={{ textAlign }}
+      className={`group relative my-4 flex -mx-4 px-4 ${alignmentClasses}`}
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => !isResizing && setShowControls(false)}
       onFocus={() => setShowControls(true)}
@@ -143,7 +152,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
     >
       {!isEditable ? (
         <img 
-          className="inline-block rounded-xl shadow-md" 
+          className="rounded-xl shadow-md" 
           src={src} 
           alt={alt || ''} 
           style={{ width }}
@@ -151,7 +160,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
         />
       ) : (
         <div 
-          className={`relative inline-block transition-all duration-200 ${
+          className={`relative transition-all duration-200 ${
             selected ? 'ring-2 ring-primary-500 ring-offset-2 rounded-xl' : ''
           }`} 
           contentEditable={false}
@@ -237,7 +246,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
           </div>
 
           <img 
-            className="inline-block rounded-xl shadow-lg transition-shadow hover:shadow-xl" 
+            className="rounded-xl shadow-lg transition-shadow hover:shadow-xl" 
             src={src} 
             alt={alt || ''} 
             style={{ width }}
