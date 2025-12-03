@@ -210,29 +210,40 @@ export function isSuccessResult<T>(
 export function sanitizeHtml(html: string): string {
   const clean = DOMPurify.sanitize(html, {
     ALLOWED_TAGS: [
-      'p',
-      'br',
-      'strong',
-      'em',
-      'u',
-      'h1',
-      'h2',
-      'h3',
-      'h4',
-      'h5',
-      'h6',
-      'ol',
-      'ul',
-      'li',
-      'a',
-      'img',
+      // Text formatting
+      'p', 'br', 'strong', 'em', 'u', 's', 'mark', 'sub', 'sup', 'span',
+      // Headings
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      // Lists
+      'ol', 'ul', 'li',
+      // Links & Media
+      'a', 'img', 'figure', 'figcaption', 'video', 'audio', 'source', 'iframe',
+      // Tables
+      'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption', 'colgroup', 'col',
+      // Code
+      'pre', 'code', 'kbd', 'samp',
+      // Quotes & Blocks
+      'blockquote', 'q', 'cite', 'hr', 'div',
+      // Details
+      'details', 'summary',
     ],
-    ALLOWED_ATTR: ['href', 'target', 'src', 'alt', 'class', 'width', 'height'],
+    ALLOWED_ATTR: [
+      'href', 'target', 'rel', 'src', 'alt', 'title', 'class', 'id',
+      'width', 'height', 'style', 'data-*',
+      'colspan', 'rowspan', 'scope', 'headers',
+      'controls', 'autoplay', 'loop', 'muted', 'poster',
+      'frameborder', 'allowfullscreen', 'allow',
+      'dir', 'lang', 'start', 'type', 'value',
+    ],
+    ALLOW_DATA_ATTR: true,
+    // جلوگیری از javascript: URLs
+    FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover'],
+    // اجازه iframe فقط برای منابع معتبر
+    ADD_TAGS: ['iframe'],
+    ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling'],
   });
 
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(clean, 'text/html');
-  return doc.body.innerHTML;
+  return clean;
 }
 
 export function htmlToEditorContent(html: string): JSONContent {

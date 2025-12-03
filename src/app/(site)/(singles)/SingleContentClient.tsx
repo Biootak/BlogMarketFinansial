@@ -102,12 +102,13 @@ const SingleContentClient = ({
               
               // Check if it's HTML (starts with < tag)
               if (content.trim().startsWith('<')) {
-                // HTML content - render directly with styles
+                // HTML content - sanitize and render with styles
+                const { sanitizeHtml } = require('@/lib/utils');
                 return (
                   <div 
                     className="editor-content prose lg:prose-lg dark:prose-invert"
-                    // biome-ignore lint/security/noDangerouslySetInnerHtml: Legacy HTML content
-                    dangerouslySetInnerHTML={{ __html: content }}
+                    // biome-ignore lint/security/noDangerouslySetInnerHtml: Content is sanitized with DOMPurify
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
                   />
                 );
               }

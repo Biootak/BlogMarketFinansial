@@ -1,9 +1,21 @@
 import { NextResponse } from 'next/server';
 import { getSystemReports } from '@/actions/reportActions';
+import { auth } from '@/auth';
 import * as XLSX from 'xlsx';
 
 export async function POST(req: Request) {
   try {
+    // چک احراز هویت - فقط ادمین‌ها
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'احراز هویت الزامی است' }, { status: 401 });
+    }
+
+    const userRole = (session.user as any).role;
+    if (!['ADMIN', 'SUPER_ADMIN'].includes(userRole)) {
+      return NextResponse.json({ error: 'دسترسی غیرمجاز' }, { status: 403 });
+    }
+
     const { from, to } = await req.json();
     
     const result = await getSystemReports(new Date(from), new Date(to));
