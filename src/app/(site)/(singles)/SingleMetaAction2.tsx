@@ -51,7 +51,7 @@ const SingleMetaAction2: FC<SingleMetaAction2Props> = ({ className = '', post })
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="flex flex-row space-x-2 sm:space-x-2.5 rtl:space-x-reverse items-center">
+      <div className="flex flex-row gap-2 sm:gap-2.5 items-center">
         <div className="hidden sm:block px-1">
           <div className="border-s border-neutral-200 dark:border-neutral-700 h-6" />
         </div>
@@ -63,7 +63,7 @@ const SingleMetaAction2: FC<SingleMetaAction2Props> = ({ className = '', post })
         />
 
         {/* Desktop Elements */}
-        <div className="hidden sm:flex space-x-2 rtl:space-x-reverse">
+        <div className="hidden sm:flex gap-2">
           <BookmarkCheck post={post}>
             {(isBookmarked) => (
               <PostCardSaveAction

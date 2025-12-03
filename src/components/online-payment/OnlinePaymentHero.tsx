@@ -47,7 +47,7 @@ const OnlinePaymentHero: FC = () => {
           </motion.div>
         </div>
         <motion.div
-          className="mt-16 flex justify-center space-x-8 rtl:space-x-reverse"
+          className="mt-16 flex justify-center gap-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}

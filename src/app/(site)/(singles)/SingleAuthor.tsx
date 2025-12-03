@@ -14,7 +14,7 @@ const SingleAuthor: React.FC<SingleAuthorProps> = ({ author }) => {
 
   return (
     <motion.div
-      className="nc-SingleAuthor flex items-center space-x-4 rtl:space-x-reverse"
+      className="nc-SingleAuthor flex items-center gap-4"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}

@@ -127,7 +127,7 @@ export default function GallerySlider({
 
         {/* Bottom Nav bar */}
         <div className="absolute bottom-0 inset-x-0 h-10 bg-gradient-to-t from-neutral-900 opacity-50 rounded-b-lg" />
-        <div className="flex items-center justify-center absolute bottom-2 left-1/2 transform -translate-x-1/2 space-x-1.5 rtl:space-x-reverse">
+        <div className="flex items-center justify-center absolute bottom-2 start-1/2 transform -translate-x-1/2 gap-1.5">
           {images.map((_, i) => (
             <button
               type="button"

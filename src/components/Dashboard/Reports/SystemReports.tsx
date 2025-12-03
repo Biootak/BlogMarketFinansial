@@ -169,7 +169,7 @@ export default function SystemReports() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{data.users.toLocaleString()}</div>
-            <div className="flex items-center space-x-2 rtl:space-x-reverse">
+            <div className="flex items-center gap-2">
               <Badge variant="secondary">{data.activeUsers} فعال</Badge>
               <Badge variant="secondary">{data.newUsers} جدید</Badge>
             </div>
