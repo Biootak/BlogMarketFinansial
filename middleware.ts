@@ -11,6 +11,10 @@ import {
   baseDashboardRoutes,
 } from '@/config/routes';
 
+// Cookie name for secure environments (production)
+const SECURE_COOKIE_NAME = '__Secure-authjs.session-token';
+const DEV_COOKIE_NAME = 'authjs.session-token';
+
 const adminApiRoutes = [
   '/api/users',
   '/api/advertisements',
@@ -56,11 +60,21 @@ const checkApiAccess = (pathname: string, role?: string): boolean => {
 };
 
 const matchDynamicRoute = (pathname: string, pattern: string): boolean => {
-  const regexPattern = pattern
-    .replace(/\[\.\.\..*?\]/g, '.*')
-    .replace(/\[.*?\]/g, '[^/]+')
-    .replace(/\//g, '\\/');
-  const regex = new RegExp(`^${regexPattern}$`, 'i');
+  // Handle catch-all routes [...slug]
+  if (pattern.includes('[...')) {
+    const basePattern = pattern.split('/[...')[0];
+    return pathname === basePattern || pathname.startsWith(basePattern + '/');
+  }
+
+  // Handle optional catch-all [[...slug]]
+  if (pattern.includes('[[...')) {
+    const basePattern = pattern.split('/[[...')[0];
+    return pathname === basePattern || pathname.startsWith(basePattern + '/');
+  }
+
+  // Handle single dynamic segments [id]
+  const regexPattern = pattern.replace(/\[.*?\]/g, '[^/]+').replace(/\//g, '\\/');
+  const regex = new RegExp('^' + regexPattern + '$', 'i');
   return regex.test(pathname);
 };
 
@@ -79,7 +93,7 @@ const isStaticPath = (pathname: string): boolean => {
 };
 
 const isPublicApi = (pathname: string): boolean => {
-  return pathname.startsWith('/api/public/') || pathname === '/api/debug-session';
+  return pathname.startsWith('/api/public/') || pathname.startsWith('/api/debug');
 };
 
 const checkDashboardAccess = (pathname: string, role?: string) => {
@@ -107,12 +121,33 @@ export async function middleware(req: NextRequest) {
   // Skip static paths early
   if (isStaticPath(pathname)) return NextResponse.next();
 
-  const token = await getToken({ req, secret: process.env.AUTH_SECRET });
+  // Use correct cookie name based on environment
+  const isProduction = process.env.NODE_ENV === 'production';
+  const cookieName = isProduction ? SECURE_COOKIE_NAME : DEV_COOKIE_NAME;
+
+  const token = await getToken({
+    req,
+    secret: process.env.AUTH_SECRET,
+    cookieName,
+  });
+
+  // Debug logging for dashboard routes
+  if (pathname.startsWith('/dashboard')) {
+    console.log('[Middleware Debug]', {
+      pathname,
+      isProduction,
+      cookieName,
+      hasToken: !!token,
+      tokenRole: token?.role,
+      hasSecret: !!process.env.AUTH_SECRET,
+    });
+  }
 
   // Check token expiration
   if (token?.exp && Date.now() / 1000 > token.exp) {
+    console.log('[Middleware] Token expired, redirecting to signin');
     return NextResponse.redirect(
-      new URL(`/signin?callbackUrl=${encodeURIComponent(pathname)}`, nextUrl)
+      new URL('/signin?callbackUrl=' + encodeURIComponent(pathname), nextUrl)
     );
   }
 
@@ -130,9 +165,10 @@ export async function middleware(req: NextRequest) {
 
   // Dashboard routes - require login
   if (!isLoggedIn && pathname.startsWith('/dashboard')) {
+    console.log('[Middleware] Not logged in, redirecting to signin');
     const callbackUrl = pathname + search;
     return NextResponse.redirect(
-      new URL(`/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`, nextUrl)
+      new URL('/signin?callbackUrl=' + encodeURIComponent(callbackUrl), nextUrl)
     );
   }
 
@@ -144,7 +180,9 @@ export async function middleware(req: NextRequest) {
 
   // Dashboard routes - check role access
   if (pathname.startsWith('/dashboard')) {
-    if (checkDashboardAccess(pathname, role)) return NextResponse.next();
+    const hasAccess = checkDashboardAccess(pathname, role);
+    console.log('[Middleware] Dashboard access check:', { pathname, role, hasAccess });
+    if (hasAccess) return NextResponse.next();
     return NextResponse.redirect(new URL('/dashboard', nextUrl));
   }
 
