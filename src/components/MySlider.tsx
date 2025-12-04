@@ -143,14 +143,14 @@ export default function MySlider<T>({
           {currentIndex > 0 && (
             <PrevBtn
               onClick={() => changeItemId(currentIndex - 1)}
-              className={`w-8 h-8 xl:w-10 xl:h-10 text-lg absolute start-2 xl:start-3 z-[1] ${arrowBtnClass}`}
+              className={`w-7 h-7 sm:w-8 sm:h-8 xl:w-10 xl:h-10 text-lg absolute start-1 sm:start-2 xl:start-3 z-[1] ${arrowBtnClass}`}
             />
           )}
 
           {data.length > currentIndex + numberOfItems && (
             <NextBtn
               onClick={() => changeItemId(currentIndex + 1)}
-              className={`w-8 h-8 xl:w-10 xl:h-10 text-lg absolute end-2 xl:end-3 z-[1] ${arrowBtnClass}`}
+              className={`w-7 h-7 sm:w-8 sm:h-8 xl:w-10 xl:h-10 text-lg absolute end-1 sm:end-2 xl:end-3 z-[1] ${arrowBtnClass}`}
             />
           )}
         </div>

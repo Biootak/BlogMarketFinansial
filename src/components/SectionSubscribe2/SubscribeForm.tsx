@@ -7,8 +7,8 @@ import * as z from 'zod';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
-import { HiArrowRight } from 'react-icons/hi2';
 import { motion } from 'framer-motion';
+import { ArrowLeft, Loader2, Mail } from 'lucide-react';
 
 const schema = z.object({
   email: z.string().email({ message: 'ایمیل معتبر وارد کنید' }),
@@ -25,6 +25,7 @@ const SubscribeForm: FC<SubscribeFormProps> = ({ onSubmit }) => {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -40,10 +41,11 @@ const SubscribeForm: FC<SubscribeFormProps> = ({ onSubmit }) => {
           description: 'اشتراک شما با موفقیت ثبت شد',
           variant: 'success',
         });
+        reset();
       } else {
         toast({
           title: 'خطا',
-          description: 'خطا در ثبت اشتراک',
+          description: result.message || 'خطا در ثبت اشتراک',
           variant: 'destructive',
         });
       }
@@ -61,31 +63,54 @@ const SubscribeForm: FC<SubscribeFormProps> = ({ onSubmit }) => {
   return (
     <motion.form
       onSubmit={handleSubmit(handleFormSubmit)}
-      className="mt-6 sm:mt-8 relative max-w-sm w-full"
+      className="relative"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.5, delay: 0.2 }}
     >
-      <Input
-        {...register('email')}
-        placeholder="ایمیل خود را وارد کنید"
-        type="email"
-        className="pr-4 pl-12 py-3 rounded-full border-2 border-purple-300 focus:border-purple-500 transition-all duration-300 w-full"
-        disabled={isLoading}
-      />
+      <div className="relative flex items-center">
+        {/* Input Container */}
+        <div className="relative flex-1">
+          <div className="absolute start-3 sm:start-4 top-1/2 -translate-y-1/2 pointer-events-none">
+            <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-white/40" />
+          </div>
+          <Input
+            {...register('email')}
+            placeholder="ایمیل خود را وارد کنید"
+            type="email"
+            className="w-full ps-10 sm:ps-12 pe-24 sm:pe-32 py-3 sm:py-4 h-11 sm:h-14 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl sm:rounded-2xl text-white text-sm sm:text-base placeholder:text-white/50 focus:border-amber-400/50 focus:bg-white/15 transition-all duration-300"
+            disabled={isLoading}
+          />
+        </div>
+
+        {/* Submit Button */}
+        <Button
+          type="submit"
+          disabled={isLoading}
+          className="absolute end-1.5 sm:end-2 top-1/2 -translate-y-1/2 h-8 sm:h-10 px-3 sm:px-5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-neutral-900 text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl shadow-lg shadow-amber-500/30 transition-all duration-300 hover:shadow-amber-500/50 hover:scale-105 disabled:opacity-70 disabled:hover:scale-100"
+        >
+          {isLoading ? (
+            <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+          ) : (
+            <span className="flex items-center gap-1 sm:gap-2">
+              <span className="hidden sm:inline">عضویت</span>
+              <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </span>
+          )}
+        </Button>
+      </div>
+
+      {/* Error Message */}
       {errors.email && (
-        <p className="text-red-500 text-sm mt-1 absolute -bottom-6 right-0">
+        <motion.p 
+          className="mt-2 text-amber-300 text-xs sm:text-sm flex items-center gap-1"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <span className="w-1 h-1 rounded-full bg-amber-300" />
           {errors.email.message}
-        </p>
+        </motion.p>
       )}
-      <Button
-        type="submit"
-        size="icon"
-        className="absolute left-1 top-1/2 -translate-y-1/2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-full transition-all duration-300"
-        disabled={isLoading}
-      >
-        <HiArrowRight className="w-5 h-5 rotate-180" />
-      </Button>
     </motion.form>
   );
 };

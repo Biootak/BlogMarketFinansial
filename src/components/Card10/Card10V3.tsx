@@ -43,21 +43,21 @@ const Card10V3: React.FC<Card10V3Props> = ({ className = 'h-full', post, gallery
     );
 
     return galleryType === 1 ? (
-      <div className="w-full h-full grid grid-cols-3 gap-2">
+      <div className="w-full h-full grid grid-cols-3 gap-1 sm:gap-2">
         <div className="h-full">{renderGalleryImage(images[0])}</div>
-        <div className="flex flex-col gap-2 h-full">
+        <div className="flex flex-col gap-1 sm:gap-2 h-full">
           <div className="flex-grow">{renderGalleryImage(images[1])}</div>
           <div className="flex-grow">{renderGalleryImage(images[2])}</div>
         </div>
         <div className="h-full">{renderGalleryImage(images[3])}</div>
       </div>
     ) : (
-      <div className="w-full h-full flex flex-col gap-2">
-        <div className="flex gap-2 h-1/2">
+      <div className="w-full h-full flex flex-col gap-1 sm:gap-2">
+        <div className="flex gap-1 sm:gap-2 h-1/2">
           <div className="w-2/3 h-full">{renderGalleryImage(images[0])}</div>
           <div className="w-1/3 h-full">{renderGalleryImage(images[1])}</div>
         </div>
-        <div className="flex gap-2 h-1/2">
+        <div className="flex gap-1 sm:gap-2 h-1/2">
           <div className="w-1/3 h-full">{renderGalleryImage(images[2])}</div>
           <div className="w-2/3 h-full">{renderGalleryImage(images[3])}</div>
         </div>
@@ -71,7 +71,7 @@ const Card10V3: React.FC<Card10V3Props> = ({ className = 'h-full', post, gallery
       onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => setIsHover(false)}
     >
-      <div className="block group rounded-3xl flex-shrink-0 relative w-full aspect-[16/16] sm:aspect-[16/9] overflow-hidden z-0">
+      <div className="block group rounded-xl sm:rounded-2xl lg:rounded-3xl flex-shrink-0 relative w-full aspect-[4/3] sm:aspect-[16/10] overflow-hidden z-0">
         {postType !== 'GALLERY' || !galleryImages || galleryImages.length === 0 ? (
           <PostFeaturedMedia post={post} isHover={isHover} />
         ) : (
@@ -82,26 +82,26 @@ const Card10V3: React.FC<Card10V3Props> = ({ className = 'h-full', post, gallery
           className="absolute inset-0 bg-neutral-900 bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity"
         />
       </div>
-      <div className="absolute top-3 inset-x-3 flex justify-between items-start gap-4">
-        <CategoryBadgeList categories={categories} />
+      <div className="absolute top-2 sm:top-3 inset-x-2 sm:inset-x-3 flex justify-between items-start gap-2 sm:gap-4">
+        <CategoryBadgeList categories={categories} className="flex flex-wrap gap-1" />
         <BookmarkCheck post={post}>
           {(isBookmarked) => (
             <PostCardSaveAction
               className="relative"
               postId={id}
               initialBookmarked={isBookmarked}
-              bookmarkClass="h-8 w-8 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+              bookmarkClass="h-6 w-6 sm:h-8 sm:w-8 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700"
             />
           )}
         </BookmarkCheck>
       </div>
-      <div className="space-y-2.5 mt-4 px-4">
-        <h2 className="nc-card-title block sm:text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-          <Link href={getPostLink(postType, slug)} className="line-clamp-1" title={title}>
+      <div className="space-y-1.5 sm:space-y-2.5 mt-2 sm:mt-4 px-2 sm:px-4">
+        <h2 className="nc-card-title block text-sm sm:text-base lg:text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+          <Link href={getPostLink(postType, slug)} className="line-clamp-2" title={title}>
             {title}
           </Link>
         </h2>
-        <CardAuthor2 className="mt-3" post={post} hoverReadingTime={false} />
+        <CardAuthor2 className="mt-2 sm:mt-3" post={post} hoverReadingTime={false} />
       </div>
     </div>
   );

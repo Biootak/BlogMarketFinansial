@@ -1,199 +1,265 @@
 'use client';
 
-// طرح 7: کارت‌های سه‌بعدی با افکت Perspective
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { PostWithRelations } from '@/types/types';
 import Image from 'next/image';
 import Avatar from '@/components/Avatar/Avatar';
-
 import { getPostLink } from '@/lib/getPostLink';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
+import { ChevronLeft, ChevronRight, Clock, Eye } from 'lucide-react';
 
 type Props = { initialPosts: PostWithRelations[]; className?: string };
 
-// انیمیشن‌های بهبود یافته
-const cardVariants = {
-  hidden: { opacity: 0, y: 40, scale: 0.95 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      duration: 0.5,
-      delay: i * 0.1,
-      ease: [0.25, 0.46, 0.45, 0.94] as const,
-    },
-  }),
-};
-
-const overlayVariants = {
-  initial: { opacity: 0 },
-  hover: { opacity: 1 },
+const shimmer = {
+  hidden: { x: '-100%' },
+  visible: { 
+    x: '100%',
+    transition: { duration: 1.5, ease: 'easeInOut' as const }
+  }
 };
 
 export default function Design7({ initialPosts, className = '' }: Props) {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Auto-slide
+  useEffect(() => {
+    if (isHovered) return;
+    const timer = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % initialPosts.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [isHovered, initialPosts.length]);
 
   if (!initialPosts?.length) return <CardLarge1Skeleton />;
 
+  const mainPost = initialPosts[activeIndex];
+  const otherPosts = initialPosts.filter((_, i) => i !== activeIndex);
+
   return (
-    <section className={`${className}`}>
-      {/* 3D Cards Container */}
-      <div 
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5" 
-        style={{ perspective: '2000px' }}
-      >
-        <AnimatePresence>
-          {initialPosts.slice(0, 3).map((post, i) => {
-            const isHovered = hoveredIndex === i;
-            const isFirst = i === 0;
-
-            return (
+    <section 
+      className={`relative ${className}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Main Container with Glass Effect */}
+      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800 p-1.5 sm:p-2">
+        {/* Inner Glow Border */}
+        <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary-500/20 via-transparent to-primary-600/20 pointer-events-none" />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 sm:gap-3 lg:gap-4">
+          {/* Main Featured Card */}
+          <div className="lg:col-span-8 relative">
+            <AnimatePresence mode="wait">
               <motion.article
-                key={post.id}
-                className={`relative group cursor-pointer ${isFirst ? 'sm:col-span-2 lg:col-span-2 lg:row-span-2' : ''}`}
-                onMouseEnter={() => setHoveredIndex(i)}
-                onMouseLeave={() => setHoveredIndex(null)}
-                custom={i}
-                variants={cardVariants}
-                initial="hidden"
-                animate="visible"
-                style={{ transformStyle: 'preserve-3d' }}
-                whileHover={{
-                  rotateY: isFirst ? 0 : -2,
-                  rotateX: isFirst ? 0 : 2,
-                  scale: 1.02,
-                  z: 50,
-                  transition: { duration: 0.3, ease: 'easeOut' },
-                }}
+                key={mainPost.id}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                className="relative group h-[320px] sm:h-[400px] lg:h-[480px] rounded-2xl overflow-hidden"
               >
-                {/* کارت اصلی */}
-                <div 
-                  className={`relative overflow-hidden rounded-2xl sm:rounded-3xl ${
-                    isFirst 
-                      ? 'h-[300px] sm:h-[380px] lg:h-full lg:min-h-[460px]' 
-                      : 'h-[200px] sm:h-[220px]'
-                  }`}
-                >
-                  {/* تصویر */}
-                  <Link href={getPostLink(post.postType, post.slug)} className="absolute inset-0 block z-0">
-                    <Image
-                      className="object-cover w-full h-full transition-transform duration-700 ease-out group-hover:scale-105"
-                      src={post.featuredImage || '/images/placeholder-large.png'}
-                      alt={post.title}
-                      fill
-                      sizes={isFirst ? '(max-width: 768px) 100vw, 66vw' : '(max-width: 768px) 100vw, 33vw'}
-                      priority={i < 3}
-                    />
-                  </Link>
-
-                  {/* گرادیانت پایین */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-
-                  {/* افکت هاور گرادیانت */}
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-t from-primary-900/60 via-primary-800/20 to-transparent pointer-events-none"
-                    variants={overlayVariants}
-                    initial="initial"
-                    animate={isHovered ? 'hover' : 'initial'}
-                    transition={{ duration: 0.3 }}
+                {/* Image */}
+                <Link href={getPostLink(mainPost.postType, mainPost.slug)} className="absolute inset-0">
+                  <Image
+                    src={mainPost.featuredImage || '/images/placeholder-large.png'}
+                    alt={mainPost.title}
+                    fill
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                    sizes="(max-width: 1024px) 100vw, 66vw"
+                    priority
                   />
+                </Link>
 
-                  {/* بج شناور */}
-                  <motion.div
-                    className="absolute top-3 sm:top-4 start-3 sm:start-4 z-10"
-                    animate={{ 
-                      y: isHovered ? -5 : 0,
-                      scale: isHovered ? 1.05 : 1,
-                    }}
-                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                {/* Gradient Overlays */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-primary-900/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                {/* Shimmer Effect on Hover */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none"
+                  variants={shimmer}
+                  initial="hidden"
+                  whileHover="visible"
+                />
+
+                {/* Top Badge */}
+                <motion.div 
+                  className="absolute top-4 sm:top-6 start-4 sm:start-6 z-10"
+                  initial={{ y: -20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <span className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-bold rounded-full shadow-lg shadow-amber-500/30">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
+                    </span>
+                    برترین
+                  </span>
+                </motion.div>
+
+                {/* Content */}
+                <div className="absolute bottom-0 start-0 end-0 p-4 sm:p-6 lg:p-8 z-10">
+                  {/* Category */}
+                  {mainPost.categories?.[0] && (
+                    <motion.span 
+                      className="inline-block px-3 py-1 mb-3 bg-white/10 backdrop-blur-md text-white/90 text-xs font-medium rounded-lg border border-white/20"
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: 0.3 }}
+                    >
+                      {mainPost.categories[0].name}
+                    </motion.span>
+                  )}
+
+                  {/* Title */}
+                  <motion.h2 
+                    className="text-xl sm:text-2xl lg:text-3xl font-black text-white leading-tight mb-4 line-clamp-2"
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.4 }}
                   >
-                    {isFirst && (
-                      <span className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs sm:text-sm font-bold rounded-xl shadow-lg shadow-amber-500/40">
-                        <span className="text-base">⭐</span>
-                        برترین
-                      </span>
-                    )}
-                    {post.categories?.[0] && !isFirst && (
-                      <span className="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-white/15 backdrop-blur-lg text-white text-[10px] sm:text-xs font-semibold rounded-lg border border-white/20">
-                        {post.categories[0].name}
-                      </span>
-                    )}
-                  </motion.div>
+                    <Link 
+                      href={getPostLink(mainPost.postType, mainPost.slug)}
+                      className="hover:text-primary-200 transition-colors duration-300"
+                    >
+                      {mainPost.title}
+                    </Link>
+                  </motion.h2>
 
-                  {/* محتوا */}
+                  {/* Meta Info */}
                   <motion.div 
-                    className="absolute bottom-0 start-0 end-0 p-3 sm:p-4 lg:p-5 z-10"
-                    animate={{ y: isHovered ? -5 : 0 }}
-                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                    className="flex items-center gap-4 flex-wrap"
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.5 }}
                   >
-                    {/* عنوان */}
-                    <h3 className={`font-black text-white leading-snug mb-2 sm:mb-3 drop-shadow-lg ${
-                      isFirst 
-                        ? 'text-lg sm:text-xl lg:text-2xl line-clamp-2' 
-                        : 'text-sm sm:text-base line-clamp-2'
-                    }`}>
-                      <Link 
-                        href={getPostLink(post.postType, post.slug)} 
-                        className="hover:text-primary-200 transition-colors duration-300"
-                      >
-                        {post.title}
-                      </Link>
-                    </h3>
-
-                    {/* نویسنده */}
-                    <div className="flex items-center gap-2.5">
-                      <motion.div
-                        whileHover={{ scale: 1.1 }}
-                        transition={{ duration: 0.2 }}
-                      >
+                    {/* Author */}
+                    <div className="flex items-center gap-2.5 group/author">
+                      <div className="relative">
+                        <div className="absolute -inset-1 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full opacity-0 group-hover/author:opacity-100 blur transition-opacity duration-300" />
                         <Avatar 
-                          sizeClass={isFirst ? 'h-8 w-8 sm:h-9 sm:w-9' : 'h-6 w-6 sm:h-7 sm:w-7'} 
+                          sizeClass="h-10 w-10 relative" 
                           radius="rounded-full" 
-                          imgUrl={post.author.profile?.avatar || post.author.image} 
-                          userName={post.author.name || ''} 
+                          imgUrl={mainPost.author.profile?.avatar || mainPost.author.image} 
+                          userName={mainPost.author.name || ''} 
                         />
-                      </motion.div>
-                      <span className="font-medium text-white/90 text-xs sm:text-sm truncate drop-shadow">
-                        {post.author.name}
-                      </span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-white text-sm">{mainPost.author.name}</span>
+                        <span className="text-white/60 text-xs flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {new Date(mainPost.createdAt).toLocaleDateString('fa-IR')}
+                        </span>
+                      </div>
                     </div>
-                  </motion.div>
 
-                  {/* افکت درخشش */}
-                  <motion.div
-                    className="absolute inset-0 pointer-events-none overflow-hidden"
-                    initial={false}
-                  >
-                    <motion.div
-                      className="absolute inset-0"
-                      style={{
-                        background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.05) 50%, transparent 55%)',
-                      }}
-                      animate={{
-                        x: isHovered ? '150%' : '-150%',
-                      }}
-                      transition={{ duration: 0.7, ease: 'easeInOut' }}
-                    />
+                    {/* Views */}
+                    {mainPost.viewCount > 0 && (
+                      <div className="flex items-center gap-1.5 text-white/70 text-sm">
+                        <Eye className="w-4 h-4" />
+                        <span>{mainPost.viewCount.toLocaleString('fa-IR')}</span>
+                      </div>
+                    )}
                   </motion.div>
                 </div>
 
-                {/* سایه سه‌بعدی */}
-                <motion.div
-                  className="absolute -bottom-3 start-6 end-6 h-6 bg-black/25 rounded-full blur-xl -z-10"
-                  animate={{
-                    scale: isHovered ? 1.15 : 1,
-                    opacity: isHovered ? 0.6 : 0.35,
-                    y: isHovered ? 4 : 0,
-                  }}
-                  transition={{ duration: 0.3 }}
-                />
+                {/* Navigation Dots */}
+                <div className="absolute bottom-4 sm:bottom-6 end-4 sm:end-6 flex items-center gap-2 z-10">
+                  {initialPosts.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setActiveIndex(i)}
+                      className={`relative h-2 rounded-full transition-all duration-300 ${
+                        i === activeIndex 
+                          ? 'w-8 bg-white' 
+                          : 'w-2 bg-white/40 hover:bg-white/60'
+                      }`}
+                    >
+                      {i === activeIndex && (
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-r from-primary-400 to-primary-600 rounded-full"
+                          layoutId="activeDot"
+                          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                        />
+                      )}
+                    </button>
+                  ))}
+                </div>
               </motion.article>
-            );
-          })}
-        </AnimatePresence>
+            </AnimatePresence>
+          </div>
+
+          {/* Side Cards */}
+          <div className="lg:col-span-4 flex flex-row lg:flex-col gap-2 sm:gap-3">
+            {otherPosts.slice(0, 2).map((post, i) => (
+              <motion.article
+                key={post.id}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 + i * 0.1 }}
+                className="relative group flex-1 h-[160px] sm:h-[180px] lg:h-auto rounded-2xl overflow-hidden cursor-pointer"
+                onClick={() => setActiveIndex(initialPosts.findIndex(p => p.id === post.id))}
+              >
+                {/* Image */}
+                <Image
+                  src={post.featuredImage || '/images/placeholder-large.png'}
+                  alt={post.title}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  sizes="(max-width: 1024px) 50vw, 33vw"
+                />
+
+                {/* Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                
+                {/* Hover Overlay */}
+                <div className="absolute inset-0 bg-primary-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                {/* Content */}
+                <div className="absolute bottom-0 start-0 end-0 p-3 sm:p-4 z-10">
+                  {post.categories?.[0] && (
+                    <span className="inline-block px-2 py-0.5 mb-2 bg-white/15 backdrop-blur-sm text-white/90 text-[10px] font-medium rounded-md">
+                      {post.categories[0].name}
+                    </span>
+                  )}
+                  <h3 className="text-sm sm:text-base font-bold text-white line-clamp-2 leading-snug group-hover:text-primary-200 transition-colors">
+                    {post.title}
+                  </h3>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Avatar 
+                      sizeClass="h-5 w-5" 
+                      radius="rounded-full" 
+                      imgUrl={post.author.profile?.avatar || post.author.image} 
+                      userName={post.author.name || ''} 
+                    />
+                    <span className="text-white/70 text-xs truncate">{post.author.name}</span>
+                  </div>
+                </div>
+
+              </motion.article>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation Arrows */}
+      <div className="absolute top-1/2 -translate-y-1/2 start-0 end-0 flex justify-between pointer-events-none px-2 sm:px-4 z-20">
+        <button
+          onClick={() => setActiveIndex((prev) => (prev - 1 + initialPosts.length) % initialPosts.length)}
+          className="pointer-events-auto w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 hover:scale-110 shadow-lg"
+        >
+          <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+        </button>
+        <button
+          onClick={() => setActiveIndex((prev) => (prev + 1) % initialPosts.length)}
+          className="pointer-events-auto w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 hover:scale-110 shadow-lg"
+        >
+          <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+        </button>
       </div>
     </section>
   );

@@ -34,8 +34,8 @@ const TabsTrigger = React.forwardRef<
       'disabled:opacity-50 h-10 font-medium px-4 sm:px-6 rounded-full',
       'transition-all duration-300 group',
       'text-neutral-900 dark:text-neutral-100',
-      'data-[state=active]:bg-gradient-to-l data-[state=active]:from-primary-500',
-      'data-[state=active]:to-secondary-500 data-[state=active]:text-white',
+      'data-[state=active]:bg-primary-600',
+      'data-[state=active]:text-white',
       'data-[state=active]:shadow-lg',
       className,
     )}

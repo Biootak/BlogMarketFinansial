@@ -1,6 +1,5 @@
 import type React from 'react';
 import type { HTMLAttributes, ReactNode } from 'react';
-import SectionAds from '../Sections/SectionAds';
 
 export interface HeadingProps extends HTMLAttributes<HTMLHeadingElement> {
   fontClass?: string;
@@ -10,7 +9,7 @@ export interface HeadingProps extends HTMLAttributes<HTMLHeadingElement> {
 
 const Heading: React.FC<HeadingProps> = ({
   children,
-  desc = 'Discover the most outstanding articles in all topics of life. ',
+  desc = '',
   className = 'mb-10 md:mb-12 text-neutral-900 dark:text-neutral-50',
   isCenter = false,
   ...args
@@ -19,14 +18,17 @@ const Heading: React.FC<HeadingProps> = ({
     <div
       className={`nc-Section-Heading relative flex flex-col sm:flex-row sm:items-end justify-between ${className}`}
     >
-      <div className={isCenter ? 'text-center w-full max-w-2xl mx-auto ' : 'max-w-2xl'}>
-        <h2 className={'text-xl font-semibold'} {...args}>
+      <div className={isCenter ? 'text-center w-full max-w-2xl mx-auto' : 'max-w-2xl'}>
+        <h2 
+          className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white" 
+          {...args}
+        >
           {children || 'Section Heading'}
         </h2>
         {desc && (
-          <span className="mt-2 md:mt-3 font-normal block text-base sm:text-xs text-neutral-600 dark:text-neutral-400">
+          <p className="mt-2 md:mt-3 font-normal text-sm sm:text-base text-neutral-500 dark:text-neutral-400">
             {desc}
-          </span>
+          </p>
         )}
       </div>
     </div>

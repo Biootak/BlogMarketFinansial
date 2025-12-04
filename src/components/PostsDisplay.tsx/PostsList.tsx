@@ -47,9 +47,9 @@ export default function PostsList({ posts }: PostsListProps) {
   const [column1Content, column2Content] = splitContentIntoColumns(content);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-      <div className="space-y-4 flex flex-col">{column1Content}</div>
-      <div className="space-y-4 flex flex-col">{column2Content}</div>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
+      <div className="space-y-3 sm:space-y-4 flex flex-col">{column1Content}</div>
+      <div className="space-y-3 sm:space-y-4 flex flex-col">{column2Content}</div>
     </div>
   );
 }
