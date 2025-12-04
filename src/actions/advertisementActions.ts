@@ -1,27 +1,21 @@
 'use server';
 
+import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/db';
 import type { ActionResult, Advertisement, AdSize, AdPosition } from '@/types/types';
 import type { Prisma } from '@prisma/client';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
-export async function getActiveAdvertisements({
-  limit = 10,
-  page = 1,
-  search = '',
-  size,
-  position,
-  orderBy = 'order',
-  orderDirection = 'asc',
-}: {
-  limit?: number;
-  page?: number;
-  search?: string;
-  size?: AdSize;
-  position?: AdPosition;
-  orderBy?: 'order' | 'createdAt' | 'startDate';
-  orderDirection?: 'asc' | 'desc';
-} = {}): Promise<ActionResult<Advertisement[]>> {
+// Internal function for fetching ads (not cached)
+async function fetchActiveAdsInternal(
+  limit: number,
+  page: number,
+  search: string,
+  size: AdSize | undefined,
+  position: AdPosition | undefined,
+  orderBy: 'order' | 'createdAt' | 'startDate',
+  orderDirection: 'asc' | 'desc',
+): Promise<ActionResult<Advertisement[]>> {
   try {
     const skip = (page - 1) * limit;
     const ads = await prisma.advertisement.findMany({
@@ -54,6 +48,38 @@ export async function getActiveAdvertisements({
     };
   }
 }
+
+// Cached version
+const getCachedActiveAds = unstable_cache(
+  fetchActiveAdsInternal,
+  ['active-advertisements'],
+  {
+    revalidate: 300, // 5 minutes
+    tags: ['advertisements'],
+  }
+);
+
+// Public API with object params
+export async function getActiveAdvertisements({
+  limit = 10,
+  page = 1,
+  search = '',
+  size,
+  position,
+  orderBy = 'order',
+  orderDirection = 'asc',
+}: {
+  limit?: number;
+  page?: number;
+  search?: string;
+  size?: AdSize;
+  position?: AdPosition;
+  orderBy?: 'order' | 'createdAt' | 'startDate';
+  orderDirection?: 'asc' | 'desc';
+} = {}): Promise<ActionResult<Advertisement[]>> {
+  return getCachedActiveAds(limit, page, search, size, position, orderBy, orderDirection);
+}
+
 
 export async function getAllAdvertisements({
   limit = 10,
@@ -141,6 +167,7 @@ export async function createAdvertisement(
       },
     });
     revalidatePath('/advertisements');
+    revalidateTag('advertisements', 'page');
     return {
       success: true,
       message: 'تبلیغ با موفقیت ایجاد شد.',
@@ -155,6 +182,7 @@ export async function createAdvertisement(
     };
   }
 }
+
 export async function updateAdvertisement(
   id: string,
   data: Partial<Omit<Prisma.AdvertisementUpdateInput, 'id' | 'createdAt' | 'updatedAt'>>,
@@ -170,6 +198,7 @@ export async function updateAdvertisement(
       },
     });
     revalidatePath('/advertisements');
+    revalidateTag('advertisements', 'page');
     return {
       success: true,
       message: 'تبلیغ با موفقیت به‌روزرسانی شد.',
@@ -184,10 +213,12 @@ export async function updateAdvertisement(
     };
   }
 }
+
 export async function deleteAdvertisement(id: string): Promise<ActionResult> {
   try {
     await prisma.advertisement.delete({ where: { id } });
     revalidatePath('/advertisements');
+    revalidateTag('advertisements', 'page');
     return {
       success: true,
       message: 'تبلیغ با موفقیت حذف شد.',

@@ -1,12 +1,12 @@
 'use server';
 
-import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import { PostStatus } from '@prisma/client';
 import prisma from '@/lib/db';
 import type { ActionResult, PostWithRelations } from '@/types/types';
 
-export const getFeaturedPosts = cache(
-  async (limit = 3): Promise<ActionResult<PostWithRelations[]>> => {
+// Internal fetch function
+async function fetchFeaturedPosts(limit: number): Promise<ActionResult<PostWithRelations[]>> {
     try {
       const posts = await prisma.post.findMany({
         where: {
@@ -66,5 +66,19 @@ export const getFeaturedPosts = cache(
         error: error instanceof Error ? error.message : String(error),
       };
     }
-  },
+}
+
+// Cached version
+const getCachedFeaturedPosts = unstable_cache(
+  fetchFeaturedPosts,
+  ['featured-posts'],
+  {
+    revalidate: 60, // 1 minute
+    tags: ['posts', 'featured-posts'],
+  }
 );
+
+// Public API
+export async function getFeaturedPosts(limit = 3): Promise<ActionResult<PostWithRelations[]>> {
+  return getCachedFeaturedPosts(limit);
+}

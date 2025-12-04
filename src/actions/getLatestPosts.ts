@@ -1,10 +1,10 @@
 'use server';
 
-import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/db';
 import { PostStatus } from '@prisma/client';
 import type { PostWithRelations } from '@/types/types';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 interface GetLatestPostsParams {
   count?: number;
@@ -12,12 +12,12 @@ interface GetLatestPostsParams {
   category?: string;
 }
 
-export const getLatestPosts = cache(
-  async ({
-    count = 6,
-    skip = 0,
-    category,
-  }: GetLatestPostsParams = {}): Promise<PostWithRelations[]> => {
+// Internal fetch function
+async function fetchLatestPosts(
+  count: number,
+  skip: number,
+  category: string | undefined,
+): Promise<PostWithRelations[]> {
     try {
       const whereClause = {
         status: PostStatus.PUBLISHED,
@@ -77,16 +77,34 @@ export const getLatestPosts = cache(
 
       return posts as PostWithRelations[];
     } catch (error) {
-      // لاگ فقط در development
       if (process.env.NODE_ENV === 'development') {
         console.error('Error fetching posts:', error);
       }
-      // برگرداندن آرایه خالی به جای throw کردن
       return [];
     }
-  },
+}
+
+// Cached version
+const getCachedLatestPosts = unstable_cache(
+  fetchLatestPosts,
+  ['latest-posts'],
+  {
+    revalidate: 60, // 1 minute
+    tags: ['posts', 'latest-posts'],
+  }
 );
 
-export const invalidatePostsCache = async () => {
+// Public API
+export async function getLatestPosts({
+  count = 6,
+  skip = 0,
+  category,
+}: GetLatestPostsParams = {}): Promise<PostWithRelations[]> {
+  return getCachedLatestPosts(count, skip, category);
+}
+
+export async function invalidatePostsCache() {
   revalidatePath('/posts');
-};
+  revalidateTag('posts', 'page');
+  revalidateTag('latest-posts', 'page');
+}

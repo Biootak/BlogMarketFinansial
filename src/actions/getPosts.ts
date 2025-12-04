@@ -1,10 +1,12 @@
 'use server';
 
+import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/db';
 import type { PostWithRelations } from '@/types/types';
 
-export async function getPosts(limit: number): Promise<PostWithRelations[]> {
-  const posts = await prisma.post.findMany({
+export const getPosts = unstable_cache(
+  async (limit: number): Promise<PostWithRelations[]> => {
+    const posts = await prisma.post.findMany({
     take: limit,
     where: { status: 'PUBLISHED', postType: 'GALLERY' },
     orderBy: { createdAt: 'desc' },
@@ -25,5 +27,11 @@ export async function getPosts(limit: number): Promise<PostWithRelations[]> {
     },
   });
 
-  return posts;
-}
+    return posts;
+  },
+  ['gallery-posts'],
+  {
+    revalidate: 60, // 1 minute
+    tags: ['posts', 'gallery-posts'],
+  }
+);

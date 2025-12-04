@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/db';
 
 export interface SiteSettings {
@@ -11,8 +12,9 @@ export interface SiteSettings {
   cacheEnabled: boolean;
 }
 
-// Fetch settings from database - no cache to ensure fresh data
-export const getSystemSettingsData = async (): Promise<SiteSettings> => {
+// Fetch settings from database with caching (revalidate every 5 minutes)
+export const getSystemSettingsData = unstable_cache(
+  async (): Promise<SiteSettings> => {
   try {
     const settings = await prisma.systemSettings.findFirst();
 
@@ -52,4 +54,10 @@ export const getSystemSettingsData = async (): Promise<SiteSettings> => {
       cacheEnabled: true,
     };
   }
-};
+},
+  ['system-settings'],
+  {
+    revalidate: 300, // 5 minutes
+    tags: ['system-settings'],
+  }
+);
