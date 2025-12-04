@@ -82,6 +82,7 @@ export const getPostBySlug = cache(
               comments: true,
               likes: true,
               savedBy: true,
+              tags: true,
             },
           },
         },
