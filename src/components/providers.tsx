@@ -20,7 +20,7 @@ export default function Providers({
         attribute="class"
         defaultTheme="light"
         enableSystem={false}
-        disableTransitionOnChange={false}
+        disableTransitionOnChange
       >
         {children}
       </ThemeProvider>

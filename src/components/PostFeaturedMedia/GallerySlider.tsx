@@ -93,6 +93,10 @@ export default function GallerySlider({
                   alt="listing card gallery"
                   className={`object-cover ${imageClass}`}
                   onLoad={() => setLoaded(true)}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/images/placeholder-large.png';
+                  }}
                   sizes="(max-width: 1025px) 100vw, 300px"
                   loading="lazy"
                 />

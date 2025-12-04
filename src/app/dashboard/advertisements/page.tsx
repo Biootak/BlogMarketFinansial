@@ -280,6 +280,10 @@ export default function AdvertisementsPage() {
                         src={ad.imageUrl}
                         alt={ad.title}
                         className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/images/placeholder-small.png';
+                        }}
                       />
                     </div>
                   </DashboardTableCell>

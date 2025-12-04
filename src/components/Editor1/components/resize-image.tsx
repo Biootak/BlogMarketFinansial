@@ -157,6 +157,10 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
           alt={alt || ''} 
           style={{ width }}
           loading="lazy"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = '/images/placeholder-large.png';
+          }}
         />
       ) : (
         <div 
@@ -251,6 +255,10 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
             alt={alt || ''} 
             style={{ width }}
             loading="lazy"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = '/images/placeholder-large.png';
+            }}
             data-drag-handle 
           />
 

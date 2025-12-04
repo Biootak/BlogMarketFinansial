@@ -428,7 +428,7 @@ export type CategoryWithParent = {
   parentCategory: CategoryWithParent | null;
 };
 
-type SearchResultItem = Post | Category | Tag | User;
+export type SearchResultItem = Post | Category | Tag | User;
 
 export interface SearchResultData {
   posts: SearchResultItem[];

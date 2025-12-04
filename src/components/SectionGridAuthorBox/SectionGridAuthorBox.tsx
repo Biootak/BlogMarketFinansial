@@ -1,11 +1,11 @@
 import React, { type FC, memo } from 'react';
 import CardAuthorBox from '@/components/CardAuthorBox/CardAuthorBox';
 import Heading from '@/components/Heading/Heading';
-import type { UserWithRelations } from '@/types/types';
+import type { TopAuthor } from '@/actions/getTopAuthors';
 
 export interface SectionGridAuthorBoxProps {
   className?: string;
-  authors: UserWithRelations[];
+  authors: TopAuthor[];
 }
 
 const SectionGridAuthorBox: FC<SectionGridAuthorBoxProps> = ({ className = '', authors }) => {

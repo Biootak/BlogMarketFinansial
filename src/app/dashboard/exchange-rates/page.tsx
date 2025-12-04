@@ -161,7 +161,15 @@ const ExchangeRatesPage: React.FC = () => {
                   <DashboardTableCell>
                     {exchangeRate.imageUrl ? (
                       <div className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-white shadow-md dark:ring-neutral-700">
-                        <img src={exchangeRate.imageUrl} alt={exchangeRate.currency} className="h-full w-full object-cover" />
+                        <img 
+                          src={exchangeRate.imageUrl} 
+                          alt={exchangeRate.currency} 
+                          className="h-full w-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                          }}
+                        />
                       </div>
                     ) : (
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary-100 to-primary-200 text-primary-600 dark:from-primary-900/50 dark:to-primary-800/50 dark:text-primary-400">

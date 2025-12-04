@@ -5,7 +5,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { PostWithRelations } from '@/types/types';
-import NcImage from '@/components/NcImage/NcImage';
+import Image from 'next/image';
 import Avatar from '@/components/Avatar/Avatar';
 
 import { getPostLink } from '@/lib/getPostLink';
@@ -45,7 +45,7 @@ export default function Design7({ initialPosts, className = '' }: Props) {
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5" 
         style={{ perspective: '2000px' }}
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           {initialPosts.slice(0, 3).map((post, i) => {
             const isHovered = hoveredIndex === i;
             const isFirst = i === 0;
@@ -78,11 +78,10 @@ export default function Design7({ initialPosts, className = '' }: Props) {
                   }`}
                 >
                   {/* تصویر */}
-                  <Link href={getPostLink(post.postType, post.slug)} className="absolute inset-0 block">
-                    <NcImage
-                      containerClassName="absolute inset-0"
+                  <Link href={getPostLink(post.postType, post.slug)} className="absolute inset-0 block z-0">
+                    <Image
                       className="object-cover w-full h-full transition-transform duration-700 ease-out group-hover:scale-105"
-                      src={post.featuredImage || '/placeholder.jpg'}
+                      src={post.featuredImage || '/images/placeholder-large.png'}
                       alt={post.title}
                       fill
                       sizes={isFirst ? '(max-width: 768px) 100vw, 66vw' : '(max-width: 768px) 100vw, 33vw'}

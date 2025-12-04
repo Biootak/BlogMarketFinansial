@@ -48,12 +48,22 @@ export async function POST(req: NextRequest) {
     // Sanitize page URL
     const sanitizedPage = page.slice(0, 500).replace(/[<>'"]/g, '');
 
-    // استفاده از upsert برای جلوگیری از duplicate
-    const pageView = await prisma.pageView.upsert({
+    // پیدا کردن یا ایجاد رکورد pageview
+    const existingPageView = await prisma.pageView.findFirst({
       where: { page: sanitizedPage },
-      update: { views: { increment: 1 } },
-      create: { page: sanitizedPage, views: 1 },
     });
+
+    let pageView;
+    if (existingPageView) {
+      pageView = await prisma.pageView.update({
+        where: { id: existingPageView.id },
+        data: { views: { increment: 1 } },
+      });
+    } else {
+      pageView = await prisma.pageView.create({
+        data: { page: sanitizedPage, views: 1 },
+      });
+    }
 
     return NextResponse.json({ success: true, views: pageView.views });
   } catch (error) {

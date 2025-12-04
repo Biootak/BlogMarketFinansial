@@ -118,6 +118,10 @@ const MentionList = forwardRef<MentionListRef, MentionListProps>(
                   src={item.avatar}
                   alt=""
                   className="w-full h-full rounded-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
                 />
               ) : (
                 item.name.charAt(0)

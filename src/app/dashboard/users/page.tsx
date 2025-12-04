@@ -325,13 +325,13 @@ export default function UsersPage() {
                   </DashboardTableCell>
                   <DashboardTableCell>
                     <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                      {roleLabels[user.role] || user.role}
+                      {roleLabels[user.role ?? ''] || user.role}
                     </span>
                   </DashboardTableCell>
                   <DashboardTableCell hidden>
                     <StatusBadge
-                      status={statusLabels[user.status] || user.status}
-                      variant={getStatusVariant(user.status) as any}
+                      status={statusLabels[user.status ?? ''] || user.status || ''}
+                      variant={getStatusVariant(user.status ?? '') as any}
                     />
                   </DashboardTableCell>
                   <DashboardTableCell>

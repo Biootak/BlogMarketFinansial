@@ -29,7 +29,7 @@ export default function Component({ className = '', post }: Card6Props) {
           sizes="(max-width: 639px) 33vw, (max-width: 1023px) 25vw, 20vw"
           className="object-cover"
           fill
-          src={featuredImage || '/placeholder.jpg'}
+          src={featuredImage || '/images/placeholder-large.png'}
           alt={title}
         />
         <span className="absolute bottom-1 end-1">

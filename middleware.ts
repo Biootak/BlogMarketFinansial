@@ -28,10 +28,11 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const ip = getClientIP(request);
 
-  // 1. HTTPS redirect در production
+  // 1. HTTPS redirect در production (فقط وقتی پشت reverse proxy هستیم)
   if (
     process.env.NODE_ENV === 'production' &&
-    request.headers.get('x-forwarded-proto') !== 'https'
+    process.env.FORCE_HTTPS === 'true' &&
+    request.headers.get('x-forwarded-proto') === 'http'
   ) {
     const httpsUrl = new URL(request.url);
     httpsUrl.protocol = 'https:';

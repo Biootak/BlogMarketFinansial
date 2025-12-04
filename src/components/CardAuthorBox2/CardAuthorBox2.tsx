@@ -3,18 +3,18 @@ import { HiArrowRight } from 'react-icons/hi2';
 import Avatar from '@/components/Avatar/Avatar';
 import NcImage from '@/components/NcImage/NcImage';
 import Link from 'next/link';
-import type { UserWithRelations } from '@/types/types';
+import type { TopAuthor } from '@/actions/getTopAuthors';
 
 export interface CardAuthorBox2Props {
   className?: string;
-  author: UserWithRelations;
+  author: TopAuthor;
 }
 
 const CardAuthorBox2: FC<CardAuthorBox2Props> = ({ className = '', author }) => {
   const { name, id, image, _count } = author;
   const postCount = _count?.posts || 0;
   const jobName = author.profile?.jobName || 'نویسنده';
-  const bgImage = author.profile?.bgImage || '/images/placeholder-small.png';
+  const bgImage = '/images/placeholder-small.png';
   const avatar = author.profile?.avatar || image;
 
   return (

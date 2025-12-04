@@ -15,11 +15,11 @@ const CardCategory3: FC<CardCategory3Props> = ({ className = '', taxonomy }) => 
     <Link href={`/archive/category/${name}`} className={`nc-CardCategory3 flex flex-col ${className}`}>
       <div className="flex-shrink-0 relative w-full aspect-[1/1] rounded-2xl overflow-hidden group">
         <Image
-          src={thumbnail || ''}
+          src={thumbnail || '/images/placeholder-small.png'}
           className="object-cover w-full h-full rounded-2xl"
           sizes="(min-width: 1024px) 20rem, (min-width: 640px) 16rem, 12rem"
           fill
-          alt=""
+          alt={name}
         />
         <span className="opacity-0 group-hover:opacity-100 absolute inset-0 bg-black bg-opacity-10 transition-opacity" />
       </div>

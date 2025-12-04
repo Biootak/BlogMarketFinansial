@@ -22,8 +22,8 @@ const CardCategory5: FC<CardCategory5Props> = ({ className = '', taxonomy }) => 
       >
         <Image
           fill
-          alt="thumbnail"
-          src={thumbnail || ''}
+          alt={name}
+          src={thumbnail || '/images/placeholder-small.png'}
           className="object-cover w-full h-full rounded-2xl"
           sizes="(min-width: 1024px) 20rem, (min-width: 640px) 16rem, 12rem"
         />

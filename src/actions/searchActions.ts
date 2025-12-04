@@ -12,7 +12,8 @@ export async function getSearchResults(
   const skip = (page - 1) * pageSize;
 
   try {
-    let posts: unknown[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let posts: any[];
     let total: number;
 
     switch (activeTab) {

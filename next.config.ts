@@ -47,10 +47,15 @@ const nextConfig: NextConfig = {
             key: 'X-DNS-Prefetch-Control',
             value: 'on',
           },
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload',
-          },
+          // HSTS فقط در production فعال باشه
+          ...(process.env.NODE_ENV === 'production'
+            ? [
+                {
+                  key: 'Strict-Transport-Security',
+                  value: 'max-age=63072000; includeSubDomains; preload',
+                },
+              ]
+            : []),
           {
             key: 'X-Content-Type-Options',
             value: 'nosniff',
@@ -89,6 +94,13 @@ const nextConfig: NextConfig = {
   },
 
   images: {
+    // افزایش timeout برای لود تصاویر
+    minimumCacheTTL: 60,
+    // فرمت‌های مجاز
+    formats: ['image/avif', 'image/webp'],
+    // محدودیت سایز دستگاه‌ها
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     remotePatterns: [
       {
         protocol: 'https',
@@ -101,6 +113,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'biotak.storage.c2.liara.space',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.storage.c2.liara.space',
       },
       {
         protocol: 'https',

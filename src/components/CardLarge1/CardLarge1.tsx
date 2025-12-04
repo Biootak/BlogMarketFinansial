@@ -169,7 +169,7 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
               <NcImage
                 containerClassName="absolute inset-0"
                 className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
-                src={featuredImage || '/placeholder.jpg'}
+                src={featuredImage || '/images/placeholder-large.png'}
                 alt={title}
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
