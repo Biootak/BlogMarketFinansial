@@ -7,12 +7,9 @@ import { motion } from 'framer-motion';
 
 import { cn } from '@/lib/utils';
 
-const DropdownMenu = React.forwardRef<
-  React.ElementRef<typeof DropdownMenuPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Root>
->(({ modal = false, ...props }, ref) => (
+const DropdownMenu = ({ modal = false, ...props }: DropdownMenuPrimitive.DropdownMenuProps) => (
   <DropdownMenuPrimitive.Root modal={modal} {...props} />
-));
+);
 DropdownMenu.displayName = 'DropdownMenu';
 
 const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
