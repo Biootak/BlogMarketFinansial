@@ -62,7 +62,9 @@ const isStaticPath = (pathname: string): boolean => {
   return staticPatterns.some((p) => pathname.startsWith(p));
 };
 
-const isPublicApi = (pathname: string): boolean => pathname.startsWith('/api/public/');
+const isPublicApi = (pathname: string): boolean => {
+  return pathname.startsWith('/api/public/') || pathname === '/api/debug-session';
+};
 
 const checkDashboardAccess = (pathname: string, role?: string) => {
   if (baseDashboardRoutes.some((r) => matchDynamicRoute(pathname, r))) return true;
