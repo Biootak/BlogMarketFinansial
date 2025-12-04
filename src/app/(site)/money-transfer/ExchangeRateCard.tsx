@@ -176,9 +176,7 @@ export function ExchangeRateCard({ rate, index }: ExchangeRateCardProps) {
 
           {/* CTA Button */}
           <motion.a
-            href="https://t.me/Financial_Market_telegram"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="#contact"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="relative w-full flex items-center justify-center gap-2 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base text-white overflow-hidden group/btn"
