@@ -1503,6 +1503,178 @@ export const InlineLoadingSkeleton: FC<{ className?: string }> = ({ className })
 
 
 // ============================================
+// Service Requests Page Skeleton
+// ============================================
+export const ServiceRequestsSkeleton: FC = () => (
+  <div className="min-h-screen">
+    {/* Ambient Background */}
+    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-amber-500/10 to-orange-500/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-br from-blue-500/8 to-indigo-500/5 rounded-full blur-3xl" />
+    </div>
+
+    <div className="space-y-8 p-8 max-w-[1600px] mx-auto">
+      {/* Header Section */}
+      <div className="relative">
+        <div className="flex items-start justify-between gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <SkeletonBase className="p-3.5 h-14 w-14 rounded-2xl" />
+              <div>
+                <SkeletonBase className="h-8 w-48 rounded-lg" />
+                <SkeletonBase className="h-4 w-64 rounded-md mt-2" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Section */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={i}
+            className={cn(
+              'relative p-5 rounded-2xl',
+              'bg-gradient-to-br from-neutral-100 to-neutral-50 dark:from-neutral-800 dark:to-neutral-900',
+              'border border-neutral-200/50 dark:border-neutral-700/50'
+            )}
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <SkeletonBase className="h-10 w-10 rounded-xl" />
+              <SkeletonBase className="h-4 w-16 rounded-md" />
+            </div>
+            <SkeletonBase className="h-8 w-12 rounded-lg" />
+            <SkeletonBase className="h-3 w-20 rounded-md mt-2" />
+          </div>
+        ))}
+      </div>
+
+      {/* Table Section */}
+      <div
+        className={cn(
+          'rounded-3xl overflow-hidden',
+          'bg-gradient-to-br from-neutral-100 to-neutral-50 dark:from-neutral-800 dark:to-neutral-900',
+          'border border-neutral-200/50 dark:border-neutral-700/50'
+        )}
+      >
+        {/* Table Header */}
+        <div className="px-6 py-4 border-b border-neutral-200/50 dark:border-neutral-700/50">
+          <div className="flex items-center justify-between">
+            <SkeletonBase className="h-6 w-40 rounded-lg" />
+            <div className="flex gap-3">
+              <SkeletonBase className="h-10 w-32 rounded-xl" />
+              <SkeletonBase className="h-10 w-48 rounded-xl" />
+            </div>
+          </div>
+        </div>
+        {/* Table Rows */}
+        <div className="divide-y divide-neutral-200/50 dark:divide-neutral-700/50">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="px-6 py-4 flex items-center gap-4">
+              <SkeletonBase className="h-10 w-10 rounded-full flex-shrink-0" />
+              <div className="flex-1 grid grid-cols-5 gap-4">
+                <div className="space-y-2">
+                  <SkeletonBase className="h-4 w-full rounded-md" />
+                  <SkeletonBase className="h-3 w-2/3 rounded-md" />
+                </div>
+                <SkeletonBase className="h-6 w-20 rounded-full self-center" />
+                <SkeletonBase className="h-4 w-24 rounded-md self-center" />
+                <SkeletonBase className="h-4 w-20 rounded-md self-center" />
+                <div className="flex gap-2 justify-end">
+                  <SkeletonBase className="h-8 w-8 rounded-lg" />
+                  <SkeletonBase className="h-8 w-8 rounded-lg" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// ============================================
+// Online Payment Page Skeleton
+// ============================================
+export const OnlinePaymentPageSkeleton: FC = () => (
+  <main className="min-h-screen bg-white dark:bg-neutral-900">
+    {/* Hero Skeleton */}
+    <section className="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16">
+          <div className="lg:w-1/2 text-center lg:text-right">
+            <SkeletonBase className="h-8 w-32 rounded-full mx-auto lg:mx-0 mb-6" />
+            <SkeletonBase className="h-14 w-full max-w-md rounded-lg mx-auto lg:mx-0 mb-4" />
+            <SkeletonBase className="h-14 w-3/4 rounded-lg mx-auto lg:mx-0 mb-6" />
+            <SkeletonBase className="h-6 w-full max-w-lg rounded mx-auto lg:mx-0 mb-2" />
+            <SkeletonBase className="h-6 w-5/6 rounded mx-auto lg:mx-0 mb-8" />
+            <div className="flex gap-4 justify-center lg:justify-start">
+              <SkeletonBase className="h-14 w-36 rounded-xl" />
+              <SkeletonBase className="h-14 w-36 rounded-xl" />
+            </div>
+          </div>
+          <div className="lg:w-1/2">
+            <SkeletonBase className="h-80 w-full max-w-lg rounded-2xl mx-auto" />
+          </div>
+        </div>
+        <div className="mt-16 flex justify-center gap-8">
+          {[...Array(4)].map((_, i) => (
+            <SkeletonBase key={i} className="h-10 w-20 rounded" />
+          ))}
+        </div>
+      </div>
+    </section>
+
+    {/* Services Skeleton */}
+    <section className="py-20 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-16">
+          <SkeletonBase className="h-6 w-24 rounded-full mx-auto mb-4" />
+          <SkeletonBase className="h-10 w-64 rounded-lg mx-auto mb-4" />
+          <SkeletonBase className="h-5 w-96 rounded mx-auto" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          {[...Array(6)].map((_, i) => (
+            <div
+              key={i}
+              className={cn(
+                'p-8 rounded-2xl',
+                'bg-neutral-100 dark:bg-neutral-800'
+              )}
+            >
+              <SkeletonBase className="h-14 w-14 rounded-xl mb-6" />
+              <SkeletonBase className="h-6 w-32 rounded mb-3" />
+              <SkeletonBase className="h-4 w-full rounded mb-2" />
+              <SkeletonBase className="h-4 w-3/4 rounded" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    {/* Contact Skeleton */}
+    <section className="py-20 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        <div
+          className={cn(
+            'p-12 rounded-3xl',
+            'bg-neutral-100 dark:bg-neutral-800'
+          )}
+        >
+          <SkeletonBase className="h-8 w-48 rounded-lg mx-auto mb-4" />
+          <SkeletonBase className="h-5 w-72 rounded mx-auto mb-10" />
+          <div className="flex justify-center gap-4">
+            <SkeletonBase className="h-14 w-44 rounded-xl" />
+            <SkeletonBase className="h-14 w-44 rounded-xl" />
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+);
+
+// ============================================
 // Card6 Skeleton (Horizontal Post Card)
 // ============================================
 export const Card6Skeleton: FC<{ className?: string }> = ({ className }) => (
