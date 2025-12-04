@@ -15,6 +15,10 @@ import {
 const SECURE_COOKIE_NAME = '__Secure-authjs.session-token';
 const DEV_COOKIE_NAME = 'authjs.session-token';
 
+// Debug mode - controlled via environment variable
+// Set DEBUG_MODE=true in Vercel Environment Variables to enable
+const DEBUG_MODE = process.env.DEBUG_MODE === 'true';
+
 const adminApiRoutes = [
   '/api/users',
   '/api/advertisements',
@@ -132,7 +136,7 @@ export async function middleware(req: NextRequest) {
   });
 
   // Debug logging for dashboard routes
-  if (pathname.startsWith('/dashboard')) {
+  if (DEBUG_MODE && pathname.startsWith('/dashboard')) {
     console.log('[Middleware Debug]', {
       pathname,
       isProduction,
@@ -145,7 +149,7 @@ export async function middleware(req: NextRequest) {
 
   // Check token expiration
   if (token?.exp && Date.now() / 1000 > token.exp) {
-    console.log('[Middleware] Token expired, redirecting to signin');
+    if (DEBUG_MODE) console.log('[Middleware] Token expired, redirecting to signin');
     return NextResponse.redirect(
       new URL('/signin?callbackUrl=' + encodeURIComponent(pathname), nextUrl)
     );
@@ -165,7 +169,7 @@ export async function middleware(req: NextRequest) {
 
   // Dashboard routes - require login
   if (!isLoggedIn && pathname.startsWith('/dashboard')) {
-    console.log('[Middleware] Not logged in, redirecting to signin');
+    if (DEBUG_MODE) console.log('[Middleware] Not logged in, redirecting to signin');
     const callbackUrl = pathname + search;
     return NextResponse.redirect(
       new URL('/signin?callbackUrl=' + encodeURIComponent(callbackUrl), nextUrl)
@@ -181,7 +185,7 @@ export async function middleware(req: NextRequest) {
   // Dashboard routes - check role access
   if (pathname.startsWith('/dashboard')) {
     const hasAccess = checkDashboardAccess(pathname, role);
-    console.log('[Middleware] Dashboard access check:', { pathname, role, hasAccess });
+    if (DEBUG_MODE) console.log('[Middleware] Dashboard access check:', { pathname, role, hasAccess });
     if (hasAccess) return NextResponse.next();
     return NextResponse.redirect(new URL('/dashboard', nextUrl));
   }

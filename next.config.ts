@@ -28,6 +28,16 @@ const nextConfig: NextConfig = {
   // Disable source maps in development to avoid warnings
   productionBrowserSourceMaps: false,
 
+  // Rewrites برای serve کردن فایل‌های آپلود شده در production
+  async rewrites() {
+    return [
+      {
+        source: '/uploads/:path*',
+        destination: '/api/uploads/:path*',
+      },
+    ];
+  },
+
   // Security headers
   async headers() {
     return [
