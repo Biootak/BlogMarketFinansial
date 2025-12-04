@@ -9,10 +9,8 @@
 /.next/
 /out/
 
-# Uploaded files (keep .gitkeep files)
-public/uploads/*
-!public/uploads/.gitkeep
-!public/uploads/*/.gitkeep
+# Uploaded files - tracked for deployment fallback
+# public/uploads/ is now tracked in git
 
 # Testing
 /coverage

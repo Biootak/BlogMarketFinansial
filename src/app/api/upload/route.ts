@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { existsSync } from 'fs';
-import path from 'path';
 import { auth } from '@/auth';
 import sharp from 'sharp';
+import { uploadFile } from '@/lib/storage';
 
-const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads');
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
 const ALLOWED_FOLDERS = ['posts', 'avatars', 'categories', 'tags', 'ads', 'general'];
@@ -21,21 +18,8 @@ const FILE_SIGNATURES: Record<string, number[][]> = {
   'image/webp': [[0x52, 0x49, 0x46, 0x46]],
 };
 
-interface UploadResult {
-  url: string;
-  filename: string;
-  size: number;
-}
-
-async function ensureDir(dir: string) {
-  if (!existsSync(dir)) {
-    await mkdir(dir, { recursive: true });
-  }
-}
-
-// چک کردن magic bytes برای تشخیص واقعی نوع فایل
+// چک کردن magic bytes
 function validateFileSignature(buffer: Buffer, mimeType: string): boolean {
-  // SVG رو با محتوا چک می‌کنیم
   if (mimeType === 'image/svg+xml') {
     const content = buffer.toString('utf8', 0, 500).toLowerCase();
     return content.includes('<svg') && !content.includes('<script');
@@ -52,30 +36,26 @@ function validateFileSignature(buffer: Buffer, mimeType: string): boolean {
   });
 }
 
-// چک کردن SVG برای کدهای مخرب
+// چک امنیت SVG
 function sanitizeSvg(buffer: Buffer): boolean {
   const content = buffer.toString('utf8').toLowerCase();
-
-  // لیست تگ‌ها و attribute‌های خطرناک
   const dangerousPatterns = [
     /<script/i,
     /javascript:/i,
-    /on\w+\s*=/i, // onclick, onerror, etc.
+    /on\w+\s*=/i,
     /<iframe/i,
     /<object/i,
     /<embed/i,
     /<foreignobject/i,
     /data:/i,
-    /xlink:href\s*=\s*["'](?!#)/i, // external xlink
+    /xlink:href\s*=\s*["'](?!#)/i,
   ];
-
   return !dangerousPatterns.some((pattern) => pattern.test(content));
 }
 
+// بهینه‌سازی تصویر
 async function optimizeImage(buffer: Buffer, mimeType: string): Promise<Buffer> {
-  if (mimeType === 'image/svg+xml') {
-    return buffer;
-  }
+  if (mimeType === 'image/svg+xml') return buffer;
 
   const image = sharp(buffer);
   const metadata = await image.metadata();
@@ -92,10 +72,10 @@ async function optimizeImage(buffer: Buffer, mimeType: string): Promise<Buffer> 
   return image.gif().toBuffer();
 }
 
+// تولید نام فایل
 function generateFilename(originalName: string, mimeType: string): string {
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(2, 8);
-  // حذف کاراکترهای خطرناک از نام فایل
   const baseName = originalName
     .replace(/\.[^/.]+$/, '')
     .replace(/[^a-zA-Z0-9-_]/g, '')
@@ -109,10 +89,10 @@ function generateFilename(originalName: string, mimeType: string): string {
   return `${timestamp}-${random}-${baseName || 'image'}.${ext}`;
 }
 
-// Rate limiting ساده (در production از Redis استفاده کن)
+// Rate limiting
 const uploadCounts = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT = 20; // حداکثر 20 آپلود
-const RATE_WINDOW = 60 * 1000; // در هر دقیقه
+const RATE_LIMIT = 20;
+const RATE_WINDOW = 60 * 1000;
 
 function checkRateLimit(userId: string): boolean {
   const now = Date.now();
@@ -123,26 +103,21 @@ function checkRateLimit(userId: string): boolean {
     return true;
   }
 
-  if (userLimit.count >= RATE_LIMIT) {
-    return false;
-  }
-
+  if (userLimit.count >= RATE_LIMIT) return false;
   userLimit.count++;
   return true;
 }
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. چک احراز هویت
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'احراز هویت الزامی است' }, { status: 401 });
     }
 
-    // 2. چک Rate Limit
     if (!checkRateLimit(session.user.id)) {
       return NextResponse.json(
-        { error: 'تعداد درخواست‌های شما بیش از حد مجاز است. لطفاً کمی صبر کنید.' },
+        { error: 'تعداد درخواست‌های شما بیش از حد مجاز است' },
         { status: 429 }
       );
     }
@@ -151,7 +126,6 @@ export async function POST(request: NextRequest) {
     const files = formData.getAll('files') as File[];
     const folder = (formData.get('folder') as string) || 'general';
 
-    // 3. چک فولدر مجاز
     if (!ALLOWED_FOLDERS.includes(folder)) {
       return NextResponse.json({ error: 'فولدر نامعتبر است' }, { status: 400 });
     }
@@ -160,56 +134,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'فایلی انتخاب نشده' }, { status: 400 });
     }
 
-    // 4. محدودیت تعداد فایل در هر درخواست
     if (files.length > 10) {
-      return NextResponse.json(
-        { error: 'حداکثر 10 فایل در هر درخواست مجاز است' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'حداکثر 10 فایل مجاز است' }, { status: 400 });
     }
 
-    const uploadDir = path.join(UPLOAD_DIR, folder);
-    await ensureDir(uploadDir);
-
-    const results: UploadResult[] = [];
+    const results = [];
 
     for (const file of files) {
-      // 5. چک نوع فایل (MIME type)
       if (!ALLOWED_TYPES.includes(file.type)) {
         return NextResponse.json({ error: `نوع فایل ${file.type} مجاز نیست` }, { status: 400 });
       }
 
-      // 6. چک حجم فایل
       if (file.size > MAX_FILE_SIZE) {
-        return NextResponse.json({ error: 'حجم فایل بیشتر از 10 مگابایت است' }, { status: 400 });
+        return NextResponse.json({ error: 'حجم فایل بیشتر از 10MB است' }, { status: 400 });
       }
 
       const buffer = Buffer.from(await file.arrayBuffer());
 
-      // 7. چک Magic Bytes (تشخیص واقعی نوع فایل)
       if (!validateFileSignature(buffer, file.type)) {
-        return NextResponse.json(
-          { error: 'محتوای فایل با نوع اعلام شده مطابقت ندارد' },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: 'محتوای فایل نامعتبر است' }, { status: 400 });
       }
 
-      // 8. چک امنیت SVG
       if (file.type === 'image/svg+xml' && !sanitizeSvg(buffer)) {
         return NextResponse.json({ error: 'فایل SVG حاوی کد مخرب است' }, { status: 400 });
       }
 
       const optimizedBuffer = await optimizeImage(buffer, file.type);
       const filename = generateFilename(file.name, file.type);
-      const filepath = path.join(uploadDir, filename);
+      const contentType = file.type === 'image/gif' || file.type === 'image/svg+xml'
+        ? file.type
+        : 'image/webp';
 
-      await writeFile(filepath, optimizedBuffer);
-
-      results.push({
-        url: `/uploads/${folder}/${filename}`,
-        filename,
-        size: optimizedBuffer.length,
-      });
+      const result = await uploadFile(optimizedBuffer, filename, folder, contentType);
+      results.push(result);
     }
 
     return NextResponse.json({
@@ -218,7 +175,7 @@ export async function POST(request: NextRequest) {
       message: 'فایل‌ها با موفقیت آپلود شدند',
     });
   } catch (error) {
-    console.error('خطا در آپلود فایل:', error);
+    console.error('خطا در آپلود:', error);
     return NextResponse.json({ error: 'خطا در آپلود فایل' }, { status: 500 });
   }
 }

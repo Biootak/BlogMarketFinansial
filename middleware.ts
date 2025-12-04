@@ -86,6 +86,7 @@ const isStaticPath = (pathname: string): boolean => {
   const staticPatterns = [
     '/images/',
     '/uploads/',
+    '/api/uploads/',
     '/_next/',
     '/assets/',
     '/favicon.ico',

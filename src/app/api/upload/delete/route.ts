@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { unlink } from 'fs/promises';
-import { existsSync } from 'fs';
-import path from 'path';
 import { auth } from '@/auth';
+import { deleteFile } from '@/lib/storage';
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -20,18 +18,25 @@ export async function DELETE(request: NextRequest) {
     // فقط فایل‌های لوکال رو حذف کن
     if (!imageUrl.startsWith('/uploads/')) {
       return NextResponse.json(
-        { error: 'فقط فایل‌های لوکال قابل حذف هستند' },
+        { error: 'فقط فایل‌های آپلود شده قابل حذف هستند' },
         { status: 400 }
       );
     }
 
-    const filepath = path.join(process.cwd(), 'public', imageUrl);
-
-    if (!existsSync(filepath)) {
-      return NextResponse.json({ error: 'فایل یافت نشد' }, { status: 404 });
+    // استخراج folder و filename از URL
+    const parts = imageUrl.replace('/uploads/', '').split('/');
+    if (parts.length < 2) {
+      return NextResponse.json({ error: 'مسیر نامعتبر' }, { status: 400 });
     }
 
-    await unlink(filepath);
+    const folder = parts[0];
+    const filename = parts.slice(1).join('/');
+
+    const deleted = await deleteFile(folder, filename);
+
+    if (!deleted) {
+      return NextResponse.json({ error: 'فایل یافت نشد' }, { status: 404 });
+    }
 
     return NextResponse.json({
       success: true,
