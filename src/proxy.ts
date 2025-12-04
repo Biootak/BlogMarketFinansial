@@ -58,7 +58,7 @@ const matchDynamicRoute = (pathname: string, pattern: string): boolean => {
 };
 
 const isStaticPath = (pathname: string): boolean => {
-  const staticPatterns = ['/images/', '/_next/', '/assets/', '/favicon.ico', '/robots.txt', '/manifest.json', '/site.webmanifest'];
+  const staticPatterns = ['/images/', '/uploads/', '/_next/', '/assets/', '/favicon.ico', '/robots.txt', '/manifest.json', '/site.webmanifest'];
   return staticPatterns.some((p) => pathname.startsWith(p));
 };
 

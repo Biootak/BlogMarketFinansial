@@ -29,8 +29,10 @@ export const publicRoutes = [
   '/search',
   '/search/[...slug]',
   '/archive',
-  '/archive/[category]',
-  '/archive/[category]/[...slug]',
+  '/archive/[[...slug]]',
+  '/archive/category/[...slug]',
+  '/archive/tag/[...slug]',
+  '/archive/author/[...slug]',
   
   // بلاگ و پست‌ها
   '/blog',

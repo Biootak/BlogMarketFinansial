@@ -48,8 +48,8 @@ const NcImage: React.FC<NcImageProps> = ({
   const isSvg = typeof imgSrc === 'string' && imgSrc.includes('.svg');
 
   return (
-    <div 
-      className={`relative ${containerClassName}`} 
+    <div
+      className={`relative ${containerClassName}`}
       style={hasAbsolutePosition ? undefined : { aspectRatio: ratio }}
     >
       <Image
