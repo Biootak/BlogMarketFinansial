@@ -27,7 +27,12 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const settings = await getSystemSettingsData();
 
   return (
-    <SiteSettingsProvider initialSettings={settings}>
+    <SiteSettingsProvider
+      initialSettings={{
+        siteName: settings.siteName,
+        siteDescription: settings.siteDescription,
+      }}
+    >
       <Header />
       <main>{children}</main>
       <Footer />

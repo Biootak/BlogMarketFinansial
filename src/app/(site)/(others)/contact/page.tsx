@@ -2,7 +2,7 @@ import React from 'react';
 import ButtonPrimary from '@/components/Button/ButtonPrimary';
 import Input from '@/components/Input/Input';
 import Label from '@/components/Label/Label';
-import DynamicSocialsList from '@/components/SocialsList/DynamicSocialsList';
+import SocialLinks from '@/components/SocialsList/SocialLinks';
 import Textarea from '@/components/Textarea/Textarea';
 import Heading2 from '@/components/Heading/Heading2';
 
@@ -47,7 +47,7 @@ const PageContact = () => {
             <h3 className="uppercase font-semibold text-sm dark:text-neutral-200 tracking-wider">
               شبکه‌های اجتماعی
             </h3>
-            <DynamicSocialsList className="mt-2" />
+            <SocialLinks className="mt-2" />
           </div>
         </div>
         <div className="border border-neutral-100 dark:border-neutral-700 lg:hidden" />

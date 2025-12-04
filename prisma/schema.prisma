@@ -384,15 +384,21 @@ model CurrencyPattern {
 }
 
 model SocialLink {
-  id        String   @id @default(cuid())
+  id        String         @id @default(cuid())
   name      String
   url       String
   icon      String?
   color     String?
-  order     Int      @default(0)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  order     Int            @default(0)
+  isActive  Boolean        @default(true)
+  type      SocialLinkType @default(SOCIAL)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+enum SocialLinkType {
+  SOCIAL
+  SUPPORT
 }
 
 

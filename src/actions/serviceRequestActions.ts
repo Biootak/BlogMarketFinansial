@@ -357,19 +357,24 @@ export async function getServiceRequestStats() {
 }
 
 
-// Get social links for contact form
+// Get support links for contact form
 export async function getSupportContactLinks() {
   try {
-    const settings = await prisma.systemSettings.findFirst({
-      select: { telegram: true, whatsapp: true },
+    const links = await prisma.socialLink.findMany({
+      where: { isActive: true, type: 'SUPPORT' },
     });
+
+    const telegram = links.find((l) =>
+      ['telegram', 'تلگرام'].includes(l.name.toLowerCase())
+    )?.url || null;
+
+    const whatsapp = links.find((l) =>
+      ['whatsapp', 'واتساپ'].includes(l.name.toLowerCase())
+    )?.url || null;
 
     return {
       success: true,
-      data: {
-        telegram: settings?.telegram || null,
-        whatsapp: settings?.whatsapp || null,
-      },
+      data: { telegram, whatsapp },
     };
   } catch {
     return { success: false, data: { telegram: null, whatsapp: null } };

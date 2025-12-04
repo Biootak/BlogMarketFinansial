@@ -16,7 +16,12 @@ export default async function DashboardLayout({
   const settings = await getSystemSettingsData();
 
   return (
-    <SiteSettingsProvider initialSettings={settings}>
+    <SiteSettingsProvider
+      initialSettings={{
+        siteName: settings.siteName,
+        siteDescription: settings.siteDescription,
+      }}
+    >
       <div
         className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-300"
         dir="rtl"

@@ -8,10 +8,6 @@ interface SiteSettingsProviderProps {
   initialSettings?: {
     siteName: string | null;
     siteDescription: string | null;
-    telegram: string | null;
-    instagram: string | null;
-    twitter: string | null;
-    whatsapp: string | null;
   };
 }
 
@@ -23,12 +19,6 @@ export function SiteSettingsProvider({ children, initialSettings }: SiteSettings
       setSettings({
         siteName: initialSettings.siteName,
         siteDescription: initialSettings.siteDescription,
-        socials: {
-          telegram: initialSettings.telegram,
-          instagram: initialSettings.instagram,
-          twitter: initialSettings.twitter,
-          whatsapp: initialSettings.whatsapp,
-        },
       });
     }
   }, [initialSettings, setSettings]);

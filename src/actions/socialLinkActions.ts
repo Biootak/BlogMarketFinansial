@@ -2,6 +2,7 @@
 
 import prisma from '@/lib/db';
 import { revalidatePath } from 'next/cache';
+import type { SocialLinkType } from '@prisma/client';
 
 export interface SocialLinkData {
   id?: string;
@@ -11,13 +12,14 @@ export interface SocialLinkData {
   color?: string;
   order?: number;
   isActive?: boolean;
+  type?: SocialLinkType;
 }
 
-// Get all social links
+// Get active social links (for public display)
 export async function getSocialLinks() {
   try {
     const links = await prisma.socialLink.findMany({
-      where: { isActive: true },
+      where: { isActive: true, type: 'SOCIAL' },
       orderBy: { order: 'asc' },
     });
     return { success: true, data: links };
@@ -27,23 +29,43 @@ export async function getSocialLinks() {
   }
 }
 
-// Get all social links (including inactive) for admin
-export async function getAllSocialLinks() {
+// Get active support links (for contact forms)
+export async function getSupportLinks() {
   try {
     const links = await prisma.socialLink.findMany({
+      where: { isActive: true, type: 'SUPPORT' },
+      orderBy: { order: 'asc' },
+    });
+    return { success: true, data: links };
+  } catch (error) {
+    console.error('Error fetching support links:', error);
+    return { success: false, error: 'خطا در دریافت لینک‌های پشتیبانی' };
+  }
+}
+
+// Get all social links by type (for admin)
+export async function getAllSocialLinks(type?: SocialLinkType) {
+  try {
+    const links = await prisma.socialLink.findMany({
+      where: type ? { type } : undefined,
       orderBy: { order: 'asc' },
     });
     return { success: true, data: links };
   } catch (error) {
     console.error('Error fetching social links:', error);
-    return { success: false, error: 'خطا در دریافت شبکه‌های اجتماعی' };
+    return { success: false, error: 'خطا در دریافت لینک‌ها' };
   }
 }
+
 
 // Create social link
 export async function createSocialLink(data: SocialLinkData) {
   try {
-    const maxOrder = await prisma.socialLink.aggregate({ _max: { order: true } });
+    const type = data.type || 'SOCIAL';
+    const maxOrder = await prisma.socialLink.aggregate({
+      _max: { order: true },
+      where: { type },
+    });
     const newOrder = (maxOrder._max.order ?? 0) + 1;
 
     const link = await prisma.socialLink.create({
@@ -54,6 +76,7 @@ export async function createSocialLink(data: SocialLinkData) {
         color: data.color || null,
         order: data.order ?? newOrder,
         isActive: data.isActive ?? true,
+        type,
       },
     });
 
@@ -62,7 +85,7 @@ export async function createSocialLink(data: SocialLinkData) {
     return { success: true, data: link };
   } catch (error) {
     console.error('Error creating social link:', error);
-    return { success: false, error: 'خطا در ایجاد شبکه اجتماعی' };
+    return { success: false, error: 'خطا در ایجاد لینک' };
   }
 }
 
@@ -78,6 +101,7 @@ export async function updateSocialLink(id: string, data: Partial<SocialLinkData>
         color: data.color,
         order: data.order,
         isActive: data.isActive,
+        type: data.type,
       },
     });
 
@@ -86,7 +110,7 @@ export async function updateSocialLink(id: string, data: Partial<SocialLinkData>
     return { success: true, data: link };
   } catch (error) {
     console.error('Error updating social link:', error);
-    return { success: false, error: 'خطا در بروزرسانی شبکه اجتماعی' };
+    return { success: false, error: 'خطا در بروزرسانی لینک' };
   }
 }
 
@@ -100,7 +124,7 @@ export async function deleteSocialLink(id: string) {
     return { success: true };
   } catch (error) {
     console.error('Error deleting social link:', error);
-    return { success: false, error: 'خطا در حذف شبکه اجتماعی' };
+    return { success: false, error: 'خطا در حذف لینک' };
   }
 }
 
@@ -108,7 +132,7 @@ export async function deleteSocialLink(id: string) {
 export async function toggleSocialLink(id: string) {
   try {
     const link = await prisma.socialLink.findUnique({ where: { id } });
-    if (!link) return { success: false, error: 'شبکه اجتماعی یافت نشد' };
+    if (!link) return { success: false, error: 'لینک یافت نشد' };
 
     const updated = await prisma.socialLink.update({
       where: { id },
