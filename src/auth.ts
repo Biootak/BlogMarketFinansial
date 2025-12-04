@@ -9,6 +9,7 @@ import Credentials from 'next-auth/providers/credentials';
 import { LoginSchema } from '@/schemas';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   events: {
     async signIn({ user, account }) {
       if (account?.provider !== 'credentials') return;

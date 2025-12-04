@@ -4,6 +4,7 @@ import Google from 'next-auth/providers/google';
 import Github from 'next-auth/providers/github';
 
 export default {
+  trustHost: true,
   providers: [
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
@@ -14,7 +15,7 @@ export default {
       clientSecret: process.env.AUTH_GITHUB_SECRET,
     }),
   ],
- 
+
   pages: {
     signIn: '/signin',
     newUser: '/signup',
