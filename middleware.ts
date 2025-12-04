@@ -9,7 +9,7 @@ import {
   adminRoutes,
   superAdminRoutes,
   baseDashboardRoutes,
-} from './config/routes';
+} from '@/config/routes';
 
 const adminApiRoutes = [
   '/api/users',
@@ -41,24 +41,40 @@ const checkApiAccess = (pathname: string, role?: string): boolean => {
   if (pathname.startsWith(apiAuthPrefix)) return true;
   if (!role) return false;
   if (role === 'SUPER_ADMIN') return true;
-  if ((role === 'ADMIN' || role === 'SUPER_ADMIN') && adminApiRoutes.some((r) => pathname.startsWith(r))) return true;
-  if (['AUTHOR', 'ADMIN', 'SUPER_ADMIN'].includes(role) && authorApiRoutes.some((r) => pathname.startsWith(r))) return true;
+  if (
+    (role === 'ADMIN' || role === 'SUPER_ADMIN') &&
+    adminApiRoutes.some((r) => pathname.startsWith(r))
+  )
+    return true;
+  if (
+    ['AUTHOR', 'ADMIN', 'SUPER_ADMIN'].includes(role) &&
+    authorApiRoutes.some((r) => pathname.startsWith(r))
+  )
+    return true;
   if (pathname.startsWith('/api/')) return false;
   return true;
 };
-
 
 const matchDynamicRoute = (pathname: string, pattern: string): boolean => {
   const regexPattern = pattern
     .replace(/\[\.\.\..*?\]/g, '.*')
     .replace(/\[.*?\]/g, '[^/]+')
     .replace(/\//g, '\\/');
-  const regex = new RegExp('^' + regexPattern + '$', 'i');
+  const regex = new RegExp(`^${regexPattern}$`, 'i');
   return regex.test(pathname);
 };
 
 const isStaticPath = (pathname: string): boolean => {
-  const staticPatterns = ['/images/', '/uploads/', '/_next/', '/assets/', '/favicon.ico', '/robots.txt', '/manifest.json', '/site.webmanifest'];
+  const staticPatterns = [
+    '/images/',
+    '/uploads/',
+    '/_next/',
+    '/assets/',
+    '/favicon.ico',
+    '/robots.txt',
+    '/manifest.json',
+    '/site.webmanifest',
+  ];
   return staticPatterns.some((p) => pathname.startsWith(p));
 };
 
@@ -68,41 +84,65 @@ const isPublicApi = (pathname: string): boolean => {
 
 const checkDashboardAccess = (pathname: string, role?: string) => {
   if (baseDashboardRoutes.some((r) => matchDynamicRoute(pathname, r))) return true;
-  if (role === 'SUPER_ADMIN' && superAdminRoutes.some((r) => matchDynamicRoute(pathname, r))) return true;
-  if ((role === 'ADMIN' || role === 'SUPER_ADMIN') && adminRoutes.some((r) => matchDynamicRoute(pathname, r))) return true;
-  if (['AUTHOR', 'ADMIN', 'SUPER_ADMIN'].includes(role || '') && authorRoutes.some((r) => matchDynamicRoute(pathname, r))) return true;
+  if (role === 'SUPER_ADMIN' && superAdminRoutes.some((r) => matchDynamicRoute(pathname, r)))
+    return true;
+  if (
+    (role === 'ADMIN' || role === 'SUPER_ADMIN') &&
+    adminRoutes.some((r) => matchDynamicRoute(pathname, r))
+  )
+    return true;
+  if (
+    ['AUTHOR', 'ADMIN', 'SUPER_ADMIN'].includes(role || '') &&
+    authorRoutes.some((r) => matchDynamicRoute(pathname, r))
+  )
+    return true;
   return false;
 };
 
-export async function proxy(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { nextUrl } = req;
   const pathname = nextUrl.pathname;
   const search = nextUrl.search;
 
+  // Skip static paths early
+  if (isStaticPath(pathname)) return NextResponse.next();
+
   const token = await getToken({ req, secret: process.env.AUTH_SECRET });
 
+  // Check token expiration
   if (token?.exp && Date.now() / 1000 > token.exp) {
-    return NextResponse.redirect(new URL('/signin?callbackUrl=' + encodeURIComponent(pathname), nextUrl));
+    return NextResponse.redirect(
+      new URL(`/signin?callbackUrl=${encodeURIComponent(pathname)}`, nextUrl)
+    );
   }
 
   const isLoggedIn = !!token;
   const role = token?.role as string | undefined;
 
-  if (isStaticPath(pathname)) return NextResponse.next();
+  // Public API routes
   if (isPublicApi(pathname)) return NextResponse.next();
+
+  // Public routes
   if (publicRoutes.some((r) => matchDynamicRoute(pathname, r))) return NextResponse.next();
+
+  // Auth routes (signin, signup, etc.)
   if (authRoutes.some((r) => pathname.startsWith(r))) return NextResponse.next();
 
+  // Dashboard routes - require login
   if (!isLoggedIn && pathname.startsWith('/dashboard')) {
     const callbackUrl = pathname + search;
-    return NextResponse.redirect(new URL('/signin?callbackUrl=' + encodeURIComponent(callbackUrl), nextUrl));
+    return NextResponse.redirect(
+      new URL(`/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`, nextUrl)
+    );
   }
 
+  // API routes - check access
   if (pathname.startsWith('/api') && !isPublicApi(pathname)) {
     if (checkApiAccess(pathname, role)) return NextResponse.next();
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
   }
 
+  // Dashboard routes - check role access
   if (pathname.startsWith('/dashboard')) {
     if (checkDashboardAccess(pathname, role)) return NextResponse.next();
     return NextResponse.redirect(new URL('/dashboard', nextUrl));
@@ -112,5 +152,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)'],
 };
