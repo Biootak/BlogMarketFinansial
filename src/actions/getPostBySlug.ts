@@ -19,34 +19,12 @@ export const getPostBySlug = cache(
         where: { slug },
         include: {
           author: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              image: true,
-              profile: {
-                select: {
-                  avatar: true,
-                  bio: true,
-                  jobName: true,
-                },
-              },
+            include: {
+              profile: true,
             },
           },
-          categories: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
-          tags: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
+          categories: true,
+          tags: true,
           comments: {
             where: { approved: true },
             orderBy: { createdAt: 'desc' },
@@ -55,23 +33,16 @@ export const getPostBySlug = cache(
                 select: {
                   id: true,
                   name: true,
+                  email: true,
+                  role: true,
                   image: true,
-                  profile: {
-                    select: { avatar: true },
-                  },
+                  profile: true,
+                  createdAt: true,
+                  updatedAt: true,
                 },
               },
-              replies: {
-                include: {
-                  author: {
-                    select: {
-                      id: true,
-                      name: true,
-                      image: true,
-                    },
-                  },
-                },
-              },
+              replies: true,
+              likes: true,
               _count: {
                 select: { likes: true },
               },
