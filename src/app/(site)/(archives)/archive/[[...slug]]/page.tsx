@@ -1,24 +1,20 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  BookOpen, 
-  FolderOpen, 
-  Tag, 
-  Clock,
-  Flame,
   ChevronLeft,
-  ChevronRight,
   FileText,
-  Home
+  Home,
+  Sparkles,
+  TrendingUp,
+  Calendar,
+  Layers,
+  Filter,
+  X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { FiFilter } from 'react-icons/fi';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import { IoClose } from 'react-icons/io5';
 import { BsFolder2Open, BsTag } from 'react-icons/bs';
-import { IoTimeOutline } from 'react-icons/io5';
 import Link from 'next/link';
 
 import { getArchivePosts } from '@/actions/postActions';
@@ -123,90 +119,70 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
 
   return (
     <div className="nc-PageArchive max-w-full overflow-x-hidden">
-      {/* Breadcrumb */}
-      <div className="sticky top-0 z-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg border-b border-gray-200/80 dark:border-gray-700/80">
+      {/* Premium Breadcrumb */}
+      <div className="sticky top-0 z-20 bg-white/70 dark:bg-neutral-900/70 backdrop-blur-xl border-b border-neutral-200/50 dark:border-neutral-800/50">
         <div className="container">
-          <nav className="flex py-2" aria-label="مسیر">
-            <ol className="flex flex-wrap items-center gap-0.5 min-w-0">
-              {/* خانه */}
+          <nav className="flex py-3" aria-label="مسیر">
+            <ol className="flex flex-wrap items-center gap-1">
               <li>
                 <Link 
                   href="/"
-                  className="group flex items-center gap-1 px-1.5 py-1 text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary text-xs sm:text-sm"
+                  className="group flex items-center gap-1.5 px-2.5 py-1.5 text-neutral-500 hover:text-primary-600 dark:text-neutral-400 dark:hover:text-primary-400 text-sm font-medium rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all duration-200"
                 >
-                  <Home className="w-3.5 h-3.5" />
-                  <span className="sr-only">خانه</span>
-                  <span className="block absolute h-0.5 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300" style={{ bottom: '-2px', left: '0px', right: '0px' }} />
+                  <Home className="w-4 h-4" />
+                  <span className="hidden sm:inline">خانه</span>
                 </Link>
               </li>
 
-              {/* آرشیو */}
-              <li>
-                <div className="flex items-center">
-                  <ChevronLeft className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-                  <Link
-                    href="/archive"
-                    className="group px-1.5 py-1 text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary text-xs sm:text-sm relative"
-                  >
-                    آرشیو
-                    <span className="block absolute h-0.5 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300" style={{ bottom: '-2px', left: '0px', right: '0px' }} />
-                  </Link>
-                </div>
+              <li className="flex items-center">
+                <ChevronLeft className="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
+                <Link
+                  href="/archive"
+                  className="px-2.5 py-1.5 text-neutral-500 hover:text-primary-600 dark:text-neutral-400 dark:hover:text-primary-400 text-sm font-medium rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all duration-200"
+                >
+                  آرشیو
+                </Link>
               </li>
 
-              {/* نوع (دسته‌بندی/برچسب) */}
               {type && (
-                <li>
-                  <div className="flex items-center">
-                    <ChevronLeft className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-                    <Link
-                      href={type === 'category' ? '/archive/category' : '/archive/tag'}
-                      className="group px-1.5 py-1 text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary text-xs sm:text-sm relative whitespace-nowrap"
-                    >
-                      {type === 'category' ? 'دسته‌بندی' : 'برچسب'}
-                      <span className="block absolute h-0.5 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300" style={{ bottom: '-2px', left: '0px', right: '0px' }} />
-                    </Link>
-                  </div>
+                <li className="flex items-center">
+                  <ChevronLeft className="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
+                  <Link
+                    href={type === 'category' ? '/archive/category' : '/archive/tag'}
+                    className="px-2.5 py-1.5 text-neutral-500 hover:text-primary-600 dark:text-neutral-400 dark:hover:text-primary-400 text-sm font-medium rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all duration-200"
+                  >
+                    {type === 'category' ? 'دسته‌بندی' : 'برچسب'}
+                  </Link>
                 </li>
               )}
 
-              {/* دسته‌بندی */}
               {selectedCategory && (
-                <li>
-                  <div className="flex items-center">
-                    <ChevronLeft className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-                    <Link
-                      href={`/archive/category/${selectedCategory.slug}`}
-                      className="group px-1.5 py-1 text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-primary text-xs sm:text-sm relative truncate max-w-[120px]"
-                    >
-                      {selectedCategory.name}
-                      <span className="block absolute h-0.5 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300" style={{ bottom: '-2px', left: '0px', right: '0px' }} />
-                    </Link>
-                  </div>
+                <li className="flex items-center">
+                  <ChevronLeft className="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
+                  <Link
+                    href={`/archive/category/${selectedCategory.slug}`}
+                    className="px-2.5 py-1.5 text-neutral-700 dark:text-neutral-200 text-sm font-semibold rounded-lg bg-primary-50 dark:bg-primary-900/30 truncate max-w-[140px]"
+                  >
+                    {selectedCategory.name}
+                  </Link>
                 </li>
               )}
 
-              {/* زیردسته */}
               {selectedSubcategory && (
-                <li>
-                  <div className="flex items-center">
-                    <ChevronLeft className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-                    <span className="px-1.5 py-1 text-gray-900 dark:text-white font-medium truncate max-w-[120px] text-xs sm:text-sm">
-                      {selectedSubcategory.name}
-                    </span>
-                  </div>
+                <li className="flex items-center">
+                  <ChevronLeft className="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
+                  <span className="px-2.5 py-1.5 text-primary-600 dark:text-primary-400 text-sm font-semibold bg-primary-100 dark:bg-primary-900/50 rounded-lg truncate max-w-[140px]">
+                    {selectedSubcategory.name}
+                  </span>
                 </li>
               )}
 
-              {/* برچسب */}
               {selectedTag && (
-                <li>
-                  <div className="flex items-center">
-                    <ChevronLeft className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
-                    <span className="px-1.5 py-1 text-gray-900 dark:text-white font-medium truncate max-w-[120px] text-xs sm:text-sm">
-                      {selectedTag.name}
-                    </span>
-                  </div>
+                <li className="flex items-center">
+                  <ChevronLeft className="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
+                  <span className="px-2.5 py-1.5 text-primary-600 dark:text-primary-400 text-sm font-semibold bg-primary-100 dark:bg-primary-900/50 rounded-lg truncate max-w-[140px]">
+                    {selectedTag.name}
+                  </span>
                 </li>
               )}
             </ol>
@@ -214,155 +190,98 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
         </div>
       </div>
 
-      <div className="container mt-2">
-        <div className="relative overflow-hidden rounded-xl bg-white dark:bg-gray-800/95 shadow-lg">
-          {/* Mobile Layout */}
-          <div className="md:hidden">
-            <div className="relative w-full aspect-[16/9] overflow-hidden">
-              <Image
-                src={selectedCategory?.thumbnail || selectedTag?.thumbnail || defaultImage}
-                alt={selectedCategory?.name || selectedTag?.name || 'تصویر مقالات'}
-                fill
-                sizes="100vw"
-                className="object-contain bg-gray-100 dark:bg-gray-900"
-                priority
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+      {/* Premium Hero Section */}
+      <div className="container mt-6 mb-8">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-neutral-50 to-primary-50/30 dark:from-neutral-900 dark:via-neutral-800 dark:to-primary-900/20 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] border border-neutral-200/60 dark:border-neutral-700/60">
+          {/* Decorative Elements */}
+          <div className="absolute top-0 left-0 w-72 h-72 bg-primary-400/10 dark:bg-primary-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary-300/10 dark:bg-primary-600/10 rounded-full blur-3xl translate-x-1/3 translate-y-1/3" />
+          
+          <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-10 p-6 md:p-10">
+            {/* Image Container */}
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary-400 to-primary-600 rounded-2xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity duration-500" />
+              <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-2xl overflow-hidden ring-4 ring-white/80 dark:ring-neutral-800/80 shadow-xl">
+                <Image
+                  src={selectedCategory?.thumbnail || selectedTag?.thumbnail || defaultImage}
+                  alt={selectedCategory?.name || selectedTag?.name || 'تصویر مقالات'}
+                  fill
+                  sizes="(min-width: 768px) 160px, 128px"
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  priority
+                />
+              </div>
+              {/* Floating Badge */}
+              <div className="absolute -bottom-2 -right-2 bg-primary-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg shadow-primary-500/30">
+                <Sparkles className="w-3.5 h-3.5 inline-block ml-1" />
+                {total} مقاله
+              </div>
             </div>
             
-            <div className="relative px-4 -mt-6">
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg">
-                {/* عنوان اصلی */}
-                <h1 className="text-lg font-bold text-gray-900 dark:text-white leading-tight mb-2">
-                  {selectedSubcategory
-                    ? selectedSubcategory.name
-                    : selectedCategory
-                      ? selectedCategory.name
-                      : selectedTag
-                        ? `مطالب مرتبط با ${selectedTag.name}`
-                        : 'همه مطالب'}
-                </h1>
-
-                {/* توضیحات */}
-                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-3">
-                  {selectedSubcategory
-                    ? `مطالب مربوط به ${selectedSubcategory.name}`
-                    : selectedCategory
-                      ? `مجموعه مطالب ${selectedCategory.name}`
-                      : selectedTag
-                        ? `مطالبی که با ${selectedTag.name} برچسب‌گذاری شده‌اند`
-                        : 'همه مطالب و محتوای سایت در یک نگاه'}
-                </p>
-
-                <div className="flex flex-wrap gap-2 text-xs sm:text-sm">
-                  {/* نوع محتوا */}
-                  <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary-600 dark:text-primary-400 rounded-lg border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/15 transition-all">
-                    {selectedCategory ? (
-                      <BsFolder2Open className="w-4 h-4 flex-shrink-0" />
-                    ) : selectedTag ? (
-                      <BsTag className="w-4 h-4 flex-shrink-0" />
-                    ) : (
-                      <FileText className="w-4 h-4 flex-shrink-0" />
-                    )}
-                    <span className="font-medium">
-                      {selectedCategory ? 'دسته‌بندی' : selectedTag ? 'برچسب' : 'همه مطالب'}
-                    </span>
-                  </span>
-
-                  {/* تعداد مقالات */}
-                  <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary-600 dark:text-primary-400 rounded-lg border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/15 transition-all">
-                    <FileText className="w-4 h-4 flex-shrink-0" />
-                    <span className="font-medium">{total} مقاله</span>
-                  </span>
-
-                  {/* زیرگروه‌ها */}
-                  {!subcategory && selectedCategory?.childCategories && selectedCategory.childCategories.length > 0 && (
-                    <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary-600 dark:text-primary-400 rounded-lg border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/15 transition-all">
-                      <BsFolder2Open className="w-4 h-4 flex-shrink-0" />
-                      <span className="font-medium">{selectedCategory.childCategories.length} زیرگروه</span>
-                    </span>
-                  )}
-
-                  {/* آخرین بروزرسانی */}
-                  <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary-600 dark:text-primary-400 rounded-lg border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/15 transition-all">
-                    <IoTimeOutline className="w-4 h-4 flex-shrink-0" />
-                    <span className="font-medium">آخرین بروزرسانی: امروز</span>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Desktop Layout */}
-          <div className="hidden md:block">
-            <div className="flex p-6 gap-6">
-              <div className="shrink-0">
-                <div className="w-28 h-28 relative rounded-lg overflow-hidden">
-                  <Image
-                    src={selectedCategory?.thumbnail || selectedTag?.thumbnail || defaultImage}
-                    alt={selectedCategory?.name || selectedTag?.name || 'تصویر مقالات'}
-                    fill
-                    sizes="(min-width: 768px) 112px"
-                    className="object-cover"
-                  />
-                </div>
+            {/* Content */}
+            <div className="flex-1 text-center md:text-right">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 rounded-full text-xs font-semibold mb-4">
+                {selectedCategory ? (
+                  <><BsFolder2Open className="w-3.5 h-3.5" /> دسته‌بندی</>
+                ) : selectedTag ? (
+                  <><BsTag className="w-3.5 h-3.5" /> برچسب</>
+                ) : (
+                  <><FileText className="w-3.5 h-3.5" /> آرشیو کامل</>
+                )}
               </div>
               
-              <div className="flex-1 min-w-0">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white leading-tight mb-2">
-                  {selectedSubcategory
-                    ? selectedSubcategory.name
-                    : selectedCategory
-                      ? selectedCategory.name
-                      : selectedTag
-                        ? `مطالب مرتبط با ${selectedTag.name}`
-                        : 'همه مطالب'}
-                </h1>
+              <h1 className="text-2xl md:text-4xl font-black text-neutral-900 dark:text-white leading-tight mb-3">
+                {selectedSubcategory
+                  ? selectedSubcategory.name
+                  : selectedCategory
+                    ? selectedCategory.name
+                    : selectedTag
+                      ? selectedTag.name
+                      : 'همه مطالب'}
+              </h1>
 
-                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
-                  {selectedSubcategory
-                    ? `مطالب مربوط به ${selectedSubcategory.name}`
-                    : selectedCategory
-                      ? `مجموعه مطالب ${selectedCategory.name}`
-                      : selectedTag
-                        ? `مطالبی که با ${selectedTag.name} برچسب‌گذاری شده‌اند`
-                        : 'همه مطالب و محتوای سایت در یک نگاه'}
-                </p>
+              <p className="text-neutral-600 dark:text-neutral-300 leading-relaxed mb-6 max-w-xl mx-auto md:mx-0">
+                {selectedSubcategory
+                  ? `جدیدترین و بهترین مطالب در حوزه ${selectedSubcategory.name}`
+                  : selectedCategory
+                    ? `مجموعه‌ای از بهترین مقالات ${selectedCategory.name}`
+                    : selectedTag
+                      ? `تمام مطالب مرتبط با ${selectedTag.name}`
+                      : 'کاوش در دنیای دانش و اطلاعات مالی'}
+              </p>
 
-                <div className="flex flex-wrap gap-2 text-sm">
-                  {/* نوع محتوا */}
-                  <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary-600 dark:text-primary-400 rounded-lg border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/15 transition-all">
-                    {selectedCategory ? (
-                      <BsFolder2Open className="w-4 h-4 flex-shrink-0" />
-                    ) : selectedTag ? (
-                      <BsTag className="w-4 h-4 flex-shrink-0" />
-                    ) : (
-                      <FileText className="w-4 h-4 flex-shrink-0" />
-                    )}
-                    <span className="font-medium">
-                      {selectedCategory ? 'دسته‌بندی' : selectedTag ? 'برچسب' : 'همه مطالب'}
-                    </span>
-                  </span>
+              {/* Stats Pills */}
+              <div className="flex flex-wrap justify-center md:justify-start gap-3">
+                <div className="group flex items-center gap-2.5 px-4 py-2.5 bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-neutral-200/80 dark:border-neutral-700/80 hover:shadow-md hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-300">
+                  <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-sm">
+                    <FileText className="w-4.5 h-4.5 text-white" />
+                  </div>
+                  <div className="text-right">
+                    <span className="block text-lg font-bold text-neutral-900 dark:text-white">{total}</span>
+                    <span className="text-xs text-neutral-500 dark:text-neutral-400">مقاله</span>
+                  </div>
+                </div>
 
-                  {/* تعداد مقالات */}
-                  <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary-600 dark:text-primary-400 rounded-lg border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/15 transition-all">
-                    <FileText className="w-4 h-4 flex-shrink-0" />
-                    <span className="font-medium">{total} مقاله</span>
-                  </span>
+                {!subcategory && selectedCategory?.childCategories && selectedCategory.childCategories.length > 0 && (
+                  <div className="group flex items-center gap-2.5 px-4 py-2.5 bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-neutral-200/80 dark:border-neutral-700/80 hover:shadow-md hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-300">
+                    <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-sm">
+                      <Layers className="w-4.5 h-4.5 text-white" />
+                    </div>
+                    <div className="text-right">
+                      <span className="block text-lg font-bold text-neutral-900 dark:text-white">{selectedCategory.childCategories.length}</span>
+                      <span className="text-xs text-neutral-500 dark:text-neutral-400">زیرگروه</span>
+                    </div>
+                  </div>
+                )}
 
-                  {/* زیرگروه‌ها */}
-                  {!subcategory && selectedCategory?.childCategories && selectedCategory.childCategories.length > 0 && (
-                    <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary-600 dark:text-primary-400 rounded-lg border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/15 transition-all">
-                      <BsFolder2Open className="w-4 h-4 flex-shrink-0" />
-                      <span className="font-medium">{selectedCategory.childCategories.length} زیرگروه</span>
-                    </span>
-                  )}
-
-                  {/* آخرین بروزرسانی */}
-                  <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary-600 dark:text-primary-400 rounded-lg border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/15 transition-all">
-                    <IoTimeOutline className="w-4 h-4 flex-shrink-0" />
-                    <span className="font-medium">آخرین بروزرسانی: امروز</span>
-                  </span>
+                <div className="group flex items-center gap-2.5 px-4 py-2.5 bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-neutral-200/80 dark:border-neutral-700/80 hover:shadow-md hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-300">
+                  <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm">
+                    <Calendar className="w-4.5 h-4.5 text-white" />
+                  </div>
+                  <div className="text-right">
+                    <span className="block text-sm font-bold text-neutral-900 dark:text-white">امروز</span>
+                    <span className="text-xs text-neutral-500 dark:text-neutral-400">آخرین بروزرسانی</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -370,68 +289,94 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
         </div>
       </div>
 
-      <div className="container py-2 sm:py-4 lg:py-6 space-y-4 sm:space-y-6 lg:space-y-8">
-        {/* Desktop View */}
-        <div className="hidden md:flex md:flex-row md:items-center md:justify-between mb-6 sm:mb-8">
-          <div className="flex flex-row gap-2.5">
-            <ModalCategories initialCategories={categories} />
-            <ModalTags initialTags={tags} />
-          </div>
-          <div>
-            <ArchiveFilterListBox filters={FILTERS} initialFilter={filter} />
+      {/* Premium Filter Bar */}
+      <div className="container mb-8">
+        {/* Desktop Filters */}
+        <div className="hidden md:block">
+          <div className="flex items-center justify-between p-4 bg-white dark:bg-neutral-800/80 rounded-2xl shadow-sm border border-neutral-200/60 dark:border-neutral-700/60 backdrop-blur-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 pl-4 border-l border-neutral-200 dark:border-neutral-700">
+                <Filter className="w-5 h-5 text-neutral-400" />
+                <span className="text-sm font-medium text-neutral-600 dark:text-neutral-300">فیلتر:</span>
+              </div>
+              <div className="flex gap-2">
+                <ModalCategories initialCategories={categories} />
+                <ModalTags initialTags={tags} />
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-neutral-500 dark:text-neutral-400">مرتب‌سازی:</span>
+              <ArchiveFilterListBox filters={FILTERS} initialFilter={filter} />
+            </div>
           </div>
         </div>
 
-        {/* Mobile View */}
-        <div className="md:hidden fixed bottom-4 left-4 z-50">
+        {/* Mobile Filter FAB */}
+        <div className="md:hidden fixed bottom-6 left-6 z-50">
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon">
-                <FiFilter className="w-5 h-5" />
+              <Button 
+                size="lg"
+                className="h-14 w-14 rounded-full shadow-xl shadow-primary-500/30 bg-gradient-to-br from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 border-0"
+              >
+                <Filter className="w-5 h-5 text-white" />
               </Button>
             </SheetTrigger>
             <SheetContent 
               side="right" 
-              className="w-full sm:w-[380px] bg-background/20 backdrop-blur-xl border-0 rtl [&>button]:hidden"
+              className="w-full sm:w-[400px] bg-white/95 dark:bg-neutral-900/95 backdrop-blur-2xl border-0 rtl [&>button]:hidden p-0"
             >
               <div className="h-full flex flex-col">
-                <SheetHeader className="mb-6 px-6 pt-6">
+                <SheetHeader className="px-6 pt-8 pb-6 border-b border-neutral-200/80 dark:border-neutral-700/80">
                   <div className="flex items-center justify-between">
-                    <SheetTitle className="text-2xl font-bold">فیلترها</SheetTitle>
-                    <SheetClose className="h-10 w-10 rounded-full hover:bg-white/10 inline-flex items-center justify-center">
-                      <IoClose className="h-5 w-5" />
+                    <div>
+                      <SheetTitle className="text-2xl font-bold text-neutral-900 dark:text-white">فیلترها</SheetTitle>
+                      <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">نتایج را محدود کنید</p>
+                    </div>
+                    <SheetClose className="h-10 w-10 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 inline-flex items-center justify-center transition-colors">
+                      <X className="h-5 w-5 text-neutral-600 dark:text-neutral-300" />
                     </SheetClose>
                   </div>
                 </SheetHeader>
 
-                <div className="flex-1 overflow-auto px-6">
-                  <div className="space-y-6">
-                    <div className="filter-section">
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-medium">دسته‌بندی‌ها</h3>
-                        <span className="text-sm text-muted-foreground/70">انتخاب کنید</span>
+                <div className="flex-1 overflow-auto px-6 py-6">
+                  <div className="space-y-8">
+                    {/* Categories Section */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center">
+                          <BsFolder2Open className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                        </div>
+                        <h3 className="text-base font-semibold text-neutral-900 dark:text-white">دسته‌بندی‌ها</h3>
                       </div>
-                      <div className="bg-white/5 hover:bg-white/10 transition-colors duration-200 rounded-xl p-4 shadow-sm text-center">
+                      <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-xl p-4 border border-neutral-200/60 dark:border-neutral-700/60">
                         <ModalCategories initialCategories={categories} />
                       </div>
                     </div>
 
-                    <div className="filter-section">
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-medium">برچسب‌ها</h3>
-                        <span className="text-sm text-muted-foreground/70">انتخاب کنید</span>
+                    {/* Tags Section */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
+                          <BsTag className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        <h3 className="text-base font-semibold text-neutral-900 dark:text-white">برچسب‌ها</h3>
                       </div>
-                      <div className="bg-white/5 hover:bg-white/10 transition-colors duration-200 rounded-xl p-4 shadow-sm text-center">
+                      <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-xl p-4 border border-neutral-200/60 dark:border-neutral-700/60">
                         <ModalTags initialTags={tags} />
                       </div>
                     </div>
 
-                    <div className="filter-section pb-6">
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-medium">مرتب‌سازی</h3>
-                        <span className="text-sm text-muted-foreground/70">{filter}</span>
+                    {/* Sort Section */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
+                          <TrendingUp className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                        </div>
+                        <h3 className="text-base font-semibold text-neutral-900 dark:text-white">مرتب‌سازی</h3>
+                        <span className="mr-auto text-xs text-neutral-500 dark:text-neutral-400 bg-neutral-200 dark:bg-neutral-700 px-2 py-0.5 rounded-full">{filter}</span>
                       </div>
-                      <div className="bg-white/5 hover:bg-white/10 transition-colors duration-200 rounded-xl p-4 shadow-sm text-center">
+                      <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-xl p-4 border border-neutral-200/60 dark:border-neutral-700/60">
                         <ArchiveFilterListBox filters={FILTERS} initialFilter={filter} />
                       </div>
                     </div>
@@ -441,11 +386,14 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
             </SheetContent>
           </Sheet>
         </div>
+      </div>
 
+      {/* Posts Grid */}
+      <div className="container">
         {posts.length > 0 ? <AnimatedPostGrid posts={posts} /> : <Empty />}
 
         {posts.length > 0 && (
-          <div className="flex flex-col mt-8 sm:mt-10 lg:mt-12 space-y-5 sm:space-y-0 sm:space-x-3 sm:flex-row sm:justify-between sm:items-center">
+          <div className="flex justify-center mt-12 mb-8">
             <Pagination currentPage={currentPage} totalPages={pages} />
           </div>
         )}

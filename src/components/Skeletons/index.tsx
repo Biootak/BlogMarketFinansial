@@ -687,38 +687,197 @@ export const HomePageSkeleton: FC = () => (
 // ============================================
 // Archive Page Skeleton
 // ============================================
-export const ArchivePageSkeleton: FC<{ cols?: number }> = ({ cols = 3 }) => (
-  <div className="container py-8 space-y-8">
-    {/* Header */}
-    <div className="space-y-4">
-      <SkeletonBase className="h-10 w-64 rounded-xl" />
-      <SkeletonBase className="h-5 w-96 rounded-lg" />
+export const ArchivePageSkeleton: FC<{ cols?: number }> = ({ cols = 4 }) => (
+  <div className="nc-PageArchive max-w-full overflow-x-hidden">
+    {/* Premium Breadcrumb Skeleton */}
+    <div className="sticky top-0 z-20 bg-white/70 dark:bg-neutral-900/70 backdrop-blur-xl border-b border-neutral-200/50 dark:border-neutral-800/50">
+      <div className="container">
+        <div className="flex py-3 gap-2">
+          {[...Array(4)].map((_, i) => (
+            <SkeletonBase key={i} className="h-8 w-20 rounded-lg" />
+          ))}
+        </div>
+      </div>
     </div>
 
-    {/* Filters */}
-    <div className="flex flex-wrap gap-3">
-      {[...Array(5)].map((_, i) => (
-        <SkeletonBase key={i} className="h-10 w-24 rounded-full" />
-      ))}
+    {/* Premium Hero Section Skeleton */}
+    <div className="container mt-6 mb-8">
+      <div
+        className={cn(
+          'relative overflow-hidden rounded-3xl p-6 md:p-10',
+          'bg-gradient-to-br from-white via-neutral-50 to-primary-50/30',
+          'dark:from-neutral-900 dark:via-neutral-800 dark:to-primary-900/20',
+          'shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]',
+          'border border-neutral-200/60 dark:border-neutral-700/60'
+        )}
+      >
+        <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10">
+          {/* Image Skeleton */}
+          <div className="relative">
+            <SkeletonBase className="w-32 h-32 md:w-40 md:h-40 rounded-2xl" />
+            <SkeletonBase className="absolute -bottom-2 -right-2 h-8 w-20 rounded-full" />
+          </div>
+
+          {/* Content Skeleton */}
+          <div className="flex-1 text-center md:text-right space-y-4">
+            <SkeletonBase className="h-6 w-24 rounded-full mx-auto md:mx-0" />
+            <SkeletonBase className="h-10 w-64 rounded-xl mx-auto md:mx-0" />
+            <SkeletonBase className="h-5 w-80 rounded-lg mx-auto md:mx-0" />
+
+            {/* Stats Pills Skeleton */}
+            <div className="flex flex-wrap justify-center md:justify-start gap-3 pt-2">
+              {[...Array(3)].map((_, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    'flex items-center gap-2.5 px-4 py-2.5 rounded-xl',
+                    'bg-white dark:bg-neutral-800',
+                    'border border-neutral-200/80 dark:border-neutral-700/80'
+                  )}
+                >
+                  <SkeletonBase className="w-9 h-9 rounded-lg" />
+                  <div className="space-y-1">
+                    <SkeletonBase className="h-5 w-12 rounded-md" />
+                    <SkeletonBase className="h-3 w-10 rounded-md" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    {/* Posts Grid */}
-    <div className={cn(
-      'grid gap-6',
-      cols === 2 && 'grid-cols-1 md:grid-cols-2',
-      cols === 3 && 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
-      cols === 4 && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-    )}>
-      {[...Array(9)].map((_, i) => (
-        <PostCardSkeleton key={i} />
-      ))}
+    {/* Premium Filter Bar Skeleton */}
+    <div className="container mb-8">
+      <div
+        className={cn(
+          'hidden md:flex items-center justify-between p-4 rounded-2xl',
+          'bg-white dark:bg-neutral-800/80',
+          'shadow-sm border border-neutral-200/60 dark:border-neutral-700/60'
+        )}
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 pl-4 border-l border-neutral-200 dark:border-neutral-700">
+            <SkeletonBase className="w-5 h-5 rounded" />
+            <SkeletonBase className="h-4 w-12 rounded-md" />
+          </div>
+          <div className="flex gap-2">
+            <SkeletonBase className="h-10 w-28 rounded-xl" />
+            <SkeletonBase className="h-10 w-24 rounded-xl" />
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <SkeletonBase className="h-4 w-16 rounded-md" />
+          <SkeletonBase className="h-10 w-32 rounded-xl" />
+        </div>
+      </div>
     </div>
 
-    {/* Pagination */}
-    <div className="flex justify-center gap-2 pt-4">
-      {[...Array(5)].map((_, i) => (
-        <SkeletonBase key={i} className="h-10 w-10 rounded-lg" />
-      ))}
+    {/* Posts Grid Skeleton */}
+    <div className="container">
+      <div
+        className={cn(
+          'grid gap-5 md:gap-6 lg:gap-7',
+          cols === 2 && 'grid-cols-1 md:grid-cols-2',
+          cols === 3 && 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+          cols === 4 && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+        )}
+      >
+        {[...Array(12)].map((_, i) => (
+          <ArchivePostCardSkeleton key={i} />
+        ))}
+      </div>
+
+      {/* Pagination Skeleton */}
+      <div className="flex justify-center gap-2 mt-12 mb-8">
+        {[...Array(5)].map((_, i) => (
+          <SkeletonBase key={i} className="h-10 w-10 rounded-lg" />
+        ))}
+      </div>
+    </div>
+
+    {/* Categories Section Skeleton */}
+    <div className="relative py-12 sm:py-16">
+      <div className="container">
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <SkeletonBase className="h-7 w-40 rounded-lg" />
+            <SkeletonBase className="h-8 w-24 rounded-lg" />
+          </div>
+          <div className="flex gap-4 overflow-hidden">
+            {[...Array(6)].map((_, i) => (
+              <SkeletonBase key={i} className="h-32 w-32 rounded-2xl flex-shrink-0" />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Authors Section Skeleton */}
+    <div className="container py-12 sm:py-16">
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <SkeletonBase className="h-7 w-32 rounded-lg" />
+          <SkeletonBase className="h-4 w-64 rounded-md" />
+        </div>
+        <div className="flex gap-6 overflow-hidden">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex flex-col items-center gap-3 flex-shrink-0">
+              <SkeletonBase className="h-20 w-20 rounded-full" />
+              <SkeletonBase className="h-4 w-24 rounded-md" />
+              <SkeletonBase className="h-3 w-16 rounded-md" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// ============================================
+// Archive Post Card Skeleton (matches new Card11 design)
+// ============================================
+export const ArchivePostCardSkeleton: FC<{ className?: string }> = ({ className }) => (
+  <div
+    className={cn(
+      'rounded-2xl overflow-hidden',
+      'bg-white dark:bg-neutral-800/90',
+      'shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)]',
+      'border border-neutral-200/80 dark:border-neutral-700/80',
+      className
+    )}
+  >
+    {/* Image */}
+    <SkeletonBase className="aspect-[4/3] w-full rounded-none" />
+
+    {/* Content */}
+    <div className="p-5 space-y-3">
+      {/* Meta */}
+      <div className="flex items-center gap-3">
+        <SkeletonBase className="h-8 w-8 rounded-full" />
+        <div className="space-y-1.5">
+          <SkeletonBase className="h-3 w-20 rounded-md" />
+          <SkeletonBase className="h-2.5 w-16 rounded-md" />
+        </div>
+      </div>
+
+      {/* Title */}
+      <div className="space-y-2">
+        <SkeletonBase className="h-5 w-full rounded-md" />
+        <SkeletonBase className="h-5 w-3/4 rounded-md" />
+      </div>
+
+      {/* Excerpt */}
+      <div className="space-y-1.5">
+        <SkeletonBase className="h-3.5 w-full rounded-md" />
+        <SkeletonBase className="h-3.5 w-5/6 rounded-md" />
+      </div>
+
+      {/* Footer */}
+      <div className="pt-3 border-t border-neutral-100 dark:border-neutral-700/50">
+        <SkeletonBase className="h-4 w-20 rounded-md" />
+      </div>
     </div>
   </div>
 );

@@ -9,16 +9,50 @@ type AnimatedPostGridProps = {
   posts: PostWithRelations[];
 };
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 24, scale: 0.96 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 100,
+      damping: 15,
+    },
+  },
+};
+
 const AnimatedPostGrid: React.FC<AnimatedPostGridProps> = ({ posts }) => {
   return (
     <motion.div
-      className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 mt-8 lg:mt-10"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, staggerChildren: 0.1 }}
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6 lg:gap-7"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
     >
-      {posts.map((post) => (
-        <motion.div key={post.id} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+      {posts.map((post, index) => (
+        <motion.div
+          key={post.id}
+          variants={itemVariants}
+          whileHover={{ 
+            y: -8,
+            transition: { type: 'spring', stiffness: 300, damping: 20 }
+          }}
+          whileTap={{ scale: 0.98 }}
+          className="group"
+        >
           <Card11 post={post} />
         </motion.div>
       ))}
