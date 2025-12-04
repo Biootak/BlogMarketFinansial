@@ -3,15 +3,6 @@ import type { NextRequest } from 'next/server';
 // از auth.edge استفاده می‌کنیم چون auth.ts از bcrypt و Prisma استفاده می‌کنه
 // که با Edge Runtime سازگار نیستن
 import { auth } from '@/auth.edge';
-import { checkRateLimit } from '@/lib/rate-limiter';
-
-function getClientIP(request: NextRequest): string {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0] ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
-  );
-}
 
 // Security headers
 function addSecurityHeaders(response: NextResponse): NextResponse {
@@ -28,7 +19,6 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const ip = getClientIP(request);
 
   // 1. HTTPS redirect در production (فقط وقتی پشت reverse proxy هستیم)
   if (
@@ -41,36 +31,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(httpsUrl, 301);
   }
 
-  // 2. Rate limiting برای API routes
-  if (pathname.startsWith('/api/')) {
-    const rateLimitType = pathname.includes('/upload')
-      ? 'upload'
-      : pathname.includes('/auth')
-        ? 'auth'
-        : pathname.includes('/pageview')
-          ? 'pageview'
-          : 'api';
-
-    const { success, remaining, reset } = await checkRateLimit(ip, rateLimitType);
-
-    if (!success) {
-      return new NextResponse(
-        JSON.stringify({
-          error: 'تعداد درخواست‌ها بیش از حد مجاز است',
-          retryAfter: Math.ceil((reset - Date.now()) / 1000),
-        }),
-        {
-          status: 429,
-          headers: {
-            'Content-Type': 'application/json',
-            'X-RateLimit-Remaining': '0',
-            'X-RateLimit-Reset': reset.toString(),
-            'Retry-After': Math.ceil((reset - Date.now()) / 1000).toString(),
-          },
-        }
-      );
-    }
-  }
+  // 2. Rate limiting به API routes منتقل شده (src/lib/rate-limiter.ts)
+  // چون @upstash/redis با Edge Runtime مشکل داره
 
   // 3. محافظت از dashboard
   if (pathname.startsWith('/dashboard')) {
