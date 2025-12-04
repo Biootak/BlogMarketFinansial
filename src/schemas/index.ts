@@ -164,6 +164,18 @@ export const ServiceRequestSchema = z.object({
   description: z.string().max(500, 'توضیحات نمی‌تواند بیشتر از ۵۰۰ کاراکتر باشد').optional(),
   urgency: z.enum(['NORMAL', 'URGENT']).default('NORMAL'),
   contactMethod: z.enum(['telegram', 'whatsapp']),
+  // Online Payment fields
+  websiteUrl: z.string().optional(),
+  productName: z.string().optional(),
+  // Tuition Payment fields
+  universityName: z.string().optional(),
+  studentId: z.string().optional(),
+  // Freelance Income fields
+  platformName: z.string().optional(),
+  platformUsername: z.string().optional(),
+  // Software Purchase fields
+  softwareName: z.string().optional(),
+  subscriptionType: z.string().optional(),
 });
 
 export type ServiceRequestFormData = z.infer<typeof ServiceRequestSchema>;
