@@ -2,8 +2,8 @@ import React, { type FC } from 'react';
 import Link from 'next/link';
 import type { PostWithRelations } from '@/types/types';
 import { toPersianNumber } from '@/lib/utils';
-import { Icon } from '../ui/icon';
 import { formatDate } from '@/utils/formatDate';
+import { HiCalendarDays, HiClock, HiFolder } from 'react-icons/hi2';
 
 export interface PostMeta2Props {
   className?: string;
@@ -26,48 +26,49 @@ const PostMeta2: FC<PostMeta2Props> = ({
 
   return (
     <div
-      className={`nc-PostMeta2 flex flex-col sm:flex-row items-start sm:items-center flex-wrap text-neutral-700 text-right dark:text-neutral-200 ${
-        size === 'normal' ? 'text-xs sm:text-sm' : 'text-xs'
-      } ${className} rtl`}
+      className={`nc-PostMeta2 flex flex-wrap items-center gap-3 sm:gap-4 text-right rtl ${className}`}
     >
-      <div className="flex items-center space-s-4 mb-2 sm:mb-0">
-        <div className="flex items-center group space-x-1">
-          <Icon
-            name="Calendar"
-            className="ml-1 size-4 sm:size-5 text-primary-400 transition-transform duration-300 ease-in-out group-hover:scale-110"
-          />
-          <span className="text-neutral-700 dark:text-neutral-300 group-hover:text-primary-500 transition-colors duration-300">
-            {formatDate(date)}
-          </span>
-        </div>
-        <div className="hidden sm:flex items-center group">
-          <Icon
-            name="Clock"
-            className="ml-1 size-4 sm:size-5 text-green-400 transition-transform duration-300 ease-in-out group-hover:scale-110"
-          />
-          <span className="group-hover:text-green-500 transition-colors duration-300">
-            {toPersianNumber(readingTime)} دقیقه مطالعه
-          </span>
-        </div>
+      {/* Date Badge */}
+      <div className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-50/80 dark:bg-primary-950/50 border border-primary-100 dark:border-primary-900/50 transition-all duration-300 hover:bg-primary-100 dark:hover:bg-primary-900/50 hover:border-primary-200 dark:hover:border-primary-800">
+        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 shadow-sm shadow-primary-500/30">
+          <HiCalendarDays className="w-3 h-3 text-white" />
+        </span>
+        <span className={`font-medium text-primary-700 dark:text-primary-300 ${size === 'normal' ? 'text-xs' : 'text-[11px]'}`}>
+          {formatDate(date)}
+        </span>
       </div>
 
+      {/* Reading Time Badge */}
+      <div className="hidden sm:flex group items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50/80 dark:bg-emerald-950/50 border border-emerald-100 dark:border-emerald-900/50 transition-all duration-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 hover:border-emerald-200 dark:hover:border-emerald-800">
+        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-sm shadow-emerald-500/30">
+          <HiClock className="w-3 h-3 text-white" />
+        </span>
+        <span className={`font-medium text-emerald-700 dark:text-emerald-300 ${size === 'normal' ? 'text-xs' : 'text-[11px]'}`}>
+          {toPersianNumber(readingTime)} دقیقه مطالعه
+        </span>
+      </div>
+
+      {/* Categories */}
       {!hiddenCategories && categories.length > 0 && (
-        <div className="flex items-center group mt-2 sm:mt-0 sm:mr-4">
-          <Icon
-            name="Tag"
-            className="mr-2 size-4 sm:size-5 text-purple-500 transition-transform duration-300 ease-in-out group-hover:scale-110"
-          />
-          {categories.map((cat, index) => (
-            <React.Fragment key={cat.id}>
-              <Link
-                href={`/category/${cat.id}`}
-                className="font-semibold hover:text-purple-500 transition-colors duration-300"
-              >
-                {cat.name}
-              </Link>
-              {index < categories.length - 1 && <span className="mx-1">،</span>}
-            </React.Fragment>
-          ))}
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-50/80 dark:bg-violet-950/50 border border-violet-100 dark:border-violet-900/50 transition-all duration-300 hover:bg-violet-100 dark:hover:bg-violet-900/50 hover:border-violet-200 dark:hover:border-violet-800">
+          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-br from-violet-500 to-violet-600 shadow-sm shadow-violet-500/30">
+            <HiFolder className="w-3 h-3 text-white" />
+          </span>
+          <div className={`flex items-center gap-1 font-medium text-violet-700 dark:text-violet-300 ${size === 'normal' ? 'text-xs' : 'text-[11px]'}`}>
+            {categories.slice(0, 2).map((cat, index) => (
+              <React.Fragment key={cat.id}>
+                <Link
+                  href={`/category/${cat.id}`}
+                  className="hover:text-violet-900 dark:hover:text-violet-200 transition-colors duration-200"
+                >
+                  {cat.name}
+                </Link>
+                {index < Math.min(categories.length, 2) - 1 && (
+                  <span className="text-violet-400 dark:text-violet-600">،</span>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
         </div>
       )}
     </div>

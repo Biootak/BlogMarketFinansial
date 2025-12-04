@@ -1,0 +1,127 @@
+/* Callout Styles */
+.ProseMirror,
+.editor-content {
+  [data-callout] {
+    margin: 1.25rem 0;
+    padding: 1rem 1.25rem;
+    border-radius: 0.75rem;
+    border-right-width: 4px;
+    border-right-style: solid;
+    position: relative;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    
+    .callout-content {
+      > *:first-child {
+        margin-top: 0;
+      }
+      
+      > *:last-child {
+        margin-bottom: 0;
+      }
+
+      p {
+        line-height: 1.7;
+      }
+
+      a {
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+    }
+  }
+
+  /* Callout types with improved colors */
+  [data-callout-type="info"],
+  .callout-info {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border-color: #3b82f6;
+    
+    .callout-content {
+      color: #1e40af;
+    }
+  }
+
+  [data-callout-type="warning"],
+  .callout-warning {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border-color: #f59e0b;
+    
+    .callout-content {
+      color: #92400e;
+    }
+  }
+
+  [data-callout-type="error"],
+  .callout-error {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border-color: #ef4444;
+    
+    .callout-content {
+      color: #991b1b;
+    }
+  }
+
+  [data-callout-type="success"],
+  .callout-success {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-color: #22c55e;
+    
+    .callout-content {
+      color: #166534;
+    }
+  }
+}
+
+/* Dark mode */
+.dark .ProseMirror,
+.dark .editor-content {
+  [data-callout] {
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  [data-callout-type="info"],
+  .callout-info {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
+    border-color: #60a5fa;
+    
+    .callout-content {
+      color: #93c5fd;
+    }
+  }
+
+  [data-callout-type="warning"],
+  .callout-warning {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.1) 100%);
+    border-color: #fbbf24;
+    
+    .callout-content {
+      color: #fcd34d;
+    }
+  }
+
+  [data-callout-type="error"],
+  .callout-error {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.1) 100%);
+    border-color: #f87171;
+    
+    .callout-content {
+      color: #fca5a5;
+    }
+  }
+
+  [data-callout-type="success"],
+  .callout-success {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.1) 100%);
+    border-color: #4ade80;
+    
+    .callout-content {
+      color: #86efac;
+    }
+  }
+}

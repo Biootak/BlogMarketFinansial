@@ -1,38 +1,68 @@
-import ButtonPrimary from '@/components/Button/ButtonPrimary';
-import type React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
+import { Home, Search, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const Page404: React.FC = () => (
-  <div className="nc-Page404 font-vazir min-h-screen flex flex-col justify-center items-center">
-    <div className="container relative py-16 lg:py-20">
-      <div className="text-center max-w-2xl mx-auto space-y-10">
-        <div className="text-neutral-600 dark:text-neutral-300 flex justify-center">
-          <div className="relative w-full h-[400px] max-w-[400px]">
-            <Image
-              src="/images/Error-404.svg"
-              alt="404 صفحه پیدا نشد"
-              fill
-              style={{ objectFit: 'contain' }}
-              sizes="(max-width: 400px) 100vw, 400px"
-            />
+export default function NotFound() {
+  return (
+    <div
+      dir="rtl"
+      className="min-h-screen flex items-center justify-center bg-gradient-to-bl from-primary-50 via-neutral-50 to-secondary-50 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900 p-4"
+    >
+      <div className="max-w-lg w-full text-center">
+        {/* 404 Number */}
+        <div className="relative mb-8">
+          <span className="text-[150px] font-black text-primary-100 dark:text-neutral-800 leading-none select-none">
+            404
+          </span>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Search className="w-20 h-20 text-primary-500 dark:text-primary-400" />
           </div>
         </div>
 
-        <p className="text-lg text-neutral-800 dark:text-neutral-200 leading-relaxed">
-          متأسفانه صفحه‌ای که به دنبال آن بودید پیدا نشد.
-          <br />
-          ممکن است آدرس تغییر کرده یا صفحه حذف شده باشد.
-        </p>
-        <Link href="/">
-          <Button variant={'secondary'} className="mt-8 inline-block">
-            بازگشت به صفحه اصلی
-          </Button>
-        </Link>
+        {/* Content */}
+        <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-xl p-8">
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50 mb-3">
+            صفحه مورد نظر یافت نشد
+          </h1>
+
+          <p className="text-neutral-600 dark:text-neutral-400 mb-6">
+            متأسفانه صفحه‌ای که به دنبال آن هستید وجود ندارد یا منتقل شده است.
+          </p>
+
+          {/* Actions */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href="/">
+              <Button className="w-full sm:w-auto gap-2">
+                <Home className="w-4 h-4" />
+                صفحه اصلی
+              </Button>
+            </Link>
+
+            <Link href="/search">
+              <Button variant="outline" className="w-full sm:w-auto gap-2">
+                <Search className="w-4 h-4" />
+                جستجو
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Helpful links */}
+        <div className="mt-8 text-sm text-neutral-500 dark:text-neutral-400">
+          <p className="mb-2">شاید این لینک‌ها کمکتان کند:</p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link href="/blog" className="hover:text-primary-500 transition-colors">
+              وبلاگ
+            </Link>
+            <Link href="/categories" className="hover:text-primary-500 transition-colors">
+              دسته‌بندی‌ها
+            </Link>
+            <Link href="/contact" className="hover:text-primary-500 transition-colors">
+              تماس با ما
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-);
-
-export default Page404;
+  );
+}

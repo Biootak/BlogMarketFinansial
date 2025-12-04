@@ -19,24 +19,20 @@ export async function updateProfile(formData: FormData): Promise<ActionResult<vo
       };
     }
 
-    console.log('Received form data:', Object.fromEntries(formData));
-
     const validatedFields = UpdateProfileSchema.parse(
       Object.fromEntries(formData),
     ) as UpdateProfileInput;
-
-    console.log('Validated fields:', validatedFields);
 
     const updateData: Partial<UpdateProfileInput & { password?: string }> = {};
     if (validatedFields.name) updateData.name = validatedFields.name;
     if (validatedFields.email) updateData.email = validatedFields.email;
 
-    // Profile update data
+    // Profile update data - همیشه فیلدها رو آپدیت کن حتی اگه خالی باشن
     const profileUpdateData: any = {};
-    if (validatedFields.bio) profileUpdateData.bio = validatedFields.bio;
-    if (validatedFields.imageUrl) profileUpdateData.avatar = validatedFields.imageUrl;
-    if (validatedFields.bgImage) profileUpdateData.bgImage = validatedFields.bgImage;
-    if (validatedFields.jobName) profileUpdateData.jobName = validatedFields.jobName;
+    if (validatedFields.bio !== undefined) profileUpdateData.bio = validatedFields.bio || '';
+    if (validatedFields.imageUrl !== undefined) profileUpdateData.avatar = validatedFields.imageUrl || null;
+    if (validatedFields.bgImage !== undefined) profileUpdateData.bgImage = validatedFields.bgImage || null;
+    if (validatedFields.jobName !== undefined) profileUpdateData.jobName = validatedFields.jobName || '';
 
     if (validatedFields.currentPassword && validatedFields.newPassword) {
       const user = await prisma.user.findUnique({ where: { id: session.user.id } });
@@ -74,12 +70,6 @@ export async function updateProfile(formData: FormData): Promise<ActionResult<vo
         create: { ...profileUpdateData, userId: session.user.id },
       });
     }
-
-    const updatedUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      include: { profile: true },
-    });
-    console.log('Updated user data:', updatedUser);
 
     revalidatePath('/edit-profile');
     return { success: true, message: 'پروفایل با موفقیت بروزرسانی شد', variant: 'success' };

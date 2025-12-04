@@ -25,7 +25,7 @@ const PostCardSaveAction: FC<PostCardSaveActionProps> = ({
   return (
     <motion.div
       className={cn(
-        'nc-PostCardSaveAction flex items-center space-x-2 rtl:space-x-reverse text-xs text-neutral-700 dark:text-neutral-300',
+        'nc-PostCardSaveAction flex items-center gap-2 text-xs text-neutral-700 dark:text-neutral-300',
         className,
       )}
       initial={{ opacity: 0, y: 10 }}

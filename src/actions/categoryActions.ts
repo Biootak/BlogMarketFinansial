@@ -3,6 +3,7 @@
 import { cache } from 'react';
 import prisma from '@/lib/db';
 import { generateColor, generateSlug, validateSlug } from '@/lib/utils';
+import { logActivity } from '@/lib/activity-logger';
 import type {
   ActionResult,
   TaxonomyType,
@@ -190,6 +191,9 @@ export async function createCategory(
       })),
     };
 
+    // ثبت فعالیت
+    await logActivity('ایجاد دسته‌بندی', `دسته‌بندی "${name}" ایجاد شد`);
+
     return {
       success: true,
       message: 'دسته‌بندی با موفقیت ایجاد شد.',
@@ -318,6 +322,9 @@ export async function updateCategory(
       })),
     };
 
+    // ثبت فعالیت
+    await logActivity('ویرایش دسته‌بندی', `دسته‌بندی "${name}" ویرایش شد`);
+
     return {
       success: true,
       message: 'دسته‌بندی با موفقیت به‌روزرسانی شد.',
@@ -354,9 +361,14 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
       };
     }
 
+    const categoryName = category.name;
+    
     await prisma.category.delete({
       where: { id },
     });
+
+    // ثبت فعالیت
+    await logActivity('حذف دسته‌بندی', `دسته‌بندی "${categoryName}" حذف شد`);
 
     return {
       success: true,

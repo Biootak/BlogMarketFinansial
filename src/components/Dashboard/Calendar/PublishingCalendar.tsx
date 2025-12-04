@@ -88,6 +88,10 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, selectedDate, posts }) =
                     src={post.featuredImage}
                     alt={post.title}
                     className="w-full h-32 sm:h-40 object-cover rounded-md"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/images/placeholder-large.png';
+                    }}
                   />
                 )}
               </li>

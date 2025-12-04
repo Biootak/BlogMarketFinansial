@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
-import Loading from '@/components/Loading';
+import { InlineLoadingSkeleton } from '@/components/Skeletons';
 import { useState } from 'react';
 
 const setupSchema = z.object({
@@ -97,9 +97,9 @@ export default function SetupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white shadow-xl rounded-2xl p-8">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-900 dark:to-neutral-800 py-12">
+      <div className="container">
+        <div className="max-w-2xl mx-auto bg-white dark:bg-neutral-800 shadow-xl rounded-2xl p-8">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-extrabold text-gray-900 mb-2">
               تنظیمات اولیه سیستم
@@ -252,13 +252,9 @@ export default function SetupPage() {
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <div className="flex items-center justify-center">
-                    <Loading 
-                      className="text-white ml-2" 
-                      childClassName="w-5 h-5"
-                      titleText="در حال ایجاد حساب"
-                    />
-                    در حال ایجاد حساب...
+                  <div className="flex items-center justify-center gap-2">
+                    <InlineLoadingSkeleton className="text-white" />
+                    <span>در حال ایجاد حساب...</span>
                   </div>
                 ) : (
                   'ایجاد حساب سوپر ادمین'
@@ -270,13 +266,12 @@ export default function SetupPage() {
       </div>
       {isLoading && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-2xl">
-            <Loading 
-              className="text-primary-500" 
-              childClassName="w-12 h-12"
-              titleText="در حال ایجاد حساب سوپر ادمین"
-            />
-            <p className="mt-4 text-gray-600 text-center">لطفاً صبر کنید...</p>
+          <div className="bg-white p-8 rounded-2xl flex flex-col items-center gap-4">
+            <div className="relative h-12 w-12">
+              <div className="absolute inset-0 rounded-full border-4 border-gray-200" />
+              <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary-500 animate-spin" />
+            </div>
+            <p className="text-gray-600 text-center">در حال ایجاد حساب سوپر ادمین...</p>
           </div>
         </div>
       )}

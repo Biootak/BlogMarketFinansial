@@ -8,16 +8,17 @@ import { getTags } from '@/actions/getTags';
 import SkeletonLoader from '@/components/SkeletonLoader';
 
 interface EditPostPageProps {
-  params: {
+  params: Promise<{
     postId: string;
-  };
+  }>;
 }
 
 export const revalidate = 0; // No caching for edit page
 
 export default async function EditPostPage({ params }: EditPostPageProps) {
+  const { postId } = await params;
   const [postResult, categoriesResult, tagsResult] = await Promise.all([
-    getPostById(params.postId),
+    getPostById(postId),
     getCategories({ limit: 100, page: 1 }),
     getTags({ limit: 100, page: 1 }),
   ]);

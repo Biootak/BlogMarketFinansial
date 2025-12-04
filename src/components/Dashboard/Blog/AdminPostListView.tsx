@@ -22,17 +22,39 @@ export default async function DashboardPosts({
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800">
-      <PostHeader />
-      <main className="flex-grow p-4 sm:p-6 lg:p-8">
-        <Suspense fallback={<SkeletonLoader variant="card" count={6} />}>
-          <PostList
-            initialPosts={result.data.posts}
-            hasNextPage={page < result.data.pages}
-            totalPages={result.data.pages}
-          />
-        </Suspense>
-      </main>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      {/* Decorative background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div 
+          className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full opacity-30 dark:opacity-20"
+          style={{
+            background: 'radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%)',
+            filter: 'blur(60px)',
+          }}
+        />
+        <div 
+          className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full opacity-25 dark:opacity-15"
+          style={{
+            background: 'radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)',
+            filter: 'blur(60px)',
+          }}
+        />
+      </div>
+
+      <div className="relative">
+        <PostHeader />
+        <main className="px-4 sm:px-6 lg:px-8 pb-12">
+          <div className="max-w-7xl mx-auto">
+            <Suspense fallback={<SkeletonLoader variant="card" count={6} />}>
+              <PostList
+                initialPosts={result.data.posts}
+                hasNextPage={page < result.data.pages}
+                totalPages={result.data.pages}
+              />
+            </Suspense>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

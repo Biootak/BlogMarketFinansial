@@ -51,7 +51,7 @@ const PostCardCommentBtn: FC<PostCardCommentBtnProps> = ({
   if (isATagOnSingle) {
     return (
       <MotionWrapper>
-        <a href={commentUrl} title="نظرات">
+        <a href={commentUrl} title="نظرات" aria-label="مشاهده نظرات">
           <Content />
         </a>
       </MotionWrapper>
@@ -60,7 +60,7 @@ const PostCardCommentBtn: FC<PostCardCommentBtnProps> = ({
 
   return (
     <MotionWrapper>
-      <Link href={commentUrl} title="نظرات">
+      <Link href={commentUrl} title="نظرات" aria-label="مشاهده نظرات">
         <Content />
       </Link>
     </MotionWrapper>

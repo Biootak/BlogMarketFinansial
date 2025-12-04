@@ -62,6 +62,7 @@ const PostCardLikeAction: FC<PostCardLikeActionProps> = ({
         )}
         onClick={handleLikeClick}
         title={isLiked ? 'برداشتن لایک' : 'لایک کردن'}
+        aria-label={isLiked ? 'برداشتن لایک' : 'لایک کردن'}
         disabled={isPending}
         whileTap={{ scale: 0.95 }}
       >

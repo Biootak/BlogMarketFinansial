@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
+import type { UploadFolder } from '@/actions/uploadActions';
 
 interface ImageUploadDialogProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ interface ImageUploadDialogProps {
   onImageRemove: () => void;
   initialPreview: string;
   title: string;
+  folder?: UploadFolder;
 }
 
 const ImageUploadDialog: React.FC<ImageUploadDialogProps> = ({
@@ -21,6 +23,7 @@ const ImageUploadDialog: React.FC<ImageUploadDialogProps> = ({
   onImageRemove,
   initialPreview,
   title,
+  folder = 'general',
 }) => {
   const [preview, setPreview] = useState(initialPreview);
 
@@ -47,6 +50,7 @@ const ImageUploadDialog: React.FC<ImageUploadDialogProps> = ({
             onImageUpload={handleImageUpload}
             onImageRemove={handleImageRemove}
             initialPreviews={preview ? [preview] : []}
+            folder={folder}
           />
         </div>
         <div className="flex justify-end">

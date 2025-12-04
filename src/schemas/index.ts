@@ -9,6 +9,17 @@ const createStringSchema = (min: number, max: number, minMessage: string, maxMes
 const createArraySchema = (min: number, max: number, minMessage: string, maxMessage: string) =>
   z.array(z.string()).min(min, minMessage).max(max, maxMessage);
 
+// Schema برای URL تصویر (هم URL کامل و هم path نسبی)
+const imageUrlSchema = (message: string) =>
+  z.string().refine(
+    (val) => {
+      if (!val) return true;
+      // قبول URL کامل یا path نسبی که با / شروع میشه
+      return val.startsWith('/') || val.startsWith('http://') || val.startsWith('https://');
+    },
+    { message },
+  );
+
 // Common schemas
 const emailSchema = z.string().email('لطفاً یک آدرس ایمیل معتبر وارد کنید');
 const passwordSchema = z
@@ -62,8 +73,8 @@ export const CreatePostSchema = z.object({
   isFeatured: z.boolean(),
   videoUrl: z.union([z.string().url('لطفاً آدرس ویدئو معتبر وارد کنید'), z.literal('')]).optional(),
   audioUrl: z.union([z.string().url('لطفاً آدرس صوتی معتبر وارد کنید'), z.literal('')]).optional(),
-  featuredImage: z.string().url('لطفاً آدرس تصویر معتبر وارد کنید').optional(),
-  galleryImages: z.array(z.string().url('لطفاً آدرس تصویر معتبر وارد کنید')).optional(),
+  featuredImage: imageUrlSchema('لطفاً آدرس تصویر معتبر وارد کنید').optional(),
+  galleryImages: z.array(imageUrlSchema('لطفاً آدرس تصویر معتبر وارد کنید')).optional(),
   status: z.nativeEnum(PostStatus),
   categories: CategorySchema,
   tags: TagSchema,
@@ -96,15 +107,15 @@ export const PostSchema = CreatePostSchema.extend({
 
 export const UpdateProfileSchema = z
   .object({
-    name: z.string().min(2, 'نام باید حداقل 2 حرف باشد').optional(),
-    email: z.string().email('ایمیل نامعتبر است').optional(),
-    bio: z.string().max(500, 'بیوگرافی نمی‌تواند بیشتر از 500 کاراکتر باشد').optional(),
-    imageUrl: z.string().url('آدرس تصویر نامعتبر است').optional(),
-    bgImage: z.string().url('آدرس تصویر پس‌زمینه نامعتبر است').optional(),
-    jobName: z.string().max(100, 'نام شغل نمی‌تواند بیشتر از 100 کاراکتر باشد').optional(),
-    currentPassword: z.string().min(6, 'رمز عبور باید حداقل 6 کاراکتر باشد').optional(),
-    newPassword: z.string().min(6, 'رمز عبور جدید باید حداقل 6 کاراکتر باشد').optional(),
-    confirmNewPassword: z.string().optional(),
+    name: z.string().min(2, 'نام باید حداقل 2 حرف باشد').optional().or(z.literal('')),
+    email: z.string().email('ایمیل نامعتبر است').optional().or(z.literal('')),
+    bio: z.string().max(500, 'بیوگرافی نمی‌تواند بیشتر از 500 کاراکتر باشد').optional().or(z.literal('')),
+    imageUrl: z.string().url('آدرس تصویر نامعتبر است').optional().or(z.literal('')),
+    bgImage: z.string().url('آدرس تصویر پس‌زمینه نامعتبر است').optional().or(z.literal('')),
+    jobName: z.string().max(100, 'نام شغل نمی‌تواند بیشتر از 100 کاراکتر باشد').optional().or(z.literal('')),
+    currentPassword: z.string().min(6, 'رمز عبور باید حداقل 6 کاراکتر باشد').optional().or(z.literal('')),
+    newPassword: z.string().min(6, 'رمز عبور جدید باید حداقل 6 کاراکتر باشد').optional().or(z.literal('')),
+    confirmNewPassword: z.string().optional().or(z.literal('')),
   })
   .refine(
     (data) => {
@@ -124,3 +135,47 @@ export const UpdateProfileSchema = z
       path: ['confirmNewPassword'],
     },
   );
+
+
+// Service Request Schema - for online payment and money transfer forms
+export const ServiceRequestSchema = z.object({
+  fullName: z
+    .string()
+    .min(3, 'نام و نام خانوادگی باید حداقل ۳ کاراکتر باشد')
+    .max(100, 'نام و نام خانوادگی نباید بیشتر از ۱۰۰ کاراکتر باشد'),
+  phone: z
+    .string()
+    .min(10, 'شماره تماس باید حداقل ۱۰ رقم باشد')
+    .max(15, 'شماره تماس نامعتبر است')
+    .regex(/^[0-9+]+$/, 'شماره تماس فقط می‌تواند شامل اعداد باشد'),
+  email: z.string().email('لطفاً یک ایمیل معتبر وارد کنید').optional().or(z.literal('')),
+  serviceType: z.enum([
+    'INTERNATIONAL_TRANSFER',
+    'ONLINE_PAYMENT',
+    'TUITION_PAYMENT',
+    'FREELANCE_INCOME',
+    'SOFTWARE_PURCHASE',
+    'OTHER',
+  ]),
+  amount: z.string().min(1, 'لطفاً مبلغ را وارد کنید').max(50, 'مبلغ نامعتبر است'),
+  currency: z.string().min(1, 'لطفاً واحد ارز را انتخاب کنید'),
+  destinationCountry: z.string().optional(),
+  bankName: z.string().optional(),
+  description: z.string().max(500, 'توضیحات نمی‌تواند بیشتر از ۵۰۰ کاراکتر باشد').optional(),
+  urgency: z.enum(['NORMAL', 'URGENT']).default('NORMAL'),
+  contactMethod: z.enum(['telegram', 'whatsapp']),
+  // Online Payment fields
+  websiteUrl: z.string().optional(),
+  productName: z.string().optional(),
+  // Tuition Payment fields
+  universityName: z.string().optional(),
+  studentId: z.string().optional(),
+  // Freelance Income fields
+  platformName: z.string().optional(),
+  platformUsername: z.string().optional(),
+  // Software Purchase fields
+  softwareName: z.string().optional(),
+  subscriptionType: z.string().optional(),
+});
+
+export type ServiceRequestFormData = z.infer<typeof ServiceRequestSchema>;

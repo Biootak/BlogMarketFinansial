@@ -11,6 +11,8 @@ interface PaginationClientProps {
   currentPage: number;
   totalPages: number;
   pageNumbers: number[];
+  onPageChange?: (page: number) => void;
+  baseUrl?: string;
 }
 
 const PaginationClient: React.FC<PaginationClientProps> = ({
@@ -18,13 +20,20 @@ const PaginationClient: React.FC<PaginationClientProps> = ({
   currentPage,
   totalPages,
   pageNumbers,
+  onPageChange,
+  baseUrl,
 }) => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   const handlePageChange = (page: number) => {
+    if (onPageChange) {
+      onPageChange(page);
+      return;
+    }
     startTransition(() => {
-      router.push(`/archive?page=${page}`);
+      const url = baseUrl ? `${baseUrl}?page=${page}` : `/archive?page=${page}`;
+      router.push(url);
     });
   };
 
@@ -33,11 +42,11 @@ const PaginationClient: React.FC<PaginationClientProps> = ({
       <button
         type="button"
         key={i}
-        className={`inline-flex w-11 h-11 items-center justify-center rounded-full text-sm font-medium transition-all duration-200 ${
+        className={`inline-flex w-11 h-11 items-center justify-center rounded-full text-sm font-semibold transition-all duration-300 ${
           i === currentPage
-            ? 'bg-primary-600 text-white shadow-sm hover:bg-primary-700'
-            : 'bg-white hover:bg-primary-50 border border-neutral-200 text-neutral-600 hover:text-primary-600 hover:border-primary-100 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-700 dark:hover:bg-primary-900/50 dark:hover:text-primary-300'
-        } ${twFocusClass()} ${isPending ? 'opacity-50' : ''}`}
+            ? 'bg-gradient-to-r from-primary-400 to-primary-600 text-white shadow-lg hover:shadow-xl hover:shadow-primary-500/50 scale-110 ring-2 ring-primary-300/50'
+            : 'bg-white hover:bg-gradient-to-r hover:from-primary-50 hover:to-primary-100 border border-neutral-200 text-neutral-600 hover:text-primary-600 hover:border-primary-300 hover:scale-105 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-700 dark:hover:bg-primary-900/20 dark:hover:text-primary-300 dark:hover:border-primary-700'
+        } ${twFocusClass()} ${isPending ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
         onClick={() => handlePageChange(i)}
         disabled={isPending}
       >
@@ -47,34 +56,34 @@ const PaginationClient: React.FC<PaginationClientProps> = ({
   };
 
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center mt-12">
       <nav
-        className={`nc-Pagination inline-flex items-center space-x-1 rtl:space-x-reverse text-base font-medium ${className}`}
+        className={`nc-Pagination inline-flex items-center gap-2 text-base font-medium ${className}`}
       >
         <button
           type="button"
-          className={`inline-flex w-11 h-11 items-center justify-center rounded-full text-sm font-medium transition-all duration-200 ${
+          className={`inline-flex w-11 h-11 items-center justify-center rounded-full text-sm font-semibold transition-all duration-300 ${
             currentPage === 1 || isPending
               ? 'bg-neutral-100 text-neutral-400 cursor-not-allowed dark:bg-neutral-800 dark:text-neutral-500'
-              : 'bg-white hover:bg-primary-50 border border-neutral-200 text-neutral-600 hover:text-primary-600 hover:border-primary-100 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-700 dark:hover:bg-primary-900/50 dark:hover:text-primary-300'
+              : 'bg-white hover:bg-gradient-to-r hover:from-primary-50 hover:to-primary-100 border border-neutral-200 text-neutral-600 hover:text-primary-600 hover:border-primary-300 hover:scale-105 shadow-md hover:shadow-lg dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-700 dark:hover:bg-primary-900/20 dark:hover:text-primary-300 dark:hover:border-primary-700'
           } ${twFocusClass()} ${isPending ? 'opacity-50' : ''}`}
           onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
           disabled={currentPage === 1 || isPending}
         >
-          {'<'}
+          <span className="text-lg">‹</span>
         </button>
         {renderPageNumbers()}
         <button
           type="button"
-          className={`inline-flex w-11 h-11 items-center justify-center rounded-full text-sm font-medium transition-all duration-200 ${
+          className={`inline-flex w-11 h-11 items-center justify-center rounded-full text-sm font-semibold transition-all duration-300 ${
             currentPage === totalPages || isPending
               ? 'bg-neutral-100 text-neutral-400 cursor-not-allowed dark:bg-neutral-800 dark:text-neutral-500'
-              : 'bg-white hover:bg-primary-50 border border-neutral-200 text-neutral-600 hover:text-primary-600 hover:border-primary-100 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-700 dark:hover:bg-primary-900/50 dark:hover:text-primary-300'
+              : 'bg-white hover:bg-gradient-to-r hover:from-primary-50 hover:to-primary-100 border border-neutral-200 text-neutral-600 hover:text-primary-600 hover:border-primary-300 hover:scale-105 shadow-md hover:shadow-lg dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-700 dark:hover:bg-primary-900/20 dark:hover:text-primary-300 dark:hover:border-primary-700'
           } ${twFocusClass()} ${isPending ? 'opacity-50' : ''}`}
           onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages || isPending}
         >
-          {'>'}
+          <span className="text-lg">›</span>
         </button>
       </nav>
     </div>

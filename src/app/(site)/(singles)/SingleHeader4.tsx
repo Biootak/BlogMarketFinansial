@@ -42,7 +42,7 @@ const SingleHeader4: FC<SingleHeader4Props> = ({ hiddenDesc = false, className =
         />
 
         <div className=" space-y-10">
-          <div className="flex flex-col sm:flex-row justify-between sm:items-end space-y-5 sm:space-y-0 sm:space-x-5 rtl:space-x-reverse">
+          <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-5">
             {/* <PostMeta2
               size="large"
               className="leading-none flex-shrink-0"

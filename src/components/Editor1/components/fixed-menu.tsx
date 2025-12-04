@@ -9,6 +9,8 @@ import { TooltipProvider } from '@radix-ui/react-tooltip';
 const MenuButtonUndo = dynamic(() => import('../controls/menu-button-undo'));
 const MenuButtonRedo = dynamic(() => import('../controls/menu-button-redo'));
 const MenuSelectHeading = dynamic(() => import('../controls/menu-select-heading'));
+const MenuSelectFontSize = dynamic(() => import('../controls/menu-select-font-size'));
+const MenuSelectFontFamily = dynamic(() => import('../controls/menu-select-font-family'));
 const MenuButtonBold = dynamic(() => import('../controls/menu-button-bold'));
 const MenuButtonItalic = dynamic(() => import('../controls/menu-button-italic'));
 const MenuButtonUnderline = dynamic(() => import('../controls/menu-button-underline'));
@@ -21,6 +23,10 @@ const MenuButtonLink = dynamic(() => import('../controls/menu-button-link'));
 const MenuButtonBlockquote = dynamic(() => import('../controls/menu-button-blockquote'));
 const MenuButtonCodeblock = dynamic(() => import('../controls/menu-button-codeblock'));
 const MenuButtonImage = dynamic(() => import('../controls/menu-button-image'));
+const MenuButtonTable = dynamic(() => import('../controls/menu-button-table'));
+const MenuButtonTaskList = dynamic(() => import('../controls/menu-button-task-list'));
+const MenuButtonSuperscript = dynamic(() => import('../controls/menu-button-superscript'));
+const MenuButtonSubscript = dynamic(() => import('../controls/menu-button-subscript'));
 
 export type FixedMenuProps = {
   editor: Editor;
@@ -33,7 +39,7 @@ const FixedMenu = ({ editor, className }: FixedMenuProps) => {
       <Toolbar.Wrapper
         className={`${className} sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-md transition-all duration-300 ease-in-out overflow-x-auto text-primary-600`}
       >
-        <div className="flex flex-wrap items-center justify-start space-x-1 space-y-1 p-2">
+        <div className="flex flex-wrap items-center justify-start gap-1 p-2">
           <Toolbar.Group className="flex-shrink-0 [&_svg]:text-primary-600 [&_svg]:stroke-primary-600">
             <MenuButtonUndo editor={editor} />
             <MenuButtonRedo editor={editor} />
@@ -43,6 +49,8 @@ const FixedMenu = ({ editor, className }: FixedMenuProps) => {
 
           <Toolbar.Group className="flex-shrink-0 [&_svg]:text-primary-600 [&_svg]:stroke-primary-600">
             <MenuSelectHeading editor={editor} />
+            <MenuSelectFontFamily editor={editor} />
+            <MenuSelectFontSize editor={editor} />
           </Toolbar.Group>
 
           <Toolbar.Divider className="hidden sm:block" />
@@ -51,6 +59,8 @@ const FixedMenu = ({ editor, className }: FixedMenuProps) => {
             <MenuButtonBold editor={editor} />
             <MenuButtonItalic editor={editor} />
             <MenuButtonUnderline editor={editor} />
+            <MenuButtonSuperscript editor={editor} />
+            <MenuButtonSubscript editor={editor} />
           </Toolbar.Group>
 
           <Toolbar.Divider className="hidden sm:block" />
@@ -71,6 +81,7 @@ const FixedMenu = ({ editor, className }: FixedMenuProps) => {
           <Toolbar.Group className="flex-shrink-0 [&_svg]:text-primary-600 [&_svg]:stroke-primary-600">
             <MenuButtonOrderedList editor={editor} />
             <MenuButtonBulletedList editor={editor} />
+            <MenuButtonTaskList editor={editor} />
           </Toolbar.Group>
 
           <Toolbar.Divider className="hidden sm:block" />
@@ -80,6 +91,7 @@ const FixedMenu = ({ editor, className }: FixedMenuProps) => {
             <MenuButtonBlockquote editor={editor} />
             <MenuButtonCodeblock editor={editor} />
             <MenuButtonImage editor={editor} />
+            <MenuButtonTable editor={editor} />
           </Toolbar.Group>
         </div>
       </Toolbar.Wrapper>

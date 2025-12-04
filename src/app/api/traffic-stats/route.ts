@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@/auth';
 
 // Mock database or data source
 const mockDatabase = {
@@ -28,6 +29,12 @@ const mockDatabase = {
 
 export async function GET() {
   try {
+    // چک احراز هویت
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'احراز هویت الزامی است' }, { status: 401 });
+    }
+
     const trafficStats = await mockDatabase.getTrafficStats();
     return NextResponse.json(trafficStats);
   } catch (error) {

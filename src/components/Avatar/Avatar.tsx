@@ -24,16 +24,19 @@ const Avatar: FC<AvatarProps> = ({
   const initial = name.charAt(0).toUpperCase();
 
   const [url, setUrl] = useState<string | StaticImageData | null | undefined>(imgUrl);
+  const [hasImage, setHasImage] = useState(!!imgUrl);
 
   useEffect(() => {
     if (!imgUrl) {
-      setUrl(`https://avatar.vercel.sh/${encodeURIComponent(name)}?size=80`);
+      // اگه نام کاربر خالی باشه، از یک نام پیش‌فرض استفاده کن
+      const avatarName = name || 'user';
+      setUrl(`https://avatar.vercel.sh/${encodeURIComponent(avatarName)}?size=80`);
+      setHasImage(true);
     } else {
       setUrl(imgUrl);
+      setHasImage(true);
     }
   }, [imgUrl, name]);
-
-  const isCustomImage = !!imgUrl;
 
   return (
     <div
@@ -48,9 +51,9 @@ const Avatar: FC<AvatarProps> = ({
           alt={name}
         />
       )}
-      {!isCustomImage && (
+      {!hasImage && (
         <>
-          <div className="absolute inset-0 bg-black bg-opacity-30" />
+          <div className="absolute inset-0 bg-neutral-500" />
           <span
             className={`relative z-10 ${fontSize} font-bold tracking-wider drop-shadow-md items-center justify-center text-white uppercase`}
           >

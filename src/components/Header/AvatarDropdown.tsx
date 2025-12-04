@@ -8,7 +8,6 @@ import LogoutButton from '../Auth/LogoutButton';
 import DarkModeSwitch from '../SwitchDarkMode/SwitchDarkMode2';
 import type { Role } from '@prisma/client';
 
-// Helper function to check if user is admin or author
 const isAdminOrAuthor = (userRole: Role | undefined) => {
   return userRole === 'ADMIN' || userRole === 'AUTHOR' || userRole === 'SUPER_ADMIN';
 };
@@ -25,34 +24,64 @@ export default async function AvatarDropdown() {
   return (
     <div className="AvatarDropdown">
       <SideDropdown>
-        <div className="overflow-hidden rounded-2xl shadow-lg ring-1 ring-black ring-opacity-5">
-          <div className="relative flex flex-col bg-white dark:bg-neutral-800 p-2">
-            {/* User Info */}
-            <div className="flex items-center p-2 mb-2 border-b border-neutral-200 dark:border-neutral-700">
-              <Avatar
-                imgUrl={user?.profile?.avatar || user.image}
-                userName={user.name}
-                sizeClass="h-10 w-10"
-                radius="rounded-full"
-              />
-              <div className="flex-grow mr-3 text-right">
-                <h4 className="font-semibold text-sm">{user.name}</h4>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400">{user.email}</p>
+        <div
+          className="
+            overflow-hidden rounded-3xl
+            bg-white/95 dark:bg-neutral-900/95
+            backdrop-blur-xl backdrop-saturate-150
+            border border-white/20 dark:border-neutral-700/50
+            shadow-[0_8px_32px_rgba(0,0,0,0.08),0_2px_8px_rgba(0,0,0,0.04)]
+            dark:shadow-[0_8px_32px_rgba(0,0,0,0.4),0_2px_8px_rgba(0,0,0,0.2)]
+          "
+        >
+          <div className="relative flex flex-col p-3">
+            {/* User Info Header */}
+            <div
+              className="
+                flex items-center gap-3 p-3 mb-2
+                bg-gradient-to-l from-slate-50/80 to-slate-100/50
+                dark:from-neutral-800/60 dark:to-neutral-800/30
+                rounded-2xl border border-slate-100/80 dark:border-neutral-700/30
+              "
+            >
+              <div className="relative">
+                <Avatar
+                  imgUrl={user?.profile?.avatar || user.image}
+                  userName={user.name}
+                  sizeClass="h-12 w-12"
+                  radius="rounded-xl"
+                />
+                <span className="absolute -bottom-0.5 -left-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white dark:border-neutral-900" />
+              </div>
+              <div className="flex-grow text-right min-w-0">
+                <h4 className="font-semibold text-sm text-neutral-900 dark:text-white truncate">
+                  {user.name}
+                </h4>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate mt-0.5">
+                  {user.email}
+                </p>
               </div>
             </div>
-            {canAccessPosts && (
-              <>
-                <MenuItem href={'/dashboard/edit-profile'} icon={ProfileIcon} text="پروفایل" />
 
+            {/* Menu Items */}
+            {canAccessPosts && (
+              <div className="space-y-1 mb-2">
+                <MenuItem href="/dashboard/edit-profile" icon={ProfileIcon} text="پروفایل" />
                 <MenuItem href="/dashboard/posts" icon={PostIcon} text="پست‌های من" />
-              </>
+              </div>
             )}
 
-            <div className="w-full my-2 border-t border-neutral-200 dark:border-neutral-700" />
+            {/* Divider */}
+            <div className="h-px bg-gradient-to-l from-transparent via-neutral-200 dark:via-neutral-700 to-transparent my-2" />
 
-            <DarkModeSwitch className="px-2" />
+            {/* Dark Mode Switch */}
+            <DarkModeSwitch className="px-1" />
 
-            <Suspense fallback={<div className="h-10 p-2" />}>
+            {/* Divider */}
+            <div className="h-px bg-gradient-to-l from-transparent via-neutral-200 dark:via-neutral-700 to-transparent my-2" />
+
+            {/* Logout */}
+            <Suspense fallback={<div className="h-11 p-2 animate-pulse bg-neutral-100 dark:bg-neutral-800 rounded-xl" />}>
               <LogoutButton />
             </Suspense>
           </div>
@@ -70,12 +99,31 @@ function MenuItem({
   return (
     <Link
       href={href}
-      className="flex items-center p-2 transition duration-150 ease-in-out rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50"
+      className="
+        group flex items-center gap-3 p-2.5
+        rounded-xl
+        text-neutral-700 dark:text-neutral-200
+        hover:bg-gradient-to-l hover:from-primary-50/80 hover:to-primary-100/50
+        dark:hover:from-primary-900/30 dark:hover:to-primary-800/20
+        hover:text-primary-700 dark:hover:text-primary-300
+        transition-all duration-300 ease-out
+        focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50
+      "
     >
-      <Icon
-        className="flex-shrink-0 w-6 h-6 text-neutral-500 dark:text-neutral-300 ml-4"
-        aria-hidden="true"
-      />
+      <span
+        className="
+          flex items-center justify-center w-9 h-9
+          rounded-xl
+          bg-neutral-100/80 dark:bg-neutral-800/80
+          group-hover:bg-primary-100 dark:group-hover:bg-primary-900/40
+          transition-all duration-300
+        "
+      >
+        <Icon
+          className="w-5 h-5 text-neutral-500 dark:text-neutral-400 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300"
+          aria-hidden="true"
+        />
+      </span>
       <span className="text-sm font-medium">{text}</span>
     </Link>
   );

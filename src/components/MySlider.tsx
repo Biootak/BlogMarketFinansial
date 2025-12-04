@@ -110,7 +110,7 @@ export default function MySlider<T>({
           opacity: { duration: 0.2 },
         }}
       >
-        <div className={'relative flow-root'} {...handlers}>
+        <div className={'relative flow-root overflow-hidden'} {...handlers}>
           <div className={'flow-root overflow-hidden rounded-xl'}>
             <motion.ul initial={false} className="relative whitespace-nowrap -mx-2 xl:-mx-4 ">
               <AnimatePresence initial={false} custom={direction}>
@@ -143,14 +143,14 @@ export default function MySlider<T>({
           {currentIndex > 0 && (
             <PrevBtn
               onClick={() => changeItemId(currentIndex - 1)}
-              className={`w-9 h-9 xl:w-12 xl:h-12 text-lg absolute -start-3 xl:-start-6 z-[1] ${arrowBtnClass}`}
+              className={`w-7 h-7 sm:w-8 sm:h-8 xl:w-10 xl:h-10 text-lg absolute start-1 sm:start-2 xl:start-3 z-[1] ${arrowBtnClass}`}
             />
           )}
 
           {data.length > currentIndex + numberOfItems && (
             <NextBtn
               onClick={() => changeItemId(currentIndex + 1)}
-              className={`w-9 h-9 xl:w-12 xl:h-12 text-lg absolute -end-3 xl:-end-6 z-[1] ${arrowBtnClass}`}
+              className={`w-7 h-7 sm:w-8 sm:h-8 xl:w-10 xl:h-10 text-lg absolute end-1 sm:end-2 xl:end-3 z-[1] ${arrowBtnClass}`}
             />
           )}
         </div>

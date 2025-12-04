@@ -88,12 +88,17 @@ export default function GallerySlider({
                 className="absolute inset-0"
               >
                 <Image
-                  src={currentImage || ''}
+                  src={currentImage || '/images/placeholder-large.png'}
                   fill
                   alt="listing card gallery"
                   className={`object-cover ${imageClass}`}
                   onLoad={() => setLoaded(true)}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/images/placeholder-large.png';
+                  }}
                   sizes="(max-width: 1025px) 100vw, 300px"
+                  loading="lazy"
                 />
               </motion.div>
             </AnimatePresence>
@@ -127,7 +132,7 @@ export default function GallerySlider({
 
         {/* Bottom Nav bar */}
         <div className="absolute bottom-0 inset-x-0 h-10 bg-gradient-to-t from-neutral-900 opacity-50 rounded-b-lg" />
-        <div className="flex items-center justify-center absolute bottom-2 left-1/2 transform -translate-x-1/2 space-x-1.5 rtl:space-x-reverse">
+        <div className="flex items-center justify-center absolute bottom-2 start-1/2 transform -translate-x-1/2 gap-1.5">
           {images.map((_, i) => (
             <button
               type="button"

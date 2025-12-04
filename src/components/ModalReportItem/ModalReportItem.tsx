@@ -122,7 +122,7 @@ const ModalReportItem: FC<ModalReportItemProps> = ({
             id="report-message"
           />
         </div>
-        <div className="mt-4 space-x-3 rtl:space-x-reverse">
+        <div className="mt-4 flex gap-3">
           <ButtonPrimary onClick={handleClickSubmitForm} type="submit">
             ارسال
           </ButtonPrimary>

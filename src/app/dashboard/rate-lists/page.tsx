@@ -2,187 +2,166 @@
 
 import { useState, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
+import { HiOutlinePencil, HiOutlineTrash, HiPlusCircle, HiMinusCircle, HiOutlineListBullet } from 'react-icons/hi2';
 import type { RateListData, RateItem } from '@/types/types';
 import { createRateList, updateRateList, deleteRateList, getRateLists } from '@/actions/rate-lists';
 import { useToast } from '@/components/ui/use-toast';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { HiOutlinePencil, HiOutlineTrash, HiPlusCircle, HiMinusCircle } from 'react-icons/hi2';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { HiOutlineInformationCircle } from 'react-icons/hi2';
-import Loading from '@/components/Loading';
-import { loadPatternsFromDB, savePatternsGroupToDB } from '@/actions/currency-patterns';
+import { TableSkeleton, SkeletonBase } from '@/components/Skeletons';
+import {
+  DashboardPageHeader,
+  DashboardSearchInput,
+  DashboardTableContainer,
+  DashboardTable,
+  DashboardTableHeader,
+  DashboardTableHead,
+  DashboardTableBody,
+  DashboardTableRow,
+  DashboardTableCell,
+  ActionButton,
+  PrimaryActionButton,
+  EmptyState,
+  FilterSelect,
+} from '@/components/Dashboard/shared/DashboardTableWrapper';
 
 const parseCurrencyRates = async (text: string): Promise<RateItem[]> => {
-  console.log('=== شروع پردازش متن ===');
-  console.log('متن ورودی:', text);
-
   const rates: RateItem[] = [];
+  const lines = text.split(/[\n\r]+/).map((l) => l.trim()).filter(Boolean);
+
+  // تبدیل اعداد فارسی/عربی به انگلیسی
+  const toEnglishNum = (str: string) =>
+    str.replace(/[۰-۹]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 1728))
+       .replace(/[٠-٩]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 1584));
+
+  // حذف ایموجی‌ها و پرچم‌ها
+  const cleanEmojis = (str: string) =>
+    str.replace(/[\u{1F1E0}-\u{1F1FF}]|[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
+
+  // استخراج همه اعداد از رشته
+  const extractNumbers = (str: string) => {
+    const nums = toEnglishNum(str).match(/[\d,\.]+/g);
+    return nums ? nums.map((n) => n.replace(/,/g, '')) : [];
+  };
+
+  // الگوهای مختلف برای تشخیص
+  const patterns = [
+    // الگو 1: "دلار: خرید 58000 فروش 59000" یا "دلار خرید: 58000 فروش: 59000"
+    /^(.+?)[\s:]+خرید[\s:]*([۰-۹٠-٩\d,\.]+)[\s\-\|]*فروش[\s:]*([۰-۹٠-٩\d,\.]+)/i,
+    // الگو 2: "خرید: 58000 فروش: 59000" بدون اسم (اسم از خط قبل)
+    /^خرید[\s:]*([۰-۹٠-٩\d,\.]+)[\s\-\|]*فروش[\s:]*([۰-۹٠-٩\d,\.]+)/i,
+    // الگو 3: "دلار 58000 / 59000" یا "دلار 58000 - 59000"
+    /^([^\d۰-۹٠-٩]+?)\s*([۰-۹٠-٩\d,\.]+)\s*[\/\-\|]\s*([۰-۹٠-٩\d,\.]+)$/,
+    // الگو 4: "دلار    58000    59000" (تب یا فاصله زیاد)
+    /^([^\d۰-۹٠-٩]+?)\s{2,}([۰-۹٠-٩\d,\.]+)\s+([۰-۹٠-٩\d,\.]+)$/,
+  ];
+
   let currentTitle = '';
 
-  // تقسیم متن به خطوط و حذف خطوط خالی
-  const lines = text
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean);
-  console.log('تعداد خطوط:', lines.length);
-
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    console.log(`\nپردازش خط ${i + 1}:`, line);
+    const line = cleanEmojis(lines[i]);
+    if (!line) continue;
 
-    // تشخیص عنوان با استفاده از پرچم کشورها
-    const countryFlags = '🇺🇲|🇪🇺|🇬🇧|🇨🇭|🇦🇺|🇨🇦|🇷🇺|🇦🇪|🇸🇦|🇹🇷|🇮🇷|🇮🇳|🇵🇰';
-    if (new RegExp(countryFlags, 'u').test(line)) {
-      // حذف ایموجی‌ها و دونقطه و تمیز کردن عنوان
-      currentTitle = line.replace(new RegExp(countryFlags, 'gu'), '').replace(':', '').trim();
-      console.log('عنوان جدید یافت شد:', currentTitle);
+    let matched = false;
+
+    // تست الگوی 1 و 3 و 4 (با اسم)
+    for (const pattern of [patterns[0], patterns[2], patterns[3]]) {
+      const match = line.match(pattern);
+      if (match) {
+        const [, title, buy, sell] = match;
+        const cleanTitle = title.replace(/[:：\-\s]+$/g, '').trim();
+        if (cleanTitle) {
+          rates.push({
+            title: cleanTitle,
+            value: `خرید: ${toEnglishNum(buy).replace(/,/g, '')} | فروش: ${toEnglishNum(sell).replace(/,/g, '')}`,
+          });
+          matched = true;
+          currentTitle = '';
+          break;
+        }
+      }
+    }
+
+    if (matched) continue;
+
+    // تست الگوی 2 (بدون اسم - از خط قبل)
+    const pattern2Match = line.match(patterns[1]);
+    if (pattern2Match && currentTitle) {
+      const [, buy, sell] = pattern2Match;
+      rates.push({
+        title: currentTitle,
+        value: `خرید: ${toEnglishNum(buy).replace(/,/g, '')} | فروش: ${toEnglishNum(sell).replace(/,/g, '')}`,
+      });
+      currentTitle = '';
       continue;
     }
 
-    // تشخیص نرخ‌های خرید و فروش
-    if (line.includes('خرید:') && line.includes('فروش:')) {
-      try {
-        console.log('خط حاوی نرخ یافت شد:', line);
+    // اگه خط فقط متن بود (بدون عدد یا با عدد کم)، احتمالاً اسم ارزه
+    const numbers = extractNumbers(line);
+    const textPart = line.replace(/[\d۰-۹٠-٩,\.\s\-\/\|:：]+/g, '').trim();
 
-        // تبدیل اعداد فارسی به انگلیسی
-        const persianToEnglish = (str: string) => {
-          return str.replace(/[۰-۹]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 1728));
-        };
-
-        // استخراج نرخ‌های خرید و فروش
-        const buyMatch = line.match(/خرید:\s*([\d۰-۹\.,]+)/);
-        const sellMatch = line.match(/فروش:\s*([\d۰-۹\.,]+)/);
-
-        if (buyMatch && sellMatch) {
-          const buyRate = persianToEnglish(buyMatch[1].trim());
-          const sellRate = persianToEnglish(sellMatch[1].trim());
-
-          console.log('نرخ خرید:', buyRate);
-          console.log('نرخ فروش:', sellRate);
-
-          if (currentTitle && buyRate && sellRate) {
-            const rateItem = {
-              title: currentTitle,
-              value: `خرید: ${buyRate} | فروش: ${sellRate}`,
-            };
-            rates.push(rateItem);
-            console.log('نرخ جدید اضافه شد:', rateItem);
-          }
-        }
-      } catch (error) {
-        console.error('خطا در پردازش خط:', error);
-      }
+    if (numbers.length === 0 && textPart.length > 0 && textPart.length < 50) {
+      currentTitle = textPart.replace(/[:：]+$/g, '').trim();
+    }
+    // اگه دو عدد داریم و اسم قبلی هست
+    else if (numbers.length >= 2 && currentTitle) {
+      rates.push({
+        title: currentTitle,
+        value: `خرید: ${numbers[0]} | فروش: ${numbers[1]}`,
+      });
+      currentTitle = '';
+    }
+    // اگه دو عدد داریم و متن هم داریم
+    else if (numbers.length >= 2 && textPart.length > 0) {
+      rates.push({
+        title: textPart.replace(/[:：]+$/g, '').trim(),
+        value: `خرید: ${numbers[0]} | فروش: ${numbers[1]}`,
+      });
     }
   }
-
-  console.log('=== پایان پردازش ===');
-  console.log('تعداد نرخ‌های استخراج شده:', rates.length);
-  console.log('نرخ‌های نهایی:', rates);
 
   return rates;
 };
 
 const formatDate = (date: string | Date | undefined) => {
   if (!date) return 'نامشخص';
-  const d = new Date(date);
-  // تبدیل به تاریخ شمسی
-  const options: Intl.DateTimeFormatOptions = {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  };
-  return new Intl.DateTimeFormat('fa-IR', options).format(d);
+  return new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(date));
 };
+
 
 const RateListsPage = () => {
   const [rateLists, setRateLists] = useState<RateListData[]>([]);
   const [filteredRateLists, setFilteredRateLists] = useState<RateListData[]>([]);
-  const [filterOptions, setFilterOptions] = useState({
-    search: '',
-    currency: 'all',
-    sortBy: 'newest',
-    dateRange: 'all', // all, today, week, month
-  });
+  const [filterOptions, setFilterOptions] = useState({ search: '', currency: 'all', sortBy: 'newest', dateRange: 'all' });
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingRateList, setEditingRateList] = useState<RateListData | null>(null);
   const { toast } = useToast();
 
-  const {
-    register,
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<RateListData>({
-    defaultValues: {
-      title: '',
-      rates: [{ title: '', value: '' }],
-      isActive: true,
-    },
+  const { register, control, handleSubmit, reset, formState: { errors } } = useForm<RateListData>({
+    defaultValues: { title: '', rates: [{ title: '', value: '' }], isActive: true },
   });
 
-  const { fields, append, remove, replace } = useFieldArray({
-    control,
-    name: 'rates',
-  });
+  const { fields, append, remove, replace } = useFieldArray({ control, name: 'rates' });
 
   const handleRatePaste = async (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
     const text = e.clipboardData.getData('text');
-
     try {
-      console.log('=== شروع پردازش پیست ===');
-      console.log('متن ورودی:', text);
-
       const rates = await parseCurrencyRates(text);
-      console.log('نرخ‌های پردازش شده:', rates);
-
       if (rates.length > 0) {
-        console.log('در حال ذخیره نرخ‌ها...');
         replace(rates);
-        toast({
-          title: 'موفقیت',
-          description: `${rates.length} نرخ ارز با موفقیت اضافه شد`,
-          variant: 'success',
-        });
-        console.log('نرخ‌ها با موفقیت ذخیره شدند');
+        toast({ title: 'موفقیت', description: `${rates.length} نرخ ارز با موفقیت اضافه شد`, variant: 'success' });
       } else {
-        console.log('هیچ نرخی یافت نشد');
-        toast({
-          title: 'خطا',
-          description: 'هیچ نرخ ارزی در متن یافت نشد',
-          variant: 'destructive',
-        });
+        toast({ title: 'خطا', description: 'هیچ نرخ ارزی در متن یافت نشد', variant: 'destructive' });
       }
     } catch (error) {
-      console.error('خطا در پردازش نرخ‌ها:', error);
-      toast({
-        title: 'خطا',
-        description: 'خطا در پردازش نرخ‌های ارز',
-        variant: 'destructive',
-      });
+      toast({ title: 'خطا', description: 'خطا در پردازش نرخ‌های ارز', variant: 'destructive' });
     }
   };
 
@@ -190,57 +169,32 @@ const RateListsPage = () => {
     try {
       const result = await createRateList(data);
       if (result.success) {
-        toast({
-          title: 'موفقیت',
-          description: 'لیست نرخ با موفقیت ایجاد شد',
-        });
+        toast({ title: 'موفقیت', description: 'لیست نرخ با موفقیت ایجاد شد' });
         setRateLists([...rateLists, result.data!]);
         setShowCreateModal(false);
         reset();
       } else {
-        toast({
-          title: 'خطا',
-          description: result.message,
-          variant: 'destructive',
-        });
+        toast({ title: 'خطا', description: result.message, variant: 'destructive' });
       }
     } catch (error) {
-      toast({
-        title: 'خطا',
-        description: 'خطا در ایجاد لیست نرخ',
-        variant: 'destructive',
-      });
+      toast({ title: 'خطا', description: 'خطا در ایجاد لیست نرخ', variant: 'destructive' });
     }
   };
 
   const handleEditSubmit = async (data: RateListData) => {
     if (!editingRateList) return;
-
     try {
       const result = await updateRateList(editingRateList.id!, data);
       if (result.success) {
-        toast({
-          title: 'موفقیت',
-          description: 'لیست نرخ با موفقیت به‌روزرسانی شد',
-        });
-        setRateLists(
-          rateLists.map((list) => (list.id === editingRateList.id ? result.data! : list)),
-        );
+        toast({ title: 'موفقیت', description: 'لیست نرخ با موفقیت به‌روزرسانی شد' });
+        setRateLists(rateLists.map((list) => (list.id === editingRateList.id ? result.data! : list)));
         setEditingRateList(null);
         reset();
       } else {
-        toast({
-          title: 'خطا',
-          description: result.message,
-          variant: 'destructive',
-        });
+        toast({ title: 'خطا', description: result.message, variant: 'destructive' });
       }
     } catch (error) {
-      toast({
-        title: 'خطا',
-        description: 'خطا در به‌روزرسانی لیست نرخ',
-        variant: 'destructive',
-      });
+      toast({ title: 'خطا', description: 'خطا در به‌روزرسانی لیست نرخ', variant: 'destructive' });
     }
   };
 
@@ -249,24 +203,13 @@ const RateListsPage = () => {
       try {
         const result = await deleteRateList(id);
         if (result.success) {
-          toast({
-            title: 'موفقیت',
-            description: 'لیست نرخ با موفقیت حذف شد',
-          });
+          toast({ title: 'موفقیت', description: 'لیست نرخ با موفقیت حذف شد' });
           setRateLists(rateLists.filter((list) => list.id !== id));
         } else {
-          toast({
-            title: 'خطا',
-            description: result.message,
-            variant: 'destructive',
-          });
+          toast({ title: 'خطا', description: result.message, variant: 'destructive' });
         }
       } catch (error) {
-        toast({
-          title: 'خطا',
-          description: 'خطا در حذف لیست نرخ',
-          variant: 'destructive',
-        });
+        toast({ title: 'خطا', description: 'خطا در حذف لیست نرخ', variant: 'destructive' });
       }
     }
   };
@@ -277,11 +220,7 @@ const RateListsPage = () => {
         const data = await getRateLists();
         setRateLists(data);
       } catch (error) {
-        toast({
-          title: 'خطا',
-          description: 'خطا در بارگیری لیست‌های نرخ',
-          variant: 'destructive',
-        });
+        toast({ title: 'خطا', description: 'خطا در بارگیری لیست‌های نرخ', variant: 'destructive' });
       } finally {
         setIsLoading(false);
       }
@@ -290,478 +229,187 @@ const RateListsPage = () => {
   }, []);
 
   useEffect(() => {
-    if (fields.length === 0) {
-      append({ title: '', value: '' });
-    }
+    if (fields.length === 0) append({ title: '', value: '' });
   }, [append, fields.length]);
 
-  // اضافه کردن تابع فیلتر
-  const applyFilters = () => {
-    let result = [...rateLists];
 
-    // فیلتر جستجو
+  useEffect(() => {
+    let result = [...rateLists];
     if (filterOptions.search) {
       const searchLower = filterOptions.search.toLowerCase();
-      result = result.filter(
-        (list) =>
-          list.title.toLowerCase().includes(searchLower) ||
-          list.rates.some(
-            (rate) =>
-              rate.title.toLowerCase().includes(searchLower) ||
-              rate.value.toLowerCase().includes(searchLower),
-          ),
-      );
+      result = result.filter((list) => list.title.toLowerCase().includes(searchLower) || list.rates.some((rate) => rate.title.toLowerCase().includes(searchLower) || rate.value.toLowerCase().includes(searchLower)));
     }
-
-    // فیلتر نوع ارز
-    if (filterOptions.currency !== 'all') {
-      const currencyMap: { [key: string]: string[] } = {
-        USD: ['دلار', 'دالر آمریکا', 'USD'],
-        EUR: ['یورو', 'EUR'],
-        GBP: ['پوند', 'GBP'],
-        AED: ['درهم', 'AED'],
-        TRY: ['لیر', 'لیره', 'TRY'],
-        IRR: ['تومان', 'ریال', 'IRR'],
-        PKR: ['کلدار', 'روپیه پاکستان', 'PKR'],
-        INR: ['روپیه هند', 'INR'],
-        RUB: ['روبل', 'RUB'],
-        CHF: ['فرانک', 'CHF'],
-        AUD: ['دلار استرالیا', 'AUD'],
-        CAD: ['دلار کانادا', 'CAD'],
-        SAR: ['ریال سعودی', 'SAR'],
-      };
-
-      const currencyKeywords = currencyMap[filterOptions.currency] || [];
-      const hasMatchingCurrency = result.some((list) =>
-        list.rates.some((rate) =>
-          currencyKeywords.some((keyword) =>
-            rate.title.toLowerCase().includes(keyword.toLowerCase()),
-          ),
-        ),
-      );
-
-      if (!hasMatchingCurrency) {
-        return [];
-      }
-    }
-
-    // فیلتر تاریخ
     if (filterOptions.dateRange !== 'all') {
-      const now = new Date();
       const getDateLimit = () => {
+        const now = new Date();
         switch (filterOptions.dateRange) {
-          case 'today':
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            return today;
-          case 'week':
-            const week = new Date();
-            week.setDate(week.getDate() - 7);
-            return week;
-          case 'month':
-            const month = new Date();
-            month.setMonth(month.getMonth() - 1);
-            return month;
-          default:
-            return new Date(0);
+          case 'today': now.setHours(0, 0, 0, 0); return now;
+          case 'week': now.setDate(now.getDate() - 7); return now;
+          case 'month': now.setMonth(now.getMonth() - 1); return now;
+          default: return new Date(0);
         }
       };
-      const dateLimit = getDateLimit();
-      result = result.filter((list) => new Date(list.updatedAt || '') > dateLimit);
+      result = result.filter((list) => new Date(list.updatedAt || '') > getDateLimit());
     }
-
-    // مرتب‌سازی
     result.sort((a, b) => {
       switch (filterOptions.sortBy) {
-        case 'newest':
-          return new Date(b.updatedAt || '').getTime() - new Date(a.updatedAt || '').getTime();
-        case 'oldest':
-          return new Date(a.updatedAt || '').getTime() - new Date(b.updatedAt || '').getTime();
-        case 'title-asc':
-          return a.title.localeCompare(b.title);
-        case 'title-desc':
-          return b.title.localeCompare(a.title);
-        case 'rates-count':
-          return b.rates.length - a.rates.length;
-        default:
-          return 0;
+        case 'newest': return new Date(b.updatedAt || '').getTime() - new Date(a.updatedAt || '').getTime();
+        case 'oldest': return new Date(a.updatedAt || '').getTime() - new Date(b.updatedAt || '').getTime();
+        case 'title-asc': return a.title.localeCompare(b.title);
+        case 'title-desc': return b.title.localeCompare(a.title);
+        default: return 0;
       }
     });
-
     setFilteredRateLists(result);
-  };
-
-  // اعمال فیلترها هر بار که فیلترها یا لیست اصلی تغییر می‌کند
-  useEffect(() => {
-    applyFilters();
   }, [filterOptions, rateLists]);
 
-  if (isLoading) return <Loading />;
+  const currencyOptions = [
+    { value: 'all', label: 'همه ارزها' }, { value: 'USD', label: 'دلار' }, { value: 'EUR', label: 'یورو' },
+    { value: 'GBP', label: 'پوند' }, { value: 'AED', label: 'درهم' }, { value: 'TRY', label: 'لیر' },
+  ];
+  const dateOptions = [
+    { value: 'all', label: 'همه زمان‌ها' }, { value: 'today', label: 'امروز' },
+    { value: 'week', label: 'هفته اخیر' }, { value: 'month', label: 'ماه اخیر' },
+  ];
+  const sortOptions = [
+    { value: 'newest', label: 'جدیدترین' }, { value: 'oldest', label: 'قدیمی‌ترین' },
+    { value: 'title-asc', label: 'عنوان (صعودی)' }, { value: 'title-desc', label: 'عنوان (نزولی)' },
+  ];
+
+  const inputClassName = 'h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80';
+
+  if (isLoading) return (
+    <div className="min-h-screen p-4 sm:p-6 lg:p-8 space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <SkeletonBase className="h-7 w-44 rounded-lg" />
+          <SkeletonBase className="h-4 w-56 rounded-md" />
+        </div>
+        <SkeletonBase className="h-10 w-36 rounded-xl" />
+      </div>
+      <TableSkeleton rows={8} />
+    </div>
+  );
+
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 lg:p-8 rtl" dir="rtl">
-      <div className="flex flex-col sm:flex-row gap-3 sm:gap-0 justify-between items-center mb-6">
-        <h1 className="text-lg sm:text-2xl font-bold">مدیریت لیست‌های نرخ</h1>
-        <Button
-          onClick={() => setShowCreateModal(true)}
-          className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto text-sm sm:text-base"
-        >
-          <HiPlusCircle className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
-          افزودن لیست نرخ
-        </Button>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 p-4 sm:p-6 lg:p-8 dark:from-neutral-900 dark:via-neutral-900 dark:to-primary-950/20" dir="rtl">
+      <DashboardPageHeader title="مدیریت لیست‌های نرخ" description="مشاهده و مدیریت لیست‌های نرخ ارز">
+        <DashboardSearchInput value={filterOptions.search} onChange={(v) => setFilterOptions((p) => ({ ...p, search: v }))} placeholder="جستجو..." />
+        <FilterSelect value={filterOptions.currency} onChange={(v) => setFilterOptions((p) => ({ ...p, currency: v }))} options={currencyOptions} />
+        <FilterSelect value={filterOptions.dateRange} onChange={(v) => setFilterOptions((p) => ({ ...p, dateRange: v }))} options={dateOptions} />
+        <FilterSelect value={filterOptions.sortBy} onChange={(v) => setFilterOptions((p) => ({ ...p, sortBy: v }))} options={sortOptions} />
+        <PrimaryActionButton onClick={() => setShowCreateModal(true)}>
+          <HiPlusCircle className="h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
+          <span>افزودن لیست نرخ</span>
+        </PrimaryActionButton>
+      </DashboardPageHeader>
 
-      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center">
-        <div className="flex flex-col sm:flex-row gap-3 w-full">
-          {/* جستجو */}
-          <Input
-            placeholder="جستجو در عنوان و نرخ‌ها..."
-            value={filterOptions.search}
-            onChange={(e) => setFilterOptions((prev) => ({ ...prev, search: e.target.value }))}
-            className="w-full sm:w-64 text-right"
-            dir="rtl"
-          />
-
-          {/* فیلتر نوع ارز */}
-          <select
-            className="border rounded-md p-2 pl-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-right appearance-none relative bg-white"
-            value={filterOptions.currency}
-            onChange={(e) => setFilterOptions((prev) => ({ ...prev, currency: e.target.value }))}
-            dir="rtl"
-            style={{ backgroundPosition: '0.5rem center' }}
-          >
-            <option value="all">همه ارزها</option>
-            <option value="USD">دلار</option>
-            <option value="EUR">یورو</option>
-            <option value="GBP">پوند</option>
-            <option value="AED">درهم</option>
-            <option value="TRY">لیر</option>
-            <option value="IRR">تومان</option>
-            <option value="PKR">کلدار</option>
-            <option value="INR">روپیه هند</option>
-            <option value="RUB">روبل</option>
-            <option value="CHF">فرانک</option>
-            <option value="AUD">دلار استرالیا</option>
-            <option value="CAD">دلار کانادا</option>
-            <option value="SAR">ریال سعودی</option>
-          </select>
-
-          {/* فیلتر بازه زمانی */}
-          <select
-            className="border rounded-md p-2 pl-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-right appearance-none relative bg-white"
-            value={filterOptions.dateRange}
-            onChange={(e) => setFilterOptions((prev) => ({ ...prev, dateRange: e.target.value }))}
-            dir="rtl"
-            style={{ backgroundPosition: '0.5rem center' }}
-          >
-            <option value="all">همه زمان‌ها</option>
-            <option value="today">امروز</option>
-            <option value="week">هفته اخیر</option>
-            <option value="month">ماه اخیر</option>
-          </select>
-
-          {/* مرتب‌سازی */}
-          <select
-            className="border rounded-md p-2 pl-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-right appearance-none relative bg-white"
-            value={filterOptions.sortBy}
-            onChange={(e) => setFilterOptions((prev) => ({ ...prev, sortBy: e.target.value }))}
-            dir="rtl"
-            style={{ backgroundPosition: '0.5rem center' }}
-          >
-            <option value="newest">جدیدترین</option>
-            <option value="oldest">قدیمی‌ترین</option>
-            <option value="title-asc">عنوان (صعودی)</option>
-            <option value="title-desc">عنوان (نزولی)</option>
-            <option value="rates-count">تعداد نرخ‌ها</option>
-          </select>
-        </div>
-      </div>
-
-      {/* نمایش موبایل */}
-      <div className="md:hidden space-y-4">
-        {filteredRateLists.map((rateList) => (
-          <div key={rateList.id} className="bg-white rounded-lg shadow-sm border p-4">
-            <div className="flex justify-between items-start mb-3">
-              <h3 className="font-semibold text-lg">{rateList.title}</h3>
-              <span className="text-xs text-gray-500">{formatDate(rateList.updatedAt)}</span>
-            </div>
-
-            <div className="bg-gray-50 rounded-lg p-3 mb-3 max-h-[200px] overflow-y-auto">
-              {rateList.rates.map((rate, index) => (
-                <div
-                  key={index}
-                  className="flex justify-between items-center py-1.5 border-b border-gray-100 last:border-0"
-                >
-                  <span className="text-sm font-medium">{rate.title}</span>
-                  <span className="text-sm text-gray-600">{rate.value}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1"
-                onClick={() => {
-                  setEditingRateList(rateList);
-                  reset(rateList);
-                }}
-              >
-                <HiOutlinePencil className="ml-1 h-4 w-4" />
-                ویرایش
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1"
-                onClick={() => handleDelete(rateList.id!)}
-              >
-                <HiOutlineTrash className="ml-1 h-4 w-4" />
-                حذف
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* نمایش دسکتاپ و تبلت */}
-      <div className="hidden md:block border rounded-lg">
-        <ScrollArea className="h-[calc(100vh-22rem)]">
-          <Table dir="rtl">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-1/4">عنوان</TableHead>
-                <TableHead className="w-2/4">نرخ‌ها</TableHead>
-                <TableHead className="w-1/4">آخرین به‌روزرسانی</TableHead>
-                <TableHead className="w-1/8">عملیات</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+      {filteredRateLists.length === 0 ? (
+        <DashboardTableContainer>
+          <EmptyState title="لیست نرخی یافت نشد" description="هنوز هیچ لیست نرخی در سیستم ثبت نشده است." icon={<HiOutlineListBullet className="h-8 w-8 text-neutral-400" />} />
+        </DashboardTableContainer>
+      ) : (
+        <DashboardTableContainer>
+          <DashboardTable>
+            <DashboardTableHeader>
+              <tr>
+                <DashboardTableHead>عنوان</DashboardTableHead>
+                <DashboardTableHead>نرخ‌ها</DashboardTableHead>
+                <DashboardTableHead hidden>آخرین به‌روزرسانی</DashboardTableHead>
+                <DashboardTableHead>عملیات</DashboardTableHead>
+              </tr>
+            </DashboardTableHeader>
+            <DashboardTableBody>
               {filteredRateLists.map((rateList) => (
-                <TableRow key={rateList.id}>
-                  <TableCell className="align-top py-4">{rateList.title}</TableCell>
-                  <TableCell className="align-top py-4">
-                    <div className="max-h-[150px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400 pr-2">
-                      <div className="space-y-1.5">
-                        {rateList.rates.map((rate, index) => (
-                          <div key={index} className="flex items-center gap-2 text-sm">
-                            <span className="font-medium min-w-[100px]">{rate.title}:</span>
-                            <span>{rate.value}</span>
-                          </div>
-                        ))}
-                      </div>
+                <DashboardTableRow key={rateList.id}>
+                  <DashboardTableCell>
+                    <span className="font-medium text-neutral-900 dark:text-neutral-100">{rateList.title}</span>
+                  </DashboardTableCell>
+                  <DashboardTableCell>
+                    <div className="max-h-24 space-y-1 overflow-y-auto pr-2">
+                      {rateList.rates.slice(0, 3).map((rate, index) => (
+                        <div key={index} className="flex items-center gap-2 text-sm">
+                          <span className="font-medium text-neutral-700 dark:text-neutral-300">{rate.title}:</span>
+                          <span className="text-neutral-500 dark:text-neutral-400">{rate.value}</span>
+                        </div>
+                      ))}
+                      {rateList.rates.length > 3 && (
+                        <span className="text-xs text-primary-500">+{rateList.rates.length - 3} مورد دیگر</span>
+                      )}
                     </div>
-                  </TableCell>
-                  <TableCell className="align-top py-4 text-sm text-gray-500">
-                    {formatDate(rateList.updatedAt)}
-                  </TableCell>
-                  <TableCell className="align-top py-4">
+                  </DashboardTableCell>
+                  <DashboardTableCell hidden>
+                    <span className="text-sm text-neutral-500 dark:text-neutral-400">{formatDate(rateList.updatedAt)}</span>
+                  </DashboardTableCell>
+                  <DashboardTableCell>
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setEditingRateList(rateList);
-                          reset(rateList);
-                        }}
-                      >
-                        <HiOutlinePencil className="ml-1" />
-                        ویرایش
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(rateList.id!)}
-                      >
-                        <HiOutlineTrash className="ml-1" />
-                        حذف
-                      </Button>
+                      <ActionButton variant="edit" onClick={() => { setEditingRateList(rateList); reset(rateList); }}>
+                        <HiOutlinePencil className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">ویرایش</span>
+                      </ActionButton>
+                      <ActionButton variant="delete" onClick={() => handleDelete(rateList.id!)}>
+                        <HiOutlineTrash className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">حذف</span>
+                      </ActionButton>
                     </div>
-                  </TableCell>
-                </TableRow>
+                  </DashboardTableCell>
+                </DashboardTableRow>
               ))}
-            </TableBody>
-          </Table>
-        </ScrollArea>
-      </div>
+            </DashboardTableBody>
+          </DashboardTable>
+        </DashboardTableContainer>
+      )}
 
-      <Dialog
-        open={showCreateModal || !!editingRateList}
-        onOpenChange={(open) => {
-          if (!open) {
-            setShowCreateModal(false);
-            setEditingRateList(null);
-            reset();
-          }
-        }}
-      >
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>
+
+      <Dialog open={showCreateModal || !!editingRateList} onOpenChange={(open) => { if (!open) { setShowCreateModal(false); setEditingRateList(null); reset(); } }}>
+        <DialogContent className="max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
+          <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-6 py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
+            <DialogTitle className="text-xl font-bold text-neutral-900 dark:text-neutral-50">
               {editingRateList ? 'ویرایش لیست نرخ' : 'افزودن لیست نرخ جدید'}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit(editingRateList ? handleEditSubmit : handleCreateSubmit)}>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="title">عنوان لیست</Label>
-                <Input
-                  id="title"
-                  {...register('title', { required: 'عنوان لیست الزامی است' })}
-                  className="mt-1"
-                  placeholder="مثل کردیت کارت یا نرخ بازار تهران "
-                />
-                {errors.title && (
-                  <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>
-                )}
+          <form onSubmit={handleSubmit(editingRateList ? handleEditSubmit : handleCreateSubmit)} className="max-h-[calc(90vh-120px)] overflow-y-auto p-6">
+            <div className="space-y-5">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">عنوان لیست</Label>
+                <Input {...register('title', { required: 'عنوان لیست الزامی است' })} placeholder="مثل کردیت کارت یا نرخ بازار تهران" className={inputClassName} />
+                {errors.title && <p className="text-xs text-red-500">{errors.title.message}</p>}
               </div>
 
-              <div className="space-y-2">
-                <div className="flex justify-between items-center mb-2">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Label className="text-lg font-medium">نرخ‌ها</Label>
-                    <div className="hidden sm:block">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 hover:bg-blue-50"
-                              type="button"
-                            >
-                              <HiOutlineInformationCircle className="h-6 w-6 text-blue-500" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent
-                            className="z-[9999] w-[280px] p-3 bg-white shadow-lg rounded-lg border border-blue-100"
-                            side="bottom"
-                            sideOffset={5}
-                            align="start"
-                          >
-                            <div className="space-y-2 text-sm">
-                              <p className="font-medium border-b pb-1 text-blue-900">
-                                راهنمای درج سریع نرخ‌ها
-                              </p>
-                              <div className="space-y-1.5">
-                                <p>۱. از اکسل یا هر برنامه دیگر، لیست نرخ‌ها را کپی کنید</p>
-                                <p>۲. در فیلد نرخ پیست (Ctrl+V) کنید</p>
-                                <p>۳. هر خط به صورت خودکار به یک نرخ جدید تبدیل می‌شود</p>
-                              </div>
-                              <div className="bg-gray-50 p-2 rounded-md">
-                                <p className="font-medium mb-1.5">فرمت‌های قابل قبول:</p>
-                                <div className="space-y-1 pr-2 text-xs">
-                                  <p>- دلار | 50000</p>
-                                  <p>- دلار : 50000</p>
-                                  <p>- دلار , 50000</p>
-                                  <p>- دلار 50000</p>
-                                </div>
-                              </div>
-                            </div>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-
-                    <div className="sm:hidden">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 hover:bg-blue-50"
-                            type="button"
-                          >
-                            <HiOutlineInformationCircle className="h-6 w-6 text-blue-500" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[425px]">
-                          <DialogHeader>
-                            <DialogTitle className="text-right">راهنمای درج سریع نرخ‌ها</DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4 mt-4">
-                            <div className="space-y-2">
-                              <p>۱. از اکسل یا هر برنامه دیگر، لیست نرخ‌ها را کپی کنید</p>
-                              <p>۲. در فیلد نرخ پیست (Ctrl+V) کنید</p>
-                              <p>۳. هر خط به صورت خودکار به یک نرخ جدید تبدیل می‌شود</p>
-                            </div>
-                            <div className="bg-gray-50 p-3 rounded-lg">
-                              <p className="font-medium mb-2">فرمت‌های قابل قبول:</p>
-                              <div className="space-y-1.5 pr-3">
-                                <p>- دلار | 50000</p>
-                                <p>- دلار : 50000</p>
-                                <p>- دلار , 50000</p>
-                                <p>- دلار 50000</p>
-                              </div>
-                            </div>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
+                    <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نرخ‌ها</Label>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button type="button" className="rounded-full p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700">
+                            <HiOutlineInformationCircle className="h-4 w-4 text-primary-500" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs p-3">
+                          <p className="text-sm">می‌توانید نرخ‌ها را از اکسل کپی و در فیلد پیست کنید.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        replace([]);
-                        append({ title: '', value: '' });
-                      }}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <HiOutlineTrash className="ml-1 h-4 w-4" />
-                      حذف همه
+                    <Button type="button" variant="outline" size="sm" onClick={() => { replace([]); append({ title: '', value: '' }); }} className="text-red-600 hover:bg-red-50">
+                      <HiOutlineTrash className="ml-1 h-4 w-4" />حذف همه
                     </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => append({ title: '', value: '' })}
-                    >
-                      <HiPlusCircle className="ml-1 h-4 w-4" />
-                      افزودن نرخ
+                    <Button type="button" variant="outline" size="sm" onClick={() => append({ title: '', value: '' })}>
+                      <HiPlusCircle className="ml-1 h-4 w-4" />افزودن نرخ
                     </Button>
                   </div>
                 </div>
-                <ScrollArea className="h-[calc(100vh-25rem)] rounded-lg border bg-gray-50/50">
-                  <div className="space-y-2 p-3 min-h-[300px]">
+                <ScrollArea className="h-64 rounded-xl border border-neutral-200/60 bg-neutral-50/50 p-3 dark:border-neutral-700/50 dark:bg-neutral-800/50">
+                  <div className="space-y-2">
                     {fields.map((field, index) => (
-                      <div
-                        key={field.id}
-                        className="flex items-center gap-2 bg-white p-2 rounded-md shadow-sm border border-gray-100"
-                        dir="rtl"
-                      >
-                        <Input
-                          {...register(`rates.${index}.title` as const, {
-                            required: 'عنوان نرخ الزامی است',
-                          })}
-                          placeholder="مثال: دلار | 50000 یا دلار: 50000"
-                          className="flex-1 text-right bg-gray-50/50 focus:bg-white transition-colors"
-                          dir="rtl"
-                          onPaste={(e) => handleRatePaste(e)}
-                        />
-                        <Input
-                          {...register(`rates.${index}.value` as const, {
-                            required: 'مقدار نرخ الزامی است',
-                          })}
-                          placeholder="مقدار نرخ"
-                          className="flex-1 text-right bg-gray-50/50 focus:bg-white transition-colors"
-                          dir="rtl"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            remove(index);
-                            if (fields.length === 1) {
-                              append({ title: '', value: '' });
-                            }
-                          }}
-                          className="flex-shrink-0 text-gray-500 hover:text-red-600 hover:bg-red-50"
-                        >
+                      <div key={field.id} className="flex items-center gap-2 rounded-lg bg-white p-2 shadow-sm dark:bg-neutral-700/50">
+                        <Input {...register(`rates.${index}.title` as const)} placeholder="عنوان نرخ" className={`${inputClassName} flex-1`} onPaste={handleRatePaste} />
+                        <Input {...register(`rates.${index}.value` as const)} placeholder="مقدار نرخ" className={`${inputClassName} flex-1`} />
+                        <Button type="button" variant="ghost" size="icon" onClick={() => { remove(index); if (fields.length === 1) append({ title: '', value: '' }); }} className="text-neutral-500 hover:text-red-600">
                           <HiMinusCircle className="h-5 w-5" />
                         </Button>
                       </div>
@@ -770,9 +418,10 @@ const RateListsPage = () => {
                 </ScrollArea>
               </div>
             </div>
-
             <DialogFooter className="mt-6">
-              <Button type="submit">{editingRateList ? 'ذخیره تغییرات' : 'ایجاد لیست'}</Button>
+              <Button type="submit" className="w-full rounded-xl bg-gradient-to-l from-primary-500 to-primary-600 py-3 font-medium text-white shadow-lg">
+                {editingRateList ? 'ذخیره تغییرات' : 'ایجاد لیست'}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

@@ -26,7 +26,7 @@ const PostCardMetaV2: FC<PostCardMetaV2Props> = ({
     <div
       className={`nc-PostCardMetaV2 inline-flex items-center flex-wrap text-neutral-800 dark:text-neutral-200 ${className}`}
     >
-      <div className="relative flex items-center space-x-2 rtl:space-x-reverse">
+      <div className="relative flex items-center gap-2">
         {!hiddenAvatar && (
           <Avatar
             radius="rounded-full"

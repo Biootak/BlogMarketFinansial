@@ -28,23 +28,44 @@ export async function getPostsByAuthor(
         break;
     }
 
-    const [posts, total] = await prisma.$transaction([
+    const where = { authorId, status: 'PUBLISHED' as const };
+
+    const [posts, total] = await Promise.all([
       prisma.post.findMany({
-        where: { authorId },
+        where,
         include: {
           author: {
-            include: {
-              profile: true,
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              profile: {
+                select: {
+                  avatar: true,
+                  jobName: true,
+                },
+              },
             },
           },
-          categories: true,
-          tags: true,
+          categories: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+          tags: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
           _count: {
             select: {
               comments: true,
               likes: true,
               savedBy: true,
-              tags: true,
             },
           },
         },
@@ -52,14 +73,14 @@ export async function getPostsByAuthor(
         skip,
         take: limit,
       }),
-      prisma.post.count({ where: { authorId } }),
+      prisma.post.count({ where }),
     ]);
 
     return {
       success: true,
       message: 'پست‌های نویسنده با موفقیت دریافت شدند.',
       data: {
-        posts,
+        posts: posts as PostWithRelations[],
         total,
         pages: Math.ceil(total / limit),
       },
@@ -68,7 +89,7 @@ export async function getPostsByAuthor(
     console.error('خطا در دریافت پست‌های نویسنده:', error);
     return {
       success: false,
-      message: 'خطا در دریافت پست‌های نویسنده. لطفاً دوباره تلاش کنید.',
+      message: 'خطا در دریافت پست‌های نویسنده.',
       error: error instanceof Error ? error.message : String(error),
     };
   }

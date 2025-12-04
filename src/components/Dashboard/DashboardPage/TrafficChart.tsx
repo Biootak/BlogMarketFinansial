@@ -1,20 +1,58 @@
 'use client';
 
 import type React from 'react';
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { motion } from 'framer-motion';
 import useSWR from 'swr';
+import { HiOutlineEye, HiOutlineCalendarDays } from 'react-icons/hi2';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl px-4 py-3 rounded-xl shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-100 dark:border-slate-700"
+      >
+        <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{label}</p>
+        <p className="text-lg font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
+          {payload[0].value.toLocaleString('fa-IR')} بازدید
+        </p>
+      </motion.div>
+    );
+  }
+  return null;
+};
+
 const TrafficChart: React.FC = () => {
-  const { data: trafficStats, error } = useSWR('/api/traffic-stats', fetcher, {
-    refreshInterval: 60000, // Refresh every minute
+  const { data: trafficStats, error, isLoading } = useSWR('/api/traffic-stats', fetcher, {
+    refreshInterval: 60000,
   });
 
-  if (error) return <div className="text-center py-4 text-red-500">خطا در بارگیری داده‌ها</div>;
-  if (!trafficStats || !trafficStats.labels || !trafficStats.data) 
-    return <div className="text-center py-4">در حال بارگیری...</div>;
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-center py-12">
+        <div className="w-16 h-16 mb-4 rounded-2xl bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center">
+          <span className="text-2xl">⚠️</span>
+        </div>
+        <p className="text-rose-600 dark:text-rose-400 font-medium">خطا در بارگیری داده‌ها</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">لطفاً دوباره تلاش کنید</p>
+      </div>
+    );
+  }
+
+  if (isLoading || !trafficStats || !trafficStats.labels || !trafficStats.data) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full">
+        <div className="relative">
+          <div className="w-12 h-12 rounded-full border-4 border-violet-200 dark:border-violet-900 border-t-violet-600 animate-spin" />
+        </div>
+        <p className="mt-4 text-slate-500 dark:text-slate-400 text-sm">در حال بارگیری...</p>
+      </div>
+    );
+  }
 
   const chartData = trafficStats.labels.map((label: string, index: number) => ({
     name: label,
@@ -23,79 +61,89 @@ const TrafficChart: React.FC = () => {
 
   return (
     <div className="w-full h-full flex flex-col">
+      {/* Chart */}
       <div className="flex-grow min-h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <BarChart data={chartData} margin={{ top: 20, right: 10, left: -10, bottom: 5 }}>
+            <defs>
+              <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#8B5CF6" stopOpacity={1} />
+                <stop offset="50%" stopColor="#7C3AED" stopOpacity={0.9} />
+                <stop offset="100%" stopColor="#6366F1" stopOpacity={0.7} />
+              </linearGradient>
+              <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#8B5CF6" floodOpacity="0.3" />
+              </filter>
+            </defs>
+            <CartesianGrid 
+              strokeDasharray="3 3" 
+              vertical={false} 
+              stroke="currentColor" 
+              className="text-slate-200 dark:text-slate-700/50" 
+            />
             <XAxis
               dataKey="name"
               stroke="currentColor"
-              fontSize={10}
+              fontSize={11}
               tickLine={false}
               axisLine={false}
               dy={10}
-              className="text-gray-600 dark:text-gray-400"
+              className="text-slate-500 dark:text-slate-400"
             />
             <YAxis
               stroke="currentColor"
-              fontSize={10}
+              fontSize={11}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(value) => `${value}`}
-              className="text-gray-600 dark:text-gray-400"
+              tickFormatter={(value) => value.toLocaleString('fa-IR')}
+              className="text-slate-500 dark:text-slate-400"
+              dx={-5}
             />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                backdropFilter: 'blur(4px)',
-                border: 'none',
-                borderRadius: '8px',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-              }}
-              labelStyle={{ color: '#1F2937' }}
-              itemStyle={{ color: '#4B5563' }}
-            />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(139, 92, 246, 0.1)', radius: 8 }} />
             <Bar
               dataKey="بازدید"
-              fill="url(#colorGradient)"
-              radius={[4, 4, 0, 0]}
+              fill="url(#barGradient)"
+              radius={[8, 8, 0, 0]}
+              filter="url(#shadow)"
               role="img"
               aria-label="نمودار ستونی بازدید"
-            >
-              {chartData.map((entry: any, index: number) => (
-                <motion.rect
-                  key={`bar-${index}`}
-                  initial={{ y: 300, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.5, delay: index * 0.05 }}
-                />
-              ))}
-            </Bar>
-            <defs>
-              <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#8B5CF6" stopOpacity={0.8} />
-                <stop offset="100%" stopColor="#8B5CF6" stopOpacity={0.3} />
-              </linearGradient>
-            </defs>
+              maxBarSize={50}
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <div className="flex justify-between items-center mt-4 text-sm">
-        <div className="text-gray-700 dark:text-gray-300">
-          <p className="font-semibold">
-            بازدید امروز:{' '}
-            <span className="text-purple-600 dark:text-purple-400">
+
+      {/* Stats Footer */}
+      <div className="flex flex-wrap justify-center gap-4 mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-900/20 dark:to-indigo-900/20 border border-violet-100 dark:border-violet-800/30"
+        >
+          <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-lg shadow-violet-500/30">
+            <HiOutlineEye className="w-4 h-4" />
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">بازدید امروز</p>
+            <p className="text-lg font-bold text-violet-700 dark:text-violet-300">
               {trafficStats.todayViews.toLocaleString('fa-IR')}
-            </span>
-          </p>
-        </div>
-        <div className="text-gray-700 dark:text-gray-300">
-          <p className="font-semibold">
-            کل بازدیدها:{' '}
-            <span className="text-purple-600 dark:text-purple-400">
+            </p>
+          </div>
+        </motion.div>
+
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-100 dark:border-emerald-800/30"
+        >
+          <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/30">
+            <HiOutlineCalendarDays className="w-4 h-4" />
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">کل بازدیدها</p>
+            <p className="text-lg font-bold text-emerald-700 dark:text-emerald-300">
               {trafficStats.totalViews.toLocaleString('fa-IR')}
-            </span>
-          </p>
-        </div>
+            </p>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

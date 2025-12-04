@@ -13,16 +13,18 @@ import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2'
 import { Skeleton } from '@/components/ui/skeleton';
 
 type PageAuthorProps = {
-  params: { id: string };
-  searchParams: { [key: string]: string | string[] | undefined };
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export default async function PageAuthor({ params, searchParams }: PageAuthorProps) {
+  const { id } = await params;
+  const searchParamsData = await searchParams;
   const currentPage =
-    typeof searchParams.page === 'string' ? Number.parseInt(searchParams.page, 10) : 1;
-  const currentFilter = typeof searchParams.filter === 'string' ? searchParams.filter : 'جدیدترین';
+    typeof searchParamsData.page === 'string' ? Number.parseInt(searchParamsData.page, 10) : 1;
+  const currentFilter = typeof searchParamsData.filter === 'string' ? searchParamsData.filter : 'جدیدترین';
 
-  const authorResult = await getAuthorById(params.id);
+  const authorResult = await getAuthorById(id);
   if (!authorResult.success || !authorResult.data) {
     notFound();
   }
@@ -38,7 +40,7 @@ export default async function PageAuthor({ params, searchParams }: PageAuthorPro
     <div className="nc-PageAuthor bg-neutral-50 dark:bg-neutral-900">
       <AuthorProfile author={author} />
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:pb-28 lg:pt-20 space-y-16 lg:space-y-28">
+      <div className="container py-16 lg:pb-28 lg:pt-20 space-y-16 lg:space-y-28">
         <AuthorContent
           initialPosts={postsResult.data?.posts || []}
           totalPages={postsResult.data?.pages || 1}
@@ -59,7 +61,7 @@ export default async function PageAuthor({ params, searchParams }: PageAuthorPro
             heading="قلم‌های برتر"
             subHeading="با ذهن‌های خلاق پشت مقالات ما آشنا شوید"
             authors={topAuthorsResult || []}
-            itemPerRow={5}
+            itemPerRow={4}
           />
         </Suspense>
 

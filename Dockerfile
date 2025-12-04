@@ -68,6 +68,10 @@ RUN adduser --system --uid 1001 nextjs
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
+# Create uploads directory with correct permissions
+RUN mkdir -p public/uploads/posts public/uploads/avatars public/uploads/categories public/uploads/tags public/uploads/ads public/uploads/general
+RUN chown -R nextjs:nodejs public/uploads
+
 # Copy necessary files
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./

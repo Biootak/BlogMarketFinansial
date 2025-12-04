@@ -1,0 +1,31 @@
+// Drag Handle Styles
+
+.ProseMirror {
+  position: relative;
+
+  .dragging {
+    opacity: 0.5;
+  }
+}
+
+.drag-handle {
+  &:hover {
+    background-color: #f3f4f6;
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.drop-indicator {
+  pointer-events: none;
+}
+
+.dark {
+  .drag-handle {
+    &:hover {
+      background-color: #374151;
+    }
+  }
+}

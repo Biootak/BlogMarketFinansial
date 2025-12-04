@@ -32,11 +32,11 @@ const Card3Small: React.FC<Card3SmallProps> = ({ className = 'h-full', post }) =
         aria-label={title}
         className="block w-20 flex-shrink-0 relative rounded-lg overflow-hidden z-0 ms-4 group"
       >
-        <div className="w-full h-0 aspect-w-3 aspect-h-2">
+        <div className="w-full aspect-[3/2]">
           <Image
             alt={title}
             sizes="(max-width: 640px) 80px, 100px"
-            className="object-fill w-full h-full group-hover:scale-110 transform transition-transform duration-300"
+            className="object-cover w-full h-full group-hover:scale-110 transform transition-transform duration-300"
             src={featuredImage || '/images/placeholder-small.png'}
             fill
             priority={false}

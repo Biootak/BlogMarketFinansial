@@ -80,6 +80,7 @@ const PostActionDropdown: FC<PostActionDropdownProps> = ({
       <DropdownMenu dir="rtl">
         <DropdownMenuTrigger asChild>
           <Button
+            type="button"
             variant="ghost"
             className={twMerge(
               'text-neutral-500 dark:text-neutral-400 flex items-center justify-center rounded-full',

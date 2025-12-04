@@ -36,7 +36,7 @@ const HeaderFilter: React.FC<HeaderFilterProps> = ({
       <Heading>{heading}</Heading>
       <div className="flex justify-between items-center">
         <Nav
-          className="sm:space-x-2 rtl:space-x-reverse"
+          className="sm:gap-2"
           containerClassName="relative flex w-full overflow-x-auto text-sm md:text-base hide-scrollbar"
         >
           <NavItem key="all" isActive={tabActive === 'همه'} onClick={() => handleClickTab('همه')}>

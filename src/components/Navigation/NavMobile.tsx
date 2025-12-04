@@ -1,19 +1,30 @@
 'use client';
 
 import type React from 'react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import ButtonClose from '@/components/ButtonClose/ButtonClose';
 import Logo from '@/components/Logo/Logo';
 import { Disclosure } from '@/app/headlessui';
-import SocialsList from '@/components/SocialsList/SocialsList';
+import ClientSocialLinks from '@/components/SocialsList/ClientSocialLinks';
 import SwitchDarkMode from '@/components/SwitchDarkMode/SwitchDarkMode';
 import Link from 'next/link';
-import { SOCIALS_DATA } from '../SocialsShare/SocialsShare';
 
 export interface NavMobileProps {
   onClickClose?: () => void;
 }
 
 const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/archive?q=${encodeURIComponent(searchQuery.trim())}`);
+      onClickClose?.();
+    }
+  };
   const NAVBAR_LINKS = [
     { id: 'urgent', name: 'اخبار فوری', href: '/archive/category/news-urgent' },
     { id: 'home', name: 'صفحه اصلی', href: '/' },
@@ -155,9 +166,10 @@ const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
 
           <div className="flex justify-between items-center mt-4">
             <SwitchDarkMode className="bg-neutral-100 dark:bg-neutral-800" />
-            <SocialsList
-              socials={SOCIALS_DATA}
-              itemClass="w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center rounded-full text-xl"
+            <ClientSocialLinks
+              className="gap-2"
+              itemClass="!w-9 !h-9"
+              iconSize={18}
             />
           </div>
         </div>
@@ -166,16 +178,17 @@ const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
         </span>
 
         <div className="mt-5">
-          <form action="" method="POST" className="flex-1 text-slate-900 dark:text-slate-200">
-            <div className="bg-slate-50 dark:bg-slate-800 flex items-center space-x-1 space-x-reverse py-2 px-4 rounded-xl h-full">
+          <form onSubmit={handleSearch} className="flex-1 text-slate-900 dark:text-slate-200">
+            <div className="bg-slate-50 dark:bg-slate-800 flex items-center gap-2 py-2.5 px-4 rounded-xl h-full">
+              {MagnifyingGlassIcon}
               <input
                 type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="جستجو کنید و اینتر بزنید"
                 className="border-none bg-transparent focus:outline-none focus:ring-0 w-full text-sm text-right"
               />
-              {MagnifyingGlassIcon}
             </div>
-            <input type="submit" hidden value="" />
           </form>
         </div>
       </div>

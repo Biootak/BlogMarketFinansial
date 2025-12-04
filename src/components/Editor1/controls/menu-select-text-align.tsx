@@ -33,9 +33,9 @@ const options = [
 ] as const;
 
 const MenuSelectTextAlign = ({ editor }: MenuSelectTextAlign) => {
-  const isAlignCenter = useActive(editor, { textAlign: 'center' });
-  const isAlignRight = useActive(editor, { textAlign: 'right' });
-  const isAlignJustify = useActive(editor, { textAlign: 'justify' });
+  const isAlignCenter = useActive(editor, 'textAlign', { textAlign: 'center' });
+  const isAlignRight = useActive(editor, 'textAlign', { textAlign: 'right' });
+  const isAlignJustify = useActive(editor, 'textAlign', { textAlign: 'justify' });
 
   const current = useMemo(() => {
     let key = 'left';

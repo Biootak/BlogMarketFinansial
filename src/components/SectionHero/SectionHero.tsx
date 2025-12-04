@@ -19,7 +19,7 @@ const SectionHero: FC<SectionHeroProps> = ({
 }) => {
   return (
     <div className={`nc-SectionHero relative ${className}`}>
-      <div className="flex flex-col lg:flex-row space-y-14 lg:space-y-0 lg:space-x-10 rtl:space-x-reverse items-center relative text-center lg:text-right">
+      <div className="flex flex-col lg:flex-row gap-14 lg:gap-10 items-center relative text-center lg:text-end">
         <div className="w-screen max-w-full xl:max-w-lg space-y-5 lg:space-y-7">
           <h2 className="text-xl !leading-tight font-semibold text-neutral-900 md:text-4xl xl:text-5xl dark:text-neutral-100">
             {heading}
@@ -30,7 +30,7 @@ const SectionHero: FC<SectionHeroProps> = ({
           {!!btnText && <ButtonPrimary href="/">{btnText}</ButtonPrimary>}
         </div>
         <div className="flex-grow">
-          <Image className="w-full" src={rightImg} alt="" />
+          <Image className="w-full" src={rightImg} alt="تصویر هیرو" priority />
         </div>
       </div>
     </div>

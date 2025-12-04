@@ -16,12 +16,15 @@ const ExchangeRateSlider: React.FC<ExchangeRateSliderProps> = ({ rates, itemPerR
   };
 
   return (
-    <MySlider
-      data={rates}
-      renderItem={renderCard}
-      itemPerRow={itemPerRow}
-      autoSlideInterval={5000}
-    />
+    <div className="nc-ExchangeRateSlider">
+      <MySlider
+        data={rates}
+        renderItem={renderCard}
+        itemPerRow={itemPerRow}
+        autoSlideInterval={5000}
+        arrowBtnClass="top-1/2 -translate-y-1/2"
+      />
+    </div>
   );
 };
 

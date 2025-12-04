@@ -4,13 +4,13 @@ import React, { type FC } from 'react';
 import Heading from '@/components/Heading/Heading';
 import CardAuthorBox2 from '@/components/CardAuthorBox2/CardAuthorBox2';
 import MySlider from '@/components/MySlider';
-import type { UserWithRelations } from '@/types/types';
+import type { TopAuthor } from '@/actions/getTopAuthors';
 
 export interface SectionSliderNewAuthorsProps {
   className?: string;
   heading: string;
   subHeading: string;
-  authors: UserWithRelations[];
+  authors: TopAuthor[];
   itemPerRow?: number;
 }
 

@@ -6,6 +6,7 @@ import prisma from '@/lib/db';
 import { auth } from '@/auth';
 import { checkRole, generateSlug, generateUniqueId, validateSlug } from '@/lib/utils';
 import { createUniqueSlug } from '@/lib/slugUtils';
+import { logActivity } from '@/lib/activity-logger';
 import type {
   ActionResult,
   CreatePostInput,
@@ -94,6 +95,9 @@ export async function createPost(data: CreatePostInput): Promise<ActionResult<Po
     // Invalidate paths
     revalidatePath('/');
     revalidatePath(`/blog/${post.id}`);
+
+    // ثبت فعالیت
+    await logActivity('ایجاد پست', `پست "${post.title}" ایجاد شد`);
     
     return {
       success: true,
@@ -227,6 +231,9 @@ export async function updatePost(
     // Invalidate paths
     revalidatePath('/');
     revalidatePath(`/blog/${post.id}`);
+
+    // ثبت فعالیت
+    await logActivity('ویرایش پست', `پست "${post.title}" ویرایش شد`);
     
     return {
       success: true,
@@ -341,6 +348,14 @@ export async function updatePostStatus(
     // Invalidate paths
     revalidatePath('/');
     revalidatePath(`/blog/${updatedPost.id}`);
+
+    // ثبت فعالیت
+    const statusLabels: Record<PostStatus, string> = {
+      DRAFT: 'پیش‌نویس',
+      PENDING_REVIEW: 'در انتظار بررسی',
+      PUBLISHED: 'منتشر شده',
+    };
+    await logActivity('تغییر وضعیت پست', `وضعیت پست "${updatedPost.title}" به "${statusLabels[newStatus]}" تغییر کرد`);
     
     return {
       success: true,
@@ -418,11 +433,16 @@ export async function deletePost(postId: string): Promise<ActionResult> {
       };
     }
 
+    const postTitle = post.title;
     await prisma.post.delete({ where: { id: postId } });
+    
     // Invalidate paths
     revalidatePath('/');
     revalidatePath('/archive');
-    revalidatePath('/');
+
+    // ثبت فعالیت
+    await logActivity('حذف پست', `پست "${postTitle}" حذف شد`);
+
     return {
       success: true,
       message: 'پست با موفقیت حذف شد.',
@@ -763,12 +783,21 @@ export const getArchivePosts = async (
   filter?: string,
   category?: string,
   subcategory?: string,
-  tag?: string, // اضافه کردن پارامتر تگ
+  tag?: string,
+  searchQuery?: string, // جستجوی متنی
 ): Promise<ActionResult<{ posts: PostWithRelations[]; total: number; pages: number }>> => {
   try {
     const skip = (page - 1) * limit;
     let whereCondition: Prisma.PostWhereInput = { status: PostStatus.PUBLISHED };
     let orderBy: Prisma.PostOrderByWithRelationInput = { createdAt: 'desc' };
+
+    // اعمال جستجوی متنی
+    if (searchQuery && searchQuery.length >= 2) {
+      whereCondition = {
+        ...whereCondition,
+        title: { contains: searchQuery, mode: 'insensitive' },
+      };
+    }
 
     // اعمال فیلتر دسته‌بندی
     if (category) {

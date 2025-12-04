@@ -5,10 +5,8 @@ import db from '@/lib/db';
 export async function GET() {
   try {
     const session = await auth();
-    console.log('Settings API [GET] - Session:', session);
 
     if (!session?.user || session.user.role !== 'SUPER_ADMIN') {
-      console.log('Settings API [GET] - Unauthorized:', session?.user);
       return NextResponse.json(
         { success: false, message: 'شما دسترسی لازم را ندارید' },
         { status: 401 },
@@ -25,13 +23,9 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    console.log('Settings API [POST] - Request received');
-
     const session = await auth();
-    console.log('Settings API [POST] - Session:', session);
 
     if (!session?.user || session.user.role !== 'SUPER_ADMIN') {
-      console.log('Settings API [POST] - Unauthorized:', session?.user);
       return NextResponse.json(
         { success: false, message: 'شما دسترسی لازم را ندارید' },
         { status: 401 },
@@ -39,9 +33,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    console.log('Settings API [POST] - Body:', body);
 
-    // اعتبارسنجی داده‌های ورودی
     if (!body.siteName || !body.siteUrl) {
       return NextResponse.json(
         { success: false, message: 'لطفاً فیلدهای اجباری را پر کنید' },
@@ -50,7 +42,6 @@ export async function POST(req: Request) {
     }
 
     try {
-      // به‌روزرسانی یا ایجاد تنظیمات
       let settings = await db.systemSettings.findFirst();
 
       if (settings) {
@@ -64,7 +55,6 @@ export async function POST(req: Request) {
         });
       }
 
-      console.log('Settings API [POST] - Settings updated:', settings);
       return NextResponse.json({
         success: true,
         message: 'تنظیمات با موفقیت ذخیره شد',

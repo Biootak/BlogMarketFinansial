@@ -9,8 +9,8 @@ import { auth } from '@/auth';
 import Providers from '@/components/providers';
 
 export const metadata: Metadata = {
-  title: 'Biotak',
-  description: 'بازارهای مالی',
+  title: 'بازارهای مالی',
+  description: 'پلتفرم مورد اعتماد شما در بازار مالی',
 };
 
 const vazirmatn = Vazirmatn({
@@ -20,11 +20,16 @@ const vazirmatn = Vazirmatn({
   variable: '--font-vazirmatn',
 });
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const session = await auth();
   return (
-    <html lang="fa-IR" dir="rtl" className={`${vazirmatn.variable} rtl`}>
-      <body className={vazirmatn.className}>
+    <html lang="fa-IR" dir="rtl" className={`${vazirmatn.variable} rtl`} suppressHydrationWarning>
+      <head />
+      <body className={vazirmatn.className} suppressHydrationWarning>
         <Providers session={session}>
           <div className="bg-[#f8f8f8] text-base dark:bg-neutral-900/95 text-neutral-900 dark:text-neutral-200">
             {children}

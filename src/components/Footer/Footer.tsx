@@ -1,9 +1,9 @@
-import type React from 'react';
 import Link from 'next/link';
 import * as motion from 'framer-motion/client';
-import SocialsList from '@/components/SocialsList/SocialsList';
-import { SOCIALS_DATA } from '@/components/SocialsShare/SocialsShare';
+import SocialLinks from '@/components/SocialsList/SocialLinks';
 import Logo from '@/components/Logo/Logo';
+import { getSystemSettingsData } from '@/data/getSystemSettings';
+import { Mail, Phone, MapPin, ArrowUpLeft } from 'lucide-react';
 
 interface WidgetFooterMenu {
   id: string;
@@ -33,62 +33,92 @@ const widgetMenus: WidgetFooterMenu[] = [
   },
 ];
 
-const Footer: React.FC = () => {
+const Footer = async () => {
+  const settings = await getSystemSettingsData();
+  const siteName = settings.siteName || 'بیوتاک';
+
   return (
-    <footer className="relative py-20 overflow-hidden bg-gradient-to-b from-indigo-100 to-purple-100 dark:from-gray-900 dark:to-indigo-900">
-      <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0))]" />
-      <div className="container relative z-10 mx-auto px-4">
+    <footer className="relative overflow-hidden">
+      {/* Background layers */}
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-slate-100 to-slate-200 dark:from-neutral-900 dark:via-neutral-950 dark:to-black" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(99,102,241,0.15),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(99,102,241,0.1),transparent)]" />
+      
+      {/* Decorative elements */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl" />
+      
+      {/* Top border gradient */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent" />
+
+      <div className="container relative z-10 pt-20 pb-8">
+        {/* Social Section */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-12"
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          className="text-center mb-16"
         >
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 dark:bg-white/5 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 mb-6">
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-sm font-medium text-slate-600 dark:text-slate-400">همیشه در دسترس</span>
+          </div>
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6">
             ما را در شبکه‌های اجتماعی دنبال کنید
           </h3>
-          <SocialsList
-            className="flex justify-center space-x-4 rtl:space-x-reverse"
-            socials={SOCIALS_DATA}
-          />
+          <SocialLinks className="flex justify-center gap-3" />
         </motion.div>
 
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4 mb-16">
+          {/* Brand Column */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="space-y-6"
+            className="lg:col-span-1"
           >
-            <Logo className="w-20 h-auto" />
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white"> Financial Market</h2>
-            <p className="text-base text-gray-600 dark:text-gray-300">
-              ارائه بهترین خدمات ارز دیجیتال و بازارهای مالی با امنیت و سرعت بالا. ما با استفاده از
-              فناوری‌های پیشرفته و تیم متخصص، بهترین تجربه معاملاتی را برای شما فراهم می‌کنیم.
-            </p>
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="relative group">
+                  <div className="absolute -inset-2 bg-gradient-to-r from-primary-500/20 to-indigo-500/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                  <Logo className="relative w-14 h-auto" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">{siteName}</h2>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">بازارهای مالی</p>
+                </div>
+              </div>
+              <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                ارائه بهترین خدمات ارز دیجیتال و بازارهای مالی با امنیت و سرعت بالا. ما با استفاده از
+                فناوری‌های پیشرفته، بهترین تجربه معاملاتی را برای شما فراهم می‌کنیم.
+              </p>
+            </div>
           </motion.div>
 
+          {/* Menu Columns */}
           {widgetMenus.map((menu, index) => (
             <motion.div
               key={menu.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="space-y-6"
+              transition={{ duration: 0.5, delay: (index + 1) * 0.1 }}
             >
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{menu.title}</h3>
-              <ul className="space-y-4">
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-6">
+                {menu.title}
+              </h3>
+              <ul className="space-y-3">
                 {menu.menus.map((item, itemIndex) => (
                   <motion.li
                     key={itemIndex}
-                    whileHover={{ x: 5 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                    whileHover={{ x: -4 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 15 }}
                   >
                     <Link
                       href={item.href}
-                      className="text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400 transition-colors"
+                      className="group inline-flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
                     >
-                      {item.label}
+                      <ArrowUpLeft className="size-3.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+                      <span>{item.label}</span>
                     </Link>
                   </motion.li>
                 ))}
@@ -96,65 +126,73 @@ const Footer: React.FC = () => {
             </motion.div>
           ))}
 
+          {/* Contact Column */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="space-y-6"
           >
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">مسیر ارتباطی</h3>
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-6">
+              مسیر ارتباطی
+            </h3>
             <ul className="space-y-4">
-              <li className="flex items-center space-x-3 rtl:space-x-reverse">
-                <svg
-                  className="w-5 h-5 text-indigo-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
+              <li>
+                <a
+                  href="tel:09380929606"
+                  className="group flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                  />
-                  <title>خرید و فروش ترون</title>
-                </svg>
-                <span className="text-gray-600 dark:text-gray-300">۰۹۳۸۰۹۲۹۶۰۶</span>
+                  <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500/10 to-indigo-500/10 dark:from-primary-500/20 dark:to-indigo-500/20 group-hover:from-primary-500/20 group-hover:to-indigo-500/20 transition-all duration-300">
+                    <Phone className="size-4 text-primary-600 dark:text-primary-400" />
+                  </span>
+                  <span className="text-sm font-medium" dir="ltr">۰۹۳۸۰۹۲۹۶۰۶</span>
+                </a>
               </li>
-              <li className="flex items-center space-x-3 rtl:space-x-reverse">
-                <svg
-                  className="w-5 h-5 text-indigo-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
+              <li>
+                <a
+                  href="mailto:support@financialmarket.com"
+                  className="group flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                  />
-                  <title>تماس با ما</title>
-                </svg>
-                <span className="text-gray-600 dark:text-gray-300">
-                  support@financialmarket.com
-                </span>
+                  <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500/10 to-indigo-500/10 dark:from-primary-500/20 dark:to-indigo-500/20 group-hover:from-primary-500/20 group-hover:to-indigo-500/20 transition-all duration-300">
+                    <Mail className="size-4 text-primary-600 dark:text-primary-400" />
+                  </span>
+                  <span className="text-sm font-medium">support@financialmarket.com</span>
+                </a>
               </li>
             </ul>
           </motion.div>
         </div>
 
+        {/* Bottom Bar */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.5 }}
-          className="mt-16 pt-8 border-t border-gray-200 dark:border-gray-700 text-center"
+          className="relative"
         >
-          <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
-            <span dir="rtl">تمامی حقوق محفوظ است.</span> <span dir="ltr">© Financial Market</span>
-          </p>
+          {/* Separator */}
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent" />
+          
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-slate-500 dark:text-slate-500">
+              <span dir="rtl">تمامی حقوق محفوظ است.</span>{' '}
+              <span className="text-slate-700 dark:text-slate-400 font-medium">{siteName}</span>{' '}
+              <span dir="ltr">© {new Date().getFullYear()}</span>
+            </p>
+            <div className="flex items-center gap-6">
+              <Link
+                href="/terms"
+                className="text-sm text-slate-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
+              >
+                قوانین و مقررات
+              </Link>
+              <Link
+                href="/privacy"
+                className="text-sm text-slate-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
+              >
+                حریم خصوصی
+              </Link>
+            </div>
+          </div>
         </motion.div>
       </div>
     </footer>

@@ -1,5 +1,6 @@
 "use client";
 import React, { type FC } from "react";
+import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 
 export interface NextPrevProps {
   className?: string;
@@ -20,82 +21,49 @@ const NextPrev: FC<NextPrevProps> = ({
 }) => {
   const [focus, setFocus] = React.useState<"left" | "right">("right");
 
+  const baseButtonClass = `
+    rounded-full flex items-center justify-center
+    bg-white/20 backdrop-blur-md
+    border border-white/30
+    text-white
+    shadow-lg
+    hover:bg-white/30 hover:scale-110
+    active:scale-95
+    transition-all duration-200 ease-out
+  `;
+
   return (
-    <div
-      className={`nc-NextPrev relative flex items-center text-slate-500 dark:text-slate-400 ${className}`}
-    >
+    <div className={`nc-NextPrev relative flex items-center gap-2 ${className}`}>
       {!onlyNext && (
         <button
-          className={`${btnClassName} ${
-            !onlyPrev ? "mr-2" : ""
-          } border-slate-200 dark:border-slate-600 rounded-full flex items-center justify-center ${
-            focus === "left" ? "border-2" : ""
+          className={`${btnClassName} ${baseButtonClass} ${
+            focus === "left" ? "ring-2 ring-white/50 scale-105" : ""
           }`}
           onClick={(e) => {
             e.preventDefault();
             onClickPrev();
           }}
-          title="Prev"
+          title="قبلی"
+          aria-label="قبلی"
           onMouseEnter={() => setFocus("left")}
         >
-          <svg
-            className="w-5 h-5 rtl:rotate-180"
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <path
-              d="M9.57 5.92993L3.5 11.9999L9.57 18.0699"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeMiterlimit="10"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M20.5 12H3.67004"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeMiterlimit="10"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <HiChevronRight className="w-5 h-5" />
         </button>
       )}
       {!onlyPrev && (
         <button
-          className={`${btnClassName}  border-slate-200 dark:border-slate-600 rounded-full flex items-center justify-center ${
-            focus === "right" ? "border-2" : ""
+          className={`${btnClassName} ${baseButtonClass} ${
+            focus === "right" ? "ring-2 ring-white/50 scale-105" : ""
           }`}
           onClick={(e) => {
             e.preventDefault();
             onClickNext();
           }}
-          title="Next"
+          title="بعدی"
+          aria-label="بعدی"
           onMouseEnter={() => setFocus("right")}
         >
-          <svg
-            className="w-5 h-5 rtl:rotate-180"
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <path
-              d="M14.4301 5.92993L20.5001 11.9999L14.4301 18.0699"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeMiterlimit="10"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M3.5 12H20.33"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeMiterlimit="10"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <HiChevronLeft className="w-5 h-5" />
         </button>
       )}
     </div>

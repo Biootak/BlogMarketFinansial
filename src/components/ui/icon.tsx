@@ -54,7 +54,8 @@ import {
   Undo,
   Check,
   CheckCheck,
-  Copy
+  Copy,
+  MoreHorizontal,
 } from 'lucide-react';
 import { type CSSProperties, memo } from 'react';
 import { cn } from '@/lib/utils';
@@ -118,9 +119,7 @@ const iconMap = {
   'Check':Check,
   'CheckCheck': CheckCheck,
   'Copy': Copy,
-
-  
-
+  'MoreHorizontal': MoreHorizontal,
 } as const;
 
 export type IconName = keyof typeof iconMap;

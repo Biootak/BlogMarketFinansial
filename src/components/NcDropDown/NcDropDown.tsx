@@ -12,7 +12,7 @@ export interface NcDropDownProps {
   triggerIconClass?: string;
   data: NcDropDownItem[];
   renderTrigger?: () => ReactNode;
-  renderItem?: (item: NcDropDownItem) => JSX.Element;
+  renderItem?: (item: NcDropDownItem) => React.ReactElement;
   title?: string;
   onClick: (item: NcDropDownItem) => void;
 }
@@ -28,7 +28,7 @@ const NcDropDown: FC<NcDropDownProps> = ({
   onClick,
 }) => {
   return (
-    <Menu as="div" className="relative inline-block text-left">
+    <Menu as="div" className="relative inline-block text-start">
       <Menu.Button className={className} title={title}>
         {renderTrigger ? renderTrigger() : <HiEllipsisHorizontal className={triggerIconClass} />}
       </Menu.Button>

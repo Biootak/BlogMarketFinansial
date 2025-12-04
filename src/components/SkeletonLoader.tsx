@@ -54,7 +54,7 @@ const SkeletonLoader: React.FC<SkeletonProps & { variant?: 'text' | 'card' | 'li
         );
       case 'list':
         return (
-          <div className="flex items-center space-x-4 rtl:space-x-reverse">
+          <div className="flex items-center gap-4">
             <SkeletonItem circle height="50px" width="50px" />
             <div className="space-y-2 flex-1">
               <SkeletonItem height="16px" width="60%" />

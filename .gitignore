@@ -9,6 +9,11 @@
 /.next/
 /out/
 
+# Uploaded files (keep .gitkeep files)
+public/uploads/*
+!public/uploads/.gitkeep
+!public/uploads/*/.gitkeep
+
 # Testing
 /coverage
 
@@ -25,6 +30,7 @@ yarn-error.log*
 
 # IDE
 .vscode/
+.kiro/
 .idea/
 *.swp
 *.swo

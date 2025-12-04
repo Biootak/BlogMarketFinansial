@@ -12,11 +12,11 @@ const SectionLargeSlider = dynamic(() => import('./SectionLargeSlider'), {
   ssr: true 
 });
 const SectionMagazine7 = dynamic(() => import('@/components/Sections/SectionMagazine7'), {
-  loading: () => <Skeleton className="h-[400px]" />,
+  loading: () => <Skeleton className="h-[400px] rounded-3xl" />,
   ssr: true
 });
 const SectionGridAuthorBox = dynamic(() => import('@/components/SectionGridAuthorBox/SectionGridAuthorBox'), {
-  loading: () => <Skeleton className="h-[400px]" />,
+  loading: () => <Skeleton className="h-[400px] rounded-3xl" />,
   ssr: true
 });
 
@@ -59,51 +59,65 @@ export default async function Home() {
 
   return (
     <div className="nc-HomePage relative">
+      {/* Hero Section */}
       <div className="container relative">
-        <Suspense fallback={<Skeleton className="h-[400px]" />}>
+        {/* Exchange Rates */}
+        <Suspense fallback={<Skeleton className="h-28 rounded-2xl" />}>
           <SectionExchangeRates />
         </Suspense>
+
+        {/* Featured Slider */}
         <Suspense fallback={<CardLarge1Skeleton />}>
           <SectionLargeSlider />
         </Suspense>
+      </div>
+
+      {/* Categories Section */}
+      <div className="container relative mt-8 lg:mt-12">
         <SectionSliderNewCategories
-          className="relative pb-4"
+          className="relative"
           heading="موضوعات پرطرفدار"
           subHeading="کشف موضوعات"
           categoryCardType="card2"
         />
-        <SectionMagazine1 className="py-6 " />
-        {firstAd ? (
-          <SectionAds className="pb-4" ad={firstAd} />
-        ) : (
-          <Skeleton className="pb-4 lg:pb-8 h-64 rounded-md" />
-        )}
-        {posts.length > 0 ? (
-          <SectionMagazine7 className="py-6" posts={posts} />
-        ) : (
-          <div className="py-6 space-y-4">
-            {[...Array(3)].map((_, i) => (
-              <Skeleton key={i.toString()} className="h-64 rounded-md" />
-            ))}
-          </div>
-        )}
       </div>
-      <div className="container">
-        {secondAd ? (
-          <SectionAds className="pb-4" ad={secondAd} />
-        ) : (
-          <Skeleton className="pb-4 lg:pb-28 h-64 rounded-md" />
-        )}
-        {topAuthors.length > 0 ? (
-          <SectionGridAuthorBox className="py-6" authors={topAuthors} />
-        ) : (
-          <div className="py-6 grid grid-cols-5 gap-4">
-            {[...Array(5)].map((_, i) => (
-              <Skeleton key={i.toString()} className="h-48 rounded-md" />
-            ))}
-          </div>
-        )}
-        <SectionSubscribe2 className="pt-16 lg:pt-28" />
+
+      {/* Latest Posts Section */}
+      <div className="container relative mt-10 lg:mt-14">
+        <SectionMagazine1 className="" />
+      </div>
+
+      {/* First Ad */}
+      {firstAd && (
+        <div className="container relative mt-10 lg:mt-14">
+          <SectionAds className="" ad={firstAd} />
+        </div>
+      )}
+
+      {/* Gallery Posts Section */}
+      {posts.length > 0 && (
+        <div className="container relative mt-10 lg:mt-14">
+          <SectionMagazine7 className="" posts={posts} />
+        </div>
+      )}
+
+      {/* Second Ad */}
+      {secondAd && (
+        <div className="container relative mt-10 lg:mt-14">
+          <SectionAds className="" ad={secondAd} />
+        </div>
+      )}
+
+      {/* Top Authors Section */}
+      {topAuthors.length > 0 && (
+        <div className="container relative mt-10 lg:mt-14">
+          <SectionGridAuthorBox className="" authors={topAuthors} />
+        </div>
+      )}
+
+      {/* Newsletter Section */}
+      <div className="container relative mt-12 lg:mt-20 mb-10 lg:mb-16">
+        <SectionSubscribe2 className="" />
       </div>
     </div>
   );

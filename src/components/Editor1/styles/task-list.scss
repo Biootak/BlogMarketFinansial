@@ -1,0 +1,150 @@
+/* Task List Styles */
+.ProseMirror,
+.editor-content {
+  ul[data-type="taskList"] {
+    list-style: none;
+    padding: 0;
+    margin: 0.75rem 0;
+
+    li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin: 0.5rem 0;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.5rem;
+      transition: background-color 0.15s ease;
+
+      &:hover {
+        background-color: rgba(59, 130, 246, 0.05);
+      }
+
+      > label {
+        flex: 0 0 auto;
+        margin-top: 0.15rem;
+        user-select: none;
+        position: relative;
+
+        input[type="checkbox"] {
+          appearance: none;
+          -webkit-appearance: none;
+          width: 1.25rem;
+          height: 1.25rem;
+          cursor: pointer;
+          border: 2px solid #d1d5db;
+          border-radius: 0.375rem;
+          background-color: white;
+          transition: all 0.15s ease;
+          position: relative;
+
+          &:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          }
+
+          &:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+          }
+
+          &:checked {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+
+            &::after {
+              content: '';
+              position: absolute;
+              top: 2px;
+              left: 6px;
+              width: 5px;
+              height: 9px;
+              border: solid white;
+              border-width: 0 2px 2px 0;
+              transform: rotate(45deg);
+            }
+          }
+        }
+      }
+
+      > div {
+        flex: 1 1 auto;
+        line-height: 1.6;
+
+        p {
+          margin: 0;
+        }
+      }
+
+      &[data-checked="true"] {
+        > div {
+          text-decoration: line-through;
+          color: #9ca3af;
+          opacity: 0.8;
+        }
+
+        &:hover {
+          background-color: rgba(156, 163, 175, 0.05);
+        }
+      }
+    }
+
+    /* Nested task lists */
+    ul[data-type="taskList"] {
+      margin-right: 1.75rem;
+      margin-top: 0.25rem;
+      margin-bottom: 0.25rem;
+      padding-right: 0.75rem;
+      border-right: 2px solid #e5e7eb;
+    }
+  }
+}
+
+/* Dark mode support */
+.dark .ProseMirror,
+.dark .editor-content {
+  ul[data-type="taskList"] {
+    li {
+      &:hover {
+        background-color: rgba(59, 130, 246, 0.1);
+      }
+
+      > label {
+        input[type="checkbox"] {
+          border-color: #4b5563;
+          background-color: #1f2937;
+
+          &:hover {
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
+          }
+
+          &:focus {
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25);
+          }
+
+          &:checked {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+          }
+        }
+      }
+
+      &[data-checked="true"] {
+        > div {
+          color: #6b7280;
+        }
+
+        &:hover {
+          background-color: rgba(107, 114, 128, 0.1);
+        }
+      }
+    }
+
+    /* Nested task lists dark mode */
+    ul[data-type="taskList"] {
+      border-right-color: #374151;
+    }
+  }
+}

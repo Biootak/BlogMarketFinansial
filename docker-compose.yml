@@ -13,6 +13,9 @@ services:
       - NODE_ENV=production
       # Next Auth
       - NEXTAUTH_URL=http://localhost:3000
+    volumes:
+      # Persist uploaded files
+      - uploads_data:/app/public/uploads
     restart: always
     depends_on:
       - db
@@ -34,6 +37,7 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:
 
 networks:
   app-network:

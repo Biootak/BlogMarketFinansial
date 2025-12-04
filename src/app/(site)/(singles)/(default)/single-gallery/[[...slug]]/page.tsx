@@ -5,11 +5,12 @@ import GalleryImages from '../GalleryImages';
 import { getGalleryPostBySlug } from '@/actions/getGalleryPostBySlug';
 
 export interface PageProps {
-  params: { slug: string[] };
+  params: Promise<{ slug: string[] }>;
 }
 
 const Page = async ({ params }: PageProps) => {
-  const postSlug = params.slug.join('/');
+  const { slug } = await params;
+  const postSlug = slug.join('/');
 
   const result = await getGalleryPostBySlug(postSlug);
 

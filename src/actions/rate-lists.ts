@@ -48,8 +48,11 @@ export async function getRateLists(): Promise<RateListData[]> {
       }
     });
   } catch (error) {
-    console.error('Error fetching rate lists:', error);
-    throw new Error('Failed to fetch rate lists');
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error fetching rate lists:', error);
+    }
+    // برگرداندن آرایه خالی به جای throw
+    return [];
   }
 }
 
@@ -76,8 +79,13 @@ export async function createRateList(
       },
     };
   } catch (error) {
-    console.error('Error creating rate list:', error);
-    throw new Error('Failed to create rate list');
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error creating rate list:', error);
+    }
+    return {
+      success: false,
+      message: 'خطا در ایجاد لیست نرخ',
+    };
   }
 }
 
@@ -115,8 +123,13 @@ export async function updateRateList(
       },
     };
   } catch (error) {
-    console.error('Error updating rate list:', error);
-    throw new Error('Failed to update rate list');
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error updating rate list:', error);
+    }
+    return {
+      success: false,
+      message: 'خطا در به‌روزرسانی لیست نرخ',
+    };
   }
 }
 
