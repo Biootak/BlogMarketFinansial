@@ -97,12 +97,15 @@ export async function checkRateLimit(
   return { success: true, remaining: max - record.count, reset: record.resetTime };
 }
 
-// پاکسازی حافظه (برای in-memory)
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, value] of inMemoryStore.entries()) {
-    if (now > value.resetTime) {
-      inMemoryStore.delete(key);
+// پاکسازی حافظه (برای in-memory) - فقط در Node.js runtime
+// در Edge runtime این کد اجرا نمیشه
+if (typeof globalThis.setInterval !== 'undefined' && typeof process !== 'undefined' && process.env.NEXT_RUNTIME !== 'edge') {
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, value] of inMemoryStore.entries()) {
+      if (now > value.resetTime) {
+        inMemoryStore.delete(key);
+      }
     }
-  }
-}, 60 * 1000); // هر دقیقه
+  }, 60 * 1000); // هر دقیقه
+}

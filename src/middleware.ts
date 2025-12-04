@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { auth } from '@/auth';
+// از auth.edge استفاده می‌کنیم چون auth.ts از bcrypt و Prisma استفاده می‌کنه
+// که با Edge Runtime سازگار نیستن
+import { auth } from '@/auth.edge';
 import { checkRateLimit } from '@/lib/rate-limiter';
 
 function getClientIP(request: NextRequest): string {
