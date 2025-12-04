@@ -8,7 +8,7 @@ interface SocialLinksProps {
   iconSize?: number;
 }
 
-const SocialLinks = async ({ className = '', itemClass = '', iconSize = 24 }: SocialLinksProps) => {
+const SocialLinks = async ({ className = '', itemClass = '', iconSize = 22 }: SocialLinksProps) => {
   const result = await getSocialLinks();
   const links = result.success ? result.data : [];
 
@@ -17,7 +17,7 @@ const SocialLinks = async ({ className = '', itemClass = '', iconSize = 24 }: So
   }
 
   return (
-    <nav className={`flex flex-wrap gap-3 ${className}`}>
+    <nav className={`flex flex-wrap gap-2 ${className}`}>
       {links.map((link, index) => (
         <motion.a
           key={link.id}
@@ -26,30 +26,53 @@ const SocialLinks = async ({ className = '', itemClass = '', iconSize = 24 }: So
           rel="noopener noreferrer"
           title={link.name}
           aria-label={`دنبال کردن در ${link.name}`}
-          whileHover={{ scale: 1.1 }}
+          whileHover={{ scale: 1.08, y: -2 }}
           whileTap={{ scale: 0.95 }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: index * 0.1 }}
-          className={`${itemClass} rounded-full p-2.5 transition-all duration-300 ease-in-out bg-white dark:bg-neutral-800 shadow-lg hover:shadow-xl hover:bg-neutral-100 dark:hover:bg-neutral-700`}
-          style={{ 
-            borderColor: link.color || undefined,
-            borderWidth: link.color ? '2px' : undefined,
-          }}
+          transition={{ duration: 0.3, delay: index * 0.05 }}
+          className={`
+            ${itemClass}
+            group relative flex items-center justify-center
+            w-11 h-11 rounded-xl
+            bg-white dark:bg-neutral-800/80
+            border border-slate-200/50 dark:border-slate-700/50
+            shadow-sm hover:shadow-lg hover:shadow-primary-500/10
+            transition-all duration-300 ease-out
+            overflow-hidden
+          `}
         >
+          {/* Gradient overlay on hover */}
+          <span
+            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            style={{
+              background: link.color
+                ? `linear-gradient(135deg, ${link.color}15, ${link.color}05)`
+                : 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(99,102,241,0.02))',
+            }}
+          />
+          {/* Border glow on hover */}
+          <span
+            className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            style={{
+              boxShadow: link.color
+                ? `inset 0 0 0 1.5px ${link.color}40`
+                : 'inset 0 0 0 1.5px rgba(99,102,241,0.3)',
+            }}
+          />
           {link.icon ? (
             <Image
               src={link.icon}
               alt={link.name}
               width={iconSize}
               height={iconSize}
-              className="object-contain"
+              className="relative z-10 object-contain transition-transform duration-300 group-hover:scale-110"
             />
           ) : (
             <span
-              className="flex items-center justify-center font-bold text-sm"
-              style={{ 
-                color: link.color || '#666',
+              className="relative z-10 flex items-center justify-center font-bold text-sm transition-transform duration-300 group-hover:scale-110"
+              style={{
+                color: link.color || '#6366f1',
                 width: iconSize,
                 height: iconSize,
               }}

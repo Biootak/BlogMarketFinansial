@@ -1,7 +1,7 @@
-import React from 'react';
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { 
+import {
   ChevronLeft,
   FileText,
   Home,
@@ -10,7 +10,7 @@ import {
   Calendar,
   Layers,
   Filter,
-  X
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
@@ -32,6 +32,7 @@ import DynamicCategories from '@/components/DynamicCategories';
 import SectionSliderNewAuthors from '@/components/SectionSliderNewAthors/SectionSliderNewAuthors';
 import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
 import Empty from '@/components/Empty';
+import ArchiveSearchInput from '../../ArchiveSearchInput';
 
 export async function generateMetadata({
   params,
@@ -74,6 +75,7 @@ type PageArchiveProps = {
   searchParams: Promise<{
     page?: string;
     filter?: string;
+    q?: string;
   }>;
 };
 
@@ -83,6 +85,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
   const [type, category, subcategory] = slug || [];
   const currentPage = searchParamsData.page ? Number.parseInt(searchParamsData.page) : 1;
   const filter = searchParamsData.filter || FILTERS[0].name;
+  const searchQuery = searchParamsData.q || '';
   const limit = 12;
 
   if (type && !['category', 'tag'].includes(type)) {
@@ -97,6 +100,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
       type === 'category' ? category : undefined,
       subcategory,
       type === 'tag' ? category : undefined,
+      searchQuery,
     ),
     getCategories({ limit: 10, page: 1 }),
     getTags({ limit: 10, page: 1 }),
@@ -191,46 +195,46 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
       </div>
 
       {/* Premium Hero Section */}
-      <div className="container mt-6 mb-8">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white via-neutral-50 to-primary-50/30 dark:from-neutral-900 dark:via-neutral-800 dark:to-primary-900/20 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] border border-neutral-200/60 dark:border-neutral-700/60">
+      <div className="container mt-4 sm:mt-6 mb-6 sm:mb-8 px-3 sm:px-4">
+        <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-white via-neutral-50 to-primary-50/30 dark:from-neutral-900 dark:via-neutral-800 dark:to-primary-900/20 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] border border-neutral-200/60 dark:border-neutral-700/60">
           {/* Decorative Elements */}
-          <div className="absolute top-0 left-0 w-72 h-72 bg-primary-400/10 dark:bg-primary-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary-300/10 dark:bg-primary-600/10 rounded-full blur-3xl translate-x-1/3 translate-y-1/3" />
+          <div className="absolute top-0 left-0 w-48 sm:w-72 h-48 sm:h-72 bg-primary-400/10 dark:bg-primary-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+          <div className="absolute bottom-0 right-0 w-64 sm:w-96 h-64 sm:h-96 bg-primary-300/10 dark:bg-primary-600/10 rounded-full blur-3xl translate-x-1/3 translate-y-1/3" />
           
-          <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-10 p-6 md:p-10">
+          <div className="relative z-10 flex flex-col items-center gap-4 sm:gap-6 md:flex-row md:gap-10 p-4 sm:p-6 md:p-10">
             {/* Image Container */}
             <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary-400 to-primary-600 rounded-2xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity duration-500" />
-              <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-2xl overflow-hidden ring-4 ring-white/80 dark:ring-neutral-800/80 shadow-xl">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl sm:rounded-2xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity duration-500" />
+              <div className="relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-xl sm:rounded-2xl overflow-hidden ring-2 sm:ring-4 ring-white/80 dark:ring-neutral-800/80 shadow-xl">
                 <Image
                   src={selectedCategory?.thumbnail || selectedTag?.thumbnail || defaultImage}
                   alt={selectedCategory?.name || selectedTag?.name || 'تصویر مقالات'}
                   fill
-                  sizes="(min-width: 768px) 160px, 128px"
+                  sizes="(min-width: 768px) 160px, (min-width: 640px) 128px, 96px"
                   className="object-cover transition-transform duration-500 group-hover:scale-110"
                   priority
                 />
               </div>
               {/* Floating Badge */}
-              <div className="absolute -bottom-2 -right-2 bg-primary-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg shadow-primary-500/30">
-                <Sparkles className="w-3.5 h-3.5 inline-block ml-1" />
+              <div className="absolute -bottom-1.5 sm:-bottom-2 -right-1.5 sm:-right-2 bg-primary-500 text-white text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded-full shadow-lg shadow-primary-500/30">
+                <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 inline-block ml-0.5 sm:ml-1" />
                 {total} مقاله
               </div>
             </div>
             
             {/* Content */}
             <div className="flex-1 text-center md:text-right">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 rounded-full text-xs font-semibold mb-4">
+              <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 rounded-full text-[10px] sm:text-xs font-semibold mb-2 sm:mb-4">
                 {selectedCategory ? (
-                  <><BsFolder2Open className="w-3.5 h-3.5" /> دسته‌بندی</>
+                  <><BsFolder2Open className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> دسته‌بندی</>
                 ) : selectedTag ? (
-                  <><BsTag className="w-3.5 h-3.5" /> برچسب</>
+                  <><BsTag className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> برچسب</>
                 ) : (
-                  <><FileText className="w-3.5 h-3.5" /> آرشیو کامل</>
+                  <><FileText className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> آرشیو کامل</>
                 )}
               </div>
               
-              <h1 className="text-2xl md:text-4xl font-black text-neutral-900 dark:text-white leading-tight mb-3">
+              <h1 className="text-xl sm:text-2xl md:text-4xl font-black text-neutral-900 dark:text-white leading-tight mb-2 sm:mb-3">
                 {selectedSubcategory
                   ? selectedSubcategory.name
                   : selectedCategory
@@ -240,7 +244,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
                       : 'همه مطالب'}
               </h1>
 
-              <p className="text-neutral-600 dark:text-neutral-300 leading-relaxed mb-6 max-w-xl mx-auto md:mx-0">
+              <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-300 leading-relaxed mb-4 sm:mb-6 max-w-xl mx-auto md:mx-0">
                 {selectedSubcategory
                   ? `جدیدترین و بهترین مطالب در حوزه ${selectedSubcategory.name}`
                   : selectedCategory
@@ -251,36 +255,36 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
               </p>
 
               {/* Stats Pills */}
-              <div className="flex flex-wrap justify-center md:justify-start gap-3">
-                <div className="group flex items-center gap-2.5 px-4 py-2.5 bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-neutral-200/80 dark:border-neutral-700/80 hover:shadow-md hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-300">
-                  <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-sm">
-                    <FileText className="w-4.5 h-4.5 text-white" />
+              <div className="flex flex-wrap justify-center md:justify-start gap-2 sm:gap-3">
+                <div className="group flex items-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-2.5 bg-white dark:bg-neutral-800 rounded-lg sm:rounded-xl shadow-sm border border-neutral-200/80 dark:border-neutral-700/80 hover:shadow-md hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-300">
+                  <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-md sm:rounded-lg bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-sm">
+                    <FileText className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-white" />
                   </div>
                   <div className="text-right">
-                    <span className="block text-lg font-bold text-neutral-900 dark:text-white">{total}</span>
-                    <span className="text-xs text-neutral-500 dark:text-neutral-400">مقاله</span>
+                    <span className="block text-base sm:text-lg font-bold text-neutral-900 dark:text-white">{total}</span>
+                    <span className="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400">مقاله</span>
                   </div>
                 </div>
 
                 {!subcategory && selectedCategory?.childCategories && selectedCategory.childCategories.length > 0 && (
-                  <div className="group flex items-center gap-2.5 px-4 py-2.5 bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-neutral-200/80 dark:border-neutral-700/80 hover:shadow-md hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-300">
-                    <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-sm">
-                      <Layers className="w-4.5 h-4.5 text-white" />
+                  <div className="group flex items-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-2.5 bg-white dark:bg-neutral-800 rounded-lg sm:rounded-xl shadow-sm border border-neutral-200/80 dark:border-neutral-700/80 hover:shadow-md hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-300">
+                    <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-md sm:rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-sm">
+                      <Layers className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-white" />
                     </div>
                     <div className="text-right">
-                      <span className="block text-lg font-bold text-neutral-900 dark:text-white">{selectedCategory.childCategories.length}</span>
-                      <span className="text-xs text-neutral-500 dark:text-neutral-400">زیرگروه</span>
+                      <span className="block text-base sm:text-lg font-bold text-neutral-900 dark:text-white">{selectedCategory.childCategories.length}</span>
+                      <span className="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400">زیرگروه</span>
                     </div>
                   </div>
                 )}
 
-                <div className="group flex items-center gap-2.5 px-4 py-2.5 bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-neutral-200/80 dark:border-neutral-700/80 hover:shadow-md hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-300">
-                  <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm">
-                    <Calendar className="w-4.5 h-4.5 text-white" />
+                <div className="group flex items-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-2.5 bg-white dark:bg-neutral-800 rounded-lg sm:rounded-xl shadow-sm border border-neutral-200/80 dark:border-neutral-700/80 hover:shadow-md hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-300">
+                  <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-md sm:rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm">
+                    <Calendar className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-white" />
                   </div>
                   <div className="text-right">
-                    <span className="block text-sm font-bold text-neutral-900 dark:text-white">امروز</span>
-                    <span className="text-xs text-neutral-500 dark:text-neutral-400">آخرین بروزرسانی</span>
+                    <span className="block text-xs sm:text-sm font-bold text-neutral-900 dark:text-white">امروز</span>
+                    <span className="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400">آخرین بروزرسانی</span>
                   </div>
                 </div>
               </div>
@@ -291,6 +295,27 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
 
       {/* Premium Filter Bar */}
       <div className="container mb-8">
+        {/* Search Input */}
+        <div className="mb-4">
+          <Suspense fallback={<div className="h-12 bg-neutral-100 dark:bg-neutral-800 rounded-xl animate-pulse" />}>
+            <ArchiveSearchInput initialQuery={searchQuery} />
+          </Suspense>
+          {searchQuery && (
+            <div className="mt-3 flex items-center gap-2">
+              <span className="text-sm text-neutral-500 dark:text-neutral-400">نتایج جستجو برای:</span>
+              <span className="px-3 py-1 bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 rounded-lg text-sm font-medium">
+                {searchQuery}
+              </span>
+              <Link
+                href="/archive"
+                className="text-xs text-neutral-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+              >
+                پاک کردن
+              </Link>
+            </div>
+          )}
+        </div>
+
         {/* Desktop Filters */}
         <div className="hidden md:block">
           <div className="flex items-center justify-between p-4 bg-white dark:bg-neutral-800/80 rounded-2xl shadow-sm border border-neutral-200/60 dark:border-neutral-700/60 backdrop-blur-sm">

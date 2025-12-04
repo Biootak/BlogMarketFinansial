@@ -21,7 +21,6 @@ const LogoutButton = () => {
     try {
       const session = await getSession();
 
-      // پاک کردن همزمان تمام کش‌های مورد نیاز
       await Promise.all([
         session?.user?.id ? invalidateUserCache(session.user.id) : Promise.resolve(),
         invalidatePublicCache(),
@@ -52,17 +51,40 @@ const LogoutButton = () => {
       onClick={handleLogout}
       disabled={isLoading}
       className={cn(
-        'flex items-center w-full p-2 text-right transition duration-150 ease-in-out rounded-lg',
-        'hover:bg-neutral-100 dark:hover:bg-neutral-700',
-        'focus:outline-none focus-visible:ring focus-visible:ring-orange-500 focus-visible:ring-opacity-50',
+        'group flex items-center gap-3 w-full p-2.5 text-right',
+        'rounded-xl',
+        'hover:bg-gradient-to-l hover:from-red-50/80 hover:to-red-100/50',
+        'dark:hover:from-red-900/20 dark:hover:to-red-800/10',
+        'transition-all duration-300 ease-out',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50',
+        isLoading && 'opacity-70 cursor-not-allowed',
       )}
     >
-      {isLoading ? (
-        <Loading size="sm" variant="neutral" className="ml-4" />
-      ) : (
-        <IoExitOutline className="w-6 h-6 ml-4 text-neutral-500 dark:text-neutral-300" />
-      )}
-      <span className="text-sm font-medium">{isLoading ? 'در حال خروج' : 'خروج'}</span>
+      <span
+        className={cn(
+          'flex items-center justify-center w-9 h-9',
+          'rounded-xl',
+          'bg-neutral-100/80 dark:bg-neutral-800/80',
+          'group-hover:bg-red-100/80 dark:group-hover:bg-red-900/30',
+          'transition-all duration-300',
+        )}
+      >
+        {isLoading ? (
+          <Loading size="sm" variant="neutral" />
+        ) : (
+          <IoExitOutline className="w-5 h-5 text-neutral-500 dark:text-neutral-400 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-300" />
+        )}
+      </span>
+      <span
+        className={cn(
+          'text-sm font-medium',
+          'text-neutral-700 dark:text-neutral-200',
+          'group-hover:text-red-700 dark:group-hover:text-red-300',
+          'transition-colors duration-300',
+        )}
+      >
+        {isLoading ? 'در حال خروج...' : 'خروج'}
+      </span>
     </button>
   );
 };

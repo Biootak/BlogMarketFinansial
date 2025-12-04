@@ -1,9 +1,8 @@
 'use client';
 
-import { type FC, Fragment, type ReactNode, useState, useCallback, useEffect } from 'react';
+import { type FC, Fragment, type ReactNode, useState, useCallback, useEffect, useRef } from 'react';
 import { Combobox, Dialog, Transition } from '@headlessui/react';
 import {
-  HiOutlineExclamationTriangle,
   HiOutlineHashtag,
   HiOutlineLifebuoy,
   HiOutlineClock,
@@ -12,10 +11,9 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import debounce from 'lodash/debounce';
 
 import type { PostWithRelations, CategoryWithPostCount, UserWithProfile } from '@/types/types';
-import { searchAuthors, searchCategories, searchPosts } from '@/actions/search';
+import { searchAll } from '@/actions/search';
 import { getPostLink } from '@/lib/getPostLink';
 
 function classNames(...classes: any) {
@@ -33,58 +31,71 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
   const [categories, setCategories] = useState<CategoryWithPostCount[]>([]);
   const [authors, setAuthors] = useState<UserWithProfile[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
 
+  // Prevent body scroll and layout shift when modal opens
+  useEffect(() => {
+    if (open) {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.overflow = 'hidden';
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    };
+  }, [open]);
+
   const handleSearch = useCallback(async (searchQuery: string) => {
+    if (!searchQuery || searchQuery.length < 2) {
+      setPosts([]);
+      setCategories([]);
+      setAuthors([]);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     try {
-      if (searchQuery === '#') {
-        const categoriesResult = await searchCategories('');
-        if (categoriesResult.success && categoriesResult.data) {
-          setCategories(categoriesResult.data);
-        }
-      } else if (searchQuery === '>') {
-        const authorsResult = await searchAuthors('');
-        if (authorsResult.success && authorsResult.data) {
-          setAuthors(authorsResult.data);
-        }
-      } else if (searchQuery !== '') {
-        const [postsResult, categoriesResult, authorsResult] = await Promise.all([
-          searchPosts(searchQuery),
-          searchCategories(searchQuery),
-          searchAuthors(searchQuery),
-        ]);
-        if (postsResult.success && postsResult.data) setPosts(postsResult.data);
-        if (categoriesResult.success && categoriesResult.data) setCategories(categoriesResult.data);
-        if (authorsResult.success && authorsResult.data) setAuthors(authorsResult.data);
-      } else {
-        setPosts([]);
-        setCategories([]);
-        setAuthors([]);
+      const result = await searchAll(searchQuery);
+      if (result.success && result.data) {
+        setPosts(result.data.posts as PostWithRelations[]);
+        setCategories(result.data.categories as CategoryWithPostCount[]);
+        setAuthors(result.data.authors as UserWithProfile[]);
       }
     } catch (error) {
       console.error('Search error:', error);
-      // Here you might want to set an error state and show an error message to the user
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  const debouncedSearch = useCallback(debounce(handleSearch, 300), [handleSearch]);
-
+  // Optimized debounce - 150ms instead of 300ms
   useEffect(() => {
-    if (rawQuery) {
-      debouncedSearch(rawQuery);
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    if (rawQuery && rawQuery !== '#' && rawQuery !== '>' && rawQuery !== '?') {
+      debounceRef.current = setTimeout(() => {
+        handleSearch(rawQuery);
+      }, 150);
     } else {
       setPosts([]);
       setCategories([]);
       setAuthors([]);
     }
+
     return () => {
-      debouncedSearch.cancel();
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
     };
-  }, [rawQuery, debouncedSearch]);
+  }, [rawQuery, handleSearch]);
 
   const handleItemSelect = useCallback(
     (item: any) => {
@@ -95,102 +106,170 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
           router.push(item.href);
         }
         setOpen(false);
-      } else {
-        console.error('Invalid item or href:', item);
       }
     },
     [router],
   );
 
+  const handleClose = useCallback(() => {
+    setOpen(false);
+    setRawQuery('');
+    setPosts([]);
+    setCategories([]);
+    setAuthors([]);
+  }, []);
+
   return (
     <>
-      <div onClick={() => setOpen(true)} className="cursor-pointer">
-        {renderTrigger ? (
-          renderTrigger()
-        ) : (
-          <button
-            type="button"
-            className="flex w-10 h-10 sm:w-12 sm:h-12 rounded-full text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none items-center justify-center"
-            aria-label="جستجو"
-          >
-            <HiOutlineMagnifyingGlass className="w-6 h-6" />
-          </button>
-        )}
-      </div>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="
+          relative w-11 h-11 rounded-2xl
+          flex items-center justify-center
+          text-slate-600 dark:text-slate-300
+          bg-gradient-to-br from-slate-50 to-slate-100/80
+          dark:from-slate-800/90 dark:to-slate-900/80
+          border border-slate-200/60 dark:border-slate-700/50
+          shadow-sm hover:shadow-md
+          hover:border-slate-300/80 dark:hover:border-slate-600/60
+          hover:from-white hover:to-slate-50
+          dark:hover:from-slate-700/90 dark:hover:to-slate-800/80
+          focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50
+          transition-all duration-300 ease-out
+        "
+        aria-label="جستجو"
+      >
+        {renderTrigger ? renderTrigger() : <HiOutlineMagnifyingGlass className="w-5 h-5" />}
+      </button>
 
-      <Transition.Root show={open} as={Fragment} afterLeave={() => setRawQuery('')} appear>
-        <Dialog as="div" className="relative z-[99]" onClose={() => setOpen(false)}>
+      <Transition.Root show={open} as={Fragment} appear>
+        <Dialog as="div" className="relative z-[99]" onClose={handleClose}>
           <Transition.Child
             as={Fragment}
-            enter="ease-out duration-300"
+            enter="ease-out duration-200"
             enterFrom="opacity-0"
             enterTo="opacity-100"
-            leave="ease-in duration-200"
+            leave="ease-in duration-150"
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-black/40 transition-opacity" />
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
           </Transition.Child>
 
           <div className="fixed inset-0 z-10 overflow-y-auto p-4 sm:p-6 md:p-20">
             <Transition.Child
               as={Fragment}
-              enter="ease-out duration-300"
+              enter="ease-out duration-200"
               enterFrom="opacity-0 scale-95"
               enterTo="opacity-100 scale-100"
-              leave="ease-in duration-100"
+              leave="ease-in duration-150"
               leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-100"
+              leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="mx-auto max-w-2xl transform divide-y divide-gray-100 overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-black ring-opacity-5 transition-all">
+              <Dialog.Panel
+                className="
+                  mx-auto max-w-2xl
+                  overflow-hidden rounded-3xl
+                  bg-white/98 dark:bg-neutral-900/98
+                  backdrop-blur-xl backdrop-saturate-150
+                  border border-white/20 dark:border-neutral-700/50
+                  shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)]
+                  dark:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)]
+                "
+              >
                 <Combobox onChange={handleItemSelect}>
-                  <div className="relative">
-                    <HiOutlineMagnifyingGlass
-                      className="pointer-events-none absolute top-3.5 right-4 h-5 w-5 text-gray-400"
-                      aria-hidden="true"
-                    />
+                  {/* Search Input */}
+                  <div className="relative border-b border-neutral-100 dark:border-neutral-800">
+                    <div
+                      className="
+                        absolute right-5 top-1/2 -translate-y-1/2
+                        w-10 h-10 rounded-xl
+                        flex items-center justify-center
+                        bg-gradient-to-br from-primary-50 to-primary-100/80
+                        dark:from-primary-900/40 dark:to-primary-800/30
+                      "
+                    >
+                      <HiOutlineMagnifyingGlass
+                        className="h-5 w-5 text-primary-600 dark:text-primary-400"
+                        aria-hidden="true"
+                      />
+                    </div>
                     <Combobox.Input
-                      className="h-12 w-full border-0 bg-transparent pr-11 pl-4 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm text-right"
-                      placeholder="جستجو..."
+                      className="
+                        h-16 w-full border-0 bg-transparent
+                        pr-20 pl-6
+                        text-neutral-900 dark:text-white
+                        placeholder:text-neutral-400 dark:placeholder:text-neutral-500
+                        focus:ring-0 text-base text-right
+                      "
+                      placeholder="جستجوی پست، دسته‌بندی یا نویسنده..."
                       onChange={(event) => setRawQuery(event.target.value)}
+                      autoComplete="off"
                     />
+                    {isLoading && (
+                      <div className="absolute left-5 top-1/2 -translate-y-1/2">
+                        <div className="w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    )}
                   </div>
 
-                  {isLoading ? (
-                    <div className="py-14 px-6 text-center text-sm sm:px-14">
-                      <p className="mt-4 font-semibold text-gray-900">در حال جستجو...</p>
-                    </div>
-                  ) : (
+                  {/* Results */}
+                  {!isLoading &&
                     (posts.length > 0 || categories.length > 0 || authors.length > 0) && (
                       <Combobox.Options
                         static
-                        className="max-h-80 scroll-py-10 scroll-pb-2 space-y-4 overflow-y-auto p-4 pb-2"
+                        className="max-h-[400px] overflow-y-auto p-3 space-y-4"
                       >
+                        {/* Posts */}
                         {posts.length > 0 && (
                           <li>
-                            <h2 className="text-xs font-semibold text-gray-900">پست‌ها</h2>
-                            <ul className="-mx-4 mt-2 text-sm text-gray-700">
+                            <h2 className="text-xs font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider px-3 mb-2">
+                              پست‌ها
+                            </h2>
+                            <ul className="space-y-1">
                               {posts.map((post) => (
                                 <Combobox.Option
                                   key={post.id}
                                   value={{ href: getPostLink(post.postType, post.slug), ...post }}
                                   className={({ active }) =>
                                     classNames(
-                                      'flex select-none items-center px-4 py-2',
-                                      active && 'bg-indigo-600 text-white',
+                                      'flex select-none items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200',
+                                      active
+                                        ? 'bg-gradient-to-l from-primary-50 to-primary-100/50 dark:from-primary-900/40 dark:to-primary-800/20'
+                                        : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50',
                                     )
                                   }
                                 >
                                   {({ active }) => (
                                     <>
-                                      <HiOutlineClock
+                                      <span
                                         className={classNames(
-                                          'h-6 w-6 flex-none',
-                                          active ? 'text-white' : 'text-gray-400',
+                                          'flex items-center justify-center w-9 h-9 rounded-xl transition-colors',
+                                          active
+                                            ? 'bg-primary-100 dark:bg-primary-900/60'
+                                            : 'bg-neutral-100 dark:bg-neutral-800',
                                         )}
-                                        aria-hidden="true"
-                                      />
-                                      <span className="mr-3 flex-auto truncate">{post.title}</span>
+                                      >
+                                        <HiOutlineClock
+                                          className={classNames(
+                                            'h-5 w-5 transition-colors',
+                                            active
+                                              ? 'text-primary-600 dark:text-primary-400'
+                                              : 'text-neutral-400 dark:text-neutral-500',
+                                          )}
+                                        />
+                                      </span>
+                                      <span
+                                        className={classNames(
+                                          'flex-auto truncate text-sm font-medium transition-colors',
+                                          active
+                                            ? 'text-primary-700 dark:text-primary-300'
+                                            : 'text-neutral-700 dark:text-neutral-200',
+                                        )}
+                                      >
+                                        {post.title}
+                                      </span>
                                     </>
                                   )}
                                 </Combobox.Option>
@@ -198,31 +277,54 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                             </ul>
                           </li>
                         )}
+
+                        {/* Categories */}
                         {categories.length > 0 && (
                           <li>
-                            <h2 className="text-xs font-semibold text-gray-900">دسته‌بندی‌ها</h2>
-                            <ul className="-mx-4 mt-2 text-sm text-gray-700">
+                            <h2 className="text-xs font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider px-3 mb-2">
+                              دسته‌بندی‌ها
+                            </h2>
+                            <ul className="space-y-1">
                               {categories.map((category) => (
                                 <Combobox.Option
                                   key={category.id}
                                   value={{ href: `/category/${category.slug}`, ...category }}
                                   className={({ active }) =>
                                     classNames(
-                                      'flex select-none items-center px-4 py-2',
-                                      active && 'bg-indigo-600 text-white',
+                                      'flex select-none items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200',
+                                      active
+                                        ? 'bg-gradient-to-l from-primary-50 to-primary-100/50 dark:from-primary-900/40 dark:to-primary-800/20'
+                                        : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50',
                                     )
                                   }
                                 >
                                   {({ active }) => (
                                     <>
-                                      <HiOutlineHashtag
+                                      <span
                                         className={classNames(
-                                          'h-6 w-6 flex-none',
-                                          active ? 'text-white' : 'text-gray-400',
+                                          'flex items-center justify-center w-9 h-9 rounded-xl transition-colors',
+                                          active
+                                            ? 'bg-primary-100 dark:bg-primary-900/60'
+                                            : 'bg-neutral-100 dark:bg-neutral-800',
                                         )}
-                                        aria-hidden="true"
-                                      />
-                                      <span className="mr-3 flex-auto truncate">
+                                      >
+                                        <HiOutlineHashtag
+                                          className={classNames(
+                                            'h-5 w-5 transition-colors',
+                                            active
+                                              ? 'text-primary-600 dark:text-primary-400'
+                                              : 'text-neutral-400 dark:text-neutral-500',
+                                          )}
+                                        />
+                                      </span>
+                                      <span
+                                        className={classNames(
+                                          'flex-auto truncate text-sm font-medium transition-colors',
+                                          active
+                                            ? 'text-primary-700 dark:text-primary-300'
+                                            : 'text-neutral-700 dark:text-neutral-200',
+                                        )}
+                                      >
                                         {category.name}
                                       </span>
                                     </>
@@ -232,18 +334,24 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                             </ul>
                           </li>
                         )}
+
+                        {/* Authors */}
                         {authors.length > 0 && (
                           <li>
-                            <h2 className="text-xs font-semibold text-gray-900">نویسندگان</h2>
-                            <ul className="-mx-4 mt-2 text-sm text-gray-700">
+                            <h2 className="text-xs font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider px-3 mb-2">
+                              نویسندگان
+                            </h2>
+                            <ul className="space-y-1">
                               {authors.map((author) => (
                                 <Combobox.Option
                                   key={author.id}
                                   value={{ href: `/author/${author.id}`, ...author }}
                                   className={({ active }) =>
                                     classNames(
-                                      'flex select-none items-center px-4 py-2',
-                                      active && 'bg-indigo-600 text-white',
+                                      'flex select-none items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200',
+                                      active
+                                        ? 'bg-gradient-to-l from-primary-50 to-primary-100/50 dark:from-primary-900/40 dark:to-primary-800/20'
+                                        : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50',
                                     )
                                   }
                                 >
@@ -252,11 +360,21 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                                       <Image
                                         src={author.image || '/default-avatar.png'}
                                         alt={author.name || 'نویسنده'}
-                                        className="h-6 w-6 flex-none rounded-full"
-                                        width={24}
-                                        height={24}
+                                        className={classNames(
+                                          'h-9 w-9 flex-none rounded-xl object-cover transition-all',
+                                          active ? 'ring-2 ring-primary-500/50' : '',
+                                        )}
+                                        width={36}
+                                        height={36}
                                       />
-                                      <span className="mr-3 flex-auto truncate">
+                                      <span
+                                        className={classNames(
+                                          'flex-auto truncate text-sm font-medium transition-colors',
+                                          active
+                                            ? 'text-primary-700 dark:text-primary-300'
+                                            : 'text-neutral-700 dark:text-neutral-200',
+                                        )}
+                                      >
                                         {author.name || author.email}
                                       </span>
                                     </>
@@ -267,67 +385,88 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                           </li>
                         )}
                       </Combobox.Options>
-                    )
-                  )}
+                    )}
 
+                  {/* Help Section */}
                   {rawQuery === '?' && (
-                    <div className="py-14 px-6 text-center text-sm sm:px-14">
-                      <HiOutlineLifebuoy
-                        className="mx-auto h-6 w-6 text-gray-400"
-                        aria-hidden="true"
-                      />
-                      <p className="mt-4 font-semibold text-gray-900">راهنمای جستجو</p>
-                      <p className="mt-2 text-gray-500">
-                        از این ابزار برای جستجوی سریع کاربران و پروژه‌ها در سراسر پلتفرم ما استفاده
-                        کنید. همچنین می‌توانید از تغییردهنده‌های جستجوی موجود در پاورقی زیر برای محدود
-                        کردن نتایج به کاربران یا پروژه‌ها استفاده کنید.
+                    <div className="py-12 px-6 text-center">
+                      <div
+                        className="
+                          w-14 h-14 mx-auto mb-4 rounded-2xl
+                          bg-gradient-to-br from-amber-100 to-amber-200/80
+                          dark:from-amber-900/40 dark:to-amber-800/30
+                          flex items-center justify-center
+                        "
+                      >
+                        <HiOutlineLifebuoy className="h-7 w-7 text-amber-600 dark:text-amber-400" />
+                      </div>
+                      <p className="text-base font-semibold text-neutral-900 dark:text-white mb-2">
+                        راهنمای جستجو
+                      </p>
+                      <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-sm mx-auto">
+                        حداقل ۲ کاراکتر وارد کنید تا جستجو شروع شود.
                       </p>
                     </div>
                   )}
 
-                  <div className="flex flex-wrap items-center bg-gray-50 py-2.5 px-4 text-xs text-gray-700">
-                    تایپ کنید{' '}
-                    <kbd
-                      className={classNames(
-                        'mx-1 flex h-5 w-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2',
-                        rawQuery.startsWith('#')
-                          ? 'border-indigo-600 text-indigo-600'
-                          : 'border-gray-400 text-gray-900',
-                      )}
+                  {/* Empty State */}
+                  {!isLoading &&
+                    rawQuery.length >= 2 &&
+                    rawQuery !== '?' &&
+                    posts.length === 0 &&
+                    categories.length === 0 &&
+                    authors.length === 0 && (
+                      <div className="py-12 px-6 text-center">
+                        <div
+                          className="
+                            w-14 h-14 mx-auto mb-4 rounded-2xl
+                            bg-gradient-to-br from-neutral-100 to-neutral-200/80
+                            dark:from-neutral-800 dark:to-neutral-700/80
+                            flex items-center justify-center
+                          "
+                        >
+                          <HiOutlineMagnifyingGlass className="h-7 w-7 text-neutral-400 dark:text-neutral-500" />
+                        </div>
+                        <p className="text-sm font-medium text-neutral-600 dark:text-neutral-300">
+                          نتیجه‌ای یافت نشد
+                        </p>
+                        <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">
+                          عبارت دیگری را جستجو کنید
+                        </p>
+                      </div>
+                    )}
+
+                  {/* Footer */}
+                  <div
+                    className="
+                      flex items-center justify-between
+                      bg-neutral-50/80 dark:bg-neutral-800/50
+                      border-t border-neutral-100 dark:border-neutral-800
+                      py-3 px-4 text-xs text-neutral-500 dark:text-neutral-400
+                    "
+                  >
+                    <span>حداقل ۲ کاراکتر</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (rawQuery.length >= 2) {
+                          router.push(`/archive?q=${encodeURIComponent(rawQuery)}`);
+                          handleClose();
+                        } else {
+                          router.push('/archive');
+                          handleClose();
+                        }
+                      }}
+                      className="
+                        flex items-center gap-1.5 px-3 py-1.5 rounded-lg
+                        bg-primary-50 dark:bg-primary-900/30
+                        text-primary-600 dark:text-primary-400
+                        hover:bg-primary-100 dark:hover:bg-primary-900/50
+                        font-medium transition-colors
+                      "
                     >
-                      #
-                    </kbd>{' '}
-                    <span className="sm:hidden">برای دسته‌بندی‌ها،</span>
-                    <span className="hidden sm:inline">برای دسترسی به دسته‌بندی‌ها،</span>
-                    <kbd
-                      className={classNames(
-                        'mx-1 flex h-5 w-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2',
-                        rawQuery.startsWith('>')
-                          ? 'border-indigo-600 text-indigo-600'
-                          : 'border-gray-400 text-gray-900',
-                      )}
-                    >
-                      &gt;
-                    </kbd>{' '}
-                    برای نویسندگان،{' '}
-                    <kbd
-                      className={classNames(
-                        'mx-1 flex h-5 w-5 items-center justify-center rounded border bg-white font-semibold sm:mx-2',
-                        rawQuery === '?'
-                          ? 'border-indigo-600 text-indigo-600'
-                          : 'border-gray-400 text-gray-900',
-                      )}
-                    >
-                      ?
-                    </kbd>{' '}
-                    برای راهنما، یا{' '}
-                    <Link
-                      href={'/search'}
-                      className="mx-1 flex h-5 px-1.5 items-center justify-center rounded border bg-white sm:mx-2 border-primary-6000 text-neutral-900"
-                      onClick={() => setOpen(false)}
-                    >
-                      رفتن به صفحه جستجو
-                    </Link>{' '}
+                      {rawQuery.length >= 2 ? `جستجوی "${rawQuery}" در آرشیو` : 'صفحه آرشیو'}
+                    </button>
                   </div>
                 </Combobox>
               </Dialog.Panel>

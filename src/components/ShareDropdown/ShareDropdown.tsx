@@ -112,13 +112,15 @@ export default function ShareDropdown({
   }, [url, toast]);
 
   return (
-    <DropdownMenu dir="rtl" modal={false}>
+    <DropdownMenu dir="rtl">
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
       <DropdownMenuContent
         align={align}
         side={side}
         sideOffset={8}
-        className="min-w-[240px] p-3 rounded-2xl border-neutral-200/80 dark:border-neutral-700/80 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl shadow-2xl"
+        avoidCollisions={true}
+        collisionPadding={16}
+        className="min-w-[240px] p-3 rounded-2xl border-neutral-200/80 dark:border-neutral-700/80 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl shadow-2xl z-50"
       >
         {/* Header */}
         <div className="px-2 pb-3 mb-2 border-b border-neutral-100 dark:border-neutral-800">

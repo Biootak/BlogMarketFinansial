@@ -783,12 +783,21 @@ export const getArchivePosts = async (
   filter?: string,
   category?: string,
   subcategory?: string,
-  tag?: string, // اضافه کردن پارامتر تگ
+  tag?: string,
+  searchQuery?: string, // جستجوی متنی
 ): Promise<ActionResult<{ posts: PostWithRelations[]; total: number; pages: number }>> => {
   try {
     const skip = (page - 1) * limit;
     let whereCondition: Prisma.PostWhereInput = { status: PostStatus.PUBLISHED };
     let orderBy: Prisma.PostOrderByWithRelationInput = { createdAt: 'desc' };
+
+    // اعمال جستجوی متنی
+    if (searchQuery && searchQuery.length >= 2) {
+      whereCondition = {
+        ...whereCondition,
+        title: { contains: searchQuery, mode: 'insensitive' },
+      };
+    }
 
     // اعمال فیلتر دسته‌بندی
     if (category) {

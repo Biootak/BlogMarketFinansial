@@ -1,6 +1,8 @@
 'use client';
 
 import type React from 'react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import ButtonClose from '@/components/ButtonClose/ButtonClose';
 import Logo from '@/components/Logo/Logo';
 import { Disclosure } from '@/app/headlessui';
@@ -13,6 +15,16 @@ export interface NavMobileProps {
 }
 
 const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/archive?q=${encodeURIComponent(searchQuery.trim())}`);
+      onClickClose?.();
+    }
+  };
   const NAVBAR_LINKS = [
     { id: 'urgent', name: 'اخبار فوری', href: '/archive/category/news-urgent' },
     { id: 'home', name: 'صفحه اصلی', href: '/' },
@@ -164,16 +176,17 @@ const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
         </span>
 
         <div className="mt-5">
-          <form action="" method="POST" className="flex-1 text-slate-900 dark:text-slate-200">
-            <div className="bg-slate-50 dark:bg-slate-800 flex items-center gap-1 py-2 px-4 rounded-xl h-full">
+          <form onSubmit={handleSearch} className="flex-1 text-slate-900 dark:text-slate-200">
+            <div className="bg-slate-50 dark:bg-slate-800 flex items-center gap-2 py-2.5 px-4 rounded-xl h-full">
+              {MagnifyingGlassIcon}
               <input
                 type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="جستجو کنید و اینتر بزنید"
                 className="border-none bg-transparent focus:outline-none focus:ring-0 w-full text-sm text-right"
               />
-              {MagnifyingGlassIcon}
             </div>
-            <input type="submit" hidden value="" />
           </form>
         </div>
       </div>
