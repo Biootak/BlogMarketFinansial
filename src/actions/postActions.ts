@@ -1063,9 +1063,22 @@ export async function getStats(): Promise<
     const weekAgo = new Date(today);
     weekAgo.setDate(weekAgo.getDate() - 7);
 
+    // بازدیدهای امروز از View model
+    const viewsToday = await prisma.view.count({
+      where: { 
+        createdAt: { gte: today }
+      },
+    });
+
+    // بازدیدهای هفته اخیر
+    const viewsWeeklyData = await prisma.view.groupBy({
+      by: ['createdAt'],
+      _count: { id: true },
+      where: { createdAt: { gte: weekAgo } },
+      orderBy: { createdAt: 'asc' },
+    });
+
     const [
-      viewsToday,
-      viewsWeekly,
       commentsNew,
       commentsWeekly,
       sharesTotal,
@@ -1077,16 +1090,6 @@ export async function getStats(): Promise<
       draftsTotal,
       draftsWeekly,
     ] = await prisma.$transaction([
-      prisma.post.aggregate({
-        _sum: { viewCount: true },
-        where: { ...baseWhere, updatedAt: { gte: today } },
-      }),
-      prisma.post.groupBy({
-        by: ['updatedAt'],
-        _sum: { viewCount: true },
-        where: { ...baseWhere, updatedAt: { gte: weekAgo } },
-        orderBy: { updatedAt: 'asc' },
-      }),
       prisma.comment.count({
         where: { 
           postId: { not: undefined },
@@ -1136,15 +1139,17 @@ export async function getStats(): Promise<
       }),
     ]);
 
-    const fillWeeklyData = (data: any[]) => {
+    const fillWeeklyData = (data: any[], isViewData = false) => {
       const filledData = new Array(7).fill(0);
       data.forEach((item) => {
-        const dayIndex =
-          6 -
-          Math.floor(
-            (today.getTime() - new Date(item.createdAt).getTime()) / (1000 * 60 * 60 * 24),
-          );
-        filledData[dayIndex] = item._count || item._sum?.viewCount || 0;
+        const itemDate = new Date(item.createdAt);
+        itemDate.setHours(0, 0, 0, 0);
+        const daysDiff = Math.floor((today.getTime() - itemDate.getTime()) / (1000 * 60 * 60 * 24));
+        const dayIndex = 6 - daysDiff;
+        
+        if (dayIndex >= 0 && dayIndex < 7) {
+          filledData[dayIndex] += isViewData ? (item._count?.id || 0) : (item._count || 0);
+        }
       });
       return filledData;
     };
@@ -1153,7 +1158,7 @@ export async function getStats(): Promise<
       success: true,
       message: 'آمار با موفقیت بازیابی شد.',
       data: {
-        views: { today: viewsToday._sum.viewCount || 0, data: fillWeeklyData(viewsWeekly) },
+        views: { today: viewsToday, data: fillWeeklyData(viewsWeeklyData, true) },
         comments: { new: commentsNew, data: fillWeeklyData(commentsWeekly) },
         shares: { total: sharesTotal, data: fillWeeklyData(sharesWeekly) },
         likes: { total: likesTotal, data: fillWeeklyData(likesWeekly) },

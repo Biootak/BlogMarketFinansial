@@ -5,46 +5,56 @@ import prisma from '@/lib/db';
 export async function getViewStats() {
   try {
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    const viewStats = await prisma.pageView.groupBy({
-      by: ['date'],
+    // استفاده از View model برای آمار دقیق‌تر
+    const viewStats = await prisma.view.groupBy({
+      by: ['createdAt'],
       where: {
         createdAt: {
           gte: sevenDaysAgo,
         },
       },
-      _sum: {
-        views: true,
+      _count: {
+        id: true,
       },
       orderBy: {
-        date: 'asc',
+        createdAt: 'asc',
       },
     });
 
     const labels = ['دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه', 'شنبه', 'یکشنبه'];
     const data = new Array(7).fill(0);
 
+    // گروه‌بندی بازدیدها بر اساس روز
     viewStats.forEach((stat) => {
-      const dayIndex = 6 - Math.floor((Date.now() - stat.date.getTime()) / (24 * 60 * 60 * 1000));
+      const statDate = new Date(stat.createdAt);
+      statDate.setHours(0, 0, 0, 0);
+      const daysDiff = Math.floor((today.getTime() - statDate.getTime()) / (24 * 60 * 60 * 1000));
+      const dayIndex = 6 - daysDiff;
+      
       if (dayIndex >= 0 && dayIndex < 7) {
-        data[dayIndex] += stat._sum.views || 0;
+        data[dayIndex] += stat._count.id;
       }
     });
 
-    const todayViews = await prisma.pageView.aggregate({
-      _sum: {
-        views: true,
-      },
+    // بازدیدهای امروز
+    const todayViews = await prisma.view.count({
       where: {
         createdAt: {
-          gte: new Date(new Date().setHours(0, 0, 0, 0)),
+          gte: today,
         },
       },
     });
 
-    const totalViews = await prisma.pageView.aggregate({
+    // کل بازدیدها از Post.viewCount
+    const totalViewsResult = await prisma.post.aggregate({
       _sum: {
-        views: true,
+        viewCount: true,
+      },
+      where: {
+        status: 'PUBLISHED',
       },
     });
 
@@ -53,8 +63,8 @@ export async function getViewStats() {
       data: {
         labels,
         data,
-        totalViews: totalViews._sum.views || 0,
-        todayViews: todayViews._sum.views || 0,
+        totalViews: totalViewsResult._sum.viewCount || 0,
+        todayViews,
       },
     };
   } catch (error) {
