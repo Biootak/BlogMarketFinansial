@@ -107,7 +107,7 @@ export function MobileMenu({ isOpen, onClose, children }: MobileMenuProps) {
         ref={menuRef}
         className={cn(
           'fixed inset-0 z-50 flex flex-col bg-white dark:bg-neutral-900',
-          'animate-in slide-in-from-right duration-300'
+          'animate-in slide-in-from-right duration-200'
         )}
         role="dialog"
         aria-modal="true"

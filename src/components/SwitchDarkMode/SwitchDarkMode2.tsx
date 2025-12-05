@@ -18,7 +18,7 @@ const DarkModeSwitch = ({ className }: SwitchDarkModeProps) => {
         rounded-xl cursor-pointer
         hover:bg-gradient-to-l hover:from-neutral-50/80 hover:to-neutral-100/50
         dark:hover:from-neutral-800/60 dark:hover:to-neutral-700/40
-        transition-all duration-300 ease-out
+        transition-all duration-200 ease-out
         ${className || ''}
       `}
       onClick={_toogleDarkMode}
@@ -33,11 +33,11 @@ const DarkModeSwitch = ({ className }: SwitchDarkModeProps) => {
             rounded-xl
             bg-neutral-100/80 dark:bg-neutral-800/80
             group-hover:bg-amber-100/80 dark:group-hover:bg-amber-900/30
-            transition-all duration-300
+            transition-all duration-150
           "
         >
           <ThemeIcon
-            className="w-5 h-5 text-neutral-500 dark:text-neutral-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-300"
+            className="w-5 h-5 text-neutral-500 dark:text-neutral-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-150"
             title="تم تاریک"
           />
         </span>
@@ -52,7 +52,7 @@ const DarkModeSwitch = ({ className }: SwitchDarkModeProps) => {
           className={`
             relative inline-flex h-6 w-11 shrink-0 cursor-pointer
             rounded-full border-2 border-transparent
-            transition-all duration-300 ease-out
+            transition-all duration-200 ease-out
             focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50
             ${
               isDarkMode
@@ -68,7 +68,7 @@ const DarkModeSwitch = ({ className }: SwitchDarkModeProps) => {
               pointer-events-none inline-block h-5 w-5
               transform rounded-full bg-white
               shadow-md ring-0
-              transition-all duration-300 ease-out
+              transition-all duration-150 ease-out
               ${isDarkMode ? '-translate-x-5 shadow-primary-500/20' : 'translate-x-0'}
             `}
           />

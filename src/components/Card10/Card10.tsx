@@ -21,7 +21,7 @@ const Card10: FC<Card10Props> = ({ className = 'h-full', post }) => {
 
   return (
     <div
-      className={`nc-Card10 relative flex flex-col transition-shadow duration-300 hover:shadow-lg ${className}`}
+      className={`nc-Card10 relative flex flex-col transition-shadow duration-200 hover:shadow-lg ${className}`}
       onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => setIsHover(false)}
     >

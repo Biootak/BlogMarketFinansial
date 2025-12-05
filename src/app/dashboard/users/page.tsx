@@ -258,7 +258,7 @@ export default function UsersPage() {
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <PrimaryActionButton onClick={() => { setEditingUser(null); form.reset(); }}>
-              <HiOutlinePlus className="h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
+              <HiOutlinePlus className="h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
               <span>افزودن کاربر</span>
             </PrimaryActionButton>
           </DialogTrigger>

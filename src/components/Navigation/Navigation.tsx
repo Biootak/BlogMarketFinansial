@@ -94,7 +94,7 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
               variant="ghost"
               className={`
                 group relative flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium rounded-xl
-                transition-all duration-300 hover:bg-transparent
+                transition-all duration-200 hover:bg-transparent
                 ${active
                   ? 'text-primary-600 dark:text-primary-400'
                   : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
@@ -104,7 +104,7 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
               <span className="relative z-10">{item.name}</span>
               <ChevronDown
                 className={`
-                  relative z-10 size-3.5 transition-transform duration-300 ease-out
+                  relative z-10 size-3.5 transition-transform duration-200 ease-out
                   ${openDropdown === item.id ? 'rotate-180' : ''}
                 `}
               />
@@ -115,7 +115,7 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
                   bg-gradient-to-br from-slate-100/90 to-slate-50/80
                   dark:from-slate-800/90 dark:to-slate-700/60
                   opacity-0 group-hover:opacity-100
-                  transition-all duration-300
+                  transition-all duration-200
                 "
               />
               {/* Active indicator */}
@@ -162,7 +162,7 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
                           href={subItem.href}
                           className={`
                             group/item relative w-full flex items-center gap-3 py-3 px-3 text-sm rounded-xl cursor-pointer
-                            transition-all duration-300
+                            transition-all duration-200
                             ${pathname === subItem.href
                               ? 'bg-gradient-to-l from-primary-50/90 to-primary-100/60 text-primary-700 dark:from-primary-900/40 dark:to-primary-800/20 dark:text-primary-300'
                               : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -176,7 +176,7 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
                               bg-gradient-to-l from-slate-100/80 to-slate-50/60
                               dark:from-slate-800/60 dark:to-slate-700/40
                               opacity-0 group-hover/item:opacity-100
-                              transition-all duration-300
+                              transition-all duration-200
                               ${pathname === subItem.href ? 'hidden' : ''}
                             `}
                           />
@@ -203,7 +203,7 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
           href={item.href}
           className={`
             group relative flex items-center px-4 py-2.5 text-sm font-medium rounded-xl
-            transition-all duration-300
+            transition-all duration-200
             ${active
               ? 'text-primary-600 dark:text-primary-400'
               : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
@@ -218,7 +218,7 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
               bg-gradient-to-br from-slate-100/90 to-slate-50/80
               dark:from-slate-800/90 dark:to-slate-700/60
               opacity-0 group-hover:opacity-100
-              transition-all duration-300
+              transition-all duration-200
             "
           />
           {/* Active indicator */}

@@ -19,7 +19,7 @@ export default async function MainNav() {
           <div className="flex items-center gap-1">
             {/* Mobile Menu */}
             <div className="lg:hidden">
-              <div className="p-2 -mr-2 rounded-xl hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition-all duration-300">
+              <div className="p-2 -mr-2 rounded-xl hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition-all duration-150">
                 <MenuBar />
               </div>
             </div>
@@ -28,7 +28,7 @@ export default async function MainNav() {
           {/* Center - Logo */}
           <div className="flex items-center justify-center flex-1 lg:flex-none lg:justify-start">
             <div className="relative group">
-              <div className="absolute -inset-2 bg-gradient-to-r from-primary-500/20 to-indigo-500/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-all duration-500" />
+              <div className="absolute -inset-2 bg-gradient-to-r from-primary-500/20 to-indigo-500/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-all duration-300" />
               <Logo variant="modern" />
             </div>
           </div>
@@ -47,13 +47,13 @@ export default async function MainNav() {
               {!session?.user ? (
                 <Link
                   href="/signin"
-                  className="group relative p-2 -ml-2 inline-flex items-center justify-center rounded-xl transition-all duration-300 hover:bg-primary-50 dark:hover:bg-primary-950/50"
+                  className="group relative p-2 -ml-2 inline-flex items-center justify-center rounded-xl transition-all duration-150 hover:bg-primary-50 dark:hover:bg-primary-950/50"
                   aria-label="ورود به حساب کاربری"
                 >
                   <User className="size-5 text-neutral-600 dark:text-neutral-300" strokeWidth={1.8} />
                 </Link>
               ) : (
-                <div className="p-1 rounded-xl hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition-all duration-300">
+                <div className="p-1 rounded-xl hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition-all duration-150">
                   <AvatarDropdown />
                 </div>
               )}
@@ -65,17 +65,17 @@ export default async function MainNav() {
                 <div className="flex items-center gap-3">
                   <Link
                     href="/signin"
-                    className="group relative inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                    className="group relative inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white rounded-xl overflow-hidden transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                   >
                     <span className="absolute inset-0 bg-gradient-to-r from-primary-500 via-primary-600 to-indigo-600" />
-                    <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                    <span className="absolute inset-0 rounded-xl shadow-lg shadow-primary-500/30 group-hover:shadow-primary-500/50 transition-shadow duration-300" />
+                    <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
+                    <span className="absolute inset-0 rounded-xl shadow-lg shadow-primary-500/30 group-hover:shadow-primary-500/50 transition-shadow duration-200" />
                     <Sparkles className="relative size-4" />
                     <span className="relative">ورود</span>
                   </Link>
                   <Link
                     href="/signup"
-                    className="group relative inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                    className="group relative inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold rounded-xl overflow-hidden transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                   >
                     <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500 to-indigo-500 p-[1.5px]">
                       <span className="absolute inset-[1.5px] rounded-[10px] bg-white dark:bg-neutral-900" />
@@ -86,13 +86,13 @@ export default async function MainNav() {
                 </div>
               ) : (
                 <div className="flex items-center gap-1">
-                  <div className="p-1 rounded-xl hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition-all duration-300">
+                  <div className="p-1 rounded-xl hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition-all duration-150">
                     <SearchModal />
                   </div>
-                  <div className="p-1 rounded-xl hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition-all duration-300">
+                  <div className="p-1 rounded-xl hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition-all duration-150">
                     <NotifyDropdown />
                   </div>
-                  <div className="p-1 rounded-xl hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition-all duration-300">
+                  <div className="p-1 rounded-xl hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition-all duration-150">
                     <AvatarDropdown />
                   </div>
                 </div>

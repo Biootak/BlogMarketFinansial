@@ -11,7 +11,7 @@ interface CopyNotificationProps {
 
 const CopyNotification: React.FC<CopyNotificationProps> = ({
   className = '',
-  iconClassName = 'mr-1 size-2 text-neutral-400 group-hover:text-primary-500 transition-colors duration-300',
+  iconClassName = 'mr-1 size-2 text-neutral-400 group-hover:text-primary-500 transition-colors duration-200',
 }) => {
   const [showNotification, setShowNotification] = useState(false);
 

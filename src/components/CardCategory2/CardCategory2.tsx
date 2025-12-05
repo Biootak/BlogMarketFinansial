@@ -34,31 +34,31 @@ const CardCategory2: FC<CardCategory2Props> = ({ className = '', taxonomy, index
       className={`nc-CardCategory2 block h-full ${className}`}
     >
       <motion.div 
-        className="relative flex flex-col items-center justify-between text-center p-5 sm:p-6 bg-white dark:bg-neutral-800/80 rounded-2xl border border-neutral-100 dark:border-neutral-700/50 h-full group overflow-hidden"
+        className="relative flex flex-col items-center justify-between text-center p-3 xs:p-4 sm:p-5 md:p-6 bg-white dark:bg-neutral-800/80 rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-neutral-700/50 h-full group overflow-hidden"
         whileHover={{ y: -4 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
       >
         {/* Background Glow */}
-        <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${colorStyle.bg}`} />
+        <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${colorStyle.bg}`} />
         
         {/* Rank Badge */}
         {index && (
-          <div className={`absolute top-3 end-3 z-10 w-8 h-8 rounded-full ${colorStyle.bg} ${colorStyle.text} flex items-center justify-center text-sm font-bold shadow-sm ring-2 ${colorStyle.ring}`}>
+          <div className={`absolute top-2 end-2 sm:top-3 sm:end-3 z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full ${colorStyle.bg} ${colorStyle.text} flex items-center justify-center text-xs sm:text-sm font-bold shadow-sm ring-2 ${colorStyle.ring}`}>
             {index}
           </div>
         )}
 
         {/* Image Container */}
         <div className="relative z-10">
-          <div className={`absolute -inset-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500 blur-xl ${colorStyle.bg}`} />
+          <div className={`absolute -inset-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 blur-xl ${colorStyle.bg}`} />
           <motion.div
             className="relative"
             whileHover={{ scale: 1.05, rotate: 3 }}
             transition={{ duration: 0.3 }}
           >
-            <div className={`absolute -inset-1 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+            <div className={`absolute -inset-1 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200`} />
             <NcImage
-              containerClassName="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden ring-4 ring-white dark:ring-neutral-700 shadow-lg"
+              containerClassName="relative w-16 h-16 xs:w-18 xs:h-18 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden ring-2 sm:ring-4 ring-white dark:ring-neutral-700 shadow-lg"
               src={thumbnail || '/images/placeholder-small.png'}
               sizes="96px"
               alt={`دسته‌بندی ${name}`}
@@ -68,18 +68,18 @@ const CardCategory2: FC<CardCategory2Props> = ({ className = '', taxonomy, index
         </div>
 
         {/* Content */}
-        <div className="relative z-10 mt-4 w-full">
-          <h2 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+        <div className="relative z-10 mt-3 sm:mt-4 w-full">
+          <h2 className="text-sm xs:text-base sm:text-lg font-bold text-neutral-900 dark:text-white truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
             {name}
           </h2>
-          <div className="flex items-center justify-center gap-1.5 mt-2 text-neutral-500 dark:text-neutral-400">
-            <FileText className="w-3.5 h-3.5" />
-            <span className="text-sm">{count} مقاله</span>
+          <div className="flex items-center justify-center gap-1 sm:gap-1.5 mt-1.5 sm:mt-2 text-neutral-500 dark:text-neutral-400">
+            <FileText className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+            <span className="text-xs sm:text-sm">{count} مقاله</span>
           </div>
         </div>
 
         {/* Bottom Decoration */}
-        <div className={`absolute bottom-0 start-0 end-0 h-1 bg-gradient-to-r from-transparent via-primary-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+        <div className={`absolute bottom-0 start-0 end-0 h-0.5 sm:h-1 bg-gradient-to-r from-transparent via-primary-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200`} />
       </motion.div>
     </Link>
   );

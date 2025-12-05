@@ -75,7 +75,7 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
               <Link 
                 href={getPostLink(postType, slug)} 
                 title={title}
-                className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-300 line-clamp-3"
+                className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-150 line-clamp-3"
               >
                 {title}
               </Link>
@@ -123,14 +123,14 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
               <div className="flex items-center gap-2">
                 <button
                   onClick={onClickPrev}
-                  className="w-11 h-11 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-500 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-lg hover:scale-105"
+                  className="w-11 h-11 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-500 hover:text-white flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-lg hover:scale-105"
                   aria-label="قبلی"
                 >
                   <HiChevronRight className="w-5 h-5" />
                 </button>
                 <button
                   onClick={onClickNext}
-                  className="w-11 h-11 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-500 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-lg hover:scale-105"
+                  className="w-11 h-11 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-500 hover:text-white flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-lg hover:scale-105"
                   aria-label="بعدی"
                 >
                   <HiChevronLeft className="w-5 h-5" />
@@ -168,7 +168,7 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
               {/* Main Image */}
               <NcImage
                 containerClassName="absolute inset-0"
-                className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
+                className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
                 src={featuredImage || '/images/placeholder-large.png'}
                 alt={title}
                 fill
@@ -177,12 +177,12 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
               />
               
               {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
               
               {/* Play Button for Video Posts */}
               {postType === 'VIDEO' && (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-200">
                     <svg className="w-6 h-6 lg:w-8 lg:h-8 text-primary-600 ms-1" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M8 5v14l11-7z"/>
                     </svg>

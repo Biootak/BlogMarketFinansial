@@ -66,7 +66,7 @@ export function DashboardTableContainer({ children, className }: DashboardTableC
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-2xl border border-neutral-200/60 bg-white/70 shadow-lg shadow-neutral-900/5 backdrop-blur-xl transition-all duration-300 dark:border-neutral-700/50 dark:bg-neutral-800/70 dark:shadow-neutral-900/20',
+        'overflow-hidden rounded-2xl border border-neutral-200/60 bg-white/70 shadow-lg shadow-neutral-900/5 backdrop-blur-xl transition-all duration-200 dark:border-neutral-700/50 dark:bg-neutral-800/70 dark:shadow-neutral-900/20',
         className
       )}
     >
@@ -256,7 +256,7 @@ export function PrimaryActionButton({ onClick, children, className, type = 'butt
       type={type}
       onClick={onClick}
       className={cn(
-        'group inline-flex items-center gap-2 rounded-xl bg-gradient-to-l from-primary-500 to-primary-600 px-5 py-2.5 text-sm font-medium text-white shadow-lg shadow-primary-500/25 transition-all duration-300 hover:from-primary-600 hover:to-primary-700 hover:shadow-xl hover:shadow-primary-500/30 active:scale-[0.98] dark:shadow-primary-900/30',
+        'group inline-flex items-center gap-2 rounded-xl bg-gradient-to-l from-primary-500 to-primary-600 px-5 py-2.5 text-sm font-medium text-white shadow-lg shadow-primary-500/25 transition-all duration-150 hover:from-primary-600 hover:to-primary-700 hover:shadow-xl hover:shadow-primary-500/30 active:scale-[0.98] dark:shadow-primary-900/30',
         className
       )}
     >

@@ -33,7 +33,7 @@ const Tag: React.FC<TagProps> = ({
           hover:border-primary-300 dark:hover:border-primary-700
           hover:-translate-y-0.5
           text-sm font-medium text-neutral-700 dark:text-neutral-300
-          transition-all duration-300 ease-out
+          transition-all duration-200 ease-out
           overflow-hidden
           ${className}
         `}
@@ -46,21 +46,21 @@ const Tag: React.FC<TagProps> = ({
         }}
       >
         {/* Hover Gradient Background */}
-        <span className="absolute inset-0 bg-gradient-to-br from-primary-50 to-violet-50 dark:from-primary-950/50 dark:to-violet-950/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <span className="absolute inset-0 bg-gradient-to-br from-primary-50 to-violet-50 dark:from-primary-950/50 dark:to-violet-950/50 opacity-0 group-hover:opacity-100 transition-opacity duration-150" />
         
         {/* Icon */}
-        <span className="relative flex items-center justify-center w-6 h-6 rounded-lg bg-gradient-to-br from-primary-500 to-violet-500 shadow-sm shadow-primary-500/25 group-hover:shadow-primary-500/40 transition-shadow duration-300">
+        <span className="relative flex items-center justify-center w-6 h-6 rounded-lg bg-gradient-to-br from-primary-500 to-violet-500 shadow-sm shadow-primary-500/25 group-hover:shadow-primary-500/40 transition-shadow duration-200">
           <HiHashtag className="w-3.5 h-3.5 text-white" />
         </span>
         
         {/* Tag Name */}
-        <span className="relative group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors duration-300">
+        <span className="relative group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors duration-150">
           {tag.name}
         </span>
         
         {/* Post Count Badge */}
         {!hideCount && postCount !== undefined && (
-          <span className="relative px-2 py-0.5 rounded-full text-[10px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 group-hover:bg-primary-100 dark:group-hover:bg-primary-900/50 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">
+          <span className="relative px-2 py-0.5 rounded-full text-[10px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 group-hover:bg-primary-100 dark:group-hover:bg-primary-900/50 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200">
             {postCount}
           </span>
         )}

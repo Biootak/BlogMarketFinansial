@@ -26,7 +26,7 @@ export default function ClientSideDropdown({ children }: ClientSideDropdownProps
               hover:from-white hover:to-slate-50
               dark:hover:from-slate-700/90 dark:hover:to-slate-800/80
               focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50
-              transition-all duration-300 ease-out
+              transition-all duration-200 ease-out
               ${open ? 'shadow-md border-slate-300 dark:border-slate-600 from-white to-slate-50 dark:from-slate-700/90 dark:to-slate-800/80' : ''}
             `}
             aria-label="منوی کاربری"
@@ -35,7 +35,7 @@ export default function ClientSideDropdown({ children }: ClientSideDropdownProps
           </Popover.Button>
           <Transition
             as={Fragment}
-            enter="transition ease-out duration-300"
+            enter="transition ease-out duration-200"
             enterFrom="opacity-0 translate-y-2 scale-95"
             enterTo="opacity-100 translate-y-0 scale-100"
             leave="transition ease-in duration-200"

@@ -30,18 +30,18 @@ const Card11: React.FC<Card11Props> = ({
 
   return (
     <div
-      className={`nc-Card11 relative flex flex-col group rounded-2xl lg:rounded-3xl overflow-hidden bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm ${className} transition-all duration-500 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.12)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_20px_60px_rgba(0,0,0,0.4)] border border-neutral-200/60 dark:border-neutral-800/60 hover:border-primary-300/50 dark:hover:border-primary-700/50 hover:-translate-y-1`}
+      className={`nc-Card11 relative flex flex-col group rounded-2xl lg:rounded-3xl overflow-hidden bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm ${className} transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.12)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)] dark:hover:shadow-[0_20px_60px_rgba(0,0,0,0.4)] border border-neutral-200/60 dark:border-neutral-800/60 hover:border-primary-300/50 dark:hover:border-primary-700/50 hover:-translate-y-1`}
     >
       {/* Decorative Gradient Background on Hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary-50/0 to-violet-50/0 group-hover:from-primary-50/30 group-hover:to-violet-50/20 dark:group-hover:from-primary-950/20 dark:group-hover:to-violet-950/10 transition-all duration-500 pointer-events-none z-0" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary-50/0 to-violet-50/0 group-hover:from-primary-50/30 group-hover:to-violet-50/20 dark:group-hover:from-primary-950/20 dark:group-hover:to-violet-950/10 transition-all duration-300 pointer-events-none z-0" />
       
       {/* Image Container */}
       <div className="block flex-shrink-0 relative w-full overflow-hidden">
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
         {/* Image with Scale Effect */}
-        <div className="transition-transform duration-700 ease-out group-hover:scale-110">
+        <div className="transition-transform duration-300 ease-out group-hover:scale-110">
           <PostFeaturedMedia post={post} imageRatio="landscape" />
         </div>
         
@@ -72,13 +72,13 @@ const Card11: React.FC<Card11Props> = ({
           href={postLink} 
           className="flex-1 flex flex-col focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-lg"
         >
-          <h3 className="nc-card-title block text-base lg:text-lg font-bold text-neutral-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300 leading-snug">
+          <h3 className="nc-card-title block text-base lg:text-lg font-bold text-neutral-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200 leading-snug">
             <span className="line-clamp-2" title={title}>
               {title}
             </span>
           </h3>
           {excerpt && (
-            <p className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2 mt-3 leading-relaxed group-hover:text-neutral-700 dark:group-hover:text-neutral-300 transition-colors duration-300">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2 mt-3 leading-relaxed group-hover:text-neutral-700 dark:group-hover:text-neutral-300 transition-colors duration-200">
               {excerpt}
             </p>
           )}
@@ -87,14 +87,14 @@ const Card11: React.FC<Card11Props> = ({
         {/* Read More Indicator */}
         <div className="mt-auto pt-4 border-t border-neutral-100 dark:border-neutral-800/50 relative">
           {/* Accent Line on Hover */}
-          <div className="absolute top-0 right-0 w-12 h-px bg-gradient-to-l from-primary-500 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute top-0 right-0 w-12 h-px bg-gradient-to-l from-primary-500 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           
           <Link 
             href={postLink}
-            className="inline-flex items-center gap-2 text-xs font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-all duration-300 group-hover:gap-3"
+            className="inline-flex items-center gap-2 text-xs font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-all duration-200 group-hover:gap-3"
           >
             <span>ادامه مطلب</span>
-            <HiArrowLeft className="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-1" />
+            <HiArrowLeft className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-1" />
           </Link>
         </div>
       </div>

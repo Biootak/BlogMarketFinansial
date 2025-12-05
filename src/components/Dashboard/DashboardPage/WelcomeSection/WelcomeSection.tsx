@@ -10,7 +10,7 @@ export default function WelcomeSection() {
       initial={{ opacity: 0, y: 24, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="relative overflow-hidden rounded-3xl text-white"
+      className="relative overflow-hidden rounded-2xl sm:rounded-3xl text-white"
       style={{
         boxShadow: `
           0 0 0 1px rgba(255,255,255,0.1),
@@ -40,7 +40,7 @@ export default function WelcomeSection() {
       <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-indigo-400/20 to-transparent rounded-tr-full" />
       
       {/* Content wrapper with padding */}
-      <div className="relative z-10 p-8 sm:p-10">
+      <div className="relative z-10 p-4 sm:p-6 md:p-8 lg:p-10">
         <WelcomeSectionContent />
       </div>
       

@@ -128,7 +128,7 @@ const NotifyDropdown = memo(({ className = 'hidden sm:block' }: Props) => {
 
             <Transition
               as={Fragment}
-              enter="transition ease-out duration-300"
+              enter="transition ease-out duration-200"
               enterFrom="opacity-0 translate-y-2 scale-95"
               enterTo="opacity-100 translate-y-0 scale-100"
               leave="transition ease-in duration-200"
@@ -223,7 +223,7 @@ const NotifyDropdown = memo(({ className = 'hidden sm:block' }: Props) => {
                           bg-primary-50/50 dark:bg-primary-900/20
                           hover:bg-primary-100/80 dark:hover:bg-primary-900/40
                           rounded-xl
-                          transition-all duration-300
+                          transition-all duration-150
                         "
                       >
                         مشاهده همه اعلان‌ها

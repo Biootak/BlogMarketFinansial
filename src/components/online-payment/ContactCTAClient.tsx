@@ -51,7 +51,7 @@ const ContactCTAClient: FC<ContactCTAClientProps> = ({
                 <button
                   type="button"
                   onClick={() => setActiveTab('request')}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
+                  className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
                     activeTab === 'request'
                       ? 'bg-white dark:bg-neutral-800 text-primary-600 dark:text-primary-400 shadow-md'
                       : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
@@ -63,7 +63,7 @@ const ContactCTAClient: FC<ContactCTAClientProps> = ({
                 <button
                   type="button"
                   onClick={() => setActiveTab('tracking')}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
+                  className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
                     activeTab === 'tracking'
                       ? 'bg-white dark:bg-neutral-800 text-primary-600 dark:text-primary-400 shadow-md'
                       : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'

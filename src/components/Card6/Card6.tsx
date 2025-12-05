@@ -100,7 +100,7 @@ export default function Card6({ className = '', post }: Card6Props) {
         <div className="hidden sm:flex flex-row items-stretch p-4 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm border border-neutral-100 dark:border-neutral-800 gap-4 relative">
           
           {/* Subtle Hover Background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary-50/0 to-violet-50/0 group-hover:from-primary-50/50 group-hover:to-violet-50/30 dark:group-hover:from-primary-950/20 dark:group-hover:to-violet-950/10 transition-all duration-400 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary-50/0 to-violet-50/0 group-hover:from-primary-50/50 group-hover:to-violet-50/30 dark:group-hover:from-primary-950/20 dark:group-hover:to-violet-950/10 transition-all duration-200 pointer-events-none" />
 
           {/* Image Container - Desktop */}
           <Link
@@ -113,7 +113,7 @@ export default function Card6({ className = '', post }: Card6Props) {
               aspectRatio="5/3"
               sizes="(max-width: 768px) 144px, (max-width: 1024px) 160px, 176px"
               priority={false}
-              className="transition-transform duration-500 group-hover:scale-105"
+              className="transition-transform duration-300 group-hover:scale-105"
             />
             
             {/* Lighter Overlay */}
@@ -162,7 +162,7 @@ export default function Card6({ className = '', post }: Card6Props) {
             {/* Meta Section */}
             <div className="mt-3 pt-2.5 border-t border-neutral-100 dark:border-neutral-800 relative">
               {/* Accent Line */}
-              <div className="absolute top-0 start-0 w-10 h-[1.5px] bg-gradient-to-l from-primary-500 to-violet-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-400" />
+              <div className="absolute top-0 start-0 w-10 h-[1.5px] bg-gradient-to-l from-primary-500 to-violet-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
               
               <PostCardMeta
                 hiddenAvatar={false}

@@ -138,7 +138,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 space-y-8"
+      className="min-h-screen py-4 sm:py-6 lg:py-8 px-3 sm:px-4 md:px-6 lg:px-8 space-y-4 sm:space-y-6 lg:space-y-8"
     >
       {/* Welcome Section */}
       <motion.div variants={itemVariants}>
@@ -148,7 +148,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
       {/* Stats Grid */}
       <motion.div 
         variants={containerVariants}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5"
       >
         {blogStatCards.map((card, index) => (
           <motion.div
@@ -171,31 +171,33 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
       {/* Tabs Section */}
       <motion.div variants={itemVariants}>
         <Tabs dir="rtl" defaultValue="traffic" className="w-full">
-          <TabsList className="inline-flex p-1.5 gap-1.5 mb-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50">
+          <TabsList className="inline-flex p-1 sm:p-1.5 gap-1 sm:gap-1.5 mb-4 sm:mb-6 lg:mb-8 bg-white dark:bg-slate-900 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50 overflow-x-auto w-full sm:w-auto">
             <TabsTrigger
               value="traffic"
-              className="px-5 py-3 rounded-xl text-sm font-semibold transition-all duration-300
+              className="px-3 sm:px-4 lg:px-5 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 whitespace-nowrap
                          data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-indigo-600 
                          data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-violet-500/30
                          text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white
                          hover:bg-slate-100 dark:hover:bg-slate-800"
             >
-              <span className="flex items-center gap-2.5">
-                <HiOutlineChartBar className="w-4 h-4" />
-                آمار بازدید
+              <span className="flex items-center gap-1.5 sm:gap-2 lg:gap-2.5">
+                <HiOutlineChartBar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden xs:inline">آمار بازدید</span>
+                <span className="xs:hidden">آمار</span>
               </span>
             </TabsTrigger>
             <TabsTrigger
               value="calendar"
-              className="px-5 py-3 rounded-xl text-sm font-semibold transition-all duration-300
+              className="px-3 sm:px-4 lg:px-5 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 whitespace-nowrap
                          data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-600 data-[state=active]:to-teal-600 
                          data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-500/30
                          text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white
                          hover:bg-slate-100 dark:hover:bg-slate-800"
             >
-              <span className="flex items-center gap-2.5">
-                <HiOutlineCalendarDays className="w-4 h-4" />
-                تقویم انتشار
+              <span className="flex items-center gap-1.5 sm:gap-2 lg:gap-2.5">
+                <HiOutlineCalendarDays className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden xs:inline">تقویم انتشار</span>
+                <span className="xs:hidden">تقویم</span>
               </span>
             </TabsTrigger>
           </TabsList>
@@ -205,7 +207,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden"
+              className="relative bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden"
               style={{
                 boxShadow: `
                   0 0 0 1px rgba(0,0,0,0.03),
@@ -216,19 +218,19 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
               }}
             >
               {/* Header */}
-              <div className="px-7 py-6 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50/50 to-white dark:from-slate-800/50 dark:to-slate-900">
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl blur-lg opacity-40" />
-                    <div className="relative p-3.5 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-xl">
-                      <HiOutlineChartBar className="w-5 h-5" />
+              <div className="px-4 sm:px-5 md:px-6 lg:px-7 py-4 sm:py-5 md:py-6 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50/50 to-white dark:from-slate-800/50 dark:to-slate-900">
+                <div className="flex items-center gap-2.5 sm:gap-3 md:gap-4">
+                  <div className="relative flex-shrink-0">
+                    <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-xl sm:rounded-2xl blur-lg opacity-40" />
+                    <div className="relative p-2 sm:p-2.5 md:p-3 lg:p-3.5 rounded-xl sm:rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-xl">
+                      <HiOutlineChartBar className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
                   </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                  <div className="min-w-0">
+                    <h2 className="text-base sm:text-lg md:text-xl font-bold text-slate-900 dark:text-white truncate">
                       آمار بازدید
                     </h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                    <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 hidden sm:block">
                       نمودار بازدید سایت در روزهای اخیر
                     </p>
                   </div>
@@ -236,8 +238,8 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
               </div>
               
               {/* Chart */}
-              <div className="p-7">
-                <div className="h-[400px]">
+              <div className="p-3 sm:p-4 md:p-5 lg:p-7">
+                <div className="h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px]">
                   <TrafficChart />
                 </div>
               </div>
@@ -249,7 +251,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden"
+              className="relative bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden"
               style={{
                 boxShadow: `
                   0 0 0 1px rgba(0,0,0,0.03),
@@ -260,19 +262,19 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
               }}
             >
               {/* Header */}
-              <div className="px-7 py-6 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50/50 to-white dark:from-slate-800/50 dark:to-slate-900">
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl blur-lg opacity-40" />
-                    <div className="relative p-3.5 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-xl">
-                      <HiOutlineCalendarDays className="w-5 h-5" />
+              <div className="px-4 sm:px-5 md:px-6 lg:px-7 py-4 sm:py-5 md:py-6 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50/50 to-white dark:from-slate-800/50 dark:to-slate-900">
+                <div className="flex items-center gap-2.5 sm:gap-3 md:gap-4">
+                  <div className="relative flex-shrink-0">
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl sm:rounded-2xl blur-lg opacity-40" />
+                    <div className="relative p-2 sm:p-2.5 md:p-3 lg:p-3.5 rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-xl">
+                      <HiOutlineCalendarDays className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
                   </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                  <div className="min-w-0">
+                    <h2 className="text-base sm:text-lg md:text-xl font-bold text-slate-900 dark:text-white truncate">
                       تقویم انتشار
                     </h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                    <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 hidden sm:block">
                       برنامه‌ریزی انتشار پست‌های آینده
                     </p>
                   </div>
@@ -280,8 +282,8 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
               </div>
               
               {/* Calendar */}
-              <div className="p-7">
-                <div className="h-[400px]">
+              <div className="p-3 sm:p-4 md:p-5 lg:p-7">
+                <div className="h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px]">
                   <PublishingCalendar scheduledPosts={scheduledPosts} />
                 </div>
               </div>

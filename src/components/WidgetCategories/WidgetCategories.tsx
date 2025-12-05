@@ -12,12 +12,12 @@ export interface WidgetCategoriesProps {
 const WidgetCategories: React.FC<WidgetCategoriesProps> = ({ className = '', categories }) => {
   return (
     <div
-      className={`nc-WidgetCategories rounded-3xl overflow-hidden bg-white dark:bg-neutral-900 shadow-xl border border-neutral-200 dark:border-neutral-800 ${className}`}
+      className={`nc-WidgetCategories rounded-2xl sm:rounded-3xl overflow-hidden bg-white dark:bg-neutral-900 shadow-xl border border-neutral-200 dark:border-neutral-800 ${className}`}
     >
       <WidgetHeading1
         title={
           <span className="flex items-center">
-            <Icon name="Hash" className="ml-2" />
+            <Icon name="Hash" className="ml-1.5 sm:ml-2" />
             موضوعات پرطرفدار
           </span>
         }
@@ -27,7 +27,7 @@ const WidgetCategories: React.FC<WidgetCategoriesProps> = ({ className = '', cat
         <div className="flex flex-col divide-y divide-neutral-200 dark:divide-neutral-700">
           {categories.map((category) => (
             <CardCategory1
-              className="p-4 xl:p-5 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+              className="p-3 sm:p-4 xl:p-5 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors duration-150"
               key={category.id}
               taxonomy={category}
               size="normal"

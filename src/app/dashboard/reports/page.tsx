@@ -100,14 +100,14 @@ export default function ReportsPage() {
                 'bg-white/80 backdrop-blur-sm shadow-lg shadow-[rgb(var(--c-primary-200))]/20',
                 'hover:bg-[rgb(var(--c-primary-50))] hover:border-[rgb(var(--c-primary-300))]',
                 'hover:shadow-xl hover:shadow-[rgb(var(--c-primary-300))]/30',
-                'transition-all duration-300 ease-out',
+                'transition-all duration-200 ease-out',
                 'group'
               )}
             >
               <RefreshCw
                 className={cn(
                   'w-5 h-5 text-[rgb(var(--c-primary-600))] group-hover:text-[rgb(var(--c-primary-700))]',
-                  'transition-all duration-300',
+                  'transition-all duration-200',
                   isRefreshing && 'animate-spin'
                 )}
               />
@@ -127,7 +127,7 @@ export default function ReportsPage() {
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
                     'relative flex items-center gap-2.5 px-5 py-3 rounded-xl font-medium text-sm',
-                    'transition-all duration-300 ease-out',
+                    'transition-all duration-200 ease-out',
                     'focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--c-primary-500))] focus-visible:ring-offset-2',
                     isActive
                       ? [
@@ -147,7 +147,7 @@ export default function ReportsPage() {
                 >
                   <span
                     className={cn(
-                      'transition-transform duration-300',
+                      'transition-transform duration-200',
                       isActive && 'scale-110'
                     )}
                   >

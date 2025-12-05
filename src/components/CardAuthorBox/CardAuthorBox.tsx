@@ -25,7 +25,7 @@ const CardAuthorBox: FC<CardAuthorBoxProps> = ({ className = '', author, index =
         transition={{ duration: 0.3, ease: 'easeOut' }}
       >
         {/* Background Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-50/50 via-transparent to-primary-50/30 dark:from-primary-900/20 dark:to-primary-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-50/50 via-transparent to-primary-50/30 dark:from-primary-900/20 dark:to-primary-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
         {/* Rank Badge for Top 3 */}
         {isTopThree && (
@@ -42,7 +42,7 @@ const CardAuthorBox: FC<CardAuthorBoxProps> = ({ className = '', author, index =
 
         {/* Avatar */}
         <div className="relative z-10">
-          <div className="absolute -inset-2 bg-gradient-to-r from-primary-400 to-primary-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-md" />
+          <div className="absolute -inset-2 bg-gradient-to-r from-primary-400 to-primary-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 blur-md" />
           <motion.div
             className="relative"
             whileHover={{ scale: 1.05 }}

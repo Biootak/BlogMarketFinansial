@@ -57,9 +57,9 @@ const ToggleSwitch = ({ enabled, onChange, disabled }: { enabled: boolean; onCha
     type="button"
     onClick={onChange}
     disabled={disabled}
-    className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full transition-all duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--c-primary-500))] focus-visible:ring-offset-2 ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${enabled ? 'bg-gradient-to-r from-[rgb(var(--c-primary-500))] to-[rgb(var(--c-primary-600))] shadow-lg shadow-[rgb(var(--c-primary-500))]/30' : 'bg-gray-200 dark:bg-gray-700'}`}
+    className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full transition-all duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--c-primary-500))] focus-visible:ring-offset-2 ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${enabled ? 'bg-gradient-to-r from-[rgb(var(--c-primary-500))] to-[rgb(var(--c-primary-600))] shadow-lg shadow-[rgb(var(--c-primary-500))]/30' : 'bg-gray-200 dark:bg-gray-700'}`}
   >
-    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition-all duration-300 ease-out ${enabled ? '-translate-x-6' : '-translate-x-1'}`} />
+    <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition-all duration-200 ease-out ${enabled ? '-translate-x-6' : '-translate-x-1'}`} />
   </button>
 );
 
@@ -74,7 +74,7 @@ const InputField = ({ label, type = 'text', value, onChange, placeholder, readOn
       readOnly={readOnly}
       disabled={disabled}
       placeholder={placeholder}
-      className={`w-full rounded-xl border-2 border-gray-200/80 bg-white/80 backdrop-blur-sm px-4 py-3 text-sm text-gray-900 shadow-sm transition-all duration-300 ease-out placeholder:text-gray-400 hover:border-[rgb(var(--c-primary-200))] hover:shadow-md focus:border-[rgb(var(--c-primary-400))] focus:bg-white focus:shadow-lg focus:outline-none focus:ring-4 focus:ring-[rgb(var(--c-primary-100))]/50 dark:border-gray-700 dark:bg-gray-800/80 dark:text-white ${readOnly || disabled ? 'cursor-not-allowed opacity-60' : ''}`}
+      className={`w-full rounded-xl border-2 border-gray-200/80 bg-white/80 backdrop-blur-sm px-4 py-3 text-sm text-gray-900 shadow-sm transition-all duration-200 ease-out placeholder:text-gray-400 hover:border-[rgb(var(--c-primary-200))] hover:shadow-md focus:border-[rgb(var(--c-primary-400))] focus:bg-white focus:shadow-lg focus:outline-none focus:ring-4 focus:ring-[rgb(var(--c-primary-100))]/50 dark:border-gray-700 dark:bg-gray-800/80 dark:text-white ${readOnly || disabled ? 'cursor-not-allowed opacity-60' : ''}`}
     />
   </div>
 );
@@ -87,7 +87,7 @@ const SelectField = ({ label, value, onChange, options, disabled = false }: { la
       value={value}
       onChange={(e) => onChange(e.target.value)}
       disabled={disabled}
-      className="w-full rounded-xl border-2 border-gray-200/80 bg-white/80 backdrop-blur-sm px-4 py-3 pr-10 text-sm text-gray-900 shadow-sm transition-all duration-300 ease-out hover:border-[rgb(var(--c-primary-200))] hover:shadow-md focus:border-[rgb(var(--c-primary-400))] focus:bg-white focus:shadow-lg focus:outline-none focus:ring-4 focus:ring-[rgb(var(--c-primary-100))]/50 dark:border-gray-700 dark:bg-gray-800/80 dark:text-white"
+      className="w-full rounded-xl border-2 border-gray-200/80 bg-white/80 backdrop-blur-sm px-4 py-3 pr-10 text-sm text-gray-900 shadow-sm transition-all duration-200 ease-out hover:border-[rgb(var(--c-primary-200))] hover:shadow-md focus:border-[rgb(var(--c-primary-400))] focus:bg-white focus:shadow-lg focus:outline-none focus:ring-4 focus:ring-[rgb(var(--c-primary-100))]/50 dark:border-gray-700 dark:bg-gray-800/80 dark:text-white"
     >
       {options.map((opt) => (
         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -98,7 +98,7 @@ const SelectField = ({ label, value, onChange, options, disabled = false }: { la
 
 // Setting Toggle Row Component
 const SettingToggleRow = ({ title, description, enabled, onChange, disabled }: { title: string; description: string; enabled: boolean; onChange: () => void; disabled?: boolean }) => (
-  <div className="group flex items-center justify-between rounded-2xl bg-gradient-to-l from-gray-50/80 to-white/50 p-5 border border-gray-100/80 transition-all duration-300 ease-out hover:border-[rgb(var(--c-primary-100))] hover:shadow-md dark:from-gray-800/50 dark:to-gray-900/50 dark:border-gray-700">
+  <div className="group flex items-center justify-between rounded-2xl bg-gradient-to-l from-gray-50/80 to-white/50 p-5 border border-gray-100/80 transition-all duration-200 ease-out hover:border-[rgb(var(--c-primary-100))] hover:shadow-md dark:from-gray-800/50 dark:to-gray-900/50 dark:border-gray-700">
     <div className="space-y-1">
       <h4 className="text-sm font-semibold text-gray-900 dark:text-white">{title}</h4>
       <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
@@ -109,7 +109,7 @@ const SettingToggleRow = ({ title, description, enabled, onChange, disabled }: {
 
 // Card Section Component
 const CardSection = ({ title, description, children }: { title: string; description: string; children: React.ReactNode }) => (
-  <div className="relative overflow-hidden rounded-3xl bg-white/70 backdrop-blur-xl border border-gray-200/60 shadow-xl shadow-gray-200/40 transition-all duration-500 ease-out hover:shadow-2xl dark:bg-gray-900/70 dark:border-gray-700/60">
+  <div className="relative overflow-hidden rounded-3xl bg-white/70 backdrop-blur-xl border border-gray-200/60 shadow-xl shadow-gray-200/40 transition-all duration-300 ease-out hover:shadow-2xl dark:bg-gray-900/70 dark:border-gray-700/60">
     <div className="absolute inset-0 bg-gradient-to-br from-[rgb(var(--c-primary-50))]/30 via-transparent to-transparent pointer-events-none" />
     <div className="absolute -left-20 -top-20 h-40 w-40 rounded-full bg-[rgb(var(--c-primary-200))]/20 blur-3xl" />
     <div className="relative p-6 sm:p-8 lg:p-10">
@@ -128,12 +128,12 @@ const CardSection = ({ title, description, children }: { title: string; descript
 // Action Buttons Component
 const ActionButtons = ({ onReset, onSubmit, loading, disabled }: { onReset?: () => void; onSubmit?: () => void; loading?: boolean; disabled?: boolean }) => (
   <div className="flex items-center justify-end gap-3 pt-8 mt-8 border-t border-gray-200/60 dark:border-gray-700/60">
-    <button type="button" onClick={onReset} disabled={loading || disabled} className="group flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-gray-600 bg-gray-100/80 border border-gray-200/60 transition-all duration-300 hover:bg-gray-200/80 hover:text-gray-900 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800/80 dark:text-gray-300 dark:border-gray-700">
-      <RefreshCw className={`h-4 w-4 transition-transform duration-300 ${loading ? 'animate-spin' : 'group-hover:-rotate-180'}`} />
+    <button type="button" onClick={onReset} disabled={loading || disabled} className="group flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-gray-600 bg-gray-100/80 border border-gray-200/60 transition-all duration-200 hover:bg-gray-200/80 hover:text-gray-900 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800/80 dark:text-gray-300 dark:border-gray-700">
+      <RefreshCw className={`h-4 w-4 transition-transform duration-200 ${loading ? 'animate-spin' : 'group-hover:-rotate-180'}`} />
       <span>بازنشانی</span>
     </button>
-    <button type="button" onClick={onSubmit} disabled={loading || disabled} className="group flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-l from-[rgb(var(--c-primary-600))] to-[rgb(var(--c-primary-500))] shadow-lg shadow-[rgb(var(--c-primary-500))]/30 transition-all duration-300 hover:shadow-xl hover:from-[rgb(var(--c-primary-700))] hover:to-[rgb(var(--c-primary-600))] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 active:translate-y-0">
-      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4 transition-transform duration-300 group-hover:scale-110" />}
+    <button type="button" onClick={onSubmit} disabled={loading || disabled} className="group flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-l from-[rgb(var(--c-primary-600))] to-[rgb(var(--c-primary-500))] shadow-lg shadow-[rgb(var(--c-primary-500))]/30 transition-all duration-200 hover:shadow-xl hover:from-[rgb(var(--c-primary-700))] hover:to-[rgb(var(--c-primary-600))] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 active:translate-y-0">
+      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" />}
       <span>{loading ? 'در حال ذخیره...' : 'ذخیره تنظیمات'}</span>
     </button>
   </div>
@@ -331,8 +331,8 @@ export default function SettingsPage() {
                     const IconComponent = tab.icon;
                     const isActive = activeTab === tab.id;
                     return (
-                      <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`group relative flex items-center gap-3 rounded-xl px-4 py-3.5 min-w-max lg:min-w-0 lg:w-full text-sm font-medium transition-all duration-300 ${isActive ? 'bg-gradient-to-l from-[rgb(var(--c-primary-600))] to-[rgb(var(--c-primary-500))] text-white shadow-lg shadow-[rgb(var(--c-primary-500))]/30' : 'text-gray-600 hover:bg-gray-100/80 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800/80'}`}>
-                        <IconComponent className={`h-5 w-5 shrink-0 transition-transform duration-300 ${isActive ? '' : 'group-hover:scale-110'}`} />
+                      <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`group relative flex items-center gap-3 rounded-xl px-4 py-3.5 min-w-max lg:min-w-0 lg:w-full text-sm font-medium transition-all duration-200 ${isActive ? 'bg-gradient-to-l from-[rgb(var(--c-primary-600))] to-[rgb(var(--c-primary-500))] text-white shadow-lg shadow-[rgb(var(--c-primary-500))]/30' : 'text-gray-600 hover:bg-gray-100/80 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800/80'}`}>
+                        <IconComponent className={`h-5 w-5 shrink-0 transition-transform duration-200 ${isActive ? '' : 'group-hover:scale-110'}`} />
                         <div className="flex flex-col items-start">
                           <span>{tab.name}</span>
                           <span className={`text-xs hidden lg:block ${isActive ? 'text-white/70' : 'text-gray-400'}`}>{tab.description}</span>
@@ -370,11 +370,11 @@ export default function SettingsPage() {
                     <InputField label="رمز عبور" type="password" value={formData.email.smtpPassword} onChange={(v) => handleInputChange('email', 'smtpPassword', v)} placeholder="••••••••" disabled={loading} />
                   </div>
                   <div className="flex items-center justify-end gap-3 pt-8 mt-8 border-t border-gray-200/60">
-                    <button type="button" onClick={handleTestSmtp} disabled={loading} className="group flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-gray-600 bg-gray-100/80 border border-gray-200/60 transition-all duration-300 hover:bg-gray-200/80 hover:shadow-md disabled:opacity-50">
+                    <button type="button" onClick={handleTestSmtp} disabled={loading} className="group flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-gray-600 bg-gray-100/80 border border-gray-200/60 transition-all duration-200 hover:bg-gray-200/80 hover:shadow-md disabled:opacity-50">
                       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
                       <span>تست اتصال</span>
                     </button>
-                    <button type="button" onClick={handleSaveEmail} disabled={loading} className="group flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-l from-[rgb(var(--c-primary-600))] to-[rgb(var(--c-primary-500))] shadow-lg transition-all duration-300 hover:shadow-xl disabled:opacity-50">
+                    <button type="button" onClick={handleSaveEmail} disabled={loading} className="group flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-l from-[rgb(var(--c-primary-600))] to-[rgb(var(--c-primary-500))] shadow-lg transition-all duration-200 hover:shadow-xl disabled:opacity-50">
                       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                       <span>ذخیره تنظیمات</span>
                     </button>
@@ -419,11 +419,11 @@ export default function SettingsPage() {
                     <SettingToggleRow title="پشتیبان‌گیری خودکار" description="فعال‌سازی پشتیبان‌گیری خودکار از پایگاه داده" enabled={formData.database.autoBackup} onChange={() => handleInputChange('database', 'autoBackup', !formData.database.autoBackup)} disabled={loading} />
                   </div>
                   <div className="flex items-center justify-end gap-3 pt-8 mt-8 border-t border-gray-200/60">
-                    <button type="button" onClick={handleTestDatabase} disabled={loading} className="group flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-gray-600 bg-gray-100/80 border border-gray-200/60 transition-all duration-300 hover:bg-gray-200/80 hover:shadow-md disabled:opacity-50">
+                    <button type="button" onClick={handleTestDatabase} disabled={loading} className="group flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-gray-600 bg-gray-100/80 border border-gray-200/60 transition-all duration-200 hover:bg-gray-200/80 hover:shadow-md disabled:opacity-50">
                       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
                       <span>تست اتصال</span>
                     </button>
-                    <button type="button" onClick={() => toast({ title: 'اطلاع', description: 'تنظیمات دیتابیس از فایل .env خوانده می‌شود' })} disabled={loading} className="group flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-l from-[rgb(var(--c-primary-600))] to-[rgb(var(--c-primary-500))] shadow-lg transition-all duration-300 hover:shadow-xl disabled:opacity-50">
+                    <button type="button" onClick={() => toast({ title: 'اطلاع', description: 'تنظیمات دیتابیس از فایل .env خوانده می‌شود' })} disabled={loading} className="group flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-l from-[rgb(var(--c-primary-600))] to-[rgb(var(--c-primary-500))] shadow-lg transition-all duration-200 hover:shadow-xl disabled:opacity-50">
                       <Check className="h-4 w-4" />
                       <span>ذخیره تنظیمات</span>
                     </button>
@@ -451,7 +451,7 @@ export default function SettingsPage() {
                       <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">کلید API</label>
                       <div className="flex gap-3">
                         <input type="text" value={formData.advanced.apiKey} readOnly placeholder="کلید API تولید نشده است" className="flex-1 rounded-xl border-2 border-gray-200/80 bg-gray-50/80 px-4 py-3 text-sm text-gray-900 font-mono cursor-not-allowed opacity-70 dark:border-gray-700 dark:bg-gray-800/80 dark:text-white" />
-                        <button type="button" onClick={handleGenerateApiKey} disabled={loading} className="shrink-0 rounded-xl px-5 py-3 text-sm font-semibold text-white bg-gradient-to-l from-[rgb(var(--c-primary-600))] to-[rgb(var(--c-primary-500))] shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-50 active:translate-y-0">
+                        <button type="button" onClick={handleGenerateApiKey} disabled={loading} className="shrink-0 rounded-xl px-5 py-3 text-sm font-semibold text-white bg-gradient-to-l from-[rgb(var(--c-primary-600))] to-[rgb(var(--c-primary-500))] shadow-lg transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-50 active:translate-y-0">
                           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'تولید کلید جدید'}
                         </button>
                       </div>

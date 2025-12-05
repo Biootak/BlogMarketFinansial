@@ -168,7 +168,7 @@ export default function ShareDropdown({
           className="gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 focus:bg-emerald-50 dark:focus:bg-emerald-900/20"
         >
           <div
-            className={`flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-300 ${
+            className={`flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-200 ${
               isCopied
                 ? 'bg-emerald-100 dark:bg-emerald-900/40'
                 : 'bg-neutral-100 dark:bg-neutral-800'

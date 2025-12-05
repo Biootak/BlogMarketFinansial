@@ -54,7 +54,7 @@ function StatCard({ title, value, icon, badges, gradient, iconBg, delay = 0 }: S
         'shadow-lg shadow-gray-200/50',
         'hover:shadow-2xl hover:shadow-gray-300/40',
         'hover:border-white/80 hover:-translate-y-1',
-        'transition-all duration-500 ease-out'
+        'transition-all duration-300 ease-out'
       )}
       style={{ animationDelay: `${delay}ms` }}
     >

@@ -38,13 +38,13 @@ const SocialLinks = async ({ className = '', itemClass = '', iconSize = 22 }: So
             bg-white dark:bg-neutral-800/80
             border border-slate-200/50 dark:border-slate-700/50
             shadow-sm hover:shadow-lg hover:shadow-primary-500/10
-            transition-all duration-300 ease-out
+            transition-all duration-200 ease-out
             overflow-hidden
           `}
         >
           {/* Gradient overlay on hover */}
           <span
-            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
             style={{
               background: link.color
                 ? `linear-gradient(135deg, ${link.color}15, ${link.color}05)`
@@ -53,7 +53,7 @@ const SocialLinks = async ({ className = '', itemClass = '', iconSize = 22 }: So
           />
           {/* Border glow on hover */}
           <span
-            className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"
             style={{
               boxShadow: link.color
                 ? `inset 0 0 0 1.5px ${link.color}40`
@@ -66,11 +66,11 @@ const SocialLinks = async ({ className = '', itemClass = '', iconSize = 22 }: So
               alt={link.name}
               width={iconSize}
               height={iconSize}
-              className="relative z-10 object-contain transition-transform duration-300 group-hover:scale-110"
+              className="relative z-10 object-contain transition-transform duration-200 group-hover:scale-110"
             />
           ) : (
             <span
-              className="relative z-10 flex items-center justify-center font-bold text-sm transition-transform duration-300 group-hover:scale-110"
+              className="relative z-10 flex items-center justify-center font-bold text-sm transition-transform duration-200 group-hover:scale-110"
               style={{
                 color: link.color || '#6366f1',
                 width: iconSize,

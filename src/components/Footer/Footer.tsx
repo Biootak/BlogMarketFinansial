@@ -80,7 +80,7 @@ const Footer = async () => {
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <div className="relative group">
-                  <div className="absolute -inset-2 bg-gradient-to-r from-primary-500/20 to-indigo-500/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                  <div className="absolute -inset-2 bg-gradient-to-r from-primary-500/20 to-indigo-500/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-all duration-300" />
                   <Logo className="relative w-14 h-auto" />
                 </div>
                 <div>

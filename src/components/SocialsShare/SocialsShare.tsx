@@ -56,7 +56,7 @@ const SocialsShare: React.FC<SocialsShareProps> = ({
           <motion.a
             key={item.id}
             href={getShareUrl(item.id)}
-            className={`rounded-full p-2 transition-all duration-300 ease-in-out bg-white dark:bg-gray-800 shadow-md hover:shadow-lg ${itemClass}`}
+            className={`rounded-full p-2 transition-all duration-200 ease-in-out bg-white dark:bg-gray-800 shadow-md hover:shadow-lg ${itemClass}`}
             title={`اشتراک‌گذاری در ${item.name}`}
             target="_blank"
             rel="noopener noreferrer"

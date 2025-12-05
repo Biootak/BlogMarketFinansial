@@ -30,7 +30,7 @@ const toastVariants = cva(
   cn(
     'group pointer-events-auto relative flex w-full items-start gap-4 overflow-hidden',
     'rounded-2xl border p-5 pe-10 shadow-2xl',
-    'backdrop-blur-xl transition-all duration-300',
+    'backdrop-blur-xl transition-all duration-200',
     'data-[swipe=cancel]:translate-x-0',
     'data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)]',
     'data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)]',

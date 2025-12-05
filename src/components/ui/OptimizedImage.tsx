@@ -112,7 +112,7 @@ export function OptimizedImage({
         onLoad={handleLoad}
         onError={handleError}
         className={cn(
-          'duration-300',
+          'duration-200',
           isLoading ? 'scale-105 blur-sm' : 'scale-100 blur-0',
           fill ? 'object-cover' : 'h-full w-full object-cover'
         )}

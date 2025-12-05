@@ -153,7 +153,7 @@ export function ProgressBar({
   return (
     <div className={cn('w-full bg-neutral-200 dark:bg-neutral-800 rounded-full h-2', className)}>
       <div
-        className="bg-primary-500 h-2 rounded-full transition-all duration-300"
+        className="bg-primary-500 h-2 rounded-full transition-all duration-200"
         style={{ width: `${percentage}%` }}
       />
     </div>

@@ -93,8 +93,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
         <div className="relative w-full h-44 rounded-2xl overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800" />
           {bgImagePreview && <Image src={bgImagePreview} alt="Background" fill sizes="100vw" className="object-cover" />}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300" />
-          <button type="button" onClick={() => setIsBgImageDialogOpen(true)} className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-200" />
+          <button type="button" onClick={() => setIsBgImageDialogOpen(true)} className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200">
             <div className="flex items-center gap-2 px-4 py-2 bg-white/90 dark:bg-slate-800/90 rounded-xl shadow-lg backdrop-blur-sm">
               <ImageIcon className="w-4 h-4 text-slate-600 dark:text-slate-300" />
               <span className="text-sm font-medium text-slate-700 dark:text-slate-200">تغییر کاور</span>
@@ -141,19 +141,19 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
 
       {/* Password Section */}
       <div className="relative overflow-hidden rounded-2xl border border-slate-200/60 dark:border-slate-700/60 bg-gradient-to-br from-slate-50/80 to-white dark:from-slate-800/50 dark:to-slate-900/50 shadow-sm">
-        <button type="button" onClick={() => setIsPasswordSectionOpen(!isPasswordSectionOpen)} className={cn('w-full flex items-center justify-between p-5 transition-all duration-300 hover:bg-slate-100/50 dark:hover:bg-slate-800/50', isPasswordSectionOpen && 'border-b border-slate-200/60 dark:border-slate-700/60')}>
+        <button type="button" onClick={() => setIsPasswordSectionOpen(!isPasswordSectionOpen)} className={cn('w-full flex items-center justify-between p-5 transition-all duration-200 hover:bg-slate-100/50 dark:hover:bg-slate-800/50', isPasswordSectionOpen && 'border-b border-slate-200/60 dark:border-slate-700/60')}>
           <div className="flex items-center gap-4">
-            <div className={cn('p-3 rounded-xl transition-all duration-300', isPasswordSectionOpen ? 'bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/25' : 'bg-slate-200/80 dark:bg-slate-700/80')}>
-              <Shield className={cn('w-5 h-5 transition-colors duration-300', isPasswordSectionOpen ? 'text-white' : 'text-slate-500 dark:text-slate-400')} />
+            <div className={cn('p-3 rounded-xl transition-all duration-200', isPasswordSectionOpen ? 'bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/25' : 'bg-slate-200/80 dark:bg-slate-700/80')}>
+              <Shield className={cn('w-5 h-5 transition-colors duration-200', isPasswordSectionOpen ? 'text-white' : 'text-slate-500 dark:text-slate-400')} />
             </div>
             <div className="text-right">
               <h3 className="font-semibold text-slate-800 dark:text-slate-200">امنیت حساب</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">تغییر رمز عبور</p>
             </div>
           </div>
-          <ChevronDown className={cn('w-5 h-5 text-slate-400 transition-transform duration-300', isPasswordSectionOpen && 'rotate-180')} />
+          <ChevronDown className={cn('w-5 h-5 text-slate-400 transition-transform duration-200', isPasswordSectionOpen && 'rotate-180')} />
         </button>
-        <div className={cn('grid transition-all duration-300 ease-out', isPasswordSectionOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>
+        <div className={cn('grid transition-all duration-200 ease-out', isPasswordSectionOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>
           <div className="overflow-hidden">
             <div className="p-5 space-y-5">
               <div className="group">
@@ -195,7 +195,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
       </div>
 
       {/* Submit */}
-      <Button type="submit" disabled={isSubmitting} className="w-full h-14 bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 hover:from-blue-600 hover:via-blue-700 hover:to-purple-700 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-70">
+      <Button type="submit" disabled={isSubmitting} className="w-full h-14 bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 hover:from-blue-600 hover:via-blue-700 hover:to-purple-700 text-white font-medium rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-70">
         {isSubmitting ? <div className="flex items-center justify-center gap-3"><Loading size="sm" variant="secondary" type="spinner" /><span>در حال بروزرسانی...</span></div> : <span className="flex items-center justify-center gap-2"><Check className="w-5 h-5" />بروزرسانی پروفایل</span>}
       </Button>
 

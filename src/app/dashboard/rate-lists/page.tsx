@@ -300,7 +300,7 @@ const RateListsPage = () => {
         <FilterSelect value={filterOptions.dateRange} onChange={(v) => setFilterOptions((p) => ({ ...p, dateRange: v }))} options={dateOptions} />
         <FilterSelect value={filterOptions.sortBy} onChange={(v) => setFilterOptions((p) => ({ ...p, sortBy: v }))} options={sortOptions} />
         <PrimaryActionButton onClick={() => setShowCreateModal(true)}>
-          <HiPlusCircle className="h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
+          <HiPlusCircle className="h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
           <span>افزودن لیست نرخ</span>
         </PrimaryActionButton>
       </DashboardPageHeader>

@@ -59,7 +59,7 @@ const Card9: FC<Card9Props> = ({ className = 'h-full', ratio = 'tall', post, hov
 
   return (
     <div
-      className={`nc-Card9 relative flex flex-col group rounded-2xl lg:rounded-3xl overflow-hidden z-0 transition-all duration-500 hover:shadow-[0_20px_60px_rgba(0,0,0,0.3)] hover:-translate-y-1 ${hoverClass} ${className} rtl`}
+      className={`nc-Card9 relative flex flex-col group rounded-2xl lg:rounded-3xl overflow-hidden z-0 transition-all duration-300 hover:shadow-[0_20px_60px_rgba(0,0,0,0.3)] hover:-translate-y-1 ${hoverClass} ${className} rtl`}
     >
       <div className={`flex items-start relative w-full ${imageRatioClass}`}>
         {postType === 'AUDIO' ? (
@@ -71,7 +71,7 @@ const Card9: FC<Card9Props> = ({ className = 'h-full', ratio = 'tall', post, hov
             <Image
               fill
               alt={title}
-              className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+              className="object-cover transition-transform duration-300 ease-out group-hover:scale-110"
               src={featuredImage || '/images/placeholder.webp'}
               sizes="(max-width: 600px) 480px, 500px"
               loading="lazy"
@@ -97,7 +97,7 @@ const Card9: FC<Card9Props> = ({ className = 'h-full', ratio = 'tall', post, hov
       <div className="absolute bottom-0 inset-x-0 h-3/4 bg-gradient-to-t from-black/90 via-black/50 to-transparent pointer-events-none" />
       
       {/* Colored Accent Gradient */}
-      <div className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-primary-900/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      <div className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-primary-900/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
       {/* Content Overlay */}
       <div className="absolute bottom-0 inset-x-0 p-5 lg:p-6 flex flex-col flex-grow">
@@ -119,7 +119,7 @@ const Card9: FC<Card9Props> = ({ className = 'h-full', ratio = 'tall', post, hov
       </div>
       
       {/* Bottom Accent Line */}
-      <div className="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-l from-primary-500 via-violet-500 to-rose-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-l from-primary-500 via-violet-500 to-rose-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
     </div>
   );
 };

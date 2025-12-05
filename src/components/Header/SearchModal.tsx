@@ -136,7 +136,7 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
           hover:from-white hover:to-slate-50
           dark:hover:from-slate-700/90 dark:hover:to-slate-800/80
           focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50
-          transition-all duration-300 ease-out
+          transition-all duration-200 ease-out
         "
         aria-label="جستجو"
       >

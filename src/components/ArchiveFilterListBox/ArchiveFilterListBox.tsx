@@ -82,7 +82,7 @@ const ArchiveFilterListBox: React.FC<ArchiveFilterListBoxProps> = ({
           hover:shadow-md
           rounded-2xl 
           shadow-sm 
-          transition-all duration-300 ease-out
+          transition-all duration-200 ease-out
           focus:outline-none focus:ring-2 focus:ring-[rgb(var(--ring))]/30 focus:border-[rgb(var(--ring))]
           text-sm font-medium
           text-[rgb(var(--foreground))]

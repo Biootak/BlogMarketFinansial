@@ -56,7 +56,7 @@ const SectionMagazine7: FC<SectionMagazine7Props> = ({ posts = [], className = '
         
         <Link 
           href="/archive"
-          className="group flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg sm:rounded-xl transition-all duration-300"
+          className="group flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg sm:rounded-xl transition-all duration-200"
         >
           <span className="text-xs sm:text-sm font-medium text-neutral-700 dark:text-neutral-300 group-hover:text-primary-600 dark:group-hover:text-primary-400">
             مشاهده همه
@@ -77,10 +77,10 @@ const SectionMagazine7: FC<SectionMagazine7Props> = ({ posts = [], className = '
         <div className="grid gap-4 sm:gap-6 md:gap-8 lg:grid-cols-2">
           {posts.slice(0, 2).map((post, index) => (
             <motion.div key={post.id} variants={itemVariants}>
-              <div className="group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-white dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary-500/10 dark:hover:shadow-primary-500/5 hover:-translate-y-1">
+              <div className="group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-white dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50 transition-all duration-200 hover:shadow-2xl hover:shadow-primary-500/10 dark:hover:shadow-primary-500/5 hover:-translate-y-1">
                 <Card10V3 post={post} galleryType={index === 1 ? 2 : 1} className="h-full" />
                 {/* Decorative gradient on hover */}
-                <div className="absolute inset-0 bg-gradient-to-t from-primary-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl sm:rounded-3xl" />
+                <div className="absolute inset-0 bg-gradient-to-t from-primary-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none rounded-2xl sm:rounded-3xl" />
               </div>
             </motion.div>
           ))}
@@ -90,10 +90,10 @@ const SectionMagazine7: FC<SectionMagazine7Props> = ({ posts = [], className = '
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mt-2 sm:mt-3">
           {posts.slice(2, 6).map((post) => (
             <motion.div key={post.id} variants={itemVariants}>
-              <div className="group relative overflow-hidden rounded-xl sm:rounded-2xl lg:rounded-3xl bg-white dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary-500/10 dark:hover:shadow-primary-500/5 hover:-translate-y-1">
+              <div className="group relative overflow-hidden rounded-xl sm:rounded-2xl lg:rounded-3xl bg-white dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-700/50 transition-all duration-200 hover:shadow-xl hover:shadow-primary-500/10 dark:hover:shadow-primary-500/5 hover:-translate-y-1">
                 <Card10 post={post} className="h-full" />
                 {/* Decorative gradient on hover */}
-                <div className="absolute inset-0 bg-gradient-to-t from-primary-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-xl sm:rounded-2xl lg:rounded-3xl" />
+                <div className="absolute inset-0 bg-gradient-to-t from-primary-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none rounded-xl sm:rounded-2xl lg:rounded-3xl" />
               </div>
             </motion.div>
           ))}

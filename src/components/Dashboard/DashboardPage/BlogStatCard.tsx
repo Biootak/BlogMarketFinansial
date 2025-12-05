@@ -90,7 +90,7 @@ const BlogStatCard: React.FC<BlogStatCardProps> = ({
     >
       {/* Card container */}
       <div 
-        className="relative h-full bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 transition-all duration-500"
+        className="relative h-full bg-white dark:bg-slate-900 p-4 sm:p-5 lg:p-6 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 transition-all duration-500"
         style={{
           boxShadow: `
             0 0 0 1px rgba(0,0,0,0.03),
@@ -109,19 +109,19 @@ const BlogStatCard: React.FC<BlogStatCardProps> = ({
         />
 
         {/* Top accent gradient */}
-        <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${config.accent} rounded-t-3xl`} />
+        <div className={`absolute top-0 left-0 right-0 h-0.5 sm:h-1 bg-gradient-to-r ${config.accent} rounded-t-2xl sm:rounded-t-3xl`} />
 
         {/* Header row */}
-        <div className="relative flex items-start justify-between mb-5">
+        <div className="relative flex items-start justify-between mb-3 sm:mb-4 lg:mb-5">
           {/* Icon with enhanced styling */}
           <motion.div 
             whileHover={{ scale: 1.1, rotate: 8 }}
             transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-            className={`relative p-3.5 rounded-2xl bg-gradient-to-br ${config.iconBg} text-white shadow-xl ${config.iconShadow}`}
+            className={`relative p-2 sm:p-2.5 lg:p-3.5 rounded-xl sm:rounded-2xl bg-gradient-to-br ${config.iconBg} text-white shadow-xl ${config.iconShadow}`}
           >
             {/* Icon glow */}
-            <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${config.iconBg} blur-lg opacity-40`} />
-            <span className="relative">{icon}</span>
+            <div className={`absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-br ${config.iconBg} blur-lg opacity-40`} />
+            <span className="relative [&>svg]:w-4 [&>svg]:h-4 sm:[&>svg]:w-5 sm:[&>svg]:h-5">{icon}</span>
           </motion.div>
           
           {/* Trend badge */}
@@ -130,31 +130,31 @@ const BlogStatCard: React.FC<BlogStatCardProps> = ({
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
-              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-bold ${trendStyle.bg} ${trendStyle.text} border border-current/10`}
+              className={`flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 lg:px-2.5 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold ${trendStyle.bg} ${trendStyle.text} border border-current/10`}
             >
-              <span className="text-[10px]">{trendStyle.icon}</span>
+              <span className="text-[8px] sm:text-[10px]">{trendStyle.icon}</span>
               <span>{percentage}%</span>
             </motion.div>
           )}
         </div>
 
         {/* Value and title */}
-        <div className="relative space-y-1.5">
+        <div className="relative space-y-1 sm:space-y-1.5">
           <motion.div 
-            className="text-3xl font-black text-slate-900 dark:text-white tracking-tight"
+            className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight"
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.15 }}
           >
             {typeof value === 'number' ? value.toLocaleString('fa-IR') : value}
           </motion.div>
-          <h3 className="text-slate-500 dark:text-slate-400 text-sm font-medium">
+          <h3 className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium">
             {title}
           </h3>
         </div>
 
         {/* Decorative corner element */}
-        <div className={`absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-tl ${config.lightBg} dark:from-slate-800/50 dark:to-slate-900/50 rounded-tl-[60px] opacity-50 group-hover:opacity-80 transition-opacity duration-500`} />
+        <div className={`absolute bottom-0 right-0 w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-tl ${config.lightBg} dark:from-slate-800/50 dark:to-slate-900/50 rounded-tl-[40px] sm:rounded-tl-[50px] lg:rounded-tl-[60px] opacity-50 group-hover:opacity-80 transition-opacity duration-500`} />
       </div>
     </motion.div>
   );

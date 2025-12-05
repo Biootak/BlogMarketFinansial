@@ -43,7 +43,7 @@ export function MobileDashboardLayout({
         {/* Sidebar */}
         <aside
           className={cn(
-            'fixed lg:sticky top-0 z-30 h-screen w-64 bg-white dark:bg-neutral-800 border-e border-neutral-200 dark:border-neutral-700 transition-transform duration-300',
+            'fixed lg:sticky top-0 z-30 h-screen w-64 bg-white dark:bg-neutral-800 border-e border-neutral-200 dark:border-neutral-700 transition-transform duration-200',
             'lg:translate-x-0',
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
           )}

@@ -78,7 +78,7 @@ const SubscribeForm: FC<SubscribeFormProps> = ({ onSubmit }) => {
             {...register('email')}
             placeholder="ایمیل خود را وارد کنید"
             type="email"
-            className="w-full ps-10 sm:ps-12 pe-24 sm:pe-32 py-3 sm:py-4 h-11 sm:h-14 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl sm:rounded-2xl text-white text-sm sm:text-base placeholder:text-white/50 focus:border-amber-400/50 focus:bg-white/15 transition-all duration-300"
+            className="w-full ps-10 sm:ps-12 pe-24 sm:pe-32 py-3 sm:py-4 h-11 sm:h-14 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl sm:rounded-2xl text-white text-sm sm:text-base placeholder:text-white/50 focus:border-amber-400/50 focus:bg-white/15 transition-all duration-200"
             disabled={isLoading}
           />
         </div>
@@ -87,7 +87,7 @@ const SubscribeForm: FC<SubscribeFormProps> = ({ onSubmit }) => {
         <Button
           type="submit"
           disabled={isLoading}
-          className="absolute end-1.5 sm:end-2 top-1/2 -translate-y-1/2 h-8 sm:h-10 px-3 sm:px-5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-neutral-900 text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl shadow-lg shadow-amber-500/30 transition-all duration-300 hover:shadow-amber-500/50 hover:scale-105 disabled:opacity-70 disabled:hover:scale-100"
+          className="absolute end-1.5 sm:end-2 top-1/2 -translate-y-1/2 h-8 sm:h-10 px-3 sm:px-5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-neutral-900 text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl shadow-lg shadow-amber-500/30 transition-all duration-200 hover:shadow-amber-500/50 hover:scale-105 disabled:opacity-70 disabled:hover:scale-100"
         >
           {isLoading ? (
             <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />

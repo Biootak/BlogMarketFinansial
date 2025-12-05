@@ -37,7 +37,7 @@ export default function Card2({ className = 'h-full', size = 'normal', post }: C
             aspectRatio={isLarge ? '16/9' : '4/3'}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             priority={isLarge}
-            className="transition-transform duration-500 group-hover:scale-105"
+            className="transition-transform duration-300 group-hover:scale-105"
           />
           
           {/* Gradient Overlay */}

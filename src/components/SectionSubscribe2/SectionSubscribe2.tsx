@@ -88,7 +88,7 @@ const SectionSubscribe2: FC<SectionSubscribe2Props> = async ({ className = '' })
                   alt="عضویت در خبرنامه"
                   src="/images/subcribe.svg"
                   fill
-                  className="object-cover transition-transform duration-500 hover:scale-105"
+                  className="object-cover transition-transform duration-300 hover:scale-105"
                   priority
                 />
               </div>

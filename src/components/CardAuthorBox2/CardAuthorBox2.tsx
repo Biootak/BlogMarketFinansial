@@ -30,7 +30,7 @@ const CardAuthorBox2: FC<CardAuthorBox2Props> = ({ className = '', author }) => 
           fill
           sizes="(max-width: 600px) 480px, 33vw"
           ratio="7/5"
-          className="object-cover group-hover:scale-105 transition-transform duration-700"
+          className="object-cover group-hover:scale-105 transition-transform duration-300"
         />
         <div className="absolute top-3 inset-x-3 flex justify-end">
           <div className="py-1.5 px-3 bg-white/90 dark:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center leading-none text-xs font-semibold shadow-sm">

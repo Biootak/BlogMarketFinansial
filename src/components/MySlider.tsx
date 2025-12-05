@@ -35,13 +35,23 @@ export default function MySlider<T>({
     const { width } = windowSize;
     if (width <= 320) {
       setNumberOfItems(1);
-    } else if (width < 500) {
-      setNumberOfItems(itemPerRow - 3 || 2);
+    } else if (width < 480) {
+      // Extra small phones - show 2 items
+      setNumberOfItems(Math.max(2, itemPerRow - 3));
+    } else if (width < 640) {
+      // Small phones - show 2-3 items
+      setNumberOfItems(Math.max(2, itemPerRow - 3));
+    } else if (width < 768) {
+      // Large phones - show 3 items
+      setNumberOfItems(Math.max(3, itemPerRow - 2));
     } else if (width < 1024) {
-      setNumberOfItems(itemPerRow - 2 || 3);
+      // Tablets - show 3-4 items
+      setNumberOfItems(Math.max(3, itemPerRow - 2));
     } else if (width < 1280) {
+      // Small desktops - show itemPerRow - 1
       setNumberOfItems(itemPerRow - 1);
     } else {
+      // Large desktops - show all items
       setNumberOfItems(itemPerRow);
     }
   }, [itemPerRow, windowSize]);
