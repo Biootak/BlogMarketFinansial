@@ -543,3 +543,149 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* ============================================
+   Premium Settings Page Enhancements
+   Ultra-modern glass morphism and animations
+   ============================================ */
+
+/* Smooth glass effect for cards */
+@supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
+  .glass-effect {
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+  }
+}
+
+/* Premium shadow layers */
+.shadow-premium {
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(255, 255, 255, 0.8);
+}
+
+.shadow-premium-hover {
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 4px 16px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(255, 255, 255, 0.9);
+}
+
+/* Smooth cubic bezier for premium feel */
+.transition-premium {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+/* Gradient text effect */
+.text-gradient-premium {
+  background: linear-gradient(135deg, rgb(var(--c-primary-600)), rgb(var(--c-primary-400)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Animated gradient background */
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.bg-gradient-animated {
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+/* Floating animation for orbs */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Pulse glow effect */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Shine effect for buttons */
+@keyframes shine {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+}
+
+.shine-effect::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 70%
+  );
+  transform: translateX(-100%) translateY(-100%) rotate(45deg);
+}
+
+.shine-effect:hover::before {
+  animation: shine 0.7s ease-in-out;
+}
+
+/* Premium focus ring */
+.focus-ring-premium:focus-visible {
+  outline: none;
+  box-shadow: 
+    0 0 0 4px rgba(var(--c-primary-500), 0.1),
+    0 0 0 2px rgba(var(--c-primary-500), 0.3);
+}
+
+/* Smooth scale on hover */
+.hover-lift {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+/* Premium card hover effect */
+.card-premium-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-premium-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.12),
+    0 8px 24px rgba(0, 0, 0, 0.08);
+}

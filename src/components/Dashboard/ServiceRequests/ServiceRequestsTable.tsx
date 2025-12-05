@@ -1,21 +1,20 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
-  HiSearch,
-  HiFilter,
-  HiEye,
-  HiTrash,
-  HiRefresh,
-  HiCheckCircle,
-  HiXCircle,
-  HiClock,
-  HiPhone,
-  HiMail,
-  HiChevronRight,
-  HiChevronLeft,
-} from 'react-icons/hi';
+  HiOutlineMagnifyingGlass,
+  HiOutlineFunnel,
+  HiOutlineEye,
+  HiOutlineTrash,
+  HiOutlineArrowPath,
+  HiOutlineCheckCircle,
+  HiOutlineXCircle,
+  HiOutlineClock,
+  HiOutlinePhone,
+  HiOutlineEnvelope,
+  HiOutlineChevronRight,
+  HiOutlineChevronLeft,
+} from 'react-icons/hi2';
 import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
 import {
   getServiceRequests,
@@ -44,25 +43,25 @@ const statusConfig = {
   PENDING: {
     label: 'در انتظار',
     color: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800',
-    icon: HiClock,
+    icon: HiOutlineClock,
     dot: 'bg-amber-500',
   },
   IN_PROGRESS: {
     label: 'در حال انجام',
     color: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800',
-    icon: HiRefresh,
+    icon: HiOutlineArrowPath,
     dot: 'bg-blue-500',
   },
   COMPLETED: {
     label: 'تکمیل شده',
     color: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800',
-    icon: HiCheckCircle,
+    icon: HiOutlineCheckCircle,
     dot: 'bg-emerald-500',
   },
   CANCELLED: {
     label: 'لغو شده',
     color: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800',
-    icon: HiXCircle,
+    icon: HiOutlineXCircle,
     dot: 'bg-rose-500',
   },
 };
@@ -134,21 +133,16 @@ export default function ServiceRequestsTable() {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="relative"
-    >
+    <div className="relative">
       {/* Main Card */}
-      <div className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl rounded-3xl border border-neutral-200/60 dark:border-neutral-700/60 shadow-xl shadow-neutral-200/40 dark:shadow-neutral-900/40 overflow-hidden">
+      <div className="overflow-hidden rounded-2xl border border-slate-200/60 bg-white/60 shadow-xl backdrop-blur-sm transition-all duration-300 dark:border-slate-700/50 dark:bg-slate-800/60">
         {/* Filters Header */}
-        <div className="p-6 border-b border-neutral-200/60 dark:border-neutral-700/60 bg-gradient-to-l from-neutral-50/80 to-white/80 dark:from-neutral-800/80 dark:to-neutral-900/80">
-          <div className="flex flex-wrap items-center gap-4">
+        <div className="border-b border-slate-200/60 bg-gradient-to-l from-slate-50/80 to-white/80 p-6 dark:border-slate-700/50 dark:from-slate-800/80 dark:to-slate-800/80">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             {/* Search */}
             <div className="relative flex-1 min-w-[280px]">
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400">
-                <HiSearch className="w-5 h-5" />
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
+                <HiOutlineMagnifyingGlass className="w-5 h-5" />
               </div>
               <input
                 type="text"
@@ -158,14 +152,14 @@ export default function ServiceRequestsTable() {
                   setSearch(e.target.value);
                   setPage(1);
                 }}
-                className="w-full pr-12 pl-5 py-3.5 rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all duration-300"
+                className="h-11 w-full rounded-xl border border-slate-200/60 bg-white/80 pr-12 pl-5 text-sm shadow-sm backdrop-blur-sm transition-all duration-300 placeholder:text-slate-400 hover:border-slate-300 hover:shadow-md focus:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100/50 dark:border-slate-700/60 dark:bg-slate-800/80 dark:text-white dark:placeholder:text-slate-500 dark:hover:border-slate-600 dark:focus:border-blue-500 dark:focus:ring-blue-900/30"
               />
             </div>
 
             {/* Status Filter */}
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-500">
-                <HiFilter className="w-5 h-5" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400">
+                <HiOutlineFunnel className="w-5 h-5" />
               </div>
               <select
                 value={statusFilter}
@@ -173,7 +167,7 @@ export default function ServiceRequestsTable() {
                   setStatusFilter(e.target.value);
                   setPage(1);
                 }}
-                className="px-5 py-3.5 rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all duration-300 cursor-pointer"
+                className="h-11 cursor-pointer rounded-xl border border-slate-200/60 bg-white/80 px-5 text-sm shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-slate-300 hover:shadow-md focus:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100/50 dark:border-slate-700/60 dark:bg-slate-800/80 dark:text-white dark:hover:border-slate-600 dark:focus:border-blue-500 dark:focus:ring-blue-900/30"
               >
                 <option value="ALL">همه وضعیت‌ها</option>
                 <option value="PENDING">در انتظار</option>
@@ -185,41 +179,41 @@ export default function ServiceRequestsTable() {
           </div>
         </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto">
+        {/* Desktop Table */}
+        <div className="hidden overflow-x-auto lg:block">
           <table className="w-full">
             <thead>
-              <tr className="bg-neutral-50/80 dark:bg-neutral-800/50">
-                <th className="px-6 py-4 text-right text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+              <tr className="border-b border-slate-200/60 bg-gradient-to-l from-slate-50/80 to-white/80 dark:border-slate-700/50 dark:from-slate-800/80 dark:to-slate-800/80">
+                <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   کد پیگیری
                 </th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   مشتری
                 </th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   نوع خدمات
                 </th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   مبلغ
                 </th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   وضعیت
                 </th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   تاریخ
                 </th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   عملیات
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+            <tbody className="divide-y divide-slate-200/60 dark:divide-slate-700/50">
               {loading ? (
                 [...Array(5)].map((_, i) => (
                   <tr key={i}>
                     {[...Array(7)].map((_, j) => (
                       <td key={j} className="px-6 py-5">
-                        <div className="h-5 bg-neutral-200 dark:bg-neutral-700 rounded-lg animate-pulse" />
+                        <div className="h-5 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-700" />
                       </td>
                     ))}
                   </tr>
@@ -228,10 +222,10 @@ export default function ServiceRequestsTable() {
                 <tr>
                   <td colSpan={7} className="px-6 py-16 text-center">
                     <div className="flex flex-col items-center gap-3">
-                      <div className="p-4 rounded-2xl bg-neutral-100 dark:bg-neutral-800">
-                        <HiSearch className="w-8 h-8 text-neutral-400" />
+                      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
+                        <HiOutlineMagnifyingGlass className="h-8 w-8 text-slate-400" />
                       </div>
-                      <p className="text-neutral-500 dark:text-neutral-400 font-medium">
+                      <p className="font-medium text-slate-500 dark:text-slate-400">
                         درخواستی یافت نشد
                       </p>
                     </div>
@@ -245,21 +239,19 @@ export default function ServiceRequestsTable() {
                     emoji: '📋',
                   };
                   return (
-                    <motion.tr
+                    <tr
                       key={request.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: index * 0.03 }}
-                      className="group hover:bg-amber-50/50 dark:hover:bg-amber-900/10 transition-colors duration-300"
+                      className="group transition-all duration-300 hover:bg-blue-50/50 dark:hover:bg-blue-900/10"
+                      style={{ animationDelay: `${index * 30}ms` }}
                     >
                       {/* Tracking Code */}
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-sm font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-3 py-1.5 rounded-lg">
+                          <span className="rounded-lg bg-blue-50 px-3 py-1.5 font-mono text-sm font-bold text-blue-700 shadow-sm dark:bg-blue-900/30 dark:text-blue-300">
                             {request.trackingCode}
                           </span>
                           {request.urgency === 'URGENT' && (
-                            <span className="px-2 py-1 text-[10px] font-bold bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 rounded-md animate-pulse">
+                            <span className="animate-pulse rounded-md bg-red-100 px-2 py-1 text-[10px] font-bold text-red-600 dark:bg-red-900/30 dark:text-red-400">
                               فوری
                             </span>
                           )}
@@ -269,15 +261,15 @@ export default function ServiceRequestsTable() {
                       {/* Customer */}
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-neutral-700 dark:to-neutral-800 flex items-center justify-center text-lg font-bold text-neutral-600 dark:text-neutral-300">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 text-lg font-bold text-slate-600 shadow-sm dark:from-slate-700 dark:to-slate-800 dark:text-slate-300">
                             {request.fullName.charAt(0)}
                           </div>
                           <div>
-                            <p className="font-semibold text-neutral-900 dark:text-white">
+                            <p className="font-semibold text-slate-900 dark:text-white">
                               {request.fullName}
                             </p>
-                            <p className="text-xs text-neutral-500 flex items-center gap-1 mt-0.5">
-                              <HiPhone className="w-3 h-3" />
+                            <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500">
+                              <HiOutlinePhone className="h-3 w-3" />
                               <span className="font-mono">{request.phone}</span>
                             </p>
                           </div>
@@ -288,7 +280,7 @@ export default function ServiceRequestsTable() {
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-2">
                           <span className="text-lg">{serviceType.emoji}</span>
-                          <span className="text-sm text-neutral-700 dark:text-neutral-300">
+                          <span className="text-sm text-slate-700 dark:text-slate-300">
                             {serviceType.label}
                           </span>
                         </div>
@@ -296,25 +288,25 @@ export default function ServiceRequestsTable() {
 
                       {/* Amount */}
                       <td className="px-6 py-5">
-                        <span className="font-mono text-sm font-semibold text-neutral-900 dark:text-white">
+                        <span className="font-mono text-sm font-semibold text-slate-900 dark:text-white">
                           {Number(request.amount).toLocaleString()}{' '}
-                          <span className="text-neutral-500 font-normal">{request.currency}</span>
+                          <span className="font-normal text-slate-500">{request.currency}</span>
                         </span>
                       </td>
 
                       {/* Status */}
                       <td className="px-6 py-5">
                         <span
-                          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border ${status?.color}`}
+                          className={`inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-semibold ${status?.color}`}
                         >
-                          <span className={`w-1.5 h-1.5 rounded-full ${status?.dot}`} />
+                          <span className={`h-1.5 w-1.5 rounded-full ${status?.dot}`} />
                           {status?.label}
                         </span>
                       </td>
 
                       {/* Date */}
                       <td className="px-6 py-5">
-                        <span className="text-sm text-neutral-600 dark:text-neutral-400">
+                        <span className="text-sm text-slate-600 dark:text-slate-400">
                           {new Date(request.createdAt).toLocaleDateString('fa-IR', {
                             year: 'numeric',
                             month: 'short',
@@ -325,28 +317,28 @@ export default function ServiceRequestsTable() {
 
                       {/* Actions */}
                       <td className="px-6 py-5">
-                        <div className="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="flex items-center gap-2 opacity-60 transition-opacity duration-300 group-hover:opacity-100">
                           <button
                             onClick={() => setSelectedRequest(request)}
-                            className="p-2.5 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-xl transition-all duration-300 hover:scale-110"
+                            className="rounded-xl p-2.5 transition-all duration-300 hover:scale-110 hover:bg-slate-100 dark:hover:bg-slate-700"
                             title="مشاهده جزئیات"
                           >
-                            <HiEye className="w-5 h-5 text-neutral-500 dark:text-neutral-400" />
+                            <HiOutlineEye className="h-5 w-5 text-slate-500 dark:text-slate-400" />
                           </button>
                           <button
                             onClick={() => openMessenger(request)}
-                            className="p-2.5 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-xl transition-all duration-300 hover:scale-110"
+                            className="rounded-xl p-2.5 transition-all duration-300 hover:scale-110 hover:bg-slate-100 dark:hover:bg-slate-700"
                             title="ارسال پیام"
                           >
                             {request.contactMethod === 'telegram' ? (
-                              <FaTelegram className="w-5 h-5 text-[#0088cc]" />
+                              <FaTelegram className="h-5 w-5 text-[#0088cc]" />
                             ) : (
-                              <FaWhatsapp className="w-5 h-5 text-[#25D366]" />
+                              <FaWhatsapp className="h-5 w-5 text-[#25D366]" />
                             )}
                           </button>
                         </div>
                       </td>
-                    </motion.tr>
+                    </tr>
                   );
                 })
               )}
@@ -354,32 +346,136 @@ export default function ServiceRequestsTable() {
           </table>
         </div>
 
+        {/* Mobile Cards View */}
+        <div className="grid gap-4 p-4 lg:hidden">
+          {loading ? (
+            [...Array(3)].map((_, i) => (
+              <div
+                key={i}
+                className="h-40 animate-pulse rounded-xl border border-slate-200/60 bg-slate-100 dark:border-slate-700/50 dark:bg-slate-800"
+              />
+            ))
+          ) : requests.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 py-16">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
+                <HiOutlineMagnifyingGlass className="h-8 w-8 text-slate-400" />
+              </div>
+              <p className="font-medium text-slate-500 dark:text-slate-400">درخواستی یافت نشد</p>
+            </div>
+          ) : (
+            requests.map((request, index) => {
+              const status = statusConfig[request.status as keyof typeof statusConfig];
+              const serviceType = serviceTypeLabels[request.serviceType] || {
+                label: request.serviceType,
+                emoji: '📋',
+              };
+              return (
+                <div
+                  key={request.id}
+                  className="group overflow-hidden rounded-xl border border-slate-200/60 bg-white/80 p-4 shadow-md backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-xl dark:border-slate-700/50 dark:bg-slate-800/80"
+                  style={{ animationDelay: `${index * 30}ms` }}
+                >
+                  <div className="mb-3 flex items-start justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-lg bg-blue-50 px-2.5 py-1 font-mono text-xs font-bold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                        {request.trackingCode}
+                      </span>
+                      {request.urgency === 'URGENT' && (
+                        <span className="animate-pulse rounded-md bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600 dark:bg-red-900/30 dark:text-red-400">
+                          فوری
+                        </span>
+                      )}
+                    </div>
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold ${status?.color}`}
+                    >
+                      <span className={`h-1.5 w-1.5 rounded-full ${status?.dot}`} />
+                      {status?.label}
+                    </span>
+                  </div>
+
+                  <div className="mb-3 flex items-center gap-3">
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 text-lg font-bold text-slate-600 shadow-sm dark:from-slate-700 dark:to-slate-800 dark:text-slate-300">
+                      {request.fullName.charAt(0)}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-slate-900 dark:text-white">
+                        {request.fullName}
+                      </p>
+                      <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500">
+                        <HiOutlinePhone className="h-3 w-3" />
+                        <span className="font-mono">{request.phone}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mb-3 flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">{serviceType.emoji}</span>
+                      <span className="text-slate-700 dark:text-slate-300">{serviceType.label}</span>
+                    </div>
+                    <span className="font-mono font-semibold text-slate-900 dark:text-white">
+                      {Number(request.amount).toLocaleString()}{' '}
+                      <span className="text-xs font-normal text-slate-500">{request.currency}</span>
+                    </span>
+                  </div>
+
+                  <div className="flex gap-2 border-t border-slate-200/60 pt-3 dark:border-slate-700/50">
+                    <button
+                      onClick={() => setSelectedRequest(request)}
+                      className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 shadow-sm transition-all duration-300 hover:scale-105 hover:bg-blue-100 active:scale-95 dark:bg-blue-900/30 dark:text-blue-300"
+                    >
+                      <HiOutlineEye className="h-4 w-4" />
+                      <span>جزئیات</span>
+                    </button>
+                    <button
+                      onClick={() => openMessenger(request)}
+                      className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-white shadow-sm transition-all duration-300 hover:scale-105 active:scale-95 ${
+                        request.contactMethod === 'telegram'
+                          ? 'bg-[#0088cc] hover:bg-[#0077b5]'
+                          : 'bg-[#25D366] hover:bg-[#20bd5a]'
+                      }`}
+                    >
+                      {request.contactMethod === 'telegram' ? (
+                        <FaTelegram className="h-4 w-4" />
+                      ) : (
+                        <FaWhatsapp className="h-4 w-4" />
+                      )}
+                      <span>پیام</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="p-6 border-t border-neutral-200/60 dark:border-neutral-700/60 bg-gradient-to-l from-neutral-50/80 to-white/80 dark:from-neutral-800/80 dark:to-neutral-900/80">
+          <div className="border-t border-slate-200/60 bg-gradient-to-l from-slate-50/80 to-white/80 p-6 dark:border-slate-700/50 dark:from-slate-800/80 dark:to-slate-800/80">
             <div className="flex items-center justify-center gap-3">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-all duration-300 hover:shadow-md"
+                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 font-medium text-slate-700 shadow-sm transition-all duration-300 hover:bg-slate-50 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
               >
-                <HiChevronRight className="w-5 h-5" />
+                <HiOutlineChevronRight className="h-5 w-5" />
                 قبلی
               </button>
 
-              <div className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-                <span className="text-amber-700 dark:text-amber-400 font-bold">{page}</span>
-                <span className="text-neutral-400">/</span>
-                <span className="text-neutral-600 dark:text-neutral-400">{totalPages}</span>
+              <div className="flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-5 py-2.5 dark:border-blue-800 dark:bg-blue-900/20">
+                <span className="font-bold text-blue-700 dark:text-blue-400">{page}</span>
+                <span className="text-slate-400">/</span>
+                <span className="text-slate-600 dark:text-slate-400">{totalPages}</span>
               </div>
 
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-all duration-300 hover:shadow-md"
+                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 font-medium text-slate-700 shadow-sm transition-all duration-300 hover:bg-slate-50 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
               >
                 بعدی
-                <HiChevronLeft className="w-5 h-5" />
+                <HiOutlineChevronLeft className="h-5 w-5" />
               </button>
             </div>
           </div>
@@ -387,74 +483,66 @@ export default function ServiceRequestsTable() {
       </div>
 
       {/* Detail Modal */}
-      <AnimatePresence>
-        {selectedRequest && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-            onClick={() => setSelectedRequest(null)}
+      {selectedRequest && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm transition-opacity duration-300"
+          onClick={() => setSelectedRequest(null)}
+        >
+          <div
+            className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200/60 bg-white p-8 shadow-2xl transition-all duration-300 dark:border-slate-700/60 dark:bg-slate-900"
+            onClick={(e) => e.stopPropagation()}
           >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="bg-white dark:bg-neutral-900 rounded-3xl p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-neutral-200/60 dark:border-neutral-700/60"
-              onClick={(e) => e.stopPropagation()}
-            >
               {/* Modal Header */}
-              <div className="flex items-center justify-between mb-8">
+              <div className="mb-8 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 shadow-lg shadow-amber-500/25">
-                    <HiEye className="w-6 h-6 text-white" />
+                  <div className="rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 p-3 shadow-lg shadow-blue-500/25">
+                    <HiOutlineEye className="h-6 w-6 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-neutral-900 dark:text-white">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                     جزئیات درخواست
                   </h3>
                 </div>
                 <button
                   onClick={() => setSelectedRequest(null)}
-                  className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl transition-colors"
+                  className="rounded-xl p-2 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
                 >
-                  <HiXCircle className="w-6 h-6 text-neutral-400" />
+                  <HiOutlineXCircle className="h-6 w-6 text-slate-400" />
                 </button>
               </div>
 
               <div className="space-y-6">
                 {/* Tracking Code Card */}
-                <div className="p-5 bg-gradient-to-l from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-2xl border border-amber-200/50 dark:border-amber-800/50">
-                  <p className="text-xs text-amber-600 dark:text-amber-400 font-medium mb-2">
+                <div className="rounded-2xl border border-blue-200/50 bg-gradient-to-l from-blue-50 to-blue-50 p-5 dark:border-blue-800/50 dark:from-blue-900/20 dark:to-blue-900/20">
+                  <p className="mb-2 text-xs font-medium text-blue-600 dark:text-blue-400">
                     کد پیگیری
                   </p>
-                  <p className="font-mono text-2xl font-black text-amber-700 dark:text-amber-300">
+                  <p className="font-mono text-2xl font-black text-blue-700 dark:text-blue-300">
                     {selectedRequest.trackingCode}
                   </p>
                 </div>
 
                 {/* Customer Info */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl">
-                    <p className="text-xs text-neutral-500 mb-1.5">نام مشتری</p>
-                    <p className="font-semibold text-neutral-900 dark:text-white">
+                  <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
+                    <p className="mb-1.5 text-xs text-slate-500">نام مشتری</p>
+                    <p className="font-semibold text-slate-900 dark:text-white">
                       {selectedRequest.fullName}
                     </p>
                   </div>
-                  <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl">
-                    <p className="text-xs text-neutral-500 mb-1.5">شماره تماس</p>
-                    <p className="font-mono font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
-                      <HiPhone className="w-4 h-4 text-neutral-400" />
+                  <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
+                    <p className="mb-1.5 text-xs text-slate-500">شماره تماس</p>
+                    <p className="flex items-center gap-2 font-mono font-semibold text-slate-900 dark:text-white">
+                      <HiOutlinePhone className="h-4 w-4 text-slate-400" />
                       {selectedRequest.phone}
                     </p>
                   </div>
                 </div>
 
                 {selectedRequest.email && (
-                  <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl">
-                    <p className="text-xs text-neutral-500 mb-1.5">ایمیل</p>
-                    <p className="text-neutral-900 dark:text-white flex items-center gap-2">
-                      <HiMail className="w-4 h-4 text-neutral-400" />
+                  <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
+                    <p className="mb-1.5 text-xs text-slate-500">ایمیل</p>
+                    <p className="flex items-center gap-2 text-slate-900 dark:text-white">
+                      <HiOutlineEnvelope className="h-4 w-4 text-slate-400" />
                       {selectedRequest.email}
                     </p>
                   </div>
@@ -462,23 +550,23 @@ export default function ServiceRequestsTable() {
 
                 {/* Service & Amount */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl">
-                    <p className="text-xs text-neutral-500 mb-1.5">نوع خدمات</p>
+                  <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
+                    <p className="mb-1.5 text-xs text-slate-500">نوع خدمات</p>
                     <div className="flex items-center gap-2">
                       <span className="text-lg">
                         {serviceTypeLabels[selectedRequest.serviceType]?.emoji || '📋'}
                       </span>
-                      <span className="font-medium text-neutral-900 dark:text-white">
+                      <span className="font-medium text-slate-900 dark:text-white">
                         {serviceTypeLabels[selectedRequest.serviceType]?.label ||
                           selectedRequest.serviceType}
                       </span>
                     </div>
                   </div>
-                  <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl">
-                    <p className="text-xs text-neutral-500 mb-1.5">مبلغ</p>
-                    <p className="font-mono text-lg font-bold text-neutral-900 dark:text-white">
+                  <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
+                    <p className="mb-1.5 text-xs text-slate-500">مبلغ</p>
+                    <p className="font-mono text-lg font-bold text-slate-900 dark:text-white">
                       {Number(selectedRequest.amount).toLocaleString()}{' '}
-                      <span className="text-sm text-neutral-500 font-normal">
+                      <span className="text-sm font-normal text-slate-500">
                         {selectedRequest.currency}
                       </span>
                     </p>
@@ -486,9 +574,9 @@ export default function ServiceRequestsTable() {
                 </div>
 
                 {selectedRequest.description && (
-                  <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl">
-                    <p className="text-xs text-neutral-500 mb-2">توضیحات</p>
-                    <p className="text-neutral-700 dark:text-neutral-300 text-sm leading-relaxed">
+                  <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
+                    <p className="mb-2 text-xs text-slate-500">توضیحات</p>
+                    <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                       {selectedRequest.description}
                     </p>
                   </div>
@@ -496,19 +584,19 @@ export default function ServiceRequestsTable() {
 
                 {/* Status Change */}
                 <div>
-                  <p className="text-xs text-neutral-500 mb-3 font-medium">تغییر وضعیت</p>
+                  <p className="mb-3 text-xs font-medium text-slate-500">تغییر وضعیت</p>
                   <div className="flex flex-wrap gap-2">
                     {Object.entries(statusConfig).map(([key, config]) => (
                       <button
                         key={key}
                         onClick={() => handleStatusChange(selectedRequest.id, key)}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border transition-all duration-300 ${
+                        className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-all duration-300 ${
                           selectedRequest.status === key
                             ? config.color
-                            : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                            : 'border-slate-200 bg-slate-100 text-slate-600 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'
                         }`}
                       >
-                        <span className={`w-2 h-2 rounded-full ${config.dot}`} />
+                        <span className={`h-2 w-2 rounded-full ${config.dot}`} />
                         {config.label}
                       </button>
                     ))}
@@ -516,35 +604,34 @@ export default function ServiceRequestsTable() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-3 pt-6 border-t border-neutral-200 dark:border-neutral-700">
+                <div className="flex gap-3 border-t border-slate-200 pt-6 dark:border-slate-700">
                   <button
                     onClick={() => openMessenger(selectedRequest)}
-                    className={`flex-1 py-3.5 rounded-2xl font-semibold text-white flex items-center justify-center gap-2 transition-all duration-300 hover:shadow-lg ${
+                    className={`flex flex-1 items-center justify-center gap-2 rounded-2xl py-3.5 font-semibold text-white transition-all duration-300 hover:shadow-lg ${
                       selectedRequest.contactMethod === 'telegram'
-                        ? 'bg-[#0088cc] hover:bg-[#0077b5] shadow-[#0088cc]/25'
-                        : 'bg-[#25D366] hover:bg-[#20bd5a] shadow-[#25D366]/25'
+                        ? 'bg-[#0088cc] shadow-[#0088cc]/25 hover:bg-[#0077b5]'
+                        : 'bg-[#25D366] shadow-[#25D366]/25 hover:bg-[#20bd5a]'
                     }`}
                   >
                     {selectedRequest.contactMethod === 'telegram' ? (
-                      <FaTelegram className="w-5 h-5" />
+                      <FaTelegram className="h-5 w-5" />
                     ) : (
-                      <FaWhatsapp className="w-5 h-5" />
+                      <FaWhatsapp className="h-5 w-5" />
                     )}
                     ارسال پیام
                   </button>
                   <button
                     onClick={() => handleDelete(selectedRequest.id)}
-                    className="px-6 py-3.5 rounded-2xl bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-2 border border-rose-200 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-all duration-300"
+                    className="flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-6 py-3.5 font-semibold text-red-600 transition-all duration-300 hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30"
                   >
-                    <HiTrash className="w-5 h-5" />
+                    <HiOutlineTrash className="h-5 w-5" />
                     حذف
                   </button>
                 </div>
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

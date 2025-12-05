@@ -19,19 +19,6 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ExchangeRatesSkeleton } from '@/components/Skeletons';
-import {
-  DashboardPageHeader,
-  DashboardTableContainer,
-  DashboardTable,
-  DashboardTableHeader,
-  DashboardTableHead,
-  DashboardTableBody,
-  DashboardTableRow,
-  DashboardTableCell,
-  ActionButton,
-  PrimaryActionButton,
-  EmptyState,
-} from '@/components/Dashboard/shared/DashboardTableWrapper';
 
 interface ExchangeRateFormValues {
   name: string;
@@ -120,170 +107,268 @@ const ExchangeRatesPage: React.FC = () => {
     reset(sanitizedExchangeRate);
   };
 
-  const inputClassName = 'h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80';
+
 
   if (isLoading) return <ExchangeRatesSkeleton />;
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 p-4 sm:p-6 lg:p-8 dark:from-neutral-900 dark:via-neutral-900 dark:to-primary-950/20" dir="rtl">
-      <DashboardPageHeader title="مدیریت ارزها" description="مشاهده و مدیریت نرخ ارزها">
-        <PrimaryActionButton onClick={() => setShowCreateModal(true)}>
-          <HiOutlinePlus className="h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
-          <span>افزودن ارز</span>
-        </PrimaryActionButton>
-      </DashboardPageHeader>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/40 p-4 sm:p-6 lg:p-8 dark:from-slate-950 dark:via-slate-900 dark:to-blue-950/20" dir="rtl">
+      {/* Header Section with Glass Effect */}
+      <div className="mb-8 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl">
+            مدیریت ارزها
+          </h1>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            مشاهده و مدیریت نرخ ارزها و رمزارزها
+          </p>
+        </div>
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="group relative inline-flex items-center gap-2.5 overflow-hidden rounded-2xl bg-gradient-to-l from-blue-600 to-blue-500 px-6 py-3.5 font-semibold text-white shadow-lg shadow-blue-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/40 active:scale-[0.98] dark:from-blue-500 dark:to-blue-600"
+        >
+          <div className="absolute inset-0 bg-gradient-to-l from-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          <HiOutlinePlus className="relative h-5 w-5 transition-transform duration-300 group-hover:rotate-90" />
+          <span className="relative">افزودن ارز جدید</span>
+        </button>
+      </div>
 
       {exchangeRates.length === 0 ? (
-        <DashboardTableContainer>
-          <EmptyState
-            title="ارزی یافت نشد"
-            description="هنوز هیچ ارزی در سیستم ثبت نشده است."
-            icon={<HiOutlineCurrencyDollar className="h-8 w-8 text-neutral-400" />}
-          />
-        </DashboardTableContainer>
+        <div className="flex min-h-[500px] items-center justify-center rounded-3xl border border-slate-200/60 bg-white/60 p-12 shadow-xl shadow-slate-200/50 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/60 dark:shadow-slate-950/50">
+          <div className="flex flex-col items-center gap-6 text-center">
+            <div className="rounded-full bg-gradient-to-br from-slate-100 to-slate-200 p-8 dark:from-slate-800 dark:to-slate-700">
+              <HiOutlineCurrencyDollar className="h-16 w-16 text-slate-400 dark:text-slate-500" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">ارزی یافت نشد</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                هنوز هیچ ارزی در سیستم ثبت نشده است. برای شروع یک ارز جدید اضافه کنید.
+              </p>
+            </div>
+          </div>
+        </div>
       ) : (
-        <DashboardTableContainer>
-          <DashboardTable>
-            <DashboardTableHeader>
-              <tr>
-                <DashboardTableHead>نماد</DashboardTableHead>
-                <DashboardTableHead>نام</DashboardTableHead>
-                <DashboardTableHead hidden>ارز</DashboardTableHead>
-                <DashboardTableHead hidden>نوع نرخ</DashboardTableHead>
-                <DashboardTableHead>مقادیر</DashboardTableHead>
-                <DashboardTableHead>عملیات</DashboardTableHead>
-              </tr>
-            </DashboardTableHeader>
-            <DashboardTableBody>
-              {exchangeRates.map((exchangeRate) => (
-                <DashboardTableRow key={exchangeRate.id}>
-                  <DashboardTableCell>
-                    {exchangeRate.imageUrl ? (
-                      <div className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-white shadow-md dark:ring-neutral-700">
-                        <img 
-                          src={exchangeRate.imageUrl} 
-                          alt={exchangeRate.currency} 
-                          className="h-full w-full object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                          }}
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary-100 to-primary-200 text-primary-600 dark:from-primary-900/50 dark:to-primary-800/50 dark:text-primary-400">
-                        <HiOutlineCurrencyDollar className="h-5 w-5" />
-                      </div>
-                    )}
-                  </DashboardTableCell>
-                  <DashboardTableCell>
-                    <span className="font-medium text-neutral-900 dark:text-neutral-100">{exchangeRate.name}</span>
-                  </DashboardTableCell>
-                  <DashboardTableCell hidden>
-                    <span className="text-neutral-600 dark:text-neutral-400">{exchangeRate.currency}</span>
-                  </DashboardTableCell>
-                  <DashboardTableCell hidden>
-                    <span className="inline-flex rounded-full bg-primary-50 px-2.5 py-1 text-xs font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-400">
+        <div className="overflow-hidden rounded-3xl border border-slate-200/60 bg-white/80 shadow-2xl shadow-slate-200/50 backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-900/80 dark:shadow-slate-950/50">
+          {/* Grid Layout for Cards */}
+          <div className="grid gap-6 p-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {exchangeRates.map((exchangeRate) => (
+              <div
+                key={exchangeRate.id}
+                className="group relative overflow-hidden rounded-2xl border border-slate-200/60 bg-gradient-to-br from-white to-slate-50/50 p-6 shadow-lg shadow-slate-200/40 transition-all duration-300 hover:scale-[1.02] hover:border-blue-300/60 hover:shadow-xl hover:shadow-blue-200/40 dark:border-slate-800/60 dark:from-slate-900 dark:to-slate-800/50 dark:shadow-slate-950/40 dark:hover:border-blue-700/60 dark:hover:shadow-blue-900/40"
+              >
+                {/* Gradient Overlay on Hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                
+                {/* Content */}
+                <div className="relative space-y-5">
+                  {/* Icon & Badge Row */}
+                  <div className="flex items-start justify-between">
+                    {/* Currency Icon */}
+                    <div className="relative">
+                      {exchangeRate.imageUrl ? (
+                        <div className="relative h-14 w-14 overflow-hidden rounded-2xl shadow-lg ring-2 ring-white transition-all duration-300 group-hover:scale-110 group-hover:shadow-xl dark:ring-slate-800">
+                          <img 
+                            src={exchangeRate.imageUrl} 
+                            alt={exchangeRate.currency} 
+                            className="h-full w-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-blue-200 shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:from-blue-200 group-hover:to-blue-300 dark:from-blue-900/50 dark:to-blue-800/50 dark:group-hover:from-blue-800/60 dark:group-hover:to-blue-700/60">
+                          <HiOutlineCurrencyDollar className="h-7 w-7 text-blue-600 dark:text-blue-400" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Rate Type Badge */}
+                    <span className="inline-flex items-center rounded-xl bg-gradient-to-l from-blue-100 to-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 shadow-sm dark:from-blue-900/40 dark:to-blue-800/40 dark:text-blue-300">
                       {exchangeRate.rateType === 'BUY_SELL' ? 'خرید/فروش' : 'پرچون/عمده'}
                     </span>
-                  </DashboardTableCell>
-                  <DashboardTableCell>
+                  </div>
+
+                  {/* Currency Info */}
+                  <div className="space-y-1.5">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                      {exchangeRate.name}
+                    </h3>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                      {exchangeRate.currency}
+                    </p>
+                  </div>
+
+                  {/* Rates Display */}
+                  <div className="space-y-2.5 rounded-xl bg-slate-50/80 p-4 dark:bg-slate-800/50">
                     {exchangeRate.rateType === 'BUY_SELL' ? (
-                      <div className="flex flex-col gap-1 text-sm">
-                        <span className="text-emerald-600 dark:text-emerald-400">خرید: {exchangeRate.buyRate || '-'}</span>
-                        <span className="text-red-600 dark:text-red-400">فروش: {exchangeRate.sellRate || '-'}</span>
-                      </div>
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-slate-600 dark:text-slate-400">نرخ خرید</span>
+                          <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                            {exchangeRate.buyRate || '-'}
+                          </span>
+                        </div>
+                        <div className="h-px bg-gradient-to-l from-transparent via-slate-300 to-transparent dark:via-slate-700" />
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-slate-600 dark:text-slate-400">نرخ فروش</span>
+                          <span className="text-sm font-bold text-rose-600 dark:text-rose-400">
+                            {exchangeRate.sellRate || '-'}
+                          </span>
+                        </div>
+                      </>
                     ) : (
-                      <div className="flex flex-col gap-1 text-sm">
-                        <span>پرچون: {exchangeRate.singleRate || '-'}</span>
-                        <span>عمده: {exchangeRate.bulkRate || '-'}</span>
-                      </div>
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-slate-600 dark:text-slate-400">نرخ پرچون</span>
+                          <span className="text-sm font-bold text-slate-900 dark:text-white">
+                            {exchangeRate.singleRate || '-'}
+                          </span>
+                        </div>
+                        <div className="h-px bg-gradient-to-l from-transparent via-slate-300 to-transparent dark:via-slate-700" />
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-slate-600 dark:text-slate-400">نرخ عمده</span>
+                          <span className="text-sm font-bold text-slate-900 dark:text-white">
+                            {exchangeRate.bulkRate || '-'}
+                          </span>
+                        </div>
+                      </>
                     )}
-                  </DashboardTableCell>
-                  <DashboardTableCell>
-                    <div className="flex items-center gap-2">
-                      <ActionButton variant="edit" onClick={() => handleEdit(exchangeRate)}>
-                        <HiOutlinePencil className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">ویرایش</span>
-                      </ActionButton>
-                      <ActionButton variant="delete" onClick={() => handleDelete(exchangeRate.id)}>
-                        <HiOutlineTrash className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">حذف</span>
-                      </ActionButton>
-                    </div>
-                  </DashboardTableCell>
-                </DashboardTableRow>
-              ))}
-            </DashboardTableBody>
-          </DashboardTable>
-        </DashboardTableContainer>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      onClick={() => handleEdit(exchangeRate)}
+                      className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-l from-blue-600 to-blue-500 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-500/30 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/40 active:scale-[0.98] dark:from-blue-500 dark:to-blue-600"
+                    >
+                      <HiOutlinePencil className="h-4 w-4" />
+                      <span>ویرایش</span>
+                    </button>
+                    <button
+                      onClick={() => handleDelete(exchangeRate.id)}
+                      className="flex items-center justify-center rounded-xl border border-rose-200 bg-white px-3 py-2.5 text-rose-600 shadow-sm transition-all duration-200 hover:scale-[1.02] hover:border-rose-300 hover:bg-rose-50 hover:shadow-md active:scale-[0.98] dark:border-rose-900/50 dark:bg-slate-900 dark:text-rose-400 dark:hover:border-rose-800 dark:hover:bg-rose-950/30"
+                    >
+                      <HiOutlineTrash className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
 
       {/* Create Modal */}
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-lg overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
-          <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-4 py-4 sm:px-6 sm:py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
-            <DialogTitle className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-neutral-50">افزودن ارز جدید</DialogTitle>
+        <DialogContent className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-2xl overflow-hidden rounded-3xl border border-slate-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-2xl dark:border-slate-800/60 dark:bg-slate-900/95" dir="rtl">
+          <DialogHeader className="border-b border-slate-200/60 bg-gradient-to-l from-slate-50 to-white px-6 py-6 dark:border-slate-800/60 dark:from-slate-900 dark:to-slate-900">
+            <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-white">افزودن ارز جدید</DialogTitle>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">اطلاعات ارز یا رمزارز جدید را وارد کنید</p>
           </DialogHeader>
-          <form onSubmit={handleSubmit(handleCreateSubmit)} className="max-h-[calc(95vh-100px)] sm:max-h-[calc(90vh-120px)] space-y-4 sm:space-y-5 overflow-y-auto p-4 sm:p-6">
-            <div className="grid gap-5 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نام ارز</Label>
-                <Input {...register('name', { required: 'نام ارز الزامی است' })} placeholder="نام ارز" className={inputClassName} />
-                {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
+          <form onSubmit={handleSubmit(handleCreateSubmit)} className="max-h-[calc(95vh-140px)] sm:max-h-[calc(90vh-160px)] space-y-6 overflow-y-auto p-6">
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div className="space-y-2.5">
+                <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">نام ارز</Label>
+                <Input 
+                  {...register('name', { required: 'نام ارز الزامی است' })} 
+                  placeholder="مثال: دلار آمریکا" 
+                  className="h-12 rounded-xl border-slate-200/60 bg-white/80 text-base transition-all duration-200 placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700/60 dark:bg-slate-800/80 dark:focus:border-blue-500 dark:focus:ring-blue-900/30" 
+                />
+                {errors.name && <p className="text-xs font-medium text-rose-600 dark:text-rose-400">{errors.name.message}</p>}
               </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">ارز</Label>
-                <Input {...register('currency', { required: 'ارز الزامی است' })} placeholder="تومان به افغانی" className={inputClassName} />
-                {errors.currency && <p className="text-xs text-red-500">{errors.currency.message}</p>}
+              <div className="space-y-2.5">
+                <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">نماد ارز</Label>
+                <Input 
+                  {...register('currency', { required: 'ارز الزامی است' })} 
+                  placeholder="مثال: USD" 
+                  className="h-12 rounded-xl border-slate-200/60 bg-white/80 text-base transition-all duration-200 placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700/60 dark:bg-slate-800/80 dark:focus:border-blue-500 dark:focus:ring-blue-900/30" 
+                />
+                {errors.currency && <p className="text-xs font-medium text-rose-600 dark:text-rose-400">{errors.currency.message}</p>}
               </div>
             </div>
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نوع نرخ</Label>
+            
+            <div className="space-y-2.5">
+              <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">نوع نرخ</Label>
               <Select onValueChange={(value: RateType) => { setValue('rateType', value); if (value === 'SINGLE_BULK') { setValue('buyRate', ''); setValue('sellRate', ''); } else { setValue('singleRate', ''); setValue('bulkRate', ''); } }} defaultValue="BUY_SELL">
-                <SelectTrigger className={inputClassName}><SelectValue placeholder="انتخاب نوع نرخ" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="BUY_SELL">خرید/فروش</SelectItem>
-                  <SelectItem value="SINGLE_BULK">پرچون/عمده</SelectItem>
+                <SelectTrigger className="h-12 rounded-xl border-slate-200/60 bg-white/80 text-base transition-all duration-200 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700/60 dark:bg-slate-800/80 dark:focus:border-blue-500 dark:focus:ring-blue-900/30">
+                  <SelectValue placeholder="انتخاب نوع نرخ" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-slate-200/60 bg-white dark:border-slate-700/60 dark:bg-slate-800">
+                  <SelectItem value="BUY_SELL" className="rounded-lg">خرید/فروش</SelectItem>
+                  <SelectItem value="SINGLE_BULK" className="rounded-lg">پرچون/عمده</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+            
             {rateType !== 'SINGLE_BULK' && (
-              <div className="grid gap-5 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نرخ خرید</Label>
-                  <Input {...register('buyRate')} placeholder="نرخ خرید" className={inputClassName} />
+              <div className="grid gap-6 rounded-2xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50/50 to-rose-50/50 p-5 dark:border-emerald-900/30 dark:from-emerald-950/20 dark:to-rose-950/20 sm:grid-cols-2">
+                <div className="space-y-2.5">
+                  <Label className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">نرخ خرید</Label>
+                  <Input 
+                    {...register('buyRate')} 
+                    placeholder="مثال: 42,500" 
+                    className="h-12 rounded-xl border-emerald-200/60 bg-white/90 text-base transition-all duration-200 placeholder:text-slate-400 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 dark:border-emerald-900/40 dark:bg-slate-900/60 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30" 
+                  />
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نرخ فروش</Label>
-                  <Input {...register('sellRate')} placeholder="نرخ فروش" className={inputClassName} />
+                <div className="space-y-2.5">
+                  <Label className="text-sm font-semibold text-rose-700 dark:text-rose-400">نرخ فروش</Label>
+                  <Input 
+                    {...register('sellRate')} 
+                    placeholder="مثال: 43,000" 
+                    className="h-12 rounded-xl border-rose-200/60 bg-white/90 text-base transition-all duration-200 placeholder:text-slate-400 focus:border-rose-400 focus:ring-4 focus:ring-rose-100 dark:border-rose-900/40 dark:bg-slate-900/60 dark:focus:border-rose-500 dark:focus:ring-rose-900/30" 
+                  />
                 </div>
               </div>
             )}
+            
             {rateType === 'SINGLE_BULK' && (
-              <div className="grid gap-5 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نرخ پرچون</Label>
-                  <Input {...register('singleRate')} placeholder="نرخ پرچون" className={inputClassName} />
+              <div className="grid gap-6 rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-50/50 to-purple-50/50 p-5 dark:border-blue-900/30 dark:from-blue-950/20 dark:to-purple-950/20 sm:grid-cols-2">
+                <div className="space-y-2.5">
+                  <Label className="text-sm font-semibold text-blue-700 dark:text-blue-400">نرخ پرچون</Label>
+                  <Input 
+                    {...register('singleRate')} 
+                    placeholder="مثال: 42,500" 
+                    className="h-12 rounded-xl border-blue-200/60 bg-white/90 text-base transition-all duration-200 placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-blue-900/40 dark:bg-slate-900/60 dark:focus:border-blue-500 dark:focus:ring-blue-900/30" 
+                  />
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نرخ عمده</Label>
-                  <Input {...register('bulkRate')} placeholder="نرخ عمده" className={inputClassName} />
+                <div className="space-y-2.5">
+                  <Label className="text-sm font-semibold text-purple-700 dark:text-purple-400">نرخ عمده</Label>
+                  <Input 
+                    {...register('bulkRate')} 
+                    placeholder="مثال: 42,000" 
+                    className="h-12 rounded-xl border-purple-200/60 bg-white/90 text-base transition-all duration-200 placeholder:text-slate-400 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 dark:border-purple-900/40 dark:bg-slate-900/60 dark:focus:border-purple-500 dark:focus:ring-purple-900/30" 
+                  />
                 </div>
               </div>
             )}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">توضیحات</Label>
-              <Input {...register('description')} placeholder="توضیحات" className={inputClassName} />
+            
+            <div className="space-y-2.5">
+              <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">توضیحات</Label>
+              <Input 
+                {...register('description')} 
+                placeholder="توضیحات اختیاری درباره این ارز" 
+                className="h-12 rounded-xl border-slate-200/60 bg-white/80 text-base transition-all duration-200 placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700/60 dark:bg-slate-800/80 dark:focus:border-blue-500 dark:focus:ring-blue-900/30" 
+              />
             </div>
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">تصویر</Label>
-              <ImageUploader onImageUpload={handleImageUpload} onImageRemove={handleImageRemove} folder="general" />
+            
+            <div className="space-y-2.5">
+              <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">تصویر نماد</Label>
+              <div className="rounded-xl border border-slate-200/60 bg-slate-50/50 p-4 dark:border-slate-700/60 dark:bg-slate-800/50">
+                <ImageUploader onImageUpload={handleImageUpload} onImageRemove={handleImageRemove} folder="general" />
+              </div>
             </div>
+            
             <DialogFooter className="pt-4">
-              <Button type="submit" className="w-full rounded-xl bg-gradient-to-l from-primary-500 to-primary-600 py-3 font-medium text-white shadow-lg">ایجاد ارز</Button>
+              <Button 
+                type="submit" 
+                className="w-full rounded-xl bg-gradient-to-l from-blue-600 to-blue-500 py-3.5 text-base font-semibold text-white shadow-lg shadow-blue-500/30 transition-all duration-200 hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/40 active:scale-[0.98] dark:from-blue-500 dark:to-blue-600"
+              >
+                ایجاد ارز جدید
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -292,68 +377,112 @@ const ExchangeRatesPage: React.FC = () => {
 
       {/* Edit Modal */}
       <Dialog open={!!editingExchangeRate} onOpenChange={() => setEditingExchangeRate(null)}>
-        <DialogContent className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-lg overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
-          <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-4 py-4 sm:px-6 sm:py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
-            <DialogTitle className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-neutral-50">ویرایش ارز</DialogTitle>
+        <DialogContent className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-2xl overflow-hidden rounded-3xl border border-slate-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-2xl dark:border-slate-800/60 dark:bg-slate-900/95" dir="rtl">
+          <DialogHeader className="border-b border-slate-200/60 bg-gradient-to-l from-slate-50 to-white px-6 py-6 dark:border-slate-800/60 dark:from-slate-900 dark:to-slate-900">
+            <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-white">ویرایش ارز</DialogTitle>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">اطلاعات ارز را ویرایش کنید</p>
           </DialogHeader>
           {editingExchangeRate && (
-            <form onSubmit={handleSubmit(handleEditSubmit)} className="max-h-[calc(95vh-100px)] sm:max-h-[calc(90vh-120px)] space-y-4 sm:space-y-5 overflow-y-auto p-4 sm:p-6">
-              <div className="grid gap-5 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نام ارز</Label>
-                  <Input {...register('name', { required: 'نام ارز الزامی است' })} placeholder="نام ارز" className={inputClassName} />
-                  {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
+            <form onSubmit={handleSubmit(handleEditSubmit)} className="max-h-[calc(95vh-140px)] sm:max-h-[calc(90vh-160px)] space-y-6 overflow-y-auto p-6">
+              <div className="grid gap-6 sm:grid-cols-2">
+                <div className="space-y-2.5">
+                  <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">نام ارز</Label>
+                  <Input 
+                    {...register('name', { required: 'نام ارز الزامی است' })} 
+                    placeholder="مثال: دلار آمریکا" 
+                    className="h-12 rounded-xl border-slate-200/60 bg-white/80 text-base transition-all duration-200 placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700/60 dark:bg-slate-800/80 dark:focus:border-blue-500 dark:focus:ring-blue-900/30" 
+                  />
+                  {errors.name && <p className="text-xs font-medium text-rose-600 dark:text-rose-400">{errors.name.message}</p>}
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">ارز</Label>
-                  <Input {...register('currency', { required: 'ارز الزامی است' })} placeholder="تومان به دلار" className={inputClassName} />
-                  {errors.currency && <p className="text-xs text-red-500">{errors.currency.message}</p>}
+                <div className="space-y-2.5">
+                  <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">نماد ارز</Label>
+                  <Input 
+                    {...register('currency', { required: 'ارز الزامی است' })} 
+                    placeholder="مثال: USD" 
+                    className="h-12 rounded-xl border-slate-200/60 bg-white/80 text-base transition-all duration-200 placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700/60 dark:bg-slate-800/80 dark:focus:border-blue-500 dark:focus:ring-blue-900/30" 
+                  />
+                  {errors.currency && <p className="text-xs font-medium text-rose-600 dark:text-rose-400">{errors.currency.message}</p>}
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نوع نرخ</Label>
+              
+              <div className="space-y-2.5">
+                <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">نوع نرخ</Label>
                 <Select onValueChange={(value: RateType) => { setValue('rateType', value); if (value === 'SINGLE_BULK') { setValue('buyRate', ''); setValue('sellRate', ''); } else { setValue('singleRate', ''); setValue('bulkRate', ''); } }} defaultValue={editingExchangeRate.rateType}>
-                  <SelectTrigger className={inputClassName}><SelectValue placeholder="انتخاب نوع نرخ" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="BUY_SELL">خرید/فروش</SelectItem>
-                    <SelectItem value="SINGLE_BULK">پرچون/عمده</SelectItem>
+                  <SelectTrigger className="h-12 rounded-xl border-slate-200/60 bg-white/80 text-base transition-all duration-200 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700/60 dark:bg-slate-800/80 dark:focus:border-blue-500 dark:focus:ring-blue-900/30">
+                    <SelectValue placeholder="انتخاب نوع نرخ" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-slate-200/60 bg-white dark:border-slate-700/60 dark:bg-slate-800">
+                    <SelectItem value="BUY_SELL" className="rounded-lg">خرید/فروش</SelectItem>
+                    <SelectItem value="SINGLE_BULK" className="rounded-lg">پرچون/عمده</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+              
               {rateType !== 'SINGLE_BULK' && (
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نرخ خرید</Label>
-                    <Input {...register('buyRate')} placeholder="نرخ خرید" className={inputClassName} />
+                <div className="grid gap-6 rounded-2xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50/50 to-rose-50/50 p-5 dark:border-emerald-900/30 dark:from-emerald-950/20 dark:to-rose-950/20 sm:grid-cols-2">
+                  <div className="space-y-2.5">
+                    <Label className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">نرخ خرید</Label>
+                    <Input 
+                      {...register('buyRate')} 
+                      placeholder="مثال: 42,500" 
+                      className="h-12 rounded-xl border-emerald-200/60 bg-white/90 text-base transition-all duration-200 placeholder:text-slate-400 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 dark:border-emerald-900/40 dark:bg-slate-900/60 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/30" 
+                    />
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نرخ فروش</Label>
-                    <Input {...register('sellRate')} placeholder="نرخ فروش" className={inputClassName} />
+                  <div className="space-y-2.5">
+                    <Label className="text-sm font-semibold text-rose-700 dark:text-rose-400">نرخ فروش</Label>
+                    <Input 
+                      {...register('sellRate')} 
+                      placeholder="مثال: 43,000" 
+                      className="h-12 rounded-xl border-rose-200/60 bg-white/90 text-base transition-all duration-200 placeholder:text-slate-400 focus:border-rose-400 focus:ring-4 focus:ring-rose-100 dark:border-rose-900/40 dark:bg-slate-900/60 dark:focus:border-rose-500 dark:focus:ring-rose-900/30" 
+                    />
                   </div>
                 </div>
               )}
+              
               {rateType === 'SINGLE_BULK' && (
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نرخ پرچون</Label>
-                    <Input {...register('singleRate')} placeholder="نرخ پرچون" className={inputClassName} />
+                <div className="grid gap-6 rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-50/50 to-purple-50/50 p-5 dark:border-blue-900/30 dark:from-blue-950/20 dark:to-purple-950/20 sm:grid-cols-2">
+                  <div className="space-y-2.5">
+                    <Label className="text-sm font-semibold text-blue-700 dark:text-blue-400">نرخ پرچون</Label>
+                    <Input 
+                      {...register('singleRate')} 
+                      placeholder="مثال: 42,500" 
+                      className="h-12 rounded-xl border-blue-200/60 bg-white/90 text-base transition-all duration-200 placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-blue-900/40 dark:bg-slate-900/60 dark:focus:border-blue-500 dark:focus:ring-blue-900/30" 
+                    />
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نرخ عمده</Label>
-                    <Input {...register('bulkRate')} placeholder="نرخ عمده" className={inputClassName} />
+                  <div className="space-y-2.5">
+                    <Label className="text-sm font-semibold text-purple-700 dark:text-purple-400">نرخ عمده</Label>
+                    <Input 
+                      {...register('bulkRate')} 
+                      placeholder="مثال: 42,000" 
+                      className="h-12 rounded-xl border-purple-200/60 bg-white/90 text-base transition-all duration-200 placeholder:text-slate-400 focus:border-purple-400 focus:ring-4 focus:ring-purple-100 dark:border-purple-900/40 dark:bg-slate-900/60 dark:focus:border-purple-500 dark:focus:ring-purple-900/30" 
+                    />
                   </div>
                 </div>
               )}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">توضیحات</Label>
-                <Input {...register('description')} placeholder="توضیحات" className={inputClassName} />
+              
+              <div className="space-y-2.5">
+                <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">توضیحات</Label>
+                <Input 
+                  {...register('description')} 
+                  placeholder="توضیحات اختیاری درباره این ارز" 
+                  className="h-12 rounded-xl border-slate-200/60 bg-white/80 text-base transition-all duration-200 placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700/60 dark:bg-slate-800/80 dark:focus:border-blue-500 dark:focus:ring-blue-900/30" 
+                />
               </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">تصویر</Label>
-                <ImageUploader onImageUpload={handleImageUpload} onImageRemove={handleImageRemove} initialPreviews={editingExchangeRate.imageUrl ? [editingExchangeRate.imageUrl] : []} folder="general" />
+              
+              <div className="space-y-2.5">
+                <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">تصویر نماد</Label>
+                <div className="rounded-xl border border-slate-200/60 bg-slate-50/50 p-4 dark:border-slate-700/60 dark:bg-slate-800/50">
+                  <ImageUploader onImageUpload={handleImageUpload} onImageRemove={handleImageRemove} initialPreviews={editingExchangeRate.imageUrl ? [editingExchangeRate.imageUrl] : []} folder="general" />
+                </div>
               </div>
+              
               <DialogFooter className="pt-4">
-                <Button type="submit" className="w-full rounded-xl bg-gradient-to-l from-primary-500 to-primary-600 py-3 font-medium text-white shadow-lg">ذخیره تغییرات</Button>
+                <Button 
+                  type="submit" 
+                  className="w-full rounded-xl bg-gradient-to-l from-blue-600 to-blue-500 py-3.5 text-base font-semibold text-white shadow-lg shadow-blue-500/30 transition-all duration-200 hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/40 active:scale-[0.98] dark:from-blue-500 dark:to-blue-600"
+                >
+                  ذخیره تغییرات
+                </Button>
               </DialogFooter>
             </form>
           )}

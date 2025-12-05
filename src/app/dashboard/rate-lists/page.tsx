@@ -293,123 +293,189 @@ const RateListsPage = () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 p-4 sm:p-6 lg:p-8 dark:from-neutral-900 dark:via-neutral-900 dark:to-primary-950/20" dir="rtl">
-      <DashboardPageHeader title="مدیریت لیست‌های نرخ" description="مشاهده و مدیریت لیست‌های نرخ ارز">
-        <DashboardSearchInput value={filterOptions.search} onChange={(v) => setFilterOptions((p) => ({ ...p, search: v }))} placeholder="جستجو..." />
-        <FilterSelect value={filterOptions.currency} onChange={(v) => setFilterOptions((p) => ({ ...p, currency: v }))} options={currencyOptions} />
-        <FilterSelect value={filterOptions.dateRange} onChange={(v) => setFilterOptions((p) => ({ ...p, dateRange: v }))} options={dateOptions} />
-        <FilterSelect value={filterOptions.sortBy} onChange={(v) => setFilterOptions((p) => ({ ...p, sortBy: v }))} options={sortOptions} />
-        <PrimaryActionButton onClick={() => setShowCreateModal(true)}>
-          <HiPlusCircle className="h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
-          <span>افزودن لیست نرخ</span>
-        </PrimaryActionButton>
-      </DashboardPageHeader>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/40 p-3 sm:p-5 lg:p-8 dark:from-slate-950 dark:via-slate-900 dark:to-blue-950/30" dir="rtl">
+      <div className="mx-auto max-w-7xl space-y-6">
+        <DashboardPageHeader title="مدیریت لیست‌های نرخ" description="مشاهده و مدیریت لیست‌های نرخ ارز">
+          <DashboardSearchInput value={filterOptions.search} onChange={(v) => setFilterOptions((p) => ({ ...p, search: v }))} placeholder="جستجو..." />
+          <FilterSelect value={filterOptions.currency} onChange={(v) => setFilterOptions((p) => ({ ...p, currency: v }))} options={currencyOptions} />
+          <FilterSelect value={filterOptions.dateRange} onChange={(v) => setFilterOptions((p) => ({ ...p, dateRange: v }))} options={dateOptions} />
+          <FilterSelect value={filterOptions.sortBy} onChange={(v) => setFilterOptions((p) => ({ ...p, sortBy: v }))} options={sortOptions} />
+          <PrimaryActionButton onClick={() => setShowCreateModal(true)}>
+            <HiPlusCircle className="h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
+            <span>افزودن لیست نرخ</span>
+          </PrimaryActionButton>
+        </DashboardPageHeader>
 
-      {filteredRateLists.length === 0 ? (
-        <DashboardTableContainer>
-          <EmptyState title="لیست نرخی یافت نشد" description="هنوز هیچ لیست نرخی در سیستم ثبت نشده است." icon={<HiOutlineListBullet className="h-8 w-8 text-neutral-400" />} />
-        </DashboardTableContainer>
-      ) : (
-        <DashboardTableContainer>
-          <DashboardTable>
-            <DashboardTableHeader>
-              <tr>
-                <DashboardTableHead>عنوان</DashboardTableHead>
-                <DashboardTableHead>نرخ‌ها</DashboardTableHead>
-                <DashboardTableHead hidden>آخرین به‌روزرسانی</DashboardTableHead>
-                <DashboardTableHead>عملیات</DashboardTableHead>
-              </tr>
-            </DashboardTableHeader>
-            <DashboardTableBody>
-              {filteredRateLists.map((rateList) => (
-                <DashboardTableRow key={rateList.id}>
-                  <DashboardTableCell>
-                    <span className="font-medium text-neutral-900 dark:text-neutral-100">{rateList.title}</span>
-                  </DashboardTableCell>
-                  <DashboardTableCell>
-                    <div className="max-h-24 space-y-1 overflow-y-auto pr-2">
-                      {rateList.rates.slice(0, 3).map((rate, index) => (
-                        <div key={index} className="flex items-center gap-2 text-sm">
-                          <span className="font-medium text-neutral-700 dark:text-neutral-300">{rate.title}:</span>
-                          <span className="text-neutral-500 dark:text-neutral-400">{rate.value}</span>
+        {filteredRateLists.length === 0 ? (
+          <div className="rounded-2xl border border-slate-200/60 bg-white/80 p-12 text-center shadow-sm backdrop-blur-sm dark:border-slate-700/50 dark:bg-slate-800/80">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200/80 dark:from-slate-700 dark:to-slate-800">
+              <HiOutlineListBullet className="h-10 w-10 text-slate-400 dark:text-slate-500" />
+            </div>
+            <h3 className="mt-6 text-lg font-semibold text-slate-900 dark:text-slate-100">لیست نرخی یافت نشد</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">هنوز هیچ لیست نرخی در سیستم ثبت نشده است.</p>
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:gap-5 lg:gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+            {filteredRateLists.map((rateList) => (
+              <div
+                key={rateList.id}
+                className="group relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white/90 p-5 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-1 dark:border-slate-700/50 dark:bg-slate-800/90 dark:hover:shadow-slate-900/30"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                
+                <div className="relative space-y-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-slate-50 truncate">
+                        {rateList.title}
+                      </h3>
+                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        {formatDate(rateList.updatedAt)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        onClick={() => { setEditingRateList(rateList); reset(rateList); }}
+                        className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/60 bg-white/80 text-slate-600 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 hover:shadow-md dark:border-slate-700/50 dark:bg-slate-800/80 dark:text-slate-400 dark:hover:border-blue-600 dark:hover:bg-blue-950/50 dark:hover:text-blue-400"
+                      >
+                        <HiOutlinePencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(rateList.id!)}
+                        className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/60 bg-white/80 text-slate-600 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-red-300 hover:bg-red-50 hover:text-red-600 hover:shadow-md dark:border-slate-700/50 dark:bg-slate-800/80 dark:text-slate-400 dark:hover:border-red-600 dark:hover:bg-red-950/50 dark:hover:text-red-400"
+                      >
+                        <HiOutlineTrash className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 rounded-xl border border-slate-200/40 bg-slate-50/50 p-3 dark:border-slate-700/40 dark:bg-slate-900/50">
+                    <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+                      <div className="h-1 w-1 rounded-full bg-slate-400" />
+                      <span>نرخ‌های ثبت شده</span>
+                    </div>
+                    <div className="max-h-32 space-y-2 overflow-y-auto pr-1">
+                      {rateList.rates.slice(0, 4).map((rate, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between gap-3 rounded-lg border border-slate-200/40 bg-white/60 px-3 py-2 backdrop-blur-sm dark:border-slate-700/40 dark:bg-slate-800/60"
+                        >
+                          <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 truncate">
+                            {rate.title}
+                          </span>
+                          <span className="text-xs text-slate-500 dark:text-slate-400 shrink-0">
+                            {rate.value}
+                          </span>
                         </div>
                       ))}
-                      {rateList.rates.length > 3 && (
-                        <span className="text-xs text-primary-500">+{rateList.rates.length - 3} مورد دیگر</span>
+                      {rateList.rates.length > 4 && (
+                        <div className="flex items-center justify-center rounded-lg border border-blue-200/40 bg-blue-50/50 px-3 py-2 dark:border-blue-800/40 dark:bg-blue-950/30">
+                          <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                            + {rateList.rates.length - 4} مورد دیگر
+                          </span>
+                        </div>
                       )}
                     </div>
-                  </DashboardTableCell>
-                  <DashboardTableCell hidden>
-                    <span className="text-sm text-neutral-500 dark:text-neutral-400">{formatDate(rateList.updatedAt)}</span>
-                  </DashboardTableCell>
-                  <DashboardTableCell>
-                    <div className="flex items-center gap-2">
-                      <ActionButton variant="edit" onClick={() => { setEditingRateList(rateList); reset(rateList); }}>
-                        <HiOutlinePencil className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">ویرایش</span>
-                      </ActionButton>
-                      <ActionButton variant="delete" onClick={() => handleDelete(rateList.id!)}>
-                        <HiOutlineTrash className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">حذف</span>
-                      </ActionButton>
-                    </div>
-                  </DashboardTableCell>
-                </DashboardTableRow>
-              ))}
-            </DashboardTableBody>
-          </DashboardTable>
-        </DashboardTableContainer>
-      )}
+                  </div>
 
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-200/40 dark:border-slate-700/40">
+                    <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                      <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                      <span>فعال</span>
+                    </div>
+                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                      {rateList.rates.length} نرخ
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       <Dialog open={showCreateModal || !!editingRateList} onOpenChange={(open) => { if (!open) { setShowCreateModal(false); setEditingRateList(null); reset(); } }}>
-        <DialogContent className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-2xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
-          <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-4 py-4 sm:px-6 sm:py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
-            <DialogTitle className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-neutral-50">
+        <DialogContent className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-2xl overflow-hidden rounded-3xl border border-slate-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-slate-700/50 dark:bg-slate-800/95" dir="rtl">
+          <DialogHeader className="border-b border-slate-200/60 bg-gradient-to-l from-slate-50/80 to-white/80 px-5 py-5 sm:px-7 sm:py-6 backdrop-blur-sm dark:border-slate-700/50 dark:from-slate-800/80 dark:to-slate-800/80">
+            <DialogTitle className="text-xl sm:text-2xl font-bold bg-gradient-to-l from-slate-900 to-slate-700 bg-clip-text text-transparent dark:from-slate-50 dark:to-slate-300">
               {editingRateList ? 'ویرایش لیست نرخ' : 'افزودن لیست نرخ جدید'}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit(editingRateList ? handleEditSubmit : handleCreateSubmit)} className="max-h-[calc(95vh-100px)] sm:max-h-[calc(90vh-120px)] overflow-y-auto p-4 sm:p-6">
-            <div className="space-y-5">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">عنوان لیست</Label>
-                <Input {...register('title', { required: 'عنوان لیست الزامی است' })} placeholder="مثل کردیت کارت یا نرخ بازار تهران" className={inputClassName} />
-                {errors.title && <p className="text-xs text-red-500">{errors.title.message}</p>}
+          <form onSubmit={handleSubmit(editingRateList ? handleEditSubmit : handleCreateSubmit)} className="max-h-[calc(95vh-120px)] sm:max-h-[calc(90vh-140px)] overflow-y-auto p-5 sm:p-7">
+            <div className="space-y-6">
+              <div className="space-y-2.5">
+                <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">عنوان لیست</Label>
+                <Input 
+                  {...register('title', { required: 'عنوان لیست الزامی است' })} 
+                  placeholder="مثل کردیت کارت یا نرخ بازار تهران" 
+                  className="h-12 rounded-xl border-slate-200/60 bg-white/80 px-4 text-base transition-all duration-200 placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700/60 dark:bg-slate-800/80 dark:focus:border-blue-500 dark:focus:ring-blue-950/50" 
+                />
+                {errors.title && <p className="text-xs font-medium text-red-500 flex items-center gap-1.5">
+                  <span className="h-1 w-1 rounded-full bg-red-500" />
+                  {errors.title.message}
+                </p>}
               </div>
 
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نرخ‌ها</Label>
+              <div className="space-y-3.5">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <Label className="text-sm font-semibold text-slate-700 dark:text-slate-300">نرخ‌ها</Label>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <button type="button" className="rounded-full p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700">
-                            <HiOutlineInformationCircle className="h-4 w-4 text-primary-500" />
+                          <button type="button" className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-blue-600 transition-all duration-200 hover:bg-blue-100 dark:bg-blue-950/50 dark:text-blue-400 dark:hover:bg-blue-950">
+                            <HiOutlineInformationCircle className="h-4 w-4" />
                           </button>
                         </TooltipTrigger>
-                        <TooltipContent className="max-w-xs p-3">
-                          <p className="text-sm">می‌توانید نرخ‌ها را از اکسل کپی و در فیلد پیست کنید.</p>
+                        <TooltipContent className="max-w-xs rounded-xl border-slate-200/60 bg-white/95 p-3.5 shadow-xl backdrop-blur-xl dark:border-slate-700/50 dark:bg-slate-800/95">
+                          <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">می‌توانید نرخ‌ها را از اکسل کپی و در فیلد پیست کنید.</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button type="button" variant="outline" size="sm" onClick={() => { replace([]); append({ title: '', value: '' }); }} className="text-red-600 hover:bg-red-50">
-                      <HiOutlineTrash className="ml-1 h-4 w-4" />حذف همه
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => { replace([]); append({ title: '', value: '' }); }} 
+                      className="h-9 rounded-xl border-red-200/60 bg-white/80 text-red-600 shadow-sm transition-all duration-200 hover:border-red-300 hover:bg-red-50 hover:shadow-md dark:border-red-800/60 dark:bg-red-950/30 dark:text-red-400 dark:hover:border-red-700 dark:hover:bg-red-950/50"
+                    >
+                      <HiOutlineTrash className="ml-1.5 h-4 w-4" />حذف همه
                     </Button>
-                    <Button type="button" variant="outline" size="sm" onClick={() => append({ title: '', value: '' })}>
-                      <HiPlusCircle className="ml-1 h-4 w-4" />افزودن نرخ
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => append({ title: '', value: '' })}
+                      className="h-9 rounded-xl border-slate-200/60 bg-white/80 shadow-sm transition-all duration-200 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 hover:shadow-md dark:border-slate-700/60 dark:bg-slate-800/80 dark:hover:border-blue-600 dark:hover:bg-blue-950/50 dark:hover:text-blue-400"
+                    >
+                      <HiPlusCircle className="ml-1.5 h-4 w-4" />افزودن نرخ
                     </Button>
                   </div>
                 </div>
-                <ScrollArea className="h-64 rounded-xl border border-neutral-200/60 bg-neutral-50/50 p-3 dark:border-neutral-700/50 dark:bg-neutral-800/50">
-                  <div className="space-y-2">
+                <ScrollArea className="h-72 rounded-2xl border border-slate-200/60 bg-gradient-to-br from-slate-50/80 to-slate-100/50 p-4 shadow-inner dark:border-slate-700/50 dark:from-slate-900/80 dark:to-slate-800/50">
+                  <div className="space-y-2.5">
                     {fields.map((field, index) => (
-                      <div key={field.id} className="flex items-center gap-2 rounded-lg bg-white p-2 shadow-sm dark:bg-neutral-700/50">
-                        <Input {...register(`rates.${index}.title` as const)} placeholder="عنوان نرخ" className={`${inputClassName} flex-1`} onPaste={handleRatePaste} />
-                        <Input {...register(`rates.${index}.value` as const)} placeholder="مقدار نرخ" className={`${inputClassName} flex-1`} />
-                        <Button type="button" variant="ghost" size="icon" onClick={() => { remove(index); if (fields.length === 1) append({ title: '', value: '' }); }} className="text-neutral-500 hover:text-red-600">
+                      <div key={field.id} className="group flex items-center gap-2.5 rounded-xl border border-slate-200/60 bg-white/90 p-3 shadow-sm backdrop-blur-sm transition-all duration-200 hover:shadow-md dark:border-slate-700/50 dark:bg-slate-800/90">
+                        <Input 
+                          {...register(`rates.${index}.title` as const)} 
+                          placeholder="عنوان نرخ" 
+                          className="h-11 flex-1 rounded-lg border-slate-200/60 bg-white/80 px-3.5 text-sm transition-all duration-200 placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:border-slate-700/60 dark:bg-slate-800/80 dark:focus:border-blue-500 dark:focus:ring-blue-950/50" 
+                          onPaste={handleRatePaste} 
+                        />
+                        <Input 
+                          {...register(`rates.${index}.value` as const)} 
+                          placeholder="مقدار نرخ" 
+                          className="h-11 flex-1 rounded-lg border-slate-200/60 bg-white/80 px-3.5 text-sm transition-all duration-200 placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:border-slate-700/60 dark:bg-slate-800/80 dark:focus:border-blue-500 dark:focus:ring-blue-950/50" 
+                        />
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => { remove(index); if (fields.length === 1) append({ title: '', value: '' }); }} 
+                          className="h-11 w-11 shrink-0 rounded-lg text-slate-500 transition-all duration-200 hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-950/50 dark:hover:text-red-400"
+                        >
                           <HiMinusCircle className="h-5 w-5" />
                         </Button>
                       </div>
@@ -418,8 +484,11 @@ const RateListsPage = () => {
                 </ScrollArea>
               </div>
             </div>
-            <DialogFooter className="mt-6">
-              <Button type="submit" className="w-full rounded-xl bg-gradient-to-l from-primary-500 to-primary-600 py-3 font-medium text-white shadow-lg">
+            <DialogFooter className="mt-7">
+              <Button 
+                type="submit" 
+                className="h-12 w-full rounded-xl bg-gradient-to-l from-blue-600 to-blue-500 font-semibold text-white shadow-lg shadow-blue-500/30 transition-all duration-200 hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-0.5 dark:from-blue-500 dark:to-blue-600 dark:shadow-blue-500/20 dark:hover:shadow-blue-500/30"
+              >
                 {editingRateList ? 'ذخیره تغییرات' : 'ایجاد لیست'}
               </Button>
             </DialogFooter>

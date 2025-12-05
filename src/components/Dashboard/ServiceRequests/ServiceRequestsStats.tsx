@@ -1,8 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { HiClock, HiCheckCircle, HiXCircle, HiRefresh, HiCollection, HiCalendar } from 'react-icons/hi';
+import {
+  HiOutlineClock,
+  HiOutlineCheckCircle,
+  HiOutlineXCircle,
+  HiOutlineArrowPath,
+  HiOutlineRectangleStack,
+  HiOutlineCalendarDays,
+} from 'react-icons/hi2';
 import { getServiceRequestStats } from '@/actions/serviceRequestActions';
 
 interface Stats {
@@ -18,56 +24,56 @@ const statCards = [
   {
     key: 'total',
     label: 'کل درخواست‌ها',
-    icon: HiCollection,
+    icon: HiOutlineRectangleStack,
     gradient: 'from-blue-500 to-blue-600',
-    bgGlow: 'bg-blue-500/20',
-    iconBg: 'bg-blue-500/10',
+    iconBg: 'bg-blue-50 dark:bg-blue-900/20',
     textColor: 'text-blue-600 dark:text-blue-400',
+    borderColor: 'border-blue-200/50 dark:border-blue-800/50',
   },
   {
     key: 'pending',
     label: 'در انتظار',
-    icon: HiClock,
+    icon: HiOutlineClock,
     gradient: 'from-amber-500 to-orange-500',
-    bgGlow: 'bg-amber-500/20',
-    iconBg: 'bg-amber-500/10',
+    iconBg: 'bg-amber-50 dark:bg-amber-900/20',
     textColor: 'text-amber-600 dark:text-amber-400',
+    borderColor: 'border-amber-200/50 dark:border-amber-800/50',
   },
   {
     key: 'inProgress',
     label: 'در حال انجام',
-    icon: HiRefresh,
+    icon: HiOutlineArrowPath,
     gradient: 'from-indigo-500 to-violet-500',
-    bgGlow: 'bg-indigo-500/20',
-    iconBg: 'bg-indigo-500/10',
+    iconBg: 'bg-indigo-50 dark:bg-indigo-900/20',
     textColor: 'text-indigo-600 dark:text-indigo-400',
+    borderColor: 'border-indigo-200/50 dark:border-indigo-800/50',
   },
   {
     key: 'completed',
     label: 'تکمیل شده',
-    icon: HiCheckCircle,
+    icon: HiOutlineCheckCircle,
     gradient: 'from-emerald-500 to-green-500',
-    bgGlow: 'bg-emerald-500/20',
-    iconBg: 'bg-emerald-500/10',
+    iconBg: 'bg-emerald-50 dark:bg-emerald-900/20',
     textColor: 'text-emerald-600 dark:text-emerald-400',
+    borderColor: 'border-emerald-200/50 dark:border-emerald-800/50',
   },
   {
     key: 'cancelled',
     label: 'لغو شده',
-    icon: HiXCircle,
+    icon: HiOutlineXCircle,
     gradient: 'from-rose-500 to-red-500',
-    bgGlow: 'bg-rose-500/20',
-    iconBg: 'bg-rose-500/10',
+    iconBg: 'bg-rose-50 dark:bg-rose-900/20',
     textColor: 'text-rose-600 dark:text-rose-400',
+    borderColor: 'border-rose-200/50 dark:border-rose-800/50',
   },
   {
     key: 'todayCount',
     label: 'امروز',
-    icon: HiCalendar,
+    icon: HiOutlineCalendarDays,
     gradient: 'from-purple-500 to-fuchsia-500',
-    bgGlow: 'bg-purple-500/20',
-    iconBg: 'bg-purple-500/10',
+    iconBg: 'bg-purple-50 dark:bg-purple-900/20',
     textColor: 'text-purple-600 dark:text-purple-400',
+    borderColor: 'border-purple-200/50 dark:border-purple-800/50',
   },
 ];
 
@@ -88,11 +94,11 @@ export default function ServiceRequestsStats() {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
         {[...Array(6)].map((_, i) => (
           <div
             key={i}
-            className="h-28 bg-gradient-to-br from-neutral-100 to-neutral-50 dark:from-neutral-800 dark:to-neutral-900 rounded-2xl animate-pulse border border-neutral-200/50 dark:border-neutral-700/50"
+            className="h-28 animate-pulse rounded-2xl border border-slate-200/50 bg-gradient-to-br from-slate-100 to-slate-50 dark:border-slate-700/50 dark:from-slate-800 dark:to-slate-900"
           />
         ))}
       </div>
@@ -102,49 +108,42 @@ export default function ServiceRequestsStats() {
   if (!stats) return null;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
       {statCards.map((card, index) => (
-        <motion.div
+        <div
           key={card.key}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: index * 0.05 }}
           className="group relative"
+          style={{ animationDelay: `${index * 50}ms` }}
         >
-          {/* Glow Effect */}
-          <div
-            className={`absolute inset-0 ${card.bgGlow} rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
-          />
-
           {/* Card */}
-          <div className="relative bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl rounded-2xl p-5 border border-neutral-200/60 dark:border-neutral-700/60 shadow-sm hover:shadow-xl hover:shadow-neutral-200/50 dark:hover:shadow-neutral-900/50 transition-all duration-300 hover:-translate-y-1">
+          <div className={`relative overflow-hidden rounded-2xl border ${card.borderColor} bg-white/80 p-5 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:bg-slate-900/80`}>
             <div className="flex items-start justify-between gap-3">
               {/* Icon */}
-              <div className={`p-2.5 rounded-xl ${card.iconBg} transition-transform duration-300 group-hover:scale-110`}>
-                <card.icon className={`w-5 h-5 ${card.textColor}`} />
+              <div className={`rounded-xl p-2.5 transition-transform duration-300 group-hover:scale-110 ${card.iconBg}`}>
+                <card.icon className={`h-5 w-5 ${card.textColor}`} />
               </div>
 
               {/* Number */}
               <div className="text-left">
-                <p className={`text-3xl font-black ${card.textColor} tabular-nums`}>
+                <p className={`text-3xl font-black tabular-nums ${card.textColor}`}>
                   {stats[card.key as keyof Stats].toLocaleString('fa-IR')}
                 </p>
               </div>
             </div>
 
             {/* Label */}
-            <p className="mt-3 text-sm font-medium text-neutral-600 dark:text-neutral-400">
+            <p className="mt-3 text-sm font-medium text-slate-600 dark:text-slate-400">
               {card.label}
             </p>
 
             {/* Bottom Gradient Line */}
-            <div className="absolute bottom-0 left-4 right-4 h-0.5 rounded-full overflow-hidden">
+            <div className="absolute bottom-0 left-4 right-4 h-0.5 overflow-hidden rounded-full">
               <div
-                className={`h-full w-0 group-hover:w-full bg-gradient-to-l ${card.gradient} transition-all duration-500`}
+                className={`h-full w-0 bg-gradient-to-l transition-all duration-500 group-hover:w-full ${card.gradient}`}
               />
             </div>
           </div>
-        </motion.div>
+        </div>
       ))}
     </div>
   );
