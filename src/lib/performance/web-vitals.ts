@@ -7,10 +7,9 @@ import type { Metric } from 'web-vitals';
 
 export interface WebVitalsMetrics {
   lcp: number; // Largest Contentful Paint
-  fid: number; // First Input Delay
+  inp: number; // Interaction to Next Paint (replaces FID)
   cls: number; // Cumulative Layout Shift
   ttfb: number; // Time to First Byte
-  inp: number; // Interaction to Next Paint
   fcp: number; // First Contentful Paint
 }
 
@@ -50,7 +49,7 @@ function getConnectionType(): string {
  * Generate unique ID for performance report
  */
 function generateReportId(): string {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 }
 
 /**
@@ -116,15 +115,14 @@ export async function initWebVitals(): Promise<void> {
   if (typeof window === 'undefined') return;
 
   try {
-    const { onCLS, onFID, onFCP, onLCP, onTTFB, onINP } = await import('web-vitals');
+    const { onCLS, onINP, onFCP, onLCP, onTTFB } = await import('web-vitals');
 
     // Monitor all Core Web Vitals
     onCLS(reportWebVitals);
-    onFID(reportWebVitals);
+    onINP(reportWebVitals); // Replaces FID in web-vitals v4+
     onFCP(reportWebVitals);
     onLCP(reportWebVitals);
     onTTFB(reportWebVitals);
-    onINP(reportWebVitals);
   } catch (error) {
     console.error('Failed to initialize web vitals:', error);
   }
@@ -142,18 +140,16 @@ export function getMetricsSnapshot(): Partial<WebVitalsMetrics> {
  */
 export function checkPerformanceTargets(metrics: Partial<WebVitalsMetrics>): {
   lcp: boolean;
-  fid: boolean;
+  inp: boolean;
   cls: boolean;
   ttfb: boolean;
-  inp: boolean;
   overall: boolean;
 } {
   const targets = {
     lcp: metrics.lcp ? metrics.lcp <= 2500 : true, // 2.5s
-    fid: metrics.fid ? metrics.fid <= 100 : true, // 100ms
+    inp: metrics.inp ? metrics.inp <= 200 : true, // 200ms (replaces FID)
     cls: metrics.cls ? metrics.cls <= 0.1 : true, // 0.1
     ttfb: metrics.ttfb ? metrics.ttfb <= 800 : true, // 800ms
-    inp: metrics.inp ? metrics.inp <= 200 : true, // 200ms
   };
 
   return {

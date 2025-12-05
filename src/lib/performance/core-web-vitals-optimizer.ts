@@ -1,6 +1,6 @@
 /**
  * Core Web Vitals Optimizer
- * Strategies to improve LCP, FID, CLS, TTFB, and INP
+ * Strategies to improve LCP, INP, CLS, TTFB, and FCP
  */
 
 /**
@@ -52,10 +52,10 @@ export const lcpOptimizations = {
 };
 
 /**
- * FID Optimization Strategies
- * Target: <= 100ms
+ * JavaScript Optimization Strategies
+ * Helps improve INP by reducing main thread blocking
  */
-export const fidOptimizations = {
+export const jsOptimizations = {
   /**
    * Defer non-critical JavaScript
    */
@@ -102,9 +102,6 @@ export const clsOptimizations = {
    * Reserve space for images
    */
   reserveImageSpace(img: HTMLImageElement, aspectRatio: string): void {
-    const [width, height] = aspectRatio.split('/').map(Number);
-    const ratio = height / width;
-    
     img.style.aspectRatio = aspectRatio;
     img.style.width = '100%';
     img.style.height = 'auto';
@@ -225,8 +222,8 @@ export function applyAllOptimizations(): void {
   // LCP optimizations
   lcpOptimizations.prioritizeAboveFoldImages();
 
-  // FID optimizations
-  fidOptimizations.deferNonCriticalJS();
+  // JS optimizations (helps INP)
+  jsOptimizations.deferNonCriticalJS();
 
   // CLS optimizations
   clsOptimizations.preventFontSwap();

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <circle cx="128" cy="128" r="128" fill="#FFA409"/>
+  <path fill="#fff" d="M128 32C67.2 32 18 81.2 18 142c0 60.8 49.2 110 110 110s110-49.2 110-110c0-60.8-49.2-110-110-110zm0 200c-49.6 0-90-40.4-90-90s40.4-90 90-90 90 40.4 90 90-40.4 90-90 90z"/>
+  <path fill="#fff" d="M128 72c-38.7 0-70 31.3-70 70s31.3 70 70 70 70-31.3 70-70-31.3-70-70-70zm0 120c-27.6 0-50-22.4-50-50s22.4-50 50-50 50 22.4 50 50-22.4 50-50 50z"/>
+  <text x="128" y="155" font-family="Arial, sans-serif" font-size="80" font-weight="bold" text-anchor="middle" fill="#FFA409">柴</text>
+</svg>

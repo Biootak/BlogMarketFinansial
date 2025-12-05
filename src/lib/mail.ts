@@ -1,9 +1,14 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export const sendVerificationEmail = async (email: string, token: string) => {
-  const confrmLink = `https://blog-market-finansial-4s7ql8cdc-biotak.vercel.app/verify-request?token=${token}`;
+  if (!resend) {
+    console.warn('Resend API key not configured. Email not sent.');
+    return;
+  }
+
+  const confrmLink = `${process.env.NEXT_PUBLIC_APP_URL}/verify-request?token=${token}`;
 
   await resend.emails.send({
     from: 'onboarding@resend.dev',

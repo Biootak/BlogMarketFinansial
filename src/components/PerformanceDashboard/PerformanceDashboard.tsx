@@ -76,11 +76,11 @@ export function PerformanceDashboard() {
               passed={targets.lcp}
             />
             <MetricRow
-              label="FID"
-              value={metrics.fid}
-              target={100}
+              label="INP"
+              value={metrics.inp}
+              target={200}
               unit="ms"
-              passed={targets.fid}
+              passed={targets.inp}
             />
             <MetricRow
               label="CLS"
@@ -95,13 +95,6 @@ export function PerformanceDashboard() {
               target={800}
               unit="ms"
               passed={targets.ttfb}
-            />
-            <MetricRow
-              label="INP"
-              value={metrics.inp}
-              target={200}
-              unit="ms"
-              passed={targets.inp}
             />
             <MetricRow
               label="FCP"

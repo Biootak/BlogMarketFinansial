@@ -37,6 +37,19 @@ export function OptimizedImage({
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
+  // Calculate width and height from aspect ratio if not provided
+  let calculatedWidth = width;
+  let calculatedHeight = height;
+
+  if (!fill && (!width || !height) && aspectRatio) {
+    const [w, h] = aspectRatio.split('/').map(Number);
+    if (w && h) {
+      // Use a base width of 1200px for calculation
+      calculatedWidth = width || 1200;
+      calculatedHeight = height || Math.round((calculatedWidth * h) / w);
+    }
+  }
+
   // Handle image load error
   const handleError = () => {
     setHasError(true);
@@ -90,8 +103,8 @@ export function OptimizedImage({
         src={src}
         alt={alt}
         fill={fill}
-        width={!fill ? width : undefined}
-        height={!fill ? height : undefined}
+        width={!fill ? calculatedWidth : undefined}
+        height={!fill ? calculatedHeight : undefined}
         sizes={sizes}
         quality={quality}
         priority={priority}

@@ -26,10 +26,9 @@ export async function POST(request: NextRequest) {
     // Example: Check if metrics meet targets
     const targets = {
       lcp: report.metrics.lcp ? report.metrics.lcp <= 2500 : true,
-      fid: report.metrics.fid ? report.metrics.fid <= 100 : true,
+      inp: report.metrics.inp ? report.metrics.inp <= 200 : true,
       cls: report.metrics.cls ? report.metrics.cls <= 0.1 : true,
       ttfb: report.metrics.ttfb ? report.metrics.ttfb <= 800 : true,
-      inp: report.metrics.inp ? report.metrics.inp <= 200 : true,
     };
 
     const failedMetrics = Object.entries(targets)
