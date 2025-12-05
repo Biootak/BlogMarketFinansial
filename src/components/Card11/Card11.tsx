@@ -18,7 +18,7 @@ const Card11: React.FC<Card11Props> = ({
   className = 'h-full',
   post,
   hiddenAuthor = false,
-  ratio = 'aspect-[4/3]',
+  ratio = '4/3',
 }) => {
   const { title, categories, createdAt, slug, postType, excerpt } = post;
 
@@ -36,7 +36,7 @@ const Card11: React.FC<Card11Props> = ({
       <div className="absolute inset-0 bg-gradient-to-br from-primary-50/0 to-violet-50/0 group-hover:from-primary-50/30 group-hover:to-violet-50/20 dark:group-hover:from-primary-950/20 dark:group-hover:to-violet-950/10 transition-all duration-500 pointer-events-none z-0" />
       
       {/* Image Container */}
-      <div className={`block flex-shrink-0 relative w-full overflow-hidden ${ratio}`}>
+      <div className="block flex-shrink-0 relative w-full overflow-hidden">
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         

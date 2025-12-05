@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
@@ -30,21 +30,14 @@ export default function Card2({ className = 'h-full', size = 'normal', post }: C
     >
       <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-white dark:bg-neutral-800/80 border border-neutral-100 dark:border-neutral-700/50 shadow-sm hover:shadow-xl hover:shadow-primary-500/10 dark:hover:shadow-primary-500/5 transition-all duration-300">
         {/* Image Container - Better aspect ratio for mobile */}
-        <Link
-          href={postLink}
-          className={`block relative w-full overflow-hidden ${
-            isLarge 
-              ? 'aspect-[16/10] sm:aspect-[16/9] lg:aspect-[16/10]' 
-              : 'aspect-[4/3] sm:aspect-[16/10]'
-          }`}
-        >
-          <Image
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+        <Link href={postLink} className="block relative w-full overflow-hidden">
+          <OptimizedImage
             src={featuredImage || '/images/placeholder-large.png'}
             alt={title}
+            aspectRatio={isLarge ? '16/9' : '4/3'}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             priority={isLarge}
+            className="transition-transform duration-500 group-hover:scale-105"
           />
           
           {/* Gradient Overlay */}

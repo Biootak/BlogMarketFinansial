@@ -5,7 +5,7 @@ import type { PostWithRelations } from '@/types/types';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
 import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
 import Link from 'next/link';
-import Image from 'next/image';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { getPostLink } from '@/lib/getPostLink';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
@@ -32,14 +32,13 @@ export default function Card6({ className = '', post }: Card6Props) {
       <div className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300">
         
         {/* Mobile Layout: Full-width image with content overlay */}
-        <div className="sm:hidden relative aspect-[16/10] w-full">
-          <Link href={postLink} className="block absolute inset-0">
-            <Image
-              sizes="100vw"
-              className="object-cover"
-              fill
+        <div className="sm:hidden relative w-full">
+          <Link href={postLink} className="block">
+            <OptimizedImage
               src={featuredImage || '/images/placeholder-large.png'}
               alt={title}
+              aspectRatio="16/10"
+              sizes="100vw"
               priority={false}
             />
             
@@ -106,15 +105,15 @@ export default function Card6({ className = '', post }: Card6Props) {
           {/* Image Container - Desktop */}
           <Link
             href={postLink}
-            className="block relative flex-shrink-0 w-36 md:w-40 lg:w-44 aspect-[5/3] rounded-xl overflow-hidden shadow-md group-hover:shadow-xl transition-shadow duration-300 ring-1 ring-neutral-200/50 dark:ring-neutral-700/50 group-hover:ring-primary-400/50 dark:group-hover:ring-primary-500/50 group-hover:ring-2"
+            className="block relative flex-shrink-0 w-36 md:w-40 lg:w-44 rounded-xl overflow-hidden shadow-md group-hover:shadow-xl transition-shadow duration-300 ring-1 ring-neutral-200/50 dark:ring-neutral-700/50 group-hover:ring-primary-400/50 dark:group-hover:ring-primary-500/50 group-hover:ring-2"
           >
-            <Image
-              sizes="(max-width: 768px) 144px, (max-width: 1024px) 160px, 176px"
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
-              fill
+            <OptimizedImage
               src={featuredImage || '/images/placeholder-large.png'}
               alt={title}
+              aspectRatio="5/3"
+              sizes="(max-width: 768px) 144px, (max-width: 1024px) 160px, 176px"
               priority={false}
+              className="transition-transform duration-500 group-hover:scale-105"
             />
             
             {/* Lighter Overlay */}
