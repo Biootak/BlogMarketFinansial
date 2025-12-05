@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { type NodeViewProps, NodeViewWrapper } from '@tiptap/react';
-import { AlignLeft, AlignCenter, AlignRight, Maximize2, Trash2, ExternalLink } from 'lucide-react';
+import { 
+  AlignLeft, AlignCenter, AlignRight, Maximize2, Trash2, ExternalLink,
+  RotateCw, Type, Download, ZoomIn, ZoomOut, Settings
+} from 'lucide-react';
 
 interface ImageNodeAttributes {
   src: string;
@@ -8,6 +11,12 @@ interface ImageNodeAttributes {
   width?: string | number | null;
   title?: string | null;
   textAlign?: 'left' | 'right' | 'center';
+  rotation?: number;
+  filter?: string;
+  opacity?: number;
+  borderRadius?: number;
+  shadow?: boolean;
+  caption?: string;
 }
 
 type ResizeImageProps = NodeViewProps & {
@@ -27,11 +36,27 @@ function sizeClamp(length: number, min: number, max: number) {
 }
 
 const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImageProps) => {
-  const { src, textAlign, width: widthProps, alt } = node.attrs;
+  const { 
+    src, 
+    textAlign, 
+    width: widthProps, 
+    alt,
+    title,
+    rotation = 0,
+    filter = 'none',
+    opacity = 100,
+    borderRadius = 12,
+    shadow = true,
+    caption
+  } = node.attrs;
+
+  // Debug: log attrs on every render
+
 
   const isEditable = editor.isEditable;
 
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   const [isResizing, setIsResizing] = useState(false);
   const [initialPosition, setInitialPosition] = useState(0);
@@ -39,6 +64,13 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
   const [direction, setDirection] = useState<'left' | 'right'>('left');
   const [width, setWidth] = useState<any>(0);
   const [showControls, setShowControls] = useState(false);
+  const [showAdvancedMenu, setShowAdvancedMenu] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editAlt, setEditAlt] = useState(alt || '');
+  const [editTitle, setEditTitle] = useState(title || '');
+  const [editCaption, setEditCaption] = useState(caption || '');
+  const [zoom, setZoom] = useState(1);
+  const [imageSize, setImageSize] = useState<{ width: number; height: number } | null>(null);
 
   const handleResize = useCallback(
     ({ delta, direction, finished, initialSize }: any) => {
@@ -69,6 +101,33 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
   useEffect(() => {
     setWidth(widthProps);
   }, [widthProps]);
+
+  useEffect(() => {
+    setEditAlt(alt || '');
+    setEditTitle(title || '');
+    setEditCaption(caption || '');
+  }, [alt, title, caption]);
+
+  // Initialize missing attributes for old images
+  useEffect(() => {
+    const needsInit = 
+      node.attrs.rotation === undefined ||
+      node.attrs.filter === undefined ||
+      node.attrs.opacity === undefined ||
+      node.attrs.borderRadius === undefined ||
+      node.attrs.shadow === undefined;
+
+    if (needsInit && isEditable) {
+      console.log('🔧 Initializing missing attributes');
+      updateAttributes({
+        rotation: node.attrs.rotation ?? 0,
+        filter: node.attrs.filter ?? 'none',
+        opacity: node.attrs.opacity ?? 100,
+        borderRadius: node.attrs.borderRadius ?? 12,
+        shadow: node.attrs.shadow ?? true,
+      });
+    }
+  }, [node.attrs, isEditable, updateAttributes]);
 
   useEffect(() => {
     if (!isResizing) return;
@@ -121,6 +180,75 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
     }
   }, [src]);
 
+  const handleRotate = useCallback(() => {
+    const newRotation = (rotation + 90) % 360;
+    updateAttributes({ rotation: newRotation });
+  }, [rotation, updateAttributes]);
+
+  const handleResetRotation = useCallback(() => {
+    updateAttributes({ rotation: 0 });
+  }, [updateAttributes]);
+
+  const handleFilterChange = useCallback((newFilter: string) => {
+    updateAttributes({ filter: newFilter });
+    setShowAdvancedMenu(false);
+  }, [updateAttributes]);
+
+  const handleOpacityChange = useCallback((newOpacity: number) => {
+    updateAttributes({ opacity: newOpacity });
+  }, [updateAttributes]);
+
+  const handleBorderRadiusChange = useCallback((newRadius: number) => {
+    updateAttributes({ borderRadius: newRadius });
+  }, [updateAttributes]);
+
+  const handleShadowToggle = useCallback(() => {
+    updateAttributes({ shadow: !shadow });
+  }, [shadow, updateAttributes]);
+
+  const handleDownload = useCallback(async () => {
+    try {
+      const response = await fetch(src);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = alt || 'image';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      // Silent fail
+    }
+  }, [src, alt]);
+
+  const handleSaveMetadata = useCallback(() => {
+    updateAttributes({ 
+      alt: editAlt,
+      title: editTitle,
+      caption: editCaption
+    });
+    setShowEditModal(false);
+  }, [editAlt, editTitle, editCaption, updateAttributes]);
+
+  const handleZoomIn = useCallback(() => {
+    setZoom(prev => Math.min(prev + 0.25, 3));
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    setZoom(prev => Math.max(prev - 0.25, 0.5));
+  }, []);
+
+  useEffect(() => {
+    if (imgRef.current) {
+      const img = imgRef.current;
+      setImageSize({ width: img.naturalWidth, height: img.naturalHeight });
+    }
+  }, [src]);
+
+
+
   // کلاس‌های مشترک برای دکمه‌های تراز
   const getAlignButtonClass = useCallback((align: string) => {
     const isActive = textAlign === align;
@@ -141,6 +269,29 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
     }
   }, [textAlign]);
 
+  // استایل‌های تصویر
+  const imageStyle = useMemo(() => ({
+    width,
+    transform: `rotate(${rotation}deg) scale(${zoom})`,
+    filter: filter !== 'none' ? filter : undefined,
+    opacity: opacity / 100,
+    borderRadius: `${borderRadius}px`,
+    boxShadow: shadow ? '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)' : undefined,
+    transition: 'all 0.3s ease',
+  }), [width, rotation, zoom, filter, opacity, borderRadius, shadow]);
+
+  const filters = [
+    { name: 'بدون فیلتر', value: 'none' },
+    { name: 'سیاه و سفید', value: 'grayscale(100%)' },
+    { name: 'سپیا', value: 'sepia(100%)' },
+    { name: 'کنتراست بالا', value: 'contrast(150%)' },
+    { name: 'روشن', value: 'brightness(120%)' },
+    { name: 'تاریک', value: 'brightness(80%)' },
+    { name: 'اشباع', value: 'saturate(150%)' },
+    { name: 'محو', value: 'blur(2px)' },
+    { name: 'معکوس', value: 'invert(100%)' },
+  ];
+
   return (
     <NodeViewWrapper 
       ref={wrapperRef} 
@@ -149,6 +300,9 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
       onMouseLeave={() => !isResizing && setShowControls(false)}
       onFocus={() => setShowControls(true)}
       onBlur={() => setShowControls(false)}
+      data-rotation={rotation}
+      data-filter={filter}
+      data-opacity={opacity}
     >
       {!isEditable ? (
         <img 
@@ -169,18 +323,17 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
           }`} 
           contentEditable={false}
         >
-          {/* Toolbar - always visible when selected or hovered */}
+          {/* Main Toolbar */}
           <div 
             className={`absolute -top-14 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-1.5 border border-gray-200 dark:border-gray-700 transition-all duration-200 ${
               showControls || selected ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
             }`}
           >
-            {/* Alignment buttons */}
+            {/* Alignment */}
             <button
               type="button"
               onClick={() => handleAlignChange('left')}
               aria-label="چپ‌چین"
-              aria-pressed={textAlign === 'left'}
               className={getAlignButtonClass('left')}
             >
               <AlignLeft size={16} />
@@ -189,7 +342,6 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
               type="button"
               onClick={() => handleAlignChange('center')}
               aria-label="وسط‌چین"
-              aria-pressed={textAlign === 'center'}
               className={getAlignButtonClass('center')}
             >
               <AlignCenter size={16} />
@@ -198,14 +350,145 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
               type="button"
               onClick={() => handleAlignChange('right')}
               aria-label="راست‌چین"
-              aria-pressed={textAlign === 'right'}
               className={getAlignButtonClass('right')}
             >
               <AlignRight size={16} />
             </button>
             
-            <div className="w-px h-6 bg-gray-200 dark:bg-gray-600 mx-1" aria-hidden="true" />
+            <div className="w-px h-6 bg-gray-200 dark:bg-gray-600 mx-1" />
             
+            {/* Transform */}
+            <button
+              type="button"
+              onClick={handleRotate}
+              aria-label="چرخش 90 درجه"
+              title={`چرخش فعلی: ${rotation}°`}
+              className={`p-2 rounded-lg transition-colors ${
+                rotation !== 0
+                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+            >
+              <RotateCw size={16} />
+            </button>
+            
+            <button
+              type="button"
+              onClick={handleZoomIn}
+              aria-label="بزرگنمایی"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
+            >
+              <ZoomIn size={16} />
+            </button>
+            
+            <button
+              type="button"
+              onClick={handleZoomOut}
+              aria-label="کوچک‌نمایی"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
+            >
+              <ZoomOut size={16} />
+            </button>
+
+            <div className="w-px h-6 bg-gray-200 dark:bg-gray-600 mx-1" />
+            
+            {/* Metadata */}
+            <button
+              type="button"
+              onClick={() => setShowEditModal(true)}
+              aria-label="ویرایش متن"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
+            >
+              <Type size={16} />
+            </button>
+
+            {/* Advanced Menu */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowAdvancedMenu(!showAdvancedMenu)}
+                aria-label="تنظیمات پیشرفته"
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
+              >
+                <Settings size={16} />
+              </button>
+              
+              {showAdvancedMenu && (
+                <div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-3 z-50">
+                  {/* Filters */}
+                  <div className="mb-3">
+                    <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                      فیلتر
+                    </label>
+                    <div className="grid grid-cols-3 gap-1">
+                      {filters.map((f) => (
+                        <button
+                          key={f.value}
+                          type="button"
+                          onClick={() => handleFilterChange(f.value)}
+                          className={`text-xs p-1.5 rounded transition-colors ${
+                            filter === f.value
+                              ? 'bg-primary-500 text-white'
+                              : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+                          }`}
+                        >
+                          {f.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Opacity */}
+                  <div className="mb-3">
+                    <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 flex justify-between">
+                      <span>شفافیت</span>
+                      <span>{opacity}%</span>
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={opacity}
+                      onChange={(e) => handleOpacityChange(Number(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
+
+                  {/* Border Radius */}
+                  <div className="mb-3">
+                    <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 flex justify-between">
+                      <span>گوشه‌های گرد</span>
+                      <span>{borderRadius}px</span>
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="50"
+                      value={borderRadius}
+                      onChange={(e) => handleBorderRadiusChange(Number(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
+
+                  {/* Shadow */}
+                  <button
+                    type="button"
+                    onClick={handleShadowToggle}
+                    className={`w-full text-xs p-2 rounded transition-colors ${
+                      shadow
+                        ? 'bg-primary-500 text-white'
+                        : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {shadow ? 'سایه فعال' : 'سایه غیرفعال'}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="w-px h-6 bg-gray-200 dark:bg-gray-600 mx-1" />
+            
+            {/* Actions */}
             <button
               type="button"
               onClick={handleFullWidth}
@@ -217,6 +500,15 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
 
             <button
               type="button"
+              onClick={handleDownload}
+              aria-label="دانلود"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
+            >
+              <Download size={16} />
+            </button>
+
+            <button
+              type="button"
               onClick={handleOpenInNewTab}
               aria-label="باز کردن در تب جدید"
               className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
@@ -224,7 +516,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
               <ExternalLink size={16} />
             </button>
             
-            <div className="w-px h-6 bg-gray-200 dark:bg-gray-600 mx-1" aria-hidden="true" />
+            <div className="w-px h-6 bg-gray-200 dark:bg-gray-600 mx-1" />
             
             <button
               type="button"
@@ -235,6 +527,81 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
               <Trash2 size={16} />
             </button>
           </div>
+
+          {/* Edit Modal */}
+          {showEditModal && (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6">
+                <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">
+                  ویرایش اطلاعات تصویر
+                </h3>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      متن جایگزین (Alt)
+                    </label>
+                    <input
+                      type="text"
+                      value={editAlt}
+                      onChange={(e) => setEditAlt(e.target.value)}
+                      placeholder="توضیح کوتاه برای تصویر"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      عنوان (Title)
+                    </label>
+                    <input
+                      type="text"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      placeholder="عنوان تصویر"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      توضیح (Caption)
+                    </label>
+                    <textarea
+                      value={editCaption}
+                      onChange={(e) => setEditCaption(e.target.value)}
+                      placeholder="توضیح کامل زیر تصویر"
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                    />
+                  </div>
+
+                  {imageSize && (
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      ابعاد: {imageSize.width} × {imageSize.height} پیکسل
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-2 mt-6">
+                  <button
+                    type="button"
+                    onClick={handleSaveMetadata}
+                    className="flex-1 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+                  >
+                    ذخیره
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowEditModal(false)}
+                    className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    انصراف
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Left resize handle */}
           <div
@@ -249,18 +616,36 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
             <div className="h-16 w-1 rounded-full bg-primary-500 shadow-lg mx-auto" />
           </div>
 
-          <img 
-            className="rounded-xl shadow-lg transition-shadow hover:shadow-xl" 
-            src={src} 
-            alt={alt || ''} 
-            style={{ width }}
-            loading="lazy"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = '/images/placeholder-large.png';
+          <div 
+            style={{
+              width,
+              display: 'inline-block',
+              opacity: opacity / 100,
+              borderRadius: `${borderRadius}px`,
+              boxShadow: shadow ? '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)' : 'none',
+              overflow: 'hidden',
+              transition: 'all 0.3s ease',
             }}
-            data-drag-handle 
-          />
+          >
+            <img 
+              ref={imgRef}
+              className="block w-full h-auto" 
+              src={src} 
+              alt={alt || ''} 
+              title={title || undefined}
+              style={{
+                transform: `rotate(${rotation}deg) scale(${zoom})`,
+                filter: filter !== 'none' ? filter : undefined,
+                transition: 'all 0.3s ease',
+              }}
+              loading="lazy"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/images/placeholder-large.png';
+              }}
+              data-drag-handle 
+            />
+          </div>
 
           {/* Right resize handle */}
           <div
@@ -282,12 +667,42 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
             </div>
           )}
 
-          {/* Alt text badge */}
-          {alt && (
-            <div className="absolute bottom-2 right-2 px-2 py-1 bg-black/60 text-white text-[10px] rounded-md backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity max-w-[150px] truncate">
-              {alt}
+          {/* Info badges */}
+          <div className="absolute bottom-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {alt && (
+              <div className="px-2 py-1 bg-black/70 text-white text-[10px] rounded-md backdrop-blur-sm max-w-[200px] truncate">
+                Alt: {alt}
+              </div>
+            )}
+            {imageSize && (
+              <div className="px-2 py-1 bg-black/70 text-white text-[10px] rounded-md backdrop-blur-sm">
+                {imageSize.width} × {imageSize.height}
+              </div>
+            )}
+          </div>
+
+          {/* Zoom indicator */}
+          {zoom !== 1 && (
+            <div className="absolute top-2 left-2 px-2 py-1 bg-black/70 text-white text-xs rounded-md backdrop-blur-sm">
+              {Math.round(zoom * 100)}%
             </div>
           )}
+
+          {/* Rotation indicator */}
+          {rotation !== 0 && (
+            <div className="absolute top-2 right-2 px-2 py-1 bg-black/70 text-white text-xs rounded-md backdrop-blur-sm">
+              {rotation}°
+            </div>
+          )}
+
+
+        </div>
+      )}
+
+      {/* Caption below image */}
+      {caption && !isEditable && (
+        <div className="text-center text-sm text-gray-600 dark:text-gray-400 mt-2 italic">
+          {caption}
         </div>
       )}
     </NodeViewWrapper>

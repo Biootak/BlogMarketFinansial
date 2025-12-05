@@ -82,10 +82,17 @@ export const DragHandle = Extension.create<DragHandleOptions>({
           view.dom.parentElement?.appendChild(dropIndicator);
 
           const getBlockPos = (node: HTMLElement): number | null => {
-            const pos = view.posAtDOM(node, 0);
-            if (pos === undefined) return null;
-            const $pos = view.state.doc.resolve(pos);
-            return $pos.before($pos.depth);
+            try {
+              const pos = view.posAtDOM(node, 0);
+              if (pos === undefined || pos === null) return null;
+              const $pos = view.state.doc.resolve(pos);
+              // اگر در سطح بالای document هستیم، از خود pos استفاده می‌کنیم
+              if ($pos.depth === 0) return pos;
+              return $pos.before($pos.depth);
+            } catch (error) {
+              // اگر خطایی رخ داد، null برمی‌گردانیم
+              return null;
+            }
           };
 
           const showHandle = (node: HTMLElement, pos: number) => {
@@ -158,17 +165,24 @@ export const DragHandle = Extension.create<DragHandleOptions>({
             e.preventDefault();
             if (!dropIndicator || draggedNodePos === null) return;
             
-            const pos = view.posAtCoords({ left: e.clientX, top: e.clientY });
-            if (pos) {
-              const $pos = view.state.doc.resolve(pos.pos);
-              const blockPos = $pos.before($pos.depth);
-              const node = view.nodeDOM(blockPos) as HTMLElement;
-              if (node) {
-                const rect = node.getBoundingClientRect();
-                const editorRect = view.dom.getBoundingClientRect();
-                const isAbove = e.clientY < rect.top + rect.height / 2;
-                dropIndicator.style.display = 'block';
-                dropIndicator.style.top = `${(isAbove ? rect.top : rect.bottom) - editorRect.top}px`;
+            try {
+              const pos = view.posAtCoords({ left: e.clientX, top: e.clientY });
+              if (pos) {
+                const $pos = view.state.doc.resolve(pos.pos);
+                const blockPos = $pos.depth === 0 ? pos.pos : $pos.before($pos.depth);
+                const node = view.nodeDOM(blockPos) as HTMLElement;
+                if (node) {
+                  const rect = node.getBoundingClientRect();
+                  const editorRect = view.dom.getBoundingClientRect();
+                  const isAbove = e.clientY < rect.top + rect.height / 2;
+                  dropIndicator.style.display = 'block';
+                  dropIndicator.style.top = `${(isAbove ? rect.top : rect.bottom) - editorRect.top}px`;
+                }
+              }
+            } catch (error) {
+              // در صورت خطا، indicator را مخفی می‌کنیم
+              if (dropIndicator) {
+                dropIndicator.style.display = 'none';
               }
             }
           });
@@ -187,26 +201,33 @@ export const DragHandle = Extension.create<DragHandleOptions>({
             
             if (draggedNodePos === null || !draggedNodeContent) return;
 
-            const pos = view.posAtCoords({ left: e.clientX, top: e.clientY });
-            if (!pos) return;
+            try {
+              const pos = view.posAtCoords({ left: e.clientX, top: e.clientY });
+              if (!pos) return;
 
-            const $pos = view.state.doc.resolve(pos.pos);
-            const targetPos = $pos.before($pos.depth);
-            const node = view.nodeDOM(targetPos) as HTMLElement;
-            
-            if (node) {
-              const rect = node.getBoundingClientRect();
-              const isAbove = e.clientY < rect.top + rect.height / 2;
-              const insertPos = isAbove ? targetPos : targetPos + view.state.doc.nodeAt(targetPos)!.nodeSize;
+              const $pos = view.state.doc.resolve(pos.pos);
+              const targetPos = $pos.depth === 0 ? pos.pos : $pos.before($pos.depth);
+              const node = view.nodeDOM(targetPos) as HTMLElement;
               
-              const { tr } = view.state;
-              const nodeToMove = view.state.doc.nodeAt(draggedNodePos);
-              if (nodeToMove) {
-                const adjustedInsertPos = insertPos > draggedNodePos ? insertPos - nodeToMove.nodeSize : insertPos;
-                tr.delete(draggedNodePos, draggedNodePos + nodeToMove.nodeSize);
-                tr.insert(adjustedInsertPos, nodeToMove);
-                view.dispatch(tr);
+              if (node) {
+                const rect = node.getBoundingClientRect();
+                const isAbove = e.clientY < rect.top + rect.height / 2;
+                const targetNode = view.state.doc.nodeAt(targetPos);
+                if (!targetNode) return;
+                
+                const insertPos = isAbove ? targetPos : targetPos + targetNode.nodeSize;
+                
+                const { tr } = view.state;
+                const nodeToMove = view.state.doc.nodeAt(draggedNodePos);
+                if (nodeToMove) {
+                  const adjustedInsertPos = insertPos > draggedNodePos ? insertPos - nodeToMove.nodeSize : insertPos;
+                  tr.delete(draggedNodePos, draggedNodePos + nodeToMove.nodeSize);
+                  tr.insert(adjustedInsertPos, nodeToMove);
+                  view.dispatch(tr);
+                }
               }
+            } catch (error) {
+              console.error('Error during drop:', error);
             }
 
             draggedNodeContent = null;

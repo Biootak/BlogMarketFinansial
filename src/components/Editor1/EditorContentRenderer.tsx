@@ -11,7 +11,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import Superscript from '@tiptap/extension-superscript';
 import Subscript from '@tiptap/extension-subscript';
 import Link from '@tiptap/extension-link';
-import Image from '@tiptap/extension-image';
+import ImageResize from './extensions/image-resize';
 import Table from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
@@ -58,10 +58,10 @@ const renderExtensions = [
       class: 'text-primary-600 hover:text-primary-700 underline underline-offset-2',
     },
   }),
-  Image.configure({
+  ImageResize.configure({
     inline: false,
     HTMLAttributes: {
-      class: 'rounded-xl shadow-md max-w-full h-auto',
+      class: 'max-w-full h-auto',
       loading: 'lazy',
     },
   }),
