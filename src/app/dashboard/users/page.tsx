@@ -246,34 +246,69 @@ export default function UsersPage() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 p-4 sm:p-6 lg:p-8 dark:from-neutral-900 dark:via-neutral-900 dark:to-primary-950/20" dir="rtl">
-      <DashboardPageHeader title="مدیریت کاربران" description="مشاهده و مدیریت کاربران سیستم">
-        <FilterSelect value={statusFilter} onChange={setStatusFilter} options={statusOptions} />
-        <FilterSelect value={roleFilter} onChange={setRoleFilter} options={roleOptions} />
-        <DashboardSearchInput
-          value={searchTerm}
-          onChange={setSearchTerm}
-          placeholder="جستجوی کاربر..."
-        />
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <PrimaryActionButton onClick={() => { setEditingUser(null); form.reset(); }}>
-              <HiOutlinePlus className="h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
-              <span>افزودن کاربر</span>
-            </PrimaryActionButton>
-          </DialogTrigger>
-          <DialogContent className="max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
-            <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-6 py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
-              <DialogTitle className="text-xl font-bold text-neutral-900 dark:text-neutral-50">
-                افزودن کاربر جدید
-              </DialogTitle>
-            </DialogHeader>
-            <div className="max-h-[calc(90vh-120px)] overflow-y-auto p-6">
-              <UserForm form={form} onSubmit={onSubmit} />
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 p-3 sm:p-6 lg:p-8 dark:from-neutral-900 dark:via-neutral-900 dark:to-primary-950/20" dir="rtl">
+      {/* Header Section */}
+      <div className="mb-6">
+        <div className="mb-4">
+          <h1 className="text-xl font-bold tracking-tight text-neutral-900 sm:text-2xl dark:text-neutral-50">
+            مدیریت کاربران
+          </h1>
+          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+            مشاهده و مدیریت کاربران سیستم
+          </p>
+        </div>
+
+        {/* Filters and Actions */}
+        <div className="space-y-3">
+          {/* Search Bar - Full Width */}
+          <DashboardSearchInput
+            value={searchTerm}
+            onChange={setSearchTerm}
+            placeholder="جستجوی کاربر..."
+            className="w-full"
+          />
+
+          {/* Filters and Add Button */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex flex-1 gap-2">
+              <FilterSelect 
+                value={statusFilter} 
+                onChange={setStatusFilter} 
+                options={statusOptions} 
+                className="flex-1 sm:min-w-[140px]" 
+              />
+              <FilterSelect 
+                value={roleFilter} 
+                onChange={setRoleFilter} 
+                options={roleOptions} 
+                className="flex-1 sm:min-w-[140px]" 
+              />
             </div>
-          </DialogContent>
-        </Dialog>
-      </DashboardPageHeader>
+
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <PrimaryActionButton 
+                  onClick={() => { setEditingUser(null); form.reset(); }} 
+                  className="w-full justify-center sm:w-auto sm:min-w-[160px]"
+                >
+                  <HiOutlinePlus className="h-5 w-5 transition-transform duration-200 group-hover:rotate-90" />
+                  <span className="font-semibold">افزودن کاربر</span>
+                </PrimaryActionButton>
+              </DialogTrigger>
+              <DialogContent className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-2xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
+                <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-4 py-4 sm:px-6 sm:py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
+                  <DialogTitle className="text-lg font-bold text-neutral-900 sm:text-xl dark:text-neutral-50">
+                    افزودن کاربر جدید
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="max-h-[calc(95vh-100px)] sm:max-h-[calc(90vh-120px)] overflow-y-auto p-4 sm:p-6">
+                  <UserForm form={form} onSubmit={onSubmit} />
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+      </div>
 
       {isLoading && page === 1 ? (
         <UsersTableSkeleton rows={8} />
@@ -286,83 +321,142 @@ export default function UsersPage() {
           />
         </DashboardTableContainer>
       ) : (
-        <DashboardTableContainer>
-          <DashboardTable>
-            <DashboardTableHeader>
-              <tr>
-                <DashboardTableHead>کاربر</DashboardTableHead>
-                <DashboardTableHead>نقش</DashboardTableHead>
-                <DashboardTableHead hidden>وضعیت</DashboardTableHead>
-                <DashboardTableHead>عملیات</DashboardTableHead>
-              </tr>
-            </DashboardTableHeader>
-            <DashboardTableBody>
-              {users.map((user) => (
-                <DashboardTableRow key={user.id}>
-                  <DashboardTableCell>
-                    <div className="flex items-center gap-4">
-                      <div className="relative h-11 w-11 overflow-hidden rounded-full ring-2 ring-white shadow-md dark:ring-neutral-700">
-                        <Image
-                          src={
-                            user.profile?.avatar ||
-                            user.image ||
-                            `https://avatar.vercel.sh/${encodeURIComponent(user.name || '')}?size=80`
-                          }
-                          alt={user.name || ''}
-                          fill
-                          className="object-cover"
+        <>
+          {/* Mobile Card View */}
+          <div className="block space-y-3 lg:hidden">
+            {users.map((user) => (
+              <div
+                key={user.id}
+                className="overflow-hidden rounded-2xl border border-neutral-200/60 bg-white/70 shadow-lg shadow-neutral-900/5 backdrop-blur-xl transition-all duration-200 hover:shadow-xl dark:border-neutral-700/50 dark:bg-neutral-800/70 dark:shadow-neutral-900/20"
+              >
+                <div className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-full ring-2 ring-white shadow-md dark:ring-neutral-700">
+                      <Image
+                        src={
+                          user.profile?.avatar ||
+                          user.image ||
+                          `https://avatar.vercel.sh/${encodeURIComponent(user.name || '')}?size=80`
+                        }
+                        alt={user.name || ''}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate font-semibold text-neutral-900 dark:text-neutral-100">
+                        {user.name}
+                      </h3>
+                      <p className="truncate text-sm text-neutral-500 dark:text-neutral-400">
+                        {user.email}
+                      </p>
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <span className="inline-flex items-center rounded-lg bg-primary-50 px-2.5 py-1 text-xs font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-400">
+                          {roleLabels[user.role ?? ''] || user.role}
+                        </span>
+                        <StatusBadge
+                          status={statusLabels[user.status ?? ''] || user.status || ''}
+                          variant={getStatusVariant(user.status ?? '') as any}
                         />
                       </div>
-                      <div className="min-w-0">
-                        <p className="truncate font-semibold text-neutral-900 dark:text-neutral-100">
-                          {user.name}
-                        </p>
-                        <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
-                          {user.email}
-                        </p>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex gap-2 border-t border-neutral-100 pt-3 dark:border-neutral-700/50">
+                    <ActionButton variant="edit" onClick={() => handleEdit(user)} className="flex-1 justify-center">
+                      <HiOutlinePencil className="h-4 w-4" />
+                      <span>ویرایش</span>
+                    </ActionButton>
+                    <ActionButton variant="delete" onClick={() => handleDelete(user.id, user.role as Role)} className="flex-1 justify-center">
+                      <HiOutlineTrash className="h-4 w-4" />
+                      <span>حذف</span>
+                    </ActionButton>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {isLoading && page > 1 && <LoadingMore message="در حال دریافت کاربران بیشتر..." />}
+            <div ref={infiniteScrollRef} style={{ height: '1px' }} />
+          </div>
+
+          {/* Desktop Table View */}
+          <DashboardTableContainer className="hidden lg:block">
+            <DashboardTable>
+              <DashboardTableHeader>
+                <tr>
+                  <DashboardTableHead>کاربر</DashboardTableHead>
+                  <DashboardTableHead>نقش</DashboardTableHead>
+                  <DashboardTableHead>وضعیت</DashboardTableHead>
+                  <DashboardTableHead>عملیات</DashboardTableHead>
+                </tr>
+              </DashboardTableHeader>
+              <DashboardTableBody>
+                {users.map((user) => (
+                  <DashboardTableRow key={user.id}>
+                    <DashboardTableCell>
+                      <div className="flex items-center gap-4">
+                        <div className="relative h-11 w-11 overflow-hidden rounded-full ring-2 ring-white shadow-md dark:ring-neutral-700">
+                          <Image
+                            src={
+                              user.profile?.avatar ||
+                              user.image ||
+                              `https://avatar.vercel.sh/${encodeURIComponent(user.name || '')}?size=80`
+                            }
+                            alt={user.name || ''}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-neutral-900 dark:text-neutral-100">
+                            {user.name}
+                          </p>
+                          <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
+                            {user.email}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </DashboardTableCell>
-                  <DashboardTableCell>
-                    <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                      {roleLabels[user.role ?? ''] || user.role}
-                    </span>
-                  </DashboardTableCell>
-                  <DashboardTableCell hidden>
-                    <StatusBadge
-                      status={statusLabels[user.status ?? ''] || user.status || ''}
-                      variant={getStatusVariant(user.status ?? '') as any}
-                    />
-                  </DashboardTableCell>
-                  <DashboardTableCell>
-                    <div className="flex items-center gap-2">
-                      <ActionButton variant="edit" onClick={() => handleEdit(user)}>
-                        <HiOutlinePencil className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">ویرایش</span>
-                      </ActionButton>
-                      <ActionButton variant="delete" onClick={() => handleDelete(user.id, user.role as Role)}>
-                        <HiOutlineTrash className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">حذف</span>
-                      </ActionButton>
-                    </div>
-                  </DashboardTableCell>
-                </DashboardTableRow>
-              ))}
-            </DashboardTableBody>
-          </DashboardTable>
-          {isLoading && page > 1 && <LoadingMore message="در حال دریافت کاربران بیشتر..." />}
-          <div ref={infiniteScrollRef} style={{ height: '1px' }} />
-        </DashboardTableContainer>
+                    </DashboardTableCell>
+                    <DashboardTableCell>
+                      <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                        {roleLabels[user.role ?? ''] || user.role}
+                      </span>
+                    </DashboardTableCell>
+                    <DashboardTableCell>
+                      <StatusBadge
+                        status={statusLabels[user.status ?? ''] || user.status || ''}
+                        variant={getStatusVariant(user.status ?? '') as any}
+                      />
+                    </DashboardTableCell>
+                    <DashboardTableCell>
+                      <div className="flex items-center gap-2">
+                        <ActionButton variant="edit" onClick={() => handleEdit(user)}>
+                          <HiOutlinePencil className="h-3.5 w-3.5" />
+                          <span>ویرایش</span>
+                        </ActionButton>
+                        <ActionButton variant="delete" onClick={() => handleDelete(user.id, user.role as Role)}>
+                          <HiOutlineTrash className="h-3.5 w-3.5" />
+                          <span>حذف</span>
+                        </ActionButton>
+                      </div>
+                    </DashboardTableCell>
+                  </DashboardTableRow>
+                ))}
+              </DashboardTableBody>
+            </DashboardTable>
+            {isLoading && page > 1 && <LoadingMore message="در حال دریافت کاربران بیشتر..." />}
+            <div ref={infiniteScrollRef} style={{ height: '1px' }} />
+          </DashboardTableContainer>
+        </>
       )}
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
-          <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-6 py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
-            <DialogTitle className="text-xl font-bold text-neutral-900 dark:text-neutral-50">
+        <DialogContent className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-2xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
+          <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-4 py-4 sm:px-6 sm:py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
+            <DialogTitle className="text-lg font-bold text-neutral-900 sm:text-xl dark:text-neutral-50">
               ویرایش کاربر
             </DialogTitle>
           </DialogHeader>
-          <div className="max-h-[calc(90vh-120px)] overflow-y-auto p-6">
+          <div className="max-h-[calc(95vh-100px)] sm:max-h-[calc(90vh-120px)] overflow-y-auto p-4 sm:p-6">
             <UserForm form={form} onSubmit={onSubmit} />
           </div>
         </DialogContent>
@@ -378,8 +472,8 @@ function UserForm({ form, onSubmit }: UserFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-        <div className="grid gap-5 sm:grid-cols-2">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           <FormField
             control={form.control}
             name="name"
@@ -390,7 +484,7 @@ function UserForm({ form, onSubmit }: UserFormProps) {
                   <Input
                     placeholder="نام کاربر"
                     {...field}
-                    className="h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80"
+                    className="h-10 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80 sm:h-11"
                   />
                 </FormControl>
                 <FormMessage />
@@ -408,7 +502,7 @@ function UserForm({ form, onSubmit }: UserFormProps) {
                     placeholder="ایمیل کاربر"
                     type="email"
                     {...field}
-                    className="h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80"
+                    className="h-10 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80 sm:h-11"
                   />
                 </FormControl>
                 <FormMessage />
@@ -417,7 +511,7 @@ function UserForm({ form, onSubmit }: UserFormProps) {
           />
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           <FormField
             control={form.control}
             name="password"
@@ -429,7 +523,7 @@ function UserForm({ form, onSubmit }: UserFormProps) {
                     placeholder="رمز عبور کاربر"
                     type="password"
                     {...field}
-                    className="h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80"
+                    className="h-10 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80 sm:h-11"
                   />
                 </FormControl>
                 <FormMessage />
@@ -446,7 +540,7 @@ function UserForm({ form, onSubmit }: UserFormProps) {
                   <Input
                     placeholder="شماره تلفن کاربر"
                     {...field}
-                    className="h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80"
+                    className="h-10 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80 sm:h-11"
                   />
                 </FormControl>
                 <FormMessage />
@@ -455,7 +549,7 @@ function UserForm({ form, onSubmit }: UserFormProps) {
           />
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           <FormField
             control={form.control}
             name="role"
@@ -464,7 +558,7 @@ function UserForm({ form, onSubmit }: UserFormProps) {
                 <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نقش</FormLabel>
                 <Select dir="rtl" onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger className="h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80">
+                    <SelectTrigger className="h-10 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80 sm:h-11">
                       <SelectValue placeholder="انتخاب نقش" />
                     </SelectTrigger>
                   </FormControl>
@@ -491,7 +585,7 @@ function UserForm({ form, onSubmit }: UserFormProps) {
                 <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">وضعیت</FormLabel>
                 <Select dir="rtl" onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger className="h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80">
+                    <SelectTrigger className="h-10 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80 sm:h-11">
                       <SelectValue placeholder="انتخاب وضعیت" />
                     </SelectTrigger>
                   </FormControl>
@@ -508,7 +602,7 @@ function UserForm({ form, onSubmit }: UserFormProps) {
           />
         </div>
 
-        <div className="pt-4">
+        <div className="pt-3">
           <SubmitButton isSubmitting={form.formState.isSubmitting} />
         </div>
       </form>

@@ -58,7 +58,7 @@ export default function CategoryItem({
     <>
       <DashboardTableRow>
         <DashboardTableCell>
-          <div className="relative h-10 w-10 overflow-hidden rounded-xl ring-2 ring-white shadow-md dark:ring-neutral-700">
+          <div className="relative h-8 w-8 sm:h-10 sm:w-10 overflow-hidden rounded-lg sm:rounded-xl ring-1 sm:ring-2 ring-white shadow-sm sm:shadow-md dark:ring-neutral-700">
             {category.thumbnail ? (
               <Image
                 src={category.thumbnail}
@@ -68,7 +68,7 @@ export default function CategoryItem({
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-neutral-100 to-neutral-200 text-neutral-500 dark:from-neutral-700 dark:to-neutral-800 dark:text-neutral-400">
-                <span className="text-lg font-semibold">
+                <span className="text-sm sm:text-lg font-semibold">
                   {category.name && category.name.length > 0 ? category.name[0].toUpperCase() : '?'}
                 </span>
               </div>
@@ -76,42 +76,42 @@ export default function CategoryItem({
           </div>
         </DashboardTableCell>
         <DashboardTableCell>
-          <div className="flex items-center gap-2" style={{ paddingRight: `${level * 24}px` }}>
-            <CategoryIcon className={`h-4 w-4 ${iconColor}`} />
-            <span className={`font-medium ${textColor}`}>{category.name}</span>
+          <div className="flex items-center gap-1.5 sm:gap-2" style={{ paddingRight: `${level * 16}px` }}>
+            <CategoryIcon className={`h-3 w-3 sm:h-4 sm:w-4 ${iconColor} flex-shrink-0`} />
+            <span className={`font-medium text-xs sm:text-sm ${textColor} truncate`}>{category.name}</span>
             {category.childCategories && category.childCategories.length > 0 && (
               <button
                 type="button"
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="rounded-md p-1 transition-colors duration-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                className="rounded-md p-0.5 sm:p-1 transition-colors duration-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 flex-shrink-0"
               >
                 {isExpanded ? (
-                  <HiOutlineChevronDown className="h-4 w-4 text-neutral-500" />
+                  <HiOutlineChevronDown className="h-3 w-3 sm:h-4 sm:w-4 text-neutral-500" />
                 ) : (
-                  <HiOutlineChevronLeft className="h-4 w-4 text-neutral-500" />
+                  <HiOutlineChevronLeft className="h-3 w-3 sm:h-4 sm:w-4 text-neutral-500" />
                 )}
               </button>
             )}
           </div>
         </DashboardTableCell>
         <DashboardTableCell>
-          <code className="rounded-md bg-neutral-100 px-2 py-1 text-xs text-neutral-600 dark:bg-neutral-700 dark:text-neutral-400">
+          <code className="rounded-md bg-neutral-100 px-1.5 py-0.5 sm:px-2 sm:py-1 text-[10px] sm:text-xs text-neutral-600 dark:bg-neutral-700 dark:text-neutral-400 block truncate max-w-[120px] sm:max-w-none">
             {category.slug}
           </code>
         </DashboardTableCell>
         <DashboardTableCell hidden>
-          <span className="inline-flex items-center justify-center rounded-full bg-primary-50 px-2.5 py-0.5 text-xs font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-400">
+          <span className="inline-flex items-center justify-center rounded-full bg-primary-50 px-2 py-0.5 sm:px-2.5 text-[10px] sm:text-xs font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-400">
             {category.count} پست
           </span>
         </DashboardTableCell>
         <DashboardTableCell>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <ActionButton variant="edit" onClick={() => setIsEditDialogOpen(true)}>
-              <HiOutlinePencil className="h-3.5 w-3.5" />
+              <HiOutlinePencil className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               <span className="hidden sm:inline">ویرایش</span>
             </ActionButton>
             <ActionButton variant="delete" onClick={handleDelete}>
-              <HiOutlineTrash className="h-3.5 w-3.5" />
+              <HiOutlineTrash className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               <span className="hidden sm:inline">حذف</span>
             </ActionButton>
           </div>

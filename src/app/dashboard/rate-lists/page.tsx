@@ -363,13 +363,13 @@ const RateListsPage = () => {
 
 
       <Dialog open={showCreateModal || !!editingRateList} onOpenChange={(open) => { if (!open) { setShowCreateModal(false); setEditingRateList(null); reset(); } }}>
-        <DialogContent className="max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
-          <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-6 py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
-            <DialogTitle className="text-xl font-bold text-neutral-900 dark:text-neutral-50">
+        <DialogContent className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-2xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
+          <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-4 py-4 sm:px-6 sm:py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
+            <DialogTitle className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-neutral-50">
               {editingRateList ? 'ویرایش لیست نرخ' : 'افزودن لیست نرخ جدید'}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit(editingRateList ? handleEditSubmit : handleCreateSubmit)} className="max-h-[calc(90vh-120px)] overflow-y-auto p-6">
+          <form onSubmit={handleSubmit(editingRateList ? handleEditSubmit : handleCreateSubmit)} className="max-h-[calc(95vh-100px)] sm:max-h-[calc(90vh-120px)] overflow-y-auto p-4 sm:p-6">
             <div className="space-y-5">
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">عنوان لیست</Label>

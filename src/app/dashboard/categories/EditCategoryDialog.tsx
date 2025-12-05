@@ -104,20 +104,20 @@ export default function EditCategoryDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="w-[calc(100%-1rem)] max-w-lg max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>ویرایش دسته‌بندی</DialogTitle>
+          <DialogTitle className="text-base sm:text-lg">ویرایش دسته‌بندی</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>نام دسته‌بندی</FormLabel>
+                  <FormLabel className="text-sm sm:text-base">نام دسته‌بندی</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} className="h-9 sm:h-10 text-sm" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -128,9 +128,9 @@ export default function EditCategoryDialog({
               name="slug"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>اسلاگ</FormLabel>
+                  <FormLabel className="text-sm sm:text-base">اسلاگ</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} className="h-9 sm:h-10 text-sm" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -141,19 +141,19 @@ export default function EditCategoryDialog({
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>دسته‌بندی‌های والد</FormLabel>
+                  <FormLabel className="text-sm sm:text-base">دسته‌بندی‌های والد</FormLabel>
                   <Select
                     onValueChange={(value) => field.onChange([...(field.value || []), value])}
                     value={(field.value || [])[(field.value || []).length - 1] || ''}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-9 sm:h-10 text-sm">
                         <SelectValue placeholder="انتخاب دسته‌بندی والد" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {parentCategories.map((parentCategory) => (
-                        <SelectItem key={parentCategory.id} value={parentCategory.id}>
+                        <SelectItem key={parentCategory.id} value={parentCategory.id} className="text-sm">
                           {parentCategory.name}
                         </SelectItem>
                       ))}
@@ -165,7 +165,7 @@ export default function EditCategoryDialog({
                       return parent ? (
                         <span
                           key={parentId}
-                          className="inline-block bg-primary-100 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
+                          className="inline-block bg-primary-100 rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-xs sm:text-sm font-semibold text-gray-700 mr-1.5 sm:mr-2 mb-1.5 sm:mb-2"
                         >
                           {parent.name}
                           <button
@@ -173,7 +173,7 @@ export default function EditCategoryDialog({
                             onClick={() =>
                               field.onChange((field.value || []).filter((id) => id !== parentId))
                             }
-                            className="mr-2 text-red-500 hover:text-red-700"
+                            className="mr-1.5 sm:mr-2 text-red-500 hover:text-red-700"
                           >
                             ×
                           </button>
@@ -190,7 +190,7 @@ export default function EditCategoryDialog({
               name="thumbnail"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>تصویر شاخص</FormLabel>
+                  <FormLabel className="text-sm sm:text-base">تصویر شاخص</FormLabel>
                   <FormControl>
                     <ImageUploader
                       onImageUpload={(urls) => form.setValue('thumbnail', urls[0])}
@@ -205,7 +205,7 @@ export default function EditCategoryDialog({
                 </FormItem>
               )}
             />
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="w-full h-9 sm:h-10 text-sm sm:text-base">
               {isSubmitting ? 'در حال ذخیره...' : 'ذخیره تغییرات'}
             </Button>
           </form>
