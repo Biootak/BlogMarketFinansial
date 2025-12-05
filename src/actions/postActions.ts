@@ -7,6 +7,7 @@ import { auth } from '@/auth';
 import { checkRole, generateSlug, generateUniqueId, validateSlug } from '@/lib/utils';
 import { createUniqueSlug } from '@/lib/slugUtils';
 import { logActivity } from '@/lib/activity-logger';
+import { calculateReadingTime } from '@/lib/readingTime';
 import type {
   ActionResult,
   CreatePostInput,
@@ -34,11 +35,15 @@ export async function createPost(data: CreatePostInput): Promise<ActionResult<Po
       };
     }
 
+    // محاسبه زمان مطالعه
+    const readingTime = calculateReadingTime(validatedData.content);
+
     const post = await prisma.post.create({
       data: {
         ...validatedData,
         id,
         slug,
+        readingTime,
         author: {
           connect: { id: session.user?.id },
         },
@@ -188,11 +193,17 @@ export async function updatePost(
       }
     }
 
+    // محاسبه زمان مطالعه اگر محتوا تغییر کرده باشد
+    const readingTime = validatedData.content 
+      ? calculateReadingTime(validatedData.content)
+      : undefined;
+
     const post = await prisma.post.update({
       where: { id: postId },
       data: {
         ...validatedData,
         slug,
+        ...(readingTime !== undefined && { readingTime }),
         categories: {
           set: [], // ابتدا همه ارتباطات را حذف می‌کنیم
           connect: validatedData.categories?.map((categoryId) => ({ id: categoryId })) ?? [],

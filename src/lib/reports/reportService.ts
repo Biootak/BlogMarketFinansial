@@ -270,30 +270,60 @@ class ReportService {
    * آمار بازدیدها
    */
   private async getViewStats(today: Date, weekAgo: Date, monthAgo: Date) {
-    const [totalViews, todayViews, weekViews, monthViews, topPosts, dailyViews] =
+    const [totalViews, todayViews, weekViews, monthViews, topPosts, dailyPosts] =
       await Promise.all([
-        db.post.aggregate({ _sum: { viewCount: true } }),
-        db.view.count({ where: { createdAt: { gte: today } } }),
-        db.view.count({ where: { createdAt: { gte: weekAgo } } }),
-        db.view.count({ where: { createdAt: { gte: monthAgo } } }),
+        // Total views from all published posts
+        db.post.aggregate({ 
+          where: { status: 'PUBLISHED' },
+          _sum: { viewCount: true } 
+        }),
+        // Today's views - sum of viewCount for posts created today
+        db.post.aggregate({
+          where: { 
+            status: 'PUBLISHED',
+            createdAt: { gte: today } 
+          },
+          _sum: { viewCount: true }
+        }),
+        // This week's views
+        db.post.aggregate({
+          where: { 
+            status: 'PUBLISHED',
+            createdAt: { gte: weekAgo } 
+          },
+          _sum: { viewCount: true }
+        }),
+        // This month's views
+        db.post.aggregate({
+          where: { 
+            status: 'PUBLISHED',
+            createdAt: { gte: monthAgo } 
+          },
+          _sum: { viewCount: true }
+        }),
+        // Top posts by viewCount
         db.post.findMany({
           where: { status: 'PUBLISHED' },
-          select: { title: true, slug: true, viewCount: true },
+          select: { title: true, slug: true, viewCount: true, createdAt: true },
           orderBy: { viewCount: 'desc' },
           take: 10,
         }),
-        db.view.groupBy({
-          by: ['createdAt'],
-          _count: true,
-          where: { createdAt: { gte: monthAgo } },
+        // Daily posts for trend (last 30 days)
+        db.post.findMany({
+          where: {
+            status: 'PUBLISHED',
+            createdAt: { gte: monthAgo }
+          },
+          select: { createdAt: true, viewCount: true },
+          orderBy: { createdAt: 'asc' }
         }),
       ]);
 
     // گروه‌بندی بازدیدها بر اساس روز
     const viewsByDay = new Map<string, number>();
-    dailyViews.forEach((view) => {
-      const date = view.createdAt.toISOString().split('T')[0];
-      viewsByDay.set(date, (viewsByDay.get(date) || 0) + view._count);
+    dailyPosts.forEach((post) => {
+      const date = post.createdAt.toISOString().split('T')[0];
+      viewsByDay.set(date, (viewsByDay.get(date) || 0) + post.viewCount);
     });
 
     const trend = Array.from(viewsByDay.entries())
@@ -301,10 +331,10 @@ class ReportService {
       .sort((a, b) => a.date.localeCompare(b.date));
 
     return {
-      total: totalViews._sum.viewCount || 0,
-      today: todayViews,
-      thisWeek: weekViews,
-      thisMonth: monthViews,
+      total: totalViews._sum?.viewCount || 0,
+      today: todayViews._sum?.viewCount || 0,
+      thisWeek: weekViews._sum?.viewCount || 0,
+      thisMonth: monthViews._sum?.viewCount || 0,
       topPosts: topPosts.map((post) => ({
         title: post.title,
         slug: post.slug,

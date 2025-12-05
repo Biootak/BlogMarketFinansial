@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import type { ActivityLog } from '@/actions/reports/activityLogs';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -9,9 +10,10 @@ import {
   User,
   Clock,
   FileText,
-  MoreHorizontal,
+  Eye,
   Activity as ActivityIcon,
 } from 'lucide-react';
+import { ActivityDetailModal } from './ActivityDetailModal';
 
 interface ActivityTableProps {
   activities: ActivityLog[];
@@ -47,11 +49,24 @@ export default function ActivityTable({
   limit,
   onPageChange,
 }: ActivityTableProps) {
+  const [selectedActivity, setSelectedActivity] = useState<ActivityLog | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   if (loading) {
     return null;
   }
 
   const totalPages = Math.ceil(total / limit);
+
+  const handleViewDetails = (activity: ActivityLog) => {
+    setSelectedActivity(activity);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setTimeout(() => setSelectedActivity(null), 200);
+  };
 
   return (
     <div className="space-y-4 sm:space-y-5">
@@ -93,12 +108,15 @@ export default function ActivityTable({
                     زمان
                   </div>
                 </th>
+                <th className="px-4 lg:px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  عملیات
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {activities.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-16 text-center">
+                  <td colSpan={5} className="px-6 py-16 text-center">
                     <div className="flex flex-col items-center gap-4">
                       <div className="p-5 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-50">
                         <FileText className="w-10 h-10 text-gray-400" />
@@ -167,6 +185,25 @@ export default function ActivityTable({
                             minute: '2-digit',
                           }).format(new Date(activity.createdAt))}
                         </span>
+                      </div>
+                    </td>
+                    <td className="px-4 lg:px-6 py-4">
+                      <div className="flex items-center justify-center">
+                        <button
+                          type="button"
+                          onClick={() => handleViewDetails(activity)}
+                          className={cn(
+                            'p-2 rounded-lg',
+                            'bg-blue-50 hover:bg-blue-100',
+                            'text-blue-600 hover:text-blue-700',
+                            'border border-blue-200',
+                            'transition-all duration-200',
+                            'hover:shadow-md'
+                          )}
+                          title="مشاهده جزئیات"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -245,18 +282,35 @@ export default function ActivityTable({
                 </div>
               )}
 
-              {/* Time */}
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                <Clock className="w-3.5 h-3.5" />
-                <span>
-                  {new Intl.DateTimeFormat('fa-IR', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  }).format(new Date(activity.createdAt))}
-                </span>
+              {/* Time and Details Button */}
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>
+                    {new Intl.DateTimeFormat('fa-IR', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    }).format(new Date(activity.createdAt))}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleViewDetails(activity)}
+                  className={cn(
+                    'flex items-center gap-1.5 px-3 py-1.5 rounded-lg',
+                    'bg-blue-50 hover:bg-blue-100',
+                    'text-blue-600 hover:text-blue-700',
+                    'border border-blue-200',
+                    'text-xs font-semibold',
+                    'transition-all duration-200'
+                  )}
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>جزئیات</span>
+                </button>
               </div>
             </div>
           ))
@@ -376,6 +430,13 @@ export default function ActivityTable({
           </Button>
         </div>
       </div>
+
+      {/* Activity Detail Modal */}
+      <ActivityDetailModal
+        activity={selectedActivity}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 }

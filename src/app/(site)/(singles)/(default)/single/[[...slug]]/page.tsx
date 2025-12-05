@@ -11,6 +11,7 @@ import { getSidebarData } from '@/actions/sidebarActions';
 import type { PostWithRelations, ActionResult } from '@/types/types';
 import Sidebar from '../../../Sidebar';
 import { getActiveAdvertisements } from '@/actions/advertisementActions';
+import { ViewTracker } from '@/components/ViewTracker';
 
 export interface PageProps {
   params: Promise<{ slug: string[] }>;
@@ -98,6 +99,9 @@ export default async function PageSingle({ params }: PageProps) {
 
   return (
     <div className="nc-PageSingle relative min-h-screen">
+      {/* View Tracker - ثبت بازدید */}
+      <ViewTracker postId={post.id} />
+      
       {/* Subtle Background Pattern */}
       <div className="absolute inset-0 bg-gradient-to-b from-neutral-50 via-white to-neutral-50/50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950/50 pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,119,198,0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,119,198,0.15),transparent)] pointer-events-none" />

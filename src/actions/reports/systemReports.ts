@@ -47,15 +47,22 @@ export async function getSystemReports(): Promise<ActionResult<SystemReport>> {
       }),
     ]);
 
-    // Get view statistics
-    const [totalViews, monthlyViews, topPosts] = await Promise.all([
-      db.pageView.aggregate({ _sum: { views: true } }),
-      db.pageView.groupBy({
-        by: ['date'],
-        where: { date: { gte: lastYear } },
-        _sum: { views: true },
+    // Get view statistics from Post.viewCount
+    const [totalViews, monthlyPosts, topPosts] = await Promise.all([
+      db.post.aggregate({ 
+        where: { status: 'PUBLISHED' },
+        _sum: { viewCount: true } 
+      }),
+      db.post.groupBy({
+        by: ['createdAt'],
+        where: { 
+          status: 'PUBLISHED',
+          createdAt: { gte: lastYear } 
+        },
+        _sum: { viewCount: true },
       }),
       db.post.findMany({
+        where: { status: 'PUBLISHED' },
         select: { title: true, viewCount: true },
         orderBy: { viewCount: 'desc' },
         take: 5,
@@ -92,10 +99,10 @@ export async function getSystemReports(): Promise<ActionResult<SystemReport>> {
           })),
         },
         viewStats: {
-          total: totalViews._sum.views || 0,
-          monthly: monthlyViews.map(stat => ({
-            month: stat.date.toISOString().slice(0, 7),
-            count: stat._sum.views || 0,
+          total: totalViews._sum?.viewCount || 0,
+          monthly: monthlyPosts.map(stat => ({
+            month: stat.createdAt.toISOString().slice(0, 7),
+            count: stat._sum?.viewCount || 0,
           })),
           topPosts: topPosts.map(post => ({
             title: post.title,
