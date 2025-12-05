@@ -2,13 +2,12 @@
 import type React from 'react';
 import { useMemo, useState, useCallback } from 'react';
 import NcImage from '@/components/NcImage/NcImage';
-import PostCardSaveAction from '@/components/PostCardSaveAction/PostCardSaveAction';
+import PostCardInfo from '@/components/PostCardInfo/PostCardInfo';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
 import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia';
 import CardAuthor2 from '@/components/CardAuthor2/CardAuthor2';
 import Link from 'next/link';
 import type { PostWithRelations } from '@/types/types';
-import BookmarkCheck from '../BookmarkCheck';
 import { getPostLink } from '@/lib/getPostLink';
 
 interface Card10V3Props {
@@ -84,16 +83,15 @@ const Card10V3: React.FC<Card10V3Props> = ({ className = 'h-full', post, gallery
       </div>
       <div className="absolute top-2 sm:top-3 inset-x-2 sm:inset-x-3 flex justify-between items-start gap-2 sm:gap-4">
         <CategoryBadgeList categories={categories} className="flex flex-wrap gap-1" />
-        <BookmarkCheck post={post}>
-          {(isBookmarked) => (
-            <PostCardSaveAction
-              className="relative"
-              postId={id}
-              initialBookmarked={isBookmarked}
-              bookmarkClass="h-6 w-6 sm:h-8 sm:w-8 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700"
-            />
-          )}
-        </BookmarkCheck>
+        <div className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-lg sm:rounded-xl px-2 sm:px-3 py-1 sm:py-1.5 shadow-lg">
+          <PostCardInfo
+            views={post.viewCount}
+            readingTime={post.readingTime}
+            showViews={true}
+            showReadingTime={true}
+            compact={true}
+          />
+        </div>
       </div>
       <div className="space-y-1.5 sm:space-y-2.5 mt-2 sm:mt-4 px-2 sm:px-4">
         <h2 className="nc-card-title block text-sm sm:text-base lg:text-lg font-semibold text-neutral-900 dark:text-neutral-100">

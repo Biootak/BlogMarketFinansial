@@ -4,6 +4,7 @@ import React, { type FC } from 'react';
 import NcBookmark from '../NcBookmark/NcBookmark';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { fadeUpVariants, hoverScaleSmall, tapScaleSmall, transitions } from '@/lib/animations';
 
 export interface PostCardSaveActionProps {
   className?: string;
@@ -12,6 +13,7 @@ export interface PostCardSaveActionProps {
   hideReadingTime?: boolean;
   postId: string;
   initialBookmarked: boolean;
+  showToast?: boolean;
 }
 
 const PostCardSaveAction: FC<PostCardSaveActionProps> = ({
@@ -21,6 +23,7 @@ const PostCardSaveAction: FC<PostCardSaveActionProps> = ({
   readingTime = 3,
   postId,
   initialBookmarked,
+  showToast = false,
 }) => {
   return (
     <motion.div
@@ -28,12 +31,17 @@ const PostCardSaveAction: FC<PostCardSaveActionProps> = ({
         'nc-PostCardSaveAction flex items-center gap-2 text-xs text-neutral-700 dark:text-neutral-300',
         className,
       )}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
+      initial="hidden"
+      animate="visible"
+      variants={fadeUpVariants}
     >
       {!hideReadingTime && !!readingTime && (
-        <motion.span whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+        <motion.span 
+          whileHover={hoverScaleSmall}
+          whileTap={tapScaleSmall}
+          transition={transitions.snappy}
+          className="cursor-default"
+        >
           {readingTime} دقیقه مطالعه
         </motion.span>
       )}
@@ -42,10 +50,7 @@ const PostCardSaveAction: FC<PostCardSaveActionProps> = ({
         containerClassName={cn(bookmarkClass, 'rtl:mr-2')}
         postId={postId}
         initialBookmarked={initialBookmarked}
-        onBookmarkChange={(newBookmarkedState) => {
-          // اینجا می‌توانید هر عملیاتی که نیاز دارید پس از تغییر وضعیت bookmark انجام دهید
-          console.log('Bookmark state changed:', newBookmarkedState);
-        }}
+        showToast={showToast}
       />
     </motion.div>
   );

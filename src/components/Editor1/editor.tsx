@@ -77,7 +77,15 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
 
     useEffect(() => {
       if (!editor || editor.isDestroyed || editor.isEditable === editable) return;
-      queueMicrotask(() => editor.setEditable(editable));
+      
+      // استفاده از setTimeout به جای queueMicrotask برای جلوگیری از flushSync error
+      const timeoutId = setTimeout(() => {
+        if (!editor.isDestroyed) {
+          editor.setEditable(editable);
+        }
+      }, 0);
+      
+      return () => clearTimeout(timeoutId);
     }, [editable, editor]);
 
     useEffect(() => {
@@ -151,12 +159,14 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
         initialContentLoadedRef.current = true;
         const parsedContent = parseContent(content);
         if (parsedContent) {
-          // استفاده از queueMicrotask برای جلوگیری از race condition
-          queueMicrotask(() => {
+          // استفاده از setTimeout به جای queueMicrotask برای جلوگیری از flushSync error
+          const timeoutId = setTimeout(() => {
             if (!editor.isDestroyed) {
               editor.commands.setContent(parsedContent);
             }
-          });
+          }, 0);
+          
+          return () => clearTimeout(timeoutId);
         }
       }
     }, [editor, content, parseContent]);

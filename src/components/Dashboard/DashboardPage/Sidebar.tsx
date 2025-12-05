@@ -294,7 +294,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
                       <button
                         type="button"
                         onClick={() => toggleSubmenu(item.label)}
-                        className={`flex items-center w-full p-2 sm:p-2.5 lg:p-3 rounded-lg sm:rounded-xl transition-all duration-150 hover:translate-x-1 ${
+                        className={`flex items-center w-full ${isOpen ? 'p-2 sm:p-2.5 lg:p-3' : 'p-2 sm:p-2.5 lg:p-3 justify-center'} rounded-lg sm:rounded-xl transition-all duration-150 hover:translate-x-1 ${
                           isActive
                             ? 'bg-white/20 text-white shadow-lg'
                             : 'text-white/70 hover:bg-white/10 hover:text-white'
@@ -348,7 +348,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
                   ) : (
                     <Link href={item.href} onClick={handleItemClick}>
                       <span
-                        className={`flex items-center p-2 sm:p-2.5 lg:p-3 rounded-lg sm:rounded-xl transition-all duration-150 hover:translate-x-1 ${
+                        className={`flex items-center ${isOpen ? 'p-2 sm:p-2.5 lg:p-3' : 'p-2 sm:p-2.5 lg:p-3 justify-center'} rounded-lg sm:rounded-xl transition-all duration-150 hover:translate-x-1 ${
                           isActive
                             ? 'bg-white/20 text-white shadow-lg'
                             : 'text-white/70 hover:bg-white/10 hover:text-white'
@@ -377,7 +377,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
           <button
             type="button"
             onClick={handleLogout}
-            className="flex items-center w-full p-2 sm:p-2.5 lg:p-3 mb-2 sm:mb-3 rounded-lg sm:rounded-xl text-white/70 hover:bg-rose-500/20 hover:text-rose-300 transition-all duration-150 hover:translate-x-1"
+            className={`flex items-center w-full ${isOpen ? 'p-2 sm:p-2.5 lg:p-3' : 'p-2 sm:p-2.5 lg:p-3 justify-center'} mb-2 sm:mb-3 rounded-lg sm:rounded-xl text-white/70 hover:bg-rose-500/20 hover:text-rose-300 transition-all duration-150 hover:translate-x-1`}
           >
             <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-white/5 flex-shrink-0">
               <HiOutlineArrowRightOnRectangle className="w-4 h-4 sm:w-5 sm:h-5" />

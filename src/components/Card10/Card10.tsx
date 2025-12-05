@@ -1,13 +1,12 @@
 'use client';
 
 import React, { type FC, useState } from 'react';
-import PostCardSaveAction from '@/components/PostCardSaveAction/PostCardSaveAction';
+import PostCardInfo from '@/components/PostCardInfo/PostCardInfo';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
 import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia';
 import PostCardMetaV2 from '@/components/PostCardMeta/PostCardMetaV2';
 import Link from 'next/link';
 import type { PostWithRelations } from '@/types/types';
-import BookmarkCheck from '../BookmarkCheck';
 import { getPostLink } from '@/lib/getPostLink';
 
 export interface Card10Props {
@@ -16,7 +15,7 @@ export interface Card10Props {
 }
 
 const Card10: FC<Card10Props> = ({ className = 'h-full', post }) => {
-  const { categories, slug, postType } = post;
+  const { categories, slug, postType, viewCount, readingTime, createdAt } = post;
   const [isHover, setIsHover] = useState(false);
 
   return (
@@ -38,16 +37,15 @@ const Card10: FC<Card10Props> = ({ className = 'h-full', post }) => {
       </div>
       <div className="absolute top-2 sm:top-3 inset-x-2 sm:inset-x-3 flex justify-between items-start gap-2 sm:gap-4 z-10">
         <CategoryBadgeList categories={categories} className="flex flex-wrap gap-1" />
-        <BookmarkCheck post={post}>
-          {(isBookmarked) => (
-            <PostCardSaveAction
-              className="relative"
-              postId={post.id}
-              initialBookmarked={isBookmarked}
-              bookmarkClass="h-6 w-6 sm:h-8 sm:w-8 bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700"
-            />
-          )}
-        </BookmarkCheck>
+        <div className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm rounded-lg sm:rounded-xl px-2 sm:px-3 py-1 sm:py-1.5 shadow-lg">
+          <PostCardInfo
+            views={viewCount}
+            readingTime={readingTime}
+            showViews={true}
+            showReadingTime={true}
+            compact={true}
+          />
+        </div>
       </div>
 
       <div className="space-y-1.5 sm:space-y-2.5 mt-2 sm:mt-4 px-1">

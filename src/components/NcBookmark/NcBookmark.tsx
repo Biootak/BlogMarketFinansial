@@ -4,15 +4,16 @@ import type React from 'react';
 import { useState, useTransition } from 'react';
 import { cn } from '@/lib/utils';
 import { savePost } from '@/actions/postActions';
-import { useToast } from '@/components/ui/use-toast';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Icon } from '../ui/icon';
+import { tapScaleSmall, transitions } from '@/lib/animations';
 
 export interface NcBookmarkProps {
   containerClassName?: string;
   postId: string;
   initialBookmarked: boolean;
   onBookmarkChange?: (isBookmarked: boolean) => void;
+  showToast?: boolean;
 }
 
 const NcBookmark: React.FC<NcBookmarkProps> = ({
@@ -20,31 +21,33 @@ const NcBookmark: React.FC<NcBookmarkProps> = ({
   postId,
   initialBookmarked,
   onBookmarkChange,
+  showToast = false,
 }) => {
   const [isBookmarked, setIsBookmarked] = useState(initialBookmarked);
   const [isPending, startTransition] = useTransition();
-  const { toast } = useToast();
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     startTransition(async () => {
-      const result = await savePost(postId);
-      if (result.success) {
-        const newBookmarkedState = !isBookmarked;
-        setIsBookmarked(newBookmarkedState);
-        if (onBookmarkChange) {
-          onBookmarkChange(newBookmarkedState);
+      // Optimistic update - فوری UI رو آپدیت می‌کنه
+      const newState = !isBookmarked;
+      setIsBookmarked(newState);
+      
+      try {
+        const result = await savePost(postId);
+        if (result.success) {
+          if (onBookmarkChange) {
+            onBookmarkChange(newState);
+          }
+        } else {
+          // اگر خطا داشت، به حالت قبلی برمی‌گرده
+          setIsBookmarked(!newState);
         }
-        toast({
-          title: 'موفقیت',
-          description: 'پست به علاقه‌مندی‌ها اضافه شد',
-          variant: 'success',
-        });
-      } else {
-        toast({
-          title: 'خطا',
-          description: 'خطا در افزودن به علاقه‌مندی‌ها',
-          variant: 'destructive',
-        });
+      } catch (error) {
+        // در صورت خطا، به حالت قبلی برمی‌گرده
+        setIsBookmarked(!newState);
       }
     });
   };
@@ -54,36 +57,53 @@ const NcBookmark: React.FC<NcBookmarkProps> = ({
       <motion.button
         type="button"
         className={cn(
-          'nc-NcBookmark w-10 h-10 rounded-full flex items-center justify-center transition-colors',
+          'nc-NcBookmark w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-200',
           containerClassName,
           isBookmarked
-            ? 'text-blue-600 bg-blue-50 dark:bg-blue-900'
-            : 'text-neutral-700 bg-neutral-50 dark:text-neutral-200 dark:bg-neutral-800 hover:bg-blue-50 dark:hover:bg-blue-900 hover:text-blue-600 dark:hover:text-blue-400',
-          { 'opacity-50 cursor-not-allowed': isPending },
+            ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/50 shadow-sm'
+            : 'text-neutral-600 bg-white/80 dark:text-neutral-300 dark:bg-neutral-800/80 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md',
+          'backdrop-blur-sm',
+          isPending && 'opacity-70 cursor-wait',
         )}
         onClick={handleClick}
         disabled={isPending}
-        title={isBookmarked ? 'حذف از لیست خواندن' : 'ذخیره در لیست خواندن'}
-        aria-label={isBookmarked ? 'حذف از لیست خواندن' : 'ذخیره در لیست خواندن'}
-        whileTap={{ scale: 0.95 }}
+        title={isBookmarked ? 'حذف از ذخیره‌ها' : 'ذخیره پست'}
+        aria-label={isBookmarked ? 'حذف از ذخیره‌ها' : 'ذخیره پست'}
+        whileTap={tapScaleSmall}
+        transition={transitions.snappy}
       >
-        <motion.div
-          animate={{ scale: isBookmarked ? [1, 1.2, 1] : 1 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Icon
-            name="Bookmark"
-            className="size-5"
-            strokeWidth={isBookmarked ? 0 : 2}
-            style={{ fill: isBookmarked ? 'currentColor' : 'none' }}
-          />
-        </motion.div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={isBookmarked ? 'bookmarked' : 'not-bookmarked'}
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            transition={transitions.fast}
+          >
+            <Icon
+              name="Bookmark"
+              className="size-4 sm:size-4.5"
+              strokeWidth={isBookmarked ? 0 : 2}
+              style={{ fill: isBookmarked ? 'currentColor' : 'none' }}
+            />
+          </motion.div>
+        </AnimatePresence>
       </motion.button>
-      {isBookmarked && (
-        <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-          ✓
-        </span>
-      )}
+      
+      {/* نشانگر کوچک برای وضعیت ذخیره شده */}
+      <AnimatePresence>
+        {isBookmarked && (
+          <motion.span
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            transition={transitions.bouncy}
+            className="absolute -top-1 -right-1 bg-blue-500 text-white text-[10px] rounded-full w-3.5 h-3.5 sm:w-4 sm:h-4 flex items-center justify-center shadow-sm"
+          >
+            ✓
+          </motion.span>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
