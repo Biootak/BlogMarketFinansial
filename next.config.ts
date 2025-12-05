@@ -28,6 +28,46 @@ const nextConfig: NextConfig = {
   // Disable source maps in development to avoid warnings
   productionBrowserSourceMaps: false,
 
+  // Bundle optimization
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'date-fns', 'lodash'],
+  },
+
+  // Webpack optimization
+  webpack: (config, { isServer }) => {
+    // Split chunks for better caching
+    if (!isServer) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            default: false,
+            vendors: false,
+            // Vendor chunk
+            vendor: {
+              name: 'vendor',
+              chunks: 'all',
+              test: /node_modules/,
+              priority: 20,
+            },
+            // Common chunk
+            common: {
+              name: 'common',
+              minChunks: 2,
+              chunks: 'all',
+              priority: 10,
+              reuseExistingChunk: true,
+              enforce: true,
+            },
+          },
+        },
+      };
+    }
+
+    return config;
+  },
+
   // Rewrites برای serve کردن فایل‌های آپلود شده در production
   async rewrites() {
     return [
