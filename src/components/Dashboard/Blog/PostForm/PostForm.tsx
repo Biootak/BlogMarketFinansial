@@ -213,9 +213,55 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
         </div>
 
         {/* Header */}
-        <div className="sticky top-0 z-50 backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border-b border-slate-200/50 dark:border-slate-700/50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center justify-between">
+        <div className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border-b border-slate-200/50 dark:border-slate-700/50">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4">
+            {/* Mobile: Stack layout */}
+            <div className="flex flex-col gap-3 sm:hidden">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-500/20">
+                    <HiOutlineSparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h1 className="text-lg font-black text-slate-900 dark:text-white">{title}</h1>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={isLoading}
+                  onClick={() => { setSaveAsDraft(true); form.handleSubmit(handleSubmit)(); }}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors duration-200 text-sm font-medium"
+                >
+                  <RiDraftLine className="w-4 h-4" />
+                  <span>پیش‌نویس</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isLoading}
+                  onClick={() => { setSaveAsDraft(false); form.handleSubmit(handleSubmit)(); }}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-violet-600 to-purple-600 text-white text-sm font-medium shadow-lg shadow-violet-500/20"
+                >
+                  {isLoading ? (
+                    <>
+                      <BiLoaderAlt className="w-4 h-4 animate-spin" />
+                      <span>ارسال...</span>
+                    </>
+                  ) : (
+                    <>
+                      <RiSendPlaneFill className="w-4 h-4" />
+                      <span>{isEditing ? 'به‌روزرسانی' : 'انتشار'}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Desktop: Original layout */}
+            <div className="hidden sm:flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="p-3 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-500/20">
                   <HiOutlineSparkles className="w-6 h-6" />
@@ -260,8 +306,8 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
               </div>
             </div>
 
-            {/* Section tabs */}
-            <div className="flex items-center gap-1 mt-6">
+            {/* Section tabs - Scrollable on mobile */}
+            <div className="flex items-center gap-1 mt-4 sm:mt-6 overflow-x-auto scrollbar-hide -mx-3 px-3 sm:mx-0 sm:px-0">
               {sectionTabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeSection === tab.id;
@@ -270,7 +316,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveSection(tab.id)}
-                    className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-colors duration-200 ${
+                    className={`relative flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-medium transition-colors duration-200 whitespace-nowrap text-sm sm:text-base ${
                       isActive
                         ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300'
                         : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -286,7 +332,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
         </div>
 
         {/* Main content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
               
@@ -441,9 +487,9 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
               </div>
 
               {/* Meta Section */}
-              <div className={activeSection === 'meta' ? 'grid grid-cols-1 lg:grid-cols-2 gap-6' : 'hidden'}>
+              <div className={activeSection === 'meta' ? 'grid grid-cols-1 gap-4 sm:gap-6' : 'hidden'}>
                 {/* Categories */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 overflow-hidden">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-6 overflow-hidden">
                   <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
                   <FormField
                     control={form.control}
@@ -489,7 +535,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                 </div>
 
                 {/* Tags */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 overflow-hidden">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-6 overflow-hidden">
                   <FormField
                     control={form.control}
                     name="tags"
@@ -531,7 +577,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                 </div>
 
                 {/* Post Status */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-6">
                   <FormField
                     control={form.control}
                     name="status"
@@ -566,14 +612,14 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                 </div>
 
                 {/* Post Type */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-6">
                   <FormField
                     control={form.control}
                     name="postType"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300">نوع پست</FormLabel>
-                        <div className="grid grid-cols-2 gap-3 mt-3">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mt-3">
                           {(Object.entries(postTypeConfig) as [PostType, typeof postTypeConfig.STANDARD][]).map(([type, config]) => {
                             const Icon = config.icon;
                             const isSelected = field.value === type;
@@ -582,14 +628,14 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                                 key={type}
                                 type="button"
                                 onClick={() => field.onChange(type)}
-                                className={`p-4 rounded-xl border-2 transition-colors duration-200 ${
+                                className={`p-3 sm:p-4 rounded-xl border-2 transition-colors duration-200 ${
                                   isSelected ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-violet-300'
                                 }`}
                               >
-                                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${config.color} flex items-center justify-center text-white mb-2 mx-auto`}>
-                                  <Icon className="w-5 h-5" />
+                                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br ${config.color} flex items-center justify-center text-white mb-1.5 sm:mb-2 mx-auto`}>
+                                  <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                                 </div>
-                                <span className={`text-sm font-medium ${isSelected ? 'text-violet-700 dark:text-violet-300' : 'text-slate-600 dark:text-slate-400'}`}>
+                                <span className={`text-xs sm:text-sm font-medium ${isSelected ? 'text-violet-700 dark:text-violet-300' : 'text-slate-600 dark:text-slate-400'}`}>
                                   {config.label}
                                 </span>
                               </button>
@@ -603,7 +649,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                 </div>
 
                 {/* Featured toggle */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 lg:col-span-2">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-6">
                   <FormField
                     control={form.control}
                     name="isFeatured"
@@ -628,7 +674,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
 
                 {/* Video URL */}
                 {form.watch('postType') === 'VIDEO' && (
-                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 lg:col-span-2">
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-6">
                     <FormField
                       control={form.control}
                       name="videoUrl"
@@ -650,7 +696,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
 
                 {/* Audio URL */}
                 {form.watch('postType') === 'AUDIO' && (
-                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 lg:col-span-2">
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-6">
                     <FormField
                       control={form.control}
                       name="audioUrl"
@@ -674,8 +720,8 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
               {/* Media Section */}
               <div className={activeSection === 'media' ? 'space-y-6' : 'hidden'}>
                 {/* Featured Image */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
-                  <div className="h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500 -mt-6 -mx-6 mb-6 rounded-t-2xl" />
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-6">
+                  <div className="h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500 -mt-4 sm:-mt-6 -mx-4 sm:-mx-6 mb-4 sm:mb-6 rounded-t-2xl" />
                   <FormField
                     control={form.control}
                     name="featuredImage"
@@ -703,8 +749,8 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
 
                 {/* Gallery Images - only show when post type is GALLERY */}
                 {form.watch('postType') === 'GALLERY' && (
-                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
-                    <div className="h-1 bg-gradient-to-r from-emerald-500 to-teal-500 -mt-6 -mx-6 mb-6 rounded-t-2xl" />
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-6">
+                    <div className="h-1 bg-gradient-to-r from-emerald-500 to-teal-500 -mt-4 sm:-mt-6 -mx-4 sm:-mx-6 mb-4 sm:mb-6 rounded-t-2xl" />
                     <FormField
                       control={form.control}
                       name="galleryImages"

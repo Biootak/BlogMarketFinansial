@@ -226,7 +226,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
 
       <nav
         dir="rtl"
-        className="fixed top-0 right-0 h-full z-40 overflow-hidden flex flex-col transition-all duration-300 ease-out"
+        className="fixed top-0 right-0 h-full z-[60] overflow-hidden flex flex-col transition-all duration-200 ease-in-out"
         style={{
           width: sidebarWidth,
           background: 'linear-gradient(180deg, #1e1b4b 0%, #312e81 50%, #3730a3 100%)',
@@ -251,7 +251,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
         <div className="relative flex-shrink-0 p-4">
           <div className="flex justify-between items-center">
             {isOpen && (
-              <div className="flex items-center gap-3 transition-opacity duration-200">
+              <div className="flex items-center gap-3 animate-in fade-in slide-in-from-right-2 duration-150">
                 <div className="relative">
                   <div className="absolute inset-0 bg-white/20 rounded-xl blur-lg" />
                   <Logo className="relative w-10 h-10 rounded-xl" />
@@ -262,11 +262,11 @@ const Sidebar = ({ userRole }: SidebarProps) => {
             <button
               type="button"
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-all duration-200 hover:scale-105 active:scale-95"
+              className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-all duration-150 hover:scale-105 active:scale-95"
               aria-label={isOpen ? 'بستن منو' : 'باز کردن منو'}
             >
               <HiOutlineBars3
-                className="w-5 h-5 transition-transform duration-300"
+                className="w-5 h-5 transition-transform duration-200"
                 style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
               />
             </button>
@@ -286,24 +286,24 @@ const Sidebar = ({ userRole }: SidebarProps) => {
                       <button
                         type="button"
                         onClick={() => toggleSubmenu(item.label)}
-                        className={`flex items-center w-full p-3 rounded-xl transition-all duration-200 hover:translate-x-1 ${
+                        className={`flex items-center w-full p-3 rounded-xl transition-all duration-150 hover:translate-x-1 ${
                           isActive
                             ? 'bg-white/20 text-white shadow-lg'
                             : 'text-white/70 hover:bg-white/10 hover:text-white'
                         }`}
                       >
                         <div
-                          className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors duration-200 ${
+                          className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors duration-150 ${
                             isActive ? 'bg-white/20' : 'bg-white/5'
                           }`}
                         >
                           {item.icon}
                         </div>
                         {isOpen && (
-                          <div className="mr-3 flex-1 flex items-center justify-between">
+                          <div className="mr-3 flex-1 flex items-center justify-between animate-in fade-in slide-in-from-right-1 duration-100">
                             <span className="font-medium">{item.label}</span>
                             <HiOutlineChevronDown
-                              className="w-4 h-4 transition-transform duration-200"
+                              className="w-4 h-4 transition-transform duration-150"
                               style={{
                                 transform: expandedItems.includes(item.label) ? 'rotate(180deg)' : 'rotate(0deg)',
                               }}
@@ -318,14 +318,14 @@ const Sidebar = ({ userRole }: SidebarProps) => {
                             <li key={submenuItem.href}>
                               <Link href={submenuItem.href} onClick={handleItemClick}>
                                 <span
-                                  className={`flex items-center gap-3 p-2.5 rounded-lg transition-all duration-200 hover:translate-x-1 ${
+                                  className={`flex items-center gap-3 p-2.5 rounded-lg transition-all duration-150 hover:translate-x-1 ${
                                     pathname === submenuItem.href
                                       ? 'bg-white/15 text-white'
                                       : 'text-white/60 hover:bg-white/10 hover:text-white'
                                   }`}
                                 >
                                   <span
-                                    className={`w-1.5 h-1.5 rounded-full transition-colors duration-200 ${
+                                    className={`w-1.5 h-1.5 rounded-full transition-colors duration-150 ${
                                       pathname === submenuItem.href ? 'bg-violet-300' : 'bg-white/40'
                                     }`}
                                   />
@@ -340,20 +340,20 @@ const Sidebar = ({ userRole }: SidebarProps) => {
                   ) : (
                     <Link href={item.href} onClick={handleItemClick}>
                       <span
-                        className={`flex items-center p-3 rounded-xl transition-all duration-200 hover:translate-x-1 ${
+                        className={`flex items-center p-3 rounded-xl transition-all duration-150 hover:translate-x-1 ${
                           isActive
                             ? 'bg-white/20 text-white shadow-lg'
                             : 'text-white/70 hover:bg-white/10 hover:text-white'
                         }`}
                       >
                         <div
-                          className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors duration-200 ${
+                          className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors duration-150 ${
                             isActive ? 'bg-white/20' : 'bg-white/5'
                           }`}
                         >
                           {item.icon}
                         </div>
-                        {isOpen && <span className="mr-3 font-medium">{item.label}</span>}
+                        {isOpen && <span className="mr-3 font-medium animate-in fade-in slide-in-from-right-1 duration-100">{item.label}</span>}
                       </span>
                     </Link>
                   )}
@@ -369,17 +369,17 @@ const Sidebar = ({ userRole }: SidebarProps) => {
           <button
             type="button"
             onClick={handleLogout}
-            className="flex items-center w-full p-3 mb-3 rounded-xl text-white/70 hover:bg-rose-500/20 hover:text-rose-300 transition-all duration-200 hover:translate-x-1"
+            className="flex items-center w-full p-3 mb-3 rounded-xl text-white/70 hover:bg-rose-500/20 hover:text-rose-300 transition-all duration-150 hover:translate-x-1"
           >
             <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/5">
               <HiOutlineArrowRightOnRectangle className="w-5 h-5" />
             </div>
-            {isOpen && <span className="mr-3 font-medium">خروج</span>}
+            {isOpen && <span className="mr-3 font-medium animate-in fade-in slide-in-from-right-1 duration-100">خروج</span>}
           </button>
 
           {/* User info */}
           <div
-            className={`flex items-center p-3 rounded-xl bg-white/10 backdrop-blur-sm transition-all duration-200 ${
+            className={`flex items-center p-3 rounded-xl bg-white/10 backdrop-blur-sm transition-all duration-150 ${
               !isOpen ? 'justify-center' : ''
             }`}
           >
@@ -393,7 +393,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
               <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full ring-2 ring-indigo-900" />
             </div>
             {isOpen && (
-              <div className="mr-3 overflow-hidden">
+              <div className="mr-3 overflow-hidden animate-in fade-in slide-in-from-right-1 duration-100">
                 <p className="font-semibold text-white truncate">{userInfo?.name || 'کاربر'}</p>
                 <p className="text-xs text-white/60 truncate">{userInfo?.email}</p>
               </div>
@@ -405,7 +405,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
       {/* Mobile overlay */}
       {isMobile && isOpen && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 transition-opacity duration-300"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] animate-in fade-in duration-200"
           onClick={() => setIsOpen(false)}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
