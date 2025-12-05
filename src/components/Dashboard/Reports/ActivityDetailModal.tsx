@@ -1,8 +1,17 @@
 'use client';
 
-import { X, User, Activity, FileText, Clock, Mail, Calendar } from 'lucide-react';
+import { User, Activity, FileText, Clock, Mail, Calendar, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ActivityLog } from '@/actions/reports/activityLogs';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
 
 interface ActivityDetailModalProps {
   activity: ActivityLog | null;
@@ -53,179 +62,171 @@ function getActionColor(action: string) {
 }
 
 export function ActivityDetailModal({ activity, isOpen, onClose }: ActivityDetailModalProps) {
-  if (!isOpen || !activity) return null;
+  if (!activity) return null;
 
   const colors = getActionColor(activity.action);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-      onClick={onClose}
-    >
-      <div
-        className={cn(
-          'relative w-full max-w-lg sm:max-w-2xl max-h-[85vh] sm:max-h-[90vh]',
-          'flex flex-col bg-white rounded-xl sm:rounded-2xl shadow-2xl',
-          'animate-in zoom-in-95 duration-200'
-        )}
-        onClick={(e) => e.stopPropagation()}
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent
+        side="left"
+        className="w-full sm:max-w-lg p-0 flex flex-col [&>button]:hidden"
+        dir="rtl"
       >
         {/* Header */}
-        <div className={cn('flex-shrink-0 p-4 sm:p-6 bg-gradient-to-l', colors.gradient)}>
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+        <div className={cn('p-4 sm:p-6 bg-gradient-to-br text-white relative', colors.gradient)}>
+          {/* Close Button */}
+          <Button
+            onClick={onClose}
+            variant="ghost"
+            size="icon"
+            className="absolute left-3 top-3 h-8 w-8 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all hover:scale-110"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+
+          <SheetHeader>
+            <div className="flex items-center gap-3 pl-10">
               {/* User Avatar */}
               <div
                 className={cn(
-                  'w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center',
+                  'w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center',
                   'bg-white/20 backdrop-blur-sm',
-                  'text-white font-bold text-lg sm:text-2xl',
+                  'text-white font-bold text-lg sm:text-xl',
                   'shadow-lg flex-shrink-0'
                 )}
               >
                 {(activity.user.name || activity.user.email || '?').charAt(0).toUpperCase()}
               </div>
-              <div className="min-w-0 flex-1">
-                <h2 className="text-lg sm:text-2xl font-bold text-white mb-0.5 sm:mb-1 truncate">جزئیات فعالیت</h2>
-                <p className="text-white/80 text-xs sm:text-sm truncate">اطلاعات کامل این فعالیت</p>
+              <div className="text-right">
+                <SheetTitle className="text-white text-base sm:text-lg">
+                  جزئیات فعالیت
+                </SheetTitle>
+                <SheetDescription className="text-white/80 text-xs sm:text-sm">
+                  اطلاعات کامل این فعالیت
+                </SheetDescription>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-white/20 hover:bg-white/30 text-white transition-all duration-200 flex-shrink-0"
-            >
-              <X className="w-4 h-4 sm:w-5 sm:h-5" />
-            </button>
-          </div>
+          </SheetHeader>
         </div>
 
         {/* Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5">
-          {/* User Info Section */}
-          <div className="space-y-2 sm:space-y-3">
-            <h3 className="text-sm sm:text-base font-bold text-gray-900 flex items-center gap-1.5 sm:gap-2">
-              <User className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
-              اطلاعات کاربر
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-              <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gray-50 border border-gray-200">
-                <div className="flex items-center gap-1.5 sm:gap-2 text-gray-600 mb-1 sm:mb-2">
-                  <User className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span className="text-[10px] sm:text-xs font-medium">نام کاربر</span>
+        <ScrollArea className="flex-1 px-4 sm:px-6">
+          <div className="space-y-4 py-4">
+            {/* User Info Section */}
+            <div className="space-y-3">
+              <h3 className="text-sm sm:text-base font-bold text-gray-900 flex items-center gap-2">
+                <User className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+                اطلاعات کاربر
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
+                  <div className="flex items-center gap-2 text-gray-600 mb-1.5">
+                    <User className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="text-[10px] sm:text-xs font-medium">نام کاربر</span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-900 font-semibold truncate">
+                    {activity.user.name || 'کاربر ناشناس'}
+                  </p>
                 </div>
-                <p className="text-xs sm:text-sm text-gray-900 font-semibold truncate">
-                  {activity.user.name || 'کاربر ناشناس'}
-                </p>
-              </div>
-              <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gray-50 border border-gray-200">
-                <div className="flex items-center gap-1.5 sm:gap-2 text-gray-600 mb-1 sm:mb-2">
-                  <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span className="text-[10px] sm:text-xs font-medium">ایمیل</span>
+                <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
+                  <div className="flex items-center gap-2 text-gray-600 mb-1.5">
+                    <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="text-[10px] sm:text-xs font-medium">ایمیل</span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-900 font-semibold break-all">
+                    {activity.user.email}
+                  </p>
                 </div>
-                <p className="text-xs sm:text-sm text-gray-900 font-semibold break-all">
-                  {activity.user.email}
-                </p>
               </div>
             </div>
-          </div>
 
-          {/* Action Info Section */}
-          <div className="space-y-2 sm:space-y-3">
-            <h3 className="text-sm sm:text-base font-bold text-gray-900 flex items-center gap-1.5 sm:gap-2">
-              <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
-              اطلاعات عملیات
-            </h3>
-            <div className="space-y-2 sm:space-y-3">
-              <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gray-50 border border-gray-200">
-                <div className="flex items-center gap-1.5 sm:gap-2 text-gray-600 mb-1.5 sm:mb-2">
-                  <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span className="text-[10px] sm:text-xs font-medium">نوع عملیات</span>
+            {/* Action Info Section */}
+            <div className="space-y-3">
+              <h3 className="text-sm sm:text-base font-bold text-gray-900 flex items-center gap-2">
+                <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+                اطلاعات عملیات
+              </h3>
+              <div className="space-y-3">
+                <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
+                  <div className="flex items-center gap-2 text-gray-600 mb-2">
+                    <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="text-[10px] sm:text-xs font-medium">نوع عملیات</span>
+                  </div>
+                  <span
+                    className={cn(
+                      'inline-flex items-center px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold border shadow-sm',
+                      colors.bg,
+                      colors.text,
+                      colors.border
+                    )}
+                  >
+                    {activity.action}
+                  </span>
                 </div>
-                <span
-                  className={cn(
-                    'inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold border shadow-sm',
-                    colors.bg,
-                    colors.text,
-                    colors.border
-                  )}
-                >
-                  {activity.action}
-                </span>
-              </div>
 
-              <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gray-50 border border-gray-200">
-                <div className="flex items-center gap-1.5 sm:gap-2 text-gray-600 mb-1.5 sm:mb-2">
-                  <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span className="text-[10px] sm:text-xs font-medium">جزئیات کامل</span>
-                </div>
-                <div className="max-h-24 sm:max-h-32 overflow-y-auto">
+                <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
+                  <div className="flex items-center gap-2 text-gray-600 mb-2">
+                    <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="text-[10px] sm:text-xs font-medium">جزئیات کامل</span>
+                  </div>
                   <p className="text-xs sm:text-sm text-gray-900 leading-relaxed whitespace-pre-wrap break-words">
                     {activity.details || 'جزئیاتی ثبت نشده است'}
                   </p>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Time Info Section */}
-          <div className="space-y-2 sm:space-y-3">
-            <h3 className="text-sm sm:text-base font-bold text-gray-900 flex items-center gap-1.5 sm:gap-2">
-              <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
-              زمان انجام
-            </h3>
-            <div className="grid grid-cols-2 gap-2 sm:gap-3">
-              <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gray-50 border border-gray-200">
-                <div className="flex items-center gap-1.5 sm:gap-2 text-gray-600 mb-1 sm:mb-2">
-                  <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span className="text-[10px] sm:text-xs font-medium">تاریخ</span>
+            {/* Time Info Section */}
+            <div className="space-y-3">
+              <h3 className="text-sm sm:text-base font-bold text-gray-900 flex items-center gap-2">
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+                زمان انجام
+              </h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
+                  <div className="flex items-center gap-2 text-gray-600 mb-1.5">
+                    <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="text-[10px] sm:text-xs font-medium">تاریخ</span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-900 font-semibold">
+                    {new Intl.DateTimeFormat('fa-IR', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    }).format(new Date(activity.createdAt))}
+                  </p>
                 </div>
-                <p className="text-xs sm:text-sm text-gray-900 font-semibold">
-                  {new Intl.DateTimeFormat('fa-IR', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  }).format(new Date(activity.createdAt))}
-                </p>
+                <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
+                  <div className="flex items-center gap-2 text-gray-600 mb-1.5">
+                    <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="text-[10px] sm:text-xs font-medium">ساعت</span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-900 font-semibold">
+                    {new Intl.DateTimeFormat('fa-IR', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      second: '2-digit',
+                    }).format(new Date(activity.createdAt))}
+                  </p>
+                </div>
               </div>
-              <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gray-50 border border-gray-200">
-                <div className="flex items-center gap-1.5 sm:gap-2 text-gray-600 mb-1 sm:mb-2">
-                  <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span className="text-[10px] sm:text-xs font-medium">ساعت</span>
-                </div>
-                <p className="text-xs sm:text-sm text-gray-900 font-semibold">
-                  {new Intl.DateTimeFormat('fa-IR', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                  }).format(new Date(activity.createdAt))}
-                </p>
+            </div>
+
+            {/* Activity ID */}
+            <div className="p-3 rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] sm:text-xs font-medium text-gray-600 flex-shrink-0">
+                  شناسه فعالیت
+                </span>
+                <code className="text-[10px] sm:text-xs font-mono text-gray-900 bg-white px-2 py-1 rounded-md border border-gray-200 truncate">
+                  {activity.id}
+                </code>
               </div>
             </div>
           </div>
-
-          {/* Activity ID */}
-          <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[10px] sm:text-xs font-medium text-gray-600 flex-shrink-0">شناسه فعالیت</span>
-              <code className="text-[10px] sm:text-xs font-mono text-gray-900 bg-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-md sm:rounded-lg border border-gray-200 truncate">
-                {activity.id}
-              </code>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="flex-shrink-0 p-3 sm:p-4 bg-gray-50 border-t border-gray-200">
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-full px-4 py-2 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl bg-gradient-to-l from-gray-700 to-gray-800 text-white text-sm sm:text-base font-semibold hover:shadow-lg transition-all duration-200"
-          >
-            بستن
-          </button>
-        </div>
-      </div>
-    </div>
+        </ScrollArea>
+      </SheetContent>
+    </Sheet>
   );
 }

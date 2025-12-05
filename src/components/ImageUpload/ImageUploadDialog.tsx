@@ -41,20 +41,17 @@ const ImageUploadDialog: React.FC<ImageUploadDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle className="text-base sm:text-lg">{title}</DialogTitle>
         </DialogHeader>
-        <div className="py-4">
+        <div className="py-2 sm:py-4">
           <ImageUploader
             onImageUpload={handleImageUpload}
             onImageRemove={handleImageRemove}
             initialPreviews={preview ? [preview] : []}
             folder={folder}
           />
-        </div>
-        <div className="flex justify-end">
-          <Button onClick={onClose}>بستن</Button>
         </div>
       </DialogContent>
     </Dialog>
