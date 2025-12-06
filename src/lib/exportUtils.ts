@@ -1,10 +1,14 @@
 import type { ReportData } from '@/actions/reportActions';
-import * as XLSX from 'xlsx';
 
 /**
  * Export report data to Excel format
  */
-export function exportToExcel(data: ReportData, dateRange: { from: Date; to: Date }): void {
+export async function exportToExcel(
+  data: ReportData,
+  dateRange: { from: Date; to: Date },
+): Promise<void> {
+  // Lazy load xlsx only when needed
+  const XLSX = await import('xlsx');
   const workbook = XLSX.utils.book_new();
 
   // KPIs Sheet

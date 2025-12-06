@@ -1,7 +1,6 @@
 import { getSystemReports } from '@/actions/reportActions';
 import { auth } from '@/auth';
 import { NextResponse } from 'next/server';
-import * as XLSX from 'xlsx';
 
 export async function POST(req: Request) {
   try {
@@ -29,6 +28,9 @@ export async function POST(req: Request) {
     if (!data) {
       return NextResponse.json({ error: 'داده‌ای یافت نشد' }, { status: 404 });
     }
+
+    // Lazy load xlsx only when needed
+    const XLSX = await import('xlsx');
 
     // تبدیل داده‌ها به فرمت مناسب برای اکسل
     const workbook = XLSX.utils.book_new();
