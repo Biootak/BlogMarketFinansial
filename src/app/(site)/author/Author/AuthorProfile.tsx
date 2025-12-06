@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card';
 import type { UserWithProfile } from '@/types/types';
 import Image from 'next/image';
 import Link from 'next/link';
-import { FaGlobe } from 'react-icons/fa';
+import { Globe } from 'lucide-react';;;
 
 type AuthorProfileProps = {
   author: UserWithProfile;
@@ -49,7 +49,7 @@ export default function AuthorProfile({ author }: AuthorProfileProps) {
                   href={`/author/${author.id}`}
                   className="flex items-center text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:text-primary-600 dark:hover:text-primary-500 font-vazirmatn justify-center md:justify-start"
                 >
-                  <FaGlobe className="w-3.5 h-3.5 ml-1.5" />
+                  <Globe className="w-3.5 h-3.5 ml-1.5" />
                   <span>{author.profile.jobName}</span>
                 </Link>
               )}

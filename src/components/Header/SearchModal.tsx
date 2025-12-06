@@ -5,12 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FC, Fragment, type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
-import {
-  HiOutlineClock,
-  HiOutlineHashtag,
-  HiOutlineLifebuoy,
-  HiOutlineMagnifyingGlass,
-} from 'react-icons/hi2';
+import { Clock, Hash, LifeBuoy, Search } from 'lucide-react';;;
 
 import { searchAll } from '@/actions/search';
 import { getPostLink } from '@/lib/getPostLink';
@@ -140,7 +135,7 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
         "
         aria-label="جستجو"
       >
-        {renderTrigger ? renderTrigger() : <HiOutlineMagnifyingGlass className="w-5 h-5" />}
+        {renderTrigger ? renderTrigger() : <Search className="w-5 h-5" />}
       </button>
 
       <Transition.Root show={open} as={Fragment} appear>
@@ -190,7 +185,7 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                         dark:from-primary-900/40 dark:to-primary-800/30
                       "
                     >
-                      <HiOutlineMagnifyingGlass
+                      <Search 
                         className="h-5 w-5 text-primary-600 dark:text-primary-400"
                         aria-hidden="true"
                       />
@@ -251,7 +246,7 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                                             : 'bg-neutral-100 dark:bg-neutral-800',
                                         )}
                                       >
-                                        <HiOutlineClock
+                                        <Clock 
                                           className={classNames(
                                             'h-5 w-5 transition-colors',
                                             active
@@ -308,7 +303,7 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                                             : 'bg-neutral-100 dark:bg-neutral-800',
                                         )}
                                       >
-                                        <HiOutlineHashtag
+                                        <Hash 
                                           className={classNames(
                                             'h-5 w-5 transition-colors',
                                             active
@@ -398,7 +393,7 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                           flex items-center justify-center
                         "
                       >
-                        <HiOutlineLifebuoy className="h-7 w-7 text-amber-600 dark:text-amber-400" />
+                        <LifeBuoy className="h-7 w-7 text-amber-600 dark:text-amber-400" />
                       </div>
                       <p className="text-base font-semibold text-neutral-900 dark:text-white mb-2">
                         راهنمای جستجو
@@ -425,7 +420,7 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                             flex items-center justify-center
                           "
                         >
-                          <HiOutlineMagnifyingGlass className="h-7 w-7 text-neutral-400 dark:text-neutral-500" />
+                          <Search className="h-7 w-7 text-neutral-400 dark:text-neutral-500" />
                         </div>
                         <p className="text-sm font-medium text-neutral-600 dark:text-neutral-300">
                           نتیجه‌ای یافت نشد

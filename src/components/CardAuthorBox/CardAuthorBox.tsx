@@ -3,7 +3,7 @@
 import type { TopAuthor } from '@/actions/getTopAuthors';
 import Avatar from '@/components/Avatar/Avatar';
 import { motion } from 'framer-motion';
-import { ArrowLeft, FileText } from 'lucide-react';
+import { ArrowLeft, FileText } from 'lucide-react';;;
 import Link from 'next/link';
 import React, { type FC } from 'react';
 

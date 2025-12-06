@@ -2,7 +2,7 @@
 
 import { getCoinMarketCapUrl } from '@/lib/utils';
 import type { ExchangeRate } from '@/types/types';
-import { TrendingDown, TrendingUp } from 'lucide-react';
+import { TrendingDown, TrendingUp } from 'lucide-react';;;
 import Link from 'next/link';
 import CurrencyIcon from './CurrencyIcon';
 

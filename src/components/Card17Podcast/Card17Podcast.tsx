@@ -5,8 +5,9 @@
 // import Link from 'next/link';
 // import ButtonPlayMusicPlayer from '../ButtonPlayMusicPlayer';
 // import Image from 'next/image';
-// import { HiPause } from 'react-icons/hi2';
-// import { HiPlay } from 'react-icons/hi2';
+import { Pause, Play } from 'lucide-react';;
+// ;
+// 
 
 // export interface Card17PodcastProps {
 //   className?: string;
@@ -20,7 +21,7 @@
 //   const renderDefaultBtnListen = (state?: 'playing') => {
 //     return (
 //       <span className="w-11 h-11 flex items-center justify-center rounded-full bg-white dark:bg-neutral-800 text-primary-6000 dark:text-primary-200 shadow-lg cursor-pointer">
-//         {state === 'playing' ? <HiPause className="w-6 h-6" /> : <HiPlay className="w-6 h-6" />}
+//         {state === 'playing' ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
 //       </span>
 //     );
 //   };

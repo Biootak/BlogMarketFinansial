@@ -11,21 +11,7 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import {
-  HiOutlineArrowRightOnRectangle,
-  HiOutlineBars3,
-  HiOutlineChartBarSquare,
-  HiOutlineChevronDown,
-  HiOutlineClipboardDocumentList,
-  HiOutlineCog6Tooth,
-  HiOutlineCurrencyDollar,
-  HiOutlineDocumentText,
-  HiOutlineHome,
-  HiOutlineMegaphone,
-  HiOutlineSquares2X2,
-  HiOutlineUserCircle,
-  HiOutlineUsers,
-} from 'react-icons/hi2';
+import { BarChart3, ChevronDown, ClipboardList, DollarSign, FileText, Grid2X2, Home, LogOut, Megaphone, Menu, Settings, UserCircle, Users } from 'lucide-react';;;
 
 interface SubmenuItem {
   href: string;
@@ -48,7 +34,7 @@ const getMenuItems = (role: string) => {
     {
       title: 'داشبورد',
       href: '/dashboard',
-      icon: <HiOutlineHome className="w-5 h-5" />,
+      icon: <Home className="w-5 h-5" />,
       label: 'داشبورد',
     },
   ];
@@ -56,7 +42,7 @@ const getMenuItems = (role: string) => {
   const postItem = {
     title: 'پست‌ها',
     href: '/dashboard/posts',
-    icon: <HiOutlineDocumentText className="w-5 h-5" />,
+    icon: <FileText className="w-5 h-5" />,
     label: 'پست ها',
   };
 
@@ -64,31 +50,31 @@ const getMenuItems = (role: string) => {
     {
       title: 'کاربران',
       href: '/dashboard/users',
-      icon: <HiOutlineUsers className="w-5 h-5" />,
+      icon: <Users className="w-5 h-5" />,
       label: 'کاربران',
     },
     {
       title: 'دسته بندی',
       href: '/dashboard/categories',
-      icon: <HiOutlineSquares2X2 className="w-5 h-5" />,
+      icon: <Grid2X2 className="w-5 h-5" />,
       label: 'دسته بندی',
     },
     {
       title: 'تبلیغات',
       href: '/dashboard/advertisements',
-      icon: <HiOutlineMegaphone className="w-5 h-5" />,
+      icon: <Megaphone className="w-5 h-5" />,
       label: 'تبلیغات',
     },
     {
       title: 'درخواست‌های خدمات',
       href: '/dashboard/service-requests',
-      icon: <HiOutlineClipboardDocumentList className="w-5 h-5" />,
+      icon: <ClipboardList className="w-5 h-5" />,
       label: 'درخواست‌ها',
     },
     {
       title: 'نرخ ارزها',
       href: '#',
-      icon: <HiOutlineCurrencyDollar className="w-5 h-5" />,
+      icon: <DollarSign className="w-5 h-5" />,
       label: 'نرخ ارزها',
       submenu: [
         { href: '/dashboard/exchange-rates', label: 'نرخ تکی' },
@@ -102,13 +88,13 @@ const getMenuItems = (role: string) => {
     {
       title: 'تنظیمات سیستم',
       href: '/dashboard/settings',
-      icon: <HiOutlineCog6Tooth className="w-5 h-5" />,
+      icon: <Settings className="w-5 h-5" />,
       label: 'تنظیمات سیستم',
     },
     {
       title: 'گزارش‌ها',
       href: '/dashboard/reports',
-      icon: <HiOutlineChartBarSquare className="w-5 h-5" />,
+      icon: <BarChart3 className="w-5 h-5" />,
       label: 'گزارش‌ها',
     },
   ];
@@ -116,7 +102,7 @@ const getMenuItems = (role: string) => {
   const profileItem = {
     title: 'پروفایل من',
     href: '/dashboard/edit-profile',
-    icon: <HiOutlineUserCircle className="w-5 h-5" />,
+    icon: <UserCircle className="w-5 h-5" />,
     label: 'پروفایل من',
   };
 
@@ -132,7 +118,7 @@ const getMenuItems = (role: string) => {
         {
           title: 'دسته بندی',
           href: '/dashboard/categories',
-          icon: <HiOutlineSquares2X2 className="w-5 h-5" />,
+          icon: <Grid2X2 className="w-5 h-5" />,
           label: 'دسته بندی',
         },
         profileItem,
@@ -281,7 +267,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
               className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-all duration-150 hover:scale-105 active:scale-95 flex-shrink-0"
               aria-label={isOpen ? 'بستن منو' : 'باز کردن منو'}
             >
-              <HiOutlineBars3
+              <Menu 
                 className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-200"
                 style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
               />
@@ -320,7 +306,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
                             <span className="font-medium text-sm sm:text-base truncate">
                               {item.label}
                             </span>
-                            <HiOutlineChevronDown
+                            <ChevronDown 
                               className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-150 flex-shrink-0"
                               style={{
                                 transform: expandedItems.includes(item.label)
@@ -400,7 +386,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
             className={`flex items-center w-full ${isOpen ? 'p-2 sm:p-2.5 lg:p-3' : 'p-2 sm:p-2.5 lg:p-3 justify-center'} mb-2 sm:mb-3 rounded-lg sm:rounded-xl text-white/70 hover:bg-rose-500/20 hover:text-rose-300 transition-all duration-150 hover:translate-x-1`}
           >
             <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-white/5 flex-shrink-0">
-              <HiOutlineArrowRightOnRectangle className="w-4 h-4 sm:w-5 sm:h-5" />
+              <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             {isOpen && (
               <span className="mr-2 sm:mr-3 font-medium text-sm sm:text-base animate-in fade-in slide-in-from-right-1 duration-100 truncate">

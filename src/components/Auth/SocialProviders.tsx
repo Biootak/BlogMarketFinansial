@@ -6,8 +6,9 @@ import { DEFAULT_REDIRECT } from '@/config/routes';
 import { signIn } from 'next-auth/react';
 import type React from 'react';
 import { useState } from 'react';
-import { FaGithub } from 'react-icons/fa';
-import { FcGoogle } from 'react-icons/fc';
+import { Chrome, Github } from 'lucide-react';
+
+
 
 const SocialProviders: React.FC = () => {
   const [isLoadingGoogle, setIsLoadingGoogle] = useState(false);
@@ -50,7 +51,7 @@ const SocialProviders: React.FC = () => {
           {isLoadingGoogle ? (
             <Loading size="md" variant="primary" type="spinner" />
           ) : (
-            <FcGoogle className=" h-5 w-5" />
+            <Chrome className=" h-5 w-5" />
           )}
         </Button>
 
@@ -65,7 +66,7 @@ const SocialProviders: React.FC = () => {
           {isLoadingGithub ? (
             <Loading size="md" variant="primary" type="spinner" />
           ) : (
-            <FaGithub className=" h-5 w-5" />
+            <Github className=" h-5 w-5" />
           )}
         </Button>
       </div>

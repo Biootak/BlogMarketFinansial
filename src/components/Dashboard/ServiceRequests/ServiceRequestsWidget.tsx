@@ -5,13 +5,9 @@ import { useToast } from '@/components/ui/use-toast';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
-import {
-  HiOutlineArrowLeft,
-  HiOutlineClipboardDocumentList,
-  HiOutlineClock,
-  HiOutlineDocumentDuplicate,
-} from 'react-icons/hi2';
+import { ArrowLeft, ClipboardList, Clock, Copy, MessageCircle, Send } from 'lucide-react';;
+;
+
 
 interface ServiceRequest {
   id: string;
@@ -126,7 +122,7 @@ export default function ServiceRequestsWidget() {
         <div className="flex items-center gap-3">
           <div className="flex-shrink-0">
             <div className="p-2.5 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-md">
-              <HiOutlineClipboardDocumentList className="w-5 h-5" />
+              <ClipboardList className="w-5 h-5" />
             </div>
           </div>
 
@@ -136,7 +132,7 @@ export default function ServiceRequestsWidget() {
             </h3>
             <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 font-medium">
-                <HiOutlineClock className="w-3 h-3" />
+                <Clock className="w-3 h-3" />
                 {stats.pending} در انتظار
               </span>
               <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
@@ -150,7 +146,7 @@ export default function ServiceRequestsWidget() {
       <div className="p-4 sm:p-5">
         {requests.length === 0 ? (
           <div className="text-center py-10 sm:py-12 text-slate-500 dark:text-slate-400">
-            <HiOutlineClock className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-3 opacity-30 text-orange-500" />
+            <Clock className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-3 opacity-30 text-orange-500" />
             <p className="text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-300 mb-1">
               درخواست در انتظاری وجود ندارد
             </p>
@@ -175,9 +171,9 @@ export default function ServiceRequestsWidget() {
                   <div className="flex-shrink-0">
                     <div className="w-11 h-11 rounded-xl bg-white dark:bg-slate-700 flex items-center justify-center shadow-sm border border-slate-200/50 dark:border-slate-600/50">
                       {request.contactMethod === 'telegram' ? (
-                        <FaTelegram className="w-5 h-5 text-[#0088cc]" />
+                        <Send className="w-5 h-5 text-[#0088cc]" />
                       ) : (
-                        <FaWhatsapp className="w-5 h-5 text-[#25D366]" />
+                        <MessageCircle className="w-5 h-5 text-[#25D366]" />
                       )}
                     </div>
                   </div>
@@ -241,7 +237,7 @@ export default function ServiceRequestsWidget() {
                       <span className="font-mono text-xs font-bold text-slate-700 dark:text-slate-300 truncate">
                         {request.trackingCode}
                       </span>
-                      <HiOutlineDocumentDuplicate className="w-3.5 h-3.5 text-slate-400 group-hover/code:text-orange-500 transition-colors flex-shrink-0" />
+                      <Copy className="w-3.5 h-3.5 text-slate-400 group-hover/code:text-orange-500 transition-colors flex-shrink-0" />
                     </button>
                   </div>
                 </div>
@@ -259,7 +255,7 @@ export default function ServiceRequestsWidget() {
             className="group flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-sm font-bold transition-all duration-200 shadow-sm hover:shadow-md"
           >
             <span>مشاهده همه درخواست‌ها</span>
-            <HiOutlineArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
           </Link>
         </div>
       )}

@@ -3,7 +3,7 @@ import Avatar from '@/components/Avatar/Avatar';
 import NcImage from '@/components/NcImage/NcImage';
 import Link from 'next/link';
 import React, { type FC } from 'react';
-import { HiArrowRight } from 'react-icons/hi2';
+import { ArrowRight } from 'lucide-react';;;
 
 export interface CardAuthorBox2Props {
   className?: string;
@@ -34,7 +34,7 @@ const CardAuthorBox2: FC<CardAuthorBox2Props> = ({ className = '', author }) => 
         />
         <div className="absolute top-3 inset-x-3 flex justify-end">
           <div className="py-1.5 px-3 bg-white/90 dark:bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center leading-none text-xs font-semibold shadow-sm">
-            <HiArrowRight className="w-4 h-4 text-yellow-600 ml-2 rtl:rotate-180" />
+            <ArrowRight className="w-4 h-4 text-yellow-600 ml-2 rtl:rotate-180" />
             <span className="text-neutral-700 dark:text-neutral-200">{postCount} مقاله</span>
           </div>
         </div>

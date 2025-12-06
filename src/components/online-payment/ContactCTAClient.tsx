@@ -2,14 +2,14 @@
 
 import { motion } from 'framer-motion';
 import { type FC, useState } from 'react';
-import { HiClock, HiPencilAlt, HiSearch, HiShieldCheck, HiSupport } from 'react-icons/hi';
+import { Clock, Edit, HelpCircle, Search, ShieldCheck } from 'lucide-react';
 import ServiceRequestForm from './ServiceRequestForm';
 import TrackingForm from './TrackingForm';
 
 const features = [
-  { icon: HiClock, title: 'پاسخگویی سریع', description: 'حداکثر ۳۰ دقیقه' },
-  { icon: HiShieldCheck, title: 'تراکنش امن', description: 'با ضمانت بازگشت وجه' },
-  { icon: HiSupport, title: 'پشتیبانی ۲۴/۷', description: 'همه روزه در خدمت شما' },
+  { icon: Clock, title: 'پاسخگویی سریع', description: 'حداکثر ۳۰ دقیقه' },
+  { icon: ShieldCheck, title: 'تراکنش امن', description: 'با ضمانت بازگشت وجه' },
+  { icon: HelpCircle, title: 'پشتیبانی ۲۴/۷', description: 'همه روزه در خدمت شما' },
 ];
 
 interface ContactCTAClientProps {
@@ -57,7 +57,7 @@ const ContactCTAClient: FC<ContactCTAClientProps> = ({
                       : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
-                  <HiPencilAlt className="w-5 h-5" />
+                  <Edit className="w-5 h-5" />
                   ثبت درخواست
                 </button>
                 <button
@@ -69,7 +69,7 @@ const ContactCTAClient: FC<ContactCTAClientProps> = ({
                       : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                   }`}
                 >
-                  <HiSearch className="w-5 h-5" />
+                  <Search className="w-5 h-5" />
                   پیگیری درخواست
                 </button>
               </div>

@@ -5,7 +5,7 @@ import type { UserWithProfile } from '@/types/types';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import type React from 'react';
-import { HiArrowLeft, HiPencilSquare } from 'react-icons/hi2';
+import { ArrowLeft, Edit } from 'lucide-react';;;
 
 export interface SingleAuthorProps {
   author?: UserWithProfile;
@@ -48,7 +48,7 @@ const SingleAuthor: React.FC<SingleAuthorProps> = ({ author }) => {
           <div className="flex-grow min-w-0">
             {/* Label */}
             <div className="flex items-center gap-2 mb-2">
-              <HiPencilSquare className="w-3.5 h-3.5 text-primary-500" />
+              <Edit className="w-3.5 h-3.5 text-primary-500" />
               <span className="text-[11px] font-semibold uppercase tracking-widest text-primary-600 dark:text-primary-400">
                 نویسنده مطلب
               </span>
@@ -70,7 +70,7 @@ const SingleAuthor: React.FC<SingleAuthorProps> = ({ author }) => {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white bg-gradient-to-l from-primary-600 to-violet-600 hover:from-primary-500 hover:to-violet-500 shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 transition-all duration-300 hover:-translate-y-0.5"
             >
               <span>مشاهده پروفایل</span>
-              <HiArrowLeft className="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-1" />
+              <ArrowLeft className="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-1" />
             </Link>
           </div>
         </div>

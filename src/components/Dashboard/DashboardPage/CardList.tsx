@@ -6,15 +6,7 @@ import { motion } from 'framer-motion';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { type FC, useCallback, useMemo } from 'react';
-import {
-  HiClipboard,
-  HiDocumentDuplicate,
-  HiEllipsisVertical,
-  HiEye,
-  HiEyeSlash,
-  HiPencil,
-  HiTrash,
-} from 'react-icons/hi2';
+import { Clipboard, Copy, Eye, EyeOff, MoreVertical, Pencil, Trash2 } from 'lucide-react';;;
 
 import PostCardLikeAndComment from '@/components/PostCardLikeAndComment/PostCardLikeAndComment';
 import PostCardMeta from '@/components/PostCardMeta/PostCardMeta';
@@ -184,7 +176,7 @@ const CardList: FC<CardListProps> = ({
                       whileTap={{ scale: 0.92 }}
                       className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-lg sm:rounded-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-md flex items-center justify-center shadow-lg border border-slate-200/50 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-700 hover:border-violet-300 dark:hover:border-violet-600 transition-all duration-200"
                     >
-                      <HiEllipsisVertical className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-slate-700 dark:text-slate-300" />
+                      <MoreVertical className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-slate-700 dark:text-slate-300" />
                     </motion.div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
@@ -201,7 +193,7 @@ const CardList: FC<CardListProps> = ({
                         >
                           {post.status === 'PUBLISHED' ? (
                             <>
-                              <HiEyeSlash className="ml-2 w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                              <EyeOff className="ml-2 w-3.5 h-3.5 sm:w-4 sm:h-4" />
                               <span className="truncate">
                                 {session?.user?.role === 'ADMIN' ||
                                 session?.user?.role === 'SUPER_ADMIN'
@@ -211,7 +203,7 @@ const CardList: FC<CardListProps> = ({
                             </>
                           ) : post.status === 'DRAFT' ? (
                             <>
-                              <HiClipboard className="ml-2 w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                              <Clipboard className="ml-2 w-3.5 h-3.5 sm:w-4 sm:h-4" />
                               <span className="truncate">ارسال برای بررسی</span>
                             </>
                           ) : (
@@ -219,12 +211,12 @@ const CardList: FC<CardListProps> = ({
                               {session?.user?.role === 'ADMIN' ||
                               session?.user?.role === 'SUPER_ADMIN' ? (
                                 <>
-                                  <HiEye className="ml-2 w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                  <Eye className="ml-2 w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                   <span className="truncate">انتشار</span>
                                 </>
                               ) : (
                                 <>
-                                  <HiPencil className="ml-2 w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                  <Pencil className="ml-2 w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                   <span className="truncate">برگشت به پیش‌نویس</span>
                                 </>
                               )}
@@ -236,7 +228,7 @@ const CardList: FC<CardListProps> = ({
                           className="rounded-lg cursor-pointer text-xs sm:text-sm"
                         >
                           <Link href={`/dashboard/posts/edit/${post.id}`}>
-                            <HiPencil className="ml-2 w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            <Pencil className="ml-2 w-3.5 h-3.5 sm:w-4 sm:h-4" />
                             <span className="truncate">ویرایش</span>
                           </Link>
                         </DropdownMenuItem>
@@ -245,7 +237,7 @@ const CardList: FC<CardListProps> = ({
                           onClick={handleDelete}
                           className="text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg cursor-pointer focus:bg-rose-50 dark:focus:bg-rose-900/20 text-xs sm:text-sm"
                         >
-                          <HiTrash className="ml-2 w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          <Trash2 className="ml-2 w-3.5 h-3.5 sm:w-4 sm:h-4" />
                           <span className="truncate">حذف</span>
                         </DropdownMenuItem>
                       </>
@@ -270,7 +262,7 @@ const CardList: FC<CardListProps> = ({
                   className="group/btn relative flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-md shadow-xl border border-white/50 dark:border-slate-700/50 hover:scale-110 active:scale-95 transition-all duration-200"
                   title="مشاهده پست"
                 >
-                  <HiEye className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                  <Eye className="w-5 h-5 text-violet-600 dark:text-violet-400" />
                   {/* Tooltip */}
                   <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 rounded-lg bg-slate-900 dark:bg-slate-700 text-white text-[10px] whitespace-nowrap opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none">
                     مشاهده
@@ -290,7 +282,7 @@ const CardList: FC<CardListProps> = ({
                     className="group/btn relative flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-md shadow-xl border border-white/50 dark:border-slate-700/50 hover:scale-110 active:scale-95 transition-all duration-200"
                     title="ویرایش پست"
                   >
-                    <HiPencil className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <Pencil className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     {/* Tooltip */}
                     <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 rounded-lg bg-slate-900 dark:bg-slate-700 text-white text-[10px] whitespace-nowrap opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none">
                       ویرایش
@@ -320,7 +312,7 @@ const CardList: FC<CardListProps> = ({
                   className="group/btn relative flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-md shadow-xl border border-white/50 dark:border-slate-700/50 hover:scale-110 active:scale-95 transition-all duration-200"
                   title="کپی لینک"
                 >
-                  <HiDocumentDuplicate className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                  <Copy className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                   {/* Tooltip */}
                   <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 rounded-lg bg-slate-900 dark:bg-slate-700 text-white text-[10px] whitespace-nowrap opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none">
                     کپی لینک

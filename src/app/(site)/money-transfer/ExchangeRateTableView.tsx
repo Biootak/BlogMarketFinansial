@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/table';
 import type { ExchangeRateData } from '@/types/types';
 import { motion } from 'framer-motion';
-import { Info, TrendingDown, TrendingUp } from 'lucide-react';
+import { Info, TrendingDown, TrendingUp } from 'lucide-react';;;
 import Image from 'next/image';
 
 interface ExchangeRateTableViewProps {

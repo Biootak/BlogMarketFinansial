@@ -6,29 +6,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { AnimatePresence, motion } from 'framer-motion';
 import { type FC, useCallback, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
-import {
-  HiAcademicCap,
-  HiArrowLeft,
-  HiArrowRight,
-  HiCash,
-  HiCheckCircle,
-  HiClipboardCopy,
-  HiClock,
-  HiCreditCard,
-  HiCurrencyDollar,
-  HiDocumentText,
-  HiExclamationCircle,
-  HiGlobe,
-  HiLightningBolt,
-  HiMail,
-  HiOfficeBuilding,
-  HiPhone,
-  HiShieldCheck,
-  HiShoppingCart,
-  HiSparkles,
-  HiUser,
-} from 'react-icons/hi';
+import { AlertCircle, ArrowLeft, ArrowRight, Banknote, Building2, CheckCircle, Clock, Copy, CreditCard, DollarSign, FileText, Globe, GraduationCap, Mail, MessageCircle, Phone, Send, ShieldCheck, ShoppingCart, Sparkles, User, Zap } from 'lucide-react';
+;
+
 
 // ============================================
 // Types & Constants
@@ -59,7 +39,7 @@ const serviceTypes: ServiceOption[] = [
   {
     value: 'INTERNATIONAL_TRANSFER',
     label: 'حواله بین‌المللی',
-    icon: HiGlobe,
+    icon: Globe,
     description: 'انتقال پول به حساب بانکی در کشورهای مختلف',
     color: 'text-blue-600 dark:text-blue-400',
     bgColor: 'bg-blue-50 dark:bg-blue-950/50',
@@ -69,7 +49,7 @@ const serviceTypes: ServiceOption[] = [
   {
     value: 'ONLINE_PAYMENT',
     label: 'پرداخت آنلاین',
-    icon: HiCreditCard,
+    icon: CreditCard,
     description: 'خرید از سایت‌های خارجی با کارت اعتباری',
     color: 'text-purple-600 dark:text-purple-400',
     bgColor: 'bg-purple-50 dark:bg-purple-950/50',
@@ -79,7 +59,7 @@ const serviceTypes: ServiceOption[] = [
   {
     value: 'TUITION_PAYMENT',
     label: 'پرداخت شهریه',
-    icon: HiAcademicCap,
+    icon: GraduationCap,
     description: 'پرداخت هزینه تحصیل در دانشگاه‌های خارجی',
     color: 'text-emerald-600 dark:text-emerald-400',
     bgColor: 'bg-emerald-50 dark:bg-emerald-950/50',
@@ -89,7 +69,7 @@ const serviceTypes: ServiceOption[] = [
   {
     value: 'FREELANCE_INCOME',
     label: 'نقد کردن درآمد',
-    icon: HiCash,
+    icon: Banknote,
     description: 'دریافت درآمد از پلتفرم‌های فریلنسری',
     color: 'text-amber-600 dark:text-amber-400',
     bgColor: 'bg-amber-50 dark:bg-amber-950/50',
@@ -99,7 +79,7 @@ const serviceTypes: ServiceOption[] = [
   {
     value: 'SOFTWARE_PURCHASE',
     label: 'خرید نرم‌افزار',
-    icon: HiShoppingCart,
+    icon: ShoppingCart,
     description: 'تهیه اشتراک و لایسنس برنامه‌ها',
     color: 'text-rose-600 dark:text-rose-400',
     bgColor: 'bg-rose-50 dark:bg-rose-950/50',
@@ -109,7 +89,7 @@ const serviceTypes: ServiceOption[] = [
   {
     value: 'OTHER',
     label: 'سایر خدمات',
-    icon: HiSparkles,
+    icon: Sparkles,
     description: 'درخواست‌های خاص و سفارشی',
     color: 'text-indigo-600 dark:text-indigo-400',
     bgColor: 'bg-indigo-50 dark:bg-indigo-950/50',
@@ -330,7 +310,7 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
               className="relative"
             >
               <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-50 dark:bg-primary-950/50 text-primary-600 dark:text-primary-400 text-sm font-medium mb-4 border border-primary-100 dark:border-primary-900/50">
-                <HiSparkles className="w-4 h-4" />
+                <Sparkles className="w-4 h-4" />
                 ثبت درخواست جدید
               </span>
               <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white mb-3">
@@ -345,9 +325,9 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
           {/* Features Bar */}
           <div className="grid grid-cols-3 divide-x divide-neutral-100 dark:divide-neutral-800 border-b border-neutral-100 dark:border-neutral-800/50 rtl:divide-x-reverse">
             {[
-              { icon: HiShieldCheck, label: 'پشتیبانی ۲۴/۷', desc: 'همه روزه در خدمت شما' },
-              { icon: HiLightningBolt, label: 'پردازش سریع', desc: 'حداکثر تا ۲۴ ساعت' },
-              { icon: HiCheckCircle, label: 'ضمانت بازگشت', desc: 'تضمین رضایت شما' },
+              { icon: ShieldCheck, label: 'پشتیبانی ۲۴/۷', desc: 'همه روزه در خدمت شما' },
+              { icon: Zap, label: 'پردازش سریع', desc: 'حداکثر تا ۲۴ ساعت' },
+              { icon: CheckCircle, label: 'ضمانت بازگشت', desc: 'تضمین رضایت شما' },
             ].map((feature, idx) => (
               <motion.div
                 key={feature.label}
@@ -432,7 +412,7 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
                         className="mt-6 p-5 bg-gradient-to-r from-red-50 to-red-100/50 dark:from-red-950/50 dark:to-red-900/30 rounded-2xl flex items-center gap-4 border border-red-200/50 dark:border-red-800/50"
                       >
                         <div className="p-2 bg-red-100 dark:bg-red-900/50 rounded-xl">
-                          <HiExclamationCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                          <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
                         </div>
                         <span className="text-red-700 dark:text-red-300 font-medium">
                           {submitResult.message}
@@ -496,7 +476,7 @@ function SupportLinks({ telegramLink, whatsappLink }: SupportLinksProps) {
             rel="noopener noreferrer"
             className="group relative flex items-center gap-3 px-6 py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-2xl font-medium transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5"
           >
-            <FaTelegram className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+            <Send className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
             <span>تلگرام</span>
           </a>
         )}
@@ -507,7 +487,7 @@ function SupportLinks({ telegramLink, whatsappLink }: SupportLinksProps) {
             rel="noopener noreferrer"
             className="group relative flex items-center gap-3 px-6 py-3.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-2xl font-medium transition-all duration-300 shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30 hover:-translate-y-0.5"
           >
-            <FaWhatsapp className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+            <MessageCircle className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
             <span>واتساپ</span>
           </a>
         )}
@@ -518,9 +498,9 @@ function SupportLinks({ telegramLink, whatsappLink }: SupportLinksProps) {
 
 function StepIndicator({ currentStep, totalSteps }: { currentStep: number; totalSteps: number }) {
   const steps = [
-    { num: 1, label: 'انتخاب خدمات', icon: HiSparkles },
-    { num: 2, label: 'اطلاعات درخواست', icon: HiDocumentText },
-    { num: 3, label: 'بررسی و ارسال', icon: HiCheckCircle },
+    { num: 1, label: 'انتخاب خدمات', icon: Sparkles },
+    { num: 2, label: 'اطلاعات درخواست', icon: FileText },
+    { num: 3, label: 'بررسی و ارسال', icon: CheckCircle },
   ];
 
   return (
@@ -567,7 +547,7 @@ function StepIndicator({ currentStep, totalSteps }: { currentStep: number; total
                     animate={{ scale: 1 }}
                     transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                   >
-                    <HiCheckCircle className="w-6 h-6" />
+                    <CheckCircle className="w-6 h-6" />
                   </motion.div>
                 ) : (
                   <Icon className="w-5 h-5" />
@@ -643,7 +623,7 @@ function SuccessState({
             animate={{ scale: 1, rotate: 0 }}
             transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.4 }}
           >
-            <HiCheckCircle className="w-12 h-12 text-white" />
+            <CheckCircle className="w-12 h-12 text-white" />
           </motion.div>
         </div>
       </motion.div>
@@ -677,9 +657,9 @@ function SuccessState({
             className="p-3 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-xl transition-all duration-300 hover:scale-105"
           >
             {copiedCode ? (
-              <HiCheckCircle className="w-6 h-6 text-green-500" />
+              <CheckCircle className="w-6 h-6 text-green-500" />
             ) : (
-              <HiClipboardCopy className="w-6 h-6 text-neutral-500" />
+              <Copy className="w-6 h-6 text-neutral-500" />
             )}
           </button>
         </div>
@@ -713,7 +693,7 @@ function SuccessState({
                 rel="noopener noreferrer"
                 className="group flex items-center gap-3 px-6 py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-2xl font-medium transition-all duration-300 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5"
               >
-                <FaTelegram className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+                <Send className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
                 تلگرام
               </a>
             )}
@@ -724,7 +704,7 @@ function SuccessState({
                 rel="noopener noreferrer"
                 className="group flex items-center gap-3 px-6 py-3.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-2xl font-medium transition-all duration-300 shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/30 hover:-translate-y-0.5"
               >
-                <FaWhatsapp className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+                <MessageCircle className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
                 واتساپ
               </a>
             )}
@@ -803,7 +783,7 @@ function Step1ServiceSelection({ serviceTypes, selectedService, onSelect }: Step
                   animate={{ scale: 1 }}
                   className="absolute top-3 left-3 w-6 h-6 bg-primary-500 rounded-full flex items-center justify-center"
                 >
-                  <HiCheckCircle className="w-4 h-4 text-white" />
+                  <CheckCircle className="w-4 h-4 text-white" />
                 </motion.div>
               )}
 
@@ -868,7 +848,7 @@ function Step2Details({ register, errors, currencies, countries, serviceType }: 
       <div className="space-y-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-xl">
-            <HiUser className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+            <User className="w-5 h-5 text-primary-600 dark:text-primary-400" />
           </div>
           <h4 className="font-bold text-neutral-900 dark:text-white">اطلاعات شخصی</h4>
         </div>
@@ -876,7 +856,7 @@ function Step2Details({ register, errors, currencies, countries, serviceType }: 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div>
             <label className={labelClass}>
-              <HiUser className={iconClass} />
+              <User className={iconClass} />
               نام و نام خانوادگی *
             </label>
             <input
@@ -891,7 +871,7 @@ function Step2Details({ register, errors, currencies, countries, serviceType }: 
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-2 text-sm text-red-500 flex items-center gap-1"
               >
-                <HiExclamationCircle className="w-4 h-4" />
+                <AlertCircle className="w-4 h-4" />
                 {errors.fullName.message}
               </motion.p>
             )}
@@ -899,7 +879,7 @@ function Step2Details({ register, errors, currencies, countries, serviceType }: 
 
           <div>
             <label className={labelClass}>
-              <HiPhone className={iconClass} />
+              <Phone className={iconClass} />
               شماره تماس *
             </label>
             <input
@@ -915,7 +895,7 @@ function Step2Details({ register, errors, currencies, countries, serviceType }: 
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-2 text-sm text-red-500 flex items-center gap-1"
               >
-                <HiExclamationCircle className="w-4 h-4" />
+                <AlertCircle className="w-4 h-4" />
                 {errors.phone.message}
               </motion.p>
             )}
@@ -924,7 +904,7 @@ function Step2Details({ register, errors, currencies, countries, serviceType }: 
 
         <div>
           <label className={labelClass}>
-            <HiMail className={iconClass} />
+            <Mail className={iconClass} />
             ایمیل (اختیاری)
           </label>
           <input
@@ -941,7 +921,7 @@ function Step2Details({ register, errors, currencies, countries, serviceType }: 
       <div className="space-y-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
-            <HiCurrencyDollar className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <DollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <h4 className="font-bold text-neutral-900 dark:text-white">اطلاعات مالی</h4>
         </div>
@@ -949,7 +929,7 @@ function Step2Details({ register, errors, currencies, countries, serviceType }: 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div>
             <label className={labelClass}>
-              <HiCurrencyDollar className={iconClass} />
+              <DollarSign className={iconClass} />
               مبلغ *
             </label>
             <input
@@ -965,7 +945,7 @@ function Step2Details({ register, errors, currencies, countries, serviceType }: 
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-2 text-sm text-red-500 flex items-center gap-1"
               >
-                <HiExclamationCircle className="w-4 h-4" />
+                <AlertCircle className="w-4 h-4" />
                 {errors.amount.message}
               </motion.p>
             )}
@@ -1002,14 +982,14 @@ function Step2Details({ register, errors, currencies, countries, serviceType }: 
         <div className="space-y-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
-              <HiGlobe className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <Globe className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
             <h4 className="font-bold text-neutral-900 dark:text-white">اطلاعات حواله</h4>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className={labelClass}>
-                <HiGlobe className={iconClass} />
+                <Globe className={iconClass} />
                 کشور مقصد *
               </label>
               <select {...register('destinationCountry')} className={inputNormalClass}>
@@ -1023,7 +1003,7 @@ function Step2Details({ register, errors, currencies, countries, serviceType }: 
             </div>
             <div>
               <label className={labelClass}>
-                <HiOfficeBuilding className={iconClass} />
+                <Building2 className={iconClass} />
                 نام بانک مقصد
               </label>
               <input
@@ -1041,14 +1021,14 @@ function Step2Details({ register, errors, currencies, countries, serviceType }: 
         <div className="space-y-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
-              <HiCreditCard className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <CreditCard className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             </div>
             <h4 className="font-bold text-neutral-900 dark:text-white">اطلاعات خرید</h4>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className={labelClass}>
-                <HiGlobe className={iconClass} />
+                <Globe className={iconClass} />
                 آدرس سایت / فروشگاه
               </label>
               <input
@@ -1061,7 +1041,7 @@ function Step2Details({ register, errors, currencies, countries, serviceType }: 
             </div>
             <div>
               <label className={labelClass}>
-                <HiShoppingCart className={iconClass} />
+                <ShoppingCart className={iconClass} />
                 نام محصول / خدمات
               </label>
               <input
@@ -1079,14 +1059,14 @@ function Step2Details({ register, errors, currencies, countries, serviceType }: 
         <div className="space-y-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
-              <HiAcademicCap className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              <GraduationCap className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             </div>
             <h4 className="font-bold text-neutral-900 dark:text-white">اطلاعات تحصیلی</h4>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className={labelClass}>
-                <HiGlobe className={iconClass} />
+                <Globe className={iconClass} />
                 کشور مقصد *
               </label>
               <select {...register('destinationCountry')} className={inputNormalClass}>
@@ -1100,7 +1080,7 @@ function Step2Details({ register, errors, currencies, countries, serviceType }: 
             </div>
             <div>
               <label className={labelClass}>
-                <HiAcademicCap className={iconClass} />
+                <GraduationCap className={iconClass} />
                 نام دانشگاه
               </label>
               <input
@@ -1128,14 +1108,14 @@ function Step2Details({ register, errors, currencies, countries, serviceType }: 
         <div className="space-y-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
-              <HiCash className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              <Banknote className="w-5 h-5 text-amber-600 dark:text-amber-400" />
             </div>
             <h4 className="font-bold text-neutral-900 dark:text-white">اطلاعات پلتفرم</h4>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className={labelClass}>
-                <HiGlobe className={iconClass} />
+                <Globe className={iconClass} />
                 نام پلتفرم
               </label>
               <input
@@ -1163,14 +1143,14 @@ function Step2Details({ register, errors, currencies, countries, serviceType }: 
         <div className="space-y-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-rose-100 dark:bg-rose-900/30 rounded-xl">
-              <HiShoppingCart className="w-5 h-5 text-rose-600 dark:text-rose-400" />
+              <ShoppingCart className="w-5 h-5 text-rose-600 dark:text-rose-400" />
             </div>
             <h4 className="font-bold text-neutral-900 dark:text-white">اطلاعات نرم‌افزار</h4>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className={labelClass}>
-                <HiShoppingCart className={iconClass} />
+                <ShoppingCart className={iconClass} />
                 نام نرم‌افزار / سرویس
               </label>
               <input
@@ -1198,7 +1178,7 @@ function Step2Details({ register, errors, currencies, countries, serviceType }: 
       <div className="space-y-4">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-xl">
-            <HiLightningBolt className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+            <Zap className="w-5 h-5 text-orange-600 dark:text-orange-400" />
           </div>
           <h4 className="font-bold text-neutral-900 dark:text-white">اولویت درخواست</h4>
         </div>
@@ -1209,7 +1189,7 @@ function Step2Details({ register, errors, currencies, countries, serviceType }: 
             <div className="p-5 rounded-2xl border-2 border-neutral-200 dark:border-neutral-700 peer-checked:border-green-500 peer-checked:bg-green-50 dark:peer-checked:bg-green-950/30 transition-all duration-300 hover:border-neutral-300 dark:hover:border-neutral-600 group-hover:shadow-lg">
               <div className="flex flex-col items-center gap-3">
                 <div className="p-3 bg-green-100 dark:bg-green-900/50 rounded-xl group-hover:scale-110 transition-transform duration-300">
-                  <HiClock className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  <Clock className="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div className="text-center">
                   <span className="font-bold text-neutral-900 dark:text-white block">عادی</span>
@@ -1226,7 +1206,7 @@ function Step2Details({ register, errors, currencies, countries, serviceType }: 
             <div className="p-5 rounded-2xl border-2 border-neutral-200 dark:border-neutral-700 peer-checked:border-red-500 peer-checked:bg-red-50 dark:peer-checked:bg-red-950/30 transition-all duration-300 hover:border-neutral-300 dark:hover:border-neutral-600 group-hover:shadow-lg">
               <div className="flex flex-col items-center gap-3">
                 <div className="p-3 bg-red-100 dark:bg-red-900/50 rounded-xl group-hover:scale-110 transition-transform duration-300">
-                  <HiLightningBolt className="w-6 h-6 text-red-600 dark:text-red-400" />
+                  <Zap className="w-6 h-6 text-red-600 dark:text-red-400" />
                 </div>
                 <div className="text-center">
                   <span className="font-bold text-neutral-900 dark:text-white block">فوری</span>
@@ -1336,12 +1316,12 @@ function Step3Review({
             <p className="font-semibold text-neutral-900 dark:text-white">
               {urgency === 'URGENT' ? (
                 <span className="inline-flex items-center gap-1.5 text-red-600 dark:text-red-400">
-                  <HiLightningBolt className="w-4 h-4" />
+                  <Zap className="w-4 h-4" />
                   فوری
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 text-green-600 dark:text-green-400">
-                  <HiClock className="w-4 h-4" />
+                  <Clock className="w-4 h-4" />
                   عادی
                 </span>
               )}
@@ -1353,7 +1333,7 @@ function Step3Review({
       {/* Description */}
       <div>
         <label className="flex items-center gap-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3">
-          <HiDocumentText className="w-4 h-4 text-primary-500" />
+          <FileText className="w-4 h-4 text-primary-500" />
           توضیحات تکمیلی (اختیاری)
         </label>
         <textarea
@@ -1372,7 +1352,7 @@ function Step3Review({
         className="flex items-start gap-4 p-5 bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-950/50 dark:to-blue-900/30 rounded-2xl border border-blue-200/50 dark:border-blue-800/50"
       >
         <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-xl flex-shrink-0">
-          <HiShieldCheck className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+          <ShieldCheck className="w-6 h-6 text-blue-600 dark:text-blue-400" />
         </div>
         <div>
           <p className="font-semibold text-blue-900 dark:text-blue-300">امنیت اطلاعات</p>
@@ -1412,7 +1392,7 @@ function NavigationButtons({
           whileTap={{ scale: 0.98 }}
           className="group flex items-center gap-3 px-6 py-4 rounded-2xl border-2 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:border-neutral-300 dark:hover:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-all duration-300"
         >
-          <HiArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
           <span className="font-medium">مرحله قبل</span>
         </motion.button>
       ) : (
@@ -1428,7 +1408,7 @@ function NavigationButtons({
           className="group flex items-center gap-3 px-8 py-4 rounded-2xl bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-medium transition-all duration-300 shadow-lg shadow-primary-500/25 hover:shadow-xl hover:shadow-primary-500/30"
         >
           <span>مرحله بعد</span>
-          <HiArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-300" />
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-300" />
         </motion.button>
       ) : (
         <motion.button
@@ -1446,7 +1426,7 @@ function NavigationButtons({
             </>
           ) : (
             <>
-              <HiCheckCircle className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+              <CheckCircle className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
               <span>ثبت درخواست</span>
             </>
           )}

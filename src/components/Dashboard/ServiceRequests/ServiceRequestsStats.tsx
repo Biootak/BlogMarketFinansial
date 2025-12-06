@@ -2,14 +2,7 @@
 
 import { getServiceRequestStats } from '@/actions/serviceRequestActions';
 import { useEffect, useState } from 'react';
-import {
-  HiOutlineArrowPath,
-  HiOutlineCalendarDays,
-  HiOutlineCheckCircle,
-  HiOutlineClock,
-  HiOutlineRectangleStack,
-  HiOutlineXCircle,
-} from 'react-icons/hi2';
+import { CalendarDays, CheckCircle, Clock, Layers, RefreshCw, XCircle } from 'lucide-react';
 
 interface Stats {
   total: number;
@@ -24,7 +17,7 @@ const statCards = [
   {
     key: 'total',
     label: 'کل درخواست‌ها',
-    icon: HiOutlineRectangleStack,
+    icon: Layers,
     gradient: 'from-blue-500 to-blue-600',
     iconBg: 'bg-blue-50 dark:bg-blue-900/20',
     textColor: 'text-blue-600 dark:text-blue-400',
@@ -33,7 +26,7 @@ const statCards = [
   {
     key: 'pending',
     label: 'در انتظار',
-    icon: HiOutlineClock,
+    icon: Clock,
     gradient: 'from-amber-500 to-orange-500',
     iconBg: 'bg-amber-50 dark:bg-amber-900/20',
     textColor: 'text-amber-600 dark:text-amber-400',
@@ -42,7 +35,7 @@ const statCards = [
   {
     key: 'inProgress',
     label: 'در حال انجام',
-    icon: HiOutlineArrowPath,
+    icon: RefreshCw,
     gradient: 'from-indigo-500 to-violet-500',
     iconBg: 'bg-indigo-50 dark:bg-indigo-900/20',
     textColor: 'text-indigo-600 dark:text-indigo-400',
@@ -51,7 +44,7 @@ const statCards = [
   {
     key: 'completed',
     label: 'تکمیل شده',
-    icon: HiOutlineCheckCircle,
+    icon: CheckCircle,
     gradient: 'from-emerald-500 to-green-500',
     iconBg: 'bg-emerald-50 dark:bg-emerald-900/20',
     textColor: 'text-emerald-600 dark:text-emerald-400',
@@ -60,7 +53,7 @@ const statCards = [
   {
     key: 'cancelled',
     label: 'لغو شده',
-    icon: HiOutlineXCircle,
+    icon: XCircle,
     gradient: 'from-rose-500 to-red-500',
     iconBg: 'bg-rose-50 dark:bg-rose-900/20',
     textColor: 'text-rose-600 dark:text-rose-400',
@@ -69,7 +62,7 @@ const statCards = [
   {
     key: 'todayCount',
     label: 'امروز',
-    icon: HiOutlineCalendarDays,
+    icon: CalendarDays,
     gradient: 'from-purple-500 to-fuchsia-500',
     iconBg: 'bg-purple-50 dark:bg-purple-900/20',
     textColor: 'text-purple-600 dark:text-purple-400',

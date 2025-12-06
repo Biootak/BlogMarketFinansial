@@ -34,14 +34,9 @@ import { useToast } from '@/components/ui/use-toast';
 import type { RateItem, RateListData } from '@/types/types';
 import { useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
-import {
-  HiMinusCircle,
-  HiOutlineListBullet,
-  HiOutlinePencil,
-  HiOutlineTrash,
-  HiPlusCircle,
-} from 'react-icons/hi2';
-import { HiOutlineInformationCircle } from 'react-icons/hi2';
+import { Info, List, MinusCircle, Pencil, PlusCircle, Trash2 } from 'lucide-react';
+;
+
 
 const parseCurrencyRates = async (text: string): Promise<RateItem[]> => {
   const rates: RateItem[] = [];
@@ -399,7 +394,7 @@ const RateListsPage = () => {
             options={sortOptions}
           />
           <PrimaryActionButton onClick={() => setShowCreateModal(true)}>
-            <HiPlusCircle className="h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
+            <PlusCircle className="h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
             <span>افزودن لیست نرخ</span>
           </PrimaryActionButton>
         </DashboardPageHeader>
@@ -407,7 +402,7 @@ const RateListsPage = () => {
         {filteredRateLists.length === 0 ? (
           <div className="rounded-2xl border border-slate-200/60 bg-white/80 p-12 text-center shadow-sm backdrop-blur-sm dark:border-slate-700/50 dark:bg-slate-800/80">
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200/80 dark:from-slate-700 dark:to-slate-800">
-              <HiOutlineListBullet className="h-10 w-10 text-slate-400 dark:text-slate-500" />
+              <List className="h-10 w-10 text-slate-400 dark:text-slate-500" />
             </div>
             <h3 className="mt-6 text-lg font-semibold text-slate-900 dark:text-slate-100">
               لیست نرخی یافت نشد
@@ -443,13 +438,13 @@ const RateListsPage = () => {
                         }}
                         className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/60 bg-white/80 text-slate-600 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 hover:shadow-md dark:border-slate-700/50 dark:bg-slate-800/80 dark:text-slate-400 dark:hover:border-blue-600 dark:hover:bg-blue-950/50 dark:hover:text-blue-400"
                       >
-                        <HiOutlinePencil className="h-4 w-4" />
+                        <Pencil className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(rateList.id!)}
                         className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/60 bg-white/80 text-slate-600 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-red-300 hover:bg-red-50 hover:text-red-600 hover:shadow-md dark:border-slate-700/50 dark:bg-slate-800/80 dark:text-slate-400 dark:hover:border-red-600 dark:hover:bg-red-950/50 dark:hover:text-red-400"
                       >
-                        <HiOutlineTrash className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
                   </div>
@@ -553,7 +548,7 @@ const RateListsPage = () => {
                             type="button"
                             className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-blue-600 transition-all duration-200 hover:bg-blue-100 dark:bg-blue-950/50 dark:text-blue-400 dark:hover:bg-blue-950"
                           >
-                            <HiOutlineInformationCircle className="h-4 w-4" />
+                            <Info className="h-4 w-4" />
                           </button>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs rounded-xl border-slate-200/60 bg-white/95 p-3.5 shadow-xl backdrop-blur-xl dark:border-slate-700/50 dark:bg-slate-800/95">
@@ -575,7 +570,7 @@ const RateListsPage = () => {
                       }}
                       className="h-9 rounded-xl border-red-200/60 bg-white/80 text-red-600 shadow-sm transition-all duration-200 hover:border-red-300 hover:bg-red-50 hover:shadow-md dark:border-red-800/60 dark:bg-red-950/30 dark:text-red-400 dark:hover:border-red-700 dark:hover:bg-red-950/50"
                     >
-                      <HiOutlineTrash className="ml-1.5 h-4 w-4" />
+                      <Trash2 className="ml-1.5 h-4 w-4" />
                       حذف همه
                     </Button>
                     <Button
@@ -585,7 +580,7 @@ const RateListsPage = () => {
                       onClick={() => append({ title: '', value: '' })}
                       className="h-9 rounded-xl border-slate-200/60 bg-white/80 shadow-sm transition-all duration-200 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 hover:shadow-md dark:border-slate-700/60 dark:bg-slate-800/80 dark:hover:border-blue-600 dark:hover:bg-blue-950/50 dark:hover:text-blue-400"
                     >
-                      <HiPlusCircle className="ml-1.5 h-4 w-4" />
+                      <PlusCircle className="ml-1.5 h-4 w-4" />
                       افزودن نرخ
                     </Button>
                   </div>
@@ -618,7 +613,7 @@ const RateListsPage = () => {
                           }}
                           className="h-11 w-11 shrink-0 rounded-lg text-slate-500 transition-all duration-200 hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-950/50 dark:hover:text-red-400"
                         >
-                          <HiMinusCircle className="h-5 w-5" />
+                          <MinusCircle className="h-5 w-5" />
                         </Button>
                       </div>
                     ))}

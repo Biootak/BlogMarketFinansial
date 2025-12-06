@@ -19,7 +19,7 @@ import type { PostWithRelations } from '@/types/types';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useSession } from 'next-auth/react';
 import { type FC, forwardRef, useCallback, useState } from 'react';
-import { HiExclamationTriangle, HiEyeSlash, HiLink } from 'react-icons/hi2';
+import { AlertTriangle, EyeOff, Link } from 'lucide-react';
 
 export interface SingleMetaAction2Props {
   className?: string;
@@ -103,7 +103,7 @@ const SingleMetaAction2: FC<SingleMetaAction2Props> = ({ className = '', post })
                 className="gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 hover:bg-neutral-100 dark:hover:bg-neutral-800"
               >
                 <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/30">
-                  <HiLink className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <Link className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <span className="font-medium text-neutral-700 dark:text-neutral-200">
                   {isCopied ? 'لینک کپی شد!' : 'کپی لینک'}
@@ -119,7 +119,7 @@ const SingleMetaAction2: FC<SingleMetaAction2Props> = ({ className = '', post })
                     className="gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                   >
                     <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-900/30">
-                      <HiEyeSlash className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                      <EyeOff className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                     </div>
                     <span className="font-medium text-neutral-700 dark:text-neutral-200">
                       پنهان کردن نویسنده
@@ -130,7 +130,7 @@ const SingleMetaAction2: FC<SingleMetaAction2Props> = ({ className = '', post })
                     className="gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 hover:bg-red-50 dark:hover:bg-red-900/20"
                   >
                     <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 dark:bg-red-900/30">
-                      <HiExclamationTriangle className="w-4 h-4 text-red-500 dark:text-red-400" />
+                      <AlertTriangle className="w-4 h-4 text-red-500 dark:text-red-400" />
                     </div>
                     <span className="font-medium text-red-600 dark:text-red-400">گزارش مقاله</span>
                   </DropdownMenuItem>

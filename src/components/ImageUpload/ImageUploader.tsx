@@ -7,7 +7,7 @@ import { useDropzone } from 'react-dropzone';
 import type { UploadFolder } from '@/actions/uploadActions';
 import { toast } from '@/components/ui/use-toast';
 import { AnimatePresence, motion } from 'framer-motion';
-import { RiCloseLine, RiImageAddLine, RiUploadCloud2Line } from 'react-icons/ri';
+import { CloudUpload, ImagePlus, X } from 'lucide-react';;;
 
 interface ImageUploaderProps {
   onImageUpload: (urls: string[]) => void;
@@ -316,7 +316,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                           ring-2 ring-white dark:ring-neutral-900
                         "
                       >
-                        <RiCloseLine size={16} className="sm:w-[18px] sm:h-[18px] stroke-[1.5]" />
+                        <X size={16} className="sm:w-[18px] sm:h-[18px] stroke-[1.5]" />
                       </motion.button>
                     </div>
                   </motion.div>
@@ -360,7 +360,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                     }
                   `}
                   >
-                    <RiImageAddLine
+                    <ImagePlus 
                       size={28}
                       className={`sm:w-9 sm:h-9 transition-colors duration-300 ${isDragActive ? 'text-white' : 'text-violet-600 dark:text-violet-400'}`}
                     />
@@ -414,7 +414,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                 animate={{ rotate: 360 }}
                 transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: 'linear' }}
               >
-                <RiUploadCloud2Line
+                <CloudUpload 
                   size={18}
                   className="sm:w-5 sm:h-5 text-violet-600 dark:text-violet-400"
                 />
@@ -480,7 +480,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                   onClick={() => setLightboxImage(null)}
                   className="absolute top-4 left-4 sm:top-6 sm:left-6 z-10 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center transition-all duration-200 hover:scale-110"
                 >
-                  <RiCloseLine size={24} className="sm:w-7 sm:h-7 text-white" />
+                  <X size={24} className="sm:w-7 sm:h-7 text-white" />
                 </motion.button>
                 <motion.div
                   initial={{ scale: 0.85, opacity: 0 }}

@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { HiOutlinePencilSquare, HiOutlineSparkles } from 'react-icons/hi2';
+import { Edit, Sparkles } from 'lucide-react';
 
 export default function NewPostButton() {
   const router = useRouter();
@@ -41,7 +41,7 @@ export default function NewPostButton() {
 
       {/* Icon container */}
       <span className="relative flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 rounded-lg sm:rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-lg group-hover:shadow-violet-500/40 transition-shadow duration-300 flex-shrink-0">
-        <HiOutlinePencilSquare className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4" />
+        <Edit className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4" />
       </span>
 
       {/* Text */}
@@ -51,7 +51,7 @@ export default function NewPostButton() {
       </span>
 
       {/* Sparkle icon */}
-      <HiOutlineSparkles className="relative w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 text-amber-500 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 flex-shrink-0" />
+      <Sparkles className="relative w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 text-amber-500 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 flex-shrink-0" />
 
       {/* CSS for shimmer */}
       <style jsx>{`

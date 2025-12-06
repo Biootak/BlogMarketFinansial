@@ -3,7 +3,7 @@
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import * as React from 'react';
-import { HiMagnifyingGlass } from 'react-icons/hi2';
+import { Search } from 'lucide-react';
 
 interface DashboardPageHeaderProps {
   title: string;
@@ -53,7 +53,7 @@ export function DashboardSearchInput({
         onChange={(e) => onChange(e.target.value)}
         className="h-9 sm:h-11 w-full sm:min-w-[200px] rounded-xl border-neutral-200/60 bg-white/80 pl-9 sm:pl-10 pr-3 sm:pr-4 text-xs sm:text-sm shadow-sm backdrop-blur-sm transition-all duration-200 placeholder:text-neutral-400 hover:border-neutral-300 focus:border-primary-400 focus:bg-white focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80 dark:hover:border-neutral-600 dark:focus:border-primary-500 dark:focus:ring-primary-900/30"
       />
-      <HiMagnifyingGlass className="absolute left-2.5 sm:left-3 top-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
+      <Search className="absolute left-2.5 sm:left-3 top-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
     </div>
   );
 }

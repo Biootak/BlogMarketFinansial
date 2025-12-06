@@ -4,7 +4,7 @@ import type React from 'react';
 
 import { useThemeMode } from '@/hooks/useThemeMode';
 import { motion } from 'framer-motion';
-import { RiMoonLine, RiSunLine } from 'react-icons/ri';
+import { Moon, Sun } from 'lucide-react';
 
 export interface SwitchDarkModeProps {
   className?: string;
@@ -35,9 +35,9 @@ const SwitchDarkMode: React.FC<SwitchDarkModeProps> = ({ className = '' }) => {
       aria-label={isDarkMode ? 'فعال کردن حالت روشن' : 'فعال کردن حالت تاریک'}
     >
       {isDarkMode ? (
-        <RiSunLine className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-500 transition-transform duration-200 ease-in-out transform hover:scale-110" />
+        <Sun className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-500 transition-transform duration-200 ease-in-out transform hover:scale-110" />
       ) : (
-        <RiMoonLine className="h-5 w-5 sm:h-6 sm:w-6 text-neutral-500 hover:text-primary-600 transition-transform duration-200 ease-in-out transform hover:scale-110" />
+        <Moon className="h-5 w-5 sm:h-6 sm:w-6 text-neutral-500 hover:text-primary-600 transition-transform duration-200 ease-in-out transform hover:scale-110" />
       )}
     </motion.button>
   );

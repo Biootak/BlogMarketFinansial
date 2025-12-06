@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useMediaQuery } from '@/hooks/use-media-query';
 import type { ExchangeRateData } from '@/types/types';
 import { motion } from 'framer-motion';
-import { ExternalLink, Info, TrendingDown, TrendingUp } from 'lucide-react';
+import { ExternalLink, Info, TrendingDown, TrendingUp } from 'lucide-react';;;
 import Image from 'next/image';
 
 interface ExchangeRateCardProps {

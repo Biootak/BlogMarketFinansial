@@ -6,7 +6,7 @@ import Tag from '@/components/Tag/Tag';
 import useIntersectionObserver from '@/hooks/useIntersectionObserver';
 import type { PostWithRelations } from '@/types/types';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { HiArrowUp, HiChatBubbleLeftRight, HiHashtag } from 'react-icons/hi2';
+;
 import MarkdownRenderer from './MarkdownRenderer';
 import SingleAuthor from './SingleAuthor';
 import SingleCommentForm from './SingleCommentForm';
@@ -14,7 +14,8 @@ import SingleCommentLists from './SingleCommentLists';
 import '@/components/Editor1/styles/renderer.scss';
 import ShareDropdown from '@/components/ShareDropdown/ShareDropdown';
 import { getPostLink } from '@/lib/getPostLink';
-import { HiShare } from 'react-icons/hi2';
+import { ArrowUp, Hash, MessagesSquare, Share2 } from 'lucide-react';
+
 
 interface SingleContentClientProps {
   post: PostWithRelations;
@@ -137,7 +138,7 @@ const SingleContentClient = ({ post, commentCount }: SingleContentClientProps) =
               {/* Header */}
               <div className="flex items-center gap-3 mb-5">
                 <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-violet-500 shadow-lg shadow-primary-500/25">
-                  <HiHashtag className="w-5 h-5 text-white" />
+                  <Hash className="w-5 h-5 text-white" />
                 </span>
                 <h4 className="text-lg font-bold text-neutral-900 dark:text-white">
                   برچسب‌های مرتبط
@@ -171,7 +172,7 @@ const SingleContentClient = ({ post, commentCount }: SingleContentClientProps) =
           {/* Comments Header */}
           <div className="flex items-center gap-4 mb-8">
             <span className="flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-rose-500 shadow-lg shadow-violet-500/25">
-              <HiChatBubbleLeftRight className="w-6 h-6 text-white" />
+              <MessagesSquare className="w-6 h-6 text-white" />
             </span>
             <div>
               <h3 className="text-xl font-bold text-neutral-900 dark:text-white">نظرات</h3>
@@ -209,7 +210,7 @@ const SingleContentClient = ({ post, commentCount }: SingleContentClientProps) =
               type="button"
               className="flex items-center gap-2 px-4 h-10 text-sm rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-700 dark:text-neutral-300"
             >
-              <HiShare className="w-5 h-5" />
+              <Share2 className="w-5 h-5" />
               <span className="font-medium">اشتراک</span>
             </button>
           </ShareDropdown>
@@ -239,7 +240,7 @@ const SingleContentClient = ({ post, commentCount }: SingleContentClientProps) =
             aria-label="Scroll to top"
           >
             {isShowScrollToTop ? (
-              <HiArrowUp className="w-5 h-5" />
+              <ArrowUp className="w-5 h-5" />
             ) : (
               <span ref={progressRef} className="text-xs font-semibold">
                 %

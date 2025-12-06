@@ -50,7 +50,7 @@ import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
 import { type SubmitHandler, type UseFormReturn, useForm } from 'react-hook-form';
-import { HiOutlinePencil, HiOutlinePlus, HiOutlineTrash, HiOutlineUsers } from 'react-icons/hi2';
+import { Pencil, Plus, Trash2, Users } from 'lucide-react';;;
 
 type FormData = {
   name: string;
@@ -339,7 +339,7 @@ export default function UsersPage() {
                   }}
                   className="w-full justify-center sm:w-auto sm:min-w-[160px]"
                 >
-                  <HiOutlinePlus className="h-5 w-5 transition-transform duration-200 group-hover:rotate-90" />
+                  <Plus className="h-5 w-5 transition-transform duration-200 group-hover:rotate-90" />
                   <span className="font-semibold">افزودن کاربر</span>
                 </PrimaryActionButton>
               </DialogTrigger>
@@ -368,7 +368,7 @@ export default function UsersPage() {
           <EmptyState
             title="کاربری یافت نشد"
             description="هنوز هیچ کاربری در سیستم ثبت نشده است."
-            icon={<HiOutlineUsers className="h-8 w-8 text-neutral-400" />}
+            icon={<Users className="h-8 w-8 text-neutral-400" />}
           />
         </DashboardTableContainer>
       ) : (
@@ -418,7 +418,7 @@ export default function UsersPage() {
                       onClick={() => handleEdit(user)}
                       className="flex-1 justify-center"
                     >
-                      <HiOutlinePencil className="h-4 w-4" />
+                      <Pencil className="h-4 w-4" />
                       <span>ویرایش</span>
                     </ActionButton>
                     <ActionButton
@@ -426,7 +426,7 @@ export default function UsersPage() {
                       onClick={() => handleDelete(user.id, user.role as Role)}
                       className="flex-1 justify-center"
                     >
-                      <HiOutlineTrash className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4" />
                       <span>حذف</span>
                     </ActionButton>
                   </div>
@@ -489,14 +489,14 @@ export default function UsersPage() {
                     <DashboardTableCell>
                       <div className="flex items-center gap-2">
                         <ActionButton variant="edit" onClick={() => handleEdit(user)}>
-                          <HiOutlinePencil className="h-3.5 w-3.5" />
+                          <Pencil className="h-3.5 w-3.5" />
                           <span>ویرایش</span>
                         </ActionButton>
                         <ActionButton
                           variant="delete"
                           onClick={() => handleDelete(user.id, user.role as Role)}
                         >
-                          <HiOutlineTrash className="h-3.5 w-3.5" />
+                          <Trash2 className="h-3.5 w-3.5" />
                           <span>حذف</span>
                         </ActionButton>
                       </div>

@@ -30,12 +30,7 @@ import type { ExchangeRateData, RateType } from '@/types/types';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
-import {
-  HiOutlineCurrencyDollar,
-  HiOutlinePencil,
-  HiOutlinePlus,
-  HiOutlineTrash,
-} from 'react-icons/hi2';
+import { Pencil, Plus, Trash2, DollarSign } from 'lucide-react';
 
 interface ExchangeRateFormValues {
   name: string;
@@ -155,7 +150,7 @@ const ExchangeRatesPage: React.FC = () => {
           className="group relative inline-flex items-center gap-2.5 overflow-hidden rounded-2xl bg-gradient-to-l from-blue-600 to-blue-500 px-6 py-3.5 font-semibold text-white shadow-lg shadow-blue-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/40 active:scale-[0.98] dark:from-blue-500 dark:to-blue-600"
         >
           <div className="absolute inset-0 bg-gradient-to-l from-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-          <HiOutlinePlus className="relative h-5 w-5 transition-transform duration-300 group-hover:rotate-90" />
+          <Plus className="relative h-5 w-5 transition-transform duration-300 group-hover:rotate-90" />
           <span className="relative">افزودن ارز جدید</span>
         </button>
       </div>
@@ -164,7 +159,7 @@ const ExchangeRatesPage: React.FC = () => {
         <div className="flex min-h-[500px] items-center justify-center rounded-3xl border border-slate-200/60 bg-white/60 p-12 shadow-xl shadow-slate-200/50 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/60 dark:shadow-slate-950/50">
           <div className="flex flex-col items-center gap-6 text-center">
             <div className="rounded-full bg-gradient-to-br from-slate-100 to-slate-200 p-8 dark:from-slate-800 dark:to-slate-700">
-              <HiOutlineCurrencyDollar className="h-16 w-16 text-slate-400 dark:text-slate-500" />
+              <DollarSign className="h-16 w-16 text-slate-400 dark:text-slate-500" />
             </div>
             <div className="space-y-2">
               <h3 className="text-xl font-bold text-slate-900 dark:text-white">ارزی یافت نشد</h3>
@@ -206,7 +201,7 @@ const ExchangeRatesPage: React.FC = () => {
                         </div>
                       ) : (
                         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-blue-200 shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:from-blue-200 group-hover:to-blue-300 dark:from-blue-900/50 dark:to-blue-800/50 dark:group-hover:from-blue-800/60 dark:group-hover:to-blue-700/60">
-                          <HiOutlineCurrencyDollar className="h-7 w-7 text-blue-600 dark:text-blue-400" />
+                          <DollarSign className="h-7 w-7 text-blue-600 dark:text-blue-400" />
                         </div>
                       )}
                     </div>
@@ -278,14 +273,14 @@ const ExchangeRatesPage: React.FC = () => {
                       onClick={() => handleEdit(exchangeRate)}
                       className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-l from-blue-600 to-blue-500 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-500/30 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/40 active:scale-[0.98] dark:from-blue-500 dark:to-blue-600"
                     >
-                      <HiOutlinePencil className="h-4 w-4" />
+                      <Pencil className="h-4 w-4" />
                       <span>ویرایش</span>
                     </button>
                     <button
                       onClick={() => handleDelete(exchangeRate.id)}
                       className="flex items-center justify-center rounded-xl border border-rose-200 bg-white px-3 py-2.5 text-rose-600 shadow-sm transition-all duration-200 hover:scale-[1.02] hover:border-rose-300 hover:bg-rose-50 hover:shadow-md active:scale-[0.98] dark:border-rose-900/50 dark:bg-slate-900 dark:text-rose-400 dark:hover:border-rose-800 dark:hover:bg-rose-950/30"
                     >
-                      <HiOutlineTrash className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 </div>

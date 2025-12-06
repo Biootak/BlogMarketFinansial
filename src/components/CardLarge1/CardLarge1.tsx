@@ -9,7 +9,7 @@ import type { PostWithRelations } from '@/types/types';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import React, { useMemo } from 'react';
-import { HiChevronLeft, HiChevronRight } from 'react-icons/hi2';
+import { ChevronLeft, ChevronRight } from 'lucide-react';;;
 import CardSkeleton from '../Skeletons/CardSkeleton';
 
 export interface CardLarge1Props {
@@ -125,14 +125,14 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
                   className="w-11 h-11 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-500 hover:text-white flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-lg hover:scale-105"
                   aria-label="قبلی"
                 >
-                  <HiChevronRight className="w-5 h-5" />
+                  <ChevronRight className="w-5 h-5" />
                 </button>
                 <button
                   onClick={onClickNext}
                   className="w-11 h-11 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-500 hover:text-white flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-lg hover:scale-105"
                   aria-label="بعدی"
                 >
-                  <HiChevronLeft className="w-5 h-5" />
+                  <ChevronLeft className="w-5 h-5" />
                 </button>
               </div>
             </motion.div>

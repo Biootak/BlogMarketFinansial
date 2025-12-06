@@ -6,21 +6,8 @@ import {
   updateServiceRequestStatus,
 } from '@/actions/serviceRequestActions';
 import { useCallback, useEffect, useState } from 'react';
-import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
-import {
-  HiOutlineArrowPath,
-  HiOutlineCheckCircle,
-  HiOutlineChevronLeft,
-  HiOutlineChevronRight,
-  HiOutlineClock,
-  HiOutlineEnvelope,
-  HiOutlineEye,
-  HiOutlineFunnel,
-  HiOutlineMagnifyingGlass,
-  HiOutlinePhone,
-  HiOutlineTrash,
-  HiOutlineXCircle,
-} from 'react-icons/hi2';
+import { CheckCircle, ChevronLeft, ChevronRight, Clock, Eye, Filter, Mail, MessageCircle, Phone, RefreshCw, Search, Send, Trash2, XCircle } from 'lucide-react';
+
 
 interface ServiceRequest {
   id: string;
@@ -44,28 +31,28 @@ const statusConfig = {
     label: 'در انتظار',
     color:
       'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800',
-    icon: HiOutlineClock,
+    icon: Clock,
     dot: 'bg-amber-500',
   },
   IN_PROGRESS: {
     label: 'در حال انجام',
     color:
       'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800',
-    icon: HiOutlineArrowPath,
+    icon: RefreshCw,
     dot: 'bg-blue-500',
   },
   COMPLETED: {
     label: 'تکمیل شده',
     color:
       'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800',
-    icon: HiOutlineCheckCircle,
+    icon: CheckCircle,
     dot: 'bg-emerald-500',
   },
   CANCELLED: {
     label: 'لغو شده',
     color:
       'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800',
-    icon: HiOutlineXCircle,
+    icon: XCircle,
     dot: 'bg-rose-500',
   },
 };
@@ -146,7 +133,7 @@ export default function ServiceRequestsTable() {
             {/* Search */}
             <div className="relative flex-1 min-w-[280px]">
               <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
-                <HiOutlineMagnifyingGlass className="w-5 h-5" />
+                <Search className="w-5 h-5" />
               </div>
               <input
                 type="text"
@@ -163,7 +150,7 @@ export default function ServiceRequestsTable() {
             {/* Status Filter */}
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400">
-                <HiOutlineFunnel className="w-5 h-5" />
+                <Filter className="w-5 h-5" />
               </div>
               <select
                 value={statusFilter}
@@ -227,7 +214,7 @@ export default function ServiceRequestsTable() {
                   <td colSpan={7} className="px-6 py-16 text-center">
                     <div className="flex flex-col items-center gap-3">
                       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
-                        <HiOutlineMagnifyingGlass className="h-8 w-8 text-slate-400" />
+                        <Search className="h-8 w-8 text-slate-400" />
                       </div>
                       <p className="font-medium text-slate-500 dark:text-slate-400">
                         درخواستی یافت نشد
@@ -273,7 +260,7 @@ export default function ServiceRequestsTable() {
                               {request.fullName}
                             </p>
                             <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500">
-                              <HiOutlinePhone className="h-3 w-3" />
+                              <Phone className="h-3 w-3" />
                               <span className="font-mono">{request.phone}</span>
                             </p>
                           </div>
@@ -327,7 +314,7 @@ export default function ServiceRequestsTable() {
                             className="rounded-xl p-2.5 transition-all duration-300 hover:scale-110 hover:bg-slate-100 dark:hover:bg-slate-700"
                             title="مشاهده جزئیات"
                           >
-                            <HiOutlineEye className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+                            <Eye className="h-5 w-5 text-slate-500 dark:text-slate-400" />
                           </button>
                           <button
                             onClick={() => openMessenger(request)}
@@ -335,9 +322,9 @@ export default function ServiceRequestsTable() {
                             title="ارسال پیام"
                           >
                             {request.contactMethod === 'telegram' ? (
-                              <FaTelegram className="h-5 w-5 text-[#0088cc]" />
+                              <Send className="h-5 w-5 text-[#0088cc]" />
                             ) : (
-                              <FaWhatsapp className="h-5 w-5 text-[#25D366]" />
+                              <MessageCircle className="h-5 w-5 text-[#25D366]" />
                             )}
                           </button>
                         </div>
@@ -362,7 +349,7 @@ export default function ServiceRequestsTable() {
           ) : requests.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-16">
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
-                <HiOutlineMagnifyingGlass className="h-8 w-8 text-slate-400" />
+                <Search className="h-8 w-8 text-slate-400" />
               </div>
               <p className="font-medium text-slate-500 dark:text-slate-400">درخواستی یافت نشد</p>
             </div>
@@ -407,7 +394,7 @@ export default function ServiceRequestsTable() {
                         {request.fullName}
                       </p>
                       <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500">
-                        <HiOutlinePhone className="h-3 w-3" />
+                        <Phone className="h-3 w-3" />
                         <span className="font-mono">{request.phone}</span>
                       </p>
                     </div>
@@ -431,7 +418,7 @@ export default function ServiceRequestsTable() {
                       onClick={() => setSelectedRequest(request)}
                       className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 shadow-sm transition-all duration-300 hover:scale-105 hover:bg-blue-100 active:scale-95 dark:bg-blue-900/30 dark:text-blue-300"
                     >
-                      <HiOutlineEye className="h-4 w-4" />
+                      <Eye className="h-4 w-4" />
                       <span>جزئیات</span>
                     </button>
                     <button
@@ -443,9 +430,9 @@ export default function ServiceRequestsTable() {
                       }`}
                     >
                       {request.contactMethod === 'telegram' ? (
-                        <FaTelegram className="h-4 w-4" />
+                        <Send className="h-4 w-4" />
                       ) : (
-                        <FaWhatsapp className="h-4 w-4" />
+                        <MessageCircle className="h-4 w-4" />
                       )}
                       <span>پیام</span>
                     </button>
@@ -465,7 +452,7 @@ export default function ServiceRequestsTable() {
                 disabled={page === 1}
                 className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 font-medium text-slate-700 shadow-sm transition-all duration-300 hover:bg-slate-50 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
               >
-                <HiOutlineChevronRight className="h-5 w-5" />
+                <ChevronRight className="h-5 w-5" />
                 قبلی
               </button>
 
@@ -481,7 +468,7 @@ export default function ServiceRequestsTable() {
                 className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 font-medium text-slate-700 shadow-sm transition-all duration-300 hover:bg-slate-50 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
               >
                 بعدی
-                <HiOutlineChevronLeft className="h-5 w-5" />
+                <ChevronLeft className="h-5 w-5" />
               </button>
             </div>
           </div>
@@ -502,7 +489,7 @@ export default function ServiceRequestsTable() {
             <div className="mb-8 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 p-3 shadow-lg shadow-blue-500/25">
-                  <HiOutlineEye className="h-6 w-6 text-white" />
+                  <Eye className="h-6 w-6 text-white" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">جزئیات درخواست</h3>
               </div>
@@ -510,7 +497,7 @@ export default function ServiceRequestsTable() {
                 onClick={() => setSelectedRequest(null)}
                 className="rounded-xl p-2 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
               >
-                <HiOutlineXCircle className="h-6 w-6 text-slate-400" />
+                <XCircle className="h-6 w-6 text-slate-400" />
               </button>
             </div>
 
@@ -536,7 +523,7 @@ export default function ServiceRequestsTable() {
                 <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
                   <p className="mb-1.5 text-xs text-slate-500">شماره تماس</p>
                   <p className="flex items-center gap-2 font-mono font-semibold text-slate-900 dark:text-white">
-                    <HiOutlinePhone className="h-4 w-4 text-slate-400" />
+                    <Phone className="h-4 w-4 text-slate-400" />
                     {selectedRequest.phone}
                   </p>
                 </div>
@@ -546,7 +533,7 @@ export default function ServiceRequestsTable() {
                 <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
                   <p className="mb-1.5 text-xs text-slate-500">ایمیل</p>
                   <p className="flex items-center gap-2 text-slate-900 dark:text-white">
-                    <HiOutlineEnvelope className="h-4 w-4 text-slate-400" />
+                    <Mail className="h-4 w-4 text-slate-400" />
                     {selectedRequest.email}
                   </p>
                 </div>
@@ -618,9 +605,9 @@ export default function ServiceRequestsTable() {
                   }`}
                 >
                   {selectedRequest.contactMethod === 'telegram' ? (
-                    <FaTelegram className="h-5 w-5" />
+                    <Send className="h-5 w-5" />
                   ) : (
-                    <FaWhatsapp className="h-5 w-5" />
+                    <MessageCircle className="h-5 w-5" />
                   )}
                   ارسال پیام
                 </button>
@@ -628,7 +615,7 @@ export default function ServiceRequestsTable() {
                   onClick={() => handleDelete(selectedRequest.id)}
                   className="flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-6 py-3.5 font-semibold text-red-600 transition-all duration-300 hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30"
                 >
-                  <HiOutlineTrash className="h-5 w-5" />
+                  <Trash2 className="h-5 w-5" />
                   حذف
                 </button>
               </div>

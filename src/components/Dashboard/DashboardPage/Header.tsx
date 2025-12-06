@@ -7,7 +7,7 @@ import { useSidebarStore } from '@/hooks/sidebarStore';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
-import { HiOutlineBars3, HiOutlineShieldCheck, HiOutlineSparkles } from 'react-icons/hi2';
+import { Menu, ShieldCheck, Sparkles } from 'lucide-react';
 
 const getRoleBadge = (role?: string) => {
   switch (role) {
@@ -132,14 +132,14 @@ const Header: React.FC = () => {
                     <div
                       className={`p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-gradient-to-r ${roleBadge.color} flex-shrink-0`}
                     >
-                      <HiOutlineShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                      <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                     </div>
                     <div className="text-right min-w-0">
                       <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">
                         سطح دسترسی
                       </p>
                       <div className="flex items-center gap-1 sm:gap-1.5 mt-0.5">
-                        <HiOutlineSparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-500 flex-shrink-0" />
+                        <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-500 flex-shrink-0" />
                         <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
                           {roleBadge.label}
                         </p>
@@ -165,7 +165,7 @@ const Header: React.FC = () => {
               onClick={() => setIsOpen(!isOpen)}
               aria-label={isOpen ? 'بستن منو' : 'باز کردن منو'}
             >
-              <HiOutlineBars3 className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
             </motion.button>
           )}
         </div>

@@ -3,7 +3,7 @@
 import CommentCard from '@/components/CommentCard/CommentCard';
 import type { CommentWithRelationsAndLikes } from '@/types/types';
 import { type FC, useState } from 'react';
-import { HiChatBubbleLeftRight, HiChevronDown } from 'react-icons/hi2';
+import { ChevronDown, MessagesSquare } from 'lucide-react';
 
 export interface SingleCommentListsProps {
   comments: CommentWithRelationsAndLikes[];
@@ -66,7 +66,7 @@ const SingleCommentLists: FC<SingleCommentListsProps> = ({ comments }) => {
 
             {/* Icon */}
             <span className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-violet-500 shadow-lg shadow-primary-500/25 group-hover:shadow-primary-500/40 transition-shadow duration-300">
-              <HiChatBubbleLeftRight className="w-5 h-5 text-white" />
+              <MessagesSquare className="w-5 h-5 text-white" />
             </span>
 
             {/* Text */}
@@ -80,7 +80,7 @@ const SingleCommentLists: FC<SingleCommentListsProps> = ({ comments }) => {
             </span>
 
             {/* Arrow */}
-            <HiChevronDown className="relative w-5 h-5 text-neutral-400 group-hover:text-primary-500 group-hover:translate-y-1 transition-all duration-300" />
+            <ChevronDown className="relative w-5 h-5 text-neutral-400 group-hover:text-primary-500 group-hover:translate-y-1 transition-all duration-300" />
           </button>
         </div>
       )}

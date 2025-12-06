@@ -2,18 +2,11 @@
 
 import { motion } from 'framer-motion';
 import type { FC } from 'react';
-import {
-  HiAcademicCap,
-  HiCash,
-  HiCreditCard,
-  HiGlobe,
-  HiShoppingCart,
-  HiSparkles,
-} from 'react-icons/hi';
+import { Banknote, CreditCard, Globe, GraduationCap, ShoppingCart, Sparkles } from 'lucide-react';
 
 const services = [
   {
-    icon: HiGlobe,
+    icon: Globe,
     title: 'حواله‌های بین‌المللی',
     description: 'انتقال سریع و امن پول برای افراد و شرکت‌ها به سراسر جهان',
     color: 'from-blue-500 to-cyan-500',
@@ -21,7 +14,7 @@ const services = [
     iconColor: 'text-blue-600 dark:text-blue-400',
   },
   {
-    icon: HiCreditCard,
+    icon: CreditCard,
     title: 'پرداخت‌های آنلاین',
     description: 'خرید آسان از سایت‌های معتبر جهانی با کارت‌های اعتباری',
     color: 'from-purple-500 to-pink-500',
@@ -29,7 +22,7 @@ const services = [
     iconColor: 'text-purple-600 dark:text-purple-400',
   },
   {
-    icon: HiAcademicCap,
+    icon: GraduationCap,
     title: 'خدمات آموزشی',
     description: 'پرداخت شهریه و هزینه‌های ثبت‌نام دانشگاه‌های خارجی',
     color: 'from-emerald-500 to-teal-500',
@@ -37,7 +30,7 @@ const services = [
     iconColor: 'text-emerald-600 dark:text-emerald-400',
   },
   {
-    icon: HiCash,
+    icon: Banknote,
     title: 'نقد کردن درآمد',
     description: 'دریافت درآمد از پلتفرم‌های فریلنسری بین‌المللی',
     color: 'from-amber-500 to-orange-500',
@@ -45,7 +38,7 @@ const services = [
     iconColor: 'text-amber-600 dark:text-amber-400',
   },
   {
-    icon: HiShoppingCart,
+    icon: ShoppingCart,
     title: 'خرید نرم‌افزار',
     description: 'تهیه اشتراک و لایسنس برنامه‌های خارجی و سرویس‌های آنلاین',
     color: 'from-rose-500 to-red-500',
@@ -53,7 +46,7 @@ const services = [
     iconColor: 'text-rose-600 dark:text-rose-400',
   },
   {
-    icon: HiSparkles,
+    icon: Sparkles,
     title: 'خدمات ویژه',
     description: 'راه‌حل‌های سفارشی برای نیازهای خاص کسب‌وکار شما',
     color: 'from-indigo-500 to-violet-500',

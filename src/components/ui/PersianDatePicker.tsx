@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import React from 'react';
 import persian from 'react-date-object/calendars/persian';
 import persian_fa from 'react-date-object/locales/persian_fa';
-import { HiCalendar } from 'react-icons/hi2';
+import { Calendar } from 'lucide-react';
 import DatePicker, { DateObject } from 'react-multi-date-picker';
 
 interface PersianDatePickerProps {
@@ -32,7 +32,7 @@ export function PersianDatePicker({ value, onChange, className }: PersianDatePic
           )}
         >
           {value ? formatDate(value) : <span>انتخاب تاریخ</span>}
-          <HiCalendar className="mr-auto h-4 w-4 opacity-50" />
+          <Calendar className="mr-auto h-4 w-4 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">

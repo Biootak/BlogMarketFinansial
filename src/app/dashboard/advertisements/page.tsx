@@ -40,12 +40,7 @@ import type { Advertisement, CustomAdDimensions } from '@/types/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import {
-  HiOutlineMegaphone,
-  HiOutlinePencil,
-  HiOutlinePlus,
-  HiOutlineTrash,
-} from 'react-icons/hi2';
+import { Pencil, Plus, Trash2, Megaphone } from 'lucide-react';
 import * as z from 'zod';
 
 const advertisementSchema = z.object({
@@ -277,7 +272,7 @@ export default function AdvertisementsPage() {
                   className="group relative flex h-11 items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-l from-blue-600 to-blue-500 px-6 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/40 active:scale-[0.98] dark:from-blue-500 dark:to-blue-600 dark:shadow-blue-500/20 dark:hover:shadow-blue-500/30"
                 >
                   <div className="absolute inset-0 bg-gradient-to-l from-white/0 via-white/10 to-white/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                  <HiOutlinePlus className="relative h-5 w-5 transition-transform duration-300 group-hover:rotate-90" />
+                  <Plus className="relative h-5 w-5 transition-transform duration-300 group-hover:rotate-90" />
                   <span className="relative">افزودن تبلیغ</span>
                 </button>
               </DialogTrigger>
@@ -306,7 +301,7 @@ export default function AdvertisementsPage() {
         <div className="flex min-h-[500px] items-center justify-center rounded-2xl border border-slate-200/60 bg-white/60 p-8 shadow-lg backdrop-blur-sm dark:border-slate-700/50 dark:bg-slate-800/60">
           <div className="text-center">
             <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800">
-              <HiOutlineMegaphone className="h-10 w-10 text-slate-400 dark:text-slate-500" />
+              <Megaphone className="h-10 w-10 text-slate-400 dark:text-slate-500" />
             </div>
             <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">
               تبلیغی یافت نشد
@@ -396,14 +391,14 @@ export default function AdvertisementsPage() {
                           onClick={() => handleEdit(ad)}
                           className="group/btn flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 shadow-sm transition-all duration-300 hover:scale-105 hover:bg-blue-100 hover:shadow-md active:scale-95 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50"
                         >
-                          <HiOutlinePencil className="h-4 w-4 transition-transform duration-300 group-hover/btn:rotate-12" />
+                          <Pencil className="h-4 w-4 transition-transform duration-300 group-hover/btn:rotate-12" />
                           <span>ویرایش</span>
                         </button>
                         <button
                           onClick={() => handleDelete(ad.id)}
                           className="group/btn flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-700 shadow-sm transition-all duration-300 hover:scale-105 hover:bg-red-100 hover:shadow-md active:scale-95 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50"
                         >
-                          <HiOutlineTrash className="h-4 w-4 transition-transform duration-300 group-hover/btn:rotate-12" />
+                          <Trash2 className="h-4 w-4 transition-transform duration-300 group-hover/btn:rotate-12" />
                           <span>حذف</span>
                         </button>
                       </div>
@@ -459,14 +454,14 @@ export default function AdvertisementsPage() {
                     onClick={() => handleEdit(ad)}
                     className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 shadow-sm transition-all duration-300 hover:scale-105 hover:bg-blue-100 active:scale-95 dark:bg-blue-900/30 dark:text-blue-300"
                   >
-                    <HiOutlinePencil className="h-4 w-4" />
+                    <Pencil className="h-4 w-4" />
                     <span>ویرایش</span>
                   </button>
                   <button
                     onClick={() => handleDelete(ad.id)}
                     className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-700 shadow-sm transition-all duration-300 hover:scale-105 hover:bg-red-100 active:scale-95 dark:bg-red-900/30 dark:text-red-300"
                   >
-                    <HiOutlineTrash className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4" />
                     <span>حذف</span>
                   </button>
                 </div>

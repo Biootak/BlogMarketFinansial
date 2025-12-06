@@ -4,7 +4,7 @@ import { fadeVariants, hoverScaleSmall, transitions } from '@/lib/animations';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import React, { type FC } from 'react';
-import { HiOutlineCalendar, HiOutlineClock, HiOutlineEye } from 'react-icons/hi2';
+import { Calendar, Clock, Eye } from 'lucide-react';
 
 export interface PostCardInfoProps {
   className?: string;
@@ -63,7 +63,7 @@ const PostCardInfo: FC<PostCardInfoProps> = ({
           transition={transitions.snappy}
           className="flex items-center gap-1 sm:gap-1.5 transition-colors duration-200 hover:text-blue-600 dark:hover:text-blue-400"
         >
-          <HiOutlineEye
+          <Eye 
             className={cn(
               'flex-shrink-0',
               compact ? 'w-3.5 h-3.5 sm:w-4 sm:h-4' : 'w-4 h-4 sm:w-4.5 sm:h-4.5',
@@ -79,7 +79,7 @@ const PostCardInfo: FC<PostCardInfoProps> = ({
           transition={transitions.snappy}
           className="flex items-center gap-1 sm:gap-1.5 transition-colors duration-200 hover:text-emerald-600 dark:hover:text-emerald-400"
         >
-          <HiOutlineClock
+          <Clock 
             className={cn(
               'flex-shrink-0',
               compact ? 'w-3.5 h-3.5 sm:w-4 sm:h-4' : 'w-4 h-4 sm:w-4.5 sm:h-4.5',
@@ -95,7 +95,7 @@ const PostCardInfo: FC<PostCardInfoProps> = ({
           transition={transitions.snappy}
           className="flex items-center gap-1 sm:gap-1.5 transition-colors duration-200 hover:text-purple-600 dark:hover:text-purple-400"
         >
-          <HiOutlineCalendar
+          <Calendar 
             className={cn(
               'flex-shrink-0',
               compact ? 'w-3.5 h-3.5 sm:w-4 sm:h-4' : 'w-4 h-4 sm:w-4.5 sm:h-4.5',

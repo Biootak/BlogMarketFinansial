@@ -14,7 +14,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import type { TaxonomyType } from '@/types/types';
 import { useCallback, useEffect, useState } from 'react';
-import { HiOutlineFolderOpen } from 'react-icons/hi2';
+import { FolderOpen } from 'lucide-react';
 import CategoryItem from './CategoryItem';
 
 interface CategoryListProps {
@@ -95,7 +95,7 @@ export function CategoryList({
         <EmptyState
           title="دسته‌بندی یافت نشد"
           description="هنوز هیچ دسته‌بندی در سیستم ثبت نشده است."
-          icon={<HiOutlineFolderOpen className="h-8 w-8 text-neutral-400" />}
+          icon={<FolderOpen className="h-8 w-8 text-neutral-400" />}
         />
       </DashboardTableContainer>
     );

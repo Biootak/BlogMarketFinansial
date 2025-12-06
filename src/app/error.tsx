@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, ArrowRight, Home, RefreshCw } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Home, RefreshCw } from 'lucide-react';;;
 import Link from 'next/link';
 import { useEffect } from 'react';
 

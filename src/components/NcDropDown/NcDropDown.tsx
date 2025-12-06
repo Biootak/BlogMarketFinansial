@@ -5,7 +5,7 @@ import type { NcDropDownItem } from '@/types/types';
 import { Menu, Transition } from '@headlessui/react';
 import type React from 'react';
 import { type FC, Fragment, type ReactNode } from 'react';
-import { HiEllipsisHorizontal } from 'react-icons/hi2';
+import { MoreHorizontal } from 'lucide-react';;;
 
 export interface NcDropDownProps {
   className?: string;
@@ -31,7 +31,7 @@ const NcDropDown: FC<NcDropDownProps> = ({
   return (
     <Menu as="div" className="relative inline-block text-start">
       <Menu.Button className={className} title={title}>
-        {renderTrigger ? renderTrigger() : <HiEllipsisHorizontal className={triggerIconClass} />}
+        {renderTrigger ? renderTrigger() : <MoreHorizontal className={triggerIconClass} />}
       </Menu.Button>
       <Transition
         as={Fragment}

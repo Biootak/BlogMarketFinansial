@@ -2,14 +2,7 @@ import type { SocialType } from '@/types/types';
 import * as motion from 'framer-motion/client';
 // components/SocialsShare/SocialsShare.tsx
 import React from 'react';
-import {
-  FaFacebook,
-  FaInstagram,
-  FaLinkedinIn,
-  FaTelegram,
-  FaTwitter,
-  FaWhatsapp,
-} from 'react-icons/fa';
+import { Facebook, Instagram, Linkedin, MessageCircle, Send, Twitter } from 'lucide-react';
 
 interface SocialsShareProps {
   className?: string;
@@ -19,10 +12,10 @@ interface SocialsShareProps {
 }
 
 export const SOCIALS_DATA: SocialType[] = [
-  { id: 'Facebook', name: 'فیسبوک', icon: FaFacebook, href: '#', color: '#1877F2' },
-  { id: 'Twitter', name: 'توییتر', icon: FaTwitter, href: '#', color: '#1DA1F2' },
-  { id: 'Telegram', name: 'تلگرام', icon: FaTelegram, href: '#', color: '#0088cc' },
-  { id: 'Instagram', name: 'اینستاگرام', icon: FaInstagram, href: '#', color: '#E4405F' },
+  { id: 'Facebook', name: 'فیسبوک', icon: Facebook, href: '#', color: '#1877F2' },
+  { id: 'Twitter', name: 'توییتر', icon: Twitter, href: '#', color: '#1DA1F2' },
+  { id: 'Telegram', name: 'تلگرام', icon: Send, href: '#', color: '#0088cc' },
+  { id: 'Instagram', name: 'اینستاگرام', icon: Instagram, href: '#', color: '#E4405F' },
 ];
 
 const SocialsShare: React.FC<SocialsShareProps> = ({

@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import type { FC } from 'react';
-import { HiArrowDown } from 'react-icons/hi';
+import { ArrowDown } from 'lucide-react';;;
 
 const paymentMethods = [
   { name: 'PayPal', logo: '/images/paypal.svg' },
@@ -68,7 +68,7 @@ const OnlinePaymentHero: FC = () => {
                 whileTap={{ scale: 0.98 }}
               >
                 شروع کنید
-                <HiArrowDown className="w-5 h-5 group-hover:translate-y-1 transition-transform" />
+                <ArrowDown className="w-5 h-5 group-hover:translate-y-1 transition-transform" />
               </motion.button>
 
               <motion.a

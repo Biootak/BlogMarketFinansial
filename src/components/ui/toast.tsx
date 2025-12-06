@@ -5,7 +5,7 @@ import * as ToastPrimitives from '@radix-ui/react-toast';
 import { type VariantProps, cva } from 'class-variance-authority';
 import { AnimatePresence, motion } from 'framer-motion';
 import * as React from 'react';
-import { MdCheckCircle, MdClose, MdError, MdInfo, MdWarning } from 'react-icons/md';
+import { CheckCircle, X, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 
 const ToastProvider = ToastPrimitives.Provider;
 
@@ -123,7 +123,7 @@ const ToastClose = React.forwardRef<
     toast-close=""
     {...props}
   >
-    <MdClose className="h-4 w-4" />
+    <X className="h-4 w-4" />
   </ToastPrimitives.Close>
 ));
 ToastClose.displayName = ToastPrimitives.Close.displayName;
@@ -169,23 +169,23 @@ export {
 
 const iconVariants: Record<ToastVariant, { icon: React.ReactNode; bg: string }> = {
   default: {
-    icon: <MdInfo className="h-5 w-5 text-gray-600" />,
+    icon: <Info className="h-5 w-5 text-gray-600" />,
     bg: 'bg-gray-100',
   },
   success: {
-    icon: <MdCheckCircle className="h-5 w-5 text-emerald-600" />,
+    icon: <CheckCircle className="h-5 w-5 text-emerald-600" />,
     bg: 'bg-emerald-100',
   },
   info: {
-    icon: <MdInfo className="h-5 w-5 text-blue-600" />,
+    icon: <Info className="h-5 w-5 text-blue-600" />,
     bg: 'bg-blue-100',
   },
   warning: {
-    icon: <MdWarning className="h-5 w-5 text-amber-600" />,
+    icon: <AlertTriangle className="h-5 w-5 text-amber-600" />,
     bg: 'bg-amber-100',
   },
   destructive: {
-    icon: <MdError className="h-5 w-5 text-red-600" />,
+    icon: <AlertCircle className="h-5 w-5 text-red-600" />,
     bg: 'bg-red-100',
   },
 };

@@ -12,7 +12,7 @@ import twFocusClass from '@/utils/twFocusClass';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import React, { type FC, useRef, useState } from 'react';
-import { HiOutlineFlag, HiOutlinePencil, HiOutlineReply, HiOutlineTrash } from 'react-icons/hi';
+import { Flag, Pencil, Reply, Trash2 } from 'lucide-react';;;
 import CommentCardLikeReply from '../CommentCardLikeReply/CommentCardLikeReply';
 import FormattedDate from '../FormattedDate';
 import ModalDeleteComment from './ModalDeleteComment';
@@ -37,22 +37,22 @@ const CommentCard: FC<CommentCardProps> = ({ className = '', comment, size = 'la
     {
       id: 'edit',
       name: 'ویرایش',
-      icon: HiOutlinePencil,
+      icon: Pencil,
     },
     {
       id: 'reply',
       name: 'پاسخ',
-      icon: HiOutlineReply,
+      icon: Reply,
     },
     {
       id: 'report',
       name: 'گزارش تخلف',
-      icon: HiOutlineFlag,
+      icon: Flag,
     },
     {
       id: 'delete',
       name: 'حذف',
-      icon: HiOutlineTrash,
+      icon: Trash2,
     },
   ];
 

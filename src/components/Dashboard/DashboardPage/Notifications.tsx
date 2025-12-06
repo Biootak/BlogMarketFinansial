@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { HiOutlineBell } from 'react-icons/hi2';
+import { Bell } from 'lucide-react';
 import NotificationItem from './NotificationItem';
 
 interface Notification {
@@ -23,7 +23,7 @@ const Notifications: React.FC = () => {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
       <h3 className="text-lg font-semibold mb-4 dark:text-white flex items-center">
-        <HiOutlineBell className="w-6 h-6 mr-2 text-purple-500" />
+        <Bell className="w-6 h-6 mr-2 text-purple-500" />
         اعلان‌ها
       </h3>
       <AnimatePresence>

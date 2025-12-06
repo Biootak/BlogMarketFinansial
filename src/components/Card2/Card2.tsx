@@ -6,7 +6,7 @@ import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { getPostLink } from '@/lib/getPostLink';
 import type { PostWithRelations } from '@/types/types';
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';;;
 import Link from 'next/link';
 import React from 'react';
 import PostCardMeta from '../PostCardMeta/PostCardMeta';

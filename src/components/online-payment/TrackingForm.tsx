@@ -3,13 +3,13 @@
 import { getServiceRequestByTrackingCode } from '@/actions/serviceRequestActions';
 import { motion } from 'framer-motion';
 import { type FC, useState } from 'react';
-import { HiCheckCircle, HiClock, HiRefresh, HiSearch, HiXCircle } from 'react-icons/hi';
+import { CheckCircle, Clock, RefreshCw, Search, XCircle } from 'lucide-react';
 
 const statusConfig = {
-  PENDING: { label: 'در انتظار بررسی', color: 'yellow', icon: HiClock },
-  IN_PROGRESS: { label: 'در حال انجام', color: 'blue', icon: HiRefresh },
-  COMPLETED: { label: 'تکمیل شده', color: 'green', icon: HiCheckCircle },
-  CANCELLED: { label: 'لغو شده', color: 'red', icon: HiXCircle },
+  PENDING: { label: 'در انتظار بررسی', color: 'yellow', icon: Clock },
+  IN_PROGRESS: { label: 'در حال انجام', color: 'blue', icon: RefreshCw },
+  COMPLETED: { label: 'تکمیل شده', color: 'green', icon: CheckCircle },
+  CANCELLED: { label: 'لغو شده', color: 'red', icon: XCircle },
 };
 
 const serviceTypeLabels: Record<string, string> = {
@@ -79,7 +79,7 @@ const TrackingForm: FC = () => {
           {isLoading ? (
             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
           ) : (
-            <HiSearch className="w-5 h-5" />
+            <Search className="w-5 h-5" />
           )}
         </motion.button>
       </form>

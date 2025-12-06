@@ -4,7 +4,7 @@ import type { PostStatus } from '@prisma/client';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { HiOutlineDocumentText, HiOutlinePlus, HiOutlineSparkles } from 'react-icons/hi2';
+import { FileText, Plus, Sparkles } from 'lucide-react';;;
 import FilterDropdown from './FilterDropdown';
 
 export default function PostHeader() {
@@ -43,7 +43,7 @@ export default function PostHeader() {
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl blur-lg opacity-40" />
               <div className="relative p-3.5 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-xl">
-                <HiOutlineDocumentText className="w-6 h-6" />
+                <FileText className="w-6 h-6" />
               </div>
             </div>
             <div>
@@ -82,14 +82,14 @@ export default function PostHeader() {
 
                 {/* Icon */}
                 <span className="relative flex items-center justify-center w-6 h-6 rounded-lg bg-white/20 group-hover:rotate-90 transition-transform duration-300">
-                  <HiOutlinePlus className="w-4 h-4 text-white" />
+                  <Plus className="w-4 h-4 text-white" />
                 </span>
 
                 {/* Text */}
                 <span className="relative text-white hidden sm:inline">افزودن پست جدید</span>
 
                 {/* Sparkle */}
-                <HiOutlineSparkles className="relative w-4 h-4 text-amber-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:block" />
+                <Sparkles className="relative w-4 h-4 text-amber-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:block" />
               </Link>
             </motion.div>
           </motion.div>

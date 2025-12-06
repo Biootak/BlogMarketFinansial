@@ -1,5 +1,5 @@
 import twFocusClass from '@/utils/twFocusClass';
-import { FaTimes } from 'react-icons/fa';
+import { X } from 'lucide-react';
 
 export interface ButtonCloseProps {
   className?: string;
@@ -19,7 +19,7 @@ const ButtonClose: React.FC<ButtonCloseProps> = ({
       onClick={onClick}
     >
       <span className="sr-only">بستن</span>
-      <FaTimes className={iconSize} />
+      <X className={iconSize} />
     </button>
   );
 };

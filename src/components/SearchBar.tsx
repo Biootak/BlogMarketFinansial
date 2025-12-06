@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { useDebounce } from '@/hooks/useDebounce';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
-import { HiMagnifyingGlass } from 'react-icons/hi2';
+import { Search } from 'lucide-react';
 
 interface SearchBarProps {
   onSearch: (term: string) => void;
@@ -35,7 +35,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         aria-label={placeholder}
         dir="rtl"
       />
-      <HiMagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 w-5 h-5 dark:text-neutral-500" />
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 w-5 h-5 dark:text-neutral-500" />
     </div>
   );
 };

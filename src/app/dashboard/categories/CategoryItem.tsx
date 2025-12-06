@@ -11,14 +11,10 @@ import type { TaxonomyType } from '@/types/types';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
-import { FaFolder, FaLayerGroup } from 'react-icons/fa';
-import {
-  HiOutlineChevronDown,
-  HiOutlineChevronLeft,
-  HiOutlinePencil,
-  HiOutlineTrash,
-} from 'react-icons/hi2';
+;
+
 import { CategoryForm } from './CategoryForm';
+import { ChevronDown, ChevronLeft, Folder, Layers, Pencil, Trash2 } from 'lucide-react';;
 
 interface CategoryItemProps {
   category: TaxonomyType;
@@ -50,7 +46,7 @@ export default function CategoryItem({
     }
   }, [category.id, toast, router]);
 
-  const CategoryIcon = level === 0 ? FaLayerGroup : FaFolder;
+  const CategoryIcon = level === 0 ? Layers : Folder;
   const iconColor = level === 0 ? 'text-primary-500' : 'text-emerald-500';
   const textColor =
     level === 0
@@ -89,9 +85,9 @@ export default function CategoryItem({
                 className="rounded-md p-0.5 sm:p-1 transition-colors duration-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 flex-shrink-0"
               >
                 {isExpanded ? (
-                  <HiOutlineChevronDown className="h-3 w-3 sm:h-4 sm:w-4 text-neutral-500" />
+                  <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 text-neutral-500" />
                 ) : (
-                  <HiOutlineChevronLeft className="h-3 w-3 sm:h-4 sm:w-4 text-neutral-500" />
+                  <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4 text-neutral-500" />
                 )}
               </button>
             )}
@@ -110,11 +106,11 @@ export default function CategoryItem({
         <DashboardTableCell>
           <div className="flex items-center gap-1 sm:gap-2">
             <ActionButton variant="edit" onClick={() => setIsEditDialogOpen(true)}>
-              <HiOutlinePencil className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+              <Pencil className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               <span className="hidden sm:inline">ویرایش</span>
             </ActionButton>
             <ActionButton variant="delete" onClick={handleDelete}>
-              <HiOutlineTrash className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+              <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               <span className="hidden sm:inline">حذف</span>
             </ActionButton>
           </div>

@@ -9,7 +9,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
 import { getSession, signOut } from 'next-auth/react';
 import { useState } from 'react';
-import { IoExitOutline } from 'react-icons/io5';
+import { LogOut } from 'lucide-react';
 import Loading from '../Button/Loading';
 
 const LogoutButton = () => {
@@ -72,7 +72,7 @@ const LogoutButton = () => {
         {isLoading ? (
           <Loading size="sm" variant="neutral" />
         ) : (
-          <IoExitOutline className="w-5 h-5 text-neutral-500 dark:text-neutral-400 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-300" />
+          <LogOut className="w-5 h-5 text-neutral-500 dark:text-neutral-400 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-300" />
         )}
       </span>
       <span

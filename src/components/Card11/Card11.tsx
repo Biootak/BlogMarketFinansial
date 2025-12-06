@@ -5,7 +5,7 @@ import { getPostLink } from '@/lib/getPostLink';
 import type { PostWithRelations } from '@/types/types';
 import Link from 'next/link';
 import type React from 'react';
-import { HiArrowLeft } from 'react-icons/hi2';
+import { ArrowLeft } from 'lucide-react';;;
 
 export interface Card11Props {
   className?: string;
@@ -48,7 +48,7 @@ const Card11: React.FC<Card11Props> = ({
         {/* Hover Arrow Indicator */}
         <div className="absolute bottom-3 start-3 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
           <div className="w-9 h-9 rounded-full bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm flex items-center justify-center shadow-lg border border-white/50 dark:border-neutral-700/50">
-            <HiArrowLeft className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+            <ArrowLeft className="w-4 h-4 text-primary-600 dark:text-primary-400" />
           </div>
         </div>
       </div>
@@ -94,7 +94,7 @@ const Card11: React.FC<Card11Props> = ({
             className="inline-flex items-center gap-2 text-xs font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-all duration-200 group-hover:gap-3"
           >
             <span>ادامه مطلب</span>
-            <HiArrowLeft className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-1" />
+            <ArrowLeft className="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-1" />
           </Link>
         </div>
       </div>

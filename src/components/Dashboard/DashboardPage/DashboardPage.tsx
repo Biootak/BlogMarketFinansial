@@ -6,16 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { PostWithRelations } from '@/types/types';
 import { motion } from 'framer-motion';
 import { memo, useMemo } from 'react';
-import {
-  HiOutlineCalendarDays,
-  HiOutlineChartBar,
-  HiOutlineChatBubbleLeftEllipsis,
-  HiOutlineDocumentText,
-  HiOutlineEye,
-  HiOutlineHeart,
-  HiOutlinePencilSquare,
-  HiOutlineShare,
-} from 'react-icons/hi2';
+import { CalendarDays, BarChart3, MessageSquare, FileText, Eye, Heart, Edit, Share2 } from 'lucide-react';
 import useSWR from 'swr';
 import PostManagement from '../Blog/PostManagement';
 import PublishingCalendar from '../Calendar/PublishingCalendar';
@@ -101,7 +92,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
         {
           title: 'بازدیدهای امروز',
           value: viewStats.todayViews,
-          icon: <HiOutlineEye className="w-5 h-5" />,
+          icon: <Eye className="w-5 h-5" />,
           color: 'blue',
           trend: 'up',
           percentage: 5.2,
@@ -109,7 +100,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
         {
           title: 'نظرات جدید',
           value: stats.comments.new,
-          icon: <HiOutlineChatBubbleLeftEllipsis className="w-5 h-5" />,
+          icon: <MessageSquare className="w-5 h-5" />,
           color: 'green',
           trend: 'neutral',
           percentage: 0.1,
@@ -117,7 +108,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
         {
           title: 'اشتراک‌گذاری‌ها',
           value: stats.shares.total,
-          icon: <HiOutlineShare className="w-5 h-5" />,
+          icon: <Share2 className="w-5 h-5" />,
           color: 'purple',
           trend: 'up',
           percentage: 12.3,
@@ -125,7 +116,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
         {
           title: 'لایک‌ها',
           value: stats.likes.total,
-          icon: <HiOutlineHeart className="w-5 h-5" />,
+          icon: <Heart className="w-5 h-5" />,
           color: 'red',
           trend: 'down',
           percentage: 2.5,
@@ -133,7 +124,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
         {
           title: 'پست‌های منتشر شده',
           value: stats.publishedPosts.total,
-          icon: <HiOutlineDocumentText className="w-5 h-5" />,
+          icon: <FileText className="w-5 h-5" />,
           color: 'orange',
           trend: 'up',
           percentage: 10.5,
@@ -141,7 +132,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
         {
           title: 'پیش‌نویس‌ها',
           value: stats.drafts.total,
-          icon: <HiOutlinePencilSquare className="w-5 h-5" />,
+          icon: <Edit className="w-5 h-5" />,
           color: 'blue',
           trend: 'neutral',
           percentage: 1,
@@ -194,7 +185,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
                          hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               <span className="flex items-center gap-1.5 sm:gap-2 lg:gap-2.5">
-                <HiOutlineChartBar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span className="hidden xs:inline">آمار بازدید</span>
                 <span className="xs:hidden">آمار</span>
               </span>
@@ -208,7 +199,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
                          hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               <span className="flex items-center gap-1.5 sm:gap-2 lg:gap-2.5">
-                <HiOutlineCalendarDays className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <CalendarDays className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span className="hidden xs:inline">تقویم انتشار</span>
                 <span className="xs:hidden">تقویم</span>
               </span>
@@ -236,7 +227,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
                   <div className="relative flex-shrink-0">
                     <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-xl sm:rounded-2xl blur-lg opacity-40" />
                     <div className="relative p-2 sm:p-2.5 md:p-3 lg:p-3.5 rounded-xl sm:rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-xl">
-                      <HiOutlineChartBar className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
                   </div>
                   <div className="min-w-0">
@@ -280,7 +271,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
                   <div className="relative flex-shrink-0">
                     <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl sm:rounded-2xl blur-lg opacity-40" />
                     <div className="relative p-2 sm:p-2.5 md:p-3 lg:p-3.5 rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-xl">
-                      <HiOutlineCalendarDays className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <CalendarDays className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
                   </div>
                   <div className="min-w-0">

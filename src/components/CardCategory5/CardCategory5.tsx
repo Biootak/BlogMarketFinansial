@@ -3,7 +3,7 @@ import type { TaxonomyType, TwMainColor } from '@/types/types';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { type FC } from 'react';
-import { HiArrowRight } from 'react-icons/hi2';
+import { ArrowRight } from 'lucide-react';;;
 
 export interface CardCategory5Props {
   className?: string;
@@ -38,7 +38,7 @@ const CardCategory5: FC<CardCategory5Props> = ({ className = '', taxonomy }) => 
         name={
           <div className="flex items-center">
             {count}
-            <HiArrowRight className="ms-1.5 w-3.5 h-3.5 rtl:rotate-180" />
+            <ArrowRight className="ms-1.5 w-3.5 h-3.5 rtl:rotate-180" />
           </div>
         }
       />

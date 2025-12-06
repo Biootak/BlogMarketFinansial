@@ -14,19 +14,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
 import type { SocialLinkType } from '@prisma/client';
-import {
-  ExternalLink,
-  GripVertical,
-  Loader2,
-  MessageCircle,
-  Palette,
-  Pencil,
-  Plus,
-  Share2,
-  Trash2,
-  Upload,
-  X,
-} from 'lucide-react';
+import { ExternalLink, GripVertical, Loader2, MessageCircle, Palette, Pencil, Plus, Share2, Trash2, Upload, X } from 'lucide-react';;;
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 

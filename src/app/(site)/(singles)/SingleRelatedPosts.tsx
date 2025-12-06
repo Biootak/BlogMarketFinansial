@@ -3,7 +3,7 @@ import Card11 from '@/components/Card11/Card11';
 import type { ActionResult, PostWithRelations } from '@/types/types';
 import type React from 'react';
 import { use } from 'react';
-import { HiPencilSquare, HiSparkles } from 'react-icons/hi2';
+import { Edit, Sparkles } from 'lucide-react';
 
 interface SingleRelatedPostsProps {
   post: PostWithRelations;
@@ -39,7 +39,7 @@ const SingleRelatedPosts: React.FC<SingleRelatedPostsProps> = ({
             {/* Section Header */}
             <div className="flex items-center gap-4 mb-8 lg:mb-10">
               <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-primary-500 to-violet-600 shadow-lg shadow-primary-500/25">
-                <HiSparkles className="w-6 h-6 text-white" />
+                <Sparkles className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h2 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white">
@@ -74,7 +74,7 @@ const SingleRelatedPosts: React.FC<SingleRelatedPostsProps> = ({
             {/* Section Header */}
             <div className="flex items-center gap-4 mb-8 lg:mb-10">
               <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-rose-500 shadow-lg shadow-violet-500/25">
-                <HiPencilSquare className="w-6 h-6 text-white" />
+                <Edit className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h2 className="text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white">

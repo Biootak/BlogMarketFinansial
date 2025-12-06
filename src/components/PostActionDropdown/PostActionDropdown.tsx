@@ -12,7 +12,7 @@ import { motion } from 'framer-motion';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import React, { type FC, useState, useCallback } from 'react';
-import { HiExclamationTriangle, HiEyeSlash, HiLink } from 'react-icons/hi2';
+import { AlertTriangle, EyeOff, Link } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
 import ModalHideAuthor from './ModalHideAuthor';
 
@@ -51,19 +51,19 @@ const PostActionDropdown: FC<PostActionDropdownProps> = ({
     {
       id: 'copylink',
       name: isCopied ? 'لینک کپی شد!' : 'کپی لینک',
-      icon: <HiLink className="w-4 h-4 ml-2 rtl:mr-2" />,
+      icon: <Link className="w-4 h-4 ml-2 rtl:mr-2" />,
       onClick: copyLink,
     },
     {
       id: 'hideThisAuthor',
       name: 'پنهان کردن این نویسنده',
-      icon: <HiEyeSlash className="w-4 h-4 ml-2 rtl:mr-2" />,
+      icon: <EyeOff className="w-4 h-4 ml-2 rtl:mr-2" />,
       onClick: openModalHideAuthor,
     },
     {
       id: 'reportThisArticle',
       name: 'گزارش این مقاله',
-      icon: <HiExclamationTriangle className="w-4 h-4 ml-2 rtl:mr-2" />,
+      icon: <AlertTriangle className="w-4 h-4 ml-2 rtl:mr-2" />,
       onClick: openModalReportPost,
     },
   ];

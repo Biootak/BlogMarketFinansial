@@ -2,7 +2,7 @@
 import ButtonPrimary from '@/components/Button/ButtonPrimary';
 import { motion } from 'framer-motion';
 import type React from 'react';
-import { IoAlertCircle } from 'react-icons/io5';
+import { AlertCircle } from 'lucide-react';
 
 interface ErrorComponentProps {
   message: string;
@@ -17,7 +17,7 @@ const ErrorComponent: React.FC<ErrorComponentProps> = ({ message, onRetry }) => 
       exit={{ opacity: 0, y: -20 }}
       className="flex flex-col items-center justify-center p-8 bg-red-50 dark:bg-red-900 rounded-lg shadow-lg"
     >
-      <IoAlertCircle className="w-16 h-16 text-red-500 dark:text-red-300 mb-4" />
+      <AlertCircle className="w-16 h-16 text-red-500 dark:text-red-300 mb-4" />
       <h2 className="text-2xl font-bold text-red-700 dark:text-red-200 mb-2">
         اینجا چیکار میکنی ! حتما مشکلی پیش اومد دوباره امتحان کن .
       </h2>

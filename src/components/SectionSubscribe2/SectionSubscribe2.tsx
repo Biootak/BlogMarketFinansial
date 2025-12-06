@@ -1,5 +1,5 @@
 import { subscribeToNewsletter } from '@/actions/newsletter';
-import { Bell, Gift, Mail, Sparkles } from 'lucide-react';
+import { Bell, Gift, Mail, Sparkles } from 'lucide-react';;;
 import Image from 'next/image';
 import type { FC } from 'react';
 import SubscribeForm from './SubscribeForm';

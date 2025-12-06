@@ -3,17 +3,7 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import type React from 'react';
-import {
-  HiOutlineArrowLeft,
-  HiOutlineChartBar,
-  HiOutlineClock,
-  HiOutlineDocumentText,
-  HiOutlineEye,
-  HiOutlinePencilAlt,
-  HiOutlinePlus,
-  HiOutlineSparkles,
-  HiPencil,
-} from 'react-icons/hi';
+import { ArrowLeft, BarChart3, Clock, Edit, Eye, FileText, Pencil, Plus, Sparkles } from 'lucide-react';;;
 
 interface PostManagementProps {
   stats: {
@@ -71,7 +61,7 @@ const PostManagement: React.FC<PostManagementProps> = ({ stats, popularPosts, re
           <div className="relative flex-shrink-0">
             <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-xl sm:rounded-2xl blur-lg opacity-40" />
             <div className="relative p-2 sm:p-2.5 lg:p-3.5 rounded-xl sm:rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-xl">
-              <HiOutlineDocumentText className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
             </div>
           </div>
           <div className="min-w-0">
@@ -103,9 +93,9 @@ const PostManagement: React.FC<PostManagementProps> = ({ stats, popularPosts, re
             }}
           >
             <div className="absolute inset-0 bg-gradient-to-r from-violet-700 to-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <HiOutlinePlus className="relative w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            <Plus className="relative w-4 h-4 sm:w-5 sm:h-5 text-white" />
             <span className="relative text-white">ایجاد پست جدید</span>
-            <HiOutlineSparkles className="relative w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <Sparkles className="relative w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </Link>
         </motion.div>
       </motion.div>
@@ -117,7 +107,7 @@ const PostManagement: React.FC<PostManagementProps> = ({ stats, popularPosts, re
       >
         <motion.div variants={itemVariants}>
           <StatCard
-            icon={HiOutlineDocumentText}
+            icon={FileText}
             title="کل پست‌ها"
             value={stats.totalPosts}
             color="violet"
@@ -125,14 +115,14 @@ const PostManagement: React.FC<PostManagementProps> = ({ stats, popularPosts, re
         </motion.div>
         <motion.div variants={itemVariants}>
           <StatCard
-            icon={HiOutlinePencilAlt}
+            icon={Edit}
             title="پیش‌نویس‌ها"
             value={stats.totalDrafts}
             color="blue"
           />
         </motion.div>
         <motion.div variants={itemVariants}>
-          <StatCard icon={HiOutlineEye} title="بازدیدها" value={stats.totalViews} color="emerald" />
+          <StatCard icon={Eye} title="بازدیدها" value={stats.totalViews} color="emerald" />
         </motion.div>
       </motion.div>
 
@@ -255,7 +245,7 @@ const PopularPosts: React.FC<{ posts: PostManagementProps['popularPosts'] }> = (
           <div className="relative flex-shrink-0">
             <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg sm:rounded-xl blur-md opacity-40" />
             <div className="relative p-1.5 sm:p-2 lg:p-2.5 rounded-lg sm:rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg">
-              <HiOutlineChartBar className="w-4 h-4 sm:w-5 sm:h-5" />
+              <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
           <div>
@@ -273,7 +263,7 @@ const PopularPosts: React.FC<{ posts: PostManagementProps['popularPosts'] }> = (
         >
           <span className="hidden sm:inline">مشاهده همه</span>
           <span className="sm:hidden">همه</span>
-          <HiOutlineArrowLeft className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover:-translate-x-1 transition-transform duration-200" />
+          <ArrowLeft className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover:-translate-x-1 transition-transform duration-200" />
         </Link>
       </div>
     </div>
@@ -300,7 +290,7 @@ const PopularPosts: React.FC<{ posts: PostManagementProps['popularPosts'] }> = (
                   {post.title}
                 </h4>
                 <div className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">
-                  <HiOutlineEye className="w-3 h-3 flex-shrink-0" />
+                  <Eye className="w-3 h-3 flex-shrink-0" />
                   <span className="font-medium">{post.views.toLocaleString('fa-IR')}</span>
                   <span className="w-0.5 h-0.5 rounded-full bg-slate-300 dark:bg-slate-600 flex-shrink-0" />
                   <span className="truncate">{post.author}</span>
@@ -314,14 +304,14 @@ const PopularPosts: React.FC<{ posts: PostManagementProps['popularPosts'] }> = (
                   className="p-1.5 sm:p-2 text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 transition-all duration-200 rounded-lg hover:bg-violet-100 dark:hover:bg-violet-900/30 hover:scale-110"
                   title="مشاهده"
                 >
-                  <HiOutlineEye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </Link>
                 <Link
                   href={`/dashboard/posts/edit/${post.id}`}
                   className="p-1.5 sm:p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:scale-110"
                   title="ویرایش"
                 >
-                  <HiPencil className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <Pencil className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </Link>
               </div>
             </div>
@@ -353,7 +343,7 @@ const RecentDrafts: React.FC<{ drafts: PostManagementProps['recentDrafts'] }> = 
           <div className="relative flex-shrink-0">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg sm:rounded-xl blur-md opacity-40" />
             <div className="relative p-1.5 sm:p-2 lg:p-2.5 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
-              <HiOutlineClock className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
           <div>
@@ -371,7 +361,7 @@ const RecentDrafts: React.FC<{ drafts: PostManagementProps['recentDrafts'] }> = 
         >
           <span className="hidden sm:inline">مشاهده همه</span>
           <span className="sm:hidden">همه</span>
-          <HiOutlineArrowLeft className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover:-translate-x-1 transition-transform duration-200" />
+          <ArrowLeft className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover:-translate-x-1 transition-transform duration-200" />
         </Link>
       </div>
     </div>
@@ -389,7 +379,7 @@ const RecentDrafts: React.FC<{ drafts: PostManagementProps['recentDrafts'] }> = 
             <div className="group relative flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 lg:p-3 rounded-xl sm:rounded-2xl hover:bg-gradient-to-r hover:from-blue-50/80 hover:to-indigo-50/50 dark:hover:from-slate-800/80 dark:hover:to-slate-800/50 transition-all duration-300 border border-transparent hover:border-blue-200 dark:hover:border-blue-800">
               {/* Draft Icon */}
               <div className="flex-shrink-0 flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
-                <HiOutlinePencilAlt className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                <Edit className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               </div>
 
               {/* Content */}
@@ -398,7 +388,7 @@ const RecentDrafts: React.FC<{ drafts: PostManagementProps['recentDrafts'] }> = 
                   {draft.title}
                 </h4>
                 <div className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">
-                  <HiOutlineClock className="w-3 h-3 flex-shrink-0" />
+                  <Clock className="w-3 h-3 flex-shrink-0" />
                   <span className="truncate">{draft.date}</span>
                   <span className="w-0.5 h-0.5 rounded-full bg-slate-300 dark:bg-slate-600 flex-shrink-0" />
                   <span className="truncate">{draft.author}</span>
@@ -411,7 +401,7 @@ const RecentDrafts: React.FC<{ drafts: PostManagementProps['recentDrafts'] }> = 
                 className="flex-shrink-0 p-1.5 sm:p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:scale-110"
                 title="ویرایش"
               >
-                <HiPencil className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <Pencil className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </Link>
             </div>
           </motion.li>

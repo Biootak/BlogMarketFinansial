@@ -9,7 +9,7 @@
 // import Link from 'next/link';
 // import Image from 'next/image';
 // import ButtonPlayMusicPlayer from '../ButtonPlayMusicPlayer';
-// import { HiPause, HiPlay } from 'react-icons/hi2';
+// import { Pause, Play } from 'lucide-react';;;
 
 // export interface Card16PodcastProps {
 //   className?: string;
@@ -31,9 +31,9 @@
 //         className={'w-14 h-14 flex items-center justify-center rounded-full bg-neutral-50 text-primary-500 cursor-pointer'}
 //       >
 //         {state === 'playing' ? (
-//           <HiPause className="w-8 h-8" />
+//           <Pause className="w-8 h-8" />
 //         ) : (
-//           <HiPlay className="ms-0.5 w-8 h-8 rtl:rotate-180" />
+//           <Play className="ms-0.5 w-8 h-8 rtl:rotate-180" />
 //         )}
 //       </div>
 //     );

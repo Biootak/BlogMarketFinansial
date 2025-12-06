@@ -2,7 +2,7 @@
 
 import LoadingVideo from '@/components/LoadingVideo/LoadingVideo';
 import React, { type FC, useEffect, useState } from 'react';
-import { HiSpeakerWave, HiSpeakerXMark } from 'react-icons/hi2';
+import { Volume2, VolumeX } from 'lucide-react';
 import ReactPlayer from 'react-player';
 
 export interface MediaVideoProps {
@@ -58,13 +58,13 @@ const MediaVideo: FC<MediaVideoProps> = ({ videoUrl, isHover }) => {
         >
           {isMuted ? (
             <>
-              <HiSpeakerXMark className="w-3.5 h-3.5" />
+              <VolumeX className="w-3.5 h-3.5" />
               {showDescUnmuted && (
                 <span className="ms-1 inline-block text-[9px]">Click here to unmute</span>
               )}
             </>
           ) : (
-            <HiSpeakerWave className="w-3.5 h-3.5" />
+            <Volume2 className="w-3.5 h-3.5" />
           )}
         </div>
       )}

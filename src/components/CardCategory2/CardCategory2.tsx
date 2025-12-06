@@ -3,7 +3,7 @@
 import NcImage from '@/components/NcImage/NcImage';
 import type { TaxonomyType, TwMainColor } from '@/types/types';
 import { motion } from 'framer-motion';
-import { FileText } from 'lucide-react';
+import { FileText } from 'lucide-react';;;
 import Link from 'next/link';
 import React, { type FC } from 'react';
 

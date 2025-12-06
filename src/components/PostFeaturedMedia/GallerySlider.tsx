@@ -5,7 +5,7 @@ import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import Image, { type StaticImageData } from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
-import { HiChevronLeft, HiChevronRight } from 'react-icons/hi2';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useSwipeable } from 'react-swipeable';
 
 export interface GallerySliderProps {
@@ -114,7 +114,7 @@ export default function GallerySlider({
                 style={{ transform: 'translate3d(0, 0, 0)' }}
                 onClick={() => changePhotoId(index - 1)}
               >
-                <HiChevronLeft className="h-4 w-4 rtl:rotate-180" />
+                <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
               </button>
             )}
             {index + 1 < images.length && (
@@ -124,7 +124,7 @@ export default function GallerySlider({
                 style={{ transform: 'translate3d(0, 0, 0)' }}
                 onClick={() => changePhotoId(index + 1)}
               >
-                <HiChevronRight className="h-4 w-4 rtl:rotate-180" />
+                <ChevronRight className="h-4 w-4 rtl:rotate-180" />
               </button>
             )}
           </div>

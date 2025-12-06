@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';
-import { HiOutlineMagnifyingGlass, HiXMark } from 'react-icons/hi2';
+import { Search, X } from 'lucide-react';
 
 interface ArchiveSearchInputProps {
   initialQuery?: string;
@@ -79,7 +79,7 @@ export default function ArchiveSearchInput({ initialQuery = '' }: ArchiveSearchI
           {isPending ? (
             <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
           ) : (
-            <HiOutlineMagnifyingGlass className="w-4 h-4" />
+            <Search className="w-4 h-4" />
           )}
         </button>
         {query && (
@@ -96,7 +96,7 @@ export default function ArchiveSearchInput({ initialQuery = '' }: ArchiveSearchI
               transition-colors duration-200
             "
           >
-            <HiXMark className="w-4 h-4" />
+            <X className="w-4 h-4" />
           </button>
         )}
       </div>

@@ -9,8 +9,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/components/ui/use-toast';
 import { useCallback, useState } from 'react';
-import { FaFacebook, FaLinkedinIn, FaTelegram, FaTwitter, FaWhatsapp } from 'react-icons/fa';
-import { HiCheck, HiLink } from 'react-icons/hi2';
+import { Check, Facebook, Link, Linkedin, MessageCircle, Send, Twitter } from 'lucide-react';
+
 
 interface ShareDropdownProps {
   url: string;
@@ -27,7 +27,7 @@ const SHARE_PLATFORMS = [
   {
     id: 'telegram',
     name: 'تلگرام',
-    icon: FaTelegram,
+    icon: Send,
     color: '#0088cc',
     getUrl: (url: string, title: string) => {
       const text = `📰 ${title}\n\n🔗 مطالعه در بیوتاک\n\n${HASHTAGS}`;
@@ -37,7 +37,7 @@ const SHARE_PLATFORMS = [
   {
     id: 'whatsapp',
     name: 'واتساپ',
-    icon: FaWhatsapp,
+    icon: MessageCircle,
     color: '#25D366',
     getUrl: (url: string, title: string) => {
       const text = `📰 *${title}*\n\n🔗 مطالعه در بیوتاک\n\n${HASHTAGS}\n\n${url}`;
@@ -47,7 +47,7 @@ const SHARE_PLATFORMS = [
   {
     id: 'twitter',
     name: 'توییتر / X',
-    icon: FaTwitter,
+    icon: Twitter,
     color: '#1DA1F2',
     getUrl: (url: string, title: string) => {
       const text = `📰 ${title}\n\n🔗 مطالعه در بیوتاک\n\n${HASHTAGS}`;
@@ -57,7 +57,7 @@ const SHARE_PLATFORMS = [
   {
     id: 'facebook',
     name: 'فیسبوک',
-    icon: FaFacebook,
+    icon: Facebook,
     color: '#1877F2',
     getUrl: (url: string, title: string) => {
       const quote = `📰 ${title}\n\n🔗 مطالعه در بیوتاک`;
@@ -67,7 +67,7 @@ const SHARE_PLATFORMS = [
   {
     id: 'linkedin',
     name: 'لینکدین',
-    icon: FaLinkedinIn,
+    icon: Linkedin,
     color: '#0A66C2',
     getUrl: (url: string, title: string) => {
       return `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}&summary=${encodeURIComponent('مطالعه در بیوتاک')}&source=Biotak`;
@@ -169,9 +169,9 @@ export default function ShareDropdown({
             }`}
           >
             {isCopied ? (
-              <HiCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             ) : (
-              <HiLink className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
+              <Link className="w-4 h-4 text-neutral-600 dark:text-neutral-400" />
             )}
           </div>
           <div className="flex flex-col">

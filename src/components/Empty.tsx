@@ -1,4 +1,4 @@
-import { MdFolder } from 'react-icons/md';
+import { Folder } from 'lucide-react';
 
 export default function Empty({
   className = 'text-center py-8',
@@ -7,7 +7,7 @@ export default function Empty({
 }) {
   return (
     <div className={className}>
-      <MdFolder className="inline-block h-12 w-12 text-neutral-400" />
+      <Folder className="inline-block h-12 w-12 text-neutral-400" />
       <h3 className="mt-4 text-sm font-semibold text-neutral-900 dark:text-neutral-300">
         موردی یافت نشد
       </h3>

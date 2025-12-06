@@ -20,7 +20,7 @@ import {
   type Tag,
   type User,
 } from '@prisma/client';
-import type { IconType } from 'react-icons';
+import type { LucideIcon } from 'lucide-react';
 import type { z } from 'zod';
 
 // Prisma Exact Types
@@ -327,7 +327,7 @@ export type Advertisement = {
 export interface SocialType {
   id: string;
   name: string;
-  icon: IconType;
+  icon: LucideIcon;
   href: string;
   color: string;
 }
@@ -335,7 +335,7 @@ export interface SocialType {
 export interface NcDropDownItem {
   id: string;
   name: string;
-  icon: IconType;
+  icon: LucideIcon;
   onClick?: () => void;
 }
 
@@ -471,6 +471,6 @@ export interface SidebarData {
 export interface NcDropDownItem {
   id: string;
   name: string;
-  icon: IconType;
+  icon: LucideIcon;
   onClick?: () => void;
 }

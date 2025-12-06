@@ -8,8 +8,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import type { TaxonomyType } from '@/types/types';
 import { useCallback, useEffect, useState } from 'react';
-import { BiLoaderAlt } from 'react-icons/bi';
-import { FiCheck, FiFolder, FiSearch, FiX } from 'react-icons/fi';
+import { Check, Folder, Loader2, Search, X } from 'lucide-react';
+
+
 
 interface CategorySelectDialogProps {
   isOpen: boolean;
@@ -66,7 +67,7 @@ export function CategorySelectDialog({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 sm:gap-3 text-right">
               <div className="p-2 sm:p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
-                <FiFolder className="w-4 h-4 sm:w-5 sm:h-5" />
+                <Folder className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div>
                 <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
@@ -97,7 +98,7 @@ export function CategorySelectDialog({
                       onClick={() => handleToggleCategory(categoryId)}
                       className="hover:bg-white/20 rounded-full p-0.5"
                     >
-                      <FiX className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                      <X className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                     </button>
                   </Badge>
                 ) : null;
@@ -109,7 +110,7 @@ export function CategorySelectDialog({
         {/* Search */}
         <div className="px-4 sm:px-6 py-3 sm:py-4">
           <div className="relative">
-            <FiSearch className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
             <Input
               type="text"
               placeholder="جستجوی دسته‌بندی..."
@@ -148,7 +149,7 @@ export function CategorySelectDialog({
                         : 'bg-slate-200 dark:bg-slate-700'
                     }`}
                   >
-                    {isSelected && <FiCheck className="w-3 h-3 sm:w-4 sm:h-4" />}
+                    {isSelected && <Check className="w-3 h-3 sm:w-4 sm:h-4" />}
                   </div>
                 </button>
               );
@@ -156,7 +157,7 @@ export function CategorySelectDialog({
             <div ref={infiniteScrollRef} style={{ height: '20px' }} />
             {isLoading && (
               <div className="flex items-center justify-center py-3 sm:py-4 text-slate-500 text-sm">
-                <BiLoaderAlt className="w-4 h-4 sm:w-5 sm:h-5 animate-spin ml-2" />
+                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin ml-2" />
                 در حال بارگذاری...
               </div>
             )}

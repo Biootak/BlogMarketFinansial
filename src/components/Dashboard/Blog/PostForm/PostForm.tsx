@@ -27,22 +27,10 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { BiLoaderAlt } from 'react-icons/bi';
-import {
-  FiFileText,
-  FiFolder,
-  FiGrid,
-  FiImage,
-  FiLink,
-  FiMusic,
-  FiPlus,
-  FiStar,
-  FiTag,
-  FiVideo,
-  FiX,
-} from 'react-icons/fi';
-import { HiOutlineSparkles } from 'react-icons/hi2';
-import { RiDraftLine, RiSendPlaneFill } from 'react-icons/ri';
+;
+
+
+
 
 import type { EditorRef } from '@/components/Editor1';
 
@@ -70,6 +58,7 @@ import { useRouter } from 'next/navigation';
 import type { ZodSchema } from 'zod';
 import { CategorySelectDialog } from './CategorySelectDialog';
 import { TagSelectDialog } from './TagSelectDialog';
+import { FileEdit, FileText, Folder, Grid, Image, Link2, Loader2, Music, Plus, Send, Sparkles, Star, Tag, Video, X } from 'lucide-react';
 
 interface PostFormProps<T extends CreatePostInput | UpdatePostInput> {
   schema: ZodSchema<T>;
@@ -88,10 +77,10 @@ interface PostFormProps<T extends CreatePostInput | UpdatePostInput> {
 }
 
 const postTypeConfig = {
-  STANDARD: { icon: FiFileText, label: 'استاندارد', color: 'from-slate-500 to-gray-600' },
-  VIDEO: { icon: FiVideo, label: 'ویدیو', color: 'from-rose-500 to-pink-600' },
-  GALLERY: { icon: FiGrid, label: 'گالری', color: 'from-violet-500 to-purple-600' },
-  AUDIO: { icon: FiMusic, label: 'صوتی', color: 'from-amber-500 to-orange-500' },
+  STANDARD: { icon: FileText, label: 'استاندارد', color: 'from-slate-500 to-gray-600' },
+  VIDEO: { icon: Video, label: 'ویدیو', color: 'from-rose-500 to-pink-600' },
+  GALLERY: { icon: Grid, label: 'گالری', color: 'from-violet-500 to-purple-600' },
+  AUDIO: { icon: Music, label: 'صوتی', color: 'from-amber-500 to-orange-500' },
 };
 
 const PostForm = <T extends CreatePostInput | UpdatePostInput>({
@@ -256,9 +245,9 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
   };
 
   const sectionTabs = [
-    { id: 'content', label: 'محتوا', icon: FiFileText },
-    { id: 'meta', label: 'تنظیمات', icon: FiTag },
-    { id: 'media', label: 'رسانه', icon: FiImage },
+    { id: 'content', label: 'محتوا', icon: FileText },
+    { id: 'meta', label: 'تنظیمات', icon: Tag },
+    { id: 'media', label: 'رسانه', icon: Image },
   ] as const;
 
   return (
@@ -278,7 +267,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-500/20">
-                    <HiOutlineSparkles className="w-5 h-5" />
+                    <Sparkles className="w-5 h-5" />
                   </div>
                   <div>
                     <h1 className="text-lg font-black text-slate-900 dark:text-white">{title}</h1>
@@ -296,7 +285,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                   }}
                   className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors duration-200 text-sm font-medium"
                 >
-                  <RiDraftLine className="w-4 h-4" />
+                  <FileEdit className="w-4 h-4" />
                   <span>پیش‌نویس</span>
                 </button>
 
@@ -311,12 +300,12 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                 >
                   {isLoading ? (
                     <>
-                      <BiLoaderAlt className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin" />
                       <span>ارسال...</span>
                     </>
                   ) : (
                     <>
-                      <RiSendPlaneFill className="w-4 h-4" />
+                      <Send className="w-4 h-4" />
                       <span>{isEditing ? 'به‌روزرسانی' : 'انتشار'}</span>
                     </>
                   )}
@@ -328,7 +317,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
             <div className="hidden sm:flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="p-3 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-500/20">
-                  <HiOutlineSparkles className="w-6 h-6" />
+                  <Sparkles className="w-6 h-6" />
                 </div>
                 <div>
                   <h1 className="text-2xl font-black text-slate-900 dark:text-white">{title}</h1>
@@ -348,7 +337,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                   }}
                   className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors duration-200 font-medium"
                 >
-                  <RiDraftLine className="w-4 h-4" />
+                  <FileEdit className="w-4 h-4" />
                   <span>پیش‌نویس</span>
                 </button>
 
@@ -363,12 +352,12 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                 >
                   {isLoading ? (
                     <>
-                      <BiLoaderAlt className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin" />
                       <span>در حال ارسال...</span>
                     </>
                   ) : (
                     <>
-                      <RiSendPlaneFill className="w-4 h-4" />
+                      <Send className="w-4 h-4" />
                       <span>{isEditing ? 'به‌روزرسانی' : 'انتشار پست'}</span>
                     </>
                   )}
@@ -417,7 +406,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                       render={({ field }) => (
                         <FormItem className="p-6">
                           <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                            <FiFileText className="w-4 h-4 text-violet-500" />
+                            <FileText className="w-4 h-4 text-violet-500" />
                             عنوان پست
                           </FormLabel>
                           <FormControl>
@@ -447,7 +436,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                       <FormItem className="p-5">
                         <div className="flex items-center justify-between">
                           <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                            <FiLink className="w-4 h-4 text-violet-500" />
+                            <Link2 className="w-4 h-4 text-violet-500" />
                             اسلاگ (URL)
                           </FormLabel>
                           <div className="flex items-center gap-2">
@@ -583,7 +572,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                          <FiFolder className="w-4 h-4 text-blue-500" />
+                          <Folder className="w-4 h-4 text-blue-500" />
                           دسته‌بندی‌ها
                         </FormLabel>
                         <div className="flex flex-wrap gap-2 mt-3 min-h-[40px]">
@@ -605,7 +594,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                                   }
                                   className="hover:bg-white/20 rounded-full p-0.5"
                                 >
-                                  <FiX className="w-3 h-3" />
+                                  <X className="w-3 h-3" />
                                 </button>
                               </Badge>
                             ) : null;
@@ -618,7 +607,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                             variant="outline"
                             className="w-full mt-3 border-dashed border-2 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                           >
-                            <FiPlus className="w-4 h-4 ml-2" />
+                            <Plus className="w-4 h-4 ml-2" />
                             افزودن دسته‌بندی
                           </Button>
                         </FormControl>
@@ -636,7 +625,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                          <FiTag className="w-4 h-4 text-emerald-500" />
+                          <Tag className="w-4 h-4 text-emerald-500" />
                           برچسب‌ها
                         </FormLabel>
                         <div className="flex flex-wrap gap-2 mt-3 min-h-[40px]">
@@ -653,7 +642,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                                 }
                                 className="hover:bg-white/20 rounded-full p-0.5"
                               >
-                                <FiX className="w-3 h-3" />
+                                <X className="w-3 h-3" />
                               </button>
                             </Badge>
                           ))}
@@ -665,7 +654,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                             variant="outline"
                             className="w-full mt-3 border-dashed border-2 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
                           >
-                            <FiPlus className="w-4 h-4 ml-2" />
+                            <Plus className="w-4 h-4 ml-2" />
                             افزودن برچسب
                           </Button>
                         </FormControl>
@@ -788,7 +777,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                       <FormItem className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="p-2.5 rounded-xl bg-gradient-to-br from-rose-500 to-pink-500 text-white">
-                            <FiStar className="w-5 h-5" />
+                            <Star className="w-5 h-5" />
                           </div>
                           <div>
                             <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300">
@@ -816,7 +805,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                            <FiVideo className="w-4 h-4 text-rose-500" />
+                            <Video className="w-4 h-4 text-rose-500" />
                             آدرس ویدیو
                           </FormLabel>
                           <FormControl>
@@ -843,7 +832,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                            <FiMusic className="w-4 h-4 text-amber-500" />
+                            <Music className="w-4 h-4 text-amber-500" />
                             آدرس فایل صوتی
                           </FormLabel>
                           <FormControl>
@@ -873,7 +862,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2 mb-4">
-                          <FiImage className="w-4 h-4 text-violet-500" />
+                          <Image className="w-4 h-4 text-violet-500" />
                           تصویر شاخص
                         </FormLabel>
                         <FormControl>
@@ -908,7 +897,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2 mb-4">
-                            <FiGrid className="w-4 h-4 text-emerald-500" />
+                            <Grid className="w-4 h-4 text-emerald-500" />
                             گالری تصاویر
                           </FormLabel>
                           <FormControl>

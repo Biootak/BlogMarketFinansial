@@ -9,8 +9,9 @@ import { useToast } from '@/components/ui/use-toast';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import type { TaxonomyType } from '@/types/types';
 import { useCallback, useEffect, useState } from 'react';
-import { BiLoaderAlt } from 'react-icons/bi';
-import { FiCheck, FiPlus, FiSearch, FiTag, FiX } from 'react-icons/fi';
+import { Check, Loader2, Plus, Search, Tag, X } from 'lucide-react';
+
+
 
 interface TagSelectDialogProps {
   isOpen: boolean;
@@ -94,7 +95,7 @@ export function TagSelectDialog({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 sm:gap-3 text-right">
               <div className="p-2 sm:p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
-                <FiTag className="w-4 h-4 sm:w-5 sm:h-5" />
+                <Tag className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div>
                 <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
@@ -123,7 +124,7 @@ export function TagSelectDialog({
                     onClick={() => handleRemoveTag(tag)}
                     className="hover:bg-white/20 rounded-full p-0.5"
                   >
-                    <FiX className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                    <X className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                   </button>
                 </Badge>
               ))}
@@ -144,7 +145,7 @@ export function TagSelectDialog({
               type="submit"
               className="h-9 sm:h-11 px-3 sm:px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white"
             >
-              <FiPlus className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
           </form>
         </div>
@@ -152,7 +153,7 @@ export function TagSelectDialog({
         {/* Search */}
         <div className="px-4 sm:px-6 py-3 sm:py-4">
           <div className="relative">
-            <FiSearch className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
             <Input
               type="text"
               placeholder="جستجوی برچسب..."
@@ -191,7 +192,7 @@ export function TagSelectDialog({
                         : 'bg-slate-200 dark:bg-slate-700'
                     }`}
                   >
-                    {isSelected && <FiCheck className="w-3 h-3 sm:w-4 sm:h-4" />}
+                    {isSelected && <Check className="w-3 h-3 sm:w-4 sm:h-4" />}
                   </div>
                 </button>
               );
@@ -199,7 +200,7 @@ export function TagSelectDialog({
             <div ref={infiniteScrollRef} style={{ height: '1px' }} />
             {isLoading && (
               <div className="flex items-center justify-center py-3 sm:py-4 text-slate-500 text-sm">
-                <BiLoaderAlt className="w-4 h-4 sm:w-5 sm:h-5 animate-spin ml-2" />
+                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin ml-2" />
                 در حال بارگذاری...
               </div>
             )}

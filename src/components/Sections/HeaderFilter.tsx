@@ -7,7 +7,7 @@ import type React from 'react';
 import { useState } from 'react';
 
 import type { PostWithRelations, TaxonomyType } from '@/types/types';
-import { HiArrowRight } from 'react-icons/hi2';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '../ui/button';
 
 export interface HeaderFilterProps {
@@ -57,7 +57,7 @@ const HeaderFilter: React.FC<HeaderFilterProps> = ({
           variant={'outline'}
         >
           <span>مشاهده همه</span>
-          <HiArrowRight className="ms-3 w-5 h-5 rtl:rotate-180" />
+          <ArrowRight className="ms-3 w-5 h-5 rtl:rotate-180" />
         </Button>
       </div>
     </div>

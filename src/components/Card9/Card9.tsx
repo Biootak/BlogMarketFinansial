@@ -8,7 +8,7 @@ import type { PostWithRelations } from '@/types/types';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { FC } from 'react';
-import { HiArrowLeft } from 'react-icons/hi2';
+import { ArrowLeft } from 'lucide-react';;;
 
 export interface Card9Props {
   className?: string;
@@ -89,7 +89,7 @@ const Card9: FC<Card9Props> = ({ className = 'h-full', ratio = 'tall', post, hov
             {/* Hover Arrow */}
             <div className="absolute top-3 end-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
               <div className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30">
-                <HiArrowLeft className="w-4 h-4 text-white" />
+                <ArrowLeft className="w-4 h-4 text-white" />
               </div>
             </div>
           </Link>
@@ -116,7 +116,7 @@ const Card9: FC<Card9Props> = ({ className = 'h-full', ratio = 'tall', post, hov
             className="inline-flex items-center gap-2 text-xs font-bold text-primary-300 hover:text-primary-200 transition-colors"
           >
             <span>ادامه مطلب</span>
-            <HiArrowLeft className="w-3.5 h-3.5" />
+            <ArrowLeft className="w-3.5 h-3.5" />
           </Link>
         </div>
       </div>

@@ -2,7 +2,7 @@ import PostMeta2 from '@/components/PostMeta2/PostMeta2';
 import type { PostWithRelations } from '@/types/types';
 import Link from 'next/link';
 import type React from 'react';
-import { HiChevronLeft, HiHome } from 'react-icons/hi2';
+import { ChevronLeft, Home } from 'lucide-react';;;
 import SingleMetaAction2 from './SingleMetaAction2';
 import SingleTitle from './SingleTitle';
 
@@ -36,12 +36,12 @@ const SingleHeader: React.FC<SingleHeaderProps> = ({ post, titleMainClass, class
               href="/"
               className="flex items-center gap-1 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
             >
-              <HiHome className="w-3.5 h-3.5" />
+              <Home className="w-3.5 h-3.5" />
               <span>{siteName}</span>
             </Link>
             {post.categories.slice(0, 2).map((cat, _index) => (
               <span key={cat.id} className="flex items-center gap-2">
-                <HiChevronLeft className="w-3 h-3 text-neutral-300 dark:text-neutral-600" />
+                <ChevronLeft className="w-3 h-3 text-neutral-300 dark:text-neutral-600" />
                 <Link
                   href={`/category/${cat.id}`}
                   className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"

@@ -7,22 +7,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import {
-  Calendar,
-  ChevronLeft,
-  FileText,
-  Filter,
-  Home,
-  Layers,
-  Sparkles,
-  TrendingUp,
-  X,
-} from 'lucide-react';
+;
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
-import { BsFolder2Open, BsTag } from 'react-icons/bs';
+
 
 import { getCategories } from '@/actions/categoryActions';
 import { getTags } from '@/actions/getTags';
@@ -40,6 +30,7 @@ import AnimatedPostGrid from '../../AnimatedPostGrid';
 import ArchiveSearchInput from '../../ArchiveSearchInput';
 import ModalCategories from '../../ModalCategories';
 import ModalTags from '../../ModalTags';
+import { Calendar, ChevronLeft, FileText, Filter, FolderOpen, Home, Layers, Sparkles, Tag, TrendingUp, X } from 'lucide-react';;
 
 export async function generateMetadata({
   params,
@@ -234,11 +225,11 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
               <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 rounded-full text-[10px] sm:text-xs font-semibold mb-2 sm:mb-4">
                 {selectedCategory ? (
                   <>
-                    <BsFolder2Open className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> دسته‌بندی
+                    <FolderOpen className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> دسته‌بندی
                   </>
                 ) : selectedTag ? (
                   <>
-                    <BsTag className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> برچسب
+                    <Tag className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> برچسب
                   </>
                 ) : (
                   <>
@@ -409,7 +400,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
                     <div>
                       <div className="flex items-center gap-2 mb-4">
                         <div className="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center">
-                          <BsFolder2Open className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                          <FolderOpen className="w-4 h-4 text-primary-600 dark:text-primary-400" />
                         </div>
                         <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
                           دسته‌بندی‌ها
@@ -424,7 +415,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
                     <div>
                       <div className="flex items-center gap-2 mb-4">
                         <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
-                          <BsTag className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                          <Tag className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                         </div>
                         <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
                           برچسب‌ها

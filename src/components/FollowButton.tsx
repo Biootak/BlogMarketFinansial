@@ -1,7 +1,7 @@
 'use client';
 
 import React, { type FC } from 'react';
-import { HiPlusCircle } from 'react-icons/hi2';
+import { PlusCircle } from 'lucide-react';
 import Button, { type ButtonProps } from './Button/Button';
 import ButtonPrimary from './Button/ButtonPrimary';
 
@@ -24,7 +24,7 @@ const FollowButton: FC<FollowButtonProps> = ({
       fontSize={fontSize}
       onClick={() => setFollowing(true)}
     >
-      <HiPlusCircle className="w-5 h-5 sm:-ms-2.5" />
+      <PlusCircle className="w-5 h-5 sm:-ms-2.5" />
       <span className="ms-2">Follow</span>
     </ButtonPrimary>
   ) : (

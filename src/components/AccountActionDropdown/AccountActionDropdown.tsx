@@ -5,7 +5,7 @@ import NcDropDown from '@/components/NcDropDown/NcDropDown';
 import type { NcDropDownItem } from '@/types/types';
 import twFocusClass from '@/utils/twFocusClass';
 import React, { type FC, useState } from 'react';
-import { HiOutlineClipboard, HiOutlineEyeSlash, HiOutlineFlag } from 'react-icons/hi2';
+import { Clipboard, EyeOff, Flag } from 'lucide-react';
 import ModalHideAuthor from './ModalHideAuthor';
 
 // تعریف پراپ‌های کامپوننت
@@ -25,17 +25,17 @@ const AccountActionDropdown: FC<AccountActionDropdownProps> = ({
     {
       id: 'copylink',
       name: 'کپی لینک',
-      icon: HiOutlineClipboard,
+      icon: Clipboard,
     },
     {
       id: 'hideThisAuthor',
       name: 'مخفی کردن این نویسنده',
-      icon: HiOutlineEyeSlash,
+      icon: EyeOff,
     },
     {
       id: 'reportThisArticle',
       name: 'گزارش این نویسنده',
-      icon: HiOutlineFlag,
+      icon: Flag,
     },
   ];
 

@@ -1,6 +1,6 @@
 import twFocusClass from '@/utils/twFocusClass';
 import React from 'react';
-import { HiReply } from 'react-icons/hi';
+import { Reply } from 'lucide-react';
 
 export interface CommentCardReplyProps {
   className?: string;
@@ -19,7 +19,7 @@ const CommentCardReply = ({ className = '', onClickReply }: CommentCardReplyProp
         title="پاسخ"
         onClick={onClickReply}
       >
-        <HiReply className="w-4 h-4 ml-1.5 rtl:mr-1.5 rtl:ml-0" />
+        <Reply className="w-4 h-4 ml-1.5 rtl:mr-1.5 rtl:ml-0" />
         <span className="text-xs leading-none">پاسخ</span>
       </button>
     </div>

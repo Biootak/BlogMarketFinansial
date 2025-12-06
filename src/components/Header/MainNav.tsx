@@ -2,7 +2,7 @@ import { auth } from '@/auth';
 import Logo from '@/components/Logo/Logo';
 import MenuBar from '@/components/MenuBar/MenuBar';
 import Navigation from '@/components/Navigation/Navigation';
-import { Sparkles, User } from 'lucide-react';
+import { Sparkles, User } from 'lucide-react';;;
 import Link from 'next/link';
 import AvatarDropdown from './AvatarDropdown';
 import NotifyDropdown from './NotifyDropdown';

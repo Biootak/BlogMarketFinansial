@@ -1,6 +1,6 @@
 import twFocusClass from '@/utils/twFocusClass';
 import React, { type ButtonHTMLAttributes, type FC } from 'react';
-import { HiChevronLeft } from 'react-icons/hi2';
+import { ChevronLeft } from 'lucide-react';
 
 interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {}
 
@@ -11,7 +11,7 @@ const NextBtn: FC<Props> = ({ className = 'w-10 h-10 text-lg', ...args }) => {
       aria-label="بعدی"
       {...args}
     >
-      <HiChevronLeft className="w-5 h-5" />
+      <ChevronLeft className="w-5 h-5" />
     </button>
   );
 };

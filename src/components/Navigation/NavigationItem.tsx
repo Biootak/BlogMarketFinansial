@@ -5,7 +5,7 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
 import React, { type FC, Fragment, useState } from 'react';
-import { HiChevronDown } from 'react-icons/hi2';
+import { ChevronDown } from 'lucide-react';;;
 import NcImage from '../NcImage/NcImage';
 import { Button } from '../ui/button';
 
@@ -66,7 +66,7 @@ const NavigationItem: FC<NavigationItemProps> = ({ menuItem }) => {
               className="inline-flex items-center text-sm font-medium text-neutral-700 hover:text-primary-600 dark:text-neutral-300 dark:hover:text-primary-400"
             >
               {menu.name}
-              <HiChevronDown
+              <ChevronDown 
                 className={`mr-1 h-4 w-4 transition-transform duration-200 ${
                   isOpen ? 'rotate-180' : ''
                 }`}
@@ -185,7 +185,7 @@ const NavigationItem: FC<NavigationItemProps> = ({ menuItem }) => {
             className="inline-flex items-center text-sm font-medium text-neutral-700 hover:text-primary-600 dark:text-neutral-300 dark:hover:text-primary-400"
           >
             {menuDropdown.name}
-            <HiChevronDown
+            <ChevronDown 
               className={`mr-1 h-4 w-4 transition-transform duration-200 ${
                 isOpen ? 'rotate-180' : ''
               }`}

@@ -2,7 +2,7 @@ import Logo from '@/components/Logo/Logo';
 import SocialLinks from '@/components/SocialsList/SocialLinks';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
 import * as motion from 'framer-motion/client';
-import { ArrowUpLeft, Mail, MapPin, Phone } from 'lucide-react';
+import { ArrowUpLeft, Mail, MapPin, Phone } from 'lucide-react';;;
 import Link from 'next/link';
 
 interface WidgetFooterMenu {

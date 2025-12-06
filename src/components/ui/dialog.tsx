@@ -2,7 +2,7 @@
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import * as React from 'react';
-import { FaTimes } from 'react-icons/fa';
+import { X } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
@@ -48,7 +48,7 @@ const DialogContent = React.forwardRef<
       {children}
       {!hideCloseButton && (
         <DialogPrimitive.Close className="absolute left-2 top-2 sm:left-4 sm:top-4 rounded-sm opacity-70 ring-offset-neutral-50 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-neutral-100 data-[state=open]:text-neutral-500">
-          <FaTimes className="h-4 w-4" />
+          <X className="h-4 w-4" />
           <span className="sr-only">بستن</span>
         </DialogPrimitive.Close>
       )}

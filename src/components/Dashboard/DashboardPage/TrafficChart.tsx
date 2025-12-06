@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import type React from 'react';
-import { HiOutlineCalendarDays, HiOutlineEye } from 'react-icons/hi2';
+import { CalendarDays, Eye } from 'lucide-react';
 import useSWR from 'swr';
 import {
   Bar,
@@ -141,7 +141,7 @@ const TrafficChart: React.FC = () => {
           className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-900/20 dark:to-indigo-900/20 border border-violet-100 dark:border-violet-800/30"
         >
           <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-lg shadow-violet-500/30">
-            <HiOutlineEye className="w-4 h-4" />
+            <Eye className="w-4 h-4" />
           </div>
           <div>
             <p className="text-xs text-slate-500 dark:text-slate-400">بازدید امروز</p>
@@ -156,7 +156,7 @@ const TrafficChart: React.FC = () => {
           className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-100 dark:border-emerald-800/30"
         >
           <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/30">
-            <HiOutlineCalendarDays className="w-4 h-4" />
+            <CalendarDays className="w-4 h-4" />
           </div>
           <div>
             <p className="text-xs text-slate-500 dark:text-slate-400">کل بازدیدها</p>

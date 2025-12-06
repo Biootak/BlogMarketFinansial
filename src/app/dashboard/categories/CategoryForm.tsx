@@ -38,7 +38,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { HiOutlinePlus } from 'react-icons/hi2';
+import { Plus } from 'lucide-react';
 import { z } from 'zod';
 
 const categorySchema = z.object({
@@ -287,7 +287,7 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
     <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
       <DialogTrigger asChild>
         <PrimaryActionButton>
-          <HiOutlinePlus className="h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
+          <Plus className="h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
           <span>افزودن دسته‌بندی</span>
         </PrimaryActionButton>
       </DialogTrigger>

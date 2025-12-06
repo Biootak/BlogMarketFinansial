@@ -2,7 +2,7 @@
 
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import * as React from 'react';
-import { HiCheck } from 'react-icons/hi2';
+import { Check } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
@@ -28,7 +28,7 @@ const Checkbox = React.forwardRef<
         'flex items-center justify-center text-primary-foreground transition-opacity duration-200 ease-in-out',
       )}
     >
-      <HiCheck className="h-4 w-4" />
+      <Check className="h-4 w-4" />
     </CheckboxPrimitive.Indicator>
   </CheckboxPrimitive.Root>
 ));

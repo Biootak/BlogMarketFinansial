@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';;;
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { memo, useState } from 'react';

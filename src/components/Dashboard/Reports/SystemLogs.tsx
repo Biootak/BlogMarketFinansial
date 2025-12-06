@@ -22,9 +22,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { toast, useToast } from '@/components/ui/use-toast';
-import { Loader2 } from 'lucide-react';
-import { AlertCircle, AlertTriangle, Info, Loader2 as Loader } from 'lucide-react';
+;
+
 import { useEffect, useState } from 'react';
+import { AlertCircle, AlertTriangle, Info, Loader2, Loader2 as Loader } from 'lucide-react';
 
 interface SystemData {
   system?: {

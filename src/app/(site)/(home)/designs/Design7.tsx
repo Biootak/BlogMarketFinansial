@@ -5,7 +5,7 @@ import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
 import { getPostLink } from '@/lib/getPostLink';
 import type { PostWithRelations } from '@/types/types';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Clock, Eye } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, Eye } from 'lucide-react';;;
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';

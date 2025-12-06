@@ -10,21 +10,7 @@ import { cn } from '@/lib/utils';
 import { UpdateProfileSchema } from '@/schemas';
 import type { UpdateProfileInput, UserWithProfile } from '@/types/types';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  Briefcase,
-  Camera,
-  Check,
-  ChevronDown,
-  Eye,
-  EyeOff,
-  FileText,
-  ImageIcon,
-  KeyRound,
-  Lock,
-  Mail,
-  Shield,
-  User,
-} from 'lucide-react';
+import { Briefcase, Camera, Check, ChevronDown, Eye, EyeOff, FileText, ImageIcon, KeyRound, Lock, Mail, Shield, User } from 'lucide-react';;;
 import Image from 'next/image';
 import { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';

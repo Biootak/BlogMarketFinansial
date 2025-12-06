@@ -5,7 +5,7 @@ import { useCommentStore } from '@/hooks/useCommentStore';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 import type { FC } from 'react';
-import { HiPaperAirplane, HiXMark } from 'react-icons/hi2';
+import { X, Send } from 'lucide-react';
 
 interface SingleCommentFormProps {
   textareaRef?: React.RefObject<HTMLTextAreaElement | null>;
@@ -143,7 +143,7 @@ const SingleCommentForm: FC<SingleCommentFormProps> = ({
                 transition-all duration-200
               "
             >
-              <HiXMark className="w-4 h-4" />
+              <X className="w-4 h-4" />
               <span>لغو</span>
             </button>
 
@@ -168,7 +168,7 @@ const SingleCommentForm: FC<SingleCommentFormProps> = ({
                 </>
               ) : (
                 <>
-                  <HiPaperAirplane className="w-4 h-4 rotate-180" />
+                  <Send className="w-4 h-4 rotate-180" />
                   <span>ارسال نظر</span>
                 </>
               )}

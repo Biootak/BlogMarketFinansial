@@ -3,7 +3,7 @@
 import type { Tag as TagType } from '@prisma/client';
 import Link from 'next/link';
 import React from 'react';
-import { HiHashtag } from 'react-icons/hi2';
+import { Hash } from 'lucide-react';;;
 
 export interface TagProps {
   className?: string;
@@ -50,7 +50,7 @@ const Tag: React.FC<TagProps> = ({
 
         {/* Icon */}
         <span className="relative flex items-center justify-center w-6 h-6 rounded-lg bg-gradient-to-br from-primary-500 to-violet-500 shadow-sm shadow-primary-500/25 group-hover:shadow-primary-500/40 transition-shadow duration-200">
-          <HiHashtag className="w-3.5 h-3.5 text-white" />
+          <Hash className="w-3.5 h-3.5 text-white" />
         </span>
 
         {/* Tag Name */}

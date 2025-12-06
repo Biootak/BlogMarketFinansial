@@ -3,7 +3,7 @@ import React from 'react';
 import ButtonPrimary from '@/components/Button/ButtonPrimary';
 import ButtonSecondary from '@/components/Button/ButtonSecondary';
 import Heading2 from '@/components/Heading/Heading2';
-import { HiCheck } from 'react-icons/hi2';
+import { Check } from 'lucide-react';
 
 export interface PricingItem {
   isPopular: boolean;
@@ -70,7 +70,7 @@ const PageSubcription = ({}) => {
           {pricing.features.map((item, index) => (
             <li className="flex items-center" key={index}>
               <span className="me-4 inline-flex flex-shrink-0 text-primary-6000">
-                <HiCheck className="w-5 h-5" aria-hidden="true" />
+                <Check className="w-5 h-5" aria-hidden="true" />
               </span>
               <span className="text-neutral-700 dark:text-neutral-300">{item}</span>
             </li>

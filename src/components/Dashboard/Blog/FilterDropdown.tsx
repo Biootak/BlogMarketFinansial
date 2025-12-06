@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { PostStatus } from '@prisma/client';
 import { useState } from 'react';
-import { HiAdjustmentsHorizontal } from 'react-icons/hi2';
+import { SlidersHorizontal } from 'lucide-react';
 
 type FilterOption = 'همه' | PostStatus;
 
@@ -40,7 +40,7 @@ export default function FilterDropdown({ onFilter }: FilterDropdownProps) {
           size="icon"
           className="hover:bg-neutral-100 dark:hover:bg-neutral-700"
         >
-          <HiAdjustmentsHorizontal className="h-5 w-5" />
+          <SlidersHorizontal className="h-5 w-5" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

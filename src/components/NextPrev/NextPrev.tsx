@@ -1,6 +1,6 @@
 'use client';
 import React, { type FC } from 'react';
-import { HiChevronLeft, HiChevronRight } from 'react-icons/hi2';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export interface NextPrevProps {
   className?: string;
@@ -47,7 +47,7 @@ const NextPrev: FC<NextPrevProps> = ({
           aria-label="قبلی"
           onMouseEnter={() => setFocus('left')}
         >
-          <HiChevronRight className="w-5 h-5" />
+          <ChevronRight className="w-5 h-5" />
         </button>
       )}
       {!onlyPrev && (
@@ -63,7 +63,7 @@ const NextPrev: FC<NextPrevProps> = ({
           aria-label="بعدی"
           onMouseEnter={() => setFocus('right')}
         >
-          <HiChevronLeft className="w-5 h-5" />
+          <ChevronLeft className="w-5 h-5" />
         </button>
       )}
     </div>

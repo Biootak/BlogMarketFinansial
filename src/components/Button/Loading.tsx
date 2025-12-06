@@ -1,7 +1,5 @@
 import type React from 'react';
-import { AiOutlineLoading3Quarters } from 'react-icons/ai';
-import { CgSpinner } from 'react-icons/cg';
-import { ImSpinner2 } from 'react-icons/im';
+import { Loader, Loader2 } from 'lucide-react';
 
 interface LoadingProps {
   size?: 'sm' | 'md' | 'lg';
@@ -33,11 +31,11 @@ const Loading: React.FC<LoadingProps> = ({
 
     switch (type) {
       case 'dots':
-        return <CgSpinner className={combinedClasses} />;
+        return <Loader className={combinedClasses} />;
       case 'spinner':
-        return <AiOutlineLoading3Quarters className={combinedClasses} />;
+        return <Loader2 className={combinedClasses} />;
       default:
-        return <ImSpinner2 className={combinedClasses} />;
+        return <Loader2 className={combinedClasses} />;
     }
   };
 

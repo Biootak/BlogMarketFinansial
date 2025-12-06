@@ -6,16 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
-import {
-  ArrowUpRight,
-  Download,
-  Eye,
-  FileText,
-  Loader2,
-  MessageSquare,
-  TrendingUp,
-  Users,
-} from 'lucide-react';
+;
 import { useCallback, useEffect, useState } from 'react';
 import {
   Bar,
@@ -27,6 +18,7 @@ import {
   XAxis,
   YAxis,
 } from '@/components/ui/chart';
+import { ArrowUpRight, BarChart3, Download, Eye, FileText, Loader2, MessageSquare, TrendingUp, Users } from 'lucide-react';
 
 interface SystemReportData {
   users: number;
@@ -433,4 +425,4 @@ export default function SystemReports() {
 }
 
 // Import for chart icon
-import { BarChart3 } from 'lucide-react';
+

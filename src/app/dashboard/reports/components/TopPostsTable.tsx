@@ -1,7 +1,7 @@
 'use client';
 
 import type { TopPost } from '@/actions/reportActions';
-import { Bookmark, ExternalLink, Eye, FileText, Heart, MessageSquare } from 'lucide-react';
+import { Bookmark, ExternalLink, Eye, FileText, Heart, MessageSquare } from 'lucide-react';;;
 import Link from 'next/link';
 
 interface TopPostsTableProps {
