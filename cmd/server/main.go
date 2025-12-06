@@ -40,17 +40,24 @@ func main() {
 		}
 	}()
 
-	// Initialize Redis connection
-	redisConfig := database.DefaultRedisConfig(cfg.RedisURL)
-	redisClient, err := database.NewRedisClient(redisConfig)
-	if err != nil {
-		log.Fatalf("❌ Failed to connect to Redis: %v", err)
-	}
-	defer func() {
-		if err := redisClient.Close(); err != nil {
-			log.Printf("⚠️  Error closing Redis connection: %v", err)
+	// Initialize Redis connection (optional)
+	var redisClient *database.RedisClient
+	if cfg.RedisURL != "" {
+		redisConfig := database.DefaultRedisConfig(cfg.RedisURL)
+		redisClient, err = database.NewRedisClient(redisConfig)
+		if err != nil {
+			log.Printf("⚠️  Failed to connect to Redis: %v (continuing without Redis)", err)
+			redisClient = nil
+		} else {
+			defer func() {
+				if err := redisClient.Close(); err != nil {
+					log.Printf("⚠️  Error closing Redis connection: %v", err)
+				}
+			}()
 		}
-	}()
+	} else {
+		log.Println("⚠️  Redis URL not configured, running without Redis")
+	}
 
 	// Setup Gin router
 	if cfg.Env == "production" {
