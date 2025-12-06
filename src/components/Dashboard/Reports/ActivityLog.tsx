@@ -1,18 +1,18 @@
 'use client';
 
-import { useEffect, useState, useCallback, Suspense } from 'react';
 import {
-  getActivityLog,
-  getActivityUsers,
-  getActivityStats,
   type ActivityFilters,
+  getActivityLog,
+  getActivityStats,
+  getActivityUsers,
 } from '@/actions/reports/activityLogs';
-import dynamic from 'next/dynamic';
-import { Loader2, Activity, Clock, TrendingUp, Download } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
-import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
 import type { ActivityLog } from '@/actions/reports/activityLogs';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from '@/components/ui/use-toast';
+import { cn } from '@/lib/utils';
+import { Activity, Clock, Download, Loader2, TrendingUp } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { ActivityFilters as ActivityFiltersComponent } from './ActivityFilters';
 
 const ActivityTable = dynamic(() => import('@/components/Dashboard/Reports/ActivityTable'), {
@@ -47,10 +47,12 @@ export default function ActivityLogComponent() {
     const fetchUsers = async () => {
       const result = await getActivityUsers();
       if (result.success && result.data) {
-        setUsers(result.data.map(user => ({
-          ...user,
-          name: user.name || 'کاربر ناشناس'
-        })));
+        setUsers(
+          result.data.map((user) => ({
+            ...user,
+            name: user.name || 'کاربر ناشناس',
+          })),
+        );
       }
     };
     fetchUsers();
@@ -131,7 +133,7 @@ export default function ActivityLogComponent() {
       ]);
 
       const csvContent = [headers, ...rows].map((row) => row.join(',')).join('\n');
-      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const blob = new Blob([`\uFEFF${csvContent}`], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = `activity-log-${new Date().toISOString().split('T')[0]}.csv`;
@@ -141,7 +143,7 @@ export default function ActivityLogComponent() {
         title: 'موفق',
         description: 'گزارش با موفقیت دانلود شد',
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'خطا',
         description: 'خطا در دانلود گزارش',
@@ -159,8 +161,12 @@ export default function ActivityLogComponent() {
             <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-sm sm:text-base font-semibold text-gray-900 truncate">گزارش فعالیت‌ها</h3>
-            <p className="text-xs sm:text-sm text-gray-500 truncate">تاریخچه فعالیت‌های کاربران سیستم</p>
+            <h3 className="text-sm sm:text-base font-semibold text-gray-900 truncate">
+              گزارش فعالیت‌ها
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-500 truncate">
+              تاریخچه فعالیت‌های کاربران سیستم
+            </p>
           </div>
         </div>
         <button
@@ -181,7 +187,7 @@ export default function ActivityLogComponent() {
             className={cn(
               'p-3 sm:p-4 rounded-lg sm:rounded-xl',
               'bg-gradient-to-br from-emerald-50 to-teal-50',
-              'border border-emerald-100'
+              'border border-emerald-100',
             )}
           >
             <div className="flex items-center gap-1.5 sm:gap-2 text-emerald-600 mb-0.5 sm:mb-1">
@@ -196,7 +202,7 @@ export default function ActivityLogComponent() {
             className={cn(
               'p-3 sm:p-4 rounded-lg sm:rounded-xl',
               'bg-gradient-to-br from-blue-50 to-indigo-50',
-              'border border-blue-100'
+              'border border-blue-100',
             )}
           >
             <div className="flex items-center gap-1.5 sm:gap-2 text-blue-600 mb-0.5 sm:mb-1">
@@ -211,7 +217,7 @@ export default function ActivityLogComponent() {
             className={cn(
               'p-3 sm:p-4 rounded-lg sm:rounded-xl',
               'bg-gradient-to-br from-violet-50 to-purple-50',
-              'border border-violet-100'
+              'border border-violet-100',
             )}
           >
             <div className="flex items-center gap-1.5 sm:gap-2 text-violet-600 mb-0.5 sm:mb-1">
@@ -251,4 +257,3 @@ export default function ActivityLogComponent() {
     </div>
   );
 }
-

@@ -1,9 +1,9 @@
 'use server';
 
 import prisma from '@/lib/db';
+import type { ActionResult, ExchangeRateData } from '@/types/types';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import type { ActionResult, ExchangeRateData } from '@/types/types';
 
 const exchangeRateSchema = z.object({
   name: z.string(),

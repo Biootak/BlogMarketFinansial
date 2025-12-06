@@ -1,11 +1,11 @@
-// app/dashboard/posts/edit/[postId]/page.tsx
-import { Suspense } from 'react';
-import { notFound } from 'next/navigation';
-import EditPostForm from '@/components/Dashboard/Blog/PostForm/EditPostForm';
-import { getPostById } from '@/actions/postActions';
 import { getCategories } from '@/actions/categoryActions';
 import { getTags } from '@/actions/getTags';
+import { getPostById } from '@/actions/postActions';
+import EditPostForm from '@/components/Dashboard/Blog/PostForm/EditPostForm';
 import SkeletonLoader from '@/components/SkeletonLoader';
+import { notFound } from 'next/navigation';
+// app/dashboard/posts/edit/[postId]/page.tsx
+import { Suspense } from 'react';
 
 interface EditPostPageProps {
   params: Promise<{

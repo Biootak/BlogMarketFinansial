@@ -38,7 +38,7 @@ export function Skeleton({
       className={cn(
         'animate-pulse bg-neutral-200 dark:bg-neutral-800',
         variantClasses[variant],
-        className
+        className,
       )}
       style={style}
     />
@@ -130,7 +130,7 @@ export function LoadingSpinner({
       className={cn(
         'animate-spin rounded-full border-primary-500 border-t-transparent',
         sizeClasses[size],
-        className
+        className,
       )}
     />
   );

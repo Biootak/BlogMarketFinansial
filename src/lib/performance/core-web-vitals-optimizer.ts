@@ -177,7 +177,7 @@ export const inpOptimizations = {
    */
   debounce<T extends (...args: any[]) => any>(
     func: T,
-    wait: number
+    wait: number,
   ): (...args: Parameters<T>) => void {
     let timeout: NodeJS.Timeout;
     return (...args: Parameters<T>) => {
@@ -191,7 +191,7 @@ export const inpOptimizations = {
    */
   throttle<T extends (...args: any[]) => any>(
     func: T,
-    limit: number
+    limit: number,
   ): (...args: Parameters<T>) => void {
     let inThrottle: boolean;
     return (...args: Parameters<T>) => {
@@ -206,11 +206,7 @@ export const inpOptimizations = {
   /**
    * Use passive event listeners
    */
-  addPassiveListener(
-    element: HTMLElement,
-    event: string,
-    handler: EventListener
-  ): void {
+  addPassiveListener(element: HTMLElement, event: string, handler: EventListener): void {
     element.addEventListener(event, handler, { passive: true });
   },
 };

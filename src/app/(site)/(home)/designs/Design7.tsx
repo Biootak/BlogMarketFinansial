@@ -1,23 +1,23 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import type { PostWithRelations } from '@/types/types';
-import Image from 'next/image';
 import Avatar from '@/components/Avatar/Avatar';
-import { getPostLink } from '@/lib/getPostLink';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
+import { getPostLink } from '@/lib/getPostLink';
+import type { PostWithRelations } from '@/types/types';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Clock, Eye } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 type Props = { initialPosts: PostWithRelations[]; className?: string };
 
 const shimmer = {
   hidden: { x: '-100%' },
-  visible: { 
+  visible: {
     x: '100%',
-    transition: { duration: 1.5, ease: 'easeInOut' as const }
-  }
+    transition: { duration: 1.5, ease: 'easeInOut' as const },
+  },
 };
 
 export default function Design7({ initialPosts, className = '' }: Props) {
@@ -39,7 +39,7 @@ export default function Design7({ initialPosts, className = '' }: Props) {
   const otherPosts = initialPosts.filter((_, i) => i !== activeIndex);
 
   return (
-    <section 
+    <section
       className={`relative ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -48,7 +48,7 @@ export default function Design7({ initialPosts, className = '' }: Props) {
       <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800 p-1.5 sm:p-2">
         {/* Inner Glow Border */}
         <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary-500/20 via-transparent to-primary-600/20 pointer-events-none" />
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 sm:gap-3 lg:gap-4">
           {/* Main Featured Card */}
           <div className="lg:col-span-8 relative">
@@ -62,7 +62,10 @@ export default function Design7({ initialPosts, className = '' }: Props) {
                 className="relative group h-[320px] sm:h-[400px] lg:h-[480px] rounded-2xl overflow-hidden"
               >
                 {/* Image */}
-                <Link href={getPostLink(mainPost.postType, mainPost.slug)} className="absolute inset-0">
+                <Link
+                  href={getPostLink(mainPost.postType, mainPost.slug)}
+                  className="absolute inset-0"
+                >
                   <Image
                     src={mainPost.featuredImage || '/images/placeholder-large.png'}
                     alt={mainPost.title}
@@ -86,7 +89,7 @@ export default function Design7({ initialPosts, className = '' }: Props) {
                 />
 
                 {/* Top Badge */}
-                <motion.div 
+                <motion.div
                   className="absolute top-4 sm:top-6 start-4 sm:start-6 z-10"
                   initial={{ y: -20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
@@ -105,7 +108,7 @@ export default function Design7({ initialPosts, className = '' }: Props) {
                 <div className="absolute bottom-0 start-0 end-0 p-4 sm:p-6 lg:p-8 z-10">
                   {/* Category */}
                   {mainPost.categories?.[0] && (
-                    <motion.span 
+                    <motion.span
                       className="inline-block px-3 py-1 mb-3 bg-white/10 backdrop-blur-md text-white/90 text-xs font-medium rounded-lg border border-white/20"
                       initial={{ x: -20, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
@@ -116,13 +119,13 @@ export default function Design7({ initialPosts, className = '' }: Props) {
                   )}
 
                   {/* Title */}
-                  <motion.h2 
+                  <motion.h2
                     className="text-xl sm:text-2xl lg:text-3xl font-black text-white leading-tight mb-4 line-clamp-2"
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.4 }}
                   >
-                    <Link 
+                    <Link
                       href={getPostLink(mainPost.postType, mainPost.slug)}
                       className="hover:text-primary-200 transition-colors duration-300"
                     >
@@ -131,7 +134,7 @@ export default function Design7({ initialPosts, className = '' }: Props) {
                   </motion.h2>
 
                   {/* Meta Info */}
-                  <motion.div 
+                  <motion.div
                     className="flex items-center gap-4 flex-wrap"
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -141,15 +144,17 @@ export default function Design7({ initialPosts, className = '' }: Props) {
                     <div className="flex items-center gap-2.5 group/author">
                       <div className="relative">
                         <div className="absolute -inset-1 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full opacity-0 group-hover/author:opacity-100 blur transition-opacity duration-300" />
-                        <Avatar 
-                          sizeClass="h-10 w-10 relative" 
-                          radius="rounded-full" 
-                          imgUrl={mainPost.author.profile?.avatar || mainPost.author.image} 
-                          userName={mainPost.author.name || ''} 
+                        <Avatar
+                          sizeClass="h-10 w-10 relative"
+                          radius="rounded-full"
+                          imgUrl={mainPost.author.profile?.avatar || mainPost.author.image}
+                          userName={mainPost.author.name || ''}
                         />
                       </div>
                       <div className="flex flex-col">
-                        <span className="font-semibold text-white text-sm">{mainPost.author.name}</span>
+                        <span className="font-semibold text-white text-sm">
+                          {mainPost.author.name}
+                        </span>
                         <span className="text-white/60 text-xs flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           {new Date(mainPost.createdAt).toLocaleDateString('fa-IR')}
@@ -174,9 +179,7 @@ export default function Design7({ initialPosts, className = '' }: Props) {
                       key={i}
                       onClick={() => setActiveIndex(i)}
                       className={`relative h-2 rounded-full transition-all duration-300 ${
-                        i === activeIndex 
-                          ? 'w-8 bg-white' 
-                          : 'w-2 bg-white/40 hover:bg-white/60'
+                        i === activeIndex ? 'w-8 bg-white' : 'w-2 bg-white/40 hover:bg-white/60'
                       }`}
                     >
                       {i === activeIndex && (
@@ -202,7 +205,7 @@ export default function Design7({ initialPosts, className = '' }: Props) {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 + i * 0.1 }}
                 className="relative group flex-1 h-[160px] sm:h-[180px] lg:h-auto rounded-2xl overflow-hidden cursor-pointer"
-                onClick={() => setActiveIndex(initialPosts.findIndex(p => p.id === post.id))}
+                onClick={() => setActiveIndex(initialPosts.findIndex((p) => p.id === post.id))}
               >
                 {/* Image */}
                 <Image
@@ -215,7 +218,7 @@ export default function Design7({ initialPosts, className = '' }: Props) {
 
                 {/* Gradient */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                
+
                 {/* Hover Overlay */}
                 <div className="absolute inset-0 bg-primary-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
@@ -230,16 +233,15 @@ export default function Design7({ initialPosts, className = '' }: Props) {
                     {post.title}
                   </h3>
                   <div className="flex items-center gap-2 mt-2">
-                    <Avatar 
-                      sizeClass="h-5 w-5" 
-                      radius="rounded-full" 
-                      imgUrl={post.author.profile?.avatar || post.author.image} 
-                      userName={post.author.name || ''} 
+                    <Avatar
+                      sizeClass="h-5 w-5"
+                      radius="rounded-full"
+                      imgUrl={post.author.profile?.avatar || post.author.image}
+                      userName={post.author.name || ''}
                     />
                     <span className="text-white/70 text-xs truncate">{post.author.name}</span>
                   </div>
                 </div>
-
               </motion.article>
             ))}
           </div>
@@ -249,7 +251,9 @@ export default function Design7({ initialPosts, className = '' }: Props) {
       {/* Navigation Arrows */}
       <div className="absolute top-1/2 -translate-y-1/2 start-0 end-0 flex justify-between pointer-events-none px-2 sm:px-4 z-20">
         <button
-          onClick={() => setActiveIndex((prev) => (prev - 1 + initialPosts.length) % initialPosts.length)}
+          onClick={() =>
+            setActiveIndex((prev) => (prev - 1 + initialPosts.length) % initialPosts.length)
+          }
           className="pointer-events-auto w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 hover:scale-110 shadow-lg"
         >
           <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />

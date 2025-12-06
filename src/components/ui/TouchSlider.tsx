@@ -1,8 +1,8 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 export interface TouchSliderProps {
   children: React.ReactNode[];
@@ -157,7 +157,7 @@ export function TouchSlider({
               'border border-neutral-200 dark:border-neutral-700',
               'opacity-0 group-hover:opacity-100 transition-opacity',
               'hover:bg-white dark:hover:bg-neutral-800',
-              'disabled:opacity-50 disabled:cursor-not-allowed'
+              'disabled:opacity-50 disabled:cursor-not-allowed',
             )}
           >
             <ChevronRight className="w-5 h-5" />
@@ -174,7 +174,7 @@ export function TouchSlider({
               'border border-neutral-200 dark:border-neutral-700',
               'opacity-0 group-hover:opacity-100 transition-opacity',
               'hover:bg-white dark:hover:bg-neutral-800',
-              'disabled:opacity-50 disabled:cursor-not-allowed'
+              'disabled:opacity-50 disabled:cursor-not-allowed',
             )}
           >
             <ChevronLeft className="w-5 h-5" />
@@ -191,9 +191,7 @@ export function TouchSlider({
             onClick={() => setCurrentIndex(index)}
             className={cn(
               'w-2 h-2 rounded-full transition-all',
-              index === currentIndex
-                ? 'bg-primary-500 w-6'
-                : 'bg-neutral-300 dark:bg-neutral-600'
+              index === currentIndex ? 'bg-primary-500 w-6' : 'bg-neutral-300 dark:bg-neutral-600',
             )}
             aria-label={`اسلاید ${index + 1}`}
           />

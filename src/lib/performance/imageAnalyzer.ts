@@ -112,8 +112,9 @@ export class ImageAnalyzer {
     const issues: ImageIssue[] = [];
 
     for (const img of regularImages) {
+      const imgElement = img as HTMLImageElement;
       issues.push({
-        src: img.src,
+        src: imgElement.src,
         currentSize: 0, // نیاز به fetch برای دریافت سایز واقعی
         optimalSize: 0,
         wastedBytes: 0,
@@ -122,7 +123,7 @@ export class ImageAnalyzer {
           'بهینه‌سازی خودکار فرمت و سایز',
           'lazy loading خودکار',
         ],
-        element: img.outerHTML.substring(0, 100),
+        element: imgElement.outerHTML.substring(0, 100),
       });
     }
 
@@ -296,11 +297,17 @@ export class ImageAnalyzer {
    * تولید گزارش جامع
    */
   generateReport(analysis: ImageAnalysis): string {
-    const { summary, unoptimizedImages, formatIssues, sizingIssues, lazyLoadingMissing, totalWastedBytes } =
-      analysis;
+    const {
+      summary,
+      unoptimizedImages,
+      formatIssues,
+      sizingIssues,
+      lazyLoadingMissing,
+      totalWastedBytes,
+    } = analysis;
 
-    let report = `# گزارش تحلیل تصاویر\n\n`;
-    report += `## خلاصه\n`;
+    let report = '# گزارش تحلیل تصاویر\n\n';
+    report += '## خلاصه\n';
     report += `- کل تصاویر: ${summary.totalImages}\n`;
     report += `- تصاویر بهینه: ${summary.optimizedImages}\n`;
     report += `- مشکلات یافت شده: ${summary.issuesFound}\n`;
@@ -314,7 +321,7 @@ export class ImageAnalyzer {
           report += `  - ${rec}\n`;
         }
       }
-      report += `\n`;
+      report += '\n';
     }
 
     if (formatIssues.length > 0) {
@@ -322,7 +329,7 @@ export class ImageAnalyzer {
       for (const issue of formatIssues.slice(0, 5)) {
         report += `- ${issue.src}: ${issue.currentFormat} → ${issue.suggestedFormat} (صرفه‌جویی ~${issue.estimatedSaving}%)\n`;
       }
-      report += `\n`;
+      report += '\n';
     }
 
     if (sizingIssues.length > 0) {
@@ -331,7 +338,7 @@ export class ImageAnalyzer {
         report += `- ${issue.src}: ${issue.actualSize.width}x${issue.actualSize.height} → ${issue.displaySize.width}x${issue.displaySize.height}\n`;
         report += `  هدر رفته: ${this.formatBytes(issue.wastedBytes)}\n`;
       }
-      report += `\n`;
+      report += '\n';
     }
 
     if (lazyLoadingMissing.length > 0) {

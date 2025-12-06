@@ -1,8 +1,8 @@
 'use client';
 
+import type { Advertisement } from '@/types/types';
 import type React from 'react';
 import BannerADS from './BannerADS';
-import type { Advertisement } from '@/types/types';
 
 interface LargeAdProps {
   ad: Advertisement;

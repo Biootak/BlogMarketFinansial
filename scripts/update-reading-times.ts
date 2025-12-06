@@ -4,7 +4,7 @@ import { calculateReadingTime } from '@/lib/readingTime';
 /**
  * Update reading times for all existing posts
  * به‌روزرسانی زمان مطالعه برای تمام پست‌های موجود
- * 
+ *
  * Usage: npx tsx scripts/update-reading-times.ts
  */
 

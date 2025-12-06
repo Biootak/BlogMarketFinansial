@@ -1,5 +1,5 @@
-import type React from "react";
-import type { FC } from "react";
+import type React from 'react';
+import type { FC } from 'react';
 
 export interface NavProps {
   containerClassName?: string;
@@ -7,11 +7,7 @@ export interface NavProps {
   children: React.ReactNode;
 }
 
-const Nav: FC<NavProps> = ({
-  containerClassName = "",
-  className = "",
-  children,
-}) => {
+const Nav: FC<NavProps> = ({ containerClassName = '', className = '', children }) => {
   return (
     <nav className={`nc-Nav ${containerClassName}`} data-nc-id="Nav">
       <ul className={`flex  ${className}`}>{children}</ul>

@@ -1,17 +1,17 @@
 'use server';
 
-import { z } from 'zod';
-import bcrypt from 'bcryptjs';
 import { auth, signIn, signOut } from '@/auth';
-import prisma from '@/lib/db';
-import { AuthError } from 'next-auth';
-import { ForgotPasswordSchema, LoginSchema, MagicLinkSchema, RegisterSchema } from '@/schemas';
-import { getUserByEmail } from '@/data/user';
 import { DEFAULT_REDIRECT } from '@/config/routes';
-import { redirect } from 'next/navigation';
-import { generateVerificationToken } from '@/lib/tokens';
-import { sendVerificationEmail } from '@/lib/mail';
+import { getUserByEmail } from '@/data/user';
 import { getVerificationTokenByToken } from '@/data/verfication-token';
+import prisma from '@/lib/db';
+import { sendVerificationEmail } from '@/lib/mail';
+import { generateVerificationToken } from '@/lib/tokens';
+import { ForgotPasswordSchema, LoginSchema, MagicLinkSchema, RegisterSchema } from '@/schemas';
+import bcrypt from 'bcryptjs';
+import { AuthError } from 'next-auth';
+import { redirect } from 'next/navigation';
+import { z } from 'zod';
 
 // تابع کمکی برای ثبت فعالیت ورود (بدون نیاز به session)
 async function logLoginActivity(userId: string, action: string, details: string) {
@@ -55,7 +55,9 @@ function handleAuthError(error: unknown): AuthResult {
   return { success: false, error: 'خطای ناشناخته' };
 }
 
-const processFormData = (formData: FormData): { name: string | null; email: string | null; password: string | null; } => {
+const processFormData = (
+  formData: FormData,
+): { name: string | null; email: string | null; password: string | null } => {
   return {
     name: formData.get('name') as string | null,
     email: formData.get('email') as string | null,
@@ -109,7 +111,11 @@ export async function loginUser(formData: FormData): Promise<AuthResult> {
       }
 
       // ثبت فعالیت ورود
-      await logLoginActivity(existingUser.id, 'ورود به سیستم', `کاربر "${existingUser.name || existingUser.email}" وارد سیستم شد`);
+      await logLoginActivity(
+        existingUser.id,
+        'ورود به سیستم',
+        `کاربر "${existingUser.name || existingUser.email}" وارد سیستم شد`,
+      );
 
       return {
         success: true,
@@ -119,7 +125,11 @@ export async function loginUser(formData: FormData): Promise<AuthResult> {
     }
 
     // ثبت فعالیت ورود
-    await logLoginActivity(existingUser.id, 'ورود به سیستم', `کاربر "${existingUser.name || existingUser.email}" وارد سیستم شد`);
+    await logLoginActivity(
+      existingUser.id,
+      'ورود به سیستم',
+      `کاربر "${existingUser.name || existingUser.email}" وارد سیستم شد`,
+    );
 
     return { success: true, message: 'ورود موفقیت‌آمیز. در حال انتقال به صفحه اصلی...' };
   } catch (error) {
@@ -236,7 +246,7 @@ export async function newVerification(token: string): Promise<AuthResult> {
       email: existingToken.email,
     },
   });
-  
+
   await prisma.verificationToken.delete({
     where: { id: existingToken.id },
   });

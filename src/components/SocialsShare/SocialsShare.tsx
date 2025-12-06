@@ -1,13 +1,13 @@
+import type { SocialType } from '@/types/types';
+import * as motion from 'framer-motion/client';
 // components/SocialsShare/SocialsShare.tsx
 import React from 'react';
-import * as motion from 'framer-motion/client';
-import type { SocialType } from '@/types/types';
 import {
   FaFacebook,
-  FaTwitter,
-  FaTelegram,
   FaInstagram,
   FaLinkedinIn,
+  FaTelegram,
+  FaTwitter,
   FaWhatsapp,
 } from 'react-icons/fa';
 

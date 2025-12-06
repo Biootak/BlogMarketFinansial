@@ -1,10 +1,10 @@
 'use client';
 
-import React, { type FC } from 'react';
-import { motion } from 'framer-motion';
-import { HiOutlineEye, HiOutlineClock, HiOutlineCalendar } from 'react-icons/hi2';
-import { cn } from '@/lib/utils';
 import { fadeVariants, hoverScaleSmall, transitions } from '@/lib/animations';
+import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
+import React, { type FC } from 'react';
+import { HiOutlineCalendar, HiOutlineClock, HiOutlineEye } from 'react-icons/hi2';
 
 export interface PostCardInfoProps {
   className?: string;
@@ -63,7 +63,12 @@ const PostCardInfo: FC<PostCardInfoProps> = ({
           transition={transitions.snappy}
           className="flex items-center gap-1 sm:gap-1.5 transition-colors duration-200 hover:text-blue-600 dark:hover:text-blue-400"
         >
-          <HiOutlineEye className={cn('flex-shrink-0', compact ? 'w-3.5 h-3.5 sm:w-4 sm:h-4' : 'w-4 h-4 sm:w-4.5 sm:h-4.5')} />
+          <HiOutlineEye
+            className={cn(
+              'flex-shrink-0',
+              compact ? 'w-3.5 h-3.5 sm:w-4 sm:h-4' : 'w-4 h-4 sm:w-4.5 sm:h-4.5',
+            )}
+          />
           <span className="font-medium">{formatNumber(views)}</span>
         </motion.div>
       )}
@@ -74,7 +79,12 @@ const PostCardInfo: FC<PostCardInfoProps> = ({
           transition={transitions.snappy}
           className="flex items-center gap-1 sm:gap-1.5 transition-colors duration-200 hover:text-emerald-600 dark:hover:text-emerald-400"
         >
-          <HiOutlineClock className={cn('flex-shrink-0', compact ? 'w-3.5 h-3.5 sm:w-4 sm:h-4' : 'w-4 h-4 sm:w-4.5 sm:h-4.5')} />
+          <HiOutlineClock
+            className={cn(
+              'flex-shrink-0',
+              compact ? 'w-3.5 h-3.5 sm:w-4 sm:h-4' : 'w-4 h-4 sm:w-4.5 sm:h-4.5',
+            )}
+          />
           <span className="font-medium">{readingTime} دقیقه</span>
         </motion.div>
       )}
@@ -85,7 +95,12 @@ const PostCardInfo: FC<PostCardInfoProps> = ({
           transition={transitions.snappy}
           className="flex items-center gap-1 sm:gap-1.5 transition-colors duration-200 hover:text-purple-600 dark:hover:text-purple-400"
         >
-          <HiOutlineCalendar className={cn('flex-shrink-0', compact ? 'w-3.5 h-3.5 sm:w-4 sm:h-4' : 'w-4 h-4 sm:w-4.5 sm:h-4.5')} />
+          <HiOutlineCalendar
+            className={cn(
+              'flex-shrink-0',
+              compact ? 'w-3.5 h-3.5 sm:w-4 sm:h-4' : 'w-4 h-4 sm:w-4.5 sm:h-4.5',
+            )}
+          />
           <span className="font-medium">{formatDate(publishDate)}</span>
         </motion.div>
       )}

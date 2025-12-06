@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { AlertCircle, CheckCircle, Database, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { AlertCircle, CheckCircle, Database, RefreshCw } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface DatabaseStats {
   counts: {
@@ -79,7 +79,7 @@ export function DatabaseStatus() {
         'border rounded-xl p-4',
         isEmptyDatabase && 'bg-red-50 border-red-200',
         noEngagement && 'bg-amber-50 border-amber-200',
-        hasData && 'bg-emerald-50 border-emerald-200'
+        hasData && 'bg-emerald-50 border-emerald-200',
       )}
     >
       <div className="flex items-start gap-3">
@@ -94,7 +94,7 @@ export function DatabaseStatus() {
                 'text-sm font-semibold',
                 isEmptyDatabase && 'text-red-900',
                 noEngagement && 'text-amber-900',
-                hasData && 'text-emerald-900'
+                hasData && 'text-emerald-900',
               )}
             >
               <Database className="w-4 h-4 inline-block ml-1" />
@@ -115,7 +115,7 @@ export function DatabaseStatus() {
               'text-sm mb-3',
               isEmptyDatabase && 'text-red-700',
               noEngagement && 'text-amber-700',
-              hasData && 'text-emerald-700'
+              hasData && 'text-emerald-700',
             )}
           >
             {stats.message}
@@ -124,20 +124,30 @@ export function DatabaseStatus() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
             <div className="bg-white/50 rounded-lg p-2">
               <div className="text-gray-600">کاربران</div>
-              <div className="font-bold text-gray-900">{stats.counts.users.toLocaleString('fa-IR')}</div>
+              <div className="font-bold text-gray-900">
+                {stats.counts.users.toLocaleString('fa-IR')}
+              </div>
             </div>
             <div className="bg-white/50 rounded-lg p-2">
               <div className="text-gray-600">پست‌ها</div>
-              <div className="font-bold text-gray-900">{stats.counts.posts.toLocaleString('fa-IR')}</div>
+              <div className="font-bold text-gray-900">
+                {stats.counts.posts.toLocaleString('fa-IR')}
+              </div>
             </div>
             <div className="bg-white/50 rounded-lg p-2">
               <div className="text-gray-600">بازدیدها</div>
-              <div className="font-bold text-gray-900">{stats.counts.views.toLocaleString('fa-IR')}</div>
+              <div className="font-bold text-gray-900">
+                {stats.counts.views.toLocaleString('fa-IR')}
+              </div>
             </div>
             <div className="bg-white/50 rounded-lg p-2">
               <div className="text-gray-600">تعاملات</div>
               <div className="font-bold text-gray-900">
-                {(stats.counts.likes + stats.counts.comments + stats.counts.savedPosts).toLocaleString('fa-IR')}
+                {(
+                  stats.counts.likes +
+                  stats.counts.comments +
+                  stats.counts.savedPosts
+                ).toLocaleString('fa-IR')}
               </div>
             </div>
           </div>
@@ -150,7 +160,8 @@ export function DatabaseStatus() {
 
           {noEngagement && (
             <div className="mt-3 text-xs text-amber-700 bg-amber-100 rounded-lg p-2">
-              💡 پست‌ها وجود دارند اما بازدید و تعاملات ثبت نشده است. برای ثبت بازدید، پست‌ها را در سایت مشاهده کنید.
+              💡 پست‌ها وجود دارند اما بازدید و تعاملات ثبت نشده است. برای ثبت بازدید، پست‌ها را در
+              سایت مشاهده کنید.
             </div>
           )}
         </div>

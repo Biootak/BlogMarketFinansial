@@ -1,8 +1,8 @@
-import { cache } from 'react';
 import { getFeaturedPosts } from '@/actions/getFeaturedPosts';
-import type { PostWithRelations, ActionResult } from '@/types/types';
-import SectionLargeSliderClient from './SectionLargeSliderClient';
 import Empty from '@/components/Empty';
+import type { ActionResult, PostWithRelations } from '@/types/types';
+import { cache } from 'react';
+import SectionLargeSliderClient from './SectionLargeSliderClient';
 
 const getFeaturedPostsCached = cache(getFeaturedPosts);
 
@@ -21,10 +21,7 @@ export default async function SectionLargeSlider() {
 
   return (
     <div>
-      <SectionLargeSliderClient
-        initialPosts={result.data}
-        className="pt-4 pb-3 md:py-5 lg:pt-5"
-      />
+      <SectionLargeSliderClient initialPosts={result.data} className="pt-4 pb-3 md:py-5 lg:pt-5" />
     </div>
   );
 }

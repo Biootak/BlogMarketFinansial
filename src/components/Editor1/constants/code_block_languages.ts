@@ -18,7 +18,7 @@ export const CODE_BLOCK_LANGUAGUES = [
   {
     syntax: 'objectivec',
     alias: 'mm, objc, obj-c, obj-c++, objective-c++',
-    label: 'Objective-C'
+    label: 'Objective-C',
   },
   { syntax: 'php', label: 'PHP' },
   { syntax: 'plaintext', alias: 'text, txt', label: 'Text' },
@@ -31,6 +31,6 @@ export const CODE_BLOCK_LANGUAGUES = [
   {
     syntax: 'xml',
     alias: 'html, xhtml, rss, atom, xjb, xsd, xsl, plist, wsf, svg',
-    label: 'HTML, XML'
-  }
+    label: 'HTML, XML',
+  },
 ];

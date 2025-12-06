@@ -1,12 +1,12 @@
 'use client';
 
-import React, { type FC, useEffect, useRef, useState } from 'react';
-import NcModal from '@/components/NcModal/NcModal';
-import Textarea from '@/components/Textarea/Textarea';
+import { RadioGroup } from '@/app/headlessui';
 import ButtonPrimary from '@/components/Button/ButtonPrimary';
 import ButtonSecondary from '@/components/Button/ButtonSecondary';
-import { RadioGroup } from '@/app/headlessui';
+import NcModal from '@/components/NcModal/NcModal';
+import Textarea from '@/components/Textarea/Textarea';
 import twFocusClass from '@/utils/twFocusClass';
+import React, { type FC, useEffect, useRef, useState } from 'react';
 import ButtonThird from '../Button/ButtonThird';
 
 export interface ProblemPlan {

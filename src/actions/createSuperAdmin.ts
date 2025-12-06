@@ -1,8 +1,8 @@
 'use server';
 
+import { checkExistingSuperAdmin } from '@/lib/auth';
 import { PrismaClient, Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import { checkExistingSuperAdmin } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { z } from 'zod';
 
@@ -11,7 +11,8 @@ const prisma = new PrismaClient();
 // اعتبارسنجی قوی‌تر با zod
 const superAdminSchema = z.object({
   email: z.string().email('ایمیل نامعتبر است'),
-  password: z.string()
+  password: z
+    .string()
     .min(12, 'رمز عبور باید حداقل 12 کاراکتر باشد')
     .regex(/[A-Z]/, 'رمز عبور باید شامل حروف بزرگ باشد')
     .regex(/[a-z]/, 'رمز عبور باید شامل حروف کوچک باشد')
@@ -32,7 +33,7 @@ export async function createSuperAdmin(formData: FormData) {
       const headersList = await headers();
       const clientIp = headersList.get('x-forwarded-for') || 'unknown';
       const allowedIps = process.env.ALLOWED_SETUP_IPS?.split(',') || [];
-      
+
       if (!allowedIps.includes(clientIp)) {
         return {
           success: false,
@@ -127,7 +128,8 @@ export async function createSuperAdmin(formData: FormData) {
       },
     });
 
-    const errorMessage = error instanceof Error ? error.message : 'خطایی در پردازش اطلاعات رخ داده است';
+    const errorMessage =
+      error instanceof Error ? error.message : 'خطایی در پردازش اطلاعات رخ داده است';
     return {
       success: false,
       message: errorMessage,

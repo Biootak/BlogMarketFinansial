@@ -1,5 +1,5 @@
-import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
+import TaskList from '@tiptap/extension-task-list';
 
 // Configure Task List extension
 export const TaskListExtension = TaskList.configure({

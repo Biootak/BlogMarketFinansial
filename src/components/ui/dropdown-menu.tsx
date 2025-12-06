@@ -1,9 +1,9 @@
 'use client';
 
-import * as React from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import { FaCheck, FaChevronLeft, FaCircle } from 'react-icons/fa6';
 import { motion } from 'framer-motion';
+import * as React from 'react';
+import { FaCheck, FaChevronLeft, FaCircle } from 'react-icons/fa6';
 
 import { cn } from '@/lib/utils';
 
@@ -171,7 +171,10 @@ const DropdownMenuSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.Separator
     ref={ref}
-    className={cn('my-2 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent dark:via-slate-700', className)}
+    className={cn(
+      'my-2 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent dark:via-slate-700',
+      className,
+    )}
     {...props}
   />
 ));

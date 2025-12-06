@@ -1,8 +1,8 @@
 // components/PostsDisplay/PostsDisplay.tsx
 import type { Advertisement, PostWithRelations } from '@/types/types';
-import PostsList from './PostsList';
-import LoadMoreButton from '../LoadMoreButton';
 import { notFound } from 'next/navigation';
+import LoadMoreButton from '../LoadMoreButton';
+import PostsList from './PostsList';
 
 interface PostsDisplayProps {
   posts: PostWithRelations[];

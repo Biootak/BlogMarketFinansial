@@ -1,8 +1,8 @@
 'use client';
 
+import { AnimatePresence, motion } from 'framer-motion';
+import { Calendar, ChevronDown, Layers, TrendingDown, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Calendar, Layers, TrendingUp, TrendingDown } from 'lucide-react';
 
 interface Rate {
   title: string;
@@ -60,18 +60,16 @@ export default function RateListGrid({ rateLists, initialCount = 6 }: RateListGr
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-gradient-to-r from-cyan-500/3 via-blue-500/5 to-indigo-500/3 rounded-full blur-3xl" />
       </div>
 
-
-
       {/* Cards Grid */}
       <motion.div
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
         className={`grid gap-4 sm:gap-6 lg:gap-8 ${
-          rateLists.length <= 3 
-            ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' 
-            : rateLists.length === 4 
-              ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-4' 
+          rateLists.length <= 3
+            ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+            : rateLists.length === 4
+              ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-4'
               : 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'
         }`}
       >
@@ -87,41 +85,40 @@ export default function RateListGrid({ rateLists, initialCount = 6 }: RateListGr
                 initial={{ opacity: 0, y: 40, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                transition={{ 
+                transition={{
                   delay: listIndex * 0.1,
                   type: 'spring',
                   stiffness: 120,
-                  damping: 20
+                  damping: 20,
                 }}
                 className="group relative h-fit"
               >
                 {/* Multi-layer Glow Effect */}
                 <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/30 via-indigo-500/30 to-violet-600/30 rounded-[28px] blur-2xl opacity-0 group-hover:opacity-60 transition-all duration-700 ease-out" />
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/20 to-violet-500/20 rounded-[26px] blur-xl opacity-0 group-hover:opacity-40 transition-all duration-500" />
-                
+
                 {/* Main Card Container */}
                 <div className="relative bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-3xl border border-slate-200/80 dark:border-slate-700/50 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.08),0_8px_48px_-8px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.4),0_8px_48px_-8px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_40px_-8px_rgba(59,130,246,0.15),0_16px_64px_-16px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_8px_40px_-8px_rgba(59,130,246,0.25),0_16px_64px_-16px_rgba(0,0,0,0.5)] transition-all duration-500 ease-out overflow-hidden transform-gpu hover:-translate-y-1">
-                  
                   {/* Premium Header */}
                   <div className="relative overflow-hidden">
                     {/* Gradient Background */}
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700" />
-                    
+
                     {/* Animated Mesh Pattern */}
                     <div className="absolute inset-0 opacity-20">
                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.2)_0%,transparent_50%)]" />
                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.15)_0%,transparent_40%)]" />
                     </div>
-                    
+
                     {/* Subtle Grid Pattern */}
-                    <div 
+                    <div
                       className="absolute inset-0 opacity-10"
                       style={{
                         backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='0.4' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E")`,
-                        backgroundSize: '24px 24px'
+                        backgroundSize: '24px 24px',
                       }}
                     />
-                    
+
                     <div className="relative px-5 py-6 sm:px-6 sm:py-7">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
@@ -129,7 +126,7 @@ export default function RateListGrid({ rateLists, initialCount = 6 }: RateListGr
                             {rateList.title}
                           </h3>
                         </div>
-                        
+
                         {/* Date Badge */}
                         <div className="flex items-center gap-2 px-3.5 py-2 bg-white/15 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg shadow-black/5 flex-shrink-0 group-hover:bg-white/20 transition-colors duration-300">
                           <Calendar className="w-4 h-4 text-white/80" />
@@ -139,13 +136,15 @@ export default function RateListGrid({ rateLists, initialCount = 6 }: RateListGr
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Bottom Curve */}
                     <div className="absolute -bottom-px left-0 right-0 h-4 bg-white dark:bg-slate-900/90 rounded-t-[24px]" />
                   </div>
 
                   {/* Table Header */}
-                  <div className={`grid gap-4 px-5 py-4 sm:px-6 bg-gradient-to-b from-slate-50/80 to-white dark:from-slate-800/60 dark:to-slate-900/40 ${isSingle ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                  <div
+                    className={`grid gap-4 px-5 py-4 sm:px-6 bg-gradient-to-b from-slate-50/80 to-white dark:from-slate-800/60 dark:to-slate-900/40 ${isSingle ? 'grid-cols-2' : 'grid-cols-3'}`}
+                  >
                     <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                       عنوان
                     </span>
@@ -194,14 +193,14 @@ export default function RateListGrid({ rateLists, initialCount = 6 }: RateListGr
                             <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">
                               {rate.title}
                             </span>
-                            
+
                             {/* Buy Price */}
                             <div className="flex items-center justify-center">
                               <span className="inline-flex items-center px-3 py-1.5 bg-gradient-to-br from-emerald-50 to-emerald-100/80 dark:from-emerald-900/30 dark:to-emerald-800/20 text-emerald-700 dark:text-emerald-300 rounded-xl text-sm font-bold tabular-nums shadow-sm shadow-emerald-500/10 border border-emerald-200/50 dark:border-emerald-700/30">
                                 {buyValue || '---'}
                               </span>
                             </div>
-                            
+
                             {/* Sell Price */}
                             {!isSingle && (
                               <div className="flex items-center justify-center">
@@ -271,15 +270,15 @@ export default function RateListGrid({ rateLists, initialCount = 6 }: RateListGr
             {/* Multi-layer Button Background */}
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600" />
             <div className="absolute inset-0 bg-gradient-to-r from-blue-700 via-indigo-700 to-violet-700 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            
+
             {/* Animated Shine */}
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <div className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12" />
             </div>
-            
+
             {/* Inner Glow */}
             <div className="absolute inset-[1px] rounded-[22px] bg-gradient-to-b from-white/20 to-transparent opacity-50" />
-            
+
             <span className="relative text-base sm:text-lg">نمایش لیست‌های بیشتر</span>
             <span className="relative px-4 py-1.5 bg-white/25 backdrop-blur-sm rounded-2xl text-sm font-black border border-white/20">
               {rateLists.length - displayCount}

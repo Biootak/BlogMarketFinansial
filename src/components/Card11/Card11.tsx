@@ -1,10 +1,10 @@
-import type React from 'react';
-import Link from 'next/link';
-import type { PostWithRelations } from '@/types/types';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
 import PostCardMeta from '@/components/PostCardMeta/PostCardMeta';
 import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia';
 import { getPostLink } from '@/lib/getPostLink';
+import type { PostWithRelations } from '@/types/types';
+import Link from 'next/link';
+import type React from 'react';
 import { HiArrowLeft } from 'react-icons/hi2';
 
 export interface Card11Props {
@@ -34,17 +34,17 @@ const Card11: React.FC<Card11Props> = ({
     >
       {/* Decorative Gradient Background on Hover */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary-50/0 to-violet-50/0 group-hover:from-primary-50/30 group-hover:to-violet-50/20 dark:group-hover:from-primary-950/20 dark:group-hover:to-violet-950/10 transition-all duration-300 pointer-events-none z-0" />
-      
+
       {/* Image Container */}
       <div className="block flex-shrink-0 relative w-full overflow-hidden">
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        
+
         {/* Image with Scale Effect */}
         <div className="transition-transform duration-300 ease-out group-hover:scale-110">
           <PostFeaturedMedia post={post} imageRatio="landscape" />
         </div>
-        
+
         {/* Hover Arrow Indicator */}
         <div className="absolute bottom-3 start-3 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
           <div className="w-9 h-9 rounded-full bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm flex items-center justify-center shadow-lg border border-white/50 dark:border-neutral-700/50">
@@ -52,7 +52,7 @@ const Card11: React.FC<Card11Props> = ({
           </div>
         </div>
       </div>
-      
+
       {/* Category Badge */}
       <span className="absolute top-3 end-3 z-20">
         <CategoryBadgeList categories={categories} />
@@ -67,9 +67,9 @@ const Card11: React.FC<Card11Props> = ({
             {createdAt.toString()}
           </span>
         )}
-        
-        <Link 
-          href={postLink} 
+
+        <Link
+          href={postLink}
           className="flex-1 flex flex-col focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-lg"
         >
           <h3 className="nc-card-title block text-base lg:text-lg font-bold text-neutral-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200 leading-snug">
@@ -83,13 +83,13 @@ const Card11: React.FC<Card11Props> = ({
             </p>
           )}
         </Link>
-        
+
         {/* Read More Indicator */}
         <div className="mt-auto pt-4 border-t border-neutral-100 dark:border-neutral-800/50 relative">
           {/* Accent Line on Hover */}
           <div className="absolute top-0 right-0 w-12 h-px bg-gradient-to-l from-primary-500 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          
-          <Link 
+
+          <Link
             href={postLink}
             className="inline-flex items-center gap-2 text-xs font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-all duration-200 group-hover:gap-3"
           >

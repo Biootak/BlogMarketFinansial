@@ -1,7 +1,7 @@
-import { mergeAttributes, Node } from '@tiptap/core';
+import { Node, mergeAttributes } from '@tiptap/core';
+import { PluginKey } from '@tiptap/pm/state';
 import { ReactRenderer } from '@tiptap/react';
 import Suggestion, { type SuggestionOptions } from '@tiptap/suggestion';
-import { PluginKey } from '@tiptap/pm/state';
 import tippy, { type Instance as TippyInstance } from 'tippy.js';
 import MentionList, { type MentionListRef } from '../components/mention-list';
 
@@ -104,7 +104,7 @@ export const Mention = Node.create<MentionOptions>({
   },
 
   parseHTML() {
-    return [{ tag: `span[data-mention]` }];
+    return [{ tag: 'span[data-mention]' }];
   },
 
   renderHTML({ node, HTMLAttributes }) {
@@ -113,7 +113,7 @@ export const Mention = Node.create<MentionOptions>({
       mergeAttributes(
         { 'data-mention': '', class: 'mention' },
         this.options.HTMLAttributes,
-        HTMLAttributes
+        HTMLAttributes,
       ),
       `@${node.attrs.label}`,
     ];
@@ -168,9 +168,10 @@ export const mentionSuggestion: Partial<SuggestionOptions> = {
   pluginKey: mentionPluginKey,
   items: ({ query }) => {
     return mockUsers
-      .filter((user) =>
-        user.name.toLowerCase().includes(query.toLowerCase()) ||
-        user.username.toLowerCase().includes(query.toLowerCase())
+      .filter(
+        (user) =>
+          user.name.toLowerCase().includes(query.toLowerCase()) ||
+          user.username.toLowerCase().includes(query.toLowerCase()),
       )
       .slice(0, 5);
   },

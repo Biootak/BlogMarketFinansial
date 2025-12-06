@@ -1,8 +1,8 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { revalidatePath } from 'next/cache';
 import type { SocialLinkType } from '@prisma/client';
+import { revalidatePath } from 'next/cache';
 
 export interface SocialLinkData {
   id?: string;
@@ -56,7 +56,6 @@ export async function getAllSocialLinks(type?: SocialLinkType) {
     return { success: false, error: 'خطا در دریافت لینک‌ها' };
   }
 }
-
 
 // Create social link
 export async function createSocialLink(data: SocialLinkData) {
@@ -153,8 +152,8 @@ export async function reorderSocialLinks(orderedIds: string[]) {
   try {
     await Promise.all(
       orderedIds.map((id, index) =>
-        prisma.socialLink.update({ where: { id }, data: { order: index } })
-      )
+        prisma.socialLink.update({ where: { id }, data: { order: index } }),
+      ),
     );
 
     revalidatePath('/dashboard/settings');

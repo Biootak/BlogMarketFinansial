@@ -1,7 +1,7 @@
+import { cn } from '@/lib/utils';
+import type { AdPosition, AdSize, Advertisement, CustomAdDimensions } from '@/types/types';
 import Image from 'next/image';
 import Link from 'next/link';
-import { cn } from '@/lib/utils';
-import type { Advertisement, AdSize, CustomAdDimensions, AdPosition } from '@/types/types';
 
 export interface BannerAdsProps {
   className?: string;
@@ -37,7 +37,6 @@ export default function BannerAds({
         return 'w-full';
       case 'SIDEBAR':
         return 'w-full';
-      case 'CUSTOM':
       default:
         return '';
     }

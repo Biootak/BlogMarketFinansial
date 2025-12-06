@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { deleteFile } from '@/lib/storage';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -17,10 +17,7 @@ export async function DELETE(request: NextRequest) {
 
     // فقط فایل‌های لوکال رو حذف کن
     if (!imageUrl.startsWith('/uploads/')) {
-      return NextResponse.json(
-        { error: 'فقط فایل‌های آپلود شده قابل حذف هستند' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'فقط فایل‌های آپلود شده قابل حذف هستند' }, { status: 400 });
     }
 
     // استخراج folder و filename از URL

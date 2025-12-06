@@ -1,9 +1,9 @@
+import Card9 from '@/components/Card9/Card9';
+import Card11 from '@/components/Card11/Card11';
+import type { ActionResult, PostWithRelations } from '@/types/types';
 import type React from 'react';
 import { use } from 'react';
-import Card11 from '@/components/Card11/Card11';
-import Card9 from '@/components/Card9/Card9';
-import type { PostWithRelations, ActionResult } from '@/types/types';
-import { HiSparkles, HiPencilSquare } from 'react-icons/hi2';
+import { HiPencilSquare, HiSparkles } from 'react-icons/hi2';
 
 interface SingleRelatedPostsProps {
   post: PostWithRelations;
@@ -31,7 +31,7 @@ const SingleRelatedPosts: React.FC<SingleRelatedPostsProps> = ({
     <div className="relative">
       {/* Background Decoration */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-neutral-50/50 to-neutral-100/50 dark:via-neutral-900/50 dark:to-neutral-950/50 pointer-events-none" />
-      
+
       <div className="relative py-12 lg:py-16">
         {/* Related Posts Section */}
         {relatedPosts.length > 0 && (

@@ -1,12 +1,12 @@
-import { BubbleMenu } from '@tiptap/react';
 import { type Editor, type Range, getMarkRange, getMarkType, posToDOMRect } from '@tiptap/core';
+import { BubbleMenu } from '@tiptap/react';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { sticky } from 'tippy.js';
+import { useAttributes } from '../hooks/use-attributes';
 import LinkPanelEdit from './link-panel-edit';
 import LinkPanelPreview from './link-panel-preview';
-import { useAttributes } from '../hooks/use-attributes';
 
 interface LinkBubbleProps {
   editor: Editor;
@@ -39,7 +39,7 @@ const LinkBubble = ({ editor }: LinkBubbleProps) => {
   );
 
   const onUnsetLink = useCallback(() => {
-    let transaction = editor.chain().focus();
+    const transaction = editor.chain().focus();
     if (pos) {
       transaction.setTextSelection(pos);
       setPos({ from: -1, to: -1 });
@@ -56,10 +56,11 @@ const LinkBubble = ({ editor }: LinkBubbleProps) => {
 
     if (linkRange) {
       const node = view.nodeDOM(linkRange.from) as HTMLElement;
-      return node!.parentElement!.getBoundingClientRect();
+      const rect = node?.parentElement?.getBoundingClientRect();
+      if (rect) return rect;
     }
 
-    return posToDOMRect(view, from, to);
+    return posToDOMRect(view, from, to) || new DOMRect();
   }, [editor]);
 
   useEffect(() => {
@@ -93,7 +94,7 @@ const LinkBubble = ({ editor }: LinkBubbleProps) => {
   return (
     <BubbleMenu
       editor={editor}
-      pluginKey={`linkMenu`}
+      pluginKey={'linkMenu'}
       shouldShow={shouldShow}
       updateDelay={0}
       tippyOptions={{

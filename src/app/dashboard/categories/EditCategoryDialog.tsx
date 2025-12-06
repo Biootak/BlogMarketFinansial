@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { updateCategory } from '@/actions/categoryActions';
+import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
+import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Form,
@@ -13,12 +13,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
-import type { TaxonomyType, UpdateCategoryInput } from '@/types/types';
-import { updateCategory } from '@/actions/categoryActions';
-import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
-import { useRouter } from 'next/navigation';
 import {
   Select,
   SelectContent,
@@ -26,6 +20,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useToast } from '@/components/ui/use-toast';
+import type { TaxonomyType, UpdateCategoryInput } from '@/types/types';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 interface EditCategoryDialogProps {
@@ -153,7 +153,11 @@ export default function EditCategoryDialog({
                     </FormControl>
                     <SelectContent>
                       {parentCategories.map((parentCategory) => (
-                        <SelectItem key={parentCategory.id} value={parentCategory.id} className="text-sm">
+                        <SelectItem
+                          key={parentCategory.id}
+                          value={parentCategory.id}
+                          className="text-sm"
+                        >
                           {parentCategory.name}
                         </SelectItem>
                       ))}
@@ -205,7 +209,11 @@ export default function EditCategoryDialog({
                 </FormItem>
               )}
             />
-            <Button type="submit" disabled={isSubmitting} className="w-full h-9 sm:h-10 text-sm sm:text-base">
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full h-9 sm:h-10 text-sm sm:text-base"
+            >
               {isSubmitting ? 'در حال ذخیره...' : 'ذخیره تغییرات'}
             </Button>
           </form>

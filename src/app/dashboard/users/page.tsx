@@ -1,37 +1,56 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useForm, type UseFormReturn, type SubmitHandler } from 'react-hook-form';
-import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineUsers } from 'react-icons/hi2';
-import Image from 'next/image';
-import { getUsers, createUser, updateUser, deleteUser } from '@/actions/userActions';
-import type { Role, UserWithProfile } from '@/types/types';
-import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { useToast } from '@/components/ui/use-toast';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import SubmitButton from '@/components/SubmitButton';
-import LoadingMore from '@/components/LoadingMore';
-import { UsersTableSkeleton } from '@/components/Skeletons';
-import { useSession } from 'next-auth/react';
+import { createUser, deleteUser, getUsers, updateUser } from '@/actions/userActions';
 import {
+  ActionButton,
   DashboardPageHeader,
   DashboardSearchInput,
-  DashboardTableContainer,
   DashboardTable,
-  DashboardTableHeader,
-  DashboardTableHead,
   DashboardTableBody,
-  DashboardTableRow,
   DashboardTableCell,
-  StatusBadge,
-  ActionButton,
-  PrimaryActionButton,
+  DashboardTableContainer,
+  DashboardTableHead,
+  DashboardTableHeader,
+  DashboardTableRow,
   EmptyState,
   FilterSelect,
+  PrimaryActionButton,
+  StatusBadge,
 } from '@/components/Dashboard/shared/DashboardTableWrapper';
+import LoadingMore from '@/components/LoadingMore';
+import { UsersTableSkeleton } from '@/components/Skeletons';
+import SubmitButton from '@/components/SubmitButton';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/components/ui/use-toast';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import type { Role, UserWithProfile } from '@/types/types';
+import { useSession } from 'next-auth/react';
+import Image from 'next/image';
+import { useCallback, useEffect, useState } from 'react';
+import { type SubmitHandler, type UseFormReturn, useForm } from 'react-hook-form';
+import { HiOutlinePencil, HiOutlinePlus, HiOutlineTrash, HiOutlineUsers } from 'react-icons/hi2';
 
 type FormData = {
   name: string;
@@ -62,14 +81,18 @@ const statusLabels: Record<string, string> = {
   Rejected: 'رد شده',
 };
 
-
 const getStatusVariant = (status: string) => {
   switch (status) {
-    case 'Active': return 'success';
-    case 'Pending': return 'warning';
-    case 'Banned': return 'danger';
-    case 'Rejected': return 'default';
-    default: return 'default';
+    case 'Active':
+      return 'success';
+    case 'Pending':
+      return 'warning';
+    case 'Banned':
+      return 'danger';
+    case 'Rejected':
+      return 'default';
+    default:
+      return 'default';
   }
 };
 
@@ -136,7 +159,7 @@ export default function UsersPage() {
       }
       setIsLoading(false);
     },
-    [toast, statusFilter, roleFilter]
+    [toast, statusFilter, roleFilter],
   );
 
   const loadMore = useCallback(() => {
@@ -167,7 +190,11 @@ export default function UsersPage() {
 
   const handleEdit = (user: UserWithProfile) => {
     if (!canManageUser(user)) {
-      toast({ title: 'خطا', description: 'شما دسترسی لازم برای ویرایش این کاربر را ندارید', variant: 'destructive' });
+      toast({
+        title: 'خطا',
+        description: 'شما دسترسی لازم برای ویرایش این کاربر را ندارید',
+        variant: 'destructive',
+      });
       return;
     }
     setEditingUser(user);
@@ -184,12 +211,20 @@ export default function UsersPage() {
 
   const handleDelete = async (id: string, userRole?: Role) => {
     if (id === currentUserId) {
-      toast({ title: 'خطا', description: 'شما نمی‌توانید حساب خود را حذف کنید', variant: 'destructive' });
+      toast({
+        title: 'خطا',
+        description: 'شما نمی‌توانید حساب خود را حذف کنید',
+        variant: 'destructive',
+      });
       return;
     }
     const role = userRole || 'USER';
     if (!canManageUser({ id, role } as UserWithProfile)) {
-      toast({ title: 'خطا', description: 'شما دسترسی لازم برای حذف این کاربر را ندارید', variant: 'destructive' });
+      toast({
+        title: 'خطا',
+        description: 'شما دسترسی لازم برای حذف این کاربر را ندارید',
+        variant: 'destructive',
+      });
       return;
     }
     if (window.confirm('آیا مطمئن هستید که می‌خواهید این کاربر را حذف کنید؟')) {
@@ -205,11 +240,19 @@ export default function UsersPage() {
 
   const onSubmit = async (data: FormData) => {
     if (editingUser && !canManageUser(editingUser)) {
-      toast({ title: 'خطا', description: 'شما دسترسی لازم برای ویرایش این کاربر را ندارید', variant: 'destructive' });
+      toast({
+        title: 'خطا',
+        description: 'شما دسترسی لازم برای ویرایش این کاربر را ندارید',
+        variant: 'destructive',
+      });
       return;
     }
     if (!canChangeRole(data.role as Role)) {
-      toast({ title: 'خطا', description: 'شما دسترسی لازم برای تغییر به این نقش را ندارید', variant: 'destructive' });
+      toast({
+        title: 'خطا',
+        description: 'شما دسترسی لازم برای تغییر به این نقش را ندارید',
+        variant: 'destructive',
+      });
       return;
     }
     const result = editingUser
@@ -244,9 +287,11 @@ export default function UsersPage() {
     ...(currentUserRole === 'SUPER_ADMIN' ? [{ value: 'SUPER_ADMIN', label: 'سوپر ادمین' }] : []),
   ];
 
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 p-3 sm:p-6 lg:p-8 dark:from-neutral-900 dark:via-neutral-900 dark:to-primary-950/20" dir="rtl">
+    <div
+      className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 p-3 sm:p-6 lg:p-8 dark:from-neutral-900 dark:via-neutral-900 dark:to-primary-950/20"
+      dir="rtl"
+    >
       {/* Header Section */}
       <div className="mb-6">
         <div className="mb-4">
@@ -271,31 +316,37 @@ export default function UsersPage() {
           {/* Filters and Add Button */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="flex flex-1 gap-2">
-              <FilterSelect 
-                value={statusFilter} 
-                onChange={setStatusFilter} 
-                options={statusOptions} 
-                className="flex-1 sm:min-w-[140px]" 
+              <FilterSelect
+                value={statusFilter}
+                onChange={setStatusFilter}
+                options={statusOptions}
+                className="flex-1 sm:min-w-[140px]"
               />
-              <FilterSelect 
-                value={roleFilter} 
-                onChange={setRoleFilter} 
-                options={roleOptions} 
-                className="flex-1 sm:min-w-[140px]" 
+              <FilterSelect
+                value={roleFilter}
+                onChange={setRoleFilter}
+                options={roleOptions}
+                className="flex-1 sm:min-w-[140px]"
               />
             </div>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <PrimaryActionButton 
-                  onClick={() => { setEditingUser(null); form.reset(); }} 
+                <PrimaryActionButton
+                  onClick={() => {
+                    setEditingUser(null);
+                    form.reset();
+                  }}
                   className="w-full justify-center sm:w-auto sm:min-w-[160px]"
                 >
                   <HiOutlinePlus className="h-5 w-5 transition-transform duration-200 group-hover:rotate-90" />
                   <span className="font-semibold">افزودن کاربر</span>
                 </PrimaryActionButton>
               </DialogTrigger>
-              <DialogContent className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-2xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
+              <DialogContent
+                className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-2xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95"
+                dir="rtl"
+              >
                 <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-4 py-4 sm:px-6 sm:py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
                   <DialogTitle className="text-lg font-bold text-neutral-900 sm:text-xl dark:text-neutral-50">
                     افزودن کاربر جدید
@@ -362,11 +413,19 @@ export default function UsersPage() {
                     </div>
                   </div>
                   <div className="mt-4 flex gap-2 border-t border-neutral-100 pt-3 dark:border-neutral-700/50">
-                    <ActionButton variant="edit" onClick={() => handleEdit(user)} className="flex-1 justify-center">
+                    <ActionButton
+                      variant="edit"
+                      onClick={() => handleEdit(user)}
+                      className="flex-1 justify-center"
+                    >
                       <HiOutlinePencil className="h-4 w-4" />
                       <span>ویرایش</span>
                     </ActionButton>
-                    <ActionButton variant="delete" onClick={() => handleDelete(user.id, user.role as Role)} className="flex-1 justify-center">
+                    <ActionButton
+                      variant="delete"
+                      onClick={() => handleDelete(user.id, user.role as Role)}
+                      className="flex-1 justify-center"
+                    >
                       <HiOutlineTrash className="h-4 w-4" />
                       <span>حذف</span>
                     </ActionButton>
@@ -433,7 +492,10 @@ export default function UsersPage() {
                           <HiOutlinePencil className="h-3.5 w-3.5" />
                           <span>ویرایش</span>
                         </ActionButton>
-                        <ActionButton variant="delete" onClick={() => handleDelete(user.id, user.role as Role)}>
+                        <ActionButton
+                          variant="delete"
+                          onClick={() => handleDelete(user.id, user.role as Role)}
+                        >
                           <HiOutlineTrash className="h-3.5 w-3.5" />
                           <span>حذف</span>
                         </ActionButton>
@@ -450,7 +512,10 @@ export default function UsersPage() {
       )}
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-2xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
+        <DialogContent
+          className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-2xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95"
+          dir="rtl"
+        >
           <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-4 py-4 sm:px-6 sm:py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
             <DialogTitle className="text-lg font-bold text-neutral-900 sm:text-xl dark:text-neutral-50">
               ویرایش کاربر
@@ -465,7 +530,6 @@ export default function UsersPage() {
   );
 }
 
-
 function UserForm({ form, onSubmit }: UserFormProps) {
   const { data: session } = useSession();
   const currentUserRole = session?.user?.role;
@@ -479,7 +543,9 @@ function UserForm({ form, onSubmit }: UserFormProps) {
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نام</FormLabel>
+                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  نام
+                </FormLabel>
                 <FormControl>
                   <Input
                     placeholder="نام کاربر"
@@ -496,7 +562,9 @@ function UserForm({ form, onSubmit }: UserFormProps) {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">ایمیل</FormLabel>
+                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  ایمیل
+                </FormLabel>
                 <FormControl>
                   <Input
                     placeholder="ایمیل کاربر"
@@ -517,7 +585,9 @@ function UserForm({ form, onSubmit }: UserFormProps) {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">رمز عبور</FormLabel>
+                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  رمز عبور
+                </FormLabel>
                 <FormControl>
                   <Input
                     placeholder="رمز عبور کاربر"
@@ -535,7 +605,9 @@ function UserForm({ form, onSubmit }: UserFormProps) {
             name="phoneNumber"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">شماره تلفن</FormLabel>
+                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  شماره تلفن
+                </FormLabel>
                 <FormControl>
                   <Input
                     placeholder="شماره تلفن کاربر"
@@ -555,7 +627,9 @@ function UserForm({ form, onSubmit }: UserFormProps) {
             name="role"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نقش</FormLabel>
+                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  نقش
+                </FormLabel>
                 <Select dir="rtl" onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger className="h-10 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80 sm:h-11">
@@ -582,7 +656,9 @@ function UserForm({ form, onSubmit }: UserFormProps) {
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">وضعیت</FormLabel>
+                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                  وضعیت
+                </FormLabel>
                 <Select dir="rtl" onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger className="h-10 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80 sm:h-11">

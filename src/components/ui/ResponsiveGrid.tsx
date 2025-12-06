@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import type { ReactNode } from 'react';
 
 export interface ResponsiveGridProps {
   children: ReactNode;
@@ -49,7 +49,7 @@ export function ResponsiveGrid({
         gridGap.mobile,
         gridGap.tablet,
         gridGap.desktop,
-        className
+        className,
       )}
     >
       {children}

@@ -190,8 +190,8 @@ export class ScriptAnalyzer {
   generateReport(analysis: ScriptAnalysis): string {
     const { scripts, blockingScripts, analyticsScripts, totalTBT, recommendations } = analysis;
 
-    let report = `# گزارش تحلیل اسکریپت‌های Third-Party\n\n`;
-    report += `## خلاصه\n`;
+    let report = '# گزارش تحلیل اسکریپت‌های Third-Party\n\n';
+    report += '## خلاصه\n';
     report += `- کل اسکریپت‌ها: ${scripts.length}\n`;
     report += `- اسکریپت‌های blocking: ${blockingScripts.length}\n`;
     report += `- اسکریپت‌های analytics: ${analyticsScripts.length}\n`;
@@ -203,7 +203,7 @@ export class ScriptAnalyzer {
         report += `- ${script.src}\n`;
         report += `  Load: ${script.loadTime.toFixed(0)}ms | Size: ${this.formatBytes(script.size)}\n`;
       }
-      report += `\n`;
+      report += '\n';
     }
 
     if (recommendations.length > 0) {

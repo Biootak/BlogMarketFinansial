@@ -1,7 +1,7 @@
 'use client';
 
-import type React from 'react';
 import type { ExchangeRate } from '@/types/types';
+import type React from 'react';
 import { ExchangeRateCard } from './ExchangeRateCard';
 import MySlider from './MySlider';
 

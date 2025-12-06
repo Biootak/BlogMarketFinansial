@@ -1,9 +1,9 @@
-import { Suspense } from 'react';
-import { getLatestPosts } from '@/actions/getLatestPosts';
 import { getActiveAdvertisements } from '@/actions/advertisementActions';
-import ClientSidePosts from './ClientSidePosts';
+import { getLatestPosts } from '@/actions/getLatestPosts';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Advertisement, PostWithRelations } from '@/types/types';
+import { Suspense } from 'react';
+import ClientSidePosts from './ClientSidePosts';
 
 export interface SectionMagazine1Props {
   className?: string;

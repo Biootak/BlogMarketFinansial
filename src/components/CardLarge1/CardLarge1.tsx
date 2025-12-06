@@ -1,16 +1,16 @@
 'use client';
 
-import React, { useMemo } from 'react';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import type { PostWithRelations } from '@/types/types';
-import NcImage from '@/components/NcImage/NcImage';
 import Avatar from '@/components/Avatar/Avatar';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
-import CardSkeleton from '../Skeletons/CardSkeleton';
-import { getPostLink } from '@/lib/getPostLink';
-import { HiChevronLeft, HiChevronRight } from 'react-icons/hi2';
 import FormattedDate from '@/components/FormattedDate';
+import NcImage from '@/components/NcImage/NcImage';
+import { getPostLink } from '@/lib/getPostLink';
+import type { PostWithRelations } from '@/types/types';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import React, { useMemo } from 'react';
+import { HiChevronLeft, HiChevronRight } from 'react-icons/hi2';
+import CardSkeleton from '../Skeletons/CardSkeleton';
 
 export interface CardLarge1Props {
   className?: string;
@@ -23,14 +23,14 @@ export interface CardLarge1Props {
 }
 
 const CardLarge1: React.FC<CardLarge1Props> = React.memo(
-  ({ 
-    className = '', 
-    post, 
-    onClickNext = () => {}, 
-    onClickPrev = () => {}, 
+  ({
+    className = '',
+    post,
+    onClickNext = () => {},
+    onClickPrev = () => {},
     onKeyDown,
     currentIndex = 0,
-    totalSlides = 1
+    totalSlides = 1,
   }) => {
     const categoryElement = useMemo(
       () => (post?.categories ? <CategoryBadgeList categories={post.categories} /> : null),
@@ -45,15 +45,14 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
     const readingTime = Math.ceil(post.content.split(' ').length / 200);
 
     return (
-      <motion.div 
-        className={`nc-CardLarge1 relative ${className}`} 
+      <motion.div
+        className={`nc-CardLarge1 relative ${className}`}
         onKeyDown={onKeyDown}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-center min-h-[400px] lg:min-h-[500px]">
-
           {/* Content Section */}
           <div className="order-2 lg:order-1 space-y-5 lg:space-y-6 p-4 lg:p-0">
             {/* Category Badge */}
@@ -64,26 +63,26 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
             >
               {categoryElement}
             </motion.div>
-            
+
             {/* Title */}
-            <motion.h1 
+            <motion.h1
               className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-neutral-900 dark:text-white leading-tight"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <Link 
-                href={getPostLink(postType, slug)} 
+              <Link
+                href={getPostLink(postType, slug)}
                 title={title}
                 className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-150 line-clamp-3"
               >
                 {title}
               </Link>
             </motion.h1>
-            
+
             {/* Excerpt */}
             {excerpt && (
-              <motion.p 
+              <motion.p
                 className="text-base lg:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed line-clamp-2"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -94,7 +93,7 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
             )}
 
             {/* Author & Meta */}
-            <motion.div 
+            <motion.div
               className="flex items-center justify-between pt-4 border-t border-neutral-200 dark:border-neutral-700"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -140,29 +139,30 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
 
             {/* Slide Counter */}
             {totalSlides > 1 && (
-              <motion.div 
+              <motion.div
                 className="flex items-center gap-2 text-sm text-neutral-500"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.5 }}
               >
-                <span className="font-bold text-primary-600 dark:text-primary-400">{String(currentIndex + 1).padStart(2, '0')}</span>
+                <span className="font-bold text-primary-600 dark:text-primary-400">
+                  {String(currentIndex + 1).padStart(2, '0')}
+                </span>
                 <span>/</span>
                 <span>{String(totalSlides).padStart(2, '0')}</span>
               </motion.div>
             )}
           </div>
 
-
           {/* Image Section */}
-          <motion.div 
+          <motion.div
             className="order-1 lg:order-2 relative"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6 }}
           >
-            <Link 
-              href={getPostLink(postType, slug)} 
+            <Link
+              href={getPostLink(postType, slug)}
               className="block relative aspect-[4/3] lg:aspect-[4/3] rounded-2xl lg:rounded-3xl overflow-hidden group"
             >
               {/* Main Image */}
@@ -175,16 +175,20 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
                 sizes="(max-width: 768px) 100vw, 50vw"
                 priority
               />
-              
+
               {/* Gradient Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-              
+
               {/* Play Button for Video Posts */}
               {postType === 'VIDEO' && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-200">
-                    <svg className="w-6 h-6 lg:w-8 lg:h-8 text-primary-600 ms-1" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z"/>
+                    <svg
+                      className="w-6 h-6 lg:w-8 lg:h-8 text-primary-600 ms-1"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M8 5v14l11-7z" />
                     </svg>
                   </div>
                 </div>

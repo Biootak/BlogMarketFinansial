@@ -66,11 +66,7 @@ export const imageToBase64 = (file: File): Promise<string> => {
 /**
  * Compress image
  */
-export const compressImage = (
-  file: File,
-  maxWidth: number = 1920,
-  quality: number = 0.8,
-): Promise<Blob> => {
+export const compressImage = (file: File, maxWidth = 1920, quality = 0.8): Promise<Blob> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const canvas = document.createElement('canvas');
@@ -112,12 +108,13 @@ export const compressImage = (
  */
 export const getOptimalFormat = (originalFormat: string): string => {
   const modernFormats = ['webp', 'avif'];
-  const supportsWebP = document.createElement('canvas').toDataURL('image/webp').indexOf('data:image/webp') === 0;
-  
+  const supportsWebP =
+    document.createElement('canvas').toDataURL('image/webp').indexOf('data:image/webp') === 0;
+
   if (supportsWebP && !modernFormats.includes(originalFormat.toLowerCase())) {
     return 'webp';
   }
-  
+
   return originalFormat;
 };
 
@@ -166,18 +163,15 @@ export const validateImageFile = (
 /**
  * Apply filter to image (returns data URL)
  */
-export const applyFilterToImage = (
-  src: string,
-  filter: string,
-): Promise<string> => {
+export const applyFilterToImage = (src: string, filter: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    
+
     img.onload = () => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      
+
       if (!ctx) {
         reject(new Error('Could not get canvas context'));
         return;
@@ -200,18 +194,15 @@ export const applyFilterToImage = (
 /**
  * Rotate image (returns data URL)
  */
-export const rotateImage = (
-  src: string,
-  degrees: number,
-): Promise<string> => {
+export const rotateImage = (src: string, degrees: number): Promise<string> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    
+
     img.onload = () => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      
+
       if (!ctx) {
         reject(new Error('Could not get canvas context'));
         return;

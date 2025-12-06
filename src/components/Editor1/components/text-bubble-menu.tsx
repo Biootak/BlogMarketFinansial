@@ -1,9 +1,20 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { BubbleMenu } from '@tiptap/react';
 import type { Editor } from '@tiptap/react';
-import { Bold, Italic, Underline, Highlighter, Link, Code, Strikethrough, X, Check } from 'lucide-react';
+import {
+  Bold,
+  Check,
+  Code,
+  Highlighter,
+  Italic,
+  Link,
+  Strikethrough,
+  Underline,
+  X,
+} from 'lucide-react';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface TextBubbleMenuProps {
   editor: Editor;
@@ -33,7 +44,12 @@ const TextBubbleMenu: React.FC<TextBubbleMenuProps> = ({ editor }) => {
     } else {
       // اضافه کردن پروتکل اگر وجود نداشت
       let finalUrl = linkUrl.trim();
-      if (finalUrl && !finalUrl.match(/^https?:\/\//i) && !finalUrl.startsWith('/') && !finalUrl.startsWith('#')) {
+      if (
+        finalUrl &&
+        !finalUrl.match(/^https?:\/\//i) &&
+        !finalUrl.startsWith('/') &&
+        !finalUrl.startsWith('#')
+      ) {
         finalUrl = `https://${finalUrl}`;
       }
       editor.chain().focus().extendMarkRange('link').setLink({ href: finalUrl }).run();
@@ -47,32 +63,38 @@ const TextBubbleMenu: React.FC<TextBubbleMenuProps> = ({ editor }) => {
     setLinkUrl('');
   }, []);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      applyLink();
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      cancelLink();
-    }
-  }, [applyLink, cancelLink]);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        applyLink();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        cancelLink();
+      }
+    },
+    [applyLink, cancelLink],
+  );
 
   // بررسی وضعیت فعال بودن هر فرمت
-  const activeStates = useMemo(() => ({
-    bold: editor.isActive('bold'),
-    italic: editor.isActive('italic'),
-    underline: editor.isActive('underline'),
-    strike: editor.isActive('strike'),
-    highlight: editor.isActive('highlight'),
-    code: editor.isActive('code'),
-    link: editor.isActive('link'),
-  }), [editor.state.selection]);
+  const activeStates = useMemo(
+    () => ({
+      bold: editor.isActive('bold'),
+      italic: editor.isActive('italic'),
+      underline: editor.isActive('underline'),
+      strike: editor.isActive('strike'),
+      highlight: editor.isActive('highlight'),
+      code: editor.isActive('code'),
+      link: editor.isActive('link'),
+    }),
+    [editor.state.selection],
+  );
 
   // کلاس‌های مشترک برای دکمه‌ها
   const getButtonClass = useCallback((isActive: boolean) => {
     return `p-2 rounded-lg transition-all duration-150 ${
-      isActive 
-        ? 'bg-primary-500 text-white shadow-sm' 
+      isActive
+        ? 'bg-primary-500 text-white shadow-sm'
         : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
     }`;
   }, []);
@@ -80,7 +102,7 @@ const TextBubbleMenu: React.FC<TextBubbleMenuProps> = ({ editor }) => {
   return (
     <BubbleMenu
       editor={editor}
-      tippyOptions={{ 
+      tippyOptions={{
         duration: 150,
         animation: 'shift-away',
         moveTransition: 'transform 0.15s ease-out',
@@ -88,15 +110,16 @@ const TextBubbleMenu: React.FC<TextBubbleMenuProps> = ({ editor }) => {
       shouldShow={({ editor, state }) => {
         const { from, to } = state.selection;
         const hasSelection = from !== to;
-        const isTextSelected = hasSelection && 
-          !editor.isActive('image') && 
-          !editor.isActive('embed') && 
+        const isTextSelected =
+          hasSelection &&
+          !editor.isActive('image') &&
+          !editor.isActive('embed') &&
           !editor.isActive('table') &&
           !editor.isActive('codeBlock');
         return isTextSelected;
       }}
     >
-      <div 
+      <div
         className="flex items-center gap-0.5 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-1.5"
         role="toolbar"
         aria-label="ابزار فرمت‌بندی متن"
@@ -173,7 +196,11 @@ const TextBubbleMenu: React.FC<TextBubbleMenuProps> = ({ editor }) => {
               <Strikethrough size={16} />
             </button>
 
-            <div className="w-px h-6 bg-gray-200 dark:bg-gray-600 mx-1" role="separator" aria-hidden="true" />
+            <div
+              className="w-px h-6 bg-gray-200 dark:bg-gray-600 mx-1"
+              role="separator"
+              aria-hidden="true"
+            />
 
             <button
               type="button"
@@ -195,7 +222,11 @@ const TextBubbleMenu: React.FC<TextBubbleMenuProps> = ({ editor }) => {
               <Code size={16} />
             </button>
 
-            <div className="w-px h-6 bg-gray-200 dark:bg-gray-600 mx-1" role="separator" aria-hidden="true" />
+            <div
+              className="w-px h-6 bg-gray-200 dark:bg-gray-600 mx-1"
+              role="separator"
+              aria-hidden="true"
+            />
 
             <button
               type="button"

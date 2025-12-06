@@ -1,6 +1,6 @@
-import { create } from 'zustand';
 import { addComment, deleteComment, editComment } from '@/actions/commentActions';
 import type { ActionResult, CommentWithCustomRelations } from '@/types/types';
+import { create } from 'zustand';
 
 interface CommentState {
   comments: CommentWithCustomRelations[];

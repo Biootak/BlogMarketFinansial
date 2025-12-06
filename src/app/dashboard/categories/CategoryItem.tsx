@@ -1,24 +1,24 @@
 'use client';
 
-import Image from 'next/image';
-import { useState, useCallback } from 'react';
+import { deleteCategory } from '@/actions/categoryActions';
 import {
+  ActionButton,
+  DashboardTableCell,
+  DashboardTableRow,
+} from '@/components/Dashboard/shared/DashboardTableWrapper';
+import { useToast } from '@/components/ui/use-toast';
+import type { TaxonomyType } from '@/types/types';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useCallback, useState } from 'react';
+import { FaFolder, FaLayerGroup } from 'react-icons/fa';
+import {
+  HiOutlineChevronDown,
+  HiOutlineChevronLeft,
   HiOutlinePencil,
   HiOutlineTrash,
-  HiOutlineChevronLeft,
-  HiOutlineChevronDown,
 } from 'react-icons/hi2';
-import { FaLayerGroup, FaFolder } from 'react-icons/fa';
-import type { TaxonomyType } from '@/types/types';
-import { deleteCategory } from '@/actions/categoryActions';
-import { useToast } from '@/components/ui/use-toast';
 import { CategoryForm } from './CategoryForm';
-import { useRouter } from 'next/navigation';
-import {
-  DashboardTableRow,
-  DashboardTableCell,
-  ActionButton,
-} from '@/components/Dashboard/shared/DashboardTableWrapper';
 
 interface CategoryItemProps {
   category: TaxonomyType;
@@ -52,7 +52,10 @@ export default function CategoryItem({
 
   const CategoryIcon = level === 0 ? FaLayerGroup : FaFolder;
   const iconColor = level === 0 ? 'text-primary-500' : 'text-emerald-500';
-  const textColor = level === 0 ? 'text-primary-600 dark:text-primary-400' : 'text-emerald-600 dark:text-emerald-400';
+  const textColor =
+    level === 0
+      ? 'text-primary-600 dark:text-primary-400'
+      : 'text-emerald-600 dark:text-emerald-400';
 
   return (
     <>
@@ -60,12 +63,7 @@ export default function CategoryItem({
         <DashboardTableCell>
           <div className="relative h-8 w-8 sm:h-10 sm:w-10 overflow-hidden rounded-lg sm:rounded-xl ring-1 sm:ring-2 ring-white shadow-sm sm:shadow-md dark:ring-neutral-700">
             {category.thumbnail ? (
-              <Image
-                src={category.thumbnail}
-                alt={category.name}
-                fill
-                className="object-cover"
-              />
+              <Image src={category.thumbnail} alt={category.name} fill className="object-cover" />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-neutral-100 to-neutral-200 text-neutral-500 dark:from-neutral-700 dark:to-neutral-800 dark:text-neutral-400">
                 <span className="text-sm sm:text-lg font-semibold">
@@ -76,9 +74,14 @@ export default function CategoryItem({
           </div>
         </DashboardTableCell>
         <DashboardTableCell>
-          <div className="flex items-center gap-1.5 sm:gap-2" style={{ paddingRight: `${level * 16}px` }}>
+          <div
+            className="flex items-center gap-1.5 sm:gap-2"
+            style={{ paddingRight: `${level * 16}px` }}
+          >
             <CategoryIcon className={`h-3 w-3 sm:h-4 sm:w-4 ${iconColor} flex-shrink-0`} />
-            <span className={`font-medium text-xs sm:text-sm ${textColor} truncate`}>{category.name}</span>
+            <span className={`font-medium text-xs sm:text-sm ${textColor} truncate`}>
+              {category.name}
+            </span>
             {category.childCategories && category.childCategories.length > 0 && (
               <button
                 type="button"

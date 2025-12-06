@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useCallback, Fragment } from 'react';
+import { Icon } from '@/components/ui/icon';
+import { Dialog, Transition } from '@headlessui/react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Dialog, Transition } from '@headlessui/react';
-import { Icon } from '@/components/ui/icon';
+import { Fragment, useCallback, useState } from 'react';
 
 interface GalleryImagesProps {
   post: {

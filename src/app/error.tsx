@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
-import Link from 'next/link';
-import { AlertTriangle, RefreshCw, Home, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { AlertTriangle, ArrowRight, Home, RefreshCw } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect } from 'react';
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -25,7 +25,11 @@ export default function Error({ error, reset }: ErrorProps) {
     const message = error.message?.toLowerCase() || '';
 
     // خطاهای دیتابیس
-    if (message.includes('database') || message.includes('prisma') || message.includes("can't reach")) {
+    if (
+      message.includes('database') ||
+      message.includes('prisma') ||
+      message.includes("can't reach")
+    ) {
       return {
         title: 'خطای سرور',
         description: 'سرور موقتاً در دسترس نیست. لطفاً چند لحظه صبر کنید و دوباره تلاش کنید.',
@@ -67,10 +71,7 @@ export default function Error({ error, reset }: ErrorProps) {
   const errorInfo = getErrorInfo();
 
   return (
-    <div
-      dir="rtl"
-      className="min-h-[60vh] flex items-center justify-center p-4"
-    >
+    <div dir="rtl" className="min-h-[60vh] flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white dark:bg-neutral-800 rounded-2xl shadow-xl p-8 text-center">
         {/* Icon */}
         <div className="text-6xl mb-4">{errorInfo.icon}</div>
@@ -81,9 +82,7 @@ export default function Error({ error, reset }: ErrorProps) {
         </h2>
 
         {/* Description */}
-        <p className="text-neutral-600 dark:text-neutral-400 mb-6">
-          {errorInfo.description}
-        </p>
+        <p className="text-neutral-600 dark:text-neutral-400 mb-6">{errorInfo.description}</p>
 
         {/* Error digest for debugging - فقط در development */}
         {process.env.NODE_ENV === 'development' && error.digest && (
@@ -94,10 +93,7 @@ export default function Error({ error, reset }: ErrorProps) {
 
         {/* Actions */}
         <div className="flex flex-col gap-3">
-          <Button
-            onClick={reset}
-            className="w-full gap-2"
-          >
+          <Button onClick={reset} className="w-full gap-2">
             <RefreshCw className="w-4 h-4" />
             تلاش مجدد
           </Button>

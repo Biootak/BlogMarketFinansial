@@ -1,7 +1,7 @@
-import type React from 'react';
-import Link from 'next/link';
 import Avatar from '@/components/Avatar/Avatar';
 import type { UserWithProfile } from '@/types/types';
+import Link from 'next/link';
+import type React from 'react';
 
 export interface CardAuthorProps {
   className?: string;

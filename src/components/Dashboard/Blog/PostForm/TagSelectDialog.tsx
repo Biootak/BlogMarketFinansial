@@ -1,16 +1,16 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import type { TaxonomyType } from '@/types/types';
-import { FiX, FiPlus, FiSearch, FiTag, FiCheck } from 'react-icons/fi';
-import { BiLoaderAlt } from 'react-icons/bi';
-import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/components/ui/use-toast';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import type { TaxonomyType } from '@/types/types';
+import { useCallback, useEffect, useState } from 'react';
+import { BiLoaderAlt } from 'react-icons/bi';
+import { FiCheck, FiPlus, FiSearch, FiTag, FiX } from 'react-icons/fi';
 
 interface TagSelectDialogProps {
   isOpen: boolean;
@@ -24,41 +24,66 @@ interface TagSelectDialogProps {
 }
 
 export function TagSelectDialog({
-  isOpen, onClose, onSelectTags, initialSelectedTags,
-  tags, onLoadMore, isLoading, hasMoreItems,
+  isOpen,
+  onClose,
+  onSelectTags,
+  initialSelectedTags,
+  tags,
+  onLoadMore,
+  isLoading,
+  hasMoreItems,
 }: TagSelectDialogProps) {
   const [selectedTags, setSelectedTags] = useState<string[]>(initialSelectedTags);
   const [newTag, setNewTag] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
 
-  useEffect(() => { setSelectedTags(initialSelectedTags); }, [initialSelectedTags]);
+  useEffect(() => {
+    setSelectedTags(initialSelectedTags);
+  }, [initialSelectedTags]);
 
-  const handleAddTag = useCallback((tagName: string) => {
-    if (!selectedTags.includes(tagName)) {
-      setSelectedTags((prev) => [...prev, tagName]);
-      toast({ title: 'موفقیت', description: 'برچسب اضافه شد', variant: 'success' });
-    }
-  }, [selectedTags, toast]);
+  const handleAddTag = useCallback(
+    (tagName: string) => {
+      if (!selectedTags.includes(tagName)) {
+        setSelectedTags((prev) => [...prev, tagName]);
+        toast({ title: 'موفقیت', description: 'برچسب اضافه شد', variant: 'success' });
+      }
+    },
+    [selectedTags, toast],
+  );
 
   const handleRemoveTag = useCallback((tagName: string) => {
     setSelectedTags((prev) => prev.filter((tag) => tag !== tagName));
   }, []);
 
-  const handleNewTagSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    if (newTag.trim() && !selectedTags.includes(newTag.trim())) {
-      handleAddTag(newTag.trim());
-      setNewTag('');
-    } else if (selectedTags.includes(newTag.trim())) {
-      toast({ title: 'خطا', description: 'این برچسب قبلاً اضافه شده است.', variant: 'destructive' });
-    }
-  }, [newTag, handleAddTag, selectedTags, toast]);
+  const handleNewTagSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      if (newTag.trim() && !selectedTags.includes(newTag.trim())) {
+        handleAddTag(newTag.trim());
+        setNewTag('');
+      } else if (selectedTags.includes(newTag.trim())) {
+        toast({
+          title: 'خطا',
+          description: 'این برچسب قبلاً اضافه شده است.',
+          variant: 'destructive',
+        });
+      }
+    },
+    [newTag, handleAddTag, selectedTags, toast],
+  );
 
-  const handleSave = useCallback(() => { onSelectTags(selectedTags); onClose(); }, [selectedTags, onSelectTags, onClose]);
-  const handleLoadMore = useCallback(() => { if (!isLoading && hasMoreItems) onLoadMore(); }, [isLoading, hasMoreItems, onLoadMore]);
+  const handleSave = useCallback(() => {
+    onSelectTags(selectedTags);
+    onClose();
+  }, [selectedTags, onSelectTags, onClose]);
+  const handleLoadMore = useCallback(() => {
+    if (!isLoading && hasMoreItems) onLoadMore();
+  }, [isLoading, hasMoreItems, onLoadMore]);
   const infiniteScrollRef = useInfiniteScroll(handleLoadMore, hasMoreItems, isLoading);
-  const filteredTags = tags.filter((tag) => tag.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredTags = tags.filter((tag) =>
+    tag.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -72,8 +97,12 @@ export function TagSelectDialog({
                 <FiTag className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div>
-                <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">انتخاب برچسب‌ها</span>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{selectedTags.length} برچسب انتخاب شده</p>
+                <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                  انتخاب برچسب‌ها
+                </span>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  {selectedTags.length} برچسب انتخاب شده
+                </p>
               </div>
             </DialogTitle>
           </DialogHeader>
@@ -84,9 +113,16 @@ export function TagSelectDialog({
           <div className="px-4 sm:px-6 py-2 sm:py-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200/50 dark:border-slate-700/50">
             <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {selectedTags.map((tag) => (
-                <Badge key={tag} className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
+                <Badge
+                  key={tag}
+                  className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
+                >
                   {tag}
-                  <button type="button" onClick={() => handleRemoveTag(tag)} className="hover:bg-white/20 rounded-full p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveTag(tag)}
+                    className="hover:bg-white/20 rounded-full p-0.5"
+                  >
                     <FiX className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                   </button>
                 </Badge>
@@ -104,7 +140,10 @@ export function TagSelectDialog({
               placeholder="برچسب جدید..."
               className="flex-1 h-9 sm:h-11 text-sm rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50"
             />
-            <Button type="submit" className="h-9 sm:h-11 px-3 sm:px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white">
+            <Button
+              type="submit"
+              className="h-9 sm:h-11 px-3 sm:px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white"
+            >
               <FiPlus className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
           </form>
@@ -140,12 +179,18 @@ export function TagSelectDialog({
                       : 'bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent hover:border-slate-200 dark:hover:border-slate-700'
                   }`}
                 >
-                  <span className={`text-sm sm:text-base font-medium ${isSelected ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-300'}`}>
+                  <span
+                    className={`text-sm sm:text-base font-medium ${isSelected ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-300'}`}
+                  >
                     {tag.name}
                   </span>
-                  <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-lg flex items-center justify-center ${
-                    isSelected ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white' : 'bg-slate-200 dark:bg-slate-700'
-                  }`}>
+                  <div
+                    className={`w-5 h-5 sm:w-6 sm:h-6 rounded-lg flex items-center justify-center ${
+                      isSelected
+                        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white'
+                        : 'bg-slate-200 dark:bg-slate-700'
+                    }`}
+                  >
                     {isSelected && <FiCheck className="w-3 h-3 sm:w-4 sm:h-4" />}
                   </div>
                 </button>
@@ -164,8 +209,17 @@ export function TagSelectDialog({
         {/* Footer */}
         <div className="p-4 sm:p-6 pt-3 sm:pt-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/30">
           <div className="flex items-center gap-2 sm:gap-3">
-            <Button variant="outline" onClick={onClose} className="flex-1 h-9 sm:h-11 text-sm sm:text-base rounded-xl">انصراف</Button>
-            <Button onClick={handleSave} className="flex-1 h-9 sm:h-11 text-sm sm:text-base rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="flex-1 h-9 sm:h-11 text-sm sm:text-base rounded-xl"
+            >
+              انصراف
+            </Button>
+            <Button
+              onClick={handleSave}
+              className="flex-1 h-9 sm:h-11 text-sm sm:text-base rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white"
+            >
               ذخیره تغییرات
             </Button>
           </div>

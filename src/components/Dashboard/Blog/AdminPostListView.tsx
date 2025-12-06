@@ -1,10 +1,10 @@
-import { Suspense } from 'react';
 import { listAllPosts } from '@/actions/postActions';
+import ErrorComponent from '@/components/ErrorComponent';
+import SkeletonLoader from '@/components/SkeletonLoader';
+import type { PostStatus } from '@/types/types';
+import { Suspense } from 'react';
 import PostHeader from './PostHeader';
 import PostList from './PostList';
-import SkeletonLoader from '@/components/SkeletonLoader';
-import ErrorComponent from '@/components/ErrorComponent';
-import type { PostStatus } from '@/types/types';
 
 export default async function DashboardPosts({
   searchParams,
@@ -25,14 +25,14 @@ export default async function DashboardPosts({
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       {/* Decorative background elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div 
+        <div
           className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full opacity-30 dark:opacity-20"
           style={{
             background: 'radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%)',
             filter: 'blur(60px)',
           }}
         />
-        <div 
+        <div
           className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full opacity-25 dark:opacity-15"
           style={{
             background: 'radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)',

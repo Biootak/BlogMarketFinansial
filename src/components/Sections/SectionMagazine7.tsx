@@ -4,7 +4,7 @@ import Card10 from '@/components/Card10/Card10';
 import Card10V3 from '@/components/Card10/Card10V3';
 import type { PostWithRelations } from '@/types/types';
 import { motion } from 'framer-motion';
-import { Images, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Images } from 'lucide-react';
 import Link from 'next/link';
 import type { FC } from 'react';
 
@@ -53,8 +53,8 @@ const SectionMagazine7: FC<SectionMagazine7Props> = ({ posts = [], className = '
             </p>
           </div>
         </div>
-        
-        <Link 
+
+        <Link
           href="/archive"
           className="group flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg sm:rounded-xl transition-all duration-200"
         >
@@ -66,7 +66,7 @@ const SectionMagazine7: FC<SectionMagazine7Props> = ({ posts = [], className = '
       </div>
 
       {/* Content Grid */}
-      <motion.div 
+      <motion.div
         className="grid grid-cols-1 gap-4 sm:gap-6 md:gap-8"
         variants={containerVariants}
         initial="hidden"

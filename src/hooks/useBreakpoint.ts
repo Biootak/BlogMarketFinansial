@@ -1,7 +1,7 @@
 'use client';
 
+import { type Breakpoint, getCurrentBreakpoint } from '@/lib/responsive/breakpoints';
 import { useEffect, useState } from 'react';
-import { getCurrentBreakpoint, type Breakpoint } from '@/lib/responsive/breakpoints';
 
 /**
  * Hook to get current breakpoint

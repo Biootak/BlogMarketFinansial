@@ -1,23 +1,22 @@
 'use client';
 
-import React, { type FC, useRef, useState } from 'react';
-import Avatar from '@/components/Avatar/Avatar';
-import NcDropDown from '@/components/NcDropDown/NcDropDown';
-import twFocusClass from '@/utils/twFocusClass';
-import ModalEditComment from './ModalEditComment';
-import ModalDeleteComment from './ModalDeleteComment';
-import ModalReportItem from '@/components/ModalReportItem/ModalReportItem';
-import Link from 'next/link';
+import { likeItem } from '@/actions/postActions';
 import SingleCommentForm from '@/app/(site)/(singles)/SingleCommentForm';
-import CommentCardLikeReply from '../CommentCardLikeReply/CommentCardLikeReply';
-import { useSession } from 'next-auth/react';
+import Avatar from '@/components/Avatar/Avatar';
+import ModalReportItem from '@/components/ModalReportItem/ModalReportItem';
+import NcDropDown from '@/components/NcDropDown/NcDropDown';
 import { useToast } from '@/components/ui/use-toast';
 import { useCommentStore } from '@/hooks/useCommentStore';
-import FormattedDate from '../FormattedDate';
 import type { CommentWithRelationsAndLikes, NcDropDownItem } from '@/types/types';
-import { likeItem } from '@/actions/postActions';
-import { HiOutlinePencil, HiOutlineReply, HiOutlineFlag, HiOutlineTrash } from 'react-icons/hi';
-
+import twFocusClass from '@/utils/twFocusClass';
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
+import React, { type FC, useRef, useState } from 'react';
+import { HiOutlineFlag, HiOutlinePencil, HiOutlineReply, HiOutlineTrash } from 'react-icons/hi';
+import CommentCardLikeReply from '../CommentCardLikeReply/CommentCardLikeReply';
+import FormattedDate from '../FormattedDate';
+import ModalDeleteComment from './ModalDeleteComment';
+import ModalEditComment from './ModalEditComment';
 
 export interface CommentCardProps {
   className?: string;

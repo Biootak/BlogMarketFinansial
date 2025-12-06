@@ -18,7 +18,7 @@ export const DragHandle = Extension.create<DragHandleOptions>({
   },
 
   addProseMirrorPlugins() {
-    const editor = this.editor;
+    const _editor = this.editor;
     let dragHandleElement: HTMLElement | null = null;
     let currentPos: number | null = null;
     let dropIndicator: HTMLElement | null = null;
@@ -89,7 +89,7 @@ export const DragHandle = Extension.create<DragHandleOptions>({
               // اگر در سطح بالای document هستیم، از خود pos استفاده می‌کنیم
               if ($pos.depth === 0) return pos;
               return $pos.before($pos.depth);
-            } catch (error) {
+            } catch (_error) {
               // اگر خطایی رخ داد، null برمی‌گردانیم
               return null;
             }
@@ -113,7 +113,9 @@ export const DragHandle = Extension.create<DragHandleOptions>({
 
           const handleMouseOver = (event: MouseEvent) => {
             const target = event.target as HTMLElement;
-            const blockNode = target.closest('p, h1, h2, h3, h4, h5, h6, ul, ol, blockquote, pre, table, [data-callout], [data-embed]');
+            const blockNode = target.closest(
+              'p, h1, h2, h3, h4, h5, h6, ul, ol, blockquote, pre, table, [data-callout], [data-embed]',
+            );
             if (blockNode && view.dom.contains(blockNode)) {
               const pos = getBlockPos(blockNode as HTMLElement);
               if (pos !== null) {
@@ -155,16 +157,23 @@ export const DragHandle = Extension.create<DragHandleOptions>({
             const node = view.state.doc.nodeAt(currentPos);
             if (node) {
               draggedNodeContent = node.toJSON();
-              e.dataTransfer?.setData('application/x-prosemirror-node', JSON.stringify({ pos: currentPos }));
-              e.dataTransfer!.effectAllowed = 'move';
-              dragHandleElement!.style.cursor = 'grabbing';
+              e.dataTransfer?.setData(
+                'application/x-prosemirror-node',
+                JSON.stringify({ pos: currentPos }),
+              );
+              if (e.dataTransfer) {
+                e.dataTransfer.effectAllowed = 'move';
+              }
+              if (dragHandleElement?.style) {
+                dragHandleElement.style.cursor = 'grabbing';
+              }
             }
           });
 
           view.dom.addEventListener('dragover', (e) => {
             e.preventDefault();
             if (!dropIndicator || draggedNodePos === null) return;
-            
+
             try {
               const pos = view.posAtCoords({ left: e.clientX, top: e.clientY });
               if (pos) {
@@ -179,7 +188,7 @@ export const DragHandle = Extension.create<DragHandleOptions>({
                   dropIndicator.style.top = `${(isAbove ? rect.top : rect.bottom) - editorRect.top}px`;
                 }
               }
-            } catch (error) {
+            } catch (_error) {
               // در صورت خطا، indicator را مخفی می‌کنیم
               if (dropIndicator) {
                 dropIndicator.style.display = 'none';
@@ -198,7 +207,7 @@ export const DragHandle = Extension.create<DragHandleOptions>({
             if (dropIndicator) {
               dropIndicator.style.display = 'none';
             }
-            
+
             if (draggedNodePos === null || !draggedNodeContent) return;
 
             try {
@@ -208,19 +217,20 @@ export const DragHandle = Extension.create<DragHandleOptions>({
               const $pos = view.state.doc.resolve(pos.pos);
               const targetPos = $pos.depth === 0 ? pos.pos : $pos.before($pos.depth);
               const node = view.nodeDOM(targetPos) as HTMLElement;
-              
+
               if (node) {
                 const rect = node.getBoundingClientRect();
                 const isAbove = e.clientY < rect.top + rect.height / 2;
                 const targetNode = view.state.doc.nodeAt(targetPos);
                 if (!targetNode) return;
-                
+
                 const insertPos = isAbove ? targetPos : targetPos + targetNode.nodeSize;
-                
+
                 const { tr } = view.state;
                 const nodeToMove = view.state.doc.nodeAt(draggedNodePos);
                 if (nodeToMove) {
-                  const adjustedInsertPos = insertPos > draggedNodePos ? insertPos - nodeToMove.nodeSize : insertPos;
+                  const adjustedInsertPos =
+                    insertPos > draggedNodePos ? insertPos - nodeToMove.nodeSize : insertPos;
                   tr.delete(draggedNodePos, draggedNodePos + nodeToMove.nodeSize);
                   tr.insert(adjustedInsertPos, nodeToMove);
                   view.dispatch(tr);

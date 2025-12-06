@@ -46,14 +46,18 @@ export class APIProfiler {
    * دریافت endpointهای کند
    */
   getSlowEndpoints(threshold: number = this.slowThreshold): APICallLog[] {
-    return this.calls.filter((c) => c.responseTime > threshold).sort((a, b) => b.responseTime - a.responseTime);
+    return this.calls
+      .filter((c) => c.responseTime > threshold)
+      .sort((a, b) => b.responseTime - a.responseTime);
   }
 
   /**
    * شناسایی payloadهای بزرگ
    */
   identifyLargePayloads(threshold: number = 1024 * 1024): APICallLog[] {
-    return this.calls.filter((c) => c.payloadSize > threshold).sort((a, b) => b.payloadSize - a.payloadSize);
+    return this.calls
+      .filter((c) => c.payloadSize > threshold)
+      .sort((a, b) => b.payloadSize - a.payloadSize);
   }
 
   /**
@@ -116,31 +120,31 @@ export class APIProfiler {
   generateReport(analysis: APIAnalysis): string {
     const { slowEndpoints, largePayloads, errorRate, avgResponseTime, recommendations } = analysis;
 
-    let report = `# گزارش تحلیل API Performance\n\n`;
-    report += `## خلاصه\n`;
+    let report = '# گزارش تحلیل API Performance\n\n';
+    report += '## خلاصه\n';
     report += `- کل درخواست‌ها: ${this.calls.length}\n`;
     report += `- میانگین زمان پاسخ: ${avgResponseTime.toFixed(0)}ms\n`;
     report += `- نرخ خطا: ${errorRate.toFixed(1)}%\n`;
     report += `- Endpointهای کند: ${slowEndpoints.length}\n\n`;
 
     if (slowEndpoints.length > 0) {
-      report += `## Endpointهای کند\n`;
+      report += '## Endpointهای کند\n';
       for (const endpoint of slowEndpoints.slice(0, 10)) {
         report += `- ${endpoint.method} ${endpoint.endpoint}: ${endpoint.responseTime.toFixed(0)}ms\n`;
       }
-      report += `\n`;
+      report += '\n';
     }
 
     if (largePayloads.length > 0) {
-      report += `## Payloadهای بزرگ\n`;
+      report += '## Payloadهای بزرگ\n';
       for (const payload of largePayloads.slice(0, 10)) {
         report += `- ${payload.endpoint}: ${this.formatBytes(payload.payloadSize)}\n`;
       }
-      report += `\n`;
+      report += '\n';
     }
 
     if (recommendations.length > 0) {
-      report += `## پیشنهادات\n`;
+      report += '## پیشنهادات\n';
       for (const rec of recommendations) {
         report += `### ${rec.endpoint} (${rec.priority})\n`;
         report += `- مشکل: ${rec.issue}\n`;

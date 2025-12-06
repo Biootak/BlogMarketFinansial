@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import db from '@/lib/db';
 import { checkDiskSpace, getSystemMetrics } from '@/lib/system';
+import { NextResponse } from 'next/server';
 
 // Mark this route as dynamic
 export const dynamic = 'force-dynamic';
@@ -10,10 +10,7 @@ export async function GET() {
   try {
     const session = await auth();
     if (!session?.user || session.user.role !== 'SUPER_ADMIN') {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized access' },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, error: 'Unauthorized access' }, { status: 401 });
     }
 
     // Get cached system metrics
@@ -27,7 +24,7 @@ export async function GET() {
           total: diskSpace.size,
           free: diskSpace.free,
           used: diskSpace.size - diskSpace.free,
-          usagePercentage: Math.round((diskSpace.size - diskSpace.free) / diskSpace.size * 100)
+          usagePercentage: Math.round(((diskSpace.size - diskSpace.free) / diskSpace.size) * 100),
         };
       }
     } catch (diskError) {
@@ -36,7 +33,7 @@ export async function GET() {
         total: 0,
         free: 0,
         used: 0,
-        usagePercentage: 0
+        usagePercentage: 0,
       };
     }
 
@@ -44,7 +41,7 @@ export async function GET() {
     let dbStatus = {
       status: 'offline',
       connections: 0,
-      responseTime: 0
+      responseTime: 0,
     };
 
     try {
@@ -55,7 +52,7 @@ export async function GET() {
       dbStatus = {
         status: 'online',
         connections: await db.$executeRaw`SELECT COUNT(*) FROM pg_stat_activity`,
-        responseTime: endTime - startTime
+        responseTime: endTime - startTime,
       };
     } catch (dbError) {
       console.error('Database check error:', dbError);
@@ -66,21 +63,21 @@ export async function GET() {
       users: 0,
       posts: 0,
       comments: 0,
-      environment: process.env.NODE_ENV || 'development'
+      environment: process.env.NODE_ENV || 'development',
     };
 
     try {
       const [users, posts, comments] = await Promise.all([
         db.user.count(),
         db.post.count(),
-        db.comment.count()
+        db.comment.count(),
       ]);
 
       appStats = {
         users,
         posts,
         comments,
-        environment: process.env.NODE_ENV || 'development'
+        environment: process.env.NODE_ENV || 'development',
       };
     } catch (statsError) {
       console.error('Error getting application stats:', statsError);
@@ -92,19 +89,18 @@ export async function GET() {
         system: systemInfo,
         database: dbStatus,
         application: appStats,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     });
-
   } catch (error) {
     console.error('System status API error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: 'Internal server error',
-        details: process.env.NODE_ENV === 'development' ? String(error) : undefined
+        details: process.env.NODE_ENV === 'development' ? String(error) : undefined,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

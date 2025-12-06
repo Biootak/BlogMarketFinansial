@@ -51,7 +51,10 @@ export const Math = Node.create<MathOptions>({
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ['div', mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, { 'data-math': '' })];
+    return [
+      'div',
+      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, { 'data-math': '' }),
+    ];
   },
 
   addCommands() {

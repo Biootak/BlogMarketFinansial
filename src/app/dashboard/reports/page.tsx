@@ -1,16 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-import { Activity, Terminal, Sparkles } from 'lucide-react';
-import dynamic from 'next/dynamic';
-import { ReportsSkeleton } from '@/components/Skeletons';
 import {
-  ReportHeader,
-  ReportTabs,
-  ReportContainer,
   ReportBackground,
+  ReportContainer,
+  ReportHeader,
   type ReportTab,
+  ReportTabs,
 } from '@/components/Dashboard/Reports';
+import { ReportsSkeleton } from '@/components/Skeletons';
+import { Activity, Sparkles, Terminal } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { useState } from 'react';
 
 const ActivityLog = dynamic(() => import('@/components/Dashboard/Reports/ActivityLog'), {
   loading: () => <ReportsSkeleton />,
@@ -23,19 +23,25 @@ const SystemLogsData = dynamic(() => import('./SystemLogsData'), {
 });
 
 const ComprehensiveReportView = dynamic(
-  () => import('./components/ComprehensiveReportView').then((mod) => ({ default: mod.ComprehensiveReportView })),
+  () =>
+    import('./components/ComprehensiveReportView').then((mod) => ({
+      default: mod.ComprehensiveReportView,
+    })),
   {
     loading: () => <ReportsSkeleton />,
     ssr: false,
-  }
+  },
 );
 
 const AuthorAnalyticsView = dynamic(
-  () => import('./components/AuthorAnalyticsView').then((mod) => ({ default: mod.AuthorAnalyticsView })),
+  () =>
+    import('./components/AuthorAnalyticsView').then((mod) => ({
+      default: mod.AuthorAnalyticsView,
+    })),
   {
     loading: () => <ReportsSkeleton />,
     ssr: false,
-  }
+  },
 );
 
 export default function ReportsPage() {
@@ -90,7 +96,10 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="min-h-screen py-4 sm:py-6 md:py-10 lg:py-14 px-3 sm:px-4 md:px-6 lg:px-8" dir="rtl">
+    <div
+      className="min-h-screen py-4 sm:py-6 md:py-10 lg:py-14 px-3 sm:px-4 md:px-6 lg:px-8"
+      dir="rtl"
+    >
       <ReportBackground />
 
       <div className="max-w-[1400px] mx-auto space-y-6 sm:space-y-8 md:space-y-10 lg:space-y-12">
@@ -98,9 +107,7 @@ export default function ReportsPage() {
 
         <ReportTabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
-        <ReportContainer gradient={activeTabData?.gradient}>
-          {renderTabContent()}
-        </ReportContainer>
+        <ReportContainer gradient={activeTabData?.gradient}>{renderTabContent()}</ReportContainer>
       </div>
     </div>
   );

@@ -1,11 +1,11 @@
 'use client';
 
 import Avatar from '@/components/Avatar/Avatar';
-import NewPostButton from './NewPostButton';
-import { motion, AnimatePresence } from 'framer-motion';
-import { HiOutlineSparkles, HiOutlineBolt, HiOutlineShieldCheck } from 'react-icons/hi2';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
+import { HiOutlineBolt, HiOutlineShieldCheck, HiOutlineSparkles } from 'react-icons/hi2';
+import NewPostButton from './NewPostButton';
 
 const roleLabels: Record<string, string> = {
   SUPER_ADMIN: 'مدیر ارشد',
@@ -15,8 +15,16 @@ const roleLabels: Record<string, string> = {
 };
 
 const roleColors: Record<string, { bg: string; border: string; text: string }> = {
-  SUPER_ADMIN: { bg: 'from-rose-500 to-pink-600', border: 'border-rose-400/50', text: 'text-white' },
-  ADMIN: { bg: 'from-violet-500 to-purple-600', border: 'border-violet-400/50', text: 'text-white' },
+  SUPER_ADMIN: {
+    bg: 'from-rose-500 to-pink-600',
+    border: 'border-rose-400/50',
+    text: 'text-white',
+  },
+  ADMIN: {
+    bg: 'from-violet-500 to-purple-600',
+    border: 'border-violet-400/50',
+    text: 'text-white',
+  },
   AUTHOR: { bg: 'from-amber-500 to-orange-500', border: 'border-amber-400/50', text: 'text-white' },
   USER: { bg: 'from-slate-500 to-gray-600', border: 'border-slate-400/50', text: 'text-white' },
 };
@@ -30,25 +38,27 @@ export default function WelcomeSectionContent() {
   return (
     <div className="relative flex flex-col items-center sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6 lg:gap-8">
       {/* Avatar Section with Role Badge */}
-      <motion.div 
+      <motion.div
         className="relative sm:order-last flex-shrink-0"
         initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
         animate={{ opacity: 1, scale: 1, rotate: 0 }}
         transition={{ delay: 0.2, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* Outer glow ring */}
-        <div className="absolute -inset-4 rounded-full opacity-60"
+        <div
+          className="absolute -inset-4 rounded-full opacity-60"
           style={{
-            background: 'conic-gradient(from 0deg, rgba(236,72,153,0.5), rgba(168,85,247,0.5), rgba(59,130,246,0.5), rgba(236,72,153,0.5))',
+            background:
+              'conic-gradient(from 0deg, rgba(236,72,153,0.5), rgba(168,85,247,0.5), rgba(59,130,246,0.5), rgba(236,72,153,0.5))',
             filter: 'blur(20px)',
             animation: 'spin 8s linear infinite',
           }}
         />
-        
+
         {/* Inner glow */}
         <div className="absolute -inset-2 bg-gradient-to-r from-pink-500/50 via-violet-500/50 to-indigo-500/50 rounded-full blur-xl" />
-        
-        <motion.div 
+
+        <motion.div
           className="relative"
           whileHover={{ scale: 1.08, rotate: 5 }}
           transition={{ type: 'spring', stiffness: 300, damping: 15 }}
@@ -57,14 +67,14 @@ export default function WelcomeSectionContent() {
           <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-pink-500 via-violet-500 to-indigo-500 p-[3px]">
             <div className="w-full h-full rounded-full bg-violet-600" />
           </div>
-          
+
           <Avatar
             imgUrl={(user?.profile?.avatar || user?.image) ?? undefined}
             userName={user?.name ?? undefined}
             sizeClass="h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28 lg:h-32 lg:w-32"
             containerClassName="relative border-[3px] sm:border-[4px] border-white/20 shadow-2xl"
           />
-          
+
           {/* Role Badge - Clickable */}
           <motion.button
             type="button"
@@ -110,14 +120,14 @@ export default function WelcomeSectionContent() {
       </motion.div>
 
       {/* Text Content */}
-      <motion.div 
+      <motion.div
         className="text-center sm:text-right flex-1 max-w-lg"
         initial={{ opacity: 0, x: -30 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* Status badges row */}
-        <motion.div 
+        <motion.div
           className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 sm:gap-2 mb-3 sm:mb-4"
           initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -131,7 +141,7 @@ export default function WelcomeSectionContent() {
             </span>
             <span>آنلاین</span>
           </div>
-          
+
           {/* Pro badge */}
           <div className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 lg:px-3.5 py-1.5 sm:py-2 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-md border border-amber-400/30 text-[10px] sm:text-xs font-medium shadow-lg">
             <HiOutlineSparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-300" />
@@ -141,7 +151,7 @@ export default function WelcomeSectionContent() {
         </motion.div>
 
         {/* Greeting - Without "خوش آمدید" */}
-        <motion.h2 
+        <motion.h2
           className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black mb-2 sm:mb-3 leading-tight"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -154,7 +164,7 @@ export default function WelcomeSectionContent() {
           <span className="inline-block bg-gradient-to-r from-white via-pink-100 to-white bg-clip-text text-transparent">
             {user?.name ?? 'کاربر'}
           </span>{' '}
-          <motion.span 
+          <motion.span
             className="inline-block origin-bottom-right"
             animate={{ rotate: [0, 14, -8, 14, -4, 10, 0] }}
             transition={{ duration: 2.5, repeat: Number.POSITIVE_INFINITY, repeatDelay: 3 }}
@@ -162,9 +172,9 @@ export default function WelcomeSectionContent() {
             👋
           </motion.span>
         </motion.h2>
-        
+
         {/* Description - Updated */}
-        <motion.p 
+        <motion.p
           className="text-white/80 mb-4 sm:mb-5 lg:mb-6 text-sm sm:text-base lg:text-lg leading-relaxed"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -172,16 +182,16 @@ export default function WelcomeSectionContent() {
         >
           <span className="text-white/90 font-medium">آماده خلق محتوای جدید هستید؟</span>
         </motion.p>
-        
+
         {/* Action buttons */}
-        <motion.div 
+        <motion.div
           className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-2.5 lg:gap-3"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45 }}
         >
           <NewPostButton />
-          
+
           {/* Quick stats button */}
           <motion.button
             type="button"

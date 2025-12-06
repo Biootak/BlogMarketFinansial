@@ -1,7 +1,7 @@
-import type { Metadata } from 'next';
 import ContactCTA from '@/components/online-payment/ContactCTA';
 import OnlinePaymentHero from '@/components/online-payment/OnlinePaymentHero';
 import ServicesList from '@/components/online-payment/ServicesList';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'پرداخت آنلاین | خدمات پرداخت بین‌المللی بیوتاک',

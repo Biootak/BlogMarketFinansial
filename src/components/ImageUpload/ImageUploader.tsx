@@ -1,12 +1,13 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import Image from 'next/image';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useDropzone } from 'react-dropzone';
-import Image from 'next/image';
 
-import { RiUploadCloud2Line, RiImageAddLine, RiCloseLine } from 'react-icons/ri';
-import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from '@/components/ui/use-toast';
 import type { UploadFolder } from '@/actions/uploadActions';
+import { toast } from '@/components/ui/use-toast';
+import { AnimatePresence, motion } from 'framer-motion';
+import { RiCloseLine, RiImageAddLine, RiUploadCloud2Line } from 'react-icons/ri';
 
 interface ImageUploaderProps {
   onImageUpload: (urls: string[]) => void;
@@ -273,7 +274,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                     className="relative group/image w-full"
                   >
                     {/* Image Container */}
-                    <div 
+                    <div
                       className="relative w-full aspect-[4/3] sm:aspect-video max-w-md mx-auto rounded-xl overflow-hidden shadow-lg shadow-neutral-900/10 dark:shadow-neutral-950/30 ring-1 ring-neutral-200/50 dark:ring-neutral-700/50 cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -431,9 +432,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                     <span className="text-neutral-600 dark:text-neutral-400">
                       تصویر {index + 1}
                     </span>
-                    <span className="font-semibold text-violet-600 dark:text-violet-400">
-                      {p}%
-                    </span>
+                    <span className="font-semibold text-violet-600 dark:text-violet-400">{p}%</span>
                   </div>
                   <div className="relative h-1.5 sm:h-2 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden shadow-inner">
                     <motion.div
@@ -446,7 +445,11 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                     <motion.div
                       className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
                       animate={{ x: ['-100%', '100%'] }}
-                      transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY, ease: 'linear' }}
+                      transition={{
+                        duration: 1.5,
+                        repeat: Number.POSITIVE_INFINITY,
+                        ease: 'linear',
+                      }}
                     />
                   </div>
                 </div>

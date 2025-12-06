@@ -1,10 +1,10 @@
-import React from 'react';
 import ButtonPrimary from '@/components/Button/ButtonPrimary';
+import Heading2 from '@/components/Heading/Heading2';
 import Input from '@/components/Input/Input';
 import Label from '@/components/Label/Label';
 import SocialLinks from '@/components/SocialsList/SocialLinks';
 import Textarea from '@/components/Textarea/Textarea';
-import Heading2 from '@/components/Heading/Heading2';
+import React from 'react';
 
 // Define info outside the component to avoid recalculating on each render
 const info = [

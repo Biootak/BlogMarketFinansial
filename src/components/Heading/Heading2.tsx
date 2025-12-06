@@ -19,7 +19,7 @@ const Heading2: React.FC<Heading2Props> = ({
       {!!emoji && (
         <span className="mr-4 text-2xl md:text-xl lg:text-4xl leading-none">{emoji}</span>
       )}
-      {children || `Heading2 Title`}
+      {children || 'Heading2 Title'}
     </h2>
   );
 };

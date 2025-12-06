@@ -1,7 +1,7 @@
 'use client';
 
-import { AlertCircle, Info, AlertTriangle, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Sheet,
   SheetContent,
@@ -9,8 +9,8 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { AlertCircle, AlertTriangle, Info, X } from 'lucide-react';
 
 interface SystemLog {
   id: string;
@@ -118,7 +118,7 @@ export function SystemLogDetailModal({ log, isOpen, onClose }: SystemLogDetailMo
                 className={cn(
                   'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium',
                   config.bg,
-                  config.text
+                  config.text,
                 )}
               >
                 {config.icon}

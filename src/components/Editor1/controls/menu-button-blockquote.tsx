@@ -1,8 +1,8 @@
-import React, { memo, useCallback } from 'react';
-import { Toolbar } from '../../ui/toolbar';
-import { Icon } from '../../ui/icon';
-import { useActive } from '../hooks/use-active';
 import type { Editor } from '@tiptap/core';
+import React, { memo, useCallback } from 'react';
+import { Icon } from '../../ui/icon';
+import { Toolbar } from '../../ui/toolbar';
+import { useActive } from '../hooks/use-active';
 
 interface MenuButtonQuoteProps {
   editor: Editor;

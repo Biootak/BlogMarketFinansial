@@ -3,8 +3,8 @@
  * سرویس گزارش‌دهی با بهینه‌سازی و کش
  */
 
-import db from '@/lib/db';
 import { cache } from '@/lib/cache';
+import db from '@/lib/db';
 
 export interface DetailedSystemReport {
   timestamp: string;
@@ -89,13 +89,7 @@ class ReportService {
     const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     // اجرای کوئری‌ها به صورت موازی
-    const [
-      userStats,
-      postStats,
-      commentStats,
-      viewStats,
-      engagementStats,
-    ] = await Promise.all([
+    const [userStats, postStats, commentStats, viewStats, engagementStats] = await Promise.all([
       this.getUserStats(today, weekAgo, monthAgo),
       this.getPostStats(),
       this.getCommentStats(today),
@@ -270,36 +264,36 @@ class ReportService {
    * آمار بازدیدها
    */
   private async getViewStats(today: Date, weekAgo: Date, monthAgo: Date) {
-    const [totalViews, todayViews, weekViews, monthViews, topPosts, dailyPosts] =
-      await Promise.all([
+    const [totalViews, todayViews, weekViews, monthViews, topPosts, dailyPosts] = await Promise.all(
+      [
         // Total views from all published posts
-        db.post.aggregate({ 
+        db.post.aggregate({
           where: { status: 'PUBLISHED' },
-          _sum: { viewCount: true } 
+          _sum: { viewCount: true },
         }),
         // Today's views - sum of viewCount for posts created today
         db.post.aggregate({
-          where: { 
+          where: {
             status: 'PUBLISHED',
-            createdAt: { gte: today } 
+            createdAt: { gte: today },
           },
-          _sum: { viewCount: true }
+          _sum: { viewCount: true },
         }),
         // This week's views
         db.post.aggregate({
-          where: { 
+          where: {
             status: 'PUBLISHED',
-            createdAt: { gte: weekAgo } 
+            createdAt: { gte: weekAgo },
           },
-          _sum: { viewCount: true }
+          _sum: { viewCount: true },
         }),
         // This month's views
         db.post.aggregate({
-          where: { 
+          where: {
             status: 'PUBLISHED',
-            createdAt: { gte: monthAgo } 
+            createdAt: { gte: monthAgo },
           },
-          _sum: { viewCount: true }
+          _sum: { viewCount: true },
         }),
         // Top posts by viewCount
         db.post.findMany({
@@ -312,12 +306,13 @@ class ReportService {
         db.post.findMany({
           where: {
             status: 'PUBLISHED',
-            createdAt: { gte: monthAgo }
+            createdAt: { gte: monthAgo },
           },
           select: { createdAt: true, viewCount: true },
-          orderBy: { createdAt: 'asc' }
+          orderBy: { createdAt: 'asc' },
         }),
-      ]);
+      ],
+    );
 
     // گروه‌بندی بازدیدها بر اساس روز
     const viewsByDay = new Map<string, number>();
@@ -354,8 +349,7 @@ class ReportService {
       db.post.count({ where: { status: 'PUBLISHED' } }),
     ]);
 
-    const avgEngagementRate =
-      postCount > 0 ? ((totalLikes + totalSaves) / postCount) * 100 : 0;
+    const avgEngagementRate = postCount > 0 ? ((totalLikes + totalSaves) / postCount) * 100 : 0;
 
     return {
       totalLikes,

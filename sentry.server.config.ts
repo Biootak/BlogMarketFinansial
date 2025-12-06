@@ -13,8 +13,5 @@ Sentry.init({
   environment: process.env.NODE_ENV,
 
   // فیلتر کردن خطاهای غیرمهم
-  ignoreErrors: [
-    'NEXT_NOT_FOUND',
-    'NEXT_REDIRECT',
-  ],
+  ignoreErrors: ['NEXT_NOT_FOUND', 'NEXT_REDIRECT'],
 });

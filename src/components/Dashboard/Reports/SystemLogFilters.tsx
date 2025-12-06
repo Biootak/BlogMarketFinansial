@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Search, Filter, X, Calendar, Code, AlertCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import type { SystemLogFilters } from '@/actions/reports/systemLogs';
+import { cn } from '@/lib/utils';
+import { AlertCircle, Calendar, Code, Filter, Search, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface SystemLogFiltersProps {
   onFilterChange: (filters: SystemLogFilters) => void;
@@ -83,23 +83,26 @@ export function SystemLogFilters({ onFilterChange, sources }: SystemLogFiltersPr
         setDateFrom(yesterday.toISOString().split('T')[0]);
         setDateTo(yesterday.toISOString().split('T')[0]);
         break;
-      case '7days':
+      case '7days': {
         const week = new Date(today);
         week.setDate(week.getDate() - 7);
         setDateFrom(week.toISOString().split('T')[0]);
         setDateTo(today.toISOString().split('T')[0]);
         break;
-      case '30days':
+      }
+      case '30days': {
         const month = new Date(today);
         month.setDate(month.getDate() - 30);
         setDateFrom(month.toISOString().split('T')[0]);
         setDateTo(today.toISOString().split('T')[0]);
         break;
-      case 'thisMonth':
+      }
+      case 'thisMonth': {
         const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
         setDateFrom(firstDay.toISOString().split('T')[0]);
         setDateTo(today.toISOString().split('T')[0]);
         break;
+      }
       case 'custom':
         break;
     }
@@ -127,12 +130,18 @@ export function SystemLogFilters({ onFilterChange, sources }: SystemLogFiltersPr
           onClick={() => setIsOpen(!isOpen)}
           className={cn(
             'flex items-center gap-2 px-4 py-2 rounded-xl border transition-all text-sm font-medium',
-            isOpen ? 'bg-amber-600 border-amber-600 text-white' : 'bg-white border-gray-200 text-gray-700 hover:border-amber-300'
+            isOpen
+              ? 'bg-amber-600 border-amber-600 text-white'
+              : 'bg-white border-gray-200 text-gray-700 hover:border-amber-300',
           )}
         >
           <Filter className="w-4 h-4" />
           <span>فیلترها</span>
-          {activeFiltersCount > 0 && <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-xs">{activeFiltersCount}</span>}
+          {activeFiltersCount > 0 && (
+            <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-xs">
+              {activeFiltersCount}
+            </span>
+          )}
         </button>
 
         {activeFiltersCount > 0 && (
@@ -172,7 +181,9 @@ export function SystemLogFilters({ onFilterChange, sources }: SystemLogFiltersPr
                   onClick={() => setLevel(lvl.value)}
                   className={cn(
                     'px-4 py-2 rounded-xl text-sm font-medium transition-all border',
-                    level === lvl.value ? 'bg-amber-600 border-amber-600 text-white' : 'bg-white border-gray-200 text-gray-700 hover:border-amber-300'
+                    level === lvl.value
+                      ? 'bg-amber-600 border-amber-600 text-white'
+                      : 'bg-white border-gray-200 text-gray-700 hover:border-amber-300',
                   )}
                 >
                   {lvl.label}
@@ -217,7 +228,9 @@ export function SystemLogFilters({ onFilterChange, sources }: SystemLogFiltersPr
                   onClick={() => handleDatePresetChange(preset.value)}
                   className={cn(
                     'px-3 py-1.5 rounded-lg text-xs font-medium transition-all border',
-                    datePreset === preset.value ? 'bg-amber-600 border-amber-600 text-white' : 'bg-white border-gray-200 text-gray-700 hover:border-amber-300'
+                    datePreset === preset.value
+                      ? 'bg-amber-600 border-amber-600 text-white'
+                      : 'bg-white border-gray-200 text-gray-700 hover:border-amber-300',
                   )}
                 >
                   {preset.label}

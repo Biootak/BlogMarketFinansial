@@ -89,7 +89,9 @@ export class DatabaseProfiler {
    * دریافت کوئری‌های کند
    */
   getSlowQueries(threshold: number = this.slowQueryThreshold): QueryProfile[] {
-    return this.queries.filter((q) => q.duration > threshold).sort((a, b) => b.duration - a.duration);
+    return this.queries
+      .filter((q) => q.duration > threshold)
+      .sort((a, b) => b.duration - a.duration);
   }
 
   /**
@@ -106,14 +108,15 @@ export class DatabaseProfiler {
       if (!queryGroups.has(pattern)) {
         queryGroups.set(pattern, []);
       }
-      queryGroups.get(pattern)!.push(query);
+      queryGroups.get(pattern)?.push(query);
     }
 
     // Find N+1 patterns (same query executed multiple times in short time)
-    for (const [pattern, queries] of queryGroups.entries()) {
+    for (const [_pattern, queries] of queryGroups.entries()) {
       if (queries.length > 5) {
         // More than 5 similar queries
-        const timeSpan = queries[queries.length - 1].timestamp.getTime() - queries[0].timestamp.getTime();
+        const timeSpan =
+          queries[queries.length - 1].timestamp.getTime() - queries[0].timestamp.getTime();
 
         if (timeSpan < 1000) {
           // Within 1 second

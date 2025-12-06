@@ -126,7 +126,7 @@ export function isRTL(): boolean {
 /**
  * Get icon rotation for RTL
  */
-export function getIconRotation(icon: 'arrow' | 'chevron', isRTL: boolean): string {
+export function getIconRotation(_icon: 'arrow' | 'chevron', isRTL: boolean): string {
   if (!isRTL) return '';
   return 'rotate-180';
 }

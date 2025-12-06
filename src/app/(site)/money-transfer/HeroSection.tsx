@@ -8,7 +8,7 @@ export default function HeroSection() {
     <section className="relative min-h-[70vh] sm:min-h-[85vh] flex items-center overflow-hidden overflow-x-hidden">
       {/* Background Layers */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 dark:from-blue-900 dark:via-indigo-900 dark:to-slate-900" />
-      
+
       {/* Animated Gradient Orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -16,7 +16,7 @@ export default function HeroSection() {
             scale: [1, 1.2, 1],
             opacity: [0.3, 0.5, 0.3],
           }}
-          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+          transition={{ duration: 8, repeat: Number.POSITIVE_INFINITY, ease: 'easeInOut' }}
           className="absolute -top-20 -right-20 sm:-top-1/4 sm:-right-1/4 w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] bg-gradient-to-br from-blue-400/40 to-transparent rounded-full blur-3xl"
         />
         <motion.div
@@ -24,13 +24,13 @@ export default function HeroSection() {
             scale: [1.2, 1, 1.2],
             opacity: [0.2, 0.4, 0.2],
           }}
-          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+          transition={{ duration: 10, repeat: Number.POSITIVE_INFINITY, ease: 'easeInOut' }}
           className="absolute -bottom-20 -left-20 sm:-bottom-1/4 sm:-left-1/4 w-[250px] h-[250px] sm:w-[400px] sm:h-[400px] bg-gradient-to-tr from-indigo-500/30 to-transparent rounded-full blur-3xl"
         />
       </div>
 
       {/* Grid Pattern Overlay */}
-      <div 
+      <div
         className="absolute inset-0 opacity-[0.03]"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
@@ -80,7 +80,7 @@ export default function HeroSection() {
                 <span>مشاهده نرخ‌های لحظه‌ای</span>
                 <ArrowDown className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-y-1 transition-transform duration-300" />
               </motion.a>
-              
+
               <motion.a
                 href="#contact"
                 whileHover={{ scale: 1.02 }}
@@ -100,10 +100,30 @@ export default function HeroSection() {
             className="hidden lg:grid grid-cols-2 gap-4"
           >
             {[
-              { icon: Globe, title: 'پوشش جهانی', desc: 'انتقال به بیش از ۵۰ کشور', color: 'from-blue-400 to-blue-600' },
-              { icon: Zap, title: 'سرعت بالا', desc: 'انتقال در کمتر از ۲۴ ساعت', color: 'from-amber-400 to-orange-500' },
-              { icon: Shield, title: 'امنیت کامل', desc: 'رمزنگاری پیشرفته', color: 'from-emerald-400 to-teal-600' },
-              { icon: Globe, title: 'نرخ رقابتی', desc: 'بهترین قیمت بازار', color: 'from-purple-400 to-indigo-600' },
+              {
+                icon: Globe,
+                title: 'پوشش جهانی',
+                desc: 'انتقال به بیش از ۵۰ کشور',
+                color: 'from-blue-400 to-blue-600',
+              },
+              {
+                icon: Zap,
+                title: 'سرعت بالا',
+                desc: 'انتقال در کمتر از ۲۴ ساعت',
+                color: 'from-amber-400 to-orange-500',
+              },
+              {
+                icon: Shield,
+                title: 'امنیت کامل',
+                desc: 'رمزنگاری پیشرفته',
+                color: 'from-emerald-400 to-teal-600',
+              },
+              {
+                icon: Globe,
+                title: 'نرخ رقابتی',
+                desc: 'بهترین قیمت بازار',
+                color: 'from-purple-400 to-indigo-600',
+              },
             ].map((item, index) => (
               <motion.div
                 key={index}
@@ -113,7 +133,9 @@ export default function HeroSection() {
                 whileHover={{ y: -5, scale: 1.02 }}
                 className="group relative bg-white/10 backdrop-blur-xl rounded-2xl p-6 border border-white/10 hover:border-white/20 hover:bg-white/15 transition-all duration-300"
               >
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-4 shadow-lg`}>
+                <div
+                  className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-4 shadow-lg`}
+                >
                   <item.icon className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-lg font-bold text-white mb-1">{item.title}</h3>
@@ -126,7 +148,12 @@ export default function HeroSection() {
 
       {/* Bottom Wave */}
       <div className="absolute bottom-0 left-0 right-0">
-        <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
+        <svg
+          viewBox="0 0 1440 120"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-full"
+        >
           <path
             d="M0 120L60 110C120 100 240 80 360 70C480 60 600 60 720 65C840 70 960 80 1080 85C1200 90 1320 90 1380 90L1440 90V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
             className="fill-slate-50 dark:fill-slate-950"

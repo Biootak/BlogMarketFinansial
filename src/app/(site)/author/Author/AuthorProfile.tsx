@@ -1,13 +1,13 @@
+import AccountActionDropdown from '@/components/AccountActionDropdown/AccountActionDropdown';
+import Avatar from '@/components/Avatar/Avatar';
+import FollowButton from '@/components/FollowButton';
+import SocialsList from '@/components/SocialsList/SocialsList';
+import VerifyIcon from '@/components/VerifyIcon';
+import { Card } from '@/components/ui/card';
+import type { UserWithProfile } from '@/types/types';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaGlobe } from 'react-icons/fa';
-import { Card } from '@/components/ui/card';
-import FollowButton from '@/components/FollowButton';
-import VerifyIcon from '@/components/VerifyIcon';
-import type { UserWithProfile } from '@/types/types';
-import Avatar from '@/components/Avatar/Avatar';
-import SocialsList from '@/components/SocialsList/SocialsList';
-import AccountActionDropdown from '@/components/AccountActionDropdown/AccountActionDropdown';
 
 type AuthorProfileProps = {
   author: UserWithProfile;

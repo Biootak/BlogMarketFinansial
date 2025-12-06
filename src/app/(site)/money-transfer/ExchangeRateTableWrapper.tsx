@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import type { ExchangeRateData } from '@/types/types';
-import { ExchangeRateTableView } from './ExchangeRateTableView';
+import { AnimatePresence, motion } from 'framer-motion';
+import { LayoutGrid, Table2 } from 'lucide-react';
+import { useState } from 'react';
 import { ExchangeRateCard } from './ExchangeRateCard';
-import { Table2, LayoutGrid } from 'lucide-react';
+import { ExchangeRateTableView } from './ExchangeRateTableView';
 
 export function ExchangeRateTableWrapper({ exchangeRates }: { exchangeRates: ExchangeRateData[] }) {
   const [view, setView] = useState<'table' | 'card'>('table');

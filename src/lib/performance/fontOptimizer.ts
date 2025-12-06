@@ -84,7 +84,7 @@ export class FontOptimizer {
             });
           }
         }
-      } catch (e) {
+      } catch (_e) {
         // CORS or other errors
       }
     }
@@ -95,7 +95,7 @@ export class FontOptimizer {
   /**
    * شناسایی weightهای استفاده نشده
    */
-  private detectUnusedWeights(fonts: FontInfo[]): string[] {
+  private detectUnusedWeights(_fonts: FontInfo[]): string[] {
     // این نیاز به تحلیل استاتیک CSS دارد
     // برای الان یک لیست خالی برمی‌گردانیم
     return [];
@@ -156,23 +156,23 @@ export class FontOptimizer {
   generateReport(analysis: FontAnalysis): string {
     const { fonts, blockingFonts, unusedWeights, clsImpact, recommendations } = analysis;
 
-    let report = `# گزارش تحلیل فونت‌ها\n\n`;
-    report += `## خلاصه\n`;
+    let report = '# گزارش تحلیل فونت‌ها\n\n';
+    report += '## خلاصه\n';
     report += `- کل فونت‌ها: ${fonts.length}\n`;
     report += `- فونت‌های blocking: ${blockingFonts.length}\n`;
     report += `- Weightهای استفاده نشده: ${unusedWeights.length}\n`;
     report += `- تأثیر CLS: ${clsImpact.toFixed(3)}\n\n`;
 
     if (blockingFonts.length > 0) {
-      report += `## فونت‌های Blocking\n`;
+      report += '## فونت‌های Blocking\n';
       for (const font of blockingFonts) {
         report += `- ${font.family}\n`;
       }
-      report += `\n`;
+      report += '\n';
     }
 
     if (recommendations.length > 0) {
-      report += `## پیشنهادات\n`;
+      report += '## پیشنهادات\n';
       for (const rec of recommendations) {
         report += `### ${rec.font} (${rec.priority})\n`;
         report += `- مشکل: ${rec.issue}\n`;

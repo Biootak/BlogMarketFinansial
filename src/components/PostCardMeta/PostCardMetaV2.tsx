@@ -1,9 +1,9 @@
-import React, { type FC } from 'react';
 import Avatar from '@/components/Avatar/Avatar';
+import React, { type FC } from 'react';
 
-import Link from 'next/link';
 import type { PostWithRelations } from '@/types/types';
 import { formatDate } from '@/utils/formatDate';
+import Link from 'next/link';
 import FormattedDate from '../FormattedDate';
 
 export interface PostCardMetaV2Props {

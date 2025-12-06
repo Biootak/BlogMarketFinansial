@@ -33,7 +33,7 @@ export async function getViewStats() {
       statDate.setHours(0, 0, 0, 0);
       const daysDiff = Math.floor((today.getTime() - statDate.getTime()) / (24 * 60 * 60 * 1000));
       const dayIndex = 6 - daysDiff;
-      
+
       if (dayIndex >= 0 && dayIndex < 7) {
         data[dayIndex] += stat._count.id;
       }

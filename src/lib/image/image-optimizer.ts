@@ -55,7 +55,7 @@ export function getOptimalQuality(format: 'webp' | 'avif' | 'jpeg'): number {
 export function calculateDimensions(
   originalWidth: number,
   originalHeight: number,
-  maxWidth: number
+  maxWidth: number,
 ): { width: number; height: number } {
   if (originalWidth <= maxWidth) {
     return { width: originalWidth, height: originalHeight };
@@ -86,9 +86,10 @@ export function shouldLazyLoad(priority: boolean, position: 'above-fold' | 'belo
 /**
  * Get image loading strategy
  */
-export function getLoadingStrategy(
-  priority: boolean
-): { loading: 'lazy' | 'eager'; fetchPriority?: 'high' | 'low' | 'auto' } {
+export function getLoadingStrategy(priority: boolean): {
+  loading: 'lazy' | 'eager';
+  fetchPriority?: 'high' | 'low' | 'auto';
+} {
   if (priority) {
     return {
       loading: 'eager',

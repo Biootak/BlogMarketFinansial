@@ -1,18 +1,18 @@
 'use client';
 
-import { useState } from 'react';
 import type { ActivityLog } from '@/actions/reports/activityLogs';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
-  ChevronRight,
-  ChevronLeft,
-  User,
-  Clock,
-  FileText,
-  Eye,
   Activity as ActivityIcon,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Eye,
+  FileText,
+  User,
 } from 'lucide-react';
+import { useState } from 'react';
 import { ActivityDetailModal } from './ActivityDetailModal';
 
 interface ActivityTableProps {
@@ -77,7 +77,7 @@ export default function ActivityTable({
           'overflow-hidden rounded-xl sm:rounded-2xl',
           'bg-white/90 backdrop-blur-sm',
           'border border-gray-200/60',
-          'shadow-xl shadow-gray-200/30'
+          'shadow-xl shadow-gray-200/30',
         )}
       >
         <div className="overflow-x-auto scrollbar-custom">
@@ -123,7 +123,9 @@ export default function ActivityTable({
                       </div>
                       <div>
                         <p className="text-gray-700 font-semibold mb-1">هیچ فعالیتی یافت نشد</p>
-                        <p className="text-sm text-gray-500">فعالیت‌های جدید اینجا نمایش داده می‌شوند</p>
+                        <p className="text-sm text-gray-500">
+                          فعالیت‌های جدید اینجا نمایش داده می‌شوند
+                        </p>
                       </div>
                     </div>
                   </td>
@@ -135,7 +137,7 @@ export default function ActivityTable({
                     className={cn(
                       'group transition-all duration-200',
                       'hover:bg-gradient-to-l hover:from-[rgb(var(--c-primary-50))]/60 hover:to-transparent',
-                      'hover:shadow-sm'
+                      'hover:shadow-sm',
                     )}
                   >
                     <td className="px-4 lg:px-6 py-4">
@@ -145,10 +147,12 @@ export default function ActivityTable({
                             'w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0',
                             'bg-gradient-to-br from-[rgb(var(--c-primary-100))] to-[rgb(var(--c-primary-200))]',
                             'text-[rgb(var(--c-primary-700))] font-bold text-base',
-                            'shadow-md group-hover:shadow-lg transition-shadow duration-200'
+                            'shadow-md group-hover:shadow-lg transition-shadow duration-200',
                           )}
                         >
-                          {(activity.user.name || activity.user.email || '?').charAt(0).toUpperCase()}
+                          {(activity.user.name || activity.user.email || '?')
+                            .charAt(0)
+                            .toUpperCase()}
                         </div>
                         <div className="min-w-0">
                           <p className="font-semibold text-gray-900 truncate">
@@ -162,14 +166,17 @@ export default function ActivityTable({
                       <span
                         className={cn(
                           'inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold border shadow-sm',
-                          getActionColor(activity.action)
+                          getActionColor(activity.action),
                         )}
                       >
                         {activity.action}
                       </span>
                     </td>
                     <td className="px-4 lg:px-6 py-4">
-                      <p className="text-sm text-gray-700 max-w-xs truncate" title={activity.details}>
+                      <p
+                        className="text-sm text-gray-700 max-w-xs truncate"
+                        title={activity.details}
+                      >
                         {activity.details || '-'}
                       </p>
                     </td>
@@ -198,7 +205,7 @@ export default function ActivityTable({
                             'text-blue-600 hover:text-blue-700',
                             'border border-blue-200',
                             'transition-all duration-200',
-                            'hover:shadow-md'
+                            'hover:shadow-md',
                           )}
                           title="مشاهده جزئیات"
                         >
@@ -235,7 +242,7 @@ export default function ActivityTable({
                 'bg-white/90 backdrop-blur-sm',
                 'border border-gray-200',
                 'shadow-md hover:shadow-lg',
-                'transition-all duration-200'
+                'transition-all duration-200',
               )}
             >
               {/* User Info */}
@@ -245,7 +252,7 @@ export default function ActivityTable({
                     'w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0',
                     'bg-gradient-to-br from-[rgb(var(--c-primary-100))] to-[rgb(var(--c-primary-200))]',
                     'text-[rgb(var(--c-primary-700))] font-bold text-lg',
-                    'shadow-md'
+                    'shadow-md',
                   )}
                 >
                   {(activity.user.name || activity.user.email || '?').charAt(0).toUpperCase()}
@@ -263,7 +270,7 @@ export default function ActivityTable({
                 <span
                   className={cn(
                     'inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold border shadow-sm',
-                    getActionColor(activity.action)
+                    getActionColor(activity.action),
                   )}
                 >
                   <ActivityIcon className="w-3.5 h-3.5 ml-1.5" />
@@ -305,7 +312,7 @@ export default function ActivityTable({
                     'text-blue-600 hover:text-blue-700',
                     'border border-blue-200',
                     'text-xs font-semibold',
-                    'transition-all duration-200'
+                    'transition-all duration-200',
                   )}
                 >
                   <Eye className="w-3.5 h-3.5" />
@@ -325,7 +332,7 @@ export default function ActivityTable({
             'px-4 py-2.5 rounded-lg',
             'bg-gradient-to-l from-gray-100 to-gray-50',
             'text-gray-700 text-xs sm:text-sm font-medium',
-            'border border-gray-200 shadow-sm'
+            'border border-gray-200 shadow-sm',
           )}
         >
           نمایش{' '}
@@ -356,7 +363,7 @@ export default function ActivityTable({
               'hover:bg-[rgb(var(--c-primary-50))] hover:text-[rgb(var(--c-primary-700))]',
               'transition-all duration-200',
               'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent',
-              'shadow-sm hover:shadow-md'
+              'shadow-sm hover:shadow-md',
             )}
           >
             <ChevronRight className="w-4 h-4 sm:ml-1" />
@@ -397,7 +404,7 @@ export default function ActivityTable({
                           'hover:bg-[rgb(var(--c-primary-50))] hover:border-[rgb(var(--c-primary-300))]',
                           'text-gray-700 hover:text-[rgb(var(--c-primary-700))]',
                           'hover:scale-105',
-                        ]
+                        ],
                   )}
                 >
                   {pageNum.toLocaleString('fa-IR')}
@@ -422,7 +429,7 @@ export default function ActivityTable({
               'hover:bg-[rgb(var(--c-primary-50))] hover:text-[rgb(var(--c-primary-700))]',
               'transition-all duration-200',
               'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent',
-              'shadow-sm hover:shadow-md'
+              'shadow-sm hover:shadow-md',
             )}
           >
             <span className="hidden sm:inline">بعدی</span>

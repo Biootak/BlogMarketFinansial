@@ -1,7 +1,7 @@
 'use client';
 
-import * as React from 'react';
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
+import * as React from 'react';
 import { HiCheck } from 'react-icons/hi2';
 
 import { cn } from '@/lib/utils';

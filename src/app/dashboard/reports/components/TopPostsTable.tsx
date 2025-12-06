@@ -1,8 +1,8 @@
 'use client';
 
-import { FileText, Eye, Heart, MessageSquare, Bookmark, ExternalLink } from 'lucide-react';
-import Link from 'next/link';
 import type { TopPost } from '@/actions/reportActions';
+import { Bookmark, ExternalLink, Eye, FileText, Heart, MessageSquare } from 'lucide-react';
+import Link from 'next/link';
 
 interface TopPostsTableProps {
   data: TopPost[];
@@ -60,30 +60,16 @@ export function TopPostsTable({ data, isLoading = false }: TopPostsTableProps) {
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-200">
-              <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600">
-                رتبه
-              </th>
+              <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600">رتبه</th>
               <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600">
                 عنوان پست
               </th>
-              <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600">
-                نویسنده
-              </th>
-              <th className="text-center py-3 px-4 text-xs font-semibold text-gray-600">
-                بازدید
-              </th>
-              <th className="text-center py-3 px-4 text-xs font-semibold text-gray-600">
-                لایک
-              </th>
-              <th className="text-center py-3 px-4 text-xs font-semibold text-gray-600">
-                نظر
-              </th>
-              <th className="text-center py-3 px-4 text-xs font-semibold text-gray-600">
-                ذخیره
-              </th>
-              <th className="text-center py-3 px-4 text-xs font-semibold text-gray-600">
-                عملیات
-              </th>
+              <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600">نویسنده</th>
+              <th className="text-center py-3 px-4 text-xs font-semibold text-gray-600">بازدید</th>
+              <th className="text-center py-3 px-4 text-xs font-semibold text-gray-600">لایک</th>
+              <th className="text-center py-3 px-4 text-xs font-semibold text-gray-600">نظر</th>
+              <th className="text-center py-3 px-4 text-xs font-semibold text-gray-600">ذخیره</th>
+              <th className="text-center py-3 px-4 text-xs font-semibold text-gray-600">عملیات</th>
             </tr>
           </thead>
           <tbody>
@@ -99,9 +85,7 @@ export function TopPostsTable({ data, isLoading = false }: TopPostsTableProps) {
                 </td>
                 <td className="py-4 px-4">
                   <div className="max-w-md">
-                    <p className="text-sm font-semibold text-gray-900 line-clamp-2">
-                      {post.title}
-                    </p>
+                    <p className="text-sm font-semibold text-gray-900 line-clamp-2">{post.title}</p>
                     <p className="text-xs text-gray-500 mt-1">
                       {post.publishedAt
                         ? new Date(post.publishedAt).toLocaleDateString('fa-IR')
@@ -177,9 +161,7 @@ export function TopPostsTable({ data, isLoading = false }: TopPostsTableProps) {
                 </h4>
                 <p className="text-[10px] sm:text-xs text-gray-500 truncate">
                   {post.author.name || 'ناشناس'} •{' '}
-                  {post.publishedAt
-                    ? new Date(post.publishedAt).toLocaleDateString('fa-IR')
-                    : '-'}
+                  {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('fa-IR') : '-'}
                 </p>
               </div>
             </div>

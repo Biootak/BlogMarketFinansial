@@ -1,7 +1,7 @@
 'use client';
 
-import { memo } from 'react';
 import { motion } from 'framer-motion';
+import { memo } from 'react';
 
 export interface BlogStatCardProps {
   title: string;
@@ -59,7 +59,7 @@ const BlogStatCard: React.FC<BlogStatCardProps> = ({
   percentage,
 }) => {
   const config = colorConfig[color];
-  
+
   const trendStyles = {
     up: {
       bg: 'bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/30 dark:to-green-900/30',
@@ -89,7 +89,7 @@ const BlogStatCard: React.FC<BlogStatCardProps> = ({
       className="group relative h-full overflow-hidden"
     >
       {/* Card container */}
-      <div 
+      <div
         className="relative h-full bg-white dark:bg-slate-900 p-4 sm:p-5 lg:p-6 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 transition-all duration-500"
         style={{
           boxShadow: `
@@ -101,32 +101,38 @@ const BlogStatCard: React.FC<BlogStatCardProps> = ({
         }}
       >
         {/* Hover glow effect */}
-        <div 
+        <div
           className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-          style={{ 
+          style={{
             background: `radial-gradient(circle at 30% 30%, ${config.glow}, transparent 70%)`,
           }}
         />
 
         {/* Top accent gradient */}
-        <div className={`absolute top-0 left-0 right-0 h-0.5 sm:h-1 bg-gradient-to-r ${config.accent} rounded-t-2xl sm:rounded-t-3xl`} />
+        <div
+          className={`absolute top-0 left-0 right-0 h-0.5 sm:h-1 bg-gradient-to-r ${config.accent} rounded-t-2xl sm:rounded-t-3xl`}
+        />
 
         {/* Header row */}
         <div className="relative flex items-start justify-between mb-3 sm:mb-4 lg:mb-5">
           {/* Icon with enhanced styling */}
-          <motion.div 
+          <motion.div
             whileHover={{ scale: 1.1, rotate: 8 }}
             transition={{ type: 'spring', stiffness: 400, damping: 15 }}
             className={`relative p-2 sm:p-2.5 lg:p-3.5 rounded-xl sm:rounded-2xl bg-gradient-to-br ${config.iconBg} text-white shadow-xl ${config.iconShadow}`}
           >
             {/* Icon glow */}
-            <div className={`absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-br ${config.iconBg} blur-lg opacity-40`} />
-            <span className="relative [&>svg]:w-4 [&>svg]:h-4 sm:[&>svg]:w-5 sm:[&>svg]:h-5">{icon}</span>
+            <div
+              className={`absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-br ${config.iconBg} blur-lg opacity-40`}
+            />
+            <span className="relative [&>svg]:w-4 [&>svg]:h-4 sm:[&>svg]:w-5 sm:[&>svg]:h-5">
+              {icon}
+            </span>
           </motion.div>
-          
+
           {/* Trend badge */}
           {trendStyle && percentage !== undefined && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
@@ -140,7 +146,7 @@ const BlogStatCard: React.FC<BlogStatCardProps> = ({
 
         {/* Value and title */}
         <div className="relative space-y-1 sm:space-y-1.5">
-          <motion.div 
+          <motion.div
             className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight"
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
@@ -154,7 +160,9 @@ const BlogStatCard: React.FC<BlogStatCardProps> = ({
         </div>
 
         {/* Decorative corner element */}
-        <div className={`absolute bottom-0 right-0 w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-tl ${config.lightBg} dark:from-slate-800/50 dark:to-slate-900/50 rounded-tl-[40px] sm:rounded-tl-[50px] lg:rounded-tl-[60px] opacity-50 group-hover:opacity-80 transition-opacity duration-500`} />
+        <div
+          className={`absolute bottom-0 right-0 w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-gradient-to-tl ${config.lightBg} dark:from-slate-800/50 dark:to-slate-900/50 rounded-tl-[40px] sm:rounded-tl-[50px] lg:rounded-tl-[60px] opacity-50 group-hover:opacity-80 transition-opacity duration-500`}
+        />
       </div>
     </motion.div>
   );

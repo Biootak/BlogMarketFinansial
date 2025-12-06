@@ -1,8 +1,8 @@
 'use server';
 
-import { cache } from 'react';
-import { Role, type User, type Profile } from '@prisma/client';
 import prisma from '@/lib/db';
+import { type Profile, Role, type User } from '@prisma/client';
+import { cache } from 'react';
 
 export type TopAuthor = Pick<User, 'id' | 'name' | 'image'> & {
   profile: Pick<Profile, 'avatar' | 'bio' | 'jobName'> | null;

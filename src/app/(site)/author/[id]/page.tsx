@@ -1,16 +1,16 @@
-import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 
-import DynamicCategories from '@/components/DynamicCategories';
 import { getAuthorById } from '@/actions/authorActions';
 import { getCategories } from '@/actions/categoryActions';
-import { getTopAuthors } from '@/actions/getTopAuthors';
 import { getPostsByAuthor } from '@/actions/getPostsByAuthor';
-import AuthorProfile from '../Author/AuthorProfile';
-import AuthorContent from '../Author/AuthorContent';
+import { getTopAuthors } from '@/actions/getTopAuthors';
+import DynamicCategories from '@/components/DynamicCategories';
 import SectionSliderNewAuthors from '@/components/SectionSliderNewAthors/SectionSliderNewAuthors';
 import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
 import { Skeleton } from '@/components/ui/skeleton';
+import AuthorContent from '../Author/AuthorContent';
+import AuthorProfile from '../Author/AuthorProfile';
 
 type PageAuthorProps = {
   params: Promise<{ id: string }>;
@@ -22,7 +22,8 @@ export default async function PageAuthor({ params, searchParams }: PageAuthorPro
   const searchParamsData = await searchParams;
   const currentPage =
     typeof searchParamsData.page === 'string' ? Number.parseInt(searchParamsData.page, 10) : 1;
-  const currentFilter = typeof searchParamsData.filter === 'string' ? searchParamsData.filter : 'جدیدترین';
+  const currentFilter =
+    typeof searchParamsData.filter === 'string' ? searchParamsData.filter : 'جدیدترین';
 
   const authorResult = await getAuthorById(id);
   if (!authorResult.success || !authorResult.data) {

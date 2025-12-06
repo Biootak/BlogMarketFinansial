@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -102,7 +102,7 @@ export async function GET() {
       {
         error: error instanceof Error ? error.message : 'خطا در بررسی دیتابیس',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

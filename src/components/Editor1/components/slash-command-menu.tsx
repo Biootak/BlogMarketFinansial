@@ -29,13 +29,16 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
     // ساخت لیست flat از آیتم‌ها با index صحیح
     const flatItems = useMemo(() => {
       const result: { item: SlashCommandItem; category: string }[] = [];
-      const grouped = items.reduce((acc, item) => {
-        if (!acc[item.category]) {
-          acc[item.category] = [];
-        }
-        acc[item.category].push(item);
-        return acc;
-      }, {} as Record<string, SlashCommandItem[]>);
+      const grouped = items.reduce(
+        (acc, item) => {
+          if (!acc[item.category]) {
+            acc[item.category] = [];
+          }
+          acc[item.category].push(item);
+          return acc;
+        },
+        {} as Record<string, SlashCommandItem[]>,
+      );
 
       for (const [category, categoryItems] of Object.entries(grouped)) {
         for (const item of categoryItems) {
@@ -52,7 +55,7 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
           command(entry.item);
         }
       },
-      [flatItems, command]
+      [flatItems, command],
     );
 
     const upHandler = useCallback(() => {
@@ -103,7 +106,7 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
 
     if (items.length === 0) {
       return (
-        <div 
+        <div
           className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 text-gray-500 dark:text-gray-400 text-sm text-center"
           role="status"
           aria-live="polite"
@@ -115,13 +118,16 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
     }
 
     // Group items by category for rendering
-    const groupedItems = items.reduce((acc, item) => {
-      if (!acc[item.category]) {
-        acc[item.category] = [];
-      }
-      acc[item.category].push(item);
-      return acc;
-    }, {} as Record<string, SlashCommandItem[]>);
+    const groupedItems = items.reduce(
+      (acc, item) => {
+        if (!acc[item.category]) {
+          acc[item.category] = [];
+        }
+        acc[item.category].push(item);
+        return acc;
+      },
+      {} as Record<string, SlashCommandItem[]>,
+    );
 
     const categoryLabels: Record<string, string> = {
       basic: 'پایه',
@@ -132,24 +138,25 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
 
     const categoryOrder = ['basic', 'list', 'media', 'advanced'];
     const sortedCategories = Object.keys(groupedItems).sort(
-      (a, b) => categoryOrder.indexOf(a) - categoryOrder.indexOf(b)
+      (a, b) => categoryOrder.indexOf(a) - categoryOrder.indexOf(b),
     );
 
     let globalIndex = 0;
 
     return (
-      <div 
+      <div
         ref={listRef}
         className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 py-2 min-w-[260px] max-h-[360px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
         role="listbox"
         aria-label="منوی دستورات"
         aria-activedescendant={`slash-item-${selectedIndex}`}
+        tabIndex={0}
       >
         {sortedCategories.map((category) => {
           const categoryItems = groupedItems[category];
           return (
             <div key={category} role="group" aria-labelledby={`category-${category}`}>
-              <div 
+              <div
                 id={`category-${category}`}
                 className="px-3 py-2 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider sticky top-0 bg-white dark:bg-gray-800 z-10"
               >
@@ -173,10 +180,10 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
                         : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 border-r-2 border-transparent'
                     }`}
                   >
-                    <span 
+                    <span
                       className={`w-10 h-10 flex items-center justify-center rounded-xl text-lg flex-shrink-0 transition-all ${
-                        isSelected 
-                          ? 'bg-primary-500 text-white shadow-md' 
+                        isSelected
+                          ? 'bg-primary-500 text-white shadow-md'
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                       }`}
                       aria-hidden="true"
@@ -184,9 +191,13 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
                       {item.icon}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <div className={`text-sm font-medium ${
-                        isSelected ? 'text-primary-700 dark:text-primary-300' : 'text-gray-900 dark:text-gray-100'
-                      }`}>
+                      <div
+                        className={`text-sm font-medium ${
+                          isSelected
+                            ? 'text-primary-700 dark:text-primary-300'
+                            : 'text-gray-900 dark:text-gray-100'
+                        }`}
+                      >
                         {item.title}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
@@ -201,7 +212,7 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
         })}
       </div>
     );
-  }
+  },
 );
 
 SlashCommandMenu.displayName = 'SlashCommandMenu';

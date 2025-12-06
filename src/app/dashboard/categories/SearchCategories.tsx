@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useTransition, useCallback } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { useDebouncedCallback } from 'use-debounce';
 import { DashboardSearchInput } from '@/components/Dashboard/shared/DashboardTableWrapper';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useState, useTransition } from 'react';
+import { useDebouncedCallback } from 'use-debounce';
 
 export default function SearchCategories() {
   const router = useRouter();
@@ -22,7 +22,7 @@ export default function SearchCategories() {
       }
       return params.toString();
     },
-    [searchParams]
+    [searchParams],
   );
 
   const debouncedSearch = useDebouncedCallback((term: string) => {
@@ -44,9 +44,7 @@ export default function SearchCategories() {
         placeholder="جستجوی دسته‌بندی..."
       />
       {isPending && (
-        <span className="absolute -bottom-5 right-0 text-xs text-neutral-500">
-          در حال جستجو...
-        </span>
+        <span className="absolute -bottom-5 right-0 text-xs text-neutral-500">در حال جستجو...</span>
       )}
     </div>
   );

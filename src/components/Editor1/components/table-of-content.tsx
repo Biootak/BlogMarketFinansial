@@ -6,23 +6,19 @@ interface TableOfContentProps {
   onItemClick: (event: React.MouseEvent, id: string) => void;
 }
 
-const TableOfContent = ({
-  items,
-  activeItemId,
-  onItemClick
-}: TableOfContentProps) => {
+const TableOfContent = ({ items, activeItemId, onItemClick }: TableOfContentProps) => {
   return (
     <>
-      <div className='text-lg mb-2 font-bold'>On this page</div>
-      <ul className=''>
+      <div className="text-lg mb-2 font-bold">On this page</div>
+      <ul className="">
         {items.map((item) => (
-          <li key={item.id} className=''>
+          <li key={item.id} className="">
             <a
               href={`#${item.id}`}
               className={`text-sm block h-full py-1.5 font-medium ${activeItemId === item.id ? 'font-bold text-blue-600' : ''}`}
               onClick={(e) => onItemClick(e, item.id)}
               style={{
-                paddingLeft: (item.level - 2) * 16
+                paddingLeft: (item.level - 2) * 16,
               }}
             >
               {item.text}

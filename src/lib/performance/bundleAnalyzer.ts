@@ -44,12 +44,12 @@ export class BundleAnalyzer {
    */
   async analyze(statsPath?: string): Promise<BundleAnalysis> {
     // Load stats from .next/analyze or provided path
-    const stats = await this.loadStats(statsPath);
+    const stats = await this.loadStats();
     this.statsData = stats;
 
     const bundles = this.extractBundles(stats);
     const totalSize = bundles.reduce((sum, b) => sum + b.size, 0);
-    const duplicates = this.findDuplicates(stats);
+    const duplicates = this.findDuplicates();
     const recommendations = this.generateRecommendations(bundles, duplicates);
 
     return {
@@ -88,10 +88,10 @@ export class BundleAnalyzer {
     // Parse modules to find duplicates
     if (this.statsData.modules) {
       for (const module of this.statsData.modules) {
-        const match = module.name?.match(/node_modules\/([^/]+)/);
+        const match = (module as any).name?.match(/node_modules\/([^/]+)/);
         if (match) {
           const pkgName = match[1];
-          const version = this.extractVersion(module.name);
+          const version = this.extractVersion((module as any).name);
 
           if (!packageMap.has(pkgName)) {
             packageMap.set(pkgName, new Set());
@@ -100,10 +100,10 @@ export class BundleAnalyzer {
           }
 
           if (version) {
-            packageMap.get(pkgName)!.add(version);
+            packageMap.get(pkgName)?.add(version);
           }
-          locationMap.get(pkgName)!.push(module.name);
-          sizeMap.set(pkgName, sizeMap.get(pkgName)! + (module.size || 0));
+          locationMap.get(pkgName)?.push((module as any).name);
+          sizeMap.set(pkgName, sizeMap.get(pkgName)! + ((module as any).size || 0));
         }
       }
     }
@@ -142,7 +142,7 @@ export class BundleAnalyzer {
         recommendations.push({
           type: 'vendor-split',
           severity: 'high',
-          title: `Vendor bundle بیش از 500KB است`,
+          title: 'Vendor bundle بیش از 500KB است',
           description: `Bundle ${bundle.name} با حجم ${this.formatSize(bundle.size)} بسیار بزرگ است.`,
           impact: 'کاهش زمان بارگذاری اولیه و بهبود caching',
           effort: 'medium',
@@ -188,7 +188,7 @@ const Component = dynamic(() => import('./Component'), {
   /**
    * Load webpack stats from file
    */
-  private async loadStats(statsPath?: string): Promise<any> {
+  private async loadStats(_statsPath?: string): Promise<any> {
     // در محیط واقعی، این از فایل stats.json خوانده می‌شود
     // برای الان، یک mock data برمی‌گردانیم
     return {
@@ -224,7 +224,7 @@ const Component = dynamic(() => import('./Component'), {
    * Generate comprehensive recommendations
    */
   private generateRecommendations(
-    bundles: BundleInfo[],
+    _bundles: BundleInfo[],
     duplicates: DuplicatePackage[],
   ): Recommendation[] {
     const recommendations: Recommendation[] = [];

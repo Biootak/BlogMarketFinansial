@@ -11,11 +11,7 @@ export default function Providers({
   session: any;
 }) {
   return (
-    <SessionProvider
-      session={session}
-      refetchOnWindowFocus={false}
-      refetchWhenOffline={false}
-    >
+    <SessionProvider session={session} refetchOnWindowFocus={false} refetchWhenOffline={false}>
       <ThemeProvider
         attribute="class"
         defaultTheme="light"

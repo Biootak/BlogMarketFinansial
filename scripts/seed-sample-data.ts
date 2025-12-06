@@ -8,7 +8,7 @@ async function main() {
 
   // ایجاد کاربران نمونه
   console.log('👥 ایجاد کاربران...');
-  const admin = await prisma.user.upsert({
+  const _admin = await prisma.user.upsert({
     where: { email: 'admin@biotak.ir' },
     update: {},
     create: {
@@ -138,7 +138,7 @@ async function main() {
           },
         });
         likeCount++;
-      } catch (error) {
+      } catch (_error) {
         // Skip duplicate likes
       }
     }
@@ -184,17 +184,17 @@ async function main() {
         },
       });
       savedCount++;
-    } catch (error) {
+    } catch (_error) {
       // Skip duplicates
     }
   }
   console.log(`✅ ${savedCount} ذخیره ایجاد شد`);
 
-  console.log('\n' + '='.repeat(50));
+  console.log(`\n${'='.repeat(50)}`);
   console.log('✅ seed کامل شد!');
   console.log('='.repeat(50));
-  console.log(`\n📊 خلاصه:`);
-  console.log(`   - کاربران: 3`);
+  console.log('\n📊 خلاصه:');
+  console.log('   - کاربران: 3');
   console.log(`   - دسته‌بندی‌ها: ${categories.length}`);
   console.log(`   - پست‌ها: ${posts.length}`);
   console.log(`   - بازدیدها: ${viewCount}`);

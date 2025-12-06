@@ -1,18 +1,15 @@
-import { createLowlight } from 'lowlight';
+import { CodeBlockLowlight as BaseCodeBlockLowlight } from '@tiptap/extension-code-block-lowlight';
 import {
   type ExtendedRegExpMatchArray,
   ReactNodeViewRenderer,
-  textblockTypeInputRule
+  textblockTypeInputRule,
 } from '@tiptap/react';
-import { CodeBlockLowlight as BaseCodeBlockLowlight } from '@tiptap/extension-code-block-lowlight';
-import CodeBlock from '../../components/code-block';
-import {
-  findLanguage,
-  loadLanguage
-} from '../../lib/code-block-language-loader';
-import { LowlightPlugin } from './low-light-plugin';
-import { CODE_BLOCK_LANGUAGUE_SYNTAX_DEFAULT } from '../../constants/code_block_languages';
 import plaintext from 'highlight.js/lib/languages/plaintext';
+import { createLowlight } from 'lowlight';
+import CodeBlock from '../../components/code-block';
+import { CODE_BLOCK_LANGUAGUE_SYNTAX_DEFAULT } from '../../constants/code_block_languages';
+import { findLanguage, loadLanguage } from '../../lib/code-block-language-loader';
+import { LowlightPlugin } from './low-light-plugin';
 
 export const backtickInputRegex = /^```([a-z]+)?[\s\n]$/;
 export const tildeInputRegex = /^~~~([a-z]+)?[\s\n]$/;
@@ -34,13 +31,13 @@ export default BaseCodeBlockLowlight.extend({
       textblockTypeInputRule({
         find: backtickInputRegex,
         type: this.type,
-        getAttributes: findAndLoadLanguage
+        getAttributes: findAndLoadLanguage,
       }),
       textblockTypeInputRule({
         find: tildeInputRegex,
         type: this.type,
-        getAttributes: findAndLoadLanguage
-      })
+        getAttributes: findAndLoadLanguage,
+      }),
     ];
   },
 
@@ -49,14 +46,14 @@ export default BaseCodeBlockLowlight.extend({
       LowlightPlugin({
         lowlight,
         name: this.name,
-        defaultLanguage: CODE_BLOCK_LANGUAGUE_SYNTAX_DEFAULT
-      })
+        defaultLanguage: CODE_BLOCK_LANGUAGUE_SYNTAX_DEFAULT,
+      }),
     ];
   },
 
   addNodeView() {
     return ReactNodeViewRenderer(CodeBlock);
-  }
+  },
 }).configure({
-  lowlight
+  lowlight,
 });

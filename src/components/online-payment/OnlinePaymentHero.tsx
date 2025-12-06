@@ -1,8 +1,8 @@
 'use client';
 
-import type { FC } from 'react';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
+import type { FC } from 'react';
 import { HiArrowDown } from 'react-icons/hi';
 
 const paymentMethods = [
@@ -25,7 +25,7 @@ const OnlinePaymentHero: FC = () => {
       {/* Background with subtle pattern */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary-50 via-white to-primary-100/50 dark:from-neutral-900 dark:via-neutral-800 dark:to-primary-900/20" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary-200/30 via-transparent to-transparent dark:from-primary-500/10" />
-      
+
       <div className="relative max-w-7xl mx-auto">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16">
           {/* Content */}
@@ -92,7 +92,7 @@ const OnlinePaymentHero: FC = () => {
             <div className="relative">
               <div className="absolute -top-8 -right-8 w-72 h-72 bg-primary-200/50 dark:bg-primary-500/10 rounded-full blur-3xl" />
               <div className="absolute -bottom-8 -left-8 w-72 h-72 bg-primary-300/30 dark:bg-primary-600/10 rounded-full blur-3xl" />
-              
+
               <Image
                 src="/images/online-payment-hero.svg"
                 alt="تصویر پرداخت آنلاین"

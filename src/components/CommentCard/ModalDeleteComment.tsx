@@ -1,6 +1,6 @@
 'use client';
 
-import React, { type FC } from 'react';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import React, { type FC } from 'react';
 
 export interface ModalDeleteCommentProps {
   show: boolean;

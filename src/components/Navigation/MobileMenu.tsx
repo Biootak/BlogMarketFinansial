@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { X } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 
 export interface MobileMenuProps {
   isOpen: boolean;
@@ -48,10 +48,10 @@ export function MobileMenu({ isOpen, onClose, children }: MobileMenuProps) {
       return () => {
         // Restore body scroll
         document.body.style.overflow = '';
-        
+
         // Restore focus
         previousFocusRef.current?.focus();
-        
+
         document.removeEventListener('keydown', handleEscape);
       };
     }
@@ -63,7 +63,7 @@ export function MobileMenu({ isOpen, onClose, children }: MobileMenuProps) {
 
     const menu = menuRef.current;
     const focusableElements = menu.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
     );
 
     const firstElement = focusableElements[0];
@@ -107,7 +107,7 @@ export function MobileMenu({ isOpen, onClose, children }: MobileMenuProps) {
         ref={menuRef}
         className={cn(
           'fixed inset-0 z-50 flex flex-col bg-white dark:bg-neutral-900',
-          'animate-in slide-in-from-right duration-200'
+          'animate-in slide-in-from-right duration-200',
         )}
         role="dialog"
         aria-modal="true"
@@ -125,7 +125,7 @@ export function MobileMenu({ isOpen, onClose, children }: MobileMenuProps) {
               'bg-neutral-100 dark:bg-neutral-800',
               'hover:bg-neutral-200 dark:hover:bg-neutral-700',
               'active:scale-95 transition-all duration-100',
-              'focus:outline-none focus:ring-2 focus:ring-primary-500'
+              'focus:outline-none focus:ring-2 focus:ring-primary-500',
             )}
             aria-label="بستن منو"
           >

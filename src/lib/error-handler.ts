@@ -10,12 +10,7 @@ export class AppError extends Error {
   public readonly isOperational: boolean;
   public readonly code: string;
 
-  constructor(
-    message: string,
-    statusCode: number = 500,
-    code: string = 'INTERNAL_ERROR',
-    isOperational: boolean = true
-  ) {
+  constructor(message: string, statusCode = 500, code = 'INTERNAL_ERROR', isOperational = true) {
     super(message);
     this.statusCode = statusCode;
     this.isOperational = isOperational;
@@ -33,7 +28,7 @@ export const Errors = {
   INVALID_CREDENTIALS: new AppError(
     'نام کاربری یا رمز عبور اشتباه است',
     401,
-    'INVALID_CREDENTIALS'
+    'INVALID_CREDENTIALS',
   ),
 
   // Validation
@@ -46,11 +41,7 @@ export const Errors = {
     new AppError(`${resource} قبلاً وجود دارد`, 409, 'ALREADY_EXISTS'),
 
   // Rate Limiting
-  TOO_MANY_REQUESTS: new AppError(
-    'تعداد درخواست‌ها بیش از حد مجاز است',
-    429,
-    'TOO_MANY_REQUESTS'
-  ),
+  TOO_MANY_REQUESTS: new AppError('تعداد درخواست‌ها بیش از حد مجاز است', 429, 'TOO_MANY_REQUESTS'),
 
   // Server
   INTERNAL_ERROR: new AppError('خطای داخلی سرور', 500, 'INTERNAL_ERROR'),
@@ -70,7 +61,7 @@ export interface ActionResult<T = unknown> {
 // Wrapper برای Server Actions با مدیریت خطا
 export async function safeAction<T>(
   action: () => Promise<T>,
-  errorMessage: string = 'خطایی رخ داده است'
+  errorMessage = 'خطایی رخ داده است',
 ): Promise<ActionResult<T>> {
   try {
     const data = await action();
@@ -166,7 +157,7 @@ export function logError(error: unknown, context?: Record<string, unknown>): voi
 // Capture user feedback
 export function captureUserFeedback(
   eventId: string,
-  feedback: { name?: string; email?: string; comments: string }
+  feedback: { name?: string; email?: string; comments: string },
 ): void {
   if (process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_SENTRY_DSN) {
     Sentry.captureFeedback({

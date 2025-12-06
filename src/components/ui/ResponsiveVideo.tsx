@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Play, RefreshCw } from 'lucide-react';
+import { useState } from 'react';
 
 export interface ResponsiveVideoProps {
   src: string;
@@ -50,7 +50,7 @@ export function ResponsiveVideo({
         className={cn(
           'relative bg-neutral-200 dark:bg-neutral-800 rounded-lg overflow-hidden',
           `aspect-[${aspectRatio}]`,
-          className
+          className,
         )}
       >
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-4">
@@ -74,7 +74,7 @@ export function ResponsiveVideo({
       className={cn(
         'relative bg-neutral-200 dark:bg-neutral-800 rounded-lg overflow-hidden',
         `aspect-[${aspectRatio}]`,
-        className
+        className,
       )}
     >
       {isLoading && (
@@ -152,7 +152,7 @@ export function ResponsiveIframe({
         className={cn(
           'relative bg-neutral-200 dark:bg-neutral-800 rounded-lg overflow-hidden flex items-center justify-center',
           `aspect-[${aspectRatio}]`,
-          className
+          className,
         )}
       >
         <p className="text-sm text-neutral-500">خطا در بارگذاری محتوا</p>
@@ -165,7 +165,7 @@ export function ResponsiveIframe({
       className={cn(
         'relative bg-neutral-200 dark:bg-neutral-800 rounded-lg overflow-hidden',
         `aspect-[${aspectRatio}]`,
-        className
+        className,
       )}
     >
       <iframe

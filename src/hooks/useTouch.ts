@@ -1,14 +1,14 @@
 'use client';
 
+import { addPassiveListener, handleSwipe, isTouchDevice } from '@/lib/touch/touch-handler';
 import { useEffect, useRef } from 'react';
-import { handleSwipe, addPassiveListener, isTouchDevice } from '@/lib/touch/touch-handler';
 
 /**
  * Hook for handling swipe gestures
  */
 export function useSwipe(
   onSwipe: (direction: 'left' | 'right' | 'up' | 'down') => void,
-  threshold = 50
+  threshold = 50,
 ) {
   const ref = useRef<HTMLElement>(null);
 
@@ -41,7 +41,7 @@ export function useIsTouchDevice(): boolean {
  */
 export function usePassiveListener<K extends keyof HTMLElementEventMap>(
   event: K,
-  handler: (event: HTMLElementEventMap[K]) => void
+  handler: (event: HTMLElementEventMap[K]) => void,
 ) {
   const ref = useRef<HTMLElement>(null);
 

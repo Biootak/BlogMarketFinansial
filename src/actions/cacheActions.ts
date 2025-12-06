@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidateTag, revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 export async function invalidateUserCache(userId: string) {
   revalidateTag(`user-${userId}`, 'page');
@@ -61,7 +61,7 @@ export async function invalidateDashboardCache() {
   revalidateTag('dashboard-credit-rates', 'page');
   revalidateTag('dashboard-rate-lists', 'page');
   revalidateTag('dashboard-subscription', 'page');
-  
+
   // کش مسیرها
   revalidatePath('/dashboard');
   revalidatePath('/dashboard/posts');

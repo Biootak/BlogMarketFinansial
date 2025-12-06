@@ -1,14 +1,32 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Download, Loader2, Users, FileText, MessageSquare, Eye, TrendingUp, ArrowUpRight } from 'lucide-react';
-import { useEffect, useState, useCallback } from 'react';
-import { toast } from '@/components/ui/use-toast';
-import { Button } from '@/components/ui/button';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { ChartSkeleton, StatsCardSkeleton } from '@/components/Skeletons';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
+import {
+  ArrowUpRight,
+  Download,
+  Eye,
+  FileText,
+  Loader2,
+  MessageSquare,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 interface SystemReportData {
   users: number;
@@ -54,16 +72,26 @@ function StatCard({ title, value, icon, badges, gradient, iconBg, delay = 0 }: S
         'shadow-md sm:shadow-lg shadow-gray-200/50',
         'hover:shadow-xl sm:hover:shadow-2xl hover:shadow-gray-300/40',
         'hover:border-white/80 hover:-translate-y-0.5 sm:hover:-translate-y-1',
-        'transition-all duration-300 ease-out'
+        'transition-all duration-300 ease-out',
       )}
       style={{ animationDelay: `${delay}ms` }}
     >
       {/* Gradient Accent */}
-      <div className={cn('absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 -mr-8 -mt-8 sm:-mr-10 sm:-mt-10 rounded-full opacity-20 blur-xl sm:blur-2xl', gradient)} />
-      
+      <div
+        className={cn(
+          'absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 -mr-8 -mt-8 sm:-mr-10 sm:-mt-10 rounded-full opacity-20 blur-xl sm:blur-2xl',
+          gradient,
+        )}
+      />
+
       <div className="relative p-5 sm:p-6 md:p-7">
         <div className="flex items-start justify-between mb-4 sm:mb-5">
-          <div className={cn('p-2.5 sm:p-3 md:p-3.5 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg flex-shrink-0', iconBg)}>
+          <div
+            className={cn(
+              'p-2.5 sm:p-3 md:p-3.5 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg flex-shrink-0',
+              iconBg,
+            )}
+          >
             {icon}
           </div>
           <div className="flex items-center gap-1 sm:gap-1.5 text-emerald-600 text-xs sm:text-sm font-medium">
@@ -77,7 +105,7 @@ function StatCard({ title, value, icon, badges, gradient, iconBg, delay = 0 }: S
           <p className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight mb-3">
             {value.toLocaleString('fa-IR')}
           </p>
-          
+
           <div className="flex flex-wrap gap-2 sm:gap-2.5">
             {badges.map((badge, idx) => (
               <span
@@ -87,11 +115,13 @@ function StatCard({ title, value, icon, badges, gradient, iconBg, delay = 0 }: S
                   'bg-gray-100/80 text-gray-700',
                   'border border-gray-200/50',
                   'transition-colors duration-200',
-                  'hover:bg-gray-200/80'
+                  'hover:bg-gray-200/80',
                 )}
               >
                 <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-current opacity-60" />
-                <span className="truncate">{badge.value.toLocaleString('fa-IR')} {badge.label}</span>
+                <span className="truncate">
+                  {badge.value.toLocaleString('fa-IR')} {badge.label}
+                </span>
               </span>
             ))}
           </div>
@@ -99,11 +129,13 @@ function StatCard({ title, value, icon, badges, gradient, iconBg, delay = 0 }: S
       </div>
 
       {/* Hover Effect Line */}
-      <div className={cn(
-        'absolute bottom-0 inset-x-0 h-0.5 sm:h-1 opacity-0 group-hover:opacity-100',
-        'transition-opacity duration-300',
-        gradient
-      )} />
+      <div
+        className={cn(
+          'absolute bottom-0 inset-x-0 h-0.5 sm:h-1 opacity-0 group-hover:opacity-100',
+          'transition-opacity duration-300',
+          gradient,
+        )}
+      />
     </div>
   );
 }
@@ -112,13 +144,20 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white/95 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 shadow-xl sm:shadow-2xl border border-gray-100 max-w-[200px] sm:max-w-none">
-        <p className="font-semibold text-gray-900 mb-1.5 sm:mb-2 text-xs sm:text-sm truncate">{label}</p>
+        <p className="font-semibold text-gray-900 mb-1.5 sm:mb-2 text-xs sm:text-sm truncate">
+          {label}
+        </p>
         <div className="space-y-1 sm:space-y-1.5">
           {payload.map((entry: any, index: number) => (
             <div key={index} className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
-              <span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
+              <span
+                className="w-2 h-2 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
+                style={{ backgroundColor: entry.color }}
+              />
               <span className="text-gray-600 truncate">{entry.name}:</span>
-              <span className="font-medium text-gray-900 flex-shrink-0">{entry.value?.toLocaleString('fa-IR')}</span>
+              <span className="font-medium text-gray-900 flex-shrink-0">
+                {entry.value?.toLocaleString('fa-IR')}
+              </span>
             </div>
           ))}
         </div>
@@ -173,7 +212,7 @@ export default function SystemReports() {
         throw new Error('خطا در دریافت اطلاعات');
       }
       const result = await response.json();
-      
+
       // سازگاری با API جدید
       if (result.users) {
         // API جدید (DetailedSystemReport)
@@ -230,7 +269,13 @@ export default function SystemReports() {
   }
 
   const chartData = [
-    { key: 'users', name: 'کاربران', تعداد: data.users, فعال: data.activeUsers, جدید: data.newUsers },
+    {
+      key: 'users',
+      name: 'کاربران',
+      تعداد: data.users,
+      فعال: data.activeUsers,
+      جدید: data.newUsers,
+    },
     { key: 'posts', name: 'پست‌ها', تعداد: data.posts, منتشرشده: data.publishedPosts },
     { key: 'comments', name: 'نظرات', تعداد: data.comments, درانتظار: data.pendingComments },
     { key: 'views', name: 'بازدیدها', تعداد: data.views, امروز: data.todayViews },
@@ -241,7 +286,10 @@ export default function SystemReports() {
       title: 'کاربران',
       value: data.users,
       icon: <Users className="w-5 h-5 text-white" />,
-      badges: [{ label: 'فعال', value: data.activeUsers }, { label: 'جدید', value: data.newUsers }],
+      badges: [
+        { label: 'فعال', value: data.activeUsers },
+        { label: 'جدید', value: data.newUsers },
+      ],
       gradient: 'bg-gradient-to-br from-blue-500 to-indigo-600',
       iconBg: 'bg-gradient-to-br from-blue-500 to-indigo-600',
     },
@@ -290,7 +338,7 @@ export default function SystemReports() {
             'hover:shadow-xl hover:shadow-[rgb(var(--c-primary-500))]/40',
             'transition-all duration-300',
             'disabled:opacity-70 disabled:cursor-not-allowed',
-            'w-full sm:w-auto'
+            'w-full sm:w-auto',
           )}
         >
           {downloading ? (
@@ -321,7 +369,7 @@ export default function SystemReports() {
           'bg-white/80 backdrop-blur-sm',
           'border border-white/60',
           'shadow-lg shadow-gray-200/50',
-          'mt-6 sm:mt-8'
+          'mt-6 sm:mt-8',
         )}
       >
         <div className="p-5 sm:p-6 md:p-7 border-b border-gray-100">
@@ -330,12 +378,14 @@ export default function SystemReports() {
               <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
             <div className="min-w-0">
-              <h3 className="font-semibold text-sm sm:text-base text-gray-900 truncate">نمودار آماری</h3>
+              <h3 className="font-semibold text-sm sm:text-base text-gray-900 truncate">
+                نمودار آماری
+              </h3>
               <p className="text-xs sm:text-sm text-gray-500 truncate">مقایسه آمار بخش‌های مختلف</p>
             </div>
           </div>
         </div>
-        
+
         <div className="p-4 sm:p-5 md:p-7">
           <div className="h-[250px] sm:h-[300px] md:h-[350px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -355,9 +405,17 @@ export default function SystemReports() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 10 }} />
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#6b7280', fontSize: 10 }}
+                />
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 10 }} />
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(59, 130, 246, 0.05)' }} />
+                <Tooltip
+                  content={<CustomTooltip />}
+                  cursor={{ fill: 'rgba(59, 130, 246, 0.05)' }}
+                />
                 <Legend wrapperStyle={{ paddingTop: '12px', fontSize: '12px' }} />
                 <Bar dataKey="تعداد" fill="url(#colorTotal)" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="فعال" fill="url(#colorActive)" radius={[4, 4, 0, 0]} />

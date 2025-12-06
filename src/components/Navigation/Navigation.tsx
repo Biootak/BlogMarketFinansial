@@ -1,9 +1,5 @@
 'use client';
 
-import { memo, useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,7 +7,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { memo, useState } from 'react';
 
 type NavItem = Readonly<{
   id: string;
@@ -95,9 +95,10 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
               className={`
                 group relative flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium rounded-xl
                 transition-all duration-200 hover:bg-transparent
-                ${active
-                  ? 'text-primary-600 dark:text-primary-400'
-                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                ${
+                  active
+                    ? 'text-primary-600 dark:text-primary-400'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
                 }
               `}
             >
@@ -163,9 +164,10 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
                           className={`
                             group/item relative w-full flex items-center gap-3 py-3 px-3 text-sm rounded-xl cursor-pointer
                             transition-all duration-200
-                            ${pathname === subItem.href
-                              ? 'bg-gradient-to-l from-primary-50/90 to-primary-100/60 text-primary-700 dark:from-primary-900/40 dark:to-primary-800/20 dark:text-primary-300'
-                              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                            ${
+                              pathname === subItem.href
+                                ? 'bg-gradient-to-l from-primary-50/90 to-primary-100/60 text-primary-700 dark:from-primary-900/40 dark:to-primary-800/20 dark:text-primary-300'
+                                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                             }
                           `}
                         >
@@ -204,9 +206,10 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
           className={`
             group relative flex items-center px-4 py-2.5 text-sm font-medium rounded-xl
             transition-all duration-200
-            ${active
-              ? 'text-primary-600 dark:text-primary-400'
-              : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+            ${
+              active
+                ? 'text-primary-600 dark:text-primary-400'
+                : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
             }
           `}
         >

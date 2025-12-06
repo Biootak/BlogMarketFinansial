@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
+import { NextResponse } from 'next/server';
 
 // Mock database or data source
 const mockDatabase = {
@@ -37,7 +37,7 @@ export async function GET() {
 
     const trafficStats = await mockDatabase.getTrafficStats();
     return NextResponse.json(trafficStats);
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json({ error: 'Failed to fetch traffic statistics' }, { status: 500 });
   }
 }

@@ -1,7 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import type { ExchangeRateData } from '@/types/types';
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 
 export function ExchangeRateCardView({ exchangeRates }: { exchangeRates: ExchangeRateData[] }) {
@@ -13,25 +13,29 @@ export function ExchangeRateCardView({ exchangeRates }: { exchangeRates: Exchang
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    show: { 
-      opacity: 1, 
+    show: {
+      opacity: 1,
       y: 0,
       transition: {
-        type: "spring" as const,
+        type: 'spring' as const,
         stiffness: 100,
-        damping: 15
-      }
-    }
+        damping: 15,
+      },
+    },
   };
 
-  const RateSection = ({ title, rates, rateType }: { title: string, rates: ExchangeRateData[], rateType: 'BUY_SELL' | 'SINGLE_BULK' }) => (
+  const RateSection = ({
+    title,
+    rates,
+    rateType,
+  }: { title: string; rates: ExchangeRateData[]; rateType: 'BUY_SELL' | 'SINGLE_BULK' }) => (
     <div className="space-y-6">
       <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">{title}</h2>
       <motion.div
@@ -63,7 +67,7 @@ export function ExchangeRateCardView({ exchangeRates }: { exchangeRates: Exchang
                 </div>
               </div>
             </div>
-            
+
             <div className="p-4 space-y-4">
               {rateType === 'BUY_SELL' ? (
                 <>

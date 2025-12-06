@@ -1,8 +1,3 @@
-import type React from 'react';
-import { memo, useCallback, useState } from 'react';
-import type { Editor } from '@tiptap/core';
-import { Toolbar } from '../../ui/toolbar';
-import { Icon } from '../../ui/icon';
 import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
 import {
   Dialog,
@@ -11,6 +6,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import type { Editor } from '@tiptap/core';
+import type React from 'react';
+import { memo, useCallback, useState } from 'react';
+import { Icon } from '../../ui/icon';
+import { Toolbar } from '../../ui/toolbar';
 
 interface MenuButtonImageProps {
   editor: Editor;

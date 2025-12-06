@@ -1,8 +1,8 @@
+import { buttonVariants } from '@/components/ui/button';
+import { Tooltip } from '@/components/ui/tooltip';
 import React from 'react';
 import { Icon } from '../../ui/icon';
 import { cn } from '../lib/utils';
-import { Tooltip } from '@/components/ui/tooltip';
-import { buttonVariants } from '@/components/ui/button';
 
 type ColorButtonProps = {
   color: string;
@@ -12,12 +12,7 @@ type ColorButtonProps = {
   onColorChange: (color: string) => void;
 };
 
-export const ColorButton = ({
-  color,
-  active,
-  onColorChange,
-  isBrightColor,
-}: ColorButtonProps) => {
+export const ColorButton = ({ color, active, onColorChange, isBrightColor }: ColorButtonProps) => {
   return (
     <Tooltip>
       <button

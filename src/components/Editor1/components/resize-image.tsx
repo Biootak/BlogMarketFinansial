@@ -1,9 +1,21 @@
-import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { type NodeViewProps, NodeViewWrapper } from '@tiptap/react';
-import { 
-  AlignLeft, AlignCenter, AlignRight, Maximize2, Trash2, ExternalLink,
-  RotateCw, Type, Download, ZoomIn, ZoomOut, Settings, X, Check
+import {
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
+  Check,
+  Download,
+  ExternalLink,
+  Maximize2,
+  RotateCw,
+  Settings,
+  Trash2,
+  Type,
+  X,
+  ZoomIn,
+  ZoomOut,
 } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 
 interface ImageNodeAttributes {
   src: string;
@@ -26,10 +38,10 @@ type ResizeImageProps = NodeViewProps & {
 };
 
 const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImageProps) => {
-  const { 
-    src, 
-    textAlign, 
-    width: widthProps, 
+  const {
+    src,
+    textAlign,
+    width: widthProps,
     alt,
     title,
     rotation = 0,
@@ -37,11 +49,10 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
     opacity = 100,
     borderRadius = 12,
     shadow = true,
-    caption
+    caption,
   } = node.attrs;
 
   // Debug: log attrs on every render
-
 
   const isEditable = editor.isEditable;
 
@@ -51,7 +62,9 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
   const [isResizing, setIsResizing] = useState(false);
   const [initialPosition, setInitialPosition] = useState({ x: 0, y: 0 });
   const [initialSize, setInitialSize] = React.useState({ width: 0, height: 0 });
-  const [resizeHandle, setResizeHandle] = useState<'tl' | 'tr' | 'bl' | 'br' | 'l' | 'r' | 't' | 'b' | null>(null);
+  const [resizeHandle, setResizeHandle] = useState<
+    'tl' | 'tr' | 'bl' | 'br' | 'l' | 'r' | 't' | 'b' | null
+  >(null);
   // Store width in pixels for precise control
   const [widthPx, setWidthPx] = useState<number | null>(null);
   const [heightPx, setHeightPx] = useState<number | null>(null);
@@ -118,7 +131,12 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
   }, [heightPx, widthPx]);
 
   const handleResize = useCallback(
-    ({ deltaX, deltaY, handle, finished }: { deltaX: number; deltaY: number; handle: string; finished: boolean }) => {
+    ({
+      deltaX,
+      deltaY,
+      handle,
+      finished,
+    }: { deltaX: number; deltaY: number; handle: string; finished: boolean }) => {
       const now = Date.now();
       if (!finished && isMobile.current && now - lastResizeTime.current < 16) {
         return;
@@ -149,7 +167,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
             newHeight = newWidth / aspectRatio.current;
             if (!resizeFromCenter) {
               newOffsetX = tlDelta;
-              newOffsetY = (initialSize.height - newHeight);
+              newOffsetY = initialSize.height - newHeight;
             }
           } else {
             newWidth = initialSize.width - deltaX * (resizeFromCenter ? 2 : 1);
@@ -163,10 +181,12 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
         case 'tr': // Top-right corner
           if (maintainAspectRatio) {
             primaryDelta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
-            newWidth = initialSize.width + (deltaX > 0 ? primaryDelta : -primaryDelta) * (resizeFromCenter ? 2 : 1);
+            newWidth =
+              initialSize.width +
+              (deltaX > 0 ? primaryDelta : -primaryDelta) * (resizeFromCenter ? 2 : 1);
             newHeight = newWidth / aspectRatio.current;
             if (!resizeFromCenter) {
-              newOffsetY = (initialSize.height - newHeight);
+              newOffsetY = initialSize.height - newHeight;
             }
           } else {
             newWidth = initialSize.width + deltaX * (resizeFromCenter ? 2 : 1);
@@ -196,7 +216,9 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
         case 'br': // Bottom-right corner
           if (maintainAspectRatio) {
             primaryDelta = Math.max(Math.abs(deltaX), Math.abs(deltaY));
-            newWidth = initialSize.width + (deltaX > 0 ? primaryDelta : -primaryDelta) * (resizeFromCenter ? 2 : 1);
+            newWidth =
+              initialSize.width +
+              (deltaX > 0 ? primaryDelta : -primaryDelta) * (resizeFromCenter ? 2 : 1);
             newHeight = newWidth / aspectRatio.current;
           } else {
             newWidth = initialSize.width + deltaX * (resizeFromCenter ? 2 : 1);
@@ -266,9 +288,9 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
       e.stopPropagation();
       hasMovedRef.current = false;
       setInitialPosition({ x: e.clientX, y: e.clientY });
-      setInitialSize({ 
-        width: width, 
-        height: height || width / aspectRatio.current 
+      setInitialSize({
+        width: width,
+        height: height || width / aspectRatio.current,
       });
       setResizeHandle(handle);
       setIsResizing(true);
@@ -282,9 +304,9 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
       hasMovedRef.current = false;
       const touch = e.touches[0];
       setInitialPosition({ x: touch.clientX, y: touch.clientY });
-      setInitialSize({ 
-        width: width, 
-        height: height || width / aspectRatio.current 
+      setInitialSize({
+        width: width,
+        height: height || width / aspectRatio.current,
       });
       setResizeHandle(handle);
       setIsResizing(true);
@@ -298,7 +320,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
     }
 
     const widthStr = String(widthProps);
-    
+
     if (widthStr.includes('%')) {
       // Convert percentage to pixels
       const percent = Number.parseFloat(widthStr);
@@ -324,7 +346,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
 
   // Initialize missing attributes for old images
   useEffect(() => {
-    const needsInit = 
+    const needsInit =
       node.attrs.rotation === undefined ||
       node.attrs.filter === undefined ||
       node.attrs.opacity === undefined ||
@@ -385,12 +407,12 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
 
     const handleMouseUp = (event: MouseEvent) => {
       event.preventDefault();
-      
+
       // Only update if we actually moved
       if (hasMovedRef.current) {
         sendResizeEvent(event.clientX, event.clientY, true);
       }
-      
+
       setIsResizing(false);
       setResizeHandle(null);
       hasMovedRef.current = false;
@@ -407,7 +429,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
 
     const handleTouchEnd = (event: TouchEvent) => {
       event.preventDefault();
-      
+
       // Only update if we actually moved
       if (hasMovedRef.current) {
         const touch = event.changedTouches[0];
@@ -415,7 +437,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
           sendResizeEvent(touch.clientX, touch.clientY, true);
         }
       }
-      
+
       setIsResizing(false);
       setResizeHandle(null);
       hasMovedRef.current = false;
@@ -468,20 +490,27 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
     updateAttributes({ rotation: newRotation });
   }, [rotation, updateAttributes]);
 
+  const handleFilterChange = useCallback(
+    (newFilter: string) => {
+      updateAttributes({ filter: newFilter });
+      setShowAdvancedMenu(false);
+    },
+    [updateAttributes],
+  );
 
+  const handleOpacityChange = useCallback(
+    (newOpacity: number) => {
+      updateAttributes({ opacity: newOpacity });
+    },
+    [updateAttributes],
+  );
 
-  const handleFilterChange = useCallback((newFilter: string) => {
-    updateAttributes({ filter: newFilter });
-    setShowAdvancedMenu(false);
-  }, [updateAttributes]);
-
-  const handleOpacityChange = useCallback((newOpacity: number) => {
-    updateAttributes({ opacity: newOpacity });
-  }, [updateAttributes]);
-
-  const handleBorderRadiusChange = useCallback((newRadius: number) => {
-    updateAttributes({ borderRadius: newRadius });
-  }, [updateAttributes]);
+  const handleBorderRadiusChange = useCallback(
+    (newRadius: number) => {
+      updateAttributes({ borderRadius: newRadius });
+    },
+    [updateAttributes],
+  );
 
   const handleShadowToggle = useCallback(() => {
     updateAttributes({ shadow: !shadow });
@@ -505,20 +534,20 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
   }, [src, alt]);
 
   const handleSaveMetadata = useCallback(() => {
-    updateAttributes({ 
+    updateAttributes({
       alt: editAlt,
       title: editTitle,
-      caption: editCaption
+      caption: editCaption,
     });
     setShowEditModal(false);
   }, [editAlt, editTitle, editCaption, updateAttributes]);
 
   const handleZoomIn = useCallback(() => {
-    setZoom(prev => Math.min(prev + 0.25, 3));
+    setZoom((prev) => Math.min(prev + 0.25, 3));
   }, []);
 
   const handleZoomOut = useCallback(() => {
-    setZoom(prev => Math.max(prev - 0.25, 0.5));
+    setZoom((prev) => Math.max(prev - 0.25, 0.5));
   }, []);
 
   useEffect(() => {
@@ -527,7 +556,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
       const naturalWidth = img.naturalWidth;
       const naturalHeight = img.naturalHeight;
       setImageSize({ width: naturalWidth, height: naturalHeight });
-      
+
       // Calculate and store aspect ratio
       if (naturalWidth && naturalHeight) {
         aspectRatio.current = naturalWidth / naturalHeight;
@@ -535,28 +564,30 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
     }
   }, [src]);
 
-
-
   // کلاس‌های مشترک برای دکمه‌های تراز - کامپکت
-  const getAlignButtonClass = useCallback((align: string) => {
-    const isActive = textAlign === align;
-    return `group/btn relative p-1.5 md:p-2 rounded-lg transition-all duration-300 ease-out ${
-      isActive 
-        ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30 scale-105' 
-        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:scale-105 hover:shadow-md'
-    }`;
-  }, [textAlign]);
+  const getAlignButtonClass = useCallback(
+    (align: string) => {
+      const isActive = textAlign === align;
+      return `group/btn relative p-1.5 md:p-2 rounded-lg transition-all duration-300 ease-out ${
+        isActive
+          ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30 scale-105'
+          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:scale-105 hover:shadow-md'
+      }`;
+    },
+    [textAlign],
+  );
 
   // تعیین کلاس‌های flexbox برای تراز
   const alignmentClasses = useMemo(() => {
     switch (textAlign) {
-      case 'left': return 'justify-start';
-      case 'right': return 'justify-end';
-      default: return 'justify-center';
+      case 'left':
+        return 'justify-start';
+      case 'right':
+        return 'justify-end';
+      default:
+        return 'justify-center';
     }
   }, [textAlign]);
-
-
 
   const filters = [
     { name: 'بدون فیلتر', value: 'none' },
@@ -571,8 +602,8 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
   ];
 
   return (
-    <NodeViewWrapper 
-      ref={wrapperRef} 
+    <NodeViewWrapper
+      ref={wrapperRef}
       className={`group relative my-6 mb-20 sm:mb-24 md:mb-20 flex ${alignmentClasses} overflow-visible`}
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => !isResizing && setShowControls(false)}
@@ -583,15 +614,20 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
       data-opacity={opacity}
     >
       {!isEditable ? (
-        <div className="relative inline-block max-w-full" style={{ 
-          width: widthProps 
-            ? (typeof widthProps === 'number' ? `${widthProps}px` : widthProps)
-            : '100%'
-        }}>
-          <img 
-            className="rounded-2xl shadow-xl transition-all duration-300 hover:shadow-2xl w-full h-auto" 
-            src={src} 
-            alt={alt || ''} 
+        <div
+          className="relative inline-block max-w-full"
+          style={{
+            width: widthProps
+              ? typeof widthProps === 'number'
+                ? `${widthProps}px`
+                : widthProps
+              : '100%',
+          }}
+        >
+          <img
+            className="rounded-2xl shadow-xl transition-all duration-300 hover:shadow-2xl w-full h-auto"
+            src={src}
+            alt={alt || ''}
             loading="lazy"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
@@ -605,21 +641,26 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
           )}
         </div>
       ) : (
-        <div 
+        <div
           className={`relative transition-all duration-300 max-w-full ${
-            selected ? 'ring-2 ring-primary-400/60 ring-offset-4 ring-offset-white dark:ring-offset-gray-900 rounded-2xl' : ''
-          }`} 
+            selected
+              ? 'ring-2 ring-primary-400/60 ring-offset-4 ring-offset-white dark:ring-offset-gray-900 rounded-2xl'
+              : ''
+          }`}
           contentEditable={false}
         >
           {/* Main Toolbar - در موبایل پایین صفحه، در دسکتاپ بالای تصویر */}
-          <div 
+          <div
             className={`fixed sm:absolute bottom-4 sm:bottom-auto sm:-top-20 md:-top-16 left-1/2 -translate-x-1/2 z-[60] flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 md:gap-2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-xl md:rounded-2xl shadow-2xl p-2 md:p-2.5 border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 ease-out ${
-              showControls || selected ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 sm:translate-y-4 scale-95 pointer-events-none'
+              showControls || selected
+                ? 'opacity-100 translate-y-0 scale-100'
+                : 'opacity-0 translate-y-4 sm:translate-y-4 scale-95 pointer-events-none'
             }`}
             style={{
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.05)',
+              boxShadow:
+                '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.05)',
               maxWidth: '95vw',
-              width: 'auto'
+              width: 'auto',
             }}
           >
             {/* Alignment - کامپکت */}
@@ -652,9 +693,9 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
                 <AlignRight className="w-4 h-4 sm:w-[14px] sm:h-[14px]" strokeWidth={2.5} />
               </button>
             </div>
-            
+
             <div className="hidden sm:block w-px h-5 md:h-6 bg-gradient-to-b from-transparent via-gray-300 dark:via-gray-600 to-transparent mx-0.5 md:mx-1" />
-            
+
             {/* Transform - کامپکت */}
             <div className="flex items-center gap-0.5">
               <button
@@ -675,7 +716,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
                   </span>
                 )}
               </button>
-              
+
               <button
                 type="button"
                 onClick={handleZoomIn}
@@ -685,7 +726,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
               >
                 <ZoomIn className="w-4 h-4 sm:w-[14px] sm:h-[14px]" strokeWidth={2.5} />
               </button>
-              
+
               <button
                 type="button"
                 onClick={handleZoomOut}
@@ -698,7 +739,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
             </div>
 
             <div className="hidden sm:block w-px h-5 md:h-6 bg-gradient-to-b from-transparent via-gray-300 dark:via-gray-600 to-transparent mx-0.5 md:mx-1" />
-            
+
             {/* Metadata */}
             <button
               type="button"
@@ -723,19 +764,25 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
                     : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 text-gray-600 dark:text-gray-400'
                 }`}
               >
-                <Settings className={`w-4 h-4 sm:w-[14px] sm:h-[14px] ${showAdvancedMenu ? 'animate-spin' : ''}`} strokeWidth={2.5} />
+                <Settings
+                  className={`w-4 h-4 sm:w-[14px] sm:h-[14px] ${showAdvancedMenu ? 'animate-spin' : ''}`}
+                  strokeWidth={2.5}
+                />
               </button>
-              
+
               {showAdvancedMenu && (
-                <div 
+                <div
                   className="fixed sm:absolute top-1/2 sm:top-full left-1/2 sm:left-0 -translate-x-1/2 sm:translate-x-0 -translate-y-1/2 sm:translate-y-0 sm:mt-3 w-[90vw] max-w-[320px] sm:w-72 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 p-4 z-[100] animate-in fade-in slide-in-from-top-2 duration-300"
                   style={{
-                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)'
+                    boxShadow:
+                      '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)',
                   }}
                 >
                   {/* Header */}
                   <div className="flex items-center justify-between mb-3 sm:mb-4 pb-2.5 sm:pb-3 border-b border-gray-200 dark:border-gray-700">
-                    <h4 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">تنظیمات پیشرفته</h4>
+                    <h4 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">
+                      تنظیمات پیشرفته
+                    </h4>
                     <button
                       type="button"
                       onClick={() => setShowAdvancedMenu(false)}
@@ -776,7 +823,9 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
                         <span className="w-0.5 sm:w-1 h-3 sm:h-4 bg-primary-500 rounded-full" />
                         شفافیت
                       </span>
-                      <span className="text-primary-600 dark:text-primary-400 font-bold text-xs sm:text-sm">{opacity}%</span>
+                      <span className="text-primary-600 dark:text-primary-400 font-bold text-xs sm:text-sm">
+                        {opacity}%
+                      </span>
                     </label>
                     <input
                       type="range"
@@ -795,7 +844,9 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
                         <span className="w-0.5 sm:w-1 h-3 sm:h-4 bg-primary-500 rounded-full" />
                         گوشه‌های گرد
                       </span>
-                      <span className="text-primary-600 dark:text-primary-400 font-bold text-xs sm:text-sm">{borderRadius}px</span>
+                      <span className="text-primary-600 dark:text-primary-400 font-bold text-xs sm:text-sm">
+                        {borderRadius}px
+                      </span>
                     </label>
                     <input
                       type="range"
@@ -825,7 +876,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
             </div>
 
             <div className="hidden sm:block w-px h-5 md:h-6 bg-gradient-to-b from-transparent via-gray-300 dark:via-gray-600 to-transparent mx-0.5 md:mx-1" />
-            
+
             {/* Actions - کامپکت */}
             <div className="flex items-center gap-0.5">
               <button
@@ -858,9 +909,9 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
                 <ExternalLink className="w-4 h-4 sm:w-[14px] sm:h-[14px]" strokeWidth={2.5} />
               </button>
             </div>
-            
+
             <div className="hidden sm:block w-px h-5 md:h-6 bg-gradient-to-b from-transparent via-gray-300 dark:via-gray-600 to-transparent mx-0.5 md:mx-1" />
-            
+
             <button
               type="button"
               onClick={handleDelete}
@@ -888,10 +939,10 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
           {/* Edit Modal - طراحی مدرن با انیمیشن */}
           {showEditModal && (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-              <div 
+              <div
                 className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
                 style={{
-                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)'
+                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)',
                 }}
               >
                 {/* Header */}
@@ -908,7 +959,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
                     <X className="w-5 h-5 sm:w-[20px] sm:h-[20px]" />
                   </button>
                 </div>
-                
+
                 <div className="space-y-5">
                   {/* Alt Text */}
                   <div>
@@ -960,7 +1011,11 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
                     <div className="flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-600">
                       <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 bg-primary-500 rounded-full animate-pulse" />
                       <span className="text-[11px] sm:text-xs font-medium text-gray-600 dark:text-gray-400">
-                        ابعاد: <span className="text-gray-900 dark:text-white font-bold">{imageSize.width} × {imageSize.height}</span> پیکسل
+                        ابعاد:{' '}
+                        <span className="text-gray-900 dark:text-white font-bold">
+                          {imageSize.width} × {imageSize.height}
+                        </span>{' '}
+                        پیکسل
                       </span>
                     </div>
                   )}
@@ -1048,7 +1103,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
             </div>
           </div>
 
-          <div 
+          <div
             className="relative group/image max-w-full"
             style={{
               width: widthPx !== null ? `${widthPx}px` : '100%',
@@ -1056,17 +1111,19 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
               display: 'inline-block',
               opacity: opacity / 100,
               borderRadius: `${borderRadius}px`,
-              boxShadow: shadow ? '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.05)' : 'none',
+              boxShadow: shadow
+                ? '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.05)'
+                : 'none',
               overflow: 'hidden',
               transition: isResizing ? 'none' : 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
               transform: isResizing ? `translate(${offsetX}px, ${offsetY}px)` : 'none',
             }}
           >
-            <img 
+            <img
               ref={imgRef}
-              className="block w-full h-auto transition-all duration-500 ease-out" 
-              src={src} 
-              alt={alt || ''} 
+              className="block w-full h-auto transition-all duration-500 ease-out"
+              src={src}
+              alt={alt || ''}
               title={title || undefined}
               style={{
                 transform: `rotate(${rotation}deg) scale(${zoom})`,
@@ -1078,9 +1135,9 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
                 const target = e.target as HTMLImageElement;
                 target.src = '/images/placeholder-large.png';
               }}
-              data-drag-handle 
+              data-drag-handle
             />
-            
+
             {/* Overlay gradient on hover */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity duration-300 pointer-events-none" />
           </div>
@@ -1146,11 +1203,12 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
                     Alt: از مرکز
                   </span>
                 )}
-                {!isShiftPressed && !isAltPressed && resizeHandle && ['tl', 'tr', 'bl', 'br'].includes(resizeHandle) && (
-                  <span className="text-gray-400">
-                    نسبت: {aspectRatio.current.toFixed(2)}
-                  </span>
-                )}
+                {!isShiftPressed &&
+                  !isAltPressed &&
+                  resizeHandle &&
+                  ['tl', 'tr', 'bl', 'br'].includes(resizeHandle) && (
+                    <span className="text-gray-400">نسبت: {aspectRatio.current.toFixed(2)}</span>
+                  )}
               </div>
             </div>
           )}
@@ -1183,7 +1241,6 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
               {rotation}°
             </div>
           )}
-
 
           {/* Caption for editable mode */}
           {caption && (

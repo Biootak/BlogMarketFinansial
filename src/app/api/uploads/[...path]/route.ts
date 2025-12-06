@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import path from 'node:path';
 import { getFile } from '@/lib/storage';
-import path from 'path';
+import { type NextRequest, NextResponse } from 'next/server';
 
 const ALLOWED_FOLDERS = ['posts', 'avatars', 'categories', 'tags', 'ads', 'general'];
 
@@ -14,8 +14,8 @@ const MIME_TYPES: Record<string, string> = {
 };
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> }
+  _request: NextRequest,
+  { params }: { params: Promise<{ path: string[] }> },
 ) {
   try {
     const { path: pathSegments } = await params;

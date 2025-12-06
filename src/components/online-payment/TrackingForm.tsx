@@ -1,9 +1,9 @@
 'use client';
 
-import { type FC, useState } from 'react';
-import { motion } from 'framer-motion';
-import { HiSearch, HiCheckCircle, HiClock, HiXCircle, HiRefresh } from 'react-icons/hi';
 import { getServiceRequestByTrackingCode } from '@/actions/serviceRequestActions';
+import { motion } from 'framer-motion';
+import { type FC, useState } from 'react';
+import { HiCheckCircle, HiClock, HiRefresh, HiSearch, HiXCircle } from 'react-icons/hi';
 
 const statusConfig = {
   PENDING: { label: 'در انتظار بررسی', color: 'yellow', icon: HiClock },
@@ -85,17 +85,15 @@ const TrackingForm: FC = () => {
       </form>
 
       {result && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-4"
-        >
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-4">
           {result.success && result.data ? (
             <div className="p-4 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-neutral-500">وضعیت</span>
                 {status && (
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-${status.color}-100 dark:bg-${status.color}-900/30 text-${status.color}-700 dark:text-${status.color}-400`}>
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-${status.color}-100 dark:bg-${status.color}-900/30 text-${status.color}-700 dark:text-${status.color}-400`}
+                  >
                     <status.icon className="w-4 h-4" />
                     {status.label}
                   </span>
@@ -103,7 +101,9 @@ const TrackingForm: FC = () => {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-neutral-500">نام</span>
-                <span className="font-medium text-neutral-900 dark:text-white">{result.data.fullName}</span>
+                <span className="font-medium text-neutral-900 dark:text-white">
+                  {result.data.fullName}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-neutral-500">نوع خدمات</span>

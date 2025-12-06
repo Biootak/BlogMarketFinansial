@@ -3,10 +3,10 @@
  * اسکریپت تحلیل عملکرد برای CI/CD
  */
 
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { BundleAnalyzer } from '../src/lib/performance/bundleAnalyzer';
 import { ReportGenerator } from '../src/lib/performance/reportGenerator';
-import * as fs from 'fs';
-import * as path from 'path';
 
 async function runPerformanceAudit() {
   console.log('🚀 Starting performance audit...\n');
@@ -38,17 +38,23 @@ async function runPerformanceAudit() {
     let failed = false;
 
     if (bundleAnalysis.totalSize > budgets.totalSize) {
-      console.error(`❌ Bundle size exceeds budget: ${formatBytes(bundleAnalysis.totalSize)} > ${formatBytes(budgets.totalSize)}`);
+      console.error(
+        `❌ Bundle size exceeds budget: ${formatBytes(bundleAnalysis.totalSize)} > ${formatBytes(budgets.totalSize)}`,
+      );
       failed = true;
     }
 
     if (report.summary.criticalCount > budgets.criticalFindings) {
-      console.error(`❌ Critical findings exceed budget: ${report.summary.criticalCount} > ${budgets.criticalFindings}`);
+      console.error(
+        `❌ Critical findings exceed budget: ${report.summary.criticalCount} > ${budgets.criticalFindings}`,
+      );
       failed = true;
     }
 
     if (report.summary.highCount > budgets.highFindings) {
-      console.error(`❌ High severity findings exceed budget: ${report.summary.highCount} > ${budgets.highFindings}`);
+      console.error(
+        `❌ High severity findings exceed budget: ${report.summary.highCount} > ${budgets.highFindings}`,
+      );
       failed = true;
     }
 

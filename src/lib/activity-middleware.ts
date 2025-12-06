@@ -1,7 +1,7 @@
-import type { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
 import { auth } from '@/auth';
 import db from '@/lib/db';
+import type { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 // لیست مسیرهایی که باید لاگ شوند
 const LOGGED_PATHS = [
@@ -19,7 +19,7 @@ const LOGGED_PATHS = [
         default:
           return '';
       }
-    }
+    },
   },
   {
     path: '/api/users',
@@ -35,13 +35,13 @@ const LOGGED_PATHS = [
         default:
           return '';
       }
-    }
+    },
   },
   {
     path: '/api/settings',
     methods: ['POST'],
-    action: () => 'به‌روزرسانی تنظیمات'
-  }
+    action: () => 'به‌روزرسانی تنظیمات',
+  },
 ];
 
 export async function logActivityMiddleware(req: NextRequest) {
@@ -55,8 +55,8 @@ export async function logActivityMiddleware(req: NextRequest) {
     const method = req.method;
 
     // بررسی آیا این مسیر باید لاگ شود
-    const logConfig = LOGGED_PATHS.find(config => 
-      path.startsWith(config.path) && config.methods.includes(method)
+    const logConfig = LOGGED_PATHS.find(
+      (config) => path.startsWith(config.path) && config.methods.includes(method),
     );
 
     if (logConfig) {
@@ -66,8 +66,8 @@ export async function logActivityMiddleware(req: NextRequest) {
           data: {
             action,
             details: `${method} ${path}`,
-            userId: session.user.id
-          }
+            userId: session.user.id,
+          },
         });
       }
     }
@@ -77,9 +77,9 @@ export async function logActivityMiddleware(req: NextRequest) {
 }
 
 export function withActivityLogging(
-  handler: (req: NextRequest) => Promise<NextResponse>
+  handler: (req: NextRequest) => Promise<NextResponse>,
 ): (req: NextRequest) => Promise<NextResponse> {
-  return async function (req: NextRequest) {
+  return async (req: NextRequest) => {
     await logActivityMiddleware(req);
     return handler(req);
   };

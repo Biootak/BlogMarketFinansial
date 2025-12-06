@@ -1,9 +1,9 @@
-import type { FC } from 'react';
 import { getCategories } from '@/actions/categoryActions';
-import ClientSideSlider from './ClientSideSlider';
+import { Sparkles } from 'lucide-react';
+import type { FC } from 'react';
 import { Suspense } from 'react';
 import Empty from '../Empty';
-import { Sparkles } from 'lucide-react';
+import ClientSideSlider from './ClientSideSlider';
 
 export interface SectionSliderNewCategoriesProps {
   className?: string;
@@ -23,20 +23,20 @@ const SectionSliderNewCategories: FC<SectionSliderNewCategoriesProps> = async ({
   const categories = result.success && result.data?.categories ? result.data.categories : [];
 
   return (
-    <section
-      className={`nc-SectionSliderNewCategories ${className} relative overflow-visible`}
-    >
+    <section className={`nc-SectionSliderNewCategories ${className} relative overflow-visible`}>
       {/* Background with subtle pattern */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary-50/80 via-white to-primary-50/50 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900 rounded-3xl" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.08),transparent_50%)] dark:bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.15),transparent_50%)]" />
-      
+
       {/* Content */}
       <div className="relative p-5 sm:p-6 lg:p-8">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary-100/80 dark:bg-primary-900/30 rounded-full mb-4">
             <Sparkles className="w-4 h-4 text-primary-600 dark:text-primary-400" />
-            <span className="text-sm font-medium text-primary-700 dark:text-primary-300">{subHeading}</span>
+            <span className="text-sm font-medium text-primary-700 dark:text-primary-300">
+              {subHeading}
+            </span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
             {heading}

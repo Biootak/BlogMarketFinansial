@@ -1,10 +1,10 @@
-import React from "react";
+import React from 'react';
 
 const data = [
-  { name: "Subcription Name", content: " Premium" },
-  { name: "Package & billing details", content: " $222.00" },
-  { name: "Remaining post", content: " 18" },
-  { name: "Expire date", content: " October 20, 2021" },
+  { name: 'Subcription Name', content: ' Premium' },
+  { name: 'Package & billing details', content: ' $222.00' },
+  { name: 'Remaining post', content: ' 18' },
+  { name: 'Expire date', content: ' October 20, 2021' },
 ];
 
 const DashboardSubcription = () => {
@@ -26,8 +26,8 @@ const DashboardSubcription = () => {
                 key={index}
                 className={`${
                   index % 2 === 0
-                    ? "bg-neutral-50 dark:bg-neutral-800"
-                    : "bg-white dark:bg-neutral-900"
+                    ? 'bg-neutral-50 dark:bg-neutral-800'
+                    : 'bg-white dark:bg-neutral-900'
                 } px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6`}
               >
                 <dt className="text-sm font-medium text-neutral-500 dark:text-neutral-300">

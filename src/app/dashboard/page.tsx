@@ -1,15 +1,15 @@
-import { Suspense } from 'react';
+import { auth } from '@/auth';
 import DashboardPage from '@/components/Dashboard/DashboardPage/DashboardPage';
 import { notFound, redirect } from 'next/navigation';
-import { auth } from '@/auth';
+import { Suspense } from 'react';
 
-import { getStats, getScheduledPosts } from '@/actions/postActions';
 import { getPopularPosts } from '@/actions/getPopularPosts';
 import { getRecentDrafts } from '@/actions/getRecentDrafts';
 import { getViewStats } from '@/actions/getViewStats';
+import { getScheduledPosts, getStats } from '@/actions/postActions';
+import ServiceRequestsWidget from '@/components/Dashboard/ServiceRequests/ServiceRequestsWidget';
 import { DashboardPageSkeleton } from '@/components/Skeletons';
 import { checkRole } from '@/lib/auth';
-import ServiceRequestsWidget from '@/components/Dashboard/ServiceRequests/ServiceRequestsWidget';
 
 export default async function Dashboard() {
   // Check user role before loading any data

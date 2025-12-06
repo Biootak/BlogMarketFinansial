@@ -1,7 +1,7 @@
-import type React from 'react';
 import WidgetHeading1 from '@/components/WidgetHeading1/WidgetHeading1';
-import Card3Small from '../Card3Small/Card3Small';
 import type { PostWithRelations } from '@/types/types';
+import type React from 'react';
+import Card3Small from '../Card3Small/Card3Small';
 import { Icon } from '../ui/icon';
 
 export interface WidgetPostsProps {

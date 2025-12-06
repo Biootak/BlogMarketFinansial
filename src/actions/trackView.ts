@@ -9,7 +9,7 @@ import { headers } from 'next/headers';
  */
 export async function trackPostView(postId: string) {
   console.log('🚀 [SERVER] trackPostView called with postId:', postId);
-  
+
   try {
     const headersList = await headers();
     const ip = headersList.get('x-forwarded-for') || headersList.get('x-real-ip') || 'unknown';

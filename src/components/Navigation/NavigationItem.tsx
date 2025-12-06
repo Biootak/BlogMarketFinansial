@@ -1,13 +1,13 @@
 'use client';
 
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { HiChevronDown } from 'react-icons/hi2';
-import React, { type FC, Fragment, useState } from 'react';
 import type { Route } from '@/routers/types';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
+import React, { type FC, Fragment, useState } from 'react';
+import { HiChevronDown } from 'react-icons/hi2';
 import NcImage from '../NcImage/NcImage';
 import { Button } from '../ui/button';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export interface NavItemType {
   id: string;
@@ -90,9 +90,7 @@ const NavigationItem: FC<NavigationItemProps> = ({ menuItem }) => {
                   <div className="grid gap-1 p-1">
                     {menu.children.map((item, index) => (
                       <Fragment key={index}>
-                        <DropdownMenu.Item
-                          className="flex cursor-pointer select-none items-center rounded-sm px-3 py-2 text-sm outline-none transition-colors hover:bg-neutral-100 focus:bg-neutral-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
-                        >
+                        <DropdownMenu.Item className="flex cursor-pointer select-none items-center rounded-sm px-3 py-2 text-sm outline-none transition-colors hover:bg-neutral-100 focus:bg-neutral-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800">
                           <p className="font-medium text-slate-900 dark:text-neutral-200">
                             {item.name}
                           </p>
@@ -157,7 +155,9 @@ const NavigationItem: FC<NavigationItemProps> = ({ menuItem }) => {
                                         {post.title}
                                       </Link>
                                     </h4>
-                                    <p className="mt-2 text-sm leading-6 text-gray-600">{post.description}</p>
+                                    <p className="mt-2 text-sm leading-6 text-gray-600">
+                                      {post.description}
+                                    </p>
                                   </div>
                                 </article>
                               ))}
@@ -249,9 +249,7 @@ const NavigationItem: FC<NavigationItemProps> = ({ menuItem }) => {
         >
           {menuItem.name}
           {menuItem.isNew && (
-            <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full mr-2">
-              جدید
-            </span>
+            <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full mr-2">جدید</span>
           )}
         </Link>
       );

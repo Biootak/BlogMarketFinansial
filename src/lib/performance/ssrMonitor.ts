@@ -193,7 +193,7 @@ export class SSRMonitor {
    * تولید پیشنهاد برای parallelization
    */
   private generateParallelizationSuggestion(fetches: FetchInfo[]): string {
-    const urls = fetches.map((f) => f.url).join(', ');
+    const _urls = fetches.map((f) => f.url).join(', ');
 
     return `این fetch ها به صورت sequential اجرا می‌شوند و می‌توانند parallel شوند:
 
@@ -239,7 +239,9 @@ const [data1, data2] = await Promise.all([
     }
 
     if (this.fetches.length > 10) {
-      suggestions.push('تعداد fetch ها زیاد است. استفاده از GraphQL یا data aggregation را در نظر بگیرید');
+      suggestions.push(
+        'تعداد fetch ها زیاد است. استفاده از GraphQL یا data aggregation را در نظر بگیرید',
+      );
     }
 
     return {

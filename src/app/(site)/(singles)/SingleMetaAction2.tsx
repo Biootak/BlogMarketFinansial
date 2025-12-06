@@ -1,25 +1,25 @@
 'use client';
 
-import { useState, useCallback, forwardRef, type FC } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import type { PostWithRelations } from '@/types/types';
-import BookmarkCheck from '@/components/BookmarkCheck';
-import { Icon } from '@/components/ui/icon';
 import { savePost } from '@/actions/postActions';
-import { useToast } from '@/components/ui/use-toast';
-import { useSession } from 'next-auth/react';
-import { getPostLink } from '@/lib/getPostLink';
+import BookmarkCheck from '@/components/BookmarkCheck';
+import ModalReportItem from '@/components/ModalReportItem/ModalReportItem';
+import ModalHideAuthor from '@/components/PostActionDropdown/ModalHideAuthor';
+import ShareDropdown from '@/components/ShareDropdown/ShareDropdown';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { HiLink, HiEyeSlash, HiExclamationTriangle } from 'react-icons/hi2';
-import ModalReportItem from '@/components/ModalReportItem/ModalReportItem';
-import ModalHideAuthor from '@/components/PostActionDropdown/ModalHideAuthor';
-import ShareDropdown from '@/components/ShareDropdown/ShareDropdown';
+import { Icon } from '@/components/ui/icon';
+import { useToast } from '@/components/ui/use-toast';
+import { getPostLink } from '@/lib/getPostLink';
+import type { PostWithRelations } from '@/types/types';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useSession } from 'next-auth/react';
+import { type FC, forwardRef, useCallback, useState } from 'react';
+import { HiExclamationTriangle, HiEyeSlash, HiLink } from 'react-icons/hi2';
 
 export interface SingleMetaAction2Props {
   className?: string;
@@ -77,9 +77,7 @@ const SingleMetaAction2: FC<SingleMetaAction2Props> = ({ className = '', post })
         <div className="hidden sm:flex items-center gap-1.5">
           {/* Bookmark Button */}
           <BookmarkCheck post={post}>
-            {(isBookmarked) => (
-              <BookmarkButton postId={post.id} initialBookmarked={isBookmarked} />
-            )}
+            {(isBookmarked) => <BookmarkButton postId={post.id} initialBookmarked={isBookmarked} />}
           </BookmarkCheck>
 
           {/* Share Dropdown */}

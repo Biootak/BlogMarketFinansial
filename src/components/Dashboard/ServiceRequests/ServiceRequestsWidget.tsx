@@ -1,17 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { getServiceRequestStats, getServiceRequests } from '@/actions/serviceRequestActions';
+import { useToast } from '@/components/ui/use-toast';
 import { motion } from 'framer-motion';
-import { 
-  HiOutlineClipboardDocumentList, 
-  HiOutlineClock, 
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
+import {
   HiOutlineArrowLeft,
+  HiOutlineClipboardDocumentList,
+  HiOutlineClock,
   HiOutlineDocumentDuplicate,
 } from 'react-icons/hi2';
-import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
-import { useToast } from '@/components/ui/use-toast';
-import { getServiceRequests, getServiceRequestStats } from '@/actions/serviceRequestActions';
 
 interface ServiceRequest {
   id: string;
@@ -79,7 +79,7 @@ export default function ServiceRequestsWidget() {
     return (
       <div className="relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 animate-pulse" />
-        
+
         <div className="p-5 sm:p-6 animate-pulse">
           {/* Header skeleton */}
           <div className="flex items-center gap-3 mb-5">
@@ -89,12 +89,12 @@ export default function ServiceRequestsWidget() {
               <div className="h-3 w-28 bg-slate-100 dark:bg-slate-800 rounded" />
             </div>
           </div>
-          
+
           {/* Items skeleton */}
           <div className="space-y-2.5">
             {[...Array(3)].map((_, i) => (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50"
               >
                 <div className="w-11 h-11 bg-slate-200 dark:bg-slate-700 rounded-xl flex-shrink-0" />
@@ -120,7 +120,7 @@ export default function ServiceRequestsWidget() {
     >
       {/* Decorative gradient top border */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500" />
-      
+
       {/* Header */}
       <div className="px-5 sm:px-6 py-4 sm:py-5 border-b border-slate-100 dark:border-slate-800">
         <div className="flex items-center gap-3">
@@ -129,7 +129,7 @@ export default function ServiceRequestsWidget() {
               <HiOutlineClipboardDocumentList className="w-5 h-5" />
             </div>
           </div>
-          
+
           <div>
             <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
               درخواست‌های خدمات
@@ -163,10 +163,10 @@ export default function ServiceRequestsWidget() {
                 key={request.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ 
-                  delay: index * 0.05, 
+                transition={{
+                  delay: index * 0.05,
                   duration: 0.2,
-                  ease: 'easeOut'
+                  ease: 'easeOut',
                 }}
                 className="group relative p-3.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-orange-50/50 dark:hover:bg-slate-800/70 transition-colors duration-200 border border-slate-200/50 dark:border-slate-700/50"
               >
@@ -181,7 +181,7 @@ export default function ServiceRequestsWidget() {
                       )}
                     </div>
                   </div>
-                  
+
                   {/* Content */}
                   <div className="flex-grow min-w-0 space-y-2">
                     <div className="flex items-start gap-2">
@@ -191,13 +191,17 @@ export default function ServiceRequestsWidget() {
                       {request.urgency === 'URGENT' && (
                         <span className="flex-shrink-0 flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] bg-red-500 text-white rounded-md font-bold">
                           <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                            <path
+                              fillRule="evenodd"
+                              d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                           فوری
                         </span>
                       )}
                     </div>
-                    
+
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5 text-xs min-w-0 flex-1">
                         <span className="px-2 py-1 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium flex-shrink-0">
@@ -205,10 +209,13 @@ export default function ServiceRequestsWidget() {
                         </span>
                         <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 flex-shrink-0" />
                         <span className="font-mono font-semibold text-slate-700 dark:text-slate-300 truncate">
-                          {request.amount} <span className="text-orange-600 dark:text-orange-400">{request.currency}</span>
+                          {request.amount}{' '}
+                          <span className="text-orange-600 dark:text-orange-400">
+                            {request.currency}
+                          </span>
                         </span>
                       </div>
-                      
+
                       {/* Status Badge - Compact */}
                       <motion.div
                         className={`flex-shrink-0 px-2 py-1 rounded-lg text-[10px] font-bold ${statusColors[request.status]} shadow-sm`}
@@ -220,7 +227,7 @@ export default function ServiceRequestsWidget() {
                         {request.status === 'CANCELLED' && '✕'}
                       </motion.div>
                     </div>
-                    
+
                     {/* Tracking Code - Compact */}
                     <button
                       type="button"
@@ -228,7 +235,9 @@ export default function ServiceRequestsWidget() {
                       className="group/code w-full inline-flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 transition-all duration-200 cursor-pointer"
                       title="کلیک برای کپی کد پیگیری"
                     >
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium flex-shrink-0">کد:</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium flex-shrink-0">
+                        کد:
+                      </span>
                       <span className="font-mono text-xs font-bold text-slate-700 dark:text-slate-300 truncate">
                         {request.trackingCode}
                       </span>

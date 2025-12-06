@@ -1,9 +1,9 @@
-import React, { type FC } from 'react';
-import { HiArrowRight } from 'react-icons/hi2';
+import type { TopAuthor } from '@/actions/getTopAuthors';
 import Avatar from '@/components/Avatar/Avatar';
 import NcImage from '@/components/NcImage/NcImage';
 import Link from 'next/link';
-import type { TopAuthor } from '@/actions/getTopAuthors';
+import React, { type FC } from 'react';
+import { HiArrowRight } from 'react-icons/hi2';
 
 export interface CardAuthorBox2Props {
   className?: string;

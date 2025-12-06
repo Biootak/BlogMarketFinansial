@@ -1,12 +1,12 @@
 'use client';
 
-import React, { type FC, useState } from 'react';
-import twFocusClass from '@/utils/twFocusClass';
-import NcDropDown from '@/components/NcDropDown/NcDropDown';
 import ModalReportItem from '@/components/ModalReportItem/ModalReportItem';
-import ModalHideAuthor from './ModalHideAuthor';
+import NcDropDown from '@/components/NcDropDown/NcDropDown';
 import type { NcDropDownItem } from '@/types/types';
+import twFocusClass from '@/utils/twFocusClass';
+import React, { type FC, useState } from 'react';
 import { HiOutlineClipboard, HiOutlineEyeSlash, HiOutlineFlag } from 'react-icons/hi2';
+import ModalHideAuthor from './ModalHideAuthor';
 
 // تعریف پراپ‌های کامپوننت
 export interface AccountActionDropdownProps {

@@ -1,13 +1,13 @@
 'use client';
 
-import type { FC } from 'react';
-import type { PostWithRelations } from '@/types/types';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
-import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
 import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia';
-import Link from 'next/link';
-import Image from 'next/image';
+import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
 import { getPostLink } from '@/lib/getPostLink';
+import type { PostWithRelations } from '@/types/types';
+import Image from 'next/image';
+import Link from 'next/link';
+import type { FC } from 'react';
 import { HiArrowLeft } from 'react-icons/hi2';
 
 export interface Card9Props {
@@ -67,7 +67,10 @@ const Card9: FC<Card9Props> = ({ className = 'h-full', ratio = 'tall', post, hov
             <PostFeaturedMedia post={post} className="w-full h-full" />
           </div>
         ) : (
-          <Link href={getPostLink(postType, slug)} className="relative w-full h-full block overflow-hidden">
+          <Link
+            href={getPostLink(postType, slug)}
+            className="relative w-full h-full block overflow-hidden"
+          >
             <Image
               fill
               alt={title}
@@ -82,7 +85,7 @@ const Card9: FC<Card9Props> = ({ className = 'h-full', ratio = 'tall', post, hov
               wrapSize="w-8 h-8"
               iconSize="w-4 h-4"
             />
-            
+
             {/* Hover Arrow */}
             <div className="absolute top-3 end-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
               <div className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30">
@@ -95,7 +98,7 @@ const Card9: FC<Card9Props> = ({ className = 'h-full', ratio = 'tall', post, hov
 
       {/* Enhanced Gradient Overlay */}
       <div className="absolute bottom-0 inset-x-0 h-3/4 bg-gradient-to-t from-black/90 via-black/50 to-transparent pointer-events-none" />
-      
+
       {/* Colored Accent Gradient */}
       <div className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-primary-900/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
@@ -105,10 +108,10 @@ const Card9: FC<Card9Props> = ({ className = 'h-full', ratio = 'tall', post, hov
           <CategoryBadgeList categories={categories} />
         </div>
         {renderMeta()}
-        
+
         {/* Read More Link */}
         <div className="mt-4 pt-3 border-t border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
-          <Link 
+          <Link
             href={getPostLink(postType, slug)}
             className="inline-flex items-center gap-2 text-xs font-bold text-primary-300 hover:text-primary-200 transition-colors"
           >
@@ -117,7 +120,7 @@ const Card9: FC<Card9Props> = ({ className = 'h-full', ratio = 'tall', post, hov
           </Link>
         </div>
       </div>
-      
+
       {/* Bottom Accent Line */}
       <div className="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-l from-primary-500 via-violet-500 to-rose-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
     </div>

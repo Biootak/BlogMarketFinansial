@@ -1,7 +1,7 @@
 import { Extension } from '@tiptap/core';
-import Suggestion, { type SuggestionOptions } from '@tiptap/suggestion';
 import { PluginKey } from '@tiptap/pm/state';
 import type { Editor } from '@tiptap/react';
+import Suggestion, { type SuggestionOptions } from '@tiptap/suggestion';
 
 // کلید یکتا برای پلاگین slash commands
 export const slashCommandsPluginKey = new PluginKey('slashCommands');
@@ -132,7 +132,8 @@ export const defaultSlashCommands: SlashCommandItem[] = [
     icon: '▦',
     keywords: ['table', 'جدول'],
     category: 'advanced',
-    command: (editor) => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
+    command: (editor) =>
+      editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
   },
   {
     title: 'خط جداکننده',
@@ -201,7 +202,11 @@ export const SlashCommands = Extension.create({
       suggestion: {
         char: '/',
         pluginKey: slashCommandsPluginKey,
-        command: ({ editor, range, props }: { editor: Editor; range: any; props: SlashCommandItem }) => {
+        command: ({
+          editor,
+          range,
+          props,
+        }: { editor: Editor; range: any; props: SlashCommandItem }) => {
           // اول اسلش و متن جستجو رو پاک کن، بعد دستور رو اجرا کن
           editor.chain().focus().deleteRange(range).run();
           // یک tick صبر کن تا deletion کامل بشه

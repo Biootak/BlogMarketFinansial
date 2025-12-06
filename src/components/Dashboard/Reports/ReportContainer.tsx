@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 interface ReportContainerProps {
   children: ReactNode;
@@ -20,7 +20,7 @@ export function ReportContainer({
         <div
           className={cn(
             'absolute -inset-0.5 sm:-inset-1 bg-gradient-to-l rounded-2xl sm:rounded-3xl blur-lg sm:blur-xl opacity-20',
-            gradient
+            gradient,
           )}
         />
 
@@ -30,16 +30,11 @@ export function ReportContainer({
             'relative overflow-hidden rounded-2xl sm:rounded-3xl',
             'bg-white/90 backdrop-blur-2xl',
             'border border-white/80 sm:border-2',
-            'shadow-xl sm:shadow-2xl shadow-gray-400/20'
+            'shadow-xl sm:shadow-2xl shadow-gray-400/20',
           )}
         >
           {/* Top Gradient Bar - Thicker & More Prominent */}
-          <div
-            className={cn(
-              'absolute top-0 inset-x-0 h-1 sm:h-1.5 bg-gradient-to-l',
-              gradient
-            )}
-          />
+          <div className={cn('absolute top-0 inset-x-0 h-1 sm:h-1.5 bg-gradient-to-l', gradient)} />
 
           {/* Multi-layer Inner Glow */}
           <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-white/40 to-transparent pointer-events-none" />

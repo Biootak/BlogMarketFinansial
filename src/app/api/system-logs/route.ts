@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import db from '@/lib/db';
+import { NextResponse } from 'next/server';
 
 /**
  * GET /api/system-logs
- * 
+ *
  * Returns a list of system logs.
- * 
+ *
  * Query Parameters:
  * - level: Filter by log level (all, debug, info, warn, error)
  * - source: Filter by log source (all, api, web, etc.)
@@ -16,10 +16,7 @@ export async function GET(req: Request) {
   try {
     const session = await auth();
     if (!session?.user || session.user.role !== 'SUPER_ADMIN') {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized access' },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, error: 'Unauthorized access' }, { status: 401 });
     }
 
     const url = new URL(req.url);
@@ -28,19 +25,19 @@ export async function GET(req: Request) {
     const search = url.searchParams.get('search');
 
     const where: any = {};
-    
+
     if (level && level !== 'all') {
       where.level = level;
     }
-    
+
     if (source && source !== 'all') {
       where.source = source;
     }
-    
+
     if (search) {
       where.message = {
         contains: search,
-        mode: 'insensitive'
+        mode: 'insensitive',
       };
     }
 
@@ -48,20 +45,17 @@ export async function GET(req: Request) {
       where,
       take: 100,
       orderBy: {
-        timestamp: 'desc'
-      }
+        timestamp: 'desc',
+      },
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      logs 
+    return NextResponse.json({
+      success: true,
+      logs,
     });
   } catch (error) {
     console.error('[SYSTEM_LOGS_GET]', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -69,10 +63,7 @@ export async function POST(req: Request) {
   try {
     const session = await auth();
     if (!session?.user || session.user.role !== 'SUPER_ADMIN') {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized access' },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, error: 'Unauthorized access' }, { status: 401 });
     }
 
     const body = await req.json();
@@ -83,19 +74,16 @@ export async function POST(req: Request) {
         level,
         message,
         source,
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      },
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      log 
+    return NextResponse.json({
+      success: true,
+      log,
     });
   } catch (error) {
     console.error('[SYSTEM_LOGS_POST]', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
   }
 }

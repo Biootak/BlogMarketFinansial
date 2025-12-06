@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { HiMagnifyingGlass } from 'react-icons/hi2';
 import { Input } from '@/components/ui/input';
 import { useDebounce } from '@/hooks/useDebounce';
 import { cn } from '@/lib/utils';
+import { useEffect, useState } from 'react';
+import { HiMagnifyingGlass } from 'react-icons/hi2';
 
 interface SearchBarProps {
   onSearch: (term: string) => void;

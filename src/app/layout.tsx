@@ -1,14 +1,14 @@
-import { Vazirmatn } from 'next/font/google';
-import type { Metadata } from 'next';
 import { Toaster } from '@/components/ui/toaster';
+import type { Metadata } from 'next';
+import { Vazirmatn } from 'next/font/google';
 
 import './globals.css';
 import '@/styles/index.scss';
 
 import { auth } from '@/auth';
-import Providers from '@/components/providers';
-import { PerformanceProvider } from '@/components/PerformanceProvider';
 import { PerformanceDashboard } from '@/components/PerformanceDashboard/PerformanceDashboard';
+import { PerformanceProvider } from '@/components/PerformanceProvider';
+import Providers from '@/components/providers';
 
 export const metadata: Metadata = {
   title: 'بازارهای مالی',

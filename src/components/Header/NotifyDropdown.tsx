@@ -2,8 +2,8 @@
 
 import { Popover, Transition } from '@/app/headlessui';
 import Avatar from '@/components/Avatar/Avatar';
-import { Fragment, memo, useCallback, useMemo, useId } from 'react';
 import { useThemeMode } from '@/hooks/useThemeMode';
+import { Fragment, memo, useCallback, useId, useMemo } from 'react';
 
 interface Props {
   className?: string;

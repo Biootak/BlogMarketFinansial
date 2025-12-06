@@ -2,8 +2,8 @@
  * API endpoint for receiving performance issues
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import type { PerformanceIssue } from '@/lib/performance/performance-monitor';
+import { type NextRequest, NextResponse } from 'next/server';
 
 interface PerformanceIssueReport extends PerformanceIssue {
   url: string;

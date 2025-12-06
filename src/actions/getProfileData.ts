@@ -14,6 +14,4 @@ export async function getProfileData(): Promise<UserWithProfile | null> {
       _count: true,
     },
   });
-
-
 }

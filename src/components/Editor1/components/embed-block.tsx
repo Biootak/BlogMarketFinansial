@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react';
+import { type NodeViewProps, NodeViewWrapper } from '@tiptap/react';
+import { AlertCircle, ExternalLink, Loader2, Play, RefreshCw } from 'lucide-react';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { type EmbedProvider, getEmbedUrl } from '../extensions/embed';
-import { Loader2, AlertCircle, RefreshCw, ExternalLink, Play } from 'lucide-react';
 
 const EmbedBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, selected }) => {
   const { src, provider, embedId, width, height } = node.attrs;
@@ -11,11 +12,14 @@ const EmbedBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, s
   const [currentHeight, setCurrentHeight] = useState(height);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
+  const [_showPreview, _setShowPreview] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const embedUrl = useMemo(() => getEmbedUrl(provider as EmbedProvider, embedId), [provider, embedId]);
-  
+  const embedUrl = useMemo(
+    () => getEmbedUrl(provider as EmbedProvider, embedId),
+    [provider, embedId],
+  );
+
   // تشخیص نوع provider برای نمایش آیکون مناسب
   const providerConfig = useMemo(() => {
     const configs: Record<string, { label: string; color: string; icon: string }> = {
@@ -27,11 +31,14 @@ const EmbedBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, s
     return configs[provider as string] || configs.generic;
   }, [provider]);
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (!editor.isEditable) return;
-    e.preventDefault();
-    setIsResizing(true);
-  }, [editor.isEditable]);
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (!editor.isEditable) return;
+      e.preventDefault();
+      setIsResizing(true);
+    },
+    [editor.isEditable],
+  );
 
   const handleLoad = useCallback(() => {
     setIsLoading(false);
@@ -138,10 +145,10 @@ const EmbedBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, s
             <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mx-auto mb-3">
               <ExternalLink className="w-6 h-6 text-gray-500" />
             </div>
-            <a 
-              href={src} 
-              target="_blank" 
-              rel="noopener noreferrer" 
+            <a
+              href={src}
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium hover:underline inline-flex items-center gap-2"
             >
               {src}
@@ -163,7 +170,7 @@ const EmbedBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, s
     >
       <div className="relative rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-200">
         {renderEmbed()}
-        
+
         {/* Resize handle */}
         {editor.isEditable && !hasError && (
           <div
@@ -178,7 +185,7 @@ const EmbedBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, s
             <div className="w-20 h-1.5 bg-white/80 rounded-full shadow-sm" />
           </div>
         )}
-        
+
         {/* Height indicator during resize */}
         {isResizing && (
           <div className="absolute bottom-8 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-black/80 text-white text-xs rounded-lg font-mono backdrop-blur-sm">
@@ -186,9 +193,11 @@ const EmbedBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, s
           </div>
         )}
       </div>
-      
+
       {/* Provider badge */}
-      <div className={`absolute top-3 left-3 px-3 py-1.5 ${providerConfig.color} text-white text-xs rounded-lg font-medium backdrop-blur-sm shadow-lg flex items-center gap-1.5`}>
+      <div
+        className={`absolute top-3 left-3 px-3 py-1.5 ${providerConfig.color} text-white text-xs rounded-lg font-medium backdrop-blur-sm shadow-lg flex items-center gap-1.5`}
+      >
         <span>{providerConfig.icon}</span>
         <span>{providerConfig.label}</span>
       </div>

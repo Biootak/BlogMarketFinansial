@@ -3,11 +3,11 @@
  * اجرای performance audit
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import prisma from '@/lib/db';
 import { BundleAnalyzer } from '@/lib/performance/bundleAnalyzer';
 import { databaseProfiler } from '@/lib/performance/databaseProfiler';
 import { ReportGenerator } from '@/lib/performance/reportGenerator';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -82,7 +82,7 @@ async function runAudit(auditId: string, type: string) {
     await prisma.performanceAudit.update({
       where: { id: auditId },
       data: {
-        findings: report,
+        findings: JSON.parse(JSON.stringify(report)),
         status: 'completed',
         completedAt: new Date(),
         summary: {

@@ -1,13 +1,13 @@
 'use client';
 
-import React, { type FC, useState } from 'react';
-import PostCardInfo from '@/components/PostCardInfo/PostCardInfo';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
-import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia';
+import PostCardInfo from '@/components/PostCardInfo/PostCardInfo';
 import PostCardMetaV2 from '@/components/PostCardMeta/PostCardMetaV2';
-import Link from 'next/link';
-import type { PostWithRelations } from '@/types/types';
+import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia';
 import { getPostLink } from '@/lib/getPostLink';
+import type { PostWithRelations } from '@/types/types';
+import Link from 'next/link';
+import React, { type FC, useState } from 'react';
 
 export interface Card10Props {
   className?: string;

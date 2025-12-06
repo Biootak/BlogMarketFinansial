@@ -1,7 +1,7 @@
 'use client';
 
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -18,10 +18,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
 import type { TaxonomyType } from '@/types/types';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Button } from '@/components/ui/button';
 
 const categorySchema = z.object({
   name: z.string().min(1, 'نام دسته‌بندی الزامی است'),
@@ -118,7 +118,9 @@ export function CategoryFormFields({
                       {parent.name}
                       <button
                         type="button"
-                        onClick={() => field.onChange((field.value || []).filter((id) => id !== parentId))}
+                        onClick={() =>
+                          field.onChange((field.value || []).filter((id) => id !== parentId))
+                        }
                         className="mr-2 text-red-500 hover:text-red-700"
                       >
                         ×

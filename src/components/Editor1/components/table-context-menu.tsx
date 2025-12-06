@@ -1,21 +1,22 @@
 'use client';
 
-import React, { useCallback, useEffect, useState, useRef } from 'react';
+import { cn } from '@/lib/utils';
 import type { Editor } from '@tiptap/react';
 import {
-  Minus,
-  Trash2,
-  ArrowUp,
   ArrowDown,
   ArrowLeft,
   ArrowRight,
-  Merge,
-  Split,
-  Palette,
+  ArrowUp,
   ChevronLeft,
+  Merge,
+  Minus,
+  Palette,
+  Split,
+  Trash2,
 } from 'lucide-react';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { COLOR_PALETTE, hexToRgba } from '../constants/color';
-import { cn } from '@/lib/utils';
 
 interface TableContextMenuProps {
   editor: Editor;
@@ -37,56 +38,59 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
     (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       const tableCell = target.closest('td, th');
-      
+
       if (tableCell && editor.isActive('table')) {
         event.preventDefault();
-        
+
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
         const menuWidth = 240;
         const menuHeight = 400;
-        
+
         let x = event.clientX;
         let y = event.clientY;
-        
+
         if (x + menuWidth > viewportWidth) {
           x = viewportWidth - menuWidth - 10;
         }
-        
+
         if (y + menuHeight > viewportHeight) {
           y = viewportHeight - menuHeight - 10;
         }
-        
+
         setPosition({ x, y });
         setIsOpen(true);
         setShowColorPicker(false);
       }
     },
-    [editor]
+    [editor],
   );
 
   const handleClick = useCallback((event: MouseEvent) => {
-    if (menuRef.current && menuRef.current.contains(event.target as Node)) {
+    if (menuRef.current?.contains(event.target as Node)) {
       return;
     }
     setIsOpen(false);
   }, []);
 
-  const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      if (showColorPicker) {
-        setShowColorPicker(false);
-      } else {
-        setIsOpen(false);
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        if (showColorPicker) {
+          setShowColorPicker(false);
+        } else {
+          setIsOpen(false);
+        }
       }
-    }
-  }, [showColorPicker]);
+    },
+    [showColorPicker],
+  );
 
   useEffect(() => {
     document.addEventListener('contextmenu', handleContextMenu);
     document.addEventListener('click', handleClick);
     document.addEventListener('keydown', handleKeyDown);
-    
+
     return () => {
       document.removeEventListener('contextmenu', handleContextMenu);
       document.removeEventListener('click', handleClick);
@@ -195,7 +199,7 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
           {sectionIndex > 0 && (
             <div className="h-px bg-gray-200 dark:bg-gray-700 my-2" role="separator" />
           )}
-          <div 
+          <div
             id={`section-${section.title}`}
             className="px-3 py-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase"
           >
@@ -215,15 +219,17 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
                 }
               }}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2 text-sm text-right transition-colors",
+                'w-full flex items-center gap-3 px-3 py-2 text-sm text-right transition-colors',
                 item.disabled
                   ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
                   : item.danger
-                  ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'
-                  : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'
+                    : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700',
               )}
             >
-              <span className={item.disabled ? 'opacity-50' : ''} aria-hidden="true">{item.icon}</span>
+              <span className={item.disabled ? 'opacity-50' : ''} aria-hidden="true">
+                {item.icon}
+              </span>
               <span>{item.label}</span>
             </button>
           ))}
@@ -235,7 +241,7 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
       <div className="px-3 py-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase">
         رنگ سلول
       </div>
-      
+
       <div className="px-2 py-1">
         <button
           type="button"
@@ -247,40 +253,50 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
             <Palette size={14} aria-hidden="true" />
             انتخاب رنگ
           </span>
-          <ChevronLeft 
-            size={14} 
-            className={cn("transition-transform", showColorPicker && "rotate-90")} 
+          <ChevronLeft
+            size={14}
+            className={cn('transition-transform', showColorPicker && 'rotate-90')}
             aria-hidden="true"
           />
         </button>
-        
+
         {showColorPicker && (
           <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg space-y-2">
             {/* Color palette - first 4 categories */}
-            {Object.entries(COLOR_PALETTE).slice(0, 4).map(([category, colors]) => (
-              <div key={category} className="flex gap-1">
-                {colors.map((c) => (
-                  <button
-                    key={c.value}
-                    type="button"
-                    onClick={() => setCellColor(opacity < 1 ? hexToRgba(c.value, opacity) : c.value)}
-                    title={c.name}
-                    aria-label={c.name}
-                    className={cn(
-                      'w-6 h-6 rounded-md transition-all hover:scale-110 border',
-                      c.isBrightColor ? 'border-gray-200 dark:border-gray-600' : 'border-transparent'
-                    )}
-                    style={{ backgroundColor: opacity < 1 ? hexToRgba(c.value, opacity) : c.value }}
-                  />
-                ))}
-              </div>
-            ))}
-            
+            {Object.entries(COLOR_PALETTE)
+              .slice(0, 4)
+              .map(([category, colors]) => (
+                <div key={category} className="flex gap-1">
+                  {colors.map((c) => (
+                    <button
+                      key={c.value}
+                      type="button"
+                      onClick={() =>
+                        setCellColor(opacity < 1 ? hexToRgba(c.value, opacity) : c.value)
+                      }
+                      title={c.name}
+                      aria-label={c.name}
+                      className={cn(
+                        'w-6 h-6 rounded-md transition-all hover:scale-110 border',
+                        c.isBrightColor
+                          ? 'border-gray-200 dark:border-gray-600'
+                          : 'border-transparent',
+                      )}
+                      style={{
+                        backgroundColor: opacity < 1 ? hexToRgba(c.value, opacity) : c.value,
+                      }}
+                    />
+                  ))}
+                </div>
+              ))}
+
             {/* Opacity slider */}
             <div className="pt-2 border-t border-gray-200 dark:border-gray-600">
               <div className="flex items-center justify-between text-xs mb-1">
                 <span className="text-gray-500 dark:text-gray-400">شفافیت</span>
-                <span className="font-mono text-gray-700 dark:text-gray-300">{Math.round(opacity * 100)}%</span>
+                <span className="font-mono text-gray-700 dark:text-gray-300">
+                  {Math.round(opacity * 100)}%
+                </span>
               </div>
               <input
                 type="range"
@@ -288,12 +304,12 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
                 max="1"
                 step="0.1"
                 value={opacity}
-                onChange={(e) => setOpacity(parseFloat(e.target.value))}
+                onChange={(e) => setOpacity(Number.parseFloat(e.target.value))}
                 className="w-full h-1.5 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
                 aria-label="تنظیم شفافیت"
               />
             </div>
-            
+
             {/* Clear color */}
             <button
               type="button"

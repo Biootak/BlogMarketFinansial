@@ -50,7 +50,6 @@
   --color-neutral-800: rgb(31, 41, 55);
   --color-neutral-900: rgb(17, 24, 39);
 
-
   --color-accent-50: rgb(255, 251, 235);
   --color-accent-100: rgb(254, 243, 199);
   --color-accent-200: rgb(253, 230, 138);
@@ -205,7 +204,7 @@
   padding-bottom: calc(var(--tw-aspect-h) / var(--tw-aspect-w) * 100%);
 }
 
-.aspect-w-3>* {
+.aspect-w-3 > * {
   position: absolute;
   height: 100%;
   width: 100%;
@@ -357,13 +356,13 @@
    ============================================ */
 
 /* Space utilities RTL fix */
-[dir="rtl"] .space-x-1> :not([hidden])~ :not([hidden]),
-[dir="rtl"] .space-x-2> :not([hidden])~ :not([hidden]),
-[dir="rtl"] .space-x-3> :not([hidden])~ :not([hidden]),
-[dir="rtl"] .space-x-4> :not([hidden])~ :not([hidden]),
-[dir="rtl"] .space-x-5> :not([hidden])~ :not([hidden]),
-[dir="rtl"] .space-x-6> :not([hidden])~ :not([hidden]),
-[dir="rtl"] .space-x-8> :not([hidden])~ :not([hidden]) {
+[dir="rtl"] .space-x-1 > :not([hidden]) ~ :not([hidden]),
+[dir="rtl"] .space-x-2 > :not([hidden]) ~ :not([hidden]),
+[dir="rtl"] .space-x-3 > :not([hidden]) ~ :not([hidden]),
+[dir="rtl"] .space-x-4 > :not([hidden]) ~ :not([hidden]),
+[dir="rtl"] .space-x-5 > :not([hidden]) ~ :not([hidden]),
+[dir="rtl"] .space-x-6 > :not([hidden]) ~ :not([hidden]),
+[dir="rtl"] .space-x-8 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-x-reverse: 1;
 }
 
@@ -507,7 +506,7 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  
+
   .animate-pulse,
   .animate-spin,
   .animate-bounce,
@@ -559,17 +558,13 @@
 
 /* Premium shadow layers */
 .shadow-premium {
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.04),
-    0 1px 2px rgba(0, 0, 0, 0.06),
-    0 0 0 1px rgba(255, 255, 255, 0.8);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06), 0 0 0 1px
+    rgba(255, 255, 255, 0.8);
 }
 
 .shadow-premium-hover {
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.08),
-    0 4px 16px rgba(0, 0, 0, 0.06),
-    0 0 0 1px rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.06), 0 0 0 1px
+    rgba(255, 255, 255, 0.9);
 }
 
 /* Smooth cubic bezier for premium feel */
@@ -588,7 +583,8 @@
 
 /* Animated gradient background */
 @keyframes gradient-shift {
-  0%, 100% {
+  0%,
+  100% {
     background-position: 0% 50%;
   }
   50% {
@@ -603,7 +599,8 @@
 
 /* Floating animation for orbs */
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) rotate(0deg);
   }
   50% {
@@ -617,7 +614,8 @@
 
 /* Pulse glow effect */
 @keyframes pulse-glow {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -642,18 +640,13 @@
 }
 
 .shine-effect::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    45deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.3) 50%,
-    transparent 70%
-  );
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 50%, transparent 70%);
   transform: translateX(-100%) translateY(-100%) rotate(45deg);
 }
 
@@ -664,9 +657,7 @@
 /* Premium focus ring */
 .focus-ring-premium:focus-visible {
   outline: none;
-  box-shadow: 
-    0 0 0 4px rgba(var(--c-primary-500), 0.1),
-    0 0 0 2px rgba(var(--c-primary-500), 0.3);
+  box-shadow: 0 0 0 4px rgba(var(--c-primary-500), 0.1), 0 0 0 2px rgba(var(--c-primary-500), 0.3);
 }
 
 /* Smooth scale on hover */
@@ -685,9 +676,7 @@
 
 .card-premium-hover:hover {
   transform: translateY(-4px);
-  box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.12),
-    0 8px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
 /* ============================================
@@ -713,7 +702,8 @@
 
 /* Smooth breathing animation for orbs */
 @keyframes breathe {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1) translateY(0);
     opacity: 0.3;
   }
@@ -761,7 +751,8 @@
 
 /* Glow pulse for active elements */
 @keyframes glow-pulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
   }
   50% {

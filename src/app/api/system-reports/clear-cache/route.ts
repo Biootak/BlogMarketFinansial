@@ -22,7 +22,7 @@ export async function POST() {
         success: false,
         error: error instanceof Error ? error.message : 'خطا در پاک کردن کش',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,9 +1,9 @@
-import React, { type FC } from 'react';
 import Badge from '@/components/Badge/Badge';
-import Link from 'next/link';
-import Image from 'next/image';
-import { HiArrowRight } from 'react-icons/hi2';
 import type { TaxonomyType, TwMainColor } from '@/types/types';
+import Image from 'next/image';
+import Link from 'next/link';
+import React, { type FC } from 'react';
+import { HiArrowRight } from 'react-icons/hi2';
 
 export interface CardCategory5Props {
   className?: string;
@@ -14,7 +14,10 @@ const CardCategory5: FC<CardCategory5Props> = ({ className = '', taxonomy }) => 
   const { count, name, thumbnail, color } = taxonomy;
 
   return (
-    <Link href={`/archive/category/${name}`} className={`nc-CardCategory5 relative block group ${className}`}>
+    <Link
+      href={`/archive/category/${name}`}
+      className={`nc-CardCategory5 relative block group ${className}`}
+    >
       <div
         className={
           'flex-shrink-0 relative w-full aspect-[8/5] rounded-3xl overflow-hidden z-0 group'

@@ -1,11 +1,11 @@
 'use client';
 
-import React, { type FC } from 'react';
-import Avatar from '@/components/Avatar/Avatar';
-import Link from 'next/link';
 import type { TopAuthor } from '@/actions/getTopAuthors';
+import Avatar from '@/components/Avatar/Avatar';
 import { motion } from 'framer-motion';
-import { FileText, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, FileText } from 'lucide-react';
+import Link from 'next/link';
+import React, { type FC } from 'react';
 
 export interface CardAuthorBoxProps {
   className?: string;
@@ -29,13 +29,15 @@ const CardAuthorBox: FC<CardAuthorBoxProps> = ({ className = '', author, index =
 
         {/* Rank Badge for Top 3 */}
         {isTopThree && (
-          <div className={`absolute top-2 sm:top-3 end-2 sm:end-3 z-10 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold shadow-lg ${
-            index === 0 
-              ? 'bg-gradient-to-br from-amber-400 to-amber-600 text-white' 
-              : index === 1 
-                ? 'bg-gradient-to-br from-neutral-300 to-neutral-400 text-neutral-800' 
-                : 'bg-gradient-to-br from-amber-600 to-amber-800 text-white'
-          }`}>
+          <div
+            className={`absolute top-2 sm:top-3 end-2 sm:end-3 z-10 w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold shadow-lg ${
+              index === 0
+                ? 'bg-gradient-to-br from-amber-400 to-amber-600 text-white'
+                : index === 1
+                  ? 'bg-gradient-to-br from-neutral-300 to-neutral-400 text-neutral-800'
+                  : 'bg-gradient-to-br from-amber-600 to-amber-800 text-white'
+            }`}
+          >
             {index + 1}
           </div>
         )}

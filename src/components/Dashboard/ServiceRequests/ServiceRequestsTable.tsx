@@ -1,26 +1,26 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
 import {
-  HiOutlineMagnifyingGlass,
-  HiOutlineFunnel,
-  HiOutlineEye,
-  HiOutlineTrash,
-  HiOutlineArrowPath,
-  HiOutlineCheckCircle,
-  HiOutlineXCircle,
-  HiOutlineClock,
-  HiOutlinePhone,
-  HiOutlineEnvelope,
-  HiOutlineChevronRight,
-  HiOutlineChevronLeft,
-} from 'react-icons/hi2';
-import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
-import {
+  deleteServiceRequest,
   getServiceRequests,
   updateServiceRequestStatus,
-  deleteServiceRequest,
 } from '@/actions/serviceRequestActions';
+import { useCallback, useEffect, useState } from 'react';
+import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
+import {
+  HiOutlineArrowPath,
+  HiOutlineCheckCircle,
+  HiOutlineChevronLeft,
+  HiOutlineChevronRight,
+  HiOutlineClock,
+  HiOutlineEnvelope,
+  HiOutlineEye,
+  HiOutlineFunnel,
+  HiOutlineMagnifyingGlass,
+  HiOutlinePhone,
+  HiOutlineTrash,
+  HiOutlineXCircle,
+} from 'react-icons/hi2';
 
 interface ServiceRequest {
   id: string;
@@ -42,25 +42,29 @@ interface ServiceRequest {
 const statusConfig = {
   PENDING: {
     label: 'در انتظار',
-    color: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800',
+    color:
+      'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800',
     icon: HiOutlineClock,
     dot: 'bg-amber-500',
   },
   IN_PROGRESS: {
     label: 'در حال انجام',
-    color: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800',
+    color:
+      'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800',
     icon: HiOutlineArrowPath,
     dot: 'bg-blue-500',
   },
   COMPLETED: {
     label: 'تکمیل شده',
-    color: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800',
+    color:
+      'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800',
     icon: HiOutlineCheckCircle,
     dot: 'bg-emerald-500',
   },
   CANCELLED: {
     label: 'لغو شده',
-    color: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800',
+    color:
+      'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800',
     icon: HiOutlineXCircle,
     dot: 'bg-rose-500',
   },
@@ -101,7 +105,7 @@ export default function ServiceRequestsTable() {
   const handleStatusChange = async (id: string, newStatus: string) => {
     const result = await updateServiceRequestStatus(
       id,
-      newStatus as 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+      newStatus as 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED',
     );
     if (result.success) {
       if (selectedRequest && selectedRequest.id === id) {
@@ -412,7 +416,9 @@ export default function ServiceRequestsTable() {
                   <div className="mb-3 flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
                       <span className="text-base">{serviceType.emoji}</span>
-                      <span className="text-slate-700 dark:text-slate-300">{serviceType.label}</span>
+                      <span className="text-slate-700 dark:text-slate-300">
+                        {serviceType.label}
+                      </span>
                     </div>
                     <span className="font-mono font-semibold text-slate-900 dark:text-white">
                       {Number(request.amount).toLocaleString()}{' '}
@@ -492,143 +498,141 @@ export default function ServiceRequestsTable() {
             className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200/60 bg-white p-8 shadow-2xl transition-all duration-300 dark:border-slate-700/60 dark:bg-slate-900"
             onClick={(e) => e.stopPropagation()}
           >
-              {/* Modal Header */}
-              <div className="mb-8 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 p-3 shadow-lg shadow-blue-500/25">
-                    <HiOutlineEye className="h-6 w-6 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-                    جزئیات درخواست
-                  </h3>
+            {/* Modal Header */}
+            <div className="mb-8 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 p-3 shadow-lg shadow-blue-500/25">
+                  <HiOutlineEye className="h-6 w-6 text-white" />
                 </div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white">جزئیات درخواست</h3>
+              </div>
+              <button
+                onClick={() => setSelectedRequest(null)}
+                className="rounded-xl p-2 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <HiOutlineXCircle className="h-6 w-6 text-slate-400" />
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {/* Tracking Code Card */}
+              <div className="rounded-2xl border border-blue-200/50 bg-gradient-to-l from-blue-50 to-blue-50 p-5 dark:border-blue-800/50 dark:from-blue-900/20 dark:to-blue-900/20">
+                <p className="mb-2 text-xs font-medium text-blue-600 dark:text-blue-400">
+                  کد پیگیری
+                </p>
+                <p className="font-mono text-2xl font-black text-blue-700 dark:text-blue-300">
+                  {selectedRequest.trackingCode}
+                </p>
+              </div>
+
+              {/* Customer Info */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
+                  <p className="mb-1.5 text-xs text-slate-500">نام مشتری</p>
+                  <p className="font-semibold text-slate-900 dark:text-white">
+                    {selectedRequest.fullName}
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
+                  <p className="mb-1.5 text-xs text-slate-500">شماره تماس</p>
+                  <p className="flex items-center gap-2 font-mono font-semibold text-slate-900 dark:text-white">
+                    <HiOutlinePhone className="h-4 w-4 text-slate-400" />
+                    {selectedRequest.phone}
+                  </p>
+                </div>
+              </div>
+
+              {selectedRequest.email && (
+                <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
+                  <p className="mb-1.5 text-xs text-slate-500">ایمیل</p>
+                  <p className="flex items-center gap-2 text-slate-900 dark:text-white">
+                    <HiOutlineEnvelope className="h-4 w-4 text-slate-400" />
+                    {selectedRequest.email}
+                  </p>
+                </div>
+              )}
+
+              {/* Service & Amount */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
+                  <p className="mb-1.5 text-xs text-slate-500">نوع خدمات</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">
+                      {serviceTypeLabels[selectedRequest.serviceType]?.emoji || '📋'}
+                    </span>
+                    <span className="font-medium text-slate-900 dark:text-white">
+                      {serviceTypeLabels[selectedRequest.serviceType]?.label ||
+                        selectedRequest.serviceType}
+                    </span>
+                  </div>
+                </div>
+                <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
+                  <p className="mb-1.5 text-xs text-slate-500">مبلغ</p>
+                  <p className="font-mono text-lg font-bold text-slate-900 dark:text-white">
+                    {Number(selectedRequest.amount).toLocaleString()}{' '}
+                    <span className="text-sm font-normal text-slate-500">
+                      {selectedRequest.currency}
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              {selectedRequest.description && (
+                <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
+                  <p className="mb-2 text-xs text-slate-500">توضیحات</p>
+                  <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                    {selectedRequest.description}
+                  </p>
+                </div>
+              )}
+
+              {/* Status Change */}
+              <div>
+                <p className="mb-3 text-xs font-medium text-slate-500">تغییر وضعیت</p>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(statusConfig).map(([key, config]) => (
+                    <button
+                      key={key}
+                      onClick={() => handleStatusChange(selectedRequest.id, key)}
+                      className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-all duration-300 ${
+                        selectedRequest.status === key
+                          ? config.color
+                          : 'border-slate-200 bg-slate-100 text-slate-600 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      <span className={`h-2 w-2 rounded-full ${config.dot}`} />
+                      {config.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 border-t border-slate-200 pt-6 dark:border-slate-700">
                 <button
-                  onClick={() => setSelectedRequest(null)}
-                  className="rounded-xl p-2 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
+                  onClick={() => openMessenger(selectedRequest)}
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-2xl py-3.5 font-semibold text-white transition-all duration-300 hover:shadow-lg ${
+                    selectedRequest.contactMethod === 'telegram'
+                      ? 'bg-[#0088cc] shadow-[#0088cc]/25 hover:bg-[#0077b5]'
+                      : 'bg-[#25D366] shadow-[#25D366]/25 hover:bg-[#20bd5a]'
+                  }`}
                 >
-                  <HiOutlineXCircle className="h-6 w-6 text-slate-400" />
+                  {selectedRequest.contactMethod === 'telegram' ? (
+                    <FaTelegram className="h-5 w-5" />
+                  ) : (
+                    <FaWhatsapp className="h-5 w-5" />
+                  )}
+                  ارسال پیام
+                </button>
+                <button
+                  onClick={() => handleDelete(selectedRequest.id)}
+                  className="flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-6 py-3.5 font-semibold text-red-600 transition-all duration-300 hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30"
+                >
+                  <HiOutlineTrash className="h-5 w-5" />
+                  حذف
                 </button>
               </div>
-
-              <div className="space-y-6">
-                {/* Tracking Code Card */}
-                <div className="rounded-2xl border border-blue-200/50 bg-gradient-to-l from-blue-50 to-blue-50 p-5 dark:border-blue-800/50 dark:from-blue-900/20 dark:to-blue-900/20">
-                  <p className="mb-2 text-xs font-medium text-blue-600 dark:text-blue-400">
-                    کد پیگیری
-                  </p>
-                  <p className="font-mono text-2xl font-black text-blue-700 dark:text-blue-300">
-                    {selectedRequest.trackingCode}
-                  </p>
-                </div>
-
-                {/* Customer Info */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
-                    <p className="mb-1.5 text-xs text-slate-500">نام مشتری</p>
-                    <p className="font-semibold text-slate-900 dark:text-white">
-                      {selectedRequest.fullName}
-                    </p>
-                  </div>
-                  <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
-                    <p className="mb-1.5 text-xs text-slate-500">شماره تماس</p>
-                    <p className="flex items-center gap-2 font-mono font-semibold text-slate-900 dark:text-white">
-                      <HiOutlinePhone className="h-4 w-4 text-slate-400" />
-                      {selectedRequest.phone}
-                    </p>
-                  </div>
-                </div>
-
-                {selectedRequest.email && (
-                  <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
-                    <p className="mb-1.5 text-xs text-slate-500">ایمیل</p>
-                    <p className="flex items-center gap-2 text-slate-900 dark:text-white">
-                      <HiOutlineEnvelope className="h-4 w-4 text-slate-400" />
-                      {selectedRequest.email}
-                    </p>
-                  </div>
-                )}
-
-                {/* Service & Amount */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
-                    <p className="mb-1.5 text-xs text-slate-500">نوع خدمات</p>
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">
-                        {serviceTypeLabels[selectedRequest.serviceType]?.emoji || '📋'}
-                      </span>
-                      <span className="font-medium text-slate-900 dark:text-white">
-                        {serviceTypeLabels[selectedRequest.serviceType]?.label ||
-                          selectedRequest.serviceType}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
-                    <p className="mb-1.5 text-xs text-slate-500">مبلغ</p>
-                    <p className="font-mono text-lg font-bold text-slate-900 dark:text-white">
-                      {Number(selectedRequest.amount).toLocaleString()}{' '}
-                      <span className="text-sm font-normal text-slate-500">
-                        {selectedRequest.currency}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-
-                {selectedRequest.description && (
-                  <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
-                    <p className="mb-2 text-xs text-slate-500">توضیحات</p>
-                    <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-                      {selectedRequest.description}
-                    </p>
-                  </div>
-                )}
-
-                {/* Status Change */}
-                <div>
-                  <p className="mb-3 text-xs font-medium text-slate-500">تغییر وضعیت</p>
-                  <div className="flex flex-wrap gap-2">
-                    {Object.entries(statusConfig).map(([key, config]) => (
-                      <button
-                        key={key}
-                        onClick={() => handleStatusChange(selectedRequest.id, key)}
-                        className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-all duration-300 ${
-                          selectedRequest.status === key
-                            ? config.color
-                            : 'border-slate-200 bg-slate-100 text-slate-600 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'
-                        }`}
-                      >
-                        <span className={`h-2 w-2 rounded-full ${config.dot}`} />
-                        {config.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-3 border-t border-slate-200 pt-6 dark:border-slate-700">
-                  <button
-                    onClick={() => openMessenger(selectedRequest)}
-                    className={`flex flex-1 items-center justify-center gap-2 rounded-2xl py-3.5 font-semibold text-white transition-all duration-300 hover:shadow-lg ${
-                      selectedRequest.contactMethod === 'telegram'
-                        ? 'bg-[#0088cc] shadow-[#0088cc]/25 hover:bg-[#0077b5]'
-                        : 'bg-[#25D366] shadow-[#25D366]/25 hover:bg-[#20bd5a]'
-                    }`}
-                  >
-                    {selectedRequest.contactMethod === 'telegram' ? (
-                      <FaTelegram className="h-5 w-5" />
-                    ) : (
-                      <FaWhatsapp className="h-5 w-5" />
-                    )}
-                    ارسال پیام
-                  </button>
-                  <button
-                    onClick={() => handleDelete(selectedRequest.id)}
-                    className="flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-6 py-3.5 font-semibold text-red-600 transition-all duration-300 hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30"
-                  >
-                    <HiOutlineTrash className="h-5 w-5" />
-                    حذف
-                  </button>
-                </div>
-              </div>
+            </div>
           </div>
         </div>
       )}

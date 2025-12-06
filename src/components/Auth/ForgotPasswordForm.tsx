@@ -1,17 +1,17 @@
 'use client';
 
-import { useState } from 'react';
-import { useForm, type SubmitHandler } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { sendMagicLink } from '@/actions/auth-actions';
-import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import Logo from '../Logo/Logo';
-import Loading from '../Button/Loading';
-import NcLink from '../NcLink/NcLink';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
+import { type SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
+import Loading from '../Button/Loading';
+import Logo from '../Logo/Logo';
+import NcLink from '../NcLink/NcLink';
 
 const ForgotPasswordSchema = z.object({
   email: z.string().min(1, 'ایمیل الزامی است').email('فرمت ایمیل نامعتبر است'),

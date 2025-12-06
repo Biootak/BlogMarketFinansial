@@ -1,21 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import { useForm, type SubmitHandler } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { loginUser, sendMagicLink } from '@/actions/auth-actions';
-import { LoginSchema } from '@/schemas';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { DEFAULT_REDIRECT } from '@/config/routes';
-import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import Logo from '../Logo/Logo';
-import SocialProviders from './SocialProviders';
-import Loading from '../Button/Loading';
-import NcLink from '../NcLink/NcLink';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { DEFAULT_REDIRECT } from '@/config/routes';
+import { LoginSchema } from '@/schemas';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { type SubmitHandler, useForm } from 'react-hook-form';
 import type { z } from 'zod';
+import Loading from '../Button/Loading';
+import Logo from '../Logo/Logo';
+import NcLink from '../NcLink/NcLink';
+import SocialProviders from './SocialProviders';
 
 type FormData = z.infer<typeof LoginSchema>;
 

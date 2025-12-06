@@ -1,16 +1,16 @@
 // components/Dashboard/Blog/PostForm/EditPostForm.tsx
 'use client';
 
-import { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { UpdatePostSchema } from '@/schemas';
-import PostForm from './PostForm';
-import type { UpdatePostInput, PostWithRelations, TaxonomyType } from '@/types/types';
-import { useToast } from '@/components/ui/use-toast';
-import { updatePost } from '@/actions/postActions';
 import { getCategories } from '@/actions/categoryActions';
 import { getTags } from '@/actions/getTags';
+import { updatePost } from '@/actions/postActions';
+import { useToast } from '@/components/ui/use-toast';
 import { isSuccessResult } from '@/lib/utils';
+import { UpdatePostSchema } from '@/schemas';
+import type { PostWithRelations, TaxonomyType, UpdatePostInput } from '@/types/types';
+import { useRouter } from 'next/navigation';
+import { useCallback, useState } from 'react';
+import PostForm from './PostForm';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface EditPostFormProps {
@@ -63,7 +63,7 @@ const EditPostForm: React.FC<EditPostFormProps> = ({
           description: 'پست با موفقیت به‌روزرسانی شد.',
           variant: 'success',
         });
-        router.push("/dashboard/posts");
+        router.push('/dashboard/posts');
         router.refresh();
       } else {
         throw new Error(result.message);

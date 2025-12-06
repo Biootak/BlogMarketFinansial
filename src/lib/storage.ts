@@ -1,12 +1,12 @@
+import { existsSync } from 'node:fs';
+import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import {
-  S3Client,
-  PutObjectCommand,
-  GetObjectCommand,
   DeleteObjectCommand,
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
 } from '@aws-sdk/client-s3';
-import { writeFile, mkdir, unlink, readFile } from 'fs/promises';
-import { existsSync } from 'fs';
-import path from 'path';
 
 // S3 Client
 const s3Client = new S3Client({
@@ -20,7 +20,8 @@ const s3Client = new S3Client({
 });
 
 const BUCKET_NAME = process.env.LIARA_BUCKET_NAME || '';
-const S3_PUBLIC_URL = process.env.LIARA_ENDPOINT?.replace('https://', `https://${BUCKET_NAME}.`) || '';
+const S3_PUBLIC_URL =
+  process.env.LIARA_ENDPOINT?.replace('https://', `https://${BUCKET_NAME}.`) || '';
 const LOCAL_UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads');
 
 export interface UploadResult {
@@ -38,7 +39,7 @@ export async function uploadFile(
   buffer: Buffer,
   filename: string,
   folder: string,
-  contentType: string
+  contentType: string,
 ): Promise<UploadResult> {
   const key = `${folder}/${filename}`;
   const localDir = path.join(LOCAL_UPLOAD_DIR, folder);
@@ -60,7 +61,7 @@ export async function uploadFile(
         Body: buffer,
         ContentType: contentType,
         CacheControl: 'public, max-age=31536000, immutable',
-      })
+      }),
     );
     s3Url = `${S3_PUBLIC_URL}/${key}`;
   } catch (error) {
@@ -89,7 +90,7 @@ export async function getFile(folder: string, filename: string): Promise<Buffer 
       new GetObjectCommand({
         Bucket: BUCKET_NAME,
         Key: key,
-      })
+      }),
     );
     if (response.Body) {
       const chunks: Uint8Array[] = [];
@@ -125,7 +126,7 @@ export async function deleteFile(folder: string, filename: string): Promise<bool
       new DeleteObjectCommand({
         Bucket: BUCKET_NAME,
         Key: key,
-      })
+      }),
     );
     deleted = true;
   } catch (error) {

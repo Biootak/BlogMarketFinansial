@@ -1,10 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { newVerification } from '@/actions/auth-actions';
 import Loading from '@/components/Button/Loading';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { newVerification } from '@/actions/auth-actions';
+import { useCallback, useEffect, useState } from 'react';
 
 const EmailIcon = () => (
   <div className="flex justify-center items-center">

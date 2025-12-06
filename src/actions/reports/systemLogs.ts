@@ -1,9 +1,9 @@
 'use server';
 
 import db from '@/lib/db';
+import type { Prisma } from '@prisma/client';
 import { checkReportAccess } from './auth';
 import type { ActionResult, SystemLog } from './types';
-import type { Prisma } from '@prisma/client';
 
 export type SystemLogFilters = {
   level?: string;
@@ -16,7 +16,7 @@ export type SystemLogFilters = {
 export async function getSystemLogs(
   page = 1,
   limit = 10,
-  filters?: SystemLogFilters
+  filters?: SystemLogFilters,
 ): Promise<ActionResult<{ logs: SystemLog[]; total: number }>> {
   try {
     await checkReportAccess();
@@ -117,9 +117,7 @@ export async function getSystemLogSources(): Promise<ActionResult<string[]>> {
 }
 
 // دریافت آمار خلاصه
-export async function getSystemLogStats(
-  filters?: SystemLogFilters
-): Promise<
+export async function getSystemLogStats(filters?: SystemLogFilters): Promise<
   ActionResult<{
     totalLogs: number;
     last24Hours: number;

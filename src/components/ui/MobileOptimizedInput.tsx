@@ -1,10 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useEffect, useRef, useState } from 'react';
 
-export interface MobileOptimizedInputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface MobileOptimizedInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   helperText?: string;
@@ -77,7 +76,7 @@ export function MobileOptimizedInput({
               : 'border-neutral-300 dark:border-neutral-600',
             'bg-white dark:bg-neutral-800',
             'text-base', // Minimum 16px to prevent zoom on iOS
-            className
+            className,
           )}
           {...props}
         />
@@ -85,13 +84,9 @@ export function MobileOptimizedInput({
         {/* Error message - reserved space to prevent layout shift */}
         <div className="min-h-[20px] mt-1">
           {error && (
-            <p className="text-sm text-red-500 animate-in fade-in slide-in-from-top-1">
-              {error}
-            </p>
+            <p className="text-sm text-red-500 animate-in fade-in slide-in-from-top-1">{error}</p>
           )}
-          {!error && helperText && (
-            <p className="text-sm text-neutral-500">{helperText}</p>
-          )}
+          {!error && helperText && <p className="text-sm text-neutral-500">{helperText}</p>}
         </div>
       </div>
     </div>
@@ -133,7 +128,7 @@ export function MobileOptimizedSelect({
             : 'border-neutral-300 dark:border-neutral-600',
           'bg-white dark:bg-neutral-800',
           'text-base',
-          className
+          className,
         )}
         {...props}
       >
@@ -185,7 +180,7 @@ export function MobileOptimizedDateInput({
             : 'border-neutral-300 dark:border-neutral-600',
           'bg-white dark:bg-neutral-800',
           'text-base',
-          className
+          className,
         )}
         {...props}
       />

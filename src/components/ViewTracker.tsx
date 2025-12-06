@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import { trackPostView } from '@/actions/trackView';
+import { useEffect, useRef } from 'react';
 
 interface ViewTrackerProps {
   postId: string;
@@ -18,7 +18,7 @@ export function ViewTracker({ postId }: ViewTrackerProps) {
     console.log('🔍 [CLIENT] ViewTracker mounted for post:', postId);
     console.log('🔍 [CLIENT] Component type:', typeof window !== 'undefined' ? 'Client' : 'Server');
     console.log('🔍 [CLIENT] Tracked ref:', tracked.current);
-    
+
     // جلوگیری از ثبت مکرر
     if (tracked.current) {
       console.log('⚠️ [CLIENT] Already tracked, skipping');
@@ -26,7 +26,7 @@ export function ViewTracker({ postId }: ViewTrackerProps) {
     }
 
     console.log('⏳ [CLIENT] Starting 2 second timer...');
-    
+
     // تاخیر 2 ثانیه برای اطمینان از بازدید واقعی
     const timer = setTimeout(async () => {
       console.log('📊 [CLIENT] Timer fired! Tracking view for post:', postId);

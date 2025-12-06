@@ -1,30 +1,31 @@
 'use client';
 
-import React, { useMemo, useCallback, useEffect, useRef } from 'react';
-import { EditorContent, useEditor } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Underline from '@tiptap/extension-underline';
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import Color from '@tiptap/extension-color';
 import Highlight from '@tiptap/extension-highlight';
-import TextStyle from '@tiptap/extension-text-style';
-import TextAlign from '@tiptap/extension-text-align';
-import Superscript from '@tiptap/extension-superscript';
-import Subscript from '@tiptap/extension-subscript';
 import Link from '@tiptap/extension-link';
-import ImageResize from './extensions/image-resize';
+import Subscript from '@tiptap/extension-subscript';
+import Superscript from '@tiptap/extension-superscript';
 import Table from '@tiptap/extension-table';
-import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
-import TaskList from '@tiptap/extension-task-list';
+import TableRow from '@tiptap/extension-table-row';
 import TaskItem from '@tiptap/extension-task-item';
-import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+import TaskList from '@tiptap/extension-task-list';
+import TextAlign from '@tiptap/extension-text-align';
+import TextStyle from '@tiptap/extension-text-style';
+import Underline from '@tiptap/extension-underline';
+import { EditorContent, useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
 import { common, createLowlight } from 'lowlight';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Callout } from './extensions/callout';
-import { Embed } from './extensions/embed';
-import { FontSize } from './extensions/font-size';
-import { FontFamily } from './extensions/font-family';
 import { detailsExtensions } from './extensions/details';
+import { Embed } from './extensions/embed';
+import { FontFamily } from './extensions/font-family';
+import { FontSize } from './extensions/font-size';
+import ImageResize from './extensions/image-resize';
 import { Math } from './extensions/math';
 
 import './styles/index.scss';
@@ -79,7 +80,8 @@ const renderExtensions = [
   }),
   TableHeader.configure({
     HTMLAttributes: {
-      class: 'border border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-800 font-semibold',
+      class:
+        'border border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-800 font-semibold',
     },
   }),
   TaskList,
@@ -114,35 +116,38 @@ const EditorContentRenderer: React.FC<EditorContentRendererProps> = ({
   const initialLoadRef = useRef(false);
 
   // Parse content - پشتیبانی از JSON و HTML
-  const parseContent = useCallback((rawContent: string | object | undefined): string | object | null => {
-    if (!rawContent) return null;
+  const parseContent = useCallback(
+    (rawContent: string | object | undefined): string | object | null => {
+      if (!rawContent) return null;
 
-    // اگر object است، مستقیم برگردان
-    if (typeof rawContent !== 'string') {
-      return rawContent;
-    }
+      // اگر object است، مستقیم برگردان
+      if (typeof rawContent !== 'string') {
+        return rawContent;
+      }
 
-    const trimmed = rawContent.trim();
-    if (!trimmed) return null;
+      const trimmed = rawContent.trim();
+      if (!trimmed) return null;
 
-    // اگر با < شروع می‌شود، HTML است
-    if (trimmed.startsWith('<')) {
-      return trimmed;
-    }
-
-    // اگر با { یا [ شروع می‌شود، JSON است
-    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
-      try {
-        return JSON.parse(trimmed);
-      } catch (error) {
-        console.warn('Error parsing JSON content:', error);
+      // اگر با < شروع می‌شود، HTML است
+      if (trimmed.startsWith('<')) {
         return trimmed;
       }
-    }
 
-    // در غیر این صورت، متن ساده است
-    return trimmed;
-  }, []);
+      // اگر با { یا [ شروع می‌شود، JSON است
+      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+        try {
+          return JSON.parse(trimmed);
+        } catch (error) {
+          console.warn('Error parsing JSON content:', error);
+          return trimmed;
+        }
+      }
+
+      // در غیر این صورت، متن ساده است
+      return trimmed;
+    },
+    [],
+  );
 
   const parsedContent = useMemo(() => parseContent(content), [content, parseContent]);
 
@@ -167,12 +172,12 @@ const EditorContentRenderer: React.FC<EditorContentRendererProps> = ({
   // Update content when it changes
   useEffect(() => {
     if (!editor || editor.isDestroyed) return;
-    
+
     // جلوگیری از بارگذاری مجدد همان محتوا
     if (content === contentRef.current && initialLoadRef.current) return;
-    
+
     contentRef.current = content;
-    
+
     if (!initialLoadRef.current && parsedContent) {
       initialLoadRef.current = true;
       queueMicrotask(() => {
@@ -210,8 +215,8 @@ const EditorContentRenderer: React.FC<EditorContentRendererProps> = ({
 
   return (
     <div className={`editor-content-renderer ${className}`}>
-      <EditorContent 
-        editor={editor} 
+      <EditorContent
+        editor={editor}
         className="bg-transparent min-h-0 [&_.ProseMirror]:p-0 [&_.ProseMirror]:outline-none"
       />
     </div>

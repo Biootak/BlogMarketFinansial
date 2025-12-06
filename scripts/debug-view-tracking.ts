@@ -3,7 +3,7 @@ import db from '@/lib/db';
 /**
  * Debug script for view tracking
  * اسکریپت دیباگ برای بررسی سیستم ثبت بازدید
- * 
+ *
  * Usage: npx tsx scripts/debug-view-tracking.ts
  */
 

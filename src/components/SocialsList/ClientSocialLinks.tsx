@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { getSocialLinks } from '@/actions/socialLinkActions';
 import * as motion from 'framer-motion/client';
 import Image from 'next/image';
-import { getSocialLinks } from '@/actions/socialLinkActions';
+import { useEffect, useState } from 'react';
 
 interface SocialLink {
   id: string;

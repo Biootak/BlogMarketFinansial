@@ -1,10 +1,10 @@
-// app/dashboard/posts/create/page.tsx
-import { Suspense } from 'react';
-import { notFound } from 'next/navigation';
-import CreatePostForm from '@/components/Dashboard/Blog/PostForm/CreatePostForm';
-import SkeletonLoader from '@/components/SkeletonLoader';
 import { getCategories } from '@/actions/categoryActions';
 import { getTags } from '@/actions/getTags';
+import CreatePostForm from '@/components/Dashboard/Blog/PostForm/CreatePostForm';
+import SkeletonLoader from '@/components/SkeletonLoader';
+import { notFound } from 'next/navigation';
+// app/dashboard/posts/create/page.tsx
+import { Suspense } from 'react';
 
 export const revalidate = 3600; // Revalidate every hour
 

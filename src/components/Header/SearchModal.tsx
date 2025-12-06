@@ -1,20 +1,20 @@
 'use client';
 
-import { type FC, Fragment, type ReactNode, useState, useCallback, useEffect, useRef } from 'react';
 import { Combobox, Dialog, Transition } from '@headlessui/react';
-import {
-  HiOutlineHashtag,
-  HiOutlineLifebuoy,
-  HiOutlineClock,
-  HiOutlineMagnifyingGlass,
-} from 'react-icons/hi2';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { type FC, Fragment, type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import {
+  HiOutlineClock,
+  HiOutlineHashtag,
+  HiOutlineLifebuoy,
+  HiOutlineMagnifyingGlass,
+} from 'react-icons/hi2';
 
-import type { PostWithRelations, CategoryWithPostCount, UserWithProfile } from '@/types/types';
 import { searchAll } from '@/actions/search';
 import { getPostLink } from '@/lib/getPostLink';
+import type { CategoryWithPostCount, PostWithRelations, UserWithProfile } from '@/types/types';
 
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(' ');

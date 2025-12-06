@@ -5,7 +5,7 @@ import React, { type ReactNode } from 'react';
 
 const layout = ({ children }: { children: ReactNode }) => {
   return (
-    <div className={`relative`}>
+    <div className={'relative'}>
       {children}
 
       <div className="container flex flex-col my-10 lg:flex-row ">

@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import type { TaxonomyType } from '@/types/types';
-import { FiX, FiSearch, FiFolder, FiCheck } from 'react-icons/fi';
-import { BiLoaderAlt } from 'react-icons/bi';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import type { TaxonomyType } from '@/types/types';
+import { useCallback, useEffect, useState } from 'react';
+import { BiLoaderAlt } from 'react-icons/bi';
+import { FiCheck, FiFolder, FiSearch, FiX } from 'react-icons/fi';
 
 interface CategorySelectDialogProps {
   isOpen: boolean;
@@ -23,24 +23,39 @@ interface CategorySelectDialogProps {
 }
 
 export function CategorySelectDialog({
-  isOpen, onClose, onSelectCategories, initialSelectedCategories,
-  categories, onLoadMore, isLoading, hasMoreItems,
+  isOpen,
+  onClose,
+  onSelectCategories,
+  initialSelectedCategories,
+  categories,
+  onLoadMore,
+  isLoading,
+  hasMoreItems,
 }: CategorySelectDialogProps) {
   const [selectedCategories, setSelectedCategories] = useState<string[]>(initialSelectedCategories);
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => { setSelectedCategories(initialSelectedCategories); }, [initialSelectedCategories]);
+  useEffect(() => {
+    setSelectedCategories(initialSelectedCategories);
+  }, [initialSelectedCategories]);
 
   const handleToggleCategory = useCallback((categoryId: string) => {
     setSelectedCategories((prev) =>
-      prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId]
+      prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId],
     );
   }, []);
 
-  const handleSave = useCallback(() => { onSelectCategories(selectedCategories); onClose(); }, [selectedCategories, onSelectCategories, onClose]);
-  const handleLoadMore = useCallback(() => { if (!isLoading && hasMoreItems) onLoadMore(); }, [isLoading, hasMoreItems, onLoadMore]);
+  const handleSave = useCallback(() => {
+    onSelectCategories(selectedCategories);
+    onClose();
+  }, [selectedCategories, onSelectCategories, onClose]);
+  const handleLoadMore = useCallback(() => {
+    if (!isLoading && hasMoreItems) onLoadMore();
+  }, [isLoading, hasMoreItems, onLoadMore]);
   const infiniteScrollRef = useInfiniteScroll(handleLoadMore, hasMoreItems, isLoading);
-  const filteredCategories = categories.filter((c) => c.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredCategories = categories.filter((c) =>
+    c.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -54,8 +69,12 @@ export function CategorySelectDialog({
                 <FiFolder className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div>
-                <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">انتخاب دسته‌بندی‌ها</span>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{selectedCategories.length} دسته‌بندی انتخاب شده</p>
+                <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                  انتخاب دسته‌بندی‌ها
+                </span>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  {selectedCategories.length} دسته‌بندی انتخاب شده
+                </p>
               </div>
             </DialogTitle>
           </DialogHeader>
@@ -68,9 +87,16 @@ export function CategorySelectDialog({
               {selectedCategories.map((categoryId) => {
                 const category = categories.find((c) => c.id === categoryId);
                 return category ? (
-                  <Badge key={categoryId} className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
+                  <Badge
+                    key={categoryId}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
+                  >
                     {category.name}
-                    <button type="button" onClick={() => handleToggleCategory(categoryId)} className="hover:bg-white/20 rounded-full p-0.5">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleCategory(categoryId)}
+                      className="hover:bg-white/20 rounded-full p-0.5"
+                    >
                       <FiX className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                     </button>
                   </Badge>
@@ -110,12 +136,18 @@ export function CategorySelectDialog({
                       : 'bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent hover:border-slate-200 dark:hover:border-slate-700'
                   }`}
                 >
-                  <span className={`text-sm sm:text-base font-medium ${isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-slate-700 dark:text-slate-300'}`}>
+                  <span
+                    className={`text-sm sm:text-base font-medium ${isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-slate-700 dark:text-slate-300'}`}
+                  >
                     {category.name}
                   </span>
-                  <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-lg flex items-center justify-center ${
-                    isSelected ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white' : 'bg-slate-200 dark:bg-slate-700'
-                  }`}>
+                  <div
+                    className={`w-5 h-5 sm:w-6 sm:h-6 rounded-lg flex items-center justify-center ${
+                      isSelected
+                        ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white'
+                        : 'bg-slate-200 dark:bg-slate-700'
+                    }`}
+                  >
                     {isSelected && <FiCheck className="w-3 h-3 sm:w-4 sm:h-4" />}
                   </div>
                 </button>
@@ -134,8 +166,17 @@ export function CategorySelectDialog({
         {/* Footer */}
         <div className="p-4 sm:p-6 pt-3 sm:pt-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/30">
           <div className="flex items-center gap-2 sm:gap-3">
-            <Button variant="outline" onClick={onClose} className="flex-1 h-9 sm:h-11 text-sm sm:text-base rounded-xl">انصراف</Button>
-            <Button onClick={handleSave} className="flex-1 h-9 sm:h-11 text-sm sm:text-base rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="flex-1 h-9 sm:h-11 text-sm sm:text-base rounded-xl"
+            >
+              انصراف
+            </Button>
+            <Button
+              onClick={handleSave}
+              className="flex-1 h-9 sm:h-11 text-sm sm:text-base rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white"
+            >
               ذخیره تغییرات
             </Button>
           </div>

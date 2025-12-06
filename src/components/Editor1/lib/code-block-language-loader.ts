@@ -1,7 +1,7 @@
 import type { createLowlight } from 'lowlight';
 import {
+  CODE_BLOCK_LANGUAGUES,
   CODE_BLOCK_LANGUAGUE_SYNTAX_DEFAULT,
-  CODE_BLOCK_LANGUAGUES
 } from '../constants/code_block_languages';
 
 export const languagesLoader: Record<string, () => Promise<any>> = {
@@ -27,12 +27,12 @@ export const languagesLoader: Record<string, () => Promise<any>> = {
   sql: () => import('highlight.js/lib/languages/sql'),
   typescript: () => import('highlight.js/lib/languages/typescript'),
   vbnet: () => import('highlight.js/lib/languages/vbnet'),
-  xml: () => import('highlight.js/lib/languages/xml')
+  xml: () => import('highlight.js/lib/languages/xml'),
 };
 
 export async function loadLanguage(
   languageName: string,
-  lowlight: ReturnType<typeof createLowlight>
+  lowlight: ReturnType<typeof createLowlight>,
 ) {
   if (lowlight.registered(languageName)) return false;
   try {
@@ -48,9 +48,7 @@ export async function loadLanguage(
 export function findLanguage(value: string | undefined) {
   const lowercase = value?.toLowerCase() || CODE_BLOCK_LANGUAGUE_SYNTAX_DEFAULT;
   const language = CODE_BLOCK_LANGUAGUES.find(
-    (language) =>
-      language.syntax === lowercase ||
-      language.alias?.split(', ').includes(lowercase)
+    (language) => language.syntax === lowercase || language.alias?.split(', ').includes(lowercase),
   );
   return language;
 }

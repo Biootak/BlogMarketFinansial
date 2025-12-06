@@ -1,8 +1,8 @@
 'use client';
 
+import SingleTitle from '@/app/(site)/(singles)/SingleTitle';
 import React, { Suspense, useEffect, useState } from 'react';
 import ReactPlayer from 'react-player';
-import SingleTitle from '@/app/(site)/(singles)/SingleTitle';
 
 const PageSv = ({}) => {
   const [isRendered, setIsRendered] = useState(false);
@@ -31,7 +31,7 @@ const PageSv = ({}) => {
 
   const renderHeader = () => {
     return (
-      <div className={`nc-SingleHeader `}>
+      <div className={'nc-SingleHeader '}>
         <div className="space-y-5 dark text-neutral-100">
           {/* <CategoryBadgeList
 						itemClass="!px-3"

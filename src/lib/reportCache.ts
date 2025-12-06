@@ -31,7 +31,7 @@ class ReportCache {
    */
   get<T>(key: string): T | null {
     const entry = this.cache.get(key);
-    
+
     if (!entry) {
       return null;
     }
@@ -95,11 +95,7 @@ class ReportCache {
 /**
  * Generate cache key for report data
  */
-export function generateReportCacheKey(
-  userId: string | undefined,
-  from: Date,
-  to: Date
-): string {
+export function generateReportCacheKey(userId: string | undefined, from: Date, to: Date): string {
   const fromStr = from.toISOString().split('T')[0];
   const toStr = to.toISOString().split('T')[0];
   return `report:${userId || 'all'}:${fromStr}:${toStr}`;

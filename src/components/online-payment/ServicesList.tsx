@@ -1,12 +1,12 @@
 'use client';
 
-import type { FC } from 'react';
 import { motion } from 'framer-motion';
+import type { FC } from 'react';
 import {
-  HiGlobe,
-  HiCreditCard,
   HiAcademicCap,
   HiCash,
+  HiCreditCard,
+  HiGlobe,
   HiShoppingCart,
   HiSparkles,
 } from 'react-icons/hi';

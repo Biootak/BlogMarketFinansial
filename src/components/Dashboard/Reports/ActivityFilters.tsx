@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Search, Filter, X, Calendar, User, Activity } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import type { ActivityFilters } from '@/actions/reports/activityLogs';
+import { cn } from '@/lib/utils';
+import { Activity, Calendar, Filter, Search, User, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface ActivityFiltersProps {
   onFilterChange: (filters: ActivityFilters) => void;
@@ -90,29 +90,33 @@ export function ActivityFilters({ onFilterChange, users }: ActivityFiltersProps)
         setDateFrom(yesterday.toISOString().split('T')[0]);
         setDateTo(yesterday.toISOString().split('T')[0]);
         break;
-      case '7days':
+      case '7days': {
         const week = new Date(today);
         week.setDate(week.getDate() - 7);
         setDateFrom(week.toISOString().split('T')[0]);
         setDateTo(today.toISOString().split('T')[0]);
         break;
-      case '30days':
+      }
+      case '30days': {
         const month = new Date(today);
         month.setDate(month.getDate() - 30);
         setDateFrom(month.toISOString().split('T')[0]);
         setDateTo(today.toISOString().split('T')[0]);
         break;
-      case 'thisMonth':
+      }
+      case 'thisMonth': {
         const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
         setDateFrom(firstDay.toISOString().split('T')[0]);
         setDateTo(today.toISOString().split('T')[0]);
         break;
-      case 'lastMonth':
+      }
+      case 'lastMonth': {
         const lastMonthFirst = new Date(today.getFullYear(), today.getMonth() - 1, 1);
         const lastMonthLast = new Date(today.getFullYear(), today.getMonth(), 0);
         setDateFrom(lastMonthFirst.toISOString().split('T')[0]);
         setDateTo(lastMonthLast.toISOString().split('T')[0]);
         break;
+      }
       case 'custom':
         // کاربر خودش تاریخ را انتخاب می‌کند
         break;
@@ -135,7 +139,7 @@ export function ActivityFilters({ onFilterChange, users }: ActivityFiltersProps)
             'bg-white border-2 border-gray-200',
             'focus:border-blue-500 focus:ring-2 focus:ring-blue-100',
             'transition-all duration-200',
-            'text-sm'
+            'text-sm',
           )}
         />
       </div>
@@ -151,7 +155,7 @@ export function ActivityFilters({ onFilterChange, users }: ActivityFiltersProps)
             'text-sm font-semibold',
             isOpen
               ? 'bg-blue-600 border-blue-600 text-white'
-              : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300'
+              : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300',
           )}
         >
           <Filter className="w-4 h-4" />
@@ -203,7 +207,7 @@ export function ActivityFilters({ onFilterChange, users }: ActivityFiltersProps)
                     'border-2',
                     actionType === type.value
                       ? 'bg-blue-600 border-blue-600 text-white shadow-md'
-                      : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300'
+                      : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300',
                   )}
                 >
                   {type.label}
@@ -238,7 +242,7 @@ export function ActivityFilters({ onFilterChange, users }: ActivityFiltersProps)
               <Calendar className="w-4 h-4" />
               بازه زمانی
             </label>
-            
+
             {/* Date Presets */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
               {DATE_PRESETS.map((preset) => (
@@ -251,7 +255,7 @@ export function ActivityFilters({ onFilterChange, users }: ActivityFiltersProps)
                     'border-2',
                     datePreset === preset.value
                       ? 'bg-blue-600 border-blue-600 text-white'
-                      : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300'
+                      : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300',
                   )}
                 >
                   {preset.label}

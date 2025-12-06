@@ -1,8 +1,8 @@
 'use server';
 
-import { cache } from 'react';
 import prisma from '@/lib/db';
 import type { ActionResult, PostWithRelations } from '@/types/types';
+import { cache } from 'react';
 
 export const getMoreFromAuthor = cache(
   async (authorId: string, postId: string): Promise<ActionResult<PostWithRelations[]>> => {

@@ -1,12 +1,12 @@
 'use client';
 
+import { savePost } from '@/actions/postActions';
+import { tapScaleSmall, transitions } from '@/lib/animations';
+import { cn } from '@/lib/utils';
+import { AnimatePresence, motion } from 'framer-motion';
 import type React from 'react';
 import { useState, useTransition } from 'react';
-import { cn } from '@/lib/utils';
-import { savePost } from '@/actions/postActions';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Icon } from '../ui/icon';
-import { tapScaleSmall, transitions } from '@/lib/animations';
 
 export interface NcBookmarkProps {
   containerClassName?: string;
@@ -29,12 +29,12 @@ const NcBookmark: React.FC<NcBookmarkProps> = ({
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     startTransition(async () => {
       // Optimistic update - فوری UI رو آپدیت می‌کنه
       const newState = !isBookmarked;
       setIsBookmarked(newState);
-      
+
       try {
         const result = await savePost(postId);
         if (result.success) {
@@ -45,7 +45,7 @@ const NcBookmark: React.FC<NcBookmarkProps> = ({
           // اگر خطا داشت، به حالت قبلی برمی‌گرده
           setIsBookmarked(!newState);
         }
-      } catch (error) {
+      } catch (_error) {
         // در صورت خطا، به حالت قبلی برمی‌گرده
         setIsBookmarked(!newState);
       }
@@ -78,7 +78,7 @@ const NcBookmark: React.FC<NcBookmarkProps> = ({
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}
-            transition={transitions.fast}
+            transition={transitions.snappy}
           >
             <Icon
               name="Bookmark"
@@ -89,7 +89,7 @@ const NcBookmark: React.FC<NcBookmarkProps> = ({
           </motion.div>
         </AnimatePresence>
       </motion.button>
-      
+
       {/* نشانگر کوچک برای وضعیت ذخیره شده */}
       <AnimatePresence>
         {isBookmarked && (

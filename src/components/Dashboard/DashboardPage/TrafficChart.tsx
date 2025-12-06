@@ -1,10 +1,10 @@
 'use client';
 
-import type React from 'react';
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { motion } from 'framer-motion';
+import type React from 'react';
+import { HiOutlineCalendarDays, HiOutlineEye } from 'react-icons/hi2';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import useSWR from 'swr';
-import { HiOutlineEye, HiOutlineCalendarDays } from 'react-icons/hi2';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -27,7 +27,11 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 const TrafficChart: React.FC = () => {
-  const { data: trafficStats, error, isLoading } = useSWR('/api/traffic-stats', fetcher, {
+  const {
+    data: trafficStats,
+    error,
+    isLoading,
+  } = useSWR('/api/traffic-stats', fetcher, {
     refreshInterval: 60000,
   });
 
@@ -72,14 +76,20 @@ const TrafficChart: React.FC = () => {
                 <stop offset="100%" stopColor="#6366F1" stopOpacity={0.7} />
               </linearGradient>
               <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#8B5CF6" floodOpacity="0.3" />
+                <feDropShadow
+                  dx="0"
+                  dy="4"
+                  stdDeviation="4"
+                  floodColor="#8B5CF6"
+                  floodOpacity="0.3"
+                />
               </filter>
             </defs>
-            <CartesianGrid 
-              strokeDasharray="3 3" 
-              vertical={false} 
-              stroke="currentColor" 
-              className="text-slate-200 dark:text-slate-700/50" 
+            <CartesianGrid
+              strokeDasharray="3 3"
+              vertical={false}
+              stroke="currentColor"
+              className="text-slate-200 dark:text-slate-700/50"
             />
             <XAxis
               dataKey="name"
@@ -99,7 +109,10 @@ const TrafficChart: React.FC = () => {
               className="text-slate-500 dark:text-slate-400"
               dx={-5}
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(139, 92, 246, 0.1)', radius: 8 }} />
+            <Tooltip
+              content={<CustomTooltip />}
+              cursor={{ fill: 'rgba(139, 92, 246, 0.1)', radius: 8 }}
+            />
             <Bar
               dataKey="بازدید"
               fill="url(#barGradient)"

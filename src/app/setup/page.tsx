@@ -1,10 +1,8 @@
 'use client';
 
 import { createSuperAdmin } from '@/actions/createSuperAdmin';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { useRouter } from 'next/navigation';
+import { InlineLoadingSkeleton } from '@/components/Skeletons';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -13,17 +11,20 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
-import { InlineLoadingSkeleton } from '@/components/Skeletons';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 const setupSchema = z.object({
   name: z.string().min(2, 'نام باید حداقل 2 حرف داشته باشد'),
   email: z.string().email('لطفاً یک آدرس ایمیل معتبر وارد کنید'),
-  password: z.string()
+  password: z
+    .string()
     .min(8, 'رمز عبور باید حداقل 8 کاراکتر داشته باشد')
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'رمز عبور باید شامل حروف بزرگ، کوچک و اعداد باشد'),
   phoneNumber: z.string().min(10, 'شماره تماس معتبر نیست'),
@@ -61,13 +62,13 @@ export default function SetupPage() {
       console.log('Submitting form data...');
       const result = await createSuperAdmin(formData);
       console.log('Result from createSuperAdmin:', result);
-      
+
       if (result?.success) {
         console.log('Success! Showing toast...');
         toast({
-          title: "عملیات موفق",
-          description: "تنظیمات اولیه با موفقیت انجام شد. در حال انتقال به صفحه ورود...",
-          variant: "default",
+          title: 'عملیات موفق',
+          description: 'تنظیمات اولیه با موفقیت انجام شد. در حال انتقال به صفحه ورود...',
+          variant: 'default',
           duration: 5000,
         });
         setTimeout(() => {
@@ -77,18 +78,18 @@ export default function SetupPage() {
       } else {
         console.log('Error! Showing error toast...');
         toast({
-          title: "خطا در تنظیمات",
+          title: 'خطا در تنظیمات',
           description: result?.message || 'خطایی در تنظیمات اولیه سیستم رخ داد',
-          variant: "destructive",
+          variant: 'destructive',
           duration: 5000,
         });
       }
     } catch (error) {
       console.error('Caught error:', error);
       toast({
-        title: "خطای سیستمی",
-        description: error instanceof Error ? error.message : "خطایی در پردازش اطلاعات رخ داد",
-        variant: "destructive",
+        title: 'خطای سیستمی',
+        description: error instanceof Error ? error.message : 'خطایی در پردازش اطلاعات رخ داد',
+        variant: 'destructive',
         duration: 5000,
       });
     } finally {
@@ -101,9 +102,7 @@ export default function SetupPage() {
       <div className="container">
         <div className="max-w-2xl mx-auto bg-white dark:bg-neutral-800 shadow-xl rounded-2xl p-8">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-extrabold text-gray-900 mb-2">
-              تنظیمات اولیه سیستم
-            </h2>
+            <h2 className="text-3xl font-extrabold text-gray-900 mb-2">تنظیمات اولیه سیستم</h2>
             <p className="text-gray-600">
               لطفاً برای راه‌اندازی سیستم، اطلاعات مدیر اصلی را وارد کنید
             </p>

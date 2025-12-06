@@ -22,7 +22,7 @@ class CacheService {
   /**
    * ذخیره داده در کش
    */
-  set<T>(key: string, data: T, ttlSeconds: number = 300): void {
+  set<T>(key: string, data: T, ttlSeconds = 300): void {
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
@@ -35,7 +35,7 @@ class CacheService {
    */
   get<T>(key: string): T | null {
     const entry = this.cache.get(key);
-    
+
     if (!entry) {
       return null;
     }
@@ -82,13 +82,9 @@ class CacheService {
   /**
    * دریافت یا محاسبه (Cache-aside pattern)
    */
-  async getOrSet<T>(
-    key: string,
-    fetcher: () => Promise<T>,
-    ttlSeconds: number = 300
-  ): Promise<T> {
+  async getOrSet<T>(key: string, fetcher: () => Promise<T>, ttlSeconds = 300): Promise<T> {
     const cached = this.get<T>(key);
-    
+
     if (cached !== null) {
       return cached;
     }

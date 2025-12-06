@@ -1,15 +1,15 @@
 'use client';
 
+import { getServiceRequestStats } from '@/actions/serviceRequestActions';
 import { useEffect, useState } from 'react';
 import {
-  HiOutlineClock,
-  HiOutlineCheckCircle,
-  HiOutlineXCircle,
   HiOutlineArrowPath,
-  HiOutlineRectangleStack,
   HiOutlineCalendarDays,
+  HiOutlineCheckCircle,
+  HiOutlineClock,
+  HiOutlineRectangleStack,
+  HiOutlineXCircle,
 } from 'react-icons/hi2';
-import { getServiceRequestStats } from '@/actions/serviceRequestActions';
 
 interface Stats {
   total: number;
@@ -116,10 +116,14 @@ export default function ServiceRequestsStats() {
           style={{ animationDelay: `${index * 50}ms` }}
         >
           {/* Card */}
-          <div className={`relative overflow-hidden rounded-2xl border ${card.borderColor} bg-white/80 p-5 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:bg-slate-900/80`}>
+          <div
+            className={`relative overflow-hidden rounded-2xl border ${card.borderColor} bg-white/80 p-5 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:bg-slate-900/80`}
+          >
             <div className="flex items-start justify-between gap-3">
               {/* Icon */}
-              <div className={`rounded-xl p-2.5 transition-transform duration-300 group-hover:scale-110 ${card.iconBg}`}>
+              <div
+                className={`rounded-xl p-2.5 transition-transform duration-300 group-hover:scale-110 ${card.iconBg}`}
+              >
                 <card.icon className={`h-5 w-5 ${card.textColor}`} />
               </div>
 

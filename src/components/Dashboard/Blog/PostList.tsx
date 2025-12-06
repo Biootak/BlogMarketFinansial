@@ -1,13 +1,17 @@
 'use client';
 
-import { useCallback, useState } from 'react';
-import { motion } from 'framer-motion';
-import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
-import { deletePostAndInvalidate, listAllPosts, updatePostStatusAndInvalidate } from '@/actions/postActions';
-import type { ActionResult, PostWithRelations, PostStatus } from '@/types/types';
+import {
+  deletePostAndInvalidate,
+  listAllPosts,
+  updatePostStatusAndInvalidate,
+} from '@/actions/postActions';
 import LoadingMore from '@/components/LoadingMore';
-import CardList from '../DashboardPage/CardList';
 import { toast } from '@/components/ui/use-toast';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import type { ActionResult, PostStatus, PostWithRelations } from '@/types/types';
+import { motion } from 'framer-motion';
+import { useCallback, useState } from 'react';
+import CardList from '../DashboardPage/CardList';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -19,10 +23,10 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 24 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const } 
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
   },
 };
 
@@ -85,42 +89,41 @@ export default function PostList({
     }
   }, []);
 
-  const handleChangeStatus = useCallback(async (
-    postId: string,
-    newStatus: PostWithRelations['status'],
-  ): Promise<boolean> => {
-    try {
-      const result = await updatePostStatusAndInvalidate(postId, newStatus);
-      if (result.success) {
-        setPosts((prev) =>
-          prev.map((post) => (post.id === postId ? { ...post, status: newStatus } : post)),
-        );
-        toast({
-          title: 'موفقیت',
-          description: 'وضعیت پست با موفقیت بروز شد',
-          variant: 'success',
-        });
-        return true;
-      } else {
+  const handleChangeStatus = useCallback(
+    async (postId: string, newStatus: PostWithRelations['status']): Promise<boolean> => {
+      try {
+        const result = await updatePostStatusAndInvalidate(postId, newStatus);
+        if (result.success) {
+          setPosts((prev) =>
+            prev.map((post) => (post.id === postId ? { ...post, status: newStatus } : post)),
+          );
+          toast({
+            title: 'موفقیت',
+            description: 'وضعیت پست با موفقیت بروز شد',
+            variant: 'success',
+          });
+          return true;
+        }
         toast({
           title: 'خطا',
           description: result.error,
           variant: 'destructive',
         });
+      } catch (error) {
+        console.error('Error updating post status:', error);
+        toast({
+          title: 'خطا',
+          description: 'خطا در بروزرسانی وضعیت پست',
+          variant: 'destructive',
+        });
       }
-    } catch (error) {
-      console.error('Error updating post status:', error);
-      toast({
-        title: 'خطا',
-        description: 'خطا در بروزرسانی وضعیت پست',
-        variant: 'destructive',
-      });
-    }
-    return false;
-  }, []);
+      return false;
+    },
+    [],
+  );
 
   return (
-    <motion.div 
+    <motion.div
       initial="hidden"
       animate="visible"
       variants={containerVariants}
@@ -128,11 +131,7 @@ export default function PostList({
     >
       {posts.map((post) => (
         <motion.div key={post.id} variants={itemVariants}>
-          <CardList
-            post={post}
-            onDelete={handleDeletePost}
-            onStatusChange={handleChangeStatus}
-          />
+          <CardList post={post} onDelete={handleDeletePost} onStatusChange={handleChangeStatus} />
         </motion.div>
       ))}
 

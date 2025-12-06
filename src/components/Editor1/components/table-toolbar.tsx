@@ -1,24 +1,25 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { cn } from '@/lib/utils';
+import { CellSelection } from '@tiptap/pm/tables';
 import { BubbleMenu } from '@tiptap/react';
 import type { Editor } from '@tiptap/react';
-import { CellSelection } from '@tiptap/pm/tables';
 import {
-  Trash2,
-  ArrowUp,
   ArrowDown,
   ArrowLeft,
   ArrowRight,
-  Merge,
-  Split,
-  RowsIcon,
+  ArrowUp,
   Columns,
+  Merge,
   Palette,
+  RowsIcon,
+  Split,
+  Trash2,
   X,
 } from 'lucide-react';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { COLOR_PALETTE, DEFAULT_COLORS, hexToRgba } from '../constants/color';
-import { cn } from '@/lib/utils';
 
 interface TableToolbarProps {
   editor: Editor;
@@ -49,49 +50,55 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showColorPicker]);
 
-  const setCellBackgroundColor = useCallback((color: string | null) => {
-    let finalColor = color;
-    if (finalColor && opacity < 1) {
-      const match = finalColor.match(/^#([0-9A-F]{6})$/i);
-      if (match) {
-        finalColor = hexToRgba(finalColor, opacity);
+  const setCellBackgroundColor = useCallback(
+    (color: string | null) => {
+      let finalColor = color;
+      if (finalColor && opacity < 1) {
+        const match = finalColor.match(/^#([0-9A-F]{6})$/i);
+        if (match) {
+          finalColor = hexToRgba(finalColor, opacity);
+        }
       }
-    }
-    
-    const { state } = editor.view;
-    const { selection, tr } = state;
-    
-    if (selection instanceof CellSelection) {
-      // برای انتخاب چند سلولی
-      selection.forEachCell((node, pos) => {
-        tr.setNodeMarkup(pos, undefined, {
-          ...node.attrs,
-          backgroundColor: finalColor,
-        });
-      });
-      editor.view.dispatch(tr);
-    } else {
-      // برای یک سلول
-      const $pos = state.doc.resolve(selection.from);
-      const cell = $pos.node(-1);
-      const cellPos = $pos.before(-1);
-      
-      if (cell && (cell.type.name === 'tableCell' || cell.type.name === 'tableHeader')) {
-        const singleTr = state.tr.setNodeMarkup(cellPos, undefined, {
-          ...cell.attrs,
-          backgroundColor: finalColor,
-        });
-        editor.view.dispatch(singleTr);
-      }
-    }
-    
-    setShowColorPicker(false);
-  }, [editor, opacity]);
 
-  const handleColorSelect = useCallback((color: string) => {
-    setSelectedColor(color);
-    setCellBackgroundColor(opacity < 1 ? hexToRgba(color, opacity) : color);
-  }, [opacity, setCellBackgroundColor]);
+      const { state } = editor.view;
+      const { selection, tr } = state;
+
+      if (selection instanceof CellSelection) {
+        // برای انتخاب چند سلولی
+        selection.forEachCell((node, pos) => {
+          tr.setNodeMarkup(pos, undefined, {
+            ...node.attrs,
+            backgroundColor: finalColor,
+          });
+        });
+        editor.view.dispatch(tr);
+      } else {
+        // برای یک سلول
+        const $pos = state.doc.resolve(selection.from);
+        const cell = $pos.node(-1);
+        const cellPos = $pos.before(-1);
+
+        if (cell && (cell.type.name === 'tableCell' || cell.type.name === 'tableHeader')) {
+          const singleTr = state.tr.setNodeMarkup(cellPos, undefined, {
+            ...cell.attrs,
+            backgroundColor: finalColor,
+          });
+          editor.view.dispatch(singleTr);
+        }
+      }
+
+      setShowColorPicker(false);
+    },
+    [editor, opacity],
+  );
+
+  const handleColorSelect = useCallback(
+    (color: string) => {
+      setSelectedColor(color);
+      setCellBackgroundColor(opacity < 1 ? hexToRgba(color, opacity) : color);
+    },
+    [opacity, setCellBackgroundColor],
+  );
 
   return (
     <BubbleMenu
@@ -108,25 +115,25 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
     >
       {/* Row controls */}
       <div className="flex items-center gap-0.5 px-1 border-l border-gray-200 dark:border-gray-700">
-        <button 
-          type="button" 
-          onClick={() => editor.chain().focus().addRowBefore().run()} 
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().addRowBefore().run()}
           className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
           aria-label="افزودن ردیف بالا"
         >
           <ArrowUp size={16} />
         </button>
-        <button 
-          type="button" 
-          onClick={() => editor.chain().focus().addRowAfter().run()} 
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().addRowAfter().run()}
           className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
           aria-label="افزودن ردیف پایین"
         >
           <ArrowDown size={16} />
         </button>
-        <button 
-          type="button" 
-          onClick={() => editor.chain().focus().deleteRow().run()} 
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().deleteRow().run()}
           className="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 transition-colors"
           aria-label="حذف ردیف"
         >
@@ -136,25 +143,25 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
 
       {/* Column controls */}
       <div className="flex items-center gap-0.5 px-1 border-l border-gray-200 dark:border-gray-700">
-        <button 
-          type="button" 
-          onClick={() => editor.chain().focus().addColumnBefore().run()} 
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().addColumnBefore().run()}
           className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
           aria-label="افزودن ستون راست"
         >
           <ArrowRight size={16} />
         </button>
-        <button 
-          type="button" 
-          onClick={() => editor.chain().focus().addColumnAfter().run()} 
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().addColumnAfter().run()}
           className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
           aria-label="افزودن ستون چپ"
         >
           <ArrowLeft size={16} />
         </button>
-        <button 
-          type="button" 
-          onClick={() => editor.chain().focus().deleteColumn().run()} 
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().deleteColumn().run()}
           className="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 transition-colors"
           aria-label="حذف ستون"
         >
@@ -164,30 +171,30 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
 
       {/* Merge/Split controls */}
       <div className="flex items-center gap-0.5 px-1 border-l border-gray-200 dark:border-gray-700">
-        <button 
-          type="button" 
-          onClick={() => editor.chain().focus().mergeCells().run()} 
-          disabled={!canMerge} 
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().mergeCells().run()}
+          disabled={!canMerge}
           className={cn(
-            "p-1.5 rounded-lg transition-colors",
-            canMerge 
-              ? 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300' 
-              : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+            'p-1.5 rounded-lg transition-colors',
+            canMerge
+              ? 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300'
+              : 'text-gray-300 dark:text-gray-600 cursor-not-allowed',
           )}
           aria-label="ادغام سلول‌ها"
           aria-disabled={!canMerge}
         >
           <Merge size={16} />
         </button>
-        <button 
-          type="button" 
-          onClick={() => editor.chain().focus().splitCell().run()} 
-          disabled={!canSplit} 
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().splitCell().run()}
+          disabled={!canSplit}
           className={cn(
-            "p-1.5 rounded-lg transition-colors",
-            canSplit 
-              ? 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300' 
-              : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+            'p-1.5 rounded-lg transition-colors',
+            canSplit
+              ? 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300'
+              : 'text-gray-300 dark:text-gray-600 cursor-not-allowed',
           )}
           aria-label="تفکیک سلول"
           aria-disabled={!canSplit}
@@ -197,25 +204,28 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
       </div>
 
       {/* Color picker */}
-      <div className="relative flex items-center gap-0.5 px-1 border-l border-gray-200 dark:border-gray-700" ref={colorPickerRef}>
-        <button 
-          type="button" 
-          onClick={() => setShowColorPicker(!showColorPicker)} 
+      <div
+        className="relative flex items-center gap-0.5 px-1 border-l border-gray-200 dark:border-gray-700"
+        ref={colorPickerRef}
+      >
+        <button
+          type="button"
+          onClick={() => setShowColorPicker(!showColorPicker)}
           className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
           aria-label="رنگ پس‌زمینه سلول"
           aria-expanded={showColorPicker}
         >
           <Palette size={16} />
         </button>
-        
+
         {showColorPicker && (
           <div className="absolute top-full right-0 mt-2 p-3 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-[300] min-w-[260px]">
             {/* Header */}
             <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
               <span className="text-sm font-medium text-gray-700 dark:text-gray-200">رنگ سلول</span>
-              <button 
-                type="button" 
-                onClick={() => setShowColorPicker(false)} 
+              <button
+                type="button"
+                onClick={() => setShowColorPicker(false)}
                 className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
                 aria-label="بستن"
               >
@@ -225,26 +235,26 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
 
             {/* Tabs */}
             <div className="flex gap-1 mb-3 p-1 bg-gray-100 dark:bg-gray-700 rounded-lg">
-              <button 
-                type="button" 
-                onClick={() => setActiveTab('palette')} 
+              <button
+                type="button"
+                onClick={() => setActiveTab('palette')}
                 className={cn(
-                  "flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all",
-                  activeTab === 'palette' 
-                    ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' 
-                    : 'text-gray-600 dark:text-gray-400'
+                  'flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all',
+                  activeTab === 'palette'
+                    ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white'
+                    : 'text-gray-600 dark:text-gray-400',
                 )}
               >
                 پالت رنگ
               </button>
-              <button 
-                type="button" 
-                onClick={() => setActiveTab('transparent')} 
+              <button
+                type="button"
+                onClick={() => setActiveTab('transparent')}
                 className={cn(
-                  "flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all",
-                  activeTab === 'transparent' 
-                    ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' 
-                    : 'text-gray-600 dark:text-gray-400'
+                  'flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all',
+                  activeTab === 'transparent'
+                    ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white'
+                    : 'text-gray-600 dark:text-gray-400',
                 )}
               >
                 شفاف
@@ -254,32 +264,40 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
             {activeTab === 'palette' ? (
               /* Color palette */
               <div className="space-y-1.5">
-                {Object.entries(COLOR_PALETTE).slice(0, 5).map(([category, colors]) => (
-                  <div key={category} className="flex gap-1">
-                    {colors.map((c) => (
-                      <button
-                        key={c.value}
-                        type="button"
-                        onClick={() => handleColorSelect(c.value)}
-                        title={c.name}
-                        className={cn(
-                          'w-6 h-6 rounded-md transition-all hover:scale-110 border',
-                          selectedColor === c.value ? 'ring-2 ring-primary-500 ring-offset-1' : '',
-                          c.isBrightColor ? 'border-gray-200 dark:border-gray-600' : 'border-transparent'
-                        )}
-                        style={{ backgroundColor: c.value }}
-                        aria-label={c.name}
-                      />
-                    ))}
-                  </div>
-                ))}
+                {Object.entries(COLOR_PALETTE)
+                  .slice(0, 5)
+                  .map(([category, colors]) => (
+                    <div key={category} className="flex gap-1">
+                      {colors.map((c) => (
+                        <button
+                          key={c.value}
+                          type="button"
+                          onClick={() => handleColorSelect(c.value)}
+                          title={c.name}
+                          className={cn(
+                            'w-6 h-6 rounded-md transition-all hover:scale-110 border',
+                            selectedColor === c.value
+                              ? 'ring-2 ring-primary-500 ring-offset-1'
+                              : '',
+                            c.isBrightColor
+                              ? 'border-gray-200 dark:border-gray-600'
+                              : 'border-transparent',
+                          )}
+                          style={{ backgroundColor: c.value }}
+                          aria-label={c.name}
+                        />
+                      ))}
+                    </div>
+                  ))}
               </div>
             ) : (
               /* Opacity slider */
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-600 dark:text-gray-400">شفافیت</span>
-                  <span className="font-mono text-gray-900 dark:text-white">{Math.round(opacity * 100)}%</span>
+                  <span className="font-mono text-gray-900 dark:text-white">
+                    {Math.round(opacity * 100)}%
+                  </span>
                 </div>
                 <input
                   type="range"
@@ -287,7 +305,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
                   max="1"
                   step="0.05"
                   value={opacity}
-                  onChange={(e) => setOpacity(parseFloat(e.target.value))}
+                  onChange={(e) => setOpacity(Number.parseFloat(e.target.value))}
                   className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
                 />
                 <div className="grid grid-cols-5 gap-1.5">
@@ -320,13 +338,13 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
 
       {/* Delete table */}
       <div className="flex items-center gap-0.5 px-1">
-        <button 
-          type="button" 
-          onClick={() => { 
+        <button
+          type="button"
+          onClick={() => {
             if (window.confirm('آیا از حذف جدول مطمئن هستید؟')) {
-              editor.chain().focus().deleteTable().run(); 
+              editor.chain().focus().deleteTable().run();
             }
-          }} 
+          }}
           className="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 transition-colors"
           aria-label="حذف جدول"
         >

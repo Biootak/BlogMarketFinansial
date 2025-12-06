@@ -238,13 +238,13 @@ export class ReportGenerator {
   exportToMarkdown(report: PerformanceReport): string {
     const { summary, findings, recommendations, priorityMatrix } = report;
 
-    let md = `# 📊 گزارش تحلیل عملکرد\n\n`;
+    let md = '# 📊 گزارش تحلیل عملکرد\n\n';
     md += `**تاریخ تولید:** ${summary.generatedAt.toLocaleString('fa-IR')}\n\n`;
 
     // Summary
-    md += `## خلاصه\n\n`;
-    md += `| معیار | تعداد |\n`;
-    md += `|-------|-------|\n`;
+    md += '## خلاصه\n\n';
+    md += '| معیار | تعداد |\n';
+    md += '|-------|-------|\n';
     md += `| کل مشکلات | ${summary.totalFindings} |\n`;
     md += `| بحرانی | ${summary.criticalCount} |\n`;
     md += `| مهم | ${summary.highCount} |\n`;
@@ -253,7 +253,7 @@ export class ReportGenerator {
     md += `| تأثیر کلی | ${summary.estimatedImpact} |\n\n`;
 
     // Findings
-    md += `## 🔍 مشکلات یافت شده\n\n`;
+    md += '## 🔍 مشکلات یافت شده\n\n';
     for (const finding of findings) {
       md += `### ${finding.title}\n\n`;
       md += `- **دسته:** ${finding.category}\n`;
@@ -265,7 +265,7 @@ export class ReportGenerator {
     }
 
     // Recommendations
-    md += `## 💡 پیشنهادات\n\n`;
+    md += '## 💡 پیشنهادات\n\n';
     for (const rec of recommendations) {
       md += `### ${rec.title}\n\n`;
       md += `${rec.description}\n\n`;
@@ -279,9 +279,9 @@ export class ReportGenerator {
     }
 
     // Priority Matrix
-    md += `## 📈 ماتریس اولویت (10 مورد برتر)\n\n`;
-    md += `| اولویت | عنوان | امتیاز تأثیر | امتیاز تلاش | امتیاز کل |\n`;
-    md += `|--------|--------|--------------|-------------|----------|\n`;
+    md += '## 📈 ماتریس اولویت (10 مورد برتر)\n\n';
+    md += '| اولویت | عنوان | امتیاز تأثیر | امتیاز تلاش | امتیاز کل |\n';
+    md += '|--------|--------|--------------|-------------|----------|\n';
     for (const [index, item] of priorityMatrix.slice(0, 10).entries()) {
       md += `| ${index + 1} | ${item.finding.title} | ${item.impactScore} | ${item.effortScore} | ${item.priorityScore.toFixed(1)} |\n`;
     }
@@ -503,7 +503,7 @@ export class ReportGenerator {
 
       if (finding.category === 'Database Performance') {
         recommendations.push({
-          title: `بهینه‌سازی کوئری دیتابیس`,
+          title: 'بهینه‌سازی کوئری دیتابیس',
           description: 'افزودن index یا استفاده از Prisma include',
           before: finding.description,
           after: '// با index یا include بهینه شود',

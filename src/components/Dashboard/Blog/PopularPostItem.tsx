@@ -1,6 +1,6 @@
-import type React from 'react';
 import Link from 'next/link';
-import { HiOutlineEye, HiOutlineCalendar, HiOutlineUser, HiPencil } from 'react-icons/hi2';
+import type React from 'react';
+import { HiOutlineCalendar, HiOutlineEye, HiOutlineUser, HiPencil } from 'react-icons/hi2';
 
 interface PopularPostItemProps {
   id: string;

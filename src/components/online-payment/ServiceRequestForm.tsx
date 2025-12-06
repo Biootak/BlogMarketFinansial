@@ -1,34 +1,34 @@
 'use client';
 
-import { type FC, useState, useCallback, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
+import { type ServiceRequestInput, createServiceRequest } from '@/actions/serviceRequestActions';
+import { type ServiceRequestFormData, ServiceRequestSchema } from '@/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { type FC, useCallback, useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
 import {
-  HiUser,
-  HiPhone,
-  HiMail,
+  HiAcademicCap,
+  HiArrowLeft,
+  HiArrowRight,
+  HiCash,
+  HiCheckCircle,
+  HiClipboardCopy,
+  HiClock,
+  HiCreditCard,
   HiCurrencyDollar,
   HiDocumentText,
-  HiLightningBolt,
-  HiCheckCircle,
   HiExclamationCircle,
-  HiClipboardCopy,
   HiGlobe,
+  HiLightningBolt,
+  HiMail,
   HiOfficeBuilding,
-  HiArrowRight,
-  HiArrowLeft,
-  HiCreditCard,
-  HiAcademicCap,
-  HiCash,
+  HiPhone,
+  HiShieldCheck,
   HiShoppingCart,
   HiSparkles,
-  HiShieldCheck,
-  HiClock,
+  HiUser,
 } from 'react-icons/hi';
-import { ServiceRequestSchema, type ServiceRequestFormData } from '@/schemas';
-import { createServiceRequest, type ServiceRequestInput } from '@/actions/serviceRequestActions';
 
 // ============================================
 // Types & Constants
@@ -224,11 +224,11 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
 
   const selectedService = useMemo(
     () => serviceTypes.find((s) => s.value === serviceType),
-    [serviceType]
+    [serviceType],
   );
   const selectedCurrencyInfo = useMemo(
     () => currencies.find((c) => c.value === selectedCurrency),
-    [selectedCurrency]
+    [selectedCurrency],
   );
 
   const totalSteps = 3;
@@ -265,7 +265,7 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
     if (currentStep !== totalSteps) {
       return;
     }
-    
+
     setIsSubmitting(true);
     setSubmitResult({ status: 'idle' });
     try {
@@ -314,13 +314,12 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
       >
         {/* Ambient Background Glow */}
         <div className="absolute -inset-4 bg-gradient-to-r from-primary-500/20 via-purple-500/10 to-blue-500/20 rounded-[2.5rem] blur-3xl opacity-50 dark:opacity-30" />
-        
+
         {/* Main Card */}
         <div className="relative bg-white/80 dark:bg-neutral-900/80 backdrop-blur-2xl rounded-3xl border border-white/50 dark:border-neutral-700/50 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_40px_-12px_rgba(0,0,0,0.5)] overflow-hidden">
-          
           {/* Decorative Top Border Gradient */}
           <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary-500 via-purple-500 to-blue-500" />
-          
+
           {/* Header Section */}
           <div className="relative px-8 pt-10 pb-8 text-center border-b border-neutral-100 dark:border-neutral-800/50">
             <div className="absolute inset-0 bg-gradient-to-b from-neutral-50/50 to-transparent dark:from-neutral-800/30" />
@@ -358,8 +357,12 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
                 className="py-5 px-4 text-center group hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors duration-300"
               >
                 <feature.icon className="w-6 h-6 mx-auto mb-2 text-primary-500 group-hover:scale-110 transition-transform duration-300" />
-                <p className="font-semibold text-neutral-900 dark:text-white text-sm">{feature.label}</p>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{feature.desc}</p>
+                <p className="font-semibold text-neutral-900 dark:text-white text-sm">
+                  {feature.label}
+                </p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  {feature.desc}
+                </p>
               </motion.div>
             ))}
           </div>
@@ -431,7 +434,9 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
                         <div className="p-2 bg-red-100 dark:bg-red-900/50 rounded-xl">
                           <HiExclamationCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
                         </div>
-                        <span className="text-red-700 dark:text-red-300 font-medium">{submitResult.message}</span>
+                        <span className="text-red-700 dark:text-red-300 font-medium">
+                          {submitResult.message}
+                        </span>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -522,7 +527,7 @@ function StepIndicator({ currentStep, totalSteps }: { currentStep: number; total
     <div className="relative">
       {/* Progress Line Background */}
       <div className="absolute top-6 right-[calc(16.67%)] left-[calc(16.67%)] h-1 bg-neutral-200 dark:bg-neutral-700 rounded-full" />
-      
+
       {/* Progress Line Active */}
       <motion.div
         className="absolute top-6 right-[calc(16.67%)] h-1 bg-gradient-to-l from-primary-500 to-primary-600 rounded-full"
@@ -567,17 +572,17 @@ function StepIndicator({ currentStep, totalSteps }: { currentStep: number; total
                 ) : (
                   <Icon className="w-5 h-5" />
                 )}
-                
+
                 {/* Pulse Animation for Active Step */}
                 {currentStep === step.num && (
                   <motion.div
                     className="absolute inset-0 rounded-2xl bg-primary-500"
                     animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
-                    transition={{ duration: 2, repeat: Infinity }}
+                    transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
                   />
                 )}
               </motion.div>
-              
+
               <span
                 className={`mt-3 text-xs sm:text-sm font-medium transition-colors duration-300 whitespace-nowrap ${
                   isActive
@@ -594,7 +599,6 @@ function StepIndicator({ currentStep, totalSteps }: { currentStep: number; total
     </div>
   );
 }
-
 
 interface SuccessStateProps {
   trackingCode: string;
@@ -652,9 +656,7 @@ function SuccessState({
         <h3 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white mb-3">
           درخواست شما با موفقیت ثبت شد!
         </h3>
-        <p className="text-neutral-500 dark:text-neutral-400 mb-8">
-          کد پیگیری شما:
-        </p>
+        <p className="text-neutral-500 dark:text-neutral-400 mb-8">کد پیگیری شما:</p>
       </motion.div>
 
       {/* Tracking Code Card */}
@@ -744,7 +746,6 @@ function SuccessState({
   );
 }
 
-
 interface Step1Props {
   serviceTypes: ServiceOption[];
   selectedService: ServiceType;
@@ -791,8 +792,10 @@ function Step1ServiceSelection({ serviceTypes, selectedService, onSelect }: Step
               }`}
             >
               {/* Background Gradient on Hover */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${service.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-              
+              <div
+                className={`absolute inset-0 bg-gradient-to-br ${service.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
+              />
+
               {/* Selection Indicator */}
               {isSelected && (
                 <motion.div
@@ -805,7 +808,9 @@ function Step1ServiceSelection({ serviceTypes, selectedService, onSelect }: Step
               )}
 
               <div className="relative flex flex-col items-start gap-4">
-                <div className={`p-3 rounded-xl ${service.bgColor} transition-transform duration-300 group-hover:scale-110`}>
+                <div
+                  className={`p-3 rounded-xl ${service.bgColor} transition-transform duration-300 group-hover:scale-110`}
+                >
                   <Icon className={`w-7 h-7 ${service.color}`} />
                 </div>
                 <div>
@@ -825,7 +830,6 @@ function Step1ServiceSelection({ serviceTypes, selectedService, onSelect }: Step
   );
 }
 
-
 interface Step2Props {
   register: ReturnType<typeof useForm<ServiceRequestFormData>>['register'];
   errors: ReturnType<typeof useForm<ServiceRequestFormData>>['formState']['errors'];
@@ -836,13 +840,7 @@ interface Step2Props {
   serviceType: ServiceType;
 }
 
-function Step2Details({
-  register,
-  errors,
-  currencies,
-  countries,
-  serviceType,
-}: Step2Props) {
+function Step2Details({ register, errors, currencies, countries, serviceType }: Step2Props) {
   const inputBaseClass = `
     w-full px-5 py-4 rounded-2xl border-2 
     bg-white dark:bg-neutral-800/50 
@@ -850,11 +848,12 @@ function Step2Details({
     placeholder:text-neutral-400 dark:placeholder:text-neutral-500
     focus:outline-none focus:ring-0
   `;
-  
+
   const inputNormalClass = `${inputBaseClass} border-neutral-200 dark:border-neutral-700 focus:border-primary-500 dark:focus:border-primary-500 hover:border-neutral-300 dark:hover:border-neutral-600`;
   const inputErrorClass = `${inputBaseClass} border-red-400 dark:border-red-500 focus:border-red-500`;
 
-  const labelClass = 'flex items-center gap-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3';
+  const labelClass =
+    'flex items-center gap-2 text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3';
   const iconClass = 'w-4 h-4 text-primary-500';
 
   return (
@@ -973,26 +972,25 @@ function Step2Details({
           </div>
 
           <div>
-            <label className={labelClass}>
-              واحد ارز *
-            </label>
-            <select
-              {...register('currency')}
-              className={inputNormalClass}
-            >
+            <label className={labelClass}>واحد ارز *</label>
+            <select {...register('currency')} className={inputNormalClass}>
               <optgroup label="ارزهای فیات">
-                {currencies.filter((c) => c.type === 'fiat').map((c) => (
-                  <option key={c.value} value={c.value}>
-                    {c.flag} {c.label}
-                  </option>
-                ))}
+                {currencies
+                  .filter((c) => c.type === 'fiat')
+                  .map((c) => (
+                    <option key={c.value} value={c.value}>
+                      {c.flag} {c.label}
+                    </option>
+                  ))}
               </optgroup>
               <optgroup label="ارزهای دیجیتال">
-                {currencies.filter((c) => c.type === 'crypto').map((c) => (
-                  <option key={c.value} value={c.value}>
-                    {c.flag} {c.label}
-                  </option>
-                ))}
+                {currencies
+                  .filter((c) => c.type === 'crypto')
+                  .map((c) => (
+                    <option key={c.value} value={c.value}>
+                      {c.flag} {c.label}
+                    </option>
+                  ))}
               </optgroup>
             </select>
           </div>
@@ -1017,7 +1015,9 @@ function Step2Details({
               <select {...register('destinationCountry')} className={inputNormalClass}>
                 <option value="">انتخاب کنید</option>
                 {countries.map((c) => (
-                  <option key={c.value} value={c.value}>{c.flag} {c.label}</option>
+                  <option key={c.value} value={c.value}>
+                    {c.flag} {c.label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -1092,7 +1092,9 @@ function Step2Details({
               <select {...register('destinationCountry')} className={inputNormalClass}>
                 <option value="">انتخاب کنید</option>
                 {countries.map((c) => (
-                  <option key={c.value} value={c.value}>{c.flag} {c.label}</option>
+                  <option key={c.value} value={c.value}>
+                    {c.flag} {c.label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -1110,9 +1112,7 @@ function Step2Details({
             </div>
           </div>
           <div>
-            <label className={labelClass}>
-              شماره دانشجویی (اختیاری)
-            </label>
+            <label className={labelClass}>شماره دانشجویی (اختیاری)</label>
             <input
               type="text"
               {...register('studentId')}
@@ -1146,9 +1146,7 @@ function Step2Details({
               />
             </div>
             <div>
-              <label className={labelClass}>
-                نام کاربری در پلتفرم
-              </label>
+              <label className={labelClass}>نام کاربری در پلتفرم</label>
               <input
                 type="text"
                 {...register('platformUsername')}
@@ -1183,9 +1181,7 @@ function Step2Details({
               />
             </div>
             <div>
-              <label className={labelClass}>
-                نوع اشتراک
-              </label>
+              <label className={labelClass}>نوع اشتراک</label>
               <select {...register('subscriptionType')} className={inputNormalClass}>
                 <option value="">انتخاب کنید</option>
                 <option value="monthly">ماهانه</option>
@@ -1217,7 +1213,9 @@ function Step2Details({
                 </div>
                 <div className="text-center">
                   <span className="font-bold text-neutral-900 dark:text-white block">عادی</span>
-                  <span className="text-xs text-neutral-500 dark:text-neutral-400">پردازش در ۲۴ ساعت</span>
+                  <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                    پردازش در ۲۴ ساعت
+                  </span>
                 </div>
               </div>
             </div>
@@ -1232,7 +1230,9 @@ function Step2Details({
                 </div>
                 <div className="text-center">
                   <span className="font-bold text-neutral-900 dark:text-white block">فوری</span>
-                  <span className="text-xs text-neutral-500 dark:text-neutral-400">پردازش سریع‌تر</span>
+                  <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                    پردازش سریع‌تر
+                  </span>
                 </div>
               </div>
             </div>
@@ -1242,7 +1242,6 @@ function Step2Details({
     </motion.div>
   );
 }
-
 
 interface Step3Props {
   selectedService: ServiceOption | undefined;
@@ -1290,7 +1289,9 @@ function Step3Review({
         {/* Service Header */}
         {selectedService && (
           <div className="relative flex items-center gap-4 pb-6 mb-6 border-b border-neutral-200 dark:border-neutral-700">
-            <div className={`p-4 rounded-2xl ${selectedService.bgColor} shadow-lg ${selectedService.shadowColor}`}>
+            <div
+              className={`p-4 rounded-2xl ${selectedService.bgColor} shadow-lg ${selectedService.shadowColor}`}
+            >
               <selectedService.icon className={`w-8 h-8 ${selectedService.color}`} />
             </div>
             <div>
@@ -1307,21 +1308,31 @@ function Step3Review({
         {/* Info Grid */}
         <div className="relative grid grid-cols-2 gap-6">
           <div className="space-y-1">
-            <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">نام</p>
+            <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+              نام
+            </p>
             <p className="font-semibold text-neutral-900 dark:text-white">{fullName || '-'}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">شماره تماس</p>
-            <p className="font-semibold text-neutral-900 dark:text-white" dir="ltr">{phone || '-'}</p>
+            <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+              شماره تماس
+            </p>
+            <p className="font-semibold text-neutral-900 dark:text-white" dir="ltr">
+              {phone || '-'}
+            </p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">مبلغ</p>
+            <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+              مبلغ
+            </p>
             <p className="font-semibold text-neutral-900 dark:text-white">
               {amount || '-'} {selectedCurrencyInfo?.label || ''}
             </p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">اولویت</p>
+            <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+              اولویت
+            </p>
             <p className="font-semibold text-neutral-900 dark:text-white">
               {urgency === 'URGENT' ? (
                 <span className="inline-flex items-center gap-1.5 text-red-600 dark:text-red-400">
@@ -1373,7 +1384,6 @@ function Step3Review({
     </motion.div>
   );
 }
-
 
 interface NavigationButtonsProps {
   currentStep: number;

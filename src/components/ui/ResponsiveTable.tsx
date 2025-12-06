@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
 
 export interface ResponsiveTableProps {
   children: React.ReactNode;
@@ -91,10 +91,7 @@ export function ResponsiveTableCell({
   return (
     <td className={className}>
       <div
-        className={cn(
-          'cursor-pointer',
-          !isExpanded && 'truncate max-w-[200px]'
-        )}
+        className={cn('cursor-pointer', !isExpanded && 'truncate max-w-[200px]')}
         onClick={() => setIsExpanded(!isExpanded)}
         title={typeof children === 'string' ? children : undefined}
       >

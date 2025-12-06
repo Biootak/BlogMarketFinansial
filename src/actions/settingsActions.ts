@@ -64,7 +64,7 @@ export async function updateGeneralSettings(data: {
     // Revalidate all pages that use site settings
     revalidatePath('/dashboard/settings');
     revalidatePath('/');
-    
+
     return { success: true, data: settings };
   } catch (error) {
     console.error('Error updating general settings:', error);
@@ -145,7 +145,7 @@ export async function updateSocialSettings(data: {
     // Revalidate all pages that use social settings
     revalidatePath('/dashboard/settings');
     revalidatePath('/');
-    
+
     return { success: true, data: settings };
   } catch (error) {
     console.error('Error updating social settings:', error);

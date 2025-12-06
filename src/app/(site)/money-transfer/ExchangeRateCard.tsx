@@ -1,12 +1,12 @@
 'use client';
 
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import type { ExchangeRateData } from '@/types/types';
-import { Info, ExternalLink, TrendingUp, TrendingDown } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import type { ExchangeRateData } from '@/types/types';
+import { motion } from 'framer-motion';
+import { ExternalLink, Info, TrendingDown, TrendingUp } from 'lucide-react';
+import Image from 'next/image';
 
 interface ExchangeRateCardProps {
   rate: ExchangeRateData;
@@ -40,7 +40,6 @@ export function ExchangeRateCard({ rate, index }: ExchangeRateCardProps) {
 
       {/* Main Card */}
       <div className="relative bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200/80 dark:border-slate-700/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.4)] group-hover:shadow-[0_16px_40px_-12px_rgba(59,130,246,0.2)] dark:group-hover:shadow-[0_16px_40px_-12px_rgba(59,130,246,0.15)] group-hover:border-blue-200 dark:group-hover:border-blue-800/50 transition-all duration-500 group-hover:-translate-y-1 sm:group-hover:-translate-y-2">
-        
         {/* Top Gradient Bar */}
         <div className="h-1 sm:h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500" />
 
@@ -65,8 +64,12 @@ export function ExchangeRateCard({ rate, index }: ExchangeRateCardProps) {
                     />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="font-bold text-base text-slate-900 dark:text-white truncate">{rate.name}</h4>
-                    <span className="text-sm text-slate-500 dark:text-slate-400">{rate.currency}</span>
+                    <h4 className="font-bold text-base text-slate-900 dark:text-white truncate">
+                      {rate.name}
+                    </h4>
+                    <span className="text-sm text-slate-500 dark:text-slate-400">
+                      {rate.currency}
+                    </span>
                   </div>
                 </div>
                 <InfoContent />
@@ -92,14 +95,14 @@ export function ExchangeRateCard({ rate, index }: ExchangeRateCardProps) {
         <div className="p-4 sm:p-5 lg:p-6 pt-3 sm:pt-4">
           {/* Currency Icon & Name */}
           <div className="flex flex-col items-center mb-4 sm:mb-5">
-            <motion.div 
+            <motion.div
               className="relative mb-3 sm:mb-4"
               whileHover={{ scale: 1.08, rotate: 3 }}
               transition={{ type: 'spring', stiffness: 300 }}
             >
               {/* Icon Background Glow */}
               <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl sm:rounded-2xl blur-lg opacity-20 group-hover:opacity-40 transition-opacity duration-300" />
-              
+
               <div className="relative w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-xl sm:rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 border-2 border-slate-200/50 dark:border-slate-600/50 shadow-lg flex items-center justify-center overflow-hidden">
                 <Image
                   src={rate.imageUrl || '/images/placeholder-small.png'}
@@ -128,7 +131,9 @@ export function ExchangeRateCard({ rate, index }: ExchangeRateCardProps) {
                     <div className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
                       <TrendingUp className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 text-emerald-600 dark:text-emerald-400" />
                     </div>
-                    <span className="text-xs sm:text-sm font-medium text-emerald-700 dark:text-emerald-300">خرید</span>
+                    <span className="text-xs sm:text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                      خرید
+                    </span>
                   </div>
                   <span className="font-bold text-sm sm:text-base lg:text-lg text-emerald-600 dark:text-emerald-400 tabular-nums">
                     {rate.buyRate || '---'}
@@ -139,7 +144,9 @@ export function ExchangeRateCard({ rate, index }: ExchangeRateCardProps) {
                     <div className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 rounded-lg bg-rose-500/10 flex items-center justify-center flex-shrink-0">
                       <TrendingDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 text-rose-600 dark:text-rose-400" />
                     </div>
-                    <span className="text-xs sm:text-sm font-medium text-rose-700 dark:text-rose-300">فروش</span>
+                    <span className="text-xs sm:text-sm font-medium text-rose-700 dark:text-rose-300">
+                      فروش
+                    </span>
                   </div>
                   <span className="font-bold text-sm sm:text-base lg:text-lg text-rose-600 dark:text-rose-400 tabular-nums">
                     {rate.sellRate || '---'}
@@ -151,9 +158,13 @@ export function ExchangeRateCard({ rate, index }: ExchangeRateCardProps) {
                 <div className="flex items-center justify-between p-2.5 sm:p-3 lg:p-3.5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl sm:rounded-2xl border border-blue-100 dark:border-blue-800/30 hover:shadow-sm transition-all duration-200">
                   <div className="flex items-center gap-1.5 sm:gap-2">
                     <div className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-[10px] sm:text-xs font-bold text-blue-600 dark:text-blue-400">۱x</span>
+                      <span className="text-[10px] sm:text-xs font-bold text-blue-600 dark:text-blue-400">
+                        ۱x
+                      </span>
                     </div>
-                    <span className="text-xs sm:text-sm font-medium text-blue-700 dark:text-blue-300">پرچون</span>
+                    <span className="text-xs sm:text-sm font-medium text-blue-700 dark:text-blue-300">
+                      پرچون
+                    </span>
                   </div>
                   <span className="font-bold text-sm sm:text-base lg:text-lg text-blue-600 dark:text-blue-400 tabular-nums">
                     {rate.singleRate || '---'}
@@ -162,9 +173,13 @@ export function ExchangeRateCard({ rate, index }: ExchangeRateCardProps) {
                 <div className="flex items-center justify-between p-2.5 sm:p-3 lg:p-3.5 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 rounded-xl sm:rounded-2xl border border-violet-100 dark:border-violet-800/30 hover:shadow-sm transition-all duration-200">
                   <div className="flex items-center gap-1.5 sm:gap-2">
                     <div className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 rounded-lg bg-violet-500/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-[10px] sm:text-xs font-bold text-violet-600 dark:text-violet-400">∞</span>
+                      <span className="text-[10px] sm:text-xs font-bold text-violet-600 dark:text-violet-400">
+                        ∞
+                      </span>
                     </div>
-                    <span className="text-xs sm:text-sm font-medium text-violet-700 dark:text-violet-300">عمده</span>
+                    <span className="text-xs sm:text-sm font-medium text-violet-700 dark:text-violet-300">
+                      عمده
+                    </span>
                   </div>
                   <span className="font-bold text-sm sm:text-base lg:text-lg text-violet-600 dark:text-violet-400 tabular-nums">
                     {rate.bulkRate || '---'}
@@ -184,7 +199,7 @@ export function ExchangeRateCard({ rate, index }: ExchangeRateCardProps) {
             {/* Button Gradient Background */}
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500 transition-all duration-300" />
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
-            
+
             {/* Shine Effect */}
             <div className="absolute inset-0 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-500">
               <div className="absolute inset-0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />

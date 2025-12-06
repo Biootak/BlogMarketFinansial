@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Menu, X } from 'lucide-react';
+import { useState } from 'react';
 
 export interface MobileDashboardLayoutProps {
   children: React.ReactNode;
@@ -45,7 +45,7 @@ export function MobileDashboardLayout({
           className={cn(
             'fixed lg:sticky top-0 z-30 h-screen w-64 bg-white dark:bg-neutral-800 border-e border-neutral-200 dark:border-neutral-700 transition-transform duration-200',
             'lg:translate-x-0',
-            isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+            isSidebarOpen ? 'translate-x-0' : '-translate-x-full',
           )}
         >
           <div className="p-4 overflow-y-auto h-full">{sidebar}</div>
@@ -84,7 +84,7 @@ export function DashboardCard({
     <div
       className={cn(
         'bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4 lg:p-6',
-        className
+        className,
       )}
     >
       {title && <h2 className="text-lg font-bold mb-4">{title}</h2>}

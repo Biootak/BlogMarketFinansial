@@ -1,14 +1,14 @@
 'use client';
 
-import PostCardMeta from '@/components/PostCardMeta/PostCardMeta';
-import type { PostWithRelations } from '@/types/types';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
+import PostCardMeta from '@/components/PostCardMeta/PostCardMeta';
 import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
-import Link from 'next/link';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { getPostLink } from '@/lib/getPostLink';
+import type { PostWithRelations } from '@/types/types';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
 export interface Card6Props {
   className?: string;
@@ -30,7 +30,6 @@ export default function Card6({ className = '', post }: Card6Props) {
     >
       {/* Mobile: Vertical Card with Overlay | Desktop: Horizontal Card */}
       <div className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300">
-        
         {/* Mobile Layout: Full-width image with content overlay */}
         <div className="sm:hidden relative w-full">
           <Link href={postLink} className="block">
@@ -41,10 +40,10 @@ export default function Card6({ className = '', post }: Card6Props) {
               sizes="100vw"
               priority={false}
             />
-            
+
             {/* Strong Gradient for Text Readability */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
-            
+
             {/* Colored Gradient Accent */}
             <div className="absolute inset-0 bg-gradient-to-br from-primary-600/30 via-transparent to-violet-600/20 mix-blend-overlay" />
           </Link>
@@ -53,16 +52,12 @@ export default function Card6({ className = '', post }: Card6Props) {
           <div className="absolute inset-0 flex flex-col justify-between p-3">
             {/* Top Section: Categories & Post Type */}
             <div className="flex items-start justify-between gap-2">
-              <CategoryBadgeList 
-                categories={categories} 
+              <CategoryBadgeList
+                categories={categories}
                 className="flex flex-wrap gap-1.5"
                 itemClass="text-[10px] px-2 py-1 font-semibold backdrop-blur-md bg-white/90 dark:bg-neutral-900/90 shadow-lg"
               />
-              <PostTypeFeaturedIcon
-                wrapSize="h-7 w-7"
-                iconSize="h-3.5 w-3.5"
-                postType={postType}
-              />
+              <PostTypeFeaturedIcon wrapSize="h-7 w-7" iconSize="h-3.5 w-3.5" postType={postType} />
             </div>
 
             {/* Bottom Section: Title & Meta */}
@@ -98,7 +93,6 @@ export default function Card6({ className = '', post }: Card6Props) {
 
         {/* Desktop Layout: Horizontal Card */}
         <div className="hidden sm:flex flex-row items-stretch p-4 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm border border-neutral-100 dark:border-neutral-800 gap-4 relative">
-          
           {/* Subtle Hover Background */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary-50/0 to-violet-50/0 group-hover:from-primary-50/50 group-hover:to-violet-50/30 dark:group-hover:from-primary-950/20 dark:group-hover:to-violet-950/10 transition-all duration-200 pointer-events-none" />
 
@@ -115,17 +109,13 @@ export default function Card6({ className = '', post }: Card6Props) {
               priority={false}
               className="transition-transform duration-300 group-hover:scale-105"
             />
-            
+
             {/* Lighter Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300" />
-            
+
             {/* Post Type Icon */}
             <span className="absolute bottom-2.5 start-2.5 z-10">
-              <PostTypeFeaturedIcon
-                wrapSize="h-7 w-7"
-                iconSize="h-3.5 w-3.5"
-                postType={postType}
-              />
+              <PostTypeFeaturedIcon wrapSize="h-7 w-7" iconSize="h-3.5 w-3.5" postType={postType} />
             </span>
 
             {/* Hover Arrow */}
@@ -138,11 +128,10 @@ export default function Card6({ className = '', post }: Card6Props) {
 
           {/* Content Section - Desktop */}
           <div className="relative flex flex-col flex-grow justify-between min-w-0 py-0.5">
-            
             {/* Categories */}
             <div className="mb-2">
-              <CategoryBadgeList 
-                categories={categories} 
+              <CategoryBadgeList
+                categories={categories}
                 className="flex flex-wrap gap-1.5"
                 itemClass="text-[10px] px-2.5 py-1 font-medium"
               />
@@ -163,7 +152,7 @@ export default function Card6({ className = '', post }: Card6Props) {
             <div className="mt-3 pt-2.5 border-t border-neutral-100 dark:border-neutral-800 relative">
               {/* Accent Line */}
               <div className="absolute top-0 start-0 w-10 h-[1.5px] bg-gradient-to-l from-primary-500 to-violet-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-              
+
               <PostCardMeta
                 hiddenAvatar={false}
                 avatarSize="h-6 w-6 text-[10px] ring-1 ring-white dark:ring-neutral-800"

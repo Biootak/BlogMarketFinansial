@@ -1,7 +1,11 @@
 'use client';
 
+import DatePicker, {
+  type DayValue,
+  type DayRange,
+  type Day,
+} from '@hassanmojab/react-modern-calendar-datepicker';
 import type * as React from 'react';
-import DatePicker, { type DayValue, type DayRange, type Day } from '@hassanmojab/react-modern-calendar-datepicker';
 import '@hassanmojab/react-modern-calendar-datepicker/lib/DatePicker.css';
 import { cn } from '@/lib/utils';
 
@@ -40,12 +44,14 @@ const Calendar: React.FC<CalendarProps> = ({
 }) => {
   if (mode === 'single') {
     return (
-      <div className={cn(
-        'p-3 rounded-lg border bg-white',
-        'border-border shadow-sm',
-        'font-vazirmatn',
-        className
-      )}>
+      <div
+        className={cn(
+          'p-3 rounded-lg border bg-white',
+          'border-border shadow-sm',
+          'font-vazirmatn',
+          className,
+        )}
+      >
         <DatePicker
           value={selected}
           onChange={onSelect}
@@ -65,11 +71,7 @@ const Calendar: React.FC<CalendarProps> = ({
   }
 
   return (
-    <div className={cn(
-      'p-3 rounded-lg border bg-white',
-      'border-border shadow-sm',
-      className
-    )}>
+    <div className={cn('p-3 rounded-lg border bg-white', 'border-border shadow-sm', className)}>
       <DatePicker
         value={selected || { from: null, to: null }}
         onChange={onSelect}

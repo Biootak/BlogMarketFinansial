@@ -1,5 +1,5 @@
-import { Link as BaseLink } from '@tiptap/extension-link';
 import { markInputRule } from '@tiptap/core';
+import { Link as BaseLink } from '@tiptap/extension-link';
 
 const extractHrefFromMatch = (match: any) => {
   return { href: match.groups.href };
@@ -29,10 +29,10 @@ export const Link = BaseLink.extend({
       markInputRule({
         find: urlSyntaxRegExp,
         type: this.type,
-        getAttributes: extractHrefFromMatch
-      })
+        getAttributes: extractHrefFromMatch,
+      }),
     ];
-  }
+  },
 });
 
 export default Link;

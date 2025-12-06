@@ -1,8 +1,8 @@
 import React, { type FC } from 'react';
 
-import Link from 'next/link';
-import Image from 'next/image';
 import type { TaxonomyType } from '@/types/types';
+import Image from 'next/image';
+import Link from 'next/link';
 
 export interface CardCategory3Props {
   className?: string;
@@ -12,7 +12,10 @@ export interface CardCategory3Props {
 const CardCategory3: FC<CardCategory3Props> = ({ className = '', taxonomy }) => {
   const { count, name, thumbnail } = taxonomy;
   return (
-    <Link href={`/archive/category/${name}`} className={`nc-CardCategory3 flex flex-col ${className}`}>
+    <Link
+      href={`/archive/category/${name}`}
+      className={`nc-CardCategory3 flex flex-col ${className}`}
+    >
       <div className="flex-shrink-0 relative w-full aspect-[1/1] rounded-2xl overflow-hidden group">
         <Image
           src={thumbnail || '/images/placeholder-small.png'}

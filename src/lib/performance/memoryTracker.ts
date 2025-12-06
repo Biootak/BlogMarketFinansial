@@ -229,7 +229,7 @@ export class MemoryTracker {
   /**
    * شروع نظارت خودکار
    */
-  startMonitoring(intervalMs: number = 5000): void {
+  startMonitoring(intervalMs = 5000): void {
     if (this.monitoringInterval) {
       return; // Already monitoring
     }
@@ -289,7 +289,7 @@ export class MemoryTracker {
         used: this.formatBytes(latest.usedHeap),
         total: this.formatBytes(latest.heapSize),
         limit: this.formatBytes(latest.heapLimit),
-        percentage: ((latest.usedHeap / latest.heapLimit) * 100).toFixed(1) + '%',
+        percentage: `${((latest.usedHeap / latest.heapLimit) * 100).toFixed(1)}%`,
       },
       gc: gcMetrics,
       leaks: latest.potentialLeaks,
@@ -310,28 +310,28 @@ export class MemoryTracker {
       return 'No memory data collected yet';
     }
 
-    let report = `# گزارش مصرف حافظه\n\n`;
-    report += `## وضعیت فعلی\n`;
+    let report = '# گزارش مصرف حافظه\n\n';
+    report += '## وضعیت فعلی\n';
     report += `- استفاده شده: ${stats.current.used}\n`;
     report += `- کل: ${stats.current.total}\n`;
     report += `- محدودیت: ${stats.current.limit}\n`;
     report += `- درصد: ${stats.current.percentage}\n\n`;
 
-    report += `## Garbage Collection\n`;
+    report += '## Garbage Collection\n';
     report += `- تعداد: ${stats.gc.collections}\n`;
     report += `- میانگین مدت: ${stats.gc.avgDuration.toFixed(2)}ms\n`;
     report += `- کل توقف: ${stats.gc.totalPause.toFixed(2)}ms\n\n`;
 
     if (stats.leaks.length > 0) {
-      report += `## نشت حافظه احتمالی\n`;
+      report += '## نشت حافظه احتمالی\n';
       for (const leak of stats.leaks) {
         report += `- **${leak.component}** (${leak.type})\n`;
         report += `  ${leak.description}\n`;
       }
-      report += `\n`;
+      report += '\n';
     }
 
-    report += `## ردیابی منابع\n`;
+    report += '## ردیابی منابع\n';
     report += `- Event Listeners: ${stats.tracking.eventListeners}\n`;
     report += `- Timers: ${stats.tracking.timers}\n`;
     report += `- Subscriptions: ${stats.tracking.subscriptions}\n`;

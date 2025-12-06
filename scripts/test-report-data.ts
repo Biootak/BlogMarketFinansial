@@ -12,14 +12,14 @@ async function testReportData() {
 
     // تست 2: تعداد پست‌های منتشر شده
     const publishedPosts = await prisma.post.count({
-      where: { status: 'PUBLISHED' }
+      where: { status: 'PUBLISHED' },
     });
     console.log(`✅ تعداد پست‌های منتشر شده: ${publishedPosts}`);
 
     // تست 3: مجموع viewCount
     const viewCountSum = await prisma.post.aggregate({
       where: { status: 'PUBLISHED' },
-      _sum: { viewCount: true }
+      _sum: { viewCount: true },
     });
     console.log(`✅ مجموع viewCount: ${viewCountSum._sum?.viewCount || 0}`);
 
@@ -30,15 +30,17 @@ async function testReportData() {
         id: true,
         title: true,
         viewCount: true,
-        createdAt: true
+        createdAt: true,
       },
       orderBy: { viewCount: 'desc' },
-      take: 5
+      take: 5,
     });
 
     console.log('\n📊 نمونه پست‌ها:');
-    samplePosts.forEach(post => {
-      console.log(`  - ${post.title}: ${post.viewCount} بازدید (${post.createdAt.toLocaleDateString('fa-IR')})`);
+    samplePosts.forEach((post) => {
+      console.log(
+        `  - ${post.title}: ${post.viewCount} بازدید (${post.createdAt.toLocaleDateString('fa-IR')})`,
+      );
     });
 
     // تست 5: بازه زمانی 30 روز گذشته
@@ -46,16 +48,18 @@ async function testReportData() {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const now = new Date();
 
-    console.log(`\n📅 بازه زمانی: ${thirtyDaysAgo.toLocaleDateString('fa-IR')} تا ${now.toLocaleDateString('fa-IR')}`);
+    console.log(
+      `\n📅 بازه زمانی: ${thirtyDaysAgo.toLocaleDateString('fa-IR')} تا ${now.toLocaleDateString('fa-IR')}`,
+    );
 
     const recentPosts = await prisma.post.count({
       where: {
         status: 'PUBLISHED',
         createdAt: {
           gte: thirtyDaysAgo,
-          lte: now
-        }
-      }
+          lte: now,
+        },
+      },
     });
     console.log(`✅ پست‌های 30 روز گذشته: ${recentPosts}`);
 
@@ -64,10 +68,10 @@ async function testReportData() {
         status: 'PUBLISHED',
         createdAt: {
           gte: thirtyDaysAgo,
-          lte: now
-        }
+          lte: now,
+        },
       },
-      _sum: { viewCount: true }
+      _sum: { viewCount: true },
     });
     console.log(`✅ بازدیدهای 30 روز گذشته: ${recentViews._sum?.viewCount || 0}`);
 
@@ -87,7 +91,6 @@ async function testReportData() {
     console.log(`   (${totalEngagements} تعامل / ${totalViews} بازدید)`);
 
     console.log('\n✅ همه تست‌ها موفق بود!');
-
   } catch (error) {
     console.error('\n❌ خطا:', error);
   } finally {

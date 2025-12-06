@@ -21,7 +21,10 @@ declare module '@tiptap/core' {
   }
 }
 
-export const calloutTypeConfig: Record<CalloutType, { icon: string; bgColor: string; borderColor: string; textColor: string }> = {
+export const calloutTypeConfig: Record<
+  CalloutType,
+  { icon: string; bgColor: string; borderColor: string; textColor: string }
+> = {
   info: {
     icon: 'ℹ️',
     bgColor: 'bg-blue-50 dark:bg-blue-900/20',

@@ -1,10 +1,10 @@
-import type { NextConfig } from 'next';
-import path from 'path';
-import { withSentryConfig } from '@sentry/nextjs';
+import path from 'node:path';
 import bundleAnalyzer from '@next/bundle-analyzer';
+import { withSentryConfig } from '@sentry/nextjs';
+import type { NextConfig } from 'next';
 
 // Content Security Policy
-const ContentSecurityPolicy = `
+const _ContentSecurityPolicy = `
   default-src 'self';
   script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net https://*.sentry.io;
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
@@ -18,7 +18,9 @@ const ContentSecurityPolicy = `
   form-action 'self';
   frame-ancestors 'self';
   upgrade-insecure-requests;
-`.replace(/\s{2,}/g, ' ').trim();
+`
+  .replace(/\s{2,}/g, ' ')
+  .trim();
 
 const nextConfig: NextConfig = {
   output: 'standalone',

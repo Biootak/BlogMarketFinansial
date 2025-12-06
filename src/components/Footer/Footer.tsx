@@ -1,9 +1,9 @@
-import Link from 'next/link';
-import * as motion from 'framer-motion/client';
-import SocialLinks from '@/components/SocialsList/SocialLinks';
 import Logo from '@/components/Logo/Logo';
+import SocialLinks from '@/components/SocialsList/SocialLinks';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
-import { Mail, Phone, MapPin, ArrowUpLeft } from 'lucide-react';
+import * as motion from 'framer-motion/client';
+import { ArrowUpLeft, Mail, MapPin, Phone } from 'lucide-react';
+import Link from 'next/link';
 
 interface WidgetFooterMenu {
   id: string;
@@ -42,11 +42,11 @@ const Footer = async () => {
       {/* Background layers */}
       <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-slate-100 to-slate-200 dark:from-neutral-900 dark:via-neutral-950 dark:to-black" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(99,102,241,0.15),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(99,102,241,0.1),transparent)]" />
-      
+
       {/* Decorative elements */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl" />
-      
+
       {/* Top border gradient */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent" />
 
@@ -60,7 +60,9 @@ const Footer = async () => {
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 dark:bg-white/5 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 mb-6">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-sm font-medium text-slate-600 dark:text-slate-400">همیشه در دسترس</span>
+            <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
+              همیشه در دسترس
+            </span>
           </div>
           <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6">
             ما را در شبکه‌های اجتماعی دنبال کنید
@@ -89,8 +91,8 @@ const Footer = async () => {
                 </div>
               </div>
               <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                ارائه بهترین خدمات ارز دیجیتال و بازارهای مالی با امنیت و سرعت بالا. ما با استفاده از
-                فناوری‌های پیشرفته، بهترین تجربه معاملاتی را برای شما فراهم می‌کنیم.
+                ارائه بهترین خدمات ارز دیجیتال و بازارهای مالی با امنیت و سرعت بالا. ما با استفاده
+                از فناوری‌های پیشرفته، بهترین تجربه معاملاتی را برای شما فراهم می‌کنیم.
               </p>
             </div>
           </motion.div>
@@ -144,7 +146,9 @@ const Footer = async () => {
                   <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500/10 to-indigo-500/10 dark:from-primary-500/20 dark:to-indigo-500/20 group-hover:from-primary-500/20 group-hover:to-indigo-500/20 transition-all duration-300">
                     <Phone className="size-4 text-primary-600 dark:text-primary-400" />
                   </span>
-                  <span className="text-sm font-medium" dir="ltr">۰۹۳۸۰۹۲۹۶۰۶</span>
+                  <span className="text-sm font-medium" dir="ltr">
+                    ۰۹۳۸۰۹۲۹۶۰۶
+                  </span>
                 </a>
               </li>
               <li>
@@ -171,7 +175,7 @@ const Footer = async () => {
         >
           {/* Separator */}
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent" />
-          
+
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-sm text-slate-500 dark:text-slate-500">
               <span dir="rtl">تمامی حقوق محفوظ است.</span>{' '}

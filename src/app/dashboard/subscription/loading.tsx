@@ -1,4 +1,4 @@
-import { SkeletonBase, GridSkeleton } from '@/components/Skeletons';
+import { GridSkeleton, SkeletonBase } from '@/components/Skeletons';
 
 export default function SubscriptionLoading() {
   return (

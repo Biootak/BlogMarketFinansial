@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
 import type { UploadFolder } from '@/actions/uploadActions';
+import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useState } from 'react';
 
 interface ImageUploadDialogProps {
   isOpen: boolean;

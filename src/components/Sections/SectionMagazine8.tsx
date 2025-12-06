@@ -14,7 +14,7 @@
 //   posts = DEMO_POSTS_AUDIO.slice(8, 17),
 //   className = "",
 // }) => {
-//   // No need to memoize a statically sliced array 
+//   // No need to memoize a statically sliced array
 //   const [first, second, ...restPosts] = posts;
 
 //   return (

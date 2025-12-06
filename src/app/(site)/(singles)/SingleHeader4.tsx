@@ -1,8 +1,6 @@
-
+import NcImage from '@/components/NcImage/NcImage';
 import React, { type FC } from 'react';
 import SingleTitle from './SingleTitle';
-import NcImage from '@/components/NcImage/NcImage';
-
 
 export interface SingleHeader4Props {
   hiddenDesc?: boolean;
@@ -51,7 +49,7 @@ const SingleHeader4: FC<SingleHeader4Props> = ({ hiddenDesc = false, className =
             /> */}
             {/* <SingleMetaAction2 /> */}
           </div>
-          <div className="w-full border-b border-neutral-100 dark:border-neutral-800"></div>
+          <div className="w-full border-b border-neutral-100 dark:border-neutral-800" />
         </div>
       </div>
     </>

@@ -1,8 +1,8 @@
 'use server';
 
-import { writeFile, mkdir, unlink } from 'fs/promises';
-import { existsSync } from 'fs';
-import path from 'path';
+import { existsSync } from 'node:fs';
+import { mkdir, unlink, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import { auth } from '@/auth';
 import sharp from 'sharp';
 
@@ -40,11 +40,12 @@ function generateFilename(originalName: string, mimeType: string): string {
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(2, 8);
   const baseName = originalName.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9-_]/g, '');
-  
-  const ext = mimeType === 'image/gif' || mimeType === 'image/svg+xml' 
-    ? originalName.split('.').pop() 
-    : 'webp';
-  
+
+  const ext =
+    mimeType === 'image/gif' || mimeType === 'image/svg+xml'
+      ? originalName.split('.').pop()
+      : 'webp';
+
   return `${timestamp}-${random}-${baseName.slice(0, 20)}.${ext}`;
 }
 
@@ -60,7 +61,7 @@ export interface UploadResult {
 
 export async function uploadImage(
   formData: FormData,
-  folder: UploadFolder = 'general'
+  folder: UploadFolder = 'general',
 ): Promise<UploadResult> {
   try {
     const session = await auth();
@@ -116,7 +117,7 @@ export async function deleteImage(imageUrl: string): Promise<{ success: boolean;
     }
 
     const filepath = path.join(process.cwd(), 'public', imageUrl);
-    
+
     if (!existsSync(filepath)) {
       return { success: false, error: 'فایل یافت نشد' };
     }

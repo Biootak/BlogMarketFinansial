@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, type FC } from 'react';
 import CommentCard from '@/components/CommentCard/CommentCard';
 import type { CommentWithRelationsAndLikes } from '@/types/types';
-import { HiChevronDown, HiChatBubbleLeftRight } from 'react-icons/hi2';
+import { type FC, useState } from 'react';
+import { HiChatBubbleLeftRight, HiChevronDown } from 'react-icons/hi2';
 
 export interface SingleCommentListsProps {
   comments: CommentWithRelationsAndLikes[];
@@ -16,13 +16,13 @@ const SingleCommentLists: FC<SingleCommentListsProps> = ({ comments }) => {
     setVisibleComments(comments.length);
   };
 
-  const renderComments = (parentId: string | null = null, depth: number = 0) => {
+  const renderComments = (parentId: string | null = null, depth = 0) => {
     return comments
       .filter((comment) => comment.parentId === parentId)
       .slice(0, visibleComments)
       .map((comment, index) => (
-        <li 
-          key={comment.id} 
+        <li
+          key={comment.id}
           className={`
             relative
             ${depth > 0 ? 'mr-8 sm:mr-12' : ''}
@@ -43,10 +43,8 @@ const SingleCommentLists: FC<SingleCommentListsProps> = ({ comments }) => {
 
   return (
     <div className="nc-SingleCommentLists">
-      <ul className="space-y-6">
-        {renderComments()}
-      </ul>
-      
+      <ul className="space-y-6">{renderComments()}</ul>
+
       {visibleComments < comments.length && (
         <div className="mt-8 flex justify-center">
           <button
@@ -65,12 +63,12 @@ const SingleCommentLists: FC<SingleCommentListsProps> = ({ comments }) => {
           >
             {/* Hover Background */}
             <span className="absolute inset-0 bg-gradient-to-br from-primary-50 to-violet-50 dark:from-primary-950/50 dark:to-violet-950/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            
+
             {/* Icon */}
             <span className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-violet-500 shadow-lg shadow-primary-500/25 group-hover:shadow-primary-500/40 transition-shadow duration-300">
               <HiChatBubbleLeftRight className="w-5 h-5 text-white" />
             </span>
-            
+
             {/* Text */}
             <span className="relative flex flex-col items-start">
               <span className="text-sm font-bold text-neutral-900 dark:text-white group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors duration-300">
@@ -80,7 +78,7 @@ const SingleCommentLists: FC<SingleCommentListsProps> = ({ comments }) => {
                 +{remainingCount} نظر دیگر
               </span>
             </span>
-            
+
             {/* Arrow */}
             <HiChevronDown className="relative w-5 h-5 text-neutral-400 group-hover:text-primary-500 group-hover:translate-y-1 transition-all duration-300" />
           </button>

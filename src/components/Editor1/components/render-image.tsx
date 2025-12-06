@@ -1,5 +1,5 @@
-import React from 'react';
 import { type NodeViewProps, NodeViewWrapper } from '@tiptap/react';
+import React from 'react';
 
 interface ImageNodeAttributes {
   src: string;

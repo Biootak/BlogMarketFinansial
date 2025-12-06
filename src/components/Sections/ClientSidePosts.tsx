@@ -1,14 +1,14 @@
 'use client';
 
-import type React from 'react';
-import { useState, useCallback } from 'react';
 import { getLatestPosts } from '@/actions/getLatestPosts';
-import type { Advertisement, PostWithRelations } from '@/types/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Empty from '../Empty';
-import PostsDisplay from '../PostsDisplay.tsx/PostsDisplay';
+import type { Advertisement, PostWithRelations } from '@/types/types';
 import { motion } from 'framer-motion';
 import { Newspaper, Sparkles } from 'lucide-react';
+import type React from 'react';
+import { useCallback, useState } from 'react';
+import Empty from '../Empty';
+import PostsDisplay from '../PostsDisplay.tsx/PostsDisplay';
 
 interface ClientSidePostsProps {
   initialPosts: Record<string, PostWithRelations[]>;
@@ -70,13 +70,13 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
     <section className="relative">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-neutral-50/50 to-transparent dark:via-neutral-900/50 rounded-2xl sm:rounded-3xl -z-10" />
-      
+
       <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-neutral-100 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm">
         {/* Header */}
         <div className="relative px-4 sm:px-5 md:px-6 lg:px-8 pt-4 sm:pt-5 md:pt-6 pb-3 sm:pb-4 border-b border-neutral-100 dark:border-neutral-800">
           {/* Decorative gradient */}
           <div className="absolute inset-0 bg-gradient-to-r from-primary-50/50 via-transparent to-primary-50/50 dark:from-primary-900/20 dark:to-primary-900/20" />
-          
+
           <div className="relative flex items-center justify-center gap-2 sm:gap-3">
             <div className="p-1.5 sm:p-2 bg-primary-100 dark:bg-primary-900/50 rounded-lg sm:rounded-xl">
               <Newspaper className="w-4 h-4 sm:w-5 sm:h-5 text-primary-600 dark:text-primary-400" />

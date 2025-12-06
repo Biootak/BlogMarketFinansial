@@ -1,12 +1,12 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-import bcrypt from 'bcryptjs';
-import prisma from '@/lib/db';
-import { ZodError } from 'zod';
-import type { ActionResult, UpdateProfileInput, UserWithProfile } from '@/types/types';
 import { auth } from '@/auth';
+import prisma from '@/lib/db';
 import { UpdateProfileSchema } from '@/schemas';
+import type { ActionResult, UpdateProfileInput, UserWithProfile } from '@/types/types';
+import bcrypt from 'bcryptjs';
+import { revalidatePath } from 'next/cache';
+import { ZodError } from 'zod';
 
 export async function updateProfile(formData: FormData): Promise<ActionResult<void>> {
   try {
@@ -30,9 +30,12 @@ export async function updateProfile(formData: FormData): Promise<ActionResult<vo
     // Profile update data - همیشه فیلدها رو آپدیت کن حتی اگه خالی باشن
     const profileUpdateData: any = {};
     if (validatedFields.bio !== undefined) profileUpdateData.bio = validatedFields.bio || '';
-    if (validatedFields.imageUrl !== undefined) profileUpdateData.avatar = validatedFields.imageUrl || null;
-    if (validatedFields.bgImage !== undefined) profileUpdateData.bgImage = validatedFields.bgImage || null;
-    if (validatedFields.jobName !== undefined) profileUpdateData.jobName = validatedFields.jobName || '';
+    if (validatedFields.imageUrl !== undefined)
+      profileUpdateData.avatar = validatedFields.imageUrl || null;
+    if (validatedFields.bgImage !== undefined)
+      profileUpdateData.bgImage = validatedFields.bgImage || null;
+    if (validatedFields.jobName !== undefined)
+      profileUpdateData.jobName = validatedFields.jobName || '';
 
     if (validatedFields.currentPassword && validatedFields.newPassword) {
       const user = await prisma.user.findUnique({ where: { id: session.user.id } });

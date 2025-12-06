@@ -1,5 +1,5 @@
-import { cache } from 'react';
 import type { ExchangeRate, ExchangeRatesResult } from '@/types/types';
+import { cache } from 'react';
 
 // Exir API Base URL
 const EXIR_API_BASE = 'https://api.exir.io/v2';
@@ -59,7 +59,6 @@ const logger = {
     console.info(`[ExchangeRates Info] ${message}`);
   },
 };
-
 
 // Exir Tickers API Response Type
 interface ExirTicker {
@@ -198,7 +197,6 @@ function processExirRates(tickers: ExirTickersResponse): ExchangeRate[] {
 
   return rates;
 }
-
 
 export const getExchangeRates = cache(async (): Promise<ExchangeRatesResult> => {
   try {

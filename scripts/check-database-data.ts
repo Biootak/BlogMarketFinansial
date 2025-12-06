@@ -91,13 +91,13 @@ async function checkDatabaseData() {
         select: { createdAt: true },
       });
 
-      console.log(`\n📅 بازه زمانی داده‌ها:`);
+      console.log('\n📅 بازه زمانی داده‌ها:');
       console.log(`   - قدیمی‌ترین پست: ${oldestPost?.createdAt.toLocaleDateString('fa-IR')}`);
       console.log(`   - جدیدترین پست: ${newestPost?.createdAt.toLocaleDateString('fa-IR')}`);
     }
 
     // خلاصه
-    console.log('\n' + '='.repeat(50));
+    console.log(`\n${'='.repeat(50)}`);
     if (userCount === 0 && postCount === 0) {
       console.log('⚠️ دیتابیس خالی است! لطفاً داده‌های نمونه اضافه کنید.');
     } else if (viewCount === 0 && likeCount === 0 && commentCount === 0) {
@@ -107,7 +107,6 @@ async function checkDatabaseData() {
       console.log('✅ دیتابیس دارای داده است و آمار باید نمایش داده شود.');
     }
     console.log('='.repeat(50));
-
   } catch (error) {
     console.error('❌ خطا در بررسی دیتابیس:', error);
   } finally {

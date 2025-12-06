@@ -1,23 +1,23 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { toast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/use-toast';
+import type { DetailedSystemReport } from '@/lib/reports/reportService';
+import { cn } from '@/lib/utils';
 import {
-  Users,
+  Activity,
+  Clock,
+  Database,
+  Download,
+  Eye,
   FileText,
   MessageSquare,
-  Eye,
-  TrendingUp,
-  Download,
   RefreshCw,
-  Clock,
+  TrendingUp,
+  Users,
   Zap,
-  Database,
-  Activity,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import type { DetailedSystemReport } from '@/lib/reports/reportService';
+import { useCallback, useEffect, useState } from 'react';
 
 export default function AdvancedSystemReports() {
   const [data, setData] = useState<DetailedSystemReport | null>(null);
@@ -28,11 +28,11 @@ export default function AdvancedSystemReports() {
     try {
       setLoading(true);
       const response = await fetch('/api/system-reports');
-      
+
       if (!response.ok) {
         throw new Error('خطا در دریافت اطلاعات');
       }
-      
+
       const result = await response.json();
       setData(result);
     } catch (error) {
@@ -58,19 +58,19 @@ export default function AdvancedSystemReports() {
       const response = await fetch('/api/system-reports/clear-cache', {
         method: 'POST',
       });
-      
+
       if (!response.ok) {
         throw new Error('خطا در پاک کردن کش');
       }
-      
+
       toast({
         title: 'موفقیت',
         description: 'کش با موفقیت پاک شد',
         variant: 'success',
       });
-      
+
       await fetchData();
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'خطا',
         description: 'خطا در پاک کردن کش',
@@ -122,14 +122,9 @@ export default function AdvancedSystemReports() {
             </span>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
-          <Button
-            onClick={handleClearCache}
-            variant="outline"
-            size="sm"
-            className="text-xs"
-          >
+          <Button onClick={handleClearCache} variant="outline" size="sm" className="text-xs">
             پاک کردن کش
           </Button>
           <Button
@@ -276,9 +271,7 @@ function StatsCard({ title, value, icon, gradient, details, growth }: StatsCardP
     <div className="relative overflow-hidden rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
       <div className="p-5">
         <div className="flex items-start justify-between mb-4">
-          <div className={cn('p-3 rounded-xl shadow-lg bg-gradient-to-br', gradient)}>
-            {icon}
-          </div>
+          <div className={cn('p-3 rounded-xl shadow-lg bg-gradient-to-br', gradient)}>{icon}</div>
           {growth > 0 && (
             <div className="flex items-center gap-1 text-emerald-600 text-sm font-medium">
               <TrendingUp className="w-4 h-4" />
@@ -289,9 +282,7 @@ function StatsCard({ title, value, icon, gradient, details, growth }: StatsCardP
 
         <div className="space-y-3">
           <p className="text-sm font-medium text-gray-500">{title}</p>
-          <p className="text-3xl font-bold text-gray-900">
-            {value.toLocaleString('fa-IR')}
-          </p>
+          <p className="text-3xl font-bold text-gray-900">{value.toLocaleString('fa-IR')}</p>
 
           <div className="flex flex-wrap gap-2 pt-2">
             {details.map((detail, idx) => (

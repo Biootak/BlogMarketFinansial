@@ -1,14 +1,14 @@
 'use client';
 
-import type React from 'react';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Disclosure } from '@/app/headlessui';
 import ButtonClose from '@/components/ButtonClose/ButtonClose';
 import Logo from '@/components/Logo/Logo';
-import { Disclosure } from '@/app/headlessui';
 import ClientSocialLinks from '@/components/SocialsList/ClientSocialLinks';
 import SwitchDarkMode from '@/components/SwitchDarkMode/SwitchDarkMode';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import type React from 'react';
+import { useState } from 'react';
 
 export interface NavMobileProps {
   onClickClose?: () => void;
@@ -166,11 +166,7 @@ const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
 
           <div className="flex justify-between items-center mt-4">
             <SwitchDarkMode className="bg-neutral-100 dark:bg-neutral-800" />
-            <ClientSocialLinks
-              className="gap-2"
-              itemClass="!w-9 !h-9"
-              iconSize={18}
-            />
+            <ClientSocialLinks className="gap-2" itemClass="!w-9 !h-9" iconSize={18} />
           </div>
         </div>
         <span className="absolute end-2 top-2 p-1">

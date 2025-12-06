@@ -1,12 +1,12 @@
-import { Suspense } from 'react';
-import Link from 'next/link';
-import { ProfileIcon, PostIcon, ThemeIcon } from '@/components/Icons';
+import { PostIcon, ProfileIcon, ThemeIcon } from '@/components/Icons';
 import SideDropdown from '@/components/SideDropdown';
-import Avatar from '../Avatar/Avatar';
 import getCurrentUser from '@/lib/current-user';
-import LogoutButton from '../Auth/LogoutButton';
-import DarkModeSwitch from '../SwitchDarkMode/SwitchDarkMode2';
 import type { Role } from '@prisma/client';
+import Link from 'next/link';
+import { Suspense } from 'react';
+import LogoutButton from '../Auth/LogoutButton';
+import Avatar from '../Avatar/Avatar';
+import DarkModeSwitch from '../SwitchDarkMode/SwitchDarkMode2';
 
 const isAdminOrAuthor = (userRole: Role | undefined) => {
   return userRole === 'ADMIN' || userRole === 'AUTHOR' || userRole === 'SUPER_ADMIN';
@@ -82,7 +82,11 @@ export default async function AvatarDropdown() {
             <div className="h-px bg-gradient-to-l from-transparent via-neutral-200 dark:via-neutral-700 to-transparent my-1.5 sm:my-2" />
 
             {/* Logout */}
-            <Suspense fallback={<div className="h-10 sm:h-11 p-2 animate-pulse bg-neutral-100 dark:bg-neutral-800 rounded-lg sm:rounded-xl" />}>
+            <Suspense
+              fallback={
+                <div className="h-10 sm:h-11 p-2 animate-pulse bg-neutral-100 dark:bg-neutral-800 rounded-lg sm:rounded-xl" />
+              }
+            >
               <LogoutButton />
             </Suspense>
           </div>

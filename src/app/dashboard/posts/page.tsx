@@ -1,6 +1,6 @@
 import AdminPostListView from '@/components/Dashboard/Blog/AdminPostListView';
-import type { PostStatus } from '@/types/types';
 import { checkRole } from '@/lib/auth';
+import type { PostStatus } from '@/types/types';
 
 export default async function DashboardPosts({
   searchParams,
@@ -10,6 +10,6 @@ export default async function DashboardPosts({
   // SUPER_ADMIN, ADMIN, and AUTHOR can access posts
   await checkRole(['SUPER_ADMIN', 'ADMIN', 'AUTHOR']);
   const searchParamsData = await searchParams;
-  
+
   return <AdminPostListView searchParams={searchParamsData} />;
 }

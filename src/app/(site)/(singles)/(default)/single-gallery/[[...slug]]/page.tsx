@@ -1,8 +1,8 @@
-import React from 'react';
-import { notFound } from 'next/navigation';
-import SingleHeader from '@/app/(site)/(singles)/SingleHeader';
-import GalleryImages from '../GalleryImages';
 import { getGalleryPostBySlug } from '@/actions/getGalleryPostBySlug';
+import SingleHeader from '@/app/(site)/(singles)/SingleHeader';
+import { notFound } from 'next/navigation';
+import React from 'react';
+import GalleryImages from '../GalleryImages';
 
 export interface PageProps {
   params: Promise<{ slug: string[] }>;

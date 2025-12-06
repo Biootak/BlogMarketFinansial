@@ -3,6 +3,8 @@
  * For code splitting and lazy loading heavy components
  */
 
+'use client';
+
 import dynamic from 'next/dynamic';
 import type { ComponentType } from 'react';
 
@@ -24,12 +26,12 @@ export function createDynamicImport<P = {}>(
   importFn: () => Promise<{ default: ComponentType<P> }>,
   options?: {
     ssr?: boolean;
-    loading?: ComponentType;
-  }
+    loading?: () => React.JSX.Element;
+  },
 ) {
   return dynamic(importFn, {
     ssr: options?.ssr ?? false,
-    loading: options?.loading ?? LoadingSpinner,
+    loading: options?.loading ?? (() => <LoadingSpinner />),
   });
 }
 

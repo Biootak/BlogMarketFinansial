@@ -1,10 +1,10 @@
 'use server';
 
-import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/db';
 import { generateColor } from '@/lib/utils';
-import type { ActionResult, TaxonomyType, PostWithRelations, SidebarData } from '@/types/types';
-import { getTopAuthors, type TopAuthor } from './getTopAuthors';
+import type { ActionResult, PostWithRelations, SidebarData, TaxonomyType } from '@/types/types';
+import { unstable_cache } from 'next/cache';
+import { type TopAuthor, getTopAuthors } from './getTopAuthors';
 
 export const getRecentPosts = unstable_cache(
   async (limit: number): Promise<PostWithRelations[]> => {

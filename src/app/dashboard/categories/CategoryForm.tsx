@@ -1,21 +1,45 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { HiOutlinePlus } from 'react-icons/hi2';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
 import { createCategory, updateCategory } from '@/actions/categoryActions';
-import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
-import { useRouter } from 'next/navigation';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { ActionResult, CreateCategoryInput, TaxonomyType, UpdateCategoryInput } from '@/types/types';
-import { z } from 'zod';
 import { PrimaryActionButton } from '@/components/Dashboard/shared/DashboardTableWrapper';
+import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/components/ui/use-toast';
+import type {
+  ActionResult,
+  CreateCategoryInput,
+  TaxonomyType,
+  UpdateCategoryInput,
+} from '@/types/types';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { HiOutlinePlus } from 'react-icons/hi2';
+import { z } from 'zod';
 
 const categorySchema = z.object({
   name: z.string().min(1, 'نام دسته‌بندی الزامی است'),
@@ -62,7 +86,6 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
     }
   }, [category, form]);
 
-
   const onSubmit = useCallback(
     async (formData: CategoryFormData) => {
       setIsSubmitting(true);
@@ -92,12 +115,16 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
         }
       } catch (error) {
         console.error('خطا در ارسال فرم:', error);
-        toast({ title: 'خطا', description: 'مشکلی در ارسال اطلاعات رخ داد.', variant: 'destructive' });
+        toast({
+          title: 'خطا',
+          description: 'مشکلی در ارسال اطلاعات رخ داد.',
+          variant: 'destructive',
+        });
       } finally {
         setIsSubmitting(false);
       }
     },
-    [category, toast, router, form, onClose]
+    [category, toast, router, form, onClose],
   );
 
   const handleDialogOpenChange = (open: boolean) => {
@@ -108,7 +135,8 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
     }
   };
 
-  const inputClassName = 'h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80';
+  const inputClassName =
+    'h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80';
 
   const formContent = (
     <Form {...form}>
@@ -118,7 +146,9 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نام دسته‌بندی</FormLabel>
+              <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                نام دسته‌بندی
+              </FormLabel>
               <FormControl>
                 <Input {...field} className={inputClassName} />
               </FormControl>
@@ -131,7 +161,9 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
           name="slug"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">اسلاگ</FormLabel>
+              <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                اسلاگ
+              </FormLabel>
               <FormControl>
                 <Input {...field} className={`${inputClassName} text-left`} dir="ltr" />
               </FormControl>
@@ -144,7 +176,9 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
           control={form.control}
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">دسته‌بندی‌های والد</FormLabel>
+              <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                دسته‌بندی‌های والد
+              </FormLabel>
               <Select
                 dir="rtl"
                 onValueChange={(value) => {
@@ -179,7 +213,9 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
                       {parent.name}
                       <button
                         type="button"
-                        onClick={() => field.onChange((field.value || []).filter((id) => id !== parentId))}
+                        onClick={() =>
+                          field.onChange((field.value || []).filter((id) => id !== parentId))
+                        }
                         className="rounded-full p-0.5 transition-colors hover:bg-primary-200 dark:hover:bg-primary-800"
                       >
                         ×
@@ -197,7 +233,9 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
           name="thumbnail"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">تصویر شاخص</FormLabel>
+              <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                تصویر شاخص
+              </FormLabel>
               <FormControl>
                 <ImageUploader
                   onImageUpload={(urls) => form.setValue('thumbnail', urls[0] || null)}
@@ -228,13 +266,18 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
   if (isOpen !== undefined && onClose) {
     return (
       <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
-        <DialogContent className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-lg overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
+        <DialogContent
+          className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-lg overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95"
+          dir="rtl"
+        >
           <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-4 py-4 sm:px-6 sm:py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
             <DialogTitle className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-neutral-50">
               {category ? 'ویرایش دسته‌بندی' : 'ایجاد دسته‌بندی جدید'}
             </DialogTitle>
           </DialogHeader>
-          <div className="max-h-[calc(95vh-100px)] sm:max-h-[calc(90vh-120px)] overflow-y-auto p-4 sm:p-6">{formContent}</div>
+          <div className="max-h-[calc(95vh-100px)] sm:max-h-[calc(90vh-120px)] overflow-y-auto p-4 sm:p-6">
+            {formContent}
+          </div>
         </DialogContent>
       </Dialog>
     );
@@ -248,13 +291,18 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
           <span>افزودن دسته‌بندی</span>
         </PrimaryActionButton>
       </DialogTrigger>
-      <DialogContent className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-lg overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
+      <DialogContent
+        className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-lg overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95"
+        dir="rtl"
+      >
         <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-4 py-4 sm:px-6 sm:py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
           <DialogTitle className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-neutral-50">
             افزودن دسته‌بندی جدید
           </DialogTitle>
         </DialogHeader>
-        <div className="max-h-[calc(95vh-100px)] sm:max-h-[calc(90vh-120px)] overflow-y-auto p-4 sm:p-6">{formContent}</div>
+        <div className="max-h-[calc(95vh-100px)] sm:max-h-[calc(90vh-120px)] overflow-y-auto p-4 sm:p-6">
+          {formContent}
+        </div>
       </DialogContent>
     </Dialog>
   );

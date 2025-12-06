@@ -1,8 +1,7 @@
-
 import type React from 'react';
-import { ImSpinner2 } from 'react-icons/im';
-import { CgSpinner } from 'react-icons/cg';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import { CgSpinner } from 'react-icons/cg';
+import { ImSpinner2 } from 'react-icons/im';
 
 interface LoadingProps {
   size?: 'sm' | 'md' | 'lg';

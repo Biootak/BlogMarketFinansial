@@ -1,14 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { useEffect, useState } from 'react';
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/components/ui/use-toast';
 import {
   Form,
   FormControl,
@@ -18,10 +16,12 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/components/ui/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { AlertCircle, Loader2, Mail, Save, Settings, Share2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { Loader2, AlertCircle, Settings, Mail, Share2, Save } from 'lucide-react';
 
 const settingsSchema = z.object({
   siteName: z.string().min(2, 'نام سایت باید حداقل 2 حرف باشد'),
@@ -79,7 +79,9 @@ export default function SystemSettings() {
         }
       } catch (error) {
         console.error('Error loading settings:', error);
-        setError(error instanceof Error ? error.message : 'An error occurred while loading settings');
+        setError(
+          error instanceof Error ? error.message : 'An error occurred while loading settings',
+        );
       } finally {
         setLoading(false);
       }
@@ -99,7 +101,7 @@ export default function SystemSettings() {
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         toast({
           title: 'موفقیت',
@@ -216,10 +218,10 @@ export default function SystemSettings() {
                       <FormItem>
                         <FormLabel>توضیحات سایت</FormLabel>
                         <FormControl>
-                          <Textarea 
-                            placeholder="توضیحات سایت را وارد کنید" 
+                          <Textarea
+                            placeholder="توضیحات سایت را وارد کنید"
                             className="min-h-[100px]"
-                            {...field} 
+                            {...field}
                           />
                         </FormControl>
                         <FormMessage />
@@ -235,15 +237,10 @@ export default function SystemSettings() {
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                           <div className="space-y-0.5">
                             <FormLabel className="text-base">حالت تعمیر و نگهداری</FormLabel>
-                            <FormDescription>
-                              فعال کردن حالت تعمیر و نگهداری سایت
-                            </FormDescription>
+                            <FormDescription>فعال کردن حالت تعمیر و نگهداری سایت</FormDescription>
                           </div>
                           <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
                           </FormControl>
                         </FormItem>
                       )}
@@ -256,15 +253,10 @@ export default function SystemSettings() {
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                           <div className="space-y-0.5">
                             <FormLabel className="text-base">فعال‌سازی کش</FormLabel>
-                            <FormDescription>
-                              فعال کردن کش برای بهبود عملکرد
-                            </FormDescription>
+                            <FormDescription>فعال کردن کش برای بهبود عملکرد</FormDescription>
                           </div>
                           <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
                           </FormControl>
                         </FormItem>
                       )}
@@ -282,7 +274,9 @@ export default function SystemSettings() {
                 <CardContent className="space-y-4">
                   <div className="grid gap-4">
                     <div className="grid gap-2">
-                      <label htmlFor="siteEmail" className="text-right">ایمیل سایت</label>
+                      <label htmlFor="siteEmail" className="text-right">
+                        ایمیل سایت
+                      </label>
                       <Input
                         id="siteEmail"
                         type="email"
@@ -299,7 +293,9 @@ export default function SystemSettings() {
                     </div>
 
                     <div className="grid gap-2">
-                      <label htmlFor="smtpHost" className="text-right">SMTP هاست</label>
+                      <label htmlFor="smtpHost" className="text-right">
+                        SMTP هاست
+                      </label>
                       <Input
                         id="smtpHost"
                         placeholder="هاست SMTP را وارد کنید"
@@ -315,7 +311,9 @@ export default function SystemSettings() {
                     </div>
 
                     <div className="grid gap-2">
-                      <label htmlFor="smtpPort" className="text-right">SMTP پورت</label>
+                      <label htmlFor="smtpPort" className="text-right">
+                        SMTP پورت
+                      </label>
                       <Input
                         id="smtpPort"
                         placeholder="پورت SMTP را وارد کنید"
@@ -331,7 +329,9 @@ export default function SystemSettings() {
                     </div>
 
                     <div className="grid gap-2">
-                      <label htmlFor="smtpUser" className="text-right">SMTP نام کاربری</label>
+                      <label htmlFor="smtpUser" className="text-right">
+                        SMTP نام کاربری
+                      </label>
                       <Input
                         id="smtpUser"
                         placeholder="نام کاربری SMTP را وارد کنید"
@@ -347,7 +347,9 @@ export default function SystemSettings() {
                     </div>
 
                     <div className="grid gap-2">
-                      <label htmlFor="smtpPass" className="text-right">SMTP رمز عبور</label>
+                      <label htmlFor="smtpPass" className="text-right">
+                        SMTP رمز عبور
+                      </label>
                       <Input
                         id="smtpPass"
                         type="password"
@@ -375,7 +377,9 @@ export default function SystemSettings() {
                 <CardContent className="space-y-4">
                   <div className="grid gap-4">
                     <div className="grid gap-2">
-                      <label htmlFor="instagram" className="text-right">اینستاگرام</label>
+                      <label htmlFor="instagram" className="text-right">
+                        اینستاگرام
+                      </label>
                       <Input
                         id="instagram"
                         placeholder="آدرس اینستاگرام را وارد کنید"
@@ -391,7 +395,9 @@ export default function SystemSettings() {
                     </div>
 
                     <div className="grid gap-2">
-                      <label htmlFor="telegram" className="text-right">تلگرام</label>
+                      <label htmlFor="telegram" className="text-right">
+                        تلگرام
+                      </label>
                       <Input
                         id="telegram"
                         placeholder="آدرس تلگرام را وارد کنید"
@@ -407,7 +413,9 @@ export default function SystemSettings() {
                     </div>
 
                     <div className="grid gap-2">
-                      <label htmlFor="twitter" className="text-right">توییتر</label>
+                      <label htmlFor="twitter" className="text-right">
+                        توییتر
+                      </label>
                       <Input
                         id="twitter"
                         placeholder="آدرس توییتر را وارد کنید"
@@ -423,7 +431,9 @@ export default function SystemSettings() {
                     </div>
 
                     <div className="grid gap-2">
-                      <label htmlFor="linkedin" className="text-right">لینکدین</label>
+                      <label htmlFor="linkedin" className="text-right">
+                        لینکدین
+                      </label>
                       <Input
                         id="linkedin"
                         placeholder="آدرس لینکدین را وارد کنید"
@@ -444,9 +454,9 @@ export default function SystemSettings() {
           </Tabs>
 
           <div className="flex justify-end">
-            <Button 
-              type="submit" 
-              disabled={form.formState.isSubmitting} 
+            <Button
+              type="submit"
+              disabled={form.formState.isSubmitting}
               className="w-full sm:w-auto"
             >
               {form.formState.isSubmitting ? (

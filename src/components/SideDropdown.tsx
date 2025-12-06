@@ -1,8 +1,8 @@
 'use client';
 
+import { UserIcon } from '@/components/Icons';
 import { Popover, Transition } from '@headlessui/react';
 import React, { Fragment, type ReactNode } from 'react';
-import { UserIcon } from '@/components/Icons';
 
 interface ClientSideDropdownProps {
   children: ReactNode;

@@ -1,13 +1,12 @@
 'use server';
 
-import { PostStatus, type Prisma, Role } from '@prisma/client';
-import { revalidatePath } from 'next/cache';
-import prisma from '@/lib/db';
 import { auth } from '@/auth';
-import { checkRole, generateSlug, generateUniqueId, validateSlug } from '@/lib/utils';
-import { createUniqueSlug } from '@/lib/slugUtils';
 import { logActivity } from '@/lib/activity-logger';
+import prisma from '@/lib/db';
 import { calculateReadingTime } from '@/lib/readingTime';
+import { createUniqueSlug } from '@/lib/slugUtils';
+import { checkRole, generateSlug, generateUniqueId, validateSlug } from '@/lib/utils';
+import { CreatePostSchema, UpdatePostSchema } from '@/schemas';
 import type {
   ActionResult,
   CreatePostInput,
@@ -15,7 +14,8 @@ import type {
   RelatedPostWithRelations,
   UpdatePostInput,
 } from '@/types/types';
-import { CreatePostSchema, UpdatePostSchema } from '@/schemas';
+import { PostStatus, type Prisma, Role } from '@prisma/client';
+import { revalidatePath } from 'next/cache';
 
 export async function createPost(data: CreatePostInput): Promise<ActionResult<PostWithRelations>> {
   const session = await checkRole(['ADMIN', 'AUTHOR']);
@@ -103,7 +103,7 @@ export async function createPost(data: CreatePostInput): Promise<ActionResult<Po
 
     // ثبت فعالیت
     await logActivity('ایجاد پست', `پست "${post.title}" ایجاد شد`);
-    
+
     return {
       success: true,
       message: 'پست با موفقیت ایجاد شد.',
@@ -132,9 +132,9 @@ export async function updatePost(
     }
 
     // Get the current post to check ownership
-    const currentPost = await prisma.post.findUnique({ 
+    const currentPost = await prisma.post.findUnique({
       where: { id: postId },
-      include: { author: true }
+      include: { author: true },
     });
 
     if (!currentPost) {
@@ -153,8 +153,10 @@ export async function updatePost(
     }
 
     // Only SUPER_ADMIN, ADMIN, and post owner (AUTHOR) can edit posts
-    if (!['SUPER_ADMIN', 'ADMIN'].includes(session.user.role) && 
-        !(session.user.role === 'AUTHOR' && currentPost.authorId === session.user.id)) {
+    if (
+      !['SUPER_ADMIN', 'ADMIN'].includes(session.user.role) &&
+      !(session.user.role === 'AUTHOR' && currentPost.authorId === session.user.id)
+    ) {
       return {
         success: false,
         message: 'شما دسترسی لازم برای ویرایش این پست را ندارید.',
@@ -173,16 +175,17 @@ export async function updatePost(
       if (!validateSlug(slug)) {
         return {
           success: false,
-          message: 'اسلاگ نامعتبر است. لطفاً فقط از حروف کوچک انگلیسی، اعداد و خط فاصله استفاده کنید.',
+          message:
+            'اسلاگ نامعتبر است. لطفاً فقط از حروف کوچک انگلیسی، اعداد و خط فاصله استفاده کنید.',
         };
       }
 
       // Check for unique slug
-      const slugExists = await prisma.post.findFirst({ 
-        where: { 
-          slug, 
-          NOT: { id: postId } 
-        } 
+      const slugExists = await prisma.post.findFirst({
+        where: {
+          slug,
+          NOT: { id: postId },
+        },
       });
 
       if (slugExists) {
@@ -194,7 +197,7 @@ export async function updatePost(
     }
 
     // محاسبه زمان مطالعه اگر محتوا تغییر کرده باشد
-    const readingTime = validatedData.content 
+    const readingTime = validatedData.content
       ? calculateReadingTime(validatedData.content)
       : undefined;
 
@@ -245,7 +248,7 @@ export async function updatePost(
 
     // ثبت فعالیت
     await logActivity('ویرایش پست', `پست "${post.title}" ویرایش شد`);
-    
+
     return {
       success: true,
       message: 'پست با موفقیت به‌روزرسانی شد.',
@@ -294,7 +297,7 @@ export async function updatePostStatus(
           error: 'شما مجاز به به‌روزرسانی این پست نیستید.',
         };
       }
-      
+
       // Authors can only:
       // 1. Change PUBLISHED -> DRAFT
       // 2. Change DRAFT -> PENDING_REVIEW
@@ -302,7 +305,7 @@ export async function updatePostStatus(
       const validTransitions = {
         PUBLISHED: ['DRAFT'],
         DRAFT: ['PENDING_REVIEW'],
-        PENDING_REVIEW: ['DRAFT']
+        PENDING_REVIEW: ['DRAFT'],
       };
 
       if (!validTransitions[post.status]?.includes(newStatus)) {
@@ -366,8 +369,11 @@ export async function updatePostStatus(
       PENDING_REVIEW: 'در انتظار بررسی',
       PUBLISHED: 'منتشر شده',
     };
-    await logActivity('تغییر وضعیت پست', `وضعیت پست "${updatedPost.title}" به "${statusLabels[newStatus]}" تغییر کرد`);
-    
+    await logActivity(
+      'تغییر وضعیت پست',
+      `وضعیت پست "${updatedPost.title}" به "${statusLabels[newStatus]}" تغییر کرد`,
+    );
+
     return {
       success: true,
       message: 'وضعیت پست با موفقیت به‌روزرسانی شد.',
@@ -390,13 +396,13 @@ export async function updatePostStatusAndInvalidate(
   try {
     // آپدیت وضعیت پست
     const result = await updatePostStatus(postId, newStatus);
-    
+
     if (result.success) {
       // Invalidate paths
       revalidatePath('/');
       revalidatePath(`/blog/${postId}`);
     }
-    
+
     return result;
   } catch (error) {
     console.error('Error updating post status:', error);
@@ -412,41 +418,43 @@ export async function deletePost(postId: string): Promise<ActionResult> {
   try {
     const session = await auth();
     if (!session?.user) {
-      return { 
-        success: false, 
-        message: 'شما باید وارد شوید.' 
+      return {
+        success: false,
+        message: 'شما باید وارد شوید.',
       };
     }
 
-    const post = await prisma.post.findUnique({ 
-      where: { id: postId } 
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
     });
 
     if (!post) {
-      return { 
-        success: false, 
-        message: 'پست مورد نظر یافت نشد.' 
+      return {
+        success: false,
+        message: 'پست مورد نظر یافت نشد.',
       };
     }
 
     if (session.user.role === 'AUTHOR' && post.authorId !== session.user.id) {
-      return { 
-        success: false, 
-        message: 'شما فقط می‌توانید پست‌های خودتان را حذف کنید.' 
+      return {
+        success: false,
+        message: 'شما فقط می‌توانید پست‌های خودتان را حذف کنید.',
       };
     }
 
-    if (!['SUPER_ADMIN', 'ADMIN'].includes(session.user.role) && 
-        !(session.user.role === 'AUTHOR' && post.authorId === session.user.id)) {
-      return { 
-        success: false, 
-        message: 'شما دسترسی لازم برای حذف این پست را ندارید.' 
+    if (
+      !['SUPER_ADMIN', 'ADMIN'].includes(session.user.role) &&
+      !(session.user.role === 'AUTHOR' && post.authorId === session.user.id)
+    ) {
+      return {
+        success: false,
+        message: 'شما دسترسی لازم برای حذف این پست را ندارید.',
       };
     }
 
     const postTitle = post.title;
     await prisma.post.delete({ where: { id: postId } });
-    
+
     // Invalidate paths
     revalidatePath('/');
     revalidatePath('/archive');
@@ -468,20 +476,18 @@ export async function deletePost(postId: string): Promise<ActionResult> {
   }
 }
 
-export async function deletePostAndInvalidate(
-  postId: string
-): Promise<ActionResult> {
+export async function deletePostAndInvalidate(postId: string): Promise<ActionResult> {
   try {
     // حذف پست
     const result = await deletePost(postId);
-    
+
     if (result.success) {
       // Invalidate paths
       revalidatePath('/');
       revalidatePath('/archive');
       revalidatePath('/');
     }
-    
+
     return result;
   } catch (error) {
     console.error('Error deleting post:', error);
@@ -1046,11 +1052,7 @@ export async function getStats(): Promise<
   try {
     // شرط‌های پایه برای کوئری
     const baseWhere: Prisma.PostWhereInput = {
-      OR: [
-        { status: 'DRAFT' },
-        { status: 'PENDING_REVIEW' },
-        { status: 'PUBLISHED' }
-      ]
+      OR: [{ status: 'DRAFT' }, { status: 'PENDING_REVIEW' }, { status: 'PUBLISHED' }],
     };
 
     // اگر نویسنده است، فقط پست‌های خودش را ببیند
@@ -1065,8 +1067,8 @@ export async function getStats(): Promise<
 
     // بازدیدهای امروز از View model
     const viewsToday = await prisma.view.count({
-      where: { 
-        createdAt: { gte: today }
+      where: {
+        createdAt: { gte: today },
       },
     });
 
@@ -1091,17 +1093,17 @@ export async function getStats(): Promise<
       draftsWeekly,
     ] = await prisma.$transaction([
       prisma.comment.count({
-        where: { 
+        where: {
           postId: { not: undefined },
-          createdAt: { gte: today } 
+          createdAt: { gte: today },
         },
       }),
       prisma.comment.groupBy({
         by: ['createdAt'],
         _count: true,
-        where: { 
+        where: {
           postId: { not: undefined },
-          createdAt: { gte: weekAgo } 
+          createdAt: { gte: weekAgo },
         },
         orderBy: { createdAt: 'asc' },
       }),
@@ -1146,9 +1148,9 @@ export async function getStats(): Promise<
         itemDate.setHours(0, 0, 0, 0);
         const daysDiff = Math.floor((today.getTime() - itemDate.getTime()) / (1000 * 60 * 60 * 24));
         const dayIndex = 6 - daysDiff;
-        
+
         if (dayIndex >= 0 && dayIndex < 7) {
-          filledData[dayIndex] += isViewData ? (item._count?.id || 0) : (item._count || 0);
+          filledData[dayIndex] += isViewData ? item._count?.id || 0 : item._count || 0;
         }
       });
       return filledData;

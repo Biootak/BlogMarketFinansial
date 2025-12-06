@@ -29,27 +29,27 @@ export default function NewPostButton() {
     >
       {/* Hover gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-violet-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity duration-150" />
-      
+
       {/* Shimmer effect */}
-      <div 
+      <div
         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
         style={{
           background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
           animation: 'shimmer 2s infinite',
         }}
       />
-      
+
       {/* Icon container */}
       <span className="relative flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 rounded-lg sm:rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-lg group-hover:shadow-violet-500/40 transition-shadow duration-300 flex-shrink-0">
         <HiOutlinePencilSquare className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4" />
       </span>
-      
+
       {/* Text */}
       <span className="relative bg-gradient-to-r from-violet-700 to-indigo-700 bg-clip-text text-transparent whitespace-nowrap">
         <span className="hidden sm:inline">نوشتن پست جدید</span>
         <span className="sm:hidden">پست جدید</span>
       </span>
-      
+
       {/* Sparkle icon */}
       <HiOutlineSparkles className="relative w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 text-amber-500 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 flex-shrink-0" />
 

@@ -1,11 +1,11 @@
 'use client';
 
-import React from 'react';
+import SingleTitle from '@/app/(site)/(singles)/SingleTitle';
 import Badge from '@/components/Badge/Badge';
 import iconPlaying from '@/images/icon-playing.gif';
 import featuredImageDemo from '@/images/podcast.jpg';
 import Image from 'next/image';
-import SingleTitle from '@/app/(site)/(singles)/SingleTitle';
+import React from 'react';
 
 const PageSingleAudio = ({}) => {
   const renderIcon = (playing: boolean) => {
@@ -21,12 +21,12 @@ const PageSingleAudio = ({}) => {
           strokeLinejoin="round"
           strokeWidth="1.5"
           d="M18.25 12L5.75 5.75V18.25L18.25 12Z"
-        ></path>
+        />
       </svg>
     );
   };
 
-  const renderButtonPlay = (playing: boolean) => {
+  const _renderButtonPlay = (playing: boolean) => {
     return (
       <div
         className={

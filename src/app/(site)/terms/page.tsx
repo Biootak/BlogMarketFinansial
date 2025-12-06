@@ -1,6 +1,6 @@
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 // app/terms/page.tsx
 import type { Metadata } from 'next';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 export const metadata: Metadata = {
   title: 'قوانین و مقررات | پلتفرم معاملات بازارهای مالی',

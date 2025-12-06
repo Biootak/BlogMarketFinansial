@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Calendar } from 'lucide-react';
+import { useState } from 'react';
 
 interface DateRange {
   from: Date;
@@ -65,7 +65,7 @@ export function DateRangePicker({
           'bg-white border border-gray-200 rounded-lg sm:rounded-xl',
           'hover:bg-gray-50 transition-colors',
           'text-xs sm:text-sm font-medium text-gray-700',
-          'w-full sm:w-auto'
+          'w-full sm:w-auto',
         )}
       >
         <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
@@ -75,10 +75,7 @@ export function DateRangePicker({
       {isOpen && (
         <>
           {/* Backdrop */}
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
-          />
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
 
           {/* Dropdown */}
           <div className="absolute left-0 right-0 sm:right-auto mt-2 sm:w-56 bg-white border border-gray-200 rounded-lg sm:rounded-xl shadow-xl z-50 overflow-hidden">
@@ -94,7 +91,7 @@ export function DateRangePicker({
                   className={cn(
                     'w-full text-right px-2 py-1.5 sm:px-3 sm:py-2 rounded-md sm:rounded-lg',
                     'text-xs sm:text-sm text-gray-700 hover:bg-gray-100',
-                    'transition-colors'
+                    'transition-colors',
                   )}
                 >
                   {preset.label}

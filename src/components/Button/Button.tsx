@@ -1,10 +1,10 @@
 'use client';
 
-import type React from 'react';
-import { forwardRef, type ButtonHTMLAttributes } from 'react'
-import type { FC } from 'react';
 import type { Route } from '@/routers/types';
 import Link from 'next/link';
+import type React from 'react';
+import { type ButtonHTMLAttributes, forwardRef } from 'react';
+import type { FC } from 'react';
 import Loading from './Loading';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -58,7 +58,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const CLASSES = `nc-Button flex-shrink-0 relative h-auto inline-flex items-center justify-center rounded-full transition-all duration-200 border-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 hover:scale-[1.02] active:scale-[0.98] ${colors} ${fontSize} ${sizeClass} ${className} `;
 
-    if (!!href) {
+    if (href) {
       return (
         <Link href={href} className={`${CLASSES}`} onClick={onClick}>
           {loading && <Loading />}

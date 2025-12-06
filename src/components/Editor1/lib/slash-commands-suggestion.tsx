@@ -1,16 +1,16 @@
 import { ReactRenderer } from '@tiptap/react';
 import tippy, { type Instance as TippyInstance } from 'tippy.js';
 import SlashCommandMenu, { type SlashCommandMenuRef } from '../components/slash-command-menu';
-import { defaultSlashCommands, type SlashCommandItem } from '../extensions/slash-commands';
+import { type SlashCommandItem, defaultSlashCommands } from '../extensions/slash-commands';
 
 export const slashCommandsSuggestion = {
   items: ({ query }: { query: string }): SlashCommandItem[] => {
     const normalizedQuery = query.toLowerCase();
-    
+
     return defaultSlashCommands.filter((item) => {
       const titleMatch = item.title.toLowerCase().includes(normalizedQuery);
       const keywordMatch = item.keywords.some((keyword) =>
-        keyword.toLowerCase().includes(normalizedQuery)
+        keyword.toLowerCase().includes(normalizedQuery),
       );
       return titleMatch || keywordMatch;
     });

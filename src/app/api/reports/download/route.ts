@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
 import { getSystemReports } from '@/actions/reportActions';
 import { auth } from '@/auth';
+import { NextResponse } from 'next/server';
 import * as XLSX from 'xlsx';
 
 export async function POST(req: Request) {
@@ -17,17 +17,17 @@ export async function POST(req: Request) {
     }
 
     const { from, to } = await req.json();
-    
+
     const result = await getSystemReports(new Date(from), new Date(to));
-    
+
     if (!result.success) {
       return NextResponse.json({ error: result.message }, { status: 400 });
     }
 
     const { data } = result;
-    
+
     if (!data) {
-      return NextResponse.json({ error: "داده‌ای یافت نشد" }, { status: 404 });
+      return NextResponse.json({ error: 'داده‌ای یافت نشد' }, { status: 404 });
     }
 
     // تبدیل داده‌ها به فرمت مناسب برای اکسل
@@ -80,9 +80,6 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error('Error in download reports:', error);
-    return NextResponse.json(
-      { error: 'خطا در دانلود گزارش' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'خطا در دانلود گزارش' }, { status: 500 });
   }
 }

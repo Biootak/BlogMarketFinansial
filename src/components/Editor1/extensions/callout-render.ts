@@ -32,7 +32,7 @@ export const CalloutRender = Node.create({
   renderHTML({ HTMLAttributes }) {
     const type = HTMLAttributes['data-type'] || 'info';
     const icon = HTMLAttributes['data-icon'] || 'ℹ️';
-    
+
     const typeStyles: Record<string, string> = {
       info: 'background-color: #eff6ff; border-color: #3b82f6; color: #1e40af;',
       warning: 'background-color: #fefce8; border-color: #eab308; color: #854d0e;',

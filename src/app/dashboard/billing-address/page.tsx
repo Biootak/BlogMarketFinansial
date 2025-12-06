@@ -1,8 +1,8 @@
-import React from "react";
-import Input from "@/components/Input/Input";
-import ButtonPrimary from "@/components/Button/ButtonPrimary";
-import Select from "@/components/Select/Select";
-import Label from "@/components/Label/Label";
+import ButtonPrimary from '@/components/Button/ButtonPrimary';
+import Input from '@/components/Input/Input';
+import Label from '@/components/Label/Label';
+import Select from '@/components/Select/Select';
+import React from 'react';
 
 const page = () => {
   return (

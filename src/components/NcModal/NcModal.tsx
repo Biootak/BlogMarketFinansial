@@ -1,7 +1,7 @@
 'use client';
 
-import React, { type FC, Fragment, type ReactNode, useEffect, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
+import React, { type FC, Fragment, type ReactNode, useEffect, useState } from 'react';
 import Button from '../Button/Button';
 import ButtonClose from '../ButtonClose/ButtonClose';
 

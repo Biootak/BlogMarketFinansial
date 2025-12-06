@@ -1,5 +1,6 @@
 'use client';
 
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Table,
   TableBody,
@@ -8,11 +9,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import type { ExchangeRateData } from '@/types/types';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Info, TrendingUp, TrendingDown } from 'lucide-react';
+import { Info, TrendingDown, TrendingUp } from 'lucide-react';
+import Image from 'next/image';
 
 interface ExchangeRateTableViewProps {
   exchangeRates: ExchangeRateData[];
@@ -117,7 +117,11 @@ export function ExchangeRateTableView({ exchangeRates }: ExchangeRateTableViewPr
                           </div>
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[300px] p-0 lg:hidden border-0 shadow-2xl" align="center" sideOffset={12}>
+                      <PopoverContent
+                        className="w-[300px] p-0 lg:hidden border-0 shadow-2xl"
+                        align="center"
+                        sideOffset={12}
+                      >
                         <div className="overflow-hidden rounded-xl">
                           <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-500 to-indigo-600">
                             <div className="w-14 h-14 rounded-xl border-2 border-white/20 overflow-hidden bg-white/10 backdrop-blur-sm">
@@ -130,7 +134,9 @@ export function ExchangeRateTableView({ exchangeRates }: ExchangeRateTableViewPr
                               />
                             </div>
                             <div>
-                              <span className="font-bold text-lg text-white block">{rate.name}</span>
+                              <span className="font-bold text-lg text-white block">
+                                {rate.name}
+                              </span>
                               <span className="text-sm text-blue-100">{rate.currency}</span>
                             </div>
                           </div>
@@ -172,7 +178,9 @@ export function ExchangeRateTableView({ exchangeRates }: ExchangeRateTableViewPr
                     </div>
                   </TableCell>
                   <TableCell className="hidden md:table-cell p-2 lg:p-4">
-                    <span className="text-sm text-slate-500 dark:text-slate-400">{rate.currency}</span>
+                    <span className="text-sm text-slate-500 dark:text-slate-400">
+                      {rate.currency}
+                    </span>
                   </TableCell>
                   <TableCell className="p-1.5 sm:p-2 lg:p-4 text-center">
                     <span className="inline-flex items-center justify-center min-w-[50px] sm:min-w-[60px] lg:min-w-[90px] px-2 sm:px-3 py-1.5 sm:py-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-lg sm:rounded-xl text-xs sm:text-sm lg:text-base font-bold">

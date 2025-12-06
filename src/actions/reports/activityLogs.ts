@@ -1,8 +1,8 @@
 'use server';
 
 import db from '@/lib/db';
-import { revalidatePath } from 'next/cache';
 import type { Prisma } from '@prisma/client';
+import { revalidatePath } from 'next/cache';
 
 export type ActivityLog = {
   id: string;
@@ -24,11 +24,7 @@ export type ActivityFilters = {
   dateTo?: Date;
 };
 
-export async function getActivityLog(
-  page = 1,
-  limit = 10,
-  filters?: ActivityFilters
-) {
+export async function getActivityLog(page = 1, limit = 10, filters?: ActivityFilters) {
   try {
     const skip = (page - 1) * limit;
 

@@ -1,7 +1,7 @@
-import { notFound } from 'next/navigation';
-import ProfileForm from '@/components/ProfileForm';
 import { getProfileData } from '@/actions/getProfileData';
-import { User, Sparkles } from 'lucide-react';
+import ProfileForm from '@/components/ProfileForm';
+import { Sparkles, User } from 'lucide-react';
+import { notFound } from 'next/navigation';
 
 export default async function ProfilePage() {
   const profileData = await getProfileData();
@@ -38,7 +38,7 @@ export default async function ProfilePage() {
         <div className="relative">
           {/* Card Glow Effect */}
           <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-2xl sm:rounded-3xl blur-xl opacity-60" />
-          
+
           {/* Card Content */}
           <div className="relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-xl sm:rounded-2xl border border-slate-200/50 dark:border-slate-700/50 shadow-2xl shadow-slate-200/50 dark:shadow-slate-950/50 p-4 sm:p-6 md:p-8 lg:p-10">
             <ProfileForm initialData={profileData} />

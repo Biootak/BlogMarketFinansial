@@ -1,11 +1,11 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { HiOutlinePlus, HiOutlineSparkles, HiOutlineDocumentText } from 'react-icons/hi2';
-import FilterDropdown from './FilterDropdown';
 import type { PostStatus } from '@prisma/client';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { HiOutlineDocumentText, HiOutlinePlus, HiOutlineSparkles } from 'react-icons/hi2';
+import FilterDropdown from './FilterDropdown';
 
 export default function PostHeader() {
   const router = useRouter();
@@ -22,7 +22,7 @@ export default function PostHeader() {
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -34,7 +34,7 @@ export default function PostHeader() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
           {/* Title Section */}
-          <motion.div 
+          <motion.div
             className="flex items-center gap-4"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -47,9 +47,7 @@ export default function PostHeader() {
               </div>
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-                پست‌ها
-              </h1>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">پست‌ها</h1>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
                 مدیریت و ویرایش محتوای وبلاگ
               </p>
@@ -57,14 +55,14 @@ export default function PostHeader() {
           </motion.div>
 
           {/* Actions */}
-          <motion.div 
+          <motion.div
             className="flex items-center gap-3 w-full sm:w-auto"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
             <FilterDropdown onFilter={handleFilter} />
-            
+
             <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }}>
               <Link
                 href="/dashboard/posts/create"
@@ -81,15 +79,15 @@ export default function PostHeader() {
               >
                 {/* Hover overlay */}
                 <div className="absolute inset-0 bg-gradient-to-r from-violet-700 to-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                
+
                 {/* Icon */}
                 <span className="relative flex items-center justify-center w-6 h-6 rounded-lg bg-white/20 group-hover:rotate-90 transition-transform duration-300">
                   <HiOutlinePlus className="w-4 h-4 text-white" />
                 </span>
-                
+
                 {/* Text */}
                 <span className="relative text-white hidden sm:inline">افزودن پست جدید</span>
-                
+
                 {/* Sparkle */}
                 <HiOutlineSparkles className="relative w-4 h-4 text-amber-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:block" />
               </Link>

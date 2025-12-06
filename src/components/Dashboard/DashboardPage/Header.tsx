@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import Avatar from '@/components/Avatar/Avatar';
+import SwitchDarkMode from '@/components/SwitchDarkMode/SwitchDarkMode';
+import { Icon } from '@/components/ui/icon';
 import { useSidebarStore } from '@/hooks/sidebarStore';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import SwitchDarkMode from '@/components/SwitchDarkMode/SwitchDarkMode';
-import Avatar from '@/components/Avatar/Avatar';
-import { Icon } from '@/components/ui/icon';
-import { HiOutlineBars3, HiOutlineSparkles, HiOutlineShieldCheck } from 'react-icons/hi2';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { HiOutlineBars3, HiOutlineShieldCheck, HiOutlineSparkles } from 'react-icons/hi2';
 
 const getRoleBadge = (role?: string) => {
   switch (role) {
@@ -129,11 +129,15 @@ const Header: React.FC = () => {
                   className="absolute top-full mt-2 left-0 z-50 min-w-[160px] sm:min-w-[200px] p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white dark:bg-slate-800 backdrop-blur-xl shadow-2xl border border-slate-200/80 dark:border-slate-700/80"
                 >
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className={`p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-gradient-to-r ${roleBadge.color} flex-shrink-0`}>
+                    <div
+                      className={`p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-gradient-to-r ${roleBadge.color} flex-shrink-0`}
+                    >
                       <HiOutlineShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                     </div>
                     <div className="text-right min-w-0">
-                      <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">سطح دسترسی</p>
+                      <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">
+                        سطح دسترسی
+                      </p>
                       <div className="flex items-center gap-1 sm:gap-1.5 mt-0.5">
                         <HiOutlineSparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-500 flex-shrink-0" />
                         <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 truncate">

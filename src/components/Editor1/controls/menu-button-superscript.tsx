@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
 import type { Editor } from '@tiptap/react';
 import { Superscript } from 'lucide-react';
+import type React from 'react';
 import { Toolbar } from '../../ui/toolbar';
 
 interface MenuButtonSuperscriptProps {

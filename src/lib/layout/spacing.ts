@@ -29,9 +29,7 @@ export const spacing = {
 /**
  * Get responsive spacing classes
  */
-export function getResponsiveSpacing(
-  type: 'section' | 'container' | 'grid'
-): string {
+export function getResponsiveSpacing(type: 'section' | 'container' | 'grid'): string {
   const values = spacing[type];
   return `${values.mobile} md:${values.tablet} lg:${values.desktop}`;
 }

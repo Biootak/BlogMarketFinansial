@@ -1,7 +1,7 @@
 'use client';
 
-import Button from '../Button/Button';
 import { HiArrowRight } from 'react-icons/hi2';
+import Button from '../Button/Button';
 
 const ViewAllButton: React.FC = () => {
   return (

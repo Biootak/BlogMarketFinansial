@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
 import { formatDate } from '@/utils/formatDate';
+import React from 'react';
 
 interface FormattedDateProps {
   date: Date | string | number;

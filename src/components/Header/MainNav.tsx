@@ -1,12 +1,12 @@
+import { auth } from '@/auth';
 import Logo from '@/components/Logo/Logo';
 import MenuBar from '@/components/MenuBar/MenuBar';
 import Navigation from '@/components/Navigation/Navigation';
+import { Sparkles, User } from 'lucide-react';
+import Link from 'next/link';
 import AvatarDropdown from './AvatarDropdown';
 import NotifyDropdown from './NotifyDropdown';
 import SearchModal from './SearchModal';
-import { auth } from '@/auth';
-import Link from 'next/link';
-import { User, Sparkles } from 'lucide-react';
 
 export default async function MainNav() {
   const session = await auth();
@@ -50,7 +50,10 @@ export default async function MainNav() {
                   className="group relative p-2 -ml-2 inline-flex items-center justify-center rounded-xl transition-all duration-150 hover:bg-primary-50 dark:hover:bg-primary-950/50"
                   aria-label="ورود به حساب کاربری"
                 >
-                  <User className="size-5 text-neutral-600 dark:text-neutral-300" strokeWidth={1.8} />
+                  <User
+                    className="size-5 text-neutral-600 dark:text-neutral-300"
+                    strokeWidth={1.8}
+                  />
                 </Link>
               ) : (
                 <div className="p-1 rounded-xl hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition-all duration-150">

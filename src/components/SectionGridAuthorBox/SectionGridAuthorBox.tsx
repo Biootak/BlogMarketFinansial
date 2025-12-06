@@ -1,10 +1,10 @@
 'use client';
 
-import React, { type FC } from 'react';
-import CardAuthorBox from '@/components/CardAuthorBox/CardAuthorBox';
 import type { TopAuthor } from '@/actions/getTopAuthors';
+import CardAuthorBox from '@/components/CardAuthorBox/CardAuthorBox';
 import { motion } from 'framer-motion';
 import { Crown, Users } from 'lucide-react';
+import React, { type FC } from 'react';
 
 export interface SectionGridAuthorBoxProps {
   className?: string;
@@ -51,14 +51,14 @@ const SectionGridAuthorBox: FC<SectionGridAuthorBoxProps> = ({ className = '', a
           </span>
         </div>
         <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-neutral-900 dark:text-white flex items-center justify-center gap-2 sm:gap-3">
-          <Users className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-primary-500" />
-          ۵ نویسنده برتر ماه
+          <Users className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-primary-500" />۵ نویسنده برتر
+          ماه
         </h2>
         <div className="mt-2 sm:mt-3 mx-auto w-16 sm:w-20 h-1 bg-gradient-to-r from-amber-400 to-amber-600 rounded-full" />
       </div>
 
       {/* Authors Grid */}
-      <motion.div 
+      <motion.div
         className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6"
         variants={containerVariants}
         initial="hidden"

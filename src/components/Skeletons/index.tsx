@@ -20,7 +20,7 @@ export const SkeletonBase: FC<SkeletonBaseProps> = ({ className, children }) => 
       'before:bg-gradient-to-r before:from-transparent',
       'before:via-white/20 before:to-transparent',
       'dark:before:via-white/5',
-      className
+      className,
     )}
   >
     {children}
@@ -60,7 +60,7 @@ export const StatsCardSkeleton: FC<{ className?: string }> = ({ className }) => 
       'bg-white/80 dark:bg-gray-800/50',
       'border border-gray-100/60 dark:border-gray-700/40',
       'shadow-sm',
-      className
+      className,
     )}
   >
     <div className="flex items-start justify-between">
@@ -86,7 +86,7 @@ export const ChartSkeleton: FC<{ className?: string; height?: string }> = ({
       'p-6 rounded-2xl',
       'bg-white/80 dark:bg-gray-800/50',
       'border border-gray-100/60 dark:border-gray-700/40',
-      className
+      className,
     )}
   >
     <div className="flex items-center justify-between mb-6">
@@ -123,7 +123,7 @@ export const TableSkeleton: FC<TableSkeletonProps> = ({
       'rounded-2xl overflow-hidden',
       'bg-white/80 dark:bg-gray-800/50',
       'border border-gray-100/60 dark:border-gray-700/40',
-      className
+      className,
     )}
   >
     {showHeader && (
@@ -142,7 +142,7 @@ export const TableSkeleton: FC<TableSkeletonProps> = ({
         <div key={rowIndex} className="px-6 py-4 flex items-center gap-4">
           {/* Avatar */}
           <SkeletonBase className="h-10 w-10 rounded-full flex-shrink-0" />
-          
+
           {/* Content columns */}
           <div className="flex-1 grid grid-cols-3 gap-4">
             <div className="space-y-2">
@@ -225,12 +225,12 @@ export const PostCardSkeleton: FC<{ className?: string }> = ({ className }) => (
       'rounded-2xl overflow-hidden',
       'bg-white/80 dark:bg-gray-800/50',
       'border border-gray-100/60 dark:border-gray-700/40',
-      className
+      className,
     )}
   >
     {/* Image */}
     <SkeletonBase className="h-48 w-full rounded-none" />
-    
+
     {/* Content */}
     <div className="p-5 space-y-4">
       {/* Categories */}
@@ -238,19 +238,19 @@ export const PostCardSkeleton: FC<{ className?: string }> = ({ className }) => (
         <SkeletonBase className="h-6 w-16 rounded-full" />
         <SkeletonBase className="h-6 w-20 rounded-full" />
       </div>
-      
+
       {/* Title */}
       <div className="space-y-2">
         <SkeletonBase className="h-5 w-full rounded-md" />
         <SkeletonBase className="h-5 w-3/4 rounded-md" />
       </div>
-      
+
       {/* Excerpt */}
       <div className="space-y-2">
         <SkeletonBase className="h-3 w-full rounded-md" />
         <SkeletonBase className="h-3 w-5/6 rounded-md" />
       </div>
-      
+
       {/* Footer */}
       <div className="flex items-center justify-between pt-2">
         <div className="flex items-center gap-3">
@@ -294,7 +294,7 @@ export const SettingsCardSkeleton: FC = () => (
     className={cn(
       'p-6 rounded-2xl space-y-6',
       'bg-white/80 dark:bg-gray-800/50',
-      'border border-gray-100/60 dark:border-gray-700/40'
+      'border border-gray-100/60 dark:border-gray-700/40',
     )}
   >
     {/* Section Header */}
@@ -359,7 +359,7 @@ export const CategoryItemSkeleton: FC = () => (
     className={cn(
       'p-4 rounded-xl',
       'bg-white/80 dark:bg-gray-800/50',
-      'border border-gray-100/60 dark:border-gray-700/40'
+      'border border-gray-100/60 dark:border-gray-700/40',
     )}
   >
     <div className="flex items-center gap-3">
@@ -373,7 +373,6 @@ export const CategoryItemSkeleton: FC = () => (
   </div>
 );
 
-
 // ============================================
 // Profile Page Skeleton
 // ============================================
@@ -384,7 +383,7 @@ export const ProfilePageSkeleton: FC = () => (
       className={cn(
         'p-6 rounded-2xl',
         'bg-white/80 dark:bg-gray-800/50',
-        'border border-gray-100/60 dark:border-gray-700/40'
+        'border border-gray-100/60 dark:border-gray-700/40',
       )}
     >
       <div className="flex flex-col sm:flex-row items-center gap-6">
@@ -441,7 +440,7 @@ export const RateCardSkeleton: FC = () => (
     className={cn(
       'p-5 rounded-2xl',
       'bg-white/80 dark:bg-gray-800/50',
-      'border border-gray-100/60 dark:border-gray-700/40'
+      'border border-gray-100/60 dark:border-gray-700/40',
     )}
   >
     <div className="flex items-center gap-4 mb-4">
@@ -495,7 +494,7 @@ export const AdCardSkeleton: FC = () => (
     className={cn(
       'rounded-2xl overflow-hidden',
       'bg-white/80 dark:bg-gray-800/50',
-      'border border-gray-100/60 dark:border-gray-700/40'
+      'border border-gray-100/60 dark:border-gray-700/40',
     )}
   >
     <SkeletonBase className="h-40 w-full rounded-none" />
@@ -542,7 +541,7 @@ export const ReportsSkeleton: FC = () => (
       className={cn(
         'rounded-2xl overflow-hidden',
         'bg-white/80 dark:bg-gray-800/50',
-        'border border-gray-100/60 dark:border-gray-700/40'
+        'border border-gray-100/60 dark:border-gray-700/40',
       )}
     >
       {[...Array(8)].map((_, i) => (
@@ -644,7 +643,6 @@ export const GridSkeleton: FC<GridSkeletonProps> = ({
   );
 };
 
-
 // ============================================
 // Site Skeletons (Public Pages)
 // ============================================
@@ -709,7 +707,7 @@ export const ExchangeRatesBarSkeleton: FC = () => (
     className={cn(
       'flex items-center gap-4 p-4 rounded-2xl overflow-hidden',
       'bg-white/80 dark:bg-neutral-800/50',
-      'border border-neutral-100/60 dark:border-neutral-700/40'
+      'border border-neutral-100/60 dark:border-neutral-700/40',
     )}
   >
     <SkeletonBase className="h-5 w-24 rounded-md flex-shrink-0" />
@@ -760,7 +758,10 @@ export const HomeFeaturedSliderSkeleton: FC = () => (
       {/* Side Cards */}
       <div className="lg:col-span-4 flex flex-row lg:flex-col gap-2 sm:gap-3">
         {[1, 2].map((i) => (
-          <div key={i} className="relative flex-1 h-[160px] sm:h-[180px] lg:h-auto rounded-2xl overflow-hidden">
+          <div
+            key={i}
+            className="relative flex-1 h-[160px] sm:h-[180px] lg:h-auto rounded-2xl overflow-hidden"
+          >
             <SkeletonBase className="absolute inset-0 rounded-none" />
             <div className="absolute bottom-0 start-0 end-0 p-3 sm:p-4 z-10 bg-gradient-to-t from-black/60 to-transparent">
               <SkeletonBase className="h-4 w-16 rounded-md mb-2" />
@@ -822,7 +823,7 @@ export const SectionMagazine1Skeleton: FC = () => (
         className={cn(
           'rounded-2xl overflow-hidden',
           'bg-white dark:bg-neutral-800/90',
-          'border border-neutral-200/80 dark:border-neutral-700/80'
+          'border border-neutral-200/80 dark:border-neutral-700/80',
         )}
       >
         <SkeletonBase className="aspect-[16/10] w-full rounded-none" />
@@ -856,7 +857,7 @@ export const SectionMagazine1Skeleton: FC = () => (
             className={cn(
               'flex gap-4 p-3 rounded-xl',
               'bg-white dark:bg-neutral-800/90',
-              'border border-neutral-200/80 dark:border-neutral-700/80'
+              'border border-neutral-200/80 dark:border-neutral-700/80',
             )}
           >
             <SkeletonBase className="h-24 w-24 sm:h-28 sm:w-28 rounded-xl flex-shrink-0" />
@@ -889,7 +890,7 @@ export const SectionMagazine7Skeleton: FC = () => (
           className={cn(
             'rounded-2xl overflow-hidden',
             'bg-white dark:bg-neutral-800/90',
-            'border border-neutral-200/80 dark:border-neutral-700/80'
+            'border border-neutral-200/80 dark:border-neutral-700/80',
           )}
         >
           <SkeletonBase className="aspect-[4/3] w-full rounded-none" />
@@ -926,7 +927,7 @@ export const SectionAuthorsSkeleton: FC = () => (
           className={cn(
             'flex flex-col items-center p-4 sm:p-6 rounded-2xl',
             'bg-white dark:bg-neutral-800/90',
-            'border border-neutral-200/80 dark:border-neutral-700/80'
+            'border border-neutral-200/80 dark:border-neutral-700/80',
           )}
         >
           <SkeletonBase className="h-20 w-20 sm:h-24 sm:w-24 rounded-full" />
@@ -945,12 +946,7 @@ export const SectionAuthorsSkeleton: FC = () => (
 // Ad Banner Skeleton
 // ============================================
 export const AdBannerSkeleton: FC = () => (
-  <div
-    className={cn(
-      'relative rounded-2xl overflow-hidden',
-      'bg-neutral-100 dark:bg-neutral-800'
-    )}
-  >
+  <div className={cn('relative rounded-2xl overflow-hidden', 'bg-neutral-100 dark:bg-neutral-800')}>
     <SkeletonBase className="h-[120px] sm:h-[150px] lg:h-[180px] w-full rounded-none" />
   </div>
 );
@@ -963,7 +959,7 @@ export const NewsletterSkeleton: FC = () => (
     className={cn(
       'relative rounded-3xl overflow-hidden p-8 sm:p-12',
       'bg-gradient-to-br from-primary-50 to-secondary-50',
-      'dark:from-neutral-800 dark:to-neutral-900'
+      'dark:from-neutral-800 dark:to-neutral-900',
     )}
   >
     <div className="max-w-2xl mx-auto text-center space-y-6">
@@ -1002,7 +998,7 @@ export const ArchivePageSkeleton: FC<{ cols?: number }> = ({ cols = 4 }) => (
           'bg-gradient-to-br from-white via-neutral-50 to-primary-50/30',
           'dark:from-neutral-900 dark:via-neutral-800 dark:to-primary-900/20',
           'shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]',
-          'border border-neutral-200/60 dark:border-neutral-700/60'
+          'border border-neutral-200/60 dark:border-neutral-700/60',
         )}
       >
         <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10">
@@ -1026,7 +1022,7 @@ export const ArchivePageSkeleton: FC<{ cols?: number }> = ({ cols = 4 }) => (
                   className={cn(
                     'flex items-center gap-2.5 px-4 py-2.5 rounded-xl',
                     'bg-white dark:bg-neutral-800',
-                    'border border-neutral-200/80 dark:border-neutral-700/80'
+                    'border border-neutral-200/80 dark:border-neutral-700/80',
                   )}
                 >
                   <SkeletonBase className="w-9 h-9 rounded-lg" />
@@ -1048,7 +1044,7 @@ export const ArchivePageSkeleton: FC<{ cols?: number }> = ({ cols = 4 }) => (
         className={cn(
           'hidden md:flex items-center justify-between p-4 rounded-2xl',
           'bg-white dark:bg-neutral-800/80',
-          'shadow-sm border border-neutral-200/60 dark:border-neutral-700/60'
+          'shadow-sm border border-neutral-200/60 dark:border-neutral-700/60',
         )}
       >
         <div className="flex items-center gap-3">
@@ -1075,7 +1071,7 @@ export const ArchivePageSkeleton: FC<{ cols?: number }> = ({ cols = 4 }) => (
           'grid gap-5 md:gap-6 lg:gap-7',
           cols === 2 && 'grid-cols-1 md:grid-cols-2',
           cols === 3 && 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
-          cols === 4 && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+          cols === 4 && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
         )}
       >
         {[...Array(12)].map((_, i) => (
@@ -1139,7 +1135,7 @@ export const ArchivePostCardSkeleton: FC<{ className?: string }> = ({ className 
       'bg-white dark:bg-neutral-800/90',
       'shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)]',
       'border border-neutral-200/80 dark:border-neutral-700/80',
-      className
+      className,
     )}
   >
     {/* Image */}
@@ -1214,7 +1210,10 @@ export const SinglePostSkeleton: FC = () => (
         {[...Array(8)].map((_, i) => (
           <SkeletonBase
             key={i}
-            className={cn('h-4 rounded-md', i % 3 === 0 ? 'w-full' : i % 3 === 1 ? 'w-11/12' : 'w-4/5')}
+            className={cn(
+              'h-4 rounded-md',
+              i % 3 === 0 ? 'w-full' : i % 3 === 1 ? 'w-11/12' : 'w-4/5',
+            )}
           />
         ))}
       </div>
@@ -1231,7 +1230,7 @@ export const SinglePostSkeleton: FC = () => (
         className={cn(
           'p-6 rounded-2xl',
           'bg-white/80 dark:bg-gray-800/50',
-          'border border-gray-100/60 dark:border-gray-700/40'
+          'border border-gray-100/60 dark:border-gray-700/40',
         )}
       >
         <div className="flex items-center gap-4">
@@ -1263,7 +1262,7 @@ export const CommentSkeleton: FC = () => (
     className={cn(
       'p-4 rounded-xl',
       'bg-white/60 dark:bg-gray-800/40',
-      'border border-gray-100/40 dark:border-gray-700/30'
+      'border border-gray-100/40 dark:border-gray-700/30',
     )}
   >
     <div className="flex gap-3">
@@ -1293,7 +1292,7 @@ export const AuthorPageSkeleton: FC = () => (
         'p-8 rounded-3xl',
         'bg-gradient-to-br from-white/90 to-gray-50/90',
         'dark:from-gray-800/90 dark:to-gray-900/90',
-        'border border-gray-100/60 dark:border-gray-700/40'
+        'border border-gray-100/60 dark:border-gray-700/40',
       )}
     >
       <div className="flex flex-col md:flex-row items-center gap-6">
@@ -1338,7 +1337,7 @@ export const ContactPageSkeleton: FC = () => (
       className={cn(
         'p-8 rounded-2xl',
         'bg-white/80 dark:bg-gray-800/50',
-        'border border-gray-100/60 dark:border-gray-700/40'
+        'border border-gray-100/60 dark:border-gray-700/40',
       )}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1386,7 +1385,7 @@ export const MoneyTransferSkeleton: FC = () => (
           className={cn(
             'p-6 rounded-2xl',
             'bg-white/80 dark:bg-gray-800/50',
-            'border border-gray-100/60 dark:border-gray-700/40'
+            'border border-gray-100/60 dark:border-gray-700/40',
           )}
         >
           <SkeletonBase className="h-12 w-12 rounded-xl mb-4" />
@@ -1409,7 +1408,7 @@ export const AuthPageSkeleton: FC = () => (
         'w-full max-w-md p-8 rounded-2xl space-y-6',
         'bg-white/90 dark:bg-gray-800/90',
         'border border-gray-100/60 dark:border-gray-700/40',
-        'shadow-xl'
+        'shadow-xl',
       )}
     >
       {/* Logo */}
@@ -1469,7 +1468,7 @@ export const SubscriptionPageSkeleton: FC = () => (
             'p-6 rounded-2xl space-y-6',
             'bg-white/80 dark:bg-gray-800/50',
             'border border-gray-100/60 dark:border-gray-700/40',
-            i === 1 && 'ring-2 ring-primary-500/50 scale-105'
+            i === 1 && 'ring-2 ring-primary-500/50 scale-105',
           )}
         >
           <SkeletonBase className="h-6 w-24 rounded-lg" />
@@ -1500,7 +1499,6 @@ export const InlineLoadingSkeleton: FC<{ className?: string }> = ({ className })
     </div>
   </div>
 );
-
 
 // ============================================
 // Service Requests Page Skeleton
@@ -1537,7 +1535,7 @@ export const ServiceRequestsSkeleton: FC = () => (
             className={cn(
               'relative p-5 rounded-2xl',
               'bg-gradient-to-br from-neutral-100 to-neutral-50 dark:from-neutral-800 dark:to-neutral-900',
-              'border border-neutral-200/50 dark:border-neutral-700/50'
+              'border border-neutral-200/50 dark:border-neutral-700/50',
             )}
           >
             <div className="flex items-center gap-3 mb-3">
@@ -1555,7 +1553,7 @@ export const ServiceRequestsSkeleton: FC = () => (
         className={cn(
           'rounded-3xl overflow-hidden',
           'bg-gradient-to-br from-neutral-100 to-neutral-50 dark:from-neutral-800 dark:to-neutral-900',
-          'border border-neutral-200/50 dark:border-neutral-700/50'
+          'border border-neutral-200/50 dark:border-neutral-700/50',
         )}
       >
         {/* Table Header */}
@@ -1636,13 +1634,7 @@ export const OnlinePaymentPageSkeleton: FC = () => (
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {[...Array(6)].map((_, i) => (
-            <div
-              key={i}
-              className={cn(
-                'p-8 rounded-2xl',
-                'bg-neutral-100 dark:bg-neutral-800'
-              )}
-            >
+            <div key={i} className={cn('p-8 rounded-2xl', 'bg-neutral-100 dark:bg-neutral-800')}>
               <SkeletonBase className="h-14 w-14 rounded-xl mb-6" />
               <SkeletonBase className="h-6 w-32 rounded mb-3" />
               <SkeletonBase className="h-4 w-full rounded mb-2" />
@@ -1656,12 +1648,7 @@ export const OnlinePaymentPageSkeleton: FC = () => (
     {/* Contact Skeleton */}
     <section className="py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        <div
-          className={cn(
-            'p-12 rounded-3xl',
-            'bg-neutral-100 dark:bg-neutral-800'
-          )}
-        >
+        <div className={cn('p-12 rounded-3xl', 'bg-neutral-100 dark:bg-neutral-800')}>
           <SkeletonBase className="h-8 w-48 rounded-lg mx-auto mb-4" />
           <SkeletonBase className="h-5 w-72 rounded mx-auto mb-10" />
           <div className="flex justify-center gap-4">
@@ -1711,7 +1698,7 @@ export const Card6Skeleton: FC<{ className?: string }> = ({ className }) => (
       className={cn(
         'hidden sm:flex flex-row items-stretch p-4 rounded-2xl gap-4',
         'bg-white/90 dark:bg-neutral-900/90',
-        'border border-neutral-100 dark:border-neutral-800'
+        'border border-neutral-100 dark:border-neutral-800',
       )}
     >
       {/* Image */}

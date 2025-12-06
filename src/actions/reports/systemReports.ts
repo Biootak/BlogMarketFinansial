@@ -4,7 +4,6 @@ import db from '@/lib/db';
 import { checkReportAccess } from './auth';
 import type { ActionResult, SystemReport } from './types';
 
-
 export async function getSystemReports(): Promise<ActionResult<SystemReport>> {
   try {
     await checkReportAccess();
@@ -48,16 +47,16 @@ export async function getSystemReports(): Promise<ActionResult<SystemReport>> {
     ]);
 
     // Get view statistics from Post.viewCount
-    const [totalViews, monthlyPosts, topPosts] = await Promise.all([
-      db.post.aggregate({ 
+    const [totalViews, monthlyViews, topPosts] = await Promise.all([
+      db.post.aggregate({
         where: { status: 'PUBLISHED' },
-        _sum: { viewCount: true } 
+        _sum: { viewCount: true },
       }),
       db.post.groupBy({
         by: ['createdAt'],
-        where: { 
+        where: {
           status: 'PUBLISHED',
-          createdAt: { gte: lastYear } 
+          createdAt: { gte: lastYear },
         },
         _sum: { viewCount: true },
       }),
@@ -76,7 +75,7 @@ export async function getSystemReports(): Promise<ActionResult<SystemReport>> {
           total: totalUsers,
           active: activeUsers,
           newThisMonth: newUsers,
-          roleDistribution: roleStats.map(stat => ({
+          roleDistribution: roleStats.map((stat) => ({
             name: stat.role,
             value: stat._count,
           })),
@@ -85,7 +84,7 @@ export async function getSystemReports(): Promise<ActionResult<SystemReport>> {
           total: totalPosts,
           published: publishedPosts,
           draft: draftPosts,
-          monthlyPosts: monthlyPosts.map(stat => ({
+          monthlyPosts: monthlyPosts.map((stat) => ({
             month: stat.createdAt.toISOString().slice(0, 7),
             count: stat._count,
           })),
@@ -93,18 +92,18 @@ export async function getSystemReports(): Promise<ActionResult<SystemReport>> {
         commentStats: {
           total: totalComments,
           recent: recentComments,
-          monthly: monthlyComments.map(stat => ({
+          monthly: monthlyComments.map((stat) => ({
             month: stat.createdAt.toISOString().slice(0, 7),
             count: stat._count,
           })),
         },
         viewStats: {
           total: totalViews._sum?.viewCount || 0,
-          monthly: monthlyPosts.map(stat => ({
+          monthly: monthlyViews.map((stat) => ({
             month: stat.createdAt.toISOString().slice(0, 7),
             count: stat._sum?.viewCount || 0,
           })),
-          topPosts: topPosts.map(post => ({
+          topPosts: topPosts.map((post) => ({
             title: post.title,
             views: post.viewCount,
           })),

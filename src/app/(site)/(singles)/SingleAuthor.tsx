@@ -1,11 +1,11 @@
 'use client';
 
-import type React from 'react';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { HiArrowLeft, HiPencilSquare } from 'react-icons/hi2';
 import Avatar from '@/components/Avatar/Avatar';
 import type { UserWithProfile } from '@/types/types';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import type React from 'react';
+import { HiArrowLeft, HiPencilSquare } from 'react-icons/hi2';
 
 export interface SingleAuthorProps {
   author?: UserWithProfile;
@@ -26,14 +26,11 @@ const SingleAuthor: React.FC<SingleAuthorProps> = ({ author }) => {
         {/* Decorative Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 via-transparent to-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-primary-400/10 to-transparent rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        
+
         {/* Content */}
         <div className="relative p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-5 sm:gap-6">
           {/* Avatar with Ring */}
-          <Link 
-            href={`/author/${author.id}`} 
-            className="relative flex-shrink-0 group/avatar"
-          >
+          <Link href={`/author/${author.id}`} className="relative flex-shrink-0 group/avatar">
             {/* Animated Ring */}
             <div className="absolute -inset-1.5 bg-gradient-to-br from-primary-500 via-violet-500 to-rose-500 rounded-full opacity-0 group-hover/avatar:opacity-100 blur-sm transition-opacity duration-300" />
             <div className="relative rounded-full p-0.5 bg-gradient-to-br from-primary-500 via-violet-500 to-rose-500">

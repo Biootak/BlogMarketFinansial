@@ -1,9 +1,9 @@
-// FixedMenu.tsx
-import React from 'react';
+import { TooltipProvider } from '@radix-ui/react-tooltip';
 import type { Editor } from '@tiptap/react';
 import dynamic from 'next/dynamic';
+// FixedMenu.tsx
+import React from 'react';
 import { Toolbar } from '../../ui/toolbar';
-import { TooltipProvider } from '@radix-ui/react-tooltip';
 
 // Dynamic imports for client-side components
 const MenuButtonUndo = dynamic(() => import('../controls/menu-button-undo'));

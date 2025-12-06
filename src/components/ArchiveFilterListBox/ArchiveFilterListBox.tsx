@@ -1,9 +1,9 @@
 'use client';
 
+import { Calendar, Check, ChevronDown, Clock, List, TrendingUp } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type React from 'react';
-import { useState, useRef, useEffect } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { Clock, TrendingUp, Calendar, List, ChevronDown, Check } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 export interface ArchiveFilterListBoxProps {
   className?: string;
@@ -89,19 +89,17 @@ const ArchiveFilterListBox: React.FC<ArchiveFilterListBoxProps> = ({
         "
       >
         <span className="flex items-center gap-2">
-          <span className="text-[rgb(var(--muted-foreground))]">
-            {getFilterIcon(selected)}
-          </span>
+          <span className="text-[rgb(var(--muted-foreground))]">{getFilterIcon(selected)}</span>
           <span className="truncate">{selected}</span>
         </span>
-        <ChevronDown 
-          className={`w-4 h-4 text-[rgb(var(--muted-foreground))] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+        <ChevronDown
+          className={`w-4 h-4 text-[rgb(var(--muted-foreground))] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div 
+        <div
           className="
             absolute top-full mt-2 
             right-0
@@ -134,20 +132,23 @@ const ArchiveFilterListBox: React.FC<ArchiveFilterListBoxProps> = ({
                     cursor-pointer 
                     transition-all duration-200
                     text-start
-                    ${isSelected 
-                      ? 'bg-[rgb(var(--ring))]/10 text-[rgb(var(--ring))]' 
-                      : 'text-[rgb(var(--popover-foreground))] hover:bg-[rgb(var(--accent))]'
+                    ${
+                      isSelected
+                        ? 'bg-[rgb(var(--ring))]/10 text-[rgb(var(--ring))]'
+                        : 'text-[rgb(var(--popover-foreground))] hover:bg-[rgb(var(--accent))]'
                     }
                     focus:outline-none focus:bg-[rgb(var(--accent))]
                   `}
                 >
-                  <span className={isSelected ? 'text-[rgb(var(--ring))]' : 'text-[rgb(var(--muted-foreground))]'}>
+                  <span
+                    className={
+                      isSelected ? 'text-[rgb(var(--ring))]' : 'text-[rgb(var(--muted-foreground))]'
+                    }
+                  >
                     {getFilterIcon(item.name)}
                   </span>
                   <span className="flex-1">{item.name}</span>
-                  {isSelected && (
-                    <Check className="w-4 h-4 text-[rgb(var(--ring))]" />
-                  )}
+                  {isSelected && <Check className="w-4 h-4 text-[rgb(var(--ring))]" />}
                 </button>
               );
             })}

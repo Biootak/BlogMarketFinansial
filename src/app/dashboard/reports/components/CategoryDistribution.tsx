@@ -1,8 +1,8 @@
 'use client';
 
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { Layers } from 'lucide-react';
 import type { CategoryStat } from '@/actions/reportActions';
+import { Layers } from 'lucide-react';
+import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
 interface CategoryDistributionProps {
   data: CategoryStat[];
@@ -84,7 +84,7 @@ export function CategoryDistribution({ data, isLoading = false }: CategoryDistri
                 fill="#8884d8"
                 dataKey="value"
               >
-                {chartData.map((entry, index) => (
+                {chartData.map((_entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
@@ -103,7 +103,9 @@ export function CategoryDistribution({ data, isLoading = false }: CategoryDistri
 
         {/* Category List */}
         <div className="space-y-2 sm:space-y-3">
-          <h4 className="text-xs sm:text-sm font-semibold text-gray-700 mb-3 sm:mb-4">جزئیات دسته‌بندی‌ها</h4>
+          <h4 className="text-xs sm:text-sm font-semibold text-gray-700 mb-3 sm:mb-4">
+            جزئیات دسته‌بندی‌ها
+          </h4>
           <div className="space-y-1.5 sm:space-y-2 max-h-64 sm:max-h-72 overflow-y-auto">
             {data.map((category, index) => (
               <div

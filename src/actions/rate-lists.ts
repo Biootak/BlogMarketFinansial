@@ -1,20 +1,18 @@
 'use server';
 
 import prisma from '@/lib/db';
+import type { ActionResult, RateItem, RateListData } from '@/types/types';
 import { revalidatePath } from 'next/cache';
-import type { ActionResult, RateListData, RateItem } from '@/types/types';
 
 export async function getRateLists(): Promise<RateListData[]> {
   try {
     const rateLists = await prisma.rateList.findMany({
       orderBy: { createdAt: 'desc' },
     });
-    
+
     // Parse and convert the JSON rates to RateItem[]
-    return rateLists.map(list => {
+    return rateLists.map((list) => {
       try {
-     
-        
         // Handle cases where rates is already an object
         let parsedRates;
         if (typeof list.rates === 'string') {
@@ -30,7 +28,7 @@ export async function getRateLists(): Promise<RateListData[]> {
         const typedRates = Array.isArray(parsedRates)
           ? parsedRates.map((rate: any) => ({
               title: String(rate.title || ''),
-              value: String(rate.value || '')
+              value: String(rate.value || ''),
             }))
           : [];
 
@@ -110,7 +108,7 @@ export async function updateRateList(
     const typedRates = Array.isArray(parsedRates)
       ? parsedRates.map((rate: any) => ({
           title: String(rate.title || ''),
-          value: String(rate.value || '')
+          value: String(rate.value || ''),
         }))
       : [];
 

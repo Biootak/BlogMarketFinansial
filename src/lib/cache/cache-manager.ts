@@ -121,7 +121,7 @@ export class CacheManager {
     link.rel = 'preload';
     link.href = url;
     link.as = as;
-    
+
     if (as === 'font') {
       link.crossOrigin = 'anonymous';
     }
@@ -164,7 +164,7 @@ export function getCacheManager(): CacheManager {
  */
 export function createCacheKey(url: string, params?: Record<string, any>): string {
   if (!params) return url;
-  
+
   const searchParams = new URLSearchParams(params);
   return `${url}?${searchParams.toString()}`;
 }

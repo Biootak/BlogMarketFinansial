@@ -1,7 +1,7 @@
-import type React from 'react';
 import CardCategory2 from '@/components/CardCategory2/CardCategory2';
 import Heading from '@/components/Heading/Heading';
 import type { TaxonomyType } from '@/types/types';
+import type React from 'react';
 
 export interface SectionGridCategoryBoxProps {
   categories: TaxonomyType[];

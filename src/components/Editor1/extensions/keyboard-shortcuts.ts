@@ -1,8 +1,6 @@
 import { Extension } from '@tiptap/core';
 
-export interface KeyboardShortcutsOptions {
-  // Custom options if needed
-}
+export type KeyboardShortcutsOptions = {};
 
 export const KeyboardShortcuts = Extension.create<KeyboardShortcutsOptions>({
   name: 'customKeyboardShortcuts',
@@ -22,12 +20,7 @@ export const KeyboardShortcuts = Extension.create<KeyboardShortcutsOptions>({
           return this.editor.chain().focus().extendMarkRange('link').unsetLink().run();
         }
 
-        return this.editor
-          .chain()
-          .focus()
-          .extendMarkRange('link')
-          .setLink({ href: url })
-          .run();
+        return this.editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
       },
 
       // Highlight shortcut - Ctrl/Cmd+Shift+H

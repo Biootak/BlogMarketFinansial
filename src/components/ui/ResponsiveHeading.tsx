@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react';
+import { getFontWeight, getLineHeight, getResponsiveFontSize } from '@/lib/responsive/typography';
 import { cn } from '@/lib/utils';
-import { getResponsiveFontSize, getLineHeight, getFontWeight } from '@/lib/responsive/typography';
+import type { ReactNode } from 'react';
 
 export interface ResponsiveHeadingProps {
   level: 1 | 2 | 3 | 4;
@@ -19,7 +19,7 @@ export function ResponsiveHeading({
   className,
   weight = 'bold',
 }: ResponsiveHeadingProps) {
-  const Tag = `h${level}` as keyof JSX.IntrinsicElements;
+  const Tag = `h${level}` as keyof React.JSX.IntrinsicElements;
   const levelKey = `h${level}` as 'h1' | 'h2' | 'h3' | 'h4';
 
   return (
@@ -28,7 +28,7 @@ export function ResponsiveHeading({
         getResponsiveFontSize(levelKey),
         getLineHeight(levelKey),
         getFontWeight(weight),
-        className
+        className,
       )}
     >
       {children}

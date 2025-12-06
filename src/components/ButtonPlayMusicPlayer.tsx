@@ -1,10 +1,10 @@
 'use client';
 
-import Image from 'next/image';
-import iconPlaying from '@/images/icon-playing.gif';
 import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
+import iconPlaying from '@/images/icon-playing.gif';
 import type { PostWithRelations } from '@/types/types';
+import Image from 'next/image';
 
 export interface ButtonPlayMusicPlayerProps {
   className?: string;

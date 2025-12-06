@@ -140,7 +140,9 @@ export class PerformanceMonitor {
     window.addEventListener('load', () => {
       setTimeout(() => {
         const timing = performance.timing;
-        const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+        const _navigation = performance.getEntriesByType(
+          'navigation',
+        )[0] as PerformanceNavigationTiming;
 
         const timings: PerformanceTimings = {
           navigationStart: timing.navigationStart,
@@ -301,7 +303,7 @@ export function getPerformanceMonitor(): PerformanceMonitor {
  */
 export function initPerformanceMonitoring(): void {
   if (typeof window === 'undefined') return;
-  
+
   const monitor = getPerformanceMonitor();
   monitor.start();
 

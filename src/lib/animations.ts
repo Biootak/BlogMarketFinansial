@@ -74,41 +74,41 @@ export const transitions = {
 // ============================================
 export const fadeVariants: Variants = {
   hidden: { opacity: 0 },
-  visible: { 
+  visible: {
     opacity: 1,
     transition: transitions.smooth,
   },
-  exit: { 
+  exit: {
     opacity: 0,
-    transition: transitions.fast,
+    transition: transitions.snappy,
   },
 };
 
 export const fadeUpVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
     transition: transitions.smooth,
   },
-  exit: { 
-    opacity: 0, 
+  exit: {
+    opacity: 0,
     y: -20,
-    transition: transitions.fast,
+    transition: transitions.snappy,
   },
 };
 
 export const fadeDownVariants: Variants = {
   hidden: { opacity: 0, y: -20 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
     transition: transitions.smooth,
   },
-  exit: { 
-    opacity: 0, 
+  exit: {
+    opacity: 0,
     y: 20,
-    transition: transitions.fast,
+    transition: transitions.snappy,
   },
 };
 
@@ -117,29 +117,29 @@ export const fadeDownVariants: Variants = {
 // ============================================
 export const scaleVariants: Variants = {
   hidden: { opacity: 0, scale: 0.9 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     scale: 1,
     transition: transitions.smooth,
   },
-  exit: { 
-    opacity: 0, 
+  exit: {
+    opacity: 0,
     scale: 0.9,
-    transition: transitions.fast,
+    transition: transitions.snappy,
   },
 };
 
 export const scaleBounceVariants: Variants = {
   hidden: { opacity: 0, scale: 0.8 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     scale: 1,
     transition: transitions.bouncy,
   },
-  exit: { 
-    opacity: 0, 
+  exit: {
+    opacity: 0,
     scale: 0.8,
-    transition: transitions.fast,
+    transition: transitions.snappy,
   },
 };
 
@@ -148,29 +148,29 @@ export const scaleBounceVariants: Variants = {
 // ============================================
 export const slideRightVariants: Variants = {
   hidden: { opacity: 0, x: -30 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     x: 0,
     transition: transitions.smooth,
   },
-  exit: { 
-    opacity: 0, 
+  exit: {
+    opacity: 0,
     x: 30,
-    transition: transitions.fast,
+    transition: transitions.snappy,
   },
 };
 
 export const slideLeftVariants: Variants = {
   hidden: { opacity: 0, x: 30 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     x: 0,
     transition: transitions.smooth,
   },
-  exit: { 
-    opacity: 0, 
+  exit: {
+    opacity: 0,
     x: -30,
-    transition: transitions.fast,
+    transition: transitions.snappy,
   },
 };
 
@@ -190,8 +190,8 @@ export const staggerContainerVariants: Variants = {
 
 export const staggerItemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
     transition: transitions.smooth,
   },
@@ -212,12 +212,12 @@ export const hoverScaleSmall = {
 
 export const tapScale = {
   scale: 0.95,
-  transition: transitions.fast,
+  transition: transitions.snappy,
 };
 
 export const tapScaleSmall = {
   scale: 0.98,
-  transition: transitions.fast,
+  transition: transitions.snappy,
 };
 
 // ============================================
@@ -225,7 +225,7 @@ export const tapScaleSmall = {
 // ============================================
 export const rotateVariants: Variants = {
   initial: { rotate: 0 },
-  animate: { 
+  animate: {
     rotate: 360,
     transition: {
       duration: 1,
@@ -240,7 +240,7 @@ export const rotateVariants: Variants = {
 // ============================================
 export const pulseVariants: Variants = {
   initial: { scale: 1 },
-  animate: { 
+  animate: {
     scale: [1, 1.05, 1],
     transition: {
       duration: 2,
@@ -273,8 +273,8 @@ export const createStaggerContainer = (staggerDelay = 0.1, delayChildren = 0.1):
  */
 export const createFadeUp = (distance = 20): Variants => ({
   hidden: { opacity: 0, y: distance },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
     transition: transitions.smooth,
   },
@@ -285,8 +285,8 @@ export const createFadeUp = (distance = 20): Variants => ({
  */
 export const createScale = (from = 0.9, to = 1): Variants => ({
   hidden: { opacity: 0, scale: from },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     scale: to,
     transition: transitions.smooth,
   },

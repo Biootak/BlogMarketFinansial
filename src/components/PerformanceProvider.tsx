@@ -5,8 +5,8 @@
  * Initializes performance monitoring on the client side
  */
 
-import { useEffect } from 'react';
 import { initPerformance } from '@/lib/performance';
+import { useEffect } from 'react';
 
 export function PerformanceProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {

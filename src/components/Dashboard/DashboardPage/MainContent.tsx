@@ -1,8 +1,8 @@
 'use client';
 
 import { useSidebarStore } from '@/hooks/sidebarStore';
+import { AnimatePresence, type Transition, type Variants, motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence, type Variants, type Transition } from 'framer-motion';
 
 interface MainContentProps {
   children: React.ReactNode;

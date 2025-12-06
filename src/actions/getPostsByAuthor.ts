@@ -1,7 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
-import type { PostWithRelations, ActionResult, PaginationParams } from '@/types/types';
+import type { ActionResult, PaginationParams, PostWithRelations } from '@/types/types';
 import type { Prisma } from '@prisma/client';
 
 interface GetPostsByAuthorParams extends PaginationParams {

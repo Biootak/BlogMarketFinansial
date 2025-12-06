@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowLeftRight, Shield, Clock, Headphones, CreditCard, Globe } from 'lucide-react';
+import { ArrowLeftRight, Clock, CreditCard, Globe, Headphones, Shield } from 'lucide-react';
 
 const infoCards = [
   {
@@ -94,27 +94,33 @@ export default function InfoCards() {
           className={`group relative bg-white dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl p-8 border border-slate-100 dark:border-slate-800 shadow-xl ${card.shadowColor} hover:shadow-2xl transition-all duration-500`}
         >
           {/* Background Glow */}
-          <div className={`absolute -top-20 -right-20 w-40 h-40 ${card.bgGlow} rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-          
+          <div
+            className={`absolute -top-20 -right-20 w-40 h-40 ${card.bgGlow} rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
+          />
+
           {/* Icon Container */}
           <div className="relative mb-6">
-            <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${card.gradient} flex items-center justify-center shadow-lg transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
+            <div
+              className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${card.gradient} flex items-center justify-center shadow-lg transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}
+            >
               <card.icon className="w-8 h-8 text-white" strokeWidth={1.5} />
             </div>
             {/* Decorative Ring */}
-            <div className={`absolute -inset-2 rounded-2xl bg-gradient-to-br ${card.gradient} opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300`} />
+            <div
+              className={`absolute -inset-2 rounded-2xl bg-gradient-to-br ${card.gradient} opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300`}
+            />
           </div>
 
           {/* Content */}
           <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-transparent group-hover:bg-gradient-to-l group-hover:bg-clip-text group-hover:from-slate-900 group-hover:to-slate-600 dark:group-hover:from-white dark:group-hover:to-slate-300 transition-all duration-300">
             {card.title}
           </h3>
-          <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
-            {card.description}
-          </p>
+          <p className="text-slate-500 dark:text-slate-400 leading-relaxed">{card.description}</p>
 
           {/* Bottom Accent Line */}
-          <div className={`absolute bottom-0 left-8 right-8 h-1 bg-gradient-to-r ${card.gradient} rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+          <div
+            className={`absolute bottom-0 left-8 right-8 h-1 bg-gradient-to-r ${card.gradient} rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
+          />
         </motion.div>
       ))}
     </motion.div>

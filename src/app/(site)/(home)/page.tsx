@@ -1,31 +1,34 @@
-import React, { Suspense } from 'react';
-import dynamic from 'next/dynamic';
-import { Skeleton } from '@/components/ui/skeleton';
+import { getActiveAdvertisements } from '@/actions/advertisementActions';
 import { getPosts } from '@/actions/getPosts';
 import { getTopAuthors } from '@/actions/getTopAuthors';
-import { getActiveAdvertisements } from '@/actions/advertisementActions';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
+import dynamic from 'next/dynamic';
+import React, { Suspense } from 'react';
 
 // Dynamic imports for heavy components
-const SectionLargeSlider = dynamic(() => import('./SectionLargeSlider'), { 
+const SectionLargeSlider = dynamic(() => import('./SectionLargeSlider'), {
   loading: () => <CardLarge1Skeleton />,
-  ssr: true 
+  ssr: true,
 });
 const SectionMagazine7 = dynamic(() => import('@/components/Sections/SectionMagazine7'), {
   loading: () => <Skeleton className="h-[400px] rounded-3xl" />,
-  ssr: true
+  ssr: true,
 });
-const SectionGridAuthorBox = dynamic(() => import('@/components/SectionGridAuthorBox/SectionGridAuthorBox'), {
-  loading: () => <Skeleton className="h-[400px] rounded-3xl" />,
-  ssr: true
-});
+const SectionGridAuthorBox = dynamic(
+  () => import('@/components/SectionGridAuthorBox/SectionGridAuthorBox'),
+  {
+    loading: () => <Skeleton className="h-[400px] rounded-3xl" />,
+    ssr: true,
+  },
+);
 
+import SectionSliderNewCategories from '@/components/SectionSliderNewCategories/SectionSliderNewCategories';
+import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
+import SectionAds from '@/components/Sections/SectionAds';
+import SectionExchangeRates from '@/components/Sections/SectionExchangeRates';
 // Regular imports for lighter components
 import SectionMagazine1 from '@/components/Sections/SectionMagazine1';
-import SectionAds from '@/components/Sections/SectionAds';
-import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
-import SectionSliderNewCategories from '@/components/SectionSliderNewCategories/SectionSliderNewCategories';
-import SectionExchangeRates from '@/components/Sections/SectionExchangeRates';
 
 export default async function Home() {
   const [posts, topAuthors, firstAdResult, secondAdResult] = await Promise.all([

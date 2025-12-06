@@ -88,9 +88,9 @@ export const DEFAULT_COLORS = [
 
 // تبدیل hex به rgba
 export const hexToRgba = (hex: string, alpha: number): string => {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
+  const r = Number.parseInt(hex.slice(1, 3), 16);
+  const g = Number.parseInt(hex.slice(3, 5), 16);
+  const b = Number.parseInt(hex.slice(5, 7), 16);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
@@ -98,12 +98,12 @@ export const hexToRgba = (hex: string, alpha: number): string => {
 export const rgbaToHexAlpha = (rgba: string): { hex: string; alpha: number } => {
   const match = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
   if (!match) return { hex: '#000000', alpha: 1 };
-  
-  const r = parseInt(match[1]).toString(16).padStart(2, '0');
-  const g = parseInt(match[2]).toString(16).padStart(2, '0');
-  const b = parseInt(match[3]).toString(16).padStart(2, '0');
-  const alpha = match[4] ? parseFloat(match[4]) : 1;
-  
+
+  const r = Number.parseInt(match[1]).toString(16).padStart(2, '0');
+  const g = Number.parseInt(match[2]).toString(16).padStart(2, '0');
+  const b = Number.parseInt(match[3]).toString(16).padStart(2, '0');
+  const alpha = match[4] ? Number.parseFloat(match[4]) : 1;
+
   return { hex: `#${r}${g}${b}`, alpha };
 };
 

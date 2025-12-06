@@ -1,8 +1,8 @@
-import type { FC } from 'react';
-import Image from 'next/image';
-import SubscribeForm from './SubscribeForm';
 import { subscribeToNewsletter } from '@/actions/newsletter';
-import { Mail, Sparkles, Bell, Gift } from 'lucide-react';
+import { Bell, Gift, Mail, Sparkles } from 'lucide-react';
+import Image from 'next/image';
+import type { FC } from 'react';
+import SubscribeForm from './SubscribeForm';
 
 export interface SectionSubscribe2Props {
   className?: string;
@@ -10,17 +10,17 @@ export interface SectionSubscribe2Props {
 
 const SectionSubscribe2: FC<SectionSubscribe2Props> = async ({ className = '' }) => {
   return (
-    <section
-      className={`nc-SectionSubscribe2 relative ${className}`}
-      dir="rtl"
-    >
+    <section className={`nc-SectionSubscribe2 relative ${className}`} dir="rtl">
       {/* Main Container */}
       <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 dark:from-primary-800 dark:via-primary-900 dark:to-neutral-900">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }} />
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            }}
+          />
         </div>
 
         {/* Floating Decorations - Smaller on mobile */}
@@ -81,7 +81,7 @@ const SectionSubscribe2: FC<SectionSubscribe2Props> = async ({ className = '' })
             <div className="relative aspect-square lg:aspect-[4/3]">
               {/* Glow Effect */}
               <div className="absolute inset-0 bg-gradient-to-br from-amber-400/30 to-primary-400/30 rounded-2xl sm:rounded-3xl blur-xl sm:blur-2xl scale-90" />
-              
+
               {/* Image Container */}
               <div className="relative h-full rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-white/10 shadow-2xl">
                 <Image
@@ -97,13 +97,27 @@ const SectionSubscribe2: FC<SectionSubscribe2Props> = async ({ className = '' })
               <div className="absolute -bottom-2 -start-2 sm:bottom-4 sm:start-4 bg-white dark:bg-neutral-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-xl border border-neutral-100 dark:border-neutral-700">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
-                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="w-5 h-5 sm:w-6 sm:h-6 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                   </div>
                   <div>
-                    <p className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white">رایگان و بدون اسپم</p>
-                    <p className="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400">هر زمان لغو اشتراک</p>
+                    <p className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white">
+                      رایگان و بدون اسپم
+                    </p>
+                    <p className="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400">
+                      هر زمان لغو اشتراک
+                    </p>
                   </div>
                 </div>
               </div>

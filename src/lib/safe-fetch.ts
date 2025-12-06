@@ -17,19 +17,19 @@ export interface SafeResult<T> {
  */
 export async function safeFetch<T>(
   fetcher: () => Promise<T>,
-  fallback: T | null = null
+  fallback: T | null = null,
 ): Promise<SafeResult<T>> {
   try {
     const data = await fetcher();
     return { data, error: null, isError: false };
   } catch (error) {
     const errorMessage = getErrorMessage(error);
-    
+
     // فقط در development لاگ کن
     if (process.env.NODE_ENV === 'development') {
       console.error('[SafeFetch Error]:', errorMessage);
     }
-    
+
     return { data: fallback, error: errorMessage, isError: true };
   }
 }

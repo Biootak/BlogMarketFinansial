@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown, HelpCircle, MessageCircle } from 'lucide-react';
+import { useState } from 'react';
 
 const faqs = [
   {
@@ -50,7 +50,9 @@ export default function FAQ() {
       <div className="text-center mb-12 lg:mb-16 relative">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-violet-50 dark:bg-violet-500/10 rounded-full mb-4">
           <HelpCircle className="w-4 h-4 text-violet-600 dark:text-violet-400" />
-          <span className="text-sm font-medium text-violet-600 dark:text-violet-400">پاسخ به سوالات شما</span>
+          <span className="text-sm font-medium text-violet-600 dark:text-violet-400">
+            پاسخ به سوالات شما
+          </span>
         </div>
         <h2 className="text-2xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-4">
           سؤالات متداول
@@ -64,7 +66,7 @@ export default function FAQ() {
       <div className="max-w-3xl mx-auto space-y-4 relative">
         {faqs.map((faq, index) => {
           const isActive = activeIndex === index;
-          
+
           return (
             <motion.div
               key={index}
@@ -84,18 +86,22 @@ export default function FAQ() {
                 className="flex items-center justify-between w-full p-5 lg:p-6 text-right focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded-2xl"
               >
                 <div className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
-                    isActive
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 group-hover:text-blue-500'
-                  }`}>
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                      isActive
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 group-hover:text-blue-500'
+                    }`}
+                  >
                     <MessageCircle className="w-5 h-5" />
                   </div>
-                  <span className={`font-semibold text-base lg:text-lg transition-colors duration-300 ${
-                    isActive
-                      ? 'text-blue-600 dark:text-blue-400'
-                      : 'text-slate-800 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white'
-                  }`}>
+                  <span
+                    className={`font-semibold text-base lg:text-lg transition-colors duration-300 ${
+                      isActive
+                        ? 'text-blue-600 dark:text-blue-400'
+                        : 'text-slate-800 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white'
+                    }`}
+                  >
                     {faq.question}
                   </span>
                 </div>
@@ -141,9 +147,7 @@ export default function FAQ() {
         viewport={{ once: true }}
         className="mt-12 text-center"
       >
-        <p className="text-slate-500 dark:text-slate-400 mb-4">
-          سوال دیگری دارید؟
-        </p>
+        <p className="text-slate-500 dark:text-slate-400 mb-4">سوال دیگری دارید؟</p>
         <a
           href="#contact"
           className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-medium hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors duration-300"

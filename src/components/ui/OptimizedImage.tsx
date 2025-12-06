@@ -1,6 +1,6 @@
+import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { useState } from 'react';
-import { cn } from '@/lib/utils';
 
 export interface OptimizedImageProps {
   src: string;
@@ -68,16 +68,11 @@ export function OptimizedImage({
         className={cn(
           'flex items-center justify-center bg-neutral-200 dark:bg-neutral-800',
           aspectRatio && `aspect-[${aspectRatio}]`,
-          className
+          className,
         )}
       >
         <div className="text-center text-neutral-500">
-          <svg
-            className="mx-auto h-12 w-12"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
+          <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -96,7 +91,7 @@ export function OptimizedImage({
       className={cn(
         'relative overflow-hidden',
         aspectRatio && !fill && `aspect-[${aspectRatio}]`,
-        className
+        className,
       )}
     >
       <Image
@@ -114,7 +109,7 @@ export function OptimizedImage({
         className={cn(
           'duration-200',
           isLoading ? 'scale-105 blur-sm' : 'scale-100 blur-0',
-          fill ? 'object-cover' : 'h-full w-full object-cover'
+          fill ? 'object-cover' : 'h-full w-full object-cover',
         )}
       />
 

@@ -1,7 +1,7 @@
-import { Suspense } from 'react';
 import { fetchExchangeRates } from '@/actions/fetchExchangeRates';
 import ExchangeRateSlider from '@/components/ExchangeRateSlider';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Suspense } from 'react';
 
 async function ExchangeRatesContent() {
   const result = await fetchExchangeRates();
@@ -24,7 +24,9 @@ async function ExchangeRatesContent() {
   if (result.data.length === 0) {
     return (
       <div className="flex items-center justify-center p-4 sm:p-6 bg-amber-50 dark:bg-amber-900/20 rounded-xl sm:rounded-2xl border border-amber-200 dark:border-amber-800">
-        <p className="text-amber-600 dark:text-amber-400 text-sm sm:text-base">هیچ نرخ ارزی یافت نشد</p>
+        <p className="text-amber-600 dark:text-amber-400 text-sm sm:text-base">
+          هیچ نرخ ارزی یافت نشد
+        </p>
       </div>
     );
   }

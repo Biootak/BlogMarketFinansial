@@ -1,8 +1,8 @@
 'use client';
 
-import React, { type FC } from 'react';
 import PostCardInfo from '@/components/PostCardInfo/PostCardInfo';
 import type { PostWithRelations } from '@/types/types';
+import React, { type FC } from 'react';
 
 export interface PostCardLikeAndCommentProps {
   className?: string;
@@ -12,10 +12,7 @@ export interface PostCardLikeAndCommentProps {
   post: PostWithRelations;
 }
 
-const PostCardLikeAndComment: FC<PostCardLikeAndCommentProps> = ({
-  className = '',
-  post,
-}) => {
+const PostCardLikeAndComment: FC<PostCardLikeAndCommentProps> = ({ className = '', post }) => {
   if (!post) {
     return null;
   }

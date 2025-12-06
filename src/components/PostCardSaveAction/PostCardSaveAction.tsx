@@ -1,10 +1,10 @@
 'use client';
 
+import { fadeUpVariants, hoverScaleSmall, tapScaleSmall, transitions } from '@/lib/animations';
+import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 import React, { type FC } from 'react';
 import NcBookmark from '../NcBookmark/NcBookmark';
-import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import { fadeUpVariants, hoverScaleSmall, tapScaleSmall, transitions } from '@/lib/animations';
 
 export interface PostCardSaveActionProps {
   className?: string;
@@ -36,7 +36,7 @@ const PostCardSaveAction: FC<PostCardSaveActionProps> = ({
       variants={fadeUpVariants}
     >
       {!hideReadingTime && !!readingTime && (
-        <motion.span 
+        <motion.span
           whileHover={hoverScaleSmall}
           whileTap={tapScaleSmall}
           transition={transitions.snappy}

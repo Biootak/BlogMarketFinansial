@@ -1,8 +1,8 @@
-import Header from '@/components/Header/Header';
 import Footer from '@/components/Footer/Footer';
-import type { Metadata } from 'next';
+import Header from '@/components/Header/Header';
 import { SiteSettingsProvider } from '@/components/SiteSettingsProvider';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
+import type { Metadata } from 'next';
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSystemSettingsData();

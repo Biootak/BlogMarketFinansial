@@ -241,7 +241,7 @@ Cache-Control: public, max-age=60, stale-while-revalidate=300`,
     if (!this.revalidations.has(resource)) {
       this.revalidations.set(resource, []);
     }
-    this.revalidations.get(resource)!.push(new Date());
+    this.revalidations.get(resource)?.push(new Date());
   }
 
   /**
@@ -274,8 +274,8 @@ Cache-Control: public, max-age=60, stale-while-revalidate=300`,
   generateReport(analysis: CacheAnalysis): string {
     const { summary, missingHeaders, revalidationIssues, recommendations } = analysis;
 
-    let report = `# گزارش تحلیل Cache\n\n`;
-    report += `## خلاصه\n`;
+    let report = '# گزارش تحلیل Cache\n\n';
+    report += '## خلاصه\n';
     report += `- کل منابع: ${summary.totalResources}\n`;
     report += `- منابع cached: ${summary.cachedResources}\n`;
     report += `- نرخ cache hit: ${summary.cacheHitRate.toFixed(1)}%\n\n`;
@@ -286,7 +286,7 @@ Cache-Control: public, max-age=60, stale-while-revalidate=300`,
         report += `- **${resource.type}**: ${resource.url}\n`;
         report += `  پیشنهاد: ${resource.recommendation}\n`;
       }
-      report += `\n`;
+      report += '\n';
     }
 
     if (revalidationIssues.length > 0) {
@@ -295,18 +295,18 @@ Cache-Control: public, max-age=60, stale-while-revalidate=300`,
         report += `- ${issue.resource}: ${issue.frequency} بار revalidate شده\n`;
         report += `  پیشنهاد: ${issue.suggestion}\n`;
       }
-      report += `\n`;
+      report += '\n';
     }
 
     if (recommendations.length > 0) {
-      report += `## پیشنهادات\n`;
+      report += '## پیشنهادات\n';
       for (const rec of recommendations) {
         report += `### ${rec.title} (${rec.severity})\n`;
         report += `${rec.description}\n`;
         if (rec.example) {
           report += `\`\`\`typescript\n${rec.example}\n\`\`\`\n`;
         }
-        report += `\n`;
+        report += '\n';
       }
     }
 

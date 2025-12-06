@@ -1,8 +1,8 @@
 'use client';
 
-import { User, Activity, FileText, Clock, Mail, Calendar, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import type { ActivityLog } from '@/actions/reports/activityLogs';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Sheet,
   SheetContent,
@@ -10,8 +10,8 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { Activity, Calendar, Clock, FileText, Mail, User, X } from 'lucide-react';
 
 interface ActivityDetailModalProps {
   activity: ActivityLog | null;
@@ -93,15 +93,13 @@ export function ActivityDetailModal({ activity, isOpen, onClose }: ActivityDetai
                   'w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center',
                   'bg-white/20 backdrop-blur-sm',
                   'text-white font-bold text-lg sm:text-xl',
-                  'shadow-lg flex-shrink-0'
+                  'shadow-lg flex-shrink-0',
                 )}
               >
                 {(activity.user.name || activity.user.email || '?').charAt(0).toUpperCase()}
               </div>
               <div className="text-right">
-                <SheetTitle className="text-white text-base sm:text-lg">
-                  جزئیات فعالیت
-                </SheetTitle>
+                <SheetTitle className="text-white text-base sm:text-lg">جزئیات فعالیت</SheetTitle>
                 <SheetDescription className="text-white/80 text-xs sm:text-sm">
                   اطلاعات کامل این فعالیت
                 </SheetDescription>
@@ -158,7 +156,7 @@ export function ActivityDetailModal({ activity, isOpen, onClose }: ActivityDetai
                       'inline-flex items-center px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold border shadow-sm',
                       colors.bg,
                       colors.text,
-                      colors.border
+                      colors.border,
                     )}
                   >
                     {activity.action}

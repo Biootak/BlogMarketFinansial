@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 interface ReportCardProps {
   icon: LucideIcon;
@@ -33,7 +33,7 @@ export function ReportCard({
         'transition-all duration-300 ease-out',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
         'group overflow-hidden',
-        'flex-1 min-w-0 w-full'
+        'flex-1 min-w-0 w-full',
       )}
     >
       {isActive ? (
@@ -67,7 +67,7 @@ export function ReportCard({
           <div
             className={cn(
               'absolute inset-0 bg-gradient-to-l opacity-0 group-hover:opacity-10 transition-opacity duration-300 rounded-xl sm:rounded-2xl',
-              gradient
+              gradient,
             )}
           />
 

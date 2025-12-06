@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import type { PostWithRelations } from '@/types/types';
+import { useEffect, useState } from 'react';
 import PostItem from './PostItem';
 
 interface PostsListProps {

@@ -1,8 +1,8 @@
 'use client';
 
-import { Users, FileText, Eye, TrendingUp, TrendingDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import type { KPIData } from '@/actions/reportActions';
+import { cn } from '@/lib/utils';
+import { Eye, FileText, TrendingDown, TrendingUp, Users } from 'lucide-react';
 
 interface KPICardsProps {
   data: KPIData;
@@ -81,7 +81,7 @@ export function KPICards({ data, isLoading = false }: KPICardsProps) {
               card.bgGradient,
               'border border-gray-200',
               'shadow-lg hover:shadow-xl transition-all duration-300',
-              'group'
+              'group',
             )}
           >
             {/* Background Pattern */}
@@ -97,7 +97,7 @@ export function KPICards({ data, isLoading = false }: KPICardsProps) {
                   'inline-flex p-2 sm:p-3 rounded-lg sm:rounded-xl mb-3 sm:mb-4',
                   'bg-gradient-to-br',
                   card.gradient,
-                  'shadow-lg group-hover:scale-110 transition-transform duration-300'
+                  'shadow-lg group-hover:scale-110 transition-transform duration-300',
                 )}
               >
                 <Icon className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
@@ -110,12 +110,14 @@ export function KPICards({ data, isLoading = false }: KPICardsProps) {
 
               {/* Value */}
               <div className="flex items-baseline gap-1.5 sm:gap-2 mb-1.5 sm:mb-2 flex-wrap">
-                <p className="text-2xl sm:text-3xl font-bold text-gray-900 truncate">{card.value}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900 truncate">
+                  {card.value}
+                </p>
                 {hasGrowth && (
                   <span
                     className={cn(
                       'inline-flex items-center gap-0.5 sm:gap-1 text-xs sm:text-sm font-semibold whitespace-nowrap',
-                      isPositive ? 'text-emerald-600' : 'text-red-600'
+                      isPositive ? 'text-emerald-600' : 'text-red-600',
                     )}
                   >
                     {isPositive ? (

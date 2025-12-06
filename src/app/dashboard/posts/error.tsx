@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
 import ButtonPrimary from '@/components/Button/ButtonPrimary';
+import { useEffect } from 'react';
 
 export default function ErrorBoundary({
   error,

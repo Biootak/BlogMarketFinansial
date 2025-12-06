@@ -1,11 +1,11 @@
 import type { Editor } from '@tiptap/core';
 import React, { memo, useCallback } from 'react';
 
-import { Toolbar } from '../../ui/toolbar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Icon } from '../../ui/icon';
+import { Toolbar } from '../../ui/toolbar';
 import { ColorPicker } from '../components/color-picker';
 import { useAttributes } from '../hooks/use-attributes';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 type MenuButtonColorProps = {
   editor: Editor;
@@ -25,10 +25,7 @@ const MenuButtonColor = ({ editor }: MenuButtonColorProps) => {
     <Popover>
       <PopoverTrigger asChild>
         <Toolbar.Button tooltip={'Text Color'} active={Boolean(textColor)}>
-          <Icon
-            name="palette"
-            style={{ color: textColor }}
-          />
+          <Icon name="palette" style={{ color: textColor }} />
         </Toolbar.Button>
       </PopoverTrigger>
 

@@ -1,6 +1,6 @@
-import type React from 'react';
 import ButtonPlayMusicPlayer from '@/components/ButtonPlayMusicPlayer';
 import type { PostWithRelations } from '@/types/types';
+import type React from 'react';
 
 interface MediaAudioProps {
   post: PostWithRelations;

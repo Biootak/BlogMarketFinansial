@@ -1,18 +1,18 @@
 'use client';
 
-import type React from 'react';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
+import type React from 'react';
 import {
-  HiOutlinePencilAlt,
-  HiOutlineEye,
-  HiOutlineDocumentText,
-  HiOutlinePlus,
   HiOutlineArrowLeft,
   HiOutlineChartBar,
   HiOutlineClock,
-  HiPencil,
+  HiOutlineDocumentText,
+  HiOutlineEye,
+  HiOutlinePencilAlt,
+  HiOutlinePlus,
   HiOutlineSparkles,
+  HiPencil,
 } from 'react-icons/hi';
 
 interface PostManagementProps {
@@ -47,23 +47,23 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const } 
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
   },
 };
 
 const PostManagement: React.FC<PostManagementProps> = ({ stats, popularPosts, recentDrafts }) => {
   return (
-    <motion.div 
+    <motion.div
       initial="hidden"
       animate="visible"
       variants={containerVariants}
       className="space-y-8"
     >
       {/* Header */}
-      <motion.div 
+      <motion.div
         variants={itemVariants}
         className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 lg:gap-5"
       >
@@ -83,8 +83,12 @@ const PostManagement: React.FC<PostManagementProps> = ({ stats, popularPosts, re
             </p>
           </div>
         </div>
-        
-        <motion.div whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }} className="w-full sm:w-auto">
+
+        <motion.div
+          whileHover={{ scale: 1.03, y: -2 }}
+          whileTap={{ scale: 0.97 }}
+          className="w-full sm:w-auto"
+        >
           <Link
             href="/dashboard/posts/create"
             className="group relative inline-flex items-center justify-center w-full sm:w-auto gap-2 sm:gap-2.5 lg:gap-3 px-4 sm:px-5 lg:px-6 py-2.5 sm:py-3 lg:py-3.5 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-sm overflow-hidden transition-all duration-300"
@@ -107,7 +111,7 @@ const PostManagement: React.FC<PostManagementProps> = ({ stats, popularPosts, re
       </motion.div>
 
       {/* Stats */}
-      <motion.div 
+      <motion.div
         variants={containerVariants}
         className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 lg:gap-5"
       >
@@ -128,17 +132,12 @@ const PostManagement: React.FC<PostManagementProps> = ({ stats, popularPosts, re
           />
         </motion.div>
         <motion.div variants={itemVariants}>
-          <StatCard 
-            icon={HiOutlineEye} 
-            title="بازدیدها" 
-            value={stats.totalViews} 
-            color="emerald" 
-          />
+          <StatCard icon={HiOutlineEye} title="بازدیدها" value={stats.totalViews} color="emerald" />
         </motion.div>
       </motion.div>
 
       {/* Posts Grid */}
-      <motion.div 
+      <motion.div
         variants={containerVariants}
         className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 lg:gap-6"
       >
@@ -181,14 +180,14 @@ const StatCard: React.FC<{
   color: 'violet' | 'blue' | 'emerald';
 }> = ({ icon: Icon, title, value, color }) => {
   const colors = colorClasses[color];
-  
+
   return (
     <motion.div
       whileHover={{ y: -6, scale: 1.02 }}
       transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
       className="group relative overflow-hidden"
     >
-      <div 
+      <div
         className={`relative bg-white dark:bg-slate-900 p-4 sm:p-5 lg:p-6 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 border-b-2 sm:border-b-4 ${colors.border} transition-all duration-500`}
         style={{
           boxShadow: `
@@ -199,25 +198,33 @@ const StatCard: React.FC<{
         }}
       >
         {/* Hover glow */}
-        <div 
+        <div
           className="absolute inset-0 rounded-2xl sm:rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-          style={{ background: `radial-gradient(circle at 70% 30%, ${colors.glow}, transparent 70%)` }}
+          style={{
+            background: `radial-gradient(circle at 70% 30%, ${colors.glow}, transparent 70%)`,
+          }}
         />
-        
+
         <div className="relative flex items-center justify-between">
           <div className="min-w-0">
-            <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium mb-1 sm:mb-1.5">{title}</p>
+            <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium mb-1 sm:mb-1.5">
+              {title}
+            </p>
             <p className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
               {value.toLocaleString('fa-IR')}
             </p>
           </div>
-          <motion.div 
+          <motion.div
             whileHover={{ scale: 1.1, rotate: 8 }}
             transition={{ type: 'spring', stiffness: 400, damping: 15 }}
             className="relative flex-shrink-0"
           >
-            <div className={`absolute inset-0 bg-gradient-to-br ${colors.iconBg} rounded-xl sm:rounded-2xl blur-lg opacity-40`} />
-            <div className={`relative p-2 sm:p-2.5 lg:p-3.5 rounded-xl sm:rounded-2xl bg-gradient-to-br ${colors.iconBg} text-white shadow-xl ${colors.iconShadow}`}>
+            <div
+              className={`absolute inset-0 bg-gradient-to-br ${colors.iconBg} rounded-xl sm:rounded-2xl blur-lg opacity-40`}
+            />
+            <div
+              className={`relative p-2 sm:p-2.5 lg:p-3.5 rounded-xl sm:rounded-2xl bg-gradient-to-br ${colors.iconBg} text-white shadow-xl ${colors.iconShadow}`}
+            >
               <Icon className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
             </div>
           </motion.div>
@@ -227,9 +234,8 @@ const StatCard: React.FC<{
   );
 };
 
-
 const PopularPosts: React.FC<{ posts: PostManagementProps['popularPosts'] }> = ({ posts }) => (
-  <div 
+  <div
     className="relative bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden group/card"
     style={{
       boxShadow: `
@@ -241,7 +247,7 @@ const PopularPosts: React.FC<{ posts: PostManagementProps['popularPosts'] }> = (
   >
     {/* Decorative gradient */}
     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500" />
-    
+
     {/* Header */}
     <div className="px-4 sm:px-5 lg:px-6 py-3 sm:py-4 lg:py-5 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50/50 to-white dark:from-slate-800/50 dark:to-slate-900">
       <div className="flex justify-between items-center gap-2">
@@ -271,7 +277,7 @@ const PopularPosts: React.FC<{ posts: PostManagementProps['popularPosts'] }> = (
         </Link>
       </div>
     </div>
-    
+
     {/* List */}
     <div className="p-3 sm:p-4">
       <ul className="space-y-1 sm:space-y-1.5">
@@ -287,7 +293,7 @@ const PopularPosts: React.FC<{ posts: PostManagementProps['popularPosts'] }> = (
               <div className="flex-shrink-0 flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 text-white text-xs sm:text-sm font-bold shadow-lg">
                 {index + 1}
               </div>
-              
+
               {/* Content */}
               <Link href={`/single/${post.slug}`} className="flex-grow min-w-0">
                 <h4 className="font-semibold text-xs sm:text-sm md:text-base text-slate-900 dark:text-white mb-0.5 line-clamp-1 group-hover:text-violet-700 dark:group-hover:text-violet-400 transition-colors duration-200">
@@ -300,7 +306,7 @@ const PopularPosts: React.FC<{ posts: PostManagementProps['popularPosts'] }> = (
                   <span className="truncate">{post.author}</span>
                 </div>
               </Link>
-              
+
               {/* Actions */}
               <div className="flex items-center gap-1 flex-shrink-0">
                 <Link
@@ -327,7 +333,7 @@ const PopularPosts: React.FC<{ posts: PostManagementProps['popularPosts'] }> = (
 );
 
 const RecentDrafts: React.FC<{ drafts: PostManagementProps['recentDrafts'] }> = ({ drafts }) => (
-  <div 
+  <div
     className="relative bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden group/card"
     style={{
       boxShadow: `
@@ -339,7 +345,7 @@ const RecentDrafts: React.FC<{ drafts: PostManagementProps['recentDrafts'] }> = 
   >
     {/* Decorative gradient */}
     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-500" />
-    
+
     {/* Header */}
     <div className="px-4 sm:px-5 lg:px-6 py-3 sm:py-4 lg:py-5 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50/50 to-white dark:from-slate-800/50 dark:to-slate-900">
       <div className="flex justify-between items-center gap-2">
@@ -369,7 +375,7 @@ const RecentDrafts: React.FC<{ drafts: PostManagementProps['recentDrafts'] }> = 
         </Link>
       </div>
     </div>
-    
+
     {/* List */}
     <div className="p-3 sm:p-4">
       <ul className="space-y-1 sm:space-y-1.5">
@@ -385,7 +391,7 @@ const RecentDrafts: React.FC<{ drafts: PostManagementProps['recentDrafts'] }> = 
               <div className="flex-shrink-0 flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
                 <HiOutlinePencilAlt className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               </div>
-              
+
               {/* Content */}
               <Link href={`/dashboard/posts/edit/${draft.id}`} className="flex-grow min-w-0">
                 <h4 className="font-semibold text-xs sm:text-sm md:text-base text-slate-900 dark:text-white mb-0.5 line-clamp-1 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors duration-200">
@@ -398,7 +404,7 @@ const RecentDrafts: React.FC<{ drafts: PostManagementProps['recentDrafts'] }> = 
                   <span className="truncate">{draft.author}</span>
                 </div>
               </Link>
-              
+
               {/* Edit Button */}
               <Link
                 href={`/dashboard/posts/edit/${draft.id}`}

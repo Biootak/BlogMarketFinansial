@@ -1,7 +1,7 @@
 'use client';
 
-import { Award, Eye, FileText, TrendingUp } from 'lucide-react';
 import type { TopAuthor } from '@/actions/reportActions';
+import { Award, Eye, FileText, TrendingUp } from 'lucide-react';
 
 interface TopAuthorsTableProps {
   data: TopAuthor[];
@@ -59,9 +59,7 @@ export function TopAuthorsTable({ data, isLoading = false }: TopAuthorsTableProp
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-200">
-              <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600">
-                رتبه
-              </th>
+              <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600">رتبه</th>
               <th className="text-right py-3 px-4 text-xs font-semibold text-gray-600">
                 نام نویسنده
               </th>
@@ -99,9 +97,7 @@ export function TopAuthorsTable({ data, isLoading = false }: TopAuthorsTableProp
                 </td>
                 <td className="py-4 px-4">
                   <div>
-                    <p className="text-sm font-semibold text-gray-900">
-                      {author.name || 'ناشناس'}
-                    </p>
+                    <p className="text-sm font-semibold text-gray-900">{author.name || 'ناشناس'}</p>
                     <p className="text-xs text-gray-500">{author.email}</p>
                   </div>
                 </td>
@@ -174,14 +170,18 @@ export function TopAuthorsTable({ data, isLoading = false }: TopAuthorsTableProp
               </div>
               <div className="text-center p-1.5 sm:p-2 bg-white rounded-md sm:rounded-lg">
                 <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500 mx-auto mb-0.5 sm:mb-1" />
-                <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1 truncate">بازدید</p>
+                <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1 truncate">
+                  بازدید
+                </p>
                 <p className="text-xs sm:text-sm font-semibold text-gray-900 truncate">
                   {author.totalViews.toLocaleString('fa-IR')}
                 </p>
               </div>
               <div className="text-center p-1.5 sm:p-2 bg-white rounded-md sm:rounded-lg">
                 <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-500 mx-auto mb-0.5 sm:mb-1" />
-                <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1 truncate">میانگین</p>
+                <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1 truncate">
+                  میانگین
+                </p>
                 <p className="text-xs sm:text-sm font-semibold text-gray-900 truncate">
                   {author.averageViews.toLocaleString('fa-IR')}
                 </p>

@@ -1,10 +1,10 @@
 'use server';
 
+import { auth } from '@/auth';
 import prisma from '@/lib/db';
+import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { z } from 'zod';
-import { auth } from '@/auth';
-import { revalidatePath } from 'next/cache';
 
 // Service type labels
 const serviceTypeLabels: Record<string, string> = {
@@ -48,7 +48,11 @@ function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
 
 // Sanitize input
 function sanitizeInput(input: string): string {
-  return input.replace(/[<>]/g, '').replace(/javascript:/gi, '').replace(/on\w+=/gi, '').trim();
+  return input
+    .replace(/[<>]/g, '')
+    .replace(/javascript:/gi, '')
+    .replace(/on\w+=/gi, '')
+    .trim();
 }
 
 // Send Telegram notification to admin
@@ -83,8 +87,17 @@ async function sendTelegramNotification(message: string): Promise<boolean> {
 // Validation schema
 const ServiceRequestInputSchema = z.object({
   fullName: z.string().min(3).max(100).transform(sanitizeInput),
-  phone: z.string().min(10).max(15).regex(/^[0-9+]+$/),
-  email: z.string().email().optional().or(z.literal('')).transform((val) => val || null),
+  phone: z
+    .string()
+    .min(10)
+    .max(15)
+    .regex(/^[0-9+]+$/),
+  email: z
+    .string()
+    .email()
+    .optional()
+    .or(z.literal(''))
+    .transform((val) => val || null),
   serviceType: z.enum([
     'INTERNATIONAL_TRANSFER',
     'ONLINE_PAYMENT',
@@ -95,9 +108,19 @@ const ServiceRequestInputSchema = z.object({
   ]),
   amount: z.string().min(1).max(50).transform(sanitizeInput),
   currency: z.string().min(1).max(10),
-  destinationCountry: z.string().optional().transform((val) => val || null),
-  bankName: z.string().optional().transform((val) => val || null),
-  description: z.string().max(500).optional().transform((val) => (val ? sanitizeInput(val) : null)),
+  destinationCountry: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  bankName: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  description: z
+    .string()
+    .max(500)
+    .optional()
+    .transform((val) => (val ? sanitizeInput(val) : null)),
   urgency: z.enum(['NORMAL', 'URGENT']).default('NORMAL'),
   contactMethod: z.enum(['telegram', 'whatsapp']),
 });
@@ -111,10 +134,15 @@ export interface ServiceRequestResult {
   error?: string;
 }
 
-export async function createServiceRequest(input: ServiceRequestInput): Promise<ServiceRequestResult> {
+export async function createServiceRequest(
+  input: ServiceRequestInput,
+): Promise<ServiceRequestResult> {
   try {
     const headersList = await headers();
-    const ip = headersList.get('x-forwarded-for')?.split(',')[0] || headersList.get('x-real-ip') || 'unknown';
+    const ip =
+      headersList.get('x-forwarded-for')?.split(',')[0] ||
+      headersList.get('x-real-ip') ||
+      'unknown';
     const userAgent = headersList.get('user-agent') || 'unknown';
 
     // Rate limiting
@@ -130,7 +158,11 @@ export async function createServiceRequest(input: ServiceRequestInput): Promise<
     // Validate
     const validationResult = ServiceRequestInputSchema.safeParse(input);
     if (!validationResult.success) {
-      return { success: false, message: validationResult.error.errors[0].message, error: 'VALIDATION_ERROR' };
+      return {
+        success: false,
+        message: validationResult.error.errors[0].message,
+        error: 'VALIDATION_ERROR',
+      };
     }
 
     const data = validationResult.data;
@@ -139,7 +171,12 @@ export async function createServiceRequest(input: ServiceRequestInput): Promise<
     // Check duplicates
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
     const duplicate = await prisma.serviceRequest.findFirst({
-      where: { phone: data.phone, amount: data.amount, currency: data.currency, createdAt: { gte: oneHourAgo } },
+      where: {
+        phone: data.phone,
+        amount: data.amount,
+        currency: data.currency,
+        createdAt: { gte: oneHourAgo },
+      },
     });
 
     if (duplicate) {
@@ -152,7 +189,7 @@ export async function createServiceRequest(input: ServiceRequestInput): Promise<
     }
 
     // Create request
-    const serviceRequest = await prisma.serviceRequest.create({
+    const _serviceRequest = await prisma.serviceRequest.create({
       data: {
         trackingCode,
         fullName: data.fullName,
@@ -193,7 +230,11 @@ ${data.description ? `📝 توضیحات: ${data.description}` : ''}
 
     // Log
     await prisma.systemLog.create({
-      data: { level: 'INFO', message: `New service request: ${trackingCode}`, source: 'ServiceRequest' },
+      data: {
+        level: 'INFO',
+        message: `New service request: ${trackingCode}`,
+        source: 'ServiceRequest',
+      },
     });
 
     return { success: true, trackingCode, message: 'درخواست شما با موفقیت ثبت شد.' };
@@ -283,7 +324,7 @@ export async function getServiceRequests(params?: {
 export async function updateServiceRequestStatus(
   id: string,
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED',
-  adminNotes?: string
+  adminNotes?: string,
 ) {
   const session = await auth();
   if (!session?.user || !['ADMIN', 'SUPER_ADMIN'].includes(session.user.role as string)) {
@@ -356,7 +397,6 @@ export async function getServiceRequestStats() {
   }
 }
 
-
 // Get support links for contact form
 export async function getSupportContactLinks() {
   try {
@@ -364,13 +404,11 @@ export async function getSupportContactLinks() {
       where: { isActive: true, type: 'SUPPORT' },
     });
 
-    const telegram = links.find((l) =>
-      ['telegram', 'تلگرام'].includes(l.name.toLowerCase())
-    )?.url || null;
+    const telegram =
+      links.find((l) => ['telegram', 'تلگرام'].includes(l.name.toLowerCase()))?.url || null;
 
-    const whatsapp = links.find((l) =>
-      ['whatsapp', 'واتساپ'].includes(l.name.toLowerCase())
-    )?.url || null;
+    const whatsapp =
+      links.find((l) => ['whatsapp', 'واتساپ'].includes(l.name.toLowerCase()))?.url || null;
 
     return {
       success: true,

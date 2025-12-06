@@ -6,15 +6,15 @@ import type {
   Role,
   SocialType,
 } from '@/types/types';
+import type { Prisma } from '@prisma/client';
+import type { JSONContent } from '@tiptap/core';
 import { type ClassValue, clsx } from 'clsx';
-import type { Session } from 'next-auth';
-import { twMerge } from 'tailwind-merge';
-import { auth } from '../auth';
-import { redirect } from 'next/navigation';
 import DOMPurify from 'dompurify';
 import { customAlphabet } from 'nanoid';
-import type { JSONContent } from '@tiptap/core';
-import { Prisma } from '@prisma/client';
+import type { Session } from 'next-auth';
+import { redirect } from 'next/navigation';
+import { twMerge } from 'tailwind-merge';
+import { auth } from '../auth';
 import { persianToEnglishDictionary } from './persian-dictionary';
 
 const coinMarketCapUrlMap: { [key: string]: string } = {
@@ -84,7 +84,7 @@ export async function checkRole(requiredRoles: Role[]) {
   }
 
   const userRole = session.user.role as Role;
-  
+
   // SUPER_ADMIN has access to everything
   if (userRole === 'SUPER_ADMIN') {
     return session;
@@ -93,7 +93,7 @@ export async function checkRole(requiredRoles: Role[]) {
   if (!requiredRoles.includes(userRole)) {
     redirect('/unauthorized');
   }
-  
+
   return session;
 }
 
@@ -111,17 +111,67 @@ export const generateUniqueId = customAlphabet('1234567890abcdef', 10);
 
 // نویسه‌گردانی فارسی به انگلیسی (Transliteration) - برای کلماتی که در دیکشنری نیستند
 const persianToEnglishMap: Record<string, string> = {
-  'ا': 'a', 'آ': 'a', 'ب': 'b', 'پ': 'p', 'ت': 't', 'ث': 's',
-  'ج': 'j', 'چ': 'ch', 'ح': 'h', 'خ': 'kh', 'د': 'd', 'ذ': 'z',
-  'ر': 'r', 'ز': 'z', 'ژ': 'zh', 'س': 's', 'ش': 'sh', 'ص': 's',
-  'ض': 'z', 'ط': 't', 'ظ': 'z', 'ع': 'a', 'غ': 'gh', 'ف': 'f',
-  'ق': 'gh', 'ک': 'k', 'گ': 'g', 'ل': 'l', 'م': 'm', 'ن': 'n',
-  'و': 'o', 'ه': 'h', 'ی': 'i', 'ي': 'i', 'ئ': 'i', 'ء': '',
-  'ة': 'h', 'ؤ': 'o', 'إ': 'e', 'أ': 'a', 'ـ': '',
-  '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4',
-  '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9',
-  '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
-  '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9',
+  ا: 'a',
+  آ: 'a',
+  ب: 'b',
+  پ: 'p',
+  ت: 't',
+  ث: 's',
+  ج: 'j',
+  چ: 'ch',
+  ح: 'h',
+  خ: 'kh',
+  د: 'd',
+  ذ: 'z',
+  ر: 'r',
+  ز: 'z',
+  ژ: 'zh',
+  س: 's',
+  ش: 'sh',
+  ص: 's',
+  ض: 'z',
+  ط: 't',
+  ظ: 'z',
+  ع: 'a',
+  غ: 'gh',
+  ف: 'f',
+  ق: 'gh',
+  ک: 'k',
+  گ: 'g',
+  ل: 'l',
+  م: 'm',
+  ن: 'n',
+  و: 'o',
+  ه: 'h',
+  ی: 'i',
+  ي: 'i',
+  ئ: 'i',
+  ء: '',
+  ة: 'h',
+  ؤ: 'o',
+  إ: 'e',
+  أ: 'a',
+  ـ: '',
+  '۰': '0',
+  '۱': '1',
+  '۲': '2',
+  '۳': '3',
+  '۴': '4',
+  '۵': '5',
+  '۶': '6',
+  '۷': '7',
+  '۸': '8',
+  '۹': '9',
+  '٠': '0',
+  '١': '1',
+  '٢': '2',
+  '٣': '3',
+  '٤': '4',
+  '٥': '5',
+  '٦': '6',
+  '٧': '7',
+  '٨': '8',
+  '٩': '9',
 };
 
 // تبدیل یک کلمه فارسی به انگلیسی
@@ -145,11 +195,11 @@ const translateWord = (word: string): string => {
 
 export const generateSlug = (title: string): string => {
   // جدا کردن کلمات با فاصله و نیم‌فاصله
-  const words = title.split(/[\s\u200C]+/).filter(w => w.length > 0);
-  
+  const words = title.split(/[\s\u200C]+/).filter((w) => w.length > 0);
+
   // ترجمه هر کلمه
-  const translatedWords = words.map(translateWord).filter(w => w.length > 0);
-  
+  const translatedWords = words.map(translateWord).filter((w) => w.length > 0);
+
   // اتصال کلمات با خط فاصله
   let slug = translatedWords.join('-');
 
@@ -211,29 +261,92 @@ export function sanitizeHtml(html: string): string {
   const clean = DOMPurify.sanitize(html, {
     ALLOWED_TAGS: [
       // Text formatting
-      'p', 'br', 'strong', 'em', 'u', 's', 'mark', 'sub', 'sup', 'span',
+      'p',
+      'br',
+      'strong',
+      'em',
+      'u',
+      's',
+      'mark',
+      'sub',
+      'sup',
+      'span',
       // Headings
-      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'h6',
       // Lists
-      'ol', 'ul', 'li',
+      'ol',
+      'ul',
+      'li',
       // Links & Media
-      'a', 'img', 'figure', 'figcaption', 'video', 'audio', 'source', 'iframe',
+      'a',
+      'img',
+      'figure',
+      'figcaption',
+      'video',
+      'audio',
+      'source',
+      'iframe',
       // Tables
-      'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption', 'colgroup', 'col',
+      'table',
+      'thead',
+      'tbody',
+      'tfoot',
+      'tr',
+      'th',
+      'td',
+      'caption',
+      'colgroup',
+      'col',
       // Code
-      'pre', 'code', 'kbd', 'samp',
+      'pre',
+      'code',
+      'kbd',
+      'samp',
       // Quotes & Blocks
-      'blockquote', 'q', 'cite', 'hr', 'div',
+      'blockquote',
+      'q',
+      'cite',
+      'hr',
+      'div',
       // Details
-      'details', 'summary',
+      'details',
+      'summary',
     ],
     ALLOWED_ATTR: [
-      'href', 'target', 'rel', 'src', 'alt', 'title', 'class', 'id',
-      'width', 'height', 'style', 'data-*',
-      'colspan', 'rowspan', 'scope', 'headers',
-      'controls', 'autoplay', 'loop', 'muted', 'poster',
-      'frameborder', 'allowfullscreen', 'allow',
-      'dir', 'lang', 'start', 'type', 'value',
+      'href',
+      'target',
+      'rel',
+      'src',
+      'alt',
+      'title',
+      'class',
+      'id',
+      'width',
+      'height',
+      'style',
+      'data-*',
+      'colspan',
+      'rowspan',
+      'scope',
+      'headers',
+      'controls',
+      'autoplay',
+      'loop',
+      'muted',
+      'poster',
+      'frameborder',
+      'allowfullscreen',
+      'allow',
+      'dir',
+      'lang',
+      'start',
+      'type',
+      'value',
     ],
     ALLOW_DATA_ATTR: true,
     // جلوگیری از javascript: URLs

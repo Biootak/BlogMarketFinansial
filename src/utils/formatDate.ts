@@ -22,4 +22,3 @@ export function formatDate(date: Date | string | number | undefined): string {
     hour12: false,
   }).format(d);
 }
-

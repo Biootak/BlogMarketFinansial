@@ -1,10 +1,10 @@
-import React from 'react';
-import SectionHero from '@/components/SectionHero/SectionHero';
-import rightImg from '@/images/about-hero-right.png';
-import SectionStatistic from './SectionStatistic';
-import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
-import BgGlassmorphism from '@/components/BgGlassmorphism/BgGlassmorphism';
 import BackgroundSection from '@/components/BackgroundSection/BackgroundSection';
+import BgGlassmorphism from '@/components/BgGlassmorphism/BgGlassmorphism';
+import SectionHero from '@/components/SectionHero/SectionHero';
+import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
+import rightImg from '@/images/about-hero-right.png';
+import React from 'react';
+import SectionStatistic from './SectionStatistic';
 
 const PageAbout = () => {
   return (

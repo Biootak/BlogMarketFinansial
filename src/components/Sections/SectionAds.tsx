@@ -1,5 +1,5 @@
-import type React from 'react';
 import type { Advertisement } from '@/types/types';
+import type React from 'react';
 import LargeAd from '../BannerADS/LargeAd';
 
 interface SectionAdsProps {

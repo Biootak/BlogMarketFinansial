@@ -1,15 +1,15 @@
 'use server';
 
-import { cache } from 'react';
+import { logActivity } from '@/lib/activity-logger';
 import prisma from '@/lib/db';
 import { generateColor, generateSlug, validateSlug } from '@/lib/utils';
-import { logActivity } from '@/lib/activity-logger';
 import type {
   ActionResult,
-  TaxonomyType,
   CreateCategoryInput,
+  TaxonomyType,
   UpdateCategoryInput,
 } from '@/types/types';
+import { cache } from 'react';
 
 export const getCategories = cache(
   async (
@@ -362,7 +362,7 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
     }
 
     const categoryName = category.name;
-    
+
     await prisma.category.delete({
       where: { id },
     });

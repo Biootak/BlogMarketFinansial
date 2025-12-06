@@ -20,11 +20,11 @@ export const defaultTouchConfig: TouchConfig = {
  */
 export function ensureTouchTarget(element: HTMLElement, minSize = 44): void {
   const rect = element.getBoundingClientRect();
-  
+
   if (rect.width < minSize || rect.height < minSize) {
     console.warn(
       `Touch target too small: ${rect.width}x${rect.height}px. Minimum: ${minSize}x${minSize}px`,
-      element
+      element,
     );
   }
 }
@@ -35,10 +35,10 @@ export function ensureTouchTarget(element: HTMLElement, minSize = 44): void {
 export function addPassiveListener(
   element: HTMLElement,
   event: string,
-  handler: EventListener
+  handler: EventListener,
 ): () => void {
   element.addEventListener(event, handler, { passive: true });
-  
+
   return () => {
     element.removeEventListener(event, handler);
   };
@@ -50,7 +50,7 @@ export function addPassiveListener(
 export function handleSwipe(
   element: HTMLElement,
   onSwipe: (direction: 'left' | 'right' | 'up' | 'down') => void,
-  threshold = 50
+  threshold = 50,
 ): () => void {
   let startX = 0;
   let startY = 0;
@@ -102,7 +102,7 @@ export function handleSwipe(
  */
 export function isTouchDevice(): boolean {
   if (typeof window === 'undefined') return false;
-  
+
   return (
     'ontouchstart' in window ||
     navigator.maxTouchPoints > 0 ||
@@ -137,7 +137,7 @@ export function getOptimalInputType(type: string): string {
 export function addTapFeedback(
   element: HTMLElement,
   onTap: () => void,
-  maxDelay = 100
+  maxDelay = 100,
 ): () => void {
   let tapStartTime = 0;
 

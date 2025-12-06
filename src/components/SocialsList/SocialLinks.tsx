@@ -1,6 +1,6 @@
+import { getSocialLinks } from '@/actions/socialLinkActions';
 import * as motion from 'framer-motion/client';
 import Image from 'next/image';
-import { getSocialLinks } from '@/actions/socialLinkActions';
 
 interface SocialLinksProps {
   className?: string;

@@ -1,9 +1,9 @@
 import React from 'react';
 
-import { HiCheck } from 'react-icons/hi2';
 import ButtonPrimary from '@/components/Button/ButtonPrimary';
 import ButtonSecondary from '@/components/Button/ButtonSecondary';
 import Heading2 from '@/components/Heading/Heading2';
+import { HiCheck } from 'react-icons/hi2';
 
 export interface PricingItem {
   isPopular: boolean;
@@ -21,7 +21,7 @@ const pricings: PricingItem[] = [
     pricing: '۵ دلار',
     per: 'ماهانه',
     features: ['گزارش‌دهی خودکار', 'پردازش سریع‌تر', 'سفارشی‌سازی'],
-    desc: ` این طرح برای شروع کار شما مناسب است.`,
+    desc: ' این طرح برای شروع کار شما مناسب است.',
   },
   {
     isPopular: true,
@@ -29,7 +29,7 @@ const pricings: PricingItem[] = [
     pricing: '۱۵ دلار',
     per: 'ماهانه',
     features: ['همه امکانات طرح استارتر', '۱۰۰ ساخت', 'گزارش‌های پیشرفت', 'پشتیبانی ویژه'],
-    desc: ` این طرح محبوب‌ترین طرح ما است و برای اکثر کسب‌وکارها مناسب است.`,
+    desc: ' این طرح محبوب‌ترین طرح ما است و برای اکثر کسب‌وکارها مناسب است.',
   },
   {
     isPopular: false,
@@ -37,7 +37,7 @@ const pricings: PricingItem[] = [
     pricing: '۲۵ دلار',
     per: 'ماهانه',
     features: ['همه امکانات طرح پایه', 'ساخت نامحدود', 'تجزیه و تحلیل پیشرفته', 'ارزیابی شرکت'],
-    desc: ` این طرح برای کسب‌وکارهای بزرگ و با نیازهای پیشرفته مناسب است.`,
+    desc: ' این طرح برای کسب‌وکارهای بزرگ و با نیازهای پیشرفته مناسب است.',
   },
 ];
 

@@ -1,9 +1,9 @@
 'use client';
 
-import type React from 'react';
-import { motion } from 'framer-motion';
 import Card11 from '@/components/Card11/Card11';
 import type { PostWithRelations } from '@/types/types';
+import { motion } from 'framer-motion';
+import type React from 'react';
 
 type AnimatedPostGridProps = {
   posts: PostWithRelations[];
@@ -42,13 +42,13 @@ const AnimatedPostGrid: React.FC<AnimatedPostGridProps> = ({ posts }) => {
       initial="hidden"
       animate="visible"
     >
-      {posts.map((post, index) => (
+      {posts.map((post, _index) => (
         <motion.div
           key={post.id}
           variants={itemVariants}
-          whileHover={{ 
+          whileHover={{
             y: -8,
-            transition: { type: 'spring', stiffness: 300, damping: 20 }
+            transition: { type: 'spring', stiffness: 300, damping: 20 },
           }}
           whileTap={{ scale: 0.98 }}
           className="group"

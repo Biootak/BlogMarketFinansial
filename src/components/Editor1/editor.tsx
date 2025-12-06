@@ -1,16 +1,16 @@
 'use client';
 
-import React, { forwardRef, useEffect, useImperativeHandle, useCallback } from 'react';
 import { EditorContent, type EditorOptions, useEditor } from '@tiptap/react';
-import { extensions as builtInExtensions } from './extensions';
+import React, { forwardRef, useEffect, useImperativeHandle, useCallback } from 'react';
+import type { EditorInstance } from '.';
 import FixedMenu from './components/fixed-menu';
+import FloatingMenuComponent from './components/floating-menu';
 import LinkBubbleMenu from './components/link-bubble-menu';
 import TableContextMenu from './components/table-context-menu';
-import FloatingMenuComponent from './components/floating-menu';
-import TextBubbleMenu from './components/text-bubble-menu';
 import TableToolbar from './components/table-toolbar';
-import type { EditorInstance } from '.';
-import { getToCItems, type TocItem } from './lib/table-of-contents';
+import TextBubbleMenu from './components/text-bubble-menu';
+import { extensions as builtInExtensions } from './extensions';
+import { type TocItem, getToCItems } from './lib/table-of-contents';
 
 import './styles/index.scss';
 
@@ -77,14 +77,14 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
 
     useEffect(() => {
       if (!editor || editor.isDestroyed || editor.isEditable === editable) return;
-      
+
       // استفاده از setTimeout به جای queueMicrotask برای جلوگیری از flushSync error
       const timeoutId = setTimeout(() => {
         if (!editor.isDestroyed) {
           editor.setEditable(editable);
         }
       }, 0);
-      
+
       return () => clearTimeout(timeoutId);
     }, [editable, editor]);
 
@@ -111,38 +111,41 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
     }, [editor, localStorageKey]);
 
     // تشخیص نوع محتوا و parse کردن آن
-    const parseContent = useCallback((rawContent: string | object | undefined): string | object | null => {
-      if (!rawContent) return null;
-      
-      if (typeof rawContent !== 'string') {
-        return rawContent;
-      }
+    const parseContent = useCallback(
+      (rawContent: string | object | undefined): string | object | null => {
+        if (!rawContent) return null;
 
-      const trimmed = rawContent.trim();
-      if (!trimmed) return null;
+        if (typeof rawContent !== 'string') {
+          return rawContent;
+        }
 
-      // اگر با < شروع شود، HTML است
-      if (trimmed.startsWith('<')) {
-        return trimmed;
-      }
+        const trimmed = rawContent.trim();
+        if (!trimmed) return null;
 
-      // اگر با { یا [ شروع شود، JSON است
-      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
-        try {
-          return JSON.parse(trimmed);
-        } catch (error) {
-          console.warn('Failed to parse content as JSON:', error);
+        // اگر با < شروع شود، HTML است
+        if (trimmed.startsWith('<')) {
           return trimmed;
         }
-      }
 
-      return trimmed;
-    }, []);
+        // اگر با { یا [ شروع شود، JSON است
+        if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+          try {
+            return JSON.parse(trimmed);
+          } catch (error) {
+            console.warn('Failed to parse content as JSON:', error);
+            return trimmed;
+          }
+        }
+
+        return trimmed;
+      },
+      [],
+    );
 
     // بارگذاری محتوای اولیه - فقط یک بار وقتی ادیتور آماده شد
     const initialContentLoadedRef = React.useRef(false);
     const contentRef = React.useRef(content);
-    
+
     useEffect(() => {
       // به‌روزرسانی ref برای مقایسه
       contentRef.current = content;
@@ -150,10 +153,10 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
 
     useEffect(() => {
       if (!editor || editor.isDestroyed) return;
-      
+
       // اگر قبلاً محتوا بارگذاری شده و محتوای جدید همان است، کاری نکن
       if (initialContentLoadedRef.current && content === contentRef.current) return;
-      
+
       // فقط یک بار محتوا را بارگذاری کن
       if (!initialContentLoadedRef.current && content) {
         initialContentLoadedRef.current = true;
@@ -165,7 +168,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
               editor.commands.setContent(parsedContent);
             }
           }, 0);
-          
+
           return () => clearTimeout(timeoutId);
         }
       }

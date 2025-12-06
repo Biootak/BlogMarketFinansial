@@ -1,8 +1,8 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import type { LucideIcon } from 'lucide-react';
 import { ReportCard } from './ReportCard';
-import { LucideIcon } from 'lucide-react';
 
 export interface ReportTab {
   id: string;

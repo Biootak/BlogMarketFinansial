@@ -57,7 +57,7 @@ const inMemoryStore = new Map<string, { count: number; resetTime: number }>();
 
 export async function checkRateLimit(
   identifier: string,
-  type: keyof typeof rateLimiters = 'api'
+  type: keyof typeof rateLimiters = 'api',
 ): Promise<{ success: boolean; remaining: number; reset: number }> {
   const limiter = rateLimiters[type];
 
@@ -99,7 +99,11 @@ export async function checkRateLimit(
 
 // پاکسازی حافظه (برای in-memory) - فقط در Node.js runtime
 // در Edge runtime این کد اجرا نمیشه
-if (typeof globalThis.setInterval !== 'undefined' && typeof process !== 'undefined' && process.env.NEXT_RUNTIME !== 'edge') {
+if (
+  typeof globalThis.setInterval !== 'undefined' &&
+  typeof process !== 'undefined' &&
+  process.env.NEXT_RUNTIME !== 'edge'
+) {
   setInterval(() => {
     const now = Date.now();
     for (const [key, value] of inMemoryStore.entries()) {

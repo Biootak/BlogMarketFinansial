@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getPostsByAuthor } from '@/actions/getPostsByAuthor';
+import Card11 from '@/components/Card11/Card11';
+import Empty from '@/components/Empty';
+import Pagination from '@/components/Pagination/Pagination';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -9,12 +11,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { getPostsByAuthor } from '@/actions/getPostsByAuthor';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { PostWithRelations } from '@/types/types';
-import Pagination from '@/components/Pagination/Pagination';
-import Card11 from '@/components/Card11/Card11';
 import { ChevronDown, Filter } from 'lucide-react';
-import Empty from '@/components/Empty';
+import { useState } from 'react';
 
 const TABS = ['مقالات', 'مورد علاقه‌ها', 'ذخیره شده‌ها'];
 const FILTERS = [

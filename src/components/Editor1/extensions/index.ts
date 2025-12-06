@@ -1,32 +1,32 @@
-import StarterKit from '@tiptap/starter-kit';
-import Underline from '@tiptap/extension-underline';
+import CharacterCount from '@tiptap/extension-character-count';
 import Color from '@tiptap/extension-color';
 import Highlight from '@tiptap/extension-highlight';
-import TextStyle from '@tiptap/extension-text-style';
-import TextAlign from '@tiptap/extension-text-align';
 import Placeholder from '@tiptap/extension-placeholder';
-import CharacterCount from '@tiptap/extension-character-count';
-import Superscript from '@tiptap/extension-superscript';
 import Subscript from '@tiptap/extension-subscript';
+import Superscript from '@tiptap/extension-superscript';
+import TextAlign from '@tiptap/extension-text-align';
+import TextStyle from '@tiptap/extension-text-style';
+import Underline from '@tiptap/extension-underline';
+import StarterKit from '@tiptap/starter-kit';
 
-import Link from './link';
-import Image from './image-resize';
-import CodeBlockLowlight from './code-block-lowlight/code-block-lowlight';
-import Heading from './heading';
-import { tableExtensions } from './table';
-import { taskExtensions } from './task-list';
-import { SlashCommands } from './slash-commands';
 import slashCommandsSuggestion from '../lib/slash-commands-suggestion';
 import { Callout } from './callout';
-import { Embed } from './embed';
+import CodeBlockLowlight from './code-block-lowlight/code-block-lowlight';
 import { detailsExtensions } from './details';
+import { DragHandle } from './drag-handle';
+import { Embed } from './embed';
+import { FontFamily } from './font-family';
+import { FontSize } from './font-size';
+import Heading from './heading';
+import Image from './image-resize';
+import { KeyboardShortcuts } from './keyboard-shortcuts';
+import Link from './link';
 import { Math } from './math';
 import { Mention, mentionSuggestion } from './mention';
-import { FontSize } from './font-size';
-import { FontFamily } from './font-family';
-import { DragHandle } from './drag-handle';
-import { KeyboardShortcuts } from './keyboard-shortcuts';
 import { Paragraph } from './paragraph';
+import { SlashCommands } from './slash-commands';
+import { tableExtensions } from './table';
+import { taskExtensions } from './task-list';
 
 export const extensions = [
   Image,

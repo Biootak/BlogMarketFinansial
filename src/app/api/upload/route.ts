@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import sharp from 'sharp';
 import { uploadFile } from '@/lib/storage';
+import { type NextRequest, NextResponse } from 'next/server';
+import sharp from 'sharp';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
     if (!checkRateLimit(session.user.id)) {
       return NextResponse.json(
         { error: 'تعداد درخواست‌های شما بیش از حد مجاز است' },
-        { status: 429 }
+        { status: 429 },
       );
     }
 
@@ -161,9 +161,8 @@ export async function POST(request: NextRequest) {
 
       const optimizedBuffer = await optimizeImage(buffer, file.type);
       const filename = generateFilename(file.name, file.type);
-      const contentType = file.type === 'image/gif' || file.type === 'image/svg+xml'
-        ? file.type
-        : 'image/webp';
+      const contentType =
+        file.type === 'image/gif' || file.type === 'image/svg+xml' ? file.type : 'image/webp';
 
       const result = await uploadFile(optimizedBuffer, filename, folder, contentType);
       results.push(result);

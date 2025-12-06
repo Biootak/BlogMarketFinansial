@@ -1,19 +1,19 @@
 'use client';
 
+import { type ReportData, getComparisonData, getReportData } from '@/actions/reportActions';
+import { toast } from '@/components/ui/use-toast';
+import { cn } from '@/lib/utils';
+import { Eye, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { getReportData, getComparisonData, type ReportData } from '@/actions/reportActions';
-import { KPICards } from './KPICards';
-import { TrendChart } from './TrendChart';
 import { CategoryDistribution } from './CategoryDistribution';
-import { TopPostsTable } from './TopPostsTable';
-import { TopAuthorsTable } from './TopAuthorsTable';
+import { DatabaseStatus } from './DatabaseStatus';
 import { DateRangePicker } from './DateRangePicker';
 import { ExportButton } from './ExportButton';
+import { KPICards } from './KPICards';
 import { ReportErrorBoundary } from './ReportErrorBoundary';
-import { DatabaseStatus } from './DatabaseStatus';
-import { toast } from '@/components/ui/use-toast';
-import { RefreshCw, TrendingUp, TrendingDown, Eye } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { TopAuthorsTable } from './TopAuthorsTable';
+import { TopPostsTable } from './TopPostsTable';
+import { TrendChart } from './TrendChart';
 
 export function ComprehensiveReportView() {
   const [data, setData] = useState<ReportData | null>(null);
@@ -31,18 +31,20 @@ export function ComprehensiveReportView() {
 
   const fetchData = async () => {
     setIsLoading(true);
-    
+
     // Check if this is a large date range
-    const daysDiff = Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
+    const daysDiff = Math.ceil(
+      (dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24),
+    );
     const isLargeRange = daysDiff > 365;
-    
+
     if (isLargeRange) {
       toast({
         title: 'در حال پردازش...',
         description: 'بازه زمانی بزرگ است، لطفاً صبر کنید',
       });
     }
-    
+
     try {
       const [reportResult, comparisonResult] = await Promise.all([
         getReportData(dateRange),
@@ -62,7 +64,7 @@ export function ComprehensiveReportView() {
       if (comparisonResult.success && comparisonResult.data) {
         setComparison(comparisonResult.data);
       }
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'خطا',
         description: 'خطا در دریافت گزارش‌ها',
@@ -91,9 +93,7 @@ export function ComprehensiveReportView() {
         <div className="flex flex-col gap-4">
           <div>
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900">گزارش جامع</h2>
-            <p className="text-xs sm:text-sm text-gray-500 mt-1">
-              آمار و تحلیل کامل عملکرد سیستم
-            </p>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">آمار و تحلیل کامل عملکرد سیستم</p>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             <div className="flex-1 min-w-0">
@@ -108,7 +108,7 @@ export function ComprehensiveReportView() {
                   'p-2 sm:p-2.5 border rounded-lg sm:rounded-xl transition-colors flex-shrink-0',
                   showComparison
                     ? 'bg-blue-600 border-blue-600 text-white'
-                    : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                    : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50',
                 )}
                 title={showComparison ? 'مخفی کردن مقایسه' : 'نمایش مقایسه'}
               >
@@ -124,7 +124,7 @@ export function ComprehensiveReportView() {
                       description: 'کش پاک شد، در حال بروزرسانی...',
                     });
                     handleRefresh();
-                  } catch (error) {
+                  } catch (_error) {
                     toast({
                       title: 'خطا',
                       description: 'خطا در پاک کردن کش',
@@ -136,7 +136,9 @@ export function ComprehensiveReportView() {
                 className="p-2 sm:p-2.5 bg-white border border-gray-200 rounded-lg sm:rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50 flex-shrink-0"
                 title="پاک کردن کش و بروزرسانی"
               >
-                <RefreshCw className={cn('w-4 h-4 sm:w-5 sm:h-5 text-gray-600', isLoading && 'animate-spin')} />
+                <RefreshCw
+                  className={cn('w-4 h-4 sm:w-5 sm:h-5 text-gray-600', isLoading && 'animate-spin')}
+                />
               </button>
             </div>
           </div>
@@ -148,7 +150,9 @@ export function ComprehensiveReportView() {
             <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1 truncate">رشد کاربران</p>
+                  <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1 truncate">
+                    رشد کاربران
+                  </p>
                   <p className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
                     {comparison.userGrowth.toFixed(1)}%
                   </p>
@@ -164,7 +168,9 @@ export function ComprehensiveReportView() {
             <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1 truncate">رشد بازدیدها</p>
+                  <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1 truncate">
+                    رشد بازدیدها
+                  </p>
                   <p className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
                     {comparison.viewGrowth.toFixed(1)}%
                   </p>
@@ -180,7 +186,9 @@ export function ComprehensiveReportView() {
             <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1 truncate">رشد تعاملات</p>
+                  <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1 truncate">
+                    رشد تعاملات
+                  </p>
                   <p className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
                     {comparison.engagementGrowth.toFixed(1)}%
                   </p>
@@ -209,9 +217,7 @@ export function ComprehensiveReportView() {
         </div>
 
         {/* Engagement Trend */}
-        {data && (
-          <TrendChart data={data.trends} metric="engagement" isLoading={isLoading} />
-        )}
+        {data && <TrendChart data={data.trends} metric="engagement" isLoading={isLoading} />}
 
         {/* Tables Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">

@@ -1,9 +1,9 @@
-import { Suspense } from 'react';
-import type { Metadata } from 'next';
 import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
-import ServiceRequestsTable from '@/components/Dashboard/ServiceRequests/ServiceRequestsTable';
 import ServiceRequestsStats from '@/components/Dashboard/ServiceRequests/ServiceRequestsStats';
+import ServiceRequestsTable from '@/components/Dashboard/ServiceRequests/ServiceRequestsTable';
+import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: 'مدیریت درخواست‌های خدمات | داشبورد',
@@ -25,8 +25,18 @@ export default async function ServiceRequestsPage() {
             <div className="relative">
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 opacity-20 blur-lg" />
               <div className="relative rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 p-3.5 shadow-lg shadow-blue-500/25">
-                <svg className="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <svg
+                  className="h-7 w-7 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
                 </svg>
               </div>
             </div>

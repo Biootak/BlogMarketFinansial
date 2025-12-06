@@ -1,12 +1,12 @@
 'use client';
 
-import { HiChevronLeft, HiChevronRight } from 'react-icons/hi2';
-import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
-import Image, { type StaticImageData } from 'next/image';
-import { useState } from 'react';
-import { useSwipeable } from 'react-swipeable';
 import { variants } from '@/utils/animationVariants';
+import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
+import Image, { type StaticImageData } from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
+import { HiChevronLeft, HiChevronRight } from 'react-icons/hi2';
+import { useSwipeable } from 'react-swipeable';
 
 export interface GallerySliderProps {
   className?: string;

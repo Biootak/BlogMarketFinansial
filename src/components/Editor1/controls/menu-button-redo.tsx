@@ -1,7 +1,7 @@
-import React, { memo, useCallback } from 'react';
 import type { Editor } from '@tiptap/core';
-import { Toolbar } from '../../ui/toolbar';
+import React, { memo, useCallback } from 'react';
 import { Icon } from '../../ui/icon';
+import { Toolbar } from '../../ui/toolbar';
 
 interface MenuButtonRedoProps {
   editor: Editor;

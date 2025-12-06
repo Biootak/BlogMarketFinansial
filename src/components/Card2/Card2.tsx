@@ -1,15 +1,15 @@
 'use client';
 
-import React from 'react';
-import { OptimizedImage } from '@/components/ui/OptimizedImage';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
 import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
-import PostCardMeta from '../PostCardMeta/PostCardMeta';
-import type { PostWithRelations } from '@/types/types';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { getPostLink } from '@/lib/getPostLink';
+import type { PostWithRelations } from '@/types/types';
+import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
+import React from 'react';
+import PostCardMeta from '../PostCardMeta/PostCardMeta';
 
 interface Card2Props {
   className?: string;
@@ -39,10 +39,10 @@ export default function Card2({ className = 'h-full', size = 'normal', post }: C
             priority={isLarge}
             className="transition-transform duration-300 group-hover:scale-105"
           />
-          
+
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-300" />
-          
+
           {/* Post Type Icon */}
           <PostTypeFeaturedIcon
             className="absolute bottom-2 sm:bottom-3 start-2 sm:start-3 z-10"
@@ -50,7 +50,7 @@ export default function Card2({ className = 'h-full', size = 'normal', post }: C
             wrapSize="w-7 h-7 sm:w-9 sm:h-9"
             iconSize="w-3 h-3 sm:w-4 sm:h-4"
           />
-          
+
           {/* Categories */}
           <div className="absolute top-2 sm:top-3 end-2 sm:end-3 z-10">
             <CategoryBadgeList
@@ -72,16 +72,18 @@ export default function Card2({ className = 'h-full', size = 'normal', post }: C
         {/* Content */}
         <div className="p-3 sm:p-4 lg:p-5">
           {/* Meta */}
-          <PostCardMeta 
-            className="relative text-xs sm:text-sm mb-2 sm:mb-3" 
-            avatarSize="h-6 w-6 sm:h-8 sm:w-8 text-xs sm:text-sm" 
-            meta={post} 
+          <PostCardMeta
+            className="relative text-xs sm:text-sm mb-2 sm:mb-3"
+            avatarSize="h-6 w-6 sm:h-8 sm:w-8 text-xs sm:text-sm"
+            meta={post}
           />
 
           {/* Title */}
-          <h2 className={`font-bold text-neutral-900 dark:text-white leading-snug mb-1.5 sm:mb-2 ${
-            isLarge ? 'text-base sm:text-lg lg:text-xl' : 'text-sm sm:text-base lg:text-lg'
-          }`}>
+          <h2
+            className={`font-bold text-neutral-900 dark:text-white leading-snug mb-1.5 sm:mb-2 ${
+              isLarge ? 'text-base sm:text-lg lg:text-xl' : 'text-sm sm:text-base lg:text-lg'
+            }`}
+          >
             <Link
               href={postLink}
               className="line-clamp-2 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-300"

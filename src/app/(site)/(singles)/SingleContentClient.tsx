@@ -1,20 +1,20 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import EditorContentRenderer from '@/components/Editor1/EditorContentRenderer';
+import PostCardCommentBtn from '@/components/PostCardCommentBtn/PostCardCommentBtn';
 import Tag from '@/components/Tag/Tag';
+import useIntersectionObserver from '@/hooks/useIntersectionObserver';
+import type { PostWithRelations } from '@/types/types';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { HiArrowUp, HiChatBubbleLeftRight, HiHashtag } from 'react-icons/hi2';
+import MarkdownRenderer from './MarkdownRenderer';
 import SingleAuthor from './SingleAuthor';
 import SingleCommentForm from './SingleCommentForm';
 import SingleCommentLists from './SingleCommentLists';
-import useIntersectionObserver from '@/hooks/useIntersectionObserver';
-import PostCardCommentBtn from '@/components/PostCardCommentBtn/PostCardCommentBtn';
-import { HiArrowUp, HiHashtag, HiChatBubbleLeftRight } from 'react-icons/hi2';
-import type { PostWithRelations } from '@/types/types';
-import MarkdownRenderer from './MarkdownRenderer';
-import EditorContentRenderer from '@/components/Editor1/EditorContentRenderer';
 import '@/components/Editor1/styles/renderer.scss';
-import { HiShare } from 'react-icons/hi2';
-import { getPostLink } from '@/lib/getPostLink';
 import ShareDropdown from '@/components/ShareDropdown/ShareDropdown';
+import { getPostLink } from '@/lib/getPostLink';
+import { HiShare } from 'react-icons/hi2';
 
 interface SingleContentClientProps {
   post: PostWithRelations;
@@ -23,10 +23,7 @@ interface SingleContentClientProps {
   commentCount: number;
 }
 
-const SingleContentClient = ({
-  post,
-  commentCount,
-}: SingleContentClientProps) => {
+const SingleContentClient = ({ post, commentCount }: SingleContentClientProps) => {
   // ساخت URL کامل پست
   const getFullUrl = useCallback(() => {
     const postLink = getPostLink(post.postType, post.slug);
@@ -87,21 +84,17 @@ const SingleContentClient = ({
     <div className="relative">
       <div className="nc-SingleContent space-y-12 lg:space-y-16">
         {/* Article Content */}
-        <div
-          id="single-entry-content"
-          className="max-w-full"
-          ref={contentRef}
-        >
+        <div id="single-entry-content" className="max-w-full" ref={contentRef}>
           {/* Content Card */}
           <div className="relative">
             {/* Decorative Side Line */}
             <div className="absolute right-0 top-8 bottom-8 w-1 bg-gradient-to-b from-primary-500/50 via-violet-500/30 to-transparent rounded-full hidden lg:block" />
-            
+
             <div className="lg:pr-8">
               {post.content ? (
                 (() => {
                   const content = post.content as string;
-                  
+
                   try {
                     const parsed = JSON.parse(content);
                     if (parsed && parsed.type === 'doc') {
@@ -110,18 +103,18 @@ const SingleContentClient = ({
                   } catch {
                     // Not JSON
                   }
-                  
+
                   if (content.trim().startsWith('<')) {
                     const { sanitizeHtml } = require('@/lib/utils');
                     return (
-                      <div 
+                      <div
                         className="editor-content prose lg:prose-lg dark:prose-invert prose-headings:text-neutral-900 dark:prose-headings:text-white prose-p:text-neutral-700 dark:prose-p:text-neutral-300 prose-a:text-primary-600 dark:prose-a:text-primary-400 prose-strong:text-neutral-900 dark:prose-strong:text-white"
                         // biome-ignore lint/security/noDangerouslySetInnerHtml: Content is sanitized with DOMPurify
                         dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
                       />
                     );
                   }
-                  
+
                   return (
                     <div className="prose lg:prose-lg dark:prose-invert prose-headings:text-neutral-900 dark:prose-headings:text-white prose-p:text-neutral-700 dark:prose-p:text-neutral-300">
                       <MarkdownRenderer content={content} />
@@ -150,7 +143,7 @@ const SingleContentClient = ({
                   برچسب‌های مرتبط
                 </h4>
               </div>
-              
+
               {/* Tags */}
               <div className="flex flex-wrap gap-3">
                 {post.tags.map((tag) => (
@@ -181,15 +174,13 @@ const SingleContentClient = ({
               <HiChatBubbleLeftRight className="w-6 h-6 text-white" />
             </span>
             <div>
-              <h3 className="text-xl font-bold text-neutral-900 dark:text-white">
-                نظرات
-              </h3>
+              <h3 className="text-xl font-bold text-neutral-900 dark:text-white">نظرات</h3>
               <p className="text-sm text-neutral-500 dark:text-neutral-400">
                 {post._count.comments} نظر ثبت شده
               </p>
             </div>
           </div>
-          
+
           {/* Comment Form */}
           <SingleCommentForm postId={post.id} onClickSubmit={handleCommentSubmit} />
         </div>
@@ -212,7 +203,7 @@ const SingleContentClient = ({
         <div className="relative overflow-hidden bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.4)] rounded-2xl border border-neutral-200/50 dark:border-neutral-700/50 p-2 flex items-center justify-center gap-1.5">
           {/* Gradient Accent */}
           <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-l from-primary-500 via-violet-500 to-rose-500" />
-          
+
           <ShareDropdown url={getFullUrl()} title={post.title} side="top" align="center">
             <button
               type="button"
@@ -222,25 +213,26 @@ const SingleContentClient = ({
               <span className="font-medium">اشتراک</span>
             </button>
           </ShareDropdown>
-          
+
           <div className="w-px h-6 bg-neutral-200 dark:bg-neutral-700" />
-          
+
           <PostCardCommentBtn
             isATagOnSingle
             className="flex px-4 h-10 text-sm rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
             postSlug={post.slug}
             commentCount={commentCount}
           />
-          
+
           <div className="w-px h-6 bg-neutral-200 dark:bg-neutral-700" />
 
           <button
             className={`
               w-10 h-10 flex items-center justify-center rounded-xl
               transition-all duration-300
-              ${isShowScrollToTop
-                ? 'bg-gradient-to-br from-primary-500 to-violet-500 text-white shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 hover:-translate-y-0.5'
-                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
+              ${
+                isShowScrollToTop
+                  ? 'bg-gradient-to-br from-primary-500 to-violet-500 text-white shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 hover:-translate-y-0.5'
+                  : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400'
               }
             `}
             onClick={() => isShowScrollToTop && window.scrollTo({ top: 0, behavior: 'smooth' })}

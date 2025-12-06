@@ -1,11 +1,11 @@
 'use client';
 
-import * as React from 'react';
-import * as ToastPrimitives from '@radix-ui/react-toast';
-import { cva, type VariantProps } from 'class-variance-authority';
-import { MdClose, MdInfo, MdCheckCircle, MdWarning, MdError } from 'react-icons/md';
-import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import * as ToastPrimitives from '@radix-ui/react-toast';
+import { type VariantProps, cva } from 'class-variance-authority';
+import { AnimatePresence, motion } from 'framer-motion';
+import * as React from 'react';
+import { MdCheckCircle, MdClose, MdError, MdInfo, MdWarning } from 'react-icons/md';
 
 const ToastProvider = ToastPrimitives.Provider;
 
@@ -42,10 +42,7 @@ const toastVariants = cva(
   {
     variants: {
       variant: {
-        default: cn(
-          'bg-white/95 border-gray-200/60 text-gray-900',
-          'shadow-gray-200/50',
-        ),
+        default: cn('bg-white/95 border-gray-200/60 text-gray-900', 'shadow-gray-200/50'),
         destructive: cn(
           'bg-gradient-to-l from-red-50/95 to-rose-50/95 border-red-200/60 text-red-900',
           'shadow-red-200/30',
@@ -195,11 +192,7 @@ const iconVariants: Record<ToastVariant, { icon: React.ReactNode; bg: string }> 
 
 export const ToastIcon: React.FC<{ variant?: ToastVariant }> = ({ variant = 'default' }) => {
   const config = iconVariants[variant];
-  return (
-    <div className={cn('flex-shrink-0 p-2 rounded-xl', config.bg)}>
-      {config.icon}
-    </div>
-  );
+  return <div className={cn('flex-shrink-0 p-2 rounded-xl', config.bg)}>{config.icon}</div>;
 };
 
 export const AnimatedToast: React.FC<ToastProps> = (props) => (

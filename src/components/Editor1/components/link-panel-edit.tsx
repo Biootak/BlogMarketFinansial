@@ -1,7 +1,7 @@
+import { Button } from '@/components/ui/button';
+import { Check, Link, X } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Icon } from '../../ui/icon';
-import { Button } from '@/components/ui/button';
-import { Link, X, Check } from 'lucide-react';
 
 interface LinkPanelEditProps {
   initial: string;
@@ -32,7 +32,12 @@ const LinkPanelEdit = ({ initial, isOpen, onSetLink }: LinkPanelEditProps) => {
   const normalizeUrl = useCallback((inputUrl: string): string => {
     const trimmed = inputUrl.trim();
     // اگر با پروتکل شروع نشده و لینک داخلی نیست، https اضافه کن
-    if (trimmed && !trimmed.match(/^(https?|mailto|tel|ftp):\/?\/?/i) && !trimmed.startsWith('/') && !trimmed.startsWith('#')) {
+    if (
+      trimmed &&
+      !trimmed.match(/^(https?|mailto|tel|ftp):\/?\/?/i) &&
+      !trimmed.startsWith('/') &&
+      !trimmed.startsWith('#')
+    ) {
       return `https://${trimmed}`;
     }
     return trimmed;
@@ -48,12 +53,15 @@ const LinkPanelEdit = ({ initial, isOpen, onSetLink }: LinkPanelEditProps) => {
     [url, isValidUrl, onSetLink, normalizeUrl],
   );
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      setUrl(initial || '');
-    }
-  }, [initial]);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setUrl(initial || '');
+      }
+    },
+    [initial],
+  );
 
   useEffect(() => {
     if (inputRef.current && isOpen) {
@@ -70,9 +78,11 @@ const LinkPanelEdit = ({ initial, isOpen, onSetLink }: LinkPanelEditProps) => {
     <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3 shadow-2xl min-w-[320px]">
       <form onSubmit={handleSubmit} className="space-y-3">
         <div className="flex items-center gap-2">
-          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-            isValidUrl ? 'bg-green-100 dark:bg-green-900/30' : 'bg-gray-100 dark:bg-gray-700'
-          }`}>
+          <div
+            className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+              isValidUrl ? 'bg-green-100 dark:bg-green-900/30' : 'bg-gray-100 dark:bg-gray-700'
+            }`}
+          >
             <Link size={16} className={isValidUrl ? 'text-green-600' : 'text-gray-500'} />
           </div>
           <input
@@ -87,23 +97,23 @@ const LinkPanelEdit = ({ initial, isOpen, onSetLink }: LinkPanelEditProps) => {
             aria-label="آدرس لینک"
           />
         </div>
-        
+
         <div className="flex items-center justify-between">
           <p className="text-[10px] text-gray-400 dark:text-gray-500">
             {isValidUrl ? '✓ لینک معتبر' : 'آدرس لینک را وارد کنید'}
           </p>
           <div className="flex gap-2">
-            <Button 
-              type="button" 
-              variant="ghost" 
+            <Button
+              type="button"
+              variant="ghost"
               size="sm"
               onClick={() => setUrl(initial || '')}
               className="h-8 px-3 text-xs"
             >
               انصراف
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               size="sm"
               disabled={!isValidUrl}
               className="h-8 px-4 text-xs bg-primary-500 hover:bg-primary-600 text-white disabled:opacity-50"

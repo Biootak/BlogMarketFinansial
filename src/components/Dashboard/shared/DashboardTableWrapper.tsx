@@ -1,9 +1,9 @@
 'use client';
 
-import * as React from 'react';
-import { cn } from '@/lib/utils';
-import { HiMagnifyingGlass } from 'react-icons/hi2';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
+import * as React from 'react';
+import { HiMagnifyingGlass } from 'react-icons/hi2';
 
 interface DashboardPageHeaderProps {
   title: string;
@@ -20,7 +20,9 @@ export function DashboardPageHeader({ title, description, children }: DashboardP
             {title}
           </h1>
           {description && (
-            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">{description}</p>
+            <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
+              {description}
+            </p>
           )}
         </div>
         {children && <div className="flex flex-wrap items-center gap-2 sm:gap-3">{children}</div>}
@@ -56,7 +58,6 @@ export function DashboardSearchInput({
   );
 }
 
-
 interface DashboardTableContainerProps {
   children: React.ReactNode;
   className?: string;
@@ -67,7 +68,7 @@ export function DashboardTableContainer({ children, className }: DashboardTableC
     <div
       className={cn(
         'overflow-hidden rounded-2xl border border-neutral-200/60 bg-white/70 shadow-lg shadow-neutral-900/5 backdrop-blur-xl transition-all duration-200 dark:border-neutral-700/50 dark:bg-neutral-800/70 dark:shadow-neutral-900/20',
-        className
+        className,
       )}
     >
       <div className="overflow-x-auto">{children}</div>
@@ -81,11 +82,7 @@ interface DashboardTableProps {
 }
 
 export function DashboardTable({ children, className }: DashboardTableProps) {
-  return (
-    <table className={cn('w-full border-collapse text-sm', className)}>
-      {children}
-    </table>
-  );
+  return <table className={cn('w-full border-collapse text-sm', className)}>{children}</table>;
 }
 
 interface DashboardTableHeaderProps {
@@ -98,7 +95,7 @@ export function DashboardTableHeader({ children, className }: DashboardTableHead
     <thead
       className={cn(
         'border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50/80 to-neutral-100/80 dark:border-neutral-700/50 dark:from-neutral-800/80 dark:to-neutral-750/80',
-        className
+        className,
       )}
     >
       {children}
@@ -118,7 +115,7 @@ export function DashboardTableHead({ children, className, hidden }: DashboardTab
       className={cn(
         'px-3 py-3 sm:px-5 sm:py-4 text-right text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-300',
         hidden && 'hidden sm:table-cell',
-        className
+        className,
       )}
     >
       {children}
@@ -152,7 +149,7 @@ export function DashboardTableRow({ children, className, onClick }: DashboardTab
       className={cn(
         'group transition-all duration-200 hover:bg-gradient-to-l hover:from-primary-50/50 hover:to-transparent dark:hover:from-primary-900/20',
         onClick && 'cursor-pointer',
-        className
+        className,
       )}
     >
       {children}
@@ -172,14 +169,13 @@ export function DashboardTableCell({ children, className, hidden }: DashboardTab
       className={cn(
         'px-3 py-3 sm:px-5 sm:py-4 text-right text-xs sm:text-sm text-neutral-700 dark:text-neutral-300',
         hidden && 'hidden sm:table-cell',
-        className
+        className,
       )}
     >
       {children}
     </td>
   );
 }
-
 
 // Status Badge Component
 interface StatusBadgeProps {
@@ -189,11 +185,15 @@ interface StatusBadgeProps {
 }
 
 const statusVariants = {
-  success: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-900/30 dark:text-emerald-400 dark:ring-emerald-400/20',
-  warning: 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-900/30 dark:text-amber-400 dark:ring-amber-400/20',
-  danger: 'bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-900/30 dark:text-red-400 dark:ring-red-400/20',
+  success:
+    'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-900/30 dark:text-emerald-400 dark:ring-emerald-400/20',
+  warning:
+    'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-900/30 dark:text-amber-400 dark:ring-amber-400/20',
+  danger:
+    'bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-900/30 dark:text-red-400 dark:ring-red-400/20',
   info: 'bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400 dark:ring-blue-400/20',
-  default: 'bg-neutral-100 text-neutral-700 ring-neutral-600/20 dark:bg-neutral-700/50 dark:text-neutral-300 dark:ring-neutral-400/20',
+  default:
+    'bg-neutral-100 text-neutral-700 ring-neutral-600/20 dark:bg-neutral-700/50 dark:text-neutral-300 dark:ring-neutral-400/20',
 };
 
 export function StatusBadge({ status, variant = 'default', className }: StatusBadgeProps) {
@@ -202,7 +202,7 @@ export function StatusBadge({ status, variant = 'default', className }: StatusBa
       className={cn(
         'inline-flex items-center rounded-full px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-xs font-medium ring-1 ring-inset transition-all duration-200',
         statusVariants[variant],
-        className
+        className,
       )}
     >
       {status}
@@ -221,11 +221,18 @@ interface ActionButtonProps {
 
 const actionVariants = {
   edit: 'text-primary-600 hover:bg-primary-50 hover:text-primary-700 dark:text-primary-400 dark:hover:bg-primary-900/30 dark:hover:text-primary-300',
-  delete: 'text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/30 dark:hover:text-red-300',
+  delete:
+    'text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/30 dark:hover:text-red-300',
   view: 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-700/50 dark:hover:text-neutral-300',
 };
 
-export function ActionButton({ onClick, variant = 'view', children, className, disabled }: ActionButtonProps) {
+export function ActionButton({
+  onClick,
+  variant = 'view',
+  children,
+  className,
+  disabled,
+}: ActionButtonProps) {
   return (
     <button
       type="button"
@@ -234,7 +241,7 @@ export function ActionButton({ onClick, variant = 'view', children, className, d
       className={cn(
         'inline-flex items-center gap-1 sm:gap-1.5 rounded-lg px-2 py-1 sm:px-3 sm:py-1.5 text-[10px] sm:text-xs font-medium transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50',
         actionVariants[variant],
-        className
+        className,
       )}
     >
       {children}
@@ -250,14 +257,19 @@ interface PrimaryActionButtonProps {
   type?: 'button' | 'submit';
 }
 
-export function PrimaryActionButton({ onClick, children, className, type = 'button' }: PrimaryActionButtonProps) {
+export function PrimaryActionButton({
+  onClick,
+  children,
+  className,
+  type = 'button',
+}: PrimaryActionButtonProps) {
   return (
     <button
       type={type}
       onClick={onClick}
       className={cn(
         'group inline-flex items-center gap-1.5 sm:gap-2.5 rounded-xl bg-gradient-to-l from-primary-500 to-primary-600 px-3 py-2 sm:px-5 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-primary-500/25 transition-all duration-150 hover:from-primary-600 hover:to-primary-700 hover:shadow-xl hover:shadow-primary-500/30 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 dark:shadow-primary-900/30 whitespace-nowrap',
-        className
+        className,
       )}
     >
       {children}
@@ -286,8 +298,12 @@ export function EmptyState({
           {icon}
         </div>
       )}
-      <h3 className="mb-1.5 sm:mb-2 text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-100">{title}</h3>
-      <p className="mb-4 sm:mb-6 max-w-sm text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">{description}</p>
+      <h3 className="mb-1.5 sm:mb-2 text-base sm:text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+        {title}
+      </h3>
+      <p className="mb-4 sm:mb-6 max-w-sm text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
+        {description}
+      </p>
       {action}
     </div>
   );
@@ -307,7 +323,7 @@ export function MobileCard({ children, className, onClick }: MobileCardProps) {
       className={cn(
         'block sm:hidden p-4 rounded-xl bg-white/80 dark:bg-neutral-800/80 border border-neutral-200/60 dark:border-neutral-700/50 shadow-sm hover:shadow-md transition-all duration-200',
         onClick && 'cursor-pointer active:scale-[0.98]',
-        className
+        className,
       )}
     >
       {children}
@@ -323,7 +339,12 @@ interface MobileCardRowProps {
 
 export function MobileCardRow({ label, value, className }: MobileCardRowProps) {
   return (
-    <div className={cn('flex items-center justify-between py-2 border-b border-neutral-100 dark:border-neutral-700/50 last:border-0', className)}>
+    <div
+      className={cn(
+        'flex items-center justify-between py-2 border-b border-neutral-100 dark:border-neutral-700/50 last:border-0',
+        className,
+      )}
+    >
       <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">{label}</span>
       <div className="text-xs font-semibold text-neutral-900 dark:text-neutral-100">{value}</div>
     </div>
@@ -339,7 +360,13 @@ interface FilterSelectProps {
   className?: string;
 }
 
-export function FilterSelect({ value, onChange, options, placeholder, className }: FilterSelectProps) {
+export function FilterSelect({
+  value,
+  onChange,
+  options,
+  placeholder,
+  className,
+}: FilterSelectProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const selectRef = React.useRef<HTMLDivElement>(null);
 
@@ -363,25 +390,21 @@ export function FilterSelect({ value, onChange, options, placeholder, className 
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           'flex h-9 sm:h-11 w-full sm:min-w-[140px] items-center justify-between rounded-xl border border-neutral-200/60 bg-white/80 px-2.5 sm:px-3 text-xs sm:text-sm font-medium text-neutral-700 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-neutral-300 hover:bg-white focus:border-primary-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80 dark:text-neutral-300 dark:hover:border-neutral-600 dark:hover:bg-neutral-800 dark:focus:border-primary-500 dark:focus:bg-neutral-800 dark:focus:ring-primary-900/30',
-          isOpen && 'border-primary-400 ring-2 ring-primary-100 dark:border-primary-500 dark:ring-primary-900/30'
+          isOpen &&
+            'border-primary-400 ring-2 ring-primary-100 dark:border-primary-500 dark:ring-primary-900/30',
         )}
       >
         <span className="truncate">{selectedOption?.label || placeholder}</span>
         <svg
           className={cn(
             'h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0 text-neutral-500 transition-transform duration-200 dark:text-neutral-400',
-            isOpen && 'rotate-180'
+            isOpen && 'rotate-180',
           )}
           fill="none"
           viewBox="0 0 20 20"
           stroke="currentColor"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="m6 8 4 4 4-4"
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="m6 8 4 4 4-4" />
         </svg>
       </button>
 
@@ -399,7 +422,7 @@ export function FilterSelect({ value, onChange, options, placeholder, className 
                 'flex w-full items-center px-2.5 sm:px-3 py-2 sm:py-2.5 text-right text-xs sm:text-sm font-medium transition-colors duration-150',
                 value === option.value
                   ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400'
-                  : 'text-neutral-700 hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-neutral-700/50'
+                  : 'text-neutral-700 hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-neutral-700/50',
               )}
             >
               <span className="flex-1 truncate">{option.label}</span>

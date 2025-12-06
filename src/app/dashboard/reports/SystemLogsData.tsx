@@ -1,31 +1,31 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
 import {
-  getSystemLogs,
+  type SystemLogFilters,
   getSystemLogSources,
   getSystemLogStats,
-  type SystemLogFilters,
+  getSystemLogs,
 } from '@/actions/reports/systemLogs';
 import {
   AlertCircle,
-  Info,
   AlertTriangle,
-  Terminal,
-  ChevronRight,
   ChevronLeft,
+  ChevronRight,
   Clock,
   Code,
   Download,
   Eye,
+  Info,
+  Terminal,
 } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
+import { SystemLogDetailModal } from '@/components/Dashboard/Reports/SystemLogDetailModal';
+import { SystemLogFilters as SystemLogFiltersComponent } from '@/components/Dashboard/Reports/SystemLogFilters';
+import { ReportsSkeleton } from '@/components/Skeletons';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
-import { ReportsSkeleton } from '@/components/Skeletons';
 import { cn } from '@/lib/utils';
-import { SystemLogFilters as SystemLogFiltersComponent } from '@/components/Dashboard/Reports/SystemLogFilters';
-import { SystemLogDetailModal } from '@/components/Dashboard/Reports/SystemLogDetailModal';
 
 interface SystemLog {
   id: string;
@@ -181,7 +181,7 @@ export default function SystemLogsData() {
       ]);
 
       const csvContent = [headers, ...rows].map((row) => row.join(',')).join('\n');
-      const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      const blob = new Blob([`\uFEFF${csvContent}`], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = `system-logs-${new Date().toISOString().split('T')[0]}.csv`;
@@ -191,7 +191,7 @@ export default function SystemLogsData() {
         title: 'موفق',
         description: 'گزارش با موفقیت دانلود شد',
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'خطا',
         description: 'خطا در دانلود گزارش',
@@ -215,7 +215,9 @@ export default function SystemLogsData() {
             <Terminal className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-sm sm:text-lg font-semibold text-gray-900 truncate">لاگ‌های سیستم</h3>
+            <h3 className="text-sm sm:text-lg font-semibold text-gray-900 truncate">
+              لاگ‌های سیستم
+            </h3>
             <p className="text-xs sm:text-sm text-gray-500 truncate">مشاهده و تحلیل لاگ‌های سیستم</p>
           </div>
         </div>
@@ -234,44 +236,74 @@ export default function SystemLogsData() {
       {/* Stats Summary */}
       {stats && (
         <div className="grid grid-cols-2 gap-2 sm:gap-3 sm:grid-cols-3 lg:grid-cols-5 sm:gap-4">
-          <div className={cn('p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100')}>
+          <div
+            className={cn(
+              'p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100',
+            )}
+          >
             <div className="flex items-center gap-1.5 sm:gap-2 text-amber-600 mb-1 sm:mb-2">
               <Terminal className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
               <span className="text-[10px] sm:text-xs font-medium truncate">کل لاگ‌ها</span>
             </div>
-            <p className="text-xl sm:text-2xl font-bold text-amber-700 truncate">{stats.totalLogs.toLocaleString('fa-IR')}</p>
+            <p className="text-xl sm:text-2xl font-bold text-amber-700 truncate">
+              {stats.totalLogs.toLocaleString('fa-IR')}
+            </p>
           </div>
 
-          <div className={cn('p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br from-purple-50 to-violet-50 border border-purple-100')}>
+          <div
+            className={cn(
+              'p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br from-purple-50 to-violet-50 border border-purple-100',
+            )}
+          >
             <div className="flex items-center gap-1.5 sm:gap-2 text-purple-600 mb-1 sm:mb-2">
               <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
               <span className="text-[10px] sm:text-xs font-medium truncate">24 ساعت</span>
             </div>
-            <p className="text-xl sm:text-2xl font-bold text-purple-700 truncate">{stats.last24Hours.toLocaleString('fa-IR')}</p>
+            <p className="text-xl sm:text-2xl font-bold text-purple-700 truncate">
+              {stats.last24Hours.toLocaleString('fa-IR')}
+            </p>
           </div>
 
-          <div className={cn('p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100')}>
+          <div
+            className={cn(
+              'p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100',
+            )}
+          >
             <div className="flex items-center gap-1.5 sm:gap-2 text-blue-600 mb-1 sm:mb-2">
               <Info className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
               <span className="text-[10px] sm:text-xs font-medium truncate">اطلاعات</span>
             </div>
-            <p className="text-xl sm:text-2xl font-bold text-blue-700 truncate">{stats.infoCount.toLocaleString('fa-IR')}</p>
+            <p className="text-xl sm:text-2xl font-bold text-blue-700 truncate">
+              {stats.infoCount.toLocaleString('fa-IR')}
+            </p>
           </div>
 
-          <div className={cn('p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100')}>
+          <div
+            className={cn(
+              'p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100',
+            )}
+          >
             <div className="flex items-center gap-1.5 sm:gap-2 text-amber-600 mb-1 sm:mb-2">
               <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
               <span className="text-[10px] sm:text-xs font-medium truncate">هشدار</span>
             </div>
-            <p className="text-xl sm:text-2xl font-bold text-amber-700 truncate">{stats.warningCount.toLocaleString('fa-IR')}</p>
+            <p className="text-xl sm:text-2xl font-bold text-amber-700 truncate">
+              {stats.warningCount.toLocaleString('fa-IR')}
+            </p>
           </div>
 
-          <div className={cn('p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br from-red-50 to-rose-50 border border-red-100')}>
+          <div
+            className={cn(
+              'p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br from-red-50 to-rose-50 border border-red-100',
+            )}
+          >
             <div className="flex items-center gap-1.5 sm:gap-2 text-red-600 mb-1 sm:mb-2">
               <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
               <span className="text-[10px] sm:text-xs font-medium truncate">خطا</span>
             </div>
-            <p className="text-xl sm:text-2xl font-bold text-red-700 truncate">{stats.errorCount.toLocaleString('fa-IR')}</p>
+            <p className="text-xl sm:text-2xl font-bold text-red-700 truncate">
+              {stats.errorCount.toLocaleString('fa-IR')}
+            </p>
           </div>
         </div>
       )}
@@ -280,7 +312,11 @@ export default function SystemLogsData() {
       <SystemLogFiltersComponent onFilterChange={handleFilterChange} sources={sources} />
 
       {/* Desktop Table View */}
-      <div className={cn('hidden md:block overflow-hidden rounded-xl bg-white border border-gray-200 shadow-sm')}>
+      <div
+        className={cn(
+          'hidden md:block overflow-hidden rounded-xl bg-white border border-gray-200 shadow-sm',
+        )}
+      >
         <div className="overflow-x-auto scrollbar-custom">
           <table className="w-full">
             <thead>
@@ -289,7 +325,9 @@ export default function SystemLogsData() {
                 <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700">پیام</th>
                 <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700">منبع</th>
                 <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700">زمان</th>
-                <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700">عملیات</th>
+                <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700">
+                  عملیات
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -302,7 +340,9 @@ export default function SystemLogsData() {
                       </div>
                       <div>
                         <p className="text-gray-700 font-medium">هیچ لاگی یافت نشد</p>
-                        <p className="text-sm text-gray-500">لاگ‌های سیستم اینجا نمایش داده می‌شوند</p>
+                        <p className="text-sm text-gray-500">
+                          لاگ‌های سیستم اینجا نمایش داده می‌شوند
+                        </p>
                       </div>
                     </div>
                   </td>
@@ -311,9 +351,18 @@ export default function SystemLogsData() {
                 logs.map((log) => {
                   const config = getLevelConfig(log.level);
                   return (
-                    <tr key={log.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                    <tr
+                      key={log.id}
+                      className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                    >
                       <td className="px-6 py-4">
-                        <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium', config.bg, config.text)}>
+                        <span
+                          className={cn(
+                            'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium',
+                            config.bg,
+                            config.text,
+                          )}
+                        >
                           {config.icon}
                           {config.label}
                         </span>
@@ -361,17 +410,28 @@ export default function SystemLogsData() {
             </div>
             <div className="text-center">
               <p className="text-sm sm:text-base text-gray-700 font-medium">هیچ لاگی یافت نشد</p>
-              <p className="text-xs sm:text-sm text-gray-500">لاگ‌های سیستم اینجا نمایش داده می‌شوند</p>
+              <p className="text-xs sm:text-sm text-gray-500">
+                لاگ‌های سیستم اینجا نمایش داده می‌شوند
+              </p>
             </div>
           </div>
         ) : (
           logs.map((log) => {
             const config = getLevelConfig(log.level);
             return (
-              <div key={log.id} className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-white border border-gray-200">
+              <div
+                key={log.id}
+                className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-white border border-gray-200"
+              >
                 {/* Header */}
                 <div className="flex items-center justify-between mb-2 sm:mb-3 pb-2 sm:pb-3 border-b border-gray-100 gap-2">
-                  <span className={cn('inline-flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-medium', config.bg, config.text)}>
+                  <span
+                    className={cn(
+                      'inline-flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-medium',
+                      config.bg,
+                      config.text,
+                    )}
+                  >
                     {config.icon}
                     {config.label}
                   </span>
@@ -387,8 +447,15 @@ export default function SystemLogsData() {
 
                 {/* Footer */}
                 <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-gray-100 gap-2">
-                  <span className="text-[10px] sm:text-xs text-gray-500 truncate">{new Date(log.timestamp).toLocaleString('fa-IR')}</span>
-                  <Button variant="ghost" size="sm" onClick={() => handleViewDetails(log)} className="h-7 sm:h-8 px-2 sm:px-3 text-xs">
+                  <span className="text-[10px] sm:text-xs text-gray-500 truncate">
+                    {new Date(log.timestamp).toLocaleString('fa-IR')}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleViewDetails(log)}
+                    className="h-7 sm:h-8 px-2 sm:px-3 text-xs"
+                  >
                     <Eye className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
                     جزئیات
                   </Button>
@@ -402,12 +469,20 @@ export default function SystemLogsData() {
       {/* Pagination */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between p-4 bg-white rounded-xl border border-gray-200">
         <div className="text-sm text-gray-600">
-          نمایش <span className="font-semibold">{Math.min(page * limit, total).toLocaleString('fa-IR')}</span> از{' '}
-          <span className="font-semibold">{total.toLocaleString('fa-IR')}</span> مورد
+          نمایش{' '}
+          <span className="font-semibold">
+            {Math.min(page * limit, total).toLocaleString('fa-IR')}
+          </span>{' '}
+          از <span className="font-semibold">{total.toLocaleString('fa-IR')}</span> مورد
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+          >
             <ChevronRight className="w-4 h-4" />
           </Button>
 
@@ -436,7 +511,12 @@ export default function SystemLogsData() {
             {page.toLocaleString('fa-IR')} / {totalPages.toLocaleString('fa-IR')}
           </div>
 
-          <Button variant="outline" size="sm" onClick={() => setPage((p) => p + 1)} disabled={page * limit >= total}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => p + 1)}
+            disabled={page * limit >= total}
+          >
             <ChevronLeft className="w-4 h-4" />
           </Button>
         </div>

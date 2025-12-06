@@ -1,8 +1,8 @@
 'use client';
 
-import type React from 'react';
-import { useState, useEffect } from 'react';
 import Image, { type ImageProps } from 'next/image';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 
 export interface NcImageProps extends Omit<ImageProps, 'alt'> {
   containerClassName?: string;
@@ -35,7 +35,8 @@ const NcImage: React.FC<NcImageProps> = ({
   }, [src]);
 
   // اگر containerClassName شامل absolute یا inset باشه، aspectRatio رو اعمال نکن
-  const hasAbsolutePosition = containerClassName.includes('absolute') || containerClassName.includes('inset');
+  const hasAbsolutePosition =
+    containerClassName.includes('absolute') || containerClassName.includes('inset');
 
   const handleError = () => {
     if (!hasError) {

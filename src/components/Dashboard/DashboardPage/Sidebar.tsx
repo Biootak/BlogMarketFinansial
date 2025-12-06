@@ -1,31 +1,31 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
 import { logout } from '@/actions/auth-actions';
-import { useToast } from '@/components/ui/use-toast';
+import Avatar from '@/components/Avatar/Avatar';
 import Logo from '@/components/Logo/Logo';
-import {
-  HiOutlineHome,
-  HiOutlineDocumentText,
-  HiOutlineUsers,
-  HiOutlineSquares2X2,
-  HiOutlineMegaphone,
-  HiOutlineCurrencyDollar,
-  HiOutlineCog6Tooth,
-  HiOutlineChartBarSquare,
-  HiOutlineUserCircle,
-  HiOutlineArrowRightOnRectangle,
-  HiOutlineChevronDown,
-  HiOutlineBars3,
-  HiOutlineClipboardDocumentList,
-} from 'react-icons/hi2';
+import { useToast } from '@/components/ui/use-toast';
 import { useSidebarStore } from '@/hooks/sidebarStore';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
-import { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useSession } from 'next-auth/react';
-import Avatar from '@/components/Avatar/Avatar';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState } from 'react';
+import {
+  HiOutlineArrowRightOnRectangle,
+  HiOutlineBars3,
+  HiOutlineChartBarSquare,
+  HiOutlineChevronDown,
+  HiOutlineClipboardDocumentList,
+  HiOutlineCog6Tooth,
+  HiOutlineCurrencyDollar,
+  HiOutlineDocumentText,
+  HiOutlineHome,
+  HiOutlineMegaphone,
+  HiOutlineSquares2X2,
+  HiOutlineUserCircle,
+  HiOutlineUsers,
+} from 'react-icons/hi2';
 
 interface SubmenuItem {
   href: string;
@@ -145,7 +145,11 @@ const getMenuItems = (role: string) => {
 // Site Name Component
 const SiteName = () => {
   const siteName = useSiteSettings((state) => state.siteName);
-  return <span className="text-sm sm:text-base lg:text-lg font-bold text-white truncate">{siteName || 'داشبورد'}</span>;
+  return (
+    <span className="text-sm sm:text-base lg:text-lg font-bold text-white truncate">
+      {siteName || 'داشبورد'}
+    </span>
+  );
 };
 
 const Sidebar = ({ userRole }: SidebarProps) => {
@@ -203,7 +207,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
   };
 
   // Calculate width based on state
-  const sidebarWidth = isMobile ? (isOpen ? '85%' : 0) : (isOpen ? 260 : 76);
+  const sidebarWidth = isMobile ? (isOpen ? '85%' : 0) : isOpen ? 260 : 76;
 
   return (
     <>
@@ -245,11 +249,15 @@ const Sidebar = ({ userRole }: SidebarProps) => {
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div
             className="absolute -top-20 -right-20 w-40 h-40 rounded-full opacity-20"
-            style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.5) 0%, transparent 70%)' }}
+            style={{
+              background: 'radial-gradient(circle, rgba(139,92,246,0.5) 0%, transparent 70%)',
+            }}
           />
           <div
             className="absolute bottom-20 -left-10 w-32 h-32 rounded-full opacity-15"
-            style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.5) 0%, transparent 70%)' }}
+            style={{
+              background: 'radial-gradient(circle, rgba(59,130,246,0.5) 0%, transparent 70%)',
+            }}
           />
         </div>
 
@@ -309,11 +317,15 @@ const Sidebar = ({ userRole }: SidebarProps) => {
                         </div>
                         {isOpen && (
                           <div className="mr-2 sm:mr-3 flex-1 flex items-center justify-between animate-in fade-in slide-in-from-right-1 duration-100 min-w-0">
-                            <span className="font-medium text-sm sm:text-base truncate">{item.label}</span>
+                            <span className="font-medium text-sm sm:text-base truncate">
+                              {item.label}
+                            </span>
                             <HiOutlineChevronDown
                               className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-150 flex-shrink-0"
                               style={{
-                                transform: expandedItems.includes(item.label) ? 'rotate(180deg)' : 'rotate(0deg)',
+                                transform: expandedItems.includes(item.label)
+                                  ? 'rotate(180deg)'
+                                  : 'rotate(0deg)',
                               }}
                             />
                           </div>
@@ -334,10 +346,14 @@ const Sidebar = ({ userRole }: SidebarProps) => {
                                 >
                                   <span
                                     className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full transition-colors duration-150 flex-shrink-0 ${
-                                      pathname === submenuItem.href ? 'bg-violet-300' : 'bg-white/40'
+                                      pathname === submenuItem.href
+                                        ? 'bg-violet-300'
+                                        : 'bg-white/40'
                                     }`}
                                   />
-                                  <span className="text-xs sm:text-sm font-medium truncate">{submenuItem.label}</span>
+                                  <span className="text-xs sm:text-sm font-medium truncate">
+                                    {submenuItem.label}
+                                  </span>
                                 </span>
                               </Link>
                             </li>
@@ -361,7 +377,11 @@ const Sidebar = ({ userRole }: SidebarProps) => {
                         >
                           {item.icon}
                         </div>
-                        {isOpen && <span className="mr-2 sm:mr-3 font-medium text-sm sm:text-base animate-in fade-in slide-in-from-right-1 duration-100 truncate">{item.label}</span>}
+                        {isOpen && (
+                          <span className="mr-2 sm:mr-3 font-medium text-sm sm:text-base animate-in fade-in slide-in-from-right-1 duration-100 truncate">
+                            {item.label}
+                          </span>
+                        )}
                       </span>
                     </Link>
                   )}
@@ -382,7 +402,11 @@ const Sidebar = ({ userRole }: SidebarProps) => {
             <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-white/5 flex-shrink-0">
               <HiOutlineArrowRightOnRectangle className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            {isOpen && <span className="mr-2 sm:mr-3 font-medium text-sm sm:text-base animate-in fade-in slide-in-from-right-1 duration-100 truncate">خروج</span>}
+            {isOpen && (
+              <span className="mr-2 sm:mr-3 font-medium text-sm sm:text-base animate-in fade-in slide-in-from-right-1 duration-100 truncate">
+                خروج
+              </span>
+            )}
           </button>
 
           {/* User info */}
@@ -402,7 +426,9 @@ const Sidebar = ({ userRole }: SidebarProps) => {
             </div>
             {isOpen && (
               <div className="mr-2 sm:mr-3 overflow-hidden animate-in fade-in slide-in-from-right-1 duration-100 min-w-0">
-                <p className="font-semibold text-white truncate text-xs sm:text-sm">{userInfo?.name || 'کاربر'}</p>
+                <p className="font-semibold text-white truncate text-xs sm:text-sm">
+                  {userInfo?.name || 'کاربر'}
+                </p>
                 <p className="text-[10px] sm:text-xs text-white/60 truncate">{userInfo?.email}</p>
               </div>
             )}

@@ -1,15 +1,15 @@
-import { NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
-import type { NextRequest } from 'next/server';
 import {
+  adminRoutes,
   apiAuthPrefix,
-  publicRoutes,
   authRoutes,
   authorRoutes,
-  adminRoutes,
-  superAdminRoutes,
   baseDashboardRoutes,
+  publicRoutes,
+  superAdminRoutes,
 } from '@/config/routes';
+import { getToken } from 'next-auth/jwt';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 // Cookie name for secure environments (production)
 const SECURE_COOKIE_NAME = '__Secure-authjs.session-token';
@@ -67,18 +67,18 @@ const matchDynamicRoute = (pathname: string, pattern: string): boolean => {
   // Handle catch-all routes [...slug]
   if (pattern.includes('[...')) {
     const basePattern = pattern.split('/[...')[0];
-    return pathname === basePattern || pathname.startsWith(basePattern + '/');
+    return pathname === basePattern || pathname.startsWith(`${basePattern}/`);
   }
 
   // Handle optional catch-all [[...slug]]
   if (pattern.includes('[[...')) {
     const basePattern = pattern.split('/[[...')[0];
-    return pathname === basePattern || pathname.startsWith(basePattern + '/');
+    return pathname === basePattern || pathname.startsWith(`${basePattern}/`);
   }
 
   // Handle single dynamic segments [id]
   const regexPattern = pattern.replace(/\[.*?\]/g, '[^/]+').replace(/\//g, '\\/');
-  const regex = new RegExp('^' + regexPattern + '$', 'i');
+  const regex = new RegExp(`^${regexPattern}$`, 'i');
   return regex.test(pathname);
 };
 
@@ -152,7 +152,7 @@ export async function middleware(req: NextRequest) {
   if (token?.exp && Date.now() / 1000 > token.exp) {
     if (DEBUG_MODE) console.log('[Middleware] Token expired, redirecting to signin');
     return NextResponse.redirect(
-      new URL('/signin?callbackUrl=' + encodeURIComponent(pathname), nextUrl)
+      new URL(`/signin?callbackUrl=${encodeURIComponent(pathname)}`, nextUrl),
     );
   }
 
@@ -173,7 +173,7 @@ export async function middleware(req: NextRequest) {
     if (DEBUG_MODE) console.log('[Middleware] Not logged in, redirecting to signin');
     const callbackUrl = pathname + search;
     return NextResponse.redirect(
-      new URL('/signin?callbackUrl=' + encodeURIComponent(callbackUrl), nextUrl)
+      new URL(`/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`, nextUrl),
     );
   }
 
@@ -186,7 +186,8 @@ export async function middleware(req: NextRequest) {
   // Dashboard routes - check role access
   if (pathname.startsWith('/dashboard')) {
     const hasAccess = checkDashboardAccess(pathname, role);
-    if (DEBUG_MODE) console.log('[Middleware] Dashboard access check:', { pathname, role, hasAccess });
+    if (DEBUG_MODE)
+      console.log('[Middleware] Dashboard access check:', { pathname, role, hasAccess });
     if (hasAccess) return NextResponse.next();
     return NextResponse.redirect(new URL('/dashboard', nextUrl));
   }

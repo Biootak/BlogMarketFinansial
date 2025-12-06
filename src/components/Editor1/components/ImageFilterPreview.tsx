@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 
 interface ImageFilterPreviewProps {
   src: string;
@@ -26,18 +26,11 @@ const ImageFilterPreview: React.FC<ImageFilterPreviewProps> = ({
       }`}
     >
       <div className="aspect-square w-full">
-        <img
-          src={src}
-          alt={name}
-          className="w-full h-full object-cover"
-          style={{ filter }}
-        />
+        <img src={src} alt={name} className="w-full h-full object-cover" style={{ filter }} />
       </div>
       <div
         className={`absolute bottom-0 left-0 right-0 px-2 py-1 text-[10px] text-center backdrop-blur-sm ${
-          isActive
-            ? 'bg-primary-500/90 text-white'
-            : 'bg-black/60 text-white'
+          isActive ? 'bg-primary-500/90 text-white' : 'bg-black/60 text-white'
         }`}
       >
         {name}

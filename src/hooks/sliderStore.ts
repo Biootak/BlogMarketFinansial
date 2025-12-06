@@ -1,6 +1,6 @@
-import { create } from 'zustand';
 import { getPostBySlug } from '@/actions/postActions';
 import type { PostWithRelations } from '@/types/types';
+import { create } from 'zustand';
 
 interface SliderState {
   posts: PostWithRelations[];
@@ -25,7 +25,7 @@ export const useSliderStore = create<SliderState>((set) => ({
         .map((result) => result.data as PostWithRelations);
 
       set({ posts: validPosts, isLoading: false });
-    } catch (error) {
+    } catch (_error) {
       set({ error: 'Failed to fetch slider posts', isLoading: false });
     }
   },

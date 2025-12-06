@@ -1,9 +1,14 @@
-import React, { memo, useMemo } from 'react';
-import { Toolbar } from '../../ui/toolbar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import type { Editor } from '@tiptap/core';
+import React, { memo, useMemo } from 'react';
 import { Icon } from '../../ui/icon';
+import { Toolbar } from '../../ui/toolbar';
 import { useActive } from '../hooks/use-active';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 type MenuSelectTextAlign = {
   editor: Editor;

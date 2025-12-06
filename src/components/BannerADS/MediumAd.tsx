@@ -1,6 +1,6 @@
+import type { Advertisement } from '@/types/types';
 import type React from 'react';
 import BannerADS from '../BannerADS/BannerADS';
-import type { Advertisement } from '@/types/types';
 
 interface MediumAdProps {
   ad: Advertisement;

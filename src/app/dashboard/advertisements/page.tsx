@@ -1,28 +1,52 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineMegaphone } from 'react-icons/hi2';
 import {
   createAdvertisement,
-  updateAdvertisement,
   deleteAdvertisement,
   getAllAdvertisements,
+  updateAdvertisement,
 } from '@/actions/advertisementActions';
-import type { Advertisement, CustomAdDimensions } from '@/types/types';
-import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/components/ui/use-toast';
 import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
-import { PersianDatePicker } from '@/components/ui/PersianDatePicker';
-import SubmitButton from '@/components/SubmitButton';
 import LoadingMore from '@/components/LoadingMore';
 import { AdvertisementsSkeleton } from '@/components/Skeletons';
+import SubmitButton from '@/components/SubmitButton';
+import { PersianDatePicker } from '@/components/ui/PersianDatePicker';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/components/ui/use-toast';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import type { Advertisement, CustomAdDimensions } from '@/types/types';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useCallback, useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import {
+  HiOutlineMegaphone,
+  HiOutlinePencil,
+  HiOutlinePlus,
+  HiOutlineTrash,
+} from 'react-icons/hi2';
+import * as z from 'zod';
 
 const advertisementSchema = z.object({
   title: z.string().min(1, 'عنوان الزامی است'),
@@ -36,15 +60,16 @@ const advertisementSchema = z.object({
   position: z.enum(['HEADER', 'FOOTER', 'SIDEBAR', 'IN_CONTENT', 'BETWEEN_POSTS', 'CUSTOM']),
   customPosition: z.string().optional(),
   order: z.coerce.number().int().positive(),
-  customDimensions: z.object({
-    width: z.string().optional(),
-    height: z.string().optional(),
-    aspectRatio: z.string().optional(),
-  }).optional(),
+  customDimensions: z
+    .object({
+      width: z.string().optional(),
+      height: z.string().optional(),
+      aspectRatio: z.string().optional(),
+    })
+    .optional(),
 });
 
 type AdvertisementFormData = z.infer<typeof advertisementSchema>;
-
 
 const sizeLabels: Record<string, string> = {
   SMALL: 'کوچک',
@@ -114,7 +139,7 @@ export default function AdvertisementsPage() {
       }
       setIsLoading(false);
     },
-    [toast]
+    [toast],
   );
 
   const loadMore = useCallback(() => {
@@ -204,9 +229,11 @@ export default function AdvertisementsPage() {
     setIsDialogOpen(true);
   };
 
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/40 p-4 sm:p-6 md:p-8 lg:p-10 dark:from-slate-950 dark:via-slate-900 dark:to-blue-950/30" dir="rtl">
+    <div
+      className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/40 p-4 sm:p-6 md:p-8 lg:p-10 dark:from-slate-950 dark:via-slate-900 dark:to-blue-950/30"
+      dir="rtl"
+    >
       {/* Header Section with Glass Effect */}
       <div className="mb-8 space-y-6">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -218,7 +245,7 @@ export default function AdvertisementsPage() {
               مشاهده و مدیریت تبلیغات سایت با رابط کاربری پیشرفته
             </p>
           </div>
-          
+
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="relative flex-1 sm:min-w-[280px]">
               <input
@@ -228,11 +255,21 @@ export default function AdvertisementsPage() {
                 placeholder="جستجوی تبلیغ..."
                 className="h-11 w-full rounded-xl border border-slate-200/60 bg-white/80 px-4 pr-10 text-sm shadow-sm backdrop-blur-sm transition-all duration-300 placeholder:text-slate-400 hover:border-slate-300 hover:shadow-md focus:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100/50 dark:border-slate-700/60 dark:bg-slate-800/80 dark:text-white dark:placeholder:text-slate-500 dark:hover:border-slate-600 dark:focus:border-blue-500 dark:focus:ring-blue-900/30"
               />
-              <svg className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <svg
+                className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 dark:text-slate-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
               </svg>
             </div>
-            
+
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <button
@@ -244,7 +281,10 @@ export default function AdvertisementsPage() {
                   <span className="relative">افزودن تبلیغ</span>
                 </button>
               </DialogTrigger>
-              <DialogContent className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-3xl overflow-hidden rounded-2xl border border-slate-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-slate-700/50 dark:bg-slate-800/95" dir="rtl">
+              <DialogContent
+                className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-3xl overflow-hidden rounded-2xl border border-slate-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-slate-700/50 dark:bg-slate-800/95"
+                dir="rtl"
+              >
                 <DialogHeader className="border-b border-slate-200/60 bg-gradient-to-l from-slate-50 to-white px-6 py-5 dark:border-slate-700/50 dark:from-slate-800 dark:to-slate-800">
                   <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white">
                     {editingAd ? 'ویرایش تبلیغ' : 'افزودن تبلیغ جدید'}
@@ -268,8 +308,12 @@ export default function AdvertisementsPage() {
             <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800">
               <HiOutlineMegaphone className="h-10 w-10 text-slate-400 dark:text-slate-500" />
             </div>
-            <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">تبلیغی یافت نشد</h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400">هنوز هیچ تبلیغی در سیستم ثبت نشده است.</p>
+            <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">
+              تبلیغی یافت نشد
+            </h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              هنوز هیچ تبلیغی در سیستم ثبت نشده است.
+            </p>
           </div>
         </div>
       ) : (
@@ -279,17 +323,29 @@ export default function AdvertisementsPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-200/60 bg-gradient-to-l from-slate-50/80 to-white/80 dark:border-slate-700/50 dark:from-slate-800/80 dark:to-slate-800/80">
-                  <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">تصویر</th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">عنوان</th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">اندازه</th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">موقعیت</th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">وضعیت</th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">عملیات</th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    تصویر
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    عنوان
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    اندازه
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    موقعیت
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    وضعیت
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    عملیات
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200/60 dark:divide-slate-700/50">
                 {ads.map((ad, index) => (
-                  <tr 
+                  <tr
                     key={ad.id}
                     className="group transition-all duration-300 hover:bg-slate-50/50 dark:hover:bg-slate-700/30"
                     style={{ animationDelay: `${index * 50}ms` }}
@@ -324,11 +380,13 @@ export default function AdvertisementsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center rounded-lg px-3 py-1 text-xs font-semibold ${
-                        ad.isActive 
-                          ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' 
-                          : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center rounded-lg px-3 py-1 text-xs font-semibold ${
+                          ad.isActive
+                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                            : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
+                        }`}
+                      >
                         {ad.isActive ? 'فعال' : 'غیرفعال'}
                       </span>
                     </td>
@@ -384,11 +442,13 @@ export default function AdvertisementsPage() {
                       <span className="inline-flex items-center rounded-lg bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-300">
                         {sizeLabels[ad.size]}
                       </span>
-                      <span className={`inline-flex items-center rounded-lg px-2 py-1 text-xs font-semibold ${
-                        ad.isActive 
-                          ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' 
-                          : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center rounded-lg px-2 py-1 text-xs font-semibold ${
+                          ad.isActive
+                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                            : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
+                        }`}
+                      >
                         {ad.isActive ? 'فعال' : 'غیرفعال'}
                       </span>
                     </div>
@@ -426,7 +486,6 @@ export default function AdvertisementsPage() {
   );
 }
 
-
 function AdvertisementForm({
   form,
   onSubmit,
@@ -439,8 +498,10 @@ function AdvertisementForm({
     form.setValue('imageUrl', '');
   };
 
-  const inputClassName = 'h-11 text-sm rounded-xl border border-slate-200/60 bg-white/80 px-4 shadow-sm backdrop-blur-sm transition-all duration-300 placeholder:text-slate-400 hover:border-slate-300 hover:shadow-md focus:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100/50 dark:border-slate-700/60 dark:bg-slate-800/80 dark:text-white dark:placeholder:text-slate-500 dark:hover:border-slate-600 dark:focus:border-blue-500 dark:focus:ring-blue-900/30';
-  const selectClassName = 'h-11 text-sm rounded-xl border border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-slate-300 hover:shadow-md focus:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100/50 dark:border-slate-700/60 dark:bg-slate-800/80 dark:hover:border-slate-600 dark:focus:border-blue-500 dark:focus:ring-blue-900/30';
+  const inputClassName =
+    'h-11 text-sm rounded-xl border border-slate-200/60 bg-white/80 px-4 shadow-sm backdrop-blur-sm transition-all duration-300 placeholder:text-slate-400 hover:border-slate-300 hover:shadow-md focus:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100/50 dark:border-slate-700/60 dark:bg-slate-800/80 dark:text-white dark:placeholder:text-slate-500 dark:hover:border-slate-600 dark:focus:border-blue-500 dark:focus:ring-blue-900/30';
+  const selectClassName =
+    'h-11 text-sm rounded-xl border border-slate-200/60 bg-white/80 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-slate-300 hover:shadow-md focus:border-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-100/50 dark:border-slate-700/60 dark:bg-slate-800/80 dark:hover:border-slate-600 dark:focus:border-blue-500 dark:focus:ring-blue-900/30';
 
   return (
     <Form {...form}>
@@ -454,9 +515,15 @@ function AdvertisementForm({
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">عنوان تبلیغ</FormLabel>
+                  <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    عنوان تبلیغ
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder="عنوان تبلیغ را وارد کنید" {...field} className={inputClassName} />
+                    <Input
+                      placeholder="عنوان تبلیغ را وارد کنید"
+                      {...field}
+                      className={inputClassName}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -467,7 +534,9 @@ function AdvertisementForm({
               name="size"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">اندازه تبلیغ</FormLabel>
+                  <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    اندازه تبلیغ
+                  </FormLabel>
                   <Select dir="rtl" onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger className={selectClassName}>
@@ -494,9 +563,15 @@ function AdvertisementForm({
                 name="customDimensions.width"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">عرض سفارشی</FormLabel>
+                    <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      عرض سفارشی
+                    </FormLabel>
                     <FormControl>
-                      <Input placeholder="مثال: 300px یا 100%" {...field} className={inputClassName} />
+                      <Input
+                        placeholder="مثال: 300px یا 100%"
+                        {...field}
+                        className={inputClassName}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -507,7 +582,9 @@ function AdvertisementForm({
                 name="customDimensions.height"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">ارتفاع سفارشی</FormLabel>
+                    <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      ارتفاع سفارشی
+                    </FormLabel>
                     <FormControl>
                       <Input placeholder="مثال: 250px" {...field} className={inputClassName} />
                     </FormControl>
@@ -520,7 +597,9 @@ function AdvertisementForm({
                 name="customDimensions.aspectRatio"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">نسبت تصویر</FormLabel>
+                    <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      نسبت تصویر
+                    </FormLabel>
                     <FormControl>
                       <Input placeholder="مثال: 16/9" {...field} className={inputClassName} />
                     </FormControl>
@@ -540,7 +619,9 @@ function AdvertisementForm({
             name="position"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">موقعیت تبلیغ</FormLabel>
+                <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  موقعیت تبلیغ
+                </FormLabel>
                 <Select dir="rtl" onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger className={selectClassName}>
@@ -566,7 +647,9 @@ function AdvertisementForm({
             name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">توضیحات</FormLabel>
+                <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  توضیحات
+                </FormLabel>
                 <FormControl>
                   <textarea
                     {...field}
@@ -589,7 +672,9 @@ function AdvertisementForm({
             name="linkUrl"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">لینک تبلیغ</FormLabel>
+                <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  لینک تبلیغ
+                </FormLabel>
                 <FormControl>
                   <Input placeholder="https://example.com" {...field} className={inputClassName} />
                 </FormControl>
@@ -603,7 +688,9 @@ function AdvertisementForm({
             name="imageUrl"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">تصویر تبلیغ</FormLabel>
+                <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  تصویر تبلیغ
+                </FormLabel>
                 <FormControl>
                   <div className="rounded-xl border border-slate-200/60 bg-white/50 p-4 dark:border-slate-700/60 dark:bg-slate-800/50">
                     <ImageUploader
@@ -629,7 +716,9 @@ function AdvertisementForm({
               name="startDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">تاریخ شروع</FormLabel>
+                  <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    تاریخ شروع
+                  </FormLabel>
                   <FormControl>
                     <PersianDatePicker value={field.value} onChange={field.onChange} />
                   </FormControl>
@@ -642,7 +731,9 @@ function AdvertisementForm({
               name="endDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">تاریخ پایان</FormLabel>
+                  <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    تاریخ پایان
+                  </FormLabel>
                   <FormControl>
                     <PersianDatePicker value={field.value} onChange={field.onChange} />
                   </FormControl>
@@ -658,7 +749,9 @@ function AdvertisementForm({
               name="order"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">ترتیب نمایش</FormLabel>
+                  <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    ترتیب نمایش
+                  </FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="1" {...field} className={inputClassName} />
                   </FormControl>
@@ -671,7 +764,9 @@ function AdvertisementForm({
               name="isActive"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">وضعیت</FormLabel>
+                  <FormLabel className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    وضعیت
+                  </FormLabel>
                   <div className="flex h-11 items-center gap-3 rounded-xl border border-slate-200/60 bg-white/80 px-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-slate-300 hover:shadow-md dark:border-slate-700/60 dark:bg-slate-800/80 dark:hover:border-slate-600">
                     <FormControl>
                       <input

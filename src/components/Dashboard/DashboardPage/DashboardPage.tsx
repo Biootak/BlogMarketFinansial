@@ -1,25 +1,25 @@
 'use client';
 
-import { useMemo, memo } from 'react';
-import { motion } from 'framer-motion';
-import useSWR from 'swr';
-import {
-  HiOutlineEye,
-  HiOutlineChatBubbleLeftEllipsis,
-  HiOutlineShare,
-  HiOutlineHeart,
-  HiOutlineDocumentText,
-  HiOutlinePencilSquare,
-  HiOutlineChartBar,
-  HiOutlineCalendarDays,
-} from 'react-icons/hi2';
-import WelcomeSection from './WelcomeSection/WelcomeSection';
 import BlogStatCard from '@/components/Dashboard/DashboardPage/BlogStatCard';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import type { PostWithRelations } from '@/types/types';
+import { motion } from 'framer-motion';
+import { memo, useMemo } from 'react';
+import {
+  HiOutlineCalendarDays,
+  HiOutlineChartBar,
+  HiOutlineChatBubbleLeftEllipsis,
+  HiOutlineDocumentText,
+  HiOutlineEye,
+  HiOutlineHeart,
+  HiOutlinePencilSquare,
+  HiOutlineShare,
+} from 'react-icons/hi2';
+import useSWR from 'swr';
 import PostManagement from '../Blog/PostManagement';
 import PublishingCalendar from '../Calendar/PublishingCalendar';
 import TrafficChart from './TrafficChart';
-import type { PostWithRelations } from '@/types/types';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import WelcomeSection from './WelcomeSection/WelcomeSection';
 
 interface DashboardPageProps {
   stats: {
@@ -58,10 +58,10 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const } 
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
   },
 };
 
@@ -72,11 +72,22 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
   recentDrafts: initialRecentDrafts,
   viewStats: initialViewStats,
 }) => {
-  const { data: stats } = useSWR('/api/dashboard/stats', { fallbackData: initialStats, revalidateOnFocus: true });
-  const { data: scheduledPosts } = useSWR('/api/dashboard/scheduled-posts', { fallbackData: initialScheduledPosts });
-  const { data: popularPosts } = useSWR('/api/dashboard/popular-posts', { fallbackData: initialPopularPosts });
-  const { data: recentDrafts } = useSWR('/api/dashboard/recent-drafts', { fallbackData: initialRecentDrafts });
-  const { data: viewStats } = useSWR('/api/dashboard/view-stats', { fallbackData: initialViewStats });
+  const { data: stats } = useSWR('/api/dashboard/stats', {
+    fallbackData: initialStats,
+    revalidateOnFocus: true,
+  });
+  const { data: scheduledPosts } = useSWR('/api/dashboard/scheduled-posts', {
+    fallbackData: initialScheduledPosts,
+  });
+  const { data: popularPosts } = useSWR('/api/dashboard/popular-posts', {
+    fallbackData: initialPopularPosts,
+  });
+  const { data: recentDrafts } = useSWR('/api/dashboard/recent-drafts', {
+    fallbackData: initialRecentDrafts,
+  });
+  const { data: viewStats } = useSWR('/api/dashboard/view-stats', {
+    fallbackData: initialViewStats,
+  });
 
   const blogStatCards = useMemo(
     () =>
@@ -146,16 +157,12 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
       </motion.div>
 
       {/* Stats Grid */}
-      <motion.div 
+      <motion.div
         variants={containerVariants}
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5"
       >
         {blogStatCards.map((card, index) => (
-          <motion.div
-            key={card.title}
-            variants={itemVariants}
-            custom={index}
-          >
+          <motion.div key={card.title} variants={itemVariants} custom={index}>
             <BlogStatCard
               title={card.title}
               value={card.value}
@@ -236,7 +243,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
                   </div>
                 </div>
               </div>
-              
+
               {/* Chart */}
               <div className="p-3 sm:p-4 md:p-5 lg:p-7">
                 <div className="h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px]">
@@ -280,7 +287,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
                   </div>
                 </div>
               </div>
-              
+
               {/* Calendar */}
               <div className="p-3 sm:p-4 md:p-5 lg:p-7">
                 <div className="h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px]">

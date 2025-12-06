@@ -1,4 +1,4 @@
-import { TableSkeleton, SkeletonBase } from '@/components/Skeletons';
+import { SkeletonBase, TableSkeleton } from '@/components/Skeletons';
 
 export default function RateListsLoading() {
   return (

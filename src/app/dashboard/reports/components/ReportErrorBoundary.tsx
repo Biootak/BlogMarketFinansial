@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import React from 'react';
 
 interface Props {
   children: React.ReactNode;
@@ -24,7 +24,7 @@ export class ReportErrorBoundary extends React.Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Report Error:', error, errorInfo);
-    
+
     // Log to system logs (in a real app, this would be an API call)
     if (typeof window !== 'undefined') {
       console.error('Error boundary caught:', {
@@ -47,11 +47,9 @@ export class ReportErrorBoundary extends React.Component<Props, State> {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
               <AlertTriangle className="w-8 h-8 text-red-600" />
             </div>
-            
-            <h3 className="text-xl font-bold text-gray-900 mb-2">
-              خطا در نمایش گزارش
-            </h3>
-            
+
+            <h3 className="text-xl font-bold text-gray-900 mb-2">خطا در نمایش گزارش</h3>
+
             <p className="text-sm text-gray-600 mb-6">
               متأسفانه در نمایش این گزارش خطایی رخ داده است. لطفاً دوباره تلاش کنید.
             </p>

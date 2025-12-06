@@ -28,7 +28,7 @@ export interface PerformanceReport {
  */
 function getDeviceType(): 'mobile' | 'tablet' | 'desktop' {
   if (typeof window === 'undefined') return 'desktop';
-  
+
   const width = window.innerWidth;
   if (width < 768) return 'mobile';
   if (width < 1024) return 'tablet';
@@ -40,8 +40,11 @@ function getDeviceType(): 'mobile' | 'tablet' | 'desktop' {
  */
 function getConnectionType(): string {
   if (typeof navigator === 'undefined') return 'unknown';
-  
-  const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+
+  const connection =
+    (navigator as any).connection ||
+    (navigator as any).mozConnection ||
+    (navigator as any).webkitConnection;
   return connection?.effectiveType || 'unknown';
 }
 

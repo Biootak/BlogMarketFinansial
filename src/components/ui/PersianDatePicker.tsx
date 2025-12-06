@@ -1,11 +1,11 @@
-import React from 'react';
-import DatePicker, { DateObject } from 'react-multi-date-picker';
-import persian from 'react-date-object/calendars/persian';
-import persian_fa from 'react-date-object/locales/persian_fa';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { HiCalendar } from 'react-icons/hi2';
 import { cn } from '@/lib/utils';
+import React from 'react';
+import persian from 'react-date-object/calendars/persian';
+import persian_fa from 'react-date-object/locales/persian_fa';
+import { HiCalendar } from 'react-icons/hi2';
+import DatePicker, { DateObject } from 'react-multi-date-picker';
 
 interface PersianDatePickerProps {
   value: Date | null;

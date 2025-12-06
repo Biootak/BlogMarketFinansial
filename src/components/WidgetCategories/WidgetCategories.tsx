@@ -1,7 +1,7 @@
-import type React from 'react';
 import CardCategory1 from '@/components/CardCategory1/CardCategory1';
 import WidgetHeading1 from '@/components/WidgetHeading1/WidgetHeading1';
 import type { TaxonomyType } from '@/types/types';
+import type React from 'react';
 import { Icon } from '../ui/icon';
 
 export interface WidgetCategoriesProps {

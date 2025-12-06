@@ -10,7 +10,10 @@ const WORDS_PER_MINUTE = 200; // میانگین سرعت خواندن (کلمه 
  * حذف تگ‌های HTML از محتوا
  */
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  return html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 /**
@@ -26,7 +29,7 @@ function countWords(text: string): number {
 /**
  * Calculate reading time in minutes
  * محاسبه زمان مطالعه به دقیقه
- * 
+ *
  * @param content - HTML content of the post
  * @returns Reading time in minutes (minimum 1)
  */

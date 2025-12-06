@@ -57,7 +57,7 @@ export class ClientMonitor {
    */
   async measureWebVitals(): Promise<WebVitals> {
     // استفاده از web-vitals library
-    const { onCLS, onFID, onLCP, onINP, onTTFB } = await import('web-vitals');
+    const { onCLS, onLCP, onINP, onTTFB } = await import('web-vitals');
 
     return new Promise((resolve) => {
       const vitals: Partial<WebVitals> = {};
@@ -67,18 +67,20 @@ export class ClientMonitor {
         this.checkIfComplete(vitals, resolve);
       });
 
-      onFID((metric) => {
-        vitals.fid = metric.value;
-        this.checkIfComplete(vitals, resolve);
-      });
+      // FID is deprecated in web-vitals v4, using INP instead
+      // onFID((metric) => {
+      //   vitals.fid = metric.value;
+      //   this.checkIfComplete(vitals, resolve);
+      // });
 
       onLCP((metric) => {
         vitals.lcp = metric.value;
         this.checkIfComplete(vitals, resolve);
       });
 
-      onINP((metric) => {
+      onINP((metric: any) => {
         vitals.inp = metric.value;
+        vitals.fid = metric.value; // Use INP as FID replacement
         this.checkIfComplete(vitals, resolve);
       });
 
@@ -147,7 +149,10 @@ export class ClientMonitor {
   /**
    * تحلیل LCP و ارائه پیشنهادات
    */
-  analyzeLCP(lcp: number, element?: Element): {
+  analyzeLCP(
+    lcp: number,
+    element?: Element,
+  ): {
     isGood: boolean;
     suggestions: string[];
   } {
@@ -183,7 +188,10 @@ export class ClientMonitor {
   /**
    * تحلیل CLS و شناسایی عناصر مشکل‌دار
    */
-  analyzeCLS(cls: number, shifts: LayoutShift[]): {
+  analyzeCLS(
+    cls: number,
+    shifts: LayoutShift[],
+  ): {
     isGood: boolean;
     problematicElements: string[];
     suggestions: string[];
@@ -244,7 +252,7 @@ export class ClientMonitor {
 
         longTaskObserver.observe({ entryTypes: ['longtask'] });
         this.observers.push(longTaskObserver);
-      } catch (e) {
+      } catch (_e) {
         // Long task API not supported
       }
 
@@ -272,7 +280,7 @@ export class ClientMonitor {
 
         layoutShiftObserver.observe({ entryTypes: ['layout-shift'] });
         this.observers.push(layoutShiftObserver);
-      } catch (e) {
+      } catch (_e) {
         // Layout shift API not supported
       }
 
@@ -290,7 +298,7 @@ export class ClientMonitor {
 
         lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
         this.observers.push(lcpObserver);
-      } catch (e) {
+      } catch (_e) {
         // LCP API not supported
       }
     }

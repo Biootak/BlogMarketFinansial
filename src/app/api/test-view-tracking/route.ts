@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { NextResponse } from 'next/server';
 
 /**
  * Test endpoint to verify view tracking

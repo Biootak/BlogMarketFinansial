@@ -5,10 +5,10 @@
  * Shows real-time performance metrics during development
  */
 
-import { useEffect, useState } from 'react';
-import { getMetricsSnapshot, checkPerformanceTargets } from '@/lib/performance/web-vitals';
 import { getPerformanceMonitor } from '@/lib/performance/performance-monitor';
+import { checkPerformanceTargets, getMetricsSnapshot } from '@/lib/performance/web-vitals';
 import type { WebVitalsMetrics } from '@/lib/performance/web-vitals';
+import { useEffect, useState } from 'react';
 
 export function PerformanceDashboard() {
   const [metrics, setMetrics] = useState<Partial<WebVitalsMetrics>>({});
@@ -82,13 +82,7 @@ export function PerformanceDashboard() {
               unit="ms"
               passed={targets.inp}
             />
-            <MetricRow
-              label="CLS"
-              value={metrics.cls}
-              target={0.1}
-              unit=""
-              passed={targets.cls}
-            />
+            <MetricRow label="CLS" value={metrics.cls} target={0.1} unit="" passed={targets.cls} />
             <MetricRow
               label="TTFB"
               value={metrics.ttfb}
@@ -111,10 +105,7 @@ export function PerformanceDashboard() {
               <h4 className="mb-2 text-sm font-semibold">Issues ({issues.length})</h4>
               <div className="max-h-40 space-y-1 overflow-y-auto text-xs">
                 {issues.slice(-5).map((issue, index) => (
-                  <div
-                    key={index}
-                    className="rounded bg-neutral-800 p-2"
-                  >
+                  <div key={index} className="rounded bg-neutral-800 p-2">
                     <div className="flex items-center gap-2">
                       <span className={getSeverityColor(issue.severity)}>●</span>
                       <span className="font-medium">{issue.type}</span>
@@ -132,9 +123,7 @@ export function PerformanceDashboard() {
               <span className="text-sm font-medium">Overall Status</span>
               <span
                 className={`rounded px-2 py-1 text-xs font-bold ${
-                  targets.overall
-                    ? 'bg-green-500/20 text-green-400'
-                    : 'bg-red-500/20 text-red-400'
+                  targets.overall ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
                 }`}
               >
                 {targets.overall ? '✓ Good' : '✗ Needs Improvement'}
@@ -161,7 +150,8 @@ function MetricRow({
   passed: boolean;
 }) {
   const displayValue = value !== undefined ? value.toFixed(value < 1 ? 3 : 0) : '-';
-  const color = value === undefined ? 'text-neutral-500' : passed ? 'text-green-400' : 'text-red-400';
+  const color =
+    value === undefined ? 'text-neutral-500' : passed ? 'text-green-400' : 'text-red-400';
 
   return (
     <div className="flex items-center justify-between text-sm">

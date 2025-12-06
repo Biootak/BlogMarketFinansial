@@ -7,10 +7,9 @@
  * Get all focusable elements within a container
  */
 export function getFocusableElements(container: HTMLElement): HTMLElement[] {
-  const selector =
-    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+  const selector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
   return Array.from(container.querySelectorAll<HTMLElement>(selector)).filter(
-    (el) => !el.hasAttribute('disabled') && !el.getAttribute('aria-hidden')
+    (el) => !el.hasAttribute('disabled') && !el.getAttribute('aria-hidden'),
   );
 }
 
@@ -68,8 +67,8 @@ export function getTabOrder(container: HTMLElement): HTMLElement[] {
 
   // Sort by tabindex
   return elements.sort((a, b) => {
-    const aIndex = parseInt(a.getAttribute('tabindex') || '0');
-    const bIndex = parseInt(b.getAttribute('tabindex') || '0');
+    const aIndex = Number.parseInt(a.getAttribute('tabindex') || '0');
+    const bIndex = Number.parseInt(b.getAttribute('tabindex') || '0');
 
     if (aIndex === 0 && bIndex === 0) return 0;
     if (aIndex === 0) return 1;
@@ -82,11 +81,7 @@ export function getTabOrder(container: HTMLElement): HTMLElement[] {
  * Check if element is visible
  */
 export function isElementVisible(element: HTMLElement): boolean {
-  return !!(
-    element.offsetWidth ||
-    element.offsetHeight ||
-    element.getClientRects().length
-  );
+  return !!(element.offsetWidth || element.offsetHeight || element.getClientRects().length);
 }
 
 /**
@@ -97,7 +92,7 @@ export function addFocusRing(element: HTMLElement): void {
     'focus:outline-none',
     'focus:ring-2',
     'focus:ring-primary-500',
-    'focus:ring-offset-2'
+    'focus:ring-offset-2',
   );
 }
 
@@ -107,7 +102,7 @@ export function addFocusRing(element: HTMLElement): void {
 export function handleDropdownKeyboard(
   container: HTMLElement,
   onSelect: (index: number) => void,
-  onClose: () => void
+  onClose: () => void,
 ): () => void {
   let currentIndex = 0;
   const items = getFocusableElements(container);
@@ -174,7 +169,10 @@ export function createSkipLink(targetId: string, text: string): HTMLAnchorElemen
 /**
  * Announce to screen readers
  */
-export function announceToScreenReader(message: string, priority: 'polite' | 'assertive' = 'polite'): void {
+export function announceToScreenReader(
+  message: string,
+  priority: 'polite' | 'assertive' = 'polite',
+): void {
   const announcement = document.createElement('div');
   announcement.setAttribute('role', 'status');
   announcement.setAttribute('aria-live', priority);

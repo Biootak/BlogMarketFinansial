@@ -1,9 +1,9 @@
 'use server';
 
-import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/db';
-import type { ActionResult, Advertisement, AdSize, AdPosition } from '@/types/types';
+import type { ActionResult, AdPosition, AdSize, Advertisement } from '@/types/types';
 import type { Prisma } from '@prisma/client';
+import { unstable_cache } from 'next/cache';
 import { revalidatePath, revalidateTag } from 'next/cache';
 
 // Internal function for fetching ads (not cached)
@@ -50,14 +50,10 @@ async function fetchActiveAdsInternal(
 }
 
 // Cached version
-const getCachedActiveAds = unstable_cache(
-  fetchActiveAdsInternal,
-  ['active-advertisements'],
-  {
-    revalidate: 300, // 5 minutes
-    tags: ['advertisements'],
-  }
-);
+const getCachedActiveAds = unstable_cache(fetchActiveAdsInternal, ['active-advertisements'], {
+  revalidate: 300, // 5 minutes
+  tags: ['advertisements'],
+});
 
 // Public API with object params
 export async function getActiveAdvertisements({
@@ -79,7 +75,6 @@ export async function getActiveAdvertisements({
 } = {}): Promise<ActionResult<Advertisement[]>> {
   return getCachedActiveAds(limit, page, search, size, position, orderBy, orderDirection);
 }
-
 
 export async function getAllAdvertisements({
   limit = 10,

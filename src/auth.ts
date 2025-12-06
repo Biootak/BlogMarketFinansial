@@ -1,12 +1,12 @@
-import NextAuth from 'next-auth';
-import bcrypt from 'bcryptjs';
-import { PrismaAdapter } from '@auth/prisma-adapter';
 import authConfig from '@/auth.config';
+import { getUserByEmail, getUserById } from '@/data/user';
 import prisma from '@/lib/db';
-import { getUserById, getUserByEmail } from '@/data/user';
-import type { Role, UserProfile } from '@/types/types';
-import Credentials from 'next-auth/providers/credentials';
 import { LoginSchema } from '@/schemas';
+import type { Role, UserProfile } from '@/types/types';
+import { PrismaAdapter } from '@auth/prisma-adapter';
+import bcrypt from 'bcryptjs';
+import NextAuth from 'next-auth';
+import Credentials from 'next-auth/providers/credentials';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,

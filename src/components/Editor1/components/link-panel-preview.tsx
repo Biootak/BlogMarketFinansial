@@ -1,5 +1,5 @@
+import { Check, Copy, ExternalLink, Pencil, Unlink } from 'lucide-react';
 import React, { useMemo, useCallback } from 'react';
-import { ExternalLink, Pencil, Unlink, Copy, Check } from 'lucide-react';
 
 interface LinkPanelPreviewProps {
   url: string;
@@ -46,7 +46,7 @@ const LinkPanelPreview = ({ url, onEdit, onRemove }: LinkPanelPreviewProps) => {
           <span className="truncate">{displayUrl}</span>
         </a>
       </div>
-      
+
       {/* Actions */}
       <div className="flex items-center justify-end gap-1 px-2 py-1.5">
         <button
@@ -55,15 +55,11 @@ const LinkPanelPreview = ({ url, onEdit, onRemove }: LinkPanelPreviewProps) => {
           className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
           aria-label={copied ? 'کپی شد' : 'کپی لینک'}
         >
-          {copied ? (
-            <Check size={16} className="text-green-500" />
-          ) : (
-            <Copy size={16} />
-          )}
+          {copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
         </button>
-        
+
         <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" aria-hidden="true" />
-        
+
         <button
           type="button"
           onClick={onEdit}
@@ -72,7 +68,7 @@ const LinkPanelPreview = ({ url, onEdit, onRemove }: LinkPanelPreviewProps) => {
         >
           <Pencil size={16} />
         </button>
-        
+
         <button
           type="button"
           onClick={onRemove}

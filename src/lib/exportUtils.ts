@@ -1,5 +1,5 @@
-import * as XLSX from 'xlsx';
 import type { ReportData } from '@/actions/reportActions';
+import * as XLSX from 'xlsx';
 
 /**
  * Export report data to Excel format
@@ -109,9 +109,7 @@ export function exportToCSV(data: ReportData, dateRange: { from: Date; to: Date 
   data.topPosts.forEach((post, index) => {
     const title = post.title.replace(/,/g, '،'); // Replace commas
     const author = (post.author.name || 'ناشناس').replace(/,/g, '،');
-    const date = post.publishedAt
-      ? new Date(post.publishedAt).toLocaleDateString('fa-IR')
-      : '-';
+    const date = post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('fa-IR') : '-';
     csv += `${index + 1},${title},${author},${post.views},${post.likes},${post.comments},${post.saves},${date}\n`;
   });
   csv += '\n';
@@ -148,7 +146,7 @@ export function exportToCSV(data: ReportData, dateRange: { from: Date; to: Date 
   const filename = `report_${fromStr}_to_${toStr}.csv`;
 
   // Create blob and download
-  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+  const blob = new Blob([`\ufeff${csv}`], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   const url = URL.createObjectURL(blob);
   link.setAttribute('href', url);

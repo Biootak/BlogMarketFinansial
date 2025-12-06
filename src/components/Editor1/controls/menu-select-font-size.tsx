@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import type { Editor } from '@tiptap/react';
-import { fontSizes } from '../extensions/font-size';
-import { ChevronDown, ALargeSmall } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import type { Editor } from '@tiptap/react';
+import { ALargeSmall, ChevronDown } from 'lucide-react';
+import type React from 'react';
+import { useRef, useState } from 'react';
+import { fontSizes } from '../extensions/font-size';
 
 interface MenuSelectFontSizeProps {
   editor: Editor;
@@ -28,7 +29,7 @@ const MenuSelectFontSize: React.FC<MenuSelectFontSizeProps> = ({ editor }) => {
   };
 
   const handleCustomSize = () => {
-    const size = parseInt(customSize);
+    const size = Number.parseInt(customSize);
     if (size >= 8 && size <= 96) {
       editor.chain().focus().setFontSize(`${size}px`).run();
       setCustomSize('');
@@ -51,7 +52,10 @@ const MenuSelectFontSize: React.FC<MenuSelectFontSizeProps> = ({ editor }) => {
         >
           <ALargeSmall size={16} className="text-gray-500" />
           <span className="min-w-[24px] text-center font-medium">{currentSizeNumber}</span>
-          <ChevronDown size={14} className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown
+            size={14}
+            className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          />
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-48 p-0" align="start">
@@ -84,15 +88,15 @@ const MenuSelectFontSize: React.FC<MenuSelectFontSizeProps> = ({ editor }) => {
               type="button"
               onClick={() => handleSizeSelect(size.value)}
               className={`w-full px-3 py-2 text-sm text-right flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${
-                currentFontSize === size.value 
-                  ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400' 
+                currentFontSize === size.value
+                  ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
                   : 'text-gray-700 dark:text-gray-200'
               }`}
             >
-              <span style={{ fontSize: `${Math.min(parseInt(size.label), 24)}px` }}>{size.label}</span>
-              {currentFontSize === size.value && (
-                <span className="text-primary-500">✓</span>
-              )}
+              <span style={{ fontSize: `${Math.min(Number.parseInt(size.label), 24)}px` }}>
+                {size.label}
+              </span>
+              {currentFontSize === size.value && <span className="text-primary-500">✓</span>}
             </button>
           ))}
         </div>

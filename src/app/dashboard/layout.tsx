@@ -1,10 +1,10 @@
-import { checkRole } from '@/lib/auth';
 import Header from '@/components/Dashboard/DashboardPage/Header';
+import MainContent from '@/components/Dashboard/DashboardPage/MainContent';
 import Sidebar from '@/components/Dashboard/DashboardPage/Sidebar';
 import SidebarInitializer from '@/components/Dashboard/DashboardPage/SidebarInitializer';
-import MainContent from '@/components/Dashboard/DashboardPage/MainContent';
 import { SiteSettingsProvider } from '@/components/SiteSettingsProvider';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
+import { checkRole } from '@/lib/auth';
 
 export default async function DashboardLayout({
   children,

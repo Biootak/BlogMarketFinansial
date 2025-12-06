@@ -29,13 +29,9 @@ export async function checkDatabaseConnection(): Promise<boolean> {
 }
 
 // Helper برای اجرای query با retry
-export async function withRetry<T>(
-  fn: () => Promise<T>,
-  retries = 3,
-  delay = 1000
-): Promise<T> {
+export async function withRetry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> {
   let lastError: Error | undefined;
-  
+
   for (let i = 0; i < retries; i++) {
     try {
       return await fn();
@@ -46,6 +42,6 @@ export async function withRetry<T>(
       }
     }
   }
-  
+
   throw lastError;
 }

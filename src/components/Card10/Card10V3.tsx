@@ -1,14 +1,14 @@
 'use client';
-import type React from 'react';
-import { useMemo, useState, useCallback } from 'react';
+import CardAuthor2 from '@/components/CardAuthor2/CardAuthor2';
+import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
 import NcImage from '@/components/NcImage/NcImage';
 import PostCardInfo from '@/components/PostCardInfo/PostCardInfo';
-import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
 import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia';
-import CardAuthor2 from '@/components/CardAuthor2/CardAuthor2';
-import Link from 'next/link';
-import type { PostWithRelations } from '@/types/types';
 import { getPostLink } from '@/lib/getPostLink';
+import type { PostWithRelations } from '@/types/types';
+import Link from 'next/link';
+import type React from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 interface Card10V3Props {
   className?: string;

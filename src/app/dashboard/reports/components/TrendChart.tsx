@@ -1,9 +1,18 @@
 'use client';
 
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { TrendingUp, Eye, Heart, MessageSquare, Bookmark } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import type { TrendData } from '@/actions/reportActions';
+import { cn } from '@/lib/utils';
+import { Bookmark, Eye, Heart, MessageSquare, TrendingUp } from 'lucide-react';
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 interface TrendChartProps {
   data: TrendData[];
@@ -54,10 +63,7 @@ export function TrendChart({ data, metric = 'views', isLoading = false }: TrendC
       {/* Chart */}
       <div className="h-64 sm:h-80">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
-            data={formattedData}
-            margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-          >
+          <AreaChart data={formattedData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
@@ -82,10 +88,7 @@ export function TrendChart({ data, metric = 'views', isLoading = false }: TrendC
               stroke="#6b7280"
               style={{ fontSize: '12px', fontFamily: 'inherit' }}
             />
-            <YAxis
-              stroke="#6b7280"
-              style={{ fontSize: '12px', fontFamily: 'inherit' }}
-            />
+            <YAxis stroke="#6b7280" style={{ fontSize: '12px', fontFamily: 'inherit' }} />
             <Tooltip
               contentStyle={{
                 backgroundColor: 'white',

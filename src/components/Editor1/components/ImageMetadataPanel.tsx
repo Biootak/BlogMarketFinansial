@@ -1,5 +1,5 @@
-import React from 'react';
-import { Info, FileImage, Ruler } from 'lucide-react';
+import { FileImage, Info, Ruler } from 'lucide-react';
+import type React from 'react';
 
 interface ImageMetadataPanelProps {
   src: string;
@@ -53,9 +53,7 @@ const ImageMetadataPanel: React.FC<ImageMetadataPanelProps> = ({
               <FileImage size={12} />
               فرمت:
             </span>
-            <span className="text-gray-900 dark:text-white font-mono uppercase">
-              {format}
-            </span>
+            <span className="text-gray-900 dark:text-white font-mono uppercase">{format}</span>
           </div>
         )}
 

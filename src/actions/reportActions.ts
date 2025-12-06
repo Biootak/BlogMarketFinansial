@@ -2,7 +2,7 @@
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import db from '@/lib/db';
-import { reportCache, generateReportCacheKey, DEFAULT_CACHE_TTL } from '@/lib/reportCache';
+import { DEFAULT_CACHE_TTL, generateReportCacheKey, reportCache } from '@/lib/reportCache';
 import { revalidatePath } from 'next/cache';
 
 interface UserStats {
@@ -176,52 +176,59 @@ export async function getSystemReports(from?: Date, to?: Date) {
   try {
     await checkReportAccess();
 
-    const dateFilter = from && to ? {
-      createdAt: {
-        gte: from,
-        lte: to
-      }
-    } : {};
+    const dateFilter =
+      from && to
+        ? {
+            createdAt: {
+              gte: from,
+              lte: to,
+            },
+          }
+        : {};
 
     const [
       userStatsResult,
       postStatsResult,
       commentStatsResult,
       viewStatsResult,
-      systemStatusResult
+      systemStatusResult,
     ] = await Promise.all([
       // آمار کاربران
       (async () => {
         const result = await prisma.user.aggregate({
           where: dateFilter,
           _count: {
-            id: true
-          }
+            id: true,
+          },
         });
-        
+
         const newThisMonth = await prisma.user.count({
           where: {
             createdAt: {
-              gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-            }
-          }
+              gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+            },
+          },
         });
-        
-        const active = await prisma.user.count({ where: { status: "Active" } });
-        
-        const roleDistribution = await prisma.user.groupBy({
-          by: ['role'],
-          _count: { id: true }
-        }).then(roles => roles.map(r => ({
-          name: r.role,
-          value: r._count.id
-        })));
-        
+
+        const active = await prisma.user.count({ where: { status: 'Active' } });
+
+        const roleDistribution = await prisma.user
+          .groupBy({
+            by: ['role'],
+            _count: { id: true },
+          })
+          .then((roles) =>
+            roles.map((r) => ({
+              name: r.role,
+              value: r._count.id,
+            })),
+          );
+
         return {
           total: result._count.id,
           active,
           newThisMonth,
-          roleDistribution
+          roleDistribution,
         };
       })(),
 
@@ -230,20 +237,20 @@ export async function getSystemReports(from?: Date, to?: Date) {
         const result = await prisma.post.aggregate({
           where: dateFilter,
           _count: {
-            id: true
-          }
+            id: true,
+          },
         });
-        
-        const published = await prisma.post.count({ 
-          where: { 
+
+        const published = await prisma.post.count({
+          where: {
             ...dateFilter,
-            status: "PUBLISHED" 
-          } 
+            status: 'PUBLISHED',
+          },
         });
 
         return {
           total: result._count.id,
-          published
+          published,
         };
       })(),
 
@@ -252,20 +259,20 @@ export async function getSystemReports(from?: Date, to?: Date) {
         const result = await prisma.comment.aggregate({
           where: dateFilter,
           _count: {
-            id: true
-          }
+            id: true,
+          },
         });
-        
-        const pending = await prisma.comment.count({ 
-          where: { 
+
+        const pending = await prisma.comment.count({
+          where: {
             ...dateFilter,
-            approved: false
-          } 
+            approved: false,
+          },
         });
 
         return {
           total: result._count.id,
-          pending
+          pending,
         };
       })(),
 
@@ -274,26 +281,26 @@ export async function getSystemReports(from?: Date, to?: Date) {
         const result = await prisma.view.aggregate({
           where: dateFilter,
           _count: {
-            id: true
-          }
+            id: true,
+          },
         });
-        
+
         const today = await prisma.view.count({
           where: {
             createdAt: {
-              gte: new Date(new Date().setHours(0, 0, 0, 0))
-            }
-          }
+              gte: new Date(new Date().setHours(0, 0, 0, 0)),
+            },
+          },
         });
 
         return {
           total: result._count.id,
-          today
+          today,
         };
       })(),
 
       // وضعیت سیستم
-      getSystemStatus()
+      getSystemStatus(),
     ]);
 
     const userStats = userStatsResult;
@@ -305,7 +312,7 @@ export async function getSystemReports(from?: Date, to?: Date) {
       memory: { total: 0, used: 0, free: 0 },
       disk: { total: 0, used: 0, free: 0 },
       database: { status: 'offline', connections: 0, queryTime: 0 },
-      cache: { status: 'offline', hitRate: 0 }
+      cache: { status: 'offline', hitRate: 0 },
     };
 
     const data: SystemReport = {
@@ -313,7 +320,7 @@ export async function getSystemReports(from?: Date, to?: Date) {
       postStats,
       commentStats,
       viewStats,
-      systemStatus
+      systemStatus,
     };
 
     revalidatePath('/dashboard/reports');
@@ -322,10 +329,10 @@ export async function getSystemReports(from?: Date, to?: Date) {
     console.error('Error in getSystemReports:', error);
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'خطا در دریافت گزارش‌های سیستم'
+      message: error instanceof Error ? error.message : 'خطا در دریافت گزارش‌های سیستم',
     };
   }
-};
+}
 
 export const getSystemStatus = async (): Promise<ActionResult<SystemStatus>> => {
   'use server';
@@ -412,9 +419,9 @@ export const getActivityLog = async (): Promise<ActionResult<Activity[]>> => {
 };
 
 export async function getSystemLogs(
-  page: number = 1,
-  limit: number = 10,
-  level?: string
+  page = 1,
+  limit = 10,
+  level?: string,
 ): Promise<ActionResult<{ logs: SystemLog[]; total: number }>> {
   try {
     await checkReportAccess();
@@ -466,23 +473,25 @@ async function logPerformanceWarning(queryName: string, duration: number) {
  */
 export async function getReportData(
   dateRange: { from: Date; to: Date },
-  userId?: string
+  userId?: string,
 ): Promise<ActionResult<ReportData>> {
   const startTime = Date.now();
-  
+
   try {
     await checkReportAccess();
 
     // Generate cache key
     const cacheKey = generateReportCacheKey(userId, dateRange.from, dateRange.to);
-    
+
     // Check if this is "all time" query (more than 1 year)
-    const daysDiff = Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
+    const daysDiff = Math.ceil(
+      (dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24),
+    );
     const isAllTime = daysDiff > 365;
-    
+
     // Use longer cache for "all time" queries (1 hour instead of 5 minutes)
     const cacheTTL = isAllTime ? 3600 * 1000 : DEFAULT_CACHE_TTL; // Convert to milliseconds
-    
+
     // Check cache first
     const cachedData = reportCache.get<ReportData>(cacheKey);
     if (cachedData) {
@@ -493,22 +502,22 @@ export async function getReportData(
     const kpisStart = Date.now();
     const kpis = await calculateKPIs(dateRange);
     await logPerformanceWarning('calculateKPIs', Date.now() - kpisStart);
-    
+
     // Get top posts
     const postsStart = Date.now();
     const topPosts = await getTopPostsData(dateRange, 10);
     await logPerformanceWarning('getTopPostsData', Date.now() - postsStart);
-    
+
     // Get top authors
     const authorsStart = Date.now();
     const topAuthors = await getTopAuthorsData(dateRange, 10);
     await logPerformanceWarning('getTopAuthorsData', Date.now() - authorsStart);
-    
+
     // Get category stats
     const categoriesStart = Date.now();
     const categories = await getCategoryStatsData(dateRange);
     await logPerformanceWarning('getCategoryStatsData', Date.now() - categoriesStart);
-    
+
     // Get trend data
     const trendsStart = Date.now();
     const trends = await getTrendDataByRange(dateRange);
@@ -611,10 +620,12 @@ async function calculateKPIs(dateRange: { from: Date; to: Date }): Promise<KPIDa
     }),
     // Total page views - کل بازدیدها (همه زمان‌ها)
     // توجه: Post.viewCount یک counter کلی است و قابل فیلتر زمانی نیست
-    db.post.aggregate({
-      where: { status: 'PUBLISHED' },
-      _sum: { viewCount: true },
-    }).then(result => result._sum?.viewCount || 0),
+    db.post
+      .aggregate({
+        where: { status: 'PUBLISHED' },
+        _sum: { viewCount: true },
+      })
+      .then((result) => result._sum?.viewCount || 0),
     // Total likes
     db.like.count({
       where: {
@@ -645,15 +656,11 @@ async function calculateKPIs(dateRange: { from: Date; to: Date }): Promise<KPIDa
   ]);
 
   // Calculate user growth percentage
-  const userGrowth = previousUsers > 0 
-    ? ((currentUsers - previousUsers) / previousUsers) * 100 
-    : 0;
+  const userGrowth = previousUsers > 0 ? ((currentUsers - previousUsers) / previousUsers) * 100 : 0;
 
   // Calculate engagement rate
   const totalEngagements = totalLikes + totalComments + totalSaves;
-  const engagementRate = pageViews > 0 
-    ? (totalEngagements / pageViews) * 100 
-    : 0;
+  const engagementRate = pageViews > 0 ? (totalEngagements / pageViews) * 100 : 0;
 
   // Get total users (all time)
   const totalUsers = await db.user.count();
@@ -676,7 +683,7 @@ async function calculateKPIs(dateRange: { from: Date; to: Date }): Promise<KPIDa
  */
 async function getTopPostsData(
   dateRange: { from: Date; to: Date },
-  limit: number = 10
+  limit = 10,
 ): Promise<TopPost[]> {
   // Get posts with their viewCount
   const posts = await db.post.findMany({
@@ -750,7 +757,7 @@ async function getTopPostsData(
         saves,
         publishedAt: post.createdAt,
       };
-    })
+    }),
   );
 
   return postsWithMetrics;
@@ -761,7 +768,7 @@ async function getTopPostsData(
  */
 async function getTopAuthorsData(
   dateRange: { from: Date; to: Date },
-  limit: number = 10
+  limit = 10,
 ): Promise<TopAuthor[]> {
   // Get all authors with published posts
   const authors = await db.user.findMany({
@@ -813,7 +820,7 @@ async function getTopAuthorsData(
         totalViews,
         averageViews: Math.round(averageViews * 100) / 100,
       };
-    })
+    }),
   );
 
   // Filter out authors with no posts in the period and sort by total views
@@ -826,9 +833,7 @@ async function getTopAuthorsData(
 /**
  * Get category distribution stats
  */
-async function getCategoryStatsData(
-  dateRange: { from: Date; to: Date }
-): Promise<CategoryStat[]> {
+async function getCategoryStatsData(dateRange: { from: Date; to: Date }): Promise<CategoryStat[]> {
   const categories = await db.category.findMany({
     select: {
       id: true,
@@ -873,7 +878,7 @@ async function getCategoryStatsData(
         postCount,
         percentage: Math.round(percentage * 100) / 100,
       };
-    })
+    }),
   );
 
   return categoryStats
@@ -884,22 +889,20 @@ async function getCategoryStatsData(
 /**
  * Get trend data aggregated by day or week
  */
-async function getTrendDataByRange(
-  dateRange: { from: Date; to: Date }
-): Promise<TrendData[]> {
+async function getTrendDataByRange(dateRange: { from: Date; to: Date }): Promise<TrendData[]> {
   const { from, to } = dateRange;
   const daysDiff = Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
-  
+
   // For very large ranges (> 365 days), use monthly aggregation
   if (daysDiff > 365) {
     return getTrendDataMonthly(from, to);
   }
-  
+
   // Use weekly aggregation for ranges > 90 days
   if (daysDiff > 90) {
     return getTrendDataWeekly(from, to);
   }
-  
+
   // Use daily for smaller ranges
   return getTrendDataDaily(from, to);
 }
@@ -917,18 +920,20 @@ async function getTrendDataDaily(from: Date, to: Date): Promise<TrendData[]> {
 
     const [views, likes, comments, saves] = await Promise.all([
       // Sum viewCount from posts created in this period
-      db.post.aggregate({
-        where: {
-          status: 'PUBLISHED',
-          createdAt: {
-            gte: currentDate,
-            lt: nextDate,
+      db.post
+        .aggregate({
+          where: {
+            status: 'PUBLISHED',
+            createdAt: {
+              gte: currentDate,
+              lt: nextDate,
+            },
           },
-        },
-        _sum: {
-          viewCount: true,
-        },
-      }).then(result => result._sum?.viewCount || 0),
+          _sum: {
+            viewCount: true,
+          },
+        })
+        .then((result) => result._sum?.viewCount || 0),
       db.like.count({
         where: {
           createdAt: {
@@ -983,18 +988,20 @@ async function getTrendDataMonthly(from: Date, to: Date): Promise<TrendData[]> {
 
     const [views, likes, comments, saves] = await Promise.all([
       // Sum viewCount from posts created in this month
-      db.post.aggregate({
-        where: {
-          status: 'PUBLISHED',
-          createdAt: {
-            gte: currentDate,
-            lt: nextDate,
+      db.post
+        .aggregate({
+          where: {
+            status: 'PUBLISHED',
+            createdAt: {
+              gte: currentDate,
+              lt: nextDate,
+            },
           },
-        },
-        _sum: {
-          viewCount: true,
-        },
-      }).then(result => result._sum?.viewCount || 0),
+          _sum: {
+            viewCount: true,
+          },
+        })
+        .then((result) => result._sum?.viewCount || 0),
       db.like.count({
         where: {
           createdAt: {
@@ -1048,18 +1055,20 @@ async function getTrendDataWeekly(from: Date, to: Date): Promise<TrendData[]> {
 
     const [views, likes, comments, saves] = await Promise.all([
       // Sum viewCount from posts created in this period
-      db.post.aggregate({
-        where: {
-          status: 'PUBLISHED',
-          createdAt: {
-            gte: currentDate,
-            lt: nextDate,
+      db.post
+        .aggregate({
+          where: {
+            status: 'PUBLISHED',
+            createdAt: {
+              gte: currentDate,
+              lt: nextDate,
+            },
           },
-        },
-        _sum: {
-          viewCount: true,
-        },
-      }).then(result => result._sum?.viewCount || 0),
+          _sum: {
+            viewCount: true,
+          },
+        })
+        .then((result) => result._sum?.viewCount || 0),
       db.like.count({
         where: {
           createdAt: {
@@ -1103,19 +1112,19 @@ async function getTrendDataWeekly(from: Date, to: Date): Promise<TrendData[]> {
 /**
  * Get user analytics data
  */
-export async function getUserAnalytics(
-  dateRange: { from: Date; to: Date }
-): Promise<ActionResult<{
-  newUsers: number;
-  growthTrend: number;
-  activeUsers: number;
-  roleDistribution: Array<{ role: string; count: number }>;
-}>> {
+export async function getUserAnalytics(dateRange: { from: Date; to: Date }): Promise<
+  ActionResult<{
+    newUsers: number;
+    growthTrend: number;
+    activeUsers: number;
+    roleDistribution: Array<{ role: string; count: number }>;
+  }>
+> {
   try {
     await checkReportAccess();
 
     const { from, to } = dateRange;
-    
+
     // Calculate previous period for growth comparison
     const periodDuration = to.getTime() - from.getTime();
     const previousFrom = new Date(from.getTime() - periodDuration);
@@ -1186,9 +1195,8 @@ export async function getUserAnalytics(
       }),
     ]);
 
-    const growthTrend = previousNewUsers > 0
-      ? ((newUsers - previousNewUsers) / previousNewUsers) * 100
-      : 0;
+    const growthTrend =
+      previousNewUsers > 0 ? ((newUsers - previousNewUsers) / previousNewUsers) * 100 : 0;
 
     const roleStats = roleDistribution.map((item) => ({
       role: item.role,
@@ -1218,16 +1226,18 @@ export async function getUserAnalytics(
  */
 export async function getAuthorAnalytics(
   authorId: string,
-  dateRange: { from: Date; to: Date }
-): Promise<ActionResult<{
-  totalViews: number;
-  engagementRate: number;
-  topPosts: TopPost[];
-  postCount: number;
-}>> {
+  dateRange: { from: Date; to: Date },
+): Promise<
+  ActionResult<{
+    totalViews: number;
+    engagementRate: number;
+    topPosts: TopPost[];
+    postCount: number;
+  }>
+> {
   try {
     const session = await auth();
-    
+
     if (!session?.user?.email) {
       throw new Error('No user email found');
     }
@@ -1351,18 +1361,18 @@ export async function getAuthorAnalytics(
 /**
  * Get comparison data between current and previous period
  */
-export async function getComparisonData(
-  dateRange: { from: Date; to: Date }
-): Promise<ActionResult<{
-  userGrowth: number;
-  viewGrowth: number;
-  engagementGrowth: number;
-}>> {
+export async function getComparisonData(dateRange: { from: Date; to: Date }): Promise<
+  ActionResult<{
+    userGrowth: number;
+    viewGrowth: number;
+    engagementGrowth: number;
+  }>
+> {
   try {
     await checkReportAccess();
 
     const { from, to } = dateRange;
-    
+
     // Calculate previous period with equal duration
     const periodDuration = to.getTime() - from.getTime();
     const previousFrom = new Date(from.getTime() - periodDuration);
@@ -1395,31 +1405,35 @@ export async function getComparisonData(
         },
       }),
       // Current period views
-      db.post.aggregate({
-        where: {
-          status: 'PUBLISHED',
-          createdAt: {
-            gte: from,
-            lte: to,
+      db.post
+        .aggregate({
+          where: {
+            status: 'PUBLISHED',
+            createdAt: {
+              gte: from,
+              lte: to,
+            },
           },
-        },
-        _sum: {
-          viewCount: true,
-        },
-      }).then(result => result._sum.viewCount || 0),
+          _sum: {
+            viewCount: true,
+          },
+        })
+        .then((result) => result._sum.viewCount || 0),
       // Previous period views
-      db.post.aggregate({
-        where: {
-          status: 'PUBLISHED',
-          createdAt: {
-            gte: previousFrom,
-            lt: previousTo,
+      db.post
+        .aggregate({
+          where: {
+            status: 'PUBLISHED',
+            createdAt: {
+              gte: previousFrom,
+              lt: previousTo,
+            },
           },
-        },
-        _sum: {
-          viewCount: true,
-        },
-      }).then(result => result._sum.viewCount || 0),
+          _sum: {
+            viewCount: true,
+          },
+        })
+        .then((result) => result._sum.viewCount || 0),
       // Current period engagements (likes + comments + saves)
       Promise.all([
         db.like.count({
@@ -1477,17 +1491,16 @@ export async function getComparisonData(
     ]);
 
     // Calculate percentage changes
-    const userGrowth = previousUsers > 0
-      ? ((currentUsers - previousUsers) / previousUsers) * 100
-      : 0;
+    const userGrowth =
+      previousUsers > 0 ? ((currentUsers - previousUsers) / previousUsers) * 100 : 0;
 
-    const viewGrowth = previousViews > 0
-      ? ((currentViews - previousViews) / previousViews) * 100
-      : 0;
+    const viewGrowth =
+      previousViews > 0 ? ((currentViews - previousViews) / previousViews) * 100 : 0;
 
-    const engagementGrowth = previousEngagements > 0
-      ? ((currentEngagements - previousEngagements) / previousEngagements) * 100
-      : 0;
+    const engagementGrowth =
+      previousEngagements > 0
+        ? ((currentEngagements - previousEngagements) / previousEngagements) * 100
+        : 0;
 
     return {
       success: true,

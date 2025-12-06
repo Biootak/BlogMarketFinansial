@@ -2,8 +2,8 @@
  * API endpoint for receiving Web Vitals metrics
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import type { PerformanceReport } from '@/lib/performance/web-vitals';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {

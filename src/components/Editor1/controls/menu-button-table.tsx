@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import * as Dialog from '@radix-ui/react-dialog';
 import type { Editor } from '@tiptap/react';
 import { Table, X } from 'lucide-react';
+import type React from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Toolbar } from '../../ui/toolbar';
-import * as Dialog from '@radix-ui/react-dialog';
 
 interface MenuButtonTableProps {
   editor: Editor;
@@ -34,43 +35,45 @@ const MenuButtonTable: React.FC<MenuButtonTableProps> = ({ editor }) => {
     setHoverSize(null);
   }, []);
 
-  const handleCellClick = useCallback((row: number, col: number) => {
-    const newSize = { rows: row + 1, cols: col + 1 };
-    setSelectedSize(newSize);
-    // Insert immediately on click
-    editor
-      .chain()
-      .focus()
-      .insertTable({ 
-        rows: newSize.rows, 
-        cols: newSize.cols, 
-        withHeaderRow: true 
-      })
-      .run();
-    setIsOpen(false);
-  }, [editor]);
+  const handleCellClick = useCallback(
+    (row: number, col: number) => {
+      const newSize = { rows: row + 1, cols: col + 1 };
+      setSelectedSize(newSize);
+      // Insert immediately on click
+      editor
+        .chain()
+        .focus()
+        .insertTable({
+          rows: newSize.rows,
+          cols: newSize.cols,
+          withHeaderRow: true,
+        })
+        .run();
+      setIsOpen(false);
+    },
+    [editor],
+  );
 
   const insertTable = useCallback(() => {
     editor
       .chain()
       .focus()
-      .insertTable({ 
-        rows: selectedSize.rows, 
-        cols: selectedSize.cols, 
-        withHeaderRow: true 
+      .insertTable({
+        rows: selectedSize.rows,
+        cols: selectedSize.cols,
+        withHeaderRow: true,
       })
       .run();
     setIsOpen(false);
   }, [editor, selectedSize]);
 
-  const handleQuickInsert = useCallback((rows: number, cols: number) => {
-    editor
-      .chain()
-      .focus()
-      .insertTable({ rows, cols, withHeaderRow: true })
-      .run();
-    setIsOpen(false);
-  }, [editor]);
+  const handleQuickInsert = useCallback(
+    (rows: number, cols: number) => {
+      editor.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run();
+      setIsOpen(false);
+    },
+    [editor],
+  );
 
   // Display size: hover takes priority, then selected
   const displaySize = hoverSize || selectedSize;
@@ -78,17 +81,14 @@ const MenuButtonTable: React.FC<MenuButtonTableProps> = ({ editor }) => {
   return (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Trigger asChild>
-        <Toolbar.Button
-          tooltip="جدول"
-          active={editor.isActive('table')}
-        >
+        <Toolbar.Button tooltip="جدول" active={editor.isActive('table')}>
           <Table size={18} />
         </Toolbar.Button>
       </Dialog.Trigger>
 
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/50 z-[100]" />
-        <Dialog.Content 
+        <Dialog.Content
           className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-[90vw] max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6"
           onPointerDownOutside={(e) => e.preventDefault()}
         >
@@ -109,9 +109,7 @@ const MenuButtonTable: React.FC<MenuButtonTableProps> = ({ editor }) => {
 
           {/* Quick Insert Buttons */}
           <div className="mb-6">
-            <p className="text-sm text-gray-500 dark:text-gray-400 text-right mb-3">
-              انتخاب سریع
-            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-right mb-3">انتخاب سریع</p>
             <div className="flex gap-2 justify-end flex-wrap">
               {[
                 { rows: 2, cols: 2, label: '۲×۲' },
@@ -136,17 +134,14 @@ const MenuButtonTable: React.FC<MenuButtonTableProps> = ({ editor }) => {
             <p className="text-sm text-gray-500 dark:text-gray-400 text-right mb-3">
               یا روی خانه‌ها کلیک کنید
             </p>
-            <div 
-              className="flex justify-center"
-              onMouseLeave={handleCellLeave}
-            >
+            <div className="flex justify-center" onMouseLeave={handleCellLeave}>
               <div className="inline-grid gap-1 p-3 bg-gray-50 dark:bg-gray-900 rounded-xl">
                 {Array.from({ length: maxRows }).map((_, rowIndex) => (
                   <div key={rowIndex} className="flex gap-1">
                     {Array.from({ length: maxCols }).map((_, colIndex) => {
-                      const isInDisplayRange = 
+                      const isInDisplayRange =
                         rowIndex < displaySize.rows && colIndex < displaySize.cols;
-                      
+
                       return (
                         <button
                           key={colIndex}

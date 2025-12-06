@@ -1,10 +1,10 @@
 'use client';
 
-import type React from 'react';
-import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
-import Link from 'next/link';
 import twFocusClass from '@/utils/twFocusClass';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import type React from 'react';
+import { useTransition } from 'react';
 
 interface PaginationClientProps {
   className?: string;

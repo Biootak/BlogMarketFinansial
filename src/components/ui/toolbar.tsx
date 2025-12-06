@@ -1,7 +1,7 @@
 import { type ButtonHTMLAttributes, type HTMLProps, forwardRef } from 'react';
-import { Icon } from './icon';
 import { cn } from '../Editor1/lib/utils';
 import { Button, type ButtonProps } from './button';
+import { Icon } from './icon';
 import { Tooltip } from './tooltip';
 
 type ToolbarWrapperProps = HTMLProps<HTMLDivElement>;
@@ -86,7 +86,8 @@ const ToolbarButton = forwardRef<HTMLButtonElement, ToolbarButtonProps>(
       className,
       {
         [`${activeClassname}`]: active,
-        'hover:bg-primary-50 text-primary-500 dark:text-primary-400 dark:hover:bg-primary-900/20': !active,
+        'hover:bg-primary-50 text-primary-500 dark:text-primary-400 dark:hover:bg-primary-900/20':
+          !active,
         'my-1': isDropdown,
       },
     );

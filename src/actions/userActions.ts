@@ -1,12 +1,12 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-import prisma from '@/lib/db';
-import { hash } from 'bcryptjs';
-import type { ActionResult, UserWithProfile } from '@/types/types';
-import type { Prisma, Role } from '@prisma/client';
 import { auth } from '@/auth';
 import { logActivity } from '@/lib/activity-logger';
+import prisma from '@/lib/db';
+import type { ActionResult, UserWithProfile } from '@/types/types';
+import type { Prisma, Role } from '@prisma/client';
+import { hash } from 'bcryptjs';
+import { revalidatePath } from 'next/cache';
 
 type GetUsersParams = {
   limit?: number;
@@ -30,7 +30,7 @@ export async function getUsers({
     }
 
     const currentUserRole = session.user.role;
-    
+
     // Filter users based on role hierarchy
     const where: Prisma.UserWhereInput = {
       OR: search
@@ -106,10 +106,10 @@ export async function createUser(data: CreateUserData): Promise<ActionResult<Use
 
     const currentUserRole = session.user.role;
     const roleHierarchy = {
-      'SUPER_ADMIN': 4,
-      'ADMIN': 3,
-      'AUTHOR': 2,
-      'USER': 1
+      SUPER_ADMIN: 4,
+      ADMIN: 3,
+      AUTHOR: 2,
+      USER: 1,
     };
 
     // Check if user has permission to create users with the specified role
@@ -139,7 +139,10 @@ export async function createUser(data: CreateUserData): Promise<ActionResult<Use
     revalidatePath('/users');
 
     // ثبت فعالیت
-    await logActivity('ایجاد کاربر', `کاربر "${newUser.name || newUser.email}" با نقش "${data.role}" ایجاد شد`);
+    await logActivity(
+      'ایجاد کاربر',
+      `کاربر "${newUser.name || newUser.email}" با نقش "${data.role}" ایجاد شد`,
+    );
 
     return {
       success: true,
@@ -176,10 +179,10 @@ export async function updateUser(
     }
 
     const roleHierarchy = {
-      'SUPER_ADMIN': 4,
-      'ADMIN': 3,
-      'AUTHOR': 2,
-      'USER': 1
+      SUPER_ADMIN: 4,
+      ADMIN: 3,
+      AUTHOR: 2,
+      USER: 1,
     };
 
     // Check if user has permission to update this user
@@ -248,10 +251,10 @@ export async function updateUserRole(userId: string, newRole: Role) {
 
     // Check role hierarchy
     const roleHierarchy = {
-      'SUPER_ADMIN': 4,
-      'ADMIN': 3,
-      'AUTHOR': 2,
-      'USER': 1
+      SUPER_ADMIN: 4,
+      ADMIN: 3,
+      AUTHOR: 2,
+      USER: 1,
     };
 
     if (roleHierarchy[currentUserRole] <= roleHierarchy[targetUser.role]) {
@@ -268,7 +271,10 @@ export async function updateUserRole(userId: string, newRole: Role) {
     });
 
     // ثبت فعالیت
-    await logActivity('تغییر نقش کاربر', `نقش کاربر "${targetUser.name || targetUser.email}" به "${newRole}" تغییر کرد`);
+    await logActivity(
+      'تغییر نقش کاربر',
+      `نقش کاربر "${targetUser.name || targetUser.email}" به "${newRole}" تغییر کرد`,
+    );
 
     return {
       success: true,
@@ -296,10 +302,10 @@ export async function deleteUser(id: string): Promise<ActionResult> {
     }
 
     const roleHierarchy = {
-      'SUPER_ADMIN': 4,
-      'ADMIN': 3,
-      'AUTHOR': 2,
-      'USER': 1
+      SUPER_ADMIN: 4,
+      ADMIN: 3,
+      AUTHOR: 2,
+      USER: 1,
     };
 
     // Check if user has permission to delete this user
@@ -308,7 +314,7 @@ export async function deleteUser(id: string): Promise<ActionResult> {
     }
 
     const userName = targetUser.name || targetUser.email;
-    
+
     await prisma.user.delete({
       where: { id },
     });

@@ -1,26 +1,18 @@
+import {
+  CategoryScale,
+  Chart as ChartJS,
+  type ChartOptions,
+  Legend,
+  LineElement,
+  LinearScale,
+  PointElement,
+  Title,
+  Tooltip,
+} from 'chart.js';
 import type React from 'react';
 import { Line } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  type ChartOptions
-} from 'chart.js';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 interface DetailedStatInfoProps {
   title: string;
@@ -37,9 +29,9 @@ const DetailedStatInfo: React.FC<DetailedStatInfoProps> = ({ title, data, labels
         data,
         borderColor: 'rgb(59, 130, 246)', // Tailwind blue-500
         backgroundColor: 'rgba(59, 130, 246, 0.5)',
-        tension: 0.1
-      }
-    ]
+        tension: 0.1,
+      },
+    ],
   };
 
   const options: ChartOptions<'line'> = {
@@ -56,8 +48,8 @@ const DetailedStatInfo: React.FC<DetailedStatInfoProps> = ({ title, data, labels
     scales: {
       y: {
         beginAtZero: true,
-      }
-    }
+      },
+    },
   };
 
   return (

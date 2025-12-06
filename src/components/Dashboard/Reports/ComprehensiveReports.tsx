@@ -1,45 +1,45 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { toast } from '@/components/ui/use-toast';
-import {
-  Users,
-  FileText,
-  MessageSquare,
-  Eye,
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  Clock,
-  Heart,
-  Share2,
-  Bookmark,
-  Globe,
-  Smartphone,
-  Monitor,
-  Calendar,
-  Target,
-  Award,
-  Activity,
-  BarChart3,
-} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
-  LineChart,
-  Line,
-  AreaChart,
+  Activity,
+  Award,
+  BarChart3,
+  Bookmark,
+  Calendar,
+  Clock,
+  DollarSign,
+  Eye,
+  FileText,
+  Globe,
+  Heart,
+  MessageSquare,
+  Monitor,
+  Share2,
+  Smartphone,
+  Target,
+  TrendingDown,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import {
   Area,
-  BarChart,
+  AreaChart,
   Bar,
-  PieChart,
-  Pie,
+  BarChart,
+  CartesianGrid,
   Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
 } from 'recharts';
 
 interface ComprehensiveData {
@@ -54,7 +54,7 @@ interface ComprehensiveData {
     engagementRate: number;
     avgReadTime: number;
   };
-  
+
   // Content Stats
   topPosts: Array<{
     id: string;
@@ -62,32 +62,32 @@ interface ComprehensiveData {
     views: number;
     engagement: number;
   }>;
-  
+
   topAuthors: Array<{
     id: string;
     name: string;
     posts: number;
     views: number;
   }>;
-  
+
   categoryStats: Array<{
     name: string;
     count: number;
     percentage: number;
   }>;
-  
+
   // User Stats
   userActivity: {
     dau: number;
     mau: number;
     returnRate: number;
   };
-  
+
   deviceStats: Array<{
     name: string;
     value: number;
   }>;
-  
+
   // Engagement
   engagement: {
     comments: number;
@@ -95,14 +95,14 @@ interface ComprehensiveData {
     shares: number;
     saves: number;
   };
-  
+
   // Trends
   viewsTrend: Array<{
     date: string;
     views: number;
     users: number;
   }>;
-  
+
   contentTrend: Array<{
     date: string;
     posts: number;
@@ -207,7 +207,7 @@ export default function ComprehensiveReports() {
                 'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
                 timeRange === range
                   ? 'bg-blue-600 text-white shadow-lg'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
               )}
             >
               {range === '7d' ? '۷ روز' : range === '30d' ? '۳۰ روز' : '۹۰ روز'}
@@ -290,7 +290,7 @@ export default function ComprehensiveReports() {
                 fill="#8884d8"
                 dataKey="count"
               >
-                {data.categoryStats.map((entry, index) => (
+                {data.categoryStats.map((_entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
@@ -353,9 +353,7 @@ export default function ComprehensiveReports() {
                     </p>
                   </div>
                 </div>
-                <div className="text-emerald-600 font-bold text-sm">
-                  {post.engagement}%
-                </div>
+                <div className="text-emerald-600 font-bold text-sm">{post.engagement}%</div>
               </div>
             ))}
           </div>
@@ -410,14 +408,19 @@ function KPICard({
   suffix?: string;
 }) {
   const isPositive = growth >= 0;
-  
+
   return (
     <div className="relative overflow-hidden rounded-2xl bg-white border-2 border-gray-200 p-6 shadow-lg hover:shadow-xl transition-shadow">
       <div className="flex items-start justify-between mb-4">
         <div className={cn('p-3 rounded-xl text-white shadow-lg bg-gradient-to-br', gradient)}>
           {icon}
         </div>
-        <div className={cn('flex items-center gap-1 text-sm font-bold', isPositive ? 'text-emerald-600' : 'text-red-600')}>
+        <div
+          className={cn(
+            'flex items-center gap-1 text-sm font-bold',
+            isPositive ? 'text-emerald-600' : 'text-red-600',
+          )}
+        >
           {isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
           {Math.abs(growth).toFixed(1)}%
         </div>
@@ -473,7 +476,12 @@ function EngagementCard({
 
   return (
     <div className="bg-white rounded-xl border-2 border-gray-200 p-4 shadow-md hover:shadow-lg transition-shadow">
-      <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center text-white mb-3 bg-gradient-to-br', colorClasses[color])}>
+      <div
+        className={cn(
+          'w-10 h-10 rounded-lg flex items-center justify-center text-white mb-3 bg-gradient-to-br',
+          colorClasses[color],
+        )}
+      >
         {icon}
       </div>
       <p className="text-xs text-gray-500 mb-1">{title}</p>
