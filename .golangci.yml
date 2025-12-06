@@ -1,0 +1,88 @@
+# golangci-lint configuration for Biotak Go Backend
+# Run with: golangci-lint run
+
+run:
+  # Timeout for analysis
+  timeout: 5m
+  
+  # Include test files
+  tests: true
+  
+  # Directories to skip
+  skip-dirs:
+    - vendor
+    - node_modules
+    - .next
+    - ent/generated
+
+linters:
+  enable:
+    - errcheck      # Check for unchecked errors
+    - gosimple      # Simplify code
+    - govet         # Vet examines Go source code
+    - ineffassign   # Detect ineffectual assignments
+    - staticcheck   # Static analysis
+    - unused        # Check for unused code
+    - gofmt         # Check formatting
+    - goimports     # Check imports
+    - misspell      # Check for misspelled words
+    - gocritic      # Comprehensive Go linter
+    - revive        # Fast, configurable linter
+    - stylecheck    # Style checker
+    
+  disable:
+    - typecheck     # Disabled because Ent generates code
+
+linters-settings:
+  errcheck:
+    # Check for errors in type assertions
+    check-type-assertions: true
+    
+  govet:
+    # Enable all analyzers
+    enable-all: true
+    
+  gofmt:
+    # Simplify code
+    simplify: true
+    
+  goimports:
+    # Put local imports after 3rd party packages
+    local-prefixes: biotak-go-backend
+    
+  misspell:
+    # Locale for spell checking
+    locale: US
+    
+  revive:
+    # Minimal configuration
+    confidence: 0.8
+
+issues:
+  # Maximum issues count per linter
+  max-issues-per-linter: 50
+  
+  # Maximum count of issues with the same text
+  max-same-issues: 3
+  
+  # Exclude some linters from running on tests
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+        - gocritic
+        
+    # Exclude Ent generated code
+    - path: ent/
+      linters:
+        - all
+
+output:
+  # Format: colored-line-number, line-number, json, tab, checkstyle
+  format: colored-line-number
+  
+  # Print lines of code with issue
+  print-issued-lines: true
+  
+  # Print linter name in the end of issue text
+  print-linter-name: true
