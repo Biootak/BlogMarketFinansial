@@ -1,7 +1,6 @@
 import path from 'node:path';
-import bundleAnalyzer from '@next/bundle-analyzer';
-import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
+import { withSentryConfig } from '@sentry/nextjs';
 
 // Content Security Policy
 const _ContentSecurityPolicy = `
@@ -236,16 +235,22 @@ const sentryWebpackPluginOptions = {
   tunnelRoute: '/monitoring',
 };
 
-// Bundle Analyzer configuration
-const withBundleAnalyzer = bundleAnalyzer({
-  enabled: process.env.ANALYZE === 'true',
-  openAnalyzer: true,
-});
+// Bundle Analyzer configuration - dynamically import only when needed
+let finalConfig = nextConfig;
 
-// اگه Sentry DSN تنظیم شده، از withSentryConfig استفاده کن
-const configWithSentry = process.env.NEXT_PUBLIC_SENTRY_DSN
-  ? withSentryConfig(nextConfig, sentryWebpackPluginOptions)
-  : nextConfig;
+// Apply Sentry config if DSN is set
+if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+  finalConfig = withSentryConfig(nextConfig, sentryWebpackPluginOptions);
+}
 
-// Apply bundle analyzer
-export default withBundleAnalyzer(configWithSentry);
+// Apply bundle analyzer if ANALYZE is set
+if (process.env.ANALYZE === 'true') {
+  // Dynamic import to avoid type issues during build
+  const withBundleAnalyzer = require('@next/bundle-analyzer')({
+    enabled: true,
+    openAnalyzer: true,
+  });
+  finalConfig = withBundleAnalyzer(finalConfig);
+}
+
+export default finalConfig;
