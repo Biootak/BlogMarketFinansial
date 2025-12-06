@@ -401,7 +401,7 @@ const RateListsPage = () => {
 
         {filteredRateLists.length === 0 ? (
           <div className="rounded-2xl border border-slate-200/60 bg-white/80 p-12 text-center shadow-sm backdrop-blur-sm dark:border-slate-700/50 dark:bg-slate-800/80">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200/80 dark:from-slate-700 dark:to-slate-800">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl gradient-neutral-br/80 dark:from-slate-700 dark:to-slate-800">
               <List className="h-10 w-10 text-slate-400 dark:text-slate-500" />
             </div>
             <h3 className="mt-6 text-lg font-semibold text-slate-900 dark:text-slate-100">

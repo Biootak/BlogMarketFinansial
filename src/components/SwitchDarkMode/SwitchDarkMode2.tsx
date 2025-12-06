@@ -56,7 +56,7 @@ const DarkModeSwitch = ({ className }: SwitchDarkModeProps) => {
             focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50
             ${
               isDarkMode
-                ? 'bg-gradient-to-r from-primary-500 to-primary-600 shadow-inner shadow-primary-700/20'
+                ? 'gradient-primary-r shadow-inner shadow-primary-700/20'
                 : 'bg-neutral-200 dark:bg-neutral-700'
             }
           `}

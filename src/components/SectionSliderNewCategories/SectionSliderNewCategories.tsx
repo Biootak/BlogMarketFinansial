@@ -41,7 +41,7 @@ const SectionSliderNewCategories: FC<SectionSliderNewCategoriesProps> = async ({
           <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white">
             {heading}
           </h2>
-          <div className="mt-3 mx-auto w-20 h-1 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full" />
+          <div className="mt-3 mx-auto w-20 h-1 gradient-primary-r rounded-full" />
         </div>
 
         {/* Slider */}

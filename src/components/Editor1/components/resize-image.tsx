@@ -570,7 +570,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
       const isActive = textAlign === align;
       return `group/btn relative p-1.5 md:p-2 rounded-lg transition-all duration-300 ease-out ${
         isActive
-          ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30 scale-105'
+          ? 'gradient-primary-br text-white shadow-lg shadow-primary-500/30 scale-105'
           : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:scale-105 hover:shadow-md'
       }`;
     },
@@ -806,7 +806,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
                           onClick={() => handleFilterChange(f.value)}
                           className={`text-[10px] sm:text-[11px] font-medium p-1.5 sm:p-2 rounded-lg transition-all duration-300 ${
                             filter === f.value
-                              ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30 scale-105'
+                              ? 'gradient-primary-br text-white shadow-lg shadow-primary-500/30 scale-105'
                               : 'bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-105 hover:shadow-md'
                           }`}
                         >
@@ -864,7 +864,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
                     onClick={handleShadowToggle}
                     className={`w-full text-[11px] sm:text-xs font-semibold p-2.5 sm:p-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2 ${
                       shadow
-                        ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30'
+                        ? 'gradient-primary-br text-white shadow-lg shadow-primary-500/30'
                         : 'bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                     }`}
                   >
@@ -1026,7 +1026,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
                   <button
                     type="button"
                     onClick={handleSaveMetadata}
-                    className="flex-1 px-5 sm:px-6 py-3 sm:py-3.5 bg-gradient-to-br from-primary-500 to-primary-600 text-white font-semibold text-sm sm:text-base rounded-xl hover:shadow-lg hover:shadow-primary-500/30 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
+                    className="flex-1 px-5 sm:px-6 py-3 sm:py-3.5 gradient-primary-br text-white font-semibold text-sm sm:text-base rounded-xl hover:shadow-lg hover:shadow-primary-500/30 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
                   >
                     <Check className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
                     ذخیره تغییرات
@@ -1053,7 +1053,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
               showControls || selected ? 'opacity-100 scale-100' : 'opacity-0 scale-0'
             }`}
           >
-            <div className="w-full h-full rounded-full bg-gradient-to-br from-primary-400 to-primary-600 shadow-xl shadow-primary-500/50 hover:scale-125 active:scale-150 transition-all duration-200 border-2 border-white" />
+            <div className="w-full h-full rounded-full gradient-primary-br shadow-xl shadow-primary-500/50 hover:scale-125 active:scale-150 transition-all duration-200 border-2 border-white" />
           </div>
 
           {/* Top-Right */}
@@ -1064,7 +1064,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
               showControls || selected ? 'opacity-100 scale-100' : 'opacity-0 scale-0'
             }`}
           >
-            <div className="w-full h-full rounded-full bg-gradient-to-br from-primary-400 to-primary-600 shadow-xl shadow-primary-500/50 hover:scale-125 active:scale-150 transition-all duration-200 border-2 border-white" />
+            <div className="w-full h-full rounded-full gradient-primary-br shadow-xl shadow-primary-500/50 hover:scale-125 active:scale-150 transition-all duration-200 border-2 border-white" />
           </div>
 
           {/* Bottom-Left */}
@@ -1075,7 +1075,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
               showControls || selected ? 'opacity-100 scale-100' : 'opacity-0 scale-0'
             }`}
           >
-            <div className="w-full h-full rounded-full bg-gradient-to-br from-primary-400 to-primary-600 shadow-xl shadow-primary-500/50 hover:scale-125 active:scale-150 transition-all duration-200 border-2 border-white" />
+            <div className="w-full h-full rounded-full gradient-primary-br shadow-xl shadow-primary-500/50 hover:scale-125 active:scale-150 transition-all duration-200 border-2 border-white" />
           </div>
 
           {/* Bottom-Right */}
@@ -1086,7 +1086,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
               showControls || selected ? 'opacity-100 scale-100' : 'opacity-0 scale-0'
             }`}
           >
-            <div className="w-full h-full rounded-full bg-gradient-to-br from-primary-400 to-primary-600 shadow-xl shadow-primary-500/50 hover:scale-125 active:scale-150 transition-all duration-200 border-2 border-white" />
+            <div className="w-full h-full rounded-full gradient-primary-br shadow-xl shadow-primary-500/50 hover:scale-125 active:scale-150 transition-all duration-200 border-2 border-white" />
           </div>
 
           {/* Edge Resize Handles */}
@@ -1229,14 +1229,14 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
 
           {/* Zoom indicator - طراحی مدرن */}
           {zoom !== 1 && (
-            <div className="absolute top-2 sm:top-3 left-2 sm:left-3 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-br from-primary-500 to-primary-600 text-white text-[10px] sm:text-xs rounded-lg sm:rounded-xl backdrop-blur-xl shadow-xl shadow-primary-500/30 border border-white/20 font-bold animate-in zoom-in-95 duration-200">
+            <div className="absolute top-2 sm:top-3 left-2 sm:left-3 px-2.5 sm:px-3 py-1 sm:py-1.5 gradient-primary-br text-white text-[10px] sm:text-xs rounded-lg sm:rounded-xl backdrop-blur-xl shadow-xl shadow-primary-500/30 border border-white/20 font-bold animate-in zoom-in-95 duration-200">
               {Math.round(zoom * 100)}%
             </div>
           )}
 
           {/* Rotation indicator - طراحی مدرن */}
           {rotation !== 0 && (
-            <div className="absolute top-2 sm:top-3 right-2 sm:right-3 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-br from-primary-500 to-primary-600 text-white text-[10px] sm:text-xs rounded-lg sm:rounded-xl backdrop-blur-xl shadow-xl shadow-primary-500/30 border border-white/20 font-bold animate-in zoom-in-95 duration-200 flex items-center gap-1 sm:gap-1.5">
+            <div className="absolute top-2 sm:top-3 right-2 sm:right-3 px-2.5 sm:px-3 py-1 sm:py-1.5 gradient-primary-br text-white text-[10px] sm:text-xs rounded-lg sm:rounded-xl backdrop-blur-xl shadow-xl shadow-primary-500/30 border border-white/20 font-bold animate-in zoom-in-95 duration-200 flex items-center gap-1 sm:gap-1.5">
               <RotateCw className="w-3 h-3 sm:w-[12px] sm:h-[12px]" />
               {rotation}°
             </div>

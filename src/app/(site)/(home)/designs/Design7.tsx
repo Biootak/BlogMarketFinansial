@@ -45,7 +45,7 @@ export default function Design7({ initialPosts, className = '' }: Props) {
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Main Container with Glass Effect */}
-      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800 p-1.5 sm:p-2">
+      <div className="relative rounded-3xl overflow-hidden gradient-neutral-br dark:from-neutral-900 dark:to-neutral-800 p-1.5 sm:p-2">
         {/* Inner Glow Border */}
         <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary-500/20 via-transparent to-primary-600/20 pointer-events-none" />
 
@@ -143,7 +143,7 @@ export default function Design7({ initialPosts, className = '' }: Props) {
                     {/* Author */}
                     <div className="flex items-center gap-2.5 group/author">
                       <div className="relative">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full opacity-0 group-hover/author:opacity-100 blur transition-opacity duration-300" />
+                        <div className="absolute -inset-1 gradient-primary-r rounded-full opacity-0 group-hover/author:opacity-100 blur transition-opacity duration-300" />
                         <Avatar
                           sizeClass="h-10 w-10 relative"
                           radius="rounded-full"

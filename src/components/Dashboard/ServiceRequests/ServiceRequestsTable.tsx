@@ -252,7 +252,7 @@ export default function ServiceRequestsTable() {
                       {/* Customer */}
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 text-lg font-bold text-slate-600 shadow-sm dark:from-slate-700 dark:to-slate-800 dark:text-slate-300">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl gradient-neutral-br text-lg font-bold text-slate-600 shadow-sm dark:from-slate-700 dark:to-slate-800 dark:text-slate-300">
                             {request.fullName.charAt(0)}
                           </div>
                           <div>
@@ -386,7 +386,7 @@ export default function ServiceRequestsTable() {
                   </div>
 
                   <div className="mb-3 flex items-center gap-3">
-                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 text-lg font-bold text-slate-600 shadow-sm dark:from-slate-700 dark:to-slate-800 dark:text-slate-300">
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl gradient-neutral-br text-lg font-bold text-slate-600 shadow-sm dark:from-slate-700 dark:to-slate-800 dark:text-slate-300">
                       {request.fullName.charAt(0)}
                     </div>
                     <div className="flex-1">

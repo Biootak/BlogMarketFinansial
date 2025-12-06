@@ -96,7 +96,7 @@ const CardCategory2: FC<CardCategory2Props> = ({ className = '', taxonomy, index
           >
             <div
               className={
-                'absolute -inset-1 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200'
+                'absolute -inset-1 rounded-full gradient-primary-br opacity-0 group-hover:opacity-100 transition-opacity duration-200'
               }
             />
             <NcImage

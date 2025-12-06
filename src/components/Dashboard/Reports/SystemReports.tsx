@@ -282,8 +282,8 @@ export default function SystemReports() {
         { label: 'فعال', value: data.activeUsers },
         { label: 'جدید', value: data.newUsers },
       ],
-      gradient: 'bg-gradient-to-br from-blue-500 to-indigo-600',
-      iconBg: 'bg-gradient-to-br from-blue-500 to-indigo-600',
+      gradient: 'gradient-primary-br',
+      iconBg: 'gradient-primary-br',
     },
     {
       title: 'پست‌ها',
@@ -298,16 +298,16 @@ export default function SystemReports() {
       value: data.comments,
       icon: <MessageSquare className="w-5 h-5 text-white" />,
       badges: [{ label: 'در انتظار تأیید', value: data.pendingComments }],
-      gradient: 'bg-gradient-to-br from-amber-500 to-orange-600',
-      iconBg: 'bg-gradient-to-br from-amber-500 to-orange-600',
+      gradient: 'gradient-warning-br',
+      iconBg: 'gradient-warning-br',
     },
     {
       title: 'بازدیدها',
       value: data.views,
       icon: <Eye className="w-5 h-5 text-white" />,
       badges: [{ label: 'امروز', value: data.todayViews }],
-      gradient: 'bg-gradient-to-br from-emerald-500 to-teal-600',
-      iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-600',
+      gradient: 'gradient-success-br',
+      iconBg: 'gradient-success-br',
     },
   ];
 

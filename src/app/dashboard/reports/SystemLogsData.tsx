@@ -211,7 +211,7 @@ export default function SystemLogsData() {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start sm:items-center gap-2 sm:gap-3 min-w-0 flex-1">
-          <div className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg flex-shrink-0">
+          <div className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl gradient-warning-br shadow-lg flex-shrink-0">
             <Terminal className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </div>
           <div className="min-w-0 flex-1">

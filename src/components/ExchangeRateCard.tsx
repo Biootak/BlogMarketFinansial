@@ -43,7 +43,7 @@ export function ExchangeRateCard({ rate }: ExchangeRateCardProps) {
 
         {/* Icon Container */}
         <div className="relative flex-shrink-0">
-          <div className="relative w-8 h-8 xs:w-9 xs:h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-md xs:rounded-lg sm:rounded-xl bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-700 dark:to-neutral-800 flex items-center justify-center shadow-sm">
+          <div className="relative w-8 h-8 xs:w-9 xs:h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-md xs:rounded-lg sm:rounded-xl gradient-neutral-br dark:from-neutral-700 dark:to-neutral-800 flex items-center justify-center shadow-sm">
             <CurrencyIcon
               symbol={symbol}
               className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 md:w-7 md:h-7"

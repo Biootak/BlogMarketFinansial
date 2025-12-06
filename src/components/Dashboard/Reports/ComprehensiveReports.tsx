@@ -343,7 +343,7 @@ export default function ComprehensiveReports() {
                 className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold text-sm">
+                  <div className="w-8 h-8 rounded-full gradient-warning-br flex items-center justify-center text-white font-bold text-sm">
                     {idx + 1}
                   </div>
                   <div>
@@ -372,7 +372,7 @@ export default function ComprehensiveReports() {
                 className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+                  <div className="w-8 h-8 rounded-full gradient-primary-br flex items-center justify-center text-white font-bold text-sm">
                     {idx + 1}
                   </div>
                   <div>

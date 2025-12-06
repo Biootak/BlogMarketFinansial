@@ -39,7 +39,7 @@ const ContactCTAClient: FC<ContactCTAClientProps> = ({
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.5 }}
-          className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800 dark:to-neutral-900 p-6 sm:p-10 lg:p-12 shadow-xl border border-neutral-200/50 dark:border-neutral-700/50"
+          className="relative overflow-hidden rounded-3xl gradient-neutral-br dark:from-neutral-800 dark:to-neutral-900 p-6 sm:p-10 lg:p-12 shadow-xl border border-neutral-200/50 dark:border-neutral-700/50"
         >
           <div className="absolute top-0 left-0 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
           <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />

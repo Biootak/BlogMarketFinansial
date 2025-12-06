@@ -46,7 +46,7 @@ export function TrendChart({ data, metric = 'views', isLoading = false }: TrendC
       {/* Header */}
       <div className="flex items-start sm:items-center justify-between mb-4 sm:mb-6 gap-2">
         <div className="flex items-start sm:items-center gap-2 sm:gap-3 min-w-0 flex-1">
-          <div className="p-1.5 sm:p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg sm:rounded-xl flex-shrink-0">
+          <div className="p-1.5 sm:p-2 gradient-primary-br rounded-lg sm:rounded-xl flex-shrink-0">
             <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </div>
           <div className="min-w-0 flex-1">

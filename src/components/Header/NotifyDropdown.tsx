@@ -183,7 +183,7 @@ const NotifyDropdown = memo(({ className = 'hidden sm:block' }: Props) => {
                             w-16 h-16 mb-4
                             flex items-center justify-center
                             rounded-2xl
-                            bg-gradient-to-br from-slate-100 to-slate-200/80
+                            gradient-neutral-br/80
                             dark:from-neutral-800 dark:to-neutral-700/80
                           "
                         >

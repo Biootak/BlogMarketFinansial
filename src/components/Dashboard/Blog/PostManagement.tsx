@@ -341,8 +341,8 @@ const RecentDrafts: React.FC<{ drafts: PostManagementProps['recentDrafts'] }> = 
       <div className="flex justify-between items-center gap-2">
         <div className="flex items-center gap-2 sm:gap-2.5 lg:gap-3 min-w-0">
           <div className="relative flex-shrink-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg sm:rounded-xl blur-md opacity-40" />
-            <div className="relative p-1.5 sm:p-2 lg:p-2.5 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
+            <div className="absolute inset-0 gradient-primary-br rounded-lg sm:rounded-xl blur-md opacity-40" />
+            <div className="relative p-1.5 sm:p-2 lg:p-2.5 rounded-lg sm:rounded-xl gradient-primary-br text-white shadow-lg">
               <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
@@ -378,7 +378,7 @@ const RecentDrafts: React.FC<{ drafts: PostManagementProps['recentDrafts'] }> = 
           >
             <div className="group relative flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 lg:p-3 rounded-xl sm:rounded-2xl hover:bg-gradient-to-r hover:from-blue-50/80 hover:to-indigo-50/50 dark:hover:from-slate-800/80 dark:hover:to-slate-800/50 transition-all duration-300 border border-transparent hover:border-blue-200 dark:hover:border-blue-800">
               {/* Draft Icon */}
-              <div className="flex-shrink-0 flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg">
+              <div className="flex-shrink-0 flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-lg gradient-primary-br text-white shadow-lg">
                 <Edit className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               </div>
 

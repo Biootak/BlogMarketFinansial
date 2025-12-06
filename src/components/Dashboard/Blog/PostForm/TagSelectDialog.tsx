@@ -91,10 +91,10 @@ export function TagSelectDialog({
       <DialogContent className="w-[calc(100%-1rem)] max-w-[480px] p-0 overflow-hidden rtl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-2xl max-h-[95vh] sm:max-h-[90vh]">
         {/* Header */}
         <div className="p-4 sm:p-6 pb-3 sm:pb-4 border-b border-slate-200 dark:border-slate-700">
-          <div className="h-1 bg-gradient-to-r from-emerald-500 to-teal-500 -mt-4 sm:-mt-6 -mx-4 sm:-mx-6 mb-3 sm:mb-4" />
+          <div className="h-1 gradient-success-br -mt-4 sm:-mt-6 -mx-4 sm:-mx-6 mb-3 sm:mb-4" />
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 sm:gap-3 text-right">
-              <div className="p-2 sm:p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
+              <div className="p-2 sm:p-2.5 rounded-xl gradient-success-br text-white">
                 <Tag className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div>
@@ -116,7 +116,7 @@ export function TagSelectDialog({
               {selectedTags.map((tag) => (
                 <Badge
                   key={tag}
-                  className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
+                  className="gradient-success-br text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
                 >
                   {tag}
                   <button
@@ -143,7 +143,7 @@ export function TagSelectDialog({
             />
             <Button
               type="submit"
-              className="h-9 sm:h-11 px-3 sm:px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white"
+              className="h-9 sm:h-11 px-3 sm:px-4 rounded-xl gradient-success-br text-white"
             >
               <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
@@ -188,7 +188,7 @@ export function TagSelectDialog({
                   <div
                     className={`w-5 h-5 sm:w-6 sm:h-6 rounded-lg flex items-center justify-center ${
                       isSelected
-                        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white'
+                        ? 'gradient-success-br text-white'
                         : 'bg-slate-200 dark:bg-slate-700'
                     }`}
                   >

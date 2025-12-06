@@ -97,7 +97,7 @@ const Card9: FC<Card9Props> = ({ className = 'h-full', ratio = 'tall', post, hov
       </div>
 
       {/* Enhanced Gradient Overlay */}
-      <div className="absolute bottom-0 inset-x-0 h-3/4 bg-gradient-to-t from-black/90 via-black/50 to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 inset-x-0 h-3/4 gradient-overlay-t pointer-events-none" />
 
       {/* Colored Accent Gradient */}
       <div className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-primary-900/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />

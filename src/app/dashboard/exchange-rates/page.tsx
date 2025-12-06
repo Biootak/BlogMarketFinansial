@@ -158,7 +158,7 @@ const ExchangeRatesPage: React.FC = () => {
       {exchangeRates.length === 0 ? (
         <div className="flex min-h-[500px] items-center justify-center rounded-3xl border border-slate-200/60 bg-white/60 p-12 shadow-xl shadow-slate-200/50 backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/60 dark:shadow-slate-950/50">
           <div className="flex flex-col items-center gap-6 text-center">
-            <div className="rounded-full bg-gradient-to-br from-slate-100 to-slate-200 p-8 dark:from-slate-800 dark:to-slate-700">
+            <div className="rounded-full gradient-neutral-br p-8 dark:from-slate-800 dark:to-slate-700">
               <DollarSign className="h-16 w-16 text-slate-400 dark:text-slate-500" />
             </div>
             <div className="space-y-2">
@@ -296,7 +296,7 @@ const ExchangeRatesPage: React.FC = () => {
           className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-2xl overflow-hidden rounded-3xl border border-slate-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-2xl dark:border-slate-800/60 dark:bg-slate-900/95"
           dir="rtl"
         >
-          <DialogHeader className="border-b border-slate-200/60 bg-gradient-to-l from-slate-50 to-white px-6 py-6 dark:border-slate-800/60 dark:from-slate-900 dark:to-slate-900">
+          <DialogHeader className="border-b border-slate-200/60 gradient-neutral-l px-6 py-6 dark:border-slate-800/60 dark:from-slate-900 dark:to-slate-900">
             <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-white">
               افزودن ارز جدید
             </DialogTitle>
@@ -464,7 +464,7 @@ const ExchangeRatesPage: React.FC = () => {
           className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-2xl overflow-hidden rounded-3xl border border-slate-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-2xl dark:border-slate-800/60 dark:bg-slate-900/95"
           dir="rtl"
         >
-          <DialogHeader className="border-b border-slate-200/60 bg-gradient-to-l from-slate-50 to-white px-6 py-6 dark:border-slate-800/60 dark:from-slate-900 dark:to-slate-900">
+          <DialogHeader className="border-b border-slate-200/60 gradient-neutral-l px-6 py-6 dark:border-slate-800/60 dark:from-slate-900 dark:to-slate-900">
             <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-white">
               ویرایش ارز
             </DialogTitle>

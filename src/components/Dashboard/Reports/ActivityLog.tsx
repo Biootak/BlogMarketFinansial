@@ -157,7 +157,7 @@ export default function ActivityLogComponent() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
         <div className="flex items-start sm:items-center gap-2 sm:gap-3 min-w-0 flex-1">
-          <div className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg flex-shrink-0">
+          <div className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl gradient-success-br shadow-lg flex-shrink-0">
             <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </div>
           <div className="min-w-0 flex-1">

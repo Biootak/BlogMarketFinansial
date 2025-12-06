@@ -202,7 +202,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
           <div className="relative z-10 flex flex-col items-center gap-4 sm:gap-6 md:flex-row md:gap-10 p-4 sm:p-6 md:p-10">
             {/* Image Container */}
             <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl sm:rounded-2xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity duration-500" />
+              <div className="absolute inset-0 gradient-primary-br rounded-xl sm:rounded-2xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity duration-500" />
               <div className="relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-xl sm:rounded-2xl overflow-hidden ring-2 sm:ring-4 ring-white/80 dark:ring-neutral-800/80 shadow-xl">
                 <Image
                   src={selectedCategory?.thumbnail || selectedTag?.thumbnail || defaultImage}
@@ -261,7 +261,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
               {/* Stats Pills */}
               <div className="flex flex-wrap justify-center md:justify-start gap-2 sm:gap-3">
                 <div className="group flex items-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-2.5 bg-white dark:bg-neutral-800 rounded-lg sm:rounded-xl shadow-sm border border-neutral-200/80 dark:border-neutral-700/80 hover:shadow-md hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-300">
-                  <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-md sm:rounded-lg bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-sm">
+                  <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-md sm:rounded-lg gradient-primary-br flex items-center justify-center shadow-sm">
                     <FileText className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-white" />
                   </div>
                   <div className="text-right">
@@ -368,7 +368,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
             <SheetTrigger asChild>
               <Button
                 size="lg"
-                className="h-14 w-14 rounded-full shadow-xl shadow-primary-500/30 bg-gradient-to-br from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 border-0"
+                className="h-14 w-14 rounded-full shadow-xl shadow-primary-500/30 gradient-primary-br hover:from-primary-600 hover:to-primary-700 border-0"
               >
                 <Filter className="w-5 h-5 text-white" />
               </Button>

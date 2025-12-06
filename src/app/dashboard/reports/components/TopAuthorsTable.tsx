@@ -26,7 +26,7 @@ export function TopAuthorsTable({ data, isLoading = false }: TopAuthorsTableProp
     return (
       <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg">
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl">
+          <div className="p-2 gradient-warning-br rounded-xl">
             <Award className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -45,7 +45,7 @@ export function TopAuthorsTable({ data, isLoading = false }: TopAuthorsTableProp
     <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-200 shadow-lg">
       {/* Header */}
       <div className="flex items-start sm:items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-        <div className="p-1.5 sm:p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg sm:rounded-xl flex-shrink-0">
+        <div className="p-1.5 sm:p-2 gradient-warning-br rounded-lg sm:rounded-xl flex-shrink-0">
           <Award className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
         </div>
         <div className="min-w-0 flex-1">
@@ -89,7 +89,7 @@ export function TopAuthorsTable({ data, isLoading = false }: TopAuthorsTableProp
                           ? 'bg-gradient-to-br from-gray-300 to-gray-500'
                           : index === 2
                             ? 'bg-gradient-to-br from-orange-400 to-orange-600'
-                            : 'bg-gradient-to-br from-blue-500 to-indigo-600'
+                            : 'gradient-primary-br'
                     }`}
                   >
                     {index + 1}
@@ -147,7 +147,7 @@ export function TopAuthorsTable({ data, isLoading = false }: TopAuthorsTableProp
                       ? 'bg-gradient-to-br from-gray-300 to-gray-500'
                       : index === 2
                         ? 'bg-gradient-to-br from-orange-400 to-orange-600'
-                        : 'bg-gradient-to-br from-blue-500 to-indigo-600'
+                        : 'gradient-primary-br'
                 }`}
               >
                 {index + 1}

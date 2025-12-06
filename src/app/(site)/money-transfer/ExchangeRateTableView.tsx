@@ -43,7 +43,7 @@ export function ExchangeRateTableView({ exchangeRates }: ExchangeRateTableViewPr
       {/* Section Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <div className="w-10 h-10 rounded-xl gradient-primary-br flex items-center justify-center shadow-lg shadow-blue-500/20">
             {type === 'buySell' ? (
               <TrendingUp className="w-5 h-5 text-white" />
             ) : (

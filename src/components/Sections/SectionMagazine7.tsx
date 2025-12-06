@@ -39,8 +39,8 @@ const SectionMagazine7: FC<SectionMagazine7Props> = ({ posts = [], className = '
       <div className="flex items-center justify-between mb-5 sm:mb-8">
         <div className="flex items-center gap-2 sm:gap-4">
           <div className="relative">
-            <div className="absolute -inset-1 sm:-inset-2 bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl sm:rounded-2xl blur-md sm:blur-lg opacity-30" />
-            <div className="relative p-2 sm:p-3 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl sm:rounded-2xl shadow-lg">
+            <div className="absolute -inset-1 sm:-inset-2 gradient-primary-r rounded-xl sm:rounded-2xl blur-md sm:blur-lg opacity-30" />
+            <div className="relative p-2 sm:p-3 gradient-primary-br rounded-xl sm:rounded-2xl shadow-lg">
               <Images className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
             </div>
           </div>

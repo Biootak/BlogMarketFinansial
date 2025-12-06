@@ -280,7 +280,7 @@ export default function AdvertisementsPage() {
                 className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-3xl overflow-hidden rounded-2xl border border-slate-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-slate-700/50 dark:bg-slate-800/95"
                 dir="rtl"
               >
-                <DialogHeader className="border-b border-slate-200/60 bg-gradient-to-l from-slate-50 to-white px-6 py-5 dark:border-slate-700/50 dark:from-slate-800 dark:to-slate-800">
+                <DialogHeader className="border-b border-slate-200/60 gradient-neutral-l px-6 py-5 dark:border-slate-700/50 dark:from-slate-800 dark:to-slate-800">
                   <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white">
                     {editingAd ? 'ویرایش تبلیغ' : 'افزودن تبلیغ جدید'}
                   </DialogTitle>
@@ -300,7 +300,7 @@ export default function AdvertisementsPage() {
       ) : ads.length === 0 ? (
         <div className="flex min-h-[500px] items-center justify-center rounded-2xl border border-slate-200/60 bg-white/60 p-8 shadow-lg backdrop-blur-sm dark:border-slate-700/50 dark:bg-slate-800/60">
           <div className="text-center">
-            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800">
+            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full gradient-neutral-br dark:from-slate-700 dark:to-slate-800">
               <Megaphone className="h-10 w-10 text-slate-400 dark:text-slate-500" />
             </div>
             <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">

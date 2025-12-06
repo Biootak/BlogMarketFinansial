@@ -27,7 +27,7 @@ export function TopPostsTable({ data, isLoading = false }: TopPostsTableProps) {
     return (
       <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg">
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl">
+          <div className="p-2 gradient-success-br rounded-xl">
             <FileText className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -46,7 +46,7 @@ export function TopPostsTable({ data, isLoading = false }: TopPostsTableProps) {
     <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-200 shadow-lg">
       {/* Header */}
       <div className="flex items-start sm:items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-        <div className="p-1.5 sm:p-2 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg sm:rounded-xl flex-shrink-0">
+        <div className="p-1.5 sm:p-2 gradient-success-br rounded-lg sm:rounded-xl flex-shrink-0">
           <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
         </div>
         <div className="min-w-0 flex-1">
@@ -79,7 +79,7 @@ export function TopPostsTable({ data, isLoading = false }: TopPostsTableProps) {
                 className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
               >
                 <td className="py-4 px-4">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-sm font-bold">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full gradient-primary-br text-white text-sm font-bold">
                     {index + 1}
                   </div>
                 </td>
@@ -152,7 +152,7 @@ export function TopPostsTable({ data, isLoading = false }: TopPostsTableProps) {
             className="p-3 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl border border-gray-200"
           >
             <div className="flex items-start gap-2 sm:gap-3 mb-2 sm:mb-3">
-              <div className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs sm:text-sm font-bold flex-shrink-0">
+              <div className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full gradient-primary-br text-white text-xs sm:text-sm font-bold flex-shrink-0">
                 {index + 1}
               </div>
               <div className="flex-1 min-w-0">

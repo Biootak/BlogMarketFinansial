@@ -30,7 +30,7 @@ const PostMeta2: FC<PostMeta2Props> = ({
     >
       {/* Date Badge */}
       <div className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-50/80 dark:bg-primary-950/50 border border-primary-100 dark:border-primary-900/50 transition-all duration-200 hover:bg-primary-100 dark:hover:bg-primary-900/50 hover:border-primary-200 dark:hover:border-primary-800">
-        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 shadow-sm shadow-primary-500/30">
+        <span className="flex items-center justify-center w-5 h-5 rounded-full gradient-primary-br shadow-sm shadow-primary-500/30">
           <CalendarDays className="w-3 h-3 text-white" />
         </span>
         <span

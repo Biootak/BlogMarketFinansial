@@ -2,7 +2,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function CardLarge1Skeleton() {
   return (
-    <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900 dark:to-neutral-800 p-1.5 sm:p-2">
+    <div className="relative rounded-3xl overflow-hidden gradient-neutral-br dark:from-neutral-900 dark:to-neutral-800 p-1.5 sm:p-2">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 sm:gap-3 lg:gap-4">
         {/* Main Card Skeleton */}
         <div className="lg:col-span-8">

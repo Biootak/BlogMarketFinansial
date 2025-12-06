@@ -120,7 +120,7 @@ const ModalCategories: React.FC<ModalCategoriesProps> = ({ initialCategories }) 
         <DialogContent className="sm:max-w-[500px] md:max-w-[700px] lg:max-w-[900px] w-[95vw] max-h-[85vh] overflow-hidden flex flex-col p-0 gap-0 rounded-2xl border-neutral-200/80 dark:border-neutral-700/80">
           <DialogHeader className="px-6 pt-6 pb-4 border-b border-neutral-200/80 dark:border-neutral-700/80 bg-gradient-to-b from-neutral-50 to-white dark:from-neutral-800 dark:to-neutral-900">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/20">
+              <div className="w-10 h-10 rounded-xl gradient-primary-br flex items-center justify-center shadow-lg shadow-primary-500/20">
                 <FolderOpen className="w-5 h-5 text-white" />
               </div>
               <div>

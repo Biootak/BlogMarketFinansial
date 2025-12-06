@@ -110,7 +110,7 @@ export function AuthorAnalyticsView() {
       {kpiData && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-200 shadow-lg">
-            <div className="inline-flex p-2 sm:p-3 rounded-lg sm:rounded-xl mb-3 sm:mb-4 bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg">
+            <div className="inline-flex p-2 sm:p-3 rounded-lg sm:rounded-xl mb-3 sm:mb-4 gradient-primary-br shadow-lg">
               <User className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
             </div>
             <h3 className="text-xs sm:text-sm font-medium text-gray-600 mb-1.5 sm:mb-2 truncate">
@@ -152,7 +152,7 @@ export function AuthorAnalyticsView() {
           </div>
 
           <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-200 shadow-lg">
-            <div className="inline-flex p-2 sm:p-3 rounded-lg sm:rounded-xl mb-3 sm:mb-4 bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg">
+            <div className="inline-flex p-2 sm:p-3 rounded-lg sm:rounded-xl mb-3 sm:mb-4 gradient-success-br shadow-lg">
               <svg
                 className="w-4 h-4 sm:w-6 sm:h-6 text-white"
                 fill="none"
@@ -176,7 +176,7 @@ export function AuthorAnalyticsView() {
           </div>
 
           <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-200 shadow-lg">
-            <div className="inline-flex p-2 sm:p-3 rounded-lg sm:rounded-xl mb-3 sm:mb-4 bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg">
+            <div className="inline-flex p-2 sm:p-3 rounded-lg sm:rounded-xl mb-3 sm:mb-4 gradient-warning-br shadow-lg">
               <svg
                 className="w-4 h-4 sm:w-6 sm:h-6 text-white"
                 fill="none"

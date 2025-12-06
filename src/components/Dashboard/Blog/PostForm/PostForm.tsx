@@ -632,7 +632,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                           {field.value?.map((tag) => (
                             <Badge
                               key={tag}
-                              className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-3 py-1.5 rounded-lg flex items-center gap-2"
+                              className="gradient-success-br text-white px-3 py-1.5 rounded-lg flex items-center gap-2"
                             >
                               {tag}
                               <button
@@ -890,7 +890,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                 {/* Gallery Images - only show when post type is GALLERY */}
                 {form.watch('postType') === 'GALLERY' && (
                   <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-6">
-                    <div className="h-1 bg-gradient-to-r from-emerald-500 to-teal-500 -mt-4 sm:-mt-6 -mx-4 sm:-mx-6 mb-4 sm:mb-6 rounded-t-2xl" />
+                    <div className="h-1 gradient-success-br -mt-4 sm:-mt-6 -mx-4 sm:-mx-6 mb-4 sm:mb-6 rounded-t-2xl" />
                     <FormField
                       control={form.control}
                       name="galleryImages"

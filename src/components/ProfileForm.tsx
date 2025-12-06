@@ -142,7 +142,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
         </div>
         <div className="absolute -bottom-10 sm:-bottom-12 right-3 sm:right-4 md:right-6">
           <div className="relative group">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-xl sm:rounded-2xl overflow-hidden border-3 sm:border-4 border-white dark:border-slate-900 shadow-xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-xl sm:rounded-2xl overflow-hidden border-3 sm:border-4 border-white dark:border-slate-900 shadow-xl gradient-neutral-br dark:from-slate-700 dark:to-slate-800">
               {avatarPreview ? (
                 <Image
                   src={avatarPreview}
@@ -263,7 +263,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
               className={cn(
                 'p-2 sm:p-2.5 md:p-3 rounded-lg sm:rounded-xl transition-all duration-200',
                 isPasswordSectionOpen
-                  ? 'bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/25'
+                  ? 'gradient-warning-br shadow-lg shadow-amber-500/25'
                   : 'bg-slate-200/80 dark:bg-slate-700/80',
               )}
             >

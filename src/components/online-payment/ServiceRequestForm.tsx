@@ -1261,7 +1261,7 @@ function Step3Review({
       </div>
 
       {/* Summary Card */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-neutral-50 to-neutral-100/50 dark:from-neutral-800/50 dark:to-neutral-900/50 rounded-3xl p-6 sm:p-8 border border-neutral-200/50 dark:border-neutral-700/50">
+      <div className="relative overflow-hidden gradient-neutral-br/50 dark:from-neutral-800/50 dark:to-neutral-900/50 rounded-3xl p-6 sm:p-8 border border-neutral-200/50 dark:border-neutral-700/50">
         {/* Decorative Elements */}
         <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-primary-500/10 to-transparent rounded-full blur-2xl" />
         <div className="absolute bottom-0 right-0 w-32 h-32 bg-gradient-to-tl from-purple-500/10 to-transparent rounded-full blur-2xl" />

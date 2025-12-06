@@ -66,7 +66,7 @@ export function CategorySelectDialog({
           <div className="h-1 bg-gradient-to-r from-blue-500 to-indigo-500 -mt-4 sm:-mt-6 -mx-4 sm:-mx-6 mb-3 sm:mb-4" />
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 sm:gap-3 text-right">
-              <div className="p-2 sm:p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
+              <div className="p-2 sm:p-2.5 rounded-xl gradient-primary-br text-white">
                 <Folder className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div>

@@ -123,7 +123,7 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
               {active && (
                 <motion.span
                   layoutId="nav-active"
-                  className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 shadow-sm shadow-primary-500/50"
+                  className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full gradient-primary-r shadow-sm shadow-primary-500/50"
                   transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                 />
               )}
@@ -228,7 +228,7 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
           {active && (
             <motion.span
               layoutId="nav-active-link"
-              className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 shadow-sm shadow-primary-500/50"
+              className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full gradient-primary-r shadow-sm shadow-primary-500/50"
               transition={{ type: 'spring', stiffness: 400, damping: 30 }}
             />
           )}

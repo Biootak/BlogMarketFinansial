@@ -347,7 +347,7 @@ export default function UsersPage() {
                 className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-2xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95"
                 dir="rtl"
               >
-                <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-4 py-4 sm:px-6 sm:py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
+                <DialogHeader className="border-b border-neutral-200/60 gradient-neutral-l px-4 py-4 sm:px-6 sm:py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
                   <DialogTitle className="text-lg font-bold text-neutral-900 sm:text-xl dark:text-neutral-50">
                     افزودن کاربر جدید
                   </DialogTitle>
@@ -516,7 +516,7 @@ export default function UsersPage() {
           className="max-h-[95vh] sm:max-h-[90vh] w-[calc(100%-1rem)] max-w-2xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95"
           dir="rtl"
         >
-          <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-4 py-4 sm:px-6 sm:py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
+          <DialogHeader className="border-b border-neutral-200/60 gradient-neutral-l px-4 py-4 sm:px-6 sm:py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
             <DialogTitle className="text-lg font-bold text-neutral-900 sm:text-xl dark:text-neutral-50">
               ویرایش کاربر
             </DialogTitle>

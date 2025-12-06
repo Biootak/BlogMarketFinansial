@@ -155,7 +155,7 @@ const TrafficChart: React.FC = () => {
           whileHover={{ scale: 1.02 }}
           className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-100 dark:border-emerald-800/30"
         >
-          <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/30">
+          <div className="p-2 rounded-xl gradient-success-br text-white shadow-lg shadow-emerald-500/30">
             <CalendarDays className="w-4 h-4" />
           </div>
           <div>

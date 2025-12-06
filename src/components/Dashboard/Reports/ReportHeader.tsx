@@ -48,7 +48,7 @@ export function ReportHeader({
                   {title}
                 </h1>
                 {showStatus && (
-                  <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] sm:text-xs font-bold rounded-full shadow-lg shadow-emerald-500/30">
+                  <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 gradient-success-br text-white text-[10px] sm:text-xs font-bold rounded-full shadow-lg shadow-emerald-500/30">
                     <TrendingUp className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                     فعال
                   </span>

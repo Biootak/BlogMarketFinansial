@@ -269,8 +269,8 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
               <div className="px-4 sm:px-5 md:px-6 lg:px-7 py-4 sm:py-5 md:py-6 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50/50 to-white dark:from-slate-800/50 dark:to-slate-900">
                 <div className="flex items-center gap-2.5 sm:gap-3 md:gap-4">
                   <div className="relative flex-shrink-0">
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl sm:rounded-2xl blur-lg opacity-40" />
-                    <div className="relative p-2 sm:p-2.5 md:p-3 lg:p-3.5 rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-xl">
+                    <div className="absolute inset-0 gradient-success-br rounded-xl sm:rounded-2xl blur-lg opacity-40" />
+                    <div className="relative p-2 sm:p-2.5 md:p-3 lg:p-3.5 rounded-xl sm:rounded-2xl gradient-success-br text-white shadow-xl">
                       <CalendarDays className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
                   </div>
