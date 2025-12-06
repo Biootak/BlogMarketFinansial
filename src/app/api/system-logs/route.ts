@@ -1,5 +1,6 @@
 import { auth } from '@/auth';
 import db from '@/lib/db';
+import type { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 /**
@@ -24,7 +25,7 @@ export async function GET(req: Request) {
     const source = url.searchParams.get('source');
     const search = url.searchParams.get('search');
 
-    const where: any = {};
+    const where: Prisma.SystemLogWhereInput = {};
 
     if (level && level !== 'all') {
       where.level = level;

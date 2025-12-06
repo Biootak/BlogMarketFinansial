@@ -1,4 +1,5 @@
 import type { EditorInstance } from '..';
+import type { HeadingNode } from '../types';
 import { slugify } from './utils';
 
 export type TocItem = {
@@ -11,6 +12,13 @@ export type TocItem = {
 export type ToCObject = TocItem & {
   children: ToCObject[];
 };
+
+interface HeadingData {
+  id: string;
+  level: number;
+  text: string;
+  node?: Element;
+}
 
 export class TOC {
   parent: TOC | null = null;
@@ -56,19 +64,19 @@ export class TOC {
   }
 }
 
-function fillEmpty(headings: any[]) {
+function fillEmpty(headings: HeadingData[]) {
   for (let i = 0; i < headings.length; i++) {
     let level = headings[i - 1]?.level || 1;
     if (headings[i].level - level > 1) {
       while (level < headings[i].level) {
-        headings.splice(i, 0, { level: level + 1, text: '' });
+        headings.splice(i, 0, { id: '', level: level + 1, text: '' });
         level++;
       }
     }
   }
 }
 
-function createTree(headings: any[], depth: number) {
+function createTree(headings: HeadingData[], depth: number) {
   fillEmpty(headings);
 
   const tree = new TOC('', '', document.createElement('div'));
@@ -76,7 +84,7 @@ function createTree(headings: any[], depth: number) {
 
   for (const heading of headings) {
     while (current.level >= heading.level && current.parent) current = current.parent;
-    current = current.addChild(heading.id, heading.text, heading.node);
+    current = current.addChild(heading.id, heading.text, heading.node || document.createElement('div'));
   }
   return flatten(tree.flatten().toObject(), depth);
 }
@@ -95,7 +103,7 @@ function flatten(toc: ToCObject, depth: number): TocItem[] {
 }
 
 export function getToCItems(editor: EditorInstance, depth = 3) {
-  const headings: any[] = [];
+  const headings: HeadingData[] = [];
 
   editor.state.doc.descendants((node, pos) => {
     if (node.type.name === 'heading') {
@@ -114,11 +122,12 @@ export function getToCItems(editor: EditorInstance, depth = 3) {
         editor.view.dispatch(transaction);
       }
 
+      const domNode = editor.view.nodeDOM(pos);
       headings.push({
         id,
         level: node.attrs.level,
         text: node.textContent,
-        node: editor.view.nodeDOM(pos),
+        node: domNode instanceof Element ? domNode : undefined,
       });
     }
   });

@@ -28,7 +28,12 @@ export async function updateProfile(formData: FormData): Promise<ActionResult<vo
     if (validatedFields.email) updateData.email = validatedFields.email;
 
     // Profile update data - همیشه فیلدها رو آپدیت کن حتی اگه خالی باشن
-    const profileUpdateData: any = {};
+    const profileUpdateData: {
+      bio?: string;
+      avatar?: string | null;
+      bgImage?: string | null;
+      jobName?: string;
+    } = {};
     if (validatedFields.bio !== undefined) profileUpdateData.bio = validatedFields.bio || '';
     if (validatedFields.imageUrl !== undefined)
       profileUpdateData.avatar = validatedFields.imageUrl || null;

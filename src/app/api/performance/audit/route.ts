@@ -6,7 +6,7 @@
 import prisma from '@/lib/db';
 import { BundleAnalyzer } from '@/lib/performance/bundleAnalyzer';
 import { databaseProfiler } from '@/lib/performance/databaseProfiler';
-import { ReportGenerator } from '@/lib/performance/reportGenerator';
+import { ReportGenerator, type AllAnalyses } from '@/lib/performance/reportGenerator';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
 
 async function runAudit(auditId: string, type: string) {
   try {
-    const analyses: any = {};
+    const analyses: AllAnalyses = {};
 
     // Bundle analysis
     if (type === 'full' || type === 'bundle') {

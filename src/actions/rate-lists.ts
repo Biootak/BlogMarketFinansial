@@ -26,7 +26,7 @@ export async function getRateLists(): Promise<RateListData[]> {
         }
 
         const typedRates = Array.isArray(parsedRates)
-          ? parsedRates.map((rate: any) => ({
+          ? parsedRates.map((rate: { title?: unknown; value?: unknown }) => ({
               title: String(rate.title || ''),
               value: String(rate.value || ''),
             }))
@@ -106,7 +106,7 @@ export async function updateRateList(
     // Parse the JSON rates back to RateItem[]
     const parsedRates = rateList.rates ? JSON.parse(String(rateList.rates)) : [];
     const typedRates = Array.isArray(parsedRates)
-      ? parsedRates.map((rate: any) => ({
+      ? parsedRates.map((rate: { title?: unknown; value?: unknown }) => ({
           title: String(rate.title || ''),
           value: String(rate.value || ''),
         }))

@@ -5,6 +5,8 @@
 
 'use client';
 
+import type { Subscription } from './types';
+
 export interface MemoryMetrics {
   heapSize: number;
   usedHeap: number;
@@ -46,7 +48,7 @@ export class MemoryTracker {
   private gcCount = 0;
   private eventListeners = new Map<string, number>();
   private timers = new Set<number>();
-  private subscriptions = new Set<any>();
+  private subscriptions = new Set<Subscription>();
   private monitoringInterval: NodeJS.Timeout | null = null;
 
   /**
@@ -215,14 +217,14 @@ export class MemoryTracker {
   /**
    * ثبت subscription
    */
-  registerSubscription(subscription: any): void {
+  registerSubscription(subscription: Subscription): void {
     this.subscriptions.add(subscription);
   }
 
   /**
    * حذف subscription
    */
-  unregisterSubscription(subscription: any): void {
+  unregisterSubscription(subscription: Subscription): void {
     this.subscriptions.delete(subscription);
   }
 

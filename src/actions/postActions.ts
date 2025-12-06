@@ -1141,7 +1141,10 @@ export async function getStats(): Promise<
       }),
     ]);
 
-    const fillWeeklyData = (data: any[], isViewData = false) => {
+    const fillWeeklyData = (
+      data: Array<{ createdAt: Date; _count?: unknown }>,
+      isViewData = false,
+    ) => {
       const filledData = new Array(7).fill(0);
       data.forEach((item) => {
         const itemDate = new Date(item.createdAt);
@@ -1150,7 +1153,19 @@ export async function getStats(): Promise<
         const dayIndex = 6 - daysDiff;
 
         if (dayIndex >= 0 && dayIndex < 7) {
-          filledData[dayIndex] += isViewData ? item._count?.id || 0 : item._count || 0;
+          if (isViewData) {
+            // For view data, _count is an object with id property
+            const count = item._count as { id?: number } | undefined;
+            filledData[dayIndex] += count?.id || 0;
+          } else {
+            // For other data, _count is a number or true (from groupBy)
+            const count = item._count;
+            if (typeof count === 'number') {
+              filledData[dayIndex] += count;
+            } else if (count === true) {
+              filledData[dayIndex] += 1;
+            }
+          }
         }
       });
       return filledData;

@@ -5,12 +5,13 @@ import TableHeader from '@tiptap/extension-table-header';
 import TableRow from '@tiptap/extension-table-row';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { CellSelection } from '@tiptap/pm/tables';
+import type { TableEditor, CellNode, ViewWithDispatch } from '../types';
 
 // Plugin key for cell drag selection
 const tableCellSelectionKey = new PluginKey('tableCellSelection');
 
 // Helper function to set background color on all selected cells
-const setSelectedCellsBackground = (editor: any, color: string | null) => {
+const setSelectedCellsBackground = (editor: TableEditor, color: string | null) => {
   const { state, view } = editor;
   const { selection } = state;
 
@@ -19,14 +20,14 @@ const setSelectedCellsBackground = (editor: any, color: string | null) => {
     const { tr } = state;
 
     // Iterate through all selected cells
-    selection.forEachCell((node: any, pos: number) => {
+    selection.forEachCell((node: CellNode, pos: number) => {
       tr.setNodeMarkup(pos, null, {
         ...node.attrs,
         backgroundColor: color,
       });
     });
 
-    view.dispatch(tr);
+    (view as ViewWithDispatch).dispatch(tr);
     return true;
   }
 
@@ -41,7 +42,7 @@ const setSelectedCellsBackground = (editor: any, color: string | null) => {
       ...cell.node.attrs,
       backgroundColor: color,
     });
-    view.dispatch(tr);
+    (view as ViewWithDispatch).dispatch(tr);
     return true;
   }
 
@@ -49,7 +50,7 @@ const setSelectedCellsBackground = (editor: any, color: string | null) => {
 };
 
 // Find cell node position from DOM coordinates
-const getCellPosFromCoords = (view: any, coords: { x: number; y: number }): number | null => {
+const getCellPosFromCoords = (view: ViewWithDispatch, coords: { x: number; y: number }): number | null => {
   const posAtCoords = view.posAtCoords({ left: coords.x, top: coords.y });
   if (!posAtCoords) return null;
 
@@ -149,7 +150,7 @@ export const TableExtension = Table.extend({
       ...this.parent?.(),
       setSelectedCellsBackgroundColor:
         (color: string | null) =>
-        ({ editor }: any) => {
+        ({ editor }: { editor: TableEditor }) => {
           return setSelectedCellsBackground(editor, color);
         },
     };

@@ -1,7 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
-import type { SearchActionResult } from '@/types/types';
+import type { SearchActionResult, SearchResultItem } from '@/types/types';
 
 export async function getSearchResults(
   searchQuery: string,
@@ -12,8 +12,7 @@ export async function getSearchResults(
   const skip = (page - 1) * pageSize;
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let posts: any[];
+    let posts: unknown[];
     let total: number;
 
     switch (activeTab) {
@@ -121,7 +120,7 @@ export async function getSearchResults(
     return {
       success: true,
       message: 'نتایج جستجو با موفقیت دریافت شد',
-      data: { posts, total, pages: Math.ceil(total / pageSize) },
+      data: { posts: posts as SearchResultItem[], total, pages: Math.ceil(total / pageSize) },
     };
   } catch (error) {
     console.error('Error in getSearchResults:', error);

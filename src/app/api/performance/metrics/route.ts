@@ -4,6 +4,7 @@
  */
 
 import prisma from '@/lib/db';
+import type { Prisma } from '@prisma/client';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest) {
     const metricType = searchParams.get('metricType');
     const limit = Number.parseInt(searchParams.get('limit') || '100');
 
-    const where: any = {};
+    const where: Prisma.PerformanceMetricWhereInput = {};
     if (route) where.route = route;
     if (metricType) where.metricType = metricType;
 

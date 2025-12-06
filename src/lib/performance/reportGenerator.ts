@@ -4,6 +4,17 @@
  */
 
 import type { BundleAnalysis } from './bundleAnalyzer';
+import type {
+  DatabaseAnalysis,
+  SSRAnalysis,
+  ClientAnalysis,
+  ImageAnalysis,
+  MemoryAnalysis,
+  CacheAnalysis,
+  ScriptsAnalysis,
+  APIAnalysis,
+  FontsAnalysis,
+} from './types';
 
 export interface CodeLocation {
   file: string;
@@ -59,15 +70,15 @@ export interface PerformanceReport {
 
 export interface AllAnalyses {
   bundle?: BundleAnalysis;
-  database?: any;
-  ssr?: any;
-  client?: any;
-  image?: any;
-  memory?: any;
-  cache?: any;
-  scripts?: any;
-  api?: any;
-  fonts?: any;
+  database?: DatabaseAnalysis;
+  ssr?: SSRAnalysis;
+  client?: ClientAnalysis;
+  image?: ImageAnalysis;
+  memory?: MemoryAnalysis;
+  cache?: CacheAnalysis;
+  scripts?: ScriptsAnalysis;
+  api?: APIAnalysis;
+  fonts?: FontsAnalysis;
 }
 
 export class ReportGenerator {
@@ -395,7 +406,7 @@ export class ReportGenerator {
   /**
    * Extract findings from database analysis
    */
-  private extractDatabaseFindings(database: any): Finding[] {
+  private extractDatabaseFindings(database: DatabaseAnalysis): Finding[] {
     const findings: Finding[] = [];
 
     // Slow queries
@@ -421,7 +432,7 @@ export class ReportGenerator {
   /**
    * Extract findings from SSR analysis
    */
-  private extractSSRFindings(ssr: any): Finding[] {
+  private extractSSRFindings(ssr: SSRAnalysis): Finding[] {
     const findings: Finding[] = [];
 
     if (ssr.slowPages) {
@@ -446,7 +457,7 @@ export class ReportGenerator {
   /**
    * Extract findings from client analysis
    */
-  private extractClientFindings(client: any): Finding[] {
+  private extractClientFindings(client: ClientAnalysis): Finding[] {
     const findings: Finding[] = [];
 
     // LCP issues

@@ -5,6 +5,8 @@
 
 'use client';
 
+import type { WebVitalsMetric } from './types';
+
 export interface WebVitals {
   lcp: number;
   fid: number;
@@ -78,7 +80,7 @@ export class ClientMonitor {
         this.checkIfComplete(vitals, resolve);
       });
 
-      onINP((metric: any) => {
+      onINP((metric: WebVitalsMetric) => {
         vitals.inp = metric.value;
         vitals.fid = metric.value; // Use INP as FID replacement
         this.checkIfComplete(vitals, resolve);
@@ -268,10 +270,14 @@ export class ClientMonitor {
 
             this.metrics.layoutShifts.push({
               value: layoutShiftEntry.value,
-              sources: (layoutShiftEntry.sources || []).map((source: any) => ({
+              sources: (layoutShiftEntry.sources || []).map((source: {
+                node?: { tagName?: string };
+                previousRect?: DOMRect;
+                currentRect?: DOMRect;
+              }) => ({
                 node: source.node?.tagName || 'unknown',
-                previousRect: source.previousRect,
-                currentRect: source.currentRect,
+                previousRect: source.previousRect || null,
+                currentRect: source.currentRect || null,
               })),
               timestamp: entry.startTime,
             });

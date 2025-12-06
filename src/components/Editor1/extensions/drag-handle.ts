@@ -1,6 +1,7 @@
 import { Extension } from '@tiptap/core';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { NodeSelection } from '@tiptap/pm/state';
+import type { DraggedNodeContent } from '../types';
 
 export interface DragHandleOptions {
   dragHandleWidth: number;
@@ -148,7 +149,7 @@ export const DragHandle = Extension.create<DragHandleOptions>({
             }
           });
 
-          let draggedNodeContent: any = null;
+          let draggedNodeContent: DraggedNodeContent | null = null;
           let draggedNodePos: number | null = null;
 
           dragHandleElement.addEventListener('dragstart', (e) => {

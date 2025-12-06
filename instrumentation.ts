@@ -33,7 +33,7 @@ export async function register() {
   }
 }
 
-export async function onRequestError(err: Error, request: Request, _context: any) {
+export async function onRequestError(err: Error, request: Request, _context: unknown) {
   // Log performance issues on errors
   console.error('❌ Request error:', {
     url: request.url,

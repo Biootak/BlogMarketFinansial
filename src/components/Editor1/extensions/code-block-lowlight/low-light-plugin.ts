@@ -6,6 +6,7 @@ import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import highlight from 'highlight.js/lib/core';
 import { CODE_BLOCK_LANGUAGUE_SYNTAX_DEFAULT } from '../../constants/code_block_languages';
 import { loadLanguage } from '../../lib/code-block-language-loader';
+import type { LowlightNode, LowlightResult } from '../../types';
 
 export const LowlightPluginKey = new PluginKey('lowlight');
 
@@ -15,7 +16,7 @@ export function LowlightPlugin({
   defaultLanguage,
 }: {
   name: string;
-  lowlight: any;
+  lowlight: unknown;
   defaultLanguage: string | null | undefined;
 }) {
   const lowlightPlugin: Plugin<any> = new Plugin({
@@ -102,7 +103,7 @@ export function LowlightPlugin({
             defaultLanguage,
           ];
 
-          await Promise.all(languages.map((language) => loadLanguage(language, lowlight)));
+          await Promise.all(languages.map((language) => loadLanguage(language, lowlight as Parameters<typeof loadLanguage>[1])));
 
           const tr = view.state.tr.setMeta(LowlightPluginKey, true);
           view.dispatch(tr);
@@ -118,7 +119,7 @@ export function LowlightPlugin({
             codeBlocks.flatMap((block) => [
               loadLanguage(
                 block.node.attrs.language || CODE_BLOCK_LANGUAGUE_SYNTAX_DEFAULT,
-                lowlight,
+                lowlight as Parameters<typeof loadLanguage>[1],
               ),
             ]),
           );
@@ -146,22 +147,22 @@ export function LowlightPlugin({
   return lowlightPlugin;
 }
 
-function parseNodes(nodes: any[], className: string[] = []): { text: string; classes: string[] }[] {
+function parseNodes(nodes: LowlightNode[], className: string[] = []): { text: string; classes: string[] }[] {
   return nodes.flatMap((node) => {
-    const classes = [...className, ...(node.properties ? node.properties.className : [])];
+    const classes = [...className, ...(node.properties?.className || [])];
 
     if (node.children) {
       return parseNodes(node.children, classes);
     }
 
     return {
-      text: node.value,
+      text: node.value || '',
       classes,
     };
   });
 }
 
-function getHighlightNodes(result: any) {
+function getHighlightNodes(result: LowlightResult): LowlightNode[] {
   // `.value` for lowlight v1, `.children` for lowlight v2
   return result.value || result.children || [];
 }
@@ -178,7 +179,7 @@ function getDecorations({
 }: {
   doc: ProsemirrorNode;
   name: string;
-  lowlight: any;
+  lowlight: unknown;
   defaultLanguage: string | null | undefined;
 }) {
   const decorations: Decoration[] = [];
@@ -188,12 +189,12 @@ function getDecorations({
   codeBlocks.forEach((block) => {
     let from = block.pos + 1;
     const language = block.node.attrs.language || defaultLanguage;
-    const languages = lowlight.listLanguages();
+    const languages = (lowlight as { listLanguages: () => string[] }).listLanguages();
 
     const nodes =
       language && (languages.includes(language) || registered(language))
-        ? getHighlightNodes(lowlight.highlight(language, block.node.textContent))
-        : getHighlightNodes(lowlight.highlightAuto(block.node.textContent));
+        ? getHighlightNodes((lowlight as { highlight: (lang: string, code: string) => LowlightResult }).highlight(language, block.node.textContent))
+        : getHighlightNodes((lowlight as { highlightAuto: (code: string) => LowlightResult }).highlightAuto(block.node.textContent));
 
     parseNodes(nodes).forEach((node) => {
       const to = from + node.text.length;

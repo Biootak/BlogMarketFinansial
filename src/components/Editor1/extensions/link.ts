@@ -1,11 +1,12 @@
 import { markInputRule } from '@tiptap/core';
 import { Link as BaseLink } from '@tiptap/extension-link';
+import type { RegexMatch } from '../types';
 
-const extractHrefFromMatch = (match: any) => {
-  return { href: match.groups.href };
+const extractHrefFromMatch = (match: RegexMatch) => {
+  return { href: match.groups?.href || '' };
 };
 
-export const extractHrefFromMarkdownLink = (match: any) => {
+export const extractHrefFromMarkdownLink = (match: RegexMatch) => {
   /**
    * Removes the last capture group from the match to satisfy
    * tiptap markInputRule expectation of having the content as

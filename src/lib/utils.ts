@@ -232,10 +232,13 @@ export function validateSlug(slug: string): boolean {
   return slugRegex.test(slug);
 }
 
-export function debounce<F extends (...args: any[]) => any>(func: F, waitFor: number) {
+export function debounce<T extends unknown[], R>(
+  func: (...args: T) => R,
+  waitFor: number,
+): (...args: T) => Promise<R> {
   let timeout: ReturnType<typeof setTimeout> | null = null;
 
-  return (...args: Parameters<F>): Promise<ReturnType<F>> => {
+  return (...args: T): Promise<R> => {
     return new Promise((resolve) => {
       if (timeout) {
         clearTimeout(timeout);

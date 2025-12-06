@@ -3,12 +3,14 @@
  * پروفایل کردن و بهینه‌سازی Prisma queries
  */
 
+import type { PrismaMiddlewareParams, PrismaMiddlewareNext } from './types';
+
 export interface QueryProfile {
   query: string;
   duration: number;
   timestamp: Date;
   stackTrace: string[];
-  params?: any;
+  params?: unknown;
   model?: string;
   operation?: string;
 }
@@ -185,7 +187,7 @@ export class DatabaseProfiler {
    * ایجاد Prisma middleware برای logging
    */
   createPrismaMiddleware() {
-    return async (params: any, next: any) => {
+    return async (params: PrismaMiddlewareParams, next: PrismaMiddlewareNext) => {
       const start = Date.now();
 
       try {

@@ -175,12 +175,12 @@ export const inpOptimizations = {
   /**
    * Debounce expensive operations
    */
-  debounce<T extends (...args: any[]) => any>(
-    func: T,
+  debounce<T extends unknown[], R>(
+    func: (...args: T) => R,
     wait: number,
-  ): (...args: Parameters<T>) => void {
+  ): (...args: T) => void {
     let timeout: NodeJS.Timeout;
-    return (...args: Parameters<T>) => {
+    return (...args: T) => {
       clearTimeout(timeout);
       timeout = setTimeout(() => func(...args), wait);
     };
@@ -189,12 +189,12 @@ export const inpOptimizations = {
   /**
    * Throttle scroll handlers
    */
-  throttle<T extends (...args: any[]) => any>(
-    func: T,
+  throttle<T extends unknown[], R>(
+    func: (...args: T) => R,
     limit: number,
-  ): (...args: Parameters<T>) => void {
+  ): (...args: T) => void {
     let inThrottle: boolean;
-    return (...args: Parameters<T>) => {
+    return (...args: T) => {
       if (!inThrottle) {
         func(...args);
         inThrottle = true;

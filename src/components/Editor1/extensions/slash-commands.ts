@@ -2,6 +2,7 @@ import { Extension } from '@tiptap/core';
 import { PluginKey } from '@tiptap/pm/state';
 import type { Editor } from '@tiptap/react';
 import Suggestion, { type SuggestionOptions } from '@tiptap/suggestion';
+import type { Range } from '../types';
 
 // کلید یکتا برای پلاگین slash commands
 export const slashCommandsPluginKey = new PluginKey('slashCommands');
@@ -206,7 +207,7 @@ export const SlashCommands = Extension.create({
           editor,
           range,
           props,
-        }: { editor: Editor; range: any; props: SlashCommandItem }) => {
+        }: { editor: Editor; range: Range; props: SlashCommandItem }) => {
           // اول اسلش و متن جستجو رو پاک کن، بعد دستور رو اجرا کن
           editor.chain().focus().deleteRange(range).run();
           // یک tick صبر کن تا deletion کامل بشه

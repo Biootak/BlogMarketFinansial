@@ -3,6 +3,8 @@
  * تحلیل حجم و ترکیب JavaScript bundles
  */
 
+import type { WebpackStats, WebpackModule } from './types';
+
 export interface BundleInfo {
   name: string;
   size: number;
@@ -37,7 +39,7 @@ export interface BundleAnalysis {
 }
 
 export class BundleAnalyzer {
-  private statsData: any = null;
+  private statsData: WebpackStats | null = null;
 
   /**
    * تحلیل webpack stats و تولید گزارش جامع
@@ -88,10 +90,10 @@ export class BundleAnalyzer {
     // Parse modules to find duplicates
     if (this.statsData.modules) {
       for (const module of this.statsData.modules) {
-        const match = (module as any).name?.match(/node_modules\/([^/]+)/);
+        const match = module.name?.match(/node_modules\/([^/]+)/);
         if (match) {
           const pkgName = match[1];
-          const version = this.extractVersion((module as any).name);
+          const version = this.extractVersion(module.name);
 
           if (!packageMap.has(pkgName)) {
             packageMap.set(pkgName, new Set());
@@ -102,8 +104,8 @@ export class BundleAnalyzer {
           if (version) {
             packageMap.get(pkgName)?.add(version);
           }
-          locationMap.get(pkgName)?.push((module as any).name);
-          sizeMap.set(pkgName, sizeMap.get(pkgName)! + ((module as any).size || 0));
+          locationMap.get(pkgName)?.push(module.name);
+          sizeMap.set(pkgName, sizeMap.get(pkgName)! + (module.size || 0));
         }
       }
     }
@@ -188,7 +190,7 @@ const Component = dynamic(() => import('./Component'), {
   /**
    * Load webpack stats from file
    */
-  private async loadStats(_statsPath?: string): Promise<any> {
+  private async loadStats(_statsPath?: string): Promise<WebpackStats> {
     // در محیط واقعی، این از فایل stats.json خوانده می‌شود
     // برای الان، یک mock data برمی‌گردانیم
     return {
@@ -201,7 +203,7 @@ const Component = dynamic(() => import('./Component'), {
   /**
    * Extract bundle information from stats
    */
-  private extractBundles(stats: any): BundleInfo[] {
+  private extractBundles(stats: WebpackStats): BundleInfo[] {
     const bundles: BundleInfo[] = [];
 
     if (stats.assets) {
