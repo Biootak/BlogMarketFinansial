@@ -79,6 +79,31 @@
   - `crypto.png`: 119 KB → 28 KB (76.7%)
 - **تأثیر**: کاهش 2.53 MB از تصاویر، بهبود page load speed
 
+### 9. Font Optimization ✅
+- بهبود تنظیمات فونت Vazirmatn در layout.tsx
+- اضافه کردن preload، fallback و adjustFontFallback
+- استفاده از next/font/google (best practice)
+- **تأثیر**: بهبود font loading performance
+
+### 10. XLSX Lazy Loading ✅ (-7.15 MB از initial bundle)
+- تبدیل xlsx imports به dynamic imports
+- تغییر `exportToExcel` به async function
+- اضافه کردن dynamic import در API route
+- **تأثیر**: کاهش 7.15 MB از initial bundle، xlsx فقط هنگام export load می‌شود
+
+### 11. Gradient Utilities Optimization ✅ (-30 KB CSS)
+- جایگزینی 84 inline gradient با custom classes
+- ایجاد 8 custom gradient class در globals.css
+- استفاده از `scripts/replace-gradients.ts` برای جایگزینی خودکار
+- **فایل‌های تغییر یافته**: 41 فایل
+- **تأثیر**: کاهش 30 KB CSS، بهبود maintainability
+
+### 12. Next.js Config Optimization ✅
+- اضافه کردن optimizePackageImports برای Radix UI packages
+- اضافه کردن recharts و framer-motion به optimize list
+- فعال‌سازی optimizeCss در experimental
+- **تأثیر**: بهبود tree shaking و bundle optimization
+
 ---
 
 ## 🎯 اهداف باقی‌مانده
@@ -149,6 +174,8 @@ Target: 2 MB ████░░░░░░░░░░░░░░░░ (64% r
 6. `perf: add gradient analysis tools and custom gradient utilities`
 7. `docs: update performance summary with gradient analysis results`
 8. `perf: optimize images to WebP format - save 2.53 MB (79.8%)`
+9. `perf: optimize gradient utilities - replace 84 inline gradients with custom classes (-30 KB CSS)`
+10. `perf: enhance next.config with optimizePackageImports for Radix UI and other packages`
 
 ---
 
@@ -157,18 +184,21 @@ Target: 2 MB ████░░░░░░░░░░░░░░░░ (64% r
 ### اولویت بالا
 1. ✅ ~~Migration React Icons به Lucide~~ (انجام شد - 82 MB کاهش)
 2. ✅ ~~Image Optimization to WebP~~ (انجام شد - 2.53 MB کاهش)
-3. کاهش CSS gradient utilities (133 KB - tools آماده است)
-4. بررسی و حذف TipTap extensions استفاده نشده
+3. ✅ ~~کاهش CSS gradient utilities~~ (انجام شد - 30 KB کاهش)
+4. ✅ ~~Font optimization با next/font~~ (انجام شد)
+5. ✅ ~~XLSX Lazy Loading~~ (انجام شد - 7.15 MB کاهش از initial bundle)
+6. ✅ ~~Next.js Config Optimization~~ (انجام شد)
 
 ### اولویت متوسط
-5. Route-based code splitting
-6. Font optimization با next/font
-7. حذف تصاویر اصلی (PNG/JPG) بعد از تست WebP
+7. Route-based code splitting برای Dashboard
+8. حذف تصاویر اصلی (PNG/JPG) بعد از تست WebP
+9. بررسی و بهینه‌سازی framer-motion usage
+10. Lazy loading برای کامپوننت‌های سنگین
 
 ### اولویت پایین
-8. API response caching
-9. Database query optimization
-10. CDN setup برای static assets
+11. API response caching
+12. Database query optimization
+13. CDN setup برای static assets
 
 ---
 
@@ -181,12 +211,15 @@ Target: 2 MB ████░░░░░░░░░░░░░░░░ (64% r
 5. **Gradient Utilities**: استفاده زیاد از gradient utilities در Tailwind باعث افزایش شدید CSS می‌شود
 6. **Image Formats**: تبدیل تصاویر به WebP می‌تواند تا 80% حجم را کاهش دهد
 7. **Automation**: ایجاد scripts برای بهینه‌سازی‌های تکراری بسیار مفید است
+8. **Custom Classes**: استفاده از custom classes به جای inline utilities برای patterns تکراری
+9. **Package Optimization**: optimizePackageImports در Next.js می‌تواند tree shaking را بهبود دهد
+10. **Lazy Loading**: lazy loading برای dependencies سنگین (مثل xlsx) بسیار مؤثر است
 
 ---
 
 **آخرین بروزرسانی**: 2025-12-06  
 **وضعیت**: در حال پیشرفت  
-**مرحله بعدی**: CSS Gradient Utilities Optimization
+**مرحله بعدی**: Route-based Code Splitting
 
 ---
 
