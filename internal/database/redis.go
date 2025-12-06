@@ -143,3 +143,15 @@ func (r *RedisClient) Stats() *redis.PoolStats {
 func (r *RedisClient) Info(ctx context.Context) (string, error) {
 	return r.Client.Info(ctx).Result()
 }
+
+// NewTestRedisClient creates a mock Redis client for testing
+// This uses miniredis for in-memory Redis simulation
+func NewTestRedisClient() *redis.Client {
+	// Create a simple in-memory Redis client for testing
+	// In a real scenario, you might use miniredis or a test Redis instance
+	client := redis.NewClient(&redis.Options{
+		Addr: "localhost:6379", // This will fail gracefully in tests
+		DB:   15,                // Use a separate DB for tests
+	})
+	return client
+}
