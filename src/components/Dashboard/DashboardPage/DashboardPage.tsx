@@ -9,13 +9,18 @@ import { memo, useMemo } from 'react';
 import { CalendarDays, BarChart3, MessageSquare, FileText, Eye, Heart, Edit, Share2 } from 'lucide-react';
 import useSWR from 'swr';
 import PostManagement from '../Blog/PostManagement';
-import PublishingCalendar from '../Calendar/PublishingCalendar';
 import { Skeleton } from '@/components/ui/skeleton';
 import WelcomeSection from './WelcomeSection/WelcomeSection';
 
+// Dynamic imports to reduce initial bundle size
 const TrafficChart = dynamic(() => import('./TrafficChart'), {
   ssr: false,
   loading: () => <Skeleton className="w-full h-[400px]" />,
+});
+
+const PublishingCalendar = dynamic(() => import('../Calendar/PublishingCalendar'), {
+  ssr: false,
+  loading: () => <Skeleton className="w-full h-[350px] rounded-lg" />,
 });
 
 interface DashboardPageProps {

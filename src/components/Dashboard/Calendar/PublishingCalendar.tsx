@@ -1,12 +1,17 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
 import type { PostWithRelations } from '@/types/types';
-import type { Day } from '@hassanmojab/react-modern-calendar-datepicker';
 import { parseISO } from 'date-fns-jalali';
 import type React from 'react';
 import { useCallback, useState } from 'react';
+
+// Dynamic import for Calendar to reduce bundle size
+const Calendar = dynamic(() => import('@/components/ui/calendar').then((mod) => ({ default: mod.Calendar })), {
+  ssr: false,
+  loading: () => <div className="w-full h-[350px] animate-pulse bg-neutral-100 dark:bg-neutral-800 rounded-lg" />,
+});
 
 type ScheduledPostForCalendar = Pick<
   PostWithRelations,
@@ -26,14 +31,14 @@ type ScheduledPostForCalendar = Pick<
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedDate: Day | null;
+  selectedDate: Date | undefined;
   posts: ScheduledPostForCalendar[];
 }
 
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, selectedDate, posts }) => {
   if (!isOpen || !selectedDate) return null;
 
-  const formattedDate = `${selectedDate.year}/${selectedDate.month}/${selectedDate.day}`;
+  const formattedDate = selectedDate.toLocaleDateString('fa-IR');
   const postsForDate = posts.filter((post) => {
     const postDate =
       post.createdAt instanceof Date
@@ -44,16 +49,10 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, selectedDate, posts }) =
 
     if (!postDate) return false;
 
-    const day = {
-      year: postDate.getFullYear(),
-      month: postDate.getMonth() + 1,
-      day: postDate.getDate(),
-    };
-
     return (
-      day.year === selectedDate.year &&
-      day.month === selectedDate.month &&
-      day.day === selectedDate.day
+      postDate.getFullYear() === selectedDate.getFullYear() &&
+      postDate.getMonth() === selectedDate.getMonth() &&
+      postDate.getDate() === selectedDate.getDate()
     );
   });
 
@@ -114,13 +113,26 @@ interface PublishingCalendarProps {
 }
 
 const PublishingCalendar: React.FC<PublishingCalendarProps> = ({ scheduledPosts }) => {
-  const [selectedDate, setSelectedDate] = useState<Day | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const closeModal = useCallback(() => {
     setIsModalOpen(false);
-    setSelectedDate(null);
+    setSelectedDate(undefined);
   }, []);
+
+  // Convert posts to dates for highlighting
+  const highlightedDates = scheduledPosts
+    .map((post) => {
+      const date =
+        post.createdAt instanceof Date
+          ? post.createdAt
+          : typeof post.createdAt === 'string'
+            ? parseISO(post.createdAt)
+            : null;
+      return date;
+    })
+    .filter((date): date is Date => date !== null);
 
   return (
     <div className="flex justify-center items-start p-4 bg-background">
@@ -134,24 +146,12 @@ const PublishingCalendar: React.FC<PublishingCalendarProps> = ({ scheduledPosts 
           }
         }}
         className="rounded-md border shadow-md"
-        highlightedDates={scheduledPosts
-          .map((post) => {
-            const date =
-              post.createdAt instanceof Date
-                ? post.createdAt
-                : typeof post.createdAt === 'string'
-                  ? parseISO(post.createdAt)
-                  : null;
-
-            if (!date) return null;
-
-            return {
-              year: date.getFullYear(),
-              month: date.getMonth() + 1,
-              day: date.getDate(),
-            };
-          })
-          .filter((date): date is Day => date !== null)}
+        modifiers={{
+          highlighted: highlightedDates,
+        }}
+        modifiersClassNames={{
+          highlighted: 'bg-primary-100 dark:bg-primary-900 font-bold',
+        }}
       />
       <Modal
         isOpen={isModalOpen}

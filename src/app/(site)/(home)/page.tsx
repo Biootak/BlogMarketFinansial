@@ -23,7 +23,14 @@ const SectionGridAuthorBox = dynamic(
   },
 );
 
-import SectionSliderNewCategories from '@/components/SectionSliderNewCategories/SectionSliderNewCategories';
+const SectionSliderNewCategories = dynamic(
+  () => import('@/components/SectionSliderNewCategories/SectionSliderNewCategories'),
+  {
+    loading: () => <CardLarge1Skeleton />,
+    ssr: true,
+  }
+);
+
 import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
 import SectionAds from '@/components/Sections/SectionAds';
 import SectionExchangeRates from '@/components/Sections/SectionExchangeRates';

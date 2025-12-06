@@ -1,19 +1,38 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { type ReportData, getComparisonData, getReportData } from '@/actions/reportActions';
 import { toast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
 import { Eye, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { CategoryDistribution } from './CategoryDistribution';
 import { DatabaseStatus } from './DatabaseStatus';
 import { DateRangePicker } from './DateRangePicker';
-import { ExportButton } from './ExportButton';
 import { KPICards } from './KPICards';
 import { ReportErrorBoundary } from './ReportErrorBoundary';
 import { TopAuthorsTable } from './TopAuthorsTable';
 import { TopPostsTable } from './TopPostsTable';
-import { TrendChart } from './TrendChart';
+
+// Dynamic imports for heavy chart components
+const TrendChart = dynamic(() => import('./TrendChart').then((mod) => ({ default: mod.TrendChart })), {
+  ssr: false,
+  loading: () => (
+    <div className="bg-white rounded-2xl p-6 border border-gray-200 animate-pulse">
+      <div className="h-8 bg-gray-200 rounded w-1/3 mb-6" />
+      <div className="h-80 bg-gray-200 rounded" />
+    </div>
+  ),
+});
+
+const CategoryDistribution = dynamic(() => import('./CategoryDistribution').then((mod) => ({ default: mod.CategoryDistribution })), {
+  ssr: false,
+  loading: () => (
+    <div className="bg-white rounded-2xl p-6 border border-gray-200 animate-pulse">
+      <div className="h-8 bg-gray-200 rounded w-1/3 mb-6" />
+      <div className="h-80 bg-gray-200 rounded" />
+    </div>
+  ),
+});
 
 export function ComprehensiveReportView() {
   const [data, setData] = useState<ReportData | null>(null);
@@ -100,7 +119,6 @@ export function ComprehensiveReportView() {
               <DateRangePicker value={dateRange} onChange={setDateRange} />
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
-              {data && <ExportButton data={data} dateRange={dateRange} disabled={isLoading} />}
               <button
                 type="button"
                 onClick={() => setShowComparison(!showComparison)}

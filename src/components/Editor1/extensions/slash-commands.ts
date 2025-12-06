@@ -185,14 +185,6 @@ export const defaultSlashCommands: SlashCommandItem[] = [
     category: 'advanced',
     command: (editor) => editor.chain().focus().setDetails().run(),
   },
-  {
-    title: 'فرمول ریاضی',
-    description: 'فرمول LaTeX',
-    icon: '∑',
-    keywords: ['math', 'latex', 'formula', 'equation', 'فرمول', 'ریاضی'],
-    category: 'advanced',
-    command: (editor) => editor.chain().focus().setMath().run(),
-  },
 ];
 
 export const SlashCommands = Extension.create({

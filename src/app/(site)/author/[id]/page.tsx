@@ -4,11 +4,20 @@ import { Suspense } from 'react';
 import { getAuthorById } from '@/actions/authorActions';
 import { getCategories } from '@/actions/categoryActions';
 import { getPostsByAuthor } from '@/actions/getPostsByAuthor';
+import dynamic from 'next/dynamic';
 import { getTopAuthors } from '@/actions/getTopAuthors';
 import DynamicCategories from '@/components/DynamicCategories';
-import SectionSliderNewAuthors from '@/components/SectionSliderNewAthors/SectionSliderNewAuthors';
 import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
 import { Skeleton } from '@/components/ui/skeleton';
+
+// Dynamic import for heavy slider component
+const SectionSliderNewAuthors = dynamic(
+  () => import('@/components/SectionSliderNewAthors/SectionSliderNewAuthors'),
+  {
+    loading: () => <Skeleton className="w-full h-64" />,
+    ssr: true,
+  }
+);
 import AuthorContent from '../Author/AuthorContent';
 import AuthorProfile from '../Author/AuthorProfile';
 

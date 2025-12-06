@@ -21,7 +21,6 @@ import Heading from './heading';
 import Image from './image-resize';
 import { KeyboardShortcuts } from './keyboard-shortcuts';
 import Link from './link';
-import { Math } from './math';
 import { Mention, mentionSuggestion } from './mention';
 import { Paragraph } from './paragraph';
 import { SlashCommands } from './slash-commands';
@@ -79,7 +78,6 @@ export const extensions = [
   Superscript,
   Subscript,
   ...detailsExtensions,
-  Math,
   Mention.configure({
     suggestion: mentionSuggestion,
   }),

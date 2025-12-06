@@ -1,6 +1,10 @@
 // biome-ignore lint/style/useNodejsImportProtocol: <explanation>
 const path = require('path');
 
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -59,4 +63,4 @@ const nextConfig = {
   transpilePackages: ['@aws-sdk/client-s3', '@aws-sdk/s3-request-presigner', 'framer-motion'],
 };
 
-module.exports = nextConfig;
+module.exports = withBundleAnalyzer(nextConfig);

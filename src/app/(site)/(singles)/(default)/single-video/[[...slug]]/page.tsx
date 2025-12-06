@@ -1,30 +1,19 @@
 'use client';
 
 import SingleTitle from '@/app/(site)/(singles)/SingleTitle';
-import React, { Suspense, useEffect, useState } from 'react';
-import ReactPlayer from 'react-player';
+import React, { Suspense } from 'react';
 
 const PageSv = ({}) => {
-  const [isRendered, setIsRendered] = useState(false);
-
-  useEffect(() => {
-    setIsRendered(true);
-  }, []);
-
   const renderMainVideo = () => {
     return (
-      <div>
-        {isRendered ? (
-          <ReactPlayer
-            url="https://www.youtube.com/watch?v=nOQyWbPO2Ds"
-            className="absolute inset-0"
-            playing={true}
-            width="100%"
-            height="100%"
-            controls
-            muted
-          />
-        ) : null}
+      <div className="absolute inset-0">
+        <iframe
+          className="w-full h-full"
+          src="https://www.youtube.com/embed/nOQyWbPO2Ds?autoplay=1&mute=1"
+          title="YouTube video player"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
       </div>
     );
   };

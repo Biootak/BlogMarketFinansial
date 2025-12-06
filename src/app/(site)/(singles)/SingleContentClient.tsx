@@ -1,12 +1,11 @@
 'use client';
 
-import EditorContentRenderer from '@/components/Editor1/EditorContentRenderer';
+import dynamic from 'next/dynamic';
 import PostCardCommentBtn from '@/components/PostCardCommentBtn/PostCardCommentBtn';
 import Tag from '@/components/Tag/Tag';
 import useIntersectionObserver from '@/hooks/useIntersectionObserver';
 import type { PostWithRelations } from '@/types/types';
 import { useCallback, useEffect, useRef, useState } from 'react';
-;
 import MarkdownRenderer from './MarkdownRenderer';
 import SingleAuthor from './SingleAuthor';
 import SingleCommentForm from './SingleCommentForm';
@@ -15,6 +14,19 @@ import '@/components/Editor1/styles/renderer.scss';
 import ShareDropdown from '@/components/ShareDropdown/ShareDropdown';
 import { getPostLink } from '@/lib/getPostLink';
 import { ArrowUp, Hash, MessagesSquare, Share2 } from 'lucide-react';
+
+// Dynamic import for EditorContentRenderer to reduce initial bundle size
+const EditorContentRenderer = dynamic(
+  () => import('@/components/Editor1/EditorContentRenderer'),
+  {
+    loading: () => (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500" />
+      </div>
+    ),
+    ssr: true,
+  }
+);
 
 
 interface SingleContentClientProps {

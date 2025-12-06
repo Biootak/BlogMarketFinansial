@@ -1,95 +1,62 @@
 'use client';
 
-import DatePicker, {
-  type DayValue,
-  type DayRange,
-  type Day,
-} from '@hassanmojab/react-modern-calendar-datepicker';
-import type * as React from 'react';
-import '@hassanmojab/react-modern-calendar-datepicker/lib/DatePicker.css';
+import * as React from 'react';
+import { DayPicker } from 'react-day-picker';
+import { faIR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import 'react-day-picker/dist/style.css';
 
-interface BaseCalendarProps {
-  className?: string;
-  minDate?: Day;
-  maxDate?: Day;
-  disabledDates?: Day[];
-  highlightedDates?: Day[];
-}
+export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
-interface SingleCalendarProps extends BaseCalendarProps {
-  mode: 'single';
-  selected: Day | null;
-  onSelect?: (value: Day | null) => void;
-}
-
-interface RangeCalendarProps extends BaseCalendarProps {
-  mode: 'range';
-  selected: DayRange | null;
-  onSelect?: (value: DayRange | null) => void;
-}
-
-type CalendarProps = SingleCalendarProps | RangeCalendarProps;
-
-const Calendar: React.FC<CalendarProps> = ({
-  className,
-  mode,
-  selected,
-  onSelect,
-  minDate,
-  maxDate,
-  disabledDates = [],
-  highlightedDates = [],
-  ...props
-}) => {
-  if (mode === 'single') {
-    return (
-      <div
-        className={cn(
-          'p-3 rounded-lg border bg-white',
-          'border-border shadow-sm',
-          'font-vazirmatn',
-          className,
-        )}
-      >
-        <DatePicker
-          value={selected}
-          onChange={onSelect}
-          shouldHighlightWeekends
-          locale="fa"
-          colorPrimary="rgb(var(--c-primary-600))"
-          colorPrimaryLight="rgb(var(--c-primary-100))"
-          minimumDate={minDate}
-          maximumDate={maxDate}
-          disabledDays={disabledDates}
-          renderFooter={() => null}
-          calendarClassName="!bg-white"
-          {...props}
-        />
-      </div>
-    );
-  }
-
+function Calendar({ className, classNames, showOutsideDays = true, ...props }: CalendarProps) {
   return (
-    <div className={cn('p-3 rounded-lg border bg-white', 'border-border shadow-sm', className)}>
-      <DatePicker
-        value={selected || { from: null, to: null }}
-        onChange={onSelect}
-        shouldHighlightWeekends
-        locale="fa"
-        colorPrimary="rgb(var(--c-primary-600))"
-        colorPrimaryLight="rgb(var(--c-primary-100))"
-        minimumDate={minDate}
-        maximumDate={maxDate}
-        disabledDays={disabledDates}
-        renderFooter={() => null}
-        calendarClassName="!bg-white"
-        {...props}
-      />
-    </div>
+    <DayPicker
+      showOutsideDays={showOutsideDays}
+      locale={faIR}
+      className={cn('p-3', className)}
+      classNames={{
+        months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
+        month: 'space-y-4',
+        caption: 'flex justify-center pt-1 relative items-center',
+        caption_label: 'text-sm font-medium',
+        nav: 'space-x-1 flex items-center',
+        nav_button: cn(
+          'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100',
+          'inline-flex items-center justify-center rounded-md text-sm font-medium',
+          'ring-offset-background transition-colors',
+          'hover:bg-accent hover:text-accent-foreground',
+          'disabled:pointer-events-none disabled:opacity-50',
+        ),
+        nav_button_previous: 'absolute left-1',
+        nav_button_next: 'absolute right-1',
+        table: 'w-full border-collapse space-y-1',
+        head_row: 'flex',
+        head_cell: 'text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]',
+        row: 'flex w-full mt-2',
+        cell: 'h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20',
+        day: cn(
+          'h-9 w-9 p-0 font-normal aria-selected:opacity-100',
+          'inline-flex items-center justify-center rounded-md text-sm',
+          'ring-offset-background transition-colors',
+          'hover:bg-accent hover:text-accent-foreground',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+          'disabled:pointer-events-none disabled:opacity-50',
+        ),
+        day_range_end: 'day-range-end',
+        day_selected:
+          'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground',
+        day_today: 'bg-accent text-accent-foreground',
+        day_outside:
+          'day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30',
+        day_disabled: 'text-muted-foreground opacity-50',
+        day_range_middle: 'aria-selected:bg-accent aria-selected:text-accent-foreground',
+        day_hidden: 'invisible',
+        ...classNames,
+      }}
+      {...props}
+    />
   );
-};
-
+}
 Calendar.displayName = 'Calendar';
 
 export { Calendar };

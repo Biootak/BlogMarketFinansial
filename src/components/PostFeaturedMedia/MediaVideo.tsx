@@ -1,73 +1,33 @@
 'use client';
 
-import LoadingVideo from '@/components/LoadingVideo/LoadingVideo';
-import React, { type FC, useEffect, useState } from 'react';
-import { Volume2, VolumeX } from 'lucide-react';
-import ReactPlayer from 'react-player';
+import React, { type FC } from 'react';
+import { Play } from 'lucide-react';
 
 export interface MediaVideoProps {
   videoUrl: string;
   isHover: boolean;
 }
 
-const MediaVideo: FC<MediaVideoProps> = ({ videoUrl, isHover }) => {
-  const [isMuted, setIsMuted] = useState(true);
-  const [showDescUnmuted, setShowDescUnmuted] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(false);
-  let __timeOut: NodeJS.Timeout | null = null;
-
-  useEffect(() => {
-    return () => {
-      __timeOut && clearTimeout(__timeOut);
-    };
-  }, [__timeOut]);
-
+const MediaVideo: FC<MediaVideoProps> = ({ videoUrl }) => {
   return (
-    <div className="nc-MediaVideo">
-      <ReactPlayer
-        url={videoUrl}
-        muted={isMuted}
-        playing={isHover}
-        style={{
-          opacity: isPlaying ? 1 : 0,
-        }}
-        className={'absolute bg-neutral-900 inset-0 transition-opacity'}
-        width="100%"
-        height="100%"
-        onStart={() => {
-          setIsPlaying(true);
-          __timeOut && clearTimeout(__timeOut);
-          __timeOut = setTimeout(() => {
-            setShowDescUnmuted(false);
-          }, 2500);
-        }}
-      />
-      <div
-        className={`${
-          isPlaying ? 'opacity-0' : 'opacity-100'
-        } absolute bg-neutral-900/30 flex items-center justify-center inset-0 transition-opacity`}
+    <div className="nc-MediaVideo relative">
+      {/* Native HTML5 Video */}
+      <video
+        className="absolute inset-0 w-full h-full object-cover bg-neutral-900"
+        src={videoUrl}
+        controls
+        preload="metadata"
       >
-        <LoadingVideo />
-      </div>
-      {isPlaying && (
-        <div
-          className={`absolute z-20 bottom-2 start-2 h-6 rounded-full bg-black bg-opacity-70 text-white flex items-center justify-center text-sm transform transition-transform ${
-            showDescUnmuted ? 'ps-[6px] pe-2' : 'w-6 hover:scale-125'
-          }`}
-          onClick={() => setIsMuted(!isMuted)}
-        >
-          {isMuted ? (
-            <>
-              <VolumeX className="w-3.5 h-3.5" />
-              {showDescUnmuted && (
-                <span className="ms-1 inline-block text-[9px]">Click here to unmute</span>
-              )}
-            </>
-          ) : (
-            <Volume2 className="w-3.5 h-3.5" />
-          )}
+        <track kind="captions" />
+      </video>
+      
+      {/* Fallback for non-video URLs */}
+      <div className="absolute inset-0 flex items-center justify-center bg-neutral-900/80">
+        <div className="text-center text-white">
+          <Play className="w-12 h-12 mx-auto mb-2" />
+          <p className="text-sm">ویدیو</p>
         </div>
-      )}
+      </div>
     </div>
   );
 };

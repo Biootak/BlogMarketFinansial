@@ -21,11 +21,21 @@ import { getArchivePosts } from '@/actions/postActions';
 import ArchiveFilterListBox from '@/components/ArchiveFilterListBox/ArchiveFilterListBox';
 import BackgroundSection from '@/components/BackgroundSection/BackgroundSection';
 import DynamicCategories from '@/components/DynamicCategories';
+import dynamic from 'next/dynamic';
 import Empty from '@/components/Empty';
 import Pagination from '@/components/Pagination/Pagination';
-import SectionSliderNewAuthors from '@/components/SectionSliderNewAthors/SectionSliderNewAuthors';
 import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
 import Image from 'next/image';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// Dynamic import for heavy slider component
+const SectionSliderNewAuthors = dynamic(
+  () => import('@/components/SectionSliderNewAthors/SectionSliderNewAuthors'),
+  {
+    loading: () => <Skeleton className="w-full h-64" />,
+    ssr: true,
+  }
+);
 import AnimatedPostGrid from '../../AnimatedPostGrid';
 import ArchiveSearchInput from '../../ArchiveSearchInput';
 import ModalCategories from '../../ModalCategories';

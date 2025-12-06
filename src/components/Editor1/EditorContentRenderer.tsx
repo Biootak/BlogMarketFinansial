@@ -26,7 +26,6 @@ import { Embed } from './extensions/embed';
 import { FontFamily } from './extensions/font-family';
 import { FontSize } from './extensions/font-size';
 import ImageResize from './extensions/image-resize';
-import { Math } from './extensions/math';
 
 import './styles/index.scss';
 
@@ -98,7 +97,6 @@ const renderExtensions = [
   FontSize,
   FontFamily,
   ...detailsExtensions,
-  Math,
 ];
 
 interface EditorContentRendererProps {
