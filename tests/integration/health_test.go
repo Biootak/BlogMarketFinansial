@@ -6,7 +6,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"biotak-go-backend/internal/database"
 	"biotak-go-backend/internal/handlers"
 
 	"github.com/gin-gonic/gin"
