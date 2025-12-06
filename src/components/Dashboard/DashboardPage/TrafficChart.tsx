@@ -3,8 +3,16 @@
 import { motion } from 'framer-motion';
 import type React from 'react';
 import { HiOutlineCalendarDays, HiOutlineEye } from 'react-icons/hi2';
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import useSWR from 'swr';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from '@/components/ui/chart';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -105,7 +113,7 @@ const TrafficChart: React.FC = () => {
               fontSize={11}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(value) => value.toLocaleString('fa-IR')}
+              tickFormatter={(value: any) => value.toLocaleString('fa-IR')}
               className="text-slate-500 dark:text-slate-400"
               dx={-5}
             />

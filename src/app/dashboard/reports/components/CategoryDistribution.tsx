@@ -2,7 +2,7 @@
 
 import type { CategoryStat } from '@/actions/reportActions';
 import { Layers } from 'lucide-react';
-import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
+import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from '@/components/ui/chart';
 
 interface CategoryDistributionProps {
   data: CategoryStat[];
@@ -79,7 +79,7 @@ export function CategoryDistribution({ data, isLoading = false }: CategoryDistri
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percentage }) => `${name} (${percentage.toFixed(1)}%)`}
+                label={({ name, percentage }: any) => `${name} (${percentage.toFixed(1)}%)`}
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"

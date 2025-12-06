@@ -26,7 +26,7 @@ import {
   Tooltip,
   XAxis,
   YAxis,
-} from 'recharts';
+} from '@/components/ui/chart';
 
 interface SystemReportData {
   users: number;

@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import BlogStatCard from '@/components/Dashboard/DashboardPage/BlogStatCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { PostWithRelations } from '@/types/types';
@@ -18,8 +19,13 @@ import {
 import useSWR from 'swr';
 import PostManagement from '../Blog/PostManagement';
 import PublishingCalendar from '../Calendar/PublishingCalendar';
-import TrafficChart from './TrafficChart';
+import { Skeleton } from '@/components/ui/skeleton';
 import WelcomeSection from './WelcomeSection/WelcomeSection';
+
+const TrafficChart = dynamic(() => import('./TrafficChart'), {
+  ssr: false,
+  loading: () => <Skeleton className="w-full h-[400px]" />,
+});
 
 interface DashboardPageProps {
   stats: {

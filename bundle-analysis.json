@@ -1,12 +1,12 @@
 {
-  "totalSize": 7581890,
-  "jsSize": 6759065,
+  "totalSize": 7585840,
+  "jsSize": 6763015,
   "cssSize": 604536,
   "bundles": [
     {
-      "name": "d9b68b3e77d3b55f.js",
-      "size": 811972,
-      "sizeKB": 792.94,
+      "name": "a808045a9d92c6bc.js",
+      "size": 811547,
+      "sizeKB": 792.53,
       "type": "js"
     },
     {
@@ -16,9 +16,9 @@
       "type": "css"
     },
     {
-      "name": "fd70431a7a0753e4.js",
-      "size": 377250,
-      "sizeKB": 368.41,
+      "name": "647d6750a06ff9fc.js",
+      "size": 377283,
+      "sizeKB": 368.44,
       "type": "js"
     },
     {
@@ -28,9 +28,9 @@
       "type": "js"
     },
     {
-      "name": "f775bf6c410e1e2c.js",
-      "size": 352285,
-      "sizeKB": 344.03,
+      "name": "fbd8ffb58421f116.js",
+      "size": 352301,
+      "sizeKB": 344.04,
       "type": "js"
     },
     {
@@ -106,15 +106,15 @@
       "type": "js"
     },
     {
-      "name": "242fda6a6a6fb2bc.js",
+      "name": "e949bcb692478a79.js",
       "size": 93366,
       "sizeKB": 91.18,
       "type": "js"
     },
     {
-      "name": "244c00c7c59f1d9c.js",
-      "size": 91841,
-      "sizeKB": 89.69,
+      "name": "ee161fe76ccde8c3.js",
+      "size": 91882,
+      "sizeKB": 89.73,
       "type": "js"
     },
     {
@@ -124,15 +124,15 @@
       "type": "js"
     },
     {
-      "name": "98c3b0731769ad15.js",
-      "size": 88334,
-      "sizeKB": 86.26,
-      "type": "js"
-    },
-    {
       "name": "e3ca99642db285f8.js",
       "size": 84460,
       "sizeKB": 82.48,
+      "type": "js"
+    },
+    {
+      "name": "905254ffb66ef60b.js",
+      "size": 83444,
+      "sizeKB": 81.49,
       "type": "js"
     },
     {
@@ -178,9 +178,9 @@
       "type": "js"
     },
     {
-      "name": "96d4c7d737d6e19c.js",
-      "size": 50168,
-      "sizeKB": 48.99,
+      "name": "3016700aaa81dae0.js",
+      "size": 50584,
+      "sizeKB": 49.4,
       "type": "js"
     },
     {
@@ -208,7 +208,7 @@
       "type": "other"
     },
     {
-      "name": "c55e5fe161587b06.js",
+      "name": "67f594e5cd95f8f8.js",
       "size": 45912,
       "sizeKB": 44.84,
       "type": "js"
@@ -280,9 +280,9 @@
       "type": "js"
     },
     {
-      "name": "1db8efa1e3a631cb.js",
-      "size": 35967,
-      "sizeKB": 35.12,
+      "name": "0ea4772ee8d7d16d.js",
+      "size": 35979,
+      "sizeKB": 35.14,
       "type": "js"
     },
     {
@@ -322,13 +322,13 @@
       "type": "css"
     },
     {
-      "name": "75e576eb6f7703cf.js",
+      "name": "06dd1ea548db57ec.js",
       "size": 32396,
       "sizeKB": 31.64,
       "type": "js"
     },
     {
-      "name": "275430549040b353.js",
+      "name": "1d4956a588f55dd4.js",
       "size": 32263,
       "sizeKB": 31.51,
       "type": "js"
@@ -430,9 +430,9 @@
       "type": "js"
     },
     {
-      "name": "09029f071b4dbd79.js",
-      "size": 19533,
-      "sizeKB": 19.08,
+      "name": "88b7d6d7284740ea.js",
+      "size": 20043,
+      "sizeKB": 19.57,
       "type": "js"
     },
     {
@@ -553,6 +553,12 @@
       "name": "81c49832ba1287ab.js",
       "size": 8566,
       "sizeKB": 8.37,
+      "type": "js"
+    },
+    {
+      "name": "8d7dc4454bb08dd9.js",
+      "size": 8237,
+      "sizeKB": 8.04,
       "type": "js"
     },
     {
