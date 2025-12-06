@@ -148,6 +148,18 @@
 
 ---
 
+### 10. XLSX Lazy Loading (-7.15 MB از Initial Bundle) ⭐
+**مشکل**: xlsx library (7.15 MB) در initial bundle  
+**راه‌حل**:
+- تبدیل import به dynamic import
+- Lazy load در `exportUtils.ts`
+- Lazy load در API route `reports/download`
+- xlsx فقط زمانی load می‌شود که کاربر export می‌کند
+
+**نتیجه**: -7.15 MB از initial bundle، بهبود First Load
+
+---
+
 ## 🛠️ Tools و Scripts ایجاد شده
 
 ### Performance Monitoring
@@ -304,7 +316,35 @@ Tailwind CSS 4 می‌تواند CSS بسیار بزرگی تولید کند. ن
 
 ---
 
-## 📝 Commits (9 commits)
+## �  Dependency Analysis
+
+### Top 10 Largest Packages
+1. **next** (152.39 MB) - Framework اصلی
+2. **prisma** (90.03 MB) - Database ORM
+3. **@prisma/client** (73.23 MB) - Prisma client
+4. **lucide-react** (27.27 MB) - Icon library (جایگزین react-icons)
+5. **typescript** (22.53 MB) - Type checking
+6. **date-fns** (21.55 MB) - Date utilities
+7. **xlsx** (7.15 MB) - Excel export (lazy loaded ✅)
+8. **react-dom** (6.98 MB) - React DOM
+9. **date-fns-jalali** (5.78 MB) - Persian calendar
+10. **sass** (5.48 MB) - CSS preprocessor
+
+### Category Breakdown
+- **Build Tools**: 194.2 MB (next, react, typescript)
+- **Database**: 163.35 MB (prisma)
+- **UI Components**: 32.69 MB (radix, headless, framer-motion)
+- **Other**: 47.06 MB
+- **Editor**: 6.59 MB (tiptap)
+- **Styling**: 6.49 MB (tailwind, sass)
+- **Forms**: 5.25 MB (react-hook-form, zod)
+- **Charts**: 4.46 MB (recharts)
+- **AWS**: 3.2 MB (s3 client)
+- **Auth**: 2 MB (next-auth)
+
+---
+
+## 📝 Commits (11 commits)
 
 1. `perf: implement critical performance optimizations`
 2. `perf: optimize CSS - remove duplicate color definitions and excessive animations (-40 KB CSS)`
@@ -315,6 +355,8 @@ Tailwind CSS 4 می‌تواند CSS بسیار بزرگی تولید کند. ن
 7. `docs: update performance summary with gradient analysis results`
 8. `perf: optimize images to WebP format - save 2.53 MB (79.8%)`
 9. `docs: update performance summary with image optimization results`
+10. `perf: improve font loading with preload and fallback optimization`
+11. `perf: lazy load xlsx library - save 7.15 MB from initial bundle`
 
 ---
 
