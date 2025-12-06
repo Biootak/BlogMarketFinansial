@@ -20,6 +20,9 @@ const vazirmatn = Vazirmatn({
   display: 'swap',
   weight: ['300', '400', '500', '600', '700'],
   variable: '--font-vazirmatn',
+  preload: true,
+  fallback: ['Tahoma', 'Arial', 'sans-serif'],
+  adjustFontFallback: true,
 });
 
 export default async function RootLayout({
