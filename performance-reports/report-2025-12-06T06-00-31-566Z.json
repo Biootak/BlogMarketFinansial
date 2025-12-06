@@ -1,0 +1,14 @@
+{
+  "summary": {
+    "totalFindings": 0,
+    "criticalCount": 0,
+    "highCount": 0,
+    "mediumCount": 0,
+    "lowCount": 0,
+    "estimatedImpact": "پایین",
+    "generatedAt": "2025-12-06T06:00:31.565Z"
+  },
+  "findings": [],
+  "recommendations": [],
+  "priorityMatrix": []
+}

@@ -1,0 +1,936 @@
+{
+  "totalSize": 8967787,
+  "jsSize": 6780303,
+  "cssSize": 644707,
+  "bundles": [
+    {
+      "name": "about-hero-right.34042028.png",
+      "size": 1324488,
+      "sizeKB": 1293.45,
+      "type": "other"
+    },
+    {
+      "name": "d9b68b3e77d3b55f.js",
+      "size": 811972,
+      "sizeKB": 792.94,
+      "type": "js"
+    },
+    {
+      "name": "cd85c5f980995266.css",
+      "size": 577395,
+      "sizeKB": 563.86,
+      "type": "css"
+    },
+    {
+      "name": "fd70431a7a0753e4.js",
+      "size": 377250,
+      "sizeKB": 368.41,
+      "type": "js"
+    },
+    {
+      "name": "39f6ba8185767e85.js",
+      "size": 371502,
+      "sizeKB": 362.79,
+      "type": "js"
+    },
+    {
+      "name": "f775bf6c410e1e2c.js",
+      "size": 352285,
+      "sizeKB": 344.03,
+      "type": "js"
+    },
+    {
+      "name": "151b5f40845859e7.js",
+      "size": 314894,
+      "sizeKB": 307.51,
+      "type": "js"
+    },
+    {
+      "name": "6ff2f900fc9c4e39.js",
+      "size": 314894,
+      "sizeKB": 307.51,
+      "type": "js"
+    },
+    {
+      "name": "3b5bf7a0e07930fa.js",
+      "size": 264739,
+      "sizeKB": 258.53,
+      "type": "js"
+    },
+    {
+      "name": "c0cd176598ac56b7.js",
+      "size": 262534,
+      "sizeKB": 256.38,
+      "type": "js"
+    },
+    {
+      "name": "76f74664cdfdadee.js",
+      "size": 214873,
+      "sizeKB": 209.84,
+      "type": "js"
+    },
+    {
+      "name": "f05adec7a87ac2a0.js",
+      "size": 128673,
+      "sizeKB": 125.66,
+      "type": "js"
+    },
+    {
+      "name": "6a2e3181889aa063.js",
+      "size": 117229,
+      "sizeKB": 114.48,
+      "type": "js"
+    },
+    {
+      "name": "a6dad97d9634a72d.js",
+      "size": 112594,
+      "sizeKB": 109.96,
+      "type": "js"
+    },
+    {
+      "name": "78f8b2a8ce0546cd.js",
+      "size": 108836,
+      "sizeKB": 106.29,
+      "type": "js"
+    },
+    {
+      "name": "eb951291db823935.js",
+      "size": 108836,
+      "sizeKB": 106.29,
+      "type": "js"
+    },
+    {
+      "name": "podcast.3f2433f9.jpg",
+      "size": 106479,
+      "sizeKB": 103.98,
+      "type": "other"
+    },
+    {
+      "name": "891cda2bb99e9780.js",
+      "size": 105991,
+      "sizeKB": 103.51,
+      "type": "js"
+    },
+    {
+      "name": "0142ccc293308848.js",
+      "size": 103708,
+      "sizeKB": 101.28,
+      "type": "js"
+    },
+    {
+      "name": "a0450868045323d2.js",
+      "size": 93366,
+      "sizeKB": 91.18,
+      "type": "js"
+    },
+    {
+      "name": "244c00c7c59f1d9c.js",
+      "size": 91841,
+      "sizeKB": 89.69,
+      "type": "js"
+    },
+    {
+      "name": "467b0f5cf84762ef.js",
+      "size": 89588,
+      "sizeKB": 87.49,
+      "type": "js"
+    },
+    {
+      "name": "98c3b0731769ad15.js",
+      "size": 88334,
+      "sizeKB": 86.26,
+      "type": "js"
+    },
+    {
+      "name": "f760daa234960552.js",
+      "size": 85155,
+      "sizeKB": 83.16,
+      "type": "js"
+    },
+    {
+      "name": "e3ca99642db285f8.js",
+      "size": 84460,
+      "sizeKB": 82.48,
+      "type": "js"
+    },
+    {
+      "name": "44278f3dbf4466d3.js",
+      "size": 83029,
+      "sizeKB": 81.08,
+      "type": "js"
+    },
+    {
+      "name": "f203fe478ee45690.js",
+      "size": 71557,
+      "sizeKB": 69.88,
+      "type": "js"
+    },
+    {
+      "name": "dd10bd2f6c08e057.js",
+      "size": 71475,
+      "sizeKB": 69.8,
+      "type": "js"
+    },
+    {
+      "name": "a7a458338ca2c361.js",
+      "size": 71363,
+      "sizeKB": 69.69,
+      "type": "js"
+    },
+    {
+      "name": "9e6758c933baedec.js",
+      "size": 61533,
+      "sizeKB": 60.09,
+      "type": "js"
+    },
+    {
+      "name": "d6fe9538ffb5a1c5.js",
+      "size": 58857,
+      "sizeKB": 57.48,
+      "type": "js"
+    },
+    {
+      "name": "11c5a3b2979cda73.js",
+      "size": 54745,
+      "sizeKB": 53.46,
+      "type": "js"
+    },
+    {
+      "name": "629d2d23ae1e7cbf.js",
+      "size": 54612,
+      "sizeKB": 53.33,
+      "type": "js"
+    },
+    {
+      "name": "96d4c7d737d6e19c.js",
+      "size": 50168,
+      "sizeKB": 48.99,
+      "type": "js"
+    },
+    {
+      "name": "5664ef663ebe20b2.js",
+      "size": 49930,
+      "sizeKB": 48.76,
+      "type": "js"
+    },
+    {
+      "name": "ab922526d315bb06.js",
+      "size": 48820,
+      "sizeKB": 47.68,
+      "type": "js"
+    },
+    {
+      "name": "6012a8ff9a93cb61.js",
+      "size": 48242,
+      "sizeKB": 47.11,
+      "type": "js"
+    },
+    {
+      "name": "f1d25eabcf1db66d-s.p.c041a43b.woff2",
+      "size": 46272,
+      "sizeKB": 45.19,
+      "type": "other"
+    },
+    {
+      "name": "c55e5fe161587b06.js",
+      "size": 45912,
+      "sizeKB": 44.84,
+      "type": "js"
+    },
+    {
+      "name": "7be472170255ec23.js",
+      "size": 45580,
+      "sizeKB": 44.51,
+      "type": "js"
+    },
+    {
+      "name": "b23b9202a9c319dd.js",
+      "size": 45317,
+      "sizeKB": 44.25,
+      "type": "js"
+    },
+    {
+      "name": "d0b0fe396039d8b4.js",
+      "size": 43792,
+      "sizeKB": 42.77,
+      "type": "js"
+    },
+    {
+      "name": "bdcc4c524a141fe6.js",
+      "size": 42053,
+      "sizeKB": 41.07,
+      "type": "js"
+    },
+    {
+      "name": "6429ef6587de0cb9.js",
+      "size": 40868,
+      "sizeKB": 39.91,
+      "type": "js"
+    },
+    {
+      "name": "145b835aac6f21fb.js",
+      "size": 40618,
+      "sizeKB": 39.67,
+      "type": "js"
+    },
+    {
+      "name": "9d70d5af0524c236.js",
+      "size": 40555,
+      "sizeKB": 39.6,
+      "type": "js"
+    },
+    {
+      "name": "b16e2f977c12637b.js",
+      "size": 37944,
+      "sizeKB": 37.05,
+      "type": "js"
+    },
+    {
+      "name": "2de82c0a7947d032.js",
+      "size": 36551,
+      "sizeKB": 35.69,
+      "type": "js"
+    },
+    {
+      "name": "5e449a60e95d6231.js",
+      "size": 36083,
+      "sizeKB": 35.24,
+      "type": "js"
+    },
+    {
+      "name": "ee22c714497a24f5.js",
+      "size": 35967,
+      "sizeKB": 35.12,
+      "type": "js"
+    },
+    {
+      "name": "8ecaefd13cd0c311.js",
+      "size": 35062,
+      "sizeKB": 34.24,
+      "type": "js"
+    },
+    {
+      "name": "ab3ff74fe964b627.js",
+      "size": 35019,
+      "sizeKB": 34.2,
+      "type": "js"
+    },
+    {
+      "name": "ec8f59eafded4799-s.bd0c2d26.woff2",
+      "size": 34444,
+      "sizeKB": 33.64,
+      "type": "other"
+    },
+    {
+      "name": "e825ee25c8d53bc7.js",
+      "size": 34386,
+      "sizeKB": 33.58,
+      "type": "js"
+    },
+    {
+      "name": "fd446dfa7f968b97.js",
+      "size": 34386,
+      "sizeKB": 33.58,
+      "type": "js"
+    },
+    {
+      "name": "d3167571a6816992.css",
+      "size": 34218,
+      "sizeKB": 33.42,
+      "type": "css"
+    },
+    {
+      "name": "7a205a2e4db3eec0.js",
+      "size": 30585,
+      "sizeKB": 29.87,
+      "type": "js"
+    },
+    {
+      "name": "69435e3b7f853a3c.js",
+      "size": 30537,
+      "sizeKB": 29.82,
+      "type": "js"
+    },
+    {
+      "name": "2fa355237fefa3f2.js",
+      "size": 29520,
+      "sizeKB": 28.83,
+      "type": "js"
+    },
+    {
+      "name": "f19a1703ce33e7d4.js",
+      "size": 28504,
+      "sizeKB": 27.84,
+      "type": "js"
+    },
+    {
+      "name": "3ceacddb306bbddc.js",
+      "size": 28360,
+      "sizeKB": 27.7,
+      "type": "js"
+    },
+    {
+      "name": "9575d6a3c546fa02.js",
+      "size": 27503,
+      "sizeKB": 26.86,
+      "type": "js"
+    },
+    {
+      "name": "c92e707e85c975d3.js",
+      "size": 26902,
+      "sizeKB": 26.27,
+      "type": "js"
+    },
+    {
+      "name": "c09e3353f02b41ce.js",
+      "size": 25658,
+      "sizeKB": 25.06,
+      "type": "js"
+    },
+    {
+      "name": "0b624f2e1f15fbbd.js",
+      "size": 24704,
+      "sizeKB": 24.13,
+      "type": "js"
+    },
+    {
+      "name": "5628e5fab914c5b0.js",
+      "size": 24504,
+      "sizeKB": 23.93,
+      "type": "js"
+    },
+    {
+      "name": "8c46be2a6bdf7a4b.js",
+      "size": 24082,
+      "sizeKB": 23.52,
+      "type": "js"
+    },
+    {
+      "name": "45f1af62181e384a.js",
+      "size": 24054,
+      "sizeKB": 23.49,
+      "type": "js"
+    },
+    {
+      "name": "3be67f396f7d45c3-s.52513087.woff2",
+      "size": 21796,
+      "sizeKB": 21.29,
+      "type": "other"
+    },
+    {
+      "name": "ea712af03a45b2de.js",
+      "size": 21750,
+      "sizeKB": 21.24,
+      "type": "js"
+    },
+    {
+      "name": "37e1e455a9ba9db7.js",
+      "size": 21269,
+      "sizeKB": 20.77,
+      "type": "js"
+    },
+    {
+      "name": "fcaeb23496b693ff.js",
+      "size": 20186,
+      "sizeKB": 19.71,
+      "type": "js"
+    },
+    {
+      "name": "09029f071b4dbd79.js",
+      "size": 19533,
+      "sizeKB": 19.08,
+      "type": "js"
+    },
+    {
+      "name": "06c957550ca74812.js",
+      "size": 18445,
+      "sizeKB": 18.01,
+      "type": "js"
+    },
+    {
+      "name": "3b4ec79e8ff773e3.js",
+      "size": 18445,
+      "sizeKB": 18.01,
+      "type": "js"
+    },
+    {
+      "name": "7a1bcb7283d7c101.js",
+      "size": 18445,
+      "sizeKB": 18.01,
+      "type": "js"
+    },
+    {
+      "name": "7d77235ed2bc22ec.js",
+      "size": 18445,
+      "sizeKB": 18.01,
+      "type": "js"
+    },
+    {
+      "name": "c1e5882997954565.js",
+      "size": 17586,
+      "sizeKB": 17.17,
+      "type": "js"
+    },
+    {
+      "name": "5f0d5b719070fc96.js",
+      "size": 16884,
+      "sizeKB": 16.49,
+      "type": "js"
+    },
+    {
+      "name": "7e94bd5c965afb7b.js",
+      "size": 16638,
+      "sizeKB": 16.25,
+      "type": "js"
+    },
+    {
+      "name": "3a5d435ccd31333a.js",
+      "size": 16516,
+      "sizeKB": 16.13,
+      "type": "js"
+    },
+    {
+      "name": "d98fdb383c21d435.js",
+      "size": 15989,
+      "sizeKB": 15.61,
+      "type": "js"
+    },
+    {
+      "name": "c7ec6b6301499dfc.js",
+      "size": 14979,
+      "sizeKB": 14.63,
+      "type": "js"
+    },
+    {
+      "name": "82856bf464eae519.js",
+      "size": 11829,
+      "sizeKB": 11.55,
+      "type": "js"
+    },
+    {
+      "name": "ae2f66ac0f48334a.css",
+      "size": 11414,
+      "sizeKB": 11.15,
+      "type": "css"
+    },
+    {
+      "name": "a1eb9fe4da29042d.js",
+      "size": 11114,
+      "sizeKB": 10.85,
+      "type": "js"
+    },
+    {
+      "name": "5feeb094fe1d6240.js",
+      "size": 11082,
+      "sizeKB": 10.82,
+      "type": "js"
+    },
+    {
+      "name": "941b13bfea68eaac.js",
+      "size": 10140,
+      "sizeKB": 9.9,
+      "type": "js"
+    },
+    {
+      "name": "turbopack-5cdc2eee2ed29d69.js",
+      "size": 9982,
+      "sizeKB": 9.75,
+      "type": "js"
+    },
+    {
+      "name": "d6126cd239abc6f9.js",
+      "size": 9146,
+      "sizeKB": 8.93,
+      "type": "js"
+    },
+    {
+      "name": "c4eef8f7188dee5b.js",
+      "size": 8952,
+      "sizeKB": 8.74,
+      "type": "js"
+    },
+    {
+      "name": "ae16679742f19b62.js",
+      "size": 8669,
+      "sizeKB": 8.47,
+      "type": "js"
+    },
+    {
+      "name": "81c49832ba1287ab.js",
+      "size": 8566,
+      "sizeKB": 8.37,
+      "type": "js"
+    },
+    {
+      "name": "99271dabaf473a4a.js",
+      "size": 8125,
+      "sizeKB": 7.93,
+      "type": "js"
+    },
+    {
+      "name": "b629a1e31ca70273.css",
+      "size": 7301,
+      "sizeKB": 7.13,
+      "type": "css"
+    },
+    {
+      "name": "69f937ea1e021170.js",
+      "size": 7289,
+      "sizeKB": 7.12,
+      "type": "js"
+    },
+    {
+      "name": "ad288265d32adf68.css",
+      "size": 7193,
+      "sizeKB": 7.02,
+      "type": "css"
+    },
+    {
+      "name": "16622fcc7eb6f709.css",
+      "size": 7186,
+      "sizeKB": 7.02,
+      "type": "css"
+    },
+    {
+      "name": "2cc687e1c25e902b.js",
+      "size": 6961,
+      "sizeKB": 6.8,
+      "type": "js"
+    },
+    {
+      "name": "b5669953b9f7b92d.js",
+      "size": 6442,
+      "sizeKB": 6.29,
+      "type": "js"
+    },
+    {
+      "name": "fd57e900742e0583.js",
+      "size": 6260,
+      "sizeKB": 6.11,
+      "type": "js"
+    },
+    {
+      "name": "4d3ca215a7788635.js",
+      "size": 6081,
+      "sizeKB": 5.94,
+      "type": "js"
+    },
+    {
+      "name": "f5a7828a0fda75ca.js",
+      "size": 5797,
+      "sizeKB": 5.66,
+      "type": "js"
+    },
+    {
+      "name": "a830af4ca2d6e766.js",
+      "size": 5638,
+      "sizeKB": 5.51,
+      "type": "js"
+    },
+    {
+      "name": "b0eb866e30d0ead2.js",
+      "size": 4979,
+      "sizeKB": 4.86,
+      "type": "js"
+    },
+    {
+      "name": "1a8273c5af2dc200.js",
+      "size": 4891,
+      "sizeKB": 4.78,
+      "type": "js"
+    },
+    {
+      "name": "17a9d7330db14b09.js",
+      "size": 4448,
+      "sizeKB": 4.34,
+      "type": "js"
+    },
+    {
+      "name": "1e24fc12cbcddcda.js",
+      "size": 4448,
+      "sizeKB": 4.34,
+      "type": "js"
+    },
+    {
+      "name": "2d7325a2f199741b.js",
+      "size": 4138,
+      "sizeKB": 4.04,
+      "type": "js"
+    },
+    {
+      "name": "e045d6ceebea98b4.js",
+      "size": 4057,
+      "sizeKB": 3.96,
+      "type": "js"
+    },
+    {
+      "name": "c07fc93095824f84.js",
+      "size": 3901,
+      "sizeKB": 3.81,
+      "type": "js"
+    },
+    {
+      "name": "665ef70b0f25935e.js",
+      "size": 3746,
+      "sizeKB": 3.66,
+      "type": "js"
+    },
+    {
+      "name": "f37f264b60d7f10d.js",
+      "size": 3524,
+      "sizeKB": 3.44,
+      "type": "js"
+    },
+    {
+      "name": "aef97bf3a92092fb.js",
+      "size": 3454,
+      "sizeKB": 3.37,
+      "type": "js"
+    },
+    {
+      "name": "297d3f1babaeaccb.js",
+      "size": 3260,
+      "sizeKB": 3.18,
+      "type": "js"
+    },
+    {
+      "name": "logo-light.ff1a922c.png",
+      "size": 3235,
+      "sizeKB": 3.16,
+      "type": "other"
+    },
+    {
+      "name": "logo.ff1a922c.png",
+      "size": 3235,
+      "sizeKB": 3.16,
+      "type": "other"
+    },
+    {
+      "name": "b44ff5ff51fe6d9e.js",
+      "size": 3157,
+      "sizeKB": 3.08,
+      "type": "js"
+    },
+    {
+      "name": "4e2e1ee7bc001bae.js",
+      "size": 3023,
+      "sizeKB": 2.95,
+      "type": "js"
+    },
+    {
+      "name": "daf592dee918eb28.js",
+      "size": 2980,
+      "sizeKB": 2.91,
+      "type": "js"
+    },
+    {
+      "name": "d7e58f91e5e9e0d4.js",
+      "size": 2856,
+      "sizeKB": 2.79,
+      "type": "js"
+    },
+    {
+      "name": "5e18e2a34fe49f1d.js",
+      "size": 2763,
+      "sizeKB": 2.7,
+      "type": "js"
+    },
+    {
+      "name": "7172ef95944a87e7.js",
+      "size": 2704,
+      "sizeKB": 2.64,
+      "type": "js"
+    },
+    {
+      "name": "ba449dbde7100dfd.js",
+      "size": 2654,
+      "sizeKB": 2.59,
+      "type": "js"
+    },
+    {
+      "name": "icon-playing.831f7583.gif",
+      "size": 2601,
+      "sizeKB": 2.54,
+      "type": "other"
+    },
+    {
+      "name": "215108db4c4f9412.js",
+      "size": 2589,
+      "sizeKB": 2.53,
+      "type": "js"
+    },
+    {
+      "name": "0bdebf2b7dec5de8.js",
+      "size": 2584,
+      "sizeKB": 2.52,
+      "type": "js"
+    },
+    {
+      "name": "ce4852b624fb710d.js",
+      "size": 2570,
+      "sizeKB": 2.51,
+      "type": "js"
+    },
+    {
+      "name": "5fb2cc72f0c65ba8.js",
+      "size": 2499,
+      "sizeKB": 2.44,
+      "type": "js"
+    },
+    {
+      "name": "4f49af93ddbb13db.js",
+      "size": 2435,
+      "sizeKB": 2.38,
+      "type": "js"
+    },
+    {
+      "name": "273b02acfac5e2cb.js",
+      "size": 2297,
+      "sizeKB": 2.24,
+      "type": "js"
+    },
+    {
+      "name": "205800ccdd571e90.js",
+      "size": 2258,
+      "sizeKB": 2.21,
+      "type": "js"
+    },
+    {
+      "name": "5986910dfeb5fc0a.js",
+      "size": 1892,
+      "sizeKB": 1.85,
+      "type": "js"
+    },
+    {
+      "name": "69dad799080023d9.js",
+      "size": 1886,
+      "sizeKB": 1.84,
+      "type": "js"
+    },
+    {
+      "name": "87ca22157110c365.js",
+      "size": 1765,
+      "sizeKB": 1.72,
+      "type": "js"
+    },
+    {
+      "name": "dd4954017d051e1b.js",
+      "size": 1049,
+      "sizeKB": 1.02,
+      "type": "js"
+    },
+    {
+      "name": "23d43bddade62b7c.js",
+      "size": 968,
+      "sizeKB": 0.95,
+      "type": "js"
+    },
+    {
+      "name": "26ab4a92ac736d18.js",
+      "size": 964,
+      "sizeKB": 0.94,
+      "type": "js"
+    },
+    {
+      "name": "8a144fe3cc7a27e4.js",
+      "size": 961,
+      "sizeKB": 0.94,
+      "type": "js"
+    },
+    {
+      "name": "30e1ca24dfc01af8.js",
+      "size": 959,
+      "sizeKB": 0.94,
+      "type": "js"
+    },
+    {
+      "name": "2dae274cff620bf4.js",
+      "size": 924,
+      "sizeKB": 0.9,
+      "type": "js"
+    },
+    {
+      "name": "f074758409e836e7.js",
+      "size": 920,
+      "sizeKB": 0.9,
+      "type": "js"
+    },
+    {
+      "name": "a24eb9c4819d953f.js",
+      "size": 910,
+      "sizeKB": 0.89,
+      "type": "js"
+    },
+    {
+      "name": "d55d608a30ea7384.js",
+      "size": 872,
+      "sizeKB": 0.85,
+      "type": "js"
+    },
+    {
+      "name": "97bb04310c2f7c32.js",
+      "size": 710,
+      "sizeKB": 0.69,
+      "type": "js"
+    },
+    {
+      "name": "835a88a623df2592.js",
+      "size": 704,
+      "sizeKB": 0.69,
+      "type": "js"
+    },
+    {
+      "name": "b5c8ed1bcd7ccbcf.js",
+      "size": 686,
+      "sizeKB": 0.67,
+      "type": "js"
+    },
+    {
+      "name": "8284d816452cbf8f.js",
+      "size": 484,
+      "sizeKB": 0.47,
+      "type": "js"
+    },
+    {
+      "name": "b563d58b6f000daa.js",
+      "size": 484,
+      "sizeKB": 0.47,
+      "type": "js"
+    },
+    {
+      "name": "8a3f820d05f92601.js",
+      "size": 434,
+      "sizeKB": 0.42,
+      "type": "js"
+    },
+    {
+      "name": "_clientMiddlewareManifest.json",
+      "size": 227,
+      "sizeKB": 0.22,
+      "type": "other"
+    },
+    {
+      "name": "_buildManifest.js",
+      "size": 219,
+      "sizeKB": 0.21,
+      "type": "js"
+    },
+    {
+      "name": "a11fa6499ab994cb.js",
+      "size": 143,
+      "sizeKB": 0.14,
+      "type": "js"
+    },
+    {
+      "name": "_ssgManifest.js",
+      "size": 80,
+      "sizeKB": 0.08,
+      "type": "js"
+    }
+  ],
+  "recommendations": [
+    "🔴 CRITICAL: 9 JS bundle(s) > 200 KB detected. Consider code splitting.",
+    "🔴 CRITICAL: Total JS size (6.47 MB) exceeds 2 MB. Target: < 1 MB",
+    "🟡 MEDIUM: Total CSS size (0.61 MB) exceeds 500 KB. Check Tailwind purge."
+  ]
+}
