@@ -448,3 +448,31 @@ model ServiceRequest {
   @@index([status])
   @@index([createdAt])
 }
+
+// Performance Monitoring Models
+model PerformanceMetric {
+  id         String   @id @default(cuid())
+  route      String
+  metricType String   // 'web-vitals', 'ssr', 'database', 'bundle', 'api', etc.
+  value      Float
+  metadata   Json?    // Additional context data
+  timestamp  DateTime @default(now())
+
+  @@index([route, metricType, timestamp])
+  @@index([metricType])
+  @@index([timestamp])
+}
+
+model PerformanceAudit {
+  id          String    @id @default(cuid())
+  type        String    // 'bundle', 'database', 'full', 'ssr', 'client', etc.
+  findings    Json      // Detailed findings from the audit
+  status      String    // 'running', 'completed', 'failed'
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  reportUrl   String?   // URL to generated report file
+  summary     Json?     // Quick summary of key metrics
+
+  @@index([type, startedAt])
+  @@index([status])
+}
