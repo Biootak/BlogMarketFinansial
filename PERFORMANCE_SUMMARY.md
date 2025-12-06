@@ -49,13 +49,19 @@
 
 ---
 
+### 6. React Icons to Lucide React Migration ✅ (-82 MB node_modules)
+- حذف کامل پکیج `react-icons` (82 MB در node_modules)
+- Migration 118 فایل به Lucide React
+- ایجاد 6 اسکریپت migration برای خودکارسازی
+- جایگزینی 150+ icon mapping
+- **تأثیر**: کاهش 82 MB از node_modules، بهبود install time
+
+---
+
 ## 🎯 اهداف باقی‌مانده
 
 ### JavaScript (6.45 MB → هدف: < 1 MB)
-1. **React Icons Migration** (~100 KB)
-   - 90+ فایل از React Icons استفاده می‌کنند
-   - نیاز به migration به Lucide React
-   - نیاز به script خودکار برای جایگزینی
+1. ✅ ~~**React Icons Migration**~~ (انجام شد)
 
 2. **TipTap Extensions Optimization** (~200 KB)
    - بررسی extensions استفاده نشده
@@ -115,15 +121,16 @@ Target: 2 MB ████░░░░░░░░░░░░░░░░ (64% r
 1. `perf: implement critical performance optimizations`
 2. `perf: optimize CSS - remove duplicate color definitions and excessive animations (-40 KB CSS)`
 3. `perf: lazy load Recharts charts - only load when dashboard accessed`
+4. `perf: migrate from react-icons to lucide-react - remove 82MB dependency`
 
 ---
 
 ## 📝 توصیه‌های بعدی
 
 ### اولویت بالا
-1. ✅ Migration React Icons به Lucide (100 KB)
-2. ✅ کاهش CSS gradient utilities (300 KB)
-3. ✅ بررسی و حذف TipTap extensions استفاده نشده
+1. ✅ ~~Migration React Icons به Lucide~~ (انجام شد - 82 MB کاهش)
+2. کاهش CSS gradient utilities (300 KB)
+3. بررسی و حذف TipTap extensions استفاده نشده
 
 ### اولویت متوسط
 4. Route-based code splitting
@@ -149,4 +156,17 @@ Target: 2 MB ████░░░░░░░░░░░░░░░░ (64% r
 
 **آخرین بروزرسانی**: 2025-12-06  
 **وضعیت**: در حال پیشرفت  
-**مرحله بعدی**: React Icons Migration
+**مرحله بعدی**: CSS Gradient Utilities Optimization
+
+---
+
+## 📦 Node Modules Size
+
+### قبل
+- **react-icons**: 82 MB
+- **Total node_modules**: ~1,264 MB
+
+### بعد
+- **react-icons**: حذف شد ✅
+- **Total node_modules**: ~1,182 MB (-82 MB, -6.5%)
+- **Install time**: بهبود یافته
