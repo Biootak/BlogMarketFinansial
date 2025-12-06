@@ -25,7 +25,24 @@ export default BaseImage.extend({
         }),
       },
       width: {
-        default: '100%',
+        default: null,
+        parseHTML: (element) => {
+          const width = element.getAttribute('width') || element.style.width;
+          if (!width) return null;
+          // Parse both pixel and percentage values
+          if (width.includes('%')) {
+            return width;
+          }
+          const numValue = Number.parseInt(width, 10);
+          return Number.isNaN(numValue) ? null : numValue;
+        },
+        renderHTML: (attributes) => {
+          if (!attributes.width) return {};
+          const width = typeof attributes.width === 'number' 
+            ? `${attributes.width}px` 
+            : attributes.width;
+          return { width, style: `width: ${width}` };
+        },
       },
       alt: {
         default: undefined,
