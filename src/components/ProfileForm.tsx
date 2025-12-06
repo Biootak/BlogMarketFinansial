@@ -124,6 +124,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
             type="button"
             onClick={() => setIsBgImageDialogOpen(true)}
             className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200"
+            aria-label="تغییر تصویر پس‌زمینه"
           >
             <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/90 dark:bg-slate-800/90 rounded-lg sm:rounded-xl shadow-lg backdrop-blur-sm">
               <ImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600 dark:text-slate-300" />
@@ -161,6 +162,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
               type="button"
               onClick={() => setIsAvatarDialogOpen(true)}
               className="absolute -bottom-1.5 sm:-bottom-2 -left-1.5 sm:-left-2 w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg shadow-blue-500/30 flex items-center justify-center hover:scale-110 transition-transform duration-200"
+              aria-label="تغییر تصویر پروفایل"
             >
               <Camera className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 text-white" />
             </button>
@@ -184,9 +186,13 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
             {...register('name')}
             className="w-full h-10 sm:h-11 md:h-12 px-3 sm:px-4 bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl text-right text-sm sm:text-base"
             placeholder="نام خود را وارد کنید"
+            aria-invalid={errors.name ? 'true' : 'false'}
+            aria-describedby={errors.name ? 'name-error' : undefined}
           />
           {errors.name && (
-            <p className="text-red-500 text-xs mt-1.5 sm:mt-2">{errors.name.message}</p>
+            <p id="name-error" className="text-red-500 text-xs mt-1.5 sm:mt-2" role="alert">
+              {errors.name.message}
+            </p>
           )}
         </div>
         <div className="group">
@@ -204,9 +210,13 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
             dir="ltr"
             className="w-full h-10 sm:h-11 md:h-12 px-3 sm:px-4 bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl text-left text-sm sm:text-base"
             placeholder="email@example.com"
+            aria-invalid={errors.email ? 'true' : 'false'}
+            aria-describedby={errors.email ? 'email-error' : undefined}
           />
           {errors.email && (
-            <p className="text-red-500 text-xs mt-1.5 sm:mt-2">{errors.email.message}</p>
+            <p id="email-error" className="text-red-500 text-xs mt-1.5 sm:mt-2" role="alert">
+              {errors.email.message}
+            </p>
           )}
         </div>
         <div className="group">
@@ -222,9 +232,13 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
             {...register('jobName')}
             className="w-full h-10 sm:h-11 md:h-12 px-3 sm:px-4 bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl text-right text-sm sm:text-base"
             placeholder="شغل خود را وارد کنید"
+            aria-invalid={errors.jobName ? 'true' : 'false'}
+            aria-describedby={errors.jobName ? 'jobName-error' : undefined}
           />
           {errors.jobName && (
-            <p className="text-red-500 text-xs mt-1.5 sm:mt-2">{errors.jobName.message}</p>
+            <p id="jobName-error" className="text-red-500 text-xs mt-1.5 sm:mt-2" role="alert">
+              {errors.jobName.message}
+            </p>
           )}
         </div>
         <div className="group">
@@ -241,9 +255,13 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
             rows={4}
             className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl text-right resize-none text-sm sm:text-base"
             placeholder="درباره خودتان بنویسید..."
+            aria-invalid={errors.bio ? 'true' : 'false'}
+            aria-describedby={errors.bio ? 'bio-error' : undefined}
           />
           {errors.bio && (
-            <p className="text-red-500 text-xs mt-1.5 sm:mt-2">{errors.bio.message}</p>
+            <p id="bio-error" className="text-red-500 text-xs mt-1.5 sm:mt-2" role="alert">
+              {errors.bio.message}
+            </p>
           )}
         </div>
       </div>
@@ -257,6 +275,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
             'w-full flex items-center justify-between p-3.5 sm:p-4 md:p-5 transition-all duration-200 hover:bg-slate-100/50 dark:hover:bg-slate-800/50',
             isPasswordSectionOpen && 'border-b border-slate-200/60 dark:border-slate-700/60',
           )}
+          aria-expanded={isPasswordSectionOpen}
+          aria-controls="password-section"
         >
           <div className="flex items-center gap-2.5 sm:gap-3 md:gap-4">
             <div
@@ -275,7 +295,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
               />
             </div>
             <div className="text-right">
-              <h3 className="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-200">
+              <h3 id="password-section-heading" className="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-200">
                 امنیت حساب
               </h3>
               <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
@@ -291,10 +311,13 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
           />
         </button>
         <div
+          id="password-section"
           className={cn(
             'grid transition-all duration-200 ease-out',
             isPasswordSectionOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0',
           )}
+          role="region"
+          aria-labelledby="password-section-heading"
         >
           <div className="overflow-hidden">
             <div className="p-3.5 sm:p-4 md:p-5 space-y-4 sm:space-y-5">
@@ -313,11 +336,14 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
                     type={showCurrentPassword ? 'text' : 'password'}
                     className="w-full h-10 sm:h-11 md:h-12 px-3 sm:px-4 pl-10 sm:pl-12 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl text-right text-sm sm:text-base"
                     placeholder="رمز عبور فعلی"
+                    aria-invalid={errors.currentPassword ? 'true' : 'false'}
+                    aria-describedby={errors.currentPassword ? 'currentPassword-error' : undefined}
                   />
                   <button
                     type="button"
                     onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                     className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 p-1 sm:p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    aria-label={showCurrentPassword ? 'مخفی کردن رمز عبور فعلی' : 'نمایش رمز عبور فعلی'}
                   >
                     {showCurrentPassword ? (
                       <EyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
@@ -327,7 +353,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
                   </button>
                 </div>
                 {errors.currentPassword && (
-                  <p className="text-red-500 text-xs mt-1.5 sm:mt-2">
+                  <p id="currentPassword-error" className="text-red-500 text-xs mt-1.5 sm:mt-2" role="alert">
                     {errors.currentPassword.message}
                   </p>
                 )}
@@ -347,11 +373,14 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
                     type={showNewPassword ? 'text' : 'password'}
                     className="w-full h-10 sm:h-11 md:h-12 px-3 sm:px-4 pl-10 sm:pl-12 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl text-right text-sm sm:text-base"
                     placeholder="رمز عبور جدید"
+                    aria-invalid={errors.newPassword ? 'true' : 'false'}
+                    aria-describedby={errors.newPassword ? 'newPassword-error' : undefined}
                   />
                   <button
                     type="button"
                     onClick={() => setShowNewPassword(!showNewPassword)}
                     className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 p-1 sm:p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    aria-label={showNewPassword ? 'مخفی کردن رمز عبور جدید' : 'نمایش رمز عبور جدید'}
                   >
                     {showNewPassword ? (
                       <EyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
@@ -361,7 +390,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
                   </button>
                 </div>
                 {errors.newPassword && (
-                  <p className="text-red-500 text-xs mt-1.5 sm:mt-2">
+                  <p id="newPassword-error" className="text-red-500 text-xs mt-1.5 sm:mt-2" role="alert">
                     {errors.newPassword.message}
                   </p>
                 )}
@@ -381,11 +410,14 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
                     type={showConfirmPassword ? 'text' : 'password'}
                     className="w-full h-10 sm:h-11 md:h-12 px-3 sm:px-4 pl-10 sm:pl-12 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl text-right text-sm sm:text-base"
                     placeholder="تکرار رمز عبور جدید"
+                    aria-invalid={errors.confirmNewPassword ? 'true' : 'false'}
+                    aria-describedby={errors.confirmNewPassword ? 'confirmNewPassword-error' : undefined}
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 p-1 sm:p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    aria-label={showConfirmPassword ? 'مخفی کردن تکرار رمز عبور' : 'نمایش تکرار رمز عبور'}
                   >
                     {showConfirmPassword ? (
                       <EyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
@@ -395,7 +427,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
                   </button>
                 </div>
                 {errors.confirmNewPassword && (
-                  <p className="text-red-500 text-xs mt-1.5 sm:mt-2">
+                  <p id="confirmNewPassword-error" className="text-red-500 text-xs mt-1.5 sm:mt-2" role="alert">
                     {errors.confirmNewPassword.message}
                   </p>
                 )}

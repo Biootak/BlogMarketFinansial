@@ -33,8 +33,11 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         siteDescription: settings.siteDescription,
       }}
     >
+      <a href="#main-content" className="skip-to-main">
+        پرش به محتوای اصلی
+      </a>
       <Header />
-      <main>{children}</main>
+      <main id="main-content">{children}</main>
       <Footer />
     </SiteSettingsProvider>
   );
