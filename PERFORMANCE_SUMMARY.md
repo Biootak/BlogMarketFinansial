@@ -65,6 +65,20 @@
   - 42 gradient با 3+ استفاده که می‌توانند به custom classes تبدیل شوند
   - پتانسیل کاهش: ~133 KB CSS
 
+### 8. Image Optimization to WebP ✅ (-2.53 MB, 79.8%)
+- تبدیل 25 تصویر به فرمت WebP با کیفیت 85%
+- ایجاد `scripts/optimize-images.ts` برای تبدیل خودکار
+- ایجاد `OptimizedImage` component برای استفاده از WebP با fallback
+- **نتایج**:
+  - حجم اصلی: 3.17 MB
+  - حجم بهینه شده: 0.64 MB
+  - کاهش: 2.53 MB (79.8%)
+- **بزرگترین کاهش‌ها**:
+  - `about-hero-right.png`: 1293 KB → 177 KB (86.3%)
+  - `hero-right.png`: 980 KB → 134 KB (86.3%)
+  - `crypto.png`: 119 KB → 28 KB (76.7%)
+- **تأثیر**: کاهش 2.53 MB از تصاویر، بهبود page load speed
+
 ---
 
 ## 🎯 اهداف باقی‌مانده
@@ -133,6 +147,8 @@ Target: 2 MB ████░░░░░░░░░░░░░░░░ (64% r
 4. `perf: migrate from react-icons to lucide-react - remove 82MB dependency`
 5. `docs: update performance summary with react-icons migration results`
 6. `perf: add gradient analysis tools and custom gradient utilities`
+7. `docs: update performance summary with gradient analysis results`
+8. `perf: optimize images to WebP format - save 2.53 MB (79.8%)`
 
 ---
 
@@ -140,18 +156,19 @@ Target: 2 MB ████░░░░░░░░░░░░░░░░ (64% r
 
 ### اولویت بالا
 1. ✅ ~~Migration React Icons به Lucide~~ (انجام شد - 82 MB کاهش)
-2. کاهش CSS gradient utilities (300 KB)
-3. بررسی و حذف TipTap extensions استفاده نشده
+2. ✅ ~~Image Optimization to WebP~~ (انجام شد - 2.53 MB کاهش)
+3. کاهش CSS gradient utilities (133 KB - tools آماده است)
+4. بررسی و حذف TipTap extensions استفاده نشده
 
 ### اولویت متوسط
-4. Route-based code splitting
-5. Image optimization (WebP/AVIF conversion)
+5. Route-based code splitting
 6. Font optimization با next/font
+7. حذف تصاویر اصلی (PNG/JPG) بعد از تست WebP
 
 ### اولویت پایین
-7. API response caching
-8. Database query optimization
-9. CDN setup برای static assets
+8. API response caching
+9. Database query optimization
+10. CDN setup برای static assets
 
 ---
 
@@ -162,6 +179,8 @@ Target: 2 MB ████░░░░░░░░░░░░░░░░ (64% r
 3. **Image Placement**: تصاویر بزرگ باید در `public/` باشند نه `src/images/`
 4. **Duplicate Dependencies**: داشتن دو کتابخانه مشابه (Chart.js + Recharts) اتلاف منابع است
 5. **Gradient Utilities**: استفاده زیاد از gradient utilities در Tailwind باعث افزایش شدید CSS می‌شود
+6. **Image Formats**: تبدیل تصاویر به WebP می‌تواند تا 80% حجم را کاهش دهد
+7. **Automation**: ایجاد scripts برای بهینه‌سازی‌های تکراری بسیار مفید است
 
 ---
 
