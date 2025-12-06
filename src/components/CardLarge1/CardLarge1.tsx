@@ -6,10 +6,9 @@ import FormattedDate from '@/components/FormattedDate';
 import NcImage from '@/components/NcImage/NcImage';
 import { getPostLink } from '@/lib/getPostLink';
 import type { PostWithRelations } from '@/types/types';
-import { motion } from 'framer-motion';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import React, { useMemo } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';;;
 import CardSkeleton from '../Skeletons/CardSkeleton';
 
 export interface CardLarge1Props {
@@ -45,32 +44,15 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
     const readingTime = Math.ceil(post.content.split(' ').length / 200);
 
     return (
-      <motion.div
-        className={`nc-CardLarge1 relative ${className}`}
-        onKeyDown={onKeyDown}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
+      <div className={`nc-CardLarge1 relative ${className}`} onKeyDown={onKeyDown}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-center min-h-[400px] lg:min-h-[500px]">
           {/* Content Section */}
           <div className="order-2 lg:order-1 space-y-5 lg:space-y-6 p-4 lg:p-0">
             {/* Category Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-            >
-              {categoryElement}
-            </motion.div>
+            <div>{categoryElement}</div>
 
             {/* Title */}
-            <motion.h1
-              className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-neutral-900 dark:text-white leading-tight"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-neutral-900 dark:text-white leading-tight">
               <Link
                 href={getPostLink(postType, slug)}
                 title={title}
@@ -78,27 +60,17 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
               >
                 {title}
               </Link>
-            </motion.h1>
+            </h1>
 
             {/* Excerpt */}
             {excerpt && (
-              <motion.p
-                className="text-base lg:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed line-clamp-2"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-              >
+              <p className="text-base lg:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed line-clamp-2">
                 {excerpt}
-              </motion.p>
+              </p>
             )}
 
             {/* Author & Meta */}
-            <motion.div
-              className="flex items-center justify-between pt-4 border-t border-neutral-200 dark:border-neutral-700"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-            >
+            <div className="flex items-center justify-between pt-4 border-t border-neutral-200 dark:border-neutral-700">
               <Link href={`/author/${author.id}`} className="flex items-center gap-3 group">
                 <Avatar
                   sizeClass="h-12 w-12"
@@ -121,6 +93,7 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
               {/* Navigation Buttons */}
               <div className="flex items-center gap-2">
                 <button
+                  type="button"
                   onClick={onClickPrev}
                   className="w-11 h-11 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-500 hover:text-white flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-lg hover:scale-105"
                   aria-label="قبلی"
@@ -128,6 +101,7 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
                   <ChevronRight className="w-5 h-5" />
                 </button>
                 <button
+                  type="button"
                   onClick={onClickNext}
                   className="w-11 h-11 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-500 hover:text-white flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-lg hover:scale-105"
                   aria-label="بعدی"
@@ -135,32 +109,22 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
                   <ChevronLeft className="w-5 h-5" />
                 </button>
               </div>
-            </motion.div>
+            </div>
 
             {/* Slide Counter */}
             {totalSlides > 1 && (
-              <motion.div
-                className="flex items-center gap-2 text-sm text-neutral-500"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.5 }}
-              >
+              <div className="flex items-center gap-2 text-sm text-neutral-500">
                 <span className="font-bold text-primary-600 dark:text-primary-400">
                   {String(currentIndex + 1).padStart(2, '0')}
                 </span>
                 <span>/</span>
                 <span>{String(totalSlides).padStart(2, '0')}</span>
-              </motion.div>
+              </div>
             )}
           </div>
 
           {/* Image Section */}
-          <motion.div
-            className="order-1 lg:order-2 relative"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
-          >
+          <div className="order-1 lg:order-2 relative">
             <Link
               href={getPostLink(postType, slug)}
               className="block relative aspect-[4/3] lg:aspect-[4/3] rounded-2xl lg:rounded-3xl overflow-hidden group"
@@ -187,7 +151,9 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
                       className="w-6 h-6 lg:w-8 lg:h-8 text-primary-600 ms-1"
                       fill="currentColor"
                       viewBox="0 0 24 24"
+                      aria-label="پخش ویدیو"
                     >
+                      <title>پخش ویدیو</title>
                       <path d="M8 5v14l11-7z" />
                     </svg>
                   </div>
@@ -198,9 +164,9 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
             {/* Decorative Elements */}
             <div className="absolute -bottom-4 -start-4 w-24 h-24 bg-primary-500/10 rounded-full blur-2xl -z-10" />
             <div className="absolute -top-4 -end-4 w-32 h-32 bg-secondary-500/10 rounded-full blur-2xl -z-10" />
-          </motion.div>
+          </div>
         </div>
-      </motion.div>
+      </div>
     );
   },
 );

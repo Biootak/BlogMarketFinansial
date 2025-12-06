@@ -1,12 +1,9 @@
-'use client';
-
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
 import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { getPostLink } from '@/lib/getPostLink';
 import type { PostWithRelations } from '@/types/types';
-import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';;;
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 import PostCardMeta from '../PostCardMeta/PostCardMeta';
@@ -23,10 +20,8 @@ export default function Card2({ className = 'h-full', size = 'normal', post }: C
   const isLarge = size === 'large';
 
   return (
-    <motion.div
-      className={`nc-Card2 group relative flex flex-col ${className}`}
-      whileHover={{ y: -4 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
+    <div
+      className={`nc-Card2 group relative flex flex-col hover:-translate-y-1 transition-transform duration-300 ${className}`}
     >
       <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-white dark:bg-neutral-800/80 border border-neutral-100 dark:border-neutral-700/50 shadow-sm hover:shadow-xl hover:shadow-primary-500/10 dark:hover:shadow-primary-500/5 transition-all duration-300">
         {/* Image Container - Better aspect ratio for mobile */}
@@ -113,6 +108,6 @@ export default function Card2({ className = 'h-full', size = 'normal', post }: C
         {/* Bottom Accent Line */}
         <div className="absolute bottom-0 start-0 end-0 h-0.5 bg-gradient-to-r from-transparent via-primary-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
-    </motion.div>
+    </div>
   );
 }
