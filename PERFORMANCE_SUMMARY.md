@@ -56,6 +56,15 @@
 - جایگزینی 150+ icon mapping
 - **تأثیر**: کاهش 82 MB از node_modules، بهبود install time
 
+### 7. Gradient Analysis & Optimization Tools
+- ایجاد `scripts/analyze-gradients.ts` برای تحلیل gradient usage
+- شناسایی 266 gradient منحصر به فرد در 108 فایل
+- ایجاد `scripts/replace-gradients.ts` برای جایگزینی خودکار
+- **یافته‌ها**: 
+  - Top gradient: `bg-gradient-to-br from-blue-500 to-indigo-600` (10 بار استفاده)
+  - 42 gradient با 3+ استفاده که می‌توانند به custom classes تبدیل شوند
+  - پتانسیل کاهش: ~133 KB CSS
+
 ---
 
 ## 🎯 اهداف باقی‌مانده
@@ -122,6 +131,8 @@ Target: 2 MB ████░░░░░░░░░░░░░░░░ (64% r
 2. `perf: optimize CSS - remove duplicate color definitions and excessive animations (-40 KB CSS)`
 3. `perf: lazy load Recharts charts - only load when dashboard accessed`
 4. `perf: migrate from react-icons to lucide-react - remove 82MB dependency`
+5. `docs: update performance summary with react-icons migration results`
+6. `perf: add gradient analysis tools and custom gradient utilities`
 
 ---
 
