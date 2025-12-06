@@ -1,14 +1,8 @@
 {
-  "totalSize": 8967787,
-  "jsSize": 6780303,
-  "cssSize": 644707,
+  "totalSize": 7581890,
+  "jsSize": 6759065,
+  "cssSize": 604536,
   "bundles": [
-    {
-      "name": "about-hero-right.34042028.png",
-      "size": 1324488,
-      "sizeKB": 1293.45,
-      "type": "other"
-    },
     {
       "name": "d9b68b3e77d3b55f.js",
       "size": 811972,
@@ -16,9 +10,9 @@
       "type": "js"
     },
     {
-      "name": "cd85c5f980995266.css",
-      "size": 577395,
-      "sizeKB": 563.86,
+      "name": "cc993dbc96e8f9bb.css",
+      "size": 537224,
+      "sizeKB": 524.63,
       "type": "css"
     },
     {
@@ -70,33 +64,27 @@
       "type": "js"
     },
     {
+      "name": "20d9c118c68452c1.js",
+      "size": 193877,
+      "sizeKB": 189.33,
+      "type": "js"
+    },
+    {
+      "name": "17e4f17a39f2a67d.js",
+      "size": 131908,
+      "sizeKB": 128.82,
+      "type": "js"
+    },
+    {
       "name": "f05adec7a87ac2a0.js",
       "size": 128673,
       "sizeKB": 125.66,
       "type": "js"
     },
     {
-      "name": "6a2e3181889aa063.js",
-      "size": 117229,
-      "sizeKB": 114.48,
-      "type": "js"
-    },
-    {
       "name": "a6dad97d9634a72d.js",
       "size": 112594,
       "sizeKB": 109.96,
-      "type": "js"
-    },
-    {
-      "name": "78f8b2a8ce0546cd.js",
-      "size": 108836,
-      "sizeKB": 106.29,
-      "type": "js"
-    },
-    {
-      "name": "eb951291db823935.js",
-      "size": 108836,
-      "sizeKB": 106.29,
       "type": "js"
     },
     {
@@ -118,7 +106,7 @@
       "type": "js"
     },
     {
-      "name": "a0450868045323d2.js",
+      "name": "242fda6a6a6fb2bc.js",
       "size": 93366,
       "sizeKB": 91.18,
       "type": "js"
@@ -130,7 +118,7 @@
       "type": "js"
     },
     {
-      "name": "467b0f5cf84762ef.js",
+      "name": "a61e6ea04267f872.js",
       "size": 89588,
       "sizeKB": 87.49,
       "type": "js"
@@ -142,21 +130,21 @@
       "type": "js"
     },
     {
-      "name": "f760daa234960552.js",
-      "size": 85155,
-      "sizeKB": 83.16,
-      "type": "js"
-    },
-    {
       "name": "e3ca99642db285f8.js",
       "size": 84460,
       "sizeKB": 82.48,
       "type": "js"
     },
     {
-      "name": "44278f3dbf4466d3.js",
+      "name": "292abf1229c1920d.js",
       "size": 83029,
       "sizeKB": 81.08,
+      "type": "js"
+    },
+    {
+      "name": "6092c662ab934a69.js",
+      "size": 73344,
+      "sizeKB": 71.63,
       "type": "js"
     },
     {
@@ -187,18 +175,6 @@
       "name": "d6fe9538ffb5a1c5.js",
       "size": 58857,
       "sizeKB": 57.48,
-      "type": "js"
-    },
-    {
-      "name": "11c5a3b2979cda73.js",
-      "size": 54745,
-      "sizeKB": 53.46,
-      "type": "js"
-    },
-    {
-      "name": "629d2d23ae1e7cbf.js",
-      "size": 54612,
-      "sizeKB": 53.33,
       "type": "js"
     },
     {
@@ -250,6 +226,12 @@
       "type": "js"
     },
     {
+      "name": "3443287ce6fa34e7.js",
+      "size": 44387,
+      "sizeKB": 43.35,
+      "type": "js"
+    },
+    {
       "name": "d0b0fe396039d8b4.js",
       "size": 43792,
       "sizeKB": 42.77,
@@ -298,13 +280,13 @@
       "type": "js"
     },
     {
-      "name": "ee22c714497a24f5.js",
+      "name": "1db8efa1e3a631cb.js",
       "size": 35967,
       "sizeKB": 35.12,
       "type": "js"
     },
     {
-      "name": "8ecaefd13cd0c311.js",
+      "name": "922517f38cc26c63.js",
       "size": 35062,
       "sizeKB": 34.24,
       "type": "js"
@@ -338,6 +320,18 @@
       "size": 34218,
       "sizeKB": 33.42,
       "type": "css"
+    },
+    {
+      "name": "75e576eb6f7703cf.js",
+      "size": 32396,
+      "sizeKB": 31.64,
+      "type": "js"
+    },
+    {
+      "name": "275430549040b353.js",
+      "size": 32263,
+      "sizeKB": 31.51,
+      "type": "js"
     },
     {
       "name": "7a205a2e4db3eec0.js",
@@ -430,7 +424,7 @@
       "type": "js"
     },
     {
-      "name": "fcaeb23496b693ff.js",
+      "name": "cd3cc34640c73aea.js",
       "size": 20186,
       "sizeKB": 19.71,
       "type": "js"
@@ -490,7 +484,7 @@
       "type": "js"
     },
     {
-      "name": "d98fdb383c21d435.js",
+      "name": "06fb3c4b5f9a221f.js",
       "size": 15989,
       "sizeKB": 15.61,
       "type": "js"
@@ -574,7 +568,7 @@
       "type": "css"
     },
     {
-      "name": "69f937ea1e021170.js",
+      "name": "36e6a511e457e813.js",
       "size": 7289,
       "sizeKB": 7.12,
       "type": "js"
@@ -930,7 +924,7 @@
   ],
   "recommendations": [
     "🔴 CRITICAL: 9 JS bundle(s) > 200 KB detected. Consider code splitting.",
-    "🔴 CRITICAL: Total JS size (6.47 MB) exceeds 2 MB. Target: < 1 MB",
-    "🟡 MEDIUM: Total CSS size (0.61 MB) exceeds 500 KB. Check Tailwind purge."
+    "🔴 CRITICAL: Total JS size (6.45 MB) exceeds 2 MB. Target: < 1 MB",
+    "🟡 MEDIUM: Total CSS size (0.58 MB) exceeds 500 KB. Check Tailwind purge."
   ]
 }
