@@ -1,8 +1,6 @@
 'use client';
 
-import { fadeVariants, hoverScaleSmall, transitions } from '@/lib/animations';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
 import React, { type FC } from 'react';
 import { Calendar, Clock, Eye } from 'lucide-react';
 
@@ -47,10 +45,7 @@ const PostCardInfo: FC<PostCardInfoProps> = ({
   };
 
   return (
-    <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={fadeVariants}
+    <div
       className={cn(
         'flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400',
         compact && 'gap-1.5 sm:gap-2',
@@ -58,10 +53,8 @@ const PostCardInfo: FC<PostCardInfoProps> = ({
       )}
     >
       {showViews && (
-        <motion.div
-          whileHover={hoverScaleSmall}
-          transition={transitions.snappy}
-          className="flex items-center gap-1 sm:gap-1.5 transition-colors duration-200 hover:text-blue-600 dark:hover:text-blue-400"
+        <div
+          className="flex items-center gap-1 sm:gap-1.5 transition-all duration-200 hover:text-blue-600 dark:hover:text-blue-400 hover:scale-102"
         >
           <Eye 
             className={cn(
@@ -70,14 +63,12 @@ const PostCardInfo: FC<PostCardInfoProps> = ({
             )}
           />
           <span className="font-medium">{formatNumber(views)}</span>
-        </motion.div>
+        </div>
       )}
 
       {showReadingTime && readingTime > 0 && (
-        <motion.div
-          whileHover={hoverScaleSmall}
-          transition={transitions.snappy}
-          className="flex items-center gap-1 sm:gap-1.5 transition-colors duration-200 hover:text-emerald-600 dark:hover:text-emerald-400"
+        <div
+          className="flex items-center gap-1 sm:gap-1.5 transition-all duration-200 hover:text-emerald-600 dark:hover:text-emerald-400 hover:scale-102"
         >
           <Clock 
             className={cn(
@@ -86,14 +77,12 @@ const PostCardInfo: FC<PostCardInfoProps> = ({
             )}
           />
           <span className="font-medium">{readingTime} دقیقه</span>
-        </motion.div>
+        </div>
       )}
 
       {showDate && publishDate && (
-        <motion.div
-          whileHover={hoverScaleSmall}
-          transition={transitions.snappy}
-          className="flex items-center gap-1 sm:gap-1.5 transition-colors duration-200 hover:text-purple-600 dark:hover:text-purple-400"
+        <div
+          className="flex items-center gap-1 sm:gap-1.5 transition-all duration-200 hover:text-purple-600 dark:hover:text-purple-400 hover:scale-102"
         >
           <Calendar 
             className={cn(
@@ -102,9 +91,9 @@ const PostCardInfo: FC<PostCardInfoProps> = ({
             )}
           />
           <span className="font-medium">{formatDate(publishDate)}</span>
-        </motion.div>
+        </div>
       )}
-    </motion.div>
+    </div>
   );
 };
 

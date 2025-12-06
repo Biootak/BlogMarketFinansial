@@ -1,8 +1,6 @@
 'use client';
 
-import { fadeUpVariants, hoverScaleSmall, tapScaleSmall, transitions } from '@/lib/animations';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
 import React, { type FC } from 'react';
 import NcBookmark from '../NcBookmark/NcBookmark';
 
@@ -26,24 +24,18 @@ const PostCardSaveAction: FC<PostCardSaveActionProps> = ({
   showToast = false,
 }) => {
   return (
-    <motion.div
+    <div
       className={cn(
         'nc-PostCardSaveAction flex items-center gap-2 text-xs text-neutral-700 dark:text-neutral-300',
         className,
       )}
-      initial="hidden"
-      animate="visible"
-      variants={fadeUpVariants}
     >
       {!hideReadingTime && !!readingTime && (
-        <motion.span
-          whileHover={hoverScaleSmall}
-          whileTap={tapScaleSmall}
-          transition={transitions.snappy}
-          className="cursor-default"
+        <span
+          className="cursor-default hover:scale-102 active:scale-98 transition-transform duration-200"
         >
           {readingTime} دقیقه مطالعه
-        </motion.span>
+        </span>
       )}
 
       <NcBookmark
@@ -52,7 +44,7 @@ const PostCardSaveAction: FC<PostCardSaveActionProps> = ({
         initialBookmarked={initialBookmarked}
         showToast={showToast}
       />
-    </motion.div>
+    </div>
   );
 };
 

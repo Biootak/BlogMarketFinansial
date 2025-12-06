@@ -1,181 +1,57 @@
 /**
  * Unified animation configurations for consistent animations across the project
- * Using Framer Motion
+ * Using Framer Motion for complex animations only
+ * 
+ * IMPORTANT: For simple animations, prefer CSS transitions and Tailwind utilities:
+ * - Hover effects: Use `hover:scale-105`, `hover:-translate-y-1`, etc.
+ * - Fade in/out: Use `opacity-0`, `opacity-100` with `transition-opacity`
+ * - Scale: Use `scale-95`, `scale-105` with `transition-transform`
+ * - Translate: Use `translate-x-*`, `translate-y-*` with `transition-transform`
+ * - Combined: Use `transition-all duration-300`
+ * 
+ * Only use Framer Motion for:
+ * - Complex sequences with multiple steps
+ * - Stagger animations (children animating in sequence)
+ * - Spring physics animations
+ * - AnimatePresence (mount/unmount animations)
+ * - Gesture-based animations (drag, swipe)
  */
 
 import type { Transition, Variants } from 'framer-motion';
 
 // ============================================
-// EASING FUNCTIONS
-// ============================================
-export const easings = {
-  // Smooth and natural easing
-  smooth: [0.22, 1, 0.36, 1] as const,
-  // Quick and snappy
-  snappy: [0.4, 0, 0.2, 1] as const,
-  // Bouncy effect
-  bouncy: [0.68, -0.55, 0.265, 1.55] as const,
-  // Linear
-  linear: [0, 0, 1, 1] as const,
-  // Ease in out
-  easeInOut: [0.4, 0, 0.2, 1] as const,
-};
-
-// ============================================
-// DURATIONS (in seconds)
-// ============================================
-export const durations = {
-  instant: 0.1,
-  fast: 0.2,
-  normal: 0.3,
-  slow: 0.5,
-  slower: 0.7,
-};
-
-// ============================================
-// TRANSITIONS
+// TRANSITIONS - For Complex Animations Only
 // ============================================
 export const transitions = {
-  // Default smooth transition
-  smooth: {
-    duration: durations.normal,
-    ease: easings.smooth,
-  } as Transition,
-
-  // Fast and snappy
-  snappy: {
-    duration: durations.fast,
-    ease: easings.snappy,
-  } as Transition,
-
-  // Bouncy effect
-  bouncy: {
-    duration: durations.normal,
-    ease: easings.bouncy,
-  } as Transition,
-
-  // Spring physics
+  // Spring physics - Use for natural, bouncy animations
   spring: {
     type: 'spring',
     stiffness: 300,
     damping: 25,
   } as Transition,
 
-  // Gentle spring
+  // Gentle spring - Use for subtle, smooth animations
   springGentle: {
     type: 'spring',
     stiffness: 200,
     damping: 20,
   } as Transition,
+
+  // Bouncy effect - Use for playful feedback animations
+  bouncy: {
+    duration: 0.3,
+    ease: [0.68, -0.55, 0.265, 1.55],
+  } as Transition,
+
+  // Snappy - Use for quick feedback animations
+  snappy: {
+    duration: 0.2,
+    ease: [0.4, 0, 0.2, 1],
+  } as Transition,
 };
 
 // ============================================
-// FADE ANIMATIONS
-// ============================================
-export const fadeVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: transitions.smooth,
-  },
-  exit: {
-    opacity: 0,
-    transition: transitions.snappy,
-  },
-};
-
-export const fadeUpVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: transitions.smooth,
-  },
-  exit: {
-    opacity: 0,
-    y: -20,
-    transition: transitions.snappy,
-  },
-};
-
-export const fadeDownVariants: Variants = {
-  hidden: { opacity: 0, y: -20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: transitions.smooth,
-  },
-  exit: {
-    opacity: 0,
-    y: 20,
-    transition: transitions.snappy,
-  },
-};
-
-// ============================================
-// SCALE ANIMATIONS
-// ============================================
-export const scaleVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.9 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: transitions.smooth,
-  },
-  exit: {
-    opacity: 0,
-    scale: 0.9,
-    transition: transitions.snappy,
-  },
-};
-
-export const scaleBounceVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.8 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: transitions.bouncy,
-  },
-  exit: {
-    opacity: 0,
-    scale: 0.8,
-    transition: transitions.snappy,
-  },
-};
-
-// ============================================
-// SLIDE ANIMATIONS
-// ============================================
-export const slideRightVariants: Variants = {
-  hidden: { opacity: 0, x: -30 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: transitions.smooth,
-  },
-  exit: {
-    opacity: 0,
-    x: 30,
-    transition: transitions.snappy,
-  },
-};
-
-export const slideLeftVariants: Variants = {
-  hidden: { opacity: 0, x: 30 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: transitions.smooth,
-  },
-  exit: {
-    opacity: 0,
-    x: -30,
-    transition: transitions.snappy,
-  },
-};
-
-// ============================================
-// STAGGER ANIMATIONS
+// STAGGER ANIMATIONS - Complex sequences only
 // ============================================
 export const staggerContainerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -193,23 +69,13 @@ export const staggerItemVariants: Variants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: transitions.smooth,
+    transition: transitions.snappy,
   },
 };
 
 // ============================================
-// HOVER & TAP ANIMATIONS
+// TAP ANIMATIONS - For interactive feedback
 // ============================================
-export const hoverScale = {
-  scale: 1.05,
-  transition: transitions.snappy,
-};
-
-export const hoverScaleSmall = {
-  scale: 1.02,
-  transition: transitions.snappy,
-};
-
 export const tapScale = {
   scale: 0.95,
   transition: transitions.snappy,
@@ -221,41 +87,12 @@ export const tapScaleSmall = {
 };
 
 // ============================================
-// ROTATION ANIMATIONS
-// ============================================
-export const rotateVariants: Variants = {
-  initial: { rotate: 0 },
-  animate: {
-    rotate: 360,
-    transition: {
-      duration: 1,
-      ease: 'linear',
-      repeat: Number.POSITIVE_INFINITY,
-    },
-  },
-};
-
-// ============================================
-// PULSE ANIMATIONS
-// ============================================
-export const pulseVariants: Variants = {
-  initial: { scale: 1 },
-  animate: {
-    scale: [1, 1.05, 1],
-    transition: {
-      duration: 2,
-      ease: easings.smooth,
-      repeat: Number.POSITIVE_INFINITY,
-    },
-  },
-};
-
-// ============================================
-// UTILITY FUNCTIONS
+// UTILITY FUNCTIONS - For complex animations
 // ============================================
 
 /**
  * Create a stagger container with custom delay
+ * Use for animating lists or grids where items appear in sequence
  */
 export const createStaggerContainer = (staggerDelay = 0.1, delayChildren = 0.1): Variants => ({
   hidden: { opacity: 0 },
@@ -268,26 +105,38 @@ export const createStaggerContainer = (staggerDelay = 0.1, delayChildren = 0.1):
   },
 });
 
+// ============================================
+// CSS ANIMATION GUIDE
+// ============================================
 /**
- * Create a custom fade up animation with custom distance
+ * PREFER CSS OVER FRAMER MOTION FOR SIMPLE ANIMATIONS
+ * 
+ * Examples of CSS-based animations (add to your component className):
+ * 
+ * 1. Hover Scale:
+ *    className="hover:scale-105 transition-transform duration-300"
+ * 
+ * 2. Hover Translate:
+ *    className="hover:-translate-y-1 transition-transform duration-300"
+ * 
+ * 3. Fade In:
+ *    className="opacity-0 animate-in fade-in duration-300"
+ * 
+ * 4. Combined Effects:
+ *    className="hover:scale-105 hover:-translate-y-1 transition-all duration-300"
+ * 
+ * 5. Active State:
+ *    className="active:scale-95 transition-transform duration-200"
+ * 
+ * 6. Loading Pulse:
+ *    className="animate-pulse"
+ * 
+ * 7. Loading Spin:
+ *    className="animate-spin"
+ * 
+ * Benefits of CSS animations:
+ * - Smaller bundle size (no Framer Motion import)
+ * - Better performance (GPU accelerated)
+ * - Simpler code (no motion components)
+ * - Works without JavaScript
  */
-export const createFadeUp = (distance = 20): Variants => ({
-  hidden: { opacity: 0, y: distance },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: transitions.smooth,
-  },
-});
-
-/**
- * Create a custom scale animation
- */
-export const createScale = (from = 0.9, to = 1): Variants => ({
-  hidden: { opacity: 0, scale: from },
-  visible: {
-    opacity: 1,
-    scale: to,
-    transition: transitions.smooth,
-  },
-});

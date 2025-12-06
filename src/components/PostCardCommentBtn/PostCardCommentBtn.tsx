@@ -1,6 +1,5 @@
 import { cn } from '@/lib/utils';
 import convertNumbThousand from '@/utils/convertNumbThousand';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 import type React from 'react';
 import type { FC } from 'react';
@@ -25,8 +24,8 @@ const PostCardCommentBtn: FC<PostCardCommentBtnProps> = ({
 
   const commonClasses = cn(
     'nc-PostCardCommentBtn relative flex items-center justify-center',
-    'w-10 h-10 rounded-full transition-colors',
-    'text-neutral-700 bg-neutral-50 hover:bg-teal-50 hover:text-teal-600',
+    'w-10 h-10 rounded-full transition-all duration-200',
+    'text-neutral-700 bg-neutral-50 hover:bg-teal-50 hover:text-teal-600 hover:scale-105 active:scale-95',
     'dark:text-neutral-200 dark:bg-neutral-800 dark:hover:bg-teal-100 dark:hover:text-teal-500',
     className,
   );
@@ -42,28 +41,22 @@ const PostCardCommentBtn: FC<PostCardCommentBtnProps> = ({
     </>
   );
 
-  const MotionWrapper = ({ children }: { children: React.ReactNode }) => (
-    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className={commonClasses}>
-      {children}
-    </motion.div>
-  );
-
   if (isATagOnSingle) {
     return (
-      <MotionWrapper>
+      <div className={commonClasses}>
         <a href={commentUrl} title="نظرات" aria-label="مشاهده نظرات">
           <Content />
         </a>
-      </MotionWrapper>
+      </div>
     );
   }
 
   return (
-    <MotionWrapper>
+    <div className={commonClasses}>
       <Link href={commentUrl} title="نظرات" aria-label="مشاهده نظرات">
         <Content />
       </Link>
-    </MotionWrapper>
+    </div>
   );
 };
 

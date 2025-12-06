@@ -1,7 +1,6 @@
 'use client';
 
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import { motion } from 'framer-motion';
 import * as React from 'react';
 import { Check, ChevronLeft, Circle } from 'lucide-react';
 
@@ -199,21 +198,19 @@ const DropdownMenuItemWithIcon = React.forwardRef<
     icon: React.ReactNode;
   }
 >(({ className, children, icon, ...props }, ref) => (
-  <motion.div whileHover={{ x: 4 }} transition={{ duration: 0.15 }}>
-    <DropdownMenuPrimitive.Item
-      ref={ref}
-      className={cn(
-        'relative flex cursor-pointer select-none items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium outline-none transition-all duration-200 focus:bg-gradient-to-r focus:from-violet-50 focus:to-purple-50 focus:text-violet-700 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:from-violet-900/30 dark:focus:to-purple-900/30 dark:focus:text-violet-300',
-        className,
-      )}
-      {...props}
-    >
-      <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-        {icon}
-      </span>
-      <span>{children}</span>
-    </DropdownMenuPrimitive.Item>
-  </motion.div>
+  <DropdownMenuPrimitive.Item
+    ref={ref}
+    className={cn(
+      'relative flex cursor-pointer select-none items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium outline-none transition-all duration-150 hover:translate-x-1 focus:bg-gradient-to-r focus:from-violet-50 focus:to-purple-50 focus:text-violet-700 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:from-violet-900/30 dark:focus:to-purple-900/30 dark:focus:text-violet-300',
+      className,
+    )}
+    {...props}
+  >
+    <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+      {icon}
+    </span>
+    <span>{children}</span>
+  </DropdownMenuPrimitive.Item>
 ));
 
 DropdownMenuItemWithIcon.displayName = 'DropdownMenuItemWithIcon';

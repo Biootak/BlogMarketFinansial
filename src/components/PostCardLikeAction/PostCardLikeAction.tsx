@@ -53,7 +53,7 @@ const PostCardLikeAction: FC<PostCardLikeActionProps> = ({
       <motion.button
         type="button"
         className={cn(
-          'nc-PostCardLikeAction w-10 h-10 flex items-center justify-center rounded-full transition-colors',
+          'nc-PostCardLikeAction w-10 h-10 flex items-center justify-center rounded-full transition-all duration-200 active:scale-95',
           className,
           isLiked
             ? 'text-rose-600 bg-rose-50 dark:bg-rose-100'
@@ -63,7 +63,6 @@ const PostCardLikeAction: FC<PostCardLikeActionProps> = ({
         title={isLiked ? 'برداشتن لایک' : 'لایک کردن'}
         aria-label={isLiked ? 'برداشتن لایک' : 'لایک کردن'}
         disabled={isPending}
-        whileTap={{ scale: 0.95 }}
       >
         <motion.div animate={{ scale: isLiked ? [1, 1.2, 1] : 1 }} transition={{ duration: 0.3 }}>
           <Icon
