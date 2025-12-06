@@ -1,18 +1,5 @@
-import {
-  CategoryScale,
-  Chart as ChartJS,
-  type ChartOptions,
-  Legend,
-  LineElement,
-  LinearScale,
-  PointElement,
-  Title,
-  Tooltip,
-} from 'chart.js';
 import type React from 'react';
-import { Line } from 'react-chartjs-2';
-
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 interface DetailedStatInfoProps {
   title: string;
@@ -21,40 +8,30 @@ interface DetailedStatInfoProps {
 }
 
 const DetailedStatInfo: React.FC<DetailedStatInfoProps> = ({ title, data, labels }) => {
-  const chartData = {
-    labels,
-    datasets: [
-      {
-        label: title,
-        data,
-        borderColor: 'rgb(59, 130, 246)', // Tailwind blue-500
-        backgroundColor: 'rgba(59, 130, 246, 0.5)',
-        tension: 0.1,
-      },
-    ],
-  };
-
-  const options: ChartOptions<'line'> = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top' as const,
-      },
-      title: {
-        display: true,
-        text: `${title} - روند 7 روز گذشته`,
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-      },
-    },
-  };
+  // Transform data for Recharts
+  const chartData = labels.map((label, index) => ({
+    name: label,
+    value: data[index],
+  }));
 
   return (
     <div className="mt-4">
-      <Line data={chartData} options={options} />
+      <h3 className="text-sm font-medium mb-2">{title} - روند 7 روز گذشته</h3>
+      <ResponsiveContainer width="100%" height={200}>
+        <LineChart data={chartData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+          <Line
+            type="monotone"
+            dataKey="value"
+            stroke="rgb(59, 130, 246)"
+            strokeWidth={2}
+            dot={{ fill: 'rgb(59, 130, 246)' }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
     </div>
   );
 };

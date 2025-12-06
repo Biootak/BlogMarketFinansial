@@ -1,6 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { type FieldValues, FormProvider, useForm } from 'react-hook-form';
 
@@ -23,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { BiLoaderAlt } from 'react-icons/bi';
@@ -42,7 +44,17 @@ import {
 import { HiOutlineSparkles } from 'react-icons/hi2';
 import { RiDraftLine, RiSendPlaneFill } from 'react-icons/ri';
 
-import { Editor, type EditorRef } from '@/components/Editor1';
+import type { EditorRef } from '@/components/Editor1';
+
+// Dynamic import for Editor - only load when needed
+const Editor = dynamic(() => import('@/components/Editor1').then((mod) => mod.Editor), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-96 rounded-lg border border-neutral-200 dark:border-neutral-700 flex items-center justify-center">
+      <Skeleton className="w-full h-full" />
+    </div>
+  ),
+});
 import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
 import { useToast } from '@/components/ui/use-toast';
 import { generateSlug } from '@/lib/utils';

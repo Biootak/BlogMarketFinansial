@@ -2,7 +2,6 @@ import BackgroundSection from '@/components/BackgroundSection/BackgroundSection'
 import BgGlassmorphism from '@/components/BgGlassmorphism/BgGlassmorphism';
 import SectionHero from '@/components/SectionHero/SectionHero';
 import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
-import rightImg from '@/images/about-hero-right.png';
 import React from 'react';
 import SectionStatistic from './SectionStatistic';
 
@@ -14,7 +13,7 @@ const PageAbout = () => {
 
       <div className="container py-6 space-y-16 lg:space-y-28">
         <SectionHero
-          rightImg={rightImg}
+          rightImg="/images/about-hero-right.png"
           heading="👋 درباره ما"
           btnText=""
           subHeading="ما بی‌طرف و مستقل هستیم و هر روز برنامه‌ها و محتوای متمایز و در سطح جهانی ایجاد می‌کنیم که میلیون‌ها نفر را در سراسر جهان آگاه، آموزش و سرگرم می‌کند."
