@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # Go Backend Service
+  go-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.go
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - ENV=development
+      - DATABASE_URL=postgresql://biotak:biotak123@postgres:5432/biotak?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+      - AUTH_SECRET=oe7gMAB/LNi6qqMMXimQsgNssvS2tw5YUMmgqd5eDOY=
+      - LIARA_ENDPOINT=https://storage.c2.liara.space
+      - LIARA_BUCKET_NAME=biotak
+      - LIARA_ACCESS_KEY=m3t07ad0csa2u28g
+      - LIARA_SECRET_KEY=aef36ce8-c519-4387-b683-0bc475cd4ffd
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - biotak-network
+    restart: unless-stopped
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=biotak
+      - POSTGRES_PASSWORD=biotak123
+      - POSTGRES_DB=biotak
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - biotak-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U biotak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - biotak-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: redis-server --appendonly yes
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  biotak-network:
+    driver: bridge
