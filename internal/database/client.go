@@ -1,20 +1,22 @@
 package database
 
 import (
+	"biotak-go-backend/ent"
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"time"
 
 	"entgo.io/ent/dialect"
-	"entgo.io/ent/dialect/sql"
+	entsql "entgo.io/ent/dialect/sql"
 	_ "github.com/lib/pq" // PostgreSQL driver
 )
 
-// EntClient will be replaced with actual Ent client after schema generation
-// For now, we use sql.DB directly
+// EntClient wraps the generated Ent client
 type EntClient struct {
-	DB *sql.DB
+	Client *ent.Client
+	DB     *entsql.Driver
 }
 
 // Config holds database configuration
@@ -46,7 +48,7 @@ func NewEntClient(config *Config) (*EntClient, error) {
 	}
 
 	// Open database connection
-	drv, err := sql.Open(dialect.Postgres, config.DatabaseURL)
+	drv, err := entsql.Open(dialect.Postgres, config.DatabaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database connection: %w", err)
 	}
@@ -66,15 +68,22 @@ func NewEntClient(config *Config) (*EntClient, error) {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	log.Println("✅ PostgreSQL connection established successfully")
+	// Create Ent client with the configured driver
+	client := ent.NewClient(ent.Driver(drv))
 
-	return &EntClient{DB: drv}, nil
+	log.Println("✅ PostgreSQL connection established successfully")
+	log.Println("✅ Ent client initialized with generated schemas")
+
+	return &EntClient{
+		Client: client,
+		DB:     drv,
+	}, nil
 }
 
 // Close closes the database connection
 func (c *EntClient) Close() error {
-	if c.DB != nil {
-		return c.DB.DB().Close()
+	if c.Client != nil {
+		return c.Client.Close()
 	}
 	return nil
 }
@@ -95,6 +104,7 @@ func (c *EntClient) Stats() sql.DBStats {
 	return c.DB.DB().Stats()
 }
 
-// Note: After Ent schemas are generated (Task 4), this file will be updated to use:
-// import "biotak-go-backend/ent"
-// client, err := ent.Open(dialect.Postgres, config.DatabaseURL)
+// GetClient returns the Ent client for database operations
+func (c *EntClient) GetClient() *ent.Client {
+	return c.Client
+}

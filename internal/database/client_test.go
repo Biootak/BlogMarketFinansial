@@ -1,9 +1,7 @@
 package database
 
 import (
-	"context"
 	"testing"
-	"time"
 )
 
 func TestDefaultConfig(t *testing.T) {
