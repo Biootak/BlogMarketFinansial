@@ -97,8 +97,9 @@ export default function GallerySlider({
                     const target = e.target as HTMLImageElement;
                     target.src = '/images/placeholder-large.png';
                   }}
-                  sizes="(max-width: 1025px) 100vw, 300px"
-                  loading="lazy"
+                  sizes="100vw"
+                  priority={index === 0}
+                  loading={index === 0 ? 'eager' : 'lazy'}
                 />
               </motion.div>
             </AnimatePresence>

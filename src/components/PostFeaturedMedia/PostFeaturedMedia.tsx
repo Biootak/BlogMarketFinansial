@@ -94,9 +94,9 @@ const PostFeaturedMedia: FC<PostFeaturedMediaProps> = ({
           }
           alt="Featured"
           fill
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+          priority
           className="object-cover"
-          loading="lazy"
           unoptimized={featuredImage.includes('.svg')}
         />
       )}

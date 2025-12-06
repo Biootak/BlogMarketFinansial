@@ -85,7 +85,7 @@ const Logo: React.FC<LogoProps> = ({
         }}
       >
         {useImage ? (
-          <Image className="block dark:hidden" src={img} alt="Logo" priority />
+          <Image className="block dark:hidden" src={img} alt="Logo" sizes="64px" priority />
         ) : (
           <div className="w-16 h-16">
             <LogoSvg className="w-full h-full" />

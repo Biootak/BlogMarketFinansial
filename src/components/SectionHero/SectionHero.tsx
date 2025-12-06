@@ -36,6 +36,7 @@ const SectionHero: FC<SectionHeroProps> = ({
             alt="تصویر هیرو"
             width={800}
             height={600}
+            sizes="(max-width: 768px) 100vw, 50vw"
             priority
           />
         </div>

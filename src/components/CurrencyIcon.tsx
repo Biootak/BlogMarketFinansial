@@ -39,6 +39,7 @@ const CurrencyIcon: FC<CurrencyIconProps> = memo(({ symbol, className = 'w-6 h-6
           alt={`${symbol} icon`}
           width={24}
           height={24}
+          sizes="24px"
           onLoad={handleLoad}
           onError={handleError}
           className={cn(isLoading ? 'invisible' : 'visible', className)}

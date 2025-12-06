@@ -25,12 +25,14 @@ const NcImage: React.FC<NcImageProps> = ({
 }) => {
   const [imgSrc, setImgSrc] = useState(src || fallbackSrc);
   const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // آپدیت imgSrc وقتی src تغییر میکنه
   useEffect(() => {
     if (src) {
       setImgSrc(src);
       setHasError(false);
+      setIsLoading(true);
     }
   }, [src]);
 
@@ -42,7 +44,12 @@ const NcImage: React.FC<NcImageProps> = ({
     if (!hasError) {
       setHasError(true);
       setImgSrc(fallbackSrc);
+      setIsLoading(false);
     }
+  };
+
+  const handleLoad = () => {
+    setIsLoading(false);
   };
 
   // تشخیص SVG برای غیرفعال کردن optimization
@@ -54,16 +61,24 @@ const NcImage: React.FC<NcImageProps> = ({
       style={hasAbsolutePosition ? undefined : { aspectRatio: ratio }}
     >
       <Image
-        className={className}
+        className={`${className} transition-opacity duration-200 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
         alt={alt}
         sizes={sizes}
         priority={priority}
         fill={fill}
         src={imgSrc}
         onError={handleError}
+        onLoad={handleLoad}
         unoptimized={isSvg}
         {...props}
       />
+      
+      {/* Loading placeholder with shimmer effect */}
+      {isLoading && !hasError && (
+        <div className="absolute inset-0 bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 dark:via-white/10 to-transparent animate-shimmer" />
+        </div>
+      )}
     </div>
   );
 };
