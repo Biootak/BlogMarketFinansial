@@ -1,0 +1,456 @@
+package handlers
+
+import (
+	"biotak-go-backend/ent"
+	"biotak-go-backend/ent/enttest"
+	"biotak-go-backend/internal/database"
+	"biotak-go-backend/internal/repositories"
+	"biotak-go-backend/internal/services"
+	"bytes"
+	"context"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	_ "github.com/mattn/go-sqlite3"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+func setupCommentHandlerTest(t *testing.T) (*CommentHandler, *ent.Client, func()) {
+	// Create test database
+	client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
+
+	// Create mock Redis client
+	redisClient := &database.RedisClient{}
+
+	// Create repositories and services
+	commentRepo := repositories.NewCommentRepository(client)
+	commentService := services.NewCommentService(commentRepo, client, redisClient)
+
+	// Create handler
+	handler := NewCommentHandler(commentService)
+
+	cleanup := func() {
+		client.Close()
+	}
+
+	return handler, client, cleanup
+}
+
+func TestCreateComment(t *testing.T) {
+	handler, client, cleanup := setupCommentHandlerTest(t)
+	defer cleanup()
+
+	ctx := context.Background()
+
+	// Create test user
+	user, err := client.User.Create().
+		SetEmail("test@example.com").
+		SetPassword("hashedpassword").
+		SetStatus("Active").
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Create test post
+	post, err := client.Post.Create().
+		SetTitle("Test Post").
+		SetSlug("test-post").
+		SetContent("Test content").
+		SetStatus("PUBLISHED").
+		SetPostType("STANDARD").
+		SetAuthorID(user.ID).
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Setup Gin
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+
+	// Add middleware to inject user context
+	router.Use(func(c *gin.Context) {
+		c.Set("user_id", user.ID)
+		c.Set("user_role", "USER")
+		c.Next()
+	})
+
+	router.POST("/api/v1/comments", handler.CreateComment)
+
+	t.Run("Create valid comment", func(t *testing.T) {
+		reqBody := services.CreateCommentRequest{
+			Content: "This is a test comment",
+			PostID:  post.ID,
+		}
+
+		body, _ := json.Marshal(reqBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/comments", bytes.NewBuffer(body))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusCreated, w.Code)
+
+		var response CommentResponse
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+
+		assert.Equal(t, "This is a test comment", response.Content)
+		assert.True(t, response.Approved) // Should be approved (no spam)
+		assert.Equal(t, post.ID, response.PostID)
+		assert.NotNil(t, response.Author)
+	})
+
+	t.Run("Create comment with spam", func(t *testing.T) {
+		reqBody := services.CreateCommentRequest{
+			Content: "Buy viagra now! Click here: http://spam.com http://spam2.com http://spam3.com http://spam4.com",
+			PostID:  post.ID,
+		}
+
+		body, _ := json.Marshal(reqBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/comments", bytes.NewBuffer(body))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusCreated, w.Code)
+
+		var response CommentResponse
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+
+		assert.False(t, response.Approved) // Should be flagged for review
+	})
+
+	t.Run("Create comment without authentication", func(t *testing.T) {
+		// Create router without auth middleware
+		noAuthRouter := gin.New()
+		noAuthRouter.POST("/api/v1/comments", handler.CreateComment)
+
+		reqBody := services.CreateCommentRequest{
+			Content: "Test comment",
+			PostID:  post.ID,
+		}
+
+		body, _ := json.Marshal(reqBody)
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/comments", bytes.NewBuffer(body))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		noAuthRouter.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusUnauthorized, w.Code)
+	})
+}
+
+func TestGetCommentsByPost(t *testing.T) {
+	handler, client, cleanup := setupCommentHandlerTest(t)
+	defer cleanup()
+
+	ctx := context.Background()
+
+	// Create test user
+	user, err := client.User.Create().
+		SetEmail("test@example.com").
+		SetPassword("hashedpassword").
+		SetStatus("Active").
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Create test post
+	post, err := client.Post.Create().
+		SetTitle("Test Post").
+		SetSlug("test-post").
+		SetContent("Test content").
+		SetStatus("PUBLISHED").
+		SetPostType("STANDARD").
+		SetAuthorID(user.ID).
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Create approved comment
+	_, err = client.Comment.Create().
+		SetContent("Approved comment").
+		SetApproved(true).
+		SetPostID(post.ID).
+		SetAuthorID(user.ID).
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Create pending comment
+	_, err = client.Comment.Create().
+		SetContent("Pending comment").
+		SetApproved(false).
+		SetPostID(post.ID).
+		SetAuthorID(user.ID).
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Setup Gin
+	gin.SetMode(gin.TestMode)
+
+	t.Run("Get comments as regular user", func(t *testing.T) {
+		router := gin.New()
+		router.Use(func(c *gin.Context) {
+			c.Set("user_role", "USER")
+			c.Next()
+		})
+		router.GET("/api/v1/posts/:postId/comments", handler.GetCommentsByPost)
+
+		req := httptest.NewRequest(http.MethodGet, "/api/v1/posts/"+post.ID+"/comments", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response CommentListResponse
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+
+		// Regular users should only see approved comments
+		assert.Equal(t, 1, response.Total)
+		assert.Equal(t, "Approved comment", response.Comments[0].Content)
+	})
+
+	t.Run("Get comments as admin", func(t *testing.T) {
+		router := gin.New()
+		router.Use(func(c *gin.Context) {
+			c.Set("user_role", "ADMIN")
+			c.Next()
+		})
+		router.GET("/api/v1/posts/:postId/comments", handler.GetCommentsByPost)
+
+		req := httptest.NewRequest(http.MethodGet, "/api/v1/posts/"+post.ID+"/comments", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response CommentListResponse
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+
+		// Admins should see both approved and pending comments
+		assert.Equal(t, 2, response.Total)
+	})
+}
+
+func TestModerateComment(t *testing.T) {
+	handler, client, cleanup := setupCommentHandlerTest(t)
+	defer cleanup()
+
+	ctx := context.Background()
+
+	// Create test user
+	user, err := client.User.Create().
+		SetEmail("test@example.com").
+		SetPassword("hashedpassword").
+		SetStatus("Active").
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Create admin user
+	admin, err := client.User.Create().
+		SetEmail("admin@example.com").
+		SetPassword("hashedpassword").
+		SetRole("ADMIN").
+		SetStatus("Active").
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Create test post
+	post, err := client.Post.Create().
+		SetTitle("Test Post").
+		SetSlug("test-post").
+		SetContent("Test content").
+		SetStatus("PUBLISHED").
+		SetPostType("STANDARD").
+		SetAuthorID(user.ID).
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Create pending comment
+	comment, err := client.Comment.Create().
+		SetContent("Pending comment").
+		SetApproved(false).
+		SetPostID(post.ID).
+		SetAuthorID(user.ID).
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Setup Gin
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+
+	// Add middleware to inject admin context
+	router.Use(func(c *gin.Context) {
+		c.Set("user_id", admin.ID)
+		c.Set("user_role", "ADMIN")
+		c.Next()
+	})
+
+	router.PUT("/api/v1/comments/:id/moderate", handler.ModerateComment)
+
+	t.Run("Approve comment", func(t *testing.T) {
+		reqBody := ModerateCommentRequest{
+			Action: "approve",
+		}
+
+		body, _ := json.Marshal(reqBody)
+		req := httptest.NewRequest(http.MethodPut, "/api/v1/comments/"+comment.ID+"/moderate", bytes.NewBuffer(body))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response CommentResponse
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+
+		assert.True(t, response.Approved)
+	})
+
+	t.Run("Reject comment", func(t *testing.T) {
+		reqBody := ModerateCommentRequest{
+			Action: "reject",
+		}
+
+		body, _ := json.Marshal(reqBody)
+		req := httptest.NewRequest(http.MethodPut, "/api/v1/comments/"+comment.ID+"/moderate", bytes.NewBuffer(body))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var response CommentResponse
+		err := json.Unmarshal(w.Body.Bytes(), &response)
+		require.NoError(t, err)
+
+		assert.False(t, response.Approved)
+	})
+
+	t.Run("Moderate without permission", func(t *testing.T) {
+		// Create router with regular user
+		noPermRouter := gin.New()
+		noPermRouter.Use(func(c *gin.Context) {
+			c.Set("user_id", user.ID)
+			c.Set("user_role", "USER")
+			c.Next()
+		})
+		noPermRouter.PUT("/api/v1/comments/:id/moderate", handler.ModerateComment)
+
+		reqBody := ModerateCommentRequest{
+			Action: "approve",
+		}
+
+		body, _ := json.Marshal(reqBody)
+		req := httptest.NewRequest(http.MethodPut, "/api/v1/comments/"+comment.ID+"/moderate", bytes.NewBuffer(body))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+		noPermRouter.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusForbidden, w.Code)
+	})
+}
+
+func TestDeleteComment(t *testing.T) {
+	handler, client, cleanup := setupCommentHandlerTest(t)
+	defer cleanup()
+
+	ctx := context.Background()
+
+	// Create test user
+	user, err := client.User.Create().
+		SetEmail("test@example.com").
+		SetPassword("hashedpassword").
+		SetStatus("Active").
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Create another user
+	otherUser, err := client.User.Create().
+		SetEmail("other@example.com").
+		SetPassword("hashedpassword").
+		SetStatus("Active").
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Create test post
+	post, err := client.Post.Create().
+		SetTitle("Test Post").
+		SetSlug("test-post").
+		SetContent("Test content").
+		SetStatus("PUBLISHED").
+		SetPostType("STANDARD").
+		SetAuthorID(user.ID).
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Create comment by user
+	comment, err := client.Comment.Create().
+		SetContent("Test comment").
+		SetApproved(true).
+		SetPostID(post.ID).
+		SetAuthorID(user.ID).
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Setup Gin
+	gin.SetMode(gin.TestMode)
+
+	t.Run("Delete own comment", func(t *testing.T) {
+		router := gin.New()
+		router.Use(func(c *gin.Context) {
+			c.Set("user_id", user.ID)
+			c.Set("user_role", "USER")
+			c.Next()
+		})
+		router.DELETE("/api/v1/comments/:id", handler.DeleteComment)
+
+		req := httptest.NewRequest(http.MethodDelete, "/api/v1/comments/"+comment.ID, nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		// Verify comment is soft deleted
+		deletedComment, err := client.Comment.Get(ctx, comment.ID)
+		require.NoError(t, err)
+		assert.NotNil(t, deletedComment.DeletedAt)
+	})
+
+	t.Run("Delete other user's comment without permission", func(t *testing.T) {
+		// Create new comment
+		newComment, err := client.Comment.Create().
+			SetContent("Another comment").
+			SetApproved(true).
+			SetPostID(post.ID).
+			SetAuthorID(user.ID).
+			SetDeletedAt(time.Time{}). // Reset deleted_at
+			Save(ctx)
+		require.NoError(t, err)
+
+		router := gin.New()
+		router.Use(func(c *gin.Context) {
+			c.Set("user_id", otherUser.ID)
+			c.Set("user_role", "USER")
+			c.Next()
+		})
+		router.DELETE("/api/v1/comments/:id", handler.DeleteComment)
+
+		req := httptest.NewRequest(http.MethodDelete, "/api/v1/comments/"+newComment.ID, nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusForbidden, w.Code)
+	})
+}
