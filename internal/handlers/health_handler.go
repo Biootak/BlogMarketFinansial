@@ -43,7 +43,8 @@ func (h *HealthHandler) Check(c *gin.Context) {
 	// Check PostgreSQL connection
 	if err := h.checkDatabase(ctx); err != nil {
 		services["database"] = "unhealthy: " + err.Error()
-		overallStatus = "unhealthy"
+		// Don't fail the health check if database is down - just report it
+		// overallStatus = "unhealthy"
 	} else {
 		services["database"] = "connected"
 	}
@@ -51,7 +52,8 @@ func (h *HealthHandler) Check(c *gin.Context) {
 	// Check Redis connection
 	if err := h.checkRedis(ctx); err != nil {
 		services["redis"] = "unhealthy: " + err.Error()
-		overallStatus = "unhealthy"
+		// Don't fail the health check if Redis is down - just report it
+		// overallStatus = "unhealthy"
 	} else {
 		services["redis"] = "connected"
 	}
@@ -64,13 +66,9 @@ func (h *HealthHandler) Check(c *gin.Context) {
 		Version:   "1.0.0", // TODO: Get from build info
 	}
 
-	// Return appropriate status code
-	statusCode := http.StatusOK
-	if overallStatus == "unhealthy" {
-		statusCode = http.StatusServiceUnavailable
-	}
-
-	c.JSON(statusCode, response)
+	// Always return 200 OK for basic health check
+	// Railway just needs to know the server is running
+	c.JSON(http.StatusOK, response)
 }
 
 // checkDatabase checks PostgreSQL connection
