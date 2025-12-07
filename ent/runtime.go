@@ -242,6 +242,12 @@ func init() {
 	post.DefaultUpdatedAt = postDescUpdatedAt.Default.(func() time.Time)
 	// post.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	post.UpdateDefaultUpdatedAt = postDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// postDescVersion is the schema descriptor for version field.
+	postDescVersion := postFields[18].Descriptor()
+	// post.DefaultVersion holds the default value on creation for the version field.
+	post.DefaultVersion = postDescVersion.Default.(int)
+	// post.VersionValidator is a validator for the "version" field. It is called by the builders before save.
+	post.VersionValidator = postDescVersion.Validators[0].(func(int) error)
 	// postDescID is the schema descriptor for id field.
 	postDescID := postFields[0].Descriptor()
 	// post.IDValidator is a validator for the "id" field. It is called by the builders before save.
@@ -346,6 +352,12 @@ func init() {
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	user.UpdateDefaultUpdatedAt = userDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// userDescVersion is the schema descriptor for version field.
+	userDescVersion := userFields[12].Descriptor()
+	// user.DefaultVersion holds the default value on creation for the version field.
+	user.DefaultVersion = userDescVersion.Default.(int)
+	// user.VersionValidator is a validator for the "version" field. It is called by the builders before save.
+	user.VersionValidator = userDescVersion.Validators[0].(func(int) error)
 	// userDescID is the schema descriptor for id field.
 	userDescID := userFields[0].Descriptor()
 	// user.IDValidator is a validator for the "id" field. It is called by the builders before save.

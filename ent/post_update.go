@@ -297,6 +297,27 @@ func (pu *PostUpdate) ClearDeletedAt() *PostUpdate {
 	return pu
 }
 
+// SetVersion sets the "version" field.
+func (pu *PostUpdate) SetVersion(i int) *PostUpdate {
+	pu.mutation.ResetVersion()
+	pu.mutation.SetVersion(i)
+	return pu
+}
+
+// SetNillableVersion sets the "version" field if the given value is not nil.
+func (pu *PostUpdate) SetNillableVersion(i *int) *PostUpdate {
+	if i != nil {
+		pu.SetVersion(*i)
+	}
+	return pu
+}
+
+// AddVersion adds i to the "version" field.
+func (pu *PostUpdate) AddVersion(i int) *PostUpdate {
+	pu.mutation.AddVersion(i)
+	return pu
+}
+
 // SetAuthor sets the "author" edge to the User entity.
 func (pu *PostUpdate) SetAuthor(u *User) *PostUpdate {
 	return pu.SetAuthorID(u.ID)
@@ -499,6 +520,11 @@ func (pu *PostUpdate) check() error {
 			return &ValidationError{Name: "author_id", err: fmt.Errorf(`ent: validator failed for field "Post.author_id": %w`, err)}
 		}
 	}
+	if v, ok := pu.mutation.Version(); ok {
+		if err := post.VersionValidator(v); err != nil {
+			return &ValidationError{Name: "version", err: fmt.Errorf(`ent: validator failed for field "Post.version": %w`, err)}
+		}
+	}
 	if _, ok := pu.mutation.AuthorID(); pu.mutation.AuthorCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Post.author"`)
 	}
@@ -590,6 +616,12 @@ func (pu *PostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if pu.mutation.DeletedAtCleared() {
 		_spec.ClearField(post.FieldDeletedAt, field.TypeTime)
+	}
+	if value, ok := pu.mutation.Version(); ok {
+		_spec.SetField(post.FieldVersion, field.TypeInt, value)
+	}
+	if value, ok := pu.mutation.AddedVersion(); ok {
+		_spec.AddField(post.FieldVersion, field.TypeInt, value)
 	}
 	if pu.mutation.AuthorCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1039,6 +1071,27 @@ func (puo *PostUpdateOne) ClearDeletedAt() *PostUpdateOne {
 	return puo
 }
 
+// SetVersion sets the "version" field.
+func (puo *PostUpdateOne) SetVersion(i int) *PostUpdateOne {
+	puo.mutation.ResetVersion()
+	puo.mutation.SetVersion(i)
+	return puo
+}
+
+// SetNillableVersion sets the "version" field if the given value is not nil.
+func (puo *PostUpdateOne) SetNillableVersion(i *int) *PostUpdateOne {
+	if i != nil {
+		puo.SetVersion(*i)
+	}
+	return puo
+}
+
+// AddVersion adds i to the "version" field.
+func (puo *PostUpdateOne) AddVersion(i int) *PostUpdateOne {
+	puo.mutation.AddVersion(i)
+	return puo
+}
+
 // SetAuthor sets the "author" edge to the User entity.
 func (puo *PostUpdateOne) SetAuthor(u *User) *PostUpdateOne {
 	return puo.SetAuthorID(u.ID)
@@ -1254,6 +1307,11 @@ func (puo *PostUpdateOne) check() error {
 			return &ValidationError{Name: "author_id", err: fmt.Errorf(`ent: validator failed for field "Post.author_id": %w`, err)}
 		}
 	}
+	if v, ok := puo.mutation.Version(); ok {
+		if err := post.VersionValidator(v); err != nil {
+			return &ValidationError{Name: "version", err: fmt.Errorf(`ent: validator failed for field "Post.version": %w`, err)}
+		}
+	}
 	if _, ok := puo.mutation.AuthorID(); puo.mutation.AuthorCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Post.author"`)
 	}
@@ -1362,6 +1420,12 @@ func (puo *PostUpdateOne) sqlSave(ctx context.Context) (_node *Post, err error) 
 	}
 	if puo.mutation.DeletedAtCleared() {
 		_spec.ClearField(post.FieldDeletedAt, field.TypeTime)
+	}
+	if value, ok := puo.mutation.Version(); ok {
+		_spec.SetField(post.FieldVersion, field.TypeInt, value)
+	}
+	if value, ok := puo.mutation.AddedVersion(); ok {
+		_spec.AddField(post.FieldVersion, field.TypeInt, value)
 	}
 	if puo.mutation.AuthorCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -242,6 +242,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "version", Type: field.TypeInt, Default: 1},
 		{Name: "author_id", Type: field.TypeString, Size: 30},
 	}
 	// PostsTable holds the schema information for the "posts" table.
@@ -252,7 +253,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "posts_users_posts",
-				Columns:    []*schema.Column{PostsColumns[17]},
+				Columns:    []*schema.Column{PostsColumns[18]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -281,7 +282,7 @@ var (
 			{
 				Name:    "post_author_id_status",
 				Unique:  false,
-				Columns: []*schema.Column{PostsColumns[17], PostsColumns[7]},
+				Columns: []*schema.Column{PostsColumns[18], PostsColumns[7]},
 			},
 			{
 				Name:    "post_deleted_at",
@@ -296,7 +297,7 @@ var (
 			{
 				Name:    "post_author_id",
 				Unique:  false,
-				Columns: []*schema.Column{PostsColumns[17]},
+				Columns: []*schema.Column{PostsColumns[18]},
 			},
 			{
 				Name:    "post_created_at",
@@ -385,6 +386,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "version", Type: field.TypeInt, Default: 1},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{

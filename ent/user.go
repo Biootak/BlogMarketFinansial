@@ -41,6 +41,8 @@ type User struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Soft delete timestamp
 	DeletedAt *time.Time `json:"deleted_at,omitempty"`
+	// Version number for optimistic locking
+	Version int `json:"version,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -98,6 +100,8 @@ func (*User) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case user.FieldEmailVerified:
 			values[i] = new(sql.NullBool)
+		case user.FieldVersion:
+			values[i] = new(sql.NullInt64)
 		case user.FieldID, user.FieldEmail, user.FieldPassword, user.FieldName, user.FieldImage, user.FieldRole, user.FieldStatus, user.FieldPhoneNumber:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt, user.FieldUpdatedAt, user.FieldDeletedAt:
@@ -194,6 +198,12 @@ func (u *User) assignValues(columns []string, values []any) error {
 				u.DeletedAt = new(time.Time)
 				*u.DeletedAt = value.Time
 			}
+		case user.FieldVersion:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field version", values[i])
+			} else if value.Valid {
+				u.Version = int(value.Int64)
+			}
 		default:
 			u.selectValues.Set(columns[i], values[i])
 		}
@@ -284,6 +294,9 @@ func (u *User) String() string {
 		builder.WriteString("deleted_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
+	builder.WriteString(", ")
+	builder.WriteString("version=")
+	builder.WriteString(fmt.Sprintf("%v", u.Version))
 	builder.WriteByte(')')
 	return builder.String()
 }

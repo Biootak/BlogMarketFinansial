@@ -222,6 +222,20 @@ func (pc *PostCreate) SetNillableDeletedAt(t *time.Time) *PostCreate {
 	return pc
 }
 
+// SetVersion sets the "version" field.
+func (pc *PostCreate) SetVersion(i int) *PostCreate {
+	pc.mutation.SetVersion(i)
+	return pc
+}
+
+// SetNillableVersion sets the "version" field if the given value is not nil.
+func (pc *PostCreate) SetNillableVersion(i *int) *PostCreate {
+	if i != nil {
+		pc.SetVersion(*i)
+	}
+	return pc
+}
+
 // SetID sets the "id" field.
 func (pc *PostCreate) SetID(s string) *PostCreate {
 	pc.mutation.SetID(s)
@@ -341,6 +355,10 @@ func (pc *PostCreate) defaults() {
 		v := post.DefaultUpdatedAt()
 		pc.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := pc.mutation.Version(); !ok {
+		v := post.DefaultVersion
+		pc.mutation.SetVersion(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -417,6 +435,14 @@ func (pc *PostCreate) check() error {
 	}
 	if _, ok := pc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Post.updated_at"`)}
+	}
+	if _, ok := pc.mutation.Version(); !ok {
+		return &ValidationError{Name: "version", err: errors.New(`ent: missing required field "Post.version"`)}
+	}
+	if v, ok := pc.mutation.Version(); ok {
+		if err := post.VersionValidator(v); err != nil {
+			return &ValidationError{Name: "version", err: fmt.Errorf(`ent: validator failed for field "Post.version": %w`, err)}
+		}
 	}
 	if v, ok := pc.mutation.ID(); ok {
 		if err := post.IDValidator(v); err != nil {
@@ -524,6 +550,10 @@ func (pc *PostCreate) createSpec() (*Post, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.DeletedAt(); ok {
 		_spec.SetField(post.FieldDeletedAt, field.TypeTime, value)
 		_node.DeletedAt = &value
+	}
+	if value, ok := pc.mutation.Version(); ok {
+		_spec.SetField(post.FieldVersion, field.TypeInt, value)
+		_node.Version = value
 	}
 	if nodes := pc.mutation.AuthorIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

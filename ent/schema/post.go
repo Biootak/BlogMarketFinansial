@@ -86,6 +86,10 @@ func (Post) Fields() []ent.Field {
 			Optional().
 			Nillable().
 			Comment("Soft delete timestamp"),
+		field.Int("version").
+			Default(1).
+			NonNegative().
+			Comment("Version number for optimistic locking"),
 	}
 }
 

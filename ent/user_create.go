@@ -169,6 +169,20 @@ func (uc *UserCreate) SetNillableDeletedAt(t *time.Time) *UserCreate {
 	return uc
 }
 
+// SetVersion sets the "version" field.
+func (uc *UserCreate) SetVersion(i int) *UserCreate {
+	uc.mutation.SetVersion(i)
+	return uc
+}
+
+// SetNillableVersion sets the "version" field if the given value is not nil.
+func (uc *UserCreate) SetNillableVersion(i *int) *UserCreate {
+	if i != nil {
+		uc.SetVersion(*i)
+	}
+	return uc
+}
+
 // SetID sets the "id" field.
 func (uc *UserCreate) SetID(s string) *UserCreate {
 	uc.mutation.SetID(s)
@@ -279,6 +293,10 @@ func (uc *UserCreate) defaults() {
 		v := user.DefaultUpdatedAt()
 		uc.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := uc.mutation.Version(); !ok {
+		v := user.DefaultVersion
+		uc.mutation.SetVersion(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -310,6 +328,14 @@ func (uc *UserCreate) check() error {
 	}
 	if _, ok := uc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "User.updated_at"`)}
+	}
+	if _, ok := uc.mutation.Version(); !ok {
+		return &ValidationError{Name: "version", err: errors.New(`ent: missing required field "User.version"`)}
+	}
+	if v, ok := uc.mutation.Version(); ok {
+		if err := user.VersionValidator(v); err != nil {
+			return &ValidationError{Name: "version", err: fmt.Errorf(`ent: validator failed for field "User.version": %w`, err)}
+		}
 	}
 	if v, ok := uc.mutation.ID(); ok {
 		if err := user.IDValidator(v); err != nil {
@@ -394,6 +420,10 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.DeletedAt(); ok {
 		_spec.SetField(user.FieldDeletedAt, field.TypeTime, value)
 		_node.DeletedAt = &value
+	}
+	if value, ok := uc.mutation.Version(); ok {
+		_spec.SetField(user.FieldVersion, field.TypeInt, value)
+		_node.Version = value
 	}
 	if nodes := uc.mutation.PostsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

@@ -54,6 +54,8 @@ type Post struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Soft delete timestamp
 	DeletedAt *time.Time `json:"deleted_at,omitempty"`
+	// Version number for optimistic locking
+	Version int `json:"version,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the PostQuery when eager-loading is set.
 	Edges        PostEdges `json:"edges"`
@@ -124,7 +126,7 @@ func (*Post) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case post.FieldIsFeatured:
 			values[i] = new(sql.NullBool)
-		case post.FieldViewCount, post.FieldReadingTime:
+		case post.FieldViewCount, post.FieldReadingTime, post.FieldVersion:
 			values[i] = new(sql.NullInt64)
 		case post.FieldID, post.FieldTitle, post.FieldSlug, post.FieldContent, post.FieldExcerpt, post.FieldFeaturedImage, post.FieldStatus, post.FieldPostType, post.FieldVideoURL, post.FieldAudioURL, post.FieldAuthorID:
 			values[i] = new(sql.NullString)
@@ -260,6 +262,12 @@ func (po *Post) assignValues(columns []string, values []any) error {
 				po.DeletedAt = new(time.Time)
 				*po.DeletedAt = value.Time
 			}
+		case post.FieldVersion:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field version", values[i])
+			} else if value.Valid {
+				po.Version = int(value.Int64)
+			}
 		default:
 			po.selectValues.Set(columns[i], values[i])
 		}
@@ -376,6 +384,9 @@ func (po *Post) String() string {
 		builder.WriteString("deleted_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
+	builder.WriteString(", ")
+	builder.WriteString("version=")
+	builder.WriteString(fmt.Sprintf("%v", po.Version))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -1,17 +1,18 @@
 package services
 
 import (
+	"context"
+	"errors"
+	"fmt"
+	"strings"
+	"time"
+
 	"biotak-go-backend/ent"
 	"biotak-go-backend/ent/post"
 	"biotak-go-backend/ent/user"
 	"biotak-go-backend/internal/database"
 	"biotak-go-backend/internal/repositories"
 	"biotak-go-backend/internal/utils"
-	"context"
-	"errors"
-	"fmt"
-	"strings"
-	"time"
 )
 
 var (
@@ -65,9 +66,10 @@ type UpdatePostRequest struct {
 	VideoURL       *string  `json:"video_url"`
 	AudioURL       *string  `json:"audio_url"`
 	GalleryImages  []string `json:"gallery_images"`
+	Version        *int     `json:"version"` // For optimistic locking
 }
 
-// CreatePost creates a new post
+// CreatePost creates a new post with categories and tags in a transaction
 func (s *PostService) CreatePost(ctx context.Context, req CreatePostRequest, authorID string) (*ent.Post, error) {
 	// Generate unique slug from title
 	slug := utils.GenerateSlug(req.Title)
@@ -86,70 +88,86 @@ func (s *PostService) CreatePost(ctx context.Context, req CreatePostRequest, aut
 		readingTime = 1
 	}
 
-	// Get author
-	author, err := s.entClient.User.Get(ctx, authorID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get author: %w", err)
-	}
-
 	// Determine post type
 	postType := post.PostTypeSTANDARD
 	if req.PostType != "" {
 		postType = post.PostType(req.PostType)
 	}
 
-	// Create post
-	builder := s.entClient.Post.Create().
-		SetTitle(req.Title).
-		SetSlug(slug).
-		SetContent(req.Content).
-		SetStatus(post.StatusDRAFT).
-		SetPostType(postType).
-		SetReadingTime(readingTime).
-		SetAuthor(author)
+	// Execute post creation in a transaction
+	createdPost, err := database.WithTxResult(ctx, s.entClient, func(ctx context.Context, tx *ent.Tx) (*ent.Post, error) {
+		// Get author within transaction
+		author, err := tx.User.Get(ctx, authorID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get author: %w", err)
+		}
 
-	// Set optional fields
-	if req.Excerpt != nil {
-		builder.SetExcerpt(*req.Excerpt)
-	}
-	if req.FeaturedImage != nil {
-		builder.SetFeaturedImage(*req.FeaturedImage)
-	}
-	if req.VideoURL != nil {
-		builder.SetVideoURL(*req.VideoURL)
-	}
-	if req.AudioURL != nil {
-		builder.SetAudioURL(*req.AudioURL)
-	}
-	if len(req.GalleryImages) > 0 {
-		builder.SetGalleryImages(req.GalleryImages)
-	}
+		// Create post
+		builder := tx.Post.Create().
+			SetTitle(req.Title).
+			SetSlug(slug).
+			SetContent(req.Content).
+			SetStatus(post.StatusDRAFT).
+			SetPostType(postType).
+			SetReadingTime(readingTime).
+			SetAuthor(author)
 
-	// Save post
-	p, err := builder.Save(ctx)
+		// Set optional fields
+		if req.Excerpt != nil {
+			builder.SetExcerpt(*req.Excerpt)
+		}
+		if req.FeaturedImage != nil {
+			builder.SetFeaturedImage(*req.FeaturedImage)
+		}
+		if req.VideoURL != nil {
+			builder.SetVideoURL(*req.VideoURL)
+		}
+		if req.AudioURL != nil {
+			builder.SetAudioURL(*req.AudioURL)
+		}
+		if len(req.GalleryImages) > 0 {
+			builder.SetGalleryImages(req.GalleryImages)
+		}
+
+		// Save post
+		p, err := builder.Save(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create post: %w", err)
+		}
+
+		// Add categories within transaction
+		if len(req.CategoryIDs) > 0 {
+			err = tx.Post.UpdateOneID(p.ID).
+				AddCategoryIDs(req.CategoryIDs...).
+				Exec(ctx)
+			if err != nil {
+				return nil, fmt.Errorf("failed to add categories: %w", err)
+			}
+		}
+
+		// Add tags within transaction
+		if len(req.TagIDs) > 0 {
+			err = tx.Post.UpdateOneID(p.ID).
+				AddTagIDs(req.TagIDs...).
+				Exec(ctx)
+			if err != nil {
+				return nil, fmt.Errorf("failed to add tags: %w", err)
+			}
+		}
+
+		// Return the created post
+		return p, nil
+	})
+
 	if err != nil {
-		return nil, fmt.Errorf("failed to create post: %w", err)
+		return nil, err
 	}
 
-	// Add categories
-	if len(req.CategoryIDs) > 0 {
-		if err := s.postRepo.AddCategories(ctx, p.ID, req.CategoryIDs); err != nil {
-			return nil, fmt.Errorf("failed to add categories: %w", err)
-		}
-	}
-
-	// Add tags
-	if len(req.TagIDs) > 0 {
-		if err := s.postRepo.AddTags(ctx, p.ID, req.TagIDs); err != nil {
-			return nil, fmt.Errorf("failed to add tags: %w", err)
-		}
-	}
-
-	// Reload post with relations
-	return s.postRepo.FindByID(ctx, p.ID)
+	// Reload post with relations (outside transaction)
+	return s.postRepo.FindByID(ctx, createdPost.ID)
 }
 
-// UpdatePost updates a post
+// UpdatePost updates a post with categories and tags in a transaction
 func (s *PostService) UpdatePost(ctx context.Context, postID string, req UpdatePostRequest, userID string, userRole string) (*ent.Post, error) {
 	// Get existing post
 	p, err := s.postRepo.FindByID(ctx, postID)
@@ -163,6 +181,13 @@ func (s *PostService) UpdatePost(ctx context.Context, postID string, req UpdateP
 	// Check permission (author or admin)
 	if p.Edges.Author.ID != userID && userRole != string(user.RoleADMIN) && userRole != string(user.RoleSUPER_ADMIN) {
 		return nil, ErrUnauthorized
+	}
+
+	// Check version for optimistic locking (if provided)
+	if req.Version != nil {
+		if err := database.CheckVersion(p.Version, *req.Version); err != nil {
+			return nil, err
+		}
 	}
 
 	// Build updates map
@@ -194,26 +219,82 @@ func (s *PostService) UpdatePost(ctx context.Context, postID string, req UpdateP
 		updates["post_type"] = post.PostType(*req.PostType)
 	}
 
-	// Update post
-	if len(updates) > 0 {
-		_, err = s.postRepo.Update(ctx, postID, updates)
-		if err != nil {
-			return nil, fmt.Errorf("failed to update post: %w", err)
-		}
-	}
+	// Execute updates in a transaction
+	err = database.WithTx(ctx, s.entClient, func(ctx context.Context, tx *ent.Tx) error {
+		// Update post fields
+		if len(updates) > 0 || req.Version != nil {
+			builder := tx.Post.UpdateOneID(postID)
 
-	// Update categories
-	if req.CategoryIDs != nil {
-		if err := s.postRepo.SetCategories(ctx, postID, req.CategoryIDs); err != nil {
-			return nil, fmt.Errorf("failed to update categories: %w", err)
-		}
-	}
+			// Apply updates
+			for key, value := range updates {
+				switch key {
+				case "title":
+					if v, ok := value.(string); ok {
+						builder.SetTitle(v)
+					}
+				case "slug":
+					if v, ok := value.(string); ok {
+						builder.SetSlug(v)
+					}
+				case "content":
+					if v, ok := value.(string); ok {
+						builder.SetContent(v)
+					}
+				case "excerpt":
+					if v, ok := value.(string); ok {
+						builder.SetExcerpt(v)
+					}
+				case "featured_image":
+					if v, ok := value.(string); ok {
+						builder.SetFeaturedImage(v)
+					}
+				case "post_type":
+					if v, ok := value.(post.PostType); ok {
+						builder.SetPostType(v)
+					}
+				case "reading_time":
+					if v, ok := value.(int); ok {
+						builder.SetReadingTime(v)
+					}
+				}
+			}
 
-	// Update tags
-	if req.TagIDs != nil {
-		if err := s.postRepo.SetTags(ctx, postID, req.TagIDs); err != nil {
-			return nil, fmt.Errorf("failed to update tags: %w", err)
+			// Increment version for optimistic locking
+			newVersion := database.IncrementVersion(p.Version)
+			builder.SetVersion(newVersion)
+
+			if err := builder.Exec(ctx); err != nil {
+				return fmt.Errorf("failed to update post: %w", err)
+			}
 		}
+
+		// Update categories
+		if req.CategoryIDs != nil {
+			err := tx.Post.UpdateOneID(postID).
+				ClearCategories().
+				AddCategoryIDs(req.CategoryIDs...).
+				Exec(ctx)
+			if err != nil {
+				return fmt.Errorf("failed to update categories: %w", err)
+			}
+		}
+
+		// Update tags
+		if req.TagIDs != nil {
+			err := tx.Post.UpdateOneID(postID).
+				ClearTags().
+				AddTagIDs(req.TagIDs...).
+				Exec(ctx)
+			if err != nil {
+				return fmt.Errorf("failed to update tags: %w", err)
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
 	}
 
 	// Invalidate cache
