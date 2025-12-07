@@ -26,6 +26,7 @@ require (
 require (
 	ariga.io/atlas v0.14.1-0.20230918065911-83ad451a4935 // indirect
 	github.com/agext/levenshtein v1.2.1 // indirect
+	github.com/alicebob/miniredis/v2 v2.35.0 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.4 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.15 // indirect
@@ -65,6 +66,7 @@ require (
 	github.com/prometheus/procfs v0.16.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
+	github.com/yuin/gopher-lua v1.1.1 // indirect
 	github.com/zclconf/go-cty v1.8.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/arch v0.3.0 // indirect

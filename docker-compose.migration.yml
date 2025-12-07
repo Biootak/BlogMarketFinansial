@@ -1,0 +1,133 @@
+version: '3.8'
+
+services:
+  # Nginx Reverse Proxy / API Gateway
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - nginx-logs:/var/log/nginx
+    depends_on:
+      - web
+      - go-backend
+    networks:
+      - biotak-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Next.js Frontend & API Routes (Legacy)
+  web:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    expose:
+      - "3000"
+    env_file:
+      - .env
+      - .env.local
+    environment:
+      - NODE_ENV=production
+      - NEXTAUTH_URL=http://localhost
+      - PORT=3000
+    volumes:
+      - uploads_data:/app/public/uploads
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - biotak-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Go Backend Service (New)
+  go-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.go
+    expose:
+      - "8080"
+    environment:
+      - PORT=8080
+      - ENV=production
+      - DATABASE_URL=postgresql://biotak:biotak123@postgres:5432/biotak?sslmode=disable
+      - REDIS_URL=redis://redis:6379
+      - AUTH_SECRET=${AUTH_SECRET}
+      - LIARA_ENDPOINT=${LIARA_ENDPOINT}
+      - LIARA_BUCKET_NAME=${LIARA_BUCKET_NAME}
+      - LIARA_ACCESS_KEY=${LIARA_ACCESS_KEY}
+      - LIARA_SECRET_KEY=${LIARA_SECRET_KEY}
+      - NEXT_PUBLIC_APP_URL=http://localhost
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - biotak-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # PostgreSQL Database (Shared)
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=biotak
+      - POSTGRES_PASSWORD=biotak123
+      - POSTGRES_DB=biotak
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - biotak-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U biotak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache (Shared)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - biotak-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: redis-server --appendonly yes
+
+volumes:
+  postgres-data:
+  redis-data:
+  uploads_data:
+  nginx-logs:
+
+networks:
+  biotak-network:
+    driver: bridge

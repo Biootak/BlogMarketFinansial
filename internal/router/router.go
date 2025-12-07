@@ -51,6 +51,7 @@ func SetupRouter(config *RouterConfig) *gin.Engine {
 		panic("Failed to initialize upload service: " + err.Error())
 	}
 	reportService := services.NewReportService(config.EntClient.Client, config.RedisClient.Client)
+	featureFlagService := services.NewFeatureFlagService(config.RedisClient.Client)
 
 	// Initialize handlers
 	healthHandler := handlers.NewHealthHandler(config.EntClient, config.RedisClient)
@@ -60,6 +61,7 @@ func SetupRouter(config *RouterConfig) *gin.Engine {
 	exchangeHandler := handlers.NewExchangeRateHandler(exchangeService)
 	uploadHandler := handlers.NewUploadHandler(uploadService)
 	reportHandler := handlers.NewReportHandler(reportService)
+	featureFlagHandler := handlers.NewFeatureFlagHandler(featureFlagService)
 
 	// Health check endpoints (no authentication required)
 	router.GET("/health", healthHandler.Check)
@@ -165,6 +167,19 @@ func SetupRouter(config *RouterConfig) *gin.Engine {
 			reports.GET("/content", reportHandler.GetContentReport)
 			reports.GET("/system-health", reportHandler.GetSystemHealthReport)
 			reports.GET("/jobs/:jobId", reportHandler.GetJobStatus)
+		}
+
+		// Feature flag routes (admin only)
+		featureFlags := v1.Group("/feature-flags")
+		featureFlags.Use(middleware.AuthMiddleware())
+		featureFlags.Use(middleware.RequireRole("ADMIN", "SUPER_ADMIN"))
+		{
+			featureFlags.GET("", featureFlagHandler.ListFlags)
+			featureFlags.GET("/:name", featureFlagHandler.GetFlag)
+			featureFlags.PUT("/:name", featureFlagHandler.UpdateFlag)
+			featureFlags.PATCH("/:name/rollout", featureFlagHandler.UpdateRollout)
+			featureFlags.POST("/initialize", featureFlagHandler.InitializeFlags)
+			featureFlags.GET("/:name/check", featureFlagHandler.CheckFlag)
 		}
 	}
 
