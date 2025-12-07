@@ -2,6 +2,7 @@ package database
 
 import (
 	"biotak-go-backend/ent"
+	"biotak-go-backend/pkg/logger"
 	"context"
 	"database/sql"
 	"fmt"
@@ -41,6 +42,46 @@ func DefaultConfig(databaseURL string) *Config {
 	}
 }
 
+// slowQueryDriver wraps the SQL driver to log slow queries
+type slowQueryDriver struct {
+	*entsql.Driver
+	threshold time.Duration
+}
+
+// Exec wraps the Exec method to log slow queries
+func (d *slowQueryDriver) Exec(ctx context.Context, query string, args, v interface{}) error {
+	start := time.Now()
+	err := d.Driver.Exec(ctx, query, args, v)
+	duration := time.Since(start)
+
+	if duration > d.threshold {
+		logger.Warn("Slow query detected", map[string]interface{}{
+			"query":        query,
+			"duration_ms":  duration.Milliseconds(),
+			"threshold_ms": d.threshold.Milliseconds(),
+		})
+	}
+
+	return err
+}
+
+// Query wraps the Query method to log slow queries
+func (d *slowQueryDriver) Query(ctx context.Context, query string, args, v interface{}) error {
+	start := time.Now()
+	err := d.Driver.Query(ctx, query, args, v)
+	duration := time.Since(start)
+
+	if duration > d.threshold {
+		logger.Warn("Slow query detected", map[string]interface{}{
+			"query":        query,
+			"duration_ms":  duration.Milliseconds(),
+			"threshold_ms": d.threshold.Milliseconds(),
+		})
+	}
+
+	return err
+}
+
 // NewEntClient creates a new Ent client with PostgreSQL connection
 func NewEntClient(config *Config) (*EntClient, error) {
 	if config.DatabaseURL == "" {
@@ -68,8 +109,14 @@ func NewEntClient(config *Config) (*EntClient, error) {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	// Create Ent client with the configured driver
-	client := ent.NewClient(ent.Driver(drv))
+	// Wrap driver with slow query logging (100ms threshold)
+	slowQueryDrv := &slowQueryDriver{
+		Driver:    drv,
+		threshold: 100 * time.Millisecond,
+	}
+
+	// Create Ent client with the slow query driver
+	client := ent.NewClient(ent.Driver(slowQueryDrv))
 
 	log.Println("✅ PostgreSQL connection established successfully")
 	log.Println("✅ Ent client initialized with generated schemas")

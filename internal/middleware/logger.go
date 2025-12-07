@@ -1,32 +1,12 @@
 package middleware
 
 import (
-	"encoding/json"
-	"fmt"
+	"biotak-go-backend/pkg/logger"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
-
-// LogEntry represents a structured log entry
-type LogEntry struct {
-	Timestamp   string                 `json:"timestamp"`
-	RequestID   string                 `json:"request_id"`
-	Method      string                 `json:"method"`
-	Path        string                 `json:"path"`
-	Query       string                 `json:"query,omitempty"`
-	Status      int                    `json:"status"`
-	Latency     string                 `json:"latency"`
-	LatencyMs   int64                  `json:"latency_ms"`
-	ClientIP    string                 `json:"client_ip"`
-	UserAgent   string                 `json:"user_agent,omitempty"`
-	UserID      string                 `json:"user_id,omitempty"`
-	UserRole    string                 `json:"user_role,omitempty"`
-	Error       string                 `json:"error,omitempty"`
-	RequestSize int                    `json:"request_size,omitempty"`
-	Extra       map[string]interface{} `json:"extra,omitempty"`
-}
 
 // LoggerMiddleware creates a structured logging middleware
 func LoggerMiddleware() gin.HandlerFunc {
@@ -52,52 +32,51 @@ func LoggerMiddleware() gin.HandlerFunc {
 		latency := time.Since(start)
 		latencyMs := latency.Milliseconds()
 
-		// Build log entry
-		entry := LogEntry{
-			Timestamp:   start.Format(time.RFC3339),
-			RequestID:   requestID,
-			Method:      c.Request.Method,
-			Path:        c.Request.URL.Path,
-			Query:       c.Request.URL.RawQuery,
-			Status:      c.Writer.Status(),
-			Latency:     latency.String(),
-			LatencyMs:   latencyMs,
-			ClientIP:    c.ClientIP(),
-			UserAgent:   c.Request.UserAgent(),
-			RequestSize: requestSize,
+		// Build context for logging
+		context := map[string]interface{}{
+			"request_id":   requestID,
+			"method":       c.Request.Method,
+			"path":         c.Request.URL.Path,
+			"status":       c.Writer.Status(),
+			"latency":      latency.String(),
+			"latency_ms":   latencyMs,
+			"client_ip":    c.ClientIP(),
+			"request_size": requestSize,
+		}
+
+		if c.Request.URL.RawQuery != "" {
+			context["query"] = c.Request.URL.RawQuery
+		}
+
+		if c.Request.UserAgent() != "" {
+			context["user_agent"] = c.Request.UserAgent()
 		}
 
 		// Add user info if authenticated
 		if userID, exists := c.Get("user_id"); exists {
 			if id, ok := userID.(string); ok {
-				entry.UserID = id
+				context["user_id"] = id
 			}
 		}
 		if userRole, exists := c.Get("user_role"); exists {
 			if role, ok := userRole.(string); ok {
-				entry.UserRole = role
+				context["user_role"] = role
 			}
 		}
 
 		// Add error if present
 		if len(c.Errors) > 0 {
-			entry.Error = c.Errors.String()
+			context["error"] = c.Errors.String()
 		}
 
-		// Log as JSON
-		logJSON, err := json.Marshal(entry)
-		if err != nil {
-			fmt.Printf("Failed to marshal log entry: %v\n", err)
-			return
-		}
-
-		// Print log based on status code
+		// Log based on status code
+		message := "HTTP Request"
 		if c.Writer.Status() >= 500 {
-			fmt.Printf("ERROR: %s\n", string(logJSON))
+			logger.Error(message, context)
 		} else if c.Writer.Status() >= 400 {
-			fmt.Printf("WARN: %s\n", string(logJSON))
+			logger.Warn(message, context)
 		} else {
-			fmt.Printf("INFO: %s\n", string(logJSON))
+			logger.Info(message, context)
 		}
 	}
 }
@@ -129,67 +108,61 @@ func GetRequestID(c *gin.Context) string {
 
 // LogInfo logs an informational message with context
 func LogInfo(c *gin.Context, message string, extra map[string]interface{}) {
-	entry := map[string]interface{}{
-		"timestamp":  time.Now().Format(time.RFC3339),
-		"level":      "INFO",
-		"message":    message,
+	context := map[string]interface{}{
 		"request_id": GetRequestID(c),
 	}
 
 	if userID, exists := c.Get("user_id"); exists {
-		entry["user_id"] = userID
+		context["user_id"] = userID
 	}
 
 	if extra != nil {
-		entry["extra"] = extra
+		for k, v := range extra {
+			context[k] = v
+		}
 	}
 
-	logJSON, _ := json.Marshal(entry)
-	fmt.Printf("INFO: %s\n", string(logJSON))
+	logger.Info(message, context)
 }
 
 // LogError logs an error message with context
 func LogError(c *gin.Context, message string, err error, extra map[string]interface{}) {
-	entry := map[string]interface{}{
-		"timestamp":  time.Now().Format(time.RFC3339),
-		"level":      "ERROR",
-		"message":    message,
+	context := map[string]interface{}{
 		"request_id": GetRequestID(c),
 	}
 
 	if err != nil {
-		entry["error"] = err.Error()
+		context["error"] = err.Error()
 	}
 
 	if userID, exists := c.Get("user_id"); exists {
-		entry["user_id"] = userID
+		context["user_id"] = userID
 	}
 
 	if extra != nil {
-		entry["extra"] = extra
+		for k, v := range extra {
+			context[k] = v
+		}
 	}
 
-	logJSON, _ := json.Marshal(entry)
-	fmt.Printf("ERROR: %s\n", string(logJSON))
+	logger.Error(message, context)
 }
 
 // LogWarn logs a warning message with context
 func LogWarn(c *gin.Context, message string, extra map[string]interface{}) {
-	entry := map[string]interface{}{
-		"timestamp":  time.Now().Format(time.RFC3339),
-		"level":      "WARN",
-		"message":    message,
+	context := map[string]interface{}{
 		"request_id": GetRequestID(c),
 	}
 
 	if userID, exists := c.Get("user_id"); exists {
-		entry["user_id"] = userID
+		context["user_id"] = userID
 	}
 
 	if extra != nil {
-		entry["extra"] = extra
+		for k, v := range extra {
+			context[k] = v
+		}
 	}
 
-	logJSON, _ := json.Marshal(entry)
-	fmt.Printf("WARN: %s\n", string(logJSON))
+	logger.Warn(message, context)
 }
