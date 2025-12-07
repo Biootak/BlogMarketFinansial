@@ -2,19 +2,59 @@ package database
 
 import (
 	"biotak-go-backend/ent"
-	"biotak-go-backend/ent/enttest"
 	"biotak-go-backend/ent/user"
+	"biotak-go-backend/internal/config"
 	"context"
 	"errors"
+	"fmt"
 	"testing"
+	"time"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/lib/pq"
 )
 
+// generateTestID generates a unique test ID
+func generateTestID(prefix string) string {
+	return fmt.Sprintf("%s-%d", prefix, time.Now().UnixNano())
+}
+
+// setupTestClient creates a test database client
+func setupTestClient(t *testing.T) (*ent.Client, func()) {
+	if testing.Short() {
+		t.Skip("Skipping database test in short mode")
+	}
+
+	// Load test configuration
+	config.LoadTestConfig()
+
+	// Create test client with PostgreSQL
+	dbURL := config.GetTestDatabaseURL()
+	client, err := ent.Open("postgres", dbURL)
+	if err != nil {
+		t.Skipf("Skipping test: cannot connect to test database: %v", err)
+	}
+
+	ctx := context.Background()
+
+	// Run migrations
+	if err := client.Schema.Create(ctx); err != nil {
+		t.Fatalf("failed to create schema: %v", err)
+	}
+
+	// Cleanup function
+	cleanup := func() {
+		// Clean up test data
+		ctx := context.Background()
+		client.User.Delete().ExecX(ctx)
+		client.Close()
+	}
+
+	return client, cleanup
+}
+
 func TestWithTx_Success(t *testing.T) {
-	// Create test client with in-memory SQLite
-	client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
-	defer client.Close()
+	client, cleanup := setupTestClient(t)
+	defer cleanup()
 
 	ctx := context.Background()
 
@@ -22,7 +62,8 @@ func TestWithTx_Success(t *testing.T) {
 	err := WithTx(ctx, client, func(ctx context.Context, tx *ent.Tx) error {
 		// Create a user within transaction
 		_, err := tx.User.Create().
-			SetEmail("test@example.com").
+			SetID(generateTestID("user")).
+			SetEmail(fmt.Sprintf("test-%d@example.com", time.Now().UnixNano())).
 			SetPassword("hashedpassword").
 			SetName("Test User").
 			SetRole(user.RoleUSER).
@@ -46,9 +87,8 @@ func TestWithTx_Success(t *testing.T) {
 }
 
 func TestWithTx_RollbackOnError(t *testing.T) {
-	// Create test client with in-memory SQLite
-	client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
-	defer client.Close()
+	client, cleanup := setupTestClient(t)
+	defer cleanup()
 
 	ctx := context.Background()
 
@@ -90,9 +130,8 @@ func TestWithTx_RollbackOnError(t *testing.T) {
 }
 
 func TestWithTx_RollbackOnPanic(t *testing.T) {
-	// Create test client with in-memory SQLite
-	client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
-	defer client.Close()
+	client, cleanup := setupTestClient(t)
+	defer cleanup()
 
 	ctx := context.Background()
 
@@ -132,9 +171,8 @@ func TestWithTx_RollbackOnPanic(t *testing.T) {
 }
 
 func TestWithTxResult_Success(t *testing.T) {
-	// Create test client with in-memory SQLite
-	client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
-	defer client.Close()
+	client, cleanup := setupTestClient(t)
+	defer cleanup()
 
 	ctx := context.Background()
 
@@ -172,9 +210,8 @@ func TestWithTxResult_Success(t *testing.T) {
 }
 
 func TestWithTxResult_RollbackOnError(t *testing.T) {
-	// Create test client with in-memory SQLite
-	client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
-	defer client.Close()
+	client, cleanup := setupTestClient(t)
+	defer cleanup()
 
 	ctx := context.Background()
 
@@ -220,9 +257,8 @@ func TestWithTxResult_RollbackOnError(t *testing.T) {
 }
 
 func TestWithTx_MultipleOperations_RollbackAll(t *testing.T) {
-	// Create test client with in-memory SQLite
-	client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
-	defer client.Close()
+	client, cleanup := setupTestClient(t)
+	defer cleanup()
 
 	ctx := context.Background()
 

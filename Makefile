@@ -11,6 +11,16 @@ help:
 	@echo "  make test-cover      - Run tests with coverage"
 	@echo "  make clean           - Clean build artifacts"
 	@echo ""
+	@echo "Load Testing:"
+	@echo "  make load-test-verify - Verify load testing setup"
+	@echo "  make load-test       - Run all load tests"
+	@echo "  make load-test-smoke - Run quick smoke test"
+	@echo "  make load-test-auth  - Test authentication endpoints"
+	@echo "  make load-test-posts - Test post listing endpoints"
+	@echo "  make load-test-rate-limit - Test rate limiting"
+	@echo "  make load-test-cache - Test cache performance"
+	@echo "  make load-test-full  - Run full system load test"
+	@echo ""
 	@echo "Docker (Go Backend Only):"
 	@echo "  make docker-up       - Start Docker services (Go backend)"
 	@echo "  make docker-down     - Stop Docker services"
@@ -59,6 +69,48 @@ test-cover:
 	go test -cover -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out -o coverage.html
 	@echo "Coverage report: coverage.html"
+
+# Run load tests
+load-test:
+	@echo "Running load tests..."
+	@if command -v k6 >/dev/null 2>&1; then \
+		powershell -ExecutionPolicy Bypass -File tests/load/run-all-tests.ps1; \
+	else \
+		echo "ERROR: k6 is not installed"; \
+		echo "Install k6: choco install k6 or scoop install k6"; \
+		exit 1; \
+	fi
+
+# Run specific load test
+load-test-auth:
+	@echo "Running authentication load test..."
+	k6 run tests/load/auth-load.js
+
+load-test-posts:
+	@echo "Running post listing load test..."
+	k6 run tests/load/post-listing-load.js
+
+load-test-rate-limit:
+	@echo "Running rate limiting test..."
+	k6 run tests/load/rate-limit-test.js
+
+load-test-cache:
+	@echo "Running cache performance test..."
+	k6 run tests/load/cache-performance.js
+
+load-test-full:
+	@echo "Running full system load test..."
+	k6 run tests/load/full-system-load.js
+
+# Run smoke test (quick validation)
+load-test-smoke:
+	@echo "Running smoke test..."
+	k6 run --vus 10 --duration 1m tests/load/full-system-load.js
+
+# Verify load testing setup
+load-test-verify:
+	@echo "Verifying load testing setup..."
+	@powershell -ExecutionPolicy Bypass -File tests/load/verify-setup.ps1
 
 # Clean build artifacts
 clean:

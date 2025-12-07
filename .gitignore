@@ -77,3 +77,7 @@ go-build/
 
 # Ent generated files (optional - can be committed)
 # ent/generated/
+
+# Load test results
+tests/load/results/
+!tests/load/results/.gitkeep

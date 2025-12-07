@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"biotak-go-backend/ent"
+	"biotak-go-backend/ent/exchangerate"
+	"biotak-go-backend/ent/post"
 	"biotak-go-backend/ent/user"
 	"biotak-go-backend/internal/database"
 
@@ -77,7 +79,7 @@ func testUserTableCompatibility(t *testing.T, ctx context.Context, entClient *en
 	entUser, err := entClient.User.Create().
 		SetEmail(email).
 		SetPassword(password).
-		SetName(&name).
+		SetName(name).
 		SetRole(user.RoleUSER).
 		SetEmailVerified(false).
 		Save(ctx)
@@ -316,42 +318,50 @@ func testTagTableCompatibility(t *testing.T, ctx context.Context, entClient *ent
 
 func testExchangeRateTableCompatibility(t *testing.T, ctx context.Context, entClient *ent.Client, db *sql.DB) {
 	// Create an exchange rate using Ent
+	name := fmt.Sprintf("test-rate-%d", time.Now().Unix())
 	currency := "BTC"
-	rate := 45000.50
-	baseCurrency := "USD"
-	source := "test"
+	buyRate := "45000.50"
+	sellRate := "44500.00"
 
 	entRate, err := entClient.ExchangeRate.Create().
+		SetName(name).
 		SetCurrency(currency).
-		SetRate(rate).
-		SetBaseCurrency(baseCurrency).
-		SetSource(source).
+		SetRateType(exchangerate.RateTypeBUY_SELL).
+		SetBuyRate(buyRate).
+		SetSellRate(sellRate).
 		Save(ctx)
 	require.NoError(t, err)
 
 	// Read the exchange rate using raw SQL
 	var (
-		id             string
-		dbCurrency     string
-		dbRate         float64
-		dbBaseCurrency string
-		dbSource       string
-		createdAt      time.Time
+		id          string
+		dbName      string
+		dbCurrency  string
+		dbRateType  string
+		dbBuyRate   sql.NullString
+		dbSellRate  sql.NullString
+		createdAt   time.Time
+		updatedAt   time.Time
 	)
 
-	query := `SELECT id, currency, rate, base_currency, source, created_at 
+	query := `SELECT id, name, currency, rate_type, buy_rate, sell_rate, created_at, updated_at 
 	          FROM exchange_rates WHERE id = $1`
 	err = db.QueryRow(query, entRate.ID).Scan(
-		&id, &dbCurrency, &dbRate, &dbBaseCurrency, &dbSource, &createdAt,
+		&id, &dbName, &dbCurrency, &dbRateType, &dbBuyRate, &dbSellRate, &createdAt, &updatedAt,
 	)
 	require.NoError(t, err)
 
 	// Verify data matches
 	assert.Equal(t, entRate.ID, id)
+	assert.Equal(t, entRate.Name, dbName)
 	assert.Equal(t, entRate.Currency, dbCurrency)
-	assert.InDelta(t, entRate.Rate, dbRate, 0.01)
-	assert.Equal(t, entRate.BaseCurrency, dbBaseCurrency)
-	assert.Equal(t, entRate.Source, dbSource)
+	assert.Equal(t, string(entRate.RateType), dbRateType)
+	if dbBuyRate.Valid && entRate.BuyRate != nil {
+		assert.Equal(t, *entRate.BuyRate, dbBuyRate.String)
+	}
+	if dbSellRate.Valid && entRate.SellRate != nil {
+		assert.Equal(t, *entRate.SellRate, dbSellRate.String)
+	}
 
 	// Clean up
 	err = entClient.ExchangeRate.DeleteOneID(entRate.ID).Exec(ctx)
@@ -379,7 +389,7 @@ func TestForeignKeyRelationships(t *testing.T) {
 	defer entClient.User.DeleteOneID(user.ID).Exec(ctx)
 
 	// Create post
-	post, err := entClient.Post.Create().
+	createdPost, err := entClient.Post.Create().
 		SetTitle("FK Test Post").
 		SetSlug(fmt.Sprintf("fk-test-%d", time.Now().Unix())).
 		SetContent("Content").
@@ -388,12 +398,12 @@ func TestForeignKeyRelationships(t *testing.T) {
 		SetPostType("STANDARD").
 		Save(ctx)
 	require.NoError(t, err)
-	defer entClient.Post.DeleteOneID(post.ID).Exec(ctx)
+	defer entClient.Post.DeleteOneID(createdPost.ID).Exec(ctx)
 
 	// Create comment
 	comment, err := entClient.Comment.Create().
 		SetContent("FK Test Comment").
-		SetPost(post).
+		SetPost(createdPost).
 		SetAuthor(user).
 		SetApproved(true).
 		Save(ctx)
@@ -402,7 +412,7 @@ func TestForeignKeyRelationships(t *testing.T) {
 
 	// Test eager loading relationships
 	loadedPost, err := entClient.Post.Query().
-		Where(post.ID(post.ID)).
+		Where(post.IDEQ(createdPost.ID)).
 		WithAuthor().
 		WithComments().
 		Only(ctx)
