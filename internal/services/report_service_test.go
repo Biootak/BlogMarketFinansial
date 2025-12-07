@@ -1,0 +1,287 @@
+package services
+
+import (
+	"context"
+	"testing"
+	"time"
+
+	"biotak-go-backend/ent/enttest"
+
+	"github.com/redis/go-redis/v9"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	_ "github.com/mattn/go-sqlite3"
+)
+
+func setupReportTest(t *testing.T) (*ReportService, func()) {
+	// Create test database
+	client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
+
+	// Create test Redis client
+	redisClient := redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
+		DB:   1, // Use test database
+	})
+
+	// Create service
+	service := NewReportService(client, redisClient)
+
+	// Return cleanup function
+	cleanup := func() {
+		client.Close()
+		redisClient.Close()
+	}
+
+	return service, cleanup
+}
+
+func TestGenerateUserActivityReport(t *testing.T) {
+	service, cleanup := setupReportTest(t)
+	defer cleanup()
+
+	ctx := context.Background()
+
+	// Create test users
+	user1, err := service.client.User.Create().
+		SetEmail("user1@test.com").
+		SetPassword("password").
+		SetName("User 1").
+		SetRole("AUTHOR").
+		Save(ctx)
+	require.NoError(t, err)
+
+	user2, err := service.client.User.Create().
+		SetEmail("user2@test.com").
+		SetPassword("password").
+		SetName("User 2").
+		SetRole("USER").
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Create test posts
+	now := time.Now()
+	post1, err := service.client.Post.Create().
+		SetTitle("Test Post 1").
+		SetSlug("test-post-1").
+		SetContent("Content 1").
+		SetStatus("PUBLISHED").
+		SetViewCount(100).
+		SetAuthor(user1).
+		SetCreatedAt(now.Add(-24 * time.Hour)).
+		Save(ctx)
+	require.NoError(t, err)
+
+	post2, err := service.client.Post.Create().
+		SetTitle("Test Post 2").
+		SetSlug("test-post-2").
+		SetContent("Content 2").
+		SetStatus("PUBLISHED").
+		SetViewCount(50).
+		SetAuthor(user1).
+		SetCreatedAt(now.Add(-12 * time.Hour)).
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Create test comments
+	_, err = service.client.Comment.Create().
+		SetContent("Comment 1").
+		SetApproved(true).
+		SetPost(post1).
+		SetAuthor(user2).
+		SetCreatedAt(now.Add(-6 * time.Hour)).
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Generate report
+	from := now.Add(-48 * time.Hour)
+	to := now
+	report, err := service.GenerateUserActivityReport(ctx, from, to)
+
+	// Assertions
+	require.NoError(t, err)
+	assert.NotNil(t, report)
+	assert.Equal(t, from, report.From)
+	assert.Equal(t, to, report.To)
+	assert.Equal(t, 2, report.TotalUsers)
+	assert.Equal(t, 2, report.ActiveUsers) // user1 has posts, user2 has comments
+
+	// Check user metrics
+	assert.Len(t, report.Users, 2)
+
+	// Find user1 metrics
+	var user1Metrics *UserActivityMetrics
+	for i := range report.Users {
+		if report.Users[i].UserID == user1.ID {
+			user1Metrics = &report.Users[i]
+			break
+		}
+	}
+	require.NotNil(t, user1Metrics)
+	assert.Equal(t, 2, user1Metrics.TotalPosts)
+	assert.Equal(t, 150, user1Metrics.TotalViews)
+	assert.Equal(t, 75.0, user1Metrics.AvgViewsPerPost)
+
+	// Remove unused variable warning
+	_ = post2
+}
+
+func TestGenerateContentReport(t *testing.T) {
+	service, cleanup := setupReportTest(t)
+	defer cleanup()
+
+	ctx := context.Background()
+
+	// Create test user
+	user, err := service.client.User.Create().
+		SetEmail("author@test.com").
+		SetPassword("password").
+		SetName("Author").
+		SetRole("AUTHOR").
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Create test category
+	category, err := service.client.Category.Create().
+		SetName("Tech").
+		SetSlug("tech").
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Create test tag
+	tag, err := service.client.Tag.Create().
+		SetName("golang").
+		SetSlug("golang").
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Create test posts
+	now := time.Now()
+	post1, err := service.client.Post.Create().
+		SetTitle("Test Post 1").
+		SetSlug("test-post-1").
+		SetContent("Content 1").
+		SetStatus("PUBLISHED").
+		SetViewCount(100).
+		SetAuthor(user).
+		AddCategories(category).
+		AddTags(tag).
+		SetCreatedAt(now.Add(-24 * time.Hour)).
+		Save(ctx)
+	require.NoError(t, err)
+
+	post2, err := service.client.Post.Create().
+		SetTitle("Test Post 2").
+		SetSlug("test-post-2").
+		SetContent("Content 2").
+		SetStatus("DRAFT").
+		SetViewCount(0).
+		SetAuthor(user).
+		AddCategories(category).
+		AddTags(tag).
+		SetCreatedAt(now.Add(-12 * time.Hour)).
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Create test comment
+	_, err = service.client.Comment.Create().
+		SetContent("Comment 1").
+		SetApproved(true).
+		SetPost(post1).
+		SetAuthor(user).
+		SetCreatedAt(now.Add(-6 * time.Hour)).
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Generate report
+	from := now.Add(-48 * time.Hour)
+	to := now
+	report, err := service.GenerateContentReport(ctx, from, to)
+
+	// Assertions
+	require.NoError(t, err)
+	assert.NotNil(t, report)
+	assert.Equal(t, 2, report.TotalPosts)
+	assert.Equal(t, 1, report.PublishedPosts)
+	assert.Equal(t, 1, report.DraftPosts)
+
+	// Check category stats
+	assert.Len(t, report.CategoryStats, 1)
+	assert.Equal(t, "Tech", report.CategoryStats[0].CategoryName)
+	assert.Equal(t, 2, report.CategoryStats[0].PostCount)
+	assert.Equal(t, 100, report.CategoryStats[0].TotalViews)
+
+	// Check author performance
+	assert.Len(t, report.AuthorPerformance, 1)
+	assert.Equal(t, user.ID, report.AuthorPerformance[0].AuthorID)
+	assert.Equal(t, 2, report.AuthorPerformance[0].PostCount)
+	assert.Equal(t, 100, report.AuthorPerformance[0].TotalViews)
+	assert.Equal(t, 1, report.AuthorPerformance[0].CommentCount)
+
+	// Check trending topics
+	assert.Contains(t, report.TrendingTopics, "golang")
+
+	// Remove unused variable warning
+	_ = post2
+}
+
+func TestGenerateSystemHealthReport(t *testing.T) {
+	service, cleanup := setupReportTest(t)
+	defer cleanup()
+
+	ctx := context.Background()
+
+	// Create some test data
+	_, err := service.client.User.Create().
+		SetEmail("user@test.com").
+		SetPassword("password").
+		SetName("User").
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Generate report
+	report, err := service.GenerateSystemHealthReport(ctx)
+
+	// Assertions
+	require.NoError(t, err)
+	assert.NotNil(t, report)
+	assert.NotEmpty(t, report.Status)
+	assert.Greater(t, report.Metrics.DatabaseSize, int64(0))
+	assert.GreaterOrEqual(t, report.Metrics.CacheHitRate, 0.0)
+	assert.LessOrEqual(t, report.Metrics.CacheHitRate, 1.0)
+}
+
+func TestAsyncReportGeneration(t *testing.T) {
+	service, cleanup := setupReportTest(t)
+	defer cleanup()
+
+	ctx := context.Background()
+
+	// Create test user
+	_, err := service.client.User.Create().
+		SetEmail("user@test.com").
+		SetPassword("password").
+		SetName("User").
+		Save(ctx)
+	require.NoError(t, err)
+
+	// Start async report generation
+	now := time.Now()
+	from := now.Add(-24 * time.Hour)
+	to := now
+	jobID, err := service.GenerateUserActivityReportAsync(ctx, from, to)
+
+	// Assertions
+	require.NoError(t, err)
+	assert.NotEmpty(t, jobID)
+
+	// Wait a bit for processing
+	time.Sleep(100 * time.Millisecond)
+
+	// Check job status
+	job, err := service.GetJobStatus(ctx, jobID)
+	require.NoError(t, err)
+	assert.NotNil(t, job)
+	assert.Equal(t, jobID, job.JobID)
+	assert.Contains(t, []string{"pending", "processing", "completed"}, job.Status)
+}
