@@ -111,6 +111,35 @@ var (
 			},
 		},
 	}
+	// DailyAnalyticsColumns holds the columns for the "daily_analytics" table.
+	DailyAnalyticsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true},
+		{Name: "date", Type: field.TypeTime},
+		{Name: "total_views", Type: field.TypeInt, Default: 0},
+		{Name: "total_comments", Type: field.TypeInt, Default: 0},
+		{Name: "new_users", Type: field.TypeInt, Default: 0},
+		{Name: "new_posts", Type: field.TypeInt, Default: 0},
+		{Name: "published_posts", Type: field.TypeInt, Default: 0},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// DailyAnalyticsTable holds the schema information for the "daily_analytics" table.
+	DailyAnalyticsTable = &schema.Table{
+		Name:       "daily_analytics",
+		Columns:    DailyAnalyticsColumns,
+		PrimaryKey: []*schema.Column{DailyAnalyticsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "dailyanalytics_date",
+				Unique:  true,
+				Columns: []*schema.Column{DailyAnalyticsColumns[1]},
+			},
+			{
+				Name:    "dailyanalytics_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{DailyAnalyticsColumns[7]},
+			},
+		},
+	}
 	// ExchangeRatesColumns holds the columns for the "exchange_rates" table.
 	ExchangeRatesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString, Unique: true, Size: 30},
@@ -151,6 +180,46 @@ var (
 				Name:    "exchangerate_currency",
 				Unique:  false,
 				Columns: []*schema.Column{ExchangeRatesColumns[2]},
+			},
+		},
+	}
+	// NewslettersColumns holds the columns for the "newsletters" table.
+	NewslettersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true},
+		{Name: "email", Type: field.TypeString, Unique: true},
+		{Name: "is_active", Type: field.TypeBool, Default: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "user_id", Type: field.TypeString, Nullable: true, Size: 30},
+	}
+	// NewslettersTable holds the schema information for the "newsletters" table.
+	NewslettersTable = &schema.Table{
+		Name:       "newsletters",
+		Columns:    NewslettersColumns,
+		PrimaryKey: []*schema.Column{NewslettersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "newsletters_users_user",
+				Columns:    []*schema.Column{NewslettersColumns[5]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "newsletter_email",
+				Unique:  true,
+				Columns: []*schema.Column{NewslettersColumns[1]},
+			},
+			{
+				Name:    "newsletter_is_active",
+				Unique:  false,
+				Columns: []*schema.Column{NewslettersColumns[2]},
+			},
+			{
+				Name:    "newsletter_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{NewslettersColumns[3]},
 			},
 		},
 	}
@@ -424,7 +493,9 @@ var (
 	Tables = []*schema.Table{
 		CategoriesTable,
 		CommentsTable,
+		DailyAnalyticsTable,
 		ExchangeRatesTable,
+		NewslettersTable,
 		PostsTable,
 		ProfilesTable,
 		TagsTable,
@@ -439,6 +510,7 @@ func init() {
 	CommentsTable.ForeignKeys[0].RefTable = CommentsTable
 	CommentsTable.ForeignKeys[1].RefTable = PostsTable
 	CommentsTable.ForeignKeys[2].RefTable = UsersTable
+	NewslettersTable.ForeignKeys[0].RefTable = UsersTable
 	PostsTable.ForeignKeys[0].RefTable = UsersTable
 	ProfilesTable.ForeignKeys[0].RefTable = UsersTable
 	CategoryChildCategoriesTable.ForeignKeys[0].RefTable = CategoriesTable

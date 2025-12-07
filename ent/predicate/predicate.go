@@ -12,8 +12,14 @@ type Category func(*sql.Selector)
 // Comment is the predicate function for comment builders.
 type Comment func(*sql.Selector)
 
+// DailyAnalytics is the predicate function for dailyanalytics builders.
+type DailyAnalytics func(*sql.Selector)
+
 // ExchangeRate is the predicate function for exchangerate builders.
 type ExchangeRate func(*sql.Selector)
+
+// Newsletter is the predicate function for newsletter builders.
+type Newsletter func(*sql.Selector)
 
 // Post is the predicate function for post builders.
 type Post func(*sql.Selector)

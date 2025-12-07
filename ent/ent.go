@@ -5,7 +5,9 @@ package ent
 import (
 	"biotak-go-backend/ent/category"
 	"biotak-go-backend/ent/comment"
+	"biotak-go-backend/ent/dailyanalytics"
 	"biotak-go-backend/ent/exchangerate"
+	"biotak-go-backend/ent/newsletter"
 	"biotak-go-backend/ent/post"
 	"biotak-go-backend/ent/profile"
 	"biotak-go-backend/ent/tag"
@@ -79,13 +81,15 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			category.Table:     category.ValidColumn,
-			comment.Table:      comment.ValidColumn,
-			exchangerate.Table: exchangerate.ValidColumn,
-			post.Table:         post.ValidColumn,
-			profile.Table:      profile.ValidColumn,
-			tag.Table:          tag.ValidColumn,
-			user.Table:         user.ValidColumn,
+			category.Table:       category.ValidColumn,
+			comment.Table:        comment.ValidColumn,
+			dailyanalytics.Table: dailyanalytics.ValidColumn,
+			exchangerate.Table:   exchangerate.ValidColumn,
+			newsletter.Table:     newsletter.ValidColumn,
+			post.Table:           post.ValidColumn,
+			profile.Table:        profile.ValidColumn,
+			tag.Table:            tag.ValidColumn,
+			user.Table:           user.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

@@ -13,7 +13,9 @@ import (
 
 	"biotak-go-backend/ent/category"
 	"biotak-go-backend/ent/comment"
+	"biotak-go-backend/ent/dailyanalytics"
 	"biotak-go-backend/ent/exchangerate"
+	"biotak-go-backend/ent/newsletter"
 	"biotak-go-backend/ent/post"
 	"biotak-go-backend/ent/profile"
 	"biotak-go-backend/ent/tag"
@@ -34,8 +36,12 @@ type Client struct {
 	Category *CategoryClient
 	// Comment is the client for interacting with the Comment builders.
 	Comment *CommentClient
+	// DailyAnalytics is the client for interacting with the DailyAnalytics builders.
+	DailyAnalytics *DailyAnalyticsClient
 	// ExchangeRate is the client for interacting with the ExchangeRate builders.
 	ExchangeRate *ExchangeRateClient
+	// Newsletter is the client for interacting with the Newsletter builders.
+	Newsletter *NewsletterClient
 	// Post is the client for interacting with the Post builders.
 	Post *PostClient
 	// Profile is the client for interacting with the Profile builders.
@@ -57,7 +63,9 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Category = NewCategoryClient(c.config)
 	c.Comment = NewCommentClient(c.config)
+	c.DailyAnalytics = NewDailyAnalyticsClient(c.config)
 	c.ExchangeRate = NewExchangeRateClient(c.config)
+	c.Newsletter = NewNewsletterClient(c.config)
 	c.Post = NewPostClient(c.config)
 	c.Profile = NewProfileClient(c.config)
 	c.Tag = NewTagClient(c.config)
@@ -152,15 +160,17 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:          ctx,
-		config:       cfg,
-		Category:     NewCategoryClient(cfg),
-		Comment:      NewCommentClient(cfg),
-		ExchangeRate: NewExchangeRateClient(cfg),
-		Post:         NewPostClient(cfg),
-		Profile:      NewProfileClient(cfg),
-		Tag:          NewTagClient(cfg),
-		User:         NewUserClient(cfg),
+		ctx:            ctx,
+		config:         cfg,
+		Category:       NewCategoryClient(cfg),
+		Comment:        NewCommentClient(cfg),
+		DailyAnalytics: NewDailyAnalyticsClient(cfg),
+		ExchangeRate:   NewExchangeRateClient(cfg),
+		Newsletter:     NewNewsletterClient(cfg),
+		Post:           NewPostClient(cfg),
+		Profile:        NewProfileClient(cfg),
+		Tag:            NewTagClient(cfg),
+		User:           NewUserClient(cfg),
 	}, nil
 }
 
@@ -178,15 +188,17 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:          ctx,
-		config:       cfg,
-		Category:     NewCategoryClient(cfg),
-		Comment:      NewCommentClient(cfg),
-		ExchangeRate: NewExchangeRateClient(cfg),
-		Post:         NewPostClient(cfg),
-		Profile:      NewProfileClient(cfg),
-		Tag:          NewTagClient(cfg),
-		User:         NewUserClient(cfg),
+		ctx:            ctx,
+		config:         cfg,
+		Category:       NewCategoryClient(cfg),
+		Comment:        NewCommentClient(cfg),
+		DailyAnalytics: NewDailyAnalyticsClient(cfg),
+		ExchangeRate:   NewExchangeRateClient(cfg),
+		Newsletter:     NewNewsletterClient(cfg),
+		Post:           NewPostClient(cfg),
+		Profile:        NewProfileClient(cfg),
+		Tag:            NewTagClient(cfg),
+		User:           NewUserClient(cfg),
 	}, nil
 }
 
@@ -216,7 +228,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Category, c.Comment, c.ExchangeRate, c.Post, c.Profile, c.Tag, c.User,
+		c.Category, c.Comment, c.DailyAnalytics, c.ExchangeRate, c.Newsletter, c.Post,
+		c.Profile, c.Tag, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -226,7 +239,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Category, c.Comment, c.ExchangeRate, c.Post, c.Profile, c.Tag, c.User,
+		c.Category, c.Comment, c.DailyAnalytics, c.ExchangeRate, c.Newsletter, c.Post,
+		c.Profile, c.Tag, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -239,8 +253,12 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Category.mutate(ctx, m)
 	case *CommentMutation:
 		return c.Comment.mutate(ctx, m)
+	case *DailyAnalyticsMutation:
+		return c.DailyAnalytics.mutate(ctx, m)
 	case *ExchangeRateMutation:
 		return c.ExchangeRate.mutate(ctx, m)
+	case *NewsletterMutation:
+		return c.Newsletter.mutate(ctx, m)
 	case *PostMutation:
 		return c.Post.mutate(ctx, m)
 	case *ProfileMutation:
@@ -632,6 +650,139 @@ func (c *CommentClient) mutate(ctx context.Context, m *CommentMutation) (Value, 
 	}
 }
 
+// DailyAnalyticsClient is a client for the DailyAnalytics schema.
+type DailyAnalyticsClient struct {
+	config
+}
+
+// NewDailyAnalyticsClient returns a client for the DailyAnalytics from the given config.
+func NewDailyAnalyticsClient(c config) *DailyAnalyticsClient {
+	return &DailyAnalyticsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `dailyanalytics.Hooks(f(g(h())))`.
+func (c *DailyAnalyticsClient) Use(hooks ...Hook) {
+	c.hooks.DailyAnalytics = append(c.hooks.DailyAnalytics, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `dailyanalytics.Intercept(f(g(h())))`.
+func (c *DailyAnalyticsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.DailyAnalytics = append(c.inters.DailyAnalytics, interceptors...)
+}
+
+// Create returns a builder for creating a DailyAnalytics entity.
+func (c *DailyAnalyticsClient) Create() *DailyAnalyticsCreate {
+	mutation := newDailyAnalyticsMutation(c.config, OpCreate)
+	return &DailyAnalyticsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of DailyAnalytics entities.
+func (c *DailyAnalyticsClient) CreateBulk(builders ...*DailyAnalyticsCreate) *DailyAnalyticsCreateBulk {
+	return &DailyAnalyticsCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *DailyAnalyticsClient) MapCreateBulk(slice any, setFunc func(*DailyAnalyticsCreate, int)) *DailyAnalyticsCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &DailyAnalyticsCreateBulk{err: fmt.Errorf("calling to DailyAnalyticsClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*DailyAnalyticsCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &DailyAnalyticsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for DailyAnalytics.
+func (c *DailyAnalyticsClient) Update() *DailyAnalyticsUpdate {
+	mutation := newDailyAnalyticsMutation(c.config, OpUpdate)
+	return &DailyAnalyticsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DailyAnalyticsClient) UpdateOne(da *DailyAnalytics) *DailyAnalyticsUpdateOne {
+	mutation := newDailyAnalyticsMutation(c.config, OpUpdateOne, withDailyAnalytics(da))
+	return &DailyAnalyticsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DailyAnalyticsClient) UpdateOneID(id string) *DailyAnalyticsUpdateOne {
+	mutation := newDailyAnalyticsMutation(c.config, OpUpdateOne, withDailyAnalyticsID(id))
+	return &DailyAnalyticsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for DailyAnalytics.
+func (c *DailyAnalyticsClient) Delete() *DailyAnalyticsDelete {
+	mutation := newDailyAnalyticsMutation(c.config, OpDelete)
+	return &DailyAnalyticsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DailyAnalyticsClient) DeleteOne(da *DailyAnalytics) *DailyAnalyticsDeleteOne {
+	return c.DeleteOneID(da.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DailyAnalyticsClient) DeleteOneID(id string) *DailyAnalyticsDeleteOne {
+	builder := c.Delete().Where(dailyanalytics.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DailyAnalyticsDeleteOne{builder}
+}
+
+// Query returns a query builder for DailyAnalytics.
+func (c *DailyAnalyticsClient) Query() *DailyAnalyticsQuery {
+	return &DailyAnalyticsQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDailyAnalytics},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a DailyAnalytics entity by its id.
+func (c *DailyAnalyticsClient) Get(ctx context.Context, id string) (*DailyAnalytics, error) {
+	return c.Query().Where(dailyanalytics.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DailyAnalyticsClient) GetX(ctx context.Context, id string) *DailyAnalytics {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *DailyAnalyticsClient) Hooks() []Hook {
+	return c.hooks.DailyAnalytics
+}
+
+// Interceptors returns the client interceptors.
+func (c *DailyAnalyticsClient) Interceptors() []Interceptor {
+	return c.inters.DailyAnalytics
+}
+
+func (c *DailyAnalyticsClient) mutate(ctx context.Context, m *DailyAnalyticsMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DailyAnalyticsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DailyAnalyticsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DailyAnalyticsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DailyAnalyticsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown DailyAnalytics mutation op: %q", m.Op())
+	}
+}
+
 // ExchangeRateClient is a client for the ExchangeRate schema.
 type ExchangeRateClient struct {
 	config
@@ -762,6 +913,155 @@ func (c *ExchangeRateClient) mutate(ctx context.Context, m *ExchangeRateMutation
 		return (&ExchangeRateDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown ExchangeRate mutation op: %q", m.Op())
+	}
+}
+
+// NewsletterClient is a client for the Newsletter schema.
+type NewsletterClient struct {
+	config
+}
+
+// NewNewsletterClient returns a client for the Newsletter from the given config.
+func NewNewsletterClient(c config) *NewsletterClient {
+	return &NewsletterClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `newsletter.Hooks(f(g(h())))`.
+func (c *NewsletterClient) Use(hooks ...Hook) {
+	c.hooks.Newsletter = append(c.hooks.Newsletter, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `newsletter.Intercept(f(g(h())))`.
+func (c *NewsletterClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Newsletter = append(c.inters.Newsletter, interceptors...)
+}
+
+// Create returns a builder for creating a Newsletter entity.
+func (c *NewsletterClient) Create() *NewsletterCreate {
+	mutation := newNewsletterMutation(c.config, OpCreate)
+	return &NewsletterCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Newsletter entities.
+func (c *NewsletterClient) CreateBulk(builders ...*NewsletterCreate) *NewsletterCreateBulk {
+	return &NewsletterCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *NewsletterClient) MapCreateBulk(slice any, setFunc func(*NewsletterCreate, int)) *NewsletterCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &NewsletterCreateBulk{err: fmt.Errorf("calling to NewsletterClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*NewsletterCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &NewsletterCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Newsletter.
+func (c *NewsletterClient) Update() *NewsletterUpdate {
+	mutation := newNewsletterMutation(c.config, OpUpdate)
+	return &NewsletterUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *NewsletterClient) UpdateOne(n *Newsletter) *NewsletterUpdateOne {
+	mutation := newNewsletterMutation(c.config, OpUpdateOne, withNewsletter(n))
+	return &NewsletterUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *NewsletterClient) UpdateOneID(id string) *NewsletterUpdateOne {
+	mutation := newNewsletterMutation(c.config, OpUpdateOne, withNewsletterID(id))
+	return &NewsletterUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Newsletter.
+func (c *NewsletterClient) Delete() *NewsletterDelete {
+	mutation := newNewsletterMutation(c.config, OpDelete)
+	return &NewsletterDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *NewsletterClient) DeleteOne(n *Newsletter) *NewsletterDeleteOne {
+	return c.DeleteOneID(n.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *NewsletterClient) DeleteOneID(id string) *NewsletterDeleteOne {
+	builder := c.Delete().Where(newsletter.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &NewsletterDeleteOne{builder}
+}
+
+// Query returns a query builder for Newsletter.
+func (c *NewsletterClient) Query() *NewsletterQuery {
+	return &NewsletterQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeNewsletter},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Newsletter entity by its id.
+func (c *NewsletterClient) Get(ctx context.Context, id string) (*Newsletter, error) {
+	return c.Query().Where(newsletter.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *NewsletterClient) GetX(ctx context.Context, id string) *Newsletter {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a Newsletter.
+func (c *NewsletterClient) QueryUser(n *Newsletter) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := n.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(newsletter.Table, newsletter.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, newsletter.UserTable, newsletter.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *NewsletterClient) Hooks() []Hook {
+	return c.hooks.Newsletter
+}
+
+// Interceptors returns the client interceptors.
+func (c *NewsletterClient) Interceptors() []Interceptor {
+	return c.inters.Newsletter
+}
+
+func (c *NewsletterClient) mutate(ctx context.Context, m *NewsletterMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&NewsletterCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&NewsletterUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&NewsletterUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&NewsletterDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Newsletter mutation op: %q", m.Op())
 	}
 }
 
@@ -1444,9 +1744,11 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Category, Comment, ExchangeRate, Post, Profile, Tag, User []ent.Hook
+		Category, Comment, DailyAnalytics, ExchangeRate, Newsletter, Post, Profile, Tag,
+		User []ent.Hook
 	}
 	inters struct {
-		Category, Comment, ExchangeRate, Post, Profile, Tag, User []ent.Interceptor
+		Category, Comment, DailyAnalytics, ExchangeRate, Newsletter, Post, Profile, Tag,
+		User []ent.Interceptor
 	}
 )

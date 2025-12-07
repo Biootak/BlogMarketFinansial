@@ -32,6 +32,18 @@ func (f CommentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CommentMutation", m)
 }
 
+// The DailyAnalyticsFunc type is an adapter to allow the use of ordinary
+// function as DailyAnalytics mutator.
+type DailyAnalyticsFunc func(context.Context, *ent.DailyAnalyticsMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DailyAnalyticsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.DailyAnalyticsMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DailyAnalyticsMutation", m)
+}
+
 // The ExchangeRateFunc type is an adapter to allow the use of ordinary
 // function as ExchangeRate mutator.
 type ExchangeRateFunc func(context.Context, *ent.ExchangeRateMutation) (ent.Value, error)
@@ -42,6 +54,18 @@ func (f ExchangeRateFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ExchangeRateMutation", m)
+}
+
+// The NewsletterFunc type is an adapter to allow the use of ordinary
+// function as Newsletter mutator.
+type NewsletterFunc func(context.Context, *ent.NewsletterMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f NewsletterFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.NewsletterMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NewsletterMutation", m)
 }
 
 // The PostFunc type is an adapter to allow the use of ordinary

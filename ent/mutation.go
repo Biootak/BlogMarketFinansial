@@ -5,7 +5,9 @@ package ent
 import (
 	"biotak-go-backend/ent/category"
 	"biotak-go-backend/ent/comment"
+	"biotak-go-backend/ent/dailyanalytics"
 	"biotak-go-backend/ent/exchangerate"
+	"biotak-go-backend/ent/newsletter"
 	"biotak-go-backend/ent/post"
 	"biotak-go-backend/ent/predicate"
 	"biotak-go-backend/ent/profile"
@@ -30,13 +32,15 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeCategory     = "Category"
-	TypeComment      = "Comment"
-	TypeExchangeRate = "ExchangeRate"
-	TypePost         = "Post"
-	TypeProfile      = "Profile"
-	TypeTag          = "Tag"
-	TypeUser         = "User"
+	TypeCategory       = "Category"
+	TypeComment        = "Comment"
+	TypeDailyAnalytics = "DailyAnalytics"
+	TypeExchangeRate   = "ExchangeRate"
+	TypeNewsletter     = "Newsletter"
+	TypePost           = "Post"
+	TypeProfile        = "Profile"
+	TypeTag            = "Tag"
+	TypeUser           = "User"
 )
 
 // CategoryMutation represents an operation that mutates the Category nodes in the graph.
@@ -1923,6 +1927,830 @@ func (m *CommentMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Comment edge %s", name)
 }
 
+// DailyAnalyticsMutation represents an operation that mutates the DailyAnalytics nodes in the graph.
+type DailyAnalyticsMutation struct {
+	config
+	op                 Op
+	typ                string
+	id                 *string
+	date               *time.Time
+	total_views        *int
+	addtotal_views     *int
+	total_comments     *int
+	addtotal_comments  *int
+	new_users          *int
+	addnew_users       *int
+	new_posts          *int
+	addnew_posts       *int
+	published_posts    *int
+	addpublished_posts *int
+	created_at         *time.Time
+	clearedFields      map[string]struct{}
+	done               bool
+	oldValue           func(context.Context) (*DailyAnalytics, error)
+	predicates         []predicate.DailyAnalytics
+}
+
+var _ ent.Mutation = (*DailyAnalyticsMutation)(nil)
+
+// dailyanalyticsOption allows management of the mutation configuration using functional options.
+type dailyanalyticsOption func(*DailyAnalyticsMutation)
+
+// newDailyAnalyticsMutation creates new mutation for the DailyAnalytics entity.
+func newDailyAnalyticsMutation(c config, op Op, opts ...dailyanalyticsOption) *DailyAnalyticsMutation {
+	m := &DailyAnalyticsMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeDailyAnalytics,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withDailyAnalyticsID sets the ID field of the mutation.
+func withDailyAnalyticsID(id string) dailyanalyticsOption {
+	return func(m *DailyAnalyticsMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *DailyAnalytics
+		)
+		m.oldValue = func(ctx context.Context) (*DailyAnalytics, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().DailyAnalytics.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withDailyAnalytics sets the old DailyAnalytics of the mutation.
+func withDailyAnalytics(node *DailyAnalytics) dailyanalyticsOption {
+	return func(m *DailyAnalyticsMutation) {
+		m.oldValue = func(context.Context) (*DailyAnalytics, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m DailyAnalyticsMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m DailyAnalyticsMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of DailyAnalytics entities.
+func (m *DailyAnalyticsMutation) SetID(id string) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *DailyAnalyticsMutation) ID() (id string, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *DailyAnalyticsMutation) IDs(ctx context.Context) ([]string, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []string{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().DailyAnalytics.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetDate sets the "date" field.
+func (m *DailyAnalyticsMutation) SetDate(t time.Time) {
+	m.date = &t
+}
+
+// Date returns the value of the "date" field in the mutation.
+func (m *DailyAnalyticsMutation) Date() (r time.Time, exists bool) {
+	v := m.date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDate returns the old "date" field's value of the DailyAnalytics entity.
+// If the DailyAnalytics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyAnalyticsMutation) OldDate(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDate: %w", err)
+	}
+	return oldValue.Date, nil
+}
+
+// ResetDate resets all changes to the "date" field.
+func (m *DailyAnalyticsMutation) ResetDate() {
+	m.date = nil
+}
+
+// SetTotalViews sets the "total_views" field.
+func (m *DailyAnalyticsMutation) SetTotalViews(i int) {
+	m.total_views = &i
+	m.addtotal_views = nil
+}
+
+// TotalViews returns the value of the "total_views" field in the mutation.
+func (m *DailyAnalyticsMutation) TotalViews() (r int, exists bool) {
+	v := m.total_views
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTotalViews returns the old "total_views" field's value of the DailyAnalytics entity.
+// If the DailyAnalytics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyAnalyticsMutation) OldTotalViews(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTotalViews is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTotalViews requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTotalViews: %w", err)
+	}
+	return oldValue.TotalViews, nil
+}
+
+// AddTotalViews adds i to the "total_views" field.
+func (m *DailyAnalyticsMutation) AddTotalViews(i int) {
+	if m.addtotal_views != nil {
+		*m.addtotal_views += i
+	} else {
+		m.addtotal_views = &i
+	}
+}
+
+// AddedTotalViews returns the value that was added to the "total_views" field in this mutation.
+func (m *DailyAnalyticsMutation) AddedTotalViews() (r int, exists bool) {
+	v := m.addtotal_views
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTotalViews resets all changes to the "total_views" field.
+func (m *DailyAnalyticsMutation) ResetTotalViews() {
+	m.total_views = nil
+	m.addtotal_views = nil
+}
+
+// SetTotalComments sets the "total_comments" field.
+func (m *DailyAnalyticsMutation) SetTotalComments(i int) {
+	m.total_comments = &i
+	m.addtotal_comments = nil
+}
+
+// TotalComments returns the value of the "total_comments" field in the mutation.
+func (m *DailyAnalyticsMutation) TotalComments() (r int, exists bool) {
+	v := m.total_comments
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTotalComments returns the old "total_comments" field's value of the DailyAnalytics entity.
+// If the DailyAnalytics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyAnalyticsMutation) OldTotalComments(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTotalComments is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTotalComments requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTotalComments: %w", err)
+	}
+	return oldValue.TotalComments, nil
+}
+
+// AddTotalComments adds i to the "total_comments" field.
+func (m *DailyAnalyticsMutation) AddTotalComments(i int) {
+	if m.addtotal_comments != nil {
+		*m.addtotal_comments += i
+	} else {
+		m.addtotal_comments = &i
+	}
+}
+
+// AddedTotalComments returns the value that was added to the "total_comments" field in this mutation.
+func (m *DailyAnalyticsMutation) AddedTotalComments() (r int, exists bool) {
+	v := m.addtotal_comments
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTotalComments resets all changes to the "total_comments" field.
+func (m *DailyAnalyticsMutation) ResetTotalComments() {
+	m.total_comments = nil
+	m.addtotal_comments = nil
+}
+
+// SetNewUsers sets the "new_users" field.
+func (m *DailyAnalyticsMutation) SetNewUsers(i int) {
+	m.new_users = &i
+	m.addnew_users = nil
+}
+
+// NewUsers returns the value of the "new_users" field in the mutation.
+func (m *DailyAnalyticsMutation) NewUsers() (r int, exists bool) {
+	v := m.new_users
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNewUsers returns the old "new_users" field's value of the DailyAnalytics entity.
+// If the DailyAnalytics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyAnalyticsMutation) OldNewUsers(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNewUsers is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNewUsers requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNewUsers: %w", err)
+	}
+	return oldValue.NewUsers, nil
+}
+
+// AddNewUsers adds i to the "new_users" field.
+func (m *DailyAnalyticsMutation) AddNewUsers(i int) {
+	if m.addnew_users != nil {
+		*m.addnew_users += i
+	} else {
+		m.addnew_users = &i
+	}
+}
+
+// AddedNewUsers returns the value that was added to the "new_users" field in this mutation.
+func (m *DailyAnalyticsMutation) AddedNewUsers() (r int, exists bool) {
+	v := m.addnew_users
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetNewUsers resets all changes to the "new_users" field.
+func (m *DailyAnalyticsMutation) ResetNewUsers() {
+	m.new_users = nil
+	m.addnew_users = nil
+}
+
+// SetNewPosts sets the "new_posts" field.
+func (m *DailyAnalyticsMutation) SetNewPosts(i int) {
+	m.new_posts = &i
+	m.addnew_posts = nil
+}
+
+// NewPosts returns the value of the "new_posts" field in the mutation.
+func (m *DailyAnalyticsMutation) NewPosts() (r int, exists bool) {
+	v := m.new_posts
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNewPosts returns the old "new_posts" field's value of the DailyAnalytics entity.
+// If the DailyAnalytics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyAnalyticsMutation) OldNewPosts(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNewPosts is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNewPosts requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNewPosts: %w", err)
+	}
+	return oldValue.NewPosts, nil
+}
+
+// AddNewPosts adds i to the "new_posts" field.
+func (m *DailyAnalyticsMutation) AddNewPosts(i int) {
+	if m.addnew_posts != nil {
+		*m.addnew_posts += i
+	} else {
+		m.addnew_posts = &i
+	}
+}
+
+// AddedNewPosts returns the value that was added to the "new_posts" field in this mutation.
+func (m *DailyAnalyticsMutation) AddedNewPosts() (r int, exists bool) {
+	v := m.addnew_posts
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetNewPosts resets all changes to the "new_posts" field.
+func (m *DailyAnalyticsMutation) ResetNewPosts() {
+	m.new_posts = nil
+	m.addnew_posts = nil
+}
+
+// SetPublishedPosts sets the "published_posts" field.
+func (m *DailyAnalyticsMutation) SetPublishedPosts(i int) {
+	m.published_posts = &i
+	m.addpublished_posts = nil
+}
+
+// PublishedPosts returns the value of the "published_posts" field in the mutation.
+func (m *DailyAnalyticsMutation) PublishedPosts() (r int, exists bool) {
+	v := m.published_posts
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPublishedPosts returns the old "published_posts" field's value of the DailyAnalytics entity.
+// If the DailyAnalytics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyAnalyticsMutation) OldPublishedPosts(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPublishedPosts is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPublishedPosts requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPublishedPosts: %w", err)
+	}
+	return oldValue.PublishedPosts, nil
+}
+
+// AddPublishedPosts adds i to the "published_posts" field.
+func (m *DailyAnalyticsMutation) AddPublishedPosts(i int) {
+	if m.addpublished_posts != nil {
+		*m.addpublished_posts += i
+	} else {
+		m.addpublished_posts = &i
+	}
+}
+
+// AddedPublishedPosts returns the value that was added to the "published_posts" field in this mutation.
+func (m *DailyAnalyticsMutation) AddedPublishedPosts() (r int, exists bool) {
+	v := m.addpublished_posts
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetPublishedPosts resets all changes to the "published_posts" field.
+func (m *DailyAnalyticsMutation) ResetPublishedPosts() {
+	m.published_posts = nil
+	m.addpublished_posts = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *DailyAnalyticsMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *DailyAnalyticsMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the DailyAnalytics entity.
+// If the DailyAnalytics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DailyAnalyticsMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *DailyAnalyticsMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// Where appends a list predicates to the DailyAnalyticsMutation builder.
+func (m *DailyAnalyticsMutation) Where(ps ...predicate.DailyAnalytics) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the DailyAnalyticsMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *DailyAnalyticsMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.DailyAnalytics, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *DailyAnalyticsMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *DailyAnalyticsMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (DailyAnalytics).
+func (m *DailyAnalyticsMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *DailyAnalyticsMutation) Fields() []string {
+	fields := make([]string, 0, 7)
+	if m.date != nil {
+		fields = append(fields, dailyanalytics.FieldDate)
+	}
+	if m.total_views != nil {
+		fields = append(fields, dailyanalytics.FieldTotalViews)
+	}
+	if m.total_comments != nil {
+		fields = append(fields, dailyanalytics.FieldTotalComments)
+	}
+	if m.new_users != nil {
+		fields = append(fields, dailyanalytics.FieldNewUsers)
+	}
+	if m.new_posts != nil {
+		fields = append(fields, dailyanalytics.FieldNewPosts)
+	}
+	if m.published_posts != nil {
+		fields = append(fields, dailyanalytics.FieldPublishedPosts)
+	}
+	if m.created_at != nil {
+		fields = append(fields, dailyanalytics.FieldCreatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *DailyAnalyticsMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case dailyanalytics.FieldDate:
+		return m.Date()
+	case dailyanalytics.FieldTotalViews:
+		return m.TotalViews()
+	case dailyanalytics.FieldTotalComments:
+		return m.TotalComments()
+	case dailyanalytics.FieldNewUsers:
+		return m.NewUsers()
+	case dailyanalytics.FieldNewPosts:
+		return m.NewPosts()
+	case dailyanalytics.FieldPublishedPosts:
+		return m.PublishedPosts()
+	case dailyanalytics.FieldCreatedAt:
+		return m.CreatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *DailyAnalyticsMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case dailyanalytics.FieldDate:
+		return m.OldDate(ctx)
+	case dailyanalytics.FieldTotalViews:
+		return m.OldTotalViews(ctx)
+	case dailyanalytics.FieldTotalComments:
+		return m.OldTotalComments(ctx)
+	case dailyanalytics.FieldNewUsers:
+		return m.OldNewUsers(ctx)
+	case dailyanalytics.FieldNewPosts:
+		return m.OldNewPosts(ctx)
+	case dailyanalytics.FieldPublishedPosts:
+		return m.OldPublishedPosts(ctx)
+	case dailyanalytics.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown DailyAnalytics field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DailyAnalyticsMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case dailyanalytics.FieldDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDate(v)
+		return nil
+	case dailyanalytics.FieldTotalViews:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTotalViews(v)
+		return nil
+	case dailyanalytics.FieldTotalComments:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTotalComments(v)
+		return nil
+	case dailyanalytics.FieldNewUsers:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNewUsers(v)
+		return nil
+	case dailyanalytics.FieldNewPosts:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNewPosts(v)
+		return nil
+	case dailyanalytics.FieldPublishedPosts:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPublishedPosts(v)
+		return nil
+	case dailyanalytics.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown DailyAnalytics field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *DailyAnalyticsMutation) AddedFields() []string {
+	var fields []string
+	if m.addtotal_views != nil {
+		fields = append(fields, dailyanalytics.FieldTotalViews)
+	}
+	if m.addtotal_comments != nil {
+		fields = append(fields, dailyanalytics.FieldTotalComments)
+	}
+	if m.addnew_users != nil {
+		fields = append(fields, dailyanalytics.FieldNewUsers)
+	}
+	if m.addnew_posts != nil {
+		fields = append(fields, dailyanalytics.FieldNewPosts)
+	}
+	if m.addpublished_posts != nil {
+		fields = append(fields, dailyanalytics.FieldPublishedPosts)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *DailyAnalyticsMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case dailyanalytics.FieldTotalViews:
+		return m.AddedTotalViews()
+	case dailyanalytics.FieldTotalComments:
+		return m.AddedTotalComments()
+	case dailyanalytics.FieldNewUsers:
+		return m.AddedNewUsers()
+	case dailyanalytics.FieldNewPosts:
+		return m.AddedNewPosts()
+	case dailyanalytics.FieldPublishedPosts:
+		return m.AddedPublishedPosts()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DailyAnalyticsMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case dailyanalytics.FieldTotalViews:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTotalViews(v)
+		return nil
+	case dailyanalytics.FieldTotalComments:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTotalComments(v)
+		return nil
+	case dailyanalytics.FieldNewUsers:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddNewUsers(v)
+		return nil
+	case dailyanalytics.FieldNewPosts:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddNewPosts(v)
+		return nil
+	case dailyanalytics.FieldPublishedPosts:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPublishedPosts(v)
+		return nil
+	}
+	return fmt.Errorf("unknown DailyAnalytics numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *DailyAnalyticsMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *DailyAnalyticsMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *DailyAnalyticsMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown DailyAnalytics nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *DailyAnalyticsMutation) ResetField(name string) error {
+	switch name {
+	case dailyanalytics.FieldDate:
+		m.ResetDate()
+		return nil
+	case dailyanalytics.FieldTotalViews:
+		m.ResetTotalViews()
+		return nil
+	case dailyanalytics.FieldTotalComments:
+		m.ResetTotalComments()
+		return nil
+	case dailyanalytics.FieldNewUsers:
+		m.ResetNewUsers()
+		return nil
+	case dailyanalytics.FieldNewPosts:
+		m.ResetNewPosts()
+		return nil
+	case dailyanalytics.FieldPublishedPosts:
+		m.ResetPublishedPosts()
+		return nil
+	case dailyanalytics.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown DailyAnalytics field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *DailyAnalyticsMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *DailyAnalyticsMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *DailyAnalyticsMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *DailyAnalyticsMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *DailyAnalyticsMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *DailyAnalyticsMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *DailyAnalyticsMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown DailyAnalytics unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *DailyAnalyticsMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown DailyAnalytics edge %s", name)
+}
+
 // ExchangeRateMutation represents an operation that mutates the ExchangeRate nodes in the graph.
 type ExchangeRateMutation struct {
 	config
@@ -2910,6 +3738,630 @@ func (m *ExchangeRateMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ExchangeRateMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown ExchangeRate edge %s", name)
+}
+
+// NewsletterMutation represents an operation that mutates the Newsletter nodes in the graph.
+type NewsletterMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *string
+	email         *string
+	is_active     *bool
+	created_at    *time.Time
+	updated_at    *time.Time
+	clearedFields map[string]struct{}
+	user          *string
+	cleareduser   bool
+	done          bool
+	oldValue      func(context.Context) (*Newsletter, error)
+	predicates    []predicate.Newsletter
+}
+
+var _ ent.Mutation = (*NewsletterMutation)(nil)
+
+// newsletterOption allows management of the mutation configuration using functional options.
+type newsletterOption func(*NewsletterMutation)
+
+// newNewsletterMutation creates new mutation for the Newsletter entity.
+func newNewsletterMutation(c config, op Op, opts ...newsletterOption) *NewsletterMutation {
+	m := &NewsletterMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeNewsletter,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withNewsletterID sets the ID field of the mutation.
+func withNewsletterID(id string) newsletterOption {
+	return func(m *NewsletterMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Newsletter
+		)
+		m.oldValue = func(ctx context.Context) (*Newsletter, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Newsletter.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withNewsletter sets the old Newsletter of the mutation.
+func withNewsletter(node *Newsletter) newsletterOption {
+	return func(m *NewsletterMutation) {
+		m.oldValue = func(context.Context) (*Newsletter, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m NewsletterMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m NewsletterMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Newsletter entities.
+func (m *NewsletterMutation) SetID(id string) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *NewsletterMutation) ID() (id string, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *NewsletterMutation) IDs(ctx context.Context) ([]string, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []string{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Newsletter.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetEmail sets the "email" field.
+func (m *NewsletterMutation) SetEmail(s string) {
+	m.email = &s
+}
+
+// Email returns the value of the "email" field in the mutation.
+func (m *NewsletterMutation) Email() (r string, exists bool) {
+	v := m.email
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEmail returns the old "email" field's value of the Newsletter entity.
+// If the Newsletter object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsletterMutation) OldEmail(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEmail is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEmail requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEmail: %w", err)
+	}
+	return oldValue.Email, nil
+}
+
+// ResetEmail resets all changes to the "email" field.
+func (m *NewsletterMutation) ResetEmail() {
+	m.email = nil
+}
+
+// SetIsActive sets the "is_active" field.
+func (m *NewsletterMutation) SetIsActive(b bool) {
+	m.is_active = &b
+}
+
+// IsActive returns the value of the "is_active" field in the mutation.
+func (m *NewsletterMutation) IsActive() (r bool, exists bool) {
+	v := m.is_active
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsActive returns the old "is_active" field's value of the Newsletter entity.
+// If the Newsletter object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsletterMutation) OldIsActive(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsActive is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsActive requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsActive: %w", err)
+	}
+	return oldValue.IsActive, nil
+}
+
+// ResetIsActive resets all changes to the "is_active" field.
+func (m *NewsletterMutation) ResetIsActive() {
+	m.is_active = nil
+}
+
+// SetUserID sets the "user_id" field.
+func (m *NewsletterMutation) SetUserID(s string) {
+	m.user = &s
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *NewsletterMutation) UserID() (r string, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the Newsletter entity.
+// If the Newsletter object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsletterMutation) OldUserID(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (m *NewsletterMutation) ClearUserID() {
+	m.user = nil
+	m.clearedFields[newsletter.FieldUserID] = struct{}{}
+}
+
+// UserIDCleared returns if the "user_id" field was cleared in this mutation.
+func (m *NewsletterMutation) UserIDCleared() bool {
+	_, ok := m.clearedFields[newsletter.FieldUserID]
+	return ok
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *NewsletterMutation) ResetUserID() {
+	m.user = nil
+	delete(m.clearedFields, newsletter.FieldUserID)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *NewsletterMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *NewsletterMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Newsletter entity.
+// If the Newsletter object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsletterMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *NewsletterMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *NewsletterMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *NewsletterMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Newsletter entity.
+// If the Newsletter object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NewsletterMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *NewsletterMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *NewsletterMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[newsletter.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *NewsletterMutation) UserCleared() bool {
+	return m.UserIDCleared() || m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *NewsletterMutation) UserIDs() (ids []string) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *NewsletterMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// Where appends a list predicates to the NewsletterMutation builder.
+func (m *NewsletterMutation) Where(ps ...predicate.Newsletter) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the NewsletterMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *NewsletterMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Newsletter, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *NewsletterMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *NewsletterMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Newsletter).
+func (m *NewsletterMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *NewsletterMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.email != nil {
+		fields = append(fields, newsletter.FieldEmail)
+	}
+	if m.is_active != nil {
+		fields = append(fields, newsletter.FieldIsActive)
+	}
+	if m.user != nil {
+		fields = append(fields, newsletter.FieldUserID)
+	}
+	if m.created_at != nil {
+		fields = append(fields, newsletter.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, newsletter.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *NewsletterMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case newsletter.FieldEmail:
+		return m.Email()
+	case newsletter.FieldIsActive:
+		return m.IsActive()
+	case newsletter.FieldUserID:
+		return m.UserID()
+	case newsletter.FieldCreatedAt:
+		return m.CreatedAt()
+	case newsletter.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *NewsletterMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case newsletter.FieldEmail:
+		return m.OldEmail(ctx)
+	case newsletter.FieldIsActive:
+		return m.OldIsActive(ctx)
+	case newsletter.FieldUserID:
+		return m.OldUserID(ctx)
+	case newsletter.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case newsletter.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown Newsletter field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NewsletterMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case newsletter.FieldEmail:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEmail(v)
+		return nil
+	case newsletter.FieldIsActive:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsActive(v)
+		return nil
+	case newsletter.FieldUserID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case newsletter.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case newsletter.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Newsletter field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *NewsletterMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *NewsletterMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NewsletterMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Newsletter numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *NewsletterMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(newsletter.FieldUserID) {
+		fields = append(fields, newsletter.FieldUserID)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *NewsletterMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *NewsletterMutation) ClearField(name string) error {
+	switch name {
+	case newsletter.FieldUserID:
+		m.ClearUserID()
+		return nil
+	}
+	return fmt.Errorf("unknown Newsletter nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *NewsletterMutation) ResetField(name string) error {
+	switch name {
+	case newsletter.FieldEmail:
+		m.ResetEmail()
+		return nil
+	case newsletter.FieldIsActive:
+		m.ResetIsActive()
+		return nil
+	case newsletter.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case newsletter.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case newsletter.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Newsletter field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *NewsletterMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.user != nil {
+		edges = append(edges, newsletter.EdgeUser)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *NewsletterMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case newsletter.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *NewsletterMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *NewsletterMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *NewsletterMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.cleareduser {
+		edges = append(edges, newsletter.EdgeUser)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *NewsletterMutation) EdgeCleared(name string) bool {
+	switch name {
+	case newsletter.EdgeUser:
+		return m.cleareduser
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *NewsletterMutation) ClearEdge(name string) error {
+	switch name {
+	case newsletter.EdgeUser:
+		m.ClearUser()
+		return nil
+	}
+	return fmt.Errorf("unknown Newsletter unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *NewsletterMutation) ResetEdge(name string) error {
+	switch name {
+	case newsletter.EdgeUser:
+		m.ResetUser()
+		return nil
+	}
+	return fmt.Errorf("unknown Newsletter edge %s", name)
 }
 
 // PostMutation represents an operation that mutates the Post nodes in the graph.

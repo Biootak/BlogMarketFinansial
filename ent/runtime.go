@@ -5,7 +5,9 @@ package ent
 import (
 	"biotak-go-backend/ent/category"
 	"biotak-go-backend/ent/comment"
+	"biotak-go-backend/ent/dailyanalytics"
 	"biotak-go-backend/ent/exchangerate"
+	"biotak-go-backend/ent/newsletter"
 	"biotak-go-backend/ent/post"
 	"biotak-go-backend/ent/profile"
 	"biotak-go-backend/ent/schema"
@@ -102,6 +104,42 @@ func init() {
 			return nil
 		}
 	}()
+	dailyanalyticsFields := schema.DailyAnalytics{}.Fields()
+	_ = dailyanalyticsFields
+	// dailyanalyticsDescTotalViews is the schema descriptor for total_views field.
+	dailyanalyticsDescTotalViews := dailyanalyticsFields[2].Descriptor()
+	// dailyanalytics.DefaultTotalViews holds the default value on creation for the total_views field.
+	dailyanalytics.DefaultTotalViews = dailyanalyticsDescTotalViews.Default.(int)
+	// dailyanalytics.TotalViewsValidator is a validator for the "total_views" field. It is called by the builders before save.
+	dailyanalytics.TotalViewsValidator = dailyanalyticsDescTotalViews.Validators[0].(func(int) error)
+	// dailyanalyticsDescTotalComments is the schema descriptor for total_comments field.
+	dailyanalyticsDescTotalComments := dailyanalyticsFields[3].Descriptor()
+	// dailyanalytics.DefaultTotalComments holds the default value on creation for the total_comments field.
+	dailyanalytics.DefaultTotalComments = dailyanalyticsDescTotalComments.Default.(int)
+	// dailyanalytics.TotalCommentsValidator is a validator for the "total_comments" field. It is called by the builders before save.
+	dailyanalytics.TotalCommentsValidator = dailyanalyticsDescTotalComments.Validators[0].(func(int) error)
+	// dailyanalyticsDescNewUsers is the schema descriptor for new_users field.
+	dailyanalyticsDescNewUsers := dailyanalyticsFields[4].Descriptor()
+	// dailyanalytics.DefaultNewUsers holds the default value on creation for the new_users field.
+	dailyanalytics.DefaultNewUsers = dailyanalyticsDescNewUsers.Default.(int)
+	// dailyanalytics.NewUsersValidator is a validator for the "new_users" field. It is called by the builders before save.
+	dailyanalytics.NewUsersValidator = dailyanalyticsDescNewUsers.Validators[0].(func(int) error)
+	// dailyanalyticsDescNewPosts is the schema descriptor for new_posts field.
+	dailyanalyticsDescNewPosts := dailyanalyticsFields[5].Descriptor()
+	// dailyanalytics.DefaultNewPosts holds the default value on creation for the new_posts field.
+	dailyanalytics.DefaultNewPosts = dailyanalyticsDescNewPosts.Default.(int)
+	// dailyanalytics.NewPostsValidator is a validator for the "new_posts" field. It is called by the builders before save.
+	dailyanalytics.NewPostsValidator = dailyanalyticsDescNewPosts.Validators[0].(func(int) error)
+	// dailyanalyticsDescPublishedPosts is the schema descriptor for published_posts field.
+	dailyanalyticsDescPublishedPosts := dailyanalyticsFields[6].Descriptor()
+	// dailyanalytics.DefaultPublishedPosts holds the default value on creation for the published_posts field.
+	dailyanalytics.DefaultPublishedPosts = dailyanalyticsDescPublishedPosts.Default.(int)
+	// dailyanalytics.PublishedPostsValidator is a validator for the "published_posts" field. It is called by the builders before save.
+	dailyanalytics.PublishedPostsValidator = dailyanalyticsDescPublishedPosts.Validators[0].(func(int) error)
+	// dailyanalyticsDescCreatedAt is the schema descriptor for created_at field.
+	dailyanalyticsDescCreatedAt := dailyanalyticsFields[7].Descriptor()
+	// dailyanalytics.DefaultCreatedAt holds the default value on creation for the created_at field.
+	dailyanalytics.DefaultCreatedAt = dailyanalyticsDescCreatedAt.Default.(func() time.Time)
 	exchangerateFields := schema.ExchangeRate{}.Fields()
 	_ = exchangerateFields
 	// exchangerateDescName is the schema descriptor for name field.
@@ -140,6 +178,26 @@ func init() {
 			return nil
 		}
 	}()
+	newsletterFields := schema.Newsletter{}.Fields()
+	_ = newsletterFields
+	// newsletterDescEmail is the schema descriptor for email field.
+	newsletterDescEmail := newsletterFields[1].Descriptor()
+	// newsletter.EmailValidator is a validator for the "email" field. It is called by the builders before save.
+	newsletter.EmailValidator = newsletterDescEmail.Validators[0].(func(string) error)
+	// newsletterDescIsActive is the schema descriptor for is_active field.
+	newsletterDescIsActive := newsletterFields[2].Descriptor()
+	// newsletter.DefaultIsActive holds the default value on creation for the is_active field.
+	newsletter.DefaultIsActive = newsletterDescIsActive.Default.(bool)
+	// newsletterDescCreatedAt is the schema descriptor for created_at field.
+	newsletterDescCreatedAt := newsletterFields[4].Descriptor()
+	// newsletter.DefaultCreatedAt holds the default value on creation for the created_at field.
+	newsletter.DefaultCreatedAt = newsletterDescCreatedAt.Default.(func() time.Time)
+	// newsletterDescUpdatedAt is the schema descriptor for updated_at field.
+	newsletterDescUpdatedAt := newsletterFields[5].Descriptor()
+	// newsletter.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	newsletter.DefaultUpdatedAt = newsletterDescUpdatedAt.Default.(func() time.Time)
+	// newsletter.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	newsletter.UpdateDefaultUpdatedAt = newsletterDescUpdatedAt.UpdateDefault.(func() time.Time)
 	postFields := schema.Post{}.Fields()
 	_ = postFields
 	// postDescTitle is the schema descriptor for title field.

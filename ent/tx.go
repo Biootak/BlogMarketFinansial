@@ -16,8 +16,12 @@ type Tx struct {
 	Category *CategoryClient
 	// Comment is the client for interacting with the Comment builders.
 	Comment *CommentClient
+	// DailyAnalytics is the client for interacting with the DailyAnalytics builders.
+	DailyAnalytics *DailyAnalyticsClient
 	// ExchangeRate is the client for interacting with the ExchangeRate builders.
 	ExchangeRate *ExchangeRateClient
+	// Newsletter is the client for interacting with the Newsletter builders.
+	Newsletter *NewsletterClient
 	// Post is the client for interacting with the Post builders.
 	Post *PostClient
 	// Profile is the client for interacting with the Profile builders.
@@ -159,7 +163,9 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Category = NewCategoryClient(tx.config)
 	tx.Comment = NewCommentClient(tx.config)
+	tx.DailyAnalytics = NewDailyAnalyticsClient(tx.config)
 	tx.ExchangeRate = NewExchangeRateClient(tx.config)
+	tx.Newsletter = NewNewsletterClient(tx.config)
 	tx.Post = NewPostClient(tx.config)
 	tx.Profile = NewProfileClient(tx.config)
 	tx.Tag = NewTagClient(tx.config)
