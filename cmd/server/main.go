@@ -12,7 +12,9 @@ import (
 
 	"biotak-go-backend/internal/config"
 	"biotak-go-backend/internal/database"
-	"biotak-go-backend/internal/handlers"
+	"biotak-go-backend/internal/router"
+	"biotak-go-backend/internal/workers"
+	"biotak-go-backend/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 )
@@ -54,37 +56,56 @@ func main() {
 					log.Printf("⚠️  Error closing Redis connection: %v", err)
 				}
 			}()
+			log.Println("✅ Redis connected successfully")
 		}
 	} else {
 		log.Println("⚠️  Redis URL not configured, running without Redis")
 	}
 
+	// Initialize logger
+	logLevel := logger.INFO
+	if cfg.Env == "development" {
+		logLevel = logger.DEBUG
+	}
+	appLogger := logger.New(os.Stdout, logLevel)
+	log.Println("✅ Logger initialized")
+
 	// Setup Gin router
 	if cfg.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
-	router := gin.Default()
 
-	// Setup health check routes
-	healthHandler := handlers.NewHealthHandler(entClient, redisClient)
-	router.GET("/health", healthHandler.Check)
-	router.GET("/health/detailed", healthHandler.Detailed)
-	router.GET("/health/ready", healthHandler.Ready)
-	router.GET("/health/live", healthHandler.Live)
+	// Setup router with all routes and middleware
+	routerConfig := &router.RouterConfig{
+		EntClient:   entClient,
+		RedisClient: redisClient,
+		Logger:      appLogger,
+		JWTSecret:   cfg.JWTSecret,
+		S3Endpoint:  cfg.S3Endpoint,
+		S3AccessKey: cfg.S3AccessKey,
+		S3SecretKey: cfg.S3SecretKey,
+		S3Bucket:    cfg.S3Bucket,
+	}
+	r := router.SetupRouter(routerConfig)
+	log.Println("✅ Router configured with all routes")
 
-	// TODO: Setup API routes (will be added in later tasks)
-	// api := router.Group("/api/v1")
-	// {
-	//     // Authentication routes
-	//     // Post routes
-	//     // Comment routes
-	//     // etc.
-	// }
+	// Start background workers
+	var workerManager *workers.WorkerManager
+	if redisClient != nil {
+		workerConfig := workers.DefaultWorkerConfig()
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		
+		workerManager = workers.StartWorkersInBackground(ctx, entClient.Client, redisClient.Client, workerConfig)
+		log.Println("✅ Background workers started")
+	} else {
+		log.Println("⚠️  Skipping background workers (Redis not available)")
+	}
 
 	// Create HTTP server
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%s", cfg.Port),
-		Handler:      router,
+		Handler:      r,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
 		IdleTimeout:  60 * time.Second,
@@ -105,6 +126,13 @@ func main() {
 	<-quit
 
 	log.Println("🛑 Shutting down server...")
+
+	// Stop background workers first
+	if workerManager != nil {
+		log.Println("🛑 Stopping background workers...")
+		workerManager.Stop()
+		log.Println("✅ Background workers stopped")
+	}
 
 	// Graceful shutdown with 5 second timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
