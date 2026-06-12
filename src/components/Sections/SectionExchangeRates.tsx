@@ -29,7 +29,7 @@ async function ExchangeRatesContent() {
     );
   }
 
-  return <ExchangeRateSlider rates={result.data} itemPerRow={5} />;
+  return <ExchangeRateSlider rates={result.data} />;
 }
 
 export default function SectionExchangeRates() {
@@ -44,10 +44,10 @@ export default function SectionExchangeRates() {
 
 function LoadingSkeleton() {
   return (
-    <div className="flex gap-2 sm:gap-4 overflow-hidden">
-      {[...Array(5)].map((_, i) => (
-        <div key={i} className="flex-1 min-w-[140px] sm:min-w-[180px]">
-          <Skeleton className="h-[80px] sm:h-[100px] rounded-xl sm:rounded-2xl" />
+    <div className="flex gap-3 sm:gap-4 overflow-hidden px-2 sm:px-3 lg:px-4">
+      {[...Array(8)].map((_, i) => (
+        <div key={i} className="w-[180px] sm:w-[200px] lg:w-[220px] shrink-0">
+          <Skeleton className="h-[72px] sm:h-[84px] lg:h-[96px] rounded-xl sm:rounded-2xl" />
         </div>
       ))}
     </div>

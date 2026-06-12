@@ -3,27 +3,27 @@
 import type React from 'react';
 import type { ExchangeRate } from '@/types/types';
 import { ExchangeRateCard } from './ExchangeRateCard';
-import MySlider from './MySlider';
+import InfiniteTicker from './InfiniteTicker';
 
 interface ExchangeRateSliderProps {
   rates: ExchangeRate[];
-  itemPerRow: 4 | 5;
 }
 
-const ExchangeRateSlider: React.FC<ExchangeRateSliderProps> = ({ rates, itemPerRow }) => {
-  const renderCard = (rate: ExchangeRate) => {
-    return <ExchangeRateCard key={rate.symbol} rate={rate} />;
-  };
-
+const ExchangeRateSlider: React.FC<ExchangeRateSliderProps> = ({ rates }) => {
   return (
-    <div className="nc-ExchangeRateSlider">
-      <MySlider
-        data={rates}
-        renderItem={renderCard}
-        itemPerRow={itemPerRow}
-        autoSlideInterval={5000}
-        arrowBtnClass="top-1/2 -translate-y-1/2"
-      />
+    <div className="nc-ExchangeRateSlider relative">
+      <InfiniteTicker duration={50} dir="rtl">
+        <div className="flex items-center gap-2 px-2 py-1">
+          {rates.map((rate, idx) => (
+            <div
+              key={`${rate.symbol}-${idx}`}
+              className="shrink-0 w-auto"
+            >
+              <ExchangeRateCard rate={rate} />
+            </div>
+          ))}
+        </div>
+      </InfiniteTicker>
     </div>
   );
 };

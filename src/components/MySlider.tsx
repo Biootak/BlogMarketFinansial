@@ -15,6 +15,7 @@ export interface MySliderProps<T> {
   renderItem?: (item: T, indx: number) => ReactNode;
   arrowBtnClass?: string;
   autoSlideInterval?: number;
+  hideArrowOutside?: boolean;
 }
 
 export default function MySlider<T>({
@@ -24,6 +25,7 @@ export default function MySlider<T>({
   renderItem = () => <div />,
   arrowBtnClass = 'top-1/2 -translate-y-1/2',
   autoSlideInterval,
+  hideArrowOutside = false,
 }: MySliderProps<T>) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
@@ -103,7 +105,7 @@ export default function MySlider<T>({
   const isRTL = document.querySelector('html')?.getAttribute('dir') === 'rtl';
 
   return (
-    <div className={`nc-MySlider ${className}`}>
+    <div className={`nc-MySlider relative ${className}`}>
       <MotionConfig
         transition={{
           x: { type: 'spring', stiffness: 300, damping: 30 },
@@ -139,21 +141,21 @@ export default function MySlider<T>({
               </AnimatePresence>
             </motion.ul>
           </div>
-
-          {currentIndex > 0 && (
-            <PrevBtn
-              onClick={() => changeItemId(currentIndex - 1)}
-              className={`w-7 h-7 sm:w-8 sm:h-8 xl:w-10 xl:h-10 text-lg absolute start-1 sm:start-2 xl:start-3 z-[1] ${arrowBtnClass}`}
-            />
-          )}
-
-          {data.length > currentIndex + numberOfItems && (
-            <NextBtn
-              onClick={() => changeItemId(currentIndex + 1)}
-              className={`w-7 h-7 sm:w-8 sm:h-8 xl:w-10 xl:h-10 text-lg absolute end-1 sm:end-2 xl:end-3 z-[1] ${arrowBtnClass}`}
-            />
-          )}
         </div>
+
+        {currentIndex > 0 && (
+          <PrevBtn
+            onClick={() => changeItemId(currentIndex - 1)}
+            className={`w-9 h-9 sm:w-10 sm:h-10 text-sm sm:text-base bg-white/95 dark:bg-neutral-800/95 backdrop-blur-sm border border-neutral-200/50 dark:border-neutral-600/50 rounded-full inline-flex items-center justify-center shadow-md hover:bg-white dark:hover:bg-neutral-700 hover:shadow-lg hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-200 absolute -start-3 sm:-start-4 z-[5] ${arrowBtnClass}`}
+          />
+        )}
+
+        {data.length > currentIndex + numberOfItems && (
+          <NextBtn
+            onClick={() => changeItemId(currentIndex + 1)}
+            className={`w-9 h-9 sm:w-10 sm:h-10 text-sm sm:text-base bg-white/95 dark:bg-neutral-800/95 backdrop-blur-sm border border-neutral-200/50 dark:border-neutral-600/50 rounded-full inline-flex items-center justify-center shadow-md hover:bg-white dark:hover:bg-neutral-700 hover:shadow-lg hover:border-primary-300 dark:hover:border-primary-600 transition-all duration-200 absolute -end-3 sm:-end-4 z-[5] ${arrowBtnClass}`}
+          />
+        )}
       </MotionConfig>
     </div>
   );

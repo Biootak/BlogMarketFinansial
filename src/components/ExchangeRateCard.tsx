@@ -31,52 +31,36 @@ export function ExchangeRateCard({ rate }: ExchangeRateCardProps) {
       rel="noopener noreferrer"
       className="block w-full group"
     >
-      <div className="relative flex items-center gap-2 sm:gap-3 p-2.5 sm:p-4 bg-white dark:bg-neutral-800/80 rounded-xl sm:rounded-2xl border border-neutral-100 dark:border-neutral-700/50 min-h-[80px] sm:min-h-[100px] w-full transition-all duration-300 hover:shadow-lg hover:shadow-primary-500/10 dark:hover:shadow-primary-500/5 hover:border-primary-200 dark:hover:border-primary-700/50 hover:-translate-y-0.5 overflow-hidden">
-        {/* Background Gradient on Hover */}
-        <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
-          isPositive 
-            ? 'bg-gradient-to-br from-emerald-50/50 to-transparent dark:from-emerald-900/10' 
-            : 'bg-gradient-to-br from-red-50/50 to-transparent dark:from-red-900/10'
-        }`} />
+      <div className="flex items-center gap-2 px-2.5 py-1.5 bg-white dark:bg-neutral-800/80 rounded-lg border border-neutral-100 dark:border-neutral-700/50 w-full transition-colors hover:border-primary-300 dark:hover:border-primary-600">
+        <CurrencyIcon symbol={symbol} className="w-4 h-4 shrink-0" />
 
-        {/* Icon Container */}
-        <div className="relative flex-shrink-0">
-          <div className="relative w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-700 dark:to-neutral-800 flex items-center justify-center shadow-sm">
-            <CurrencyIcon symbol={symbol} className="w-5 h-5 sm:w-7 sm:h-7" />
-          </div>
-        </div>
+        <span className="text-[11px] font-bold text-neutral-900 dark:text-neutral-100 truncate">
+          {symbol}
+        </span>
 
-        {/* Content */}
-        <div className="relative flex flex-col justify-between flex-grow min-w-0 gap-0.5 sm:gap-1">
-          {/* Top Row */}
-          <div className="flex justify-between items-center w-full">
-            <h3 className="text-xs sm:text-sm font-bold truncate text-neutral-900 dark:text-neutral-100 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-              {symbol}
-            </h3>
-            <div className={`flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold ${
-              isPositive 
-                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
-                : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-            }`}>
-              {isPositive ? (
-                <TrendingUp className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-              ) : (
-                <TrendingDown className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-              )}
-              <span>{isPositive ? '+' : ''}{change.toFixed(2)}%</span>
-            </div>
-          </div>
+        <span className="text-[11px] font-semibold text-neutral-800 dark:text-neutral-200 tabular-nums whitespace-nowrap">
+          ${displayPrice}
+        </span>
 
-          {/* Prices */}
-          <div className="space-y-0">
-            <p className="text-sm sm:text-base font-bold text-neutral-800 dark:text-neutral-200 tabular-nums">
-              ${displayPrice}
-            </p>
-            <p className="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400 tabular-nums">
-              {formattedIrrPrice} <span className="text-neutral-400 dark:text-neutral-500">تومان</span>
-            </p>
-          </div>
-        </div>
+        <span className="text-[10px] text-neutral-500 dark:text-neutral-400 tabular-nums whitespace-nowrap">
+          {formattedIrrPrice} تومان
+        </span>
+
+        <span
+          className={`flex items-center gap-0.5 text-[10px] font-semibold tabular-nums whitespace-nowrap ${
+            isPositive
+              ? 'text-emerald-600 dark:text-emerald-400'
+              : 'text-red-600 dark:text-red-400'
+          }`}
+        >
+          {isPositive ? (
+            <TrendingUp className="w-2.5 h-2.5" />
+          ) : (
+            <TrendingDown className="w-2.5 h-2.5" />
+          )}
+          {isPositive ? '+' : ''}
+          {change.toFixed(2)}%
+        </span>
       </div>
     </Link>
   );

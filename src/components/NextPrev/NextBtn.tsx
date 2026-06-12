@@ -7,11 +7,11 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {}
 const NextBtn: FC<Props> = ({ className = 'w-10 h-10 text-lg', ...args }) => {
   return (
     <button
-      className={`NextBtn ${className} bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm border border-neutral-200/50 dark:border-neutral-600/50 rounded-full inline-flex items-center justify-center shadow-lg hover:bg-white dark:hover:bg-neutral-700 hover:shadow-xl hover:scale-105 transition-all duration-200 ${twFocusClass()}`}
+      className={`NextBtn ${className} bg-white/95 dark:bg-neutral-800/95 backdrop-blur-sm border border-neutral-200/50 dark:border-neutral-600/50 rounded-full inline-flex items-center justify-center shadow-lg hover:bg-white dark:hover:bg-neutral-700 hover:shadow-xl hover:scale-110 transition-all duration-200 ${twFocusClass()}`}
       aria-label="بعدی"
       {...args}
     >
-      <HiChevronLeft className="w-5 h-5" />
+      <HiChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
     </button>
   );
 };
