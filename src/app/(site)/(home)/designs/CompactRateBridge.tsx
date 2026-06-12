@@ -19,7 +19,6 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeftRight, TrendingUp, TrendingDown, Pause, Play, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { RateItem } from '@/types/types';
-import MorphingNumber from './MorphingNumber';
 
 interface CompactRateBridgeProps {
   rates: RateItem[];
@@ -90,7 +89,6 @@ export default function CompactRateBridge({
 }: CompactRateBridgeProps) {
   const [internalIndex, setInternalIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [morphTick, setMorphTick] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // isPaused ترکیبی: pause داخلی (hover) + pause خارجی (از parent)
@@ -119,11 +117,9 @@ export default function CompactRateBridge({
   // وقتی hover عوض می‌شه، interval پاک و دوباره ساخته بشه
   // (این کار explicit اطمینان می‌ده که interval جدید با state جدید ساخته می‌شه)
 
-  // Morph tick
-  useEffect(() => {
-    const t = setInterval(() => setMorphTick((x) => x + 1), 3000);
-    return () => clearInterval(t);
-  }, []);
+  // Morph tick حذف شد — تغییرات بسیار کوچک (±۰.۲۵٪) عملاً قابل دیدن نبود
+  // و هر ۳ ثانیه re-render کل bridge رو trigger می‌کرد
+  // الان عدد base نمایش داده می‌شه (بدون morph)
 
   // propagate hover state به parent (با debounce کوتاه برای جلوگیری از loop)
   useEffect(() => {
@@ -136,15 +132,13 @@ export default function CompactRateBridge({
 
   const current = parsedRates[activeIndex] || parsedRates[0];
 
-  // morph خرید
+  // morph حذف شد — عدد base مستقیماً نمایش داده می‌شه
   const buyBase = extractNumeric(current?.buy);
-  const buyNoise = buyBase > 0 ? Math.sin(morphTick * 9301 + buyBase) * buyBase * 0.0025 : 0;
-  const buyDisplay = buyBase + buyNoise;
+  const buyDisplay = buyBase;
 
   // morph فروش
   const sellBase = extractNumeric(current?.sell);
-  const sellNoise = sellBase > 0 ? Math.sin(morphTick * 9301 + sellBase) * sellBase * 0.0025 : 0;
-  const sellDisplay = sellBase + sellNoise;
+  const sellDisplay = sellBase;
 
   // لینک ثبت سفارش
   const orderHref = `${orderLinkBase}?currency=${encodeURIComponent(current?.title || '')}&type=INTERNATIONAL_TRANSFER#contact`;
@@ -253,13 +247,11 @@ export default function CompactRateBridge({
                     <TrendingUp className="w-2.5 h-2.5" />
                     خرید
                   </span>
-                  <MorphingNumber
-                    value={buyDisplay}
-                    duration={1200}
-                    decimals={0}
-                    className="text-[12px] sm:text-[13px] font-bold text-emerald-200"
-                    showTrend
-                  />
+                  <span className="text-[12px] sm:text-[13px] font-bold text-emerald-200 tabular-nums">
+                    {buyDisplay > 0
+                      ? buyDisplay.toLocaleString('fa-IR')
+                      : current?.buy}
+                  </span>
                   {buySuffix && (
                     <span className="text-[9px] sm:text-[10px] text-emerald-200/70 shrink-0">
                       {buySuffix}
@@ -275,13 +267,11 @@ export default function CompactRateBridge({
                     <TrendingDown className="w-2.5 h-2.5" />
                     فروش
                   </span>
-                  <MorphingNumber
-                    value={sellDisplay}
-                    duration={1200}
-                    decimals={0}
-                    className="text-[12px] sm:text-[13px] font-bold text-rose-200"
-                    showTrend
-                  />
+                  <span className="text-[12px] sm:text-[13px] font-bold text-rose-200 tabular-nums">
+                    {sellDisplay > 0
+                      ? sellDisplay.toLocaleString('fa-IR')
+                      : current?.sell}
+                  </span>
                   {sellSuffix && (
                     <span className="text-[9px] sm:text-[10px] text-rose-200/70 shrink-0">
                       {sellSuffix}

@@ -52,7 +52,16 @@ export default function MagneticSpotlightCard({
   innerClassName = '',
 }: MagneticSpotlightCardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [position, setPosition] = useState({ x: 0.5, y: 0.5 }); // normalized 0..1
+  const spotlightRef = useRef<HTMLDivElement>(null);
+  const holoRef = useRef<HTMLDivElement>(null);
+  const edgeRef = useRef<HTMLDivElement>(null);
+
+  // position به صورت ref ذخیره می‌شه تا re-render نشه
+  const positionRef = useRef({ x: 0.5, y: 0.5 });
+  const rafRef = useRef<number | null>(null);
+  const pendingMouseEvent = useRef<MouseEvent<HTMLDivElement> | null>(null);
+
+  // فقط isHovering و prefersReducedMotion به صورت state (re-render ارزش داره)
   const [isHovering, setIsHovering] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
@@ -65,18 +74,56 @@ export default function MagneticSpotlightCard({
     return () => mq.removeEventListener('change', handler);
   }, []);
 
+  // rAF-driven update — مستقیم DOM رو update می‌کنه، نه state
+  const applyStyles = useCallback(() => {
+    rafRef.current = null;
+    const { x, y } = positionRef.current;
+
+    if (containerRef.current) {
+      const tiltX = prefersReducedMotion ? 0 : (y - 0.5) * -12 * tiltStrength;
+      const tiltY = prefersReducedMotion ? 0 : (x - 0.5) * 12 * tiltStrength;
+      containerRef.current.style.transform = prefersReducedMotion
+        ? ''
+        : `perspective(1200px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) translateZ(0)`;
+    }
+
+    const spotlightBg = `radial-gradient(circle 280px at ${x * 100}% ${y * 100}%, ${spotlightColor}, transparent 70%)`;
+    if (spotlightRef.current) spotlightRef.current.style.background = spotlightBg;
+
+    if (enableHolographic && holoRef.current) {
+      const holoAngle = (x - 0.5) * 60 + (y - 0.5) * 30;
+      holoRef.current.style.background = `linear-gradient(${105 + holoAngle}deg,
+        rgba(255, 0, 128, 0) 0%,
+        rgba(255, 0, 128, 0.18) 20%,
+        rgba(0, 255, 255, 0.18) 40%,
+        rgba(128, 0, 255, 0.18) 60%,
+        rgba(0, 255, 128, 0.18) 80%,
+        rgba(255, 0, 128, 0) 100%)`;
+    }
+
+    if (edgeRef.current) {
+      edgeRef.current.style.background = `radial-gradient(circle 200px at ${x * 100}% ${y * 100}%, rgba(255,255,255,0.4), transparent 60%)`;
+    }
+  }, [prefersReducedMotion, tiltStrength, spotlightColor, enableHolographic]);
+
+  // schedule rAF
+  const scheduleUpdate = useCallback(() => {
+    if (rafRef.current !== null) return;
+    rafRef.current = requestAnimationFrame(applyStyles);
+  }, [applyStyles]);
+
   const handleMouseMove = useCallback(
     (e: MouseEvent<HTMLDivElement>) => {
       if (prefersReducedMotion) return;
       const rect = containerRef.current?.getBoundingClientRect();
       if (!rect) return;
-
-      // موقعیت ماوس به فرم normalized (0..1)
-      const x = (e.clientX - rect.left) / rect.width;
-      const y = (e.clientY - rect.top) / rect.height;
-      setPosition({ x, y });
+      positionRef.current = {
+        x: (e.clientX - rect.left) / rect.width,
+        y: (e.clientY - rect.top) / rect.height,
+      };
+      scheduleUpdate();
     },
-    [prefersReducedMotion],
+    [prefersReducedMotion, scheduleUpdate],
   );
 
   const handleMouseEnter = useCallback(() => {
@@ -85,48 +132,48 @@ export default function MagneticSpotlightCard({
 
   const handleMouseLeave = useCallback(() => {
     setIsHovering(false);
-    // برگشت smooth به مرکز
-    setPosition({ x: 0.5, y: 0.5 });
+    positionRef.current = { x: 0.5, y: 0.5 };
+    scheduleUpdate();
+  }, [scheduleUpdate]);
+
+  // cleanup rAF on unmount
+  useEffect(() => {
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    };
   }, []);
 
-  // محاسبه tilt
-  // x: 0 → چپ، 1 → راست. در RTL منطق برعکس می‌شه ولی برای tilt مهم نیست
-  const tiltX = prefersReducedMotion ? 0 : (position.y - 0.5) * -12 * tiltStrength; // چرخش محور X
-  const tiltY = prefersReducedMotion ? 0 : (position.x - 0.5) * 12 * tiltStrength; // چرخش محور Y
-
+  // محاسبه tilt — فقط برای اولین رندر، بعدش rAF مستقیم DOM رو update می‌کنه
   const containerStyle: CSSProperties = {
-    transform: prefersReducedMotion
-      ? undefined
-      : `perspective(1200px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) translateZ(0)`,
     transformStyle: 'preserve-3d',
-    transition: isHovering ? 'transform 80ms ease-out' : 'transform 400ms cubic-bezier(0.2, 0.8, 0.2, 1)',
+    transition: isHovering
+      ? 'transform 80ms ease-out'
+      : 'transform 400ms cubic-bezier(0.2, 0.8, 0.2, 1)',
     willChange: 'transform',
   };
 
-  // موقعیت spotlight
+  // opacity ها فقط با isHovering تغییر می‌کنن (re-render مجاز)
   const spotlightStyle: CSSProperties = {
-    background: `radial-gradient(circle 280px at ${position.x * 100}% ${position.y * 100}%, ${spotlightColor}, transparent 70%)`,
     opacity: isHovering ? 1 : 0,
     transition: 'opacity 500ms ease',
   };
 
-  // موقعیت holographic gradient
-  // با tilt، gradient می‌چرخه
-  const holoAngle = (position.x - 0.5) * 60 + (position.y - 0.5) * 30;
   const holoStyle: CSSProperties = enableHolographic
     ? {
-        background: `linear-gradient(${105 + holoAngle}deg,
-          rgba(255, 0, 128, 0) 0%,
-          rgba(255, 0, 128, 0.18) 20%,
-          rgba(0, 255, 255, 0.18) 40%,
-          rgba(128, 0, 255, 0.18) 60%,
-          rgba(0, 255, 128, 0.18) 80%,
-          rgba(255, 0, 128, 0) 100%)`,
-        mixBlendMode: 'color-dodge',
+        mixBlendMode: 'color-dodge' as const,
         opacity: isHovering && !prefersReducedMotion ? 0.9 : 0,
         transition: 'opacity 400ms ease',
       }
     : { display: 'none' };
+
+  const edgeStyle: CSSProperties = {
+    WebkitMaskImage: 'linear-gradient(black, black), linear-gradient(black, black)',
+    WebkitMaskComposite: 'xor' as const,
+    maskComposite: 'exclude' as const,
+    padding: '1px',
+    opacity: isHovering ? 1 : 0,
+    transition: 'opacity 400ms ease',
+  };
 
   return (
     <div
@@ -142,8 +189,9 @@ export default function MagneticSpotlightCard({
         {children}
       </div>
 
-      {/* Spotlight Layer */}
+      {/* Spotlight Layer — background توسط rAF مستقیم set می‌شه */}
       <div
+        ref={spotlightRef}
         className="absolute inset-0 pointer-events-none z-20 rounded-[inherit]"
         style={spotlightStyle}
         aria-hidden
@@ -152,17 +200,18 @@ export default function MagneticSpotlightCard({
       {/* Holographic Layer */}
       {enableHolographic && (
         <div
+          ref={holoRef}
           className="absolute inset-0 pointer-events-none z-30 rounded-[inherit]"
           style={holoStyle}
           aria-hidden
         />
       )}
 
-      {/* Edge highlight (premium glass) — وقتی hover می‌شه، کارت یه خط نورانی ملایم می‌گیره */}
+      {/* Edge highlight — background توسط rAF مستقیم set می‌شه */}
       <div
+        ref={edgeRef}
         className="absolute inset-0 pointer-events-none rounded-[inherit] z-10"
-        style={{
-          background: `radial-gradient(circle 200px at ${position.x * 100}% ${position.y * 100}%, rgba(255,255,255,0.4), transparent 60%)`,
+        style={edgeStyle}
           WebkitMaskImage: 'linear-gradient(black, black), linear-gradient(black, black)',
           WebkitMaskComposite: 'xor',
           maskComposite: 'exclude',

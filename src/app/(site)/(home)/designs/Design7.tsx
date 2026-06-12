@@ -36,7 +36,6 @@ import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
 import MarketTickerBar from './MarketTickerBar';
 import SentimentBadge from './SentimentBadge';
 import MagneticSpotlightCard from './MagneticSpotlightCard';
-import MorphingNumber from './MorphingNumber';
 import CompactRateBridge from './CompactRateBridge';
 import {
   getCategoryTheme,
@@ -172,15 +171,8 @@ export default function Design7({ initialPosts, rates, rateLists, className = ''
     return items;
   }, [rateLists, mainPost]);
 
-  // morph trigger — هر ۴ ثانیه یه tick اعمال می‌شه
-  const [morphTick, setMorphTick] = useState(0);
-  useEffect(() => {
-    if (transferRateItems.length === 0) return;
-    const interval = setInterval(() => {
-      setMorphTick((t) => t + 1);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [transferRateItems.length]);
+  // morphTick حذف شد — قبلاً هر ۴ ثانیه یه tick می‌زد که باعث re-render کل می‌شد
+  // الان viewCount مستقیماً نمایش داده می‌شه (بدون morph)
 
   // State برای pause کردن auto-rotate bridge نرخ‌ها از بیرون (مثلاً hover)
   const [isBridgePaused, setIsBridgePaused] = useState(false);
@@ -458,12 +450,9 @@ export default function Design7({ initialPosts, rates, rateLists, className = ''
                         <span className="text-[9px] uppercase tracking-wider text-white/50 font-bold flex items-center gap-1">
                           <Eye className="w-2.5 h-2.5" /> بازدید
                         </span>
-                        <MorphingNumber
-                          value={mainPost.viewCount + morphTick * 7}
-                          duration={1000}
-                          decimals={0}
-                          className="text-sm font-bold text-white"
-                        />
+                        <span className="text-sm font-bold text-white tabular-nums">
+                          {mainPost.viewCount.toLocaleString('fa-IR')}
+                        </span>
                       </div>
                     )}
 

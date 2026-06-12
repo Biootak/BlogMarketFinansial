@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { memo } from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { SENTIMENT_CONFIG, type SentimentType } from './categoryTheme';
 
@@ -18,7 +19,7 @@ interface SentimentBadgeProps {
  * با glassmorphism ملایم و pulse subtle.
  * ----------------------------------------------------------------------------
  */
-export default function SentimentBadge({
+export default memo(function SentimentBadge({
   sentiment,
   size = 'md',
   showLabel = true,
@@ -51,4 +52,4 @@ export default function SentimentBadge({
       {showLabel && <span>{config.label}</span>}
     </motion.span>
   );
-}
+});

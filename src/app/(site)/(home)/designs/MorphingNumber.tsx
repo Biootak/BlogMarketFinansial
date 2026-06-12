@@ -14,7 +14,7 @@
  * ----------------------------------------------------------------------------
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 
 interface MorphingNumberProps {
   value: number;
@@ -52,7 +52,7 @@ function formatEnglish(n: number, decimals: number): string {
   });
 }
 
-export default function MorphingNumber({
+export default memo(function MorphingNumber({
   value,
   duration = 1200,
   persian = true,
@@ -124,4 +124,4 @@ export default function MorphingNumber({
       {suffix}
     </span>
   );
-}
+});
