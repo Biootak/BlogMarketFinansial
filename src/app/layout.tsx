@@ -97,7 +97,7 @@ export const viewport: Viewport = {
 const vazirmatn = Vazirmatn({
   subsets: ['arabic'],
   display: 'swap',
-  weight: ['300', '400', '500', '600', '700'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-vazirmatn',
   preload: true,
   fallback: ['system-ui', 'sans-serif'],

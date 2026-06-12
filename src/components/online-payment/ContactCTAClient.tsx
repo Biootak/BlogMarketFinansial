@@ -32,14 +32,14 @@ const ContactCTAClient: FC<ContactCTAClientProps> = ({
   const [activeTab, setActiveTab] = useState<'request' | 'tracking'>('request');
 
   return (
-    <section id="contact" className="relative py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8">
+    <section id="contact" className="relative py-12 sm:py-14 lg:py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.5 }}
-          className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800 dark:to-neutral-900 p-6 sm:p-10 lg:p-12 shadow-xl border border-neutral-200/50 dark:border-neutral-700/50"
+          className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800 dark:to-neutral-900 p-5 sm:p-8 lg:p-10 shadow-xl border border-neutral-200/50 dark:border-neutral-700/50"
         >
           <div className="absolute top-0 left-0 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
           <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
@@ -87,15 +87,15 @@ const ContactCTAClient: FC<ContactCTAClientProps> = ({
                   >
                     فرم درخواست خدمات
                   </motion.span>
-                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-neutral-900 dark:text-white mb-4">
+                  <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-neutral-900 dark:text-white mb-3 leading-snug">
                     ثبت درخواست آنلاین
                   </h2>
-                  <p className="text-neutral-600 dark:text-neutral-400 text-lg max-w-xl mx-auto">
+                  <p className="text-neutral-600 dark:text-neutral-400 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
                     فرم زیر را پر کنید تا درخواست شما مستقیماً به کارشناسان ما ارسال شود
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
                   {features.map((feature, index) => (
                     <motion.div
                       key={feature.title}
@@ -103,11 +103,11 @@ const ContactCTAClient: FC<ContactCTAClientProps> = ({
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ delay: 0.2 + index * 0.1 }}
-                      className="flex flex-col items-center p-4 rounded-xl bg-white dark:bg-neutral-800/50 border border-neutral-200/50 dark:border-neutral-700/50"
+                      className="flex flex-col items-center p-3 rounded-xl bg-white dark:bg-neutral-800/50 border border-neutral-200/50 dark:border-neutral-700/50"
                     >
-                      <feature.icon className="w-8 h-8 text-primary-500 mb-2" />
-                      <span className="font-medium text-neutral-900 dark:text-white">{feature.title}</span>
-                      <span className="text-sm text-neutral-500 dark:text-neutral-400">{feature.description}</span>
+                      <feature.icon className="w-6 h-6 text-primary-500 mb-1.5" />
+                      <span className="text-sm font-medium text-neutral-900 dark:text-white">{feature.title}</span>
+                      <span className="text-xs text-neutral-500 dark:text-neutral-400">{feature.description}</span>
                     </motion.div>
                   ))}
                 </div>
@@ -128,10 +128,10 @@ const ContactCTAClient: FC<ContactCTAClientProps> = ({
                   >
                     پیگیری سفارش
                   </motion.span>
-                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-neutral-900 dark:text-white mb-4">
+                  <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-neutral-900 dark:text-white mb-3 leading-snug">
                     پیگیری درخواست
                   </h2>
-                  <p className="text-neutral-600 dark:text-neutral-400 text-lg max-w-xl mx-auto">
+                  <p className="text-neutral-600 dark:text-neutral-400 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
                     کد پیگیری خود را وارد کنید تا وضعیت درخواست را مشاهده کنید
                   </p>
                 </div>

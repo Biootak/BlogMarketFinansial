@@ -52,10 +52,10 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-center min-h-[400px] lg:min-h-[500px]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-center min-h-[360px] lg:min-h-[420px]">
 
           {/* Content Section */}
-          <div className="order-2 lg:order-1 space-y-5 lg:space-y-6 p-4 lg:p-0">
+          <div className="order-2 lg:order-1 space-y-4 lg:space-y-5 p-4 lg:p-0">
             {/* Category Badge */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -67,7 +67,7 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
             
             {/* Title */}
             <motion.h1 
-              className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-neutral-900 dark:text-white leading-tight"
+              className="text-xl sm:text-2xl lg:text-3xl font-bold text-neutral-900 dark:text-white leading-snug"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
@@ -84,7 +84,7 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
             {/* Excerpt */}
             {excerpt && (
               <motion.p 
-                className="text-base lg:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed line-clamp-2"
+                className="text-sm lg:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed line-clamp-2"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.3 }}

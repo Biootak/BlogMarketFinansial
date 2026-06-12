@@ -21,13 +21,13 @@ const OnlinePaymentHero: FC = () => {
   };
 
   return (
-    <section className="relative py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
+    <section className="relative py-12 sm:py-14 lg:py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
       {/* Background with subtle pattern */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary-50 via-white to-primary-100/50 dark:from-neutral-900 dark:via-neutral-800 dark:to-primary-900/20" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary-200/30 via-transparent to-transparent dark:from-primary-500/10" />
       
       <div className="relative max-w-7xl mx-auto">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-12">
           {/* Content */}
           <motion.div
             className="lg:w-1/2 text-center lg:text-right"
@@ -46,7 +46,7 @@ const OnlinePaymentHero: FC = () => {
               خدمات فعال و آماده
             </motion.div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-neutral-900 dark:text-white mb-6 leading-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-neutral-900 dark:text-white mb-4 leading-snug">
               پرداخت‌های بین‌المللی
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-l from-primary-600 to-primary-400 dark:from-primary-400 dark:to-primary-300">
@@ -54,26 +54,26 @@ const OnlinePaymentHero: FC = () => {
               </span>
             </h1>
 
-            <p className="text-lg sm:text-xl text-neutral-600 dark:text-neutral-300 mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+            <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-300 mb-6 max-w-xl mx-auto lg:mx-0 leading-relaxed">
               خدمات پرداخت بین‌المللی شما از طریق پی‌پال، مستر کارت، ویزا کارت، حساب بانکی و سایر
               روش‌های آنلاین با بهترین شرایط و قیمت‌ها.
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
               <motion.button
                 onClick={scrollToContact}
-                className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl text-lg shadow-lg shadow-primary-500/25 hover:shadow-xl hover:shadow-primary-500/30 transition-all duration-300"
+                className="group inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl text-sm sm:text-base shadow-lg shadow-primary-500/25 hover:shadow-xl hover:shadow-primary-500/30 transition-all duration-300"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
                 شروع کنید
-                <HiArrowDown className="w-5 h-5 group-hover:translate-y-1 transition-transform" />
+                <HiArrowDown className="w-4 h-4 group-hover:translate-y-1 transition-transform" />
               </motion.button>
 
               <motion.a
                 href="#services"
-                className="inline-flex items-center justify-center px-8 py-4 border-2 border-neutral-200 dark:border-neutral-700 hover:border-primary-300 dark:hover:border-primary-600 text-neutral-700 dark:text-neutral-200 font-semibold rounded-xl text-lg transition-all duration-300"
+                className="inline-flex items-center justify-center px-6 py-3 border-2 border-neutral-200 dark:border-neutral-700 hover:border-primary-300 dark:hover:border-primary-600 text-neutral-700 dark:text-neutral-200 font-semibold rounded-xl text-sm sm:text-base transition-all duration-300"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >

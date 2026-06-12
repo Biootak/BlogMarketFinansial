@@ -66,6 +66,46 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ============================================================================
+   Base typography — slightly smaller than browser default (16px) so content
+   fits comfortably and doesn't feel oversized. linear.app uses ~14-15px base.
+   ============================================================================ */
+html {
+  font-size: var(--fs-base);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-size: var(--fs-base);
+  line-height: var(--leading-normal);
+  font-weight: 400;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tame global heading sizes — most blog themes oversize these. */
+h1, h2, h3, h4, h5, h6 {
+  line-height: var(--leading-tight);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+h1 { font-size: var(--fs-4xl); }
+h2 { font-size: var(--fs-3xl); }
+h3 { font-size: var(--fs-2xl); }
+h4 { font-size: var(--fs-xl); }
+h5 { font-size: var(--fs-lg); }
+h6 { font-size: var(--fs-base); }
+
+@media (min-width: 1024px) {
+  h1 { font-size: var(--fs-5xl); }
+  h2 { font-size: var(--fs-4xl); }
+  h3 { font-size: var(--fs-2xl); }
+}
+
+p { line-height: var(--leading-relaxed); }
+
 :root {
   --background: 247 248 250;
   --foreground: 20 23 32;
@@ -79,8 +119,23 @@
   --accent-foreground: 20 23 32;
   --border: 224 228 235;
   --input: 224 228 235;
-  --ring: 94 106 230;
+  --ring: 94 106  230;
   --radius: 0.625rem;
+
+  /* Type scale (linear.app-inspired: tighter, smaller than typical blog themes) */
+  --fs-base: 15px;
+  --fs-sm: 13px;
+  --fs-xs: 12px;
+  --fs-lg: 16px;
+  --fs-xl: 18px;
+  --fs-2xl: 20px;
+  --fs-3xl: 24px;
+  --fs-4xl: 28px;
+  --fs-5xl: 32px;
+  --leading-tight: 1.2;
+  --leading-snug: 1.35;
+  --leading-normal: 1.55;
+  --leading-relaxed: 1.7;
 }
 
 .dark {
@@ -165,36 +220,39 @@
   animation: gradient 5s ease infinite;
 }
 
+/* ============================================================================
+   Container widths — optimized for modern wide screens, using more real estate
+   while keeping content readable.
+   ============================================================================ */
 .container {
   width: 100%;
   margin-inline: auto;
   padding-inline: 1rem;
 }
-@media (min-width: 640px) { .container { padding-inline: 1.5rem; } }
-@media (min-width: 768px) { .container { padding-inline: 2rem; } }
-@media (min-width: 1024px) { .container { max-width: 960px; padding-inline: 1.5rem; } }
-@media (min-width: 1280px) { .container { max-width: 1200px; } }
-@media (min-width: 1536px) { .container { max-width: 1400px; } }
-@media (min-width: 1920px) { .container { max-width: 1600px; } }
+@media (min-width: 640px) { .container { padding-inline: 1.25rem; } }
+@media (min-width: 768px) { .container { padding-inline: 1.5rem; } }
+@media (min-width: 1024px) { .container { max-width: 1200px; padding-inline: 2rem; } }
+@media (min-width: 1280px) { .container { max-width: 1400px; } }
+@media (min-width: 1536px) { .container { max-width: 1600px; } }
 
 .container-wide {
   width: 100%;
   margin-inline: auto;
   padding-inline: 1rem;
 }
-@media (min-width: 640px) { .container-wide { padding-inline: 2rem; } }
-@media (min-width: 1024px) { .container-wide { max-width: 1100px; } }
-@media (min-width: 1280px) { .container-wide { max-width: 1400px; } }
-@media (min-width: 1536px) { .container-wide { max-width: 1700px; } }
+@media (min-width: 640px) { .container-wide { padding-inline: 1.25rem; } }
+@media (min-width: 1024px) { .container-wide { max-width: 1280px; padding-inline: 2rem; } }
+@media (min-width: 1280px) { .container-wide { max-width: 1536px; } }
+@media (min-width: 1536px) { .container-wide { max-width: 1800px; } }
 
 .container-fluid {
   width: 100%;
   margin-inline: auto;
   padding-inline: 1rem;
 }
-@media (min-width: 640px) { .container-fluid { padding-inline: 2rem; } }
-@media (min-width: 1024px) { .container-fluid { padding-inline: 3rem; } }
-@media (min-width: 1536px) { .container-fluid { padding-inline: 4rem; } }
+@media (min-width: 640px) { .container-fluid { padding-inline: 1.5rem; } }
+@media (min-width: 1024px) { .container-fluid { padding-inline: 2rem; } }
+@media (min-width: 1536px) { .container-fluid { padding-inline: 2.5rem; } }
 
 [dir="rtl"] .space-x-1 > :not([hidden]) ~ :not([hidden]),
 [dir="rtl"] .space-x-2 > :not([hidden]) ~ :not([hidden]),

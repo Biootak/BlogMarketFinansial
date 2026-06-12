@@ -28,7 +28,7 @@ const SectionSubscribe2: FC<SectionSubscribe2Props> = async ({ className = '' })
         <div className="absolute bottom-5 sm:bottom-10 end-5 sm:end-10 w-20 sm:w-32 h-20 sm:h-32 bg-white/10 rounded-full blur-2xl sm:blur-3xl" />
 
         {/* Content */}
-        <div className="relative flex flex-col lg:flex-row items-center gap-6 sm:gap-8 lg:gap-12 p-4 sm:p-6 lg:p-12">
+        <div className="relative flex flex-col lg:flex-row items-center gap-5 sm:gap-6 lg:gap-8 p-4 sm:p-6 lg:p-8">
           {/* Text Content */}
           <div className="flex-1 text-center lg:text-start">
             {/* Badge */}
@@ -39,27 +39,27 @@ const SectionSubscribe2: FC<SectionSubscribe2Props> = async ({ className = '' })
             </div>
 
             {/* Title */}
-            <h2 className="text-xl sm:text-2xl lg:text-4xl font-black text-white leading-tight mb-3 sm:mb-4">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-white leading-snug mb-2 sm:mb-3">
               به خبرنامه ما
               <span className="block text-amber-300">بپیوندید</span>
             </h2>
 
             {/* Description */}
-            <p className="text-white/80 text-sm sm:text-base lg:text-lg mb-5 sm:mb-8 max-w-md mx-auto lg:mx-0">
+            <p className="text-white/80 text-sm sm:text-base mb-4 sm:mb-6 max-w-md mx-auto lg:mx-0 leading-relaxed">
               آخرین اخبار بازارهای مالی و تحلیل‌های تخصصی را مستقیماً در ایمیل خود دریافت کنید.
             </p>
 
             {/* Features - Hidden on small mobile */}
-            <div className="hidden sm:flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8 justify-center lg:justify-start">
-              <div className="flex items-center gap-2 sm:gap-3 text-white/90">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white/10 flex items-center justify-center">
-                  <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-amber-300" />
+            <div className="hidden sm:flex flex-col sm:flex-row gap-3 mb-5 sm:mb-6 justify-center lg:justify-start">
+              <div className="flex items-center gap-2 text-white/90">
+                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                  <Bell className="w-4 h-4 text-amber-300" />
                 </div>
                 <span className="text-xs sm:text-sm font-medium">اطلاع‌رسانی فوری</span>
               </div>
-              <div className="flex items-center gap-2 sm:gap-3 text-white/90">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white/10 flex items-center justify-center">
-                  <Gift className="w-4 h-4 sm:w-5 sm:h-5 text-amber-300" />
+              <div className="flex items-center gap-2 text-white/90">
+                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                  <Gift className="w-4 h-4 text-amber-300" />
                 </div>
                 <span className="text-xs sm:text-sm font-medium">محتوای انحصاری</span>
               </div>

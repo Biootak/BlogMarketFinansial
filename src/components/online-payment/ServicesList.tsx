@@ -85,7 +85,7 @@ const ServicesList: FC = () => {
   return (
     <section
       id="services"
-      className="relative py-20 sm:py-24 lg:py-28 px-4 sm:px-6 lg:px-8 bg-white dark:bg-neutral-900"
+      className="relative py-12 sm:py-14 lg:py-16 px-4 sm:px-6 lg:px-8 bg-white dark:bg-neutral-900"
     >
       {/* Subtle background pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px]" />
@@ -99,13 +99,13 @@ const ServicesList: FC = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <span className="inline-block px-4 py-1.5 mb-4 text-sm font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 rounded-full">
+          <span className="inline-block px-3 py-1 mb-3 text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 rounded-full">
             خدمات ما
           </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-neutral-900 dark:text-white mb-4">
+          <h2 className="text-2xl sm:text-3xl font-bold text-neutral-900 dark:text-white mb-3 leading-snug">
             خدمات پرداخت بین‌المللی
           </h2>
-          <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
+          <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed">
             با تیم متخصص ما، تمامی نیازهای پرداخت بین‌المللی شما با سرعت و امنیت بالا انجام می‌شود
           </p>
         </motion.div>
@@ -120,19 +120,19 @@ const ServicesList: FC = () => {
         >
           {services.map((service) => (
             <motion.li key={service.title} variants={itemVariants}>
-              <div className="group h-full p-6 sm:p-8 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl border border-neutral-100 dark:border-neutral-700/50 hover:border-primary-200 dark:hover:border-primary-700/50 transition-all duration-300 hover:shadow-lg hover:shadow-neutral-200/50 dark:hover:shadow-neutral-900/50">
+              <div className="group h-full p-5 sm:p-6 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl border border-neutral-100 dark:border-neutral-700/50 hover:border-primary-200 dark:hover:border-primary-700/50 transition-all duration-300 hover:shadow-lg hover:shadow-neutral-200/50 dark:hover:shadow-neutral-900/50">
                 {/* Icon */}
                 <div
-                  className={`inline-flex items-center justify-center w-14 h-14 rounded-xl ${service.bgColor} mb-6 group-hover:scale-110 transition-transform duration-300`}
+                  className={`inline-flex items-center justify-center w-12 h-12 rounded-xl ${service.bgColor} mb-4 group-hover:scale-110 transition-transform duration-300`}
                 >
-                  <service.icon className={`w-7 h-7 ${service.iconColor}`} />
+                  <service.icon className={`w-6 h-6 ${service.iconColor}`} />
                 </div>
 
                 {/* Content */}
-                <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-3 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300">
+                <h3 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white mb-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-300 leading-snug">
                   {service.title}
                 </h3>
-                <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
                   {service.description}
                 </p>
 

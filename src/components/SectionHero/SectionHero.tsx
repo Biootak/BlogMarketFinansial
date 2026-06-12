@@ -19,12 +19,12 @@ const SectionHero: FC<SectionHeroProps> = ({
 }) => {
   return (
     <div className={`nc-SectionHero relative ${className}`}>
-      <div className="flex flex-col lg:flex-row gap-14 lg:gap-10 items-center relative text-center lg:text-end">
-        <div className="w-screen max-w-full xl:max-w-lg space-y-5 lg:space-y-7">
-          <h2 className="text-xl !leading-tight font-semibold text-neutral-900 md:text-4xl xl:text-5xl dark:text-neutral-100">
+      <div className="flex flex-col lg:flex-row gap-10 lg:gap-8 items-center relative text-center lg:text-end">
+        <div className="w-screen max-w-full xl:max-w-lg space-y-4 lg:space-y-5">
+          <h2 className="text-xl !leading-tight font-semibold text-neutral-900 md:text-2xl lg:text-3xl dark:text-neutral-100">
             {heading}
           </h2>
-          <span className="block text-base xl:text-lg text-neutral-6000 dark:text-neutral-400">
+          <span className="block text-sm xl:text-base text-neutral-6000 dark:text-neutral-400">
             {subHeading}
           </span>
           {!!btnText && <ButtonPrimary href="/">{btnText}</ButtonPrimary>}
