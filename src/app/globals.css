@@ -303,3 +303,22 @@ p { line-height: var(--leading-relaxed); }
 .end-0 { inset-inline-end: 0; }
 .start-auto { inset-inline-start: auto; }
 .end-auto { inset-inline-end: auto; }
+
+/* ============================================================================
+   Section Spacing — standardized rhythm across the site
+   ----------------------------------------------------------------------------
+   Use these utility classes on the *wrapper* of a section to get consistent
+   vertical rhythm. Don't use mt-X on individual children.
+   ============================================================================ */
+.section-rhythm       { margin-top: 2rem; }                  /* 32px mobile */
+.section-rhythm-lg    { margin-top: 3rem; }                  /* 48px mobile */
+@media (min-width: 1024px) {
+  .section-rhythm     { margin-top: 3rem; }                  /* 48px lg */
+  .section-rhythm-lg  { margin-top: 5rem; }                  /* 80px lg */
+}
+
+/* Page-level top/bottom padding for content pages (not home) */
+.page-pad             { padding-top: 1.5rem; padding-bottom: 3rem; }
+@media (min-width: 1024px) {
+  .page-pad           { padding-top: 2rem;   padding-bottom: 4rem; }
+}

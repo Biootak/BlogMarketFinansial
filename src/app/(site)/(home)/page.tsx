@@ -83,40 +83,40 @@ export default async function Home() {
       </div>
 
       {/* Latest Posts Section */}
-      <div className="container relative mt-10 lg:mt-14">
+      <div className="container relative mt-8 lg:mt-12">
         <SectionMagazine1 className="" />
       </div>
 
       {/* First Ad */}
       {firstAd && (
-        <div className="container relative mt-10 lg:mt-14">
+        <div className="container relative mt-8 lg:mt-12">
           <SectionAds className="" ad={firstAd} />
         </div>
       )}
 
       {/* Gallery Posts Section */}
       {posts.length > 0 && (
-        <div className="container relative mt-10 lg:mt-14">
+        <div className="container relative mt-8 lg:mt-12">
           <SectionMagazine7 className="" posts={posts} />
         </div>
       )}
 
       {/* Second Ad */}
       {secondAd && (
-        <div className="container relative mt-10 lg:mt-14">
+        <div className="container relative mt-8 lg:mt-12">
           <SectionAds className="" ad={secondAd} />
         </div>
       )}
 
       {/* Top Authors Section */}
       {topAuthors.length > 0 && (
-        <div className="container relative mt-10 lg:mt-14">
+        <div className="container relative mt-8 lg:mt-12">
           <SectionGridAuthorBox className="" authors={topAuthors} />
         </div>
       )}
 
       {/* Newsletter Section */}
-      <div className="container relative mt-12 lg:mt-20 mb-10 lg:mb-16">
+      <div className="container relative mt-8 lg:mt-12 mb-10 lg:mb-16">
         <SectionSubscribe2 className="" />
       </div>
     </div>

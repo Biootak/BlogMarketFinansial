@@ -34,7 +34,7 @@ async function ExchangeRatesContent() {
 
 export default function SectionExchangeRates() {
   return (
-    <section className="nc-SectionExchangeRates py-2 sm:py-4">
+    <section className="nc-SectionExchangeRates py-1">
       <Suspense fallback={<LoadingSkeleton />}>
         <ExchangeRatesContent />
       </Suspense>

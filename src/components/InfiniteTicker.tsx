@@ -44,16 +44,16 @@ export default function InfiniteTicker({
   return (
     <div
       dir={dir}
-      className={`infinite-ticker relative w-full overflow-hidden ${className}`}
+      className={`infinite-ticker relative w-full overflow-hidden group ${
+        pauseOnHover ? 'hover:cursor-default' : ''
+      } ${className}`}
       style={{ '--ticker-duration': `${duration}s` } as React.CSSProperties}
     >
       {/* Scrolling track. `min-w-[200%]` guarantees the track is wider than
           the viewport even when there are very few children, so the loop
           is always seamless. */}
       <div
-        className={`ticker-track flex w-max min-w-[200%] ${
-          pauseOnHover ? 'hover:[animation-play-state:paused]' : ''
-        } ${isRTL ? 'ticker-rtl' : 'ticker-ltr'}`}
+        className={`ticker-track flex w-max min-w-[200%] ${isRTL ? 'ticker-rtl' : 'ticker-ltr'}`}
       >
         <div className="ticker-group flex shrink-0 items-stretch">{children}</div>
         <div className="ticker-group flex shrink-0 items-stretch" aria-hidden>
@@ -88,6 +88,16 @@ export default function InfiniteTicker({
         .ticker-rtl {
           animation: ticker-scroll-rtl var(--ticker-duration) linear infinite;
           will-change: transform;
+        }
+
+        /* Pause when the parent (or track itself) is hovered. This way the
+           ticker stops across the FULL container width, not just on top
+           of an item. The parent selector is well supported in 2026+. */
+        :global(.infinite-ticker:hover) .ticker-ltr,
+        :global(.infinite-ticker:hover) .ticker-rtl,
+        .ticker-ltr:hover,
+        .ticker-rtl:hover {
+          animation-play-state: paused;
         }
 
         @media (prefers-reduced-motion: reduce) {
