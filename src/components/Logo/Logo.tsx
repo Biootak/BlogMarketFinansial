@@ -92,7 +92,7 @@ const Logo: React.FC<LogoProps> = ({
             priority
           />
         ) : (
-          <div className="w-16 h-16">
+          <div className="w-9 h-9 sm:w-10 sm:h-10">
             <LogoSvg className="w-full h-full" />
           </div>
         )}

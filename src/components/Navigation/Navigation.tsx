@@ -123,31 +123,34 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
 
     if (item.subItems) {
       return (
-        <DropdownMenu
-          dir="rtl"
+        <li
           key={item.id}
-          onOpenChange={(open) => {
-            setActiveId(open ? item.id : null);
-            if (!open) setHoveredId(null);
-          }}
+          className="relative flex-shrink-0"
+          onMouseEnter={() => setHoveredId(item.id)}
+          onMouseLeave={() => setHoveredId(null)}
         >
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              onMouseEnter={() => setHoveredId(item.id)}
-              onMouseLeave={() => setHoveredId(null)}
-              onFocus={() => setHoveredId(item.id)}
-              onBlur={() => setHoveredId(null)}
-              className={`
-                relative inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium
-                rounded-full outline-none
-                transition-colors duration-200
-                ${active
-                  ? 'text-[rgb(var(--c-foreground))]'
-                  : 'text-[rgb(var(--c-neutral-400))] hover:text-[rgb(var(--c-foreground))]'
-                }
-              `}
-            >
+          <DropdownMenu
+            dir="rtl"
+            onOpenChange={(open) => {
+              setActiveId(open ? item.id : null);
+              if (!open) setHoveredId(null);
+            }}
+          >
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                onFocus={() => setHoveredId(item.id)}
+                onBlur={() => setHoveredId(null)}
+                className={`
+                  relative z-10 inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium
+                  rounded-full outline-none whitespace-nowrap
+                  transition-colors duration-200
+                  ${active
+                    ? 'text-[rgb(var(--c-foreground))]'
+                    : 'text-[rgb(var(--c-neutral-400))] hover:text-[rgb(var(--c-foreground))]'
+                  }
+                `}
+              >
               {/* linear.app-style animated pill background */}
               {showPill && (
                 <motion.span
@@ -166,7 +169,7 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
               <span className="relative z-10">{item.name}</span>
               <ChevronDown
                 className={`
-                  relative z-10 size-3.5
+                  relative z-10 size-3.5 shrink-0
                   transition-transform duration-200 ease-out
                   ${activeId === item.id ? 'rotate-180' : ''}
                 `}
@@ -255,10 +258,11 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
                     })}
                   </motion.ul>
                 </motion.div>
-              </DropdownMenuContent>
-            )}
-          </AnimatePresence>
-        </DropdownMenu>
+                </DropdownMenuContent>
+              )}
+            </AnimatePresence>
+          </DropdownMenu>
+        </li>
       );
     }
 
@@ -266,7 +270,7 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
     return (
       <li
         key={item.id}
-        className="relative"
+        className="relative flex-shrink-0"
         onMouseEnter={() => setHoveredId(item.id)}
         onMouseLeave={() => setHoveredId(null)}
       >
@@ -287,7 +291,7 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
           href={item.href}
           className={`
             relative z-10 inline-flex items-center px-3.5 py-2 text-sm font-medium
-            rounded-full outline-none
+            rounded-full outline-none whitespace-nowrap
             transition-colors duration-200
             ${active
               ? 'text-[rgb(var(--c-foreground))]'
@@ -303,7 +307,7 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
 
   return (
     <nav className="flex items-center justify-center" aria-label="ناوبری اصلی">
-      <ul className={`items-center ${className} gap-1`}>{NAVBAR_LINKS.map(renderNavItem)}</ul>
+      <ul className={`items-center ${className} gap-1 flex`}>{NAVBAR_LINKS.map(renderNavItem)}</ul>
     </nav>
   );
 };
