@@ -212,13 +212,6 @@ export default function MagneticSpotlightCard({
         ref={edgeRef}
         className="absolute inset-0 pointer-events-none rounded-[inherit] z-10"
         style={edgeStyle}
-          WebkitMaskImage: 'linear-gradient(black, black), linear-gradient(black, black)',
-          WebkitMaskComposite: 'xor',
-          maskComposite: 'exclude',
-          padding: '1px',
-          opacity: isHovering ? 1 : 0,
-          transition: 'opacity 400ms ease',
-        }}
         aria-hidden
       />
     </div>

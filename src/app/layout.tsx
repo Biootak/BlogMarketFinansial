@@ -113,7 +113,7 @@ export default async function RootLayout({
     <html
       lang="fa-IR"
       dir="rtl"
-      className={`${vazirmatn.variable} rtl dark`}
+      className={`${vazirmatn.variable} rtl`}
       suppressHydrationWarning
     >
       <body

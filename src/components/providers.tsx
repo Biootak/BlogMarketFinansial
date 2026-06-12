@@ -12,8 +12,9 @@ export default function Providers({
   session: any;
 }) {
   // Avoid hydration mismatch — only mount next-themes on the client.
-  // We also accept a manual theme override via the `data-theme` attribute
-  // to keep the layout's default `class="dark"` in sync.
+  // The default theme is `light`/white; the inline script below keeps
+  // <html>'s class attribute in sync with the user's stored choice so
+  // we never flash the wrong palette.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -25,7 +26,7 @@ export default function Providers({
     >
       <ThemeProvider
         attribute="class"
-        defaultTheme="dark"
+        defaultTheme="light"
         enableSystem={false}
         storageKey="bmf-theme"
         disableTransitionOnChange
@@ -33,7 +34,8 @@ export default function Providers({
         {/*
           Inline script that runs *before* paint on the client to set the
           `class` attribute on <html> in sync with the user's stored choice.
-          This prevents the dark→light flash.
+          Default is light/white; dark is only applied when the user explicitly
+          chose it. This prevents the light→dark flash.
         */}
         {mounted ? null : (
           <script
@@ -42,10 +44,10 @@ export default function Providers({
               __html: `
                 try {
                   var t = localStorage.getItem('bmf-theme');
-                  if (t === 'light') {
-                    document.documentElement.classList.remove('dark');
-                  } else {
+                  if (t === 'dark') {
                     document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
                   }
                 } catch (e) {}
               `,
