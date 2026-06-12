@@ -80,7 +80,7 @@ export default function MarketTickerBar({
                     {/* Price (Toman) */}
                     <span className="text-[11px] sm:text-[12px] font-semibold text-neutral-700 dark:text-neutral-300 tabular-nums">
                       {formattedToman}
-                      <span className="text-[9px] text-neutral-500 dark:text-neutral-500 mr-0.5">
+                      <span className="text-[9px] text-neutral-600 dark:text-neutral-400 mr-0.5">
                         تومان
                       </span>
                     </span>

@@ -699,7 +699,7 @@ export default function Design7({ initialPosts, rates, rateLists, className = ''
         </div>
 
         {/* Keyboard hint — فقط در sm+ */}
-        <div className="hidden sm:flex items-center gap-1 text-[10px] text-neutral-400 dark:text-neutral-600 tabular-nums">
+        <div className="hidden sm:flex items-center gap-1 text-[10px] text-neutral-500 dark:text-neutral-500 tabular-nums">
           <kbd className="px-1.5 py-0.5 bg-neutral-200/60 dark:bg-neutral-800/60 rounded border border-neutral-300/60 dark:border-neutral-700/60 font-mono">
             ←
           </kbd>
