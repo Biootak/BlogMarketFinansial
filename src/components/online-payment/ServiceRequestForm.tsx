@@ -1,6 +1,6 @@
 'use client';
 
-import { type FC, useState, useCallback, useMemo } from 'react';
+import { type FC, useState, useCallback, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -221,6 +221,54 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
   const fullName = watch('fullName');
   const phone = watch('phone');
   const urgency = watch('urgency');
+
+  // خواندن URL params برای prefill فرم (مثلاً از اسلایدر هوم)
+  // پارامترهای پشتیبانی‌شده:
+  //   ?currency=USD    → ارز انتخابی
+  //   ?type=INTERNATIONAL_TRANSFER → نوع خدمات
+  //   ?amount=1000     → مبلغ (اختیاری)
+  //   #contact          → اسکرول خودکار به فرم
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const hash = window.location.hash;
+
+    const currencyParam = params.get('currency');
+    const typeParam = params.get('type');
+    const amountParam = params.get('amount');
+
+    if (typeParam && (typeParam as ServiceType) && typeParam !== defaultServiceType) {
+      setValue('serviceType', typeParam as ServiceType, { shouldValidate: false });
+    }
+
+    if (currencyParam) {
+      // ابتدا با value مستقیم (مثل USD) امتحان کن
+      const exists = currencies.some((c) => c.value === currencyParam.toUpperCase());
+      if (exists) {
+        setValue('currency', currencyParam.toUpperCase(), { shouldValidate: false });
+      } else {
+        // در غیر این صورت با label جستجو کن (مثل "دلار آمریکا" یا "افغانی")
+        const matched = currencies.find((c) =>
+          c.label.includes(currencyParam) || c.value === currencyParam,
+        );
+        if (matched) {
+          setValue('currency', matched.value, { shouldValidate: false });
+        }
+      }
+    }
+
+    if (amountParam) {
+      setValue('amount', amountParam, { shouldValidate: false });
+    }
+
+    // اگه hash=#contact بود، اسکرول به فرم
+    if (hash === '#contact') {
+      setTimeout(() => {
+        const el = document.getElementById('contact');
+        el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
+    }
+  }, [setValue, defaultServiceType]);
 
   const selectedService = useMemo(
     () => serviceTypes.find((s) => s.value === serviceType),
