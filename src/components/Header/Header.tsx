@@ -1,14 +1,49 @@
+/**
+ * Header — linear.app inspired dark glassmorphism
+ *
+ * - Sticky, translucent surface that picks up content behind it.
+ * - Subtle 1px hairline border at the bottom (linear-style).
+ * - Server component — no framer-motion here, no client JS for the shell.
+ * - The actual interactive bits (Navigation, dropdowns) live in their own
+ *   client components.
+ */
 import MainNav from './MainNav';
 
 const Header = () => {
   return (
-    <header className="sticky top-0 w-full z-40">
-      {/* Glassmorphism backdrop */}
-      <div className="absolute inset-0 bg-white/70 dark:bg-neutral-900/80 backdrop-blur-xl backdrop-saturate-150" />
-      {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-primary-50/30 via-transparent to-indigo-50/30 dark:from-primary-950/20 dark:via-transparent dark:to-indigo-950/20" />
-      {/* Bottom border with gradient */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent" />
+    <header className="sticky top-0 w-full z-40" role="banner">
+      {/* Translucent surface — picks up gradient/blur from main background */}
+      <div
+        aria-hidden
+        className="
+          absolute inset-0
+          bg-[rgb(var(--c-surface-canvas))]/70
+          dark:bg-[rgb(var(--c-surface-elevated))]/70
+          backdrop-blur-xl backdrop-saturate-150
+        "
+      />
+
+      {/* Subtle inner glow / top highlight, linear.app style */}
+      <div
+        aria-hidden
+        className="
+          absolute inset-x-0 top-0 h-px
+          bg-gradient-to-r
+          from-transparent
+          via-white/[0.06]
+          to-transparent
+        "
+      />
+
+      {/* Hairline divider */}
+      <div
+        aria-hidden
+        className="
+          absolute inset-x-0 bottom-0 h-px
+          bg-[rgb(var(--c-border-subtle))]
+        "
+      />
+
       <MainNav />
     </header>
   );

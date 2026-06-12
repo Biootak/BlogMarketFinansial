@@ -1,202 +1,140 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/container-queries";
 
+/* ============================================================================
+   linear.app-inspired Theme Tokens
+   ============================================================================ */
 @theme {
-  /* shadcn/ui required colors */
-  --color-background: rgb(255, 255, 255);
-  --color-foreground: rgb(17, 24, 39);
-  --color-card: rgb(255, 255, 255);
-  --color-card-foreground: rgb(17, 24, 39);
-  --color-popover: rgb(255, 255, 255);
-  --color-popover-foreground: rgb(17, 24, 39);
-  --color-muted: rgb(243, 244, 246);
-  --color-muted-foreground: rgb(107, 114, 128);
-  --color-accent: rgb(243, 244, 246);
-  --color-accent-foreground: rgb(17, 24, 39);
-  --color-border: rgb(229, 231, 235);
-  --color-input: rgb(229, 231, 235);
-  --color-ring: rgb(59, 130, 246);
+  --color-background: rgb(20, 23, 32);
+  --color-foreground: rgb(228, 230, 238);
+  --color-card: rgb(26, 30, 41);
+  --color-card-foreground: rgb(228, 230, 238);
+  --color-popover: rgb(36, 41, 54);
+  --color-popover-foreground: rgb(228, 230, 238);
+  --color-muted: rgb(36, 41, 54);
+  --color-muted-foreground: rgb(152, 161, 178);
+  --color-accent: rgb(46, 52, 68);
+  --color-accent-foreground: rgb(228, 230, 238);
+  --color-border: rgb(46, 52, 68);
+  --color-input: rgb(46, 52, 68);
+  --color-ring: rgb(94, 106, 230);
 
-  --color-primary-50: rgb(239, 246, 255);
-  --color-primary-100: rgb(219, 234, 254);
-  --color-primary-200: rgb(191, 219, 254);
-  --color-primary-300: rgb(147, 197, 253);
-  --color-primary-400: rgb(96, 165, 250);
-  --color-primary-500: rgb(59, 130, 246);
-  --color-primary-600: rgb(37, 99, 235);
-  --color-primary-700: rgb(29, 78, 216);
-  --color-primary-800: rgb(30, 64, 175);
-  --color-primary-900: rgb(30, 58, 138);
+  --color-primary-50: rgb(235, 240, 255);
+  --color-primary-100: rgb(215, 222, 255);
+  --color-primary-200: rgb(184, 196, 255);
+  --color-primary-300: rgb(148, 163, 255);
+  --color-primary-400: rgb(121, 134, 247);
+  --color-primary-500: rgb(94, 106, 230);
+  --color-primary-600: rgb(76, 86, 200);
+  --color-primary-700: rgb(60, 68, 162);
+  --color-primary-800: rgb(45, 51, 124);
+  --color-primary-900: rgb(30, 34, 86);
 
-  --color-secondary-50: rgb(239, 246, 255);
-  --color-secondary-100: rgb(219, 234, 254);
-  --color-secondary-200: rgb(191, 219, 254);
-  --color-secondary-300: rgb(147, 197, 253);
-  --color-secondary-400: rgb(96, 165, 250);
-  --color-secondary-500: rgb(37, 99, 235);
-  --color-secondary-600: rgb(30, 64, 175);
-  --color-secondary-700: rgb(29, 78, 216);
-  --color-secondary-800: rgb(30, 64, 175);
-  --color-secondary-900: rgb(30, 58, 138);
+  --color-secondary-50: rgb(240, 244, 255);
+  --color-secondary-100: rgb(224, 230, 255);
+  --color-secondary-200: rgb(196, 207, 255);
+  --color-secondary-300: rgb(162, 178, 255);
+  --color-secondary-400: rgb(130, 148, 240);
+  --color-secondary-500: rgb(105, 122, 215);
+  --color-secondary-600: rgb(84, 99, 184);
+  --color-secondary-700: rgb(65, 78, 152);
+  --color-secondary-800: rgb(47, 58, 118);
+  --color-secondary-900: rgb(30, 38, 82);
 
-  --color-neutral-50: rgb(249, 250, 251);
-  --color-neutral-100: rgb(243, 244, 246);
-  --color-neutral-200: rgb(229, 231, 235);
-  --color-neutral-300: rgb(209, 213, 219);
-  --color-neutral-400: rgb(156, 163, 175);
-  --color-neutral-500: rgb(107, 114, 128);
-  --color-neutral-600: rgb(75, 85, 99);
-  --color-neutral-700: rgb(55, 65, 81);
-  --color-neutral-800: rgb(31, 41, 55);
-  --color-neutral-900: rgb(17, 24, 39);
+  --color-neutral-0: rgb(255, 255, 255);
+  --color-neutral-50: rgb(247, 248, 250);
+  --color-neutral-100: rgb(240, 242, 246);
+  --color-neutral-200: rgb(224, 228, 235);
+  --color-neutral-300: rgb(200, 207, 218);
+  --color-neutral-400: rgb(152, 161, 178);
+  --color-neutral-500: rgb(110, 119, 137);
+  --color-neutral-600: rgb(80, 87, 105);
+  --color-neutral-700: rgb(56, 62, 78);
+  --color-neutral-800: rgb(36, 41, 54);
+  --color-neutral-850: rgb(26, 30, 41);
+  --color-neutral-900: rgb(20, 23, 32);
+  --color-neutral-950: rgb(12, 14, 21);
 
-
-  --color-accent-50: rgb(255, 251, 235);
-  --color-accent-100: rgb(254, 243, 199);
-  --color-accent-200: rgb(253, 230, 138);
-  --color-accent-300: rgb(252, 211, 77);
-  --color-accent-400: rgb(251, 191, 36);
-  --color-accent-500: rgb(245, 158, 11);
-  --color-accent-600: rgb(217, 119, 6);
-  --color-accent-700: rgb(180, 83, 9);
-  --color-accent-800: rgb(146, 64, 14);
-  --color-accent-900: rgb(120, 53, 15);
-
-  --color-success-50: rgb(236, 253, 245);
-  --color-success-100: rgb(209, 250, 229);
-  --color-success-200: rgb(167, 243, 208);
-  --color-success-300: rgb(110, 231, 183);
-  --color-success-400: rgb(52, 211, 153);
-  --color-success-500: rgb(16, 185, 129);
-  --color-success-600: rgb(5, 150, 105);
-  --color-success-700: rgb(4, 120, 87);
-  --color-success-800: rgb(6, 95, 70);
-  --color-success-900: rgb(6, 78, 59);
-
-  --color-warning-50: rgb(255, 251, 235);
-  --color-warning-100: rgb(254, 243, 199);
-  --color-warning-200: rgb(253, 230, 138);
-  --color-warning-300: rgb(252, 211, 77);
-  --color-warning-400: rgb(251, 191, 36);
-  --color-warning-500: rgb(245, 158, 11);
-  --color-warning-600: rgb(217, 119, 6);
-  --color-warning-700: rgb(180, 83, 9);
-  --color-warning-800: rgb(146, 64, 14);
-  --color-warning-900: rgb(120, 53, 15);
-
-  --color-destructive-50: rgb(254, 242, 242);
-  --color-destructive-100: rgb(254, 226, 226);
-  --color-destructive-200: rgb(254, 202, 202);
-  --color-destructive-300: rgb(252, 165, 165);
-  --color-destructive-400: rgb(248, 113, 113);
-  --color-destructive-500: rgb(239, 68, 68);
-  --color-destructive-600: rgb(220, 38, 38);
-  --color-destructive-700: rgb(185, 28, 28);
-  --color-destructive-800: rgb(153, 27, 27);
-  --color-destructive-900: rgb(127, 29, 29);
-
-  --color-info-50: rgb(239, 246, 255);
-  --color-info-100: rgb(219, 234, 254);
-  --color-info-200: rgb(191, 219, 254);
-  --color-info-300: rgb(147, 197, 253);
-  --color-info-400: rgb(96, 165, 250);
-  --color-info-500: rgb(59, 130, 246);
-  --color-info-600: rgb(37, 99, 235);
-  --color-info-700: rgb(29, 78, 216);
-  --color-info-800: rgb(30, 64, 175);
-  --color-info-900: rgb(30, 58, 138);
+  --color-surface-canvas: rgb(20, 23, 32);
+  --color-surface-elevated: rgb(26, 30, 41);
+  --color-surface-overlay: rgb(36, 41, 54);
+  --color-surface-glass: rgb(36, 41, 54);
+  --color-border-subtle: rgb(46, 52, 68);
+  --color-border-default: rgb(58, 65, 84);
+  --color-border-strong: rgb(82, 91, 115);
 }
 
-@custom-variant dark (.dark &);
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  /* shadcn/ui CSS variables for light mode */
-  --background: 255 255 255;
-  --foreground: 17 24 39;
+  --background: 247 248 250;
+  --foreground: 20 23 32;
   --card: 255 255 255;
-  --card-foreground: 17 24 39;
+  --card-foreground: 20 23 32;
   --popover: 255 255 255;
-  --popover-foreground: 17 24 39;
-  --muted: 243 244 246;
-  --muted-foreground: 107 114 128;
-  --accent: 243 244 246;
-  --accent-foreground: 17 24 39;
-  --border: 229 231 235;
-  --input: 229 231 235;
-  --ring: 59 130 246;
-  --radius: 0.5rem;
-
-  --c-primary-50: 239, 246, 255;
-  --c-primary-100: 219, 234, 254;
-  --c-primary-200: 191, 219, 254;
-  --c-primary-300: 147, 197, 253;
-  --c-primary-400: 96, 165, 250;
-  --c-primary-500: 59, 130, 246;
-  --c-primary-600: 37, 99, 235;
-  --c-primary-700: 29, 78, 216;
-  --c-primary-800: 30, 64, 175;
-  --c-primary-900: 30, 58, 138;
-  --c-secondary-50: 239, 246, 255;
-  --c-secondary-100: 219, 234, 254;
-  --c-secondary-200: 191, 219, 254;
-  --c-secondary-300: 147, 197, 253;
-  --c-secondary-400: 96, 165, 250;
-  --c-secondary-500: 37, 99, 235;
-  --c-secondary-600: 30, 64, 175;
-  --c-secondary-700: 29, 78, 216;
-  --c-secondary-800: 30, 64, 175;
-  --c-secondary-900: 30, 58, 138;
-  --c-neutral-50: 249, 250, 251;
-  --c-neutral-100: 243, 244, 246;
-  --c-neutral-200: 229, 231, 235;
-  --c-neutral-300: 209, 213, 219;
-  --c-neutral-400: 156, 163, 175;
-  --c-neutral-500: 107, 114, 128;
-  --c-neutral-600: 75, 85, 99;
-  --c-neutral-700: 55, 65, 81;
-  --c-neutral-800: 31, 41, 55;
-  --c-neutral-900: 17, 24, 39;
+  --popover-foreground: 20 23 32;
+  --muted: 240 242 246;
+  --muted-foreground: 110 119 137;
+  --accent: 240 242 246;
+  --accent-foreground: 20 23 32;
+  --border: 224 228 235;
+  --input: 224 228 235;
+  --ring: 94 106 230;
+  --radius: 0.625rem;
 }
 
 .dark {
-  --background: 17 24 39;
-  --foreground: 243 244 246;
-  --card: 31 41 55;
-  --card-foreground: 243 244 246;
-  --popover: 31 41 55;
-  --popover-foreground: 243 244 246;
-  --muted: 55 65 81;
-  --muted-foreground: 156 163 175;
-  --accent: 55 65 81;
-  --accent-foreground: 243 244 246;
-  --border: 55 65 81;
-  --input: 55 65 81;
-  --ring: 96 165 250;
+  --background: 20 23 32;
+  --foreground: 228 230 238;
+  --card: 26 30 41;
+  --card-foreground: 228 230 238;
+  --popover: 36 41 54;
+  --popover-foreground: 228 230 238;
+  --muted: 36 41 54;
+  --muted-foreground: 152 161 178;
+  --accent: 46 52 68;
+  --accent-foreground: 228 230 238;
+  --border: 46 52 68;
+  --input: 46 52 68;
+  --ring: 94 106 230;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-pulse, .animate-spin, .animate-bounce, .animate-gradient {
+    animation: none !important;
+  }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-shimmer { animation: shimmer 2s infinite; }
 
 @layer utilities {
   .scrollbar-custom {
     scrollbar-width: thin;
-    scrollbar-color: rgba(var(--c-primary-500), 0.5) rgba(var(--c-neutral-200), 0.5);
+    scrollbar-color: rgba(94, 106, 230, 0.5) rgba(46, 52, 68, 0.5);
   }
-
-  .scrollbar-custom::-webkit-scrollbar {
-    width: 8px;
-  }
-
+  .scrollbar-custom::-webkit-scrollbar { width: 8px; }
   .scrollbar-custom::-webkit-scrollbar-track {
-    background: rgba(var(--c-neutral-200), 0.5);
+    background: rgba(46, 52, 68, 0.5);
     border-radius: 4px;
   }
-
   .scrollbar-custom::-webkit-scrollbar-thumb {
-    background-color: rgba(var(--c-primary-500), 0.5);
+    background-color: rgba(94, 106, 230, 0.5);
     border-radius: 4px;
-    border: 2px solid rgba(var(--c-neutral-200), 0.5);
+    border: 2px solid rgba(46, 52, 68, 0.5);
   }
-
   .scrollbar-custom::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(var(--c-primary-600), 0.7);
+    background-color: rgba(76, 86, 200, 0.7);
   }
 }
 
@@ -204,8 +142,7 @@
   position: relative;
   padding-bottom: calc(var(--tw-aspect-h) / var(--tw-aspect-w) * 100%);
 }
-
-.aspect-w-3>* {
+.aspect-w-3 > * {
   position: absolute;
   height: 100%;
   width: 100%;
@@ -214,322 +151,97 @@
   bottom: 0;
   left: 0;
 }
-
-.aspect-h-3 {
-  --tw-aspect-h: 3;
-}
-
-.aspect-h-4 {
-  --tw-aspect-h: 4;
-}
-
-.aspect-w-3 {
-  --tw-aspect-w: 3;
-}
+.aspect-h-3 { --tw-aspect-h: 3; }
+.aspect-h-4 { --tw-aspect-h: 4; }
+.aspect-w-3 { --tw-aspect-w: 3; }
 
 @keyframes gradient {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
-
 .animate-gradient {
   background-size: 200% 200%;
   animation: gradient 5s ease infinite;
 }
-
-/* ============================================
-   Container System - Optimized for Financial/News Sites
-   - Uses percentage-based padding for better space usage
-   - Larger max-width for modern wide screens
-   - Balanced whitespace (not too tight, not too loose)
-   ============================================ */
 
 .container {
   width: 100%;
   margin-inline: auto;
   padding-inline: 1rem;
 }
+@media (min-width: 640px) { .container { padding-inline: 1.5rem; } }
+@media (min-width: 768px) { .container { padding-inline: 2rem; } }
+@media (min-width: 1024px) { .container { max-width: 960px; padding-inline: 1.5rem; } }
+@media (min-width: 1280px) { .container { max-width: 1200px; } }
+@media (min-width: 1536px) { .container { max-width: 1400px; } }
+@media (min-width: 1920px) { .container { max-width: 1600px; } }
 
-@media (min-width: 640px) {
-  .container {
-    padding-inline: 1.5rem;
-  }
-}
-
-@media (min-width: 768px) {
-  .container {
-    padding-inline: 2rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .container {
-    max-width: 960px;
-    padding-inline: 1.5rem;
-  }
-}
-
-@media (min-width: 1280px) {
-  .container {
-    max-width: 1200px;
-  }
-}
-
-@media (min-width: 1536px) {
-  .container {
-    max-width: 1400px;
-  }
-}
-
-@media (min-width: 1920px) {
-  .container {
-    max-width: 1600px;
-  }
-}
-
-/* Wide container - for sections that need more space */
 .container-wide {
   width: 100%;
   margin-inline: auto;
   padding-inline: 1rem;
 }
+@media (min-width: 640px) { .container-wide { padding-inline: 2rem; } }
+@media (min-width: 1024px) { .container-wide { max-width: 1100px; } }
+@media (min-width: 1280px) { .container-wide { max-width: 1400px; } }
+@media (min-width: 1536px) { .container-wide { max-width: 1700px; } }
 
-@media (min-width: 640px) {
-  .container-wide {
-    padding-inline: 2rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .container-wide {
-    max-width: 1100px;
-  }
-}
-
-@media (min-width: 1280px) {
-  .container-wide {
-    max-width: 1400px;
-  }
-}
-
-@media (min-width: 1536px) {
-  .container-wide {
-    max-width: 1700px;
-  }
-}
-
-/* Full-width with padding - for hero sections, sliders */
 .container-fluid {
   width: 100%;
   margin-inline: auto;
   padding-inline: 1rem;
 }
+@media (min-width: 640px) { .container-fluid { padding-inline: 2rem; } }
+@media (min-width: 1024px) { .container-fluid { padding-inline: 3rem; } }
+@media (min-width: 1536px) { .container-fluid { padding-inline: 4rem; } }
 
-@media (min-width: 640px) {
-  .container-fluid {
-    padding-inline: 2rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .container-fluid {
-    padding-inline: 3rem;
-  }
-}
-
-@media (min-width: 1536px) {
-  .container-fluid {
-    padding-inline: 4rem;
-  }
-}
-
-/* ============================================
-   RTL Support for Tailwind CSS 4
-   ============================================ */
-
-/* Space utilities RTL fix */
-[dir="rtl"] .space-x-1> :not([hidden])~ :not([hidden]),
-[dir="rtl"] .space-x-2> :not([hidden])~ :not([hidden]),
-[dir="rtl"] .space-x-3> :not([hidden])~ :not([hidden]),
-[dir="rtl"] .space-x-4> :not([hidden])~ :not([hidden]),
-[dir="rtl"] .space-x-5> :not([hidden])~ :not([hidden]),
-[dir="rtl"] .space-x-6> :not([hidden])~ :not([hidden]),
-[dir="rtl"] .space-x-8> :not([hidden])~ :not([hidden]) {
+[dir="rtl"] .space-x-1 > :not([hidden]) ~ :not([hidden]),
+[dir="rtl"] .space-x-2 > :not([hidden]) ~ :not([hidden]),
+[dir="rtl"] .space-x-3 > :not([hidden]) ~ :not([hidden]),
+[dir="rtl"] .space-x-4 > :not([hidden]) ~ :not([hidden]),
+[dir="rtl"] .space-x-5 > :not([hidden]) ~ :not([hidden]),
+[dir="rtl"] .space-x-6 > :not([hidden]) ~ :not([hidden]),
+[dir="rtl"] .space-x-8 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-x-reverse: 1;
 }
 
-/* Margin/Padding logical properties for RTL */
-.ms-auto {
-  margin-inline-start: auto;
-}
+.ms-auto { margin-inline-start: auto; }
+.me-auto { margin-inline-end: auto; }
+.ps-0 { padding-inline-start: 0; }
+.pe-0 { padding-inline-end: 0; }
+.ps-1 { padding-inline-start: 0.25rem; }
+.pe-1 { padding-inline-end: 0.25rem; }
+.ps-2 { padding-inline-start: 0.5rem; }
+.pe-2 { padding-inline-end: 0.5rem; }
+.ps-3 { padding-inline-start: 0.75rem; }
+.pe-3 { padding-inline-end: 0.75rem; }
+.ps-4 { padding-inline-start: 1rem; }
+.pe-4 { padding-inline-end: 1rem; }
+.ms-0 { margin-inline-start: 0; }
+.me-0 { margin-inline-end: 0; }
+.ms-1 { margin-inline-start: 0.25rem; }
+.me-1 { margin-inline-end: 0.25rem; }
+.ms-2 { margin-inline-start: 0.5rem; }
+.me-2 { margin-inline-end: 0.5rem; }
+.ms-3 { margin-inline-start: 0.75rem; }
+.me-3 { margin-inline-end: 0.75rem; }
+.ms-4 { margin-inline-start: 1rem; }
+.me-4 { margin-inline-end: 1rem; }
 
-.me-auto {
-  margin-inline-end: auto;
-}
+.text-start { text-align: start; }
+.text-end { text-align: end; }
 
-.ps-0 {
-  padding-inline-start: 0;
-}
-
-.pe-0 {
-  padding-inline-end: 0;
-}
-
-.ps-1 {
-  padding-inline-start: 0.25rem;
-}
-
-.pe-1 {
-  padding-inline-end: 0.25rem;
-}
-
-.ps-2 {
-  padding-inline-start: 0.5rem;
-}
-
-.pe-2 {
-  padding-inline-end: 0.5rem;
-}
-
-.ps-3 {
-  padding-inline-start: 0.75rem;
-}
-
-.pe-3 {
-  padding-inline-end: 0.75rem;
-}
-
-.ps-4 {
-  padding-inline-start: 1rem;
-}
-
-.pe-4 {
-  padding-inline-end: 1rem;
-}
-
-.ms-0 {
-  margin-inline-start: 0;
-}
-
-.me-0 {
-  margin-inline-end: 0;
-}
-
-.ms-1 {
-  margin-inline-start: 0.25rem;
-}
-
-.me-1 {
-  margin-inline-end: 0.25rem;
-}
-
-.ms-2 {
-  margin-inline-start: 0.5rem;
-}
-
-.me-2 {
-  margin-inline-end: 0.5rem;
-}
-
-.ms-3 {
-  margin-inline-start: 0.75rem;
-}
-
-.me-3 {
-  margin-inline-end: 0.75rem;
-}
-
-.ms-4 {
-  margin-inline-start: 1rem;
-}
-
-.me-4 {
-  margin-inline-end: 1rem;
-}
-
-/* Text alignment for RTL */
-.text-start {
-  text-align: start;
-}
-
-.text-end {
-  text-align: end;
-}
-
-/* Border radius for RTL */
 .rounded-s {
   border-start-start-radius: 0.25rem;
   border-end-start-radius: 0.25rem;
 }
-
 .rounded-e {
   border-start-end-radius: 0.25rem;
   border-end-end-radius: 0.25rem;
 }
 
-/* Inset utilities for RTL */
-.start-0 {
-  inset-inline-start: 0;
-}
-
-.end-0 {
-  inset-inline-end: 0;
-}
-
-.start-auto {
-  inset-inline-start: auto;
-}
-
-.end-auto {
-  inset-inline-end: auto;
-}
-
-/* ============================================
-   Reduced Motion Support
-   Respects user's prefers-reduced-motion setting
-   ============================================ */
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-  
-  .animate-pulse,
-  .animate-spin,
-  .animate-bounce,
-  .animate-gradient {
-    animation: none !important;
-  }
-}
-
-/* ============================================
-   Skeleton Shimmer Animation
-   Premium loading effect for skeleton components
-   ============================================ */
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-.animate-shimmer {
-  animation: shimmer 2s infinite;
-}
+.start-0 { inset-inline-start: 0; }
+.end-0 { inset-inline-end: 0; }
+.start-auto { inset-inline-start: auto; }
+.end-auto { inset-inline-end: auto; }

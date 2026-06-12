@@ -1,42 +1,72 @@
+/* ============================================================================
+   Theme Colors — linear.app inspired
+   ----------------------------------------------------------------------------
+   Linear.app's dark theme is built on a near-black canvas with very subtle,
+   cool gray surfaces, soft borders, and a restrained accent palette.
+   Light mode is intentionally rare in the brand, so we keep it as a fallback.
+
+   Tokens are stored as `R G B` triples (no rgb() wrapper) so they can be
+   composed with `rgba(var(--c-xxx-N), 0.5)` etc. without an extra layer of
+   CSS variables.
+   ============================================================================ */
+
 :root {
-  /* PRIMARY COLOR */
-  --c-primary-50: 239, 246, 255;
-  --c-primary-100: 219, 234, 254;
-  --c-primary-200: 191, 219, 254;
-  --c-primary-300: 147, 197, 253;
-  --c-primary-400: 96, 165, 250;
-  --c-primary-500: 59, 130, 246;
-  --c-primary-600: 37, 99, 235;
-  --c-primary-700: 29, 78, 216;
-  --c-primary-800: 30, 64, 175;
-  --c-primary-900: 30, 58, 138;
+  /* ------------------------------- PRIMARY -------------------------------- */
+  /* Cool, slightly violet-tinged blue. Linear uses a similar accent. */
+  --c-primary-50: 235, 240, 255;
+  --c-primary-100: 215, 222, 255;
+  --c-primary-200: 184, 196, 255;
+  --c-primary-300: 148, 163, 255;
+  --c-primary-400: 121, 134, 247;
+  --c-primary-500: 94, 106, 230; /* base accent */
+  --c-primary-600: 76, 86, 200;
+  --c-primary-700: 60, 68, 162;
+  --c-primary-800: 45, 51, 124;
+  --c-primary-900: 30, 34, 86;
 
-  /* SECONDARY COLOR */
-  --c-secondary-50: 239, 246, 255;
-  --c-secondary-100: 219, 234, 254;
-  --c-secondary-200: 191, 219, 254;
-  --c-secondary-300: 147, 197, 253;
-  --c-secondary-400: 96, 165, 250;
-  --c-secondary-500: 37, 99, 235;
-  --c-secondary-600: 30, 64, 175;
-  --c-secondary-700: 29, 78, 216;
-  --c-secondary-800: 30, 64, 175;
-  --c-secondary-900: 30, 58, 138;
+  /* ------------------------------ SECONDARY ------------------------------- */
+  --c-secondary-50: 240, 244, 255;
+  --c-secondary-100: 224, 230, 255;
+  --c-secondary-200: 196, 207, 255;
+  --c-secondary-300: 162, 178, 255;
+  --c-secondary-400: 130, 148, 240;
+  --c-secondary-500: 105, 122, 215;
+  --c-secondary-600: 84, 99, 184;
+  --c-secondary-700: 65, 78, 152;
+  --c-secondary-800: 47, 58, 118;
+  --c-secondary-900: 30, 38, 82;
 
-  /* NEUTRAL COLOR */
-  --c-neutral-50: 249, 250, 251;
-  --c-neutral-100: 243, 244, 246;
-  --c-neutral-200: 229, 231, 235;
-  --c-neutral-300: 209, 213, 219;
-  --c-neutral-400: 156, 163, 175;
-  --c-neutral-500: 107, 114, 128;
-  --c-neutral-600: 75, 85, 99;
-  --c-neutral-700: 55, 65, 81;
-  --c-neutral-800: 31, 41, 55;
-  --c-neutral-900: 17, 24, 39;
+  /* ------------------------------- NEUTRAL -------------------------------- */
+  /* Linear.app's neutral palette is a deeply cool charcoal scale. */
+  --c-neutral-0:   255, 255, 255; /* pure white (for overlays) */
+  --c-neutral-50:  247, 248, 250;
+  --c-neutral-100: 240, 242, 246;
+  --c-neutral-200: 224, 228, 235;
+  --c-neutral-300: 200, 207, 218;
+  --c-neutral-400: 152, 161, 178;
+  --c-neutral-500: 110, 119, 137;
+  --c-neutral-600: 80, 87, 105;
+  --c-neutral-700: 56, 62, 78;
+  --c-neutral-800: 36, 41, 54;
+  --c-neutral-850: 26, 30, 41; /* linear.app "elevated surface" */
+  --c-neutral-900: 20, 23, 32; /* linear.app "canvas" */
+  --c-neutral-950: 12, 14, 21; /* deepest background */
 
-  /* ACCENT COLOR (تکمیلی برای primary) */
-  --c-accent-50: 255, 251, 235;
+  /* ----------------------------- SURFACES --------------------------------- */
+  /* These are the three "elevation" levels used throughout the UI. */
+  --c-surface-canvas:    20, 23, 32;     /* page background (dark) */
+  --c-surface-elevated:  26, 30, 41;     /* cards, dropdowns */
+  --c-surface-overlay:   36, 41, 54;     /* popovers, modals */
+  --c-surface-glass:     36, 41, 54;     /* used with backdrop-blur */
+
+  /* ----------------------------- BORDERS ---------------------------------- */
+  /* Very subtle hairlines — Linear uses 1px borders with low opacity. */
+  --c-border-subtle:     46, 52, 68;
+  --c-border-default:    58, 65, 84;
+  --c-border-strong:     82, 91, 115;
+
+  /* ----------------------------- ACCENT (gold) ---------------------------- */
+  --c-accent-50:  255, 251, 235;
   --c-accent-100: 254, 243, 199;
   --c-accent-200: 253, 230, 138;
   --c-accent-300: 252, 211, 77;
@@ -47,8 +77,8 @@
   --c-accent-800: 146, 64, 14;
   --c-accent-900: 120, 53, 15;
 
-  /* SUCCESS COLOR */
-  --c-success-50: 236, 253, 245;
+  /* ----------------------------- SUCCESS ---------------------------------- */
+  --c-success-50:  236, 253, 245;
   --c-success-100: 209, 250, 229;
   --c-success-200: 167, 243, 208;
   --c-success-300: 110, 231, 183;
@@ -59,8 +89,8 @@
   --c-success-800: 6, 95, 70;
   --c-success-900: 6, 78, 59;
 
-  /* WARNING COLOR */
-  --c-warning-50: 255, 251, 235;
+  /* ------------------------------ WARNING --------------------------------- */
+  --c-warning-50:  255, 251, 235;
   --c-warning-100: 254, 243, 199;
   --c-warning-200: 253, 230, 138;
   --c-warning-300: 252, 211, 77;
@@ -71,8 +101,8 @@
   --c-warning-800: 146, 64, 14;
   --c-warning-900: 120, 53, 15;
 
-  /* ERROR COLOR */
-  --c-destructive-50: 254, 242, 242;
+  /* ---------------------------- DESTRUCTIVE ------------------------------- */
+  --c-destructive-50:  254, 242, 242;
   --c-destructive-100: 254, 226, 226;
   --c-destructive-200: 254, 202, 202;
   --c-destructive-300: 252, 165, 165;
@@ -83,8 +113,8 @@
   --c-destructive-800: 153, 27, 27;
   --c-destructive-900: 127, 29, 29;
 
-  /* INFO COLOR */
-  --c-info-50: 239, 246, 255;
+  /* -------------------------------- INFO ---------------------------------- */
+  --c-info-50:  239, 246, 255;
   --c-info-100: 219, 234, 254;
   --c-info-200: 191, 219, 254;
   --c-info-300: 147, 197, 253;
@@ -94,4 +124,19 @@
   --c-info-700: 29, 78, 216;
   --c-info-800: 30, 64, 175;
   --c-info-900: 30, 58, 138;
+}
+
+/* ============================================================================
+   Light theme overrides (used when html does NOT have .dark)
+   Linear-style: light mode is intentionally restrained.
+   ============================================================================ */
+:root:not(.dark) {
+  --c-surface-canvas:    247, 248, 250;
+  --c-surface-elevated:  255, 255, 255;
+  --c-surface-overlay:   255, 255, 255;
+  --c-surface-glass:     255, 255, 255;
+
+  --c-border-subtle:     224, 228, 235;
+  --c-border-default:    200, 207, 218;
+  --c-border-strong:     152, 161, 178;
 }
