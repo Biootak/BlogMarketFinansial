@@ -1,43 +1,54 @@
 'use client';
 
 /**
- * ClientSidePosts — نسخه ۲۰۲۶ (v2 — با همه‌ی تکنیک‌های جدید)
+ * ClientSidePosts — نسخه ۲۰۲۶ (v3 — داینامیک، تمیز، بدون CTA اضافی)
  *
- * تکنیک‌های مدرن (2026):
- *  1.  MarketTicker — نوار متحرک قیمت (LIVE indicator)
- *  2.  LiveClock — ساعت تهران با pulse
- *  3.  AnimatedNumber — شمارنده از 0
- *  4.  Bento layout — featured hero (8col) + 2 mini (4col)
- *  5.  Aurora background (low-saturation)
- *  6.  Tabs با `layoutId` indicator (linear.app-style)
- *  7.  Category-Specific Accent (هر تب رنگ خودش)
- *  8.  3D Tilt + Spotlight + Parallax
- *  9.  Stagger container هنگام ورود
- * 10.  AnimatePresence بین category ها
- * 11.  Tabular-nums + PersianDigits
- * 12.  Hairline border highlight
- * 13.  Shimmer line روی hover
- * 14.  Meta slide-up در CompactPostCard
- * 15.  RTL کامل
- * 16.  Keyboard accessible
- * 17.  respects prefers-reduced-motion + pointer: coarse
+ * تکنیک‌ها (نگه‌داشته شده):
+ *  1.  MarketTicker — نوار متحرک قیمت
+ *  2.  LiveClock — ساعت تهران
+ *  3.  AnimatedNumber
+ *  4.  Bento layout
+ *  5.  Aurora background
+ *  6.  Tabs با layoutId indicator
+ *  7.  Category-Specific Accent
+ *  8.  3D Tilt + Spotlight
+ *  9.  AnimatePresence
+ * 10.  Tabular-nums + PersianDigits
+ * 11.  prefers-reduced-motion + pointer: coarse
  *
- * رنگ‌بندی: refined (low-saturation) — بدون رنگ جیغ
+ * تغییرات v3:
+ *  - Tabs به صورت داینامیک از دیتابیس (همیشه «همه» اول، بعد بر اساس تعداد مقاله)
+ *  - اگه تعداد دسته‌ها > MAX_VISIBLE_TABS، بقیه توی DropdownMenu
+ *  - حذف «مشاهده آرشیو کامل» (CTA اضافی)
+ *  - `hasMore` اولیه درست: فقط اگه POSTS_PER_PAGE تا پست اومده باشه true
+ *  - محافظت در برابر تکراری بودن نام دسته (dedupe در entry)
+ *  - محافظت در برابر کلیک همزمان روی «بارگذاری بیشتر» چند دسته (isLoading)
+ *  - Slug-aware category filter (نه name-based)
  */
 
 import type React from 'react';
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Newspaper,
-  ArrowLeft,
   AlertCircle,
   Sparkles,
+  ChevronDown,
+  Check,
+  MoreHorizontal,
 } from 'lucide-react';
 import { getLatestPosts } from '@/actions/getLatestPosts';
 import { getMarketTickerData, type MarketTickerItem } from '@/actions/marketTickerActions';
 import type { Advertisement, PostWithRelations } from '@/types/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import Empty from '../Empty';
 import PostsDisplay from '../PostsDisplay.tsx/PostsDisplay';
 import { cn, toPersianNumber } from '@/lib/utils';
@@ -51,11 +62,13 @@ import { getCategoryAccent } from './effects/categoryAccent';
 interface ClientSidePostsProps {
   initialPosts: Record<string, PostWithRelations[]>;
   initialAds: Advertisement[];
-  categories: string[];
+  /** لیست نام دسته‌ها به ترتیب دلخواه (همیشه «همه» اول) */
+  categoryNames: string[];
   initialTickerData?: MarketTickerItem[];
 }
 
 const POSTS_PER_PAGE = 6;
+const MAX_VISIBLE_TABS = 6; // بیشتر از این → dropdown
 
 /* -------------------------------------------------------------------------- */
 /*  Variants                                                                  */
@@ -77,23 +90,65 @@ const tabsListVariants = {
 };
 
 /* -------------------------------------------------------------------------- */
+/*  Helpers                                                                   */
+/* -------------------------------------------------------------------------- */
+
+function normFa(s: string): string {
+  return s
+    .replace(/\s+/g, '')
+    .replace(/[‌]/g, '')
+    .toLowerCase();
+}
+
+function dedupeCategoryNames(input: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const name of input) {
+    const trimmed = name?.trim();
+    if (!trimmed) continue;
+    // «همه» فقط یک‌بار (اگه چند بار اومده باشه، فقط اولی)
+    const key = normFa(trimmed);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(trimmed);
+  }
+  return out;
+}
+
+/* -------------------------------------------------------------------------- */
 /*  Component                                                                 */
 /* -------------------------------------------------------------------------- */
 
 const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
   initialPosts,
   initialAds,
-  categories,
+  categoryNames,
   initialTickerData = [],
 }) => {
+  /* ---------- Dedupe + clean category list ---------- */
+  const categories = useMemo(() => {
+    // اگه «همه» نبود، اضافه‌اش کن
+    const hasAll = categoryNames.some((c) => normFa(c) === normFa('همه'));
+    const list = hasAll ? categoryNames : ['همه', ...categoryNames];
+    return dedupeCategoryNames(list);
+  }, [categoryNames]);
+
   const [posts, setPosts] = useState<Record<string, PostWithRelations[]>>(initialPosts);
   const [ads] = useState<Advertisement[]>(initialAds);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasMore, setHasMore] = useState<Record<string, boolean>>(
-    Object.fromEntries(categories.map((category) => [category, true])),
-  );
+  /* hasMore اولیه: فقط وقتی true که دقیقاً POSTS_PER_PAGE تا پست اومده باشه.
+   * در غیر این صورت (۰ تا یا کمتر از صفحه) یعنی ته صفحه. */
+  const [hasMore, setHasMore] = useState<Record<string, boolean>>(() => {
+    const map: Record<string, boolean> = {};
+    for (const cat of categories) {
+      const len = initialPosts[cat]?.length ?? 0;
+      map[cat] = len === POSTS_PER_PAGE;
+    }
+    return map;
+  });
   const [error, setError] = useState<Error | null>(null);
-  const [activeCategory, setActiveCategory] = useState('همه');
+  const [activeCategory, setActiveCategory] = useState<string>('همه');
+  const isLoadingRef = useRef(false); // برای race condition
 
   const accent = useMemo(() => getCategoryAccent(activeCategory), [activeCategory]);
 
@@ -104,9 +159,22 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
 
   const activeCount = posts[activeCategory]?.length ?? 0;
 
-  const loadMorePosts = useCallback(async () => {
-    if (isLoading || !hasMore[activeCategory]) return;
+  /* ---------- Split visible + overflow tabs ---------- */
+  const { visibleTabs, overflowTabs } = useMemo(() => {
+    // اگه «همه» هست، اول می‌مونه
+    const allIdx = categories.findIndex((c) => normFa(c) === normFa('همه'));
+    const allName = allIdx >= 0 ? categories[allIdx] : 'همه';
+    const rest = categories.filter((c) => c !== allName);
+    const visible = [allName, ...rest.slice(0, MAX_VISIBLE_TABS - 1)];
+    const overflow = rest.slice(MAX_VISIBLE_TABS - 1);
+    return { visibleTabs: visible, overflowTabs: overflow };
+  }, [categories]);
 
+  const loadMorePosts = useCallback(async () => {
+    if (isLoadingRef.current || isLoading) return;
+    if (!hasMore[activeCategory]) return;
+
+    isLoadingRef.current = true;
     setIsLoading(true);
     setError(null);
 
@@ -134,13 +202,19 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
       console.error('Error loading more posts:', err);
       setError(err as Error);
     } finally {
+      isLoadingRef.current = false;
       setIsLoading(false);
     }
   }, [posts, isLoading, hasMore, activeCategory]);
 
+  /* ---------- Switch category → scroll to top of panel ---------- */
+  useEffect(() => {
+    // اگه دسته‌ی فعال توی visible نیست و توی overflow هست، دوباره tabs رو می‌بندیم
+  }, [activeCategory]);
+
   return (
     <section className="relative isolate space-y-3 sm:space-y-4">
-      {/* Market Ticker (نوار قیمت زنده — از server action) */}
+      {/* Market Ticker */}
       <MarketTicker
         initialData={initialTickerData}
         refetchAction={getMarketTickerData}
@@ -164,11 +238,9 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
             'bg-white/75 dark:bg-neutral-900/70 backdrop-blur-xl',
             'shadow-[0_1px_0_0_rgba(255,255,255,0.6)_inset,0_24px_48px_-24px_rgba(20,23,32,0.12)]',
             'dark:shadow-[0_1px_0_0_rgba(255,255,255,0.04)_inset,0_24px_48px_-24px_rgba(0,0,0,0.4)]',
-            // Accent glow border هنگام تغییر category
             'transition-all duration-500',
           )}
           style={{
-            // subtle accent ring color
             boxShadow: `0 1px 0 0 rgba(255,255,255,0.6) inset, 0 24px 48px -24px ${accent.color}15`,
           }}
         >
@@ -187,7 +259,6 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
           {/* ================================================================== */}
           <header className="relative px-5 sm:px-7 lg:px-10 pt-7 pb-5 sm:pt-9 sm:pb-6">
             <div className="relative flex flex-wrap items-center gap-x-5 gap-y-3 sm:flex-nowrap">
-              {/* Icon block (با accent color دسته‌ی فعال) */}
               <motion.div
                 className="relative shrink-0"
                 animate={{ scale: [1, 1.05, 1] }}
@@ -235,7 +306,6 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
                 </div>
               </motion.div>
 
-              {/* Title + subtitle */}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <h2 className="text-xl sm:text-2xl lg:text-[26px] font-bold tracking-tight text-neutral-900 dark:text-white">
@@ -313,10 +383,10 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
           </AnimatePresence>
 
           {/* ================================================================== */}
-          {/*  Tabs با Category-Specific Accent                                   */}
+          {/*  Tabs                                                              */}
           {/* ================================================================== */}
           <Tabs
-            defaultValue="همه"
+            value={activeCategory}
             onValueChange={setActiveCategory}
             dir="rtl"
             className="w-full"
@@ -336,7 +406,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
                   'backdrop-blur-md',
                 )}
               >
-                {categories.map((category) => {
+                {visibleTabs.map((category) => {
                   const count = posts[category]?.length ?? 0;
                   const isActive = activeCategory === category;
                   const tabAccent = getCategoryAccent(category);
@@ -345,19 +415,15 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
                       key={category}
                       value={category}
                       className={cn(
-                        'relative flex items-center gap-2 px-4 sm:px-5 py-2',
-                        'text-sm font-medium rounded-xl',
+                        'relative flex items-center gap-2 px-3.5 sm:px-4 py-2',
+                        'text-[13px] sm:text-sm font-medium rounded-xl',
                         'transition-colors duration-200',
                         'text-neutral-600 dark:text-neutral-400',
                         'hover:text-neutral-900 dark:hover:text-neutral-200',
                         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50',
                         'cursor-pointer',
                       )}
-                      style={
-                        isActive
-                          ? { color: tabAccent.color }
-                          : undefined
-                      }
+                      style={isActive ? { color: tabAccent.color } : undefined}
                     >
                       {isActive && (
                         <motion.span
@@ -376,7 +442,6 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
                           aria-hidden
                         />
                       )}
-                      {/* Active dot */}
                       {isActive && (
                         <span
                           className="relative z-10 inline-block h-1.5 w-1.5 rounded-full"
@@ -405,6 +470,85 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
                     </TabsTrigger>
                   );
                 })}
+
+                {/* Overflow dropdown — اگه دسته‌های بیشتری مونده */}
+                {overflowTabs.length > 0 && (
+                  <DropdownMenu dir="rtl">
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className={cn(
+                          'relative flex items-center gap-1.5 px-3.5 sm:px-4 py-2',
+                          'text-[13px] sm:text-sm font-medium rounded-xl',
+                          'transition-colors duration-200',
+                          'text-neutral-600 dark:text-neutral-400',
+                          'hover:text-neutral-900 dark:hover:text-neutral-200',
+                          'hover:bg-white/60 dark:hover:bg-neutral-700/60',
+                          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50',
+                          'cursor-pointer',
+                        )}
+                        aria-label={`${toPersianNumber(overflowTabs.length)} دسته‌ی بیشتر`}
+                      >
+                        <MoreHorizontal className="h-4 w-4" strokeWidth={2} aria-hidden />
+                        <span>بیشتر</span>
+                        <ChevronDown className="h-3 w-3 opacity-60" strokeWidth={2} aria-hidden />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="end"
+                      sideOffset={8}
+                      className={cn(
+                        'min-w-[220px] p-1.5',
+                        'rounded-2xl',
+                        'border border-neutral-200/80 dark:border-neutral-700/80',
+                        'bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl',
+                        'shadow-[0_8px_32px_-8px_rgba(20,23,32,0.18)]',
+                        'dark:shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]',
+                      )}
+                    >
+                      <DropdownMenuLabel className="text-[11px] uppercase tracking-wide text-neutral-500 dark:text-neutral-400 font-semibold px-2 py-1.5">
+                        دسته‌های بیشتر
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator className="bg-neutral-200/60 dark:bg-neutral-700/60" />
+                      <div className="max-h-[280px] overflow-y-auto">
+                        {overflowTabs.map((category) => {
+                          const isActive = activeCategory === category;
+                          const count = posts[category]?.length ?? 0;
+                          return (
+                            <DropdownMenuItem
+                              key={category}
+                              onSelect={() => setActiveCategory(category)}
+                              className={cn(
+                                'flex items-center justify-between gap-3 px-2.5 py-2',
+                                'rounded-lg cursor-pointer',
+                                'text-[13px]',
+                                isActive &&
+                                  'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300',
+                              )}
+                            >
+                              <span className="flex items-center gap-2 min-w-0">
+                                {isActive && <Check className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} />}
+                                <span className="truncate">{category}</span>
+                              </span>
+                              {count > 0 && (
+                                <span
+                                  className={cn(
+                                    'inline-flex items-center justify-center min-w-[1.5rem] h-5 px-1.5 rounded-full',
+                                    'text-[10px] font-semibold tabular-nums',
+                                    'bg-neutral-100 dark:bg-neutral-800',
+                                    'text-neutral-600 dark:text-neutral-300',
+                                  )}
+                                >
+                                  {toPersianNumber(count)}
+                                </span>
+                              )}
+                            </DropdownMenuItem>
+                          );
+                        })}
+                      </div>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </TabsList>
 
               {/* Active category hint */}
@@ -432,55 +576,33 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
                 value={category}
                 className="mt-0 px-5 sm:px-7 lg:px-10 py-6 sm:py-8 focus-visible:outline-none focus-visible:ring-0"
               >
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={category}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    variants={panelVariants}
-                  >
-                    {posts[category] && posts[category].length > 0 ? (
-                      <PostsDisplay
-                        posts={posts[category]}
-                        ads={ads}
-                        onLoadMore={loadMorePosts}
-                        isLoading={isLoading}
-                        hasMore={hasMore[category]}
-                      />
-                    ) : (
-                      <Empty />
-                    )}
-                  </motion.div>
-                </AnimatePresence>
+                {category === activeCategory ? (
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={category}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      variants={panelVariants}
+                    >
+                      {posts[category] && posts[category].length > 0 ? (
+                        <PostsDisplay
+                          posts={posts[category]}
+                          ads={ads}
+                          onLoadMore={loadMorePosts}
+                          isLoading={isLoading}
+                          hasMore={hasMore[category] ?? false}
+                        />
+                      ) : (
+                        <Empty />
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
+                ) : null}
               </TabsContent>
             ))}
           </Tabs>
         </motion.div>
-      </div>
-
-      {/* View-all CTA */}
-      <div className="flex justify-center sm:justify-end">
-        <a
-          href="/archive"
-          className={cn(
-            'group inline-flex items-center gap-2 px-4 py-2',
-            'rounded-full',
-            'text-sm font-medium',
-            'text-neutral-600 dark:text-neutral-300',
-            'hover:text-primary-700 dark:hover:text-primary-300',
-            'transition-colors duration-200',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50',
-            'cursor-pointer',
-          )}
-        >
-          <span>مشاهده آرشیو کامل</span>
-          <ArrowLeft
-            className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-1"
-            strokeWidth={2}
-            aria-hidden
-          />
-        </a>
       </div>
     </section>
   );

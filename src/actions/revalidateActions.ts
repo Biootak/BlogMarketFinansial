@@ -7,6 +7,7 @@ export async function revalidateCategoryCache(categoryId: string) {
     if (categoryId === 'list') {
       revalidateTag('categories', 'page');
       revalidateTag('category-list', 'page');
+      revalidateTag('latest-post-categories', 'page');
     } else {
       revalidateTag(`category-${categoryId}`, 'page');
     }

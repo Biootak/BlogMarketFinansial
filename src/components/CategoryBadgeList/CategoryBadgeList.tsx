@@ -9,6 +9,8 @@ export interface CategoryBadgeListProps {
   itemClass?: string;
   categories: Category[];
   disableLinks?: boolean;
+  /** حداکثر تعداد badge که نمایش داده می‌شه. بقیه جمع می‌شن توی یک +N */
+  maxVisible?: number;
 }
 
 const CategoryBadgeList: React.FC<CategoryBadgeListProps> = ({
@@ -16,6 +18,7 @@ const CategoryBadgeList: React.FC<CategoryBadgeListProps> = ({
   itemClass,
   categories,
   disableLinks = false,
+  maxVisible = 4,
 }) => {
   const colors: TwMainColor[] = [
     'pink',
@@ -28,19 +31,27 @@ const CategoryBadgeList: React.FC<CategoryBadgeListProps> = ({
     'gray',
   ];
 
+  const { visible, hiddenCount } = useMemo(() => {
+    const safe = Array.isArray(categories) ? categories : [];
+    return {
+      visible: safe.slice(0, maxVisible),
+      hiddenCount: Math.max(0, safe.length - maxVisible),
+    };
+  }, [categories, maxVisible]);
+
   const categoryColors = useMemo(() => {
-    return categories.reduce(
+    return visible.reduce(
       (acc, category, index) => {
         acc[category.id] = colors[index % colors.length];
         return acc;
       },
       {} as Record<string, TwMainColor>,
     );
-  }, [categories]);
+  }, [visible]);
 
   return (
     <div className={`nc-CategoryBadgeList ${className}`} data-nc-id="CategoryBadgeList">
-      {categories.map((category) => (
+      {visible.map((category) => (
         <Badge
           key={category.id}
           className={`${itemClass} text-[10px]/[14px] px-3 py-1  m-1`}
@@ -50,6 +61,14 @@ const CategoryBadgeList: React.FC<CategoryBadgeListProps> = ({
           isLink={!disableLinks}
         />
       ))}
+      {hiddenCount > 0 && (
+        <span
+          className={`${itemClass ?? ''} inline-flex items-center justify-center m-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-neutral-200/70 dark:bg-neutral-800/70 text-neutral-600 dark:text-neutral-300 tabular-nums`}
+          aria-label={`${hiddenCount} مورد بیشتر`}
+        >
+          +{hiddenCount}
+        </span>
+      )}
     </div>
   );
 };

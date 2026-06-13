@@ -54,8 +54,9 @@ export default function Card6({ className = '', post }: Card6Props) {
           <div className="absolute inset-0 flex flex-col justify-between p-3">
             {/* Top Section: Categories & Post Type */}
             <div className="flex items-start justify-between gap-2">
-              <CategoryBadgeList 
-                categories={categories} 
+              <CategoryBadgeList
+                categories={categories}
+                maxVisible={2}
                 className="flex flex-wrap gap-1.5"
                 itemClass="text-[10px] px-2 py-1 font-semibold backdrop-blur-md bg-white/90 dark:bg-neutral-900/90 shadow-lg"
               />
@@ -142,8 +143,9 @@ export default function Card6({ className = '', post }: Card6Props) {
             
             {/* Categories */}
             <div className="mb-2">
-              <CategoryBadgeList 
-                categories={categories} 
+              <CategoryBadgeList
+                categories={categories}
+                maxVisible={2}
                 className="flex flex-wrap gap-1.5"
                 itemClass="text-[10px] px-2.5 py-1 font-medium"
               />

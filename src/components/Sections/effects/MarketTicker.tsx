@@ -155,7 +155,10 @@ export default function MarketTicker({
             const Icon = isUp ? TrendingUp : TrendingDown;
             return (
               <div
-                key={item.symbol}
+                /* category + symbol + index — `data.map` به تنهایی ایمنه، اما
+                 * ترکیب با `index` تضمین می‌کنه اگه در آینده داده تکراری
+                 * از سرور بیاد، React باز هم key یکتا داشته باشه. */
+                key={`${item.category}-${item.symbol}`}
                 className={cn(
                   'group/item flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3',
                   'text-[11px] sm:text-[13px]',

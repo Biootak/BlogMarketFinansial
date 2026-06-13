@@ -175,7 +175,21 @@ async function loadMarketTickerData(): Promise<MarketTickerItem[]> {
     // silent
   }
 
-  return items;
+  /* ---------- Dedupe by symbol ----------
+   * چند ردیف DB می‌تونه یک currency داشته باشه (rateType های متفاوت، یا
+   * تکرار دستی). اگه symbol تکراری توی آرایه بمونه، React در <Marquee/>
+   * که children رو ۳ بار تکرار می‌کنه با warning «duplicate key» می‌ترکه.
+   * اولین occurrence (که جدیدترین هست چون orderBy createdAt desc) نگه داشته می‌شه.
+   */
+  const seen = new Set<string>();
+  const unique: MarketTickerItem[] = [];
+  for (const item of items) {
+    if (seen.has(item.symbol)) continue;
+    seen.add(item.symbol);
+    unique.push(item);
+  }
+
+  return unique;
 }
 
 /**

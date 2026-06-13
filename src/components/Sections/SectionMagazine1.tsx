@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { getLatestPosts } from '@/actions/getLatestPosts';
 import { getActiveAdvertisements } from '@/actions/advertisementActions';
 import { getMarketTickerData } from '@/actions/marketTickerActions';
+import { getLatestPostCategories, type LatestPostCategory } from '@/actions/getLatestPostCategories';
 import ClientSidePosts from './ClientSidePosts';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Advertisement, PostWithRelations } from '@/types/types';
@@ -10,27 +11,81 @@ export interface SectionMagazine1Props {
   className?: string;
 }
 
-const CATEGORIES = ['همه', 'طلا', 'ارز دیجیتال', 'بازار جهانی'];
+/* ---------- Helpers ---------- */
+
+/** نرمال‌سازی نام دسته برای مقایسه (حذف فاصله + کشیدگی + حروف کوچک فارسی) */
+function normFa(s: string): string {
+  return s
+    .replace(/\s+/g, '')
+    .replace(/[‌]/g, '') // ZWNJ
+    .toLowerCase();
+}
+
+/** فیلتر کردن پست‌ها بر اساس category.slug (نه name) — تا با تفاوت نام/فاصله مشکل نخوره */
+function filterByCategory(
+  posts: PostWithRelations[],
+  slugOrName: string,
+  slugLookup: Map<string, string>, // normName -> slug
+): PostWithRelations[] {
+  if (slugOrName === 'همه') return posts;
+  // اول سعی می‌کنیم به slug تبدیل کنیم
+  const slug = slugLookup.get(normFa(slugOrName)) ?? slugOrName;
+  return posts.filter((post) =>
+    post.categories?.some(
+      (cat) => cat.slug === slug || normFa(cat.name) === normFa(slugOrName),
+    ),
+  );
+}
 
 export default async function SectionMagazine1({ className = '' }: SectionMagazine1Props) {
-  const [allPosts, mediumAdsResult, tickerData] = await Promise.all([
-    getLatestPosts({ count: 6 }),
-    getActiveAdvertisements({ limit: 10, size: 'MEDIUM' }),
+  // 1) اول دسته‌ها رو می‌گیریم تا بدونیم چه category name هایی معتبرن
+  const categoriesData: LatestPostCategory[] = await getLatestPostCategories();
+
+  // Map normName -> slug برای فیلترینگ
+  const slugLookup = new Map<string, string>();
+  for (const c of categoriesData) {
+    slugLookup.set(normFa(c.name), c.slug);
+  }
+
+  // 2) لیست تب‌ها — همیشه «همه» اول، بقیه بر اساس تعداد مقاله (DB ترتیب داده)
+  const categoryNames: string[] = ['همه', ...categoriesData.map((c) => c.name)];
+
+  // 3) پست‌های همه‌ی دسته‌ها به‌صورت موازی
+  const postsByCategoryPromises = categoryNames.map((name) =>
+    name === 'همه'
+      ? getLatestPosts({ count: 12, skip: 0 })
+      : getLatestPosts({ count: 12, skip: 0, category: name }),
+  );
+
+  const [tickerData, mediumAdsResult, ...postsResults] = await Promise.all([
     getMarketTickerData(),
+    getActiveAdvertisements({ limit: 10, size: 'MEDIUM' }),
+    ...postsByCategoryPromises,
   ]);
 
-  const initialAds: Advertisement[] = mediumAdsResult.success ? (mediumAdsResult.data ?? []) : [];
+  const initialAds: Advertisement[] = mediumAdsResult.success
+    ? (mediumAdsResult.data ?? [])
+    : [];
 
-  const categorizedPosts: Record<string, PostWithRelations[]> = {
-    همه: allPosts,
-    طلا: allPosts.filter((post) => post.categories.some((cat) => cat.name === 'طلا')),
-    'ارز دیجیتال': allPosts.filter((post) =>
-      post.categories.some((cat) => cat.name === 'ارز های دیجیتال'),
-    ),
-    'بازار جهانی': allPosts.filter((post) =>
-      post.categories.some((cat) => cat.name === 'بازار جهانی'),
-    ),
-  };
+  // 4) ساخت categorizedPosts — dedupe پست‌ها در «همه»
+  const seen = new Set<string>();
+  const allPosts: PostWithRelations[] = [];
+  for (const list of [postsResults[0]]) {
+    for (const p of list ?? []) {
+      if (!seen.has(p.id)) {
+        seen.add(p.id);
+        allPosts.push(p);
+      }
+    }
+  }
+
+  const categorizedPosts: Record<string, PostWithRelations[]> = {};
+  categorizedPosts['همه'] = allPosts;
+  for (let i = 1; i < categoryNames.length; i++) {
+    const name = categoryNames[i];
+    const list = (postsResults[i] as PostWithRelations[] | undefined) ?? [];
+    categorizedPosts[name] = filterByCategory(list, name, slugLookup);
+  }
 
   return (
     <div className={`nc-SectionMagazine1 ${className}`}>
@@ -38,7 +93,7 @@ export default async function SectionMagazine1({ className = '' }: SectionMagazi
         <ClientSidePosts
           initialPosts={categorizedPosts}
           initialAds={initialAds}
-          categories={CATEGORIES}
+          categoryNames={categoryNames}
           initialTickerData={tickerData}
         />
       </Suspense>
