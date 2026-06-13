@@ -171,7 +171,7 @@ export default function FeaturedPostHero({
               {/* ============================================================== */}
               {/*  Image column (Parallax)                                       */}
               {/* ============================================================== */}
-              <div className="relative lg:col-span-7 aspect-[16/10] sm:aspect-[16/9] lg:aspect-auto lg:min-h-[480px] overflow-hidden">
+              <div className={cn("relative lg:col-span-7 xl:col-span-7 2xl:col-span-7 aspect-[16/10] sm:aspect-[16/10] md:aspect-[16/9] lg:aspect-auto sm:min-h-[300px] md:min-h-[320px] lg:min-h-[380px] xl:min-h-[420px] 2xl:min-h-[460px] overflow-hidden")}>
                 <Link
                   href={postLink}
                   className="absolute inset-0 block"
@@ -257,7 +257,7 @@ export default function FeaturedPostHero({
               {/* ============================================================== */}
               {/*  Content column                                                */}
               {/* ============================================================== */}
-              <div className="relative lg:col-span-5 p-5 sm:p-7 lg:p-8 flex flex-col justify-between gap-5 sm:gap-6">
+              <div className={cn("relative lg:col-span-5 xl:col-span-5 2xl:col-span-5 p-4 sm:p-6 lg:p-7 xl:p-8 2xl:p-10 flex flex-col justify-between gap-4 sm:gap-5 lg:gap-6 min-w-0")}>
                 <div className="space-y-4">
                   {/* Date + reading time + views + comments */}
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] sm:text-xs text-neutral-500 dark:text-neutral-400 font-vazirmatn">
@@ -337,7 +337,7 @@ export default function FeaturedPostHero({
                   {/* Title */}
                   <h3
                     className={cn(
-                      'text-xl sm:text-2xl lg:text-[28px] font-bold leading-[1.3]',
+                      'text-[15px] sm:text-lg md:text-xl lg:text-[24px] xl:text-[26px] 2xl:text-[28px] font-bold leading-[1.4] sm:leading-[1.3] text-balance',
                       'text-neutral-900 dark:text-white',
                       'tracking-tight',
                     )}
@@ -359,7 +359,7 @@ export default function FeaturedPostHero({
                   {excerpt && (
                     <p
                       className={cn(
-                        'text-[13px] sm:text-sm leading-[1.75]',
+                        'text-[12.5px] sm:text-[13px] md:text-[13.5px] leading-[1.7] sm:leading-[1.75]',
                         'text-neutral-600 dark:text-neutral-400',
                         'line-clamp-3 sm:line-clamp-4',
                       )}

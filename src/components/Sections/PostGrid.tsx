@@ -184,16 +184,16 @@ export default function PostGrid({
       {/* Toolbar: count + view toggle + page indicator */}
       <div
         className={cn(
-          'flex flex-wrap items-center justify-between gap-3',
+          'flex flex-wrap items-center justify-between gap-2.5 sm:gap-3',
           'rounded-2xl border border-neutral-200/60 dark:border-neutral-700/40',
           'bg-white/50 dark:bg-neutral-900/50 backdrop-blur-md',
-          'px-4 py-2.5',
+          'px-3 py-2 sm:px-4 sm:py-2.5',
         )}
       >
-        <div className="flex items-center gap-2 text-[12px] text-neutral-600 dark:text-neutral-400 font-vazirmatn tabular-nums">
+        <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-[12px] text-neutral-600 dark:text-neutral-400 font-vazirmatn tabular-nums">
           <span>نمایش</span>
           <span
-            className="inline-flex items-center justify-center min-w-[2.25rem] h-6 px-2 rounded-md font-semibold"
+            className="inline-flex items-center justify-center min-w-[2rem] sm:min-w-[2.25rem] h-5 sm:h-6 px-1.5 sm:px-2 rounded-md font-semibold"
             style={{ backgroundColor: `${accentColor}15`, color: accentColor }}
           >
             {toPersianNumber(formatNumber(start + 1))}–{toPersianNumber(formatNumber(end))}
@@ -209,8 +209,8 @@ export default function PostGrid({
           type="button"
           onClick={() => setViewMode('compact')}
           className={cn(
-            'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md',
-            'text-[11px] font-medium',
+            'inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-md',
+            'text-[10.5px] sm:text-[11px] font-medium',
             'text-neutral-500 dark:text-neutral-400',
             'hover:text-neutral-900 dark:hover:text-white',
             'hover:bg-neutral-100 dark:hover:bg-neutral-800',
@@ -229,7 +229,7 @@ export default function PostGrid({
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0, transition: { duration: 0.3, ease: STRIPE_EASE } }}
           exit={{ opacity: 0, y: -4, transition: { duration: 0.15 } }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5 lg:gap-6"
         >
           {pageItems.map((post) => (
             <PostItem key={post.id} post={post} />
@@ -292,7 +292,7 @@ function PageBtn({
       disabled={disabled}
       aria-label={ariaLabel}
       className={cn(
-        'inline-flex h-9 w-9 items-center justify-center rounded-lg',
+        'inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg',
         'border border-neutral-200/60 dark:border-neutral-700/60',
         'bg-white/60 dark:bg-neutral-900/60',
         'hover:border-neutral-300 dark:hover:border-neutral-600',
@@ -334,8 +334,8 @@ function PaginationNumbers({
             onClick={() => onSelect(p)}
             aria-current={p === page ? 'page' : undefined}
             className={cn(
-              'inline-flex h-9 min-w-9 px-2.5 items-center justify-center rounded-lg',
-              'text-[12px] font-semibold tabular-nums',
+              'inline-flex h-8 min-w-8 sm:h-9 sm:min-w-9 px-2 sm:px-2.5 items-center justify-center rounded-lg',
+            'text-[11px] sm:text-[12px] font-semibold tabular-nums',
               'transition-colors',
               p === page
                 ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900'

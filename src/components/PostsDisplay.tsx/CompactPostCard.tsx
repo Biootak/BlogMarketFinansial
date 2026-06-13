@@ -129,7 +129,7 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
             whileHover={{ y: -3 }}
             transition={{ duration: 0.4, ease: STRIPE_EASE }}
             className={cn(
-              'relative h-full overflow-hidden rounded-3xl',
+              'relative h-full overflow-hidden rounded-3xl flex flex-col',
               'border border-neutral-200/70 dark:border-neutral-800/80',
               'bg-white/70 dark:bg-neutral-900/70 backdrop-blur-md',
               'shadow-[0_1px_0_0_rgba(255,255,255,0.6)_inset,0_8px_24px_-12px_rgba(20,23,32,0.12)]',
@@ -140,7 +140,7 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
             )}
           >
             {/* Image */}
-            <div className="relative aspect-[16/10] overflow-hidden">
+            <div className="relative aspect-[16/10] sm:aspect-[16/10] md:aspect-[16/10] lg:aspect-[16/11] xl:aspect-[16/10] overflow-hidden">
               <Link
                 href={postLink}
                 className="absolute inset-0 block"
@@ -184,7 +184,7 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
               </Link>
 
               {/* Top: post-type icon */}
-              <div className="absolute top-3 start-3 z-10">
+              <div className="absolute top-2.5 start-2.5 sm:top-3 sm:start-3 z-10">
                 <PostTypeFeaturedIcon
                   wrapSize="h-8 w-8"
                   iconSize="h-3.5 w-3.5"
@@ -194,7 +194,7 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
 
               {/* Top-end: categories chip (یکی) */}
               {categories && categories.length > 0 && (
-                <div className="absolute top-3 end-3 z-10 max-w-[180px]">
+                <div className="absolute top-2.5 end-2.5 sm:top-3 sm:end-3 z-10 max-w-[160px] sm:max-w-[180px]">
                   <CategoryBadgeList
                     categories={categories.slice(0, 1)}
                     className="flex"
@@ -205,10 +205,10 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
               )}
 
               {/* Bottom: title on image (روی gradient تیره) */}
-              <div className="absolute inset-x-0 bottom-0 z-10 p-4 sm:p-5">
+              <div className="absolute inset-x-0 bottom-0 z-10 p-3 sm:p-4 md:p-5">
                 <h3
                   className={cn(
-                    'text-base sm:text-lg font-bold leading-[1.4]',
+                    'text-[13.5px] sm:text-[15px] md:text-base lg:text-[15px] xl:text-base font-bold leading-[1.45] sm:leading-[1.4] text-balance',
                     'text-white',
                     'line-clamp-2',
                     'drop-shadow-lg',
@@ -236,8 +236,8 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
                 initial={false}
                 className={cn(
                   'flex items-center justify-between gap-2',
-                  'px-4 sm:px-5 py-3',
-                  'text-[11px] sm:text-xs text-neutral-500 dark:text-neutral-400',
+                  'px-3.5 sm:px-5 py-2.5 sm:py-3',
+                'text-[10.5px] sm:text-xs text-neutral-500 dark:text-neutral-400',
                   'font-vazirmatn tabular-nums',
                   'transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',
                   'group-hover:opacity-0 group-hover:-translate-y-1',
@@ -269,8 +269,8 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
                 className={cn(
                   'absolute inset-0',
                   'flex items-center justify-between gap-2',
-                  'px-4 sm:px-5 py-3',
-                  'bg-gradient-to-t from-primary-50/80 to-transparent',
+                  'px-3.5 sm:px-5 py-2.5 sm:py-3',
+                'bg-gradient-to-t from-primary-50/80 to-transparent',
                   'dark:from-primary-900/20 dark:to-transparent',
                   'text-[11px] sm:text-xs',
                   'text-neutral-700 dark:text-neutral-200',

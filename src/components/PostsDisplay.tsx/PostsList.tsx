@@ -3,9 +3,18 @@
 /**
  * PostsList — نسخه ۲۰۲۶ (refined)
  *
- * چیدمان:
- *  - 3 پست اول: Bento Asymmetric — 1 hero (8col) + 2 mini (4col)
- *  - بقیه: 2-col masonry با CSS columns
+ * چیدمان (فول ریسپانسیو):
+ *  - 3 پست اول: Bento Asymmetric
+ *      - < sm : 1 col (hero بالا، 2 mini زیر هم)
+ *      - sm-md: 1 col (mini کنار هم 2col در عرض کم)
+ *      - md  : 12col بento (7/5)
+ *      - lg  : 12col بento (8/4)
+ *      - 2xl : 12col بento (9/3)
+ *  - بقیه: CSS columns masonry
+ *      - < sm : 1 col
+ *      - sm  : 2 col
+ *      - xl  : 3 col
+ *      - 2xl : 4 col
  *
  * تکنیک‌ها:
  *  1. CSS columns (masonry واقعی)
@@ -40,28 +49,35 @@ const PostsList: React.FC<PostsListProps> = ({ posts, className = '' }) => {
   return (
     <div className={cn('space-y-6 sm:space-y-8', className)}>
       {/* ============================================================== */}
-      {/*  Bento Top: 1 Hero + 2 Mini (asymmetric 8/4 grid)             */}
+      {/*  Bento Top: 1 Hero + 2 Mini (asymmetric responsive)            */}
       {/* ============================================================== */}
       <motion.div
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
-        className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 lg:gap-6"
+        className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-4 lg:gap-5 xl:gap-6 items-stretch"
       >
-        {/* Hero - 8 cols */}
+        {/* Hero - responsive column span */}
         <motion.div
           variants={staggerItem}
-          className="lg:col-span-8"
+          className="md:col-span-7 lg:col-span-8 2xl:col-span-8 min-w-0 flex"
         >
-          <FeaturedPostHero post={hero} />
+          <FeaturedPostHero post={hero} className="flex-1" />
         </motion.div>
 
-        {/* Mini - 4 cols, stack of 2 */}
+        {/* Mini - 2 col on small, 1 col on lg+ */}
         {mini.length > 0 && (
-          <div className="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4 sm:gap-5 lg:gap-6">
+          <div
+            className={cn(
+              'md:col-span-5 lg:col-span-4 2xl:col-span-4 min-w-0',
+              'grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-1',
+              'gap-3 md:gap-3.5 lg:gap-4 xl:gap-5',
+              'auto-rows-fr',
+            )}
+          >
             {mini.map((post) => (
-              <motion.div key={post.id} variants={staggerItem}>
-                <CompactPostCard post={post} />
+              <motion.div key={post.id} variants={staggerItem} className="min-w-0 flex">
+                <CompactPostCard post={post} className="flex-1 w-full" />
               </motion.div>
             ))}
           </div>
@@ -69,7 +85,7 @@ const PostsList: React.FC<PostsListProps> = ({ posts, className = '' }) => {
       </motion.div>
 
       {/* ============================================================== */}
-      {/*  Rest: 2-col CSS columns masonry                               */}
+      {/*  Rest: CSS columns masonry (1 → 2 → 3 → 4 col)                  */}
       {/* ============================================================== */}
       {rest.length > 0 && (
         <motion.div
@@ -80,8 +96,9 @@ const PostsList: React.FC<PostsListProps> = ({ posts, className = '' }) => {
         >
           <div
             className={cn(
-              'columns-1 sm:columns-2 gap-4 sm:gap-5 lg:gap-6',
-              '[&>*]:mb-4 sm:[&>*]:mb-5 lg:[&>*]:mb-6',
+              'columns-1 sm:columns-2 md:columns-2 lg:columns-3 xl:columns-3 2xl:columns-4',
+              'gap-3 sm:gap-4 md:gap-4 lg:gap-5 xl:gap-6',
+            '[&>*]:mb-3 sm:[&>*]:mb-4 md:[&>*]:mb-4 lg:[&>*]:mb-5 xl:[&>*]:mb-6',
               '[&>*]:break-inside-avoid',
               '[&>*]:inline-block [&>*]:w-full',
             )}

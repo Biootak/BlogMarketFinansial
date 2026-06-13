@@ -282,88 +282,111 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
           {/* ================================================================== */}
           {/*  Header                                                            */}
           {/* ================================================================== */}
-          <header className="relative px-5 sm:px-7 lg:px-10 pt-7 pb-5 sm:pt-9 sm:pb-6">
-            <div className="relative flex flex-wrap items-center gap-x-5 gap-y-3 sm:flex-nowrap">
-              <motion.div
-                className="relative shrink-0"
-                animate={{ scale: [1, 1.05, 1] }}
-                transition={{
-                  duration: 2.4,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }}
-              >
-                <div
-                  className="absolute inset-0 -m-1 rounded-2xl blur-xl transition-colors duration-500"
-                  style={{
-                    background: `linear-gradient(135deg, ${accent.color}25, ${accent.color}10)`,
+          <header className="relative px-3.5 sm:px-7 lg:px-10 pt-5 sm:pt-9 pb-3 sm:pb-6">
+            <div className="relative flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-3 sm:flex-nowrap">
+              {/* Top row on mobile: icon + title + clock */}
+              <div className="flex items-center gap-3 sm:gap-0 sm:flex-1 sm:min-w-0">
+                <motion.div
+                  className="relative shrink-0"
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{
+                    duration: 2.4,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
                   }}
-                  aria-hidden
-                />
+                >
+                  <div
+                    className="absolute inset-0 -m-1 rounded-2xl blur-xl transition-colors duration-500"
+                    style={{
+                      background: `linear-gradient(135deg, ${accent.color}25, ${accent.color}10)`,
+                    }}
+                    aria-hidden
+                  />
+                  <div
+                    className={cn(
+                      'relative flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center',
+                      'rounded-2xl',
+                      'bg-gradient-to-br from-white to-neutral-100 dark:from-neutral-800 dark:to-neutral-850',
+                      'border border-neutral-200/80 dark:border-neutral-700/60',
+                      'shadow-sm',
+                      'transition-colors duration-500',
+                    )}
+                  >
+                    <Newspaper
+                      className="h-5 w-5 sm:h-6 sm:w-6 transition-colors duration-500"
+                      style={{ color: accent.color }}
+                      strokeWidth={1.75}
+                    />
+                    <span
+                      className="pointer-events-none absolute -end-1 -top-1 inline-flex h-3 w-3 items-center justify-center"
+                      aria-hidden
+                    >
+                      <span
+                        className="absolute inset-0 inline-flex h-full w-full animate-ping rounded-full opacity-60"
+                        style={{ backgroundColor: accent.color }}
+                      />
+                      <span
+                        className="relative inline-flex h-1.5 w-1.5 rounded-full"
+                        style={{ backgroundColor: accent.color }}
+                      />
+                    </span>
+                  </div>
+                </motion.div>
+
+                <div className="min-w-0 flex-1 sm:flex-none sm:ml-5">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base sm:text-2xl lg:text-[26px] font-bold tracking-tight text-neutral-900 dark:text-white break-words text-balance">
+                      آخرین مقالات
+                    </h2>
+                    <Sparkles
+                      className="hidden sm:block h-4 w-4 text-amber-500/80"
+                      strokeWidth={1.75}
+                      aria-hidden
+                    />
+                  </div>
+                </div>
+
+                {/* Live clock pill — mobile: in top row, desktop: separate */}
                 <div
                   className={cn(
-                    'relative flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center',
-                    'rounded-2xl',
-                    'bg-gradient-to-br from-white to-neutral-100 dark:from-neutral-800 dark:to-neutral-850',
+                    'sm:hidden inline-flex items-center gap-1 shrink-0',
+                  'h-7 px-2 rounded-full',
                     'border border-neutral-200/80 dark:border-neutral-700/60',
-                    'shadow-sm',
-                    'transition-colors duration-500',
+                    'bg-white/70 dark:bg-neutral-800/60 backdrop-blur-md',
+                    'text-[10px] font-medium text-neutral-600 dark:text-neutral-300',
+                    'tabular-nums',
                   )}
                 >
-                  <Newspaper
-                    className="h-5 w-5 sm:h-6 sm:w-6 transition-colors duration-500"
-                    style={{ color: accent.color }}
-                    strokeWidth={1.75}
-                  />
-                  <span
-                    className="pointer-events-none absolute -end-1 -top-1 inline-flex h-3 w-3 items-center justify-center"
-                    aria-hidden
-                  >
-                    <span
-                      className="absolute inset-0 inline-flex h-full w-full animate-ping rounded-full opacity-60"
-                      style={{ backgroundColor: accent.color }}
-                    />
-                    <span
-                      className="relative inline-flex h-1.5 w-1.5 rounded-full"
-                      style={{ backgroundColor: accent.color }}
-                    />
+                  <LiveClock showIcon={false} showSeconds={false} />
+                  <span className="text-neutral-400 dark:text-neutral-500" aria-hidden>
+                    ·
                   </span>
+                  <span className="text-neutral-500 dark:text-neutral-400">تهران</span>
                 </div>
-              </motion.div>
-
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-xl sm:text-2xl lg:text-[26px] font-bold tracking-tight text-neutral-900 dark:text-white">
-                    آخرین مقالات
-                  </h2>
-                  <Sparkles
-                    className="hidden sm:block h-4 w-4 text-amber-500/80"
-                    strokeWidth={1.75}
-                    aria-hidden
-                  />
-                </div>
-                <p className="mt-1 text-[13px] sm:text-sm text-neutral-500 dark:text-neutral-400 font-vazirmatn flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                  <span>تازه‌ترین تحلیل‌ها و گزارش‌های بازارهای مالی</span>
-                  {totalCount > 0 && (
-                    <>
-                      <span className="text-neutral-300 dark:text-neutral-700" aria-hidden>
-                        ·
-                      </span>
-                      <span className="tabular-nums text-neutral-700 dark:text-neutral-300">
-                        <AnimatedNumber
-                          value={totalCount}
-                          suffix=" مطلب"
-                        />
-                      </span>
-                    </>
-                  )}
-                </p>
               </div>
 
-              {/* Live clock pill */}
+              {/* Subtitle row */}
+              <p className="text-[11.5px] sm:text-sm text-neutral-500 dark:text-neutral-400 font-vazirmatn flex flex-wrap items-center gap-x-2 gap-y-0.5 sm:flex-1 sm:min-w-0 sm:-mt-1">
+                <span>تازه‌ترین تحلیل‌ها و گزارش‌های بازارهای مالی</span>
+                {totalCount > 0 && (
+                  <>
+                    <span className="text-neutral-300 dark:text-neutral-700" aria-hidden>
+                      ·
+                    </span>
+                    <span className="tabular-nums text-neutral-700 dark:text-neutral-300">
+                      <AnimatedNumber
+                        value={totalCount}
+                        suffix=" مطلب"
+                      />
+                    </span>
+                  </>
+                )}
+              </p>
+
+              {/* Live clock pill — desktop: separate end item */}
               <div
                 className={cn(
-                  'inline-flex items-center gap-1.5',
+                  'hidden sm:inline-flex items-center gap-1.5 shrink-0',
                   'h-9 px-3.5 rounded-full',
                   'border border-neutral-200/80 dark:border-neutral-700/60',
                   'bg-white/70 dark:bg-neutral-800/60 backdrop-blur-md',
@@ -420,11 +443,13 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
               initial="hidden"
               animate="visible"
               variants={tabsListVariants}
-              className="px-5 sm:px-7 lg:px-10 pt-2 pb-1 flex flex-wrap items-center gap-3 sm:gap-4"
+              className="px-3.5 sm:px-7 lg:px-10 pt-2 pb-1 flex flex-wrap items-center gap-2.5 sm:gap-4"
             >
               <TabsList
                 className={cn(
-                  'relative w-full sm:w-auto inline-flex items-center gap-1 p-1',
+                  'relative inline-flex items-center gap-1 p-1 min-h-[40px] sm:min-h-0',
+                  'w-full max-w-full overflow-x-auto overflow-y-hidden scrollbar-none',
+                  'sm:w-auto sm:max-w-none sm:flex-wrap sm:overflow-visible sm:scrollbar-custom',
                   'rounded-2xl',
                   'bg-neutral-100/80 dark:bg-neutral-800/60',
                   'border border-neutral-200/60 dark:border-neutral-700/40',
@@ -440,8 +465,8 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
                       key={category}
                       value={category}
                       className={cn(
-                        'relative flex items-center gap-2 px-3.5 sm:px-4 py-2',
-                        'text-[13px] sm:text-sm font-medium rounded-xl',
+                        'relative flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2',
+                        'text-[12.5px] sm:text-sm font-medium rounded-xl whitespace-nowrap',
                         'transition-colors duration-200',
                         'text-neutral-600 dark:text-neutral-400',
                         'hover:text-neutral-900 dark:hover:text-neutral-200',
@@ -503,8 +528,8 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
                       <button
                         type="button"
                         className={cn(
-                          'relative flex items-center gap-1.5 px-3.5 sm:px-4 py-2',
-                          'text-[13px] sm:text-sm font-medium rounded-xl',
+                          'relative flex items-center gap-1.5 px-3 sm:px-4 py-2',
+                        'text-[12.5px] sm:text-sm font-medium rounded-xl whitespace-nowrap',
                           'transition-colors duration-200',
                           'text-neutral-600 dark:text-neutral-400',
                           'hover:text-neutral-900 dark:hover:text-neutral-200',
@@ -577,10 +602,10 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
               </TabsList>
 
               {/* Active category hint */}
-              <div className="hidden sm:flex items-center gap-2 text-[11px] text-neutral-500 dark:text-neutral-400 font-vazirmatn tabular-nums">
+              <div className="flex items-center gap-2 text-[10.5px] sm:text-[11px] text-neutral-500 dark:text-neutral-400 font-vazirmatn tabular-nums">
                 <span>نمایش</span>
                 <span
-                  className="inline-flex items-center justify-center min-w-[1.5rem] h-6 px-2 rounded-md font-semibold"
+                  className="inline-flex items-center justify-center min-w-[1.5rem] h-5 sm:h-6 px-1.5 sm:px-2 rounded-md font-semibold"
                   style={{
                     backgroundColor: `${accent.color}15`,
                     color: accent.color,
@@ -599,7 +624,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
               <TabsContent
                 key={category}
                 value={category}
-                className="mt-0 px-5 sm:px-7 lg:px-10 py-6 sm:py-8 focus-visible:outline-none focus-visible:ring-0"
+                className="mt-0 px-3.5 sm:px-7 lg:px-10 py-5 sm:py-8 focus-visible:outline-none focus-visible:ring-0"
               >
                 {category === activeCategory ? (
                   <AnimatePresence mode="wait">
