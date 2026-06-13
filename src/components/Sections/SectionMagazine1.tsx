@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { getLatestPosts } from '@/actions/getLatestPosts';
 import { getActiveAdvertisements } from '@/actions/advertisementActions';
+import { getMarketTickerData } from '@/actions/marketTickerActions';
 import ClientSidePosts from './ClientSidePosts';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Advertisement, PostWithRelations } from '@/types/types';
@@ -12,9 +13,10 @@ export interface SectionMagazine1Props {
 const CATEGORIES = ['همه', 'طلا', 'ارز دیجیتال', 'بازار جهانی'];
 
 export default async function SectionMagazine1({ className = '' }: SectionMagazine1Props) {
-  const [allPosts, mediumAdsResult] = await Promise.all([
+  const [allPosts, mediumAdsResult, tickerData] = await Promise.all([
     getLatestPosts({ count: 6 }),
     getActiveAdvertisements({ limit: 10, size: 'MEDIUM' }),
+    getMarketTickerData(),
   ]);
 
   const initialAds: Advertisement[] = mediumAdsResult.success ? (mediumAdsResult.data ?? []) : [];
@@ -37,6 +39,7 @@ export default async function SectionMagazine1({ className = '' }: SectionMagazi
           initialPosts={categorizedPosts}
           initialAds={initialAds}
           categories={CATEGORIES}
+          initialTickerData={tickerData}
         />
       </Suspense>
     </div>
