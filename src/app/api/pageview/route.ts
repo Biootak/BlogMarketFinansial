@@ -1,17 +1,29 @@
 import prisma from '@/lib/db';
 import { type NextRequest, NextResponse } from 'next/server';
+import { LRUCache } from 'lru-cache';
 
-// Rate limiting ساده برای جلوگیری از spam
-const viewCounts = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT = 100; // حداکثر 100 بازدید
-const RATE_WINDOW = 60 * 1000; // در هر دقیقه
+// تنظیم: route باید dynamic باشه چون به IP request وابسته است
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs'; // Prisma به nodejs runtime نیاز دارد
+
+// Rate limiter in-memory با LRU bounded cache (حداکثر 10,000 IP)
+// جایگزین Map بی‌نهایت قبلی - خودکار entryهای قدیمی/کم‌استفاده را حذف می‌کند
+const viewCounts = new LRUCache<string, { count: number; resetTime: number }>({
+  max: 10_000,
+  ttl: 60 * 1000,
+  ttlAutopurge: true,
+});
+
+const RATE_LIMIT = 100;
+const RATE_WINDOW = 60 * 1000;
 
 function getClientIP(request: NextRequest): string {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0] ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
-  );
+  const xff = request.headers.get('x-forwarded-for');
+  if (xff) {
+    const first = xff.split(',')[0]?.trim();
+    if (first) return first;
+  }
+  return request.headers.get('x-real-ip') || 'unknown';
 }
 
 function checkRateLimit(ip: string): boolean {
@@ -33,41 +45,52 @@ function checkRateLimit(ip: string): boolean {
 
 export async function POST(req: NextRequest) {
   try {
-    // Rate limiting
+    // Rate limiting محلی (سریع، بدون I/O)
     const ip = getClientIP(req);
     if (!checkRateLimit(ip)) {
-      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        { status: 429, headers: { 'Retry-After': '60' } }
+      );
     }
 
-    const { page } = await req.json();
-
-    if (!page || typeof page !== 'string') {
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body.page !== 'string') {
       return NextResponse.json({ error: 'Page URL is required' }, { status: 400 });
     }
 
-    // Sanitize page URL
-    const sanitizedPage = page.slice(0, 500).replace(/[<>'"]/g, '');
+    const page = body.page;
+    if (page.length > 500) {
+      return NextResponse.json({ error: 'Page URL too long' }, { status: 400 });
+    }
 
-    // پیدا کردن یا ایجاد رکورد pageview
+    // Sanitize page URL
+    const sanitizedPage = page.replace(/[<>'"]/g, '');
+
+    // page فیلد در schema unique نیست، پس باید findFirst + update/insert
+    // (در آینده می‌توان با اضافه کردن @unique به schema و migration، این را بهینه‌تر کرد)
     const existingPageView = await prisma.pageView.findFirst({
       where: { page: sanitizedPage },
+      select: { id: true },
     });
 
-    let pageView;
-    if (existingPageView) {
-      pageView = await prisma.pageView.update({
-        where: { id: existingPageView.id },
-        data: { views: { increment: 1 } },
-      });
-    } else {
-      pageView = await prisma.pageView.create({
-        data: { page: sanitizedPage, views: 1 },
-      });
-    }
+    const pageView = existingPageView
+      ? await prisma.pageView.update({
+          where: { id: existingPageView.id },
+          data: { views: { increment: 1 } },
+        })
+      : await prisma.pageView.create({
+          data: { page: sanitizedPage, views: 1 },
+        });
 
     return NextResponse.json({ success: true, views: pageView.views });
   } catch (error) {
-    console.error('Error recording page view:', error);
+    console.error('[pageview] Error recording page view:', error);
     return NextResponse.json({ error: 'Failed to record page view' }, { status: 500 });
   }
+}
+
+// GET method disabled - فقط POST مجاز
+export async function GET() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
 }

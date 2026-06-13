@@ -195,5 +195,14 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)'],
+  // مستثنا کردن مسیرهای پرترافیک/استاتیک از middleware برای کاهش overhead
+  // - /api/pageview: hot path، فقط rate limit خودش رو داره
+  // - /api/public/*: public API، نیاز به auth check نیست
+  // - /api/auth/*: NextAuth routes
+  // - /api/uploads/*: file serving
+  // - /uploads/*: file serving (با rewrite به /api/uploads)
+  // - /_next/*, favicon, فایل‌های دارای extension: static assets
+  matcher: [
+    '/((?!api/pageview|api/public|api/auth|api/uploads|uploads|_next/static|_next/image|favicon.ico|.*\\..*).*)',
+  ],
 };

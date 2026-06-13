@@ -1,5 +1,6 @@
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
+import { LRUCache } from 'lru-cache';
 
 // اگه Redis تنظیم نشده، از in-memory استفاده کن
 const redis = process.env.UPSTASH_REDIS_REST_URL
@@ -52,8 +53,24 @@ export const rateLimiters = {
     : null,
 };
 
-// Fallback in-memory rate limiter
-const inMemoryStore = new Map<string, { count: number; resetTime: number }>();
+// Fallback in-memory rate limiter با LRU bounded cache
+// جایگزین Map بی‌نهایت قبلی - خودکار entryهای منقضی/کم‌استفاده را حذف می‌کند
+const inMemoryStore = new LRUCache<string, { count: number; resetTime: number }>({
+  // حداکثر تعداد identifierهای منحصر به فرد در حافظه
+  // کافی برای workload واقعی؛ اگه بیشتر بشه، LRU قدیمی‌ها رو حذف می‌کنه
+  max: 50_000,
+  // TTL پیش‌فرض - هر entry بعد این مدت منقضی می‌شه
+  // هر نوع rate limit حداکثر window‌اش 15m هست، پس 20m کافیه
+  ttl: 20 * 60 * 1000,
+  ttlAutopurge: true,
+});
+
+const LIMITS: Record<string, { max: number; windowMs: number }> = {
+  api: { max: 100, windowMs: 60 * 1000 },
+  upload: { max: 30, windowMs: 60 * 1000 },
+  auth: { max: 10, windowMs: 15 * 60 * 1000 },
+  pageview: { max: 200, windowMs: 60 * 1000 },
+};
 
 export async function checkRateLimit(
   identifier: string,
@@ -63,23 +80,21 @@ export async function checkRateLimit(
 
   // اگه Redis داریم، از Upstash استفاده کن
   if (limiter) {
-    const result = await limiter.limit(identifier);
-    return {
-      success: result.success,
-      remaining: result.remaining,
-      reset: result.reset,
-    };
+    try {
+      const result = await limiter.limit(identifier);
+      return {
+        success: result.success,
+        remaining: result.remaining,
+        reset: result.reset,
+      };
+    } catch (error) {
+      // اگه Upstash fail شد (timeout, network)، fail-open و از in-memory استفاده کن
+      console.warn(`[rate-limiter] Upstash failed for ${type}, falling back to in-memory:`, error);
+    }
   }
 
   // Fallback به in-memory
-  const limits: Record<string, { max: number; windowMs: number }> = {
-    api: { max: 100, windowMs: 60 * 1000 },
-    upload: { max: 30, windowMs: 60 * 1000 },
-    auth: { max: 10, windowMs: 15 * 60 * 1000 },
-    pageview: { max: 200, windowMs: 60 * 1000 },
-  };
-
-  const { max, windowMs } = limits[type];
+  const { max, windowMs } = LIMITS[type] ?? LIMITS.api;
   const now = Date.now();
   const key = `${type}:${identifier}`;
   const record = inMemoryStore.get(key);
@@ -97,15 +112,29 @@ export async function checkRateLimit(
   return { success: true, remaining: max - record.count, reset: record.resetTime };
 }
 
-// پاکسازی حافظه (برای in-memory) - فقط در Node.js runtime
-// در Edge runtime این کد اجرا نمیشه
-if (typeof globalThis.setInterval !== 'undefined' && typeof process !== 'undefined' && process.env.NEXT_RUNTIME !== 'edge') {
-  setInterval(() => {
-    const now = Date.now();
-    for (const [key, value] of inMemoryStore.entries()) {
-      if (now > value.resetTime) {
-        inMemoryStore.delete(key);
+// پاکسازی حافظه (برای in-memory) - فقط در Node.js runtime و فقط یکبار
+// LRU cache خودش TTL داره، پس نیازی به interval manual نیست
+// این فقط برای cleanup entries منقضی شده در window‌های طولانی‌تر هست
+// در Edge runtime این کد اجرا نمیشه (process.env.NEXT_RUNTIME === 'edge')
+if (
+  typeof globalThis.setInterval !== 'undefined' &&
+  typeof process !== 'undefined' &&
+  process.env.NEXT_RUNTIME !== 'edge' &&
+  // جلوگیری از اجرای چندباره در dev با HMR
+  !(globalThis as { __bmf_rate_limiter_cleanup__?: boolean }).__bmf_rate_limiter_cleanup__
+) {
+  (globalThis as { __bmf_rate_limiter_cleanup__?: boolean }).__bmf_rate_limiter_cleanup__ = true;
+  setInterval(
+    () => {
+      // LRU ttlAutopurge: true خودش cleanup می‌کنه
+      // این فقط به‌عنوان backup هست
+      const now = Date.now();
+      for (const [key, value] of inMemoryStore.entries()) {
+        if (now > value.resetTime) {
+          inMemoryStore.delete(key);
+        }
       }
-    }
-  }, 60 * 1000); // هر دقیقه
+    },
+    5 * 60 * 1000
+  ); // هر 5 دقیقه - نه 1 دقیقه (کمتر overhead)
 }
