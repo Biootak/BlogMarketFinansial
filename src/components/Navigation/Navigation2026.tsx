@@ -1,0 +1,375 @@
+'use client';
+
+/**
+ * Navigation2026 — نسخه refined (Linear × Vercel)
+ *
+ * اصلاحات:
+ * - حذف glow ضربان‌دار (اضافی)
+ * - حذف پس‌زمینه pill ضخیم (Linear.app خودش این کار رو با underline انجام می‌ده)
+ * - Morphing underline نرم بجای pill background
+ * - Dropdown با shadow طبیعی‌تر
+ * - CSS-driven marquee-style indicator
+ * - GPU containment
+ */
+
+import { memo, useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import {
+  STRIPE_EASE,
+  STRIPE_EASE_SOFT,
+  dropdownPanel,
+  staggerContainer,
+  staggerItem,
+} from '@/lib/motion';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
+
+type NavItem = Readonly<{
+  id: string;
+  href: string;
+  name: string;
+  subItems?: NavItem[];
+  isNew?: boolean;
+}>;
+
+type NavigationProps = Readonly<{
+  className?: string;
+}>;
+
+const NAVBAR_LINKS: readonly NavItem[] = [
+  { id: 'home', name: 'صفحه اصلی', href: '/' },
+  {
+    id: 'crypto',
+    name: 'ارزهای دیجیتال',
+    href: '/archive/category/crypto',
+    subItems: [
+      { id: 'crypto-urgent', name: 'اخبار فوری', href: '/archive/category/crypto/news-urgent' },
+      { id: 'crypto-analysis', name: 'تحلیل', href: '/archive/category/crypto/analysis' },
+      { id: 'crypto-education', name: 'آموزش', href: '/archive/category/crypto/education' },
+    ],
+  },
+  {
+    id: 'gold',
+    name: 'طلا (اونس)',
+    href: '/archive/category/gold',
+    subItems: [
+      { id: 'gold-news', name: 'اخبار طلا', href: '/archive/category/gold/news' },
+      { id: 'gold-analysis', name: 'تحلیل', href: '/archive/category/gold/analysis' },
+      { id: 'gold-global', name: 'بازار جهانی', href: '/archive/category/gold/global' },
+    ],
+  },
+  {
+    id: 'global-market',
+    name: 'بازار جهانی',
+    href: '/archive/category/global-market',
+    subItems: [
+      { id: 'currency-pairs', name: 'جفت ارزها', href: '/archive/category/global-market/currency-pairs' },
+      { id: 'global-analysis', name: 'تحلیل', href: '/archive/category/global-market/analysis' },
+      { id: 'global-education', name: 'آموزش', href: '/archive/category/global-market/education' },
+    ],
+  },
+  { id: 'stock', name: 'بورس و سهام', href: '/archive/category/stock' },
+  { id: 'money-transfer', name: 'حواله', href: '/money-transfer' },
+  { id: 'online-payment', name: 'پرداخت آنلاین', href: '/online-payment' },
+  { id: 'urgent', name: 'اخبار فوری', href: '/archive/category/news-urgent', isNew: true },
+  { id: 'terms', name: 'قوانین', href: '/terms' },
+] as const;
+
+const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement => {
+  const pathname = usePathname();
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [showLeftFade, setShowLeftFade] = useState(false);
+  const [showRightFade, setShowRightFade] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
+  const scrollRef = useRef<HTMLUListElement>(null);
+
+  const isActive = (item: NavItem) => {
+    if (pathname === item.href) return true;
+    if (item.subItems) {
+      return item.subItems.some((subItem) => pathname.startsWith(subItem.href));
+    }
+    return false;
+  };
+
+  const checkScrollFades = () => {
+    if (!scrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+    setShowLeftFade(scrollLeft > 4);
+    setShowRightFade(scrollLeft < scrollWidth - clientWidth - 4);
+  };
+
+  useEffect(() => {
+    checkScrollFades();
+    const el = scrollRef.current;
+    if (!el) return;
+    el.addEventListener('scroll', checkScrollFades, { passive: true });
+    window.addEventListener('resize', checkScrollFades);
+    return () => {
+      el.removeEventListener('scroll', checkScrollFades);
+      window.removeEventListener('resize', checkScrollFades);
+    };
+  }, []);
+
+  const subItemVariants = prefersReducedMotion
+    ? { hidden: { opacity: 1 }, visible: { opacity: 1 } }
+    : staggerItem;
+
+  const panelVariants = prefersReducedMotion
+    ? {
+        hidden: { opacity: 1, y: 0, scale: 1 },
+        visible: { opacity: 1, y: 0, scale: 1 },
+        exit: { opacity: 1, y: 0, scale: 1 },
+      }
+    : dropdownPanel;
+
+  const renderNavItem = (item: NavItem) => {
+    const active = isActive(item);
+    const hovered = hoveredId === item.id;
+
+    if (item.subItems) {
+      return (
+        <li
+          key={item.id}
+          className="relative flex-shrink-0"
+          onMouseEnter={() => setHoveredId(item.id)}
+          onMouseLeave={() => setHoveredId(null)}
+        >
+          <DropdownMenu
+            dir="rtl"
+            onOpenChange={(open) => {
+              setActiveId(open ? item.id : null);
+              if (!open) setHoveredId(null);
+            }}
+          >
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                onFocus={() => setHoveredId(item.id)}
+                onBlur={() => setHoveredId(null)}
+                className={cn(
+                  'group/btn relative z-10 inline-flex items-center gap-1 px-3.5 py-2 text-[13px] font-medium',
+                  'rounded-full outline-none whitespace-nowrap',
+                  'transition-colors duration-200',
+                  active
+                    ? 'text-neutral-900 dark:text-neutral-50'
+                    : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-50',
+                )}
+              >
+                <span className="relative z-10 tracking-[-0.005em]">{item.name}</span>
+
+                {/* Morphing underline indicator */}
+                {(hovered || active) && (
+                  <motion.span
+                    aria-hidden
+                    layoutId="nav-underline"
+                    className={cn(
+                      'absolute inset-x-3 bottom-1 h-px',
+                      active
+                        ? 'bg-neutral-900 dark:bg-neutral-50'
+                        : 'bg-neutral-400 dark:bg-neutral-500',
+                    )}
+                    transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                  />
+                )}
+
+                <svg
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={cn(
+                    'relative z-10 opacity-60 transition-transform duration-200',
+                    activeId === item.id ? 'rotate-180' : '',
+                  )}
+                  aria-hidden
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+            </DropdownMenuTrigger>
+
+            <AnimatePresence>
+              {activeId === item.id && (
+                <DropdownMenuContent
+                  forceMount
+                  align="start"
+                  sideOffset={10}
+                  asChild
+                  className={cn(
+                    'min-w-[220px] p-1.5',
+                    'bg-white/95 dark:bg-neutral-900/95',
+                    'backdrop-blur-2xl',
+                    'border border-neutral-200/80 dark:border-neutral-800/80',
+                    'rounded-xl',
+                    'shadow-[0_8px_30px_-8px_rgba(20,23,32,0.12),0_0_0_1px_rgba(0,0,0,0.02)]',
+                    'dark:shadow-[0_8px_30px_-8px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.04)]',
+                  )}
+                >
+                  <motion.div
+                    variants={panelVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                  >
+                    <motion.ul
+                      variants={staggerContainer}
+                      initial="hidden"
+                      animate="visible"
+                      className="flex flex-col gap-0.5"
+                    >
+                      {item.subItems.map((subItem) => {
+                        const isSubActive = pathname === subItem.href;
+                        return (
+                          <motion.li key={subItem.id} variants={subItemVariants}>
+                            <DropdownMenuItem asChild>
+                              <Link
+                                href={subItem.href}
+                                className={cn(
+                                  'group/sub relative flex items-center gap-3',
+                                  'py-2 px-3 text-[13px] rounded-lg',
+                                  'transition-colors duration-150 cursor-pointer',
+                                  isSubActive
+                                    ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-50'
+                                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50',
+                                )}
+                              >
+                                {isSubActive && (
+                                  <span
+                                    aria-hidden
+                                    className="absolute inset-y-2 start-2 w-0.5 rounded-full bg-neutral-900 dark:bg-neutral-50"
+                                  />
+                                )}
+                                <span className="relative z-10 font-medium tracking-[-0.005em]">
+                                  {subItem.name}
+                                </span>
+                                <svg
+                                  aria-hidden
+                                  className={cn(
+                                    'ms-auto h-3 w-3 opacity-0 -translate-x-1',
+                                    'group-hover/sub:opacity-100 group-hover/sub:translate-x-0',
+                                    'transition-all duration-200 rtl:rotate-180',
+                                  )}
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2.2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <path d="M9 18l6-6-6-6" />
+                                </svg>
+                              </Link>
+                            </DropdownMenuItem>
+                          </motion.li>
+                        );
+                      })}
+                    </motion.ul>
+                  </motion.div>
+                </DropdownMenuContent>
+              )}
+            </AnimatePresence>
+          </DropdownMenu>
+        </li>
+      );
+    }
+
+    return (
+      <li
+        key={item.id}
+        className="relative flex-shrink-0"
+        onMouseEnter={() => setHoveredId(item.id)}
+        onMouseLeave={() => setHoveredId(null)}
+      >
+        <Link
+          href={item.href}
+          className={cn(
+            'group/btn relative z-10 inline-flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium',
+            'rounded-full outline-none whitespace-nowrap',
+            'transition-colors duration-200',
+            active
+              ? 'text-neutral-900 dark:text-neutral-50'
+              : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-50',
+          )}
+        >
+          <span className="relative z-10 tracking-[-0.005em]">{item.name}</span>
+
+          {/* Morphing underline indicator */}
+          {(hovered || active) && (
+            <motion.span
+              aria-hidden
+              layoutId="nav-underline"
+              className={cn(
+                'absolute inset-x-3 bottom-1 h-px',
+                active
+                  ? 'bg-neutral-900 dark:bg-neutral-50'
+                  : 'bg-neutral-400 dark:bg-neutral-500',
+              )}
+              transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+            />
+          )}
+
+          {item.isNew && (
+            <span
+              aria-label="جدید"
+              className="inline-flex h-1.5 w-1.5 rounded-full bg-rose-500/80"
+            />
+          )}
+        </Link>
+      </li>
+    );
+  };
+
+  return (
+    <nav className="flex items-center justify-center" aria-label="ناوبری اصلی">
+      <div className="relative">
+        {/* Fade edges برای اسکرول */}
+        <div
+          aria-hidden
+          className={cn(
+            'pointer-events-none absolute inset-y-0 start-0 w-5 z-20 transition-opacity duration-200',
+            'bg-gradient-to-r from-[rgb(var(--c-surface-canvas))] to-transparent',
+            'dark:from-[rgb(var(--c-surface-elevated))]',
+            showLeftFade ? 'opacity-100' : 'opacity-0',
+          )}
+        />
+        <div
+          aria-hidden
+          className={cn(
+            'pointer-events-none absolute inset-y-0 end-0 w-5 z-20 transition-opacity duration-200',
+            'bg-gradient-to-l from-[rgb(var(--c-surface-canvas))] to-transparent',
+            'dark:from-[rgb(var(--c-surface-elevated))]',
+            showRightFade ? 'opacity-100' : 'opacity-0',
+          )}
+        />
+
+        <ul
+          ref={scrollRef}
+          className={cn(
+            'items-center gap-0.5 flex max-w-full overflow-x-auto',
+            'scrollbar-none',
+            className,
+          )}
+          style={{ scrollbarWidth: 'none' }}
+        >
+          {NAVBAR_LINKS.map(renderNavItem)}
+        </ul>
+      </div>
+    </nav>
+  );
+};
+
+export default memo(Navigation);
+
+export { STRIPE_EASE, STRIPE_EASE_SOFT };

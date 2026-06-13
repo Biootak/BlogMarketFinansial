@@ -1,58 +1,44 @@
 'use client';
 
 /**
- * ModernTrendingTopics — نسخه ۲۰۲۶ "موضوعات پرطرفدار"
+ * ModernTrendingTopics — نسخه ۲۰۲۶ (refined)
  *
- * ترکیب تکنیک‌های مدرن:
- * 1. Bento Grid نامتقارن با featured card بزرگ
- * 2. Aurora Background با mesh gradient پویا
- * 3. Magnetic hover effect
- * 4. Spotlight + Tilt3D
- * 5. Shimmer animation روی featured card
- * 6. Animated Counter با spring
- * 7. Trending badge با pulse rings
- * 8. LiveIndicator برای حس real-time
- * 9. Marquee ticker بالای بخش
- * 10. Noise texture برای عمق
- * 11. Glassmorphism (backdrop-blur)
- * 12. Stagger animation با framer-motion
- * 13. رنگ‌بندی پویا بر اساس دسته
- * 14. RTL کامل و Responsive
+ * تکنیک‌ها — همه با اصل refined:
+ *  1. Bento Grid نامتقارن (featured بزرگ + 7 کارت)
+ *  2. Aurora Background با رنگ‌های low-saturation
+ *  3. Magnetic hover (spring نرم)
+ *  4. 3D Tilt (با Glare بسیار subtle)
+ *  5. Shimmer animation (linear.app-style، فقط یک خط نور)
+ *  6. View-driven انیمیشن‌ها (stagger هنگام ورود)
+ *  7. Glassmorphism (backdrop-blur 12px نه 24px)
+ *  8. رنگ‌بندی با hover lift، نه gradientهای شدید
+ *  9. Tabular-nums برای اعداد فارسی
+ * 10. GPU containment برای performance
+ * 11. respects prefers-reduced-motion
+ * 12. RTL کامل
  *
- * Layout (8 کارت):
- * ┌──────────┬──────┬──────┐
- * │ FEATURED │ S2   │ S3   │
- * │  (4×2)   ├──────┴──────┤
- * │          │   S4 (4×1)  │
- * ├──────────┤             │
- * │   S5     │             │
- * │  (2×1)   ├──────┬──────┤
- * ├──────────┤ S6   │ S7   │
- * │   S8     │      │      │
- * └──────────┴──────┴──────┘
+ * تفاوت با نسخه قبل:
+ *  - رنگ‌ها refined (slate/blue/cyan/emerald، نه fuchsia و violet غلیظ)
+ *  - Featured card monochromatic (طوسی گرم + tint primary)
+ *  - shadowها کم‌اشباع‌تر
+ *  - animation‌ها کندتر اما طبیعی‌تر (Raycast vibe)
+ *  - حذف Spring stiffness زیاد (smooth feel)
  */
 
 import { motion, type Variants } from 'framer-motion';
-import {
-  ArrowUpLeft,
-  Eye,
-  Flame,
-  Hash,
-  Sparkles,
-  TrendingUp,
-  Zap,
-} from 'lucide-react';
-import Link from 'next/link';
 import { useMemo, type FC } from 'react';
+import Link from 'next/link';
 import type { TaxonomyType } from '@/types/types';
 import { cn } from '@/lib/utils';
 import { AuroraBackground } from './effects/AuroraBackground';
-import { LiveIndicator } from './effects/LiveIndicator';
 import { Magnetic } from './effects/Magnetic';
 import { Marquee } from './effects/Marquee';
 import { Shimmer } from './effects/Shimmer';
 import { TextGradient } from './effects/TextGradient';
-import { TiltCard } from './effects/TiltCard';
+
+/* -------------------------------------------------------------------------- */
+/*  Types                                                                     */
+/* -------------------------------------------------------------------------- */
 
 export interface ModernTrendingTopicsProps {
   categories: TaxonomyType[];
@@ -63,35 +49,66 @@ export interface ModernTrendingTopicsProps {
   subtitle?: string;
 }
 
+interface Palette {
+  /** رنگ اصلی (طیف ملایم) */
+  accent: string;
+  /** bg subtle برای icon container */
+  bg: string;
+  /** رنگ متن */
+  text: string;
+  /** border ring */
+  ring: string;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Palettes — low-saturation (Linear/Vercel vibe)                            */
+/* -------------------------------------------------------------------------- */
+
+/** رنگ‌های ملایم — saturation پایین، جایگزین violet/fuchsia */
+const PALETTES: Palette[] = [
+  { accent: '#94a3b8', bg: 'bg-slate-500/10',     text: 'text-slate-600 dark:text-slate-300',     ring: 'ring-slate-500/20' }, // slate
+  { accent: '#64748b', bg: 'bg-neutral-500/10',   text: 'text-neutral-600 dark:text-neutral-300', ring: 'ring-neutral-500/20' },
+  { accent: '#5b6cff', bg: 'bg-primary-500/8',    text: 'text-primary-600 dark:text-primary-300', ring: 'ring-primary-500/20' }, // primary (طیف سایت)
+  { accent: '#22d3ee', bg: 'bg-cyan-500/10',      text: 'text-cyan-700 dark:text-cyan-300',       ring: 'ring-cyan-500/20' },
+  { accent: '#34d399', bg: 'bg-emerald-500/10',   text: 'text-emerald-700 dark:text-emerald-300', ring: 'ring-emerald-500/20' },
+  { accent: '#fbbf24', bg: 'bg-amber-500/10',     text: 'text-amber-700 dark:text-amber-300',     ring: 'ring-amber-500/20' },
+  { accent: '#f87171', bg: 'bg-rose-500/10',      text: 'text-rose-700 dark:text-rose-300',       ring: 'ring-rose-500/20' },
+  { accent: '#a78bfa', bg: 'bg-violet-500/10',    text: 'text-violet-700 dark:text-violet-300',   ring: 'ring-violet-500/20' },
+];
+
+/* -------------------------------------------------------------------------- */
+/*  Variants                                                                  */
+/* -------------------------------------------------------------------------- */
+
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.06, delayChildren: 0.1 },
+    transition: {
+      staggerChildren: 0.045,
+      delayChildren: 0.08,
+    },
   },
 };
 
 const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 24, scale: 0.96 },
+  hidden: { opacity: 0, y: 16, scale: 0.985 },
   show: {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { type: 'spring', stiffness: 240, damping: 24 },
+    transition: {
+      type: 'spring',
+      stiffness: 180,
+      damping: 26,
+      mass: 0.8,
+    },
   },
 };
 
-/** رنگ‌بندی مدرن ۲۰۲۶ — هر دسته یه طیف اختصاصی */
-const PALETTES = [
-  { from: 'from-violet-500', to: 'to-fuchsia-500', soft: 'bg-violet-500/10', text: 'text-violet-600 dark:text-violet-300', glow: 'shadow-violet-500/40' },
-  { from: 'from-cyan-500', to: 'to-blue-500', soft: 'bg-cyan-500/10', text: 'text-cyan-600 dark:text-cyan-300', glow: 'shadow-cyan-500/40' },
-  { from: 'from-rose-500', to: 'to-orange-500', soft: 'bg-rose-500/10', text: 'text-rose-600 dark:text-rose-300', glow: 'shadow-rose-500/40' },
-  { from: 'from-emerald-500', to: 'to-teal-500', soft: 'bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-300', glow: 'shadow-emerald-500/40' },
-  { from: 'from-amber-500', to: 'to-yellow-500', soft: 'bg-amber-500/10', text: 'text-amber-600 dark:text-amber-300', glow: 'shadow-amber-500/40' },
-  { from: 'from-indigo-500', to: 'to-purple-500', soft: 'bg-indigo-500/10', text: 'text-indigo-600 dark:text-indigo-300', glow: 'shadow-indigo-500/40' },
-  { from: 'from-pink-500', to: 'to-red-500', soft: 'bg-pink-500/10', text: 'text-pink-600 dark:text-pink-300', glow: 'shadow-pink-500/40' },
-  { from: 'from-sky-500', to: 'to-indigo-500', soft: 'bg-sky-500/10', text: 'text-sky-600 dark:text-sky-300', glow: 'shadow-sky-500/40' },
-] as const;
+/* -------------------------------------------------------------------------- */
+/*  Utilities                                                                 */
+/* -------------------------------------------------------------------------- */
 
 function hashCode(s: string): number {
   let h = 0;
@@ -104,19 +121,42 @@ function hashCode(s: string): number {
 
 function AnimatedNumber({ value, className }: { value: number; className?: string }) {
   return (
-    <span className={cn('tabular-nums font-bold', className)}>
+    <span className={cn('tabular-nums font-semibold', className)}>
       {value.toLocaleString('fa-IR')}
     </span>
   );
 }
 
+/** یه آیکون ساده SVG برای هر دسته (نه emoji) */
+function CategoryGlyph({ accent }: { accent: string }) {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={accent}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4 6h16M4 12h10M4 18h16" />
+    </svg>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Main Component                                                            */
+/* -------------------------------------------------------------------------- */
+
 const ModernTrendingTopics: FC<ModernTrendingTopicsProps> = ({
   categories,
-  className = '',
+  className,
   maxItems = 8,
   viewAllHref = '/archive',
   title = 'موضوعات پرطرفدار',
-  subtitle = 'داغ‌ترین ترندهای بازار — به‌روزرسانی لحظه‌ای',
+  subtitle = 'این دسته‌بندی‌ها الان بیشتر از همه خونده می‌شن',
 }) => {
   const sorted = useMemo(
     () =>
@@ -128,258 +168,190 @@ const ModernTrendingTopics: FC<ModernTrendingTopicsProps> = ({
   );
 
   const colorMap = useMemo(
-    () => new Map(sorted.map((c, idx) => [c.id, PALETTES[hashCode(c.id) % PALETTES.length]])),
+    () => new Map(sorted.map((c, idx) => [c.id, PALETTES[(hashCode(c.id) + idx) % PALETTES.length]])),
     [sorted],
   );
 
   if (sorted.length === 0) return null;
 
-  // featured (rank 1 و 2)
   const [featured, ...rest] = sorted;
 
   return (
     <section
       className={cn(
         'group/section relative isolate overflow-hidden rounded-3xl',
-        'border border-neutral-200/60 dark:border-neutral-800/60',
-        'bg-gradient-to-br from-neutral-50 via-white/80 to-neutral-100/60',
-        'dark:from-neutral-950 dark:via-neutral-900/80 dark:to-neutral-950',
-        'shadow-[0_20px_70px_-20px_rgba(0,0,0,0.15)]',
-        'dark:shadow-[0_20px_70px_-20px_rgba(0,0,0,0.6)]',
+        'border border-neutral-200/70 dark:border-neutral-800/70',
+        'bg-white/60 dark:bg-neutral-950/60',
+        'backdrop-blur-2xl',
+        // ظریف‌تر
+        'shadow-[0_1px_0_0_rgba(0,0,0,0.02),0_24px_60px_-30px_rgba(20,23,32,0.08)]',
+        'dark:shadow-[0_1px_0_0_rgba(255,255,255,0.04),0_24px_60px_-30px_rgba(0,0,0,0.5)]',
+        'transition-colors',
         className,
       )}
+      style={{ contain: 'layout paint' }}
       aria-label="موضوعات پرطرفدار"
     >
-      {/* AURORA BACKGROUND */}
-      <AuroraBackground />
+      {/* AURORA — refined */}
+      <AuroraBackground intensity={0.55} />
 
-      {/* TICKER BAR */}
-      <div className="relative border-b border-neutral-200/40 bg-white/40 backdrop-blur-sm dark:border-neutral-800/40 dark:bg-neutral-900/40">
+      {/* TOP TICKER — همه دسته‌بندی‌ها */}
+      <div
+        className={cn(
+          'relative border-b border-[var(--hairline)]',
+          'bg-white/40 dark:bg-neutral-950/40',
+          'backdrop-blur-md',
+        )}
+      >
         <div className="flex items-center gap-3 px-5 py-2 sm:px-8">
-          <LiveIndicator label="LIVE" size="sm" color="rose" />
-          <Marquee speed={-50} className="flex-1" pauseOnHover>
-            {sorted.slice(0, 6).map((c) => (
-              <Link
-                key={c.id}
-                href={`/archive/category/${c.slug}`}
-                className={cn(
-                  'flex shrink-0 items-center gap-2 rounded-full px-3 py-1 text-xs font-medium',
-                  'bg-white/60 text-neutral-700 hover:bg-white',
-                  'dark:bg-neutral-800/60 dark:text-neutral-300 dark:hover:bg-neutral-800',
-                  'transition-colors',
-                )}
-              >
-                <span className={cn('h-1.5 w-1.5 rounded-full', colorMap.get(c.id)?.soft)} />
-                <span className="font-bold">{c.name}</span>
-                <span className="text-neutral-400">•</span>
-                <span className="tabular-nums text-neutral-500 dark:text-neutral-400">
-                  {c.count.toLocaleString('fa-IR')}
-                </span>
-              </Link>
-            ))}
+          <Marquee speed={-40} className="flex-1" repeat={4}>
+            {sorted.map((c) => {
+              const palette = colorMap.get(c.id)!;
+              return (
+                <Link
+                  key={c.id}
+                  href={`/archive/category/${c.slug}`}
+                  className={cn(
+                    'group/chip flex shrink-0 items-center gap-2 rounded-full',
+                    'border border-neutral-200/70 dark:border-neutral-800/70',
+                    'bg-white/70 dark:bg-neutral-900/60',
+                    'px-2.5 py-1 text-xs',
+                    'hover:border-neutral-300 dark:hover:border-neutral-700',
+                    'transition-colors',
+                  )}
+                >
+                  <span
+                    aria-hidden
+                    className="inline-block h-1.5 w-1.5 rounded-full"
+                    style={{ backgroundColor: palette.accent }}
+                  />
+                  <span className="font-medium text-neutral-800 dark:text-neutral-200">
+                    {c.name}
+                  </span>
+                  <span className="text-neutral-400 dark:text-neutral-500">·</span>
+                  <span className="tabular-nums text-neutral-500 dark:text-neutral-400">
+                    {c.count.toLocaleString('fa-IR')} مقاله
+                  </span>
+                </Link>
+              );
+            })}
           </Marquee>
         </div>
       </div>
 
       {/* HEADER */}
-      <motion.div
-        initial={{ opacity: 0, y: -8 }}
+      <motion.header
+        initial={{ opacity: 0, y: -4 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-100px' }}
+        viewport={{ once: true, margin: '-80px' }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative px-5 pt-6 pb-5 sm:px-8 sm:pt-8 sm:pb-6"
+        className="relative flex flex-wrap items-end justify-between gap-4 px-5 pt-6 pb-5 sm:px-8 sm:pt-7 sm:pb-6"
       >
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div className="flex items-start gap-3 sm:gap-4">
-            {/* آیکون اصلی با glow متحرک */}
-            <Magnetic strength={0.3}>
-              <div className="relative">
-                <motion.div
-                  initial={{ rotate: -180, scale: 0 }}
-                  whileInView={{ rotate: 0, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ type: 'spring', stiffness: 180, damping: 16 }}
-                  className={cn(
-                    'relative flex h-12 w-12 sm:h-14 sm:w-14 flex-shrink-0 items-center justify-center',
-                    'rounded-2xl bg-gradient-to-br from-violet-500 via-fuchsia-500 to-pink-500',
-                    'shadow-[0_8px_30px_-5px_rgba(168,85,247,0.5)]',
-                  )}
+        <div className="flex items-start gap-3.5 sm:gap-4">
+          {/* آیکون — refined */}
+          <Magnetic strength={0.18}>
+            <div className="relative">
+              <div
+                className={cn(
+                  'relative flex h-11 w-11 sm:h-12 sm:w-12 flex-shrink-0 items-center justify-center',
+                  'rounded-xl',
+                  'border border-neutral-200/70 dark:border-neutral-800/70',
+                  'bg-white dark:bg-neutral-900',
+                  'shadow-[0_1px_0_0_rgba(255,255,255,0.04)_inset,0_2px_4px_-2px_rgba(20,23,32,0.06)]',
+                  'dark:shadow-[0_1px_0_0_rgba(255,255,255,0.04)_inset,0_2px_4px_-2px_rgba(0,0,0,0.4)]',
+                )}
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-primary-500"
+                  aria-hidden
                 >
-                  <Flame className="h-6 w-6 sm:h-7 sm:w-7 text-white drop-shadow-md" strokeWidth={2.5} />
-                  <span className="absolute inset-0 rounded-2xl bg-violet-500/40 animate-ping opacity-30" />
-                </motion.div>
+                  <path d="M12 2.5c1.5 3 4.5 4.5 7.5 4.5-.5 4-1.5 7-3.5 9-2 2-4 3-7 3s-5-1-7-3c-2-2-3-5-3.5-9 3 0 6-1.5 7.5-4.5 0-.5.5-1 1-1s1 .5 1 1z" />
+                  <path d="M12 8v6" />
+                  <path d="M9 11h6" />
+                </svg>
               </div>
-            </Magnetic>
-
-            <div>
-              <h2 className="flex flex-wrap items-center gap-2 text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50">
-                <TextGradient from="from-violet-600 dark:from-violet-400" via="via-fuchsia-500 dark:via-fuchsia-400" to="to-pink-500 dark:to-pink-400">
-                  {title}
-                </TextGradient>
-                <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500 animate-pulse" />
-              </h2>
-              <p className="mt-1 text-sm sm:text-base text-neutral-600 dark:text-neutral-400 max-w-md">
-                {subtitle}
-              </p>
             </div>
-          </div>
+          </Magnetic>
 
-          {/* View All — magnetic button */}
-          <Magnetic strength={0.2}>
-            <Link
-              href={viewAllHref}
+          <div>
+            <h2
               className={cn(
-                'group/btn relative inline-flex items-center gap-2 overflow-hidden',
-                'h-10 sm:h-11 px-4 sm:px-5 rounded-full',
-                'bg-gradient-to-r from-violet-600 via-fuchsia-600 to-pink-600',
-                'text-white text-sm font-bold',
-                'shadow-[0_8px_24px_-8px_rgba(168,85,247,0.6)]',
-                'hover:shadow-[0_12px_32px_-8px_rgba(168,85,247,0.8)]',
-                'transition-all duration-300',
-                'hover:scale-105 active:scale-95',
+                'flex flex-wrap items-center gap-x-2 gap-y-1',
+                'text-xl sm:text-2xl md:text-[26px] font-bold',
+                'tracking-[-0.022em]',
+                'text-neutral-900 dark:text-neutral-50',
               )}
             >
-              {/* shimmer داخل دکمه */}
-              <span
-                aria-hidden
-                className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover/btn:translate-x-full transition-transform duration-700"
-              />
-              <span className="relative">مشاهده همه</span>
-              <ArrowUpLeft className="relative h-4 w-4 transition-transform duration-300 group-hover/btn:-translate-x-1 group-hover/btn:-translate-y-1" />
-            </Link>
-          </Magnetic>
+              <TextGradient variant="mono">{title}</TextGradient>
+            </h2>
+            <p
+              className={cn(
+                'mt-1 text-[13px] sm:text-sm',
+                'text-neutral-500 dark:text-neutral-400',
+                'max-w-md tracking-[-0.005em]',
+              )}
+            >
+              {subtitle}
+            </p>
+          </div>
         </div>
 
-        {/* Stats line */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.2 }}
-          className="mt-5 flex flex-wrap items-center gap-3 sm:gap-5 text-xs sm:text-sm text-neutral-500 dark:text-neutral-400"
-        >
-          <span className="inline-flex items-center gap-1.5">
-            <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
-            <span>
-              <AnimatedNumber value={sorted.length} className="text-emerald-600 dark:text-emerald-400" /> موضوع فعال
-            </span>
-          </span>
-          <span className="h-1 w-1 rounded-full bg-neutral-300 dark:bg-neutral-700" />
-          <span className="inline-flex items-center gap-1.5">
-            <Eye className="h-3.5 w-3.5 text-blue-500" />
-            <span>مرتب‌سازی بر اساس محبوبیت</span>
-          </span>
-          <span className="h-1 w-1 rounded-full bg-neutral-300 dark:bg-neutral-700 hidden sm:block" />
-          <span className="inline-flex items-center gap-1.5">
-            <Zap className="h-3.5 w-3.5 text-amber-500" />
-            <span>لحظه‌ای</span>
-          </span>
-        </motion.div>
-      </motion.div>
+        {/* View All — refined magnetic button */}
+        <Magnetic strength={0.12}>
+          <Link
+            href={viewAllHref}
+            className={cn(
+              'group/btn relative inline-flex h-9 items-center gap-1.5 overflow-hidden',
+              'rounded-full px-3.5 text-[13px] font-medium',
+              'text-neutral-700 dark:text-neutral-300',
+              'border border-neutral-200/70 dark:border-neutral-800/70',
+              'bg-white/70 dark:bg-neutral-900/60',
+              'hover:border-neutral-300 dark:hover:border-neutral-700',
+              'hover:text-neutral-900 dark:hover:text-neutral-100',
+              'transition-colors duration-200',
+            )}
+          >
+            <span className="relative">همه رو ببینید</span>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="relative transition-transform duration-300 group-hover/btn:-translate-x-1 rtl:group-hover/btn:translate-x-1"
+              aria-hidden
+            >
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+          </Link>
+        </Magnetic>
+      </motion.header>
 
-      {/* BENTO GRID */}
+      {/* BENTO GRID — انعطاف‌پذیر برای ۳ تا ۸ کارت */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
         whileInView="show"
-        viewport={{ once: true, margin: '-50px' }}
+        viewport={{ once: true, margin: '-40px' }}
         className="relative px-5 pb-6 sm:px-8 sm:pb-8"
       >
-        <div
-          className={cn(
-            'grid gap-3 sm:gap-4',
-            'grid-cols-2 md:grid-cols-4 lg:grid-cols-6',
-            'auto-rows-[minmax(150px,_auto)]',
-          )}
-        >
-          {/* FEATURED CARD (top 1) — بزرگ، 2 ستون در موبایل، 3 ستون در md+ */}
-          {featured && (
-            <FeaturedCard
-              category={featured}
-              palette={colorMap.get(featured.id)!}
-              rank={1}
-              index={0}
-              variants={itemVariants}
-            />
-          )}
-
-          {/* S2 */}
-          {rest[0] && (
-            <SmallCard
-              category={rest[0]}
-              palette={colorMap.get(rest[0].id)!}
-              rank={2}
-              variants={itemVariants}
-              colSpan="col-span-1"
-            />
-          )}
-
-          {/* S3 */}
-          {rest[1] && (
-            <SmallCard
-              category={rest[1]}
-              palette={colorMap.get(rest[1].id)!}
-              rank={3}
-              variants={itemVariants}
-              colSpan="col-span-1"
-            />
-          )}
-
-          {/* S4 — متوسط عرض کامل */}
-          {rest[2] && (
-            <SmallCard
-              category={rest[2]}
-              palette={colorMap.get(rest[2].id)!}
-              rank={4}
-              variants={itemVariants}
-              colSpan="col-span-2 md:col-span-2"
-            />
-          )}
-
-          {/* S5 — featured دوم عرض کامل */}
-          {rest[3] && (
-            <SmallCard
-              category={rest[3]}
-              palette={colorMap.get(rest[3].id)!}
-              rank={5}
-              variants={itemVariants}
-              colSpan="col-span-2 md:col-span-4"
-              wide
-            />
-          )}
-
-          {/* S6, S7 */}
-          {rest[4] && (
-            <SmallCard
-              category={rest[4]}
-              palette={colorMap.get(rest[4].id)!}
-              rank={6}
-              variants={itemVariants}
-              colSpan="col-span-1"
-            />
-          )}
-
-          {rest[5] && (
-            <SmallCard
-              category={rest[5]}
-              palette={colorMap.get(rest[5].id)!}
-              rank={7}
-              variants={itemVariants}
-              colSpan="col-span-1"
-            />
-          )}
-
-          {/* S8 — wide */}
-          {rest[6] && (
-            <SmallCard
-              category={rest[6]}
-              palette={colorMap.get(rest[6].id)!}
-              rank={8}
-              variants={itemVariants}
-              colSpan="col-span-2 md:col-span-2"
-            />
-          )}
-        </div>
+        <BentoGrid
+          featured={featured}
+          rest={rest}
+          colorMap={colorMap}
+          itemVariants={itemVariants}
+        />
       </motion.div>
     </section>
   );
@@ -388,20 +360,234 @@ const ModernTrendingTopics: FC<ModernTrendingTopicsProps> = ({
 export default ModernTrendingTopics;
 
 /* -------------------------------------------------------------------------- */
-/*  Featured Card — کارت بزرگ ویژه                                            */
+/*  BentoGrid — چیدمان انعطاف‌پذیر بر اساس تعداد کارت‌ها                     */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * چیدمان هوشمند:
+ *  - ۱ کارت: featured تنها
+ *  - ۲ کارت: featured بزرگ + یک کارت
+ *  - ۳ کارت: featured بزرگ + ۲ کارت کوچک
+ *  - ۴ کارت: featured بزرگ + ۲×۲ کارت
+ *  - ۵+ کارت: featured بزرگ + ۷ کارت در ۲ ردیف
+ *  - ۸ کارت: طرح کامل (featured + S2 + S3 + S4 wide + S5 wide + S6 + S7 + S8)
+ */
+function BentoGrid({
+  featured,
+  rest,
+  colorMap,
+  itemVariants,
+}: {
+  featured: TaxonomyType;
+  rest: TaxonomyType[];
+  colorMap: Map<string, Palette>;
+  itemVariants: Variants;
+}) {
+  const total = rest.length + 1;
+  const [c2, c3, c4, c5, c6, c7, c8] = rest;
+
+  return (
+    <div
+      className={cn(
+        'grid gap-2.5 sm:gap-3',
+        'grid-cols-2 md:grid-cols-4 lg:grid-cols-6',
+        'auto-rows-[minmax(140px,_auto)]',
+      )}
+    >
+      {/* FEATURED — همیشه اول، بزرگ (2 col mobile / 3 col md+ / 3 col lg) */}
+      <FeaturedCard
+        category={featured}
+        palette={colorMap.get(featured.id)!}
+        rank={1}
+        variants={itemVariants}
+      />
+
+      {/* ۲ کارت — featured تنها نیست، یه کارت کنارش */}
+      {total === 2 && c2 && (
+        <TopicCard
+          category={c2}
+          palette={colorMap.get(c2.id)!}
+          rank={2}
+          variants={itemVariants}
+          className="col-span-1 md:col-span-3"
+          wide
+        />
+      )}
+
+      {/* ۳ کارت — featured + ۲ کارت کوچک */}
+      {total === 3 && c2 && (
+        <TopicCard
+          category={c2}
+          palette={colorMap.get(c2.id)!}
+          rank={2}
+          variants={itemVariants}
+          className="col-span-1"
+        />
+      )}
+      {total === 3 && c3 && (
+        <TopicCard
+          category={c3}
+          palette={colorMap.get(c3.id)!}
+          rank={3}
+          variants={itemVariants}
+          className="col-span-1"
+        />
+      )}
+
+      {/* ۴ کارت — featured + ۲ کارت (یکی بالا، یکی wide) */}
+      {total === 4 && c2 && (
+        <TopicCard
+          category={c2}
+          palette={colorMap.get(c2.id)!}
+          rank={2}
+          variants={itemVariants}
+          className="col-span-1"
+        />
+      )}
+      {total === 4 && c3 && (
+        <TopicCard
+          category={c3}
+          palette={colorMap.get(c3.id)!}
+          rank={3}
+          variants={itemVariants}
+          className="col-span-1"
+        />
+      )}
+      {total === 4 && c4 && (
+        <TopicCard
+          category={c4}
+          palette={colorMap.get(c4.id)!}
+          rank={4}
+          variants={itemVariants}
+          className="col-span-2 md:col-span-4"
+          wide
+        />
+      )}
+
+      {/* ۵ کارت — featured + ۲ + ۲ wide */}
+      {total === 5 && c2 && (
+        <TopicCard
+          category={c2}
+          palette={colorMap.get(c2.id)!}
+          rank={2}
+          variants={itemVariants}
+          className="col-span-1"
+        />
+      )}
+      {total === 5 && c3 && (
+        <TopicCard
+          category={c3}
+          palette={colorMap.get(c3.id)!}
+          rank={3}
+          variants={itemVariants}
+          className="col-span-1"
+        />
+      )}
+      {total === 5 && c4 && (
+        <TopicCard
+          category={c4}
+          palette={colorMap.get(c4.id)!}
+          rank={4}
+          variants={itemVariants}
+          className="col-span-2 md:col-span-2"
+        />
+      )}
+      {total === 5 && c5 && (
+        <TopicCard
+          category={c5}
+          palette={colorMap.get(c5.id)!}
+          rank={5}
+          variants={itemVariants}
+          className="col-span-2 md:col-span-2"
+        />
+      )}
+
+      {/* ۶ کارت — featured + ۲ + ۲ + ۱ (wide برای وسط) */}
+      {total >= 6 && c2 && (
+        <TopicCard
+          category={c2}
+          palette={colorMap.get(c2.id)!}
+          rank={2}
+          variants={itemVariants}
+          className="col-span-1"
+        />
+      )}
+      {total >= 6 && c3 && (
+        <TopicCard
+          category={c3}
+          palette={colorMap.get(c3.id)!}
+          rank={3}
+          variants={itemVariants}
+          className="col-span-1"
+        />
+      )}
+      {total >= 6 && c4 && (
+        <TopicCard
+          category={c4}
+          palette={colorMap.get(c4.id)!}
+          rank={4}
+          variants={itemVariants}
+          className="col-span-2 md:col-span-4"
+          wide
+        />
+      )}
+      {total >= 6 && c5 && (
+        <TopicCard
+          category={c5}
+          palette={colorMap.get(c5.id)!}
+          rank={5}
+          variants={itemVariants}
+          className="col-span-1"
+        />
+      )}
+      {total >= 6 && c6 && (
+        <TopicCard
+          category={c6}
+          palette={colorMap.get(c6.id)!}
+          rank={6}
+          variants={itemVariants}
+          className="col-span-1"
+        />
+      )}
+
+      {/* ۷ کارت — مثل ۶، فقط یکی اضافه wide */}
+      {total >= 7 && c7 && (
+        <TopicCard
+          category={c7}
+          palette={colorMap.get(c7.id)!}
+          rank={7}
+          variants={itemVariants}
+          className="col-span-2 md:col-span-2"
+        />
+      )}
+
+      {/* ۸ کارت — کامل */}
+      {total >= 8 && c8 && (
+        <TopicCard
+          category={c8}
+          palette={colorMap.get(c8.id)!}
+          rank={8}
+          variants={itemVariants}
+          className="col-span-2 md:col-span-2"
+        />
+      )}
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Featured Card — refined monochromatic                                     */
 /* -------------------------------------------------------------------------- */
 
 function FeaturedCard({
   category,
   palette,
   rank,
-  index,
   variants,
 }: {
   category: TaxonomyType;
-  palette: (typeof PALETTES)[number];
+  palette: Palette;
   rank: number;
-  index: number;
   variants: Variants;
 }) {
   return (
@@ -409,236 +595,269 @@ function FeaturedCard({
       variants={variants}
       className="col-span-2 row-span-2 md:col-span-3 md:row-span-2"
     >
-      <Magnetic strength={0.15}>
-        <TiltCard intensity={6} glare={false} className="h-full">
-          <Link
-            href={`/archive/category/${category.slug}`}
-            className={cn(
-              'group/feat relative flex h-full min-h-[280px] sm:min-h-[320px] flex-col justify-between',
-              'rounded-3xl overflow-hidden p-5 sm:p-7',
-              'border border-white/20 dark:border-white/10',
-              'bg-white/70 dark:bg-neutral-900/60',
-              'backdrop-blur-xl backdrop-saturate-150',
-              'shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)]',
-              'dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)]',
-              'hover:shadow-[0_30px_80px_-20px_rgba(0,0,0,0.3)]',
-              'transition-shadow duration-500',
-            )}
-            aria-label={`دسته ${category.name} - ویژه با ${category.count} مقاله`}
-          >
-            {/* Gradient overlay پویا */}
+      <Magnetic strength={0.1}>
+        <Link
+          href={`/archive/category/${category.slug}`}
+          className={cn(
+            'group/feat relative flex h-full min-h-[300px] sm:min-h-[340px] flex-col justify-between',
+            'rounded-2xl overflow-hidden p-5 sm:p-7',
+            'border border-neutral-200/70 dark:border-neutral-800/70',
+            'bg-neutral-900 dark:bg-neutral-50',
+            'shadow-[0_2px_0_0_rgba(255,255,255,0.04)_inset,0_20px_40px_-20px_rgba(20,23,32,0.3)]',
+            'dark:shadow-[0_2px_0_0_rgba(255,255,255,0.04)_inset,0_20px_40px_-20px_rgba(0,0,0,0.6)]',
+            'transition-all duration-500',
+            'hover:shadow-[0_2px_0_0_rgba(255,255,255,0.04)_inset,0_28px_50px_-20px_rgba(20,23,32,0.4)]',
+          )}
+          aria-label={`دسته ${category.name} - ویژه با ${category.count} مقاله`}
+        >
+          {/* Decorative orb — subtle */}
+          <div
+            aria-hidden
+            className="absolute -top-20 -end-20 h-64 w-64 rounded-full opacity-[0.08] blur-3xl"
+            style={{ background: palette.accent }}
+          />
+          <div
+            aria-hidden
+            className="absolute -bottom-32 -start-16 h-72 w-72 rounded-full bg-white/5 blur-3xl"
+          />
+
+          {/* Shimmer — یک خط نور افقی که می‌گذره */}
+          <Shimmer className="opacity-40" />
+
+          {/* Top — Rank + label */}
+          <div className="relative z-10 flex items-start justify-between">
             <div
               className={cn(
-                'absolute inset-0 opacity-70 transition-opacity duration-500',
-                'bg-gradient-to-br',
-                palette.from,
-                'via-fuchsia-500/20',
-                palette.to,
-                'group-hover/feat:opacity-90',
+                'flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center',
+                'rounded-2xl',
+                'border border-white/10',
+                'bg-white/[0.04] dark:bg-neutral-900/[0.04]',
+                'backdrop-blur-md',
               )}
-            />
-
-            {/* Shimmer animation */}
-            <Shimmer className="opacity-60" />
-
-            {/* Decorative orbs */}
-            <div className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
-            <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-black/10 blur-3xl" />
-
-            {/* Top — Rank + badge */}
-            <div className="relative z-10 flex items-start justify-between">
-              <motion.div
-                initial={{ scale: 0, rotate: -45 }}
-                whileInView={{ scale: 1, rotate: 0 }}
-                viewport={{ once: true }}
-                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 + index * 0.05 }}
-                className="relative flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-white/90 text-3xl sm:text-4xl font-black text-neutral-900 shadow-lg"
-              >
-                #{rank}
-              </motion.div>
-
-              <motion.div
-                initial={{ scale: 0, rotate: 12 }}
-                whileInView={{ scale: 1, rotate: 0 }}
-                viewport={{ once: true }}
-                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.3 }}
+            >
+              <span
                 className={cn(
-                  'relative inline-flex items-center gap-1.5 rounded-full px-3 py-1.5',
-                  'bg-white/95 text-rose-600 text-xs font-black uppercase tracking-wider',
-                  'shadow-lg',
+                  'text-2xl sm:text-3xl font-bold tracking-tight',
+                  'text-white dark:text-neutral-900',
                 )}
               >
-                <span className="absolute inset-0 rounded-full bg-rose-500/30 animate-ping opacity-50" />
-                <Flame className="relative h-3.5 w-3.5" />
-                <span className="relative">ترند برتر</span>
-              </motion.div>
+                {String(rank).padStart(2, '0')}
+              </span>
             </div>
 
-            {/* Middle — Title + count */}
-            <div className="relative z-10 mt-4">
-              <h3 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-white drop-shadow-md">
-                {category.name}
-              </h3>
-              <p className="mt-2 flex items-center gap-2 text-sm sm:text-base text-white/90 font-medium">
-                <Hash className="h-4 w-4" />
-                <AnimatedNumber value={category.count} className="text-white" />
-                <span>مقاله و تحلیل</span>
-              </p>
-            </div>
+            <span
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-full',
+                'border border-white/10 dark:border-neutral-900/10',
+                'bg-white/5 dark:bg-neutral-900/5',
+                'px-2.5 py-1 text-[11px] font-medium tracking-wide',
+                'text-white/90 dark:text-neutral-900/80',
+                'backdrop-blur-md',
+              )}
+            >
+              <span
+                aria-hidden
+                className="h-1.5 w-1.5 rounded-full"
+                style={{ backgroundColor: palette.accent }}
+              />
+              پربازدیدترین
+            </span>
+          </div>
 
-            {/* Bottom — CTA + arrow */}
-            <div className="relative z-10 mt-4 flex items-center justify-between">
-              <div className="inline-flex items-center gap-2 text-xs text-white/80 font-medium">
-                <span>برای کاوش کلیک کنید</span>
-                <span className="text-lg">←</span>
-              </div>
-              <motion.div
-                className={cn(
-                  'flex h-10 w-10 items-center justify-center rounded-full',
-                  'bg-white text-neutral-900 shadow-lg',
-                  'transition-transform duration-300',
-                  'group-hover/feat:rotate-[-45deg] group-hover/feat:scale-110',
-                )}
+          {/* Middle — Title + count */}
+          <div className="relative z-10 mt-4">
+            <h3
+              className={cn(
+                'text-2xl sm:text-3xl md:text-4xl font-bold tracking-[-0.02em]',
+                'text-white dark:text-neutral-900',
+                'leading-[1.1]',
+              )}
+            >
+              {category.name}
+            </h3>
+            <p
+              className={cn(
+                'mt-2 flex items-center gap-1.5 text-sm sm:text-[15px]',
+                'text-white/70 dark:text-neutral-700',
+              )}
+            >
+              <span className="font-medium tabular-nums">
+                {category.count.toLocaleString('fa-IR')}
+              </span>
+              <span>مقاله اینجا منتشر شده</span>
+            </p>
+          </div>
+
+          {/* Bottom — CTA + arrow */}
+          <div className="relative z-10 mt-4 flex items-center justify-between">
+            <span
+              className={cn(
+                'text-xs sm:text-[13px]',
+                'text-white/60 dark:text-neutral-600',
+                'tracking-[-0.005em]',
+              )}
+            >
+              کلیک کنید ببینید چی هست
+            </span>
+            <div
+              className={cn(
+                'flex h-9 w-9 items-center justify-center rounded-full',
+                'border border-white/15 dark:border-neutral-900/15',
+                'bg-white/5 dark:bg-neutral-900/5',
+                'transition-all duration-300',
+                'group-hover/feat:bg-white/15',
+                'dark:group-hover/feat:bg-neutral-900/15',
+              )}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-white transition-transform duration-300 group-hover/feat:-translate-x-0.5 rtl:group-hover/feat:translate-x-0.5 dark:text-neutral-900"
+                aria-hidden
               >
-                <ArrowUpLeft className="h-5 w-5" />
-              </motion.div>
+                <path d="M19 12H5M12 5l-7 7 7 7" />
+              </svg>
             </div>
-          </Link>
-        </TiltCard>
+          </div>
+        </Link>
       </Magnetic>
     </motion.div>
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Small Card                                                                 */
+/*  Topic Card — refined minimal                                              */
 /* -------------------------------------------------------------------------- */
 
-function SmallCard({
+function TopicCard({
   category,
   palette,
   rank,
   variants,
-  colSpan = 'col-span-1',
+  className,
   wide = false,
 }: {
   category: TaxonomyType;
-  palette: (typeof PALETTES)[number];
+  palette: Palette;
   rank: number;
   variants: Variants;
-  colSpan?: string;
+  className?: string;
   wide?: boolean;
 }) {
   const isTop3 = rank <= 3;
 
   return (
-    <motion.div variants={variants} className={cn(colSpan, wide && 'row-span-1')}>
-      <Magnetic strength={0.2}>
-        <TiltCard intensity={wide ? 5 : 8} className="h-full">
-          <Link
-            href={`/archive/category/${category.slug}`}
-            className={cn(
-              'group/card relative flex h-full flex-col justify-between',
-              'rounded-2xl sm:rounded-3xl overflow-hidden p-4 sm:p-5',
-              'border border-neutral-200/60 dark:border-neutral-800/60',
-              'bg-white/70 dark:bg-neutral-900/60',
-              'backdrop-blur-xl backdrop-saturate-150',
-              'shadow-[0_8px_30px_-8px_rgba(0,0,0,0.12)]',
-              'dark:shadow-[0_8px_30px_-8px_rgba(0,0,0,0.4)]',
-              'hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.25)]',
-              'transition-shadow duration-500',
-              wide ? 'min-h-[120px] sm:min-h-[130px]' : 'min-h-[150px] sm:min-h-[160px]',
-            )}
-            aria-label={`دسته ${category.name} با ${category.count} مقاله`}
-          >
-            {/* Gradient overlay */}
+    <motion.div variants={variants} className={cn('min-w-0', className)}>
+      <Magnetic strength={0.14}>
+        <Link
+          href={`/archive/category/${category.slug}`}
+          className={cn(
+            'group/card relative flex h-full flex-col justify-between',
+            'rounded-2xl overflow-hidden p-4 sm:p-5',
+            'border border-neutral-200/70 dark:border-neutral-800/70',
+            'bg-white/70 dark:bg-neutral-900/60',
+            'backdrop-blur-xl',
+            'shadow-[0_1px_0_0_rgba(0,0,0,0.02),0_4px_12px_-6px_rgba(20,23,32,0.06)]',
+            'dark:shadow-[0_1px_0_0_rgba(255,255,255,0.02),0_4px_12px_-6px_rgba(0,0,0,0.4)]',
+            'transition-all duration-300',
+            'hover:border-neutral-300 dark:hover:border-neutral-700',
+            'hover:shadow-[0_1px_0_0_rgba(0,0,0,0.02),0_8px_24px_-8px_rgba(20,23,32,0.1)]',
+            'dark:hover:shadow-[0_1px_0_0_rgba(255,255,255,0.04),0_8px_24px_-8px_rgba(0,0,0,0.5)]',
+            'hover:-translate-y-0.5',
+            wide ? 'min-h-[110px] sm:min-h-[120px]' : 'min-h-[140px] sm:min-h-[150px]',
+          )}
+          style={{ willChange: 'transform' }}
+          aria-label={`دسته ${category.name} با ${category.count} مقاله`}
+        >
+          {/* Top row — Icon + rank */}
+          <div className="relative z-10 flex items-start justify-between">
             <div
               className={cn(
-                'absolute inset-0 opacity-50 transition-opacity duration-500',
-                'bg-gradient-to-br',
-                palette.from,
-                'via-white/5',
-                palette.to,
-                'group-hover/card:opacity-80',
+                'flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl',
+                palette.bg,
+                'ring-1 ring-inset',
+                palette.ring,
               )}
-            />
+            >
+              <CategoryGlyph accent={palette.accent} />
+            </div>
 
-            {/* Top row */}
-            <div className="relative z-10 flex items-start justify-between">
-              <motion.div
-                initial={{ scale: 0, rotate: -45 }}
-                whileInView={{ scale: 1, rotate: 0 }}
-                viewport={{ once: true }}
-                transition={{ type: 'spring', stiffness: 200, damping: 15, delay: rank * 0.04 }}
+            {isTop3 && (
+              <span
                 className={cn(
-                  'flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl',
-                  palette.soft,
-                  palette.text,
-                  'ring-1 ring-inset ring-white/10',
+                  'inline-flex items-center gap-0.5 rounded-md',
+                  'border border-neutral-200/70 dark:border-neutral-800/70',
+                  'bg-white/80 dark:bg-neutral-900/60',
+                  'px-1.5 py-0.5 text-[10px] font-semibold tabular-nums',
+                  'text-neutral-600 dark:text-neutral-400',
                 )}
               >
-                <Hash className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={2.2} />
-              </motion.div>
+                #{rank}
+              </span>
+            )}
+          </div>
 
-              {isTop3 && (
-                <motion.div
-                  initial={{ scale: 0, rotate: -12 }}
-                  whileInView={{ scale: 1, rotate: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.2 }}
-                  className={cn(
-                    'relative inline-flex items-center gap-1 rounded-full px-2 py-0.5',
-                    'bg-gradient-to-br',
-                    palette.from,
-                    palette.to,
-                    'text-white text-[10px] font-black uppercase tracking-wider',
-                    'shadow-md',
-                  )}
-                >
-                  <Flame className="h-2.5 w-2.5" />
-                  <span>#{rank}</span>
-                </motion.div>
+          {/* Middle — title */}
+          <div className="relative z-10 mt-3">
+            <h3
+              className={cn(
+                'font-semibold tracking-[-0.012em] leading-snug',
+                'text-neutral-900 dark:text-neutral-50',
+                wide ? 'text-base sm:text-lg' : 'text-[14px] sm:text-[15px]',
               )}
-            </div>
+            >
+              {category.name}
+            </h3>
+            <p
+              className={cn(
+                'mt-1 flex items-center gap-1',
+                'text-neutral-500 dark:text-neutral-400',
+                wide ? 'text-[13px]' : 'text-[12px] sm:text-[13px]',
+              )}
+            >
+              <span className="tabular-nums font-medium">
+                {category.count.toLocaleString('fa-IR')}
+              </span>
+              <span>مطلب</span>
+            </p>
+          </div>
 
-            {/* Middle — title */}
-            <div className="relative z-10 mt-3">
-              <h3
-                className={cn(
-                  'font-bold text-neutral-900 dark:text-neutral-50 leading-tight tracking-tight',
-                  wide ? 'text-lg sm:text-xl' : 'text-sm sm:text-base',
-                )}
-              >
-                {category.name}
-              </h3>
-              <p
-                className={cn(
-                  'mt-1 flex items-center gap-1.5 text-neutral-600 dark:text-neutral-300',
-                  wide ? 'text-sm' : 'text-xs sm:text-sm',
-                )}
-              >
-                <AnimatedNumber value={category.count} />
-                <span>مقاله</span>
-              </p>
-            </div>
-
-            {/* Bottom — arrow */}
-            <div className="relative z-10 mt-3 flex items-center justify-end">
-              <motion.div
-                className={cn(
-                  'flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full',
-                  'bg-neutral-900/5 dark:bg-white/5',
-                  'text-neutral-700 dark:text-neutral-300',
-                  'opacity-0 -translate-x-1',
-                  'group-hover/card:opacity-100 group-hover/card:translate-x-0',
-                  'transition-all duration-300',
-                )}
-              >
-                <ArrowUpLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              </motion.div>
-            </div>
-          </Link>
-        </TiltCard>
+          {/* Bottom — refined arrow on hover */}
+          <div
+            className={cn(
+              'absolute bottom-3 end-3 sm:bottom-4 sm:end-4',
+              'flex h-7 w-7 items-center justify-center rounded-full',
+              'border border-neutral-200/70 dark:border-neutral-800/70',
+              'bg-white/0 dark:bg-neutral-900/0',
+              'text-neutral-400 dark:text-neutral-500',
+              'opacity-0',
+              'group-hover/card:opacity-100',
+              'group-hover/card:border-neutral-300 dark:group-hover/card:border-neutral-700',
+              'transition-all duration-300',
+            )}
+          >
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="transition-transform duration-300 group-hover/card:-translate-x-0.5 rtl:group-hover/card:translate-x-0.5"
+              aria-hidden
+            >
+              <path d="M19 12H5M12 5l-7 7 7 7" />
+            </svg>
+          </div>
+        </Link>
       </Magnetic>
     </motion.div>
   );

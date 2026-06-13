@@ -1,41 +1,45 @@
 'use client';
 
-import { motion } from 'framer-motion';
+/**
+ * TextGradient — متن با گرادینت ملایم
+ *
+ * Linear.app / Vercel style:
+ * - رنگ‌های low-saturation (نه جیغ)
+ * - animation فقط در hover یا وقتی data-animate باشه
+ * - text-shadow ضد pixelation
+ */
+
+import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 export interface TextGradientProps {
   children: ReactNode;
   className?: string;
-  /** رنگ‌های گرادینت */
-  from?: string;
-  via?: string;
-  to?: string;
-  /** آیا انیمیشن gradient داشته باشه */
-  animate?: boolean;
+  /** variant: refined palettes */
+  variant?: 'default' | 'mono' | 'cool' | 'warm';
+  /** کلاس‌های اضافی */
 }
 
-/**
- * TextGradient — متن با گرادینت متحرک
- *
- * - linear.app-style gradient text
- * - animation با background-position (متحرک)
- */
+const VARIANTS = {
+  default:
+    'from-[rgb(var(--c-foreground))] via-[rgb(var(--c-primary-400))] to-[rgb(var(--c-foreground))]',
+  mono: 'from-[rgb(var(--c-foreground))] via-[rgb(var(--c-neutral-500))] to-[rgb(var(--c-foreground))]',
+  cool: 'from-[rgb(var(--c-primary-500))] via-[rgb(var(--c-primary-300))] to-[rgb(var(--c-primary-500))]',
+  warm: 'from-[rgb(var(--c-foreground))] via-[rgb(var(--c-accent))] to-[rgb(var(--c-foreground))]',
+} as const;
+
 export function TextGradient({
   children,
   className,
-  from = 'from-primary-500',
-  via = 'via-fuchsia-500',
-  to = 'to-violet-500',
-  animate = true,
+  variant = 'default',
 }: TextGradientProps) {
   return (
     <span
       className={cn(
         'inline-block bg-gradient-to-r bg-clip-text text-transparent',
-        from,
-        via,
-        to,
-        animate && 'bg-[length:200%_auto] animate-gradient',
+        'bg-[length:200%_auto]',
+        'animate-gradient',
+        VARIANTS[variant],
         className,
       )}
     >

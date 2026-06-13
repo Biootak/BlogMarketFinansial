@@ -1,78 +1,71 @@
 'use client';
 
+/**
+ * LiveIndicator — نشانگر LIVE refined
+ *
+ * - رنگ‌ها low-saturation
+ * - فقط یک dot با ping
+ * - استفاده بهینه از motion
+ */
+
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 export interface LiveIndicatorProps {
   className?: string;
-  /** متن کنار نقطه */
   label?: string;
-  /** سایز */
-  size?: 'sm' | 'md' | 'lg';
-  /** رنگ نقطه */
-  color?: 'rose' | 'emerald' | 'amber' | 'blue';
+  size?: 'xs' | 'sm' | 'md';
+  /** رنگ — refined palette */
+  color?: 'rose' | 'emerald' | 'amber' | 'neutral';
 }
 
-/**
- * LiveIndicator — نشانگر "زنده" با pulse animation
- *
- * - یه نقطه کوچک با pulse rings
- * - مخصوص نشون دادن "real-time" یا "live" بودن دیتا
- */
+const colorMap = {
+  rose: 'bg-rose-500/80',
+  emerald: 'bg-emerald-500/80',
+  amber: 'bg-amber-500/80',
+  neutral: 'bg-neutral-500/80',
+} as const;
+
+const labelColor = {
+  rose: 'text-rose-600/90 dark:text-rose-400/90',
+  emerald: 'text-emerald-600/90 dark:text-emerald-400/90',
+  amber: 'text-amber-600/90 dark:text-amber-400/90',
+  neutral: 'text-neutral-600/90 dark:text-neutral-400/90',
+} as const;
+
+const sizeMap = {
+  xs: { dot: 'h-1 w-1', text: 'text-[9px]' },
+  sm: { dot: 'h-1.5 w-1.5', text: 'text-[10px]' },
+  md: { dot: 'h-2 w-2', text: 'text-xs' },
+} as const;
+
 export function LiveIndicator({
   className,
-  label = 'LIVE',
+  label = 'live',
   size = 'sm',
   color = 'rose',
 }: LiveIndicatorProps) {
-  const colorMap = {
-    rose: 'bg-rose-500 shadow-rose-500/50',
-    emerald: 'bg-emerald-500 shadow-emerald-500/50',
-    amber: 'bg-amber-500 shadow-amber-500/50',
-    blue: 'bg-blue-500 shadow-blue-500/50',
-  };
-
-  const sizeMap = {
-    sm: { dot: 'h-1.5 w-1.5', text: 'text-[10px]', gap: 'gap-1.5' },
-    md: { dot: 'h-2 w-2', text: 'text-xs', gap: 'gap-2' },
-    lg: { dot: 'h-2.5 w-2.5', text: 'text-sm', gap: 'gap-2.5' },
-  };
+  const s = sizeMap[size];
 
   return (
     <div
       className={cn(
-        'inline-flex items-center rounded-full bg-rose-500/10 px-2 py-0.5',
-        sizeMap[size].gap,
+        'inline-flex items-center gap-1.5',
+        'tracking-[0.15em] uppercase font-medium',
+        s.text,
+        labelColor[color],
         className,
       )}
     >
-      <span className="relative inline-flex">
+      <span className="relative inline-flex" aria-hidden>
         <motion.span
-          className={cn(
-            'absolute inline-flex h-full w-full rounded-full opacity-75',
-            colorMap[color],
-          )}
+          className={cn('absolute inline-flex h-full w-full rounded-full opacity-60', colorMap[color])}
           animate={{ scale: [1, 2.2], opacity: [0.6, 0] }}
           transition={{ duration: 1.6, repeat: Infinity, ease: 'easeOut' }}
         />
-        <span
-          className={cn(
-            'relative inline-flex rounded-full shadow-lg',
-            colorMap[color],
-            sizeMap[size].dot,
-          )}
-        />
+        <span className={cn('relative inline-flex rounded-full', s.dot, colorMap[color])} />
       </span>
-      {label && (
-        <span
-          className={cn(
-            'font-bold tracking-wider text-rose-600 dark:text-rose-400',
-            sizeMap[size].text,
-          )}
-        >
-          {label}
-        </span>
-      )}
+      {label}
     </div>
   );
 }

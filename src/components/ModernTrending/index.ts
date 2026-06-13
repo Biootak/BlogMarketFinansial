@@ -1,16 +1,15 @@
 /**
- * ModernTrending — نسخه ۲۰۲۶ از "موضوعات پرطرفدار"
+ * ModernTrending — نسخه refined "موضوعات پرطرفدار"
  *
- * ترکیب چندین تکنیک مدرن:
- * - Bento Grid نامتقارن
- * - Aurora / Mesh Gradient
+ * المان‌های اصلی:
+ * - Bento Grid نامتقارن با featured card بزرگ
+ * - Aurora Background low-saturation
  * - Magnetic Hover
- * - 3D Tilt + Glare
- * - Shimmer
- * - Marquee Ticker
- * - Live Indicator
- * - Glassmorphism
- * - Animated Counter با اعداد فارسی
+ * - 3D Tilt (subtle)
+ * - Shimmer line (subtle)
+ * - Marquee Ticker (CSS-driven)
+ * - LiveIndicator
+ * - Morphing Underline
  *
  * استفاده:
  * ```tsx

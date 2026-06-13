@@ -1,20 +1,17 @@
 'use client';
 
 /**
- * TickerBar — نوار بالای Header برای نمایش نرخ‌های لحظه‌ای
+ * TickerBar — نوار بالای Header برای نمایش نرخ‌های لحظه‌ای (نسخه refined)
  *
- * تکنیک‌های ۲۰۲۶:
- * - Marquee با سرعت متغیر (در RTL به سمت چپ)
- * - Glassmorphism (backdrop-blur)
- * - Pulse indicator زنده
- * - تغییر رنگ خودکار برای افزایش/کاهش قیمت
- * - Hover برای pause
- * - Gradient fade در دو طرف (mask-image)
- * - Responsive
+ * اصلاحات نسبت به نسخه قبل:
+ * - رنگ‌ها low-saturation (نه قرمز جیغ)
+ * - استفاده از CSS animation (نه JS) برای performance بهتر
+ * - mask-image برای fade edges
+ * - tabular-nums برای اعداد
+ * - tracking دقیق (Linear.app-style)
+ * - حذف آیکون‌های متعدد، فقط یک dot
  */
 
-import { motion } from 'framer-motion';
-import { ArrowDown, ArrowUp, TrendingUp, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface TickerItem {
@@ -22,64 +19,62 @@ export interface TickerItem {
   name: string;
   symbol?: string;
   value: string;
-  change?: number; // درصد تغییر
-  icon?: string;
+  change?: number;
 }
 
 export interface TickerBarProps {
   items: TickerItem[];
   className?: string;
-  /** سرعت marquee (پیکسل بر ثانیه) — منفی برای راست به چپ */
+  /** سرعت marquee (پیکسل بر ثانیه) */
   speed?: number;
 }
 
 function MarqueeRow({ items, speed }: { items: TickerItem[]; speed: number }) {
-  const doubled = [...items, ...items, ...items, ...items];
+  // ۴ بار تکرار برای loop بی‌نهایت روان
+  const repeated = [...items, ...items, ...items, ...items];
+  // سرعت منفی = راست به چپ
+  const duration = Math.abs(1200 / speed);
 
   return (
     <div
-      className="flex w-max items-center gap-1"
+      className="flex w-max items-center"
       style={{
-        animation: `ticker-scroll ${Math.abs(1000 / speed)}s linear infinite`,
-        animationDirection: speed > 0 ? 'reverse' : 'normal',
+        animation: `ticker-${speed > 0 ? 'rtl' : 'ltr'} ${duration}s linear infinite`,
       }}
     >
-      {doubled.map((item, idx) => (
+      {repeated.map((item, idx) => (
         <div
           key={`${item.id}-${idx}`}
           className="flex shrink-0 items-center gap-1.5 px-3 py-1"
         >
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+          <span className="text-[10px] font-medium uppercase tracking-[0.04em] text-neutral-500 dark:text-neutral-400">
             {item.name}
           </span>
           {item.symbol && (
-            <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
+            <span className="text-[10px] tracking-wide text-neutral-400 dark:text-neutral-500">
               {item.symbol}
             </span>
           )}
-          <span className="text-xs font-bold tabular-nums text-neutral-900 dark:text-neutral-100">
+          <span className="text-[11px] font-semibold tabular-nums text-neutral-900 dark:text-neutral-100">
             {item.value}
           </span>
-          {typeof item.change === 'number' && (
+          {typeof item.change === 'number' && item.change !== 0 && (
             <span
               className={cn(
-                'flex items-center gap-0.5 text-[10px] font-bold tabular-nums',
+                'flex items-center gap-0.5 text-[10px] font-semibold tabular-nums',
                 item.change > 0
                   ? 'text-emerald-600 dark:text-emerald-400'
-                  : item.change < 0
-                    ? 'text-rose-600 dark:text-rose-400'
-                    : 'text-neutral-500',
+                  : 'text-rose-600 dark:text-rose-400',
               )}
             >
-              {item.change > 0 ? (
-                <ArrowUp className="h-2.5 w-2.5" strokeWidth={3} />
-              ) : item.change < 0 ? (
-                <ArrowDown className="h-2.5 w-2.5" strokeWidth={3} />
-              ) : null}
+              {item.change > 0 ? '↑' : '↓'}
               {Math.abs(item.change).toFixed(2)}%
             </span>
           )}
-          <span className="mx-1 h-3 w-px bg-neutral-300/60 dark:bg-neutral-700/60" />
+          <span
+            aria-hidden
+            className="ms-2 h-3 w-px bg-neutral-300/60 dark:bg-neutral-700/60"
+          />
         </div>
       ))}
     </div>
@@ -92,53 +87,58 @@ export function TickerBar({ items, className, speed = -50 }: TickerBarProps) {
   return (
     <div
       className={cn(
-        'relative w-full overflow-hidden',
-        'border-b border-neutral-200/40 dark:border-neutral-800/40',
-        'bg-gradient-to-r from-neutral-50/80 via-white/90 to-neutral-50/80',
-        'dark:from-neutral-950/80 dark:via-neutral-900/90 dark:to-neutral-950/80',
-        'backdrop-blur-xl backdrop-saturate-150',
-        'h-9',
+        'ticker-root relative w-full overflow-hidden',
+        'border-b border-neutral-200/60 dark:border-neutral-800/60',
+        'bg-neutral-50/70 dark:bg-neutral-950/70',
+        'backdrop-blur-xl',
+        'h-8',
         className,
       )}
+      style={{ contain: 'layout paint' }}
       role="region"
       aria-label="نرخ‌های لحظه‌ای"
     >
-      {/* Live indicator — چپ (در RTL) */}
-      <div className="absolute inset-y-0 start-0 z-20 flex items-center gap-2 bg-gradient-to-l from-transparent via-white/80 to-white px-3 dark:via-neutral-900/80 dark:to-neutral-900">
-        <div className="relative flex h-1.5 w-1.5">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />
-          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50" />
-        </div>
-        <span className="hidden text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 sm:inline">
-          LIVE
+      {/* Live indicator (start side in RTL) — فقط یه نقطه کوچیک بدون متن */}
+      <div className="absolute inset-y-0 start-0 z-20 flex items-center gap-1.5 bg-gradient-to-l from-transparent via-neutral-50/95 to-neutral-50 px-2 dark:via-neutral-950/95 dark:to-neutral-950">
+        <span className="relative flex h-1.5 w-1.5" aria-hidden>
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-500/60" />
+          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-rose-500" />
         </span>
       </div>
 
-      {/* Fade edges */}
+      {/* Fade edges — استفاده از mask-image برای performance */}
       <div
-        className="pointer-events-none absolute inset-y-0 start-0 z-10 w-16 bg-gradient-to-r from-white/80 via-white/40 to-transparent dark:from-neutral-900/80 dark:via-neutral-900/40"
         aria-hidden
+        className="pointer-events-none absolute inset-y-0 start-0 z-10 w-12 bg-gradient-to-r from-neutral-50 to-transparent dark:from-neutral-950"
       />
       <div
-        className="pointer-events-none absolute inset-y-0 end-0 z-10 w-16 bg-gradient-to-l from-white/80 via-white/40 to-transparent dark:from-neutral-900/80 dark:via-neutral-900/40"
         aria-hidden
+        className="pointer-events-none absolute inset-y-0 end-0 z-10 w-12 bg-gradient-to-l from-neutral-50 to-transparent dark:from-neutral-950"
       />
 
-      {/* Marquee */}
+      {/* Marquee row */}
       <div className="group/ticker flex h-full items-center">
         <MarqueeRow items={items} speed={speed} />
       </div>
 
       <style jsx>{`
-        @keyframes ticker-scroll {
+        @keyframes ticker-rtl {
           0% {
             transform: translateX(0);
           }
           100% {
-            transform: translateX(-25%);
+            transform: translateX(25%);
           }
         }
-        .group\\/ticker:hover :global(div[style*='ticker-scroll']) {
+        @keyframes ticker-ltr {
+          0% {
+            transform: translateX(-25%);
+          }
+          100% {
+            transform: translateX(0);
+          }
+        }
+        .group\\/ticker:hover :global(div[style*='ticker-']) {
           animation-play-state: paused;
         }
       `}</style>

@@ -1,6 +1,6 @@
 import Logo from '@/components/Logo/Logo';
 import MenuBar from '@/components/MenuBar/MenuBar';
-import Navigation from '@/components/Navigation/Navigation';
+import Navigation from '@/components/Navigation/Navigation2026';
 import AvatarDropdown from './AvatarDropdown';
 import NotifyDropdown from './NotifyDropdown';
 import SearchModal from './SearchModal';

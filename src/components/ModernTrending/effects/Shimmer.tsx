@@ -1,53 +1,56 @@
 'use client';
 
-import { motion } from 'framer-motion';
+/**
+ * Shimmer — خط نور متحرک (refined)
+ *
+ * - Skew به جای straight (حس طبیعی‌تر)
+ * - یک خط، نه halo
+ * - Performance: فقط transform
+ */
+
+import { motion, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 export interface ShimmerProps {
   className?: string;
-  /** زاویه شیمر (پیش‌فرض ۱۱۰ درجه، مورب) */
-  angle?: number;
-  /** رنگ پایه (با opacity 0 کار می‌کنه) */
-  baseColor?: string;
-  /** رنگ نور */
-  highlightColor?: string;
+  /** رنگ highlight */
+  color?: 'light' | 'dark';
 }
 
-/**
- * Shimmer — خط نوری که روی کارت می‌لغزه (حس "premium")
- *
- * - استفاده از gradient conic با mask
- * - حرکت بی‌نهایت و نرم
- * - قابل استفاده به عنوان overlay روی هر المان
- */
-export function Shimmer({
-  className,
-  angle = 110,
-  baseColor = 'transparent',
-  highlightColor = 'rgba(255,255,255,0.18)',
-}: ShimmerProps) {
+export function Shimmer({ className, color = 'dark' }: ShimmerProps) {
+  const reduce = useReducedMotion();
+
+  const highlight =
+    color === 'light'
+      ? 'rgba(255,255,255,0.20)'
+      : 'rgba(255,255,255,0.14)';
+
   return (
     <div
       className={cn('pointer-events-none absolute inset-0 overflow-hidden', className)}
       aria-hidden
+      style={{ contain: 'strict' }}
     >
-      <motion.div
-        initial={{ x: '-100%' }}
-        animate={{ x: '200%' }}
-        transition={{
-          duration: 2.4,
-          repeat: Infinity,
-          ease: [0.22, 1, 0.36, 1],
-          repeatDelay: 1,
-        }}
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: `linear-gradient(${angle}deg, ${baseColor} 0%, ${baseColor} 35%, ${highlightColor} 50%, ${baseColor} 65%, ${baseColor} 100%)`,
-          width: '60%',
-          filter: 'blur(8px)',
-        }}
-      />
+      {!reduce && (
+        <motion.div
+          initial={{ x: '-100%' }}
+          animate={{ x: '200%' }}
+          transition={{
+            duration: 2.6,
+            repeat: Infinity,
+            ease: [0.22, 1, 0.36, 1],
+            repeatDelay: 1.4,
+          }}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: `linear-gradient(110deg, transparent 30%, ${highlight} 50%, transparent 70%)`,
+            width: '50%',
+            transform: 'skewX(-12deg)',
+            willChange: 'transform',
+          }}
+        />
+      )}
     </div>
   );
 }

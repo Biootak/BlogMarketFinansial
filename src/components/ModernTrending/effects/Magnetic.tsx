@@ -1,47 +1,48 @@
 'use client';
 
+/**
+ * Magnetic — جذب ماوس (refined)
+ *
+ * - Spring نرم‌تر
+ * - transform-only (GPU)
+ * - disable در موبایل و reduced-motion
+ */
+
 import { motion, useMotionValue, useSpring } from 'framer-motion';
-import { type ReactNode, useRef, type CSSProperties } from 'react';
+import { type ReactNode, useRef, type CSSProperties, useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
 
 export interface MagneticProps {
   children: ReactNode;
-  /** شدت جذب (پیشنهاد: 0.1 - 0.4) */
   strength?: number;
-  /** غیرفعال کردن در موبایل */
-  disableOnMobile?: boolean;
   className?: string;
   style?: CSSProperties;
 }
 
-/**
- * Magnetic — کامپوننتی که محتوای داخلش رو به سمت ماوس جذب می‌کنه.
- * تکنیک مدرن ۲۰۲۶ که در سایت‌هایی مثل Linear و Vercel استفاده می‌شه.
- *
- * - transform: translate با spring نرم
- * - فقط transform جابجا می‌شه (بدون layout shift)
- * - در موبایل به دلیل عدم وجود ماوس، غیرفعال می‌شه
- */
 export function Magnetic({
   children,
-  strength = 0.25,
-  disableOnMobile = true,
+  strength = 0.2,
   className,
   style,
 }: MagneticProps) {
   const ref = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
+  const [enabled, setEnabled] = useState(true);
 
-  // spring نرم
-  const springConfig = { stiffness: 220, damping: 18, mass: 0.6 };
-  const xSpring = useSpring(x, springConfig);
-  const ySpring = useSpring(y, springConfig);
+  useEffect(() => {
+    // در موبایل و reduced-motion غیرفعال
+    if (typeof window === 'undefined') return;
+    const isCoarse = window.matchMedia('(pointer: coarse)').matches;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setEnabled(!isCoarse && !reduce);
+  }, []);
+
+  const xSpring = useSpring(x, { stiffness: 220, damping: 18, mass: 0.6 });
+  const ySpring = useSpring(y, { stiffness: 220, damping: 18, mass: 0.6 });
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (disableOnMobile && typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches) {
-      return;
-    }
-    if (!ref.current) return;
+    if (!enabled || !ref.current) return;
     const rect = ref.current.getBoundingClientRect();
     const relX = e.clientX - rect.left - rect.width / 2;
     const relY = e.clientY - rect.top - rect.height / 2;
@@ -60,7 +61,7 @@ export function Magnetic({
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{ x: xSpring, y: ySpring, ...style }}
-      className={className}
+      className={cn(className)}
     >
       {children}
     </motion.div>

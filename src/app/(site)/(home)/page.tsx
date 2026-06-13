@@ -47,7 +47,7 @@ export default async function Home() {
       orderDirection: 'asc',
       page: 2,
     }),
-    getCategories({ limit: 8 }),
+    getCategories({ limit: 16 }),
   ]);
 
   const popularCategories =
