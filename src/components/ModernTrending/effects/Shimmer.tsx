@@ -27,9 +27,8 @@ export function Shimmer({ className, color = 'dark' }: ShimmerProps) {
 
   return (
     <div
-      className={cn('pointer-events-none absolute inset-0 overflow-hidden', className)}
+      className={cn('pointer-events-none absolute inset-0 overflow-hidden contain-strict', className)}
       aria-hidden
-      style={{ contain: 'strict' }}
     >
       {!reduce && (
         <motion.div

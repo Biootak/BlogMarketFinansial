@@ -46,7 +46,7 @@ export function AuroraBackground({
         className,
       )}
       aria-hidden
-      style={{ contain: 'layout paint' }}
+      suppressHydrationWarning
     >
       {/* Blob 1 — top-right */}
       <motion.div

@@ -43,6 +43,7 @@ import { TextGradient } from './effects/TextGradient';
 export interface ModernTrendingTopicsProps {
   categories: TaxonomyType[];
   className?: string;
+  /** حداکثر تعداد نمایش (پیش‌فرض: بدون محدودیت) */
   maxItems?: number;
   viewAllHref?: string;
   title?: string;
@@ -153,19 +154,17 @@ function CategoryGlyph({ accent }: { accent: string }) {
 const ModernTrendingTopics: FC<ModernTrendingTopicsProps> = ({
   categories,
   className,
-  maxItems = 8,
+  maxItems,
   viewAllHref = '/archive',
   title = 'موضوعات پرطرفدار',
   subtitle = 'این دسته‌بندی‌ها الان بیشتر از همه خونده می‌شن',
 }) => {
-  const sorted = useMemo(
-    () =>
-      [...categories]
-        .filter((c) => c.count > 0)
-        .sort((a, b) => b.count - a.count)
-        .slice(0, maxItems),
-    [categories, maxItems],
-  );
+  const sorted = useMemo(() => {
+    const filtered = [...categories]
+      .filter((c) => c.count > 0)
+      .sort((a, b) => b.count - a.count);
+    return maxItems ? filtered.slice(0, maxItems) : filtered;
+  }, [categories, maxItems]);
 
   const colorMap = useMemo(
     () => new Map(sorted.map((c, idx) => [c.id, PALETTES[(hashCode(c.id) + idx) % PALETTES.length]])),
@@ -187,9 +186,9 @@ const ModernTrendingTopics: FC<ModernTrendingTopicsProps> = ({
         'shadow-[0_1px_0_0_rgba(0,0,0,0.02),0_24px_60px_-30px_rgba(20,23,32,0.08)]',
         'dark:shadow-[0_1px_0_0_rgba(255,255,255,0.04),0_24px_60px_-30px_rgba(0,0,0,0.5)]',
         'transition-colors',
+        'contain-paint',
         className,
       )}
-      style={{ contain: 'layout paint' }}
       aria-label="موضوعات پرطرفدار"
     >
       {/* AURORA — refined */}
@@ -360,17 +359,16 @@ const ModernTrendingTopics: FC<ModernTrendingTopicsProps> = ({
 export default ModernTrendingTopics;
 
 /* -------------------------------------------------------------------------- */
-/*  BentoGrid — چیدمان انعطاف‌پذیر بر اساس تعداد کارت‌ها                     */
+/*  BentoGrid — چیدمان حرفه‌ای با استایل ثابت برای همه کارت‌ها                */
 /* -------------------------------------------------------------------------- */
 
 /**
- * چیدمان هوشمند:
- *  - ۱ کارت: featured تنها
- *  - ۲ کارت: featured بزرگ + یک کارت
- *  - ۳ کارت: featured بزرگ + ۲ کارت کوچک
- *  - ۴ کارت: featured بزرگ + ۲×۲ کارت
- *  - ۵+ کارت: featured بزرگ + ۷ کارت در ۲ ردیف
- *  - ۸ کارت: طرح کامل (featured + S2 + S3 + S4 wide + S5 wide + S6 + S7 + S8)
+ * استراتژی طراحی:
+ *  - featured card یه استثنا نیست — همه کارت‌ها یه استایل ثابت دارن
+ *  - در موبایل: ۲ ستون، در md: ۳ ستون، در lg: ۴ ستون
+ *  - featured فقط با محتوای بیشتر (rank + "ویژه" badge) متمایز می‌شه
+ *  - اگه دسته‌بندی بیشتر از ۸ تا باشه، باید به صفحه archive برن
+ *  - layout ۱۰۰٪ جمع‌وجور — هیچ فضای خالی
  */
 function BentoGrid({
   featured,
@@ -383,194 +381,41 @@ function BentoGrid({
   colorMap: Map<string, Palette>;
   itemVariants: Variants;
 }) {
-  const total = rest.length + 1;
-  const [c2, c3, c4, c5, c6, c7, c8] = rest;
+  // همه کارت‌ها یکجا، featured اول
+  const all = [featured, ...rest];
 
   return (
     <div
       className={cn(
         'grid gap-2.5 sm:gap-3',
-        'grid-cols-2 md:grid-cols-4 lg:grid-cols-6',
+        // ۲ ستون موبایل، ۳ ستون تبلت، ۴ ستون دسکتاپ — auto-fit
+        'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4',
         'auto-rows-[minmax(140px,_auto)]',
       )}
     >
-      {/* FEATURED — همیشه اول، بزرگ (2 col mobile / 3 col md+ / 3 col lg) */}
-      <FeaturedCard
-        category={featured}
-        palette={colorMap.get(featured.id)!}
-        rank={1}
-        variants={itemVariants}
-      />
-
-      {/* ۲ کارت — featured تنها نیست، یه کارت کنارش */}
-      {total === 2 && c2 && (
-        <TopicCard
-          category={c2}
-          palette={colorMap.get(c2.id)!}
-          rank={2}
-          variants={itemVariants}
-          className="col-span-1 md:col-span-3"
-          wide
-        />
-      )}
-
-      {/* ۳ کارت — featured + ۲ کارت کوچک */}
-      {total === 3 && c2 && (
-        <TopicCard
-          category={c2}
-          palette={colorMap.get(c2.id)!}
-          rank={2}
-          variants={itemVariants}
-          className="col-span-1"
-        />
-      )}
-      {total === 3 && c3 && (
-        <TopicCard
-          category={c3}
-          palette={colorMap.get(c3.id)!}
-          rank={3}
-          variants={itemVariants}
-          className="col-span-1"
-        />
-      )}
-
-      {/* ۴ کارت — featured + ۲ کارت (یکی بالا، یکی wide) */}
-      {total === 4 && c2 && (
-        <TopicCard
-          category={c2}
-          palette={colorMap.get(c2.id)!}
-          rank={2}
-          variants={itemVariants}
-          className="col-span-1"
-        />
-      )}
-      {total === 4 && c3 && (
-        <TopicCard
-          category={c3}
-          palette={colorMap.get(c3.id)!}
-          rank={3}
-          variants={itemVariants}
-          className="col-span-1"
-        />
-      )}
-      {total === 4 && c4 && (
-        <TopicCard
-          category={c4}
-          palette={colorMap.get(c4.id)!}
-          rank={4}
-          variants={itemVariants}
-          className="col-span-2 md:col-span-4"
-          wide
-        />
-      )}
-
-      {/* ۵ کارت — featured + ۲ + ۲ wide */}
-      {total === 5 && c2 && (
-        <TopicCard
-          category={c2}
-          palette={colorMap.get(c2.id)!}
-          rank={2}
-          variants={itemVariants}
-          className="col-span-1"
-        />
-      )}
-      {total === 5 && c3 && (
-        <TopicCard
-          category={c3}
-          palette={colorMap.get(c3.id)!}
-          rank={3}
-          variants={itemVariants}
-          className="col-span-1"
-        />
-      )}
-      {total === 5 && c4 && (
-        <TopicCard
-          category={c4}
-          palette={colorMap.get(c4.id)!}
-          rank={4}
-          variants={itemVariants}
-          className="col-span-2 md:col-span-2"
-        />
-      )}
-      {total === 5 && c5 && (
-        <TopicCard
-          category={c5}
-          palette={colorMap.get(c5.id)!}
-          rank={5}
-          variants={itemVariants}
-          className="col-span-2 md:col-span-2"
-        />
-      )}
-
-      {/* ۶ کارت — featured + ۲ + ۲ + ۱ (wide برای وسط) */}
-      {total >= 6 && c2 && (
-        <TopicCard
-          category={c2}
-          palette={colorMap.get(c2.id)!}
-          rank={2}
-          variants={itemVariants}
-          className="col-span-1"
-        />
-      )}
-      {total >= 6 && c3 && (
-        <TopicCard
-          category={c3}
-          palette={colorMap.get(c3.id)!}
-          rank={3}
-          variants={itemVariants}
-          className="col-span-1"
-        />
-      )}
-      {total >= 6 && c4 && (
-        <TopicCard
-          category={c4}
-          palette={colorMap.get(c4.id)!}
-          rank={4}
-          variants={itemVariants}
-          className="col-span-2 md:col-span-4"
-          wide
-        />
-      )}
-      {total >= 6 && c5 && (
-        <TopicCard
-          category={c5}
-          palette={colorMap.get(c5.id)!}
-          rank={5}
-          variants={itemVariants}
-          className="col-span-1"
-        />
-      )}
-      {total >= 6 && c6 && (
-        <TopicCard
-          category={c6}
-          palette={colorMap.get(c6.id)!}
-          rank={6}
-          variants={itemVariants}
-          className="col-span-1"
-        />
-      )}
-
-      {/* ۷ کارت — مثل ۶، فقط یکی اضافه wide */}
-      {total >= 7 && c7 && (
-        <TopicCard
-          category={c7}
-          palette={colorMap.get(c7.id)!}
-          rank={7}
-          variants={itemVariants}
-          className="col-span-2 md:col-span-2"
-        />
-      )}
-
-      {/* ۸ کارت — کامل */}
-      {total >= 8 && c8 && (
-        <TopicCard
-          category={c8}
-          palette={colorMap.get(c8.id)!}
-          rank={8}
-          variants={itemVariants}
-          className="col-span-2 md:col-span-2"
-        />
-      )}
+      {all.map((c, idx) => {
+        const isFeatured = idx === 0;
+        return isFeatured ? (
+          <FeaturedCard
+            key={c.id}
+            category={c}
+            palette={colorMap.get(c.id)!}
+            rank={1}
+            variants={itemVariants}
+            // featured در همه سایزها ۲ ستون × ۲ ردیف (مربع بزرگ)
+            className="col-span-2 row-span-2 sm:col-span-2 sm:row-span-2 lg:col-span-2 lg:row-span-2"
+          />
+        ) : (
+          <TopicCard
+            key={c.id}
+            category={c}
+            palette={colorMap.get(c.id)!}
+            rank={idx + 1}
+            variants={itemVariants}
+            className="col-span-1"
+          />
+        );
+      })}
     </div>
   );
 }
@@ -584,16 +429,18 @@ function FeaturedCard({
   palette,
   rank,
   variants,
+  className,
 }: {
   category: TaxonomyType;
   palette: Palette;
   rank: number;
   variants: Variants;
+  className?: string;
 }) {
   return (
     <motion.div
       variants={variants}
-      className="col-span-2 row-span-2 md:col-span-3 md:row-span-2"
+      className={cn(className)}
     >
       <Magnetic strength={0.1}>
         <Link

@@ -84,8 +84,9 @@ export default async function Home() {
         <div className="container relative mt-8 lg:mt-12">
           <ModernTrendingTopics
             categories={popularCategories}
+            maxItems={9}
             title="موضوعات پرطرفدار"
-            subtitle="داغ‌ترین ترندهای بازار — به‌روزرسانی لحظه‌ای"
+            subtitle="این دسته‌بندی‌ها الان بیشتر از همه خونده می‌شن"
             viewAllHref="/archive"
           />
         </div>

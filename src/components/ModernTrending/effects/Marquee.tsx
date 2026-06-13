@@ -33,8 +33,7 @@ export function Marquee({
 
   return (
     <div
-      className={cn('overflow-hidden', className)}
-      style={{ contain: 'layout paint' }}
+      className={cn('overflow-hidden contain-paint', className)}
     >
       <div
         className={cn(

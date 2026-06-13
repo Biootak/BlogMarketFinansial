@@ -1,0 +1,1 @@
+{"function":"() => { const el = document.querySelector('section[aria-label=\"موضوعات پرطرفدار\"]'); if (el) el.scrollIntoView({block:'start'}); return el ? 'found' : 'not found'; }"}
