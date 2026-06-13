@@ -12,6 +12,22 @@ interface GetLatestPostsParams {
   category?: string;
 }
 
+/* ---------- CACHE VERSION ----------
+ * هر بار که seed یا داده‌ها به شکل قابل‌توجهی عوض می‌شن، این عدد رو زیاد کنید.
+ * چرا؟ unstable_cache در Next.js کلیدش ترکیب [name, ...args, tags] هست و
+ * وقتی داخل خود تابع fetch می‌کنیم، تغییر DB بدون تغییر key هیچ تاثیری نداره.
+ * revalidateTag فقط از Server Action کار می‌کنه و seed مستقیم به DB می‌زنه.
+ * ساده‌ترین راه: version رو hard-code زیاد کنیم تا کلید cache عوض شه.
+ *
+ * بعد از seed، تگ `posts` در حافظه‌ی Next باطل می‌شه چون:
+ *  1. Seed فقط به DB می‌زنه — کش Next.js بدون تغییر باقی می‌مونه
+ *  2. Revalidate API فقط revalidatePath می‌کنه (که روی data cache اثر نداره)
+ *  3. unstable_cache فقط با revalidateTag باطل می‌شه
+ *
+ * راه‌حل: VERSION رو با هر تغییر شدید (seed یا schema) عوض کن.
+ */
+const CACHE_VERSION = 'v3-2026-06-13'; // بعد از seed ۳۶ پست، به این نسخه ارتقا داده شد
+
 // Internal fetch function
 async function fetchLatestPosts(
   count: number,
@@ -87,7 +103,8 @@ async function fetchLatestPosts(
 // Cached version
 const getCachedLatestPosts = unstable_cache(
   fetchLatestPosts,
-  ['latest-posts'],
+  // کلید cache — VERSION توش هست تا با عوض شدنش، کش قبلی باطل بشه
+  ['latest-posts', CACHE_VERSION],
   {
     revalidate: 60, // 1 minute
     tags: ['posts', 'latest-posts'],

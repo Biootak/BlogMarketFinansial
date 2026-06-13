@@ -50,7 +50,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import Empty from '../Empty';
-import PostsDisplay from '../PostsDisplay.tsx/PostsDisplay';
+import PostGrid from './PostGrid';
 import { cn, toPersianNumber } from '@/lib/utils';
 import { AuroraBackground } from '@/components/ModernTrending/effects/AuroraBackground';
 import { STRIPE_EASE, STRIPE_EASE_SOFT } from '@/lib/motion';
@@ -65,9 +65,11 @@ interface ClientSidePostsProps {
   /** لیست نام دسته‌ها به ترتیب دلخواه (همیشه «همه» اول) */
   categoryNames: string[];
   initialTickerData?: MarketTickerItem[];
+  /** اندازه‌ی صفحه‌ی اولیه (که برای تشخیص hasMore اولیه لازمه) */
+  initialPageSize?: number;
 }
 
-const POSTS_PER_PAGE = 6;
+const DEFAULT_INITIAL_PAGE_SIZE = 12;
 const MAX_VISIBLE_TABS = 6; // بیشتر از این → dropdown
 
 /* -------------------------------------------------------------------------- */
@@ -124,6 +126,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
   initialAds,
   categoryNames,
   initialTickerData = [],
+  initialPageSize = DEFAULT_INITIAL_PAGE_SIZE,
 }) => {
   /* ---------- Dedupe + clean category list ---------- */
   const categories = useMemo(() => {
@@ -136,13 +139,14 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
   const [posts, setPosts] = useState<Record<string, PostWithRelations[]>>(initialPosts);
   const [ads] = useState<Advertisement[]>(initialAds);
   const [isLoading, setIsLoading] = useState(false);
-  /* hasMore اولیه: فقط وقتی true که دقیقاً POSTS_PER_PAGE تا پست اومده باشه.
-   * در غیر این صورت (۰ تا یا کمتر از صفحه) یعنی ته صفحه. */
+  /* hasMore اولیه: فقط وقتی true که دقیقاً initialPageSize تا پست اومده باشه
+   * (یعنی احتمالاً صفحه‌ی بعدی هم وجود داره).
+   * در غیر این صورت (۰ تا یا کمتر از یک صفحه‌ی کامل) یعنی به انتها رسیدیم. */
   const [hasMore, setHasMore] = useState<Record<string, boolean>>(() => {
     const map: Record<string, boolean> = {};
     for (const cat of categories) {
       const len = initialPosts[cat]?.length ?? 0;
-      map[cat] = len === POSTS_PER_PAGE;
+      map[cat] = len === initialPageSize;
     }
     return map;
   });
@@ -152,12 +156,33 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
 
   const accent = useMemo(() => getCategoryAccent(activeCategory), [activeCategory]);
 
-  const totalCount = useMemo(
-    () => Object.values(posts).reduce((acc, list) => acc + list.length, 0),
-    [posts],
-  );
+  /* ---------- Counts (de-duped) ----------
+   * یک پست می‌تونه چند دسته داشته باشه. اگه فقط طول آرایه‌ها رو جمع بزنیم،
+   * پست‌های مشترک چندبار شمرده می‌شن (باگ قبلی). الان:
+   *  - totalCount: تعداد یکتای پست‌ها در همه‌ی دسته‌ها
+   *  - activeCount: تعداد یکتای پست‌ها در دسته‌ی فعال
+   *  - perCategoryCount[cat]: تعداد یکتا برای badge تب‌ها
+   */
+  const perCategoryCount = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const cat of categories) {
+      const list = posts[cat] ?? [];
+      const ids = new Set<string>();
+      for (const p of list) ids.add(p.id);
+      map[cat] = ids.size;
+    }
+    return map;
+  }, [posts, categories]);
 
-  const activeCount = posts[activeCategory]?.length ?? 0;
+  const totalCount = useMemo(() => {
+    const ids = new Set<string>();
+    for (const list of Object.values(posts)) {
+      for (const p of list) ids.add(p.id);
+    }
+    return ids.size;
+  }, [posts]);
+
+  const activeCount = perCategoryCount[activeCategory] ?? 0;
 
   /* ---------- Split visible + overflow tabs ---------- */
   const { visibleTabs, overflowTabs } = useMemo(() => {
@@ -181,7 +206,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
     try {
       const currentPosts = posts[activeCategory] || [];
       const newPosts = await getLatestPosts({
-        count: POSTS_PER_PAGE,
+        count: initialPageSize,
         skip: currentPosts.length,
         category: activeCategory !== 'همه' ? activeCategory : undefined,
       });
@@ -195,7 +220,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
         }));
         setHasMore((prev) => ({
           ...prev,
-          [activeCategory]: newPosts.length === POSTS_PER_PAGE,
+          [activeCategory]: newPosts.length === initialPageSize,
         }));
       }
     } catch (err) {
@@ -205,7 +230,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
       isLoadingRef.current = false;
       setIsLoading(false);
     }
-  }, [posts, isLoading, hasMore, activeCategory]);
+  }, [posts, isLoading, hasMore, activeCategory, initialPageSize]);
 
   /* ---------- Switch category → scroll to top of panel ---------- */
   useEffect(() => {
@@ -407,7 +432,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
                 )}
               >
                 {visibleTabs.map((category) => {
-                  const count = posts[category]?.length ?? 0;
+                  const count = perCategoryCount[category] ?? 0;
                   const isActive = activeCategory === category;
                   const tabAccent = getCategoryAccent(category);
                   return (
@@ -513,7 +538,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
                       <div className="max-h-[280px] overflow-y-auto">
                         {overflowTabs.map((category) => {
                           const isActive = activeCategory === category;
-                          const count = posts[category]?.length ?? 0;
+                          const count = perCategoryCount[category] ?? 0;
                           return (
                             <DropdownMenuItem
                               key={category}
@@ -586,12 +611,12 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
                       variants={panelVariants}
                     >
                       {posts[category] && posts[category].length > 0 ? (
-                        <PostsDisplay
+                        <PostGrid
                           posts={posts[category]}
-                          ads={ads}
                           onLoadMore={loadMorePosts}
                           isLoading={isLoading}
                           hasMore={hasMore[category] ?? false}
+                          accentColor={accent.color}
                         />
                       ) : (
                         <Empty />

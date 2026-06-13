@@ -11,7 +11,7 @@
 
 # Uploaded files - tracked for deployment fallback
 # public/uploads/ is now tracked in git
-
+.screenshots
 # Testing
 /coverage
 

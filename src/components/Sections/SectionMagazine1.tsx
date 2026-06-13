@@ -51,10 +51,18 @@ export default async function SectionMagazine1({ className = '' }: SectionMagazi
   const categoryNames: string[] = ['همه', ...categoriesData.map((c) => c.name)];
 
   // 3) پست‌های همه‌ی دسته‌ها به‌صورت موازی
+  //    - «همه»: ۲۴ پست (compact view خوب کار کنه + صفحه‌بندی)
+  //    - هر دسته: ۱۲ پست (برای infinite scroll)
+  const INITIAL_ALL = 24;
+  const INITIAL_PER_CATEGORY = 12;
   const postsByCategoryPromises = categoryNames.map((name) =>
     name === 'همه'
-      ? getLatestPosts({ count: 12, skip: 0 })
-      : getLatestPosts({ count: 12, skip: 0, category: name }),
+      ? getLatestPosts({ count: INITIAL_ALL, skip: 0 })
+      : getLatestPosts({
+          count: INITIAL_PER_CATEGORY,
+          skip: 0,
+          category: name,
+        }),
   );
 
   const [tickerData, mediumAdsResult, ...postsResults] = await Promise.all([
@@ -95,6 +103,7 @@ export default async function SectionMagazine1({ className = '' }: SectionMagazi
           initialAds={initialAds}
           categoryNames={categoryNames}
           initialTickerData={tickerData}
+          initialPageSize={INITIAL_ALL}
         />
       </Suspense>
     </div>
