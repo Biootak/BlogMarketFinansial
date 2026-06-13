@@ -1,13 +1,15 @@
 'use client';
 
 /**
- * Marquee — اسکرول بی‌نهایت (refined, CSS-driven)
+ * Marquee — اسکرول بی‌نهایت (CSS-driven)
  *
- * اصلاحات:
- * - استفاده از CSS animation (نه JS RAF) — performance بهتر
- * - GPU acceleration (transform)
- * - Pause on hover از CSS
- * - کم‌حجم‌تر و سریع‌تر
+ * استراتژی:
+ *  - محتوا ۳ بار تکرار می‌شه
+ *  - track با `direction: ltr` (حتی در RTL) — تا ترتیب المان‌ها LTR باشه
+ *  - محتوای درون (children) خودش RTL هست
+ *  - animation از 0% شروع و به -33.33% می‌ره → loop بی‌نهایت روان
+ *  - وقتی به -33.33% رسید، یعنی دقیقاً یک تکرار کامل شده
+ *  - چون کل track به سمت چپ می‌ره، متن RTL به نظر "از راست به چپ" می‌آد (طبیعی)
  */
 
 import { type ReactNode, useMemo } from 'react';
@@ -28,12 +30,19 @@ export function Marquee({
   pauseOnHover = true,
   className = '',
 }: MarqueeProps) {
-  // سرعت بر اساس pixels/second — برای loop روان حدود ۲۰-۶۰ پیکسل بر ثانیه
-  const duration = useMemo(() => Math.max(8, Math.abs(1500 / speed)), [speed]);
+  // سرعت: هر چه بیشتر، سریع‌تر
+  const duration = useMemo(
+    () => Math.max(10, Math.abs(1200 / speed)),
+    [speed],
+  );
+  // translateX اندازه: 100% / repeat (تا loop بی‌نهایت روان)
+  const translateStep = 100 / repeat;
 
   return (
     <div
       className={cn('overflow-hidden contain-paint', className)}
+      // track رو LTR کن تا ترتیب المان‌ها حفظ بشه
+      style={{ direction: 'ltr' }}
     >
       <div
         className={cn(
@@ -41,25 +50,30 @@ export function Marquee({
           pauseOnHover && 'group/ticker',
         )}
         style={{
-          animation: `marquee-${speed > 0 ? 'rtl' : 'ltr'} ${duration}s linear infinite`,
+          animation: `marquee-scroll ${duration}s linear infinite`,
           willChange: 'transform',
         }}
       >
         {Array.from({ length: repeat }).map((_, i) => (
-          <div key={i} className="flex shrink-0 items-center gap-3">
+          <div
+            key={i}
+            className="flex shrink-0 items-center gap-3"
+            // هر تکرار RTL باشه تا متن فارسی درست نمایش داده بشه
+            style={{ direction: 'rtl' }}
+          >
             {children}
           </div>
         ))}
       </div>
 
       <style jsx>{`
-        @keyframes marquee-rtl {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(33.33%); }
-        }
-        @keyframes marquee-ltr {
-          0% { transform: translateX(-33.33%); }
-          100% { transform: translateX(0); }
+        @keyframes marquee-scroll {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-${translateStep}%);
+          }
         }
         .group\\/ticker:hover :global(.marquee-track) {
           animation-play-state: paused;

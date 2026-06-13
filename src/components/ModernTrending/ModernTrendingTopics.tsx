@@ -159,16 +159,24 @@ const ModernTrendingTopics: FC<ModernTrendingTopicsProps> = ({
   title = 'موضوعات پرطرفدار',
   subtitle = 'این دسته‌بندی‌ها الان بیشتر از همه خونده می‌شن',
 }) => {
-  const sorted = useMemo(() => {
-    const filtered = [...categories]
-      .filter((c) => c.count > 0)
-      .sort((a, b) => b.count - a.count);
-    return maxItems ? filtered.slice(0, maxItems) : filtered;
-  }, [categories, maxItems]);
+  // همه دسته‌ها (بدون محدودیت) — برای Ticker
+  const allCategories = useMemo(
+    () =>
+      [...categories]
+        .filter((c) => c.count > 0)
+        .sort((a, b) => b.count - a.count),
+    [categories],
+  );
+
+  // فقط maxItems تا برتر — برای Bento Grid
+  const sorted = useMemo(
+    () => (maxItems ? allCategories.slice(0, maxItems) : allCategories),
+    [allCategories, maxItems],
+  );
 
   const colorMap = useMemo(
-    () => new Map(sorted.map((c, idx) => [c.id, PALETTES[(hashCode(c.id) + idx) % PALETTES.length]])),
-    [sorted],
+    () => new Map(allCategories.map((c, idx) => [c.id, PALETTES[(hashCode(c.id) + idx) % PALETTES.length]])),
+    [allCategories],
   );
 
   if (sorted.length === 0) return null;
@@ -203,8 +211,8 @@ const ModernTrendingTopics: FC<ModernTrendingTopicsProps> = ({
         )}
       >
         <div className="flex items-center gap-3 px-5 py-2 sm:px-8">
-          <Marquee speed={-40} className="flex-1" repeat={4}>
-            {sorted.map((c) => {
+          <Marquee speed={-40} className="flex-1" repeat={6}>
+            {allCategories.map((c) => {
               const palette = colorMap.get(c.id)!;
               return (
                 <Link
