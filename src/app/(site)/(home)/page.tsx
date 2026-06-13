@@ -24,11 +24,12 @@ const SectionGridAuthorBox = dynamic(() => import('@/components/SectionGridAutho
 import SectionMagazine1 from '@/components/Sections/SectionMagazine1';
 import SectionAds from '@/components/Sections/SectionAds';
 import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
-import SectionSliderNewCategories from '@/components/SectionSliderNewCategories/SectionSliderNewCategories';
+import ModernTrendingTopics from '@/components/ModernTrending';
 import SectionExchangeRates from '@/components/Sections/SectionExchangeRates';
+import { getCategories } from '@/actions/categoryActions';
 
 export default async function Home() {
-  const [posts, topAuthors, firstAdResult, secondAdResult] = await Promise.all([
+  const [posts, topAuthors, firstAdResult, secondAdResult, categoriesResult] = await Promise.all([
     getPosts(6),
     getTopAuthors(5),
     getActiveAdvertisements({
@@ -46,7 +47,13 @@ export default async function Home() {
       orderDirection: 'asc',
       page: 2,
     }),
+    getCategories({ limit: 8 }),
   ]);
+
+  const popularCategories =
+    categoriesResult.success && categoriesResult.data?.categories
+      ? categoriesResult.data.categories.filter((c) => c.count > 0)
+      : [];
 
   const firstAd =
     firstAdResult.success && firstAdResult.data && firstAdResult.data.length > 0
@@ -72,15 +79,17 @@ export default async function Home() {
         </Suspense>
       </div>
 
-      {/* Categories Section */}
-      <div className="container relative mt-8 lg:mt-12">
-        <SectionSliderNewCategories
-          className="relative"
-          heading="موضوعات پرطرفدار"
-          subHeading="کشف موضوعات"
-          categoryCardType="card2"
-        />
-      </div>
+      {/* Trending Topics Section — نسخه ۲۰۲۶ */}
+      {popularCategories.length > 0 && (
+        <div className="container relative mt-8 lg:mt-12">
+          <ModernTrendingTopics
+            categories={popularCategories}
+            title="موضوعات پرطرفدار"
+            subtitle="داغ‌ترین ترندهای بازار — به‌روزرسانی لحظه‌ای"
+            viewAllHref="/archive"
+          />
+        </div>
+      )}
 
       {/* Latest Posts Section */}
       <div className="container relative mt-8 lg:mt-12">

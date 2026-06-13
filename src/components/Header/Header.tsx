@@ -1,17 +1,25 @@
 /**
- * Header — linear.app inspired dark glassmorphism
+ * Header — linear.app inspired dark glassmorphism + Ticker bar 2026
  *
- * - Sticky, translucent surface that picks up content behind it.
- * - Subtle 1px hairline border at the bottom (linear-style).
- * - Server component — no framer-motion here, no client JS for the shell.
+ * - Ticker bar بالا با نرخ‌های لحظه‌ای
+ * - Sticky, translucent surface that picks up content behind it
+ * - Subtle 1px hairline border at the bottom (linear-style)
+ * - Server component — no framer-motion here, no client JS for the shell
  * - The actual interactive bits (Navigation, dropdowns) live in their own
- *   client components.
+ *   client components
  */
 import MainNav from './MainNav';
+import { TickerBar } from './TickerBar';
+import { getTickerData } from '@/actions/tickerActions';
 
-const Header = () => {
+const Header = async () => {
+  const tickerItems = await getTickerData();
+
   return (
     <header className="sticky top-0 w-full z-40" role="banner">
+      {/* Ticker bar — نرخ‌های لحظه‌ای */}
+      {tickerItems.length > 0 && <TickerBar items={tickerItems} />}
+
       {/* Translucent surface — picks up gradient/blur from main background */}
       <div
         aria-hidden
