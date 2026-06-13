@@ -1,0 +1,12 @@
+// Quick type-check helper — برای استفاده در CI یا چک محلی
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/components/PopularTopics/**/*.ts",
+    "src/components/PopularTopics/**/*.tsx"
+  ]
+}
