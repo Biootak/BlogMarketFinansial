@@ -7,6 +7,7 @@ import { savePost } from '@/actions/postActions';
 import { useToast } from '@/components/ui/use-toast';
 import { motion } from 'framer-motion';
 import { Icon } from '../ui/icon';
+import { Check } from 'lucide-react';
 
 export interface NcBookmarkProps {
   containerClassName?: string;
@@ -81,7 +82,7 @@ const NcBookmark: React.FC<NcBookmarkProps> = ({
       </motion.button>
       {isBookmarked && (
         <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-          ✓
+          <Check className="h-3 w-3" strokeWidth={3} aria-hidden />
         </span>
       )}
     </div>

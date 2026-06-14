@@ -9,6 +9,7 @@ import React, {
   useRef,
   useMemo,
 } from 'react';
+import { Search, Lightbulb } from 'lucide-react';
 import type { SlashCommandItem } from '../extensions/slash-commands';
 
 export interface SlashCommandMenuRef {
@@ -103,12 +104,12 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
 
     if (items.length === 0) {
       return (
-        <div 
+        <div
           className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 text-gray-500 dark:text-gray-400 text-sm text-center"
           role="status"
           aria-live="polite"
         >
-          <span className="text-2xl block mb-2">🔍</span>
+          <Search className="mx-auto mb-2 h-7 w-7 opacity-60" strokeWidth={1.5} aria-hidden />
           نتیجه‌ای یافت نشد
         </div>
       );
@@ -158,6 +159,7 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
               {categoryItems.map((item) => {
                 const currentIndex = globalIndex++;
                 const isSelected = currentIndex === selectedIndex;
+                const Icon = item.icon;
                 return (
                   <button
                     key={item.title}
@@ -173,15 +175,15 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
                         : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 border-r-2 border-transparent'
                     }`}
                   >
-                    <span 
-                      className={`w-10 h-10 flex items-center justify-center rounded-xl text-lg flex-shrink-0 transition-all ${
-                        isSelected 
-                          ? 'bg-primary-500 text-white shadow-md' 
+                    <span
+                      className={`w-10 h-10 flex items-center justify-center rounded-xl flex-shrink-0 transition-all ${
+                        isSelected
+                          ? 'bg-primary-500 text-white shadow-md'
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                       }`}
                       aria-hidden="true"
                     >
-                      {item.icon}
+                      <Icon className="h-5 w-5" strokeWidth={1.75} />
                     </span>
                     <div className="flex-1 min-w-0">
                       <div className={`text-sm font-medium ${

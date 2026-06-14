@@ -2,6 +2,7 @@
 
 import React, { useMemo, useCallback, useEffect, useRef } from 'react';
 import { EditorContent, useEditor } from '@tiptap/react';
+import { FileText } from 'lucide-react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import Color from '@tiptap/extension-color';
@@ -193,7 +194,7 @@ const EditorContentRenderer: React.FC<EditorContentRendererProps> = ({
   if (!parsedContent) {
     return (
       <div className={`flex items-center justify-center py-8 text-gray-400 ${className}`}>
-        <span className="text-2xl mr-2">📄</span>
+        <FileText className="w-8 h-8 ml-2" strokeWidth={1.5} aria-hidden />
         محتوایی برای نمایش وجود ندارد
       </div>
     );

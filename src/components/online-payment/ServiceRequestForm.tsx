@@ -51,7 +51,6 @@ interface CurrencyOption {
   value: string;
   label: string;
   symbol: string;
-  flag: string;
   type: 'fiat' | 'crypto';
 }
 
@@ -119,38 +118,38 @@ const serviceTypes: ServiceOption[] = [
 ];
 
 const currencies: CurrencyOption[] = [
-  { value: 'USD', label: 'دلار آمریکا', symbol: '$', flag: '🇺🇸', type: 'fiat' },
-  { value: 'EUR', label: 'یورو', symbol: '€', flag: '🇪🇺', type: 'fiat' },
-  { value: 'GBP', label: 'پوند انگلیس', symbol: '£', flag: '🇬🇧', type: 'fiat' },
-  { value: 'TRY', label: 'لیر ترکیه', symbol: '₺', flag: '🇹🇷', type: 'fiat' },
-  { value: 'AED', label: 'درهم امارات', symbol: 'د.إ', flag: '🇦🇪', type: 'fiat' },
-  { value: 'CAD', label: 'دلار کانادا', symbol: 'C$', flag: '🇨🇦', type: 'fiat' },
-  { value: 'AUD', label: 'دلار استرالیا', symbol: 'A$', flag: '🇦🇺', type: 'fiat' },
-  { value: 'CHF', label: 'فرانک سوئیس', symbol: 'CHF', flag: '🇨🇭', type: 'fiat' },
-  { value: 'CNY', label: 'یوان چین', symbol: '¥', flag: '🇨🇳', type: 'fiat' },
-  { value: 'JPY', label: 'ین ژاپن', symbol: '¥', flag: '🇯🇵', type: 'fiat' },
-  { value: 'USDT', label: 'تتر (USDT)', symbol: '₮', flag: '💎', type: 'crypto' },
-  { value: 'BTC', label: 'بیت‌کوین', symbol: '₿', flag: '🪙', type: 'crypto' },
-  { value: 'ETH', label: 'اتریوم', symbol: 'Ξ', flag: '💠', type: 'crypto' },
-  { value: 'BNB', label: 'بایننس کوین', symbol: 'BNB', flag: '🔶', type: 'crypto' },
-  { value: 'TRX', label: 'ترون', symbol: 'TRX', flag: '🔴', type: 'crypto' },
-  { value: 'OTHER', label: 'سایر ارزها', symbol: '?', flag: '🌐', type: 'fiat' },
+  { value: 'USD', label: 'دلار آمریکا', symbol: '$', type: 'fiat' },
+  { value: 'EUR', label: 'یورو', symbol: '€', type: 'fiat' },
+  { value: 'GBP', label: 'پوند انگلیس', symbol: '£', type: 'fiat' },
+  { value: 'TRY', label: 'لیر ترکیه', symbol: '₺', type: 'fiat' },
+  { value: 'AED', label: 'درهم امارات', symbol: 'د.إ', type: 'fiat' },
+  { value: 'CAD', label: 'دلار کانادا', symbol: 'C$', type: 'fiat' },
+  { value: 'AUD', label: 'دلار استرالیا', symbol: 'A$', type: 'fiat' },
+  { value: 'CHF', label: 'فرانک سوئیس', symbol: 'CHF', type: 'fiat' },
+  { value: 'CNY', label: 'یوان چین', symbol: '¥', type: 'fiat' },
+  { value: 'JPY', label: 'ین ژاپن', symbol: '¥', type: 'fiat' },
+  { value: 'USDT', label: 'تتر (USDT)', symbol: '₮', type: 'crypto' },
+  { value: 'BTC', label: 'بیت‌کوین', symbol: '₿', type: 'crypto' },
+  { value: 'ETH', label: 'اتریوم', symbol: 'Ξ', type: 'crypto' },
+  { value: 'BNB', label: 'بایننس کوین', symbol: 'BNB', type: 'crypto' },
+  { value: 'TRX', label: 'ترون', symbol: 'TRX', type: 'crypto' },
+  { value: 'OTHER', label: 'سایر ارزها', symbol: '?', type: 'fiat' },
 ];
 
 const countries = [
-  { value: 'turkey', label: 'ترکیه', flag: '🇹🇷' },
-  { value: 'uae', label: 'امارات', flag: '🇦🇪' },
-  { value: 'germany', label: 'آلمان', flag: '🇩🇪' },
-  { value: 'uk', label: 'انگلستان', flag: '🇬🇧' },
-  { value: 'canada', label: 'کانادا', flag: '🇨🇦' },
-  { value: 'australia', label: 'استرالیا', flag: '🇦🇺' },
-  { value: 'usa', label: 'آمریکا', flag: '🇺🇸' },
-  { value: 'france', label: 'فرانسه', flag: '🇫🇷' },
-  { value: 'switzerland', label: 'سوئیس', flag: '🇨🇭' },
-  { value: 'netherlands', label: 'هلند', flag: '🇳🇱' },
-  { value: 'china', label: 'چین', flag: '🇨🇳' },
-  { value: 'japan', label: 'ژاپن', flag: '🇯🇵' },
-  { value: 'other', label: 'سایر کشورها', flag: '🌍' },
+  { value: 'turkey', label: 'ترکیه' },
+  { value: 'uae', label: 'امارات' },
+  { value: 'germany', label: 'آلمان' },
+  { value: 'uk', label: 'انگلستان' },
+  { value: 'canada', label: 'کانادا' },
+  { value: 'australia', label: 'استرالیا' },
+  { value: 'usa', label: 'آمریکا' },
+  { value: 'france', label: 'فرانسه' },
+  { value: 'switzerland', label: 'سوئیس' },
+  { value: 'netherlands', label: 'هلند' },
+  { value: 'china', label: 'چین' },
+  { value: 'japan', label: 'ژاپن' },
+  { value: 'other', label: 'سایر کشورها' },
 ];
 
 // ============================================
@@ -878,7 +877,7 @@ interface Step2Props {
   register: ReturnType<typeof useForm<ServiceRequestFormData>>['register'];
   errors: ReturnType<typeof useForm<ServiceRequestFormData>>['formState']['errors'];
   currencies: CurrencyOption[];
-  countries: { value: string; label: string; flag: string }[];
+  countries: { value: string; label: string }[];
   selectedCurrency: string;
   setValue: ReturnType<typeof useForm<ServiceRequestFormData>>['setValue'];
   serviceType: ServiceType;
@@ -1031,14 +1030,14 @@ function Step2Details({
               <optgroup label="ارزهای فیات">
                 {currencies.filter((c) => c.type === 'fiat').map((c) => (
                   <option key={c.value} value={c.value}>
-                    {c.flag} {c.label}
+                    {c.label}
                   </option>
                 ))}
               </optgroup>
               <optgroup label="ارزهای دیجیتال">
                 {currencies.filter((c) => c.type === 'crypto').map((c) => (
                   <option key={c.value} value={c.value}>
-                    {c.flag} {c.label}
+                    {c.label}
                   </option>
                 ))}
               </optgroup>
@@ -1065,7 +1064,7 @@ function Step2Details({
               <select {...register('destinationCountry')} className={inputNormalClass}>
                 <option value="">انتخاب کنید</option>
                 {countries.map((c) => (
-                  <option key={c.value} value={c.value}>{c.flag} {c.label}</option>
+                  <option key={c.value} value={c.value}>{c.label}</option>
                 ))}
               </select>
             </div>
@@ -1140,7 +1139,7 @@ function Step2Details({
               <select {...register('destinationCountry')} className={inputNormalClass}>
                 <option value="">انتخاب کنید</option>
                 {countries.map((c) => (
-                  <option key={c.value} value={c.value}>{c.flag} {c.label}</option>
+                  <option key={c.value} value={c.value}>{c.label}</option>
                 ))}
               </select>
             </div>

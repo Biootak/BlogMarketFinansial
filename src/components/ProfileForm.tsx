@@ -16,7 +16,7 @@ import ImageUploadDialog from './ImageUpload/ImageUploadDialog';
 import Loading from './Button/Loading';
 import {
   Camera, User, Mail, Briefcase, FileText, Lock, KeyRound, Check,
-  ImageIcon, Shield, Eye, EyeOff, ChevronDown,
+  ImageIcon, Shield, Eye, EyeOff, ChevronDown, Lightbulb,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -186,8 +186,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
                 </div>
                 {errors.confirmNewPassword && <p className="text-red-500 text-xs mt-2">{errors.confirmNewPassword.message}</p>}
               </div>
-              <div className="p-4 rounded-xl bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200/50 dark:border-amber-800/30">
-                <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">💡 رمز عبور قوی شامل حداقل ۶ کاراکتر، ترکیبی از حروف بزرگ و کوچک، اعداد و نمادها است.</p>
+              <div className="p-4 rounded-xl bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200/50 dark:border-amber-800/30 flex items-start gap-2">
+                <Lightbulb className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" strokeWidth={2} aria-hidden />
+                <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">رمز عبور قوی شامل حداقل ۶ کاراکتر، ترکیبی از حروف بزرگ و کوچک، اعداد و نمادها است.</p>
               </div>
             </div>
           </div>

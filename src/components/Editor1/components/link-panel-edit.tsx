@@ -89,8 +89,9 @@ const LinkPanelEdit = ({ initial, isOpen, onSetLink }: LinkPanelEditProps) => {
         </div>
         
         <div className="flex items-center justify-between">
-          <p className="text-[10px] text-gray-400 dark:text-gray-500">
-            {isValidUrl ? '✓ لینک معتبر' : 'آدرس لینک را وارد کنید'}
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 inline-flex items-center gap-1">
+            {isValidUrl && <Check className="h-3 w-3 text-green-600" strokeWidth={2.5} aria-hidden />}
+            {isValidUrl ? 'لینک معتبر' : 'آدرس لینک را وارد کنید'}
           </p>
           <div className="flex gap-2">
             <Button 

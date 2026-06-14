@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { FloatingMenu as TiptapFloatingMenu } from '@tiptap/react';
 import type { Editor } from '@tiptap/react';
-import { Plus, Type, Heading1, Heading2, Heading3, List, ListOrdered, CheckSquare, Quote, Code, Table, Minus, Image, AlertCircle, FileText } from 'lucide-react';
+import { Plus, Type, Heading1, Heading2, Heading3, List, ListOrdered, CheckSquare, Quote, Code, Table, Minus, Image, AlertCircle, FileText, Lightbulb } from 'lucide-react';
 
 interface FloatingMenuProps {
   editor: Editor;
@@ -249,8 +249,9 @@ const FloatingMenuComponent: React.FC<FloatingMenuProps> = ({ editor }) => {
               </button>
             ))}
             <div className="px-3 py-2 mt-1 border-t border-gray-100 dark:border-gray-700">
-              <p className="text-[10px] text-gray-400 dark:text-gray-500">
-                💡 تایپ کنید <kbd className="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-[9px]">/</kbd> برای دستورات بیشتر
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 inline-flex items-center gap-1.5">
+                <Lightbulb className="h-3 w-3" strokeWidth={1.75} aria-hidden />
+                تایپ کنید <kbd className="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-[9px]">/</kbd> برای دستورات بیشتر
               </p>
             </div>
           </div>

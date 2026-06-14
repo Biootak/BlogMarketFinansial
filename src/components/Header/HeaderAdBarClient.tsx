@@ -14,9 +14,12 @@
  *    previously dismissed this ad. To avoid hydration mismatch we
  *    keep the initial render identical to the server output, then
  *    reconcile after mount.
+ *  - Dismissal TTL: 1 hour. After that, the ad will show again so
+ *    the same user still sees a returning-promo slot on a fresh visit.
  *
  * 2026-06-14: hydration-safe version — initial visible state matches
- * server; only after mount do we consult localStorage.
+ * server; only after mount do we consult localStorage. Dismissal
+ * window shortened from 24h to 1h on user request.
  */
 
 import { useEffect, useState } from 'react';
@@ -77,7 +80,7 @@ export default function HeaderAdBarClient({ ad }: { ad: Ad }) {
       const dismissed = localStorage.getItem(`${STORAGE_PREFIX}${ad.id}`);
       if (dismissed) {
         const ts = Number.parseInt(dismissed, 10);
-        if (Number.isFinite(ts) && Date.now() - ts < 24 * 60 * 60 * 1000) {
+        if (Number.isFinite(ts) && Date.now() - ts < 60 * 60 * 1000) {
           setVisible(false);
         }
       }

@@ -18,7 +18,7 @@ export interface HeaderFilterProps {
 
 const HeaderFilter: React.FC<HeaderFilterProps> = ({
   categories = [],
-  heading = '🎈 آخرین مقالات',
+  heading = 'آخرین مقالات',
   getFilteredPosts,
 }) => {
   const [tabActive, setTabActive] = useState<string>('همه');

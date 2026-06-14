@@ -10,7 +10,7 @@ const CalloutBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor,
   
   const type = (node.attrs.type as CalloutType) || 'info';
   const config = useMemo(() => calloutTypeConfig[type], [type]);
-  const icon = node.attrs.icon || config.icon;
+  const IconComponent = config.icon;
 
   // Click outside handler
   useEffect(() => {
@@ -40,7 +40,7 @@ const CalloutBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor,
   const handleTypeChange = useCallback((newType: CalloutType) => {
     updateAttributes({
       type: newType,
-      icon: calloutTypeConfig[newType].icon,
+      icon: calloutTypeConfig[newType].iconName,
     });
     setShowTypePicker(false);
   }, [updateAttributes]);
@@ -85,7 +85,7 @@ const CalloutBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor,
             aria-haspopup="listbox"
             disabled={!editor.isEditable}
           >
-            {icon}
+            <IconComponent className="h-6 w-6" strokeWidth={2} aria-hidden />
           </button>
           
           {showTypePicker && editor.isEditable && (
@@ -101,6 +101,7 @@ const CalloutBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor,
               <div className="space-y-1">
                 {(Object.keys(calloutTypeConfig) as CalloutType[]).map((calloutType) => {
                   const isSelected = type === calloutType;
+                  const PickerIcon = calloutTypeConfig[calloutType].icon;
                   return (
                     <button
                       key={calloutType}
@@ -109,15 +110,15 @@ const CalloutBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor,
                       role="option"
                       aria-selected={isSelected}
                       className={`w-full flex items-center gap-3 p-2 rounded-lg transition-all duration-150 ${
-                        isSelected 
-                          ? 'bg-primary-100 dark:bg-primary-900/30 border-r-2 border-primary-500' 
+                        isSelected
+                          ? 'bg-primary-100 dark:bg-primary-900/30 border-r-2 border-primary-500'
                           : 'hover:bg-gray-100 dark:hover:bg-gray-700 border-r-2 border-transparent'
                       }`}
                     >
-                      <span className={`w-8 h-8 flex items-center justify-center rounded-lg text-lg ${
-                        isSelected ? 'bg-primary-500 text-white' : 'bg-gray-100 dark:bg-gray-700'
+                      <span className={`w-8 h-8 flex items-center justify-center rounded-lg ${
+                        isSelected ? 'bg-primary-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200'
                       }`}>
-                        {calloutTypeConfig[calloutType].icon}
+                        <PickerIcon className="h-5 w-5" strokeWidth={2} aria-hidden />
                       </span>
                       <div className="flex-1 text-right">
                         <div className={`text-sm font-medium ${

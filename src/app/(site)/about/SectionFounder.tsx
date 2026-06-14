@@ -44,7 +44,7 @@
 //   return (
 //     <div className="nc-SectionFounder relative rtl" dir="rtl">
 //       <Heading desc="ما بی طرف و مستقل هستیم و هر روز برنامه ها و محتوای متمایز و در سطح جهانی ایجاد می کنیم">
-//         ⛱ بنیانگذاران
+//         بنیانگذاران
 //       </Heading>
 //       <div className="grid sm:grid-cols-2 gap-x-5 gap-y-8 lg:grid-cols-4 xl:gap-x-8">
 //         {FOUNDER_DEMO.map((item) => (

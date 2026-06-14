@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react';
+import { AlertTriangle, Sigma } from 'lucide-react';
 
 // Dynamic import for KaTeX to avoid SSR issues
 let katex: typeof import('katex') | null = null;
@@ -135,8 +136,9 @@ const MathBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, se
             dir="ltr"
           />
           {error && (
-            <div className="px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm border-t border-red-200 dark:border-red-800">
-              ⚠️ {error}
+            <div className="px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm border-t border-red-200 dark:border-red-800 inline-flex items-center gap-1.5 w-full">
+              <AlertTriangle className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
+              <span>{error}</span>
             </div>
           )}
           {renderedHtml && !error && (
@@ -162,12 +164,12 @@ const MathBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, se
             />
           ) : error ? (
             <div className="text-center text-red-500">
-              <span className="text-2xl">⚠️</span>
+              <AlertTriangle className="mx-auto h-8 w-8" strokeWidth={1.75} aria-hidden />
               <p className="text-sm mt-1">{error}</p>
             </div>
           ) : (
             <div className="text-center text-gray-400">
-              <span className="text-2xl">∑</span>
+              <Sigma className="mx-auto h-8 w-8" strokeWidth={1.5} aria-hidden />
               <p className="text-sm mt-1">برای افزودن فرمول کلیک کنید</p>
             </div>
           )}

@@ -3,7 +3,7 @@
 import React, { useState, useRef } from 'react';
 import type { Editor } from '@tiptap/react';
 import { fontSizes } from '../extensions/font-size';
-import { ChevronDown, ALargeSmall } from 'lucide-react';
+import { ChevronDown, ALargeSmall, Check } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface MenuSelectFontSizeProps {
@@ -73,7 +73,7 @@ const MenuSelectFontSize: React.FC<MenuSelectFontSizeProps> = ({ editor }) => {
               onClick={handleCustomSize}
               className="px-3 py-2 text-sm bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
             >
-              ✓
+              <Check className="h-4 w-4" strokeWidth={2.5} />
             </button>
           </div>
         </div>
@@ -91,7 +91,7 @@ const MenuSelectFontSize: React.FC<MenuSelectFontSizeProps> = ({ editor }) => {
             >
               <span style={{ fontSize: `${Math.min(parseInt(size.label), 24)}px` }}>{size.label}</span>
               {currentFontSize === size.value && (
-                <span className="text-primary-500">✓</span>
+                <Check className="h-4 w-4 text-primary-500" strokeWidth={2.5} />
               )}
             </button>
           ))}

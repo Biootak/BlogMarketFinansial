@@ -8,12 +8,12 @@ import { revalidatePath } from 'next/cache';
 
 // Service type labels
 const serviceTypeLabels: Record<string, string> = {
-  INTERNATIONAL_TRANSFER: '🌍 حواله بین‌المللی',
-  ONLINE_PAYMENT: '💳 پرداخت آنلاین',
-  TUITION_PAYMENT: '🎓 پرداخت شهریه',
-  FREELANCE_INCOME: '💼 نقد کردن درآمد',
-  SOFTWARE_PURCHASE: '📦 خرید نرم‌افزار',
-  OTHER: '✨ سایر خدمات',
+  INTERNATIONAL_TRANSFER: 'حواله بین‌المللی',
+  ONLINE_PAYMENT: 'پرداخت آنلاین',
+  TUITION_PAYMENT: 'پرداخت شهریه',
+  FREELANCE_INCOME: 'نقد کردن درآمد',
+  SOFTWARE_PURCHASE: 'خرید نرم‌افزار',
+  OTHER: 'سایر خدمات',
 };
 
 // Generate unique tracking code
@@ -160,23 +160,23 @@ export async function createServiceRequest(input: ServiceRequestInput): Promise<
     });
 
     // Send Telegram notification to admin
-    const urgencyEmoji = data.urgency === 'URGENT' ? '🔴 فوری' : '🟢 عادی';
+    const urgencyLabel = data.urgency === 'URGENT' ? 'فوری' : 'عادی';
     const notificationMessage = `
-🆕 *درخواست جدید خدمات*
+*درخواست جدید خدمات*
 
-🔖 کد پیگیری: \`${trackingCode}\`
-👤 نام: ${data.fullName}
-📱 تماس: ${data.phone}
-${data.email ? `📧 ایمیل: ${data.email}` : ''}
+کد پیگیری: \`${trackingCode}\`
+نام: ${data.fullName}
+تماس: ${data.phone}
+${data.email ? `ایمیل: ${data.email}` : ''}
 
 ${serviceTypeLabels[data.serviceType] || data.serviceType}
-💰 مبلغ: ${data.amount} ${data.currency}
-⏰ اولویت: ${urgencyEmoji}
-📲 روش تماس: ${data.contactMethod === 'telegram' ? 'تلگرام' : 'واتساپ'}
+مبلغ: ${data.amount} ${data.currency}
+اولویت: ${urgencyLabel}
+روش تماس: ${data.contactMethod === 'telegram' ? 'تلگرام' : 'واتساپ'}
 
-${data.description ? `📝 توضیحات: ${data.description}` : ''}
+${data.description ? `توضیحات: ${data.description}` : ''}
 
-🔗 [مشاهده در داشبورد](${process.env.NEXT_PUBLIC_APP_URL}/dashboard/service-requests)
+[مشاهده در داشبورد](${process.env.NEXT_PUBLIC_APP_URL}/dashboard/service-requests)
     `.trim();
 
     await sendTelegramNotification(notificationMessage);

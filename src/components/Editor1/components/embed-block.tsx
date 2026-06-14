@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react';
 import { type EmbedProvider, getEmbedUrl } from '../extensions/embed';
-import { Loader2, AlertCircle, RefreshCw, ExternalLink, Play } from 'lucide-react';
+import { Loader2, AlertCircle, RefreshCw, ExternalLink, Play, Film, Twitter, Link as LinkIcon, type LucideIcon } from 'lucide-react';
 
 const EmbedBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, selected }) => {
   const { src, provider, embedId, width, height } = node.attrs;
@@ -18,11 +18,11 @@ const EmbedBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, s
   
   // تشخیص نوع provider برای نمایش آیکون مناسب
   const providerConfig = useMemo(() => {
-    const configs: Record<string, { label: string; color: string; icon: string }> = {
-      youtube: { label: 'YouTube', color: 'bg-red-600', icon: '▶️' },
-      vimeo: { label: 'Vimeo', color: 'bg-blue-500', icon: '🎬' },
-      twitter: { label: 'Twitter', color: 'bg-sky-500', icon: '🐦' },
-      generic: { label: 'Link', color: 'bg-gray-600', icon: '🔗' },
+    const configs: Record<string, { label: string; color: string; icon: LucideIcon }> = {
+      youtube: { label: 'YouTube', color: 'bg-red-600', icon: Play },
+      vimeo: { label: 'Vimeo', color: 'bg-blue-500', icon: Film },
+      twitter: { label: 'Twitter', color: 'bg-sky-500', icon: Twitter },
+      generic: { label: 'Link', color: 'bg-gray-600', icon: LinkIcon },
     };
     return configs[provider as string] || configs.generic;
   }, [provider]);
@@ -189,7 +189,7 @@ const EmbedBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, s
       
       {/* Provider badge */}
       <div className={`absolute top-3 left-3 px-3 py-1.5 ${providerConfig.color} text-white text-xs rounded-lg font-medium backdrop-blur-sm shadow-lg flex items-center gap-1.5`}>
-        <span>{providerConfig.icon}</span>
+        <providerConfig.icon className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
         <span>{providerConfig.label}</span>
       </div>
 

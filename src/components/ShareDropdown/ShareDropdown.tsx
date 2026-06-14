@@ -36,7 +36,7 @@ const SHARE_PLATFORMS = [
     icon: FaTelegram,
     color: '#0088cc',
     getUrl: (url: string, title: string) => {
-      const text = `📰 ${title}\n\n🔗 مطالعه در بیوتاک\n\n${HASHTAGS}`;
+      const text = `${title}\n\nمطالعه در بیوتاک\n\n${HASHTAGS}`;
       return `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
     },
   },
@@ -46,7 +46,7 @@ const SHARE_PLATFORMS = [
     icon: FaWhatsapp,
     color: '#25D366',
     getUrl: (url: string, title: string) => {
-      const text = `📰 *${title}*\n\n🔗 مطالعه در بیوتاک\n\n${HASHTAGS}\n\n${url}`;
+      const text = `*${title}*\n\nمطالعه در بیوتاک\n\n${HASHTAGS}\n\n${url}`;
       return `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
     },
   },
@@ -56,7 +56,7 @@ const SHARE_PLATFORMS = [
     icon: FaTwitter,
     color: '#1DA1F2',
     getUrl: (url: string, title: string) => {
-      const text = `📰 ${title}\n\n🔗 مطالعه در بیوتاک\n\n${HASHTAGS}`;
+      const text = `${title}\n\nمطالعه در بیوتاک\n\n${HASHTAGS}`;
       return `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
     },
   },
@@ -66,7 +66,7 @@ const SHARE_PLATFORMS = [
     icon: FaFacebook,
     color: '#1877F2',
     getUrl: (url: string, title: string) => {
-      const quote = `📰 ${title}\n\n🔗 مطالعه در بیوتاک`;
+      const quote = `${title}\n\nمطالعه در بیوتاک`;
       return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(quote)}`;
     },
   },

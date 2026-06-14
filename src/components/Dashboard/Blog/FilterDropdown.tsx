@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { HiAdjustmentsHorizontal } from 'react-icons/hi2';
+import { HiAdjustmentsHorizontal, HiCheck } from 'react-icons/hi2';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -56,7 +56,7 @@ export default function FilterDropdown({ onFilter }: FilterDropdownProps) {
           >
             {option.name}
             {selectedFilter === option.value && (
-              <span className="text-primary-600 dark:text-primary-400">✓</span>
+              <HiCheck className="h-4 w-4 text-primary-600 dark:text-primary-400" aria-hidden />
             )}
           </DropdownMenuItem>
         ))}

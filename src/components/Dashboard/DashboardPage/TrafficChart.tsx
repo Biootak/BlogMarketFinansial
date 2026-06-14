@@ -4,7 +4,7 @@ import type React from 'react';
 import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import useSWR from 'swr';
-import { HiOutlineEye, HiOutlineCalendarDays } from 'react-icons/hi2';
+import { HiOutlineEye, HiOutlineCalendar, HiExclamation } from 'react-icons/hi';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -54,7 +54,7 @@ const TrafficChart: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center py-12">
         <div className="w-16 h-16 mb-4 rounded-2xl bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center">
-          <span className="text-2xl">⚠️</span>
+          <HiExclamation className="w-8 h-8 text-rose-500" aria-hidden />
         </div>
         <p className="text-rose-600 dark:text-rose-400 font-medium">خطا در بارگیری داده‌ها</p>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">لطفاً دوباره تلاش کنید</p>
@@ -106,7 +106,7 @@ const TrafficChart: React.FC = () => {
           className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-100 dark:border-emerald-800/30"
         >
           <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/30">
-            <HiOutlineCalendarDays className="w-4 h-4" />
+            <HiOutlineCalendar className="w-4 h-4" />
           </div>
           <div>
             <p className="text-xs text-slate-500 dark:text-slate-400">کل بازدیدها</p>

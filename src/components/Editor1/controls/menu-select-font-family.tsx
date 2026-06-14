@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { Editor } from '@tiptap/react';
 import { fontFamilies, loadFont, type FontOption } from '../extensions/font-family';
-import { Type, Check, Globe, Monitor, ChevronDown, Sparkles, Upload, X } from 'lucide-react';
+import { Type, Check, Globe, Monitor, ChevronDown, Sparkles, Upload, X, Languages } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -50,12 +50,19 @@ const MenuSelectFontFamily: React.FC<MenuSelectFontFamilyProps> = ({ editor }) =
     return matchSearch && matchTab;
   });
 
-  const tabs = [
-    { id: 'all', label: 'همه', icon: Sparkles, count: allFonts.length },
-    { id: 'persian', label: 'فارسی', emoji: '🇮🇷', count: allFonts.filter(f => f.category === 'persian').length },
-    { id: 'system', label: 'سیستم', icon: Monitor, count: allFonts.filter(f => f.category === 'system').length },
-    { id: 'google', label: 'آنلاین', icon: Globe, count: allFonts.filter(f => f.category === 'google').length },
-    { id: 'uploaded', label: 'آپلود', icon: Upload, count: uploadedFonts.length },
+  interface Tab {
+  id: string;
+  label: string;
+  icon?: typeof Sparkles;
+  count: number;
+}
+
+const tabs: Tab[] = [
+    { id: 'all', label: 'همه', icon: Sparkles, count: 0 },
+    { id: 'persian', label: 'فارسی', icon: Languages, count: 0 },
+    { id: 'system', label: 'سیستم', icon: Monitor, count: 0 },
+    { id: 'google', label: 'آنلاین', icon: Globe, count: 0 },
+    { id: 'uploaded', label: 'آپلود', icon: Upload, count: 0 },
   ];
 
   useEffect(() => {
@@ -148,15 +155,20 @@ const MenuSelectFontFamily: React.FC<MenuSelectFontFamilyProps> = ({ editor }) =
         </div>
         <div className="flex gap-1 px-3 py-2 border-b overflow-x-auto">
           {tabs.map((tab) => {
-            if (tab.id !== 'all' && tab.count === 0) return null;
+            const tabCount = tab.id === 'all'
+              ? allFonts.length
+              : tab.id === 'uploaded'
+                ? uploadedFonts.length
+                : allFonts.filter(f => f.category === tab.id).length;
+            if (tab.id !== 'all' && tabCount === 0) return null;
             const Icon = tab.icon;
             return (
               <button key={tab.id} type="button" onClick={() => setActiveTab(tab.id)}
                 className={cn("flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
                   activeTab === tab.id ? "bg-primary-500 text-white" : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200")}>
-                {Icon ? <Icon size={12} /> : <span>{tab.emoji}</span>}
+                {Icon && <Icon size={12} strokeWidth={2} aria-hidden />}
                 {tab.label}
-                <span className={cn("text-[10px] px-1 rounded", activeTab === tab.id ? "bg-white/20" : "bg-gray-200 dark:bg-gray-700")}>{tab.count}</span>
+                <span className={cn("text-[10px] px-1 rounded", activeTab === tab.id ? "bg-white/20" : "bg-gray-200 dark:bg-gray-700")}>{tabCount}</span>
               </button>
             );
           })}

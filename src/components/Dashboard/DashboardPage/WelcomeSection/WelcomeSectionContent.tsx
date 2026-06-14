@@ -3,7 +3,7 @@
 import Avatar from '@/components/Avatar/Avatar';
 import NewPostButton from './NewPostButton';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HiOutlineSparkles, HiOutlineBolt, HiOutlineShieldCheck } from 'react-icons/hi2';
+import { HiOutlineSparkles, HiOutlineLightningBolt, HiOutlineShieldCheck, HiHand } from 'react-icons/hi';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useState } from 'react';
 
@@ -153,12 +153,12 @@ export default function WelcomeSectionContent() {
           <span className="inline-block bg-gradient-to-r from-white via-pink-100 to-white bg-clip-text text-transparent">
             {user?.name ?? 'کاربر'}
           </span>{' '}
-          <motion.span 
+          <motion.span
             className="inline-block origin-bottom-right"
             animate={{ rotate: [0, 14, -8, 14, -4, 10, 0] }}
             transition={{ duration: 2.5, repeat: Number.POSITIVE_INFINITY, repeatDelay: 3 }}
           >
-            👋
+            <HiHand className="inline-block w-8 h-8 sm:w-10 sm:h-10 text-amber-300" aria-label="سلام" />
           </motion.span>
         </motion.h2>
         
@@ -188,7 +188,7 @@ export default function WelcomeSectionContent() {
             whileTap={{ scale: 0.97 }}
             className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white/90 font-medium text-sm hover:bg-white/20 transition-all duration-300 shadow-lg"
           >
-            <HiOutlineBolt className="w-4 h-4" />
+            <HiOutlineLightningBolt className="w-4 h-4" />
             <span>آمار سریع</span>
           </motion.button>
         </motion.div>

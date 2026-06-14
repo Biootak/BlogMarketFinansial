@@ -2,6 +2,29 @@ import { Extension } from '@tiptap/core';
 import Suggestion, { type SuggestionOptions } from '@tiptap/suggestion';
 import { PluginKey } from '@tiptap/pm/state';
 import type { Editor } from '@tiptap/react';
+import type { LucideIcon } from 'lucide-react';
+import {
+  Pilcrow,
+  Heading1,
+  Heading2,
+  Heading3,
+  Heading4,
+  List,
+  ListOrdered,
+  CheckSquare,
+  Image as ImageIcon,
+  Play,
+  Quote,
+  Code2,
+  Table,
+  Minus,
+  Info,
+  AlertTriangle,
+  CheckCircle2,
+  XCircle,
+  FolderOpen,
+  Sigma,
+} from 'lucide-react';
 
 // کلید یکتا برای پلاگین slash commands
 export const slashCommandsPluginKey = new PluginKey('slashCommands');
@@ -9,7 +32,7 @@ export const slashCommandsPluginKey = new PluginKey('slashCommands');
 export interface SlashCommandItem {
   title: string;
   description: string;
-  icon: string;
+  icon: LucideIcon;
   command: (editor: Editor) => void;
   keywords: string[];
   category: 'basic' | 'media' | 'advanced' | 'list';
@@ -20,7 +43,7 @@ export const defaultSlashCommands: SlashCommandItem[] = [
   {
     title: 'متن',
     description: 'پاراگراف معمولی',
-    icon: '📝',
+    icon: Pilcrow,
     keywords: ['paragraph', 'text', 'متن', 'پاراگراف'],
     category: 'basic',
     command: (editor) => editor.chain().focus().setParagraph().run(),
@@ -28,7 +51,7 @@ export const defaultSlashCommands: SlashCommandItem[] = [
   {
     title: 'عنوان ۱',
     description: 'عنوان بزرگ',
-    icon: 'H1',
+    icon: Heading1,
     keywords: ['heading', 'h1', 'عنوان', 'تیتر'],
     category: 'basic',
     command: (editor) => editor.chain().focus().toggleHeading({ level: 1 }).run(),
@@ -36,7 +59,7 @@ export const defaultSlashCommands: SlashCommandItem[] = [
   {
     title: 'عنوان ۲',
     description: 'عنوان متوسط',
-    icon: 'H2',
+    icon: Heading2,
     keywords: ['heading', 'h2', 'عنوان', 'تیتر'],
     category: 'basic',
     command: (editor) => editor.chain().focus().toggleHeading({ level: 2 }).run(),
@@ -44,7 +67,7 @@ export const defaultSlashCommands: SlashCommandItem[] = [
   {
     title: 'عنوان ۳',
     description: 'عنوان کوچک',
-    icon: 'H3',
+    icon: Heading3,
     keywords: ['heading', 'h3', 'عنوان', 'تیتر'],
     category: 'basic',
     command: (editor) => editor.chain().focus().toggleHeading({ level: 3 }).run(),
@@ -52,7 +75,7 @@ export const defaultSlashCommands: SlashCommandItem[] = [
   {
     title: 'عنوان ۴',
     description: 'عنوان خیلی کوچک',
-    icon: 'H4',
+    icon: Heading4,
     keywords: ['heading', 'h4', 'عنوان', 'تیتر'],
     category: 'basic',
     command: (editor) => editor.chain().focus().toggleHeading({ level: 4 }).run(),
@@ -61,7 +84,7 @@ export const defaultSlashCommands: SlashCommandItem[] = [
   {
     title: 'لیست نقطه‌ای',
     description: 'لیست با نقطه',
-    icon: '•',
+    icon: List,
     keywords: ['bullet', 'list', 'لیست', 'نقطه'],
     category: 'list',
     command: (editor) => editor.chain().focus().toggleBulletList().run(),
@@ -69,7 +92,7 @@ export const defaultSlashCommands: SlashCommandItem[] = [
   {
     title: 'لیست شماره‌ای',
     description: 'لیست با شماره',
-    icon: '1.',
+    icon: ListOrdered,
     keywords: ['numbered', 'list', 'لیست', 'شماره'],
     category: 'list',
     command: (editor) => editor.chain().focus().toggleOrderedList().run(),
@@ -77,7 +100,7 @@ export const defaultSlashCommands: SlashCommandItem[] = [
   {
     title: 'لیست وظایف',
     description: 'لیست با چک‌باکس',
-    icon: '☑',
+    icon: CheckSquare,
     keywords: ['task', 'todo', 'checkbox', 'وظیفه', 'چک'],
     category: 'list',
     command: (editor) => editor.chain().focus().toggleTaskList().run(),
@@ -86,7 +109,7 @@ export const defaultSlashCommands: SlashCommandItem[] = [
   {
     title: 'تصویر',
     description: 'درج تصویر',
-    icon: '🖼️',
+    icon: ImageIcon,
     keywords: ['image', 'picture', 'تصویر', 'عکس'],
     category: 'media',
     command: (editor) => {
@@ -99,7 +122,7 @@ export const defaultSlashCommands: SlashCommandItem[] = [
   {
     title: 'ویدیو یوتیوب',
     description: 'جاسازی ویدیو از یوتیوب',
-    icon: '▶️',
+    icon: Play,
     keywords: ['youtube', 'video', 'ویدیو', 'یوتیوب'],
     category: 'media',
     command: (editor) => {
@@ -113,7 +136,7 @@ export const defaultSlashCommands: SlashCommandItem[] = [
   {
     title: 'نقل قول',
     description: 'بلاک نقل قول',
-    icon: '❝',
+    icon: Quote,
     keywords: ['quote', 'blockquote', 'نقل قول'],
     category: 'advanced',
     command: (editor) => editor.chain().focus().toggleBlockquote().run(),
@@ -121,7 +144,7 @@ export const defaultSlashCommands: SlashCommandItem[] = [
   {
     title: 'کد',
     description: 'بلاک کد',
-    icon: '</>',
+    icon: Code2,
     keywords: ['code', 'codeblock', 'کد'],
     category: 'advanced',
     command: (editor) => editor.chain().focus().toggleCodeBlock().run(),
@@ -129,7 +152,7 @@ export const defaultSlashCommands: SlashCommandItem[] = [
   {
     title: 'جدول',
     description: 'درج جدول',
-    icon: '▦',
+    icon: Table,
     keywords: ['table', 'جدول'],
     category: 'advanced',
     command: (editor) => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
@@ -137,7 +160,7 @@ export const defaultSlashCommands: SlashCommandItem[] = [
   {
     title: 'خط جداکننده',
     description: 'خط افقی',
-    icon: '—',
+    icon: Minus,
     keywords: ['divider', 'hr', 'horizontal', 'خط', 'جداکننده'],
     category: 'advanced',
     command: (editor) => editor.chain().focus().setHorizontalRule().run(),
@@ -146,7 +169,7 @@ export const defaultSlashCommands: SlashCommandItem[] = [
   {
     title: 'نکته',
     description: 'بلاک اطلاعات',
-    icon: 'ℹ️',
+    icon: Info,
     keywords: ['callout', 'info', 'نکته', 'اطلاعات'],
     category: 'advanced',
     command: (editor) => editor.chain().focus().setCallout({ type: 'info' }).run(),
@@ -154,7 +177,7 @@ export const defaultSlashCommands: SlashCommandItem[] = [
   {
     title: 'هشدار',
     description: 'بلاک هشدار',
-    icon: '⚠️',
+    icon: AlertTriangle,
     keywords: ['callout', 'warning', 'هشدار'],
     category: 'advanced',
     command: (editor) => editor.chain().focus().setCallout({ type: 'warning' }).run(),
@@ -162,7 +185,7 @@ export const defaultSlashCommands: SlashCommandItem[] = [
   {
     title: 'موفقیت',
     description: 'بلاک موفقیت',
-    icon: '✅',
+    icon: CheckCircle2,
     keywords: ['callout', 'success', 'موفقیت'],
     category: 'advanced',
     command: (editor) => editor.chain().focus().setCallout({ type: 'success' }).run(),
@@ -170,7 +193,7 @@ export const defaultSlashCommands: SlashCommandItem[] = [
   {
     title: 'خطا',
     description: 'بلاک خطا',
-    icon: '❌',
+    icon: XCircle,
     keywords: ['callout', 'error', 'خطا'],
     category: 'advanced',
     command: (editor) => editor.chain().focus().setCallout({ type: 'error' }).run(),
@@ -178,7 +201,7 @@ export const defaultSlashCommands: SlashCommandItem[] = [
   {
     title: 'آکاردئون',
     description: 'بلاک قابل باز و بسته شدن',
-    icon: '📂',
+    icon: FolderOpen,
     keywords: ['details', 'accordion', 'toggle', 'آکاردئون', 'جزئیات'],
     category: 'advanced',
     command: (editor) => editor.chain().focus().setDetails().run(),
@@ -186,7 +209,7 @@ export const defaultSlashCommands: SlashCommandItem[] = [
   {
     title: 'فرمول ریاضی',
     description: 'فرمول LaTeX',
-    icon: '∑',
+    icon: Sigma,
     keywords: ['math', 'latex', 'formula', 'equation', 'فرمول', 'ریاضی'],
     category: 'advanced',
     command: (editor) => editor.chain().focus().setMath().run(),

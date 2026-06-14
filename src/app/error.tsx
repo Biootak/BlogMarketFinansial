@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { AlertTriangle, RefreshCw, Home, ArrowRight } from 'lucide-react';
+import { Wrench, WifiOff, Lock, Search, AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ErrorProps {
@@ -29,7 +29,7 @@ export default function Error({ error, reset }: ErrorProps) {
       return {
         title: 'خطای سرور',
         description: 'سرور موقتاً در دسترس نیست. لطفاً چند لحظه صبر کنید و دوباره تلاش کنید.',
-        icon: '🔧',
+        icon: Wrench,
       };
     }
 
@@ -37,7 +37,7 @@ export default function Error({ error, reset }: ErrorProps) {
       return {
         title: 'خطای اتصال',
         description: 'اتصال به سرور برقرار نشد. لطفاً اتصال اینترنت خود را بررسی کنید.',
-        icon: '🌐',
+        icon: WifiOff,
       };
     }
 
@@ -45,7 +45,7 @@ export default function Error({ error, reset }: ErrorProps) {
       return {
         title: 'دسترسی غیرمجاز',
         description: 'شما دسترسی به این بخش را ندارید. لطفاً وارد حساب کاربری شوید.',
-        icon: '🔒',
+        icon: Lock,
       };
     }
 
@@ -53,18 +53,19 @@ export default function Error({ error, reset }: ErrorProps) {
       return {
         title: 'یافت نشد',
         description: 'صفحه یا منبع مورد نظر یافت نشد.',
-        icon: '🔍',
+        icon: Search,
       };
     }
 
     return {
       title: 'خطای غیرمنتظره',
       description: 'متأسفانه مشکلی پیش آمده است. لطفاً دوباره تلاش کنید.',
-      icon: '⚠️',
+      icon: AlertTriangle,
     };
   };
 
   const errorInfo = getErrorInfo();
+  const Icon = errorInfo.icon;
 
   return (
     <div
@@ -73,8 +74,9 @@ export default function Error({ error, reset }: ErrorProps) {
     >
       <div className="max-w-md w-full bg-white dark:bg-neutral-800 rounded-2xl shadow-xl p-8 text-center">
         {/* Icon */}
-        <div className="text-6xl mb-4">{errorInfo.icon}</div>
-
+        <div className="mb-4 flex justify-center">
+          <Icon className="w-14 h-14 text-rose-500" strokeWidth={1.5} aria-hidden />
+        </div>
         {/* Title */}
         <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50 mb-2">
           {errorInfo.title}

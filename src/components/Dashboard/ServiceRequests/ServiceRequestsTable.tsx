@@ -15,6 +15,15 @@ import {
   HiMail,
   HiChevronRight,
   HiChevronLeft,
+  HiGlobe,
+  HiCreditCard,
+  HiAcademicCap,
+  HiCash,
+  HiShoppingCart,
+  HiDesktopComputer,
+  HiClipboardList,
+  HiSparkles,
+  HiTemplate,
 } from 'react-icons/hi';
 import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
 import {
@@ -67,13 +76,13 @@ const statusConfig = {
   },
 };
 
-const serviceTypeLabels: Record<string, { label: string; emoji: string }> = {
-  INTERNATIONAL_TRANSFER: { label: 'حواله بین‌المللی', emoji: '🌍' },
-  ONLINE_PAYMENT: { label: 'پرداخت آنلاین', emoji: '💳' },
-  TUITION_PAYMENT: { label: 'پرداخت شهریه', emoji: '🎓' },
-  FREELANCE_INCOME: { label: 'نقد کردن درآمد', emoji: '💼' },
-  SOFTWARE_PURCHASE: { label: 'خرید نرم‌افزار', emoji: '💻' },
-  OTHER: { label: 'سایر', emoji: '📋' },
+const serviceTypeLabels: Record<string, { label: string; icon: typeof HiGlobe }> = {
+  INTERNATIONAL_TRANSFER: { label: 'حواله بین‌المللی', icon: HiGlobe },
+  ONLINE_PAYMENT: { label: 'پرداخت آنلاین', icon: HiCreditCard },
+  TUITION_PAYMENT: { label: 'پرداخت شهریه', icon: HiAcademicCap },
+  FREELANCE_INCOME: { label: 'نقد کردن درآمد', icon: HiCash },
+  SOFTWARE_PURCHASE: { label: 'خرید نرم‌افزار', icon: HiDesktopComputer },
+  OTHER: { label: 'سایر', icon: HiClipboardList },
 };
 
 export default function ServiceRequestsTable() {
@@ -242,8 +251,9 @@ export default function ServiceRequestsTable() {
                   const status = statusConfig[request.status as keyof typeof statusConfig];
                   const serviceType = serviceTypeLabels[request.serviceType] || {
                     label: request.serviceType,
-                    emoji: '📋',
+                    icon: HiTemplate,
                   };
+                  const ServiceIcon = serviceType.icon;
                   return (
                     <motion.tr
                       key={request.id}
@@ -287,7 +297,7 @@ export default function ServiceRequestsTable() {
                       {/* Service Type */}
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-2">
-                          <span className="text-lg">{serviceType.emoji}</span>
+                          <ServiceIcon className="w-5 h-5 text-neutral-500 dark:text-neutral-400" />
                           <span className="text-sm text-neutral-700 dark:text-neutral-300">
                             {serviceType.label}
                           </span>
@@ -465,9 +475,10 @@ export default function ServiceRequestsTable() {
                   <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl">
                     <p className="text-xs text-neutral-500 mb-1.5">نوع خدمات</p>
                     <div className="flex items-center gap-2">
-                      <span className="text-lg">
-                        {serviceTypeLabels[selectedRequest.serviceType]?.emoji || '📋'}
-                      </span>
+                      {(() => {
+                        const Icon = serviceTypeLabels[selectedRequest.serviceType]?.icon || HiTemplate;
+                        return <Icon className="w-5 h-5 text-neutral-500 dark:text-neutral-400" />;
+                      })()}
                       <span className="font-medium text-neutral-900 dark:text-white">
                         {serviceTypeLabels[selectedRequest.serviceType]?.label ||
                           selectedRequest.serviceType}

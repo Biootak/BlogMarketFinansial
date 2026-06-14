@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { HiCheck } from 'react-icons/hi2';
+import { Gem } from 'lucide-react';
 import ButtonPrimary from '@/components/Button/ButtonPrimary';
 import ButtonSecondary from '@/components/Button/ButtonSecondary';
 import Heading2 from '@/components/Heading/Heading2';
@@ -93,7 +94,7 @@ const PageSubcription = ({}) => {
   return (
     <div className="rtl">
       <header className="text-center max-w-2xl mx-auto - mb-14 sm:mb-16 lg:mb-20">
-        <Heading2 emoji="💎">طرح‌های اشتراک</Heading2>
+        <Heading2 icon={Gem}>طرح‌های اشتراک</Heading2>
         <span className="block text-sm mt-2 text-neutral-700 sm:text-base dark:text-neutral-200">
           قیمت‌گذاری مناسب برای هر نوع کسب و کار
         </span>
