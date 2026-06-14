@@ -3,13 +3,12 @@ import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getPosts } from '@/actions/getPosts';
 import { getTopAuthors } from '@/actions/getTopAuthors';
-import { getActiveAdvertisements } from '@/actions/advertisementActions';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
 
 // Dynamic imports for heavy components
-const SectionLargeSlider = dynamic(() => import('./SectionLargeSlider'), { 
+const SectionLargeSlider = dynamic(() => import('./SectionLargeSlider'), {
   loading: () => <CardLarge1Skeleton />,
-  ssr: true 
+  ssr: true
 });
 const SectionMagazine7 = dynamic(() => import('@/components/Sections/SectionMagazine7'), {
   loading: () => <Skeleton className="h-[400px] rounded-3xl" />,
@@ -21,32 +20,37 @@ const SectionGridAuthorBox = dynamic(() => import('@/components/SectionGridAutho
 });
 
 // Regular imports for lighter components
-import SectionMagazine1 from '@/components/Sections/SectionMagazine1';
 import SectionAds from '@/components/Sections/SectionAds';
 import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
 import ModernTrendingTopics from '@/components/ModernTrending';
 import SectionExchangeRates from '@/components/Sections/SectionExchangeRates';
 import { getCategories } from '@/actions/categoryActions';
+import PulseSection, { PulseSectionSkeleton } from '@/components/Sections/PulseBoard/PulseSection';
 
 export default async function Home() {
   const [posts, topAuthors, firstAdResult, secondAdResult, categoriesResult] = await Promise.all([
     getPosts(6),
     getTopAuthors(5),
-    getActiveAdvertisements({
-      limit: 1,
-      size: 'LARGE',
-      position: 'CUSTOM',
-      orderBy: 'order',
-      orderDirection: 'asc',
-    }),
-    getActiveAdvertisements({
-      limit: 1,
-      size: 'LARGE',
-      position: 'CUSTOM',
-      orderBy: 'order',
-      orderDirection: 'asc',
-      page: 2,
-    }),
+    // Ads برای SectionAds بین اسلایدها
+    import('@/actions/advertisementActions').then((m) =>
+      m.getActiveAdvertisements({
+        limit: 1,
+        size: 'LARGE',
+        position: 'CUSTOM',
+        orderBy: 'order',
+        orderDirection: 'asc',
+      }),
+    ),
+    import('@/actions/advertisementActions').then((m) =>
+      m.getActiveAdvertisements({
+        limit: 1,
+        size: 'LARGE',
+        position: 'CUSTOM',
+        orderBy: 'order',
+        orderDirection: 'asc',
+        page: 2,
+      }),
+    ),
     getCategories({ limit: 16 }),
   ]);
 
@@ -92,9 +96,11 @@ export default async function Home() {
         </div>
       )}
 
-      {/* Latest Posts Section */}
+      {/* Latest Posts Section — بازطراحی PulseBoard (نسخه ۲۰۲۶) */}
       <div className="container relative mt-8 lg:mt-12">
-        <SectionMagazine1 className="" />
+        <Suspense fallback={<PulseSectionSkeleton />}>
+          <PulseSection />
+        </Suspense>
       </div>
 
       {/* First Ad */}
