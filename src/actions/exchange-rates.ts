@@ -2,6 +2,7 @@
 
 import prisma from '@/lib/db';
 import { revalidatePath } from 'next/cache';
+import { revalidateTag } from '@/lib/revalidate';
 import { z } from 'zod';
 import type { ActionResult, ExchangeRateData } from '@/types/types';
 
@@ -42,6 +43,9 @@ export async function createExchangeRate(
     });
 
     revalidatePath('/dashboard/admin/exchange-rates');
+    revalidateTag('ticker');
+    revalidateTag('exchange-rates');
+    revalidateTag('dashboard-exchange-rates');
 
     return {
       success: true,
@@ -81,6 +85,9 @@ export async function updateExchangeRate(
     });
 
     revalidatePath('/dashboard/admin/exchange-rates');
+    revalidateTag('ticker');
+    revalidateTag('exchange-rates');
+    revalidateTag('dashboard-exchange-rates');
 
     return {
       success: true,
@@ -102,6 +109,9 @@ export async function deleteExchangeRate(id: string): Promise<ActionResult> {
   try {
     await prisma.exchangeRate.delete({ where: { id } });
     revalidatePath('/dashboard/admin/exchange-rates');
+    revalidateTag('ticker');
+    revalidateTag('exchange-rates');
+    revalidateTag('dashboard-exchange-rates');
     return {
       success: true,
       variant: 'info',

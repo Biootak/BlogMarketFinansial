@@ -1,15 +1,20 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
+import { revalidateTag } from '@/lib/revalidate';
 
 export async function revalidateCategoryCache(categoryId: string) {
   try {
     if (categoryId === 'list') {
-      revalidateTag('categories', 'page');
-      revalidateTag('category-list', 'page');
-      revalidateTag('latest-post-categories', 'page');
+      revalidateTag('categories');
+      revalidateTag('category-list');
+      revalidateTag('latest-post-categories');
+      // 2026-06-14: archive list is filtered by category slug, so any
+      // category write must bust the archive too.
+      revalidateTag('archive');
     } else {
-      revalidateTag(`category-${categoryId}`, 'page');
+      revalidateTag(`category-${categoryId}`);
+      revalidateTag('categories');
+      revalidateTag('archive');
     }
     return { success: true };
   } catch (error) {
@@ -21,13 +26,22 @@ export async function revalidateCategoryCache(categoryId: string) {
 export async function revalidatePostCache(postId?: string) {
   try {
     if (postId) {
-      revalidateTag(`post-${postId}`, 'page');
+      revalidateTag(`post-${postId}`);
     }
 
-    revalidateTag('posts', 'page');
-    revalidateTag('gallery-posts', 'page');
-    revalidateTag('latest-posts', 'page');
-    revalidateTag('featured-posts', 'page');
+    // 2026-06-14: drop the 'page' profile arg. unstable_cache is the
+    // Data Cache, not the page-level `fetch` cache, so the explicit
+    // profile was wrong and silently no-op'd. The single-arg form
+    // busts every tag below correctly.
+    revalidateTag('posts');
+    revalidateTag('post-slug');
+    revalidateTag('post-by-slug');
+    revalidateTag('archive');
+    revalidateTag('gallery-posts');
+    revalidateTag('latest-posts');
+    revalidateTag('featured-posts');
+    revalidateTag('popular-posts');
+    revalidateTag('dashboard-stats');
 
     return { success: true };
   } catch (error) {
@@ -38,7 +52,7 @@ export async function revalidatePostCache(postId?: string) {
 
 export async function revalidateSettingsCache() {
   try {
-    revalidateTag('system-settings', 'page');
+    revalidateTag('system-settings');
     return { success: true };
   } catch (error) {
     console.error('Error revalidating settings cache:', error);
@@ -48,7 +62,7 @@ export async function revalidateSettingsCache() {
 
 export async function revalidateAdvertisementsCache() {
   try {
-    revalidateTag('advertisements', 'page');
+    revalidateTag('advertisements');
     return { success: true };
   } catch (error) {
     console.error('Error revalidating advertisements cache:', error);
@@ -58,13 +72,29 @@ export async function revalidateAdvertisementsCache() {
 
 export async function revalidateAllCache() {
   try {
-    revalidateTag('posts', 'page');
-    revalidateTag('gallery-posts', 'page');
-    revalidateTag('latest-posts', 'page');
-    revalidateTag('featured-posts', 'page');
-    revalidateTag('categories', 'page');
-    revalidateTag('system-settings', 'page');
-    revalidateTag('advertisements', 'page');
+    revalidateTag('posts');
+    revalidateTag('post-slug');
+    revalidateTag('post-by-slug');
+    revalidateTag('archive');
+    revalidateTag('gallery-posts');
+    revalidateTag('latest-posts');
+    revalidateTag('featured-posts');
+    revalidateTag('popular-posts');
+    revalidateTag('categories');
+    revalidateTag('category-list');
+    revalidateTag('latest-post-categories');
+    revalidateTag('tags');
+    revalidateTag('sidebar-data');
+    revalidateTag('sidebar-posts');
+    revalidateTag('sidebar-tags');
+    revalidateTag('sidebar-categories');
+    revalidateTag('sidebar-authors');
+    revalidateTag('sidebar-ads');
+    revalidateTag('system-settings');
+    revalidateTag('advertisements');
+    revalidateTag('ticker');
+    revalidateTag('exchange-rates');
+    revalidateTag('dashboard-stats');
     return { success: true };
   } catch (error) {
     console.error('Error revalidating all cache:', error);

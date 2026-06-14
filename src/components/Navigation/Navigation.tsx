@@ -183,9 +183,8 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
                 forceMount
                 align="start"
                 sideOffset={10}
-                asChild
                 className="
-                  min-w-[220px] p-1.5
+                  z-[60] min-w-[220px] p-1.5
                   bg-[rgb(var(--c-surface-overlay))]/95
                   backdrop-blur-2xl backdrop-saturate-150
                   border border-[rgb(var(--c-border-subtle))]
@@ -258,9 +257,9 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
                     })}
                   </motion.ul>
                 </motion.div>
-                </DropdownMenuContent>
-              )}
-            </AnimatePresence>
+              </DropdownMenuContent>
+            )}
+          </AnimatePresence>
           </DropdownMenu>
         </li>
       );

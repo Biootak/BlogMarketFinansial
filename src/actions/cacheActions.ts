@@ -1,16 +1,16 @@
 'use server';
 
-import { revalidateTag, revalidatePath } from 'next/cache';
+import { revalidatePath } from 'next/cache';
+import { revalidateTag } from '@/lib/revalidate';
 
 export async function invalidateUserCache(userId: string) {
-  revalidateTag(`user-${userId}`, 'page');
-  revalidateTag('user-posts', 'page');
-  revalidateTag('user-comments', 'page');
-  revalidateTag('user-likes', 'page');
-  revalidateTag('user-subscription', 'page');
-  revalidateTag('user-billing', 'page');
-  // اضافه کردن کش داشبورد کاربر
-  revalidateTag(`dashboard-user-${userId}`, 'page');
+  revalidateTag(`user-${userId}`);
+  revalidateTag('user-posts');
+  revalidateTag('user-comments');
+  revalidateTag('user-likes');
+  revalidateTag('user-subscription');
+  revalidateTag('user-billing');
+  revalidateTag(`dashboard-user-${userId}`);
   revalidatePath('/dashboard');
   revalidatePath('/dashboard/edit-profile');
   revalidatePath('/dashboard/subscription');
@@ -19,50 +19,53 @@ export async function invalidateUserCache(userId: string) {
 }
 
 export async function invalidatePublicCache() {
-  revalidateTag('posts', 'page');
-  revalidateTag('categories', 'page');
-  revalidateTag('tags', 'page');
-  revalidateTag('comments', 'page');
+  revalidateTag('posts');
+  revalidateTag('archive');
+  revalidateTag('categories');
+  revalidateTag('tags');
+  revalidateTag('comments');
   await invalidateSidebarCache();
 }
 
 export async function invalidateHomePageCache() {
-  revalidateTag('featured-posts', 'page');
-  revalidateTag('latest-posts', 'page');
-  revalidateTag('popular-posts', 'page');
+  revalidateTag('featured-posts');
+  revalidateTag('latest-posts');
+  revalidateTag('popular-posts');
 }
 
 export async function invalidatePostCache(postId: string) {
-  revalidateTag(`post-${postId}`, 'page');
-  revalidateTag('posts', 'page');
-  revalidateTag('comments', 'page');
+  revalidateTag(`post-${postId}`);
+  revalidateTag('post-slug');
+  revalidateTag('post-by-slug');
+  revalidateTag('posts');
+  revalidateTag('archive');
+  revalidateTag('comments');
+  revalidateTag('dashboard-stats');
 }
 
 export async function invalidateSidebarCache() {
-  // کش داده‌های ساید بار
-  revalidateTag('sidebar-data', 'page');
-  revalidateTag('sidebar-posts', 'page');
-  revalidateTag('sidebar-tags', 'page');
-  revalidateTag('sidebar-categories', 'page');
-  revalidateTag('sidebar-authors', 'page');
-  revalidateTag('sidebar-ads', 'page');
+  revalidateTag('sidebar-data');
+  revalidateTag('sidebar-posts');
+  revalidateTag('sidebar-tags');
+  revalidateTag('sidebar-categories');
+  revalidateTag('sidebar-authors');
+  revalidateTag('sidebar-ads');
 }
 
 export async function invalidateDashboardCache() {
-  // کش صفحات داشبورد
-  revalidateTag('dashboard', 'page');
-  revalidateTag('dashboard-posts', 'page');
-  revalidateTag('dashboard-categories', 'page');
-  revalidateTag('dashboard-users', 'page');
-  revalidateTag('dashboard-reports', 'page');
-  revalidateTag('dashboard-settings', 'page');
-  revalidateTag('dashboard-advertisements', 'page');
-  revalidateTag('dashboard-exchange-rates', 'page');
-  revalidateTag('dashboard-credit-rates', 'page');
-  revalidateTag('dashboard-rate-lists', 'page');
-  revalidateTag('dashboard-subscription', 'page');
-  
-  // کش مسیرها
+  revalidateTag('dashboard');
+  revalidateTag('dashboard-posts');
+  revalidateTag('dashboard-categories');
+  revalidateTag('dashboard-users');
+  revalidateTag('dashboard-reports');
+  revalidateTag('dashboard-settings');
+  revalidateTag('dashboard-advertisements');
+  revalidateTag('dashboard-exchange-rates');
+  revalidateTag('dashboard-credit-rates');
+  revalidateTag('dashboard-rate-lists');
+  revalidateTag('dashboard-subscription');
+  revalidateTag('dashboard-stats');
+
   revalidatePath('/dashboard');
   revalidatePath('/dashboard/posts');
   revalidatePath('/dashboard/categories');

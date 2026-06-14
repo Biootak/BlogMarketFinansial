@@ -23,6 +23,11 @@ const BUCKET_NAME = process.env.LIARA_BUCKET_NAME || '';
 const S3_PUBLIC_URL = process.env.LIARA_ENDPOINT?.replace('https://', `https://${BUCKET_NAME}.`) || '';
 const LOCAL_UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads');
 
+// 2026-06-14: در production فقط به S3 می‌نویسیم. کپی لوکال در
+// public/uploads دیسک و outbound S3 را دوبل می‌کرد. در dev کپی
+// لوکال نگه داشته شد تا بدون تنظیم LIARA_* بتوان آپلود را تست کرد.
+const isProd = process.env.NODE_ENV === 'production';
+
 export interface UploadResult {
   url: string;
   s3Url: string | null;
@@ -32,7 +37,8 @@ export interface UploadResult {
 }
 
 /**
- * آپلود فایل به S3 و ذخیره کپی لوکال
+ * آپلود فایل به S3 (و در dev، کپی لوکال).
+ * در production فقط S3 نوشته می‌شود — کپی public/uploads حذف شد.
  */
 export async function uploadFile(
   buffer: Buffer,
@@ -41,14 +47,17 @@ export async function uploadFile(
   contentType: string
 ): Promise<UploadResult> {
   const key = `${folder}/${filename}`;
-  const localDir = path.join(LOCAL_UPLOAD_DIR, folder);
-  const localPath = path.join(localDir, filename);
+  const localPath = `/uploads/${folder}/${filename}`;
 
-  // ذخیره لوکال
-  if (!existsSync(localDir)) {
-    await mkdir(localDir, { recursive: true });
+  // 2026-06-14: dev only — local mirror under public/uploads so
+  // uploads are visible without configuring Liara.
+  if (!isProd) {
+    const localDir = path.join(LOCAL_UPLOAD_DIR, folder);
+    if (!existsSync(localDir)) {
+      await mkdir(localDir, { recursive: true });
+    }
+    await writeFile(path.join(localDir, filename), buffer);
   }
-  await writeFile(localPath, buffer);
 
   // آپلود به S3
   let s3Url: string | null = null;
@@ -65,20 +74,26 @@ export async function uploadFile(
     s3Url = `${S3_PUBLIC_URL}/${key}`;
   } catch (error) {
     console.error('خطا در آپلود به S3:', error);
-    // ادامه بده، لوکال ذخیره شده
+    // در production بدون S3 موفق، شکست می‌خوریم — فراخواننده
+    // باید خطا را ببیند. در dev ساکت می‌مانیم چون کپی لوکال
+    // ممکن است کافی باشد.
+    if (isProd) {
+      throw error;
+    }
   }
 
   return {
-    url: `/uploads/${folder}/${filename}`,
+    url: isProd && s3Url ? s3Url : `/uploads/${folder}/${filename}`,
     s3Url,
-    localPath: `/uploads/${folder}/${filename}`,
+    localPath,
     filename,
     size: buffer.length,
   };
 }
 
 /**
- * خواندن فایل - اول S3، بعد لوکال
+ * خواندن فایل - اول S3، بعد (در dev) لوکال.
+ * در production دیگر fallback لوکال وجود ندارد.
  */
 export async function getFile(folder: string, filename: string): Promise<Buffer | null> {
   const key = `${folder}/${filename}`;
@@ -100,10 +115,13 @@ export async function getFile(folder: string, filename: string): Promise<Buffer 
       return Buffer.concat(chunks);
     }
   } catch {
-    // S3 در دسترس نیست، از لوکال بخون
+    // S3 در دسترس نیست — در dev از لوکال fallback می‌کنیم
   }
 
-  // از لوکال بخون
+  // در production بدون S3 موفق، null برمی‌گردد (تصویر 404 می‌شود)
+  if (isProd) return null;
+
+  // dev: از لوکال بخون
   try {
     const localPath = path.join(LOCAL_UPLOAD_DIR, folder, filename);
     return await readFile(localPath);
@@ -113,7 +131,7 @@ export async function getFile(folder: string, filename: string): Promise<Buffer 
 }
 
 /**
- * حذف فایل از S3 و لوکال
+ * حذف فایل از S3 (و در dev، لوکال).
  */
 export async function deleteFile(folder: string, filename: string): Promise<boolean> {
   const key = `${folder}/${filename}`;
@@ -132,13 +150,15 @@ export async function deleteFile(folder: string, filename: string): Promise<bool
     console.error('خطا در حذف از S3:', error);
   }
 
-  // حذف لوکال
-  try {
-    const localPath = path.join(LOCAL_UPLOAD_DIR, folder, filename);
-    await unlink(localPath);
-    deleted = true;
-  } catch {
-    // فایل لوکال وجود نداشت
+  // حذف لوکال فقط در dev
+  if (!isProd) {
+    try {
+      const localPath = path.join(LOCAL_UPLOAD_DIR, folder, filename);
+      await unlink(localPath);
+      deleted = true;
+    } catch {
+      // فایل لوکال وجود نداشت
+    }
   }
 
   return deleted;

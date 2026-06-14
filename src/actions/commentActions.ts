@@ -4,6 +4,7 @@ import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import type { ActionResult, CommentWithCustomRelations } from '@/types/types';
 import { revalidatePath } from 'next/cache';
+import { revalidateTag } from '@/lib/revalidate';
 
 export async function addComment(
   postId: string,
@@ -66,6 +67,9 @@ export async function addComment(
     });
 
     revalidatePath(`/single/${postId}`);
+    revalidateTag(`post-${postId}`);
+    revalidateTag('comments');
+    revalidateTag('dashboard-stats');
 
     return {
       success: true,
@@ -119,6 +123,9 @@ export async function deleteComment(commentId: string): Promise<ActionResult<voi
     });
 
     revalidatePath(`/single/${comment.postId}`);
+    revalidateTag(`post-${comment.postId}`);
+    revalidateTag('comments');
+    revalidateTag('dashboard-stats');
 
     return {
       success: true,
@@ -210,6 +217,9 @@ export async function editComment(
     });
 
     revalidatePath(`/single/${comment.postId}`);
+    revalidateTag(`post-${comment.postId}`);
+    revalidateTag('comments');
+    revalidateTag('dashboard-stats');
 
     return {
       success: true,

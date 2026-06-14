@@ -4,7 +4,8 @@ import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/db';
 import type { ActionResult, Advertisement, AdSize, AdPosition } from '@/types/types';
 import type { Prisma } from '@prisma/client';
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidatePath } from 'next/cache';
+import { revalidateTag } from '@/lib/revalidate';
 
 // Internal function for fetching ads (not cached)
 async function fetchActiveAdsInternal(
@@ -167,7 +168,7 @@ export async function createAdvertisement(
       },
     });
     revalidatePath('/advertisements');
-    revalidateTag('advertisements', 'page');
+    revalidateTag('advertisements');
     return {
       success: true,
       message: 'تبلیغ با موفقیت ایجاد شد.',
@@ -198,7 +199,7 @@ export async function updateAdvertisement(
       },
     });
     revalidatePath('/advertisements');
-    revalidateTag('advertisements', 'page');
+    revalidateTag('advertisements');
     return {
       success: true,
       message: 'تبلیغ با موفقیت به‌روزرسانی شد.',
@@ -218,7 +219,7 @@ export async function deleteAdvertisement(id: string): Promise<ActionResult> {
   try {
     await prisma.advertisement.delete({ where: { id } });
     revalidatePath('/advertisements');
-    revalidateTag('advertisements', 'page');
+    revalidateTag('advertisements');
     return {
       success: true,
       message: 'تبلیغ با موفقیت حذف شد.',

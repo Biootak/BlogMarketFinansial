@@ -91,10 +91,19 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
   const prefersReducedMotion = useReducedMotion();
   const scrollRef = useRef<HTMLUListElement>(null);
 
+  // Reset hover state on route change so the underline never lingers on the
+  // previously-hovered item after navigation (e.g. clicking a sub-item).
+  useEffect(() => {
+    setHoveredId(null);
+  }, [pathname]);
+
   const isActive = (item: NavItem) => {
     if (pathname === item.href) return true;
     if (item.subItems) {
-      return item.subItems.some((subItem) => pathname.startsWith(subItem.href));
+      return item.subItems.some(
+        (subItem) =>
+          pathname === subItem.href || pathname.startsWith(`${subItem.href}/`),
+      );
     }
     return false;
   };
@@ -155,7 +164,7 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
                 onFocus={() => setHoveredId(item.id)}
                 onBlur={() => setHoveredId(null)}
                 className={cn(
-                  'group/btn relative z-10 inline-flex items-center gap-1 px-3.5 py-2 text-[13px] font-medium',
+                  'group/btn relative z-10 inline-flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium',
                   'rounded-full outline-none whitespace-nowrap',
                   'transition-colors duration-200',
                   active
@@ -171,7 +180,7 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
                     aria-hidden
                     layoutId="nav-underline"
                     className={cn(
-                      'absolute inset-x-3 bottom-1 h-px',
+                      'absolute inset-x-2 bottom-0.5 h-px',
                       active
                         ? 'bg-neutral-900 dark:bg-neutral-50'
                         : 'bg-neutral-400 dark:bg-neutral-500',
@@ -295,7 +304,7 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
         <Link
           href={item.href}
           className={cn(
-            'group/btn relative z-10 inline-flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium',
+            'group/btn relative z-10 inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium',
             'rounded-full outline-none whitespace-nowrap',
             'transition-colors duration-200',
             active
@@ -311,7 +320,7 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
               aria-hidden
               layoutId="nav-underline"
               className={cn(
-                'absolute inset-x-3 bottom-1 h-px',
+                'absolute inset-x-2 bottom-0.5 h-px',
                 active
                   ? 'bg-neutral-900 dark:bg-neutral-50'
                   : 'bg-neutral-400 dark:bg-neutral-500',
@@ -332,40 +341,38 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
   };
 
   return (
-    <nav className="flex items-center justify-center" aria-label="ناوبری اصلی">
-      <div className="relative">
-        {/* Fade edges برای اسکرول */}
-        <div
-          aria-hidden
-          className={cn(
-            'pointer-events-none absolute inset-y-0 start-0 w-5 z-20 transition-opacity duration-200',
-            'bg-gradient-to-r from-[rgb(var(--c-surface-canvas))] to-transparent',
-            'dark:from-[rgb(var(--c-surface-elevated))]',
-            showLeftFade ? 'opacity-100' : 'opacity-0',
-          )}
-        />
-        <div
-          aria-hidden
-          className={cn(
-            'pointer-events-none absolute inset-y-0 end-0 w-5 z-20 transition-opacity duration-200',
-            'bg-gradient-to-l from-[rgb(var(--c-surface-canvas))] to-transparent',
-            'dark:from-[rgb(var(--c-surface-elevated))]',
-            showRightFade ? 'opacity-100' : 'opacity-0',
-          )}
-        />
+    <nav className="relative flex items-center" aria-label="ناوبری اصلی">
+      {/* Fade edges برای اسکرول — فقط وقتی overflow داریم */}
+      <div
+        aria-hidden
+        className={cn(
+          'pointer-events-none absolute inset-y-0 start-0 w-5 z-20 transition-opacity duration-200',
+          'bg-gradient-to-r from-[rgb(var(--c-surface-canvas))] to-transparent',
+          'dark:from-[rgb(var(--c-surface-elevated))]',
+          showLeftFade ? 'opacity-100' : 'opacity-0',
+        )}
+      />
+      <div
+        aria-hidden
+        className={cn(
+          'pointer-events-none absolute inset-y-0 end-0 w-5 z-20 transition-opacity duration-200',
+          'bg-gradient-to-l from-[rgb(var(--c-surface-canvas))] to-transparent',
+          'dark:from-[rgb(var(--c-surface-elevated))]',
+          showRightFade ? 'opacity-100' : 'opacity-0',
+        )}
+      />
 
-        <ul
-          ref={scrollRef}
-          className={cn(
-            'items-center gap-0.5 flex max-w-full overflow-x-auto',
-            'scrollbar-none',
-            className,
-          )}
-          style={{ scrollbarWidth: 'none' }}
-        >
-          {NAVBAR_LINKS.map(renderNavItem)}
-        </ul>
-      </div>
+      <ul
+        ref={scrollRef}
+        className={cn(
+          'items-center gap-0.5 flex max-w-full overflow-x-auto',
+          'scrollbar-none',
+          className,
+        )}
+        style={{ scrollbarWidth: 'none' }}
+      >
+        {NAVBAR_LINKS.map(renderNavItem)}
+      </ul>
     </nav>
   );
 };

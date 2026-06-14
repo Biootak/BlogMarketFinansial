@@ -6,10 +6,15 @@
  * ترکیب:
  * - نرخ ارزهای دیجیتال از Exir API (fallback به mock در صورت خطا)
  * - نرخ طلا/ارز از دیتابیس
- * - هر ۶۰ ثانیه کش می‌شه
+ *
+ * 2026-06-14: Replaced `react.cache` (per-request only) with
+ * `unstable_cache` (Data Cache, 60s TTL, tag-invalidated). Header is
+ * rendered on every layout pass, so the per-request memoization was
+ * useless across navigations. Tags let admin edits bust the cache
+ * immediately.
  */
 
-import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import { fetchExchangeRates } from '@/actions/fetchExchangeRates';
 import prisma from '@/lib/db';
 import type { TickerItem } from '@/components/Header/TickerBar';
@@ -21,7 +26,8 @@ function formatNumber(num: number, decimals = 0): string {
   });
 }
 
-export const getTickerData = cache(async (): Promise<TickerItem[]> => {
+// Internal fetch function — not cached, called by the wrapper.
+async function fetchTickerData(): Promise<TickerItem[]> {
   const items: TickerItem[] = [];
 
   // 1. Crypto rates
@@ -65,4 +71,22 @@ export const getTickerData = cache(async (): Promise<TickerItem[]> => {
   }
 
   return items;
-});
+}
+
+// 2026-06-14: Data Cache wrapper. Tags: 'ticker' for any admin edit to
+// ExchangeRate rows, 'ticker-crypto' if/when we bust the crypto leg
+// independently. The crypto leg is already cached inside
+// `src/lib/exchange-rates.ts` (fetch with revalidate: 60), so a 60s TTL
+// here is fine and acts as the second layer.
+const getCachedTickerData = unstable_cache(
+  fetchTickerData,
+  ['ticker-data', 'v1-2026-06-14'],
+  {
+    revalidate: 60, // 1 minute
+    tags: ['ticker', 'exchange-rates'],
+  },
+);
+
+export const getTickerData = async (): Promise<TickerItem[]> => {
+  return getCachedTickerData();
+};

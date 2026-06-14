@@ -1,7 +1,6 @@
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  
 }
 
 generator client {
@@ -72,8 +71,8 @@ model User {
   activities    ActivityLog[]
   activity      Activity[]
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Account {
@@ -90,11 +89,11 @@ model Account {
   id_token          String?
   session_state     String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([provider, providerAccountId])
 }
 
 model Session {
@@ -109,10 +108,10 @@ model Session {
 }
 
 model VerificationToken {
-  id         String   @id @default(cuid())
-  email      String
-  token      String   @unique
-  expires    DateTime
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
 
   @@unique([email, token])
 }
@@ -145,7 +144,7 @@ model Post {
   viewCount     Int        @default(0)
   readingTime   Int        @default(0)
 
-  author     User       @relation(fields: [authorId], references: [id])
+  author     User        @relation(fields: [authorId], references: [id])
   comments   Comment[]
   categories Category[]
   tags       Tag[]
@@ -160,15 +159,27 @@ model Post {
   @@index([authorId])
   @@index([createdAt])
   @@index([isFeatured])
+  // 2026-06-14: composite indexes for the hot read paths.
+  // The archive page + home always filter by status, then sort by
+  // createdAt (or likes count) — single-column indexes force the
+  // planner to either filter or sort, never both. The (status, createdAt)
+  // and (status, viewCount) pairs let Postgres do an index-only scan.
+  @@index([status, createdAt(sort: Desc)])
+  @@index([status, viewCount(sort: Desc)])
+  @@index([status, isFeatured, createdAt(sort: Desc)])
+  // For author-scoped listings (e.g. dashboard AUTHOR role).
+  @@index([authorId, status, createdAt(sort: Desc)])
+  // For full-text search later (pg_trgm or tsvector).
+  @@index([title])
 }
 
 model View {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   postId    String
-  post      Post     @relation(fields: [postId], references: [id])
+  post      Post    @relation(fields: [postId], references: [id])
   ip        String?
   userAgent String?
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -177,16 +188,16 @@ model View {
 }
 
 model Comment {
-  id       String @id @default(cuid())
+  id       String  @id @default(cuid())
   content  String
   postId   String
   authorId String
   parentId String?
   approved Boolean @default(false)
 
-  post    Post     @relation(fields: [postId], references: [id])
-  author  User     @relation(fields: [authorId], references: [id])
-  parent  Comment? @relation("CommentToComment", fields: [parentId], references: [id])
+  post    Post      @relation(fields: [postId], references: [id])
+  author  User      @relation(fields: [authorId], references: [id])
+  parent  Comment?  @relation("CommentToComment", fields: [parentId], references: [id])
   replies Comment[] @relation("CommentToComment")
   likes   Like[]
 
@@ -196,10 +207,15 @@ model Comment {
   @@index([postId])
   @@index([authorId])
   @@index([approved])
+  // 2026-06-14: composite index for the per-post approved-comments list
+  // (rendered in the comments section of single post pages).
+  @@index([postId, approved, createdAt(sort: Desc)])
+  // For the dashboard activity log (latest comments by a user).
+  @@index([authorId, createdAt(sort: Desc)])
 }
 
 model Like {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   userId    String
   postId    String?
   commentId String?
@@ -211,6 +227,12 @@ model Like {
   createdAt DateTime @default(now())
 
   @@unique([userId, postId, commentId])
+  // 2026-06-14: per-post like counts are sorted on the archive (محبوب‌ترین)
+  // and home sections. Without these, Postgres falls back to a seq scan
+  // + groupBy, which is O(n) on every archive page load.
+  @@index([postId, createdAt(sort: Desc)])
+  @@index([commentId, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
 }
 
 model Category {
@@ -227,14 +249,14 @@ model Category {
 }
 
 model Tag {
-  id        String @id @default(cuid())
-  name      String @unique
-  slug      String @unique
+  id        String  @id @default(cuid())
+  name      String  @unique
+  slug      String  @unique
   thumbnail String?
   posts     Post[]
-  
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model SavedPost {
@@ -248,6 +270,9 @@ model SavedPost {
   createdAt DateTime @default(now())
 
   @@unique([userId, postId])
+  // 2026-06-14: used by getStats() weekly groupBy and by user profile pages.
+  @@index([createdAt(sort: Desc)])
+  @@index([postId, createdAt(sort: Desc)])
 }
 
 model Notification {
@@ -259,27 +284,27 @@ model Notification {
 }
 
 model Advertisement {
-  id               String       @id @default(cuid())
+  id               String     @id @default(cuid())
   title            String
   description      String?
   imageUrl         String
   linkUrl          String
   startDate        DateTime
   endDate          DateTime
-  isActive         Boolean      @default(true)
-  size             AdSize       @default(MEDIUM)
-  position         AdPosition   @default(IN_CONTENT)
+  isActive         Boolean    @default(true)
+  size             AdSize     @default(MEDIUM)
+  position         AdPosition @default(IN_CONTENT)
   customPosition   String?
-  order            Int          @default(0)
+  order            Int        @default(0)
   customDimensions Json?
 
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ExchangeRate {
   id          String   @id @default(cuid())
-  name        String   @unique 
+  name        String   @unique
   currency    String
   rateType    RateType @default(BUY_SELL)
   buyRate     String?
@@ -290,22 +315,27 @@ model ExchangeRate {
   imageUrl    String?
   updatedAt   DateTime @updatedAt
   createdAt   DateTime @default(now())
+
+  // 2026-06-14: getTickerData does `orderBy: { createdAt: 'desc' } take: 5`
+  // and the dashboard exchange-rates page sorts the same way. Without this
+  // index the query degrades to a sort+limit on the full table.
+  @@index([createdAt(sort: Desc)])
 }
 
 model RateList {
   id        String   @id @default(cuid())
   title     String
-  rates     Json     // Array of { title: string, value: string }
+  rates     Json // Array of { title: string, value: string }
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model PageView {
-  id        String   @id @default(cuid())
-  page      String
-  views     Int
-  date      DateTime @default(now())
+  id    String   @id @default(cuid())
+  page  String
+  views Int
+  date  DateTime @default(now())
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -341,7 +371,7 @@ model SystemSettings {
 
 model SystemLog {
   id        String   @id @default(cuid())
-  level     String   // ERROR, WARNING, INFO
+  level     String // ERROR, WARNING, INFO
   message   String   @db.Text
   source    String
   timestamp DateTime @default(now())
@@ -374,9 +404,9 @@ model Activity {
 
 model CurrencyPattern {
   id        String   @id @default(cuid())
-  type      String   // نوع الگو: currency, format, prefix, suffix, separator, multiplier
-  pattern   String   // الگوی ذخیره شده
-  value     Float?   // برای multiplier استفاده می‌شود
+  type      String // نوع الگو: currency, format, prefix, suffix, separator, multiplier
+  pattern   String // الگوی ذخیره شده
+  value     Float? // برای multiplier استفاده می‌شود
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -401,7 +431,6 @@ enum SocialLinkType {
   SUPPORT
 }
 
-
 enum ServiceRequestStatus {
   PENDING
   IN_PROGRESS
@@ -424,24 +453,24 @@ enum RequestUrgency {
 }
 
 model ServiceRequest {
-  id              String               @id @default(cuid())
-  trackingCode    String               @unique
-  fullName        String
-  phone           String
-  email           String?
-  serviceType     ServiceType
-  amount          String
-  currency        String
-  description     String?
-  urgency         RequestUrgency       @default(NORMAL)
-  contactMethod   String               // telegram or whatsapp
-  status          ServiceRequestStatus @default(PENDING)
-  adminNotes      String?
-  ipAddress       String?
-  userAgent       String?
-  
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
+  id            String               @id @default(cuid())
+  trackingCode  String               @unique
+  fullName      String
+  phone         String
+  email         String?
+  serviceType   ServiceType
+  amount        String
+  currency      String
+  description   String?
+  urgency       RequestUrgency       @default(NORMAL)
+  contactMethod String // telegram or whatsapp
+  status        ServiceRequestStatus @default(PENDING)
+  adminNotes    String?
+  ipAddress     String?
+  userAgent     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([trackingCode])
   @@index([phone])

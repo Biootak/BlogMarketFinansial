@@ -4,7 +4,8 @@ import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/db';
 import { PostStatus } from '@prisma/client';
 import type { PostWithRelations } from '@/types/types';
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidatePath } from 'next/cache';
+import { revalidateTag } from '@/lib/revalidate';
 
 interface GetLatestPostsParams {
   count?: number;
@@ -26,7 +27,7 @@ interface GetLatestPostsParams {
  *
  * راه‌حل: VERSION رو با هر تغییر شدید (seed یا schema) عوض کن.
  */
-const CACHE_VERSION = 'v3-2026-06-13'; // بعد از seed ۳۶ پست، به این نسخه ارتقا داده شد
+const CACHE_VERSION = 'v4-2026-06-14'; // 2026-06-14: archive/post-by-slug cached wrappers added.
 
 // Internal fetch function
 async function fetchLatestPosts(
@@ -122,6 +123,6 @@ export async function getLatestPosts({
 
 export async function invalidatePostsCache() {
   revalidatePath('/posts');
-  revalidateTag('posts', 'page');
-  revalidateTag('latest-posts', 'page');
+  revalidateTag('posts');
+  revalidateTag('latest-posts');
 }

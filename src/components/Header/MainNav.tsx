@@ -14,7 +14,7 @@ export default async function MainNav() {
   return (
     <nav className="relative z-10">
       <div className="container">
-        <div className="h-16 sm:h-[72px] flex items-center justify-between gap-2 sm:gap-4">
+        <div className="h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
           {/* Right Side - Menu (Mobile) */}
           <div className="flex items-center gap-1">
             {/* Mobile Menu */}
@@ -26,18 +26,16 @@ export default async function MainNav() {
           </div>
 
           {/* Center - Logo */}
-          <div className="flex items-center justify-center flex-1 lg:flex-none lg:justify-start">
+          <div className="flex items-center lg:flex-none">
             <div className="relative group">
               <div className="absolute -inset-2 bg-gradient-to-r from-primary-500/20 to-indigo-500/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-all duration-500" />
               <Logo variant="modern" />
             </div>
           </div>
 
-          {/* Navigation - Desktop */}
-          <div className="hidden lg:flex justify-center flex-1 mx-8">
-            <div className="relative">
-              <Navigation />
-            </div>
+          {/* Navigation - Desktop (no double flex-center wrapper) */}
+          <div className="hidden lg:flex flex-1 min-w-0 justify-center">
+            <Navigation />
           </div>
 
           {/* Left Side - User/Auth (Mobile) | Auth + Actions (Desktop) */}

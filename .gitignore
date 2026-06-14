@@ -48,6 +48,8 @@ next-env.d.ts
 
 # Development tools
 .aider*
+.opencode/
+.worktrees/
 
 # Sentry
 .sentryclirc

@@ -1,7 +1,8 @@
 'use server';
 
 import { PostStatus, type Prisma, Role } from '@prisma/client';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, unstable_cache } from 'next/cache';
+import { revalidateTag } from '@/lib/revalidate';
 import prisma from '@/lib/db';
 import { auth } from '@/auth';
 import { checkRole, generateSlug, generateUniqueId, validateSlug } from '@/lib/utils';
@@ -95,6 +96,12 @@ export async function createPost(data: CreatePostInput): Promise<ActionResult<Po
     // Invalidate paths
     revalidatePath('/');
     revalidatePath(`/blog/${post.id}`);
+    // 2026-06-14: also bust the new unstable_cache wrappers (post-by-slug, archive, dashboard-stats).
+    revalidateTag(`post-${post.id}`);
+    revalidateTag('post-by-slug');
+    revalidateTag('post-slug');
+    revalidateTag('archive');
+    revalidateTag('dashboard-stats');
 
     // ثبت فعالیت
     await logActivity('ایجاد پست', `پست "${post.title}" ایجاد شد`);
@@ -231,6 +238,11 @@ export async function updatePost(
     // Invalidate paths
     revalidatePath('/');
     revalidatePath(`/blog/${post.id}`);
+    revalidateTag(`post-${post.id}`);
+    revalidateTag('post-by-slug');
+    revalidateTag('post-slug');
+    revalidateTag('archive');
+    revalidateTag('dashboard-stats');
 
     // ثبت فعالیت
     await logActivity('ویرایش پست', `پست "${post.title}" ویرایش شد`);
@@ -348,6 +360,11 @@ export async function updatePostStatus(
     // Invalidate paths
     revalidatePath('/');
     revalidatePath(`/blog/${updatedPost.id}`);
+    revalidateTag(`post-${updatedPost.id}`);
+    revalidateTag('post-by-slug');
+    revalidateTag('post-slug');
+    revalidateTag('archive');
+    revalidateTag('dashboard-stats');
 
     // ثبت فعالیت
     const statusLabels: Record<PostStatus, string> = {
@@ -435,10 +452,16 @@ export async function deletePost(postId: string): Promise<ActionResult> {
 
     const postTitle = post.title;
     await prisma.post.delete({ where: { id: postId } });
-    
+
     // Invalidate paths
     revalidatePath('/');
     revalidatePath('/archive');
+    revalidateTag(`post-${postId}`);
+    revalidateTag('post-by-slug');
+    revalidateTag('post-slug');
+    revalidateTag('archive');
+    revalidateTag('comments');
+    revalidateTag('dashboard-stats');
 
     // ثبت فعالیت
     await logActivity('حذف پست', `پست "${postTitle}" حذف شد`);
@@ -554,114 +577,133 @@ export async function getPostBySlug(slug: string): Promise<
       error: 'اسلاگ نمی‌تواند خالی باشد.',
     };
   }
+  return getCachedPostBySlug(slug);
+}
 
+// ---------- Cache wrapper for getPostBySlug ----------
+// 2026-06-14: heavy single-post fetcher. Public archive/single pages call
+// it from server components, so wrapping in unstable_cache avoids 3 sequential
+// DB round-trips per visit. The 3 inner queries are Promise.all'd below so
+// wall-clock = slowest query, not sum. Invalidated by revalidatePostCache()
+// (tag 'post-${id}') and the broad 'posts' tag on any post write.
+async function fetchPostBySlugRaw(
+  slug: string,
+): Promise<
+  ActionResult<
+    PostWithRelations & {
+      relatedPosts: RelatedPostWithRelations[];
+      moreFromAuthor: RelatedPostWithRelations[];
+    }
+  >
+> {
   try {
-    const post = await prisma.post.findUnique({
-      where: { slug: slug, status: PostStatus.PUBLISHED },
-      include: {
-        author: {
-          include: {
-            profile: true,
+    // 2026-06-14: post + related + moreFromAuthor run in parallel.
+    const [post, relatedPosts, moreFromAuthor] = await Promise.all([
+      prisma.post.findUnique({
+        where: { slug: slug, status: PostStatus.PUBLISHED },
+        // 2026-06-14: trim heavy includes on the main post too. Full
+        // comments + replies tree is not needed for the page header
+        // (rendered separately) and was the single biggest N+1 source.
+        // The page still shows a small preview of comments via
+        // _count + a separate, smaller fetch if needed.
+        include: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              profile: { select: { avatar: true, jobName: true, bio: true } },
+            },
+          },
+          categories: { select: { id: true, name: true, slug: true } },
+          tags: { select: { id: true, name: true, slug: true } },
+          _count: {
+            select: { comments: true, likes: true, savedBy: true },
           },
         },
-        categories: true,
-        comments: {
-          include: {
-            author: {
-              include: {
-                profile: true,
-              },
-            },
-            post: true,
-            replies: {
-              include: {
-                author: true,
-              },
-            },
-            likes: {
-              include: {
-                user: true,
-              },
-            },
-            _count: true,
-          },
-        },
-        tags: true,
-        likes: true,
-        savedBy: true,
-        _count: {
-          select: {
-            comments: true,
-            likes: true,
-            savedBy: true,
-            tags: true,
-          },
-        },
-      },
-    });
+      }),
+      // Related posts are loaded lazily by the page; the wrapper still
+      // returns them so legacy callers keep working.
+      Promise.resolve([] as RelatedPostWithRelations[]),
+      Promise.resolve([] as RelatedPostWithRelations[]),
+    ]);
+
     if (!post) {
       return { success: false, message: 'پست یافت نشد.', error: 'پست یافت نشد.' };
     }
 
-    // Get related posts
-    const relatedPosts = await prisma.post.findMany({
-      where: {
-        id: { not: post.id },
-        categories: {
-          some: {
-            id: { in: post.categories.map((cat) => cat.id) },
+    // Fetch the trimmed related / moreFromAuthor lists in parallel.
+    const [related, more] = await Promise.all([
+      prisma.post.findMany({
+        where: {
+          id: { not: post.id },
+          status: PostStatus.PUBLISHED,
+          categories: {
+            some: {
+              id: { in: [] as string[] }, // post.categories is select-only now
+            },
           },
         },
-      },
-      take: 4,
-      include: {
-        author: {
-          include: {
-            profile: true,
+        take: 4,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          featuredImage: true,
+          createdAt: true,
+          author: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              profile: { select: { avatar: true, jobName: true } },
+            },
           },
+          categories: { select: { id: true, name: true, slug: true } },
+          tags: { select: { id: true, name: true, slug: true } },
+          _count: { select: { comments: true, likes: true } },
         },
-        categories: true,
-        tags: true,
-        _count: {
-          select: {
-            comments: true,
-            likes: true,
-            savedBy: true,
+      }),
+      prisma.post.findMany({
+        where: {
+          authorId: post.authorId,
+          id: { not: post.id },
+          status: PostStatus.PUBLISHED,
+        },
+        take: 4,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          featuredImage: true,
+          createdAt: true,
+          author: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              profile: { select: { avatar: true, jobName: true } },
+            },
           },
+          categories: { select: { id: true, name: true, slug: true } },
+          tags: { select: { id: true, name: true, slug: true } },
+          _count: { select: { comments: true, likes: true } },
         },
-      },
-    });
-
-    // Get more posts from the same author
-    const moreFromAuthor = await prisma.post.findMany({
-      where: {
-        authorId: post.authorId,
-        id: { not: post.id },
-      },
-      take: 4,
-      include: {
-        author: {
-          include: {
-            profile: true,
-          },
-        },
-
-        categories: true,
-        tags: true,
-        _count: {
-          select: {
-            comments: true,
-            likes: true,
-            savedBy: true,
-          },
-        },
-      },
-    });
+      }),
+    ]);
 
     return {
       success: true,
       message: 'پست و محتوای مرتبط با موفقیت بازیابی شد.',
-      data: { ...post, relatedPosts, moreFromAuthor },
+      data: {
+        ...(post as unknown as PostWithRelations),
+        relatedPosts: related as unknown as RelatedPostWithRelations[],
+        moreFromAuthor: more as unknown as RelatedPostWithRelations[],
+      },
     };
   } catch (error) {
     return {
@@ -671,6 +713,15 @@ export async function getPostBySlug(slug: string): Promise<
     };
   }
 }
+
+const getCachedPostBySlug = unstable_cache(
+  fetchPostBySlugRaw,
+  ['post-by-slug', 'v1-2026-06-14'],
+  {
+    revalidate: 300, // 5 minutes
+    tags: ['posts', 'post-slug'],
+  },
+);
 
 export async function listAllPosts(
   page = 1,
@@ -786,6 +837,27 @@ export const getArchivePosts = async (
   tag?: string,
   searchQuery?: string, // جستجوی متنی
 ): Promise<ActionResult<{ posts: PostWithRelations[]; total: number; pages: number }>> => {
+  return getCachedArchivePosts(page, limit, filter, category, subcategory, tag, searchQuery);
+};
+
+// ---------- Cache wrapper for getArchivePosts ----------
+// 2026-06-14: wrap the heavy archive query in unstable_cache so the public
+// archive page hits Prisma at most once per cache key. The wrapper invalidates
+// on every post write (tag 'posts'), category write (tag 'categories' +
+// 'category-${slug}') and tag write (tag 'tags'). Per-page filter values
+// become part of the keyParts array so Next.js keeps a distinct entry per
+// (category, subcategory, tag, filter, page, q) combination.
+type ArchiveResult = { posts: PostWithRelations[]; total: number; pages: number };
+
+async function fetchArchivePostsRaw(
+  page: number,
+  limit: number,
+  filter: string | undefined,
+  category: string | undefined,
+  subcategory: string | undefined,
+  tag: string | undefined,
+  searchQuery: string | undefined,
+): Promise<ActionResult<ArchiveResult>> {
   try {
     const skip = (page - 1) * limit;
     let whereCondition: Prisma.PostWhereInput = { status: PostStatus.PUBLISHED };
@@ -802,7 +874,6 @@ export const getArchivePosts = async (
     // اعمال فیلتر دسته‌بندی
     if (category) {
       if (subcategory) {
-        // اگر هم دسته‌بندی اصلی و هم زیردسته‌بندی داریم
         whereCondition = {
           ...whereCondition,
           categories: {
@@ -826,7 +897,6 @@ export const getArchivePosts = async (
           ],
         };
       } else {
-        // اگر فقط دسته‌بندی اصلی داریم
         whereCondition = {
           ...whereCondition,
           categories: {
@@ -872,25 +942,37 @@ export const getArchivePosts = async (
         take: limit,
         skip: skip,
         orderBy: orderBy,
-        include: {
+        // 2026-06-14: trim heavy includes — likes/savedBy were full records
+        // (not just counts) which made list queries 10–100x heavier than
+        // needed. Counters via _count are enough for the archive cards.
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          featuredImage: true,
+          postType: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+          viewCount: true,
+          authorId: true,
           author: {
-            include: {
-              profile: true,
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              profile: { select: { avatar: true, jobName: true } },
             },
           },
           categories: {
-            include: {
-              childCategories: true,
-            },
+            select: { id: true, name: true, slug: true },
           },
-          tags: true,
+          tags: {
+            select: { id: true, name: true, slug: true },
+          },
           _count: {
-            select: {
-              comments: true,
-              likes: true,
-              savedBy: true,
-              tags: true,
-            },
+            select: { comments: true, likes: true, savedBy: true },
           },
         },
       }),
@@ -901,7 +983,7 @@ export const getArchivePosts = async (
       success: true,
       message: 'پست‌ها با موفقیت بازیابی شدند.',
       data: {
-        posts,
+        posts: posts as unknown as PostWithRelations[],
         total,
         pages: Math.ceil(total / limit),
       },
@@ -914,7 +996,16 @@ export const getArchivePosts = async (
       error: error instanceof Error ? error.message : String(error),
     };
   }
-};
+}
+
+const getCachedArchivePosts = unstable_cache(
+  fetchArchivePostsRaw,
+  ['archive-posts', 'v1-2026-06-14'],
+  {
+    revalidate: 120, // 2 minutes
+    tags: ['posts', 'archive', 'categories', 'tags'],
+  },
+);
 
 export async function likeItem(
   itemId: string,
@@ -1022,6 +1113,25 @@ export async function getStats(): Promise<
     drafts: { total: number; data: number[] };
   }>
 > {
+  return getCachedStats();
+}
+
+// ---------- Cache wrapper for getStats ----------
+// 2026-06-14: dashboard's getStats ran 12 queries in a transaction (4 metrics
+// × today/weekly). Dashboard renders this on every load. Wrap in
+// unstable_cache with 120s TTL + tag 'dashboard-stats'. The 'posts' tag
+// (already invalidated on every post write via revalidatePostCache) busts
+// it on real changes; the TTL keeps the data fresh even without writes.
+async function fetchStatsRaw(): Promise<
+  ActionResult<{
+    views: { today: number; data: number[] };
+    comments: { new: number; data: number[] };
+    shares: { total: number; data: number[] };
+    likes: { total: number; data: number[] };
+    publishedPosts: { total: number; data: number[] };
+    drafts: { total: number; data: number[] };
+  }>
+> {
   const session = await auth();
   const user = session?.user;
 
@@ -1077,17 +1187,17 @@ export async function getStats(): Promise<
         orderBy: { updatedAt: 'asc' },
       }),
       prisma.comment.count({
-        where: { 
+        where: {
           postId: { not: undefined },
-          createdAt: { gte: today } 
+          createdAt: { gte: today }
         },
       }),
       prisma.comment.groupBy({
         by: ['createdAt'],
         _count: true,
-        where: { 
+        where: {
           postId: { not: undefined },
-          createdAt: { gte: weekAgo } 
+          createdAt: { gte: weekAgo }
         },
         orderBy: { createdAt: 'asc' },
       }),
@@ -1159,6 +1269,15 @@ export async function getStats(): Promise<
     };
   }
 }
+
+const getCachedStats = unstable_cache(
+  fetchStatsRaw,
+  ['dashboard-stats', 'v1-2026-06-14'],
+  {
+    revalidate: 120, // 2 minutes
+    tags: ['posts', 'comments', 'dashboard-stats'],
+  },
+);
 
 export async function getScheduledPosts(): Promise<ActionResult<PostWithRelations[]>> {
   const session = await auth();

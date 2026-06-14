@@ -2,21 +2,26 @@ import type { NextConfig } from 'next';
 import path from 'path';
 import { withSentryConfig } from '@sentry/nextjs';
 
-// Content Security Policy
+// 2026-06-14: Content Security Policy — تمیزتر، با allowlist دقیق برای
+// Sentry loader، Telegram bot API، font CDNهای Vazirmatn و سرویس‌دهنده‌های
+// embed ویدیو. در dev مجاز نمی‌کنیم چون next-themes و HMR script نیاز به
+// unsafe-eval دارند که در prod لازم نیست.
+const isProd = process.env.NODE_ENV === 'production';
+
 const ContentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net https://*.sentry.io;
+  script-src 'self' 'unsafe-inline' https://*.sentry.io ${isProd ? '' : "'unsafe-eval'"};
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   img-src 'self' blob: data: https: http:;
-  font-src 'self' https://fonts.gstatic.com;
-  connect-src 'self' https://*.sentry.io https://api.telegram.org wss: ws:;
-  frame-src 'self' https://www.youtube.com https://player.vimeo.com https://www.aparat.com;
+  font-src 'self' data: https://fonts.gstatic.com;
+  connect-src 'self' https://*.sentry.io https://api.telegram.org https://api.exir.io wss: ws:;
+  frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://www.aparat.com;
   media-src 'self' https: blob:;
   object-src 'none';
   base-uri 'self';
   form-action 'self';
   frame-ancestors 'self';
-  upgrade-insecure-requests;
+  ${isProd ? 'upgrade-insecure-requests;' : ''}
 `.replace(/\s{2,}/g, ' ').trim();
 
 const nextConfig: NextConfig = {
@@ -87,11 +92,13 @@ const nextConfig: NextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()',
           },
-          // CSP Header - فعال کن وقتی تست کردی
-          // {
-          //   key: 'Content-Security-Policy',
-          //   value: ContentSecurityPolicy,
-          // },
+          // 2026-06-14: CSP فعال شد. برای dev شل‌گیر است (بدون
+          // upgrade-insecure-requests و با unsafe-eval) تا HMR کار
+          // کند. در prod سخت‌گیرانه.
+          {
+            key: 'Content-Security-Policy',
+            value: ContentSecurityPolicy,
+          },
         ],
       },
     ];
@@ -176,7 +183,13 @@ const sentryWebpackPluginOptions = {
   tunnelRoute: '/monitoring',
 };
 
-// اگه Sentry DSN تنظیم شده، از withSentryConfig استفاده کن
-export default process.env.NEXT_PUBLIC_SENTRY_DSN
+// 2026-06-14: Sentry فقط وقتی wrap می‌شود که هم DSN ست شده باشد و هم
+// در production باشیم. قبلاً در dev هم wrap می‌شد و یک middleware
+// اضافی روی هر request می‌گذاشت. حالا dev بدون Sentry اجرا می‌شود
+// که TTFB را در محیط توسعه بهتر می‌کند.
+const shouldWrapSentry =
+  Boolean(process.env.NEXT_PUBLIC_SENTRY_DSN) && process.env.NODE_ENV === 'production';
+
+export default shouldWrapSentry
   ? withSentryConfig(nextConfig, sentryWebpackPluginOptions)
   : nextConfig;
