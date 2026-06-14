@@ -1,37 +1,35 @@
 /**
- * Header — linear.app inspired dark glassmorphism + Ticker bar 2026
+ * Header — Premium dark glassmorphism × Linear × Vercel × Stripe
  *
- * - Ticker bar بالا با نرخ‌های لحظه‌ای
- * - Sticky, translucent surface that picks up content behind it
- * - Subtle 1px hairline border at the bottom (linear-style)
- * - Server component — no framer-motion here, no client JS for the shell
- * - The actual interactive bits (Navigation, dropdowns) live in their own
- *   client components
+ * ساختار نهایی:
+ *  - TickerBar بالا (h-8) با نرخ‌های لحظه‌ای
+ *  - MainNav اصلی (h-12 mobile / h-14 desktop)
+ *  - sticky + backdrop-blur
+ *  - layout سه‌ستونه متقارن: Logo | Navigation (وسط) | Actions
+ *  - هیچ overlap یا asymmetry بین ستون‌ها
+ *  - سرور کامپوننت بدون framer-motion
  *
- * 2026-06-14: split into Header (sync shell) + HeaderTicker (async ticker
- * loader). Layout wraps HeaderTicker in <Suspense> so a slow Exir API or
- * DB hiccup never blocks the rest of the page. Nav is rendered
- * immediately; ticker streams in once ready.
+ * 2026-06-14: بازطراحی کامل برای تقارن کامل در همه سایزها
+ *  - Navigation واقعاً در مرکز viewport (نه فقط container)
+ *  - Logo و Actions هم‌عرض و هم‌تراز با Navigation
+ *  - TickerBar با marquee صحیح RTL
  */
 import { Suspense } from 'react';
 import MainNav from './MainNav';
 import { TickerBar } from './TickerBar';
 import { getTickerData } from '@/actions/tickerActions';
 
-// Skeleton used by <Suspense> while the ticker is loading. h-7 keeps
-// it visually matched to the real TickerBar (h-8 minus the bottom
-// border) so the header doesn't pop on hydration.
+// Skeleton ticker برای زمان load
 function TickerBarSkeleton() {
   return (
     <div
       aria-hidden
-      className="h-7 w-full bg-[rgb(var(--c-surface-elevated))]/40 animate-pulse"
+      className="h-8 w-full bg-[rgb(var(--c-surface-elevated))]/40 animate-pulse"
     />
   );
 }
 
-// Async subcomponent that hits the (cached) ticker. Lives separately so
-// Next can stream it inside <Suspense>.
+// Async ticker loader در Suspense
 async function HeaderTicker() {
   const tickerItems = await getTickerData();
   if (tickerItems.length === 0) return null;
@@ -40,49 +38,45 @@ async function HeaderTicker() {
 
 const Header = () => {
   return (
-    // 2026-06-14: standardized height tokens.
-    //   • TickerBar  — h-8 (32px)
-    //   • MainNav    — h-12 mobile / h-14 desktop (48/56px)
-    //   • Header total without ticker = 48/56px
-    //   • Header total with ticker    = 80/88px
-    // The two background/divider divs use `inset-x-0` and explicit
-    // bottom:0 so they sit on the lower hairline, not under the row.
-    <header className="sticky top-0 w-full z-40" role="banner">
-      {/* Ticker bar — نرخ‌های لحظه‌ای. در <Suspense> پیچیده شد تا
-          کندی Exir/DB کل صفحه را بلاک نکند. */}
+    <header
+      className="sticky top-0 w-full z-40 isolate"
+      role="banner"
+    >
+      {/* Ticker bar — نرخ‌های لحظه‌ای */}
       <Suspense fallback={<TickerBarSkeleton />}>
         <HeaderTicker />
       </Suspense>
 
-      {/* Translucent surface — picks up gradient/blur from main background */}
+      {/* Translucent surface با glassmorphism ملایم */}
       <div
         aria-hidden
         className="
-          absolute inset-0
-          bg-[rgb(var(--c-surface-canvas))]/70
-          dark:bg-[rgb(var(--c-surface-elevated))]/70
+          absolute inset-0 -z-10
+          bg-white/70 dark:bg-neutral-950/70
           backdrop-blur-xl backdrop-saturate-150
+          supports-[backdrop-filter]:bg-white/60
+          dark:supports-[backdrop-filter]:bg-neutral-950/60
         "
       />
 
-      {/* Subtle inner glow / top highlight, linear.app style */}
+      {/* Top inner highlight (linear.app style) */}
       <div
         aria-hidden
         className="
-          absolute inset-x-0 top-0 h-px
+          absolute inset-x-0 top-0 h-px -z-10
           bg-gradient-to-r
           from-transparent
-          via-white/[0.06]
+          via-black/[0.06] dark:via-white/[0.08]
           to-transparent
         "
       />
 
-      {/* Hairline divider */}
+      {/* Bottom hairline divider */}
       <div
         aria-hidden
         className="
-          absolute inset-x-0 bottom-0 h-px
-          bg-[rgb(var(--c-border-subtle))]
+          absolute inset-x-0 bottom-0 h-px -z-10
+          bg-neutral-200/70 dark:bg-neutral-800/70
         "
       />
 

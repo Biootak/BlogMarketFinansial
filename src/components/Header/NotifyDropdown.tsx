@@ -94,19 +94,13 @@ const NotifyDropdown = memo(({ className = 'hidden sm:block' }: Props) => {
             <Popover.Button
               aria-label="اعلان‌ها"
               className={`
-                relative w-11 h-11 rounded-2xl
+                relative
                 flex items-center justify-center
-                text-slate-600 dark:text-slate-300
-                bg-gradient-to-br from-slate-50 to-slate-100/80
-                dark:from-slate-800/90 dark:to-slate-900/80
-                border border-slate-200/60 dark:border-slate-700/50
-                shadow-sm hover:shadow-md
-                hover:border-slate-300/80 dark:hover:border-slate-600/60
-                hover:from-white hover:to-slate-50
-                dark:hover:from-slate-700/90 dark:hover:to-slate-800/80
+                size-10 rounded-xl
+                text-neutral-600 dark:text-neutral-300
                 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50
-                transition-all duration-300 ease-out
-                ${open ? 'shadow-md border-slate-300 dark:border-slate-600 from-white to-slate-50 dark:from-slate-700/90 dark:to-slate-800/80' : ''}
+                transition-colors duration-200
+                ${open ? 'bg-neutral-100 dark:bg-neutral-800/80' : ''}
               `}
             >
               {/* Notification badge */}

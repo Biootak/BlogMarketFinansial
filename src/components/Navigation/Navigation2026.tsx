@@ -82,7 +82,7 @@ const NAVBAR_LINKS: readonly NavItem[] = [
   { id: 'terms', name: 'قوانین', href: '/terms' },
 ] as const;
 
-const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement => {
+const Navigation = ({ className = '' }: NavigationProps): React.ReactElement => {
   const pathname = usePathname();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -91,12 +91,12 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
   const prefersReducedMotion = useReducedMotion();
   const scrollRef = useRef<HTMLUListElement>(null);
 
-  // Reset hover state on route change so the underline never lingers on the
-  // previously-hovered item after navigation (e.g. clicking a sub-item).
+  // ریست hover state پس از تغییر مسیر
   useEffect(() => {
     setHoveredId(null);
   }, [pathname]);
 
+  // تشخیص فعال بودن آیتم نسبت به pathname
   const isActive = (item: NavItem) => {
     if (pathname === item.href) return true;
     if (item.subItems) {
@@ -108,22 +108,24 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
     return false;
   };
 
-  const checkScrollFades = () => {
-    if (!scrollRef.current) return;
-    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-    setShowLeftFade(scrollLeft > 4);
-    setShowRightFade(scrollLeft < scrollWidth - clientWidth - 4);
-  };
-
+  // شناسایی overflow برای فعال‌سازی fade edges
   useEffect(() => {
-    checkScrollFades();
+    const check = () => {
+      const el = scrollRef.current;
+      if (!el) return;
+      // در RTL: scrollLeft مثبت یعنی scroll به چپ (start)
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      setShowLeftFade(el.scrollLeft > 4);
+      setShowRightFade(el.scrollLeft < maxScroll - 4);
+    };
+    check();
     const el = scrollRef.current;
     if (!el) return;
-    el.addEventListener('scroll', checkScrollFades, { passive: true });
-    window.addEventListener('resize', checkScrollFades);
+    el.addEventListener('scroll', check, { passive: true });
+    window.addEventListener('resize', check);
     return () => {
-      el.removeEventListener('scroll', checkScrollFades);
-      window.removeEventListener('resize', checkScrollFades);
+      el.removeEventListener('scroll', check);
+      window.removeEventListener('resize', check);
     };
   }, []);
 
@@ -353,34 +355,35 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
   };
 
   return (
-    <nav className="relative flex items-center" aria-label="ناوبری اصلی">
+    <nav
+      className={cn('relative flex items-center', className)}
+      aria-label="ناوبری اصلی"
+    >
       {/* Fade edges برای اسکرول — فقط وقتی overflow داریم */}
       <div
         aria-hidden
         className={cn(
-          'pointer-events-none absolute inset-y-0 start-0 w-5 z-20 transition-opacity duration-200',
-          'bg-gradient-to-r from-[rgb(var(--c-surface-canvas))] to-transparent',
-          'dark:from-[rgb(var(--c-surface-elevated))]',
+          'pointer-events-none absolute inset-y-0 start-0 w-6 z-20 transition-opacity duration-200',
+          'bg-gradient-to-r from-white dark:from-neutral-950 to-transparent',
           showLeftFade ? 'opacity-100' : 'opacity-0',
         )}
       />
       <div
         aria-hidden
         className={cn(
-          'pointer-events-none absolute inset-y-0 end-0 w-5 z-20 transition-opacity duration-200',
-          'bg-gradient-to-l from-[rgb(var(--c-surface-canvas))] to-transparent',
-          'dark:from-[rgb(var(--c-surface-elevated))]',
+          'pointer-events-none absolute inset-y-0 end-0 w-6 z-20 transition-opacity duration-200',
+          'bg-gradient-to-l from-white dark:from-neutral-950 to-transparent',
           showRightFade ? 'opacity-100' : 'opacity-0',
         )}
       />
 
       <ul
         ref={scrollRef}
-        className={cn(
-          'items-center gap-0.5 flex max-w-full overflow-x-auto',
-          'scrollbar-none',
-          className,
-        )}
+        className="
+          items-center gap-0.5
+          flex max-w-full overflow-x-auto
+          scrollbar-none
+        "
         style={{ scrollbarWidth: 'none' }}
       >
         {NAVBAR_LINKS.map(renderNavItem)}
