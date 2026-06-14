@@ -98,7 +98,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ success: true, data: result.data, message: result.message });
     }
 
-    const { id, ...rest } = body;
+    const { id, toggle: _toggle, ...rest } = body;
     const result = await updateHeaderAd(id as string, rest);
     if (!result.success) {
       return NextResponse.json(
