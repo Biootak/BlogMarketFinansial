@@ -1,85 +1,50 @@
 /**
- * getMarketTickerRates — نرخ‌های بازار واقعی (طلا، ارز، سکه، نفت)
+ * getMarketTickerRates — نرخ‌های بازار آزاد برای تیکر پایین اسلایدر
  *
- * دیتا از جدول `ExchangeRate` خونده می‌شه (admin-managed).
- * این آیتم‌ها در MarketTickerBar پایین اسلایدر اصلی استفاده می‌شن.
+ * منبع داده: src/lib/freeMarketRates.ts
+ *   1. USD/Toman از قیمت تتر (Exir — رایگان، بدون کلید)
+ *   2. EUR/GBP/AED/CHF/... از FX جهانی × USD (exchangerate-api.com — رایگان)
+ *   3. طلا/سکه/نفت از جدول ExchangeRate (ادمین در داشبورد ثبت می‌کنه)
  *
- * نکته: برای بالای صفحه (PulseSection) از `getMarketTickerData` استفاده
- * می‌شه که crypto + forex/gold رو ترکیب می‌کنه. این اکشن فقط forex/gold
- * رو برمی‌گردونه (بدون crypto) تا ردیف پایین خلاصه‌ی بازار واقعی باشه.
- *
- * کش: unstable_cache با 60s TTL (هم‌راستا با سایر تیکرها).
+ * هیچ‌کدوم از این منابع نیاز به ثبت‌نام یا API key ندارن. کش ۶۰ ثانیه‌ای
+ * فشار روی منابع رایگان را کنترل می‌کنه.
  */
 
 import { unstable_cache } from 'next/cache';
-import prisma from '@/lib/db';
+import { assembleFreeMarketRates, type FreeMarketItem, type MarketSource } from '@/lib/freeMarketRates';
+
+export type { FreeMarketItem, MarketSource };
 
 export interface MarketRateItem {
-  /** نماد (مثل USD، GOLD، COIN) */
   symbol: string;
-  /** نام فارسی */
   name: string;
-  /** قیمت به تومان (از buyRate یا singleRate) */
-  price: number;
-  /** درصد تغییر (اگه buy/sell موجود باشه) */
-  change: number;
+  price: number;       // تومان
+  change: number;      // درصد
+  source: MarketSource; // برای دیباگ
 }
 
-const CRYPTO_LIKE = new Set(['BTC', 'ETH', 'USDT', 'XRP', 'LTC', 'BCH', 'EOS', 'XLM', 'TRX', 'LINK', 'UNI', 'AAVE', 'DOT', 'ADA', 'DOGE', 'SHIB', 'MATIC', 'SOL', 'AVAX', 'ATOM', 'FTM', 'SAND', 'MANA', 'AXS']);
-
-async function loadMarketRates(): Promise<MarketRateItem[]> {
+async function load(): Promise<MarketRateItem[]> {
   try {
-    const dbRates = await prisma.exchangeRate.findMany({
-      take: 40,
-      orderBy: { createdAt: 'desc' },
-    });
-
-    const items: MarketRateItem[] = [];
-    for (const rate of dbRates) {
-      const currency = rate.currency.toUpperCase();
-      // فیلتر: موارد crypto-like (اگه اشتباهی وارد DB شدن) رو حذف کن
-      if (CRYPTO_LIKE.has(currency)) continue;
-
-      const value = rate.buyRate || rate.singleRate;
-      if (!value) continue;
-      const price = parseFloat(value);
-      if (Number.isNaN(price) || price <= 0) continue;
-
-      let change = 0;
-      if (rate.buyRate && rate.sellRate) {
-        const buy = parseFloat(rate.buyRate);
-        const sell = parseFloat(rate.sellRate);
-        if (buy > 0) {
-          change = Number((((sell - buy) / buy) * 100).toFixed(2));
-        }
-      }
-
-      items.push({
-        symbol: currency,
-        name: rate.name || currency,
-        price,
-        change,
-      });
+    const result = await assembleFreeMarketRates();
+    return result.items.map((it) => ({
+      symbol: it.symbol,
+      name: it.name,
+      price: it.priceToman,
+      change: it.change,
+      source: it.source,
+    }));
+  } catch (err) {
+    if (process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.warn('[marketTickerRates] assemble failed:', err);
     }
-
-    // Dedupe by symbol — اولین occurrence (جدیدترین) نگه داشته می‌شه
-    const seen = new Set<string>();
-    const unique: MarketRateItem[] = [];
-    for (const item of items) {
-      if (seen.has(item.symbol)) continue;
-      seen.add(item.symbol);
-      unique.push(item);
-    }
-
-    return unique;
-  } catch {
     return [];
   }
 }
 
 export const getMarketTickerRates = unstable_cache(
-  loadMarketRates,
-  ['market-ticker-rates', 'v1-2026-06-14'],
+  load,
+  ['market-ticker-rates', 'v3-freemarket-2026-06-14'],
   {
     revalidate: 60,
     tags: ['ticker', 'exchange-rates'],
