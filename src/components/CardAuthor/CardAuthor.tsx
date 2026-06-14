@@ -2,6 +2,7 @@ import type React from 'react';
 import Link from 'next/link';
 import Avatar from '@/components/Avatar/Avatar';
 import type { UserWithProfile } from '@/types/types';
+import { heading, text } from '@/lib/design-tokens';
 
 export interface CardAuthorProps {
   className?: string;
@@ -19,18 +20,16 @@ const CardAuthor: React.FC<CardAuthorProps> = ({ className = '', author }) => {
       aria-label={`View ${name}'s profile`}
     >
       <Avatar
-        sizeClass="h-10 w-10 text-base"
-        containerClassName="flex-shrink-0 me-4"
+        sizeClass="h-9 w-9 text-sm"
+        containerClassName="flex-shrink-0 me-3"
         radius="rounded-full"
         imgUrl={profile?.avatar}
         userName={name}
       />
       <div>
-        <h2 className="text-sm sm:text-base text-neutral-900 dark:text-neutral-100 font-medium sm:font-semibold">
-          {name}
-        </h2>
+        <h2 className={heading.h4}>{name}</h2>
         {profile?.jobName && (
-          <span className="block mt-[2px] text-xs text-neutral-500 dark:text-neutral-400">
+          <span className={['block mt-0.5', text.meta].join(' ')}>
             {profile.jobName}
           </span>
         )}

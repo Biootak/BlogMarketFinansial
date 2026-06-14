@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import PostCardMeta from '@/components/PostCardMeta/PostCardMeta';
 import type { PostWithRelations } from '@/types/types';
+import { heading, text } from '@/lib/design-tokens';
 
 export interface Card3SmallProps {
   className?: string;
@@ -18,9 +19,9 @@ const Card3Small: React.FC<Card3SmallProps> = ({ className = 'h-full', post }) =
       className={`nc-Card3Small relative flex flex-row justify-between items-center ${className}`}
     >
       <Link href={href} className="absolute inset-0" aria-label={title} />
-      <div className="relative space-y-2">
+      <div className="relative space-y-1.5">
         <PostCardMeta meta={post} />
-        <h2 className="nc-card-title block text-sm sm:text-base font-medium sm:font-semibold text-neutral-900 dark:text-neutral-100">
+        <h2 className={heading.h4}>
           <Link href={href} className="line-clamp-2">
             {title}
           </Link>

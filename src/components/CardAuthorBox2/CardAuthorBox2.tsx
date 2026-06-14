@@ -4,6 +4,7 @@ import Avatar from '@/components/Avatar/Avatar';
 import NcImage from '@/components/NcImage/NcImage';
 import Link from 'next/link';
 import type { TopAuthor } from '@/actions/getTopAuthors';
+import { heading, text, radius } from '@/lib/design-tokens';
 
 export interface CardAuthorBox2Props {
   className?: string;
@@ -20,7 +21,13 @@ const CardAuthorBox2: FC<CardAuthorBox2Props> = ({ className = '', author }) => 
   return (
     <Link
       href={`/author/${id}`}
-      className={`nc-CardAuthorBox2 group relative flex flex-col items-center justify-center text-center rounded-3xl overflow-hidden bg-white dark:bg-neutral-900 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 ${className}`}
+      className={[
+        'nc-CardAuthorBox2 group relative flex flex-col items-center justify-center text-center overflow-hidden',
+        'bg-white dark:bg-neutral-900 shadow-lg hover:shadow-2xl',
+        'transition-all duration-300 hover:-translate-y-1',
+        radius.lg,
+        className,
+      ].join(' ')}
     >
       <div className="relative w-full">
         <NcImage
@@ -43,16 +50,16 @@ const CardAuthorBox2: FC<CardAuthorBox2Props> = ({ className = '', author }) => 
       <div className="-mt-10 mx-auto mb-6 flex flex-col items-center relative z-10">
         <Avatar
           containerClassName="ring-4 ring-white dark:ring-neutral-900 shadow-xl"
-          sizeClass="w-20 h-20 text-2xl"
+          sizeClass="w-16 h-16 text-lg"
           radius="rounded-full"
           imgUrl={avatar}
           userName={name}
         />
-        <div className="mt-4 px-4">
-          <h2 className="text-lg font-bold text-neutral-900 dark:text-neutral-100 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+        <div className="mt-3 px-4">
+          <h2 className={[heading.h3, 'group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors'].join(' ')}>
             <span className="line-clamp-1">{name}</span>
           </h2>
-          <span className="block mt-1.5 text-sm font-medium text-neutral-500 dark:text-neutral-400">
+          <span className={['block mt-1', text.bodySm].join(' ')}>
             @{jobName}
           </span>
         </div>

@@ -26,7 +26,7 @@ const Card10: FC<Card10Props> = ({ className = 'h-full', post }) => {
       onMouseLeave={() => setIsHover(false)}
     >
       <Link href={getPostLink(postType, slug)} className="absolute inset-0" />
-      <div className="block group rounded-xl sm:rounded-2xl lg:rounded-3xl flex-shrink-0 relative w-full aspect-[4/3] sm:aspect-[9/8] overflow-hidden z-0">
+      <div className="block group rounded-xl sm:rounded-2xl flex-shrink-0 relative w-full aspect-[4/3] sm:aspect-[9/8] overflow-hidden z-0">
         <div>
           <PostFeaturedMedia post={post} isHover={isHover} />
         </div>
@@ -50,7 +50,7 @@ const Card10: FC<Card10Props> = ({ className = 'h-full', post }) => {
         </BookmarkCheck>
       </div>
 
-      <div className="space-y-1.5 sm:space-y-2.5 mt-2 sm:mt-4 px-1">
+      <div className="space-y-1.5 sm:space-y-2 mt-2 sm:mt-4 px-1">
         <PostCardMetaV2 meta={post} />
       </div>
     </div>

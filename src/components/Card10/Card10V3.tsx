@@ -71,7 +71,7 @@ const Card10V3: React.FC<Card10V3Props> = ({ className = 'h-full', post, gallery
       onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => setIsHover(false)}
     >
-      <div className="block group rounded-xl sm:rounded-2xl lg:rounded-3xl flex-shrink-0 relative w-full aspect-[4/3] sm:aspect-[16/10] overflow-hidden z-0">
+      <div className="block group rounded-xl sm:rounded-2xl flex-shrink-0 relative w-full aspect-[4/3] sm:aspect-[16/10] overflow-hidden z-0">
         {postType !== 'GALLERY' || !galleryImages || galleryImages.length === 0 ? (
           <PostFeaturedMedia post={post} isHover={isHover} />
         ) : (
@@ -96,7 +96,7 @@ const Card10V3: React.FC<Card10V3Props> = ({ className = 'h-full', post, gallery
         </BookmarkCheck>
       </div>
       <div className="space-y-1.5 sm:space-y-2.5 mt-2 sm:mt-4 px-2 sm:px-4">
-        <h2 className="nc-card-title block text-sm sm:text-base lg:text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+        <h2 className="nc-card-title block text-sm sm:text-base font-semibold text-neutral-900 dark:text-neutral-100">
           <Link href={getPostLink(postType, slug)} className="line-clamp-2" title={title}>
             {title}
           </Link>

@@ -22,19 +22,19 @@ const CardAuthor2 = ({ className = '', post, hoverReadingTime = true, lightText 
 
   const readingTime = Math.ceil(post.content.split(' ').length / 200);
 
-  const nameClass = lightText 
+  const nameClass = lightText
     ? 'text-sm text-white hover:text-white/80 font-medium'
     : 'text-sm text-neutral-700 hover:text-black dark:text-neutral-300 dark:hover:text-white font-medium';
-  
+
   const dateClass = lightText
-    ? 'flex items-center mt-1 text-xs text-neutral-200'
-    : 'flex items-center mt-1 text-xs text-neutral-500 dark:text-neutral-400';
+    ? 'flex items-center mt-0.5 text-xs text-neutral-200'
+    : 'flex items-center mt-0.5 text-xs text-neutral-500 dark:text-neutral-400';
 
   return (
     <Link href={href} className={`nc-CardAuthor2 relative inline-flex items-center ${className}`}>
       <Avatar
-        sizeClass="h-10 w-10 text-base"
-        containerClassName="flex-shrink-0 me-3"
+        sizeClass="h-8 w-8 text-xs"
+        containerClassName="flex-shrink-0 me-2.5"
         radius="rounded-full"
         imgUrl={author.profile?.avatar || avatar}
         userName={displayName || ''}
