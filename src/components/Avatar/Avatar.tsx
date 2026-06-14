@@ -12,38 +12,15 @@ export interface AvatarProps {
   fontSize?: string;
 }
 
-// 2026-06-14: the project has dozens of remote hostnames in next.config.ts
-// (pexels, unsplash, liara, vercel, google avatars, github, jsdelivr, ...).
-// Adding yet another one to that allowlist each time a seed row ships a
-// new placeholder hostname is a never-ending game and crashes the page
-// the moment a contributor forgets. So instead of asking next/image to
-// proxy an unknown host, we fall back to a plain <img>. The page never
-// breaks, the user still sees the avatar, and we don't have to bounce
-// the dev server every time.
-//
-// next/image still gets used for the hostnames we DO proxy (everything
-// in next.config.ts), which is what we want for LCP/optimization.
-const isNextImageHost = (raw: string): boolean => {
-  if (raw.startsWith('/')) return true; // local /uploads/...
-  if (raw.startsWith('data:')) return true; // inline
-  try {
-    const { hostname } = new URL(raw);
-    // Patterns must match next.config.ts remotePatterns entries
-    return (
-      hostname === 'images.pexels.com' ||
-      hostname === 'images.unsplash.com' ||
-      hostname === 'biotak.storage.c2.liara.space' ||
-      hostname.endsWith('.storage.c2.liara.space') ||
-      hostname === 'avatar.vercel.sh' ||
-      hostname === 'lh3.googleusercontent.com' ||
-      hostname === 'avatars.githubusercontent.com' ||
-      hostname === 'cdn.jsdelivr.net' ||
-      hostname === 'i.pravatar.cc'
-    );
-  } catch {
-    return false;
-  }
-};
+// 2026-06-14: never use next/image for remote avatars.
+// The previous design kept a local allowlist that mirrored next.config.ts
+// remotePatterns, but every new placeholder hostname crashed the page
+// until both the config and this list were updated. That coupling was
+// the bug. Plain <img> works for every host with no configuration, no
+// server restart, and no crash. We still get the optimized path for
+// local /uploads/... by special-casing that single case, since those
+// actually live behind the same Next.js server.
+const isLocalUploads = (raw: string): boolean => raw.startsWith('/uploads/');
 
 const Avatar: FC<AvatarProps> = ({
   containerClassName = 'ring-1 ring-white dark:ring-neutral-900',
@@ -71,7 +48,7 @@ const Avatar: FC<AvatarProps> = ({
   }, [imgUrl, name]);
 
   const rawUrl = typeof url === 'string' ? url : '';
-  const useNextImage = rawUrl !== '' && isNextImageHost(rawUrl);
+  const useNextImage = rawUrl !== '' && isLocalUploads(rawUrl);
 
   return (
     <div
@@ -93,6 +70,7 @@ const Avatar: FC<AvatarProps> = ({
           alt={name}
           className="absolute inset-0 w-full h-full object-cover"
           loading="lazy"
+          referrerPolicy="no-referrer"
         />
       )}
       {!hasImage && (

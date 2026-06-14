@@ -5,27 +5,50 @@ import { getPosts } from '@/actions/getPosts';
 import { getTopAuthors } from '@/actions/getTopAuthors';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
 
-// Dynamic imports for heavy components
+// Dynamic imports for heavy components — تمام section هایی که فریم-ورک
+// سمت کلاینت (framer-motion، state، effect) دارن اینجا لود می‌شن تا main
+// thread برای HTML اولیه آزاد بشه. همه با ssr:true هستن تا SEO و LCP
+// رندر سمت سرور داشته باشن، ولی کدشون به یه chunk جداگانه split می‌شه.
 const SectionLargeSlider = dynamic(() => import('./SectionLargeSlider'), {
   loading: () => <CardLarge1Skeleton />,
-  ssr: true
+  ssr: true,
 });
 const SectionMagazine7 = dynamic(() => import('@/components/Sections/SectionMagazine7'), {
   loading: () => <Skeleton className="h-[400px] rounded-3xl" />,
-  ssr: true
+  ssr: true,
 });
-const SectionGridAuthorBox = dynamic(() => import('@/components/SectionGridAuthorBox/SectionGridAuthorBox'), {
-  loading: () => <Skeleton className="h-[400px] rounded-3xl" />,
-  ssr: true
+const SectionGridAuthorBox = dynamic(
+  () => import('@/components/SectionGridAuthorBox/SectionGridAuthorBox'),
+  { loading: () => <Skeleton className="h-[400px] rounded-3xl" />, ssr: true },
+);
+const ModernTrendingTopics = dynamic(
+  () => import('@/components/ModernTrending/ModernTrendingTopics').then((m) => m.default),
+  { loading: () => <Skeleton className="h-[420px] rounded-3xl" />, ssr: true },
+);
+const SectionSubscribe2 = dynamic(
+  () => import('@/components/SectionSubscribe2/SectionSubscribe2'),
+  { loading: () => <Skeleton className="h-[280px] rounded-3xl" />, ssr: true },
+);
+const PulseSection = dynamic(
+  () => import('@/components/Sections/PulseBoard/PulseSection').then((m) => m.default),
+  {
+    loading: () => (
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-full rounded-2xl" />
+        <Skeleton className="h-[480px] w-full rounded-3xl" />
+      </div>
+    ),
+    ssr: true,
+  },
+);
+const SectionExchangeRates = dynamic(
+  () => import('@/components/Sections/SectionExchangeRates'),
+  { loading: () => <Skeleton className="h-28 rounded-2xl" />, ssr: true },
+);
+const SectionAds = dynamic(() => import('@/components/Sections/SectionAds'), {
+  loading: () => <Skeleton className="h-[150px] lg:h-[250px] rounded-3xl" />,
+  ssr: true,
 });
-
-// Regular imports for lighter components
-import SectionAds from '@/components/Sections/SectionAds';
-import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
-import ModernTrendingTopics from '@/components/ModernTrending';
-import SectionExchangeRates from '@/components/Sections/SectionExchangeRates';
-import { getCategories } from '@/actions/categoryActions';
-import PulseSection, { PulseSectionSkeleton } from '@/components/Sections/PulseBoard/PulseSection';
 
 export default async function Home() {
   const [posts, topAuthors, firstAdResult, secondAdResult, categoriesResult] = await Promise.all([
@@ -51,7 +74,7 @@ export default async function Home() {
         page: 2,
       }),
     ),
-    getCategories({ limit: 16 }),
+    import('@/actions/categoryActions').then((m) => m.getPopularCategoriesForHome(16)),
   ]);
 
   const popularCategories =
@@ -98,7 +121,14 @@ export default async function Home() {
 
       {/* Latest Posts Section — بازطراحی PulseBoard (نسخه ۲۰۲۶) */}
       <div className="container relative mt-8 lg:mt-12">
-        <Suspense fallback={<PulseSectionSkeleton />}>
+        <Suspense
+          fallback={
+            <div className="space-y-4">
+              <Skeleton className="h-10 w-full rounded-2xl" />
+              <Skeleton className="h-[480px] w-full rounded-3xl" />
+            </div>
+          }
+        >
           <PulseSection />
         </Suspense>
       </div>
