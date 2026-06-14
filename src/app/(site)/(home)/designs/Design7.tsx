@@ -159,10 +159,15 @@ export default function Design7({ initialPosts, rates, marketRates, rateLists, c
       if (relevantLists.length === 0) relevantLists = rateLists;
     }
 
-    // از همه لیست‌های مرتبط، RateItem ها رو جمع می‌کنیم
+    // از همه لیست‌های مرتبط، فقط RateItem هایی که خرید/فروش دارن ("|") رو جمع می‌کنیم
     const items: RateItem[] = [];
     for (const list of relevantLists) {
+      // لیست‌های خالی رو رد کن
+      if (!list.rates || list.rates.length === 0) continue;
       for (const item of list.rates) {
+        // فقط نرخ‌هایی که value شامل "|" هست (یعنی خرید و فروش جدا تعریف شدن)
+        const value = String(item.value || '');
+        if (!value.includes('|')) continue;
         // حذف duplicate title
         if (!items.some((i) => i.title === item.title)) {
           items.push(item);
@@ -214,6 +219,24 @@ export default function Design7({ initialPosts, rates, marketRates, rateLists, c
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
             {/* ─── Main Featured Card ─── */}
             <div className="lg:col-span-8 relative">
+              {/* ─── Rotating Compact Transfer Rate Bridge — چرخش خودکار بین نرخ‌های حواله ───
+                  بیرون از AnimatePresence نگه‌ش داشتیم تا موقع تعویض پست unmount نشه
+                  و شمارنده چرخش از 0 ریست نشه. والدش همین column هست که relative هست. */}
+              {transferRateItems.length > 0 && (
+                <motion.div
+                  initial={{ y: -10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.35, type: 'spring', stiffness: 200 }}
+                  className="absolute top-14 sm:top-16 start-4 sm:start-6 z-20"
+                >
+                  <CompactRateBridge
+                    rates={transferRateItems}
+                    externalPaused={isBridgePaused}
+                    onHoverChange={setIsBridgePaused}
+                  />
+                </motion.div>
+              )}
+
               <AnimatePresence mode="wait">
                 <MagneticSpotlightCard
                   key={mainPost.id}
@@ -277,24 +300,6 @@ export default function Design7({ initialPosts, rates, marketRates, rateLists, c
                     {/* Sentiment badge */}
                     <SentimentBadge sentiment={mainSentiment} size="sm" />
                   </motion.div>
-
-                  {/* ─── Rotating Compact Transfer Rate Bridge — چرخش خودکار بین نرخ‌های حواله ─── */}
-                  {transferRateItems.length > 0 && (
-                    <motion.div
-                      key={`bridge-${activeIndex}`}
-                      initial={{ y: -10, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      exit={{ y: -10, opacity: 0 }}
-                      transition={{ delay: 0.35, type: 'spring', stiffness: 200 }}
-                      className="absolute top-14 sm:top-16 start-4 sm:start-6 z-20"
-                    >
-                      <CompactRateBridge
-                        rates={transferRateItems}
-                        externalPaused={isBridgePaused}
-                        onHoverChange={setIsBridgePaused}
-                      />
-                    </motion.div>
-                  )}
 
                   {/* Top-right: index counter + pause toggle */}
                   <motion.div
