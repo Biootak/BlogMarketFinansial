@@ -33,7 +33,8 @@ import type { PostWithRelations, ExchangeRate, RateListData, RateItem } from '@/
 import Avatar from '@/components/Avatar/Avatar';
 import { getPostLink } from '@/lib/getPostLink';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
-import MarketTickerBar from './MarketTickerBar';
+import type { MarketRateItem } from '@/actions/marketTickerRates';
+import MarketRatesTickerBar from './MarketRatesTickerBar';
 import SentimentBadge from './SentimentBadge';
 import MagneticSpotlightCard from './MagneticSpotlightCard';
 import CompactRateBridge from './CompactRateBridge';
@@ -47,13 +48,14 @@ import {
 type Props = {
   initialPosts: PostWithRelations[];
   rates?: ExchangeRate[];
+  marketRates?: MarketRateItem[];
   rateLists?: RateListData[];
   className?: string;
 };
 
 const AUTO_PLAY_INTERVAL = 6000; // ۶ ثانیه
 
-export default function Design7({ initialPosts, rates, rateLists, className = '' }: Props) {
+export default function Design7({ initialPosts, rates, marketRates, rateLists, className = '' }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -179,10 +181,10 @@ export default function Design7({ initialPosts, rates, rateLists, className = ''
 
   return (
     <section className={`relative ${className}`}>
-      {/* ─── Ticker Bar بالای اسلایدر ─── */}
-      {rates && rates.length > 0 && (
+      {/* ─── Ticker Bar بالای اسلایدر — نرخ‌های بازار واقعی (طلا، ارز، سکه) ─── */}
+      {marketRates && marketRates.length > 0 && (
         <div className="mb-3 sm:mb-4">
-          <MarketTickerBar rates={rates} />
+          <MarketRatesTickerBar rates={marketRates} />
         </div>
       )}
 

@@ -4,10 +4,12 @@
 import Design7 from './designs/Design7';
 
 import type { PostWithRelations, ExchangeRate, RateListData } from '@/types/types';
+import type { MarketRateItem } from '@/actions/marketTickerRates';
 
 type Props = {
   initialPosts: PostWithRelations[];
   rates?: ExchangeRate[];
+  marketRates?: MarketRateItem[];
   rateLists?: RateListData[];
   className?: string;
 };
@@ -15,6 +17,7 @@ type Props = {
 export default function SectionLargeSliderClient({
   initialPosts,
   rates,
+  marketRates,
   rateLists,
   className = '',
 }: Props) {
@@ -23,6 +26,7 @@ export default function SectionLargeSliderClient({
     <Design7
       initialPosts={initialPosts}
       rates={rates}
+      marketRates={marketRates}
       rateLists={rateLists}
       className={className}
     />
