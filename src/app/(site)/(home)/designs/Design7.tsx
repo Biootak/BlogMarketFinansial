@@ -532,6 +532,7 @@ export default function Design7({ initialPosts, rates, marketRates, rateLists, c
                       tiltStrength={0.25}
                       enableHolographic
                       className="relative group h-full w-full rounded-2xl overflow-hidden cursor-pointer bg-neutral-200 dark:bg-neutral-900"
+                      innerClassName="relative h-full"
                     >
                     {/* Image */}
                     <Image
