@@ -520,3 +520,47 @@ model ServiceRequest {
   // combination — covers `where: { status }, orderBy: { createdAt }`.
   @@index([status, createdAt(sort: Desc)])
 }
+
+enum HeaderAdVariant {
+  // متن ساده + دکمه CTA (سفارشی)
+  TEXT
+  // تصویر بنر + لینک
+  IMAGE
+  // ترکیبی: متن + تصویر
+  MIXED
+}
+
+enum HeaderAdTheme {
+  PRIMARY
+  ACCENT
+  NEUTRAL
+  DARK
+  GRADIENT
+}
+
+/// 2026-06-14: تبلیغ باریک بالای هدر.
+/// فقط یک ردیف فعال در لحظه (singleton).
+/// کاربر می‌تواند با دکمه × آن را برای session ببندد
+/// (کوکی client-side — در سرور نگه‌داری نمی‌شود).
+model HeaderAd {
+  id       String          @id @default(cuid())
+  text     String // متن اصلی تبلیغ (فارسی)
+  subtext  String? // متن فرعی اختیاری
+  ctaLabel String? // متن دکمه CTA (مثلاً «بیشتر بدانید»)
+  ctaHref  String? // لینک CTA
+  imageUrl String? // اختیاری: لوگو/آیکن
+  href     String? // اختیاری: لینک کل بنر
+  variant  HeaderAdVariant @default(TEXT)
+  theme    HeaderAdTheme   @default(PRIMARY)
+  isActive Boolean         @default(false) // singleton: فقط یکی فعال باشد
+  priority Int             @default(0) // برای ترتیب نمایش در آینده
+
+  startDate DateTime?
+  endDate   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, startDate, endDate])
+  @@index([priority])
+}

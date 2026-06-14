@@ -20,6 +20,7 @@ import {
   HiOutlineChevronDown,
   HiOutlineBars3,
   HiOutlineClipboardDocumentList,
+  HiOutlineSparkles,
 } from 'react-icons/hi2';
 import { useSidebarStore } from '@/hooks/sidebarStore';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
@@ -78,6 +79,12 @@ const getMenuItems = (role: string) => {
       href: '/dashboard/advertisements',
       icon: <HiOutlineMegaphone className="w-5 h-5" />,
       label: 'تبلیغات',
+    },
+    {
+      title: 'تبلیغ بالای هدر',
+      href: '/dashboard/header-ad',
+      icon: <HiOutlineSparkles className="w-5 h-5" />,
+      label: 'تبلیغ هدر',
     },
     {
       title: 'درخواست‌های خدمات',
