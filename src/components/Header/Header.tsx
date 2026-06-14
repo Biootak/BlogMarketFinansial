@@ -18,12 +18,14 @@ import MainNav from './MainNav';
 import { TickerBar } from './TickerBar';
 import { getTickerData } from '@/actions/tickerActions';
 
-// Skeleton used by <Suspense> while the ticker is loading.
+// Skeleton used by <Suspense> while the ticker is loading. h-7 keeps
+// it visually matched to the real TickerBar (h-8 minus the bottom
+// border) so the header doesn't pop on hydration.
 function TickerBarSkeleton() {
   return (
     <div
       aria-hidden
-      className="h-9 w-full bg-[rgb(var(--c-surface-elevated))]/40 animate-pulse"
+      className="h-7 w-full bg-[rgb(var(--c-surface-elevated))]/40 animate-pulse"
     />
   );
 }
@@ -38,6 +40,13 @@ async function HeaderTicker() {
 
 const Header = () => {
   return (
+    // 2026-06-14: standardized height tokens.
+    //   • TickerBar  — h-8 (32px)
+    //   • MainNav    — h-12 mobile / h-14 desktop (48/56px)
+    //   • Header total without ticker = 48/56px
+    //   • Header total with ticker    = 80/88px
+    // The two background/divider divs use `inset-x-0` and explicit
+    // bottom:0 so they sit on the lower hairline, not under the row.
     <header className="sticky top-0 w-full z-40" role="banner">
       {/* Ticker bar — نرخ‌های لحظه‌ای. در <Suspense> پیچیده شد تا
           کندی Exir/DB کل صفحه را بلاک نکند. */}

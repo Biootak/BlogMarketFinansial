@@ -174,17 +174,24 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
               >
                 <span className="relative z-10 tracking-[-0.005em]">{item.name}</span>
 
-                {/* Morphing underline indicator */}
-                {(hovered || active) && (
+                {/* 2026-06-14: morphing underline only for ACTIVE item.
+                    Hover state gets a soft background pill with its own
+                    layoutId, so framer-motion never has to morph the
+                    underline between two distinct DOM positions when
+                    hovering a sibling while a different item is active. */}
+                {active && (
                   <motion.span
                     aria-hidden
-                    layoutId="nav-underline"
-                    className={cn(
-                      'absolute inset-x-2 bottom-0.5 h-px',
-                      active
-                        ? 'bg-neutral-900 dark:bg-neutral-50'
-                        : 'bg-neutral-400 dark:bg-neutral-500',
-                    )}
+                    layoutId="nav-underline-active"
+                    className="absolute inset-x-2 bottom-0.5 h-px bg-neutral-900 dark:bg-neutral-50"
+                    transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                  />
+                )}
+                {hovered && !active && (
+                  <motion.span
+                    aria-hidden
+                    layoutId="nav-hover-bg"
+                    className="absolute inset-0 rounded-full bg-neutral-100/60 dark:bg-neutral-800/40"
                     transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                   />
                 )}
@@ -314,17 +321,22 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
         >
           <span className="relative z-10 tracking-[-0.005em]">{item.name}</span>
 
-          {/* Morphing underline indicator */}
-          {(hovered || active) && (
+          {/* 2026-06-14: see dropdown branch — active uses its own
+              layoutId so the morphing animation never collides with
+              the hover pill on a sibling item. */}
+          {active && (
             <motion.span
               aria-hidden
-              layoutId="nav-underline"
-              className={cn(
-                'absolute inset-x-2 bottom-0.5 h-px',
-                active
-                  ? 'bg-neutral-900 dark:bg-neutral-50'
-                  : 'bg-neutral-400 dark:bg-neutral-500',
-              )}
+              layoutId="nav-underline-active"
+              className="absolute inset-x-2 bottom-0.5 h-px bg-neutral-900 dark:bg-neutral-50"
+              transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+            />
+          )}
+          {hovered && !active && (
+            <motion.span
+              aria-hidden
+              layoutId="nav-hover-bg"
+              className="absolute inset-0 rounded-full bg-neutral-100/60 dark:bg-neutral-800/40"
               transition={{ type: 'spring', stiffness: 380, damping: 32 }}
             />
           )}

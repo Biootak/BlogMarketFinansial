@@ -14,34 +14,41 @@ export default async function MainNav() {
   return (
     <nav className="relative z-10">
       <div className="container">
-        <div className="h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
-          {/* Right Side - Menu (Mobile) */}
-          <div className="flex items-center gap-1">
-            {/* Mobile Menu */}
-            <div className="lg:hidden">
-              <div className="p-2 -mr-2 rounded-xl hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition-all duration-300">
-                <MenuBar />
-              </div>
-            </div>
-          </div>
+        {/* 2026-06-14: standardized to h-12 mobile / h-14 desktop. Total
+            header height is now 80px (mobile) / 88px (desktop) including
+            the h-8 ticker bar — matches Linear/Vercel header scale.
 
-          {/* Center - Logo */}
-          <div className="flex items-center lg:flex-none">
+            2026-06-14 (layout): three-column grid so Logo, Navigation and
+            Actions each live in an equal column with the items centered
+            inside. On mobile the columns collapse and the Logo + Actions
+            stay symmetric around the hamburger/menu. */}
+        <div
+          className="
+            grid grid-cols-[1fr_auto_1fr] items-center
+            h-12 sm:h-14
+            gap-2 sm:gap-4
+          "
+        >
+          {/* Right column (RTL → visually left) — Logo */}
+          <div className="flex items-center justify-start">
             <div className="relative group">
               <div className="absolute -inset-2 bg-gradient-to-r from-primary-500/20 to-indigo-500/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-all duration-500" />
               <Logo variant="modern" />
             </div>
           </div>
 
-          {/* Navigation - Desktop (no double flex-center wrapper) */}
-          <div className="hidden lg:flex flex-1 min-w-0 justify-center">
+          {/* Middle column — primary navigation, perfectly centered */}
+          <div className="hidden lg:flex items-center justify-center min-w-0">
             <Navigation />
           </div>
 
-          {/* Left Side - User/Auth (Mobile) | Auth + Actions (Desktop) */}
-          <div className="flex items-center gap-1 sm:gap-2">
-            {/* Mobile Auth/User */}
-            <div className="lg:hidden">
+          {/* Left column (RTL → visually right) — actions */}
+          <div className="flex items-center justify-end gap-1 sm:gap-2">
+            {/* Mobile: Menu + User/Auth */}
+            <div className="flex lg:hidden items-center gap-1">
+              <div className="p-2 -mr-2 rounded-xl hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition-all duration-300">
+                <MenuBar />
+              </div>
               {!session?.user ? (
                 <Link
                   href="/signin"
@@ -57,7 +64,7 @@ export default async function MainNav() {
               )}
             </div>
 
-            {/* Desktop Actions */}
+            {/* Desktop: auth + actions */}
             <div className="hidden lg:flex items-center gap-2">
               {!session?.user ? (
                 <div className="flex items-center gap-3">
