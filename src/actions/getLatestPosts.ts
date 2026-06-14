@@ -27,7 +27,7 @@ interface GetLatestPostsParams {
  *
  * راه‌حل: VERSION رو با هر تغییر شدید (seed یا schema) عوض کن.
  */
-const CACHE_VERSION = 'v4-2026-06-14'; // 2026-06-14: archive/post-by-slug cached wrappers added.
+const CACHE_VERSION = 'v5-2026-06-14'; // 2026-06-14: filter posts with valid featuredImage.
 
 // Internal fetch function
 async function fetchLatestPosts(
@@ -38,6 +38,8 @@ async function fetchLatestPosts(
     try {
       const whereClause = {
         status: PostStatus.PUBLISHED,
+        // فقط پست‌هایی که تصویر شاخص معتبر دارن — برای زیبایی بخش «آخرین مقالات»
+        featuredImage: { not: null },
         ...(category && category !== 'همه'
           ? {
               categories: {
@@ -92,7 +94,12 @@ async function fetchLatestPosts(
         },
       });
 
-      return posts as PostWithRelations[];
+      // فیلتر ثانویه: حذف رشته‌های خالی / placeholder های broken
+      const cleaned = posts.filter((p) => {
+        const img = (p as { featuredImage?: string | null }).featuredImage;
+        return typeof img === 'string' && img.trim().length > 0;
+      });
+      return cleaned as PostWithRelations[];
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
         console.error('Error fetching posts:', error);

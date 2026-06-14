@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e1b4b"/>
+      <stop offset="100%" stop-color="#0c0a1f"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.2" cy="0.3" r="0.5">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <rect width="800" height="600" fill="url(#glow)"/>
+  <g transform="translate(640,200)">
+    <rect x="-60" y="-60" width="120" height="120" rx="24" fill="#3b82f6" opacity="0.2"/>
+    <text x="0" y="20" text-anchor="middle" font-family="system-ui" font-size="80" font-weight="800" fill="#3b82f6">B</text>
+  </g>
+  <g font-family="system-ui" fill="#e2e8f0">
+    <text x="100" y="380" font-size="36" font-weight="700">بلوبانک</text>
+    <text x="100" y="420" font-size="16" fill="#94a3b8">افتتاح حساب آنلاین در ۳ دقیقه</text>
+    <text x="100" y="450" font-size="14" fill="#3b82f6" font-weight="600">بدون مراجعه‌ی حضوری</text>
+  </g>
+  <g font-family="system-ui" font-size="10" fill="#475569">
+    <text x="700" y="580" text-anchor="end">ad · تبلیغ</text>
+  </g>
+</svg>

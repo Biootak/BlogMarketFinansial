@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="800" viewBox="0 0 1280 800">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a0f1f"/>
+      <stop offset="100%" stop-color="#0c0a1f"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.4" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#a855f7" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1280" height="800" fill="url(#bg)"/>
+  <rect width="1280" height="800" fill="url(#glow)"/>
+  <!-- candlesticks -->
+  <g>
+    <line x1="120" y1="280" x2="120" y2="500" stroke="#a5b4fc" stroke-width="2"/>
+    <rect x="105" y="340" width="30" height="80" fill="#22c55e" opacity="0.9"/>
+    <line x1="180" y1="300" x2="180" y2="520" stroke="#a5b4fc" stroke-width="2"/>
+    <rect x="165" y="380" width="30" height="100" fill="#ef4444" opacity="0.9"/>
+    <line x1="240" y1="320" x2="240" y2="500" stroke="#a5b4fc" stroke-width="2"/>
+    <rect x="225" y="360" width="30" height="80" fill="#22c55e" opacity="0.9"/>
+    <line x1="300" y1="280" x2="300" y2="480" stroke="#a5b4fc" stroke-width="2"/>
+    <rect x="285" y="320" width="30" height="100" fill="#22c55e" opacity="0.9"/>
+    <line x1="360" y1="260" x2="360" y2="460" stroke="#a5b4fc" stroke-width="2"/>
+    <rect x="345" y="300" width="30" height="100" fill="#ef4444" opacity="0.9"/>
+    <line x1="420" y1="240" x2="420" y2="440" stroke="#a5b4fc" stroke-width="2"/>
+    <rect x="405" y="280" width="30" height="100" fill="#22c55e" opacity="0.9"/>
+    <line x1="480" y1="220" x2="480" y2="420" stroke="#a5b4fc" stroke-width="2"/>
+    <rect x="465" y="260" width="30" height="100" fill="#22c55e" opacity="0.9"/>
+    <line x1="540" y1="200" x2="540" y2="400" stroke="#a5b4fc" stroke-width="2"/>
+    <rect x="525" y="240" width="30" height="100" fill="#ef4444" opacity="0.9"/>
+    <line x1="600" y1="180" x2="600" y2="380" stroke="#a5b4fc" stroke-width="2"/>
+    <rect x="585" y="220" width="30" height="100" fill="#22c55e" opacity="0.9"/>
+  </g>
+  <!-- trend line -->
+  <g opacity="0.7" stroke="#d8b4fe" stroke-width="2.5" fill="none">
+    <polyline points="120,380 180,400 240,380 300,360 360,340 420,320 480,300 540,280 600,260"/>
+  </g>
+  <!-- EMA lines -->
+  <g opacity="0.5" stroke="#a855f7" stroke-width="1.5" fill="none" stroke-dasharray="6 4">
+    <polyline points="120,420 180,410 240,400 300,380 360,360 420,340 480,320 540,300 600,280"/>
+  </g>
+  <g opacity="0.5" stroke="#ec4899" stroke-width="1.5" fill="none" stroke-dasharray="6 4">
+    <polyline points="120,440 180,430 240,420 300,400 360,380 420,360 480,340 540,320 600,300"/>
+  </g>
+  <!-- RSI panel -->
+  <g transform="translate(700,180)">
+    <rect width="500" height="120" fill="#0c0a1f" stroke="#a855f7" stroke-opacity="0.3" stroke-width="1" rx="4"/>
+    <line x1="0" y1="40" x2="500" y2="40" stroke="#a855f7" stroke-opacity="0.3"/>
+    <line x1="0" y1="80" x2="500" y2="80" stroke="#a855f7" stroke-opacity="0.3"/>
+    <path d="M 0 60 Q 50 40, 100 50 T 200 30 T 300 70 T 400 50 T 500 60" stroke="#d8b4fe" stroke-width="2" fill="none"/>
+    <text x="10" y="20" font-family="monospace" font-size="10" fill="#a855f7" opacity="0.7">RSI(14)</text>
+  </g>
+  <g font-family="system-ui" fill="#d8b4fe">
+    <text x="80" y="160" font-size="28" font-weight="600" letter-spacing="2">TECHNICAL · تحلیل تکنیکال</text>
+  </g>
+</svg>

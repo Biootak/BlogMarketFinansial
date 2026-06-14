@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a1208"/>
+      <stop offset="100%" stop-color="#0a0a05"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.7" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <rect width="800" height="600" fill="url(#glow)"/>
+  <g transform="translate(640,200)">
+    <circle r="60" fill="#f59e0b" opacity="0.2"/>
+    <circle r="40" fill="#fbbf24" opacity="0.9"/>
+    <text x="0" y="14" text-anchor="middle" font-family="serif" font-size="48" font-weight="800" fill="#7c2d12">₿</text>
+  </g>
+  <g font-family="system-ui" fill="#e2e8f0">
+    <text x="100" y="380" font-size="32" font-weight="700">طلای دیجیتال</text>
+    <text x="100" y="415" font-size="16" fill="#94a3b8">سرمایه‌گذاری در طلا بدون نگهداری فیزیکی</text>
+    <text x="100" y="445" font-size="14" fill="#fbbf24" font-weight="600">از ۱۰۰ هزار تومان شروع کنید</text>
+  </g>
+  <g font-family="system-ui" font-size="10" fill="#475569">
+    <text x="700" y="580" text-anchor="end">ad · تبلیغ</text>
+  </g>
+</svg>

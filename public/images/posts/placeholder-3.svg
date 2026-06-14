@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="800" viewBox="0 0 1280 800">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f1a14"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1280" height="800" fill="url(#bg)"/>
+  <rect width="1280" height="800" fill="url(#glow)"/>
+  <!-- globe lines -->
+  <g stroke="#10b981" stroke-width="1" fill="none" opacity="0.4">
+    <ellipse cx="640" cy="400" rx="380" ry="380"/>
+    <ellipse cx="640" cy="400" rx="380" ry="180"/>
+    <ellipse cx="640" cy="400" rx="380" ry="280"/>
+    <ellipse cx="640" cy="400" rx="180" ry="380"/>
+    <ellipse cx="640" cy="400" rx="280" ry="380"/>
+    <line x1="260" y1="400" x2="1020" y2="400"/>
+    <line x1="640" y1="20" x2="640" y2="780"/>
+  </g>
+  <g fill="#10b981" opacity="0.7">
+    <circle cx="500" cy="320" r="3"/>
+    <circle cx="720" cy="380" r="3"/>
+    <circle cx="850" cy="450" r="3"/>
+    <circle cx="600" cy="500" r="3"/>
+    <circle cx="450" cy="420" r="3"/>
+  </g>
+  <!-- currency symbols -->
+  <g font-family="system-ui" fill="#34d399" opacity="0.85" font-weight="700">
+    <text x="100" y="180" font-size="42">$</text>
+    <text x="1100" y="220" font-size="42">€</text>
+    <text x="1080" y="640" font-size="42">£</text>
+    <text x="120" y="620" font-size="42">¥</text>
+  </g>
+  <!-- chart -->
+  <g opacity="0.7" stroke="#10b981" stroke-width="2.5" fill="none">
+    <polyline points="80,720 220,680 360,640 500,580 640,500 780,460 920,380 1060,320 1200,280"/>
+  </g>
+  <g font-family="system-ui" fill="#10b981">
+    <text x="80" y="160" font-size="28" font-weight="600" letter-spacing="2">GLOBAL · بازار جهانی</text>
+  </g>
+</svg>

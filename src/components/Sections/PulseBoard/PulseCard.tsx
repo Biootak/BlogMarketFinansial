@@ -67,7 +67,6 @@ export function PulseCard({
 
   const reduce = useReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [pointerActive, setPointerActive] = useState(false);
 
   // accent — از اولین دسته یا override
   const primaryCategory = categories?.[0];
@@ -100,11 +99,9 @@ export function PulseCard({
     yPct.set(yp);
     tiltX.set(((yp - 50) / 50) * -1.5);
     tiltY.set(((xp - 50) / 50) * 1.5);
-    setPointerActive(true);
   };
 
   const handleMouseLeave = () => {
-    setPointerActive(false);
     xPct.set(50);
     yPct.set(50);
     tiltX.set(0);

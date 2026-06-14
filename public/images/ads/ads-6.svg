@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a1929"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <rect width="800" height="600" fill="url(#glow)"/>
+  <g transform="translate(640,200)">
+    <rect x="-40" y="-60" width="80" height="120" rx="10" fill="#22d3ee" opacity="0.25"/>
+    <rect x="-32" y="-30" width="64" height="20" fill="#0a1929" rx="2"/>
+    <text x="0" y="-15" text-anchor="middle" font-family="monospace" font-size="10" fill="#22d3ee">£BTC</text>
+    <circle cx="-15" cy="20" r="4" fill="#0a1929"/>
+    <circle cx="15" cy="20" r="4" fill="#0a1929"/>
+    <circle cx="-15" cy="40" r="4" fill="#0a1929"/>
+  </g>
+  <g font-family="system-ui" fill="#e2e8f0">
+    <text x="100" y="380" font-size="32" font-weight="700">کیف پول لجر</text>
+    <text x="100" y="415" font-size="16" fill="#94a3b8">امن‌ترین روش نگهداری ارز دیجیتال</text>
+    <text x="100" y="445" font-size="14" fill="#22d3ee" font-weight="600">Ledger Nano X · ۱۲ میلیون کاربر</text>
+  </g>
+  <g font-family="system-ui" font-size="10" fill="#475569">
+    <text x="700" y="580" text-anchor="end">ad · تبلیغ</text>
+  </g>
+</svg>
