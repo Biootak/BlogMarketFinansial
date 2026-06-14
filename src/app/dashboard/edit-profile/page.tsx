@@ -1,10 +1,19 @@
 import { notFound } from 'next/navigation';
 import ProfileForm from '@/components/ProfileForm';
 import { getProfileData } from '@/actions/getProfileData';
+import { auth } from '@/auth';
 import { User, Sparkles } from 'lucide-react';
 
 export default async function ProfilePage() {
-  const profileData = await getProfileData();
+  // 2026-06-14: getProfileData is now an unstable_cache wrapper that
+  // takes a userId, so we have to resolve the session here. The
+  // per-user cache key still gives us the same dedup benefit
+  // across re-renders of the dashboard.
+  const session = await auth();
+  if (!session?.user?.id) {
+    return notFound();
+  }
+  const profileData = await getProfileData(session.user.id);
 
   if (!profileData) {
     return notFound();
@@ -41,7 +50,7 @@ export default async function ProfilePage() {
           
           {/* Card Content */}
           <div className="relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/50 shadow-2xl shadow-slate-200/50 dark:shadow-slate-950/50 p-8 md:p-10">
-            <ProfileForm initialData={profileData} />
+            <ProfileForm initialData={profileData as never} />
           </div>
         </div>
       </div>

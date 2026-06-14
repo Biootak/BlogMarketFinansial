@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -276,9 +277,16 @@ export default function AdvertisementsPage() {
                 <DashboardTableRow key={ad.id}>
                   <DashboardTableCell>
                     <div className="relative h-16 w-28 overflow-hidden rounded-xl ring-1 ring-neutral-200/60 dark:ring-neutral-700/50">
-                      <img
+                      {/* 2026-06-14: swapped raw <img> for next/image so
+                          the optimizer handles resize/format/quality
+                          and the dashboard table doesn't ship the
+                          original asset size down the wire. */}
+                      <Image
                         src={ad.imageUrl}
                         alt={ad.title}
+                        width={112}
+                        height={64}
+                        sizes="112px"
                         className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;

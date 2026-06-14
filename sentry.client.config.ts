@@ -6,11 +6,13 @@ Sentry.init({
   // فقط در production فعال باشه
   enabled: process.env.NODE_ENV === 'production',
 
-  // درصد نمونه‌گیری برای performance
-  tracesSampleRate: 0.1, // 10% از transactions
-
-  // درصد نمونه‌گیری برای replay
-  replaysSessionSampleRate: 0.1,
+  // 2026-06-14: lowered `replaysSessionSampleRate` from 0.1 to
+  // 0.01. Replay sessions are GB/day in volume at 10%, and
+  // 99% of the useful signal in a blog/content site comes from
+  // error replays anyway. We keep `replaysOnErrorSampleRate: 1.0`
+  // so every error still gets captured.
+  tracesSampleRate: 0.1,
+  replaysSessionSampleRate: 0.01,
   replaysOnErrorSampleRate: 1.0,
 
   // تنظیمات اضافی

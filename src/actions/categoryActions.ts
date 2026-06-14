@@ -147,9 +147,20 @@ export async function createCategory(
       };
     }
 
+    // 2026-06-14: replaced the N+1 while-loop (one findUnique per
+    // candidate slug) with a single startsWith query. In the worst
+    // case this was 1000 round-trips; now it's always 1.
+    const existingSlugs = new Set(
+      (
+        await prisma.category.findMany({
+          where: { slug: { startsWith: slug } },
+          select: { slug: true },
+        })
+      ).map((c) => c.slug),
+    );
     let uniqueSlug = slug;
     let slugCounter = 1;
-    while (await prisma.category.findUnique({ where: { slug: uniqueSlug } })) {
+    while (existingSlugs.has(uniqueSlug)) {
       uniqueSlug = `${slug}-${slugCounter}`;
       slugCounter++;
     }
@@ -253,8 +264,19 @@ export async function updateCategory(
     const currentCategory = await prisma.category.findUnique({ where: { id } });
     let uniqueSlug = slug;
     if (currentCategory && currentCategory.slug !== slug) {
+      // 2026-06-14: same N+1 → 1-shot as createCategory. One
+      // startsWith query gives us the set of slugs that would
+      // collide, then we pick the next free one in memory.
+      const existingSlugs = new Set(
+        (
+          await prisma.category.findMany({
+            where: { slug: { startsWith: slug }, NOT: { id } },
+            select: { slug: true },
+          })
+        ).map((c) => c.slug),
+      );
       let slugCounter = 1;
-      while (await prisma.category.findFirst({ where: { slug: uniqueSlug, NOT: { id } } })) {
+      while (existingSlugs.has(uniqueSlug)) {
         uniqueSlug = `${slug}-${slugCounter}`;
         slugCounter++;
       }

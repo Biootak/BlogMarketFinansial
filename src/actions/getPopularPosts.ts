@@ -1,5 +1,6 @@
 'use server';
 
+import { unstable_cache } from 'next/cache';
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
 
@@ -28,35 +29,42 @@ export async function getPopularPosts(): Promise<
     };
   }
 
+  const where: Prisma.PostWhereInput = { status: 'PUBLISHED' };
+  if (user.role === 'AUTHOR') {
+    where.authorId = user.id;
+  }
+
   try {
-    const where: Prisma.PostWhereInput = {
-      status: 'PUBLISHED',
-    };
-
-    // اگر نویسنده است، فقط پست‌های خودش را ببیند
-    if (user.role === 'AUTHOR') {
-      where.authorId = user.id;
-    }
-
-    const popularPosts = await prisma.post.findMany({
-      where,
-      orderBy: {
-        viewCount: 'desc',
-      },
-      take: 5,
-      select: {
-        id: true,
-        title: true,
-        viewCount: true,
-        createdAt: true,
-        slug: true,
-        author: {
-          select: {
-            name: true,
+    // 2026-06-14: 2-minute cache. The view count delta is small
+    // enough that a 2-minute staleness is invisible in the UI, but
+    // the dashboard widget no longer hits the DB on every render.
+    const fetcher = unstable_cache(
+      async (roleScope: { authorId?: string }) => {
+        return prisma.post.findMany({
+          where: {
+            status: 'PUBLISHED',
+            ...(roleScope.authorId ? { authorId: roleScope.authorId } : {}),
           },
-        },
+          orderBy: { viewCount: 'desc' },
+          take: 5,
+          select: {
+            id: true,
+            title: true,
+            viewCount: true,
+            createdAt: true,
+            slug: true,
+            author: { select: { name: true } },
+          },
+        });
       },
-    });
+      ['popular-posts', 'v1-2026-06-14'],
+      {
+        revalidate: 120,
+        tags: ['popular-posts', 'posts'],
+      },
+    );
+
+    const popularPosts = await fetcher({ authorId: user.role === 'AUTHOR' ? user.id : undefined });
 
     const formattedPosts = popularPosts.map((post) => ({
       id: post.id,

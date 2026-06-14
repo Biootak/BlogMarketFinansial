@@ -29,6 +29,11 @@ const PostCardLikeAction: FC<PostCardLikeActionProps> = ({
   const handleLikeClick = useCallback(() => {
     if (!postId) return;
 
+    // 2026-06-14: optimistic update with rollback on failure.
+    // The previous version did `setIsLiked(!isLiked)` on success,
+    // which flipped the state back to its previous value (a bug).
+    // We capture the optimistic value in `newLikeState` and rely
+    // on the catch path to roll back if the server call fails.
     startTransition(async () => {
       const newLikeState = !isLiked;
       setIsLiked(newLikeState);
@@ -39,9 +44,7 @@ const PostCardLikeAction: FC<PostCardLikeActionProps> = ({
         if (!result || !result.success) {
           throw new Error(result?.message || 'خطا در عملیات لایک');
         }
-        if (result.success) {
-          setIsLiked(!isLiked);
-        }
+        // success: optimistic state is already correct, nothing to do
       } catch {
         setIsLiked(!newLikeState);
         setLikeCount((prevCount) => (newLikeState ? Math.max(0, prevCount - 1) : prevCount + 1));

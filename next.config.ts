@@ -160,6 +160,32 @@ const nextConfig: NextConfig = {
     silenceDeprecations: ['legacy-js-api'],
   },
 
+  // 2026-06-14: experimental flags tuned for the public/blog
+  // workload:
+  //   * ppr: enables Partial Prerendering — single post pages can
+  //     stream the static shell first and defer the comments widget.
+  //   * staleTimes: client router cache stays warm across back/
+  //     forward navigations, which is the dominant nav pattern on
+  //     long-form blog reading.
+  //   * optimizePackageImports: tree-shakes lucide-react and
+  //     react-icons, both of which are imported widely here and
+  //     easily bloat the first-load JS by 100KB+ without this.
+  experimental: {
+    ppr: 'incremental',
+    staleTimes: {
+      dynamic: 30,
+      static: 180,
+    },
+    optimizePackageImports: ['lucide-react', 'react-icons', 'framer-motion'],
+  },
+
+  // 2026-06-14: keepAlive on the global HTTP agent. Re-establishing
+  // TLS to Sentry, image optimizers and external APIs on every
+  // request is one of the most common cold-start costs in Node.
+  httpAgentOptions: {
+    keepAlive: true,
+  },
+
   transpilePackages: ['@aws-sdk/client-s3', '@aws-sdk/s3-request-presigner', 'framer-motion'],
 };
 

@@ -229,17 +229,23 @@ export async function newVerification(token: string): Promise<AuthResult> {
     };
   }
 
-  await prisma.user.update({
-    where: { id: existingUser.id },
-    data: {
-      emailVerified: new Date(),
-      email: existingToken.email,
-    },
-  });
-  
-  await prisma.verificationToken.delete({
-    where: { id: existingToken.id },
-  });
+  // 2026-06-14: wrap the two writes in a single transaction.
+  // Previously if the token delete succeeded but the user update
+  // failed, the user would be left with their email marked
+  // unverified and the token gone — a soft lockout. The
+  // transaction makes this atomic.
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: existingUser.id },
+      data: {
+        emailVerified: new Date(),
+        email: existingToken.email,
+      },
+    }),
+    prisma.verificationToken.delete({
+      where: { id: existingToken.id },
+    }),
+  ]);
 
   return { success: true, message: 'ایمیل با موفقیت تایید شد.' };
 }

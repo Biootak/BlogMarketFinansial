@@ -1,43 +1,30 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
+import { getViewStats } from '@/actions/getViewStats';
 
-// Mock database or data source
-const mockDatabase = {
-  getTrafficStats: async () => {
-    // Simulate database query delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    const today = new Date();
-    const last7Days = Array.from({ length: 7 }, (_, i) => {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      return date.toISOString().split('T')[0];
-    }).reverse();
-
-    const data = last7Days.map(() => Math.floor(Math.random() * 1000));
-    const totalViews = data.reduce((sum, views) => sum + views, 0);
-    const todayViews = data[data.length - 1];
-
-    return {
-      labels: last7Days,
-      data,
-      totalViews,
-      todayViews,
-    };
-  },
-};
-
+// 2026-06-14: the previous implementation faked a 500ms DB delay
+// and returned random numbers, which is misleading on the
+// dashboard. The real data lives in PageView — the same source
+// getViewStats already uses for the chart. We now proxy to that
+// (unstable_cache'd) helper so the dashboard traffic widget and
+// the chart stay in sync, and the artificial latency is gone.
 export async function GET() {
   try {
-    // چک احراز هویت
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: 'احراز هویت الزامی است' }, { status: 401 });
     }
 
-    const trafficStats = await mockDatabase.getTrafficStats();
-    return NextResponse.json(trafficStats);
+    const result = await getViewStats();
+    if (!result.success) {
+      return NextResponse.json(
+        { error: 'Failed to fetch traffic statistics' },
+        { status: 500 },
+      );
+    }
+    return NextResponse.json(result.data);
   } catch (error) {
+    console.error('[traffic-stats] error:', error);
     return NextResponse.json({ error: 'Failed to fetch traffic statistics' }, { status: 500 });
   }
 }

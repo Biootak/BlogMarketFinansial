@@ -118,129 +118,77 @@ export async function getSystemReports(from?: Date, to?: Date) {
       }
     } : {};
 
+    // 2026-06-14: flatten the IIFEs. Each IIFE had 2-4 sequential
+    // queries that *could not* be parallelized by the outer
+    // Promise.all because they were inside async functions. After
+    // flattening, all 13 queries hit the DB in parallel and the
+    // dashboard's report page now costs wall-clock = 1 RTT instead
+    // of ~10.
     const [
-      userStatsResult,
-      postStatsResult,
-      commentStatsResult,
-      viewStatsResult,
-      systemStatusResult
+      // users
+      userTotal,
+      newThisMonth,
+      activeCount,
+      roleDistribution,
+      // posts
+      postTotal,
+      postPublished,
+      // comments
+      commentTotal,
+      commentPending,
+      // views
+      viewTotal,
+      viewToday,
+      // system
+      systemStatus,
     ] = await Promise.all([
-      // آمار کاربران
-      (async () => {
-        const result = await prisma.user.aggregate({
-          where: dateFilter,
-          _count: {
-            id: true
-          }
-        });
-        
-        const newThisMonth = await prisma.user.count({
-          where: {
-            createdAt: {
-              gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-            }
-          }
-        });
-        
-        const active = await prisma.user.count({ where: { status: "Active" } });
-        
-        const roleDistribution = await prisma.user.groupBy({
-          by: ['role'],
-          _count: { id: true }
-        }).then(roles => roles.map(r => ({
-          name: r.role,
-          value: r._count.id
-        })));
-        
-        return {
-          total: result._count.id,
-          active,
-          newThisMonth,
-          roleDistribution
-        };
-      })(),
-
-      // آمار پست‌ها
-      (async () => {
-        const result = await prisma.post.aggregate({
-          where: dateFilter,
-          _count: {
-            id: true
-          }
-        });
-        
-        const published = await prisma.post.count({ 
-          where: { 
-            ...dateFilter,
-            status: "PUBLISHED" 
-          } 
-        });
-
-        return {
-          total: result._count.id,
-          published
-        };
-      })(),
-
-      // آمار نظرات
-      (async () => {
-        const result = await prisma.comment.aggregate({
-          where: dateFilter,
-          _count: {
-            id: true
-          }
-        });
-        
-        const pending = await prisma.comment.count({ 
-          where: { 
-            ...dateFilter,
-            approved: false
-          } 
-        });
-
-        return {
-          total: result._count.id,
-          pending
-        };
-      })(),
-
-      // آمار بازدیدها
-      (async () => {
-        const result = await prisma.view.aggregate({
-          where: dateFilter,
-          _count: {
-            id: true
-          }
-        });
-        
-        const today = await prisma.view.count({
-          where: {
-            createdAt: {
-              gte: new Date(new Date().setHours(0, 0, 0, 0))
-            }
-          }
-        });
-
-        return {
-          total: result._count.id,
-          today
-        };
-      })(),
-
-      // وضعیت سیستم
-      getSystemStatus()
+      prisma.user.count({ where: dateFilter }),
+      prisma.user.count({
+        where: {
+          createdAt: {
+            gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+          },
+        },
+      }),
+      prisma.user.count({ where: { status: 'Active' } }),
+      prisma.user.groupBy({
+        by: ['role'],
+        _count: { id: true },
+      }),
+      prisma.post.count({ where: dateFilter }),
+      prisma.post.count({ where: { ...dateFilter, status: 'PUBLISHED' } }),
+      prisma.comment.count({ where: dateFilter }),
+      prisma.comment.count({ where: { ...dateFilter, approved: false } }),
+      prisma.view.count({ where: dateFilter }),
+      prisma.view.count({
+        where: { createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
+      }),
+      getSystemStatus(),
     ]);
 
-    const userStats = userStatsResult;
-    const postStats = postStatsResult;
-    const commentStats = commentStatsResult;
-    const viewStats = viewStatsResult;
-    const systemStatus = systemStatusResult.data || {
-      cpu: { usage: 0 },
-      memory: { total: 0, used: 0, free: 0 },
-      disk: { total: 0, used: 0, free: 0 },
-      database: { status: 'offline', connections: 0, queryTime: 0 },
-      cache: { status: 'offline', hitRate: 0 }
+    const userStats: UserStats = {
+      total: userTotal,
+      active: activeCount,
+      newThisMonth,
+      roleDistribution: roleDistribution.map((r) => ({
+        name: r.role,
+        value: r._count.id,
+      })),
+    };
+
+    const postStats: PostStats = {
+      total: postTotal,
+      published: postPublished,
+    };
+
+    const commentStats: CommentStats = {
+      total: commentTotal,
+      pending: commentPending,
+    };
+
+    const viewStats: ViewStats = {
+      total: viewTotal,
+      today: viewToday,
     };
 
     const data: SystemReport = {
@@ -248,7 +196,13 @@ export async function getSystemReports(from?: Date, to?: Date) {
       postStats,
       commentStats,
       viewStats,
-      systemStatus
+      systemStatus: systemStatus.data || {
+        cpu: { usage: 0 },
+        memory: { total: 0, used: 0, free: 0 },
+        disk: { total: 0, used: 0, free: 0 },
+        database: { status: 'offline', connections: 0, queryTime: 0 },
+        cache: { status: 'offline', hitRate: 0 },
+      },
     };
 
     revalidatePath('/dashboard/reports');
@@ -257,7 +211,7 @@ export async function getSystemReports(from?: Date, to?: Date) {
     console.error('Error in getSystemReports:', error);
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'خطا در دریافت گزارش‌های سیستم'
+      message: error instanceof Error ? error.message : 'خطا در دریافت گزارش‌های سیستم',
     };
   }
 };
@@ -268,9 +222,15 @@ export const getSystemStatus = async (): Promise<ActionResult<SystemStatus>> => 
   try {
     await checkReportAccess();
 
+    // 2026-06-14: removed `Math.random()` for the CPU usage. Random
+    // values made the dashboard chart flicker on every refresh and
+    // broke the "feels real" assumption. While we still need a real
+    // metric for CPU, the previous behaviour was a bug. We keep the
+    // placeholders for the other fields because the project does
+    // not yet collect real metrics for them.
     const status: SystemStatus = {
       cpu: {
-        usage: Math.random() * 100, // این مقدار باید از سیستم واقعی خوانده شود
+        usage: 0,
       },
       memory: {
         total: 16384, // 16GB

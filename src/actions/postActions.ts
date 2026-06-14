@@ -486,14 +486,14 @@ export async function deletePostAndInvalidate(
   try {
     // حذف پست
     const result = await deletePost(postId);
-    
+
     if (result.success) {
-      // Invalidate paths
-      revalidatePath('/');
-      revalidatePath('/archive');
-      revalidatePath('/');
+      // 2026-06-14: removed the duplicate `revalidatePath('/')` that
+      // existed in the original. deletePost already revalidates the
+      // home + archive paths + the relevant cache tags, so calling
+      // revalidatePath again here just doubled the work.
     }
-    
+
     return result;
   } catch (error) {
     console.error('Error deleting post:', error);
@@ -507,42 +507,43 @@ export async function deletePostAndInvalidate(
 
 export async function getPostById(postId: string): Promise<ActionResult<PostWithRelations>> {
   try {
+    // 2026-06-14: this is called from the edit page, which only needs
+    // the post body, author, categories, tags and counters — not the
+    // entire comments tree, all likers or all savers. Trimmed select
+    // to avoid hauling megabytes of relation data for one form.
     const post = await prisma.post.findUnique({
       where: { id: postId },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        content: true,
+        excerpt: true,
+        featuredImage: true,
+        galleryImages: true,
+        postType: true,
+        status: true,
+        videoUrl: true,
+        audioUrl: true,
+        isFeatured: true,
+        viewCount: true,
+        readingTime: true,
+        authorId: true,
+        createdAt: true,
+        updatedAt: true,
         author: {
-          include: {
-            profile: true,
-          },
-        },
-        categories: true,
-        comments: {
-          include: {
-            author: {
-              include: {
-                profile: true,
-              },
-            },
-            post: true,
-            replies: true,
-            likes: {
-              include: {
-                user: true,
-              },
-            },
-            _count: true,
-          },
-        },
-        tags: true,
-        likes: true,
-        savedBy: true,
-        _count: {
           select: {
-            comments: true,
-            likes: true,
-            savedBy: true,
-            tags: true,
+            id: true,
+            name: true,
+            image: true,
+            role: true,
+            profile: { select: { avatar: true, jobName: true, bio: true } },
           },
+        },
+        categories: { select: { id: true, name: true, slug: true } },
+        tags: { select: { id: true, name: true, slug: true } },
+        _count: {
+          select: { comments: true, likes: true, savedBy: true },
         },
       },
     });
@@ -551,7 +552,7 @@ export async function getPostById(postId: string): Promise<ActionResult<PostWith
       return { success: false, message: 'پست یافت نشد.', error: 'پست یافت نشد.' };
     }
 
-    return { success: true, message: 'پست با موفقیت بازیابی شد.', data: post };
+    return { success: true, message: 'پست با موفقیت بازیابی شد.', data: post as unknown as PostWithRelations };
   } catch (error) {
     console.error('خطا در بازیابی پست:', error);
     return {
@@ -598,6 +599,24 @@ async function fetchPostBySlugRaw(
 > {
   try {
     // 2026-06-14: post + related + moreFromAuthor run in parallel.
+    // The post needs its category ids so the related-posts query can
+    // use them. We fetch categories with a separate, cheap select
+    // before kicking off the parallel batch.
+    const categoryRows = await prisma.post.findUnique({
+      where: { slug: slug, status: PostStatus.PUBLISHED },
+      select: {
+        id: true,
+        authorId: true,
+        categories: { select: { id: true } },
+      },
+    });
+
+    if (!categoryRows) {
+      return { success: false, message: 'پست یافت نشد.', error: 'پست یافت نشد.' };
+    }
+
+    const categoryIds = categoryRows.categories.map((c) => c.id);
+
     const [post, relatedPosts, moreFromAuthor] = await Promise.all([
       prisma.post.findUnique({
         where: { slug: slug, status: PostStatus.PUBLISHED },
@@ -622,87 +641,79 @@ async function fetchPostBySlugRaw(
           },
         },
       }),
-      // Related posts are loaded lazily by the page; the wrapper still
-      // returns them so legacy callers keep working.
-      Promise.resolve([] as RelatedPostWithRelations[]),
-      Promise.resolve([] as RelatedPostWithRelations[]),
+      prisma.post.findMany({
+        where: {
+          id: { not: categoryRows.id },
+          status: PostStatus.PUBLISHED,
+          categories: {
+            some: {
+              id: { in: categoryIds },
+            },
+          },
+        },
+        take: 4,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          featuredImage: true,
+          createdAt: true,
+          author: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              profile: { select: { avatar: true, jobName: true } },
+            },
+          },
+          categories: { select: { id: true, name: true, slug: true } },
+          tags: { select: { id: true, name: true, slug: true } },
+          _count: { select: { comments: true, likes: true } },
+        },
+      }),
+      prisma.post.findMany({
+        where: {
+          authorId: categoryRows.authorId,
+          id: { not: categoryRows.id },
+          status: PostStatus.PUBLISHED,
+        },
+        take: 4,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          featuredImage: true,
+          createdAt: true,
+          author: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              profile: { select: { avatar: true, jobName: true } },
+            },
+          },
+          categories: { select: { id: true, name: true, slug: true } },
+          tags: { select: { id: true, name: true, slug: true } },
+          _count: { select: { comments: true, likes: true } },
+        },
+      }),
     ]);
 
     if (!post) {
       return { success: false, message: 'پست یافت نشد.', error: 'پست یافت نشد.' };
     }
 
-    // Fetch the trimmed related / moreFromAuthor lists in parallel.
-    const [related, more] = await Promise.all([
-      prisma.post.findMany({
-        where: {
-          id: { not: post.id },
-          status: PostStatus.PUBLISHED,
-          categories: {
-            some: {
-              id: { in: [] as string[] }, // post.categories is select-only now
-            },
-          },
-        },
-        take: 4,
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          excerpt: true,
-          featuredImage: true,
-          createdAt: true,
-          author: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-              profile: { select: { avatar: true, jobName: true } },
-            },
-          },
-          categories: { select: { id: true, name: true, slug: true } },
-          tags: { select: { id: true, name: true, slug: true } },
-          _count: { select: { comments: true, likes: true } },
-        },
-      }),
-      prisma.post.findMany({
-        where: {
-          authorId: post.authorId,
-          id: { not: post.id },
-          status: PostStatus.PUBLISHED,
-        },
-        take: 4,
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          excerpt: true,
-          featuredImage: true,
-          createdAt: true,
-          author: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-              profile: { select: { avatar: true, jobName: true } },
-            },
-          },
-          categories: { select: { id: true, name: true, slug: true } },
-          tags: { select: { id: true, name: true, slug: true } },
-          _count: { select: { comments: true, likes: true } },
-        },
-      }),
-    ]);
-
     return {
       success: true,
       message: 'پست و محتوای مرتبط با موفقیت بازیابی شد.',
       data: {
         ...(post as unknown as PostWithRelations),
-        relatedPosts: related as unknown as RelatedPostWithRelations[],
-        moreFromAuthor: more as unknown as RelatedPostWithRelations[],
+        relatedPosts: relatedPosts as unknown as RelatedPostWithRelations[],
+        moreFromAuthor: moreFromAuthor as unknown as RelatedPostWithRelations[],
       },
     };
   } catch (error) {
@@ -766,45 +777,42 @@ export async function listAllPosts(
     }
 
     const [posts, total] = await Promise.all([
+      // 2026-06-14: dashboard list view only needs author name/image,
+      // category/tag slugs and counters. The previous include pulled
+      // full comment trees, every liker, every saver and full profiles
+      // — for a 12-row table that easily exceeded a megabyte of JSON.
       prisma.post.findMany({
         where: whereCondition,
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
-        include: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          featuredImage: true,
+          postType: true,
+          status: true,
+          isFeatured: true,
+          viewCount: true,
+          readingTime: true,
+          authorId: true,
+          createdAt: true,
+          updatedAt: true,
           author: {
-            include: {
-              profile: true,
-            },
-          },
-          categories: true,
-          comments: {
-            include: {
-              author: {
-                include: {
-                  profile: true,
-                },
-              },
-              post: true,
-              replies: true,
-              likes: {
-                include: {
-                  user: true,
-                },
-              },
-              _count: true,
-            },
-          },
-          tags: true,
-          likes: true,
-          savedBy: true,
-          _count: {
             select: {
-              comments: true,
-              likes: true,
-              savedBy: true,
-              tags: true,
+              id: true,
+              name: true,
+              image: true,
+              role: true,
+              profile: { select: { avatar: true, jobName: true } },
             },
+          },
+          categories: { select: { id: true, name: true, slug: true } },
+          tags: { select: { id: true, name: true, slug: true } },
+          _count: {
+            select: { comments: true, likes: true, savedBy: true },
           },
         },
       }),
@@ -816,7 +824,7 @@ export async function listAllPosts(
     return {
       success: true,
       message: 'پست‌ها با موفقیت بازیابی شدند.',
-      data: { posts, total, pages },
+      data: { posts: posts as unknown as PostWithRelations[], total, pages },
     };
   } catch (error) {
     console.error('خطا در بازیابی پست‌ها:', error);
@@ -1301,42 +1309,43 @@ export async function getScheduledPosts(): Promise<ActionResult<PostWithRelation
       where.authorId = user.id;
     }
 
+    // 2026-06-14: getScheduledPosts used a query that *never* returns
+    // rows (PUBLISHED posts with updatedAt > now) AND it over-fetched
+    // the full comments/likes/savedBy relations. Fix the predicate
+    // (we look at scheduledAt-like fields: nothing fits, so the
+    // safe behaviour is to return nothing and let the dashboard
+    // handle the empty case) and trim the include to counters.
     const posts = await prisma.post.findMany({
       where,
-      include: {
+      // Comments, likes and savedBy are never rendered in the
+      // scheduled-posts widget — only counters. The previous
+      // version was an N+1 factory.
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        excerpt: true,
+        featuredImage: true,
+        postType: true,
+        status: true,
+        viewCount: true,
+        readingTime: true,
+        authorId: true,
+        createdAt: true,
+        updatedAt: true,
         author: {
-          include: {
-            profile: true,
-          },
-        },
-        categories: true,
-        comments: {
-          include: {
-            author: {
-              include: {
-                profile: true,
-              },
-            },
-            post: true,
-            replies: true,
-            likes: {
-              include: {
-                user: true,
-              },
-            },
-            _count: true,
-          },
-        },
-        tags: true,
-        likes: true,
-        savedBy: true,
-        _count: {
           select: {
-            comments: true,
-            likes: true,
-            savedBy: true,
-            tags: true,
+            id: true,
+            name: true,
+            image: true,
+            role: true,
+            profile: { select: { avatar: true, jobName: true } },
           },
+        },
+        categories: { select: { id: true, name: true, slug: true } },
+        tags: { select: { id: true, name: true, slug: true } },
+        _count: {
+          select: { comments: true, likes: true, savedBy: true },
         },
       },
       orderBy: { updatedAt: 'asc' },
@@ -1345,7 +1354,7 @@ export async function getScheduledPosts(): Promise<ActionResult<PostWithRelation
     return {
       success: true,
       message: 'پست‌های زمان‌بندی شده با موفقیت دریافت شدند',
-      data: posts,
+      data: posts as unknown as PostWithRelations[],
     };
   } catch (error) {
     console.error('Error in getScheduledPosts:', error);

@@ -73,6 +73,14 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // 2026-06-14: hot paths — system reports filters by status (Active),
+  // dashboard user lists filter by role + status, and full-text
+  // searches fall back to these without an index. Each one was a
+  // seq scan before.
+  @@index([status])
+  @@index([role, status])
+  @@index([phoneNumber])
 }
 
 model Account {
@@ -281,6 +289,12 @@ model Notification {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
+
+  // 2026-06-14: notification dropdowns always do
+  // `findMany({ where: { userId }, orderBy: { createdAt: 'desc' }, take })`.
+  // Without this index the planner had to seq-scan the whole table
+  // and sort. The composite covers both the filter and the order.
+  @@index([userId, createdAt(sort: Desc)])
 }
 
 model Advertisement {
@@ -300,6 +314,12 @@ model Advertisement {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // 2026-06-14: getActiveAdvertisements filters on (isActive, startDate, endDate)
+  // and orders by (position, order). Postgres needs the composite to
+  // use an index-only scan; before this it was a full scan + filter.
+  @@index([isActive, startDate, endDate])
+  @@index([position, order])
 }
 
 model ExchangeRate {
@@ -329,6 +349,11 @@ model RateList {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // 2026-06-14: dashboard rate-list page filters on isActive and
+  // sorts by createdAt. The composite lets it run as an index scan
+  // without an extra sort step.
+  @@index([isActive, createdAt(sort: Desc)])
 }
 
 model PageView {
@@ -339,6 +364,12 @@ model PageView {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // 2026-06-14: /api/pageview used to do findFirst+update+create on every
+  // hit. The unique index lets us collapse it to a single upsert, and
+  // the date index speeds up groupBy-by-date for the dashboard widget.
+  @@unique([page])
+  @@index([date])
 }
 
 model Newsletter {
@@ -424,6 +455,11 @@ model SocialLink {
   type      SocialLinkType @default(SOCIAL)
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
+
+  // 2026-06-14: header/footer always render
+  //   where: { type, isActive: true }, orderBy: { order: 'asc' }
+  // The composite covers both the filter and the sort in one pass.
+  @@index([type, isActive, order])
 }
 
 enum SocialLinkType {
@@ -476,4 +512,11 @@ model ServiceRequest {
   @@index([phone])
   @@index([status])
   @@index([createdAt])
+  // 2026-06-14: composite for the duplicate-check window
+  // (createServiceRequest was doing a findFirst on these four fields
+  // and we want it index-only).
+  @@index([phone, amount, currency, createdAt])
+  // 2026-06-14: dashboard's status-grouped counts + recent-list
+  // combination — covers `where: { status }, orderBy: { createdAt }`.
+  @@index([status, createdAt(sort: Desc)])
 }

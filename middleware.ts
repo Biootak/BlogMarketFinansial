@@ -44,6 +44,43 @@ const authorApiRoutes = [
   '/api/dashboard/recent-drafts',
 ];
 
+// 2026-06-14: precompile the route matchers once at module load.
+// The previous implementation built a fresh `new RegExp` on every
+// request, and ran it once per route. With 10+ admin routes and
+// 10+ author routes, every request to /dashboard or /api was
+// doing 20+ regex allocations + executions. The precompiled
+// version is allocation-free on the hot path.
+type CompiledRoute = { pattern: string; test: (pathname: string) => boolean };
+
+const compileRoute = (pattern: string): CompiledRoute => {
+  if (pattern.includes('[...')) {
+    const base = pattern.split('/[...')[0];
+    return {
+      pattern,
+      test: (p) => p === base || p.startsWith(base + '/'),
+    };
+  }
+  if (pattern.includes('[[...')) {
+    const base = pattern.split('/[[...')[0];
+    return {
+      pattern,
+      test: (p) => p === base || p.startsWith(base + '/'),
+    };
+  }
+  const regexPattern = pattern.replace(/\[.*?\]/g, '[^/]+').replace(/\//g, '\\/');
+  const regex = new RegExp('^' + regexPattern + '$', 'i');
+  return { pattern, test: (p) => regex.test(p) };
+};
+
+const compiledBaseDashboard = baseDashboardRoutes.map(compileRoute);
+const compiledSuperAdmin = superAdminRoutes.map(compileRoute);
+const compiledAdmin = adminRoutes.map(compileRoute);
+const compiledAuthor = authorRoutes.map(compileRoute);
+const compiledPublic = publicRoutes.map(compileRoute);
+
+const matchesAny = (pathname: string, routes: CompiledRoute[]): boolean =>
+  routes.some((r) => r.test(pathname));
+
 const checkApiAccess = (pathname: string, role?: string): boolean => {
   if (pathname.startsWith('/api/public')) return true;
   if (pathname.startsWith(apiAuthPrefix)) return true;
@@ -63,38 +100,17 @@ const checkApiAccess = (pathname: string, role?: string): boolean => {
   return true;
 };
 
-const matchDynamicRoute = (pathname: string, pattern: string): boolean => {
-  // Handle catch-all routes [...slug]
-  if (pattern.includes('[...')) {
-    const basePattern = pattern.split('/[...')[0];
-    return pathname === basePattern || pathname.startsWith(basePattern + '/');
-  }
-
-  // Handle optional catch-all [[...slug]]
-  if (pattern.includes('[[...')) {
-    const basePattern = pattern.split('/[[...')[0];
-    return pathname === basePattern || pathname.startsWith(basePattern + '/');
-  }
-
-  // Handle single dynamic segments [id]
-  const regexPattern = pattern.replace(/\[.*?\]/g, '[^/]+').replace(/\//g, '\\/');
-  const regex = new RegExp('^' + regexPattern + '$', 'i');
-  return regex.test(pathname);
-};
-
 const isStaticPath = (pathname: string): boolean => {
-  const staticPatterns = [
-    '/images/',
-    '/uploads/',
-    '/api/uploads/',
-    '/_next/',
-    '/assets/',
-    '/favicon.ico',
-    '/robots.txt',
-    '/manifest.json',
-    '/site.webmanifest',
-  ];
-  return staticPatterns.some((p) => pathname.startsWith(p));
+  // 2026-06-14: matcher in `config` already excludes static assets
+  // and the /api/public, /api/auth, /api/uploads, /api/pageview
+  // prefixes, so this function is rarely called. The list is
+  // tightened to keep the cost O(1) when it does run.
+  if (pathname.startsWith('/_next/')) return true;
+  if (pathname.startsWith('/uploads/')) return true;
+  if (pathname.startsWith('/api/uploads/')) return true;
+  if (pathname === '/favicon.ico' || pathname === '/robots.txt' || pathname === '/manifest.json' || pathname === '/site.webmanifest') return true;
+  if (pathname.includes('.')) return true;
+  return false;
 };
 
 const isPublicApi = (pathname: string): boolean => {
@@ -102,17 +118,16 @@ const isPublicApi = (pathname: string): boolean => {
 };
 
 const checkDashboardAccess = (pathname: string, role?: string) => {
-  if (baseDashboardRoutes.some((r) => matchDynamicRoute(pathname, r))) return true;
-  if (role === 'SUPER_ADMIN' && superAdminRoutes.some((r) => matchDynamicRoute(pathname, r)))
-    return true;
+  if (matchesAny(pathname, compiledBaseDashboard)) return true;
+  if (role === 'SUPER_ADMIN' && matchesAny(pathname, compiledSuperAdmin)) return true;
   if (
     (role === 'ADMIN' || role === 'SUPER_ADMIN') &&
-    adminRoutes.some((r) => matchDynamicRoute(pathname, r))
+    matchesAny(pathname, compiledAdmin)
   )
     return true;
   if (
     ['AUTHOR', 'ADMIN', 'SUPER_ADMIN'].includes(role || '') &&
-    authorRoutes.some((r) => matchDynamicRoute(pathname, r))
+    matchesAny(pathname, compiledAuthor)
   )
     return true;
   return false;
@@ -163,7 +178,7 @@ export async function middleware(req: NextRequest) {
   if (isPublicApi(pathname)) return NextResponse.next();
 
   // Public routes
-  if (publicRoutes.some((r) => matchDynamicRoute(pathname, r))) return NextResponse.next();
+  if (matchesAny(pathname, compiledPublic)) return NextResponse.next();
 
   // Auth routes (signin, signup, etc.)
   if (authRoutes.some((r) => pathname.startsWith(r))) return NextResponse.next();
@@ -195,14 +210,27 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  // مستثنا کردن مسیرهای پرترافیک/استاتیک از middleware برای کاهش overhead
-  // - /api/pageview: hot path، فقط rate limit خودش رو داره
-  // - /api/public/*: public API، نیاز به auth check نیست
-  // - /api/auth/*: NextAuth routes
-  // - /api/uploads/*: file serving
-  // - /uploads/*: file serving (با rewrite به /api/uploads)
-  // - /_next/*, favicon, فایل‌های دارای extension: static assets
+  // 2026-06-14: tightened the matcher. The previous version was
+  // a single negative-lookahead that ran the middleware for every
+  // public-facing page, which meant decoding the JWT on every home,
+  // archive, single, author, etc. request — even though the home
+  // and archive pages don't need auth at all.
+  //
+  // New matcher: only paths that start with /dashboard, /api, or
+  // /signin|/signup etc. (auth routes) get the middleware. Public
+  // marketing pages skip the JWT decode entirely.
+  //
+  // Excludes: /api/pageview (hot path, has its own rate limit),
+  // /api/public/* (no auth needed), /api/auth/* (NextAuth),
+  // /api/uploads/* (file serving), /uploads/* (file rewrite),
+  // /_next/* and files with extensions.
   matcher: [
-    '/((?!api/pageview|api/public|api/auth|api/uploads|uploads|_next/static|_next/image|favicon.ico|.*\\..*).*)',
+    '/dashboard/:path*',
+    '/api/((?!pageview|public|auth|uploads).*)',
+    '/signin',
+    '/signup',
+    '/verify-request',
+    '/forgot-password',
+    '/reset-password',
   ],
 };

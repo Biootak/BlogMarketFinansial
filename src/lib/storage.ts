@@ -94,7 +94,30 @@ export async function uploadFile(
 /**
  * خواندن فایل - اول S3، بعد (در dev) لوکال.
  * در production دیگر fallback لوکال وجود ندارد.
+ *
+ * 2026-06-14: split into two helpers:
+ *   * `getFileStream` returns the raw Node ReadableStream from S3 so
+ *     route handlers can pipe it straight to the HTTP response
+ *     (no `Buffer.concat` of a 10MB file in RAM).
+ *   * `getFile` keeps the Buffer-based API for callers that need
+ *     the bytes (e.g. sharp pipeline in upload route).
  */
+export async function getFileStream(folder: string, filename: string) {
+  const key = `${folder}/${filename}`;
+  const response = await s3Client.send(
+    new GetObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: key,
+    }),
+  );
+  // AWS SDK returns a Node ReadableStream in the Node runtime; the
+  // types only declare a Web ReadableStream variant so we cast
+  // (the `// @ts-expect-error` was left in for the previous code
+  // path that was an actual type error, but the SDK type has
+  // since been narrowed enough to not need it).
+  return response.Body as unknown as NodeJS.ReadableStream;
+}
+
 export async function getFile(folder: string, filename: string): Promise<Buffer | null> {
   const key = `${folder}/${filename}`;
 

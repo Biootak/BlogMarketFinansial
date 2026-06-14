@@ -15,37 +15,61 @@ export const getPostBySlug = cache(
     }
 
     try {
+      // 2026-06-14: bound the comments fetch and drop the heavy
+      // `replies: true` + `likes: true` (full records) — replaced by
+      // _count + a small author projection. Saves an unbounded
+      // recursive walk and 2 N+1s per post load.
       const post = await prisma.post.findUnique({
         where: { slug },
-        include: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          content: true,
+          excerpt: true,
+          featuredImage: true,
+          galleryImages: true,
+          postType: true,
+          status: true,
+          videoUrl: true,
+          audioUrl: true,
+          isFeatured: true,
+          viewCount: true,
+          readingTime: true,
+          authorId: true,
+          createdAt: true,
+          updatedAt: true,
           author: {
-            include: {
-              profile: true,
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              role: true,
+              profile: { select: { avatar: true, jobName: true, bio: true } },
             },
           },
-          categories: true,
-          tags: true,
+          categories: { select: { id: true, name: true, slug: true, thumbnail: true } },
+          tags: { select: { id: true, name: true, slug: true } },
           comments: {
             where: { approved: true },
             orderBy: { createdAt: 'desc' },
-            include: {
+            take: 20,
+            select: {
+              id: true,
+              content: true,
+              approved: true,
+              parentId: true,
+              createdAt: true,
               author: {
                 select: {
                   id: true,
                   name: true,
-                  email: true,
-                  role: true,
                   image: true,
-                  profile: true,
-                  createdAt: true,
-                  updatedAt: true,
+                  role: true,
+                  profile: { select: { avatar: true, jobName: true } },
                 },
               },
-              replies: true,
-              likes: true,
-              _count: {
-                select: { likes: true },
-              },
+              _count: { select: { likes: true, replies: true } },
             },
           },
           _count: {
@@ -53,7 +77,6 @@ export const getPostBySlug = cache(
               comments: true,
               likes: true,
               savedBy: true,
-              tags: true,
             },
           },
         },
@@ -66,7 +89,7 @@ export const getPostBySlug = cache(
       return {
         success: true,
         message: 'پست با موفقیت بازیابی شد.',
-        data: post as PostWithRelations,
+        data: post as unknown as PostWithRelations,
       };
     } catch (error) {
       return {

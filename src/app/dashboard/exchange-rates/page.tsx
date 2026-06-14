@@ -2,6 +2,7 @@
 
 import type React from 'react';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { HiOutlinePencil, HiOutlineTrash, HiOutlinePlus, HiOutlineCurrencyDollar } from 'react-icons/hi2';
 import {
@@ -161,10 +162,18 @@ const ExchangeRatesPage: React.FC = () => {
                   <DashboardTableCell>
                     {exchangeRate.imageUrl ? (
                       <div className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-white shadow-md dark:ring-neutral-700">
-                        <img 
-                          src={exchangeRate.imageUrl} 
-                          alt={exchangeRate.currency} 
-                          className="h-full w-full object-cover"
+                        {/* 2026-06-14: raw <img> replaced by
+                            next/image — same resize/format benefits
+                            as the ads table. The onError handler
+                            hides the parent container now, since
+                            next/image's element is wrapped. */}
+                        <Image
+                          src={exchangeRate.imageUrl}
+                          alt={exchangeRate.currency}
+                          width={40}
+                          height={40}
+                          sizes="40px"
+                          className="h-full w-full rounded-full object-cover"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
                             target.style.display = 'none';

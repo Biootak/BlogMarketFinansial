@@ -1,5 +1,6 @@
 'use server';
 
+import { unstable_cache } from 'next/cache';
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
 
@@ -26,33 +27,38 @@ export async function getRecentDrafts(): Promise<
     };
   }
 
+  const where: Prisma.PostWhereInput = { status: 'DRAFT' };
+  if (user.role === 'AUTHOR') {
+    where.authorId = user.id;
+  }
+
   try {
-    const where: Prisma.PostWhereInput = {
-      status: 'DRAFT',
-    };
-
-    // اگر نویسنده است، فقط پست‌های خودش را ببیند
-    if (user.role === 'AUTHOR') {
-      where.authorId = user.id;
-    }
-
-    const recentDrafts = await prisma.post.findMany({
-      where,
-      orderBy: {
-        updatedAt: 'desc',
-      },
-      take: 5,
-      select: {
-        id: true,
-        title: true,
-        updatedAt: true,
-        author: {
+    // 2026-06-14: per-user cache key. `unstable_cache` keys on
+    // `[name, ...args]`, so passing the user id here scopes the
+    // cache correctly while still sharing the 30s TTL globally
+    // for the same user.
+    const fetcher = unstable_cache(
+      async (roleScope: { authorId?: string }) => {
+        return prisma.post.findMany({
+          where: { status: 'DRAFT', ...(roleScope.authorId ? { authorId: roleScope.authorId } : {}) },
+          orderBy: { updatedAt: 'desc' },
+          take: 5,
           select: {
-            name: true,
+            id: true,
+            title: true,
+            updatedAt: true,
+            author: { select: { name: true } },
           },
-        },
+        });
       },
-    });
+      ['recent-drafts', 'v1-2026-06-14'],
+      {
+        revalidate: 30,
+        tags: ['recent-drafts', 'posts'],
+      },
+    );
+
+    const recentDrafts = await fetcher({ authorId: user.role === 'AUTHOR' ? user.id : undefined });
 
     const formattedDrafts = recentDrafts.map((draft) => ({
       id: draft.id,

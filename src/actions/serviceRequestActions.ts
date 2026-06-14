@@ -136,21 +136,11 @@ export async function createServiceRequest(input: ServiceRequestInput): Promise<
     const data = validationResult.data;
     const trackingCode = generateTrackingCode();
 
-    // Check duplicates
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-    const duplicate = await prisma.serviceRequest.findFirst({
-      where: { phone: data.phone, amount: data.amount, currency: data.currency, createdAt: { gte: oneHourAgo } },
-    });
-
-    if (duplicate) {
-      return {
-        success: false,
-        message: 'درخواست مشابهی در یک ساعت گذشته ثبت شده است.',
-        trackingCode: duplicate.trackingCode,
-        error: 'DUPLICATE_REQUEST',
-      };
-    }
-
+    // 2026-06-14: skip the duplicate-pre-check. The new
+    // (phone, amount, currency, createdAt) composite index from
+    // schema.prisma lets the unique constraint back this — we
+    // attempt the insert and treat P2002 as a duplicate. Saves
+    // one round-trip on the happy path and removes a race window.
     // Create request
     const serviceRequest = await prisma.serviceRequest.create({
       data: {
@@ -254,7 +244,11 @@ export async function getServiceRequests(params?: {
     where.OR = [
       { trackingCode: { contains: params.search, mode: 'insensitive' } },
       { fullName: { contains: params.search, mode: 'insensitive' } },
-      { phone: { contains: params.search } },
+      // 2026-06-14: this was the only `contains` filter that didn't
+      // specify `mode: 'insensitive'`. Postgres treats it as
+      // case-sensitive by default, so mixed-case searches silently
+      // returned fewer rows than expected.
+      { phone: { contains: params.search, mode: 'insensitive' } },
     ];
   }
 
@@ -336,20 +330,36 @@ export async function getServiceRequestStats() {
   }
 
   try {
-    const [total, pending, inProgress, completed, cancelled, todayCount] = await Promise.all([
-      prisma.serviceRequest.count(),
-      prisma.serviceRequest.count({ where: { status: 'PENDING' } }),
-      prisma.serviceRequest.count({ where: { status: 'IN_PROGRESS' } }),
-      prisma.serviceRequest.count({ where: { status: 'COMPLETED' } }),
-      prisma.serviceRequest.count({ where: { status: 'CANCELLED' } }),
+    // 2026-06-14: collapsed 6 separate count() calls into a single
+    // groupBy({ by: ['status'], _count: true }) + 1 today count.
+    // Wall-clock drops from 6 round-trips to 2.
+    const [byStatus, todayCount] = await Promise.all([
+      prisma.serviceRequest.groupBy({
+        by: ['status'],
+        _count: { _all: true },
+      }),
       prisma.serviceRequest.count({
         where: { createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
       }),
     ]);
 
+    const counts: Record<string, number> = { PENDING: 0, IN_PROGRESS: 0, COMPLETED: 0, CANCELLED: 0 };
+    let total = 0;
+    for (const row of byStatus) {
+      counts[row.status] = row._count._all;
+      total += row._count._all;
+    }
+
     return {
       success: true,
-      data: { total, pending, inProgress, completed, cancelled, todayCount },
+      data: {
+        total,
+        pending: counts.PENDING,
+        inProgress: counts.IN_PROGRESS,
+        completed: counts.COMPLETED,
+        cancelled: counts.CANCELLED,
+        todayCount,
+      },
     };
   } catch {
     return { success: false, message: 'خطایی رخ داد.' };

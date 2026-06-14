@@ -1,74 +1,76 @@
 'use server';
 
+import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/db';
 import { revalidatePath } from 'next/cache';
+import { revalidateTag } from '@/lib/revalidate';
 import type { ActionResult, RateListData, RateItem } from '@/types/types';
 
-export async function getRateLists(): Promise<RateListData[]> {
-  try {
-    const rateLists = await prisma.rateList.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
-    
-    // Parse and convert the JSON rates to RateItem[]
-    return rateLists.map(list => {
-      try {
-     
-        
-        // Handle cases where rates is already an object
-        let parsedRates;
-        if (typeof list.rates === 'string') {
-          parsedRates = JSON.parse(list.rates);
-        } else if (Array.isArray(list.rates)) {
-          parsedRates = list.rates;
-        } else if (typeof list.rates === 'object' && list.rates !== null) {
-          parsedRates = list.rates;
-        } else {
-          parsedRates = [];
-        }
-
-        const typedRates = Array.isArray(parsedRates)
-          ? parsedRates.map((rate: any) => ({
-              title: String(rate.title || ''),
-              value: String(rate.value || '')
-            }))
-          : [];
-
-        return {
-          ...list,
-          rates: typedRates,
-        };
-      } catch (parseError) {
-        console.error(`Error parsing rates for list ${list.id}:`, parseError);
-        console.error('Problematic rates value:', list.rates);
-        return {
-          ...list,
-          rates: [],
-        };
-      }
-    });
-  } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error fetching rate lists:', error);
-    }
-    // برگرداندن آرایه خالی به جای throw
-    return [];
+// 2026-06-14: shared helper to normalize the Json column into a
+// typed array. Prisma 6 returns the Json value already parsed, so
+// we only do the typeof / array guards — no JSON.parse on the hot
+// path.
+const normalizeRates = (raw: unknown): RateItem[] => {
+  if (Array.isArray(raw)) {
+    return raw.map((rate: any) => ({
+      title: String(rate?.title ?? ''),
+      value: String(rate?.value ?? ''),
+    }));
   }
-}
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? normalizeRates(parsed) : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+};
+
+export const getRateLists = unstable_cache(
+  async (): Promise<RateListData[]> => {
+    try {
+      const rateLists = await prisma.rateList.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+      });
+
+      return rateLists.map((list) => ({
+        ...list,
+        rates: normalizeRates(list.rates),
+      }));
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching rate lists:', error);
+      }
+      return [];
+    }
+  },
+  ['rate-lists', 'v1-2026-06-14'],
+  {
+    revalidate: 300,
+    tags: ['rate-lists'],
+  },
+);
 
 export async function createRateList(
   data: Omit<RateListData, 'id' | 'createdAt' | 'updatedAt'>,
 ): Promise<ActionResult<RateListData>> {
   try {
+    // 2026-06-14: Prisma's Json column type serializes for us. The
+    // previous `JSON.stringify` was redundant and meant the column
+    // stored a string-in-string which broke read paths.
     const rateList = await prisma.rateList.create({
       data: {
         title: data.title,
-        rates: JSON.stringify(data.rates),
+        rates: data.rates as never,
         isActive: data.isActive,
       },
     });
 
     revalidatePath('/dashboard/rate-lists');
+    revalidateTag('rate-lists');
 
     return {
       success: true,
@@ -94,32 +96,26 @@ export async function updateRateList(
   data: Partial<Omit<RateListData, 'id' | 'createdAt' | 'updatedAt'>>,
 ): Promise<ActionResult<RateListData>> {
   try {
+    // Same fix as createRateList: don't JSON.stringify the Json
+    // column. Let Prisma handle serialization.
     const rateList = await prisma.rateList.update({
       where: { id },
       data: {
         title: data.title,
-        rates: data.rates ? JSON.stringify(data.rates) : undefined,
+        rates: (data.rates ?? undefined) as never,
         isActive: data.isActive,
       },
     });
 
     revalidatePath('/dashboard/rate-lists');
-
-    // Parse the JSON rates back to RateItem[]
-    const parsedRates = rateList.rates ? JSON.parse(String(rateList.rates)) : [];
-    const typedRates = Array.isArray(parsedRates)
-      ? parsedRates.map((rate: any) => ({
-          title: String(rate.title || ''),
-          value: String(rate.value || '')
-        }))
-      : [];
+    revalidateTag('rate-lists');
 
     return {
       success: true,
       message: 'Rate list updated successfully',
       data: {
         ...rateList,
-        rates: typedRates,
+        rates: normalizeRates(rateList.rates),
       },
     };
   } catch (error) {
@@ -137,6 +133,7 @@ export async function deleteRateList(id: string): Promise<ActionResult> {
   try {
     await prisma.rateList.delete({ where: { id } });
     revalidatePath('/dashboard/rate-lists');
+    revalidateTag('rate-lists');
     return {
       success: true,
       variant: 'success',

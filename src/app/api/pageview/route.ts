@@ -67,21 +67,19 @@ export async function POST(req: NextRequest) {
     // Sanitize page URL
     const sanitizedPage = page.replace(/[<>'"]/g, '');
 
-    // page فیلد در schema unique نیست، پس باید findFirst + update/insert
-    // (در آینده می‌توان با اضافه کردن @unique به schema و migration، این را بهینه‌تر کرد)
-    const existingPageView = await prisma.pageView.findFirst({
-      where: { page: sanitizedPage },
-      select: { id: true },
+    // 2026-06-14: with the @@unique([page]) on PageView (added in
+    // schema.prisma) this collapses into a single upsert. Same 1
+    // trip to the DB on the happy path, but the row lookup is now
+    // an index scan instead of a full table scan, and we drop a
+    // query on the cold path. The `as any` cast covers the
+    // in-between window before `npx prisma generate` refreshes
+    // the client (the schema migration is what makes
+    // `where: { page }` accepted by the generated types).
+    const pageView = await prisma.pageView.upsert({
+      where: { page: sanitizedPage } as any,
+      create: { page: sanitizedPage, views: 1 },
+      update: { views: { increment: 1 } },
     });
-
-    const pageView = existingPageView
-      ? await prisma.pageView.update({
-          where: { id: existingPageView.id },
-          data: { views: { increment: 1 } },
-        })
-      : await prisma.pageView.create({
-          data: { page: sanitizedPage, views: 1 },
-        });
 
     return NextResponse.json({ success: true, views: pageView.views });
   } catch (error) {

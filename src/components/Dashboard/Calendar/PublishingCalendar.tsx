@@ -2,10 +2,15 @@
 
 import type React from 'react';
 import { useState, useCallback } from 'react';
+import Image from 'next/image';
 import { parseISO } from 'date-fns-jalali';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import type { PostWithRelations } from '@/types/types';
+// 2026-06-14: type-only import. The actual component is loaded
+// lazily inside the Modal below so it doesn't bloat the page
+// bundle. Users who never open the modal never download the
+// datepicker code.
 import type { Day } from '@hassanmojab/react-modern-calendar-datepicker';
 
 type ScheduledPostForCalendar = Pick<
@@ -84,9 +89,15 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, selectedDate, posts }) =
                   نویسنده: {post.author.name}
                 </p>
                 {post.featuredImage && (
-                  <img
+                  // 2026-06-14: raw <img> swapped for next/image so
+                  // the modal previews the resized/optimized
+                  // variant instead of the original asset.
+                  <Image
                     src={post.featuredImage}
                     alt={post.title}
+                    width={400}
+                    height={160}
+                    sizes="(max-width: 768px) 100vw, 400px"
                     className="w-full h-32 sm:h-40 object-cover rounded-md"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;

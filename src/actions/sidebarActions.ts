@@ -13,47 +13,55 @@ export const getRecentPosts = unstable_cache(
         where: { status: 'PUBLISHED' },
         orderBy: { createdAt: 'desc' },
         take: limit,
-        include: {
+        // 2026-06-14: trim the include — author.password was being
+        // selected and shipped through the unstable_cache JSON, which
+        // is a security risk (cache entries can be inspected by anyone
+        // with read access to the data store). Same fix applied to
+        // getSidebarData below.
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          featuredImage: true,
+          postType: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+          viewCount: true,
+          readingTime: true,
+          authorId: true,
           author: {
             select: {
               id: true,
               name: true,
-              email: true,
               image: true,
-              status: true,
-              createdAt: true,
-              updatedAt: true,
               role: true,
-              password: true,
-              emailVerified: true,
-              phoneNumber: true,
               profile: {
                 select: {
-                  bio: true,
                   avatar: true,
-                  bgImage: true,
                   jobName: true,
-                  company: true,
-                  userId: true,
-                  id: true,
                 },
               },
             },
           },
-          categories: true,
-          tags: true,
+          categories: {
+            select: { id: true, name: true, slug: true, thumbnail: true },
+          },
+          tags: {
+            select: { id: true, name: true, slug: true },
+          },
           _count: {
             select: {
               comments: true,
               likes: true,
               savedBy: true,
-              tags: true,
             },
           },
         },
       });
 
-      return recentPosts;
+      return recentPosts as unknown as PostWithRelations[];
     } catch (error) {
       console.error('خطا در بازیابی پست‌های اخیر:', error);
       return [];
@@ -171,42 +179,37 @@ export async function getSidebarData(): Promise<SidebarData> {
           where: { status: 'PUBLISHED' },
           orderBy: { createdAt: 'desc' },
           take: 5,
-          include: {
+          // 2026-06-14: same security/perf fix as getRecentPosts —
+          // author.password was leaked through the cache. author is
+          // now name/image/profile.avatar only.
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            excerpt: true,
+            featuredImage: true,
+            postType: true,
+            status: true,
+            createdAt: true,
+            updatedAt: true,
+            viewCount: true,
+            readingTime: true,
+            authorId: true,
             author: {
               select: {
                 id: true,
                 name: true,
-                email: true,
                 image: true,
-                status: true,
-                createdAt: true,
-                updatedAt: true,
                 role: true,
-                password: true,
-                emailVerified: true,
-                phoneNumber: true,
                 profile: {
-                  select: {
-                    bio: true,
-                    avatar: true,
-                    bgImage: true,
-                    jobName: true,
-                    company: true,
-                    userId: true,
-                    id: true,
-                  },
+                  select: { avatar: true, jobName: true },
                 },
               },
             },
-            categories: true,
-            tags: true,
+            categories: { select: { id: true, name: true, slug: true, thumbnail: true } },
+            tags: { select: { id: true, name: true, slug: true } },
             _count: {
-              select: {
-                comments: true,
-                likes: true,
-                savedBy: true,
-                tags: true,
-              },
+              select: { comments: true, likes: true, savedBy: true },
             },
           },
         }),
@@ -243,20 +246,19 @@ export async function getSidebarData(): Promise<SidebarData> {
         prisma.user.findMany({
           where: { role: 'AUTHOR' },
           take: 5,
+          // 2026-06-14: trim — no more emailVerified/phoneNumber/bio/
+          // bgImage/company in the sidebar payload. Cache writes are
+          // much smaller and we never expose sensitive fields to the
+          // client.
           select: {
             id: true,
             name: true,
-            email: true,
-            emailVerified: true,
-            phoneNumber: true,
             image: true,
+            role: true,
             profile: {
               select: {
-                bio: true,
                 avatar: true,
-                bgImage: true,
                 jobName: true,
-                company: true,
               },
             },
             _count: {
@@ -288,7 +290,7 @@ export async function getSidebarData(): Promise<SidebarData> {
       ]);
 
       return {
-        recentPosts: posts,
+        recentPosts: posts as unknown as PostWithRelations[],
         popularTags: tags.map((tag) => ({
           ...tag,
           taxonomy: 'tag' as const,
@@ -299,7 +301,7 @@ export async function getSidebarData(): Promise<SidebarData> {
           taxonomy: 'category' as const,
           count: category._count.posts,
         })),
-        popularAuthors: authors,
+        popularAuthors: authors as unknown as SidebarData['popularAuthors'],
         ads: ads,
       };
     },
