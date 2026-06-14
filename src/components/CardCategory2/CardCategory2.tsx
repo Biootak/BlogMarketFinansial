@@ -6,6 +6,7 @@ import type { TaxonomyType, TwMainColor } from '@/types/types';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { FileText } from 'lucide-react';
+import { heading, text, radius } from '@/lib/design-tokens';
 
 export interface CardCategory2Props {
   className?: string;
@@ -33,22 +34,26 @@ const CardCategory2: FC<CardCategory2Props> = ({ className = '', taxonomy, index
       href={`/archive/category/${slug}`}
       className={`nc-CardCategory2 block h-full ${className}`}
     >
-      <motion.div 
-        className="relative flex flex-col items-center justify-between text-center p-5 sm:p-6 bg-white dark:bg-neutral-800/80 rounded-2xl border border-neutral-100 dark:border-neutral-700/50 h-full group overflow-hidden"
+      <motion.div
+        className={[
+          'relative flex flex-col items-center justify-between text-center',
+          'p-4 sm:p-5',
+          'bg-white dark:bg-neutral-800/80',
+          'border border-neutral-100 dark:border-neutral-700/50',
+          'h-full group overflow-hidden',
+          radius.md,
+        ].join(' ')}
         whileHover={{ y: -4 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
       >
-        {/* Background Glow */}
         <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${colorStyle.bg}`} />
-        
-        {/* Rank Badge */}
+
         {index && (
-          <div className={`absolute top-3 end-3 z-10 w-8 h-8 rounded-full ${colorStyle.bg} ${colorStyle.text} flex items-center justify-center text-sm font-bold shadow-sm ring-2 ${colorStyle.ring}`}>
+          <div className={`absolute top-3 end-3 z-10 w-7 h-7 rounded-full ${colorStyle.bg} ${colorStyle.text} flex items-center justify-center text-xs font-bold shadow-sm ring-2 ${colorStyle.ring}`}>
             {index}
           </div>
         )}
 
-        {/* Image Container */}
         <div className="relative z-10">
           <div className={`absolute -inset-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500 blur-xl ${colorStyle.bg}`} />
           <motion.div
@@ -58,27 +63,25 @@ const CardCategory2: FC<CardCategory2Props> = ({ className = '', taxonomy, index
           >
             <div className={`absolute -inset-1 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
             <NcImage
-              containerClassName="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden ring-4 ring-white dark:ring-neutral-700 shadow-lg"
+              containerClassName="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden ring-4 ring-white dark:ring-neutral-700 shadow-lg"
               src={thumbnail || '/images/placeholder-small.png'}
-              sizes="96px"
+              sizes="80px"
               alt={`دسته‌بندی ${name}`}
               className="object-cover"
             />
           </motion.div>
         </div>
 
-        {/* Content */}
-        <div className="relative z-10 mt-4 w-full">
-          <h2 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+        <div className="relative z-10 mt-3 w-full">
+          <h2 className={[heading.h4, 'truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors'].join(' ')}>
             {name}
           </h2>
-          <div className="flex items-center justify-center gap-1.5 mt-2 text-neutral-500 dark:text-neutral-400">
+          <div className="flex items-center justify-center gap-1.5 mt-1.5 text-neutral-500 dark:text-neutral-400">
             <FileText className="w-3.5 h-3.5" />
-            <span className="text-sm">{count} مقاله</span>
+            <span className="text-xs">{count} مقاله</span>
           </div>
         </div>
 
-        {/* Bottom Decoration */}
         <div className={`absolute bottom-0 start-0 end-0 h-1 bg-gradient-to-r from-transparent via-primary-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
       </motion.div>
     </Link>

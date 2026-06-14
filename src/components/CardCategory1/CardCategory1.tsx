@@ -1,8 +1,8 @@
 import React, { type FC } from 'react';
 import NcImage from '@/components/NcImage/NcImage';
-
 import Link from 'next/link';
 import type { TaxonomyType } from '@/types/types';
+import { heading, text, radius } from '@/lib/design-tokens';
 
 export interface CardCategory1Props {
   className?: string;
@@ -20,26 +20,18 @@ const CardCategory1: FC<CardCategory1Props> = ({ className = '', size = 'normal'
       <NcImage
         alt=""
         containerClassName={`relative flex-shrink-0 ${
-          size === 'large' ? 'w-20 h-20' : 'w-12 h-12'
-        } rounded-lg me-4 overflow-hidden`}
+          size === 'large' ? 'w-16 h-16' : 'w-10 h-10'
+        } ${radius.md} me-3 overflow-hidden`}
         src={thumbnail || '/images/placeholder-small.png'}
         fill
         className="object-cover"
         sizes="80px"
       />
       <div>
-        <h2
-          className={`${
-            size === 'large' ? 'text-lg' : 'text-base'
-          } nc-card-title text-neutral-900 dark:text-neutral-100 text-sm sm:text-base font-medium sm:font-semibold`}
-        >
+        <h2 className={[heading.h4, 'text-neutral-900 dark:text-neutral-100'].join(' ')}>
           {name}
         </h2>
-        <span
-          className={`${
-            size === 'large' ? 'text-sm' : 'text-xs'
-          } block mt-[2px] text-neutral-500 dark:text-neutral-400`}
-        >
+        <span className={['block mt-0.5', text.meta].join(' ')}>
           {count} مقاله ها
         </span>
       </div>

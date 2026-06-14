@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { HiArrowRight } from 'react-icons/hi2';
 import type { TaxonomyType, TwMainColor } from '@/types/types';
+import { heading, radius } from '@/lib/design-tokens';
 
 export interface CardCategory5Props {
   className?: string;
@@ -16,9 +17,10 @@ const CardCategory5: FC<CardCategory5Props> = ({ className = '', taxonomy }) => 
   return (
     <Link href={`/archive/category/${name}`} className={`nc-CardCategory5 relative block group ${className}`}>
       <div
-        className={
-          'flex-shrink-0 relative w-full aspect-[8/5] rounded-3xl overflow-hidden z-0 group'
-        }
+        className={[
+          'flex-shrink-0 relative w-full aspect-[8/5] overflow-hidden z-0 group',
+          radius.lg,
+        ].join(' ')}
       >
         <Image
           fill
@@ -41,9 +43,12 @@ const CardCategory5: FC<CardCategory5Props> = ({ className = '', taxonomy }) => 
       />
       <div className="absolute inset-0 flex items-center justify-center">
         <h2
-          className={
-            'text-base font-medium px-4 py-2 sm:px-6 sm:py-3 bg-white text-neutral-900 bg-opacity-50 backdrop-filter backdrop-blur-lg rounded-full border-2 border-white border-opacity-60'
-          }
+          className={[
+            'px-3 py-1.5 sm:px-5 sm:py-2',
+            'bg-white text-neutral-900 bg-opacity-50 backdrop-blur-lg',
+            'rounded-full border-2 border-white border-opacity-60',
+            'text-sm sm:text-base font-semibold',
+          ].join(' ')}
         >
           {name}
         </h2>

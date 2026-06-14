@@ -1,9 +1,9 @@
 import React, { type FC } from "react";
-
 import Badge from "@/components/Badge/Badge";
 import Link from "next/link";
 import Image from "next/image";
 import type { TaxonomyType, TwMainColor } from "@/types/types";
+import { heading, text, radius } from "@/lib/design-tokens";
 
 export interface CardCategory4Props {
   className?: string;
@@ -19,30 +19,21 @@ const CardCategory4: FC<CardCategory4Props> = ({
   const { count, name, thumbnail, color } = taxonomy;
   const getColorClass = () => {
     switch (color) {
-      case "pink":
-        return "bg-pink-500";
-      case "red":
-        return "bg-red-500";
-      case "gray":
-        return "bg-gray-500";
-      case "green":
-        return "bg-green-500";
-      case "purple":
-        return "bg-purple-500";
-      case "indigo":
-        return "bg-indigo-500";
-      case "yellow":
-        return "bg-yellow-500";
-      case "blue":
-        return "bg-blue-500";
-      default:
-        return "bg-pink-500";
+      case "pink": return "bg-pink-500";
+      case "red": return "bg-red-500";
+      case "gray": return "bg-gray-500";
+      case "green": return "bg-green-500";
+      case "purple": return "bg-purple-500";
+      case "indigo": return "bg-indigo-500";
+      case "yellow": return "bg-yellow-500";
+      case "blue": return "bg-blue-500";
+      default: return "bg-pink-500";
     }
   };
 
   return (
     <Link href={`/archive/category/${name}`} className={`nc-CardCategory4 flex flex-col ${className}`}>
-      <div className="flex-shrink-0 relative w-full aspect-[7/5] rounded-3xl overflow-hidden group">
+      <div className={`flex-shrink-0 relative w-full aspect-[7/5] ${radius.lg} overflow-hidden group`}>
         <Image
           alt={name}
           fill
@@ -62,13 +53,11 @@ const CardCategory4: FC<CardCategory4Props> = ({
         <span className="opacity-0 group-hover:opacity-100 absolute inset-0 bg-black bg-opacity-10 transition-opacity" />
       </div>
 
-      <div className="flex items-center mt-5">
-        <div className={`w-9 h-9 ${getColorClass()} rounded-full`} />
-        <div className="ms-4">
-          <h2 className="text-base text-neutral-900 dark:text-neutral-100 font-medium">
-            {name}
-          </h2>
-          <span className="block text-sm text-neutral-500 dark:text-neutral-400">
+      <div className="flex items-center mt-3">
+        <div className={`w-8 h-8 ${getColorClass()} rounded-full`} />
+        <div className="ms-3">
+          <h2 className={heading.h4}>{name}</h2>
+          <span className={['block', text.bodySm].join(' ')}>
             {count} Articles
           </span>
         </div>
