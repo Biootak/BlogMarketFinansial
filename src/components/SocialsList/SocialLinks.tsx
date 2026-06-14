@@ -8,6 +8,21 @@ interface SocialLinksProps {
   iconSize?: number;
 }
 
+/**
+ * 2026-06-14: detect whether `link.icon` is a real URL/path or a leftover
+ * non-URL string (e.g. "FaTelegram" from a previous icon-as-string convention).
+ * next/image rejects non-URL values, so we fall back to the letter avatar.
+ */
+const isValidIconSrc = (value: string | null | undefined): value is string => {
+  if (!value) return false;
+  return (
+    value.startsWith('/') ||
+    value.startsWith('http://') ||
+    value.startsWith('https://') ||
+    value.startsWith('data:')
+  );
+};
+
 const SocialLinks = async ({ className = '', itemClass = '', iconSize = 22 }: SocialLinksProps) => {
   const result = await getSocialLinks();
   const links = result.success ? result.data : [];
@@ -42,7 +57,6 @@ const SocialLinks = async ({ className = '', itemClass = '', iconSize = 22 }: So
             overflow-hidden
           `}
         >
-          {/* Gradient overlay on hover */}
           <span
             className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
             style={{
@@ -51,7 +65,6 @@ const SocialLinks = async ({ className = '', itemClass = '', iconSize = 22 }: So
                 : 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(99,102,241,0.02))',
             }}
           />
-          {/* Border glow on hover */}
           <span
             className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
             style={{
@@ -60,7 +73,7 @@ const SocialLinks = async ({ className = '', itemClass = '', iconSize = 22 }: So
                 : 'inset 0 0 0 1.5px rgba(99,102,241,0.3)',
             }}
           />
-          {link.icon ? (
+          {isValidIconSrc(link.icon) ? (
             <Image
               src={link.icon}
               alt={link.name}

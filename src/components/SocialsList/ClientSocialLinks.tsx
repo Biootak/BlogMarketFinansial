@@ -21,6 +21,17 @@ interface ClientSocialLinksProps {
   iconSize?: number;
 }
 
+// 2026-06-14: see SocialLinks.tsx — guard against non-URL icon strings
+const isValidIconSrc = (value: string | null | undefined): value is string => {
+  if (!value) return false;
+  return (
+    value.startsWith('/') ||
+    value.startsWith('http://') ||
+    value.startsWith('https://') ||
+    value.startsWith('data:')
+  );
+};
+
 const ClientSocialLinks = ({
   className = '',
   itemClass = '',
@@ -86,7 +97,7 @@ const ClientSocialLinks = ({
                 : 'inset 0 0 0 1.5px rgba(99,102,241,0.3)',
             }}
           />
-          {link.icon ? (
+          {isValidIconSrc(link.icon) ? (
             <Image
               src={link.icon}
               alt={link.name}

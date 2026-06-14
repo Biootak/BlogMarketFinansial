@@ -41,6 +41,18 @@ interface SocialLink {
   type: SocialLinkType;
 }
 
+// 2026-06-14: guard against non-URL icon strings. Some legacy rows store
+// "FaTelegram" etc. — passed directly to next/image, those break the page.
+const isValidIconSrc = (value: string | null | undefined): value is string => {
+  if (!value) return false;
+  return (
+    value.startsWith('/') ||
+    value.startsWith('http://') ||
+    value.startsWith('https://') ||
+    value.startsWith('data:')
+  );
+};
+
 const defaultColors: Record<string, string> = {
   telegram: '#0088cc',
   instagram: '#E4405F',
@@ -195,7 +207,7 @@ export default function SocialLinksManager() {
             آیکون/لوگو
           </Label>
           <div className="flex gap-2 mt-1">
-            {newLink.icon && (
+            {newLink.icon && isValidIconSrc(newLink.icon) && (
               <div className="relative w-12 h-12 rounded-xl border overflow-hidden bg-gray-50 dark:bg-neutral-800">
                 <Image src={newLink.icon} alt="icon" fill className="object-contain p-1" />
                 <button
@@ -286,7 +298,7 @@ export default function SocialLinksManager() {
             <div>
               <Label>آیکون</Label>
               <div className="flex gap-2 mt-1">
-                {editingData.icon && (
+                {editingData.icon && isValidIconSrc(editingData.icon) && (
                   <div className="relative w-12 h-12 rounded-xl border overflow-hidden bg-gray-50 dark:bg-neutral-800">
                     <Image src={editingData.icon} alt="icon" fill className="object-contain p-1" />
                     <button
@@ -339,7 +351,7 @@ export default function SocialLinksManager() {
             className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden"
             style={{ backgroundColor: `${link.color}20` || '#f3f4f6' }}
           >
-            {link.icon ? (
+            {isValidIconSrc(link.icon) ? (
               <Image src={link.icon} alt={link.name} width={28} height={28} className="object-contain" />
             ) : (
               <span className="font-bold text-lg" style={{ color: link.color || '#666' }}>

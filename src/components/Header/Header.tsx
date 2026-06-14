@@ -1,39 +1,18 @@
 /**
  * Header — Premium dark glassmorphism × Linear × Vercel × Stripe
  *
- * ساختار نهایی:
- *  - HeaderAdBar (باریک، اختیاری) — تبلیغ بالای هدر با دکمه بستن
- *  - TickerBar (h-8) با نرخ‌های لحظه‌ای
- *  - MainNav اصلی (h-12 mobile / h-14 desktop)
+ * Structure:
+ *  - HeaderAdBar (h-8/9, optional) — admin-controlled narrow ad at the very top
+ *  - MainNav (h-12 mobile / h-14 desktop) — logo, navigation, actions
  *  - sticky + backdrop-blur
- *  - layout سه‌ستونه متقارن: Logo | Navigation (وسط) | Actions
- *  - سرور کامپوننت بدون framer-motion
+ *  - three-column symmetric layout: Logo | Navigation (center) | Actions
+ *  - server component, no framer-motion
  *
- * 2026-06-14: بازطراحی کامل برای تقارن کامل در همه سایزها
- *  - افزودن HeaderAdBar (تبلیغ بالای هدر) — singleton با قابلیت بستن
+ * 2026-06-14: ticker bar removed — live rates are no longer rendered here.
+ *  The ad bar remains as the topmost element when active.
  */
-import { Suspense } from 'react';
-import MainNav from './MainNav';
 import HeaderAdBar from './HeaderAdBar';
-import { TickerBar } from './TickerBar';
-import { getTickerData } from '@/actions/tickerActions';
-
-// Skeleton ticker برای زمان load
-function TickerBarSkeleton() {
-  return (
-    <div
-      aria-hidden
-      className="h-8 w-full bg-[rgb(var(--c-surface-elevated))]/40 animate-pulse"
-    />
-  );
-}
-
-// Async ticker loader در Suspense
-async function HeaderTicker() {
-  const tickerItems = await getTickerData();
-  if (tickerItems.length === 0) return null;
-  return <TickerBar items={tickerItems} />;
-}
+import MainNav from './MainNav';
 
 const Header = () => {
   return (
@@ -41,15 +20,10 @@ const Header = () => {
       className="sticky top-0 w-full z-40 isolate"
       role="banner"
     >
-      {/* تبلیغ باریک بالای هدر — اختیاری و قابل بستن توسط کاربر */}
+      {/* Narrow ad at the very top — admin-controlled, dismissible by user */}
       <HeaderAdBar />
 
-      {/* Ticker bar — نرخ‌های لحظه‌ای */}
-      <Suspense fallback={<TickerBarSkeleton />}>
-        <HeaderTicker />
-      </Suspense>
-
-      {/* Translucent surface با glassmorphism ملایم */}
+      {/* Translucent surface with subtle glassmorphism */}
       <div
         aria-hidden
         className="

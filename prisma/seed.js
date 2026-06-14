@@ -51,10 +51,10 @@ function hoursAgo(n) { return new Date(Date.now() - n * 60 * 60 * 1000); }
 
 /* ─── 1) SystemSettings (singleton) ──────────────────────────── */
 async function seedSystemSettings() {
-  const existing = await p.systemSettings.findFirst();
-  if (existing) {
+  const existingCount = await p.systemSettings.findFirst();
+  if (existingCount) {
     console.log('   ⏭️  SystemSettings قبلاً وجود دارد');
-    return existing;
+    return existingCount;
   }
   const created = await p.systemSettings.create({
     data: {
@@ -246,6 +246,8 @@ async function seedPosts() {
 
 /* ─── 7) Comments (با reply تو در تو) ────────────────────────── */
 async function seedComments(users, posts) {
+  const existingCount = await p.comment.count();
+  if (existingCount >= 200) { console.log('   ⏭️  Comments قبلاً ایجاد شده (' + existingCount + ' عدد)'); return; }
   const normalUsers = users.filter((u) => u.role === 'USER');
   if (normalUsers.length === 0) { console.log('   ⚠️  کاربر عادی برای دیدگاه یافت نشد'); return; }
   const sampleComments = [
@@ -308,6 +310,8 @@ async function seedComments(users, posts) {
 
 /* ─── 8) Likes (پست و دیدگاه) ───────────────────────────────── */
 async function seedLikes(users, posts) {
+  const existingCount = await p.like.count();
+  if (existingCount >= 100) { console.log('   ⏭️  Likes قبلاً ایجاد شده (' + existingCount + ' عدد)'); return; }
   const normalUsers = users.filter((u) => u.role === 'USER');
   let added = 0;
   // Like روی پست‌ها
@@ -335,6 +339,8 @@ async function seedLikes(users, posts) {
 
 /* ─── 9) Views (بازدید از پست‌ها) ───────────────────────────── */
 async function seedViews(posts) {
+  const existingCount = await p.view.count();
+  if (existingCount >= 500) { console.log('   ⏭️  Views قبلاً ایجاد شده (' + existingCount + ' عدد)'); return; }
   const userAgents = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
     'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15',
@@ -362,6 +368,8 @@ async function seedViews(posts) {
 
 /* ─── 10) SavedPosts (نشان‌شده‌ها) ──────────────────────────── */
 async function seedSavedPosts(users, posts) {
+  const existingCount = await p.savedPost.count();
+  if (existingCount >= 30) { console.log('   ⏭️  SavedPosts قبلاً ایجاد شده (' + existingCount + ' عدد)'); return; }
   const normalUsers = users.filter((u) => u.role === 'USER');
   let added = 0;
   for (const user of normalUsers) {
@@ -381,6 +389,8 @@ async function seedSavedPosts(users, posts) {
 
 /* ─── 11) Notifications ─────────────────────────────────────── */
 async function seedNotifications(users) {
+  const existingCount = await p.notification.count();
+  if (existingCount >= 30) { console.log('   ⏭️  Notifications قبلاً ایجاد شده (' + existingCount + ' عدد)'); return; }
   const normalUsers = users.filter((u) => u.role === 'USER');
   const samples = [
     'پاسخ به دیدگاه شما توسط {user} ارسال شد.',
@@ -411,6 +421,8 @@ async function seedNotifications(users) {
 
 /* ─── 12) ActivityLog + Activity ───────────────────────────── */
 async function seedActivityLogs(users) {
+  const existingCount = await p.activityLog.count();
+  if (existingCount >= 100) { console.log('   ⏭️  ActivityLogs قبلاً ایجاد شده (' + existingCount + ' عدد)'); return; }
   const actions = ['LOGIN', 'POST_VIEW', 'POST_LIKE', 'COMMENT_ADD', 'PROFILE_UPDATE', 'POST_CREATE', 'PASSWORD_CHANGE'];
   let added = 0;
   for (const user of users) {
@@ -442,6 +454,8 @@ async function seedActivityLogs(users) {
 
 /* ─── 13) Newsletters ──────────────────────────────────────── */
 async function seedNewsletters() {
+  const existingCount = await p.newsletter.count();
+  if (existingCount >= 5) { console.log('   ⏭️  Newsletters قبلاً ایجاد شده (' + existingCount + ' عدد)'); return; }
   const emails = ['investor1@gmail.com', 'trader2@yahoo.com', 'crypto.fan@outlook.com', 'gold.lover@gmail.com', 'stock.pro@protonmail.com'];
   let added = 0;
   for (const email of emails) {
@@ -553,6 +567,8 @@ async function seedServiceRequests() {
 
 /* ─── 17) SystemLogs ────────────────────────────────────────── */
 async function seedSystemLogs() {
+  const existingCount = await p.systemLog.count();
+  if (existingCount >= 20) { console.log('   ⏭️  SystemLogs قبلاً ایجاد شده (' + existingCount + ' عدد)'); return; }
   const levels = ['INFO', 'INFO', 'INFO', 'WARNING', 'ERROR'];
   const sources = ['api/auth', 'api/posts', 'api/payment', 'cron/rates', 'middleware', 'cache'];
   const messages = [
@@ -637,8 +653,9 @@ async function seedCurrencyPatterns() {
 
 /* ─── 20) Accounts (OAuth providers) ────────────────────────── */
 async function seedAccounts(users) {
-  const existing = await p.account.count();
-  if (existing > 0) { console.log('   ⏭️  Account قبلاً وجود دارد'); return; }
+  const existingCount = await p.account.count();
+  if (existingCount >= 1) { console.log('   ⏭️  Account قبلاً ایجاد شده (' + existingCount + ' عدد)'); return; }
+
   const providers = [
     { provider: 'google', providerAccountId: 'google-123456' },
     { provider: 'github', providerAccountId: 'github-789012' },

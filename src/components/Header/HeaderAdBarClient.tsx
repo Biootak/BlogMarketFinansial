@@ -1,15 +1,22 @@
 'use client';
 
 /**
- * HeaderAdBarClient — تبلیغ باریک بالای هدر
+ * HeaderAdBarClient — narrow ad bar at the very top of the header.
  *
- *  - پیش‌فرض h-8 (32px) هم‌ارتفاع با TickerBar
- *  - در صورت وجود href کل بنر لینک می‌شود
- *  - دکمه × تبلیغ را برای session با localStorage می‌بندد
- *  - theme ها: primary | accent | neutral | dark | gradient
- *  - variant ها: text | image | mixed
+ *  - Server-rendered: <HeaderAdBar> (server) only renders this component
+ *    when there is an active ad. The first paint always matches the
+ *    server-rendered HTML, which is the requirement for hydration to
+ *    succeed.
+ *  - Dismissal: the user pressing × sets a localStorage flag and the
+ *    client then unmounts. Because the server never knew about the
+ *    dismissal, we use a `useState(true)` (initially visible) and a
+ *    `useEffect` that may immediately set it to false if the user
+ *    previously dismissed this ad. To avoid hydration mismatch we
+ *    keep the initial render identical to the server output, then
+ *    reconcile after mount.
  *
- *  ۲۰۲۶-۰۶-۱۴: glassmorphism ملایم + animation slide-down
+ * 2026-06-14: hydration-safe version — initial visible state matches
+ * server; only after mount do we consult localStorage.
  */
 
 import { useEffect, useState } from 'react';
@@ -59,23 +66,24 @@ const ctaClasses: Record<Theme, string> = {
 };
 
 export default function HeaderAdBarClient({ ad }: { ad: Ad }) {
-  const [visible, setVisible] = useState(false);
+  // 2026-06-14: start `true` to match the server render. The server has
+  // already determined the ad is active and rendered this component;
+  // we must not return null on first client paint or React will
+  // complain about a hydration mismatch.
+  const [visible, setVisible] = useState(true);
 
   useEffect(() => {
     try {
       const dismissed = localStorage.getItem(`${STORAGE_PREFIX}${ad.id}`);
       if (dismissed) {
         const ts = Number.parseInt(dismissed, 10);
-        // expire بعد از ۲۴ ساعت
         if (Number.isFinite(ts) && Date.now() - ts < 24 * 60 * 60 * 1000) {
           setVisible(false);
-          return;
         }
       }
     } catch {
-      // localStorage در دسترس نیست (private mode) → پیش‌فرض visible
+      // localStorage unavailable — keep the bar visible
     }
-    setVisible(true);
   }, [ad.id]);
 
   const handleDismiss = (e: React.MouseEvent) => {
@@ -118,7 +126,6 @@ export default function HeaderAdBarClient({ ad }: { ad: Ad }) {
             text-xs sm:text-[13px]
           "
         >
-          {/* Optional Icon */}
           {ad.variant !== 'TEXT' && ad.imageUrl ? (
             <span className="flex-shrink-0 size-5 sm:size-6 rounded-md overflow-hidden bg-black/10">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -141,7 +148,6 @@ export default function HeaderAdBarClient({ ad }: { ad: Ad }) {
             />
           )}
 
-          {/* Banner content */}
           <Wrapper
             {...wrapperProps}
             className="flex-1 flex items-center justify-center gap-2 sm:gap-3 min-w-0 truncate"
@@ -152,7 +158,6 @@ export default function HeaderAdBarClient({ ad }: { ad: Ad }) {
             )}
           </Wrapper>
 
-          {/* CTA button */}
           {ad.ctaLabel && ad.ctaHref && (
             <a
               href={ad.ctaHref}
@@ -173,7 +178,6 @@ export default function HeaderAdBarClient({ ad }: { ad: Ad }) {
             </a>
           )}
 
-          {/* Close button */}
           <button
             type="button"
             onClick={handleDismiss}

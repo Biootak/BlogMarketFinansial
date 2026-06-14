@@ -152,6 +152,14 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'cdn.jsdelivr.net',
       },
+      // 2026-06-14: pravatar.cc is used by some seed data
+      // (e.g. placeholder author avatars). Add it explicitly so
+      // next/image's optimizer can fetch and transform those URLs
+      // rather than crashing the home page render.
+      {
+        protocol: 'https',
+        hostname: 'i.pravatar.cc',
+      },
     ],
   },
 
