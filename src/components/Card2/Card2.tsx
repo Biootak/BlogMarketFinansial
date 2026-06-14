@@ -10,6 +10,7 @@ import PostCardMeta from '../PostCardMeta/PostCardMeta';
 import type { PostWithRelations } from '@/types/types';
 import { getPostLink } from '@/lib/getPostLink';
 import { ArrowLeft } from 'lucide-react';
+import { cardPad, heading, radius, text } from '@/lib/design-tokens';
 
 interface Card2Props {
   className?: string;
@@ -28,13 +29,19 @@ export default function Card2({ className = 'h-full', size = 'normal', post }: C
       whileHover={{ y: -4 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
     >
-      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-white dark:bg-neutral-800/80 border border-neutral-100 dark:border-neutral-700/50 shadow-sm hover:shadow-xl hover:shadow-primary-500/10 dark:hover:shadow-primary-500/5 transition-all duration-300">
+      <div className={[
+        'relative overflow-hidden bg-white dark:bg-neutral-800/80',
+        'border border-neutral-100 dark:border-neutral-700/50',
+        'shadow-sm hover:shadow-xl hover:shadow-primary-500/10 dark:hover:shadow-primary-500/5',
+        'transition-all duration-300',
+        isLarge ? radius.lg : radius.md,
+      ].join(' ')}>
         {/* Image Container - Better aspect ratio for mobile */}
         <Link
           href={postLink}
           className={`block relative w-full overflow-hidden ${
-            isLarge 
-              ? 'aspect-[16/10] sm:aspect-[16/9] lg:aspect-[16/10]' 
+            isLarge
+              ? 'aspect-[16/10] sm:aspect-[16/9] lg:aspect-[16/10]'
               : 'aspect-[4/3] sm:aspect-[16/10]'
           }`}
         >
@@ -46,10 +53,10 @@ export default function Card2({ className = 'h-full', size = 'normal', post }: C
             alt={title}
             priority={isLarge}
           />
-          
+
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-300" />
-          
+
           {/* Post Type Icon */}
           <PostTypeFeaturedIcon
             className="absolute bottom-2 sm:bottom-3 start-2 sm:start-3 z-10"
@@ -57,7 +64,7 @@ export default function Card2({ className = 'h-full', size = 'normal', post }: C
             wrapSize="w-7 h-7 sm:w-9 sm:h-9"
             iconSize="w-3 h-3 sm:w-4 sm:h-4"
           />
-          
+
           {/* Categories */}
           <div className="absolute top-2 sm:top-3 end-2 sm:end-3 z-10">
             <CategoryBadgeList
@@ -77,18 +84,17 @@ export default function Card2({ className = 'h-full', size = 'normal', post }: C
         </Link>
 
         {/* Content */}
-        <div className="p-3 sm:p-4 lg:p-5">
-          {/* Meta */}
-          <PostCardMeta 
-            className="relative text-xs sm:text-sm mb-2 sm:mb-3" 
-            avatarSize="h-6 w-6 sm:h-8 sm:w-8 text-xs sm:text-sm" 
-            meta={post} 
+        <div className={cardPad.default}>
+          <PostCardMeta
+            className="relative mb-2 sm:mb-3"
+            avatarSize="h-6 w-6 sm:h-8 sm:w-8 text-xs sm:text-sm"
+            meta={post}
           />
 
-          {/* Title */}
-          <h2 className={`font-bold text-neutral-900 dark:text-white leading-snug mb-1.5 sm:mb-2 ${
-            isLarge ? 'text-base sm:text-lg lg:text-xl' : 'text-sm sm:text-base lg:text-lg'
-          }`}>
+          <h2 className={[
+            'font-bold text-neutral-900 dark:text-white leading-snug mb-1.5 sm:mb-2',
+            isLarge ? 'text-base sm:text-lg lg:text-xl' : 'text-sm sm:text-base lg:text-lg',
+          ].join(' ')}>
             <Link
               href={postLink}
               className="line-clamp-2 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-300"
@@ -98,24 +104,30 @@ export default function Card2({ className = 'h-full', size = 'normal', post }: C
             </Link>
           </h2>
 
-          {/* Excerpt - Hidden on small mobile */}
           {excerpt && (
-            <p className="hidden sm:block text-neutral-500 dark:text-neutral-400 text-xs sm:text-sm leading-relaxed line-clamp-2">
+            <p className={[
+              'hidden sm:block line-clamp-2',
+              text.bodySm,
+            ].join(' ')}>
               {excerpt}
             </p>
           )}
 
-          {/* Read More Link */}
           <Link
             href={postLink}
-            className="inline-flex items-center gap-1 sm:gap-1.5 mt-2 sm:mt-4 text-xs sm:text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors group/link"
+            className={[
+              'inline-flex items-center gap-1 sm:gap-1.5 mt-2 sm:mt-4',
+              'text-xs sm:text-sm font-medium',
+              'text-primary-600 dark:text-primary-400',
+              'hover:text-primary-700 dark:hover:text-primary-300',
+              'transition-all duration-300 group/link',
+            ].join(' ')}
           >
             <span>ادامه مطلب</span>
             <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 group-hover/link:-translate-x-1 transition-transform" />
           </Link>
         </div>
 
-        {/* Bottom Accent Line */}
         <div className="absolute bottom-0 start-0 end-0 h-0.5 bg-gradient-to-r from-transparent via-primary-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
     </motion.div>

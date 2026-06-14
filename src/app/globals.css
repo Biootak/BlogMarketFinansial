@@ -156,22 +156,26 @@ p { line-height: var(--leading-relaxed); }
   --ring: 94 106  230;
   --radius: 0.625rem;
 
-  /* Type scale (linear.app-inspired: tighter, smaller than typical blog themes) */
-  --fs-base: 15px;
-  --fs-sm: 13px;
-  --fs-xs: 12px;
-  --fs-lg: 16px;
-  --fs-xl: 18px;
-  --fs-2xl: 20px;
-  --fs-3xl: 24px;
-  --fs-4xl: 28px;
-  --fs-5xl: 32px;
-  --leading-tight: 1.18;
-  --leading-snug: 1.32;
+  /* 2026-06-14: tightened the type ramp.  The previous scale was
+     15/18/20/24/28/32 — readable but heavy on a blog card grid.  Linear
+     and Vercel use 14/16/18/22/26/30 instead.  This pulls every visible
+     text element down one step on average, which is what the user is
+     asking for when they say "texts feel too large". */
+  --fs-base: 14px;
+  --fs-sm: 12px;
+  --fs-xs: 11px;
+  --fs-lg: 15px;
+  --fs-xl: 16px;
+  --fs-2xl: 18px;
+  --fs-3xl: 22px;
+  --fs-4xl: 26px;
+  --fs-5xl: 30px;
+  --leading-tight: 1.2;
+  --leading-snug: 1.35;
   --leading-normal: 1.5;
-  --leading-relaxed: 1.65;
-  --tracking-tight: -0.018em;
-  --tracking-snug: -0.008em;
+  --leading-relaxed: 1.6;
+  --tracking-tight: -0.015em;
+  --tracking-snug: -0.005em;
 }
 
 .dark {

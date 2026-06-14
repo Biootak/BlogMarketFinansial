@@ -19,14 +19,14 @@ const Heading: React.FC<HeadingProps> = ({
       className={`nc-Section-Heading relative flex flex-col sm:flex-row sm:items-end justify-between ${className}`}
     >
       <div className={isCenter ? 'text-center w-full max-w-2xl mx-auto' : 'max-w-2xl'}>
-        <h2 
-          className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white" 
+        <h2
+          className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white"
           {...args}
         >
           {children || 'Section Heading'}
         </h2>
         {desc && (
-          <p className="mt-2 md:mt-3 font-normal text-sm sm:text-base text-neutral-500 dark:text-neutral-400">
+          <p className="mt-2 md:mt-3 font-normal text-[13px] sm:text-sm text-neutral-500 dark:text-neutral-400">
             {desc}
           </p>
         )}

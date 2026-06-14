@@ -4,6 +4,7 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { HiMagnifyingGlass } from 'react-icons/hi2';
 import { Input } from '@/components/ui/input';
+import { heading, text, table, form, space } from '@/lib/design-tokens';
 
 interface DashboardPageHeaderProps {
   title: string;
@@ -14,14 +15,10 @@ interface DashboardPageHeaderProps {
 export function DashboardPageHeader({ title, description, children }: DashboardPageHeaderProps) {
   return (
     <div className="mb-8">
-      <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50">
-            {title}
-          </h1>
-          {description && (
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">{description}</p>
-          )}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1.5">
+          <h1 className={heading.h1}>{title}</h1>
+          {description && <p className={text.bodySm}>{description}</p>}
         </div>
         {children && <div className="flex flex-wrap items-center gap-3">{children}</div>}
       </div>
@@ -49,7 +46,17 @@ export function DashboardSearchInput({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-10 w-full min-w-[200px] rounded-xl border-neutral-200/60 bg-white/80 pl-10 pr-4 text-sm shadow-sm backdrop-blur-sm transition-all duration-200 placeholder:text-neutral-400 hover:border-neutral-300 focus:border-primary-400 focus:bg-white focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80 dark:hover:border-neutral-600 dark:focus:border-primary-500 dark:focus:ring-primary-900/30 sm:w-64"
+        className={cn(
+          'h-10 sm:h-11 w-full min-w-[200px] sm:w-64',
+          'rounded-xl border-neutral-200/60 bg-white/80 pl-10 pr-4 text-sm',
+          'shadow-sm backdrop-blur-sm transition-all duration-200',
+          'placeholder:text-neutral-400',
+          'hover:border-neutral-300',
+          'focus:border-primary-400 focus:bg-white focus:ring-2 focus:ring-primary-100',
+          'dark:border-neutral-700/60 dark:bg-neutral-800/80',
+          'dark:hover:border-neutral-600',
+          'dark:focus:border-primary-500 dark:focus:ring-primary-900/30',
+        )}
       />
       <HiMagnifyingGlass className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
     </div>
@@ -66,7 +73,10 @@ export function DashboardTableContainer({ children, className }: DashboardTableC
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-2xl border border-neutral-200/60 bg-white/70 shadow-lg shadow-neutral-900/5 backdrop-blur-xl transition-all duration-300 dark:border-neutral-700/50 dark:bg-neutral-800/70 dark:shadow-neutral-900/20',
+        'overflow-hidden rounded-2xl',
+        'border border-neutral-200/60 bg-white/70 shadow-lg shadow-neutral-900/5',
+        'backdrop-blur-xl transition-all duration-300',
+        'dark:border-neutral-700/50 dark:bg-neutral-800/70 dark:shadow-neutral-900/20',
         className
       )}
     >
@@ -116,7 +126,7 @@ export function DashboardTableHead({ children, className, hidden }: DashboardTab
   return (
     <th
       className={cn(
-        'px-5 py-4 text-right text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-300',
+        table.headerCell,
         hidden && 'hidden sm:table-cell',
         className
       )}
@@ -170,7 +180,7 @@ export function DashboardTableCell({ children, className, hidden }: DashboardTab
   return (
     <td
       className={cn(
-        'px-5 py-4 text-right text-sm text-neutral-700 dark:text-neutral-300',
+        table.cell,
         hidden && 'hidden sm:table-cell',
         className
       )}
@@ -286,8 +296,8 @@ export function EmptyState({
           {icon}
         </div>
       )}
-      <h3 className="mb-2 text-lg font-semibold text-neutral-900 dark:text-neutral-100">{title}</h3>
-      <p className="mb-6 max-w-sm text-sm text-neutral-500 dark:text-neutral-400">{description}</p>
+      <h3 className={[heading.h3, 'mb-2'].join(' ')}>{title}</h3>
+      <p className={[text.bodySm, 'mb-6 max-w-sm'].join(' ')}>{description}</p>
       {action}
     </div>
   );
@@ -308,7 +318,7 @@ export function FilterSelect({ value, onChange, options, placeholder, className 
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className={cn(
-        'h-10 rounded-xl border border-neutral-200/60 bg-white/80 px-4 text-sm text-neutral-700 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-neutral-300 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80 dark:text-neutral-300 dark:hover:border-neutral-600 dark:focus:border-primary-500 dark:focus:ring-primary-900/30',
+        'h-10 sm:h-11 rounded-xl border border-neutral-200/60 bg-white/80 px-4 text-sm text-neutral-700 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-neutral-300 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80 dark:text-neutral-300 dark:hover:border-neutral-600 dark:focus:border-primary-500 dark:focus:ring-primary-900/30',
         className
       )}
     >

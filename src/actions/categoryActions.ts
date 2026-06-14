@@ -473,6 +473,68 @@ export const getAllParentCategories = cache(async (): Promise<ActionResult<Taxon
   }
 });
 
+/**
+ * 2026-06-14: returns top-N categories by post count for the home page
+ * trending topics section. Single source of truth for the format the
+ * home page expects: `{ categories: TaxonomyType[] }` so that the
+ * caller can do `result.data?.categories` consistently.
+ */
+export const getPopularCategoriesForHome = cache(
+  async (limit: number = 16): Promise<ActionResult<{ categories: TaxonomyType[] }>> => {
+    try {
+      const safeLimit = Math.max(1, Math.min(50, Math.floor(limit)));
+      const rows = await prisma.category.findMany({
+        where: { parentCategories: { none: {} } },
+        take: safeLimit,
+        orderBy: { posts: { _count: 'desc' } },
+        include: {
+          _count: { select: { posts: true } },
+          childCategories: {
+            include: { _count: { select: { posts: true } } },
+          },
+        },
+      });
+
+      const categories: TaxonomyType[] = rows.map((category) => ({
+        id: category.id,
+        name: category.name,
+        slug: category.slug,
+        thumbnail: category.thumbnail,
+        taxonomy: 'category',
+        color: generateColor(category.id),
+        count: category._count.posts,
+        childCategories: category.childCategories.map((child) => ({
+          id: child.id,
+          name: child.name,
+          slug: child.slug,
+          thumbnail: child.thumbnail,
+          taxonomy: 'subcategory',
+          color: generateColor(child.id),
+          count: child._count.posts,
+          createdAt: child.createdAt,
+          updatedAt: child.updatedAt,
+        })),
+        parentCategories: [],
+        createdAt: category.createdAt,
+        updatedAt: category.updatedAt,
+      }));
+
+      return {
+        success: true,
+        message: 'دسته‌بندی‌های محبوب با موفقیت بازیابی شدند.',
+        data: { categories },
+      };
+    } catch (error) {
+      console.error('خطا در دریافت دسته‌بندی‌های محبوب:', error);
+      return {
+        success: false,
+        message: 'خطا در دریافت دسته‌بندی‌های محبوب. لطفاً دوباره تلاش کنید.',
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+  },
+);
+
 async function checkCircularReference(categoryId: string, parentIds: string[]): Promise<boolean> {
   const queue = [...parentIds];
   const visited = new Set<string>();
