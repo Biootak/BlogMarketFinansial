@@ -28,6 +28,9 @@ import {
   Play,
   Sparkles,
   BookOpen,
+  TrendingUp,
+  TrendingDown,
+  Minus,
 } from 'lucide-react';
 import type { PostWithRelations, ExchangeRate, RateListData, RateItem } from '@/types/types';
 import Avatar from '@/components/Avatar/Avatar';
@@ -41,6 +44,7 @@ import CompactRateBridge from './CompactRateBridge';
 import {
   getCategoryTheme,
   detectSentiment,
+  SENTIMENT_CONFIG,
   type CategoryTheme,
   type SentimentType,
 } from './categoryTheme';
@@ -482,7 +486,7 @@ export default function Design7({ initialPosts, rates, marketRates, rateLists, c
                         روند
                       </span>
                       <span
-                        className={`text-sm font-bold ${
+                        className={`text-sm font-bold flex items-baseline gap-0.5 ${
                           mainSentiment === 'bullish'
                             ? 'text-emerald-300'
                             : mainSentiment === 'bearish'
@@ -490,11 +494,16 @@ export default function Design7({ initialPosts, rates, marketRates, rateLists, c
                               : 'text-amber-300'
                         }`}
                       >
-                        {mainSentiment === 'bullish'
-                          ? '▲ صعودی'
-                          : mainSentiment === 'bearish'
-                            ? '▼ نزولی'
-                            : '◆ خنثی'}
+                        {SENTIMENT_CONFIG[mainSentiment].icon === 'up' && (
+                          <TrendingUp className="w-3.5 h-3.5" />
+                        )}
+                        {SENTIMENT_CONFIG[mainSentiment].icon === 'down' && (
+                          <TrendingDown className="w-3.5 h-3.5" />
+                        )}
+                        {SENTIMENT_CONFIG[mainSentiment].icon === 'flat' && (
+                          <Minus className="w-3.5 h-3.5" />
+                        )}
+                        {SENTIMENT_CONFIG[mainSentiment].label}
                       </span>
                     </div>
                   </motion.div>

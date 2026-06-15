@@ -410,3 +410,31 @@ export function formatDate(date: Date | string): string {
 
   return `${year}/${month}/${day} ${hours}:${minutes}`;
 }
+
+/**
+ * زمان نسبی به فارسی (مثل "۲ ساعت پیش"، "۳ روز پیش")
+ * برای استفاده در Stats Cockpit و سایر نقاط UI
+ */
+export function formatRelativeTime(date: Date | string): string {
+  const diff = Date.now() - new Date(date).getTime();
+  const minutes = Math.floor(diff / 60_000);
+
+  if (minutes < 1) return 'لحظاتی پیش';
+  if (minutes < 60) return `${toPersianNumber(minutes)} دقیقه پیش`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${toPersianNumber(hours)} ساعت پیش`;
+
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${toPersianNumber(days)} روز پیش`;
+
+  if (days < 30) {
+    const weeks = Math.floor(days / 7);
+    return `${toPersianNumber(weeks)} هفته پیش`;
+  }
+
+  // برای تاریخ‌های قدیمی‌تر، تاریخ شمسی کوتاه برگردان
+  return new Intl.DateTimeFormat('fa-IR', { month: 'long', day: 'numeric' }).format(
+    new Date(date),
+  );
+}

@@ -216,7 +216,7 @@ export const SENTIMENT_CONFIG: Record<SentimentType, {
 }> = {
   bullish: {
     label: 'صعودی',
-    shortLabel: '▲',
+    shortLabel: '↑',
     gradient: 'bg-gradient-to-r from-emerald-500 to-teal-500',
     icon: 'up',
     ring: 'ring-emerald-400/40',
@@ -224,7 +224,7 @@ export const SENTIMENT_CONFIG: Record<SentimentType, {
   },
   bearish: {
     label: 'نزولی',
-    shortLabel: '▼',
+    shortLabel: '↓',
     gradient: 'bg-gradient-to-r from-rose-500 to-pink-600',
     icon: 'down',
     ring: 'ring-rose-400/40',
@@ -232,7 +232,7 @@ export const SENTIMENT_CONFIG: Record<SentimentType, {
   },
   neutral: {
     label: 'خنثی',
-    shortLabel: '◆',
+    shortLabel: '–',
     gradient: 'bg-gradient-to-r from-amber-500 to-orange-500',
     icon: 'flat',
     ring: 'ring-amber-400/40',
