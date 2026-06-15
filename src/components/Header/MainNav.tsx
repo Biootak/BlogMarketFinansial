@@ -39,37 +39,37 @@ export default async function MainNav() {
         <div
           className="
             grid items-center
-            grid-cols-[auto_1fr]
-            @lg/nav:grid-cols-[1fr_auto_1fr]
-            h-12 sm:h-14
+            grid-cols-[1fr_auto_1fr]
+            @lg/nav:grid-rows-[auto_auto]
+            h-auto sm:h-auto @lg/nav:py-2
             gap-2 sm:gap-4
           "
         >
-          {/* ستون راست (در RTL: لوگو) */}
-          <div className="flex items-center justify-start min-w-0">
+          {/* ستون راست (در RTL: همبرگر منو - همه سایزها) */}
+          <div className="flex items-center justify-start min-w-0 col-start-1 row-start-1">
+            {/* موبایل و دسکتاپ: همبرگر منو */}
+            <div
+              className="
+                flex items-center justify-center
+                size-10 rounded-xl
+                text-neutral-600 dark:text-neutral-300
+                hover:bg-neutral-100 dark:hover:bg-neutral-800/80
+                transition-colors duration-200
+              "
+            >
+              <MenuBar />
+            </div>
+          </div>
+
+          {/* ستون وسط — Logo (در همه سایزها) */}
+          <div className="flex items-center justify-center min-w-0 col-start-2 row-start-1">
             <Logo variant="modern" />
           </div>
 
-          {/* ستون وسط — Navigation (فقط lg+) */}
-          <div className="hidden @lg/nav:flex items-center justify-center min-w-0 col-start-2 row-start-1">
-            <Navigation />
-          </div>
-
-          {/* ستون چپ (در RTL: اکشن‌ها) */}
-          <div className="flex items-center justify-end gap-1 sm:gap-2 min-w-0 col-start-2 @lg/nav:col-start-3 row-start-1">
-            {/* موبایل: فقط hamburger + user/auth */}
+          {/* ستون چپ (در RTL: اکشن‌ها/ورود — همه سایزها) */}
+          <div className="flex items-center justify-end gap-1 sm:gap-2 min-w-0 col-start-3 row-start-1">
+            {/* موبایل: فقط user/auth */}
             <div className="flex @lg/nav:hidden items-center gap-1">
-              <div
-                className="
-                  flex items-center justify-center
-                  size-10 rounded-xl
-                  text-neutral-600 dark:text-neutral-300
-                  hover:bg-neutral-100 dark:hover:bg-neutral-800/80
-                  transition-colors duration-200
-                "
-              >
-                <MenuBar />
-              </div>
               {!session?.user ? (
                 <Link
                   href="/signin"
@@ -216,6 +216,11 @@ export default async function MainNav() {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* ستون وسط ردیف دوم — Navigation (فقط lg+) */}
+          <div className="hidden @lg/nav:flex items-center justify-center min-w-0 col-span-3 row-start-2">
+            <Navigation />
           </div>
         </div>
       </div>

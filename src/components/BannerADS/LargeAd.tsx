@@ -4,7 +4,7 @@ import type { Advertisement } from '@/types/types';
 interface LargeAdProps {
   ad: Advertisement;
   className?: string;
-  variant?: 'image' | 'spotlight' | 'rich' | 'minimal';
+  variant?: 'image' | 'showcase' | 'spotlight' | 'rich' | 'minimal';
 }
 
 export default function LargeAd({ ad, className = '', variant = 'image' }: LargeAdProps) {

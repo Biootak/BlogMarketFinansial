@@ -6,15 +6,16 @@ interface SectionAdsProps {
   className?: string;
   ad: Advertisement;
   /**
-   * 'spotlight' (default) → editorial hero with mask reveal
-   * 'rich'                 → split image + text card with CTA
-   * 'image'                → image-only with conic-gradient border
-   * 'minimal'              → tight sidebar card
+   * 'showcase' (default) → editorial hero with aurora mesh + 3D tilt + sparkline
+   * 'rich'                → split image + text card with CTA shimmer
+   * 'image'               → image-only with conic-gradient border
+   * 'minimal'             → tight sidebar card
+   * 'spotlight'           → legacy alias for 'showcase'
    */
-  variant?: 'spotlight' | 'rich' | 'image' | 'minimal';
+  variant?: 'showcase' | 'rich' | 'image' | 'minimal' | 'spotlight';
 }
 
-const SectionAds: React.FC<SectionAdsProps> = ({ className = '', ad, variant = 'spotlight' }) => {
+const SectionAds: React.FC<SectionAdsProps> = ({ className = '', ad, variant = 'showcase' }) => {
   return (
     <section className={`nc-SectionAds ${className}`}>
       <LargeAd ad={ad} variant={variant} />

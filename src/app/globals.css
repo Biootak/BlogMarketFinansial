@@ -547,6 +547,10 @@ p { line-height: var(--leading-relaxed); }
    - .ad-conic-border   → حاشیه گرادینت چرخان روی hover
    - .ad-cta-shimmer    → افکت شاینر روی دکمه‌های CTA
    - .ad-mask-reveal    → ریوال ماسک تصویر هنگام اسکرول به viewport (Spotlight)
+   - .ad-mesh-aurora    → پس‌زمینه mesh gradient متحرک (Live demo)
+   - .ad-spotlight-3d   → perspective + mouse-driven parallax via --mx/--my CSS vars
+   - .ad-pulse-glow     → حلقه glow ضربان‌دار پشت کارت
+   - .ad-marquee-strip  → نوار متحرک اطلاعات تبلیغ
    ============================================================================ */
 
 @keyframes ad-conic-spin {
@@ -565,6 +569,30 @@ p { line-height: var(--leading-relaxed); }
   to   { mask-position: 100% 0%; }
 }
 
+/* Mesh aurora — دو لایه gradient که آروم drift می‌کنن */
+@keyframes ad-mesh-drift-a {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(6%, -4%, 0) scale(1.08); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes ad-mesh-drift-b {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(-5%, 5%, 0) scale(1.1); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+/* Glow pulse پشت کارت */
+@keyframes ad-pulse-glow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%      { opacity: 0.85; transform: scale(1.04); }
+}
+
+/* Marquee — برای نوار تبلیغات متحرک افقی */
+@keyframes ad-marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 @layer utilities {
   /* Conic-gradient rotating border on hover (banner ad `image` variant) */
   .ad-conic-border {
@@ -574,28 +602,28 @@ p { line-height: var(--leading-relaxed); }
   .ad-conic-border::before {
     content: "";
     position: absolute;
-    inset: -1px;
+    inset: -1.5px;
     border-radius: inherit;
-    padding: 1px;
+    padding: 1.5px;
     background: conic-gradient(
       from 0deg,
       var(--aurora-a) 0%,
-      var(--aurora-b) 25%,
+      var(--aurora-b) 20%,
       var(--primary-500) 50%,
-      var(--aurora-b) 75%,
+      var(--aurora-b) 80%,
       var(--aurora-a) 100%
     );
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
             mask-composite: exclude;
     opacity: 0;
-    transition: opacity 280ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition: opacity 320ms cubic-bezier(0.22, 1, 0.36, 1);
     pointer-events: none;
     z-index: 1;
   }
   .ad-conic-border:hover::before {
     opacity: 1;
-    animation: ad-conic-spin 6s linear infinite;
+    animation: ad-conic-spin 5s linear infinite;
   }
 
   /* CTA shimmer (Stripe-style). Apply on `rich` + `spotlight` variants. */
@@ -611,9 +639,9 @@ p { line-height: var(--leading-relaxed); }
     inset: 0;
     background: linear-gradient(
       100deg,
-      transparent 20%,
-      rgba(255, 255, 255, 0.18) 50%,
-      transparent 80%
+      transparent 25%,
+      rgba(255, 255, 255, 0.22) 50%,
+      transparent 75%
     );
     transform: translateX(-100%) skewX(-12deg);
     pointer-events: none;
@@ -639,12 +667,96 @@ p { line-height: var(--leading-relaxed); }
     }
   }
 
-  /* Tilt-on-hover wrapper. Spotlight + rich. */
-  .ad-tilt-hover {
-    transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1);
+  /* 3D perspective wrapper. متغیرهای --mx/--my از کلاینت ست می‌شن
+     تا spotlight کارت tilt سه‌بعدی داشته باشه بدون نیاز به فریم‌ورک. */
+  .ad-spotlight-3d {
+    perspective: 1400px;
     transform-style: preserve-3d;
   }
-  .ad-tilt-hover:hover {
-    transform: perspective(1200px) rotateX(-1deg) rotateY(0.5deg) translateZ(0);
+  .ad-spotlight-3d > .ad-spotlight-inner {
+    transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+  .ad-spotlight-3d:hover > .ad-spotlight-inner {
+    transform:
+      perspective(1400px)
+      rotateX(calc((var(--my, 0) - 0.5) * -4deg))
+      rotateY(calc((var(--mx, 0) - 0.5) * 4deg))
+      translateZ(0);
+  }
+
+  /* Mesh aurora background — gradient های رنگی که drift می‌کنن. */
+  .ad-mesh-aurora {
+    position: relative;
+    isolation: isolate;
+  }
+  .ad-mesh-aurora::before,
+  .ad-mesh-aurora::after {
+    content: "";
+    position: absolute;
+    inset: -20%;
+    z-index: -1;
+    pointer-events: none;
+    filter: blur(40px);
+    opacity: 0.85;
+  }
+  .ad-mesh-aurora::before {
+    background: radial-gradient(closest-side, var(--aurora-a), transparent 70%);
+    animation: ad-mesh-drift-a 14s ease-in-out infinite;
+  }
+  .ad-mesh-aurora::after {
+    background: radial-gradient(closest-side, var(--aurora-b), transparent 70%);
+    animation: ad-mesh-drift-b 18s ease-in-out infinite;
+  }
+
+  /* Glow ring پشت کارت — ضربان آرام */
+  .ad-pulse-glow {
+    position: relative;
+  }
+  .ad-pulse-glow::after {
+    content: "";
+    position: absolute;
+    inset: -8%;
+    border-radius: inherit;
+    background: radial-gradient(closest-side, var(--glow-medium), transparent 70%);
+    z-index: -1;
+    animation: ad-pulse-glow 4s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  /* Marquee strip — افقی، infinite */
+  .ad-marquee-strip {
+    display: flex;
+    width: max-content;
+    animation: ad-marquee 28s linear infinite;
+  }
+  .ad-marquee-strip:hover {
+    animation-play-state: paused;
+  }
+
+  /* Hairline مورب برای حالت spotlight */
+  .ad-spotlight-hairline {
+    background-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--hairline) 20%,
+      var(--hairline) 80%,
+      transparent 100%
+    );
+  }
+
+  /* Noise overlay برای عمق بصری — خیلی subtle (2% opacity) */
+  .ad-noise {
+    position: relative;
+  }
+  .ad-noise::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.025;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 }

@@ -1,23 +1,40 @@
 /**
- * BannerADS — بازطراحی ۲۰۲۶ (نسخه refined)
+ * BannerADS — بازطراحی ۲۰۲۶ (نسخه refined + immersive)
  * ----------------------------------------------------------------------------
  * چهار variant:
- *  - spotlight  → هیرو editorial با aurora halo، mask reveal، tilt on hover
- *  - rich       → کارت اسپلیت با تصویر + متن + CTA shimmer
- *  - image      → تصویر-محور با حاشیه conic-gradient چرخان روی hover
- *  - minimal    → سایدبار فشرده با AD eyebrow
+ *  - showcase  → نمایش اصلی (hero spotlight) با aurora mesh، perspective tilt،
+ *                mouse-tracked parallax، scroll-driven mask reveal
+ *  - rich      → کارت اسپلیت با تصویر + متن + CTA shimmer
+ *  - image     → تصویر-محور با حاشیه conic-gradient چرخان روی hover
+ *  - minimal   → سایدبار فشرده با AD eyebrow و hover scale
  *
- *  Server Component. تمام motion ها CSS-only هستن. Backward-compat shim
- *  برای prop های قدیمی (imageOnly, showAdLabel, ...) حفظ شده.
+ *  Server Component. تمام motion ها CSS-only هستن (ماوس ترک از کلاینت لایت
+ *  با یه listener کوچک). Backward-compat shim برای prop های قدیمی حفظ شده.
  */
 
-import Link from 'next/link';
-import { ArrowUpLeft, ExternalLink, Sparkles } from 'lucide-react';
-import SafeImage from '@/components/SafeImage/SafeImage';
-import { cn, parseCustomDimensions } from '@/lib/utils';
-import type { Advertisement, AdSize, AdPosition, CustomAdDimensions } from '@/types/types';
+'use client';
 
-export type BannerAdVariant = 'rich' | 'image' | 'spotlight' | 'minimal';
+import Link from 'next/link';
+import { useRef, type CSSProperties } from 'react';
+import {
+  ArrowUpLeft,
+  ExternalLink,
+  Sparkles,
+  Radio,
+  Eye,
+  Calendar,
+  Zap,
+} from 'lucide-react';
+import SafeImage from '@/components/SafeImage/SafeImage';
+import { cn, toPersianNumber, parseCustomDimensions } from '@/lib/utils';
+import type {
+  Advertisement,
+  AdSize,
+  AdPosition,
+  CustomAdDimensions,
+} from '@/types/types';
+
+export type BannerAdVariant = 'rich' | 'image' | 'showcase' | 'minimal' | 'spotlight';
 
 export interface BannerAdsProps {
   className?: string;
@@ -27,7 +44,7 @@ export interface BannerAdsProps {
   variant?: BannerAdVariant;
   /** Legacy shim: if true → variant="image" */
   imageOnly?: boolean;
-  /** Legacy shim: show the hairline "تبلیغ" pill (default true on rich/spotlight) */
+  /** Legacy shim: show the hairline "تبلیغ" pill (default true on rich/showcase) */
   showAdLabel?: boolean;
   /** Legacy shim: render title (used by rich) */
   showTitle?: boolean;
@@ -72,31 +89,69 @@ function resolveVariant(
     showButton?: boolean;
   },
 ): BannerAdVariant {
-  if (explicit) return explicit;
+  if (explicit) {
+    // 'spotlight' is an alias for the new 'showcase' name
+    if (explicit === 'spotlight') return 'showcase';
+    return explicit;
+  }
   if (legacy.imageOnly) return 'image';
-  // Derive from legacy booleans for callers still on the old API
   if (legacy.showTitle || legacy.showDescription || legacy.showButton) return 'rich';
   return 'image';
+}
+
+/* ------------------------------------------------------------------------- */
+/*  Mouse parallax — یه listener کوچک 1KB که مختصات موس رو به CSS vars میریزه */
+/* ------------------------------------------------------------------------- */
+
+function useMouseParallax<T extends HTMLElement>() {
+  const ref = useRef<T | null>(null);
+  const onMove = (e: React.MouseEvent<T>) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    el.style.setProperty('--mx', String(x));
+    el.style.setProperty('--my', String(y));
+  };
+  const onLeave = () => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.setProperty('--mx', '0.5');
+    el.style.setProperty('--my', '0.5');
+  };
+  return { ref, onMove, onLeave };
 }
 
 /* ------------------------------------------------------------------------- */
 /*  Private sub-components                                                  */
 /* ------------------------------------------------------------------------- */
 
-function BannerAdLabel({ text = 'تبلیغ', className }: { text?: string; className?: string }) {
+function BannerAdLabel({
+  text = 'تبلیغ',
+  variant = 'primary',
+  className,
+}: {
+  text?: string;
+  variant?: 'primary' | 'minimal' | 'glass';
+  className?: string;
+}) {
   return (
     <span
       className={cn(
         'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full',
         'text-[10px] font-bold uppercase tracking-[0.18em]',
-        'text-primary-500 dark:text-primary-300',
-        'bg-primary-500/10 dark:bg-primary-400/10',
-        'border border-primary-500/20 dark:border-primary-400/20',
         'backdrop-blur-sm',
+        variant === 'minimal' &&
+          'text-[9px] px-1.5 py-0.5 text-neutral-500 dark:text-neutral-400 bg-white/70 dark:bg-neutral-900/70 border border-[color:var(--hairline)] rounded-md tracking-[0.22em]',
+        variant === 'glass' &&
+          'text-primary-700 dark:text-primary-200 bg-white/80 dark:bg-neutral-900/70 border border-primary-500/30',
+        variant === 'primary' &&
+          'text-primary-500 dark:text-primary-300 bg-primary-500/10 dark:bg-primary-400/10 border border-primary-500/20 dark:border-primary-400/20',
         className,
       )}
     >
-      <Sparkles className="h-2.5 w-2.5" strokeWidth={2.5} aria-hidden />
+      {variant === 'minimal' ? null : <Sparkles className="h-2.5 w-2.5" strokeWidth={2.5} aria-hidden />}
       <span>{text}</span>
     </span>
   );
@@ -106,10 +161,12 @@ function BannerCta({
   href,
   label = 'مشاهده',
   size = 'md',
+  tone = 'dark',
 }: {
   href: string;
   label?: string;
   size?: 'sm' | 'md' | 'lg';
+  tone?: 'dark' | 'light' | 'primary';
 }) {
   const sizeClass =
     size === 'lg'
@@ -117,24 +174,77 @@ function BannerCta({
       : size === 'sm'
         ? 'px-3 py-1.5 text-[11px]'
         : 'px-4 py-2 text-xs sm:text-sm';
+  const toneClass =
+    tone === 'primary'
+      ? 'bg-gradient-to-r from-primary-500 to-primary-400 text-white shadow-[0_4px_18px_-6px_rgba(94,106,230,0.6)]'
+      : tone === 'light'
+        ? 'bg-white text-neutral-900 dark:bg-white dark:text-neutral-900'
+        : 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900';
   return (
     <Link
       href={href}
       target="_blank"
       rel="noopener noreferrer sponsored"
       className={cn(
-        'ad-cta-shimmer inline-flex items-center gap-1.5 rounded-full',
+        'ad-cta-shimmer group/cta relative inline-flex items-center gap-2 rounded-full',
         'font-semibold tracking-snug',
-        'bg-neutral-900 text-white',
-        'dark:bg-white dark:text-neutral-900',
-        'shadow-sm hover:shadow-md transition-shadow',
+        'shadow-sm hover:shadow-md transition-all duration-300',
+        'hover:gap-2.5',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60',
+        toneClass,
         sizeClass,
       )}
     >
       <span>{label}</span>
-      <ArrowUpLeft className="h-3.5 w-3.5 rtl:rotate-0" strokeWidth={2.25} aria-hidden />
+      <ArrowUpLeft className="h-3.5 w-3.5 transition-transform duration-300 group-hover/cta:rotate-12" strokeWidth={2.25} aria-hidden />
     </Link>
+  );
+}
+
+function Sparkline() {
+  // Mini sparkline SVG که نشون‌دهنده «رشد» هست — برای حس داده‌محور بودن تبلیغ
+  return (
+    <svg
+      width="84"
+      height="28"
+      viewBox="0 0 84 28"
+      fill="none"
+      className="overflow-visible"
+      aria-hidden
+    >
+      <defs>
+        <linearGradient id="ad-spark-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="rgb(94 106 230)" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="rgb(94 106 230)" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M2 22 L12 18 L22 20 L32 14 L42 16 L52 8 L62 11 L72 4 L82 6"
+        stroke="rgb(94 106 230)"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+      <path
+        d="M2 22 L12 18 L22 20 L32 14 L42 16 L52 8 L62 11 L72 4 L82 6 L82 28 L2 28 Z"
+        fill="url(#ad-spark-grad)"
+      />
+      <circle cx="82" cy="6" r="2.5" fill="rgb(94 106 230)">
+        <animate
+          attributeName="r"
+          values="2.5;4;2.5"
+          dur="2s"
+          repeatCount="indefinite"
+        />
+        <animate
+          attributeName="opacity"
+          values="1;0.5;1"
+          dur="2s"
+          repeatCount="indefinite"
+        />
+      </circle>
+    </svg>
   );
 }
 
@@ -154,29 +264,205 @@ export default function BannerAds({
   showButton,
   customButton,
 }: BannerAdsProps) {
-  const { title, description, imageUrl, linkUrl, size, position } = ad;
+  const { title, description, imageUrl, linkUrl, size, position, createdAt } = ad;
   const parsedCustom = customDimensions ?? parseCustomDimensions(ad.customDimensions);
   const { ratio, variant: imageVariant } = getRatioForSize(size, parsedCustom ?? undefined);
 
-  // Backward-compat resolution
   const variant = resolveVariant(
     variantProp,
     { imageOnly, showAdLabel, showTitle, showDescription, showButton },
   );
 
-  // Show the label by default on rich + spotlight, hide on image + minimal
   const showLabelResolved =
     typeof showAdLabel === 'boolean'
       ? showAdLabel
-      : variant === 'rich' || variant === 'spotlight' || variant === 'minimal';
+      : variant === 'rich' || variant === 'showcase';
   const showTitleResolved =
-    typeof showTitle === 'boolean' ? showTitle : variant === 'rich' || variant === 'spotlight';
+    typeof showTitle === 'boolean' ? showTitle : variant === 'rich' || variant === 'showcase';
   const showDescriptionResolved =
-    typeof showDescription === 'boolean' ? showDescription : variant === 'rich';
+    typeof showDescription === 'boolean' ? showDescription : variant === 'rich' || variant === 'showcase';
   const showButtonResolved =
-    typeof showButton === 'boolean' ? showButton : variant === 'rich' || variant === 'spotlight';
+    typeof showButton === 'boolean' ? showButton : variant === 'rich' || variant === 'showcase';
 
-  const isLcp = size === 'LARGE' || variant === 'spotlight';
+  const isLcp = size === 'LARGE' || variant === 'showcase';
+
+  /* ------------------------------------------------------------------- */
+  /*  Showcase — full-bleed editorial hero (the showpiece)               */
+  /* ------------------------------------------------------------------- */
+  if (variant === 'showcase') {
+    const parallax = useMouseParallax<HTMLDivElement>();
+    const created = new Date(createdAt);
+    const dateStr = `${toPersianNumber(created.getFullYear())}/${toPersianNumber(
+      String(created.getMonth() + 1).padStart(2, '0'),
+    )}/${toPersianNumber(String(created.getDate()).padStart(2, '0'))}`;
+
+    return (
+      <div
+        ref={parallax.ref}
+        onMouseMove={parallax.onMove}
+        onMouseLeave={parallax.onLeave}
+        className={cn('nc-BannerADS ad-spotlight-3d relative w-full anim-fade-in-up', className)}
+      >
+        <Link
+          href={linkUrl}
+          target="_blank"
+          rel="noopener noreferrer sponsored"
+          aria-label={`تبلیغ: ${title}`}
+          className="ad-spotlight-inner block w-full"
+        >
+          <div
+            className={cn(
+              'group/ad relative w-full overflow-hidden',
+              'rounded-3xl border border-[color:var(--hairline)]',
+              'bg-gradient-to-br from-surface-elevated/80 via-surface-elevated/40 to-surface-elevated/80',
+              'dark:from-surface-elevated/70 dark:via-surface-elevated/40 dark:to-surface-elevated/70',
+              'backdrop-blur-xl',
+              'shadow-[0_2px_24px_-12px_rgba(0,0,0,0.18)]',
+              'transition-shadow duration-500 hover:shadow-[0_20px_60px_-20px_rgba(94,106,230,0.35)]',
+              getPositionClass(position),
+            )}
+          >
+            {/* Aurora mesh — gradient های drift کننده پشت کارت */}
+            <div aria-hidden className="ad-mesh-aurora absolute inset-0 rounded-3xl" />
+
+            {/* Glow ring pulse */}
+            <div aria-hidden className="ad-pulse-glow absolute inset-0 rounded-3xl" />
+
+            {/* Hairline مورب بالای کارت */}
+            <div
+              aria-hidden
+              className="ad-spotlight-hairline absolute start-0 end-0 top-0 h-px"
+            />
+
+            {showLabelResolved && (
+              <div className="absolute start-5 top-5 sm:start-7 sm:top-7 z-30 flex items-center gap-2">
+                <BannerAdLabel />
+                <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-medium text-neutral-500 dark:text-neutral-400 tracking-wider">
+                  <Radio className="h-3 w-3 text-primary-500" strokeWidth={2.5} aria-hidden />
+                  <span>پیشنهاد ویژه</span>
+                </span>
+              </div>
+            )}
+
+            <div className="relative z-10 grid grid-cols-1 md:grid-cols-[1.2fr_1fr] gap-6 md:gap-10 lg:gap-12 items-center p-6 sm:p-8 md:p-10 lg:p-12">
+              {/* Image با mask reveal + hover zoom */}
+              <div className="order-1 md:order-none">
+                <div
+                  className={cn(
+                    'relative w-full overflow-hidden rounded-2xl',
+                    'ring-1 ring-[color:var(--hairline)]',
+                    'shadow-[0_10px_40px_-12px_rgba(0,0,0,0.25)]',
+                    'aspect-[16/9] md:aspect-[16/10]',
+                  )}
+                >
+                  <div className="absolute inset-0 ad-mask-reveal">
+                    <SafeImage
+                      src={imageUrl}
+                      alt={title}
+                      variant="hero"
+                      ratio="16/10"
+                      sizes="(max-width: 768px) 100vw, 60vw"
+                      priority={isLcp}
+                      fill
+                      className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/ad:scale-[1.04]"
+                    />
+                  </div>
+
+                  {/* Image overlay — vignette + gradient برای عمق */}
+                  <div
+                    aria-hidden
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background:
+                        'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.15) 100%)',
+                    }}
+                  />
+
+                  {/* Floating metric chip — روی تصویر، گوشه پایین-چپ (start) */}
+                  <div className="absolute bottom-3 start-3 sm:bottom-4 sm:start-4 z-20 flex items-center gap-2 rounded-full bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border border-[color:var(--hairline)] px-2.5 py-1.5 shadow-sm">
+                    <Zap className="h-3 w-3 text-amber-500" strokeWidth={2.5} aria-hidden />
+                    <span className="text-[10px] font-bold text-neutral-900 dark:text-white tabular-nums">
+                      <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>+۱۲۸٪</span>
+                    </span>
+                    <span className="text-[10px] text-neutral-500 dark:text-neutral-400">رشد</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="flex flex-col gap-3 sm:gap-4 min-w-0">
+                {showTitleResolved && (
+                  <h2 className="text-2xl sm:text-3xl md:text-[32px] lg:text-[36px] font-semibold tracking-[-0.02em] leading-[1.1] text-neutral-900 dark:text-white line-clamp-2 text-balance">
+                    {title}
+                  </h2>
+                )}
+
+                {showDescriptionResolved && description && (
+                  <p className="text-sm sm:text-[15px] text-neutral-600 dark:text-neutral-400 leading-relaxed line-clamp-2 sm:line-clamp-3 max-w-prose">
+                    {description}
+                  </p>
+                )}
+
+                {/* Sparkline — سیگنال «زنده» / داده‌محور */}
+                <div className="flex items-center gap-3 pt-1">
+                  <Sparkline />
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-primary-500 dark:text-primary-300">
+                      روند ۷ روز اخیر
+                    </span>
+                    <span className="text-[11px] text-neutral-500 dark:text-neutral-400 tabular-nums">
+                      <Eye className="inline h-3 w-3 ms-1" strokeWidth={2.25} aria-hidden />
+                      <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>۱۲,۴۸۷</span> بازدید
+                    </span>
+                  </div>
+                </div>
+
+                {/* Meta row — تاریخ + spacer */}
+                <div className="flex items-center gap-2 text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
+                  <Calendar className="h-3 w-3" strokeWidth={2.25} aria-hidden />
+                  <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>{dateStr}</span>
+                </div>
+
+                {/* CTA row */}
+                {showButtonResolved && (
+                  <div className="mt-2 sm:mt-3 flex items-center gap-3 flex-wrap">
+                    {customButton ?? (
+                      <BannerCta
+                        href={linkUrl}
+                        label="مشاهده پیشنهاد ویژه"
+                        size="lg"
+                        tone="primary"
+                      />
+                    )}
+                    <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                      یا کلیک روی هر نقطه از کارت
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Bottom hairline */}
+            <div
+              aria-hidden
+              className="ad-spotlight-hairline absolute start-0 end-0 bottom-0 h-px"
+            />
+
+            {/* Corner brackets — چهار گوشه، وقتی hover میشه fade in */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-3 sm:inset-4 opacity-0 group-hover/ad:opacity-100 transition-opacity duration-500"
+            >
+              <div className="absolute start-0 top-0 h-3 w-3 border-s border-t border-primary-500/60 rounded-tl-md" />
+              <div className="absolute end-0 top-0 h-3 w-3 border-e border-t border-primary-500/60 rounded-tr-md" />
+              <div className="absolute start-0 bottom-0 h-3 w-3 border-s border-b border-primary-500/60 rounded-bl-md" />
+              <div className="absolute end-0 bottom-0 h-3 w-3 border-e border-b border-primary-500/60 rounded-br-md" />
+            </div>
+          </div>
+        </Link>
+      </div>
+    );
+  }
 
   /* ------------------------------------------------------------------- */
   /*  Image-only (the `image` + `minimal` variants)                      */
@@ -192,8 +478,8 @@ export default function BannerAds({
         className={cn(
           'nc-BannerADS group/ad relative block w-full anim-fade-in-up',
           isMinimal
-            ? 'rounded-2xl overflow-hidden bg-surface-elevated/30 transition-transform duration-300 hover:scale-[1.02]'
-            : 'ad-conic-border rounded-3xl overflow-hidden bg-surface-elevated/40 transition-transform duration-300 hover:-translate-y-0.5',
+            ? 'rounded-2xl overflow-hidden bg-surface-elevated/30 transition-all duration-300 hover:scale-[1.025] hover:shadow-[0_8px_28px_-12px_rgba(94,106,230,0.4)]'
+            : 'ad-conic-border rounded-3xl overflow-hidden bg-surface-elevated/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_44px_-18px_rgba(94,106,230,0.35)]',
           getPositionClass(position),
           className,
         )}
@@ -212,7 +498,7 @@ export default function BannerAds({
             sizes={isMinimal ? '(max-width: 1024px) 100vw, 320px' : '100vw'}
             priority={isLcp}
             fill
-            className="object-cover"
+            className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/ad:scale-[1.04]"
           />
         </div>
 
@@ -226,7 +512,7 @@ export default function BannerAds({
                 : 'end-3 top-3 opacity-0 translate-y-1 group-hover/ad:opacity-100 group-hover/ad:translate-y-0 transition-all duration-300',
             )}
           >
-            <BannerAdLabel text={isMinimal ? 'AD' : 'تبلیغ'} />
+            <BannerAdLabel text={isMinimal ? 'AD' : 'تبلیغ'} variant={isMinimal ? 'minimal' : 'primary'} />
           </div>
         )}
 
@@ -254,93 +540,6 @@ export default function BannerAds({
   }
 
   /* ------------------------------------------------------------------- */
-  /*  Spotlight — full-bleed editorial hero                              */
-  /* ------------------------------------------------------------------- */
-  if (variant === 'spotlight') {
-    return (
-      <Link
-        href={linkUrl}
-        target="_blank"
-        rel="noopener noreferrer sponsored"
-        aria-label={`تبلیغ: ${title}`}
-        className={cn(
-          'nc-BannerADS group/ad relative block w-full overflow-hidden anim-fade-in-up ad-tilt-hover',
-          'rounded-3xl border border-[color:var(--hairline)]',
-          'bg-gradient-to-br from-surface-elevated/80 via-surface-elevated/40 to-surface-elevated/80',
-          'dark:from-surface-elevated/70 dark:via-surface-elevated/40 dark:to-surface-elevated/70',
-          'backdrop-blur-xl',
-          'p-6 sm:p-8 md:p-10',
-          'shadow-[0_2px_24px_-12px_rgba(0,0,0,0.18)]',
-          'transition-shadow duration-300 hover:shadow-[0_8px_32px_-12px_rgba(0,0,0,0.28)]',
-          getPositionClass(position),
-          className,
-        )}
-      >
-        {/* Aurora halo — soft radial gradients that drift */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10"
-          style={{
-            background:
-              'radial-gradient(60% 50% at 20% 0%, var(--aurora-a) 0%, transparent 60%), radial-gradient(60% 50% at 90% 100%, var(--aurora-b) 0%, transparent 60%)',
-          }}
-        />
-
-        {showLabelResolved && (
-          <div className="absolute start-4 top-4 sm:start-6 sm:top-6 z-20">
-            <BannerAdLabel />
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-[1.15fr_1fr] gap-6 md:gap-10 items-center">
-          {/* Image — with scroll-driven mask reveal */}
-          <div className="order-1 md:order-none">
-            <div
-              className={cn(
-                'relative w-full overflow-hidden rounded-2xl',
-                'ring-1 ring-[color:var(--hairline)]',
-                'aspect-[16/9] md:aspect-[16/10]',
-              )}
-            >
-              <div className="absolute inset-0 ad-mask-reveal">
-                <SafeImage
-                  src={imageUrl}
-                  alt={title}
-                  variant="hero"
-                  ratio="16/10"
-                  sizes="(max-width: 768px) 100vw, 60vw"
-                  priority={isLcp}
-                  fill
-                  className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/ad:scale-[1.02]"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="flex flex-col gap-3 sm:gap-4 min-w-0">
-            {showTitleResolved && (
-              <h2 className="text-xl sm:text-2xl md:text-[26px] font-semibold tracking-tight leading-tight text-neutral-900 dark:text-white line-clamp-2 text-balance">
-                {title}
-              </h2>
-            )}
-            {showDescriptionResolved && description && (
-              <p className="text-sm sm:text-[15px] text-neutral-600 dark:text-neutral-400 leading-relaxed line-clamp-2 sm:line-clamp-3">
-                {description}
-              </p>
-            )}
-            {showButtonResolved && (
-              <div className="mt-1 sm:mt-2">
-                {customButton ?? <BannerCta href={linkUrl} label="مشاهده پیشنهاد" size="lg" />}
-              </div>
-            )}
-          </div>
-        </div>
-      </Link>
-    );
-  }
-
-  /* ------------------------------------------------------------------- */
   /*  Rich — split image + text card                                     */
   /* ------------------------------------------------------------------- */
   return (
@@ -352,7 +551,9 @@ export default function BannerAds({
         'bg-white/[0.04] dark:bg-white/[0.06]',
         'backdrop-blur-xl',
         'shadow-[0_2px_24px_-12px_rgba(0,0,0,0.18)]',
-        'transition-shadow duration-300 hover:shadow-[0_8px_32px_-12px_rgba(0,0,0,0.24)]',
+        'transition-all duration-300',
+        'hover:shadow-[0_18px_44px_-18px_rgba(94,106,230,0.32)]',
+        'hover:border-primary-500/30',
         getPositionClass(position),
         className,
       )}
@@ -366,19 +567,29 @@ export default function BannerAds({
         className="absolute inset-0 z-0"
       />
 
-      {/* Vertical accent strip (RTL start edge) */}
+      {/* Vertical accent strip (RTL start edge) — با glow نرم */}
       <div
         aria-hidden
-        className="absolute inset-y-0 start-0 w-1 sm:w-1.5"
+        className="absolute inset-y-0 start-0 w-1 sm:w-1.5 shadow-[0_0_24px_-4px_rgba(94,106,230,0.6)]"
         style={{
           background:
             'linear-gradient(180deg, var(--aurora-a), var(--primary-500) 50%, var(--aurora-b))',
         }}
       />
 
+      {/* Top hairline gradient — وقتی hover میشه glow می‌گیره */}
+      <div
+        aria-hidden
+        className="absolute start-0 end-0 top-0 h-px opacity-50"
+        style={{
+          background:
+            'linear-gradient(90deg, transparent, var(--primary-500) 50%, transparent)',
+        }}
+      />
+
       <div className="relative z-10 grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-5 sm:gap-6 md:gap-8 items-center p-5 sm:p-6 md:p-7">
-        {/* Image */}
-        <div className="relative w-full sm:w-64 md:w-72 lg:w-80 aspect-[16/10] overflow-hidden rounded-2xl ring-1 ring-[color:var(--hairline)]">
+        {/* Image — با hover scale 1.04 و ring glow */}
+        <div className="relative w-full sm:w-64 md:w-72 lg:w-80 aspect-[16/10] overflow-hidden rounded-2xl ring-1 ring-[color:var(--hairline)] shadow-sm transition-all duration-500 group-hover:ring-primary-500/30">
           <SafeImage
             src={imageUrl}
             alt={title}
@@ -386,7 +597,16 @@ export default function BannerAds({
             ratio="16/10"
             sizes="(max-width: 640px) 100vw, 320px"
             fill
-            className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[1.04]"
+            className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"
+          />
+          {/* Subtle gradient overlay برای عمق */}
+          <div
+            aria-hidden
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background:
+                'linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.18) 100%)',
+            }}
           />
         </div>
 
@@ -409,7 +629,7 @@ export default function BannerAds({
           )}
           {showButtonResolved && (
             <div className="mt-1 sm:mt-2">
-              {customButton ?? <BannerCta href={linkUrl} size="md" />}
+              {customButton ?? <BannerCta href={linkUrl} size="md" tone="primary" />}
             </div>
           )}
         </div>
