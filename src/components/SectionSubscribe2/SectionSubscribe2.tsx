@@ -1,8 +1,7 @@
 import type { FC } from 'react';
-import Image from 'next/image';
+import { Mail, Sparkles, Bell, Gift, Users, CheckCircle2 } from 'lucide-react';
 import SubscribeForm from './SubscribeForm';
 import { subscribeToNewsletter } from '@/actions/newsletter';
-import { Mail, Sparkles, Bell, Gift } from 'lucide-react';
 
 export interface SectionSubscribe2Props {
   className?: string;
@@ -14,7 +13,6 @@ const SectionSubscribe2: FC<SectionSubscribe2Props> = async ({ className = '' })
       className={`nc-SectionSubscribe2 relative ${className}`}
       dir="rtl"
     >
-      {/* Main Container */}
       <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 dark:from-primary-800 dark:via-primary-900 dark:to-neutral-900">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
@@ -23,96 +21,75 @@ const SectionSubscribe2: FC<SectionSubscribe2Props> = async ({ className = '' })
           }} />
         </div>
 
-        {/* Floating Decorations - Smaller on mobile */}
-        <div className="absolute top-5 sm:top-10 start-5 sm:start-10 w-12 sm:w-20 h-12 sm:h-20 bg-white/10 rounded-full blur-xl sm:blur-2xl" />
-        <div className="absolute bottom-5 sm:bottom-10 end-5 sm:end-10 w-20 sm:w-32 h-20 sm:h-32 bg-white/10 rounded-full blur-2xl sm:blur-3xl" />
+        {/* Floating Decorations — کوچک‌تر و یکی کمتر */}
+        <div className="absolute top-3 sm:top-6 start-3 sm:start-6 w-10 sm:w-16 h-10 sm:h-16 bg-white/10 rounded-full blur-xl sm:blur-2xl" />
+        <div className="absolute bottom-3 sm:bottom-6 end-3 sm:end-6 w-14 sm:w-20 h-14 sm:h-20 bg-white/10 rounded-full blur-2xl" />
 
-        {/* Content */}
-        <div className="relative flex flex-col lg:flex-row items-center gap-5 sm:gap-6 lg:gap-8 p-4 sm:p-6 lg:p-8">
-          {/* Text Content */}
-          <div className="flex-1 text-center lg:text-start">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/10 backdrop-blur-sm rounded-full mb-4 sm:mb-6 border border-white/20">
-              <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300" />
-              <span className="text-xs sm:text-sm font-medium text-white/90">خبرنامه هفتگی</span>
-              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300" />
-            </div>
-
-            {/* Title */}
-            <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-white leading-snug mb-2 sm:mb-3">
-              به خبرنامه ما
-              <span className="block text-amber-300">بپیوندید</span>
-            </h2>
-
-            {/* Description */}
-            <p className="text-white/80 text-sm sm:text-base mb-4 sm:mb-6 max-w-md mx-auto lg:mx-0 leading-relaxed">
-              آخرین اخبار بازارهای مالی و تحلیل‌های تخصصی را مستقیماً در ایمیل خود دریافت کنید.
-            </p>
-
-            {/* Features - Hidden on small mobile */}
-            <div className="hidden sm:flex flex-col sm:flex-row gap-3 mb-5 sm:mb-6 justify-center lg:justify-start">
-              <div className="flex items-center gap-2 text-white/90">
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                  <Bell className="w-4 h-4 text-amber-300" />
-                </div>
-                <span className="text-xs sm:text-sm font-medium">اطلاع‌رسانی فوری</span>
-              </div>
-              <div className="flex items-center gap-2 text-white/90">
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                  <Gift className="w-4 h-4 text-amber-300" />
-                </div>
-                <span className="text-xs sm:text-sm font-medium">محتوای انحصاری</span>
-              </div>
-            </div>
-
-            {/* Subscribe Form */}
-            <div className="max-w-md mx-auto lg:mx-0">
-              <SubscribeForm onSubmit={subscribeToNewsletter} />
-            </div>
-
-            {/* Trust Text */}
-            <p className="mt-4 sm:mt-6 text-white/50 text-[10px] sm:text-xs">
-              بیش از ۱۰,۰۰۰ کاربر عضو خبرنامه ما هستند
-            </p>
+        {/* Content — تک‌ستونه چگال، فرم + 3 آمار فشرده در پایین */}
+        <div className="relative flex flex-col items-center text-center p-5 sm:p-7 lg:p-9 gap-4 max-w-3xl mx-auto">
+          {/* Badge — فشرده‌تر */}
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
+            <Mail className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-300" />
+            <span className="text-[10.5px] sm:text-xs font-medium text-white/90">خبرنامه هفتگی</span>
+            <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-300" />
           </div>
 
-          {/* Image - Hidden on small mobile, shown on sm+ */}
-          <div className="hidden sm:block flex-1 w-full max-w-sm lg:max-w-none">
-            <div className="relative aspect-square lg:aspect-[4/3]">
-              {/* Glow Effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-400/30 to-primary-400/30 rounded-2xl sm:rounded-3xl blur-xl sm:blur-2xl scale-90" />
-              
-              {/* Image Container */}
-              <div className="relative h-full rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-white/10 shadow-2xl">
-                <Image
-                  alt="عضویت در خبرنامه"
-                  src="/images/subcribe.svg"
-                  fill
-                  className="object-cover transition-transform duration-500 hover:scale-105"
-                  priority
-                />
-              </div>
+          {/* Title — یک‌خطی، جمع‌وجور */}
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-white leading-tight">
+            به <span className="text-amber-300">خبرنامه ما</span> بپیوندید
+          </h2>
 
-              {/* Floating Card - Adjusted for mobile */}
-              <div className="absolute -bottom-2 -start-2 sm:bottom-4 sm:start-4 bg-white dark:bg-neutral-800 rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-xl border border-neutral-100 dark:border-neutral-700">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
-                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white">رایگان و بدون اسپم</p>
-                    <p className="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400">هر زمان لغو اشتراک</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+          {/* Description — یک‌خطی */}
+          <p className="text-white/80 text-[13px] sm:text-sm leading-relaxed max-w-xl">
+            آخرین اخبار بازارهای مالی و تحلیل‌های تخصصی، مستقیماً در ایمیل شما.
+          </p>
+
+          {/* Subscribe Form */}
+          <div className="w-full max-w-md pt-1">
+            <SubscribeForm onSubmit={subscribeToNewsletter} />
           </div>
+
+          {/* Stats strip — 3 آمار افقی به جای تصویر دکوراتیو 320px */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-2xl pt-3 sm:pt-4 border-t border-white/10">
+            <StatCell icon={<Users className="h-3.5 w-3.5" strokeWidth={2.25} />} value="۱۰,۲۴۷" label="عضو فعال" />
+            <StatCell icon={<Bell className="h-3.5 w-3.5" strokeWidth={2.25} />} value="هفتگی" label="ارسال منظم" />
+            <StatCell icon={<CheckCircle2 className="h-3.5 w-3.5" strokeWidth={2.25} />} value="۱۰۰٪" label="بدون اسپم" />
+          </div>
+
+          {/* Trust Text */}
+          <p className="text-white/50 text-[10px] sm:text-[11px]">
+            هر زمان که بخواهید می‌توانید اشتراک را لغو کنید
+          </p>
         </div>
       </div>
     </section>
   );
 };
+
+function StatCell({
+  icon,
+  value,
+  label,
+}: {
+  icon: React.ReactNode;
+  value: string;
+  label: string;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-0.5 sm:gap-1 py-1">
+      <div className="flex items-center gap-1 text-amber-300">
+        {icon}
+      </div>
+      <span
+        className="text-sm sm:text-base font-bold text-white tabular-nums"
+        dir="ltr"
+        style={{ unicodeBidi: 'isolate' }}
+      >
+        {value}
+      </span>
+      <span className="text-[10px] sm:text-[11px] text-white/60">{label}</span>
+    </div>
+  );
+}
 
 export default SectionSubscribe2;

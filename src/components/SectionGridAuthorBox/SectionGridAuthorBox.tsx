@@ -1,10 +1,12 @@
 'use client';
 
 import React, { type FC } from 'react';
+import Link from 'next/link';
 import CardAuthorBox from '@/components/CardAuthorBox/CardAuthorBox';
 import type { TopAuthor } from '@/actions/getTopAuthors';
 import { motion } from '@/lib/motion-shim';
-import { Crown, Users } from 'lucide-react';
+import { Crown } from 'lucide-react';
+import { SectionHeader } from '@/components/SectionHeader';
 
 export interface SectionGridAuthorBoxProps {
   className?: string;
@@ -42,24 +44,17 @@ const SectionGridAuthorBox: FC<SectionGridAuthorBoxProps> = ({ className = '', a
 
   return (
     <section className={`nc-SectionGridAuthorBox relative ${className}`}>
-      {/* Header */}
-      <div className="text-center mb-6 sm:mb-10">
-        <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1 sm:py-1.5 bg-amber-100/80 dark:bg-amber-900/30 rounded-full mb-3 sm:mb-4">
-          <Crown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600 dark:text-amber-400" />
-          <span className="text-xs sm:text-sm font-medium text-amber-700 dark:text-amber-300">
-            رتبه‌بندی بر اساس تعداد مقالات
-          </span>
-        </div>
-        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-neutral-900 dark:text-white flex items-center justify-center gap-2 sm:gap-3">
-          <Users className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-primary-500" />
-          ۵ نویسنده برتر ماه
-        </h2>
-        <div className="mt-2 sm:mt-3 mx-auto w-16 sm:w-20 h-1 bg-gradient-to-r from-amber-400 to-amber-600 rounded-full" />
-      </div>
+      <SectionHeader
+        icon={<Crown className="h-4 w-4 sm:h-4.5 sm:w-4.5" strokeWidth={2.25} />}
+        title="نویسندگان برتر"
+        subtitle={`${topAuthors.length} نویسنده فعال این ماه بر اساس تعداد مقالات`}
+        accent="amber"
+        viewAll={{ label: 'مشاهده همه', href: '/authors' }}
+      />
 
       {/* Authors Grid */}
-      <motion.div 
-        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6"
+      <motion.div
+        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4"
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
@@ -71,10 +66,6 @@ const SectionGridAuthorBox: FC<SectionGridAuthorBoxProps> = ({ className = '', a
           </motion.div>
         ))}
       </motion.div>
-
-      {/* Background Decorations */}
-      <div className="absolute -top-10 start-1/4 w-40 h-40 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-10 end-1/4 w-40 h-40 bg-primary-400/10 rounded-full blur-3xl pointer-events-none" />
     </section>
   );
 };

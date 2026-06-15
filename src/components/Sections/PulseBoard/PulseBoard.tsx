@@ -205,8 +205,8 @@ export function PulseBoard({
         {/* ================================================================== */}
         {/*  Header — Sticky inside panel                                       */}
         {/* ================================================================== */}
-        <header className="relative px-4 sm:px-7 lg:px-10 pt-5 sm:pt-7 pb-3 sm:pb-5">
-          <div className="flex flex-col gap-3.5 sm:gap-4">
+        <header className="relative px-4 sm:px-7 lg:px-10 pt-4 sm:pt-5 pb-3 sm:pb-4">
+          <div className="flex flex-col gap-3">
             {/* Top row: icon + title + clock + view toggle */}
             <div className="flex items-center gap-3 sm:gap-4">
               {/* Animated icon */}
@@ -233,7 +233,7 @@ export function PulseBoard({
                   )}
                 >
                   <Newspaper
-                    className="h-5 w-5 sm:h-6 sm:w-6 transition-colors duration-700"
+                    className="h-4.5 w-4.5 sm:h-5 sm:w-5 transition-colors duration-700"
                     style={{ color: accent.color }}
                     strokeWidth={1.75}
                     aria-hidden
@@ -256,7 +256,7 @@ export function PulseBoard({
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-lg sm:text-2xl lg:text-[28px] font-bold tracking-tight text-neutral-900 dark:text-white text-balance">
+                  <h2 className="text-lg sm:text-xl lg:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white text-balance">
                     آخرین مقالات
                   </h2>
                   <Sparkles
@@ -265,7 +265,7 @@ export function PulseBoard({
                     aria-hidden
                   />
                 </div>
-                <p className="mt-0.5 text-[11.5px] sm:text-[13px] text-neutral-500 dark:text-neutral-400 font-vazirmatn">
+                <p className="mt-0.5 text-[11.5px] sm:text-[12.5px] text-neutral-500 dark:text-neutral-400 font-vazirmatn">
                   تازه‌ترین تحلیل‌ها و گزارش‌های بازارهای مالی
                 </p>
               </div>
@@ -403,7 +403,7 @@ export function PulseBoard({
                 })}
               </div>
 
-              {/* Counter */}
+              {/* Counter + Archive CTA inline */}
               <div className="inline-flex items-center gap-1.5 text-[10.5px] sm:text-[11.5px] text-neutral-500 dark:text-neutral-400 font-vazirmatn tabular-nums">
                 <Radio className="h-3 w-3" strokeWidth={2.25} aria-hidden />
                 <span>پخش زنده‌ی</span>
@@ -416,8 +416,39 @@ export function PulseBoard({
                 >
                   <AnimatedNumber value={totalCount} suffix=" مقاله" />
                 </span>
+                <span className="text-neutral-300 dark:text-neutral-600 mx-1">·</span>
+                <span>
+                  نمایش{' '}
+                  <span className="font-semibold text-neutral-900 dark:text-white">
+                    {toPersianNumber(formatNumber(filteredPosts.length))}
+                  </span>{' '}
+                  مقاله
+                </span>
               </div>
             </div>
+
+            {/* Row 2: Archive CTA (در سمت چپ RTL) */}
+            <Link
+              href={`/archive${activeCategory === 'همه' ? '' : `/${encodeURIComponent(activeCategory)}`}`}
+              className={cn(
+                'group/all inline-flex items-center gap-1.5 self-end sm:self-auto',
+                'px-3.5 py-1.5 rounded-full',
+                'text-[11.5px] sm:text-[12.5px] font-semibold text-white',
+                'transition-all duration-300 hover:gap-2.5',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
+              )}
+              style={{
+                backgroundColor: accent.color,
+                boxShadow: `0 4px 14px -4px ${accent.color}80`,
+              }}
+            >
+              <span>مشاهده آرشیو کامل</span>
+              <ArrowLeft
+                className="h-3.5 w-3.5 transition-transform duration-300 group-hover/all:-translate-x-1 rtl:rotate-180"
+                strokeWidth={2.5}
+                aria-hidden
+              />
+            </Link>
           </div>
         </header>
 
@@ -514,47 +545,6 @@ export function PulseBoard({
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
-
-        {/* ================================================================== */}
-        {/*  Footer — View all link                                            */}
-        {/* ================================================================== */}
-        <div
-          className={cn(
-            'relative flex flex-wrap items-center justify-between gap-3',
-            'px-4 sm:px-7 lg:px-10 py-3.5 sm:py-4',
-            'border-t border-neutral-200/60 dark:border-neutral-800/70',
-            'bg-white/30 dark:bg-neutral-900/30 backdrop-blur-sm',
-          )}
-        >
-          <div className="text-[11px] sm:text-[12px] text-neutral-500 dark:text-neutral-400 font-vazirmatn">
-            نمایش <span className="font-semibold text-neutral-900 dark:text-white tabular-nums">
-              {toPersianNumber(formatNumber(filteredPosts.length))}
-            </span>{' '}
-            مقاله از {toPersianNumber(formatNumber(totalCount))} مقاله
-          </div>
-          <Link
-            href={`/archive${activeCategory === 'همه' ? '' : `/${encodeURIComponent(activeCategory)}`}`}
-            className={cn(
-              'group/all inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full',
-              'text-[11.5px] sm:text-[12.5px] font-semibold',
-              'text-white',
-              'transition-all duration-300',
-              'hover:gap-2.5',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
-            )}
-            style={{
-              backgroundColor: accent.color,
-              boxShadow: `0 4px 14px -4px ${accent.color}80`,
-            }}
-          >
-            مشاهده آرشیو کامل
-            <ArrowLeft
-              className="h-3.5 w-3.5 transition-transform duration-300 group-hover/all:-translate-x-1"
-              strokeWidth={2.5}
-              aria-hidden
-            />
-          </Link>
         </div>
       </motion.div>
     </section>
