@@ -32,6 +32,7 @@ const Header = () => {
           backdrop-blur-xl backdrop-saturate-150
           supports-[backdrop-filter]:bg-white/60
           dark:supports-[backdrop-filter]:bg-neutral-950/60
+          header-glass-scrolled
         "
       />
 
@@ -53,6 +54,7 @@ const Header = () => {
         className="
           absolute inset-x-0 bottom-0 h-px -z-10
           bg-neutral-200/70 dark:bg-neutral-800/70
+          header-border-scrolled
         "
       />
 

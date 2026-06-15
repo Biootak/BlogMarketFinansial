@@ -20,3 +20,87 @@
     visibility: visible;
   }
 }
+
+/* ============================================================================
+   Modern 2026 Scroll-driven Header Animations (CSS-Only)
+   ============================================================================ */
+
+@keyframes header-glass-fade {
+  from {
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(0px);
+  }
+  to {
+    background-color: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(24px);
+  }
+}
+
+@keyframes header-glass-fade-dark {
+  from {
+    background-color: rgba(12, 14, 21, 0.1);
+    backdrop-filter: blur(0px);
+  }
+  to {
+    background-color: rgba(12, 14, 21, 0.75);
+    backdrop-filter: blur(24px);
+  }
+}
+
+@keyframes header-border-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes main-nav-shrink {
+  from {
+    height: 4.5rem; /* 72px */
+  }
+  to {
+    height: 3.5rem; /* 56px */
+  }
+}
+
+/* Responsive sticky header classes */
+.header-glass-scrolled {
+  animation: header-glass-fade linear both;
+  animation-timeline: scroll(root block);
+  animation-range: 0px 80px;
+}
+
+:is(.dark .header-glass-scrolled) {
+  animation: header-glass-fade-dark linear both;
+  animation-timeline: scroll(root block);
+  animation-range: 0px 80px;
+}
+
+.header-border-scrolled {
+  animation: header-border-fade linear both;
+  animation-timeline: scroll(root block);
+  animation-range: 0px 80px;
+}
+
+.main-nav-container {
+  height: 3.5rem; /* 56px - default fallback on mobile */
+  transition: height 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (min-width: 1024px) {
+  .main-nav-container {
+    height: 4rem; /* 64px - fallback on desktop */
+  }
+  
+  @supports (animation-timeline: scroll()) {
+    .main-nav-container {
+      height: 4.5rem; /* Start taller (72px) at the top of the page */
+      animation: main-nav-shrink linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0px 80px;
+    }
+  }
+}
+
