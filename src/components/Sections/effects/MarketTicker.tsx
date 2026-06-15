@@ -187,7 +187,8 @@ export default function MarketTicker({
           )}
         >
           {lastUpdate && (
-            <span>
+            // dir="ltr" + isolate: تضمین می‌کنه ترتیب HH:MM در RTL حفظ بشه
+            <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>
               {toPersianNumber(
                 lastUpdate.toLocaleTimeString('fa-IR', {
                   hour: '2-digit',

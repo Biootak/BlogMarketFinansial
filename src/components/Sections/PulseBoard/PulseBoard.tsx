@@ -283,7 +283,8 @@ export function PulseBoard({
               >
                 {(
                   [
-                    { v: 'bento' as ViewMode, label: 'بنتو', Icon: LayoutGrid },
+                    // «شاخصی» = چیدمان موزائیکی/کاشی‌مانند — جایگزین فارسی برای «بنتو»
+                    { v: 'bento' as ViewMode, label: 'شاخصی', Icon: LayoutGrid },
                     { v: 'rail' as ViewMode, label: 'فهرست', Icon: ListIcon },
                   ] as const
                 ).map(({ v, label, Icon }) => {

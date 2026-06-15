@@ -64,6 +64,10 @@ export default function LiveClock({
         'tabular-nums',
         className,
       )}
+      // dir="ltr" + unicode-bidi: isolate تضمین می‌کنه ترتیب ارقام
+      // در containerهای RTL (مثل کل صفحه) حفظ بشه: HH:MM نه MM:HH
+      dir="ltr"
+      style={{ unicodeBidi: 'isolate' }}
       suppressHydrationWarning
     >
       {showIcon && (
