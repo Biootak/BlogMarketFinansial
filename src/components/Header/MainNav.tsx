@@ -39,20 +39,30 @@ export default async function MainNav() {
         <div
           className="
             grid items-center
-            grid-cols-[auto_1fr_auto]
-            @md/nav:grid-cols-[1fr_auto_1fr]
+            grid-cols-[auto_1fr]
+            @lg/nav:grid-cols-[1fr_auto_1fr]
             h-12 sm:h-14
             gap-2 sm:gap-4
           "
         >
-          {/* ستون راست (در RTL) */}
+          {/* ستون راست (در RTL: لوگو) */}
           <div className="flex items-center justify-start min-w-0">
-            {/* تبلت و پایین‌تر: hamburger */}
-            <div className="flex @md/nav:hidden items-center gap-1">
+            <Logo variant="modern" />
+          </div>
+
+          {/* ستون وسط — Navigation (فقط lg+) */}
+          <div className="hidden @lg/nav:flex items-center justify-center min-w-0 col-start-2 row-start-1">
+            <Navigation />
+          </div>
+
+          {/* ستون چپ (در RTL: اکشن‌ها) */}
+          <div className="flex items-center justify-end gap-1 sm:gap-2 min-w-0 col-start-2 @lg/nav:col-start-3 row-start-1">
+            {/* موبایل: فقط hamburger + user/auth */}
+            <div className="flex @lg/nav:hidden items-center gap-1">
               <div
                 className="
                   flex items-center justify-center
-                  size-9 sm:size-10 rounded-xl
+                  size-10 rounded-xl
                   text-neutral-600 dark:text-neutral-300
                   hover:bg-neutral-100 dark:hover:bg-neutral-800/80
                   transition-colors duration-200
@@ -60,178 +70,151 @@ export default async function MainNav() {
               >
                 <MenuBar />
               </div>
+              {!session?.user ? (
+                <Link
+                  href="/signin"
+                  className="
+                    group flex items-center justify-center
+                    size-10 rounded-xl
+                    text-neutral-600 dark:text-neutral-300
+                    hover:bg-neutral-100 dark:hover:bg-neutral-800/80
+                    transition-colors duration-200
+                  "
+                  aria-label="ورود به حساب کاربری"
+                >
+                  <User className="size-5" strokeWidth={1.8} />
+                </Link>
+              ) : (
+                <div
+                  className="
+                    flex items-center justify-center
+                    size-10 rounded-xl
+                    hover:bg-neutral-100 dark:hover:bg-neutral-800/80
+                    transition-colors duration-200
+                  "
+                >
+                  <AvatarDropdown />
+                </div>
+              )}
             </div>
 
-            {/* تبلت به بالا: خالی (برای تقارن) */}
-          </div>
+            {/* دسکتاپ: search + notify + avatar/sign-in */}
+            <div className="hidden @lg/nav:flex items-center gap-1.5">
+              <div
+                className="
+                  flex items-center justify-center
+                  size-10 rounded-xl
+                  text-neutral-600 dark:text-neutral-300
+                  hover:bg-neutral-100 dark:hover:bg-neutral-800/80
+                  transition-colors duration-200
+                "
+              >
+                <SearchModal />
+              </div>
 
-          {/* ستون وسط */}
-          <div className="flex items-center justify-center min-w-0">
-            {/* تمام سایزها: لوگو در مرکز */}
-            <div className="@md/nav:hidden"><Logo variant="modern" /></div>
-            {/* تبلت به بالا: ناوبری در مرکز */}
-            <div className="hidden @md/nav:flex items-center justify-center min-w-0">
-              <Navigation />
-            </div>
-          </div>
-
-          {/* ستون چپ (در RTL) */}
-          <div className="flex items-center justify-end gap-1 sm:gap-2 min-w-0">
-            {/* تمام سایزها: لوگو در تبلت به بالا در این ستون (برای تقارن) */}
-            <div className="hidden @md/nav:flex items-center justify-center min-w-0">
-              <Logo variant="modern" />
-            </div>
-
-            {/* تمام سایزها: اکشن‌ها */}
-            <div className="flex items-center gap-1 sm:gap-1.5">
-              {/* تبلت و پایین‌تر: only user/auth */}
-              <div className="flex @md/nav:hidden items-center gap-1">
-                {!session?.user ? (
-                  <Link
-                    href="/signin"
+              {session?.user && (
+                <>
+                  <div
                     className="
-                      group flex items-center justify-center
-                      size-9 sm:size-10 rounded-xl
+                      flex items-center justify-center
+                      size-10 rounded-xl
                       text-neutral-600 dark:text-neutral-300
                       hover:bg-neutral-100 dark:hover:bg-neutral-800/80
                       transition-colors duration-200
                     "
-                    aria-label="ورود به حساب کاربری"
                   >
-                    <User className="size-4 sm:size-5" strokeWidth={1.8} />
-                  </Link>
-                ) : (
+                    <NotifyDropdown />
+                  </div>
                   <div
                     className="
                       flex items-center justify-center
-                      size-9 sm:size-10 rounded-xl
+                      size-10 rounded-xl
                       hover:bg-neutral-100 dark:hover:bg-neutral-800/80
                       transition-colors duration-200
                     "
                   >
                     <AvatarDropdown />
                   </div>
-                )}
-              </div>
+                </>
+              )}
 
-              {/* تبلت به بالا: full actions */}
-              <div className="hidden @md/nav:flex items-center gap-1.5">
-                <div
-                  className="
-                    flex items-center justify-center
-                    size-10 rounded-xl
-                    text-neutral-600 dark:text-neutral-300
-                    hover:bg-neutral-100 dark:hover:bg-neutral-800/80
-                    transition-colors duration-200
-                  "
-                >
-                  <SearchModal />
-                </div>
-
-                {session?.user && (
-                  <>
-                    <div
+              {!session?.user && (
+                <div className="flex items-center gap-2 me-1">
+                  <Link
+                    href="/signin"
+                    className="
+                      group relative inline-flex items-center justify-center gap-1.5
+                      h-10 px-5
+                      text-sm font-semibold text-white
+                      rounded-xl overflow-hidden
+                      transition-transform duration-200
+                      hover:scale-[1.02] active:scale-[0.98]
+                    "
+                  >
+                    <span
+                      aria-hidden
                       className="
-                        flex items-center justify-center
-                        size-10 rounded-xl
-                        text-neutral-600 dark:text-neutral-300
-                        hover:bg-neutral-100 dark:hover:bg-neutral-800/80
-                        transition-colors duration-200
+                        absolute inset-0
+                        bg-gradient-to-r from-primary-500 via-primary-600 to-indigo-600
+                      "
+                    />
+                    <span
+                      aria-hidden
+                      className="
+                        absolute inset-0
+                        bg-gradient-to-r from-transparent via-white/20 to-transparent
+                        -translate-x-full
+                        group-hover:translate-x-full
+                        transition-transform duration-700
+                      "
+                    />
+                    <Sparkles className="relative size-4" aria-hidden />
+                    <span className="relative">ورود</span>
+                  </Link>
+                  <Link
+                    href="/signup"
+                    className="
+                      group relative inline-flex items-center justify-center
+                      h-10 px-5
+                      text-sm font-semibold
+                      rounded-xl overflow-hidden
+                      transition-transform duration-200
+                      hover:scale-[1.02] active:scale-[0.98]
+                    "
+                  >
+                    <span
+                      aria-hidden
+                      className="
+                        absolute inset-0 rounded-xl
+                        bg-gradient-to-r from-primary-500 to-indigo-500
+                        p-[1.5px]
                       "
                     >
-                      <NotifyDropdown />
-                    </div>
-                    <div
-                      className="
-                        flex items-center justify-center
-                        size-10 rounded-xl
-                        hover:bg-neutral-100 dark:hover:bg-neutral-800/80
-                        transition-colors duration-200
-                      "
-                    >
-                      <AvatarDropdown />
-                    </div>
-                  </>
-                )}
-
-                {!session?.user && (
-                  <div className="flex items-center gap-2 me-1">
-                    <Link
-                      href="/signin"
-                      className="
-                        group relative inline-flex items-center justify-center gap-1.5
-                        h-9 sm:h-10 px-4 sm:px-5
-                        text-xs sm:text-sm font-semibold text-white
-                        rounded-xl overflow-hidden
-                        transition-transform duration-200
-                        hover:scale-[1.02] active:scale-[0.98]
-                      "
-                    >
-                      <span
-                        aria-hidden
-                        className="
-                          absolute inset-0
-                          bg-gradient-to-r from-primary-500 via-primary-600 to-indigo-600
-                        "
-                      />
-                      <span
-                        aria-hidden
-                        className="
-                          absolute inset-0
-                          bg-gradient-to-r from-transparent via-white/20 to-transparent
-                          -translate-x-full
-                          group-hover:translate-x-full
-                          transition-transform duration-700
-                        "
-                      />
-                      <Sparkles className="relative size-3.5 sm:size-4" aria-hidden />
-                      <span className="relative">ورود</span>
-                    </Link>
-                    <Link
-                      href="/signup"
-                      className="
-                        group relative inline-flex items-center justify-center
-                        h-9 sm:h-10 px-4 sm:px-5
-                        text-xs sm:text-sm font-semibold
-                        rounded-xl overflow-hidden
-                        transition-transform duration-200
-                        hover:scale-[1.02] active:scale-[0.98]
-                      "
-                    >
-                      <span
-                        aria-hidden
-                        className="
-                          absolute inset-0 rounded-xl
-                          bg-gradient-to-r from-primary-500 to-indigo-500
-                          p-[1.5px]
-                        "
-                      >
-                        <span
-                          aria-hidden
-                          className="
-                            absolute inset-[1.5px] rounded-[10px]
-                            bg-white dark:bg-neutral-900
-                          "
-                        />
-                      </span>
                       <span
                         aria-hidden
                         className="
                           absolute inset-[1.5px] rounded-[10px]
-                          bg-gradient-to-r
-                          from-primary-50 to-indigo-50
-                          dark:from-primary-950/50 dark:to-indigo-950/50
-                          opacity-0 group-hover:opacity-100
-                          transition-opacity duration-300
+                          bg-white dark:bg-neutral-900
                         "
                       />
-                      <span className="relative text-primary-600 dark:text-primary-400">
-                        ثبت‌نام
-                      </span>
-                    </Link>
-                  </div>
-                )}
-              </div>
+                    </span>
+                    <span
+                      aria-hidden
+                      className="
+                        absolute inset-[1.5px] rounded-[10px]
+                        bg-gradient-to-r
+                        from-primary-50 to-indigo-50
+                        dark:from-primary-950/50 dark:to-indigo-950/50
+                        opacity-0 group-hover:opacity-100
+                        transition-opacity duration-300
+                      "
+                    />
+                    <span className="relative text-primary-600 dark:text-primary-400">
+                      ثبت‌نام
+                    </span>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>

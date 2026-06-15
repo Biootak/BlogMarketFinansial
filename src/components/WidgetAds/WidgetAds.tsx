@@ -16,11 +16,11 @@ const WidgetAds: React.FC<WidgetAdsProps> = ({ className = '', ads = [] }) => {
   }
 
   return (
-    <div className={`nc-WidgetAds w-full overflow-hidden ${className}`}>
-      <div className="flex flex-col w-full">
+    <div className={`nc-WidgetAds w-full ${className}`}>
+      <div className="flex flex-col w-full gap-4">
         {lastThreeAds.map((ad, index) => (
-          <div key={index} className="w-full ">
-            <BannerAds ad={ad} imageOnly={true} className="w-full h-full mb-4 " />
+          <div key={index} className="w-full">
+            <BannerAds ad={ad} imageOnly={true} className="w-full" />
           </div>
         ))}
       </div>

@@ -29,9 +29,11 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   compress: true,
   poweredByHeader: false,
-
-  // Disable source maps in development to avoid warnings
-  productionBrowserSourceMaps: false,
+  // Enable static asset compression (gzip). For production behind a CDN
+  // the CDN usually does this; when running standalone (e.g. `next start`)
+  // we want Next to do it too so the size that the client parses is
+  // smaller on cold cache.
+  productionBrowserSourceMaps: true,
 
   // Rewrites برای serve کردن فایل‌های آپلود شده در production
   async rewrites() {
@@ -53,6 +55,18 @@ const nextConfig: NextConfig = {
           {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      // Cache headers برای مسیرهای عمومی سایت (HTML و RSC)
+      // این کمک می‌کنه back/forward cache کار کنه و CDN بتونه
+      // نسخه‌ی SSR شده رو نگه داره.
+      {
+        source: '/((?!api|dashboard|setup|signin|signup|_next).*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, s-maxage=300, stale-while-revalidate=86400',
           },
         ],
       },
@@ -184,7 +198,7 @@ const nextConfig: NextConfig = {
       dynamic: 30,
       static: 180,
     },
-    optimizePackageImports: ['lucide-react', 'react-icons', 'framer-motion'],
+    optimizePackageImports: ['lucide-react', 'react-icons'],
   },
 
   // 2026-06-14: keepAlive on the global HTTP agent. Re-establishing
@@ -194,7 +208,7 @@ const nextConfig: NextConfig = {
     keepAlive: true,
   },
 
-  transpilePackages: ['@aws-sdk/client-s3', '@aws-sdk/s3-request-presigner', 'framer-motion'],
+  transpilePackages: ['@aws-sdk/client-s3', '@aws-sdk/s3-request-presigner'],
 };
 
 // Sentry configuration

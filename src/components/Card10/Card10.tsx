@@ -25,7 +25,7 @@ const Card10: FC<Card10Props> = ({ className = 'h-full', post }) => {
       onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => setIsHover(false)}
     >
-      <Link href={getPostLink(postType, slug)} className="absolute inset-0" />
+      <Link href={getPostLink(postType, slug)} className="absolute inset-0" tabIndex={-1} />
       <div className="block group rounded-xl sm:rounded-2xl flex-shrink-0 relative w-full aspect-[4/3] sm:aspect-[9/8] overflow-hidden z-0">
         <div>
           <PostFeaturedMedia post={post} isHover={isHover} />
@@ -34,6 +34,8 @@ const Card10: FC<Card10Props> = ({ className = 'h-full', post }) => {
         <Link
           href={getPostLink(postType, slug)}
           className="absolute inset-0 bg-neutral-900 bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity"
+          tabIndex={-1}
+          aria-hidden
         />
       </div>
       <div className="absolute top-2 sm:top-3 inset-x-2 sm:inset-x-3 flex justify-between items-start gap-2 sm:gap-4 z-10">

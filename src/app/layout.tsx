@@ -1,3 +1,14 @@
+/**
+ * @file Root layout (server component)
+ *
+ * Auth is opt-in per route — we do NOT await `auth()` here because every
+ * public page would pay the cost of loading the next-auth runtime
+ * (and bcrypt + PrismaAdapter) just to pass `session` to a client
+ * `SessionProvider` that doesn't need it on first paint.
+ *
+ * Per route, the (site)/layout and dashboard/layout call `auth()` and
+ * pass `session` to `<Providers session={session}>`.
+ */
 import { Vazirmatn } from 'next/font/google';
 import type { Metadata, Viewport } from 'next';
 import { Toaster } from '@/components/ui/toaster';
@@ -5,7 +16,6 @@ import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 import '@/styles/index.scss';
 
-import { auth } from '@/auth';
 import Providers from '@/components/providers';
 
 /* ============================================================================
@@ -38,50 +48,6 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'BlogMarketFinansial' }],
   creator: 'BlogMarketFinansial',
-  publisher: 'BlogMarketFinansial',
-  alternates: {
-    canonical: '/',
-    languages: {
-      'fa-IR': '/',
-    },
-  },
-  openGraph: {
-    type: 'website',
-    locale: 'fa_IR',
-    url: SITE_URL,
-    siteName: 'بازارهای مالی',
-    title: 'بازارهای مالی | پلتفرم تحلیل و آموزش بازارهای مالی',
-    description:
-      'پلتفرم مورد اعتماد شما در بازار مالی — تحلیل، آموزش و اخبار لحظه‌ای.',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'بازارهای مالی',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'بازارهای مالی',
-    description: 'پلتفرم مورد اعتماد شما در بازار مالی',
-    images: ['/og-image.png'],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
-  },
-  icons: {
-    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
-  },
-  manifest: '/manifest.webmanifest',
 };
 
 export const viewport: Viewport = {
@@ -97,18 +63,16 @@ export const viewport: Viewport = {
 const vazirmatn = Vazirmatn({
   subsets: ['arabic'],
   display: 'swap',
-  weight: ['400', '500', '600', '700'],
   variable: '--font-vazirmatn',
   preload: true,
-  fallback: ['system-ui', 'sans-serif'],
+  weight: ['400', '500', '600', '700'],
 });
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
   return (
     <html
       lang="fa-IR"
@@ -117,16 +81,13 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body
-        className={`${vazirmatn.className} antialiased`}
+        className="bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 antialiased font-vazirmatn"
         suppressHydrationWarning
       >
-        <Providers session={session}>
-          {/* linear.app-style dark canvas by default */}
-          <div className="min-h-screen bg-[rgb(var(--c-surface-canvas))] text-[rgb(var(--c-foreground))] transition-colors duration-300">
-            {children}
-            <Toaster />
-          </div>
+        <Providers>
+          {children}
         </Providers>
+        <Toaster />
       </body>
     </html>
   );

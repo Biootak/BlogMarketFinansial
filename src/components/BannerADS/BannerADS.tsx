@@ -45,7 +45,7 @@ export default function BannerAds({
 
   const getImageContainerClass = () => {
     if (size === 'CUSTOM') return '';
-    return cn('relative w-full overflow-hidden', {
+    return cn('relative w-full overflow-hidden bg-neutral-900', {
       'aspect-[16/5]': size === 'LARGE',
       'aspect-[16/6]': size === 'MEDIUM',
       'aspect-[16/7]': size === 'SMALL',
@@ -77,7 +77,7 @@ export default function BannerAds({
       >
         <div
           className={cn(
-            'relative w-full h-full overflow-hidden rounded-lg',
+            'relative w-full overflow-hidden rounded-lg',
             getImageContainerClass(),
           )}
         >
@@ -85,7 +85,7 @@ export default function BannerAds({
             src={imageUrl}
             alt={title}
             fill
-            className="object-fill w-full h-full "
+            className="object-contain w-full h-full"
             sizes="100vw"
             priority
           />
@@ -120,12 +120,12 @@ export default function BannerAds({
         })}
       >
         <Image
-          src={imageUrl}
-          alt={title}
-          fill
-          className="object-fill w-full h-full  "
-          sizes="100vw"
-        />
+            src={imageUrl}
+            alt={title}
+            fill
+            className="object-contain w-full h-full"
+            sizes="100vw"
+          />
       </div>
       <div className="flex flex-col flex-grow w-full sm:mr-4 mt-4 sm:mt-0">
         <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4">

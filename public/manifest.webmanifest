@@ -1,0 +1,19 @@
+{
+  "name": "Financial Market",
+  "short_name": "FM",
+  "description": "بازارهای مالی، ارز دیجیتال، طلا و بازار جهانی",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#14171f",
+  "theme_color": "#5e6ae6",
+  "dir": "rtl",
+  "lang": "fa-IR",
+  "icons": [
+    {
+      "src": "/images/logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -14,7 +14,7 @@ const LargeAd: React.FC<LargeAdProps> = ({ ad, className = '' }) => {
     <div className={`nc-LargeAd ${className}`}>
       <BannerADS
         ad={ad}
-        className="w-full lg:h-[250px] sm:h-[150px]"
+        className="w-full"
         showAdLabel={false}
         imageOnly={true}
       />

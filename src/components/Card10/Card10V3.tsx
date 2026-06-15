@@ -80,6 +80,8 @@ const Card10V3: React.FC<Card10V3Props> = ({ className = 'h-full', post, gallery
         <Link
           href={getPostLink(postType, slug)}
           className="absolute inset-0 bg-neutral-900 bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity"
+          tabIndex={-1}
+          aria-hidden
         />
       </div>
       <div className="absolute top-2 sm:top-3 inset-x-2 sm:inset-x-3 flex justify-between items-start gap-2 sm:gap-4">

@@ -67,7 +67,7 @@ export function PopularTopicCard({
     <Link
       href={`/archive/category/${taxonomy.slug}`}
       className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-neutral-900 rounded-3xl"
-      aria-label={`دسته ${taxonomy.name} با ${taxonomy.count} مقاله`}
+      aria-label={`${taxonomy.name} - ${taxonomy.count} مقاله`}
     >
       <SpotlightCard
         spotlightColor={spotlightColor}

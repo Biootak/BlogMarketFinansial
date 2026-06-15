@@ -9,7 +9,7 @@ export default function Providers({
   session,
 }: {
   children: React.ReactNode;
-  session: any;
+  session?: unknown;
 }) {
   // Avoid hydration mismatch — only mount next-themes on the client.
   // The default theme is `light`/white; the inline script below keeps
@@ -20,7 +20,7 @@ export default function Providers({
 
   return (
     <SessionProvider
-      session={session}
+      {...(session ? { session: session as never } : {})}
       refetchOnWindowFocus={false}
       refetchWhenOffline={false}
     >

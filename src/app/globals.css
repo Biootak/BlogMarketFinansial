@@ -99,6 +99,7 @@ html {
   text-size-adjust: 100%;
   /* Smooth scroll only if user prefers it */
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
@@ -110,6 +111,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: "ss01", "cv11", "kern";
   font-synthesis: none;
+  overflow-x: hidden;
 }
 
 /* Number rendering refined */

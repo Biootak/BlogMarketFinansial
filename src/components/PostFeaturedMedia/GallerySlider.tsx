@@ -136,10 +136,16 @@ export default function GallerySlider({
           {images.map((_, i) => (
             <button
               type="button"
-              className={`w-1.5 h-1.5 rounded-full ${i === index ? 'bg-white' : 'bg-white/60 '}`}
+              className={`min-h-[24px] min-w-[24px] inline-flex items-center justify-center rounded-full ${i === index ? '' : ''}`}
               onClick={() => changePhotoId(i)}
               key={i}
-            />
+              aria-label={`رفتن به تصویر ${i + 1}`}
+            >
+              <span
+                aria-hidden
+                className={`w-1.5 h-1.5 rounded-full ${i === index ? 'bg-white' : 'bg-white/60'}`}
+              />
+            </button>
           ))}
         </div>
       </div>

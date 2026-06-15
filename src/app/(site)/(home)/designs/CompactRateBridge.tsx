@@ -222,7 +222,7 @@ export default function CompactRateBridge({
         href={orderHref}
         onClick={(e) => e.stopPropagation()}
         className="relative flex-1 min-w-0 sm:min-w-[260px] sm:max-w-[320px] overflow-hidden cursor-pointer hover:bg-white/5 transition-colors"
-        aria-label={`ثبت سفارش ${current?.title}`}
+        aria-label={`${current?.title} - ثبت سفارش`}
       >
         <AnimatePresence mode="wait">
           <motion.div

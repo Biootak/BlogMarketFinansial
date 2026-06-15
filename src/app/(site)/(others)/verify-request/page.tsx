@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import Loading from '@/components/Button/Loading';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -108,4 +108,10 @@ const VerifyRequest = () => {
   );
 };
 
-export default VerifyRequest;
+export default function VerifyRequestPage() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <VerifyRequest />
+    </Suspense>
+  );
+}
