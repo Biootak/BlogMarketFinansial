@@ -3,23 +3,24 @@
 /**
  * MarketTicker — نوار متحرک قیمت‌های لحظه‌ای (نسخه ۲۰۲۶ — با Server Action)
  *
+ * از TickerShell برای glassmorphism + pause-on-hover استفاده می‌کنه؛
+ * فقط لایه‌ی live label و refresh دستی اینجا نگه داشته شدن چون رفتار
+ * polling/refresh مختص این کامپوننت هست.
+ *
  * تکنیک‌ها:
  *  1. Server Action (`getMarketTickerData`) — initial data از سرور
- *  2. SWR-style polling — هر ۶۰ ثانیه refresh می‌کنه (هم‌راستا با cache)
+ *  2. SWR-style polling — هر ۶۰ ثانیه refresh می‌کنه
  *  3. Smooth color transition برای تغییرات قیمت
- *  4. Marquee (از ModernTrending)
- *  5. Hairline borders + glassmorphism
- *  6. Pause on hover
- *  7. Color-coded تغییرات (سبز/قرمز با low-saturation)
- *  8. respects prefers-reduced-motion
- *
- * نکته: server data فقط یک‌بار در mount می‌ره — polling اختیاری.
+ *  4. Marquee از ModernTrending
+ *  5. Color-coded تغییرات (سبز/قرمز با low-saturation)
+ *  6. respects prefers-reduced-motion
  */
 
 import { useEffect, useState, useTransition } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Activity, RefreshCw } from 'lucide-react';
 import { Marquee } from '@/components/ModernTrending/effects/Marquee';
+import { TickerShell } from '@/components/TickerShell';
 import { cn, toPersianNumber, formatNumber } from '@/lib/utils';
 import { STRIPE_EASE } from '@/lib/motion';
 import type { MarketTickerItem } from '@/actions/marketTickerActions';
@@ -32,10 +33,6 @@ interface MarketTickerProps {
   /** Server action برای fetch دوباره — اختیاری */
   refetchAction?: () => Promise<MarketTickerItem[]>;
 }
-
-/* -------------------------------------------------------------------------- */
-/*  Helpers                                                                   */
-/* -------------------------------------------------------------------------- */
 
 function formatPrice(item: MarketTickerItem): string {
   const { price, category, unit } = item;
@@ -55,10 +52,6 @@ function formatPrice(item: MarketTickerItem): string {
   return toPersianNumber(formatNumber(Math.round(price)));
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Component                                                                 */
-/* -------------------------------------------------------------------------- */
-
 export default function MarketTicker({
   initialData = [],
   className,
@@ -69,14 +62,12 @@ export default function MarketTicker({
   const [isPending, startTransition] = useTransition();
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
-  /* ---------- Initial lastUpdate ---------- */
   useEffect(() => {
     if (initialData.length > 0) {
       setLastUpdate(new Date());
     }
   }, [initialData.length]);
 
-  /* ---------- Polling: refresh هر N ثانیه ---------- */
   useEffect(() => {
     if (!refetchAction || pollInterval <= 0) return;
     const id = setInterval(() => {
@@ -93,7 +84,6 @@ export default function MarketTicker({
     return () => clearInterval(id);
   }, [refetchAction, pollInterval]);
 
-  /* ---------- Manual refresh ---------- */
   const handleRefresh = () => {
     if (!refetchAction) return;
     startTransition(async () => {
@@ -109,55 +99,37 @@ export default function MarketTicker({
 
   if (data.length === 0) return null;
 
+  // لایه‌ی LIVE با pulse — مختص این کامپوننت (رنگ emerald متمایز)
+  const liveLabel = (
+    <span className="text-[10px] sm:text-[11px] font-bold text-emerald-700 dark:text-emerald-300 tabular-nums tracking-wide flex items-center gap-1.5">
+      <Activity
+        className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-emerald-600 dark:text-emerald-400"
+        strokeWidth={2.25}
+      />
+      LIVE
+    </span>
+  );
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: STRIPE_EASE }}
-      className={cn(
-        'relative flex items-center gap-2 sm:gap-3',
-        'h-10 sm:h-11',
-        'rounded-2xl',
-        'border border-neutral-200/70 dark:border-neutral-800/80',
-        'bg-white/60 dark:bg-neutral-900/60 backdrop-blur-md',
-        'overflow-hidden',
-        'shadow-[0_1px_0_0_rgba(255,255,255,0.5)_inset,0_2px_8px_-4px_rgba(20,23,32,0.08)]',
-        'dark:shadow-[0_1px_0_0_rgba(255,255,255,0.04)_inset,0_2px_8px_-4px_rgba(0,0,0,0.3)]',
-        className,
-      )}
+      className={cn('relative', className)}
     >
-      {/* Live label */}
-      <div
-        className={cn(
-          'flex items-center gap-1.5 shrink-0',
-          'h-full px-3 sm:px-3.5',
-          'bg-gradient-to-l from-emerald-500/10 to-transparent',
-          'border-l border-neutral-200/70 dark:border-neutral-800/80',
-        )}
+      <TickerShell
+        height="md"
+        tone="emerald"
+        showLiveDot
+        ariaLabel="نرخ‌های زنده"
+        lead={liveLabel}
       >
-        <span className="relative inline-flex" aria-hidden>
-          <span className="absolute inset-0 inline-flex h-full w-full animate-ping rounded-full bg-emerald-500/40 opacity-60" />
-          <Activity
-            className="relative h-3 w-3 sm:h-3.5 sm:w-3.5 text-emerald-600 dark:text-emerald-400"
-            strokeWidth={2.25}
-          />
-        </span>
-        <span className="text-[10px] sm:text-[11px] font-bold text-emerald-700 dark:text-emerald-300 tabular-nums tracking-wide">
-          LIVE
-        </span>
-      </div>
-
-      {/* Marquee */}
-      <div className="flex-1 min-w-0">
         <Marquee speed={-30} pauseOnHover pauseOnHold>
           {data.map((item) => {
             const isUp = item.change >= 0;
             const Icon = isUp ? TrendingUp : TrendingDown;
             return (
               <div
-                /* category + symbol + index — `data.map` به تنهایی ایمنه، اما
-                 * ترکیب با `index` تضمین می‌کنه اگه در آینده داده تکراری
-                 * از سرور بیاد، React باز هم key یکتا داشته باشه. */
                 key={`${item.category}-${item.symbol}`}
                 className={cn(
                   'group/item flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3',
@@ -199,22 +171,29 @@ export default function MarketTicker({
             );
           })}
         </Marquee>
-      </div>
+      </TickerShell>
 
-      {/* Refresh + last update */}
+      {/* Refresh + last update — خارج از shell تا positioning مستقل داشته باشه */}
       {refetchAction && (
         <div
           className={cn(
-            'hidden md:flex items-center gap-1.5 shrink-0',
-            'h-full px-2.5',
-            'border-r border-neutral-200/70 dark:border-neutral-800/80',
+            'absolute top-1/2 -translate-y-1/2 end-2 z-20',
+            'hidden md:flex items-center gap-1.5',
+            'h-7 px-2 rounded-lg',
+            'bg-white/70 dark:bg-neutral-800/70 backdrop-blur-md',
+            'border border-neutral-200/60 dark:border-neutral-700/60',
             'text-[10px] text-neutral-500 dark:text-neutral-400',
             'font-vazirmatn tabular-nums',
           )}
         >
           {lastUpdate && (
             <span>
-              {toPersianNumber(lastUpdate.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }))}
+              {toPersianNumber(
+                lastUpdate.toLocaleTimeString('fa-IR', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                }),
+              )}
             </span>
           )}
           <button
@@ -222,7 +201,7 @@ export default function MarketTicker({
             onClick={handleRefresh}
             disabled={isPending}
             className={cn(
-              'inline-flex h-6 w-6 items-center justify-center rounded-md',
+              'inline-flex h-5 w-5 items-center justify-center rounded-md',
               'hover:bg-neutral-100 dark:hover:bg-neutral-800',
               'transition-colors duration-200',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50',
@@ -232,10 +211,7 @@ export default function MarketTicker({
             aria-label="بروزرسانی قیمت‌ها"
           >
             <RefreshCw
-              className={cn(
-                'h-3 w-3',
-                isPending && 'animate-spin',
-              )}
+              className={cn('h-3 w-3', isPending && 'animate-spin')}
               strokeWidth={2.25}
             />
           </button>

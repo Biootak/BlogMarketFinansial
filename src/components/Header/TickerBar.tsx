@@ -3,14 +3,12 @@
 /**
  * TickerBar — نوار بالای Header برای نمایش نرخ‌های لحظه‌ای
  *
- * استفاده از Marquee اصلاح‌شده (CSS-driven)
- * - ۳ بار تکرار برای loop بی‌نهایت روان
- * - pause on hover
- * - fade edges با mask
- * - tabular-nums برای اعداد
+ * استفاده از TickerShell (glassmorphism + pause-on-hover یکپارچه)
+ * و Marquee اصلاح‌شده (CSS-driven) برای loop بی‌نهایت.
  */
 
 import { Marquee } from '@/components/ModernTrending/effects/Marquee';
+import { TickerShell } from '@/components/TickerShell';
 import { cn } from '@/lib/utils';
 
 export interface TickerItem {
@@ -32,37 +30,13 @@ export function TickerBar({ items, className, speed = -30 }: TickerBarProps) {
   if (items.length === 0) return null;
 
   return (
-    <div
-      className={cn(
-        'ticker-root relative w-full overflow-hidden',
-        'border-b border-neutral-200/60 dark:border-neutral-800/60',
-        'bg-neutral-50/70 dark:bg-neutral-950/70',
-        'backdrop-blur-xl',
-        'h-8',
-        className,
-      )}
-      role="region"
-      aria-label="نرخ‌های لحظه‌ای"
+    <TickerShell
+      height="sm"
+      fadeSize="sm"
+      tone="neutral"
+      className={className}
+      ariaLabel="نرخ‌های لحظه‌ای"
     >
-      {/* Live indicator — فقط یه نقطه کوچیک (در سمت چپ RTL) */}
-      <div className="pointer-events-none absolute inset-y-0 start-0 z-20 flex items-center gap-1.5 px-2">
-        <span className="relative flex h-1.5 w-1.5" aria-hidden>
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-500/60" />
-          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-rose-500" />
-        </span>
-      </div>
-
-      {/* Fade edges — mask-image برای محو شدن لبه‌ها */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 start-0 z-10 w-10 bg-gradient-to-r from-neutral-50 to-transparent dark:from-neutral-950"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 end-0 z-10 w-10 bg-gradient-to-l from-neutral-50 to-transparent dark:from-neutral-950"
-      />
-
-      {/* Marquee */}
       <Marquee speed={speed} className="h-full" repeat={3} pauseOnHold>
         {items.map((item) => (
           <div
@@ -100,6 +74,6 @@ export function TickerBar({ items, className, speed = -30 }: TickerBarProps) {
           </div>
         ))}
       </Marquee>
-    </div>
+    </TickerShell>
   );
 }

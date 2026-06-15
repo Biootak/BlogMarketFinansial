@@ -186,7 +186,9 @@ const ModernTrendingTopics: FC<ModernTrendingTopicsProps> = ({
   return (
     <section
       className={cn(
-        'group/section relative isolate overflow-hidden rounded-3xl',
+        // marquee-pause: hover روی هر نقطه‌ی section
+        // (شامل ticker بالا و bento grid پایین) marquee رو متوقف می‌کنه
+        'group/section marquee-pause relative isolate overflow-hidden rounded-3xl',
         'border border-neutral-200/70 dark:border-neutral-800/70',
         'bg-white/60 dark:bg-neutral-950/60',
         'backdrop-blur-2xl',
@@ -204,8 +206,11 @@ const ModernTrendingTopics: FC<ModernTrendingTopicsProps> = ({
 
       {/* TOP TICKER — همه دسته‌بندی‌ها */}
       <div
+        // marquee-pause: parent بالاتر (section) هم کلاس رو داره، ولی اینجا
+        // هم اضافه می‌کنیم تا اگه section رو از `.marquee-pause` حذف کردن، این
+        // div مستقل کار کنه
         className={cn(
-          'relative border-b border-[var(--hairline)]',
+          'marquee-pause relative border-b border-[var(--hairline)]',
           'bg-white/40 dark:bg-neutral-950/40',
           'backdrop-blur-md',
         )}

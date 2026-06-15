@@ -238,7 +238,8 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
   }, [activeCategory]);
 
   return (
-    <section className="relative isolate space-y-3 sm:space-y-4">
+    // marquee-pause: hover روی هر نقطه‌ی section باعث توقف MarketTicker می‌شه
+    <section className="relative isolate space-y-3 sm:space-y-4 marquee-pause">
       {/* Market Ticker */}
       <MarketTicker
         initialData={initialTickerData}

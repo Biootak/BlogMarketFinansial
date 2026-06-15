@@ -147,7 +147,9 @@ export function PulseBoard({
     <section
       ref={containerRef}
       dir="rtl"
-      className="relative isolate"
+      // marquee-pause: hover روی هر نقطه‌ی section باعث توقف
+      // MarketTicker (که داخلش Marquee داره) می‌شه
+      className="relative isolate marquee-pause"
       aria-label="آخرین مقالات"
     >
       {/* ============================================================== */}

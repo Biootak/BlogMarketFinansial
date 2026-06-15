@@ -11,7 +11,7 @@ interface ExchangeRateSliderProps {
 
 const ExchangeRateSlider: React.FC<ExchangeRateSliderProps> = ({ rates }) => {
   return (
-    <div className="nc-ExchangeRateSlider relative">
+    <div className="nc-ExchangeRateSlider relative marquee-pause">
       <InfiniteTicker duration={50} dir="rtl">
         <div className="flex items-center gap-2 px-2 py-1">
           {rates.map((rate, idx) => (

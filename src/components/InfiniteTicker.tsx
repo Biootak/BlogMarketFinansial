@@ -36,7 +36,8 @@ interface InfiniteTickerProps {
   className?: string;
 }
 
-export default function InfiniteTicker({
+// هم default هم named export تا با `import { InfiniteTicker }` و `import InfiniteTicker` سازگار باشه
+function InfiniteTickerFn({
   children,
   duration = 40,
   pauseOnHover = true,
@@ -122,3 +123,8 @@ export default function InfiniteTicker({
     </div>
   );
 }
+
+// هر دو export تا API قدیم (default) و جدید (named) در دسترس باشن
+export default InfiniteTickerFn;
+export { InfiniteTickerFn as InfiniteTicker };
+

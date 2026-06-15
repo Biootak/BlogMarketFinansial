@@ -376,13 +376,22 @@ p { line-height: var(--leading-relaxed); }
    ----------------------------------------------------------------------------
    `data-pause-on-hover` و `data-holding` از Marquee.tsx و InfiniteTicker.tsx ست میشن.
    این selectorها هم روی .marquee-track و هم روی .ticker-track (و children) اعمال میشن.
+
+   همچنین کلاس `marquee-pause` روی هر parent قابل استفاده‌ست:
+   هر `.marquee-track` یا `.ticker-track` درون `.marquee-pause:hover` متوقف میشه.
    ============================================================================ */
 
-/* وقتی کاربر hover می‌کنه → track متوقف میشه */
-[data-pause-on-hover='true']:hover > .marquee-track,
-[data-pause-on-hover='true']:hover > .ticker-track,
+/* وقتی کاربر hover می‌کنه → track متوقف میشه.
+   ترکیب descendant selector تضمین می‌کنه حتی اگه track در چند لایه
+   div تو در تو باشه باز هم pause کار کنه. */
+[data-pause-on-hover='true']:hover .marquee-track,
+[data-pause-on-hover='true']:hover .ticker-track,
 [data-pause-on-hover='true']:hover .ticker-ltr,
-[data-pause-on-hover='true']:hover .ticker-rtl {
+[data-pause-on-hover='true']:hover .ticker-rtl,
+.marquee-pause:hover .marquee-track,
+.marquee-pause:hover .ticker-track,
+.marquee-pause:hover .ticker-ltr,
+.marquee-pause:hover .ticker-rtl {
   animation-play-state: paused;
 }
 
@@ -390,6 +399,7 @@ p { line-height: var(--leading-relaxed); }
 [data-holding='true'] > .marquee-track,
 [data-holding='true'] > .ticker-track,
 [data-holding='true'] .ticker-ltr,
-[data-holding='true'] .ticker-rtl {
+[data-holding='true'] .ticker-rtl,
+[data-holding='true'] .marquee-track {
   animation-play-state: paused !important;
 }
