@@ -184,7 +184,7 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
                 align="start"
                 sideOffset={10}
                 className="
-                  z-[60] min-w-[220px] p-1.5
+                  z-[60] min-w-[14rem] max-w-[min(90vw,18rem)] p-1.5
                   bg-[rgb(var(--c-surface-overlay))]/95
                   backdrop-blur-2xl backdrop-saturate-150
                   border border-[rgb(var(--c-border-subtle))]
@@ -305,8 +305,13 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
   };
 
   return (
-    <nav className="flex items-center justify-center" aria-label="ناوبری اصلی">
-      <ul className={`items-center ${className} gap-1 flex`}>{NAVBAR_LINKS.map(renderNavItem)}</ul>
+    <nav className="flex items-center justify-center min-w-0 max-w-full" aria-label="ناوبری اصلی">
+      <ul
+        className={`items-center ${className} gap-1 flex max-w-full min-w-0 overflow-x-auto scrollbar-none`}
+        style={{ scrollbarWidth: 'none' }}
+      >
+        {NAVBAR_LINKS.map(renderNavItem)}
+      </ul>
     </nav>
   );
 };

@@ -62,7 +62,7 @@ export default function MarketTickerBar({
 
         {/* Ticker Track */}
         <div className="flex-1 min-w-0 overflow-hidden">
-          <InfiniteTicker duration={60} dir="rtl" pauseOnHover>
+          <InfiniteTicker duration={60} dir="rtl" pauseOnHover pauseOnHold>
             <div className="flex items-center divide-x divide-neutral-200/70 dark:divide-neutral-800/70">
               {items.map((rate, idx) => {
                 const isPositive = rate.change >= 0;

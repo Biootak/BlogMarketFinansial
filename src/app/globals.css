@@ -370,3 +370,26 @@ p { line-height: var(--leading-relaxed); }
 @media (min-width: 1024px) {
   .page-pad           { padding-top: 2rem;   padding-bottom: 4rem; }
 }
+
+/* ============================================================================
+   Marquee / InfiniteTicker — state های pause روی hover و hold
+   ----------------------------------------------------------------------------
+   `data-pause-on-hover` و `data-holding` از Marquee.tsx و InfiniteTicker.tsx ست میشن.
+   این selectorها هم روی .marquee-track و هم روی .ticker-track (و children) اعمال میشن.
+   ============================================================================ */
+
+/* وقتی کاربر hover می‌کنه → track متوقف میشه */
+[data-pause-on-hover='true']:hover > .marquee-track,
+[data-pause-on-hover='true']:hover > .ticker-track,
+[data-pause-on-hover='true']:hover .ticker-ltr,
+[data-pause-on-hover='true']:hover .ticker-rtl {
+  animation-play-state: paused;
+}
+
+/* وقتی کاربر کلیک کنه و نگه داره (یا تاچ) → track متوقف میشه */
+[data-holding='true'] > .marquee-track,
+[data-holding='true'] > .ticker-track,
+[data-holding='true'] .ticker-ltr,
+[data-holding='true'] .ticker-rtl {
+  animation-play-state: paused !important;
+}

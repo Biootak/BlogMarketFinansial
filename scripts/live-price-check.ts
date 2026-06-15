@@ -19,7 +19,9 @@
  * ----------------------------------------------------------------------------
  */
 
-type MarketSource = 'navasan' | 'usdt' | 'fx-derived' | 'db';
+// هم‌نام با `src/lib/freeMarketRates.ts` تا type-check در build/migration راحت باشه
+// type-only re-declaration مجاز نیست — از import type استفاده می‌کنیم
+import type { MarketSource } from '../src/lib/freeMarketRates';
 
 interface FreeMarketItem {
   symbol: string;
@@ -263,33 +265,33 @@ check('AED: in [18k, 25k] toman', inRange(aed!.priceToman, 18_000, 25_000), `got
 // این نسبت‌ها مستقل از قیمت مطلق هستن و در طول زمان پایدارن.
 check(
   'SEKKEH/GOLD18 ratio in [110, 150] (each coin = ~8.133g gold18)',
-  ratioInRange(sekkeh.priceToman, gold18.priceToman, 110, 150),
-  `ratio=${(sekkeh.priceToman / gold18.priceToman).toFixed(1)}`,
+  ratioInRange(sekkeh!.priceToman, gold18!.priceToman, 110, 150),
+  `ratio=${(sekkeh!.priceToman / gold18!.priceToman).toFixed(1)}`,
 );
 check(
   'NIM/SEKKEH ratio in [0.45, 0.55] (NIM = SEKKEH/2 ± premium)',
-  ratioInRange(nim.priceToman, sekkeh.priceToman, 0.45, 0.55),
-  `ratio=${(nim.priceToman / sekkeh.priceToman).toFixed(3)}`,
+  ratioInRange(nim!.priceToman, sekkeh!.priceToman, 0.45, 0.55),
+  `ratio=${(nim!.priceToman / sekkeh!.priceToman).toFixed(3)}`,
 );
 check(
   'ROB/SEKKEH ratio in [0.30, 0.40] (ROB = SEKKEH/3 ± premium)',
-  ratioInRange(rob.priceToman, sekkeh.priceToman, 0.30, 0.40),
-  `ratio=${(rob.priceToman / sekkeh.priceToman).toFixed(3)}`,
+  ratioInRange(rob!.priceToman, sekkeh!.priceToman, 0.30, 0.40),
+  `ratio=${(rob!.priceToman / sekkeh!.priceToman).toFixed(3)}`,
 );
 check(
   'EUR/USD ratio in [0.7, 1.2] (reasonable global FX)',
-  ratioInRange(eur.priceToman, usd.priceToman, 0.7, 1.2),
-  `ratio=${(eur.priceToman / usd.priceToman).toFixed(3)}`,
+  ratioInRange(eur!.priceToman, usd!.priceToman, 0.7, 1.2),
+  `ratio=${(eur!.priceToman / usd!.priceToman).toFixed(3)}`,
 );
 check(
   'GBP/EUR ratio in [0.95, 1.25] (GBP typically slightly above EUR)',
-  ratioInRange(itemsA.find((i) => i.symbol === 'GBP')!.priceToman, eur.priceToman, 0.95, 1.25),
-  `ratio=${(itemsA.find((i) => i.symbol === 'GBP')!.priceToman / eur.priceToman).toFixed(3)}`,
+  ratioInRange(itemsA.find((i) => i.symbol === 'GBP')!.priceToman, eur!.priceToman, 0.95, 1.25),
+  `ratio=${(itemsA.find((i) => i.symbol === 'GBP')!.priceToman / eur!.priceToman).toFixed(3)}`,
 );
 check(
   'OUNCE_GOLD / GOLD18 ratio in [25, 50] (1 oz = 31.1g, ≈30× without premium)',
-  ratioInRange(ounce.priceToman, gold18.priceToman, 25, 50),
-  `ratio=${(ounce.priceToman / gold18.priceToman).toFixed(1)} (expected ~31.1 × premium)`,
+  ratioInRange(ounce!.priceToman, gold18!.priceToman, 25, 50),
+  `ratio=${(ounce!.priceToman / gold18!.priceToman).toFixed(1)} (expected ~31.1 × premium)`,
 );
 
 // ============================================================
@@ -351,7 +353,8 @@ check('C: premium 5% = 77,910', usd50 === 77910, `got=${usd50}`);
 // سناریو D: Navasan ناقص (فقط چند آیتم) + USDT + FX
 // ============================================================
 console.log('\n━━━ D. Navasan partial (only USD) + USDT + FX ━━━');
-const partialNavasan = {
+// Cast به `any` چون این سناریو عمداً ناقصه تا partial coverage رو تست کنه
+const partialNavasan: any = {
   usd: REALISTIC_NAVASAN.usd,
   sekkeh: REALISTIC_NAVASAN.sekkeh,  // has SEKKEH but not EUR
 };

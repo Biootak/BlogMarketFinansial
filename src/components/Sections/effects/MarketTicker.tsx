@@ -149,7 +149,7 @@ export default function MarketTicker({
 
       {/* Marquee */}
       <div className="flex-1 min-w-0">
-        <Marquee speed={-30} pauseOnHover>
+        <Marquee speed={-30} pauseOnHover pauseOnHold>
           {data.map((item) => {
             const isUp = item.change >= 0;
             const Icon = isUp ? TrendingUp : TrendingDown;

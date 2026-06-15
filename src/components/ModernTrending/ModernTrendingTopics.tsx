@@ -211,7 +211,9 @@ const ModernTrendingTopics: FC<ModernTrendingTopicsProps> = ({
         )}
       >
         <div className="flex items-center gap-3 px-5 py-2 sm:px-8">
-          <Marquee speed={-40} className="flex-1" repeat={6}>
+          {/* repeat={3} به جای 6: در صفحه‌های کوچک که تراکم چیپ‌ها بالاست، 3 بار
+              تکرار برای seamless loop کافیه و DOM رو سنگین نمی‌کنه */}
+          <Marquee speed={-25} className="flex-1 min-w-0" repeat={3} pauseOnHold>
             {allCategories.map((c) => {
               const palette = colorMap.get(c.id)!;
               return (

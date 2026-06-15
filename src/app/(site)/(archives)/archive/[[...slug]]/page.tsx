@@ -122,7 +122,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
   const defaultImage = '/images/crypto/crypto.png';
 
   return (
-    <div className="nc-PageArchive max-w-full overflow-x-hidden">
+    <div className="nc-PageArchive max-w-full @container/archive @md/archive:overflow-x-visible">
       {/* Premium Breadcrumb */}
       <div className="sticky top-0 z-20 bg-white/70 dark:bg-neutral-900/70 backdrop-blur-xl border-b border-neutral-200/50 dark:border-neutral-800/50">
         <div className="container">
@@ -161,11 +161,11 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
               )}
 
               {selectedCategory && (
-                <li className="flex items-center">
-                  <ChevronLeft className="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
+                <li className="flex items-center min-w-0">
+                  <ChevronLeft className="w-4 h-4 text-neutral-300 dark:text-neutral-600 shrink-0" />
                   <Link
                     href={`/archive/category/${selectedCategory.slug}`}
-                    className="px-2.5 py-1.5 text-neutral-700 dark:text-neutral-200 text-sm font-semibold rounded-lg bg-primary-50 dark:bg-primary-900/30 truncate max-w-[140px]"
+                    className="px-2.5 py-1.5 text-neutral-700 dark:text-neutral-200 text-sm font-semibold rounded-lg bg-primary-50 dark:bg-primary-900/30 truncate max-w-[10rem] sm:max-w-[14rem] md:max-w-[18rem]"
                   >
                     {selectedCategory.name}
                   </Link>
@@ -173,18 +173,18 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
               )}
 
               {selectedSubcategory && (
-                <li className="flex items-center">
-                  <ChevronLeft className="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
-                  <span className="px-2.5 py-1.5 text-primary-600 dark:text-primary-400 text-sm font-semibold bg-primary-100 dark:bg-primary-900/50 rounded-lg truncate max-w-[140px]">
+                <li className="flex items-center min-w-0">
+                  <ChevronLeft className="w-4 h-4 text-neutral-300 dark:text-neutral-600 shrink-0" />
+                  <span className="px-2.5 py-1.5 text-primary-600 dark:text-primary-400 text-sm font-semibold bg-primary-100 dark:bg-primary-900/50 rounded-lg truncate max-w-[10rem] sm:max-w-[14rem] md:max-w-[18rem]">
                     {selectedSubcategory.name}
                   </span>
                 </li>
               )}
 
               {selectedTag && (
-                <li className="flex items-center">
-                  <ChevronLeft className="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
-                  <span className="px-2.5 py-1.5 text-primary-600 dark:text-primary-400 text-sm font-semibold bg-primary-100 dark:bg-primary-900/50 rounded-lg truncate max-w-[140px]">
+                <li className="flex items-center min-w-0">
+                  <ChevronLeft className="w-4 h-4 text-neutral-300 dark:text-neutral-600 shrink-0" />
+                  <span className="px-2.5 py-1.5 text-primary-600 dark:text-primary-400 text-sm font-semibold bg-primary-100 dark:bg-primary-900/50 rounded-lg truncate max-w-[10rem] sm:max-w-[14rem] md:max-w-[18rem]">
                     {selectedTag.name}
                   </span>
                 </li>

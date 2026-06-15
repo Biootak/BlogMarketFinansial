@@ -1,6 +1,7 @@
 'use client';
 
 import type React from 'react';
+import { useState } from 'react';
 
 /**
  * InfiniteTicker
@@ -16,7 +17,8 @@ import type React from 'react';
  *    that moment the second copy is exactly where the first was —
  *    producing a seamless wrap.
  *  - `prefers-reduced-motion` is respected → animation paused.
- *  - Pauses on hover (configurable).
+ *  - Pauses on hover (configurable, via data-pause-on-hover — global CSS).
+ *  - Pauses when the user holds mouse/touch (configurable, via data-holding).
  *  - RTL-safe: pass `dir="rtl"` for Persian/Arabic UIs.
  * ----------------------------------------------------------------------------
  */
@@ -26,6 +28,8 @@ interface InfiniteTickerProps {
   duration?: number;
   /** Pause the animation when the user hovers. Default true. */
   pauseOnHover?: boolean;
+  /** Pause the animation when the user clicks-and-holds (or touches). Default false. */
+  pauseOnHold?: boolean;
   /** Element direction. Set to "rtl" for Persian/Arabic UIs. */
   dir?: 'ltr' | 'rtl';
   /** Extra className for the outer wrapper. */
@@ -36,10 +40,12 @@ export default function InfiniteTicker({
   children,
   duration = 40,
   pauseOnHover = true,
+  pauseOnHold = false,
   dir = 'ltr',
   className = '',
 }: InfiniteTickerProps) {
   const isRTL = dir === 'rtl';
+  const [isHolding, setIsHolding] = useState(false);
 
   return (
     <div
@@ -48,6 +54,14 @@ export default function InfiniteTicker({
         pauseOnHover ? 'hover:cursor-default' : ''
       } ${className}`}
       style={{ '--ticker-duration': `${duration}s` } as React.CSSProperties}
+      onMouseDown={pauseOnHold ? () => setIsHolding(true) : undefined}
+      onMouseUp={pauseOnHold ? () => setIsHolding(false) : undefined}
+      onMouseLeave={pauseOnHold ? () => setIsHolding(false) : undefined}
+      onTouchStart={pauseOnHold ? () => setIsHolding(true) : undefined}
+      onTouchEnd={pauseOnHold ? () => setIsHolding(false) : undefined}
+      onTouchCancel={pauseOnHold ? () => setIsHolding(false) : undefined}
+      data-pause-on-hover={pauseOnHover ? 'true' : undefined}
+      data-holding={isHolding ? 'true' : undefined}
     >
       {/* Scrolling track. `min-w-[200%]` guarantees the track is wider than
           the viewport even when there are very few children, so the loop
@@ -90,9 +104,7 @@ export default function InfiniteTicker({
           will-change: transform;
         }
 
-        /* Pause when the parent (or track itself) is hovered. This way the
-           ticker stops across the FULL container width, not just on top
-           of an item. The parent selector is well supported in 2026+. */
+        /* Fallback local pause: وقتی به هر دلیلی selector global کار نکنه */
         :global(.infinite-ticker:hover) .ticker-ltr,
         :global(.infinite-ticker:hover) .ticker-rtl,
         .ticker-ltr:hover,

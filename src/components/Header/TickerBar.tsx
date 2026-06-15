@@ -28,7 +28,7 @@ export interface TickerBarProps {
   speed?: number;
 }
 
-export function TickerBar({ items, className, speed = -50 }: TickerBarProps) {
+export function TickerBar({ items, className, speed = -30 }: TickerBarProps) {
   if (items.length === 0) return null;
 
   return (
@@ -63,7 +63,7 @@ export function TickerBar({ items, className, speed = -50 }: TickerBarProps) {
       />
 
       {/* Marquee */}
-      <Marquee speed={speed} className="h-full" repeat={3}>
+      <Marquee speed={speed} className="h-full" repeat={3} pauseOnHold>
         {items.map((item) => (
           <div
             key={item.id}

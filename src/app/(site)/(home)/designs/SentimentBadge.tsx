@@ -29,8 +29,9 @@ export default memo(function SentimentBadge({
   const Icon =
     sentiment === 'bullish' ? TrendingUp : sentiment === 'bearish' ? TrendingDown : Minus;
 
+  // متن خیلی کوچک در sm: بزرگ‌تر می‌شه تا به حداقل WCAG-AA (12px) برسه
   const sizeClasses = {
-    sm: 'h-6 px-2 text-[10px] gap-1',
+    sm: 'h-6 sm:h-7 px-2 text-[10px] sm:text-xs gap-1',
     md: 'h-8 px-3 text-xs gap-1.5',
     lg: 'h-10 px-4 text-sm gap-2',
   };

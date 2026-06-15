@@ -12,7 +12,7 @@
  *  - چون کل track به سمت چپ می‌ره، متن RTL به نظر "از راست به چپ" می‌آد (طبیعی)
  */
 
-import { type ReactNode, useMemo } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 export interface MarqueeProps {
@@ -20,6 +20,8 @@ export interface MarqueeProps {
   speed?: number;
   repeat?: number;
   pauseOnHover?: boolean;
+  /** وقتی کاربر کلیک کنه و نگه داره (یا تاچ کنه) اسکرول متوقف میشه */
+  pauseOnHold?: boolean;
   className?: string;
 }
 
@@ -28,6 +30,7 @@ export function Marquee({
   speed = -50,
   repeat = 3,
   pauseOnHover = true,
+  pauseOnHold = false,
   className = '',
 }: MarqueeProps) {
   // سرعت: هر چه بیشتر، سریع‌تر
@@ -38,17 +41,24 @@ export function Marquee({
   // translateX اندازه: 100% / repeat (تا loop بی‌نهایت روان)
   const translateStep = 100 / repeat;
 
+  const [isHolding, setIsHolding] = useState(false);
+
   return (
     <div
       className={cn('overflow-hidden contain-paint', className)}
       // track رو LTR کن تا ترتیب المان‌ها حفظ بشه
       style={{ direction: 'ltr' }}
+      onMouseDown={pauseOnHold ? () => setIsHolding(true) : undefined}
+      onMouseUp={pauseOnHold ? () => setIsHolding(false) : undefined}
+      onMouseLeave={pauseOnHold ? () => setIsHolding(false) : undefined}
+      onTouchStart={pauseOnHold ? () => setIsHolding(true) : undefined}
+      onTouchEnd={pauseOnHold ? () => setIsHolding(false) : undefined}
+      onTouchCancel={pauseOnHold ? () => setIsHolding(false) : undefined}
+      data-pause-on-hover={pauseOnHover ? 'true' : undefined}
+      data-holding={isHolding ? 'true' : undefined}
     >
       <div
-        className={cn(
-          'marquee-track flex w-max items-center gap-3',
-          pauseOnHover && 'group/ticker',
-        )}
+        className="marquee-track flex w-max items-center gap-3"
         style={{
           animation: `marquee-scroll ${duration}s linear infinite`,
           willChange: 'transform',
@@ -74,9 +84,6 @@ export function Marquee({
           100% {
             transform: translateX(-${translateStep}%);
           }
-        }
-        .group\\/ticker:hover :global(.marquee-track) {
-          animation-play-state: paused;
         }
       `}</style>
     </div>
