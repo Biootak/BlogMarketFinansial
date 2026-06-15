@@ -162,11 +162,14 @@ function BannerCta({
   label = 'مشاهده',
   size = 'md',
   tone = 'dark',
+  asSpan = false,
 }: {
   href: string;
   label?: string;
   size?: 'sm' | 'md' | 'lg';
   tone?: 'dark' | 'light' | 'primary';
+  /** وقتی true باشه، به‌جای <a> یه <span> بصری رندر می‌کنه (برای جلوگیری از nested anchor) */
+  asSpan?: boolean;
 }) {
   const sizeClass =
     size === 'lg'
@@ -180,23 +183,44 @@ function BannerCta({
       : tone === 'light'
         ? 'bg-white text-neutral-900 dark:bg-white dark:text-neutral-900'
         : 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900';
+
+  const sharedClass = cn(
+    'ad-cta-shimmer group/cta relative inline-flex items-center gap-2 rounded-full',
+    'font-semibold tracking-snug',
+    'shadow-sm hover:shadow-md transition-all duration-300',
+    'hover:gap-2.5',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60',
+    toneClass,
+    sizeClass,
+  );
+
+  const inner = (
+    <>
+      <span>{label}</span>
+      <ArrowUpLeft className="h-3.5 w-3.5 transition-transform duration-300 group-hover/cta:rotate-12" strokeWidth={2.25} aria-hidden />
+    </>
+  );
+
+  // وقتی داخل یه <a> دیگه هستیم، از <span> بصری استفاده می‌کنیم
+  if (asSpan) {
+    return (
+      <span
+        aria-hidden
+        className={sharedClass}
+      >
+        {inner}
+      </span>
+    );
+  }
+
   return (
     <Link
       href={href}
       target="_blank"
       rel="noopener noreferrer sponsored"
-      className={cn(
-        'ad-cta-shimmer group/cta relative inline-flex items-center gap-2 rounded-full',
-        'font-semibold tracking-snug',
-        'shadow-sm hover:shadow-md transition-all duration-300',
-        'hover:gap-2.5',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60',
-        toneClass,
-        sizeClass,
-      )}
+      className={sharedClass}
     >
-      <span>{label}</span>
-      <ArrowUpLeft className="h-3.5 w-3.5 transition-transform duration-300 group-hover/cta:rotate-12" strokeWidth={2.25} aria-hidden />
+      {inner}
     </Link>
   );
 }
@@ -274,9 +298,7 @@ export default function BannerAds({
   );
 
   const showLabelResolved =
-    typeof showAdLabel === 'boolean'
-      ? showAdLabel
-      : variant === 'rich' || variant === 'showcase';
+    typeof showAdLabel === 'boolean' ? showAdLabel : false;
   const showTitleResolved =
     typeof showTitle === 'boolean' ? showTitle : variant === 'rich' || variant === 'showcase';
   const showDescriptionResolved =
@@ -437,6 +459,7 @@ export default function BannerAds({
                         label="مشاهده پیشنهاد ویژه"
                         size="lg"
                         tone="primary"
+                        asSpan
                       />
                     )}
                     <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
@@ -592,13 +615,14 @@ export default function BannerAds({
           }}
         />
 
-        {/* Whole-card click layer */}
-        <Link
-          href={linkUrl}
-          target="_blank"
-          rel="noopener noreferrer sponsored"
+        {/* Whole-card click layer — از <a> استفاده نمی‌کنیم تا nested anchor نشه */}
+        <div
+          role="link"
+          tabIndex={0}
           aria-label={`تبلیغ: ${title}`}
-          className="absolute inset-0 z-0"
+          onClick={() => window.open(linkUrl, '_blank', 'noopener,noreferrer')}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') window.open(linkUrl, '_blank', 'noopener,noreferrer'); }}
+          className="absolute inset-0 z-0 cursor-pointer"
         />
 
         {/* Vertical accent strip (RTL start edge) — با glow نرم */}
@@ -662,8 +686,8 @@ export default function BannerAds({
               </p>
             )}
             {showButtonResolved && (
-              <div className="mt-1 sm:mt-2">
-                {customButton ?? <BannerCta href={linkUrl} size="md" tone="primary" />}
+              <div className="mt-1 sm:mt-2 relative z-10">
+                {customButton ?? <BannerCta href={linkUrl} size="md" tone="primary" asSpan />}
               </div>
             )}
           </div>
