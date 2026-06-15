@@ -17,7 +17,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
+import { SafeImage } from '@/components/SafeImage';
 import Link from 'next/link';
 import { motion, useInView, useReducedMotion } from '@/lib/motion-shim';
 import { Eye, MessageCircle, ArrowLeft } from 'lucide-react';
@@ -109,15 +109,17 @@ function RailItem({ post, index }: { post: PostWithRelations; index: number }) {
             'border border-neutral-200/60 dark:border-neutral-800/80',
           )}
         >
-          <Image
-            src={post.featuredImage || '/images/placeholder-large.png'}
+          <SafeImage
+            src={post.featuredImage}
             alt={post.title}
             fill
             sizes="120px"
+            containerClassName="absolute inset-0"
             className={cn(
               'object-cover transition-transform duration-500 ease-out',
               !reduce && 'group-hover/rail:scale-110',
             )}
+            variant="thumbnail"
           />
           {/* Accent gradient on hover */}
           <div

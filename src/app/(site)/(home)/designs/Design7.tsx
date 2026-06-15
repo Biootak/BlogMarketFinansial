@@ -17,7 +17,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { SafeImage } from '@/components/SafeImage';
 import { motion, AnimatePresence } from '@/lib/motion-shim';
 import {
   ChevronLeft,
@@ -252,15 +252,18 @@ export default function Design7({ initialPosts, rates, marketRates, rateLists, c
                   <Link
                     href={getPostLink(mainPost.postType, mainPost.slug)}
                     className="absolute inset-0"
-                    aria-label={mainPost.title}
+                    aria-hidden
+                    tabIndex={-1}
                   >
-                    <Image
-                      src={mainPost.featuredImage || '/images/placeholder-large.png'}
-                      alt={mainPost.title}
+                    <SafeImage
+                      src={mainPost.featuredImage}
+                      alt=""
                       fill
                       className="object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-105"
                       sizes="(max-width: 1024px) 100vw, 66vw"
                       priority
+                      containerClassName="absolute inset-0"
+                      variant="hero"
                     />
                   </Link>
 
@@ -522,12 +525,14 @@ export default function Design7({ initialPosts, rates, marketRates, rateLists, c
                       innerClassName="relative h-full"
                     >
                     {/* Image */}
-                    <Image
-                      src={post.featuredImage || '/images/placeholder-large.png'}
+                    <SafeImage
+                      src={post.featuredImage}
                       alt={post.title}
                       fill
                       className="object-cover transition-transform duration-500 group-hover:scale-110"
                       sizes="(max-width: 1024px) 50vw, 33vw"
+                      containerClassName="absolute inset-0"
+                      variant="card"
                     />
 
                     {/* Theme tint overlay */}
@@ -679,8 +684,8 @@ export default function Design7({ initialPosts, rates, marketRates, rateLists, c
                 key={post.id}
                 onClick={() => setActiveIndex(i)}
                 aria-label={`رفتن به اسلاید ${i + 1}`}
-                className={`group relative h-1.5 rounded-full transition-all duration-300 ${
-                  i === activeIndex ? 'w-10' : 'w-1.5 bg-neutral-300 dark:bg-neutral-700 hover:bg-neutral-400 dark:hover:bg-neutral-600'
+                className={`group relative h-2 min-h-[24px] min-w-[24px] rounded-full transition-all duration-300 ${
+                  i === activeIndex ? 'w-10' : 'w-2 bg-neutral-300 dark:bg-neutral-700 hover:bg-neutral-400 dark:hover:bg-neutral-600'
                 }`}
               >
                 {i === activeIndex && theme && (

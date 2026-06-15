@@ -1,39 +1,27 @@
 'use client';
 
 /**
- * FeaturedPostHero — نسخه ۲۰۲۶ (v2 — با Parallax + Spotlight)
+ * FeaturedPostHero — نسخه ۲۰۲۶ (CSS-driven, no framer-motion runtime)
  *
- * چیدمان Editorial:
- *  - موبایل: تصویر بالا، محتوا پایین
- *  - دسکتاپ: تصویر سمت راست (RTL) — 7/12 عرض، محتوا 5/12
+ * چیدمان Editorial: موبایل تصویر بالا، دسکتاپ تصویر سمت راست (RTL).
  *
  * تکنیک‌ها:
- *  1.  Parallax تصویر (mouse-based, smooth spring)
- *  2.  Spotlight cursor (نور radial که cursor رو دنبال می‌کنه)
- *  3.  Tilt 3D subtle (3deg)
- *  4.  Glassmorphism overlay (gradient چندلایه)
- *  5.  Shimmer line (فقط hover)
+ *  1.  Parallax تصویر (rAF + direct style transform)
+ *  2.  Spotlight cursor از Spotlight
+ *  3.  Tilt 3D subtle از TiltCard
+ *  4.  Glassmorphism overlay
+ *  5.  Shimmer line از Shimmer
  *  6.  Reading time + date با tabular-nums
- *  7.  View count (real from DB)
- *  8.  Comment count
- *  9.  CTA pill button (با arrow انیمیشنی)
- * 10.  RTL-aware
- * 11.  Keyboard accessible
- * 12.  respects prefers-reduced-motion
- *
- * رنگ‌بندی: refined، بدون saturation بالا
+ *  7.  View count + comment count
+ *  8.  CTA pill button
+ *  9.  RTL-aware
+ * 10.  Keyboard accessible
+ * 11.  respects prefers-reduced-motion
  */
 
 import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
+import { SafeImage } from '@/components/SafeImage';
 import Link from 'next/link';
-import {
-  motion,
-  useMotionValue,
-  useSpring,
-  useTransform,
-  useReducedMotion,
-} from '@/lib/motion-shim';
 import {
   Clock,
   Calendar,
@@ -48,8 +36,6 @@ import { getPostLink } from '@/lib/getPostLink';
 import { TiltCard } from '@/components/ModernTrending/effects/TiltCard';
 import { Shimmer } from '@/components/ModernTrending/effects/Shimmer';
 import Spotlight from '@/components/Sections/effects/Spotlight';
-import { STRIPE_EASE, staggerItem } from '@/lib/motion';
-import PostCardMeta from '@/components/PostCardMeta/PostCardMeta';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
 import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
 
@@ -57,10 +43,6 @@ interface FeaturedPostHeroProps {
   post: PostWithRelations;
   className?: string;
 }
-
-/* -------------------------------------------------------------------------- */
-/*  Helpers                                                                   */
-/* -------------------------------------------------------------------------- */
 
 function formatJalaliDate(d: Date | string): string {
   const date = new Date(d);
@@ -71,15 +53,11 @@ function formatJalaliDate(d: Date | string): string {
   }).format(date);
 }
 
-function estimateReadingMinutes(text: string | undefined | null): number {
-  if (!text) return 4;
-  const words = text.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).length;
+function estimateReadingMinutes(excerpt: string | undefined | null): number {
+  if (!excerpt) return 3;
+  const words = excerpt.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).length;
   return Math.max(2, Math.round(words / 150));
 }
-
-/* -------------------------------------------------------------------------- */
-/*  Component                                                                 */
-/* -------------------------------------------------------------------------- */
 
 export default function FeaturedPostHero({
   post,
@@ -109,16 +87,12 @@ export default function FeaturedPostHero({
       ? readingTime
       : estimateReadingMinutes(excerpt ?? '');
 
-  /* ---------- Parallax: mouse-based image translation ---------- */
+  /* ---------- Parallax: rAF-driven smoothing مستقیم روی transform ---------- */
   const cardRef = useRef<HTMLDivElement>(null);
-  const xPct = useMotionValue(0);
-  const yPct = useMotionValue(0);
-  const xSpring = useSpring(xPct, { stiffness: 180, damping: 22 });
-  const ySpring = useSpring(yPct, { stiffness: 180, damping: 22 });
-  const imgX = useTransform(xSpring, (v) => v * -12);
-  const imgY = useTransform(ySpring, (v) => v * -12);
-
+  const imgRef = useRef<HTMLDivElement>(null);
+  const stateRef = useRef({ x: 0, y: 0, tx: 0, ty: 0 });
   const [parallaxEnabled, setParallaxEnabled] = useState(false);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const fine = window.matchMedia('(pointer: fine)').matches;
@@ -126,21 +100,37 @@ export default function FeaturedPostHero({
     setParallaxEnabled(fine && !reduce);
   }, []);
 
+  useEffect(() => {
+    if (!parallaxEnabled) return;
+    let rafId = 0;
+    const tick = () => {
+      const s = stateRef.current;
+      s.x += (s.tx - s.x) * 0.12;
+      s.y += (s.ty - s.y) * 0.12;
+      if (imgRef.current) {
+        imgRef.current.style.transform =
+          `translate3d(${(s.x * -12).toFixed(2)}px, ${(s.y * -12).toFixed(2)}px, 0) scale(1.08)`;
+      }
+      rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, [parallaxEnabled]);
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!parallaxEnabled || !cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
-    xPct.set((e.clientX - rect.left) / rect.width - 0.5);
-    yPct.set((e.clientY - rect.top) / rect.height - 0.5);
+    stateRef.current.tx = (e.clientX - rect.left) / rect.width - 0.5;
+    stateRef.current.ty = (e.clientY - rect.top) / rect.height - 0.5;
   };
   const handleMouseLeave = () => {
-    xPct.set(0);
-    yPct.set(0);
+    stateRef.current.tx = 0;
+    stateRef.current.ty = 0;
   };
 
   return (
-    <motion.article
-      variants={staggerItem}
-      className={cn('group/hero relative h-full', className)}
+    <article
+      className={cn('group/hero relative h-full anim-fade-in-up', className)}
       dir="rtl"
     >
       <TiltCard intensity={3} perspective={1400} className="h-full w-full">
@@ -149,263 +139,169 @@ export default function FeaturedPostHero({
           intensity={0.4}
           size={500}
         >
-          <motion.div
+          <div
             ref={cardRef}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
-            whileHover={{ y: -4 }}
-            transition={{ duration: 0.4, ease: STRIPE_EASE }}
             className={cn(
-              'relative h-full overflow-hidden rounded-3xl',
+              'relative h-full overflow-hidden rounded-3xl flex flex-col',
               'border border-neutral-200/70 dark:border-neutral-800/80',
-              'bg-white/70 dark:bg-neutral-900/70',
-              'backdrop-blur-md',
-              'shadow-[0_1px_0_0_rgba(255,255,255,0.6)_inset,0_20px_50px_-25px_rgba(20,23,32,0.18)]',
-              'dark:shadow-[0_1px_0_0_rgba(255,255,255,0.05)_inset,0_20px_50px_-25px_rgba(0,0,0,0.5)]',
-              'hover:shadow-[0_1px_0_0_rgba(255,255,255,0.6)_inset,0_32px_64px_-30px_rgba(94,106,230,0.28)]',
-              'dark:hover:shadow-[0_1px_0_0_rgba(255,255,255,0.05)_inset,0_32px_64px_-30px_rgba(94,106,230,0.32)]',
-              'transition-shadow duration-500',
+              'bg-white/70 dark:bg-neutral-900/70 backdrop-blur-md',
+              'shadow-[0_1px_0_0_rgba(255,255,255,0.6)_inset,0_8px_24px_-12px_rgba(20,23,32,0.12)]',
+              'dark:shadow-[0_1px_0_0_rgba(255,255,255,0.04)_inset,0_8px_24px_-12px_rgba(0,0,0,0.4)]',
+              'hover:shadow-[0_1px_0_0_rgba(255,255,255,0.6)_inset,0_20px_40px_-20px_rgba(94,106,230,0.25)]',
+              'dark:hover:shadow-[0_1px_0_0_rgba(255,255,255,0.04)_inset,0_20px_40px_-20px_rgba(94,106,230,0.3)]',
+              'hover:-translate-y-0.5 transition-[transform,box-shadow] duration-500',
             )}
           >
-            <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-0 h-full">
-              {/* ============================================================== */}
-              {/*  Image column (Parallax)                                       */}
-              {/* ============================================================== */}
-              <div className={cn("relative lg:col-span-7 xl:col-span-7 2xl:col-span-7 aspect-[16/10] sm:aspect-[16/10] md:aspect-[16/9] lg:aspect-auto sm:min-h-[300px] md:min-h-[320px] lg:min-h-[380px] xl:min-h-[420px] 2xl:min-h-[460px] overflow-hidden")}>
-                <Link
-                  href={postLink}
-                  className="absolute inset-0 block"
-                  aria-label={title}
+            {/* Image */}
+            <div className="relative aspect-[16/10] sm:aspect-[16/10] md:aspect-[16/10] lg:aspect-[16/11] xl:aspect-[16/10] overflow-hidden">
+              <Link
+                href={postLink}
+                className="absolute inset-0 block"
+                aria-label={title}
+              >
+                <div
+                  ref={imgRef}
+                  className="absolute inset-0 will-change-transform"
                 >
-                  <motion.div
-                    className="absolute inset-0"
-                    style={{ x: imgX, y: imgY, scale: 1.08 }}
-                  >
-                    <Image
-                      fill
-                      priority
-                      sizes="(max-width: 1024px) 100vw, 60vw"
-                      src={featuredImage || '/images/placeholder-large.png'}
-                      alt={title}
-                      className="object-cover"
-                    />
-                  </motion.div>
-
-                  {/* Multi-layer glassy gradient overlay */}
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      background:
-                        'linear-gradient(180deg, transparent 25%, rgba(20,23,32,0.30) 60%, rgba(20,23,32,0.70) 100%)',
-                    }}
-                    aria-hidden
-                  />
-                  <div
-                    className="absolute inset-0 mix-blend-overlay opacity-50"
-                    style={{
-                      background:
-                        'linear-gradient(135deg, rgba(94,106,230,0.20) 0%, transparent 50%, rgba(34,211,238,0.12) 100%)',
-                    }}
-                    aria-hidden
-                  />
-
-                  {/* Shimmer line on hover */}
-                  <div className="opacity-0 group-hover/hero:opacity-100 transition-opacity duration-700">
-                    <Shimmer color="light" />
-                  </div>
-                </Link>
-
-                {/* Top badges */}
-                <div className="absolute top-3 sm:top-5 end-3 sm:end-5 flex flex-col items-end gap-2 z-10">
-                  <span
-                    className={cn(
-                      'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full',
-                      'backdrop-blur-md',
-                      'bg-white/85 dark:bg-neutral-900/80',
-                      'border border-white/40 dark:border-neutral-700/50',
-                      'text-[10px] sm:text-[11px] font-semibold',
-                      'text-neutral-900 dark:text-neutral-100',
-                      'shadow-sm',
-                    )}
-                  >
-                    <Sparkles className="h-3 w-3 text-amber-500" strokeWidth={2.25} />
-                    <span>ویژه</span>
-                  </span>
-
-                  {categories && categories.length > 0 && (
-                    <div className="flex flex-wrap justify-end gap-1.5 max-w-[260px]">
-                      <CategoryBadgeList
-                        categories={categories.slice(0, 2)}
-                        className="flex flex-wrap gap-1.5"
-                        itemClass="text-[10px] sm:text-[11px] px-2 py-0.5 font-semibold backdrop-blur-md bg-white/90 dark:bg-neutral-900/85 shadow-sm border border-white/30 dark:border-neutral-700/50"
-                        disableLinks
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Bottom post-type icon */}
-                <div className="absolute bottom-3 sm:bottom-5 start-3 sm:start-5 z-10">
-                  <PostTypeFeaturedIcon
-                    wrapSize="h-9 w-9 sm:h-11 sm:w-11"
-                    iconSize="h-4 w-4 sm:h-5 sm:w-5"
-                    postType={postType}
+                  <SafeImage
+                    fill
+                    priority
+                    sizes="(max-width: 1024px) 100vw, 60vw"
+                    src={featuredImage}
+                    alt={title}
+                    className="object-cover"
+                    containerClassName="absolute inset-0"
+                    variant="hero"
                   />
                 </div>
+
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background:
+                      'linear-gradient(180deg, rgba(20,23,32,0) 30%, rgba(20,23,32,0.45) 75%, rgba(20,23,32,0.85) 100%)',
+                  }}
+                  aria-hidden
+                />
+                <div
+                  className="absolute inset-0 mix-blend-overlay opacity-50"
+                  style={{
+                    background:
+                      'linear-gradient(135deg, rgba(94,106,230,0.18) 0%, transparent 60%, rgba(34,211,238,0.10) 100%)',
+                  }}
+                  aria-hidden
+                />
+
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+                  <Shimmer color="light" />
+                </div>
+              </Link>
+
+              <div className="absolute top-2.5 start-2.5 sm:top-3 sm:start-3 z-10">
+                <PostTypeFeaturedIcon
+                  wrapSize="h-8 w-8"
+                  iconSize="h-3.5 w-3.5"
+                  postType={postType}
+                />
               </div>
 
-              {/* ============================================================== */}
-              {/*  Content column                                                */}
-              {/* ============================================================== */}
-              <div className={cn("relative lg:col-span-5 xl:col-span-5 2xl:col-span-5 p-4 sm:p-6 lg:p-7 xl:p-8 2xl:p-10 flex flex-col justify-between gap-4 sm:gap-5 lg:gap-6 min-w-0")}>
-                <div className="space-y-4">
-                  {/* Date + reading time + views + comments */}
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] sm:text-xs text-neutral-500 dark:text-neutral-400 font-vazirmatn">
-                    {dateStr && (
-                      <span className="inline-flex items-center gap-1.5">
-                        <Calendar
-                          className="h-3 w-3 text-neutral-400"
-                          strokeWidth={2}
-                          aria-hidden
-                        />
-                        <time
-                          className="tabular-nums"
-                          dateTime={new Date(createdAt).toISOString()}
-                        >
-                          {dateStr}
-                        </time>
-                      </span>
-                    )}
-                    <span
-                      className="text-neutral-300 dark:text-neutral-700"
-                      aria-hidden
-                    >
-                      ·
-                    </span>
-                    <span className="inline-flex items-center gap-1.5">
-                      <Clock
-                        className="h-3 w-3 text-neutral-400"
-                        strokeWidth={2}
-                        aria-hidden
-                      />
-                      <span className="tabular-nums">
-                        {toPersianNumber(readingMin)} دقیقه مطالعه
-                      </span>
-                    </span>
-                    {typeof viewCount === 'number' && viewCount > 0 && (
-                      <>
-                        <span
-                          className="text-neutral-300 dark:text-neutral-700"
-                          aria-hidden
-                        >
-                          ·
-                        </span>
-                        <span className="inline-flex items-center gap-1.5">
-                          <Eye
-                            className="h-3 w-3 text-neutral-400"
-                            strokeWidth={2}
-                            aria-hidden
-                          />
-                          <span className="tabular-nums">
-                            {toPersianNumber(formatNumber(viewCount))} بازدید
-                          </span>
-                        </span>
-                      </>
-                    )}
-                    {typeof _count?.comments === 'number' && _count.comments > 0 && (
-                      <>
-                        <span
-                          className="text-neutral-300 dark:text-neutral-700"
-                          aria-hidden
-                        >
-                          ·
-                        </span>
-                        <span className="inline-flex items-center gap-1.5">
-                          <MessageCircle
-                            className="h-3 w-3 text-neutral-400"
-                            strokeWidth={2}
-                            aria-hidden
-                          />
-                          <span className="tabular-nums">
-                            {toPersianNumber(_count.comments)} دیدگاه
-                          </span>
-                        </span>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Title */}
-                  <h3
-                    className={cn(
-                      'text-[15px] sm:text-lg md:text-xl lg:text-[24px] xl:text-[26px] 2xl:text-[28px] font-bold leading-[1.4] sm:leading-[1.3] text-balance',
-                      'text-neutral-900 dark:text-white',
-                      'tracking-tight',
-                    )}
-                  >
-                    <Link
-                      href={postLink}
-                      className={cn(
-                        'transition-colors duration-300',
-                        'hover:text-primary-700 dark:hover:text-primary-300',
-                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50 rounded-md',
-                      )}
-                      title={title}
-                    >
-                      {title}
-                    </Link>
-                  </h3>
-
-                  {/* Excerpt */}
-                  {excerpt && (
-                    <p
-                      className={cn(
-                        'text-[12.5px] sm:text-[13px] md:text-[13.5px] leading-[1.7] sm:leading-[1.75]',
-                        'text-neutral-600 dark:text-neutral-400',
-                        'line-clamp-3 sm:line-clamp-4',
-                      )}
-                    >
-                      {excerpt}
-                    </p>
-                  )}
-                </div>
-
-                {/* Author + CTA */}
-                <div className="flex items-center justify-between gap-3 pt-4 border-t border-neutral-200/70 dark:border-neutral-800/80">
-                  <PostCardMeta
-                    hiddenAvatar={false}
-                    avatarSize="h-8 w-8 sm:h-9 sm:w-9 text-xs"
-                    meta={post}
-                    className="text-[12px] sm:text-[13px] text-neutral-700 dark:text-neutral-300"
+              {categories && categories.length > 0 && (
+                <div className="absolute top-2.5 end-2.5 sm:top-3 sm:end-3 z-10 max-w-[180px] sm:max-w-[220px]">
+                  <CategoryBadgeList
+                    categories={categories.slice(0, 1)}
+                    className="flex"
+                    itemClass="text-[10px] px-2 py-0.5 font-semibold backdrop-blur-md bg-white/90 dark:bg-neutral-900/85 shadow-sm border border-white/30 dark:border-neutral-700/50"
+                    disableLinks
                   />
+                </div>
+              )}
 
+              <div className="absolute inset-x-0 bottom-0 z-10 p-3 sm:p-4 md:p-5">
+                <h3
+                  className={cn(
+                    'text-[15px] sm:text-[17px] md:text-lg lg:text-[17px] xl:text-lg font-bold leading-[1.45] sm:leading-[1.4] text-balance',
+                    'text-white',
+                    'line-clamp-2',
+                    'drop-shadow-lg',
+                    'tracking-tight',
+                  )}
+                >
                   <Link
                     href={postLink}
                     className={cn(
-                      'group/cta relative inline-flex items-center gap-1.5',
-                      'h-9 sm:h-10 px-3.5 sm:px-4',
-                      'rounded-full',
-                      'bg-neutral-900 dark:bg-white',
-                      'text-white dark:text-neutral-900',
-                      'text-[12px] sm:text-sm font-medium',
-                      'shadow-sm hover:shadow-md',
-                      'transition-all duration-300',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50',
-                      'cursor-pointer',
+                      'transition-colors duration-300',
+                      'hover:text-primary-200',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/50 rounded',
                     )}
-                    aria-label={`ادامه مطلب: ${title}`}
                   >
-                    <span>ادامه مطلب</span>
-                    <ArrowLeft
-                      className="h-3.5 w-3.5 transition-transform duration-300 group-hover/cta:-translate-x-0.5"
-                      strokeWidth={2.25}
-                      aria-hidden
-                    />
+                    {title}
                   </Link>
-                </div>
+                </h3>
               </div>
             </div>
 
-            {/* Hairline highlight border — top */}
+            {/* Body */}
+            <div className="flex flex-col flex-1 p-4 sm:p-5 md:p-6 gap-3">
+              {excerpt && (
+                <p
+                  className={cn(
+                    'text-[12.5px] sm:text-sm leading-relaxed',
+                    'text-neutral-600 dark:text-neutral-300',
+                    'line-clamp-2 sm:line-clamp-3',
+                  )}
+                >
+                  {excerpt}
+                </p>
+              )}
+
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] sm:text-xs text-neutral-500 dark:text-neutral-400 font-vazirmatn tabular-nums">
+                <span className="inline-flex items-center gap-1">
+                  <Calendar className="h-3 w-3" strokeWidth={2} aria-hidden />
+                  <time dateTime={new Date(createdAt).toISOString()}>{dateStr}</time>
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <Clock className="h-3 w-3" strokeWidth={2} aria-hidden />
+                  {toPersianNumber(readingMin)} دقیقه
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <Eye className="h-3 w-3" strokeWidth={2} aria-hidden />
+                  {toPersianNumber(formatNumber(viewCount ?? 0))} بازدید
+                </span>
+                {_count?.comments !== undefined && (
+                  <span className="inline-flex items-center gap-1">
+                    <MessageCircle className="h-3 w-3" strokeWidth={2} aria-hidden />
+                    {toPersianNumber(formatNumber(_count.comments))} نظر
+                  </span>
+                )}
+              </div>
+
+              <div className="mt-auto flex items-center justify-between">
+                <Link
+                  href={postLink}
+                  className={cn(
+                    'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full',
+                    'bg-neutral-900 dark:bg-white',
+                    'text-white dark:text-neutral-900',
+                    'text-[11px] sm:text-xs font-semibold',
+                    'hover:opacity-90',
+                    'transition-opacity duration-200',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/50',
+                  )}
+                >
+                  <span>ادامه مطلب</span>
+                  <ArrowLeft className="h-3 w-3" strokeWidth={2.5} aria-hidden />
+                </Link>
+                {categories && categories.length > 0 && (
+                  <span className="hidden sm:inline-flex items-center gap-1 text-[10px] uppercase tracking-wide text-neutral-400 dark:text-neutral-500 font-semibold">
+                    <Sparkles className="h-3 w-3 text-amber-500/80" strokeWidth={1.75} aria-hidden />
+                    ویژه
+                  </span>
+                )}
+              </div>
+            </div>
+
             <div
               className="pointer-events-none absolute inset-x-0 top-0 h-px"
               style={{
@@ -414,9 +310,9 @@ export default function FeaturedPostHero({
               }}
               aria-hidden
             />
-          </motion.div>
+          </div>
         </Spotlight>
       </TiltCard>
-    </motion.article>
+    </article>
   );
 }
