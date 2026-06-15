@@ -31,10 +31,15 @@ import {
   TrendingUp,
   TrendingDown,
   Minus,
+  Tag,
+  MessageCircle,
+  Activity,
+  Calendar,
 } from 'lucide-react';
 import type { PostWithRelations, ExchangeRate, RateListData, RateItem } from '@/types/types';
 import Avatar from '@/components/Avatar/Avatar';
 import { getPostLink } from '@/lib/getPostLink';
+import { formatRelativeTime } from '@/lib/utils';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
 import type { MarketRateItem } from '@/actions/marketTickerRates';
 import MarketRatesTickerBar from './MarketRatesTickerBar';
@@ -352,7 +357,7 @@ export default function Design7({ initialPosts, rates, marketRates, rateLists, c
                     {/* Title */}
                     <motion.h2
                       key={`title-${mainPost.id}`}
-                      className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-black text-white leading-tight mb-4 line-clamp-2 drop-shadow-lg"
+                      className="text-base sm:text-xl lg:text-2xl xl:text-3xl font-black text-white leading-snug mb-3 sm:mb-4 line-clamp-2 drop-shadow-lg"
                       initial={{ y: 20, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ delay: 0.35 }}
@@ -430,7 +435,9 @@ export default function Design7({ initialPosts, rates, marketRates, rateLists, c
                     </motion.div>
                   </div>
 
-                  {/* ─── Stats Cockpit — اتاق فرمان آمار زنده (فقط lg+) ─── */}
+                  {/* ─── Stats Cockpit — اطلاعات مکمل پست (نه تکراری) ───
+                      meta info پایین: نویسنده + تاریخ مطلق + بازدید + زمان مطالعه
+                      اینجا فقط چیزایی که اون‌جا نیست: */}
                   <motion.div
                     key={`cockpit-${mainPost.id}`}
                     initial={{ y: 30, opacity: 0 }}
@@ -439,73 +446,49 @@ export default function Design7({ initialPosts, rates, marketRates, rateLists, c
                     transition={{ delay: 0.5, type: 'spring', stiffness: 200 }}
                     className="absolute bottom-4 sm:bottom-6 start-4 sm:start-6 z-20 hidden lg:flex items-stretch gap-0 backdrop-blur-xl bg-black/40 border border-white/15 rounded-2xl shadow-2xl overflow-hidden"
                   >
-                    {/* Live Pulse Cell */}
-                    <div className="flex flex-col items-center justify-center gap-0.5 px-3 py-2 border-l border-white/10">
-                      <span className="text-[9px] uppercase tracking-wider text-white/50 font-bold">
-                        Live
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <span className="relative flex h-1.5 w-1.5">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
-                        </span>
-                        <span className="text-[10px] font-mono font-bold text-emerald-300">
-                          ON
-                        </span>
-                      </span>
-                    </div>
-
-                    {/* Views Cell — Morphing */}
-                    {mainPost.viewCount > 0 && (
+                    {/* Comments Cell — تعداد نظرات (مکمل — تعامل کاربران) */}
+                    {typeof mainPost._count?.comments === 'number' && mainPost._count.comments > 0 && (
                       <div className="flex flex-col items-start justify-center gap-0.5 px-3 py-2 border-l border-white/10 min-w-[80px]">
                         <span className="text-[9px] uppercase tracking-wider text-white/50 font-bold flex items-center gap-1">
-                          <Eye className="w-2.5 h-2.5" /> بازدید
+                          <MessageCircle className="w-2.5 h-2.5" /> نظرات
                         </span>
                         <span className="text-sm font-bold text-white tabular-nums">
-                          {mainPost.viewCount.toLocaleString('fa-IR')}
+                          {mainPost._count.comments.toLocaleString('fa-IR')}
                         </span>
                       </div>
                     )}
 
-                    {/* Reading Time Cell */}
-                    {mainPost.excerpt && (
-                      <div className="flex flex-col items-start justify-center gap-0.5 px-3 py-2 border-l border-white/10 min-w-[70px]">
-                        <span className="text-[9px] uppercase tracking-wider text-white/50 font-bold flex items-center gap-1">
-                          <BookOpen className="w-2.5 h-2.5" /> زمان
-                        </span>
-                        <span className="text-sm font-bold text-white flex items-baseline gap-0.5 tabular-nums">
-                          {Math.max(1, Math.ceil(mainPost.excerpt.length / 300))}
-                          <span className="text-[9px] text-white/50 font-medium">دقیقه</span>
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Sentiment Mini-Cell */}
-                    <div className="flex flex-col items-start justify-center gap-0.5 px-3 py-2 min-w-[70px]">
-                      <span className="text-[9px] uppercase tracking-wider text-white/50 font-bold">
-                        روند
+                    {/* Published Time Cell — زمان نسبی انتشار (مکمل تاریخ مطلق meta) */}
+                    <div className="flex flex-col items-start justify-center gap-0.5 px-3 py-2 border-l border-white/10 min-w-[90px]">
+                      <span className="text-[9px] uppercase tracking-wider text-white/50 font-bold flex items-center gap-1">
+                        <Calendar className="w-2.5 h-2.5" /> پیش
                       </span>
-                      <span
-                        className={`text-sm font-bold flex items-baseline gap-0.5 ${
-                          mainSentiment === 'bullish'
-                            ? 'text-emerald-300'
-                            : mainSentiment === 'bearish'
-                              ? 'text-rose-300'
-                              : 'text-amber-300'
-                        }`}
-                      >
-                        {SENTIMENT_CONFIG[mainSentiment].icon === 'up' && (
-                          <TrendingUp className="w-3.5 h-3.5" />
-                        )}
-                        {SENTIMENT_CONFIG[mainSentiment].icon === 'down' && (
-                          <TrendingDown className="w-3.5 h-3.5" />
-                        )}
-                        {SENTIMENT_CONFIG[mainSentiment].icon === 'flat' && (
-                          <Minus className="w-3.5 h-3.5" />
-                        )}
-                        {SENTIMENT_CONFIG[mainSentiment].label}
+                      <span className="text-sm font-bold text-white line-clamp-1 max-w-full">
+                        {formatRelativeTime(mainPost.createdAt)}
                       </span>
                     </div>
+
+                    {/* Slide Progress Cell — موقعیت اسلاید فعال (مربوط به خود اسلایدر) */}
+                    <div className="flex flex-col items-start justify-center gap-0.5 px-3 py-2 border-l border-white/10 min-w-[100px]">
+                      <span className="text-[9px] uppercase tracking-wider text-white/50 font-bold flex items-center gap-1">
+                        <Activity className="w-2.5 h-2.5" /> اسلاید
+                      </span>
+                      <span className="text-sm font-bold text-white tabular-nums">
+                        {String(activeIndex + 1).padStart(2, '۰')} از {String(initialPosts.length).padStart(2, '۰')}
+                      </span>
+                    </div>
+
+                    {/* Tags Cell — تگ‌های مرتبط (مکمل — موضوعات) */}
+                    {mainPost.tags && mainPost.tags.length > 0 && (
+                      <div className="flex flex-col items-start justify-center gap-0.5 px-3 py-2 min-w-[100px] max-w-[160px]">
+                        <span className="text-[9px] uppercase tracking-wider text-white/50 font-bold flex items-center gap-1">
+                          <Tag className="w-2.5 h-2.5" /> برچسب
+                        </span>
+                        <span className="text-sm font-bold text-white line-clamp-1 max-w-full">
+                          {mainPost.tags.map((t) => t.name).join(' • ')}
+                        </span>
+                      </div>
+                    )}
                   </motion.div>
 
                   {/* Reading Progress Bar — پایین کارت */}

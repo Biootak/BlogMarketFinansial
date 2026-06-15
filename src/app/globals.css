@@ -118,25 +118,16 @@ body {
   font-feature-settings: "tnum", "lnum";
 }
 
-/* Headings refined */
-h1, h2, h3, h4, h5, h6 {
+/* Headings refined — استایل‌های non-size (font-size باید از Tailwind بیاد) */
+:where(h1, h2, h3, h4, h5, h6) {
   line-height: var(--leading-tight);
   font-weight: 700;
   letter-spacing: -0.018em;
   font-feature-settings: "ss01";
 }
-h1 { font-size: var(--fs-4xl); }
-h2 { font-size: var(--fs-3xl); }
-h3 { font-size: var(--fs-2xl); }
-h4 { font-size: var(--fs-xl); }
-h5 { font-size: var(--fs-lg); }
-h6 { font-size: var(--fs-base); }
-
-@media (min-width: 1024px) {
-  h1 { font-size: var(--fs-5xl); }
-  h2 { font-size: var(--fs-4xl); }
-  h3 { font-size: var(--fs-2xl); }
-}
+/* font-size heading ها عمداً اینجا تنظیم نمی‌شه تا Tailwind utilities (text-base, text-xl, ...)
+   بتونن کنترل کامل داشته باشن. برای سایز پیش‌فرض heading ها، از heading elements استفاده کنید
+   و با کلاس‌های Tailwind (text-base, text-2xl, ...) سایز رو override کنید. */
 
 p { line-height: var(--leading-relaxed); }
 
