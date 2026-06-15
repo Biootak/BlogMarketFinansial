@@ -24,6 +24,9 @@ import { PersianDatePicker } from '@/components/ui/PersianDatePicker';
 import SubmitButton from '@/components/SubmitButton';
 import LoadingMore from '@/components/LoadingMore';
 import { AdvertisementsSkeleton } from '@/components/Skeletons';
+import { CustomSwitch } from '@/components/ui/CustomSwitch';
+import BannerADS from '@/components/BannerADS/BannerADS';
+import { toPersianNumber, cn } from '@/lib/utils';
 import {
   DashboardPageHeader,
   DashboardSearchInput,
@@ -236,7 +239,7 @@ export default function AdvertisementsPage() {
               <span>افزودن تبلیغ</span>
             </PrimaryActionButton>
           </DialogTrigger>
-          <DialogContent className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
+          <DialogContent className="max-h-[90vh] w-full max-w-5xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
             <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-6 py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
               <DialogTitle className="text-xl font-bold text-neutral-900 dark:text-neutral-50">
                 {editingAd ? 'ویرایش تبلیغ' : 'افزودن تبلیغ جدید'}
@@ -248,6 +251,34 @@ export default function AdvertisementsPage() {
           </DialogContent>
         </Dialog>
       </DashboardPageHeader>
+
+      {/* Summary Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="rounded-2xl border border-neutral-200/60 dark:border-neutral-700/50 bg-white/70 dark:bg-neutral-850/70 p-4 backdrop-blur-md shadow-sm transition-all duration-300 hover:shadow-md">
+          <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">کل تبلیغات</div>
+          <div className="text-2xl font-bold mt-1 text-neutral-900 dark:text-white tabular-nums">
+            {toPersianNumber(ads.length)}
+          </div>
+        </div>
+        <div className="rounded-2xl border border-neutral-200/60 dark:border-neutral-700/50 bg-white/70 dark:bg-neutral-850/70 p-4 backdrop-blur-md shadow-sm transition-all duration-300 hover:shadow-md">
+          <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">تبلیغات فعال</div>
+          <div className="text-2xl font-bold mt-1 text-emerald-600 dark:text-emerald-400 tabular-nums">
+            {toPersianNumber(ads.filter(a => a.isActive).length)}
+          </div>
+        </div>
+        <div className="rounded-2xl border border-neutral-200/60 dark:border-neutral-700/50 bg-white/70 dark:bg-neutral-850/70 p-4 backdrop-blur-md shadow-sm transition-all duration-300 hover:shadow-md">
+          <div className="text-xs font-semibold text-primary-600 dark:text-primary-400">جایگاه سربرگ</div>
+          <div className="text-2xl font-bold mt-1 text-primary-600 dark:text-primary-400 tabular-nums">
+            {toPersianNumber(ads.filter(a => a.position === 'HEADER').length)}
+          </div>
+        </div>
+        <div className="rounded-2xl border border-neutral-200/60 dark:border-neutral-700/50 bg-white/70 dark:bg-neutral-850/70 p-4 backdrop-blur-md shadow-sm transition-all duration-300 hover:shadow-md">
+          <div className="text-xs font-semibold text-amber-600 dark:text-amber-400">سایر جایگاه‌ها</div>
+          <div className="text-2xl font-bold mt-1 text-amber-600 dark:text-amber-400 tabular-nums">
+            {toPersianNumber(ads.filter(a => a.position !== 'HEADER').length)}
+          </div>
+        </div>
+      </div>
 
       {isLoading && page === 1 ? (
         <AdvertisementsSkeleton />
@@ -268,7 +299,7 @@ export default function AdvertisementsPage() {
                 <DashboardTableHead>عنوان</DashboardTableHead>
                 <DashboardTableHead hidden>اندازه</DashboardTableHead>
                 <DashboardTableHead hidden>موقعیت</DashboardTableHead>
-                <DashboardTableHead hidden>وضعیت</DashboardTableHead>
+                <DashboardTableHead hidden>وضعیت فعال</DashboardTableHead>
                 <DashboardTableHead>عملیات</DashboardTableHead>
               </tr>
             </DashboardTableHeader>
@@ -277,10 +308,6 @@ export default function AdvertisementsPage() {
                 <DashboardTableRow key={ad.id}>
                   <DashboardTableCell>
                     <div className="relative h-16 w-28 overflow-hidden rounded-xl ring-1 ring-neutral-200/60 dark:ring-neutral-700/50">
-                      {/* 2026-06-14: swapped raw <img> for next/image so
-                          the optimizer handles resize/format/quality
-                          and the dashboard table doesn't ship the
-                          original asset size down the wire. */}
                       <Image
                         src={ad.imageUrl}
                         alt={ad.title}
@@ -311,10 +338,35 @@ export default function AdvertisementsPage() {
                     </span>
                   </DashboardTableCell>
                   <DashboardTableCell hidden>
-                    <StatusBadge
-                      status={ad.isActive ? 'فعال' : 'غیرفعال'}
-                      variant={ad.isActive ? 'success' : 'default'}
-                    />
+                    <div className="flex items-center h-full">
+                      <CustomSwitch
+                        checked={ad.isActive}
+                        onCheckedChange={async (checked) => {
+                          // Optimistic update
+                          setAds((prev) =>
+                            prev.map((a) => (a.id === ad.id ? { ...a, isActive: checked } : a))
+                          );
+                          const result = await updateAdvertisement(ad.id, { isActive: checked });
+                          if (result.success) {
+                            toast({
+                              title: 'موفقیت',
+                              description: 'وضعیت فعال بودن تبلیغ تغییر کرد.',
+                              variant: 'success',
+                            });
+                          } else {
+                            // Rollback
+                            setAds((prev) =>
+                              prev.map((a) => (a.id === ad.id ? { ...a, isActive: !checked } : a))
+                            );
+                            toast({
+                              title: 'خطا',
+                              description: result.message,
+                              variant: 'destructive',
+                            });
+                          }
+                        }}
+                      />
+                    </div>
                   </DashboardTableCell>
                   <DashboardTableCell>
                     <div className="flex items-center gap-2">
@@ -345,6 +397,9 @@ function AdvertisementForm({
   form,
   onSubmit,
 }: { form: any; onSubmit: (data: AdvertisementFormData) => Promise<void> }) {
+  const [activeTab, setActiveTab] = useState<'content' | 'placement' | 'schedule'>('content');
+  const watchedValues = form.watch();
+
   const handleImageUpload = (urls: string[]) => {
     form.setValue('imageUrl', urls[0]);
   };
@@ -353,239 +408,453 @@ function AdvertisementForm({
     form.setValue('imageUrl', '');
   };
 
-  const inputClassName = 'h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80';
-  const selectClassName = 'h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80';
+  const inputClassName = 'h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80 dark:text-neutral-100';
+  const selectClassName = 'h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80 dark:text-neutral-100';
+
+  // Construct preview ad matching database type
+  const previewAd: Advertisement = {
+    id: 'preview',
+    title: watchedValues.title || 'عنوان نمونه تبلیغ شما',
+    description: watchedValues.description || 'توضیحات نمونه تبلیغات در این قسمت نمایش داده خواهد شد.',
+    imageUrl: watchedValues.imageUrl || '',
+    linkUrl: watchedValues.linkUrl || 'https://google.com',
+    size: watchedValues.size || 'MEDIUM',
+    position: watchedValues.position || 'IN_CONTENT',
+    isActive: watchedValues.isActive ?? true,
+    order: Number(watchedValues.order || 1),
+    customPosition: watchedValues.customPosition || null,
+    customDimensions: watchedValues.customDimensions || null,
+    startDate: watchedValues.startDate || new Date(),
+    endDate: watchedValues.endDate || new Date(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-        <div className="grid gap-5 sm:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">عنوان</FormLabel>
-                <FormControl>
-                  <Input placeholder="عنوان تبلیغ" {...field} className={inputClassName} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="size"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">اندازه تبلیغ</FormLabel>
-                <Select dir="rtl" onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger className={selectClassName}>
-                      <SelectValue placeholder="انتخاب اندازه تبلیغ" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="SMALL">100% * 65 (کوچک)</SelectItem>
-                    <SelectItem value="MEDIUM">160 * 65 (متوسط)</SelectItem>
-                    <SelectItem value="LARGE">1280 * 250 (بزرگ)</SelectItem>
-                    <SelectItem value="CUSTOM">سفارشی</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-8 items-start">
+          {/* Form Fields Side */}
+          <div className="space-y-5">
+            {/* Tabs Header */}
+            <div className="flex border-b border-neutral-200 dark:border-neutral-700/60 pb-px mb-6 gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveTab('content')}
+                className={cn(
+                  "pb-3 text-sm font-semibold border-b-2 transition-all duration-200 px-2 cursor-pointer",
+                  activeTab === 'content'
+                    ? "border-primary-500 text-neutral-900 dark:text-white"
+                    : "border-transparent text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                )}
+              >
+                ۱. محتوا و مقصد
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('placement')}
+                className={cn(
+                  "pb-3 text-sm font-semibold border-b-2 transition-all duration-200 px-2 cursor-pointer",
+                  activeTab === 'placement'
+                    ? "border-primary-500 text-neutral-900 dark:text-white"
+                    : "border-transparent text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                )}
+              >
+                ۲. جایگاه و ابعاد
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('schedule')}
+                className={cn(
+                  "pb-3 text-sm font-semibold border-b-2 transition-all duration-200 px-2 cursor-pointer",
+                  activeTab === 'schedule'
+                    ? "border-primary-500 text-neutral-900 dark:text-white"
+                    : "border-transparent text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                )}
+              >
+                ۳. زمان‌بندی و انتشار
+              </button>
+            </div>
 
-        {form.watch('size') === 'CUSTOM' && (
-          <div className="grid gap-5 sm:grid-cols-3">
-            <FormField
-              control={form.control}
-              name="customDimensions.width"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">عرض سفارشی</FormLabel>
-                  <FormControl>
-                    <Input placeholder="مثال: 300px یا 100%" {...field} className={inputClassName} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="customDimensions.height"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">ارتفاع سفارشی</FormLabel>
-                  <FormControl>
-                    <Input placeholder="مثال: 250px" {...field} className={inputClassName} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="customDimensions.aspectRatio"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نسبت تصویر</FormLabel>
-                  <FormControl>
-                    <Input placeholder="مثال: 16/9" {...field} className={inputClassName} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        )}
-
-        <FormField
-          control={form.control}
-          name="position"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">موقعیت تبلیغ</FormLabel>
-              <Select dir="rtl" onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger className={selectClassName}>
-                    <SelectValue placeholder="انتخاب موقعیت تبلیغ" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="HEADER">سربرگ</SelectItem>
-                  <SelectItem value="FOOTER">پاورقی</SelectItem>
-                  <SelectItem value="SIDEBAR">نوار کناری</SelectItem>
-                  <SelectItem value="IN_CONTENT">داخل محتوا</SelectItem>
-                  <SelectItem value="BETWEEN_POSTS">بین پست‌ها</SelectItem>
-                  <SelectItem value="CUSTOM">سفارشی</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">توضیحات</FormLabel>
-              <FormControl>
-                <textarea
-                  {...field}
-                  placeholder="توضیحات تبلیغ"
-                  className="w-full rounded-xl border border-neutral-200/60 bg-white/80 px-4 py-3 text-sm transition-all duration-200 placeholder:text-neutral-400 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80 dark:text-neutral-100"
-                  rows={3}
+            {/* Tab: Content */}
+            {activeTab === 'content' && (
+              <div className="space-y-4 anim-fade-in">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">عنوان تبلیغ</FormLabel>
+                      <FormControl>
+                        <Input placeholder="مثال: جشنواره زمستانه بورس‌مارکت" {...field} className={inputClassName} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
-        <FormField
-          control={form.control}
-          name="linkUrl"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">لینک</FormLabel>
-              <FormControl>
-                <Input placeholder="لینک تبلیغ" {...field} className={inputClassName} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="imageUrl"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">تصویر تبلیغ</FormLabel>
-              <FormControl>
-                <ImageUploader
-                  onImageUpload={handleImageUpload}
-                  onImageRemove={handleImageRemove}
-                  initialPreviews={field.value ? [field.value] : []}
-                  folder="ads"
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">توضیحات کوتاه</FormLabel>
+                      <FormControl>
+                        <textarea
+                          {...field}
+                          placeholder="توضیحات جذاب و خلاصه برای جذب مخاطب"
+                          className="w-full rounded-xl border border-neutral-200/60 bg-white/80 px-4 py-3 text-sm transition-all duration-200 placeholder:text-neutral-400 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80 dark:text-neutral-100"
+                          rows={3}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
-        <div className="grid gap-5 sm:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="startDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">تاریخ شروع</FormLabel>
-                <FormControl>
-                  <PersianDatePicker value={field.value} onChange={field.onChange} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="endDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">تاریخ پایان</FormLabel>
-                <FormControl>
-                  <PersianDatePicker value={field.value} onChange={field.onChange} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+                <FormField
+                  control={form.control}
+                  name="linkUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">لینک مقصد (URL)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://example.com/landing" {...field} className={inputClassName} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-        <div className="grid gap-5 sm:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="order"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">ترتیب نمایش</FormLabel>
-                <FormControl>
-                  <Input type="number" {...field} className={inputClassName} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+                <FormField
+                  control={form.control}
+                  name="imageUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">تصویر بنر</FormLabel>
+                      <FormControl>
+                        <ImageUploader
+                          onImageUpload={handleImageUpload}
+                          onImageRemove={handleImageRemove}
+                          initialPreviews={field.value ? [field.value] : []}
+                          folder="ads"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             )}
-          />
-          <FormField
-            control={form.control}
-            name="isActive"
-            render={({ field }) => (
-              <FormItem className="flex items-center gap-3 rounded-xl border border-neutral-200/60 bg-white/50 p-4 dark:border-neutral-700/50 dark:bg-neutral-800/50">
-                <FormControl>
-                  <input
-                    type="checkbox"
-                    checked={field.value}
-                    onChange={field.onChange}
-                    className="h-5 w-5 rounded-md border-neutral-300 text-primary-600 transition-all duration-200 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+
+            {/* Tab: Placement */}
+            {activeTab === 'placement' && (
+              <div className="space-y-4 anim-fade-in">
+                {/* Visual Placement selector mockup */}
+                <div>
+                  <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2 block">
+                    انتخاب بصری موقعیت تبلیغ
+                  </FormLabel>
+                  <div className="border border-neutral-200/60 dark:border-neutral-700/50 rounded-2xl p-4 bg-neutral-50/50 dark:bg-neutral-900/30 space-y-3">
+                    <div className="relative border-2 border-dashed border-neutral-200 dark:border-neutral-700 rounded-xl p-3 bg-white dark:bg-neutral-800 space-y-2.5">
+                      {/* Header ad mock */}
+                      <button
+                        type="button"
+                        onClick={() => form.setValue('position', 'HEADER')}
+                        className={cn(
+                          "w-full py-2.5 rounded-lg border text-xs font-semibold transition-all duration-300 cursor-pointer",
+                          watchedValues.position === 'HEADER'
+                            ? "bg-primary-500/10 border-primary-500 text-primary-600 shadow-[0_0_12px_rgba(94,106,230,0.15)] scale-[1.01]"
+                            : "bg-neutral-50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-700/60 text-neutral-500 hover:border-neutral-300 dark:hover:border-neutral-600"
+                        )}
+                      >
+                        {watchedValues.position === 'HEADER' ? '✓ سربرگ (Header)' : 'سربرگ (Header)'}
+                      </button>
+
+                      {/* Body mock */}
+                      <div className="grid grid-cols-[1.8fr_1fr] gap-3">
+                        <div className="space-y-2.5">
+                          <button
+                            type="button"
+                            onClick={() => form.setValue('position', 'IN_CONTENT')}
+                            className={cn(
+                              "w-full py-5 rounded-lg border text-xs font-semibold transition-all duration-300 cursor-pointer",
+                              watchedValues.position === 'IN_CONTENT'
+                                ? "bg-primary-500/10 border-primary-500 text-primary-600 shadow-[0_0_12px_rgba(94,106,230,0.15)] scale-[1.01]"
+                                : "bg-neutral-50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-700/60 text-neutral-500 hover:border-neutral-300 dark:hover:border-neutral-600"
+                            )}
+                          >
+                            {watchedValues.position === 'IN_CONTENT' ? '✓ داخل محتوای پست' : 'داخل محتوای پست'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => form.setValue('position', 'BETWEEN_POSTS')}
+                            className={cn(
+                              "w-full py-3.5 rounded-lg border text-xs font-semibold transition-all duration-300 cursor-pointer",
+                              watchedValues.position === 'BETWEEN_POSTS'
+                                ? "bg-primary-500/10 border-primary-500 text-primary-600 shadow-[0_0_12px_rgba(94,106,230,0.15)] scale-[1.01]"
+                                : "bg-neutral-50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-700/60 text-neutral-500 hover:border-neutral-300 dark:hover:border-neutral-600"
+                            )}
+                          >
+                            {watchedValues.position === 'BETWEEN_POSTS' ? '✓ بین پست‌های لیست' : 'بین پست‌های لیست'}
+                          </button>
+                        </div>
+                        
+                        {/* Sidebar mock */}
+                        <button
+                          type="button"
+                          onClick={() => form.setValue('position', 'SIDEBAR')}
+                          className={cn(
+                            "w-full h-full flex items-center justify-center rounded-lg border text-xs font-semibold transition-all duration-300 cursor-pointer",
+                            watchedValues.position === 'SIDEBAR'
+                              ? "bg-primary-500/10 border-primary-500 text-primary-600 shadow-[0_0_12px_rgba(94,106,230,0.15)] scale-[1.01]"
+                              : "bg-neutral-50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-700/60 text-neutral-500 hover:border-neutral-300 dark:hover:border-neutral-600"
+                          )}
+                        >
+                          {watchedValues.position === 'SIDEBAR' ? '✓ نوار کناری (Sidebar)' : 'نوار کناری'}
+                        </button>
+                      </div>
+
+                      {/* Footer mock */}
+                      <button
+                        type="button"
+                        onClick={() => form.setValue('position', 'FOOTER')}
+                        className={cn(
+                          "w-full py-2 rounded-lg border text-xs font-semibold transition-all duration-300 cursor-pointer",
+                          watchedValues.position === 'FOOTER'
+                            ? "bg-primary-500/10 border-primary-500 text-primary-600 shadow-[0_0_12px_rgba(94,106,230,0.15)] scale-[1.01]"
+                            : "bg-neutral-50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-700/60 text-neutral-500 hover:border-neutral-300 dark:hover:border-neutral-600"
+                        )}
+                      >
+                        {watchedValues.position === 'FOOTER' ? '✓ پاورقی (Footer)' : 'پاورقی (Footer)'}
+                      </button>
+                    </div>
+                    <div className="text-[10px] text-neutral-400 dark:text-neutral-500 text-center font-medium">
+                      برای تغییر موقعیت، مستقیماً روی بخش مورد نظر در مدل شبیه‌سازی بالا کلیک کنید.
+                    </div>
+                  </div>
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="size"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">اندازه نمایش بنر</FormLabel>
+                      <Select dir="rtl" onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className={selectClassName}>
+                            <SelectValue placeholder="انتخاب اندازه بنر" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="SMALL">کوچک (100% * 65)</SelectItem>
+                          <SelectItem value="MEDIUM">متوسط (160 * 65)</SelectItem>
+                          <SelectItem value="LARGE">بزرگ / عریض (1280 * 250)</SelectItem>
+                          <SelectItem value="CUSTOM">ابعاد سفارشی</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {watchedValues.size === 'CUSTOM' && (
+                  <div className="grid gap-5 sm:grid-cols-3 p-4 border border-dashed border-neutral-200 dark:border-neutral-700 rounded-xl bg-neutral-50/50 dark:bg-neutral-900/30">
+                    <FormField
+                      control={form.control}
+                      name="customDimensions.width"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-semibold text-neutral-600 dark:text-neutral-400">عرض سفارشی</FormLabel>
+                          <FormControl>
+                            <Input placeholder="مثال: 300px یا 100%" {...field} className={inputClassName} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="customDimensions.height"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-semibold text-neutral-600 dark:text-neutral-400">ارتفاع سفارشی</FormLabel>
+                          <FormControl>
+                            <Input placeholder="مثال: 250px" {...field} className={inputClassName} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="customDimensions.aspectRatio"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-semibold text-neutral-600 dark:text-neutral-400">نسبت تصویر</FormLabel>
+                          <FormControl>
+                            <Input placeholder="مثال: 16/9" {...field} className={inputClassName} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Tab: Schedule */}
+            {activeTab === 'schedule' && (
+              <div className="space-y-4 anim-fade-in">
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="startDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">تاریخ شروع نمایش</FormLabel>
+                        <FormControl>
+                          <PersianDatePicker value={field.value} onChange={field.onChange} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </FormControl>
-                <FormLabel className="!mt-0 text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                  فعال بودن تبلیغ
-                </FormLabel>
-              </FormItem>
-            )}
-          />
-        </div>
+                  <FormField
+                    control={form.control}
+                    name="endDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">تاریخ پایان نمایش</FormLabel>
+                        <FormControl>
+                          <PersianDatePicker value={field.value} onChange={field.onChange} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-        <div className="pt-4">
-          <SubmitButton isSubmitting={form.formState.isSubmitting} />
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="order"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">اولویت نمایش (ترتیب)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} className={inputClassName} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="isActive"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center gap-3 rounded-xl border border-neutral-200/60 bg-white/50 p-4 dark:border-neutral-700/50 dark:bg-neutral-800/50">
+                        <FormControl>
+                          <input
+                            type="checkbox"
+                            checked={field.value}
+                            onChange={field.onChange}
+                            className="h-5 w-5 rounded-md border-neutral-300 text-primary-600 transition-all duration-200 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 cursor-pointer"
+                          />
+                        </FormControl>
+                        <FormLabel className="!mt-0 text-sm font-medium text-neutral-700 dark:text-neutral-300 cursor-pointer">
+                          فعال بودن فوری تبلیغ در سایت
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Stepped Actions Buttons */}
+            <div className="flex items-center justify-between pt-5 mt-6 border-t border-neutral-200/60 dark:border-neutral-700/50">
+              {activeTab !== 'content' ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (activeTab === 'schedule') setActiveTab('placement');
+                    else if (activeTab === 'placement') setActiveTab('content');
+                  }}
+                  className="h-10 px-5 text-xs font-semibold rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                >
+                  مرحله قبلی
+                </button>
+              ) : (
+                <div />
+              )}
+
+              {activeTab === 'content' && (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('placement')}
+                  className="h-10 px-6 text-xs font-semibold rounded-xl bg-primary-500 text-white hover:bg-primary-600 transition-all cursor-pointer shadow-sm active:scale-[0.98]"
+                >
+                  مرحله بعد: جایگاه و ابعاد
+                </button>
+              )}
+
+              {activeTab === 'placement' && (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('schedule')}
+                  className="h-10 px-6 text-xs font-semibold rounded-xl bg-primary-500 text-white hover:bg-primary-600 transition-all cursor-pointer shadow-sm active:scale-[0.98]"
+                >
+                  مرحله بعد: زمان‌بندی
+                </button>
+              )}
+
+              {activeTab === 'schedule' && (
+                <SubmitButton isSubmitting={form.formState.isSubmitting} />
+              )}
+            </div>
+          </div>
+
+          {/* Left Side: Real-time Live Preview Pane */}
+          <div className="lg:sticky lg:top-0 border border-neutral-200/60 dark:border-neutral-700/50 rounded-2xl p-5 bg-neutral-50/40 dark:bg-neutral-900/20 space-y-4">
+            <div className="flex items-center justify-between border-b border-neutral-200/60 dark:border-neutral-700/50 pb-2">
+              <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400">پیش‌نمایش زنده کارت تبلیغ</span>
+              <span className="text-[9px] bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-full font-bold">زنده</span>
+            </div>
+            
+            <div className="flex items-center justify-center p-3 bg-neutral-950/5 dark:bg-neutral-950/20 rounded-xl overflow-hidden min-h-[160px] border border-neutral-200/40 dark:border-neutral-800/40">
+              {previewAd.imageUrl ? (
+                <div className="w-full scale-90 sm:scale-100 origin-center transition-all duration-300">
+                  <BannerADS
+                    ad={previewAd}
+                    variant={
+                      previewAd.size === 'LARGE' ? 'showcase' :
+                      previewAd.size === 'MEDIUM' ? 'rich' :
+                      previewAd.size === 'SMALL' ? 'minimal' : 'image'
+                    }
+                    className="w-full"
+                  />
+                </div>
+              ) : (
+                <div className="text-center py-8 px-4 space-y-2">
+                  <div className="h-10 w-10 mx-auto rounded-full bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center text-neutral-400">
+                    <HiOutlineMegaphone className="h-5 w-5" />
+                  </div>
+                  <div className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">در حال انتظار برای تصویر...</div>
+                  <div className="text-neutral-400 dark:text-neutral-550 text-[10px] max-w-[200px] mx-auto leading-relaxed">
+                    با وارد کردن اطلاعات و آپلود تصویر، شکل زنده تبلیغ را اینجا مشاهده خواهید کرد.
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Quick Tips */}
+            <div className="p-3 bg-primary-500/5 rounded-xl border border-primary-500/10 text-[11px] text-primary-600 dark:text-primary-400 leading-relaxed">
+              💡 <strong>راهنما:</strong> ابعاد بزرگ (LARGE) دارای افکت تعاملی سه‌بعدی و بازتاب ماوس است. ابعاد متوسط (MEDIUM) به صورت متنی-تصویری غنی، و ابعاد کوچک (SMALL) متناسب با سایدبار نمایش داده می‌شود.
+            </div>
+          </div>
         </div>
       </form>
     </Form>

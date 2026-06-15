@@ -33,7 +33,10 @@ interface MarketTickerProps {
 }
 
 function formatPrice(item: MarketTickerItem): string {
-  const { price, category, unit } = item;
+  const { category, unit } = item;
+  const price = Number(item.price);
+
+  if (!Number.isFinite(price)) return '—';
 
   if (category === 'crypto' && unit === 'usd') {
     if (price < 1) {

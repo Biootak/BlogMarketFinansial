@@ -286,11 +286,16 @@ export default function BannerAds({
 
   const isLcp = size === 'LARGE' || variant === 'showcase';
 
+  // Rules of Hooks: همه هوک‌ها باید بدون شرط در بالای کامپوننت صدا زده شن
+  const showcaseParallax = useMouseParallax<HTMLDivElement>();
+  const imageLinkParallax = useMouseParallax<HTMLAnchorElement>();
+  const richParallax = useMouseParallax<HTMLDivElement>();
+
   /* ------------------------------------------------------------------- */
   /*  Showcase — full-bleed editorial hero (the showpiece)               */
   /* ------------------------------------------------------------------- */
   if (variant === 'showcase') {
-    const parallax = useMouseParallax<HTMLDivElement>();
+    const parallax = showcaseParallax;
     const created = new Date(createdAt);
     const dateStr = `${toPersianNumber(created.getFullYear())}/${toPersianNumber(
       String(created.getMonth() + 1).padStart(2, '0'),
@@ -469,14 +474,18 @@ export default function BannerAds({
   /* ------------------------------------------------------------------- */
   if (variant === 'image' || variant === 'minimal') {
     const isMinimal = variant === 'minimal';
+    const parallax = imageLinkParallax;
     return (
       <Link
+        ref={parallax.ref}
+        onMouseMove={parallax.onMove}
+        onMouseLeave={parallax.onLeave}
         href={linkUrl}
         target="_blank"
         rel="noopener noreferrer sponsored"
         aria-label={`تبلیغ: ${title}`}
         className={cn(
-          'nc-BannerADS group/ad relative block w-full anim-fade-in-up',
+          'nc-BannerADS group/ad ad-spotlight-3d relative block w-full anim-fade-in-up',
           isMinimal
             ? 'rounded-2xl overflow-hidden bg-surface-elevated/30 transition-all duration-300 hover:scale-[1.025] hover:shadow-[0_8px_28px_-12px_rgba(94,106,230,0.4)]'
             : 'ad-conic-border rounded-3xl overflow-hidden bg-surface-elevated/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_44px_-18px_rgba(94,106,230,0.35)]',
@@ -484,57 +493,68 @@ export default function BannerAds({
           className,
         )}
       >
-        <div
-          className={cn(
-            'relative w-full overflow-hidden',
-            isMinimal ? 'aspect-[16/9] sm:aspect-[16/8]' : 'aspect-[16/5] sm:aspect-[16/6]',
-          )}
-        >
-          <SafeImage
-            src={imageUrl}
-            alt={title}
-            variant={imageVariant}
-            ratio={ratio}
-            sizes={isMinimal ? '(max-width: 1024px) 100vw, 320px' : '100vw'}
-            priority={isLcp}
-            fill
-            className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/ad:scale-[1.04]"
+        <div className="ad-spotlight-inner relative w-full overflow-hidden rounded-3xl">
+          {/* Spotlight reflection gloss effect */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 opacity-0 group-hover/ad:opacity-100 transition-opacity duration-500 z-20 mix-blend-overlay"
+            style={{
+              background: `radial-gradient(circle 300px at calc(var(--mx, 0.5) * 100%) calc(var(--my, 0.5) * 100%), rgba(255, 255, 255, 0.15) 0%, var(--glow-soft) 40%, transparent 100%)`,
+            }}
           />
+
+          <div
+            className={cn(
+              'relative w-full overflow-hidden',
+              isMinimal ? 'aspect-[16/9] sm:aspect-[16/8]' : 'aspect-[16/5] sm:aspect-[16/6]',
+            )}
+          >
+            <SafeImage
+              src={imageUrl}
+              alt={title}
+              variant={imageVariant}
+              ratio={ratio}
+              sizes={isMinimal ? '(max-width: 1024px) 100vw, 320px' : '100vw'}
+              priority={isLcp}
+              fill
+              className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/ad:scale-[1.04]"
+            />
+          </div>
+
+          {/* Top-end corner label (always shown for minimal; hover for image) */}
+          {showLabelResolved && (
+            <div
+              className={cn(
+                'absolute z-10',
+                isMinimal
+                  ? 'end-2 top-2 opacity-100'
+                  : 'end-3 top-3 opacity-0 translate-y-1 group-hover/ad:opacity-100 group-hover/ad:translate-y-0 transition-all duration-300',
+              )}
+            >
+              <BannerAdLabel text={isMinimal ? 'AD' : 'تبلیغ'} variant={isMinimal ? 'minimal' : 'primary'} />
+            </div>
+          )}
+
+          {/* Bottom-start "مشاهده" pill (image variant only, on hover) */}
+          {!isMinimal && (
+            <div
+              className={cn(
+                'absolute z-10 start-4 bottom-4',
+                'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5',
+                'bg-white/95 text-neutral-900 backdrop-blur-md',
+                'dark:bg-neutral-900/95 dark:text-white',
+                'text-[11px] sm:text-xs font-semibold',
+                'border border-[color:var(--hairline)]',
+                'shadow-sm',
+                'opacity-0 translate-y-2 group-hover/ad:opacity-100 group-hover/ad:translate-y-0',
+                'transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+              )}
+            >
+              <span>مشاهده</span>
+              <ExternalLink className="h-3 w-3" strokeWidth={2.25} aria-hidden />
+            </div>
+          )}
         </div>
-
-        {/* Top-end corner label (always shown for minimal; hover for image) */}
-        {showLabelResolved && (
-          <div
-            className={cn(
-              'absolute z-10',
-              isMinimal
-                ? 'end-2 top-2 opacity-100'
-                : 'end-3 top-3 opacity-0 translate-y-1 group-hover/ad:opacity-100 group-hover/ad:translate-y-0 transition-all duration-300',
-            )}
-          >
-            <BannerAdLabel text={isMinimal ? 'AD' : 'تبلیغ'} variant={isMinimal ? 'minimal' : 'primary'} />
-          </div>
-        )}
-
-        {/* Bottom-start "مشاهده" pill (image variant only, on hover) */}
-        {!isMinimal && (
-          <div
-            className={cn(
-              'absolute z-10 start-4 bottom-4',
-              'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5',
-              'bg-white/95 text-neutral-900 backdrop-blur-md',
-              'dark:bg-neutral-900/95 dark:text-white',
-              'text-[11px] sm:text-xs font-semibold',
-              'border border-[color:var(--hairline)]',
-              'shadow-sm',
-              'opacity-0 translate-y-2 group-hover/ad:opacity-100 group-hover/ad:translate-y-0',
-              'transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
-            )}
-          >
-            <span>مشاهده</span>
-            <ExternalLink className="h-3 w-3" strokeWidth={2.25} aria-hidden />
-          </div>
-        )}
       </Link>
     );
   }
@@ -542,10 +562,14 @@ export default function BannerAds({
   /* ------------------------------------------------------------------- */
   /*  Rich — split image + text card                                     */
   /* ------------------------------------------------------------------- */
+  const parallax = richParallax;
   return (
     <div
+      ref={parallax.ref}
+      onMouseMove={parallax.onMove}
+      onMouseLeave={parallax.onLeave}
       className={cn(
-        'nc-BannerADS relative w-full anim-fade-in-up',
+        'nc-BannerADS group/ad ad-spotlight-3d relative w-full anim-fade-in-up',
         'rounded-3xl overflow-hidden',
         'border border-[color:var(--hairline)]',
         'bg-white/[0.04] dark:bg-white/[0.06]',
@@ -558,80 +582,91 @@ export default function BannerAds({
         className,
       )}
     >
-      {/* Whole-card click layer */}
-      <Link
-        href={linkUrl}
-        target="_blank"
-        rel="noopener noreferrer sponsored"
-        aria-label={`تبلیغ: ${title}`}
-        className="absolute inset-0 z-0"
-      />
+      <div className="ad-spotlight-inner relative w-full overflow-hidden rounded-3xl">
+        {/* Spotlight reflection gloss effect */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-0 group-hover/ad:opacity-100 transition-opacity duration-500 z-20 mix-blend-overlay"
+          style={{
+            background: `radial-gradient(circle 300px at calc(var(--mx, 0.5) * 100%) calc(var(--my, 0.5) * 100%), rgba(255, 255, 255, 0.15) 0%, var(--glow-soft) 40%, transparent 100%)`,
+          }}
+        />
 
-      {/* Vertical accent strip (RTL start edge) — با glow نرم */}
-      <div
-        aria-hidden
-        className="absolute inset-y-0 start-0 w-1 sm:w-1.5 shadow-[0_0_24px_-4px_rgba(94,106,230,0.6)]"
-        style={{
-          background:
-            'linear-gradient(180deg, var(--aurora-a), var(--primary-500) 50%, var(--aurora-b))',
-        }}
-      />
+        {/* Whole-card click layer */}
+        <Link
+          href={linkUrl}
+          target="_blank"
+          rel="noopener noreferrer sponsored"
+          aria-label={`تبلیغ: ${title}`}
+          className="absolute inset-0 z-0"
+        />
 
-      {/* Top hairline gradient — وقتی hover میشه glow می‌گیره */}
-      <div
-        aria-hidden
-        className="absolute start-0 end-0 top-0 h-px opacity-50"
-        style={{
-          background:
-            'linear-gradient(90deg, transparent, var(--primary-500) 50%, transparent)',
-        }}
-      />
+        {/* Vertical accent strip (RTL start edge) — با glow نرم */}
+        <div
+          aria-hidden
+          className="absolute inset-y-0 start-0 w-1 sm:w-1.5 shadow-[0_0_24px_-4px_rgba(94,106,230,0.6)]"
+          style={{
+            background:
+              'linear-gradient(180deg, var(--aurora-a), var(--primary-500) 50%, var(--aurora-b))',
+          }}
+        />
 
-      <div className="relative z-10 grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-5 sm:gap-6 md:gap-8 items-center p-5 sm:p-6 md:p-7">
-        {/* Image — با hover scale 1.04 و ring glow */}
-        <div className="relative w-full sm:w-64 md:w-72 lg:w-80 aspect-[16/10] overflow-hidden rounded-2xl ring-1 ring-[color:var(--hairline)] shadow-sm transition-all duration-500 group-hover:ring-primary-500/30">
-          <SafeImage
-            src={imageUrl}
-            alt={title}
-            variant="card"
-            ratio="16/10"
-            sizes="(max-width: 640px) 100vw, 320px"
-            fill
-            className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"
-          />
-          {/* Subtle gradient overlay برای عمق */}
-          <div
-            aria-hidden
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                'linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.18) 100%)',
-            }}
-          />
-        </div>
+        {/* Top hairline gradient — وقتی hover میشه glow می‌گیره */}
+        <div
+          aria-hidden
+          className="absolute start-0 end-0 top-0 h-px opacity-50"
+          style={{
+            background:
+              'linear-gradient(90deg, transparent, var(--primary-500) 50%, transparent)',
+          }}
+        />
 
-        {/* Content */}
-        <div className="flex flex-col gap-2 sm:gap-3 min-w-0">
-          {showLabelResolved && (
-            <div className="flex">
-              <BannerAdLabel />
-            </div>
-          )}
-          {showTitleResolved && (
-            <h2 className="text-base sm:text-lg md:text-xl font-semibold tracking-tight text-neutral-900 dark:text-white line-clamp-2 text-balance">
-              {title}
-            </h2>
-          )}
-          {showDescriptionResolved && description && (
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed line-clamp-2">
-              {description}
-            </p>
-          )}
-          {showButtonResolved && (
-            <div className="mt-1 sm:mt-2">
-              {customButton ?? <BannerCta href={linkUrl} size="md" tone="primary" />}
-            </div>
-          )}
+        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-5 sm:gap-6 md:gap-8 items-center p-5 sm:p-6 md:p-7">
+          {/* Image — با hover scale 1.04 و ring glow */}
+          <div className="relative w-full sm:w-64 md:w-72 lg:w-80 aspect-[16/10] overflow-hidden rounded-2xl ring-1 ring-[color:var(--hairline)] shadow-sm transition-all duration-500 group-hover:ring-primary-500/30">
+            <SafeImage
+              src={imageUrl}
+              alt={title}
+              variant="card"
+              ratio="16/10"
+              sizes="(max-width: 640px) 100vw, 320px"
+              fill
+              className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"
+            />
+            {/* Subtle gradient overlay برای عمق */}
+            <div
+              aria-hidden
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background:
+                  'linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.18) 100%)',
+              }}
+            />
+          </div>
+
+          {/* Content */}
+          <div className="flex flex-col gap-2 sm:gap-3 min-w-0">
+            {showLabelResolved && (
+              <div className="flex">
+                <BannerAdLabel />
+              </div>
+            )}
+            {showTitleResolved && (
+              <h2 className="text-base sm:text-lg md:text-xl font-semibold tracking-tight text-neutral-900 dark:text-white line-clamp-2 text-balance">
+                {title}
+              </h2>
+            )}
+            {showDescriptionResolved && description && (
+              <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed line-clamp-2">
+                {description}
+              </p>
+            )}
+            {showButtonResolved && (
+              <div className="mt-1 sm:mt-2">
+                {customButton ?? <BannerCta href={linkUrl} size="md" tone="primary" />}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
