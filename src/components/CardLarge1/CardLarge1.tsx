@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import type { PostWithRelations } from '@/types/types';
 import NcImage from '@/components/NcImage/NcImage';
 import Avatar from '@/components/Avatar/Avatar';

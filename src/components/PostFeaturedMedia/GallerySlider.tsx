@@ -1,7 +1,7 @@
 'use client';
 
 import { HiChevronLeft, HiChevronRight } from 'react-icons/hi2';
-import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
+import { AnimatePresence, motion, MotionConfig } from '@/lib/motion-shim';
 import Image, { type StaticImageData } from 'next/image';
 import { useState } from 'react';
 import { useSwipeable } from 'react-swipeable';

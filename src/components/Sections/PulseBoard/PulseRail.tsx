@@ -19,7 +19,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion, useInView, useReducedMotion } from 'framer-motion';
+import { motion, useInView, useReducedMotion } from '@/lib/motion-shim';
 import { Eye, MessageCircle, ArrowLeft } from 'lucide-react';
 import type { PostWithRelations } from '@/types/types';
 import { cn, toPersianNumber, formatNumber } from '@/lib/utils';

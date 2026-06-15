@@ -19,7 +19,7 @@
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from '@/lib/motion-shim';
 import { ChevronRight, ChevronLeft, Loader2, LayoutGrid, List } from 'lucide-react';
 import type { PostWithRelations } from '@/types/types';
 import { cn, toPersianNumber, formatNumber } from '@/lib/utils';

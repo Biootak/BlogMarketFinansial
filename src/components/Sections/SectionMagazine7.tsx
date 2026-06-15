@@ -3,7 +3,7 @@
 import Card10 from '@/components/Card10/Card10';
 import Card10V3 from '@/components/Card10/Card10V3';
 import type { PostWithRelations } from '@/types/types';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import { Images, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import type { FC } from 'react';

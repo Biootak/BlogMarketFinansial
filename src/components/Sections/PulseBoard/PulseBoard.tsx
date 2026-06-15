@@ -27,7 +27,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence, useReducedMotion, useInView } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion, useInView } from '@/lib/motion-shim';
 import {
   Sparkles,
   ArrowLeft,

@@ -2,7 +2,7 @@
 
 import type React from 'react';
 import dynamic from 'next/dynamic';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import useSWR from 'swr';
 import { HiOutlineEye, HiOutlineCalendar, HiExclamation } from 'react-icons/hi';
 

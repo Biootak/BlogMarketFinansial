@@ -3,7 +3,6 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
 import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
 import PostCardMeta from '../PostCardMeta/PostCardMeta';
@@ -24,10 +23,8 @@ export default function Card2({ className = 'h-full', size = 'normal', post }: C
   const isLarge = size === 'large';
 
   return (
-    <motion.div
-      className={`nc-Card2 group relative flex flex-col ${className}`}
-      whileHover={{ y: -4 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
+    <div
+      className={`nc-Card2 group relative flex flex-col hover:-translate-y-1 transition-transform duration-300 ${className}`}
     >
       <div className={[
         'relative overflow-hidden bg-white dark:bg-neutral-800/80',
@@ -130,6 +127,6 @@ export default function Card2({ className = 'h-full', size = 'normal', post }: C
 
         <div className="absolute bottom-0 start-0 end-0 h-0.5 bg-gradient-to-r from-transparent via-primary-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
-    </motion.div>
+    </div>
   );
 }

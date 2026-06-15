@@ -1,38 +1,28 @@
 'use client';
 
 /**
- * CompactPostCard — کارت فشرده برای چیدمان Bento
+ * CompactPostCard — کارت فشرده برای چیدمان Bento (CSS-driven)
  *
- * تکنیک‌ها:
- *  1.  Parallax subtle روی تصویر
- *  2.  Tilt 3D (3deg، فقط دسکتاپ)
- *  3.  Hover meta slide-up (category + date از پایین)
- *  4.  Multi-layer glassmorphism overlay
- *  5.  Shimmer line (فقط hover)
- *  6.  Spotlight cursor (نور radial)
- *  7.  RTL-aware
- *  8.  respects prefers-reduced-motion + pointer: coarse
- *
- * استفاده: در PostsList برای 2 mini card کنار Hero.
+ * - Parallax تصویر با rAF + direct transform
+ * - Tilt 3D از TiltCard
+ * - Hover meta slide-up با CSS group-hover + transition
+ * - Multi-layer glassmorphism overlay
+ * - Shimmer line از Shimmer
+ * - Spotlight cursor از Spotlight
+ * - RTL-aware
+ * - prefers-reduced-motion: global rule
  */
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import {
-  Calendar,
-  Clock,
-  Eye,
-  ArrowLeft,
-} from 'lucide-react';
+import { Calendar, Clock, Eye, ArrowLeft } from 'lucide-react';
 import type { PostWithRelations } from '@/types/types';
 import { cn, toPersianNumber, formatNumber } from '@/lib/utils';
 import { getPostLink } from '@/lib/getPostLink';
 import { TiltCard } from '@/components/ModernTrending/effects/TiltCard';
 import { Shimmer } from '@/components/ModernTrending/effects/Shimmer';
 import Spotlight from '@/components/Sections/effects/Spotlight';
-import { STRIPE_EASE, staggerItem } from '@/lib/motion';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
 import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
 
@@ -80,16 +70,12 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
       ? readingTime
       : estimateReadingMinutes(excerpt ?? '');
 
-  /* ---------- Parallax: mouse move = image translate ---------- */
+  // Parallax: rAF-driven smoothing مستقیم روی transform
   const cardRef = useRef<HTMLDivElement>(null);
-  const xPct = useMotionValue(0);
-  const yPct = useMotionValue(0);
-  const xSpring = useSpring(xPct, { stiffness: 200, damping: 20 });
-  const ySpring = useSpring(yPct, { stiffness: 200, damping: 20 });
-  const imgX = useTransform(xSpring, (v) => v * -8);
-  const imgY = useTransform(ySpring, (v) => v * -8);
-
+  const imgRef = useRef<HTMLDivElement>(null);
+  const stateRef = useRef({ x: 0, y: 0, tx: 0, ty: 0 });
   const [parallaxEnabled, setParallaxEnabled] = useState(false);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const fine = window.matchMedia('(pointer: fine)').matches;
@@ -97,22 +83,37 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
     setParallaxEnabled(fine && !reduce);
   }, []);
 
+  useEffect(() => {
+    if (!parallaxEnabled) return;
+    let rafId = 0;
+    const tick = () => {
+      const s = stateRef.current;
+      // ease-out toward target (tx, ty)
+      s.x += (s.tx - s.x) * 0.12;
+      s.y += (s.ty - s.y) * 0.12;
+      if (imgRef.current) {
+        imgRef.current.style.transform =
+          `translate3d(${(s.x * -8).toFixed(2)}px, ${(s.y * -8).toFixed(2)}px, 0) scale(1.05)`;
+      }
+      rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, [parallaxEnabled]);
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!parallaxEnabled || !cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
-    const cx = (e.clientX - rect.left) / rect.width - 0.5;
-    const cy = (e.clientY - rect.top) / rect.height - 0.5;
-    xPct.set(cx);
-    yPct.set(cy);
+    stateRef.current.tx = (e.clientX - rect.left) / rect.width - 0.5;
+    stateRef.current.ty = (e.clientY - rect.top) / rect.height - 0.5;
   };
   const handleMouseLeave = () => {
-    xPct.set(0);
-    yPct.set(0);
+    stateRef.current.tx = 0;
+    stateRef.current.ty = 0;
   };
 
   return (
-    <motion.article
-      variants={staggerItem}
+    <article
       className={cn('group relative h-full', className)}
       dir="rtl"
     >
@@ -122,12 +123,10 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
           intensity={0.35}
           size={300}
         >
-          <motion.div
+          <div
             ref={cardRef}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
-            whileHover={{ y: -3 }}
-            transition={{ duration: 0.4, ease: STRIPE_EASE }}
             className={cn(
               'relative h-full overflow-hidden rounded-3xl flex flex-col',
               'border border-neutral-200/70 dark:border-neutral-800/80',
@@ -136,19 +135,18 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
               'dark:shadow-[0_1px_0_0_rgba(255,255,255,0.04)_inset,0_8px_24px_-12px_rgba(0,0,0,0.4)]',
               'hover:shadow-[0_1px_0_0_rgba(255,255,255,0.6)_inset,0_20px_40px_-20px_rgba(94,106,230,0.25)]',
               'dark:hover:shadow-[0_1px_0_0_rgba(255,255,255,0.04)_inset,0_20px_40px_-20px_rgba(94,106,230,0.3)]',
-              'transition-shadow duration-500',
+              'hover:-translate-y-0.5 transition-[transform,box-shadow] duration-500',
             )}
           >
-            {/* Image */}
             <div className="relative aspect-[16/10] sm:aspect-[16/10] md:aspect-[16/10] lg:aspect-[16/11] xl:aspect-[16/10] overflow-hidden">
               <Link
                 href={postLink}
                 className="absolute inset-0 block"
                 aria-label={title}
               >
-                <motion.div
-                  className="absolute inset-0"
-                  style={{ x: imgX, y: imgY, scale: 1.05 }}
+                <div
+                  ref={imgRef}
+                  className="absolute inset-0 will-change-transform"
                 >
                   <Image
                     fill
@@ -157,9 +155,8 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
                     alt={title}
                     className="object-cover"
                   />
-                </motion.div>
+                </div>
 
-                {/* Multi-layer glassy gradient */}
                 <div
                   className="absolute inset-0"
                   style={{
@@ -177,13 +174,11 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
                   aria-hidden
                 />
 
-                {/* Shimmer line on hover */}
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-700">
                   <Shimmer color="light" />
                 </div>
               </Link>
 
-              {/* Top: post-type icon */}
               <div className="absolute top-2.5 start-2.5 sm:top-3 sm:start-3 z-10">
                 <PostTypeFeaturedIcon
                   wrapSize="h-8 w-8"
@@ -192,7 +187,6 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
                 />
               </div>
 
-              {/* Top-end: categories chip (یکی) */}
               {categories && categories.length > 0 && (
                 <div className="absolute top-2.5 end-2.5 sm:top-3 sm:end-3 z-10 max-w-[160px] sm:max-w-[180px]">
                   <CategoryBadgeList
@@ -204,7 +198,6 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
                 </div>
               )}
 
-              {/* Bottom: title on image (روی gradient تیره) */}
               <div className="absolute inset-x-0 bottom-0 z-10 p-3 sm:p-4 md:p-5">
                 <h3
                   className={cn(
@@ -229,15 +222,12 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
               </div>
             </div>
 
-            {/* Footer: meta info (با slide-up هنگام hover) */}
             <div className="relative">
-              {/* Default state: date + reading time visible */}
-              <motion.div
-                initial={false}
+              <div
                 className={cn(
                   'flex items-center justify-between gap-2',
                   'px-3.5 sm:px-5 py-2.5 sm:py-3',
-                'text-[10.5px] sm:text-xs text-neutral-500 dark:text-neutral-400',
+                  'text-[10.5px] sm:text-xs text-neutral-500 dark:text-neutral-400',
                   'font-vazirmatn tabular-nums',
                   'transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',
                   'group-hover:opacity-0 group-hover:-translate-y-1',
@@ -261,16 +251,14 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
                   />
                   {toPersianNumber(readingMin)} دقیقه
                 </span>
-              </motion.div>
+              </div>
 
-              {/* Hover state: views + CTA slide-up از پایین */}
-              <motion.div
-                initial={false}
+              <div
                 className={cn(
                   'absolute inset-0',
                   'flex items-center justify-between gap-2',
                   'px-3.5 sm:px-5 py-2.5 sm:py-3',
-                'bg-gradient-to-t from-primary-50/80 to-transparent',
+                  'bg-gradient-to-t from-primary-50/80 to-transparent',
                   'dark:from-primary-900/20 dark:to-transparent',
                   'text-[11px] sm:text-xs',
                   'text-neutral-700 dark:text-neutral-200',
@@ -308,10 +296,9 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
                     aria-hidden
                   />
                 </Link>
-              </motion.div>
+              </div>
             </div>
 
-            {/* Hairline highlight border — top */}
             <div
               className="pointer-events-none absolute inset-x-0 top-0 h-px"
               style={{
@@ -320,9 +307,9 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
               }}
               aria-hidden
             />
-          </motion.div>
+          </div>
         </Spotlight>
       </TiltCard>
-    </motion.article>
+    </article>
   );
 }

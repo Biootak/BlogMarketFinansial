@@ -5,7 +5,7 @@ import { useState, useTransition } from 'react';
 import { cn } from '@/lib/utils';
 import { savePost } from '@/actions/postActions';
 import { useToast } from '@/components/ui/use-toast';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import { Icon } from '../ui/icon';
 import { Check } from 'lucide-react';
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from '@/lib/motion-shim';
 import { ChevronDown, HelpCircle, MessageCircle } from 'lucide-react';
 
 const faqs = [

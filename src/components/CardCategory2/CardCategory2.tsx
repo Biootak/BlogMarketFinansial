@@ -4,7 +4,7 @@ import React, { type FC } from 'react';
 import NcImage from '@/components/NcImage/NcImage';
 import type { TaxonomyType, TwMainColor } from '@/types/types';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import { FileText } from 'lucide-react';
 import { heading, text, radius } from '@/lib/design-tokens';
 

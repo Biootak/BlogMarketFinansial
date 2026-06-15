@@ -25,7 +25,7 @@
  *  - حذف Spring stiffness زیاد (smooth feel)
  */
 
-import { motion, type Variants } from 'framer-motion';
+import { motion, type Variants } from '@/lib/motion-shim';
 import { useMemo, type FC } from 'react';
 import Link from 'next/link';
 import type { TaxonomyType } from '@/types/types';

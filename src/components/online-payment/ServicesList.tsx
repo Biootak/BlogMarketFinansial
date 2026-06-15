@@ -1,7 +1,7 @@
 'use client';
 
 import type { FC } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import {
   HiGlobe,
   HiCreditCard,

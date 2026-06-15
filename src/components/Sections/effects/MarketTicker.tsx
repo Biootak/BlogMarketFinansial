@@ -17,12 +17,10 @@
  */
 
 import { useEffect, useState, useTransition } from 'react';
-import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Activity, RefreshCw } from 'lucide-react';
 import { Marquee } from '@/components/ModernTrending/effects/Marquee';
 import { TickerShell } from '@/components/TickerShell';
 import { cn, toPersianNumber, formatNumber } from '@/lib/utils';
-import { STRIPE_EASE } from '@/lib/motion';
 import type { MarketTickerItem } from '@/actions/marketTickerActions';
 
 interface MarketTickerProps {
@@ -111,11 +109,8 @@ export default function MarketTicker({
   );
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: STRIPE_EASE }}
-      className={cn('relative', className)}
+    <div
+      className={cn('relative anim-fade-in-down', className)}
     >
       <TickerShell
         height="md"
@@ -218,6 +213,6 @@ export default function MarketTicker({
           </button>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }

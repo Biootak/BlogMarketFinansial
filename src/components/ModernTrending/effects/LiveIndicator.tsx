@@ -1,21 +1,16 @@
-'use client';
-
 /**
- * LiveIndicator — نشانگر LIVE refined
+ * LiveIndicator — نشانگر LIVE (CSS-driven, no framer-motion)
  *
- * - رنگ‌ها low-saturation
- * - فقط یک dot با ping
- * - استفاده بهینه از motion
+ * - Pure CSS @keyframes برای ping effect
+ * - prefers-reduced-motion: global rule clamps animation به 0.01ms
  */
 
-import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 export interface LiveIndicatorProps {
   className?: string;
   label?: string;
   size?: 'xs' | 'sm' | 'md';
-  /** رنگ — refined palette */
   color?: 'rose' | 'emerald' | 'amber' | 'neutral';
 }
 
@@ -58,10 +53,11 @@ export function LiveIndicator({
       )}
     >
       <span className="relative inline-flex" aria-hidden>
-        <motion.span
-          className={cn('absolute inline-flex h-full w-full rounded-full opacity-60', colorMap[color])}
-          animate={{ scale: [1, 2.2], opacity: [0.6, 0] }}
-          transition={{ duration: 1.6, repeat: Infinity, ease: 'easeOut' }}
+        <span
+          className={cn(
+            'absolute inline-flex h-full w-full rounded-full opacity-60 anim-ping-soft',
+            colorMap[color],
+          )}
         />
         <span className={cn('relative inline-flex rounded-full', s.dot, colorMap[color])} />
       </span>

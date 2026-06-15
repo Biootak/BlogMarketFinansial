@@ -3,7 +3,7 @@
 import * as React from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { FaCheck, FaChevronLeft, FaCircle } from 'react-icons/fa6';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 
 import { cn } from '@/lib/utils';
 

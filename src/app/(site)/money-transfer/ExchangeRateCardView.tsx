@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import type { ExchangeRateData } from '@/types/types';
 import Image from 'next/image';
 

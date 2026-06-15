@@ -12,7 +12,7 @@
  */
 
 import Image from 'next/image';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion } from '@/lib/motion-shim';
 import { ExternalLink } from 'lucide-react';
 import type { Advertisement } from '@/types/types';
 import { cn } from '@/lib/utils';

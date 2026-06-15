@@ -3,7 +3,7 @@
 import type React from 'react';
 
 import { useThemeMode } from '@/hooks/useThemeMode';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import { RiMoonLine, RiSunLine } from 'react-icons/ri';
 
 export interface SwitchDarkModeProps {

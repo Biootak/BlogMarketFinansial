@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from '@/lib/motion-shim';
 import type { ExchangeRateData } from '@/types/types';
 import { ExchangeRateTableView } from './ExchangeRateTableView';
 import { ExchangeRateCard } from './ExchangeRateCard';

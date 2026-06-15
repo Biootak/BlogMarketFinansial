@@ -3,7 +3,7 @@
 import React, { type FC } from 'react';
 import CardAuthorBox from '@/components/CardAuthorBox/CardAuthorBox';
 import type { TopAuthor } from '@/actions/getTopAuthors';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import { Crown, Users } from 'lucide-react';
 
 export interface SectionGridAuthorBoxProps {

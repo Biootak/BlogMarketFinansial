@@ -1,7 +1,9 @@
+'use client';
+
 import React, { type FC, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import { HiLink, HiEyeSlash, HiExclamationTriangle } from 'react-icons/hi2';
 import {
   DropdownMenu,

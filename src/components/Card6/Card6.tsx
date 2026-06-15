@@ -6,7 +6,6 @@ import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList'
 import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
 import Link from 'next/link';
 import { getPostLink } from '@/lib/getPostLink';
-import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { heading, text, radius } from '@/lib/design-tokens';
 import { SafeImage } from '@/components/SafeImage';
@@ -21,13 +20,9 @@ export default function Card6({ className = '', post }: Card6Props) {
   const postLink = getPostLink(postType, slug);
 
   return (
-    <motion.article
+    <article
       dir="rtl"
-      className={`nc-Card6 group relative ${className}`}
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -3 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
+      className={`nc-Card6 group relative anim-fade-in-up hover:-translate-y-0.5 transition-transform duration-300 ${className}`}
     >
       <div className={[
         'relative overflow-hidden shadow-md hover:shadow-xl transition-all duration-300',
@@ -167,6 +162,6 @@ export default function Card6({ className = '', post }: Card6Props) {
           <div className="absolute top-3 bottom-3 start-0 w-1 bg-gradient-to-b from-primary-400 via-violet-500 to-rose-400 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 scale-y-0 group-hover:scale-y-100 origin-center" />
         </div>
       </div>
-    </motion.article>
+    </article>
   );
 }

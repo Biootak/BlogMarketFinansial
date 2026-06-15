@@ -1,7 +1,7 @@
 'use client';
 
 import { type FC, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import { HiClock, HiShieldCheck, HiSupport, HiSearch, HiPencilAlt } from 'react-icons/hi';
 import ServiceRequestForm from './ServiceRequestForm';
 import TrackingForm from './TrackingForm';

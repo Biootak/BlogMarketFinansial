@@ -5,7 +5,7 @@ import { memo, useState } from 'react';
 import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import GenericCryptoIcon from '@/components/GenericCryptoIcon';
 
 interface CurrencyIconProps {

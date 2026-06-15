@@ -4,7 +4,7 @@ import React, { FC, type ReactNode, useEffect, useState, useCallback } from 'rea
 import { useWindowSize } from 'react-use';
 import { useSwipeable } from 'react-swipeable';
 import { variants } from '@/utils/animationVariants';
-import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
+import { AnimatePresence, motion, MotionConfig } from '@/lib/motion-shim';
 import PrevBtn from '@/components/NextPrev/PrevBtn';
 import NextBtn from '@/components/NextPrev/NextBtn';
 

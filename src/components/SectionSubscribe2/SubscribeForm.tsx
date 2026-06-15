@@ -7,7 +7,7 @@ import * as z from 'zod';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import { ArrowLeft, Loader2, Mail } from 'lucide-react';
 
 const schema = z.object({

@@ -1,7 +1,7 @@
 'use client';
 
 import { type FC, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import { HiSearch, HiCheckCircle, HiClock, HiXCircle, HiRefresh } from 'react-icons/hi';
 import { getServiceRequestByTrackingCode } from '@/actions/serviceRequestActions';
 

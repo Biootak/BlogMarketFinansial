@@ -11,7 +11,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import type { ExchangeRateData } from '@/types/types';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import { Info, TrendingUp, TrendingDown } from 'lucide-react';
 
 interface ExchangeRateTableViewProps {

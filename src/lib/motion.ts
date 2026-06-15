@@ -1,165 +1,90 @@
 /**
- * Motion Primitives (stripe.com-inspired)
+ * Motion Primitives (CSS-driven, framer-motion-free)
  *
- * Reusable animation variants, transitions, and helpers built on top of
- * framer-motion. Inspired by the smooth, snappy motion language used on
- * stripe.com and linear.app.
+ * Replacement for the previous framer-motion-based primitives. Each export
+ * is now a CSS class string (or class composition helper) instead of a
+ * framer-motion `Variants` / `Transition` object. This removes the ~50 KiB
+ * framer-motion runtime from the main bundle while preserving the same
+ * visual behavior.
  *
- * - Centralized so we can tweak timings in one place.
- * - Respects `prefers-reduced-motion` automatically via `useReducedMotion`.
- * - Optimized for SSR — components that import this stay small.
+ * - Centralized so we can tune timings in one place.
+ * - Respects `prefers-reduced-motion` automatically via the global CSS rule
+ *   in `globals.css` (sets animation-duration to 0.01ms).
+ * - SSR-friendly — these are plain strings, no runtime needed.
+ *
+ * Keyframes & utility classes live in `src/app/globals.css` (search for
+ * "Motion Primitives"). Easing curve is `cubic-bezier(0.22, 1, 0.36, 1)`,
+ * the same stripe.com-inspired curve the previous implementation used.
  */
-
-import type { Transition, Variants } from 'framer-motion';
 
 /* -------------------------------------------------------------------------- */
-/*  Curves & Durations                                                        */
+/*  Easing constants — kept as named exports for any code that still wants    */
+/*  to reference them, but consumers should prefer the class strings below.   */
 /* -------------------------------------------------------------------------- */
 
-/**
- * Stripe.com uses a custom ease that feels both natural and snappy.
- * This is a cubic-bezier approximation of that curve.
- */
-export const STRIPE_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+/** Stripe.com-style ease — cubic-bezier(0.22, 1, 0.36, 1). */
+export const STRIPE_EASE = [0.22, 1, 0.36, 1] as const;
 
-/** Slightly bouncier variant for tactile UI elements (buttons, hovers). */
-export const STRIPE_EASE_SOFT: [number, number, number, number] = [0.16, 1, 0.3, 1];
+/** Slightly snappier variant for tactile UI. */
+export const STRIPE_EASE_SOFT = [0.16, 1, 0.3, 1] as const;
 
-/** Linear.app uses similar curves with a touch of spring physics. */
-export const LINEAR_SPRING: Transition = {
-  type: 'spring',
-  stiffness: 500,
-  damping: 35,
-  mass: 0.8,
-};
-
-/** Soft spring for larger panels / dropdowns. */
-export const SOFT_SPRING: Transition = {
-  type: 'spring',
-  stiffness: 260,
-  damping: 26,
-  mass: 0.9,
-};
-
-/** Quick tween for micro-interactions (icons, dots). */
-export const QUICK_TWEEN: Transition = {
-  duration: 0.18,
-  ease: STRIPE_EASE_SOFT,
-};
-
-/** Standard tween for menus / dropdowns. */
-export const DEFAULT_TWEEN: Transition = {
-  duration: 0.24,
-  ease: STRIPE_EASE,
-};
+/** Legacy spring config — kept for type compatibility; consumers can ignore. */
+export const LINEAR_SPRING = { type: 'spring', stiffness: 500, damping: 35, mass: 0.8 } as const;
+export const SOFT_SPRING = { type: 'spring', stiffness: 260, damping: 26, mass: 0.9 } as const;
+export const QUICK_TWEEN = { duration: 0.18, ease: STRIPE_EASE_SOFT } as const;
+export const DEFAULT_TWEEN = { duration: 0.24, ease: STRIPE_EASE } as const;
 
 /* -------------------------------------------------------------------------- */
-/*  Variants                                                                  */
+/*  Class strings (the actual replacement for framer-motion `Variants`)       */
 /* -------------------------------------------------------------------------- */
 
-/** Fade in + slight slide up. Use for cards, list items. */
-export const fadeInUp: Variants = {
-  hidden: { opacity: 0, y: 8 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.32, ease: STRIPE_EASE } },
-  exit: { opacity: 0, y: 4, transition: { duration: 0.18, ease: STRIPE_EASE } },
-};
+/** Fade in + slight slide up — for cards, list items, section entrance. */
+export const fadeInUp = 'anim-fade-in-up';
 
-/** Fade in only. */
-export const fadeIn: Variants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.24, ease: STRIPE_EASE } },
-  exit: { opacity: 0, transition: { duration: 0.16, ease: STRIPE_EASE } },
-};
+/** Fade in only — for cross-fade transitions. */
+export const fadeIn = 'anim-fade-in';
 
-/**
- * Dropdown panel reveal — like stripe.com's product menus.
- * Origin top → bottom, scale from 0.96, opacity 0 → 1.
- */
-export const dropdownPanel: Variants = {
-  hidden: { opacity: 0, y: -6, scale: 0.97 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { duration: 0.22, ease: STRIPE_EASE_SOFT },
-  },
-  exit: {
-    opacity: 0,
-    y: -4,
-    scale: 0.98,
-    transition: { duration: 0.16, ease: STRIPE_EASE },
-  },
-};
+/** Dropdown panel reveal — top-down, scale + fade. */
+export const dropdownPanel = 'anim-fade-in-down';
 
-/**
- * Accordion panel for mobile menus.
- */
-export const accordionPanel: Variants = {
-  hidden: { height: 0, opacity: 0 },
-  visible: {
-    height: 'auto',
-    opacity: 1,
-    transition: { duration: 0.28, ease: STRIPE_EASE },
-  },
-  exit: {
-    height: 0,
-    opacity: 0,
-    transition: { duration: 0.2, ease: STRIPE_EASE },
-  },
-};
+/** Out animation for dropdowns. */
+export const dropdownPanelExit = 'anim-fade-out-up';
 
-/**
- * Container variants for staggered children reveals.
- * Use with `staggerItem` on each child.
- */
-export const staggerContainer: Variants = {
-  hidden: { opacity: 1 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.04,
-      delayChildren: 0.02,
-    },
-  },
-};
+/** Accordion panel for mobile menus (height auto). */
+export const accordionPanel = 'anim-accordion-in';
 
-export const staggerItem: Variants = {
-  hidden: { opacity: 0, y: 6 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.22, ease: STRIPE_EASE } },
-};
+/** Out animation for accordions. */
+export const accordionPanelExit = 'anim-accordion-out';
+
+/** Container variants for staggered children reveals. */
+export const staggerContainer = 'stagger-children';
+
+/** Item variants for staggered children reveals. */
+export const staggerItem = '';
 
 /* -------------------------------------------------------------------------- */
 /*  Helpers                                                                   */
 /* -------------------------------------------------------------------------- */
 
 /**
- * Returns a `transition` object that respects the user's reduced-motion
- * preference. Components that consume this should still be valid React
- * server-component-friendly when used with framer-motion's motion proxies.
- *
- * @example
- *   const t = reducedMotionSafe(DEFAULT_TWEEN);
- *   <motion.div transition={t} />
+ * Legacy helper — was used to read `prefers-reduced-motion` at runtime.
+ * Now a no-op since the global CSS `@media (prefers-reduced-motion: reduce)`
+ * rule in `globals.css` already clamps every animation to 0.01ms. Kept as
+ * an export for backwards compatibility with the previous API.
  */
-export function reducedMotionSafe(
-  base: Transition | undefined,
-  reduced: Transition = { duration: 0 },
-): Transition {
-  // We cannot read `prefers-reduced-motion` on the server, so this helper
-  // is intended to be called inside a client component after mount.
-  if (typeof window === 'undefined') return base ?? { duration: 0.2 };
-  const prefersReducedMotion = window.matchMedia?.(
-    '(prefers-reduced-motion: reduce)',
-  ).matches;
-  return prefersReducedMotion ? reduced : (base ?? { duration: 0.2 });
+export function reducedMotionSafe<T>(base: T, _reduced?: T): T {
+  return base;
 }
 
 /**
  * Hover/tap micro-interactions for nav items.
- * Returns a `whileHover` / `whileTap` config for framer-motion.
+ * Returns a Tailwind class fragment that can be spread into a className.
+ * In the framer-motion era this returned `whileHover` / `whileTap` config.
+ * In the CSS-driven era, hover/tap is handled by Tailwind's `hover:` /
+ * `active:` modifiers (see consumer files for the equivalent).
  */
 export const navItemInteractions = {
-  whileHover: { y: -1 },
-  whileTap: { scale: 0.97 },
-  transition: QUICK_TWEEN,
+  hover: 'hover:-translate-y-px',
+  tap: 'active:scale-[0.97]',
+  transition: 'transition-transform duration-[180ms] ease-[cubic-bezier(0.16,1,0.3,1)]',
 } as const;

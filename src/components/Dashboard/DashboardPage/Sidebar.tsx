@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from '@/lib/motion-shim';
 import { logout } from '@/actions/auth-actions';
 import { useToast } from '@/components/ui/use-toast';
 import Logo from '@/components/Logo/Logo';

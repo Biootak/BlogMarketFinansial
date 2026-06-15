@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, type Variants } from 'framer-motion';
+import { motion, type Variants } from '@/lib/motion-shim';
 import { ArrowLeft, Flame, Sparkles, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, type FC } from 'react';

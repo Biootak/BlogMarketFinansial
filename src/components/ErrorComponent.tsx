@@ -1,7 +1,7 @@
 'use client';
 import type React from 'react';
 import { IoAlertCircle } from 'react-icons/io5';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import ButtonPrimary from '@/components/Button/ButtonPrimary';
 
 interface ErrorComponentProps {

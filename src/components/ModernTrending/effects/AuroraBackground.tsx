@@ -1,17 +1,15 @@
-'use client';
-
 /**
- * AuroraBackground — پس‌زمینه گرادینت مش پویا (نسخه refined)
+ * AuroraBackground — پس‌زمینه گرادینت مش پویا (CSS-driven, server component)
  *
- * تغییرات نسبت به نسخه قبل:
- * - رنگ‌ها کم‌اشباع‌تر (neutral + یک tint) — الهام از Linear/Vercel
- * - blur کمتر (80px نه 3xl) برای ظرافت
- * - ۲ blob نه ۳
- * - opacity پایین‌تر (0.4 نه 1)
- * - GPU containment برای performance
+ * - Pure CSS keyframes → 0 KB client JS, runs on compositor thread
+ * - prefers-reduced-motion: global CSS rule clamps animation to 0.01ms
+ * - GPU containment via [contain:layout_paint]
+ *
+ * Note: این نسخه server component شده چون هیچ state/effect نداره. فریم‌ورک
+ * Next.js به طور خودکار RSC payload embed می‌کنه و client hydration cost صفر
+ * میشه (مهم‌ترین optimization).
  */
 
-import { motion, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 export interface AuroraBackgroundProps {
@@ -29,28 +27,20 @@ export function AuroraBackground({
   intensity = 0.5,
   accentA = 'var(--aurora-a)',
   accentB = 'var(--aurora-b)',
-  duration = 32,
+  // duration برای backwards compat نگه داشته شده، keyframe از CSS میاد
+  duration: _duration = 32,
 }: AuroraBackgroundProps) {
-  const reduce = useReducedMotion();
-
-  const blobTransition = reduce
-    ? { duration: 0 }
-    : { duration, repeat: Infinity, ease: 'easeInOut' as const };
-
   return (
     <div
       className={cn(
         'pointer-events-none absolute inset-0 overflow-hidden',
-        // GPU containment
         '[contain:layout_paint]',
         className,
       )}
       aria-hidden
-      suppressHydrationWarning
     >
-      {/* Blob 1 — top-right */}
-      <motion.div
-        className="absolute -top-40 -end-40 h-[480px] w-[480px] rounded-full"
+      <div
+        className="absolute -top-40 -end-40 h-[480px] w-[480px] rounded-full anim-aurora-a"
         style={{
           background: `radial-gradient(circle, ${accentA} 0%, transparent 70%)`,
           opacity: intensity,
@@ -58,21 +48,9 @@ export function AuroraBackground({
           willChange: 'transform',
           transform: 'translateZ(0)',
         }}
-        animate={
-          reduce
-            ? undefined
-            : {
-                x: [0, 60, -20, 0],
-                y: [0, 30, -40, 0],
-                scale: [1, 1.08, 0.96, 1],
-              }
-        }
-        transition={blobTransition}
       />
-
-      {/* Blob 2 — bottom-left */}
-      <motion.div
-        className="absolute -bottom-40 -start-40 h-[420px] w-[420px] rounded-full"
+      <div
+        className="absolute -bottom-40 -start-40 h-[420px] w-[420px] rounded-full anim-aurora-b"
         style={{
           background: `radial-gradient(circle, ${accentB} 0%, transparent 70%)`,
           opacity: intensity * 0.8,
@@ -80,19 +58,7 @@ export function AuroraBackground({
           willChange: 'transform',
           transform: 'translateZ(0)',
         }}
-        animate={
-          reduce
-            ? undefined
-            : {
-                x: [0, -50, 30, 0],
-                y: [0, -30, 20, 0],
-                scale: [1, 1.05, 1.1, 1],
-              }
-        }
-        transition={blobTransition}
       />
-
-      {/* Hairline grid — بسیار subtle */}
       <div
         className="absolute inset-0 opacity-[0.025] dark:opacity-[0.04]"
         style={{

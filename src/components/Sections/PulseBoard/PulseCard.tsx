@@ -16,7 +16,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { motion, useMotionValue, useSpring, useReducedMotion } from 'framer-motion';
+import { motion, useMotionValue, useSpring, useReducedMotion } from '@/lib/motion-shim';
 import { Clock, Eye, MessageCircle, ArrowLeft } from 'lucide-react';
 import type { PostWithRelations } from '@/types/types';
 import { cn, toPersianNumber, formatNumber } from '@/lib/utils';

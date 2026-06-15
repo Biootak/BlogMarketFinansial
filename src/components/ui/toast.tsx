@@ -4,7 +4,7 @@ import * as React from 'react';
 import * as ToastPrimitives from '@radix-ui/react-toast';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { MdClose, MdInfo, MdCheckCircle, MdWarning, MdError } from 'react-icons/md';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from '@/lib/motion-shim';
 import { cn } from '@/lib/utils';
 
 const ToastProvider = ToastPrimitives.Provider;

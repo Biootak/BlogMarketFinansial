@@ -16,7 +16,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from '@/lib/motion-shim';
 import { ArrowLeftRight, TrendingUp, TrendingDown, Pause, Play, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { RateItem } from '@/types/types';
 

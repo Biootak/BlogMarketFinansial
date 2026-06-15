@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import { HiOutlineClipboardDocumentList, HiOutlineClock, HiOutlineArrowLeft } from 'react-icons/hi2';
 import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
 import { getServiceRequests, getServiceRequestStats } from '@/actions/serviceRequestActions';

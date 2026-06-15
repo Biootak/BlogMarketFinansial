@@ -7,7 +7,7 @@ import type { Route } from '@/routers/types';
 import Link from 'next/link';
 import NcImage from '../NcImage/NcImage';
 import { Button } from '../ui/button';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from '@/lib/motion-shim';
 
 export interface NavItemType {
   id: string;

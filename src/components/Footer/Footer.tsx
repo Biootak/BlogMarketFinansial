@@ -1,8 +1,9 @@
+'use client';
+
 import Link from 'next/link';
-import * as motion from 'framer-motion/client';
+import { motion } from '@/lib/motion-shim';
 import SocialLinks from '@/components/SocialsList/SocialLinks';
 import Logo from '@/components/Logo/Logo';
-import { getSystemSettingsData } from '@/data/getSystemSettings';
 import { Mail, Phone, ArrowUpLeft } from 'lucide-react';
 import { heading, text, space, radius } from '@/lib/design-tokens';
 
@@ -34,9 +35,8 @@ const widgetMenus: WidgetFooterMenu[] = [
   },
 ];
 
-const Footer = async () => {
-  const settings = await getSystemSettingsData();
-  const siteName = settings.siteName || 'بیوتاک';
+const Footer = () => {
+  const siteName = 'بیوتاک';
 
   return (
     <footer className="relative overflow-hidden">

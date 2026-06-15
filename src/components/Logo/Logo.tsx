@@ -1,8 +1,10 @@
+'use client';
+
 import type React from 'react';
 import Image, { type StaticImageData } from 'next/image';
 import Link from 'next/link';
-import * as motion from 'framer-motion/client';
-import type { Variants } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
+import type { Variants } from '@/lib/motion-shim';
 
 import logoImg from '@/images/logo.png';
 import logoLightImg from '@/images/logo-light.png';

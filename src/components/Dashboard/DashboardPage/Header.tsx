@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from '@/lib/motion-shim';
 import { useSidebarStore } from '@/hooks/sidebarStore';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import SwitchDarkMode from '@/components/SwitchDarkMode/SwitchDarkMode';

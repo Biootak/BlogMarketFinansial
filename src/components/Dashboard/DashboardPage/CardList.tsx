@@ -1,7 +1,7 @@
 'use client';
 
 import { type FC, useCallback, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import type { PostStatus } from '@prisma/client';
 import { 
   HiEllipsisVertical, 

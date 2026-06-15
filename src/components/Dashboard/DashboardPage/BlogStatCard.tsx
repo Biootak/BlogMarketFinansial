@@ -1,7 +1,7 @@
 'use client';
 
 import { memo } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 
 export interface BlogStatCardProps {
   title: string;

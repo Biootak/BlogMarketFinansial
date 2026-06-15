@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import { HiClock, HiCheckCircle, HiXCircle, HiRefresh, HiCollection, HiCalendar } from 'react-icons/hi';
 import { getServiceRequestStats } from '@/actions/serviceRequestActions';
 

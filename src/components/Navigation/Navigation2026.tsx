@@ -3,26 +3,15 @@
 /**
  * Navigation2026 — نسخه refined (Linear × Vercel)
  *
- * اصلاحات:
- * - حذف glow ضربان‌دار (اضافی)
- * - حذف پس‌زمینه pill ضخیم (Linear.app خودش این کار رو با underline انجام می‌ده)
- * - Morphing underline نرم بجای pill background
- * - Dropdown با shadow طبیعی‌تر
- * - CSS-driven marquee-style indicator
- * - GPU containment
+ * - حذف framer-motion: morphing underline و hover pill با CSS transition پیاده شدن.
+ * - Dropdown reveal با CSS keyframe (anim-fade-in-down).
+ * - Stagger داخل dropdown با :nth-child(n) animation-delay.
+ * - prefers-reduced-motion توسط global rule در globals.css مدیریت میشه.
  */
 
 import { memo, useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import {
-  STRIPE_EASE,
-  STRIPE_EASE_SOFT,
-  dropdownPanel,
-  staggerContainer,
-  staggerItem,
-} from '@/lib/motion';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -82,21 +71,21 @@ const NAVBAR_LINKS: readonly NavItem[] = [
   { id: 'terms', name: 'قوانین', href: '/terms' },
 ] as const;
 
+const UNDERLINE_BASE = 'absolute inset-x-2 bottom-0.5 h-px bg-neutral-900 dark:bg-neutral-50';
+const HOVER_BG_BASE = 'absolute inset-0 rounded-full bg-neutral-100/60 dark:bg-neutral-800/40';
+
 const Navigation = ({ className = '' }: NavigationProps): React.ReactElement => {
   const pathname = usePathname();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [showLeftFade, setShowLeftFade] = useState(false);
   const [showRightFade, setShowRightFade] = useState(false);
-  const prefersReducedMotion = useReducedMotion();
   const scrollRef = useRef<HTMLUListElement>(null);
 
-  // ریست hover state پس از تغییر مسیر
   useEffect(() => {
     setHoveredId(null);
   }, [pathname]);
 
-  // تشخیص فعال بودن آیتم نسبت به pathname
   const isActive = (item: NavItem) => {
     if (pathname === item.href) return true;
     if (item.subItems) {
@@ -108,12 +97,10 @@ const Navigation = ({ className = '' }: NavigationProps): React.ReactElement => 
     return false;
   };
 
-  // شناسایی overflow برای فعال‌سازی fade edges
   useEffect(() => {
     const check = () => {
       const el = scrollRef.current;
       if (!el) return;
-      // در RTL: scrollLeft مثبت یعنی scroll به چپ (start)
       const maxScroll = el.scrollWidth - el.clientWidth;
       setShowLeftFade(el.scrollLeft > 4);
       setShowRightFade(el.scrollLeft < maxScroll - 4);
@@ -128,18 +115,6 @@ const Navigation = ({ className = '' }: NavigationProps): React.ReactElement => 
       window.removeEventListener('resize', check);
     };
   }, []);
-
-  const subItemVariants = prefersReducedMotion
-    ? { hidden: { opacity: 1 }, visible: { opacity: 1 } }
-    : staggerItem;
-
-  const panelVariants = prefersReducedMotion
-    ? {
-        hidden: { opacity: 1, y: 0, scale: 1 },
-        visible: { opacity: 1, y: 0, scale: 1 },
-        exit: { opacity: 1, y: 0, scale: 1 },
-      }
-    : dropdownPanel;
 
   const renderNavItem = (item: NavItem) => {
     const active = isActive(item);
@@ -176,25 +151,16 @@ const Navigation = ({ className = '' }: NavigationProps): React.ReactElement => 
               >
                 <span className="relative z-10 tracking-[-0.005em]">{item.name}</span>
 
-                {/* 2026-06-14: morphing underline only for ACTIVE item.
-                    Hover state gets a soft background pill with its own
-                    layoutId, so framer-motion never has to morph the
-                    underline between two distinct DOM positions when
-                    hovering a sibling while a different item is active. */}
                 {active && (
-                  <motion.span
+                  <span
                     aria-hidden
-                    layoutId="nav-underline-active"
-                    className="absolute inset-x-2 bottom-0.5 h-px bg-neutral-900 dark:bg-neutral-50"
-                    transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                    className={`${UNDERLINE_BASE} transition-opacity duration-200`}
                   />
                 )}
                 {hovered && !active && (
-                  <motion.span
+                  <span
                     aria-hidden
-                    layoutId="nav-hover-bg"
-                    className="absolute inset-0 rounded-full bg-neutral-100/60 dark:bg-neutral-800/40"
-                    transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                    className={`${HOVER_BG_BASE} transition-opacity duration-150`}
                   />
                 )}
 
@@ -218,88 +184,76 @@ const Navigation = ({ className = '' }: NavigationProps): React.ReactElement => 
               </button>
             </DropdownMenuTrigger>
 
-            <AnimatePresence>
-              {activeId === item.id && (
-                <DropdownMenuContent
-                  forceMount
-                  align="start"
-                  sideOffset={10}
-                  asChild
-                  className={cn(
-                    // dropdown رو به اندازه‌ی محتوا نگه می‌داریم ولی
-                    // از viewport بیرون نمی‌زنه: min در rem، max برابر 90vw
-                    'min-w-[14rem] max-w-[min(90vw,18rem)] p-1.5',
-                    'bg-white/95 dark:bg-neutral-900/95',
-                    'backdrop-blur-2xl',
-                    'border border-neutral-200/80 dark:border-neutral-800/80',
-                    'rounded-xl',
-                    'shadow-[0_8px_30px_-8px_rgba(20,23,32,0.12),0_0_0_1px_rgba(0,0,0,0.02)]',
-                    'dark:shadow-[0_8px_30px_-8px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.04)]',
-                  )}
+            {activeId === item.id && (
+              <DropdownMenuContent
+                forceMount
+                align="start"
+                sideOffset={10}
+                asChild
+                className={cn(
+                  'min-w-[14rem] max-w-[min(90vw,18rem)] p-1.5',
+                  'bg-white/95 dark:bg-neutral-900/95',
+                  'backdrop-blur-2xl',
+                  'border border-neutral-200/80 dark:border-neutral-800/80',
+                  'rounded-xl',
+                  'shadow-[0_8px_30px_-8px_rgba(20,23,32,0.12),0_0_0_1px_rgba(0,0,0,0.02)]',
+                  'dark:shadow-[0_8px_30px_-8px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.04)]',
+                  'anim-fade-in-down',
+                )}
+              >
+                <ul
+                  className="flex flex-col gap-0.5 stagger-children"
+                  key={activeId}
                 >
-                  <motion.div
-                    variants={panelVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                  >
-                    <motion.ul
-                      variants={staggerContainer}
-                      initial="hidden"
-                      animate="visible"
-                      className="flex flex-col gap-0.5"
-                    >
-                      {item.subItems.map((subItem) => {
-                        const isSubActive = pathname === subItem.href;
-                        return (
-                          <motion.li key={subItem.id} variants={subItemVariants}>
-                            <DropdownMenuItem asChild>
-                              <Link
-                                href={subItem.href}
-                                className={cn(
-                                  'group/sub relative flex items-center gap-3',
-                                  'py-2 px-3 text-[13px] rounded-lg',
-                                  'transition-colors duration-150 cursor-pointer',
-                                  isSubActive
-                                    ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-50'
-                                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50',
-                                )}
-                              >
-                                {isSubActive && (
-                                  <span
-                                    aria-hidden
-                                    className="absolute inset-y-2 start-2 w-0.5 rounded-full bg-neutral-900 dark:bg-neutral-50"
-                                  />
-                                )}
-                                <span className="relative z-10 font-medium tracking-[-0.005em]">
-                                  {subItem.name}
-                                </span>
-                                <svg
-                                  aria-hidden
-                                  className={cn(
-                                    'ms-auto h-3 w-3 opacity-0 -translate-x-1',
-                                    'group-hover/sub:opacity-100 group-hover/sub:translate-x-0',
-                                    'transition-all duration-200 rtl:rotate-180',
-                                  )}
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2.2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                >
-                                  <path d="M9 18l6-6-6-6" />
-                                </svg>
-                              </Link>
-                            </DropdownMenuItem>
-                          </motion.li>
-                        );
-                      })}
-                    </motion.ul>
-                  </motion.div>
-                </DropdownMenuContent>
-              )}
-            </AnimatePresence>
+                  {item.subItems.map((subItem) => {
+                    const isSubActive = pathname === subItem.href;
+                    return (
+                      <li key={subItem.id}>
+                        <DropdownMenuItem asChild>
+                          <Link
+                            href={subItem.href}
+                            className={cn(
+                              'group/sub relative flex items-center gap-3',
+                              'py-2 px-3 text-[13px] rounded-lg',
+                              'transition-colors duration-150 cursor-pointer',
+                              isSubActive
+                                ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-50'
+                                : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50',
+                            )}
+                          >
+                            {isSubActive && (
+                              <span
+                                aria-hidden
+                                className="absolute inset-y-2 start-2 w-0.5 rounded-full bg-neutral-900 dark:bg-neutral-50"
+                              />
+                            )}
+                            <span className="relative z-10 font-medium tracking-[-0.005em]">
+                              {subItem.name}
+                            </span>
+                            <svg
+                              aria-hidden
+                              className={cn(
+                                'ms-auto h-3 w-3 opacity-0 -translate-x-1',
+                                'group-hover/sub:opacity-100 group-hover/sub:translate-x-0',
+                                'transition-all duration-200 rtl:rotate-180',
+                              )}
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M9 18l6-6-6-6" />
+                            </svg>
+                          </Link>
+                        </DropdownMenuItem>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </DropdownMenuContent>
+            )}
           </DropdownMenu>
         </li>
       );
@@ -325,24 +279,11 @@ const Navigation = ({ className = '' }: NavigationProps): React.ReactElement => 
         >
           <span className="relative z-10 tracking-[-0.005em]">{item.name}</span>
 
-          {/* 2026-06-14: see dropdown branch — active uses its own
-              layoutId so the morphing animation never collides with
-              the hover pill on a sibling item. */}
           {active && (
-            <motion.span
-              aria-hidden
-              layoutId="nav-underline-active"
-              className="absolute inset-x-2 bottom-0.5 h-px bg-neutral-900 dark:bg-neutral-50"
-              transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-            />
+            <span aria-hidden className={`${UNDERLINE_BASE} transition-opacity duration-200`} />
           )}
           {hovered && !active && (
-            <motion.span
-              aria-hidden
-              layoutId="nav-hover-bg"
-              className="absolute inset-0 rounded-full bg-neutral-100/60 dark:bg-neutral-800/40"
-              transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-            />
+            <span aria-hidden className={`${HOVER_BG_BASE} transition-opacity duration-150`} />
           )}
 
           {item.isNew && (
@@ -361,7 +302,6 @@ const Navigation = ({ className = '' }: NavigationProps): React.ReactElement => 
       className={cn('relative flex items-center', className)}
       aria-label="ناوبری اصلی"
     >
-      {/* Fade edges برای اسکرول — فقط وقتی overflow داریم */}
       <div
         aria-hidden
         className={cn(
@@ -395,5 +335,3 @@ const Navigation = ({ className = '' }: NavigationProps): React.ReactElement => 
 };
 
 export default memo(Navigation);
-
-export { STRIPE_EASE, STRIPE_EASE_SOFT };

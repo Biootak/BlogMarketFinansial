@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import { HiOutlinePlus, HiOutlineSparkles, HiOutlineDocumentText } from 'react-icons/hi2';
 import FilterDropdown from './FilterDropdown';
 import type { PostStatus } from '@prisma/client';

@@ -28,7 +28,7 @@
 
 import type React from 'react';
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from '@/lib/motion-shim';
 import {
   Newspaper,
   AlertCircle,

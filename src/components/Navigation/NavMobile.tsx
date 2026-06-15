@@ -1,31 +1,27 @@
 'use client';
 
 /**
- * NavMobile — linear.app × stripe.com
+ * NavMobile — linear.app × stripe.com (CSS-driven, no framer-motion)
  *
- * - Smooth accordion panels (height auto-animated) instead of `display:none`.
- * - Staggered entry on mount for the search box, socials, and list.
- * - Reduced-motion friendly: heights are set instantly.
+ * - Smooth accordion panels (height auto-animated) via CSS @keyframes.
+ * - Staggered entry on mount via .stagger-children + :nth-child delays.
+ * - Reduced-motion friendly via the global @media rule in globals.css.
  * - Renders a server-friendly `nav` landmark with a labelled dialog region.
+ *
+ * Performance:
+ *  - Pure CSS animations on the main path. No framer-motion runtime,
+ *    no `useReducedMotion` subscription, no `useEffect`-driven setState.
  */
 
 import type React from 'react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import ButtonClose from '@/components/ButtonClose/ButtonClose';
 import Logo from '@/components/Logo/Logo';
 import { Disclosure } from '@/app/headlessui';
 import ClientSocialLinks from '@/components/SocialsList/ClientSocialLinks';
 import SwitchDarkMode from '@/components/SwitchDarkMode/SwitchDarkMode';
 import Link from 'next/link';
-import {
-  STRIPE_EASE,
-  STRIPE_EASE_SOFT,
-  accordionPanel,
-  staggerContainer,
-  staggerItem,
-} from '@/lib/motion';
 
 export interface NavMobileProps {
   onClickClose?: () => void;
@@ -115,7 +111,6 @@ const MagnifyingGlassIcon = (
 const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
-  const prefersReducedMotion = useReducedMotion();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,14 +119,6 @@ const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
       onClickClose?.();
     }
   };
-
-  const panelVariants = prefersReducedMotion
-    ? {
-        hidden: { height: 'auto', opacity: 1 },
-        visible: { height: 'auto', opacity: 1 },
-        exit: { height: 'auto', opacity: 1 },
-      }
-    : accordionPanel;
 
   const renderItem = (item: MobileNavItem) => {
     if (item.subItems) {
@@ -169,49 +156,40 @@ const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
                 </svg>
               </Disclosure.Button>
 
-              <AnimatePresence initial={false}>
-                {open && (
-                  <motion.div
-                    key="content"
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    variants={panelVariants}
-                    style={{ overflow: 'hidden' }}
+              {open && (
+                <div
+                  key="content"
+                  className="anim-accordion-in"
+                >
+                  <ul
+                    className="ps-4 pe-2 py-2 space-y-1 stagger-children"
                   >
-                    <motion.ul
-                      variants={staggerContainer}
-                      initial="hidden"
-                      animate="visible"
-                      className="ps-4 pe-2 py-2 space-y-1"
-                    >
-                      {item.subItems?.map((subItem: { id: string; href: string; name: string }) => (
-                        <motion.li key={subItem.id} variants={staggerItem}>
-                          <Link
-                            href={subItem.href}
-                            className="
-                              flex items-center gap-2 py-2 px-3 text-sm
-                              rounded-lg outline-none
-                              text-[rgb(var(--c-neutral-300))]
-                              transition-colors duration-200
-                              hover:bg-[rgb(var(--c-surface-elevated))]
-                              hover:text-[rgb(var(--c-foreground))]
-                              focus-visible:bg-[rgb(var(--c-surface-elevated))]
-                            "
-                            onClick={onClickClose}
-                          >
-                            <span
-                              aria-hidden
-                              className="size-1 rounded-full bg-[rgb(var(--c-primary-500))]"
-                            />
-                            {subItem.name}
-                          </Link>
-                        </motion.li>
-                      ))}
-                    </motion.ul>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                    {item.subItems?.map((subItem: { id: string; href: string; name: string }) => (
+                      <li key={subItem.id}>
+                        <Link
+                          href={subItem.href}
+                          className="
+                            flex items-center gap-2 py-2 px-3 text-sm
+                            rounded-lg outline-none
+                            text-[rgb(var(--c-neutral-300))]
+                            transition-colors duration-200
+                            hover:bg-[rgb(var(--c-surface-elevated))]
+                            hover:text-[rgb(var(--c-foreground))]
+                            focus-visible:bg-[rgb(var(--c-surface-elevated))]
+                          "
+                          onClick={onClickClose}
+                        >
+                          <span
+                            aria-hidden
+                            className="size-1 rounded-full bg-[rgb(var(--c-primary-500))]"
+                          />
+                          {subItem.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           )}
         </Disclosure>
@@ -239,47 +217,33 @@ const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
   };
 
   return (
-    <motion.div
-      initial={prefersReducedMotion ? { x: 0, opacity: 1 } : { x: 32, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={prefersReducedMotion ? { x: 0, opacity: 1 } : { x: 32, opacity: 0 }}
-      transition={{ duration: 0.28, ease: STRIPE_EASE }}
+    <div
       className="
-        overflow-y-auto w-full h-full
+        overflow-y-auto w-full h-full anim-fade-in-right
         bg-[rgb(var(--c-surface-canvas))] scrollbar-custom
       "
       role="dialog"
       aria-modal="true"
       aria-label="منوی موبایل"
     >
-      <motion.div
-        variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
-        className="py-6 px-5 border-b border-[rgb(var(--c-border-subtle))]"
+      <div
+        className="py-6 px-5 border-b border-[rgb(var(--c-border-subtle))] stagger-children"
       >
-        <motion.div variants={staggerItem} className="flex items-center justify-between">
+        <div className="flex items-center justify-between">
           <Logo />
           <ButtonClose onClick={onClickClose} />
-        </motion.div>
+        </div>
 
-        <motion.p
-          variants={staggerItem}
-          className="mt-5 text-sm text-[rgb(var(--c-neutral-400))] text-right"
-        >
+        <p className="mt-5 text-sm text-[rgb(var(--c-neutral-400))] text-right">
           از مبتدی تا حرفه‌ای، اینجا مکانی برای یادگیری و رشد در دنیای ارزهای دیجیتال است
-        </motion.p>
+        </p>
 
-        <motion.div
-          variants={staggerItem}
-          className="mt-4 flex justify-between items-center"
-        >
+        <div className="mt-4 flex justify-between items-center">
           <SwitchDarkMode className="bg-[rgb(var(--c-surface-elevated))]" />
           <ClientSocialLinks className="gap-2" itemClass="!w-9 !h-9" iconSize={18} />
-        </motion.div>
+        </div>
 
-        <motion.form
-          variants={staggerItem}
+        <form
           onSubmit={handleSearch}
           className="mt-5 text-[rgb(var(--c-foreground))]"
         >
@@ -310,25 +274,20 @@ const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
               "
             />
           </div>
-        </motion.form>
-      </motion.div>
+        </form>
+      </div>
 
-      <motion.ul
-        variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
-        className="flex flex-col py-4 px-2 space-y-0.5"
+      <ul
+        className="flex flex-col py-4 px-2 space-y-0.5 stagger-children"
       >
         {NAVBAR_LINKS.map((item) => (
-          <motion.li key={item.id} variants={staggerItem}>
+          <li key={item.id}>
             {renderItem(item)}
-          </motion.li>
+          </li>
         ))}
-      </motion.ul>
-    </motion.div>
+      </ul>
+    </div>
   );
 };
 
 export default NavMobile;
-
-export { STRIPE_EASE, STRIPE_EASE_SOFT };

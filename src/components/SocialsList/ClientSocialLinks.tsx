@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import * as motion from 'framer-motion/client';
+import { motion } from '@/lib/motion-shim';
 import Image from 'next/image';
 import { getSocialLinks } from '@/actions/socialLinkActions';
 

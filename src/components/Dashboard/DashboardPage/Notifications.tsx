@@ -2,7 +2,7 @@
 
 import type React from 'react';
 import { useState, useEffect } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from '@/lib/motion-shim';
 import { HiOutlineBell } from 'react-icons/hi2';
 import NotificationItem from './NotificationItem';
 

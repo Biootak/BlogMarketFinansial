@@ -33,7 +33,7 @@ import {
   useSpring,
   useTransform,
   useReducedMotion,
-} from 'framer-motion';
+} from '@/lib/motion-shim';
 import {
   Clock,
   Calendar,

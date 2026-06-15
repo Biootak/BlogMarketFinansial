@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import { useRouter } from 'next/navigation';
 import { HiOutlinePencilSquare, HiOutlineSparkles } from 'react-icons/hi2';
 

@@ -51,6 +51,11 @@ next-env.d.ts
 .opencode/
 .worktrees/
 
+# Lighthouse reports
+/lighthouse-*.report.html
+/lighthouse-*.report.json
+/.lighthouse-tmp/
+
 # Sentry
 .sentryclirc
 .vercel

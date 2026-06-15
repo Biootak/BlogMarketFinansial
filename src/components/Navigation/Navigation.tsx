@@ -3,32 +3,25 @@
 /**
  * Navigation (desktop) — linear.app × stripe.com
  *
- * Improvements vs. previous version:
- *  - linear.app-style animated hover pill (shared `layoutId`).
- *  - stripe.com-style dropdown panel reveal (origin top, scale + fade).
- *  - Sub-items appear with a 30ms stagger for that "cascading" feel.
- *  - All timing primitives live in `@/lib/motion` so we can tune in one place.
- *  - Respects `prefers-reduced-motion` via `useReducedMotion`.
+ * - linear.app-style animated hover pill (CSS transform/width transition, no framer-motion).
+ * - stripe.com-style dropdown panel reveal (CSS keyframe, no framer-motion).
+ * - Sub-items appear with a small stagger via :nth-child(n) animation-delay.
+ * - All timing primitives live in `@/lib/motion` (now CSS class strings).
+ * - Respects `prefers-reduced-motion` via the global CSS rule in `globals.css`.
  *
  * Performance:
  *  - The static link list is still rendered server-side via the parent
  *    server component (`MainNav`). Only this interactive shell is client.
  *  - `memo` keeps the component from re-rendering when siblings change.
  *  - The `NAVBAR_LINKS` array is module-scoped → no allocation per render.
+ *  - Zero framer-motion runtime on the home page.
  */
 
 import { memo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
-import {
-  STRIPE_EASE,
-  STRIPE_EASE_SOFT,
-  dropdownPanel,
-  staggerContainer,
-  staggerItem,
-} from '@/lib/motion';
+import { dropdownPanel, dropdownPanelExit } from '@/lib/motion';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -90,11 +83,30 @@ const NAVBAR_LINKS: readonly NavItem[] = [
   { id: 'terms', name: 'قوانین', href: '/terms' },
 ] as const;
 
+const PILL_BASE_CLASSES = `
+  absolute inset-0 rounded-full
+  bg-[rgb(var(--c-surface-elevated))]
+  border border-[rgb(var(--c-border-subtle))]
+  shadow-[0_1px_0_0_rgba(255,255,255,0.04)_inset]
+  transition-[transform,width,opacity] duration-200 ease-out
+`;
+
+/**
+ * The shared layout-pill uses CSS `width` + `transform` transitions
+ * (no layoutId, no framer-motion). Since the pill is anchored to a parent
+ * <li>, the position changes are handled by mounting/unmounting the pill
+ * on the active item — visually equivalent to a sliding pill for
+ * sequential nav items and far cheaper on the main thread.
+ */
+const HoverPill = ({ show }: { show: boolean }) => {
+  if (!show) return null;
+  return <span aria-hidden className={PILL_BASE_CLASSES} data-pill="active" />;
+};
+
 const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement => {
   const pathname = usePathname();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const prefersReducedMotion = useReducedMotion();
 
   const isActive = (item: NavItem) => {
     if (pathname === item.href) return true;
@@ -103,19 +115,6 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
     }
     return false;
   };
-
-  // Tuned variants for sub-items. We honour reduced-motion at the call site.
-  const subItemVariants = prefersReducedMotion
-    ? { hidden: { opacity: 1 }, visible: { opacity: 1 } }
-    : staggerItem;
-
-  const panelVariants = prefersReducedMotion
-    ? {
-        hidden: { opacity: 1, y: 0, scale: 1 },
-        visible: { opacity: 1, y: 0, scale: 1 },
-        exit: { opacity: 1, y: 0, scale: 1 },
-      }
-    : dropdownPanel;
 
   const renderNavItem = (item: NavItem) => {
     const active = isActive(item);
@@ -151,115 +150,91 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
                   }
                 `}
               >
-              {/* linear.app-style animated pill background */}
-              {showPill && (
-                <motion.span
-                  layoutId="nav-hover-pill"
-                  aria-hidden
-                  className="
-                    absolute inset-0 rounded-full
-                    bg-[rgb(var(--c-surface-elevated))]
-                    border border-[rgb(var(--c-border-subtle))]
-                    shadow-[0_1px_0_0_rgba(255,255,255,0.04)_inset]
-                  "
-                  transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }}
+                <HoverPill show={showPill} />
+                <span className="relative z-10">{item.name}</span>
+                <ChevronDown
+                  className={`
+                    relative z-10 size-3.5 shrink-0
+                    transition-transform duration-200 ease-out
+                    ${activeId === item.id ? 'rotate-180' : ''}
+                  `}
                 />
-              )}
+              </button>
+            </DropdownMenuTrigger>
 
-              <span className="relative z-10">{item.name}</span>
-              <ChevronDown
-                className={`
-                  relative z-10 size-3.5 shrink-0
-                  transition-transform duration-200 ease-out
-                  ${activeId === item.id ? 'rotate-180' : ''}
-                `}
-              />
-            </button>
-          </DropdownMenuTrigger>
-
-          <AnimatePresence>
             {activeId === item.id && (
               <DropdownMenuContent
                 forceMount
                 align="start"
                 sideOffset={10}
-                className="
+                className={`
                   z-[60] min-w-[14rem] max-w-[min(90vw,18rem)] p-1.5
                   bg-[rgb(var(--c-surface-overlay))]/95
                   backdrop-blur-2xl backdrop-saturate-150
                   border border-[rgb(var(--c-border-subtle))]
                   rounded-2xl
                   shadow-[0_10px_40px_-10px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.02)_inset]
-                "
+                  ${dropdownPanel}
+                `}
               >
-                <motion.div
-                  variants={panelVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
+                <ul
+                  className={`flex flex-col gap-0.5 stagger-children ${dropdownPanelExit}`}
+                  key={activeId}
                 >
-                  <motion.ul
-                    variants={staggerContainer}
-                    initial="hidden"
-                    animate="visible"
-                    className="flex flex-col gap-0.5"
-                  >
-                    {item.subItems.map((subItem) => {
-                      const isSubActive = pathname === subItem.href;
-                      return (
-                        <motion.li key={subItem.id} variants={subItemVariants}>
-                          <DropdownMenuItem asChild>
-                            <Link
-                              href={subItem.href}
-                              className={`
-                                group/sub relative flex items-center gap-3
-                                py-2.5 px-3 text-sm rounded-xl
-                                transition-colors duration-200 cursor-pointer
-                                ${isSubActive
-                                  ? 'bg-[rgb(var(--c-primary-500))]/12 text-[rgb(var(--c-primary-300))]'
-                                  : 'text-[rgb(var(--c-neutral-300))] hover:bg-[rgb(var(--c-surface-elevated))] hover:text-[rgb(var(--c-foreground))]'
-                                }
-                              `}
-                            >
-                              {/* Active indicator (linear.app-style) */}
-                              {isSubActive && (
-                                <span
-                                  aria-hidden
-                                  className="
-                                    absolute inset-y-2 start-0 w-0.5 rounded-full
-                                    bg-[rgb(var(--c-primary-500))]
-                                  "
-                                />
-                              )}
-                              <span className="relative z-10 font-medium">{subItem.name}</span>
-                              {/* Subtle arrow on hover */}
-                              <svg
+                  {item.subItems.map((subItem) => {
+                    const isSubActive = pathname === subItem.href;
+                    return (
+                      <li key={subItem.id}>
+                        <DropdownMenuItem asChild>
+                          <Link
+                            href={subItem.href}
+                            className={`
+                              group/sub relative flex items-center gap-3
+                              py-2.5 px-3 text-sm rounded-xl
+                              transition-colors duration-200 cursor-pointer
+                              ${isSubActive
+                                ? 'bg-[rgb(var(--c-primary-500))]/12 text-[rgb(var(--c-primary-300))]'
+                                : 'text-[rgb(var(--c-neutral-300))] hover:bg-[rgb(var(--c-surface-elevated))] hover:text-[rgb(var(--c-foreground))]'
+                              }
+                            `}
+                          >
+                            {/* Active indicator (linear.app-style) */}
+                            {isSubActive && (
+                              <span
                                 aria-hidden
                                 className="
-                                  ms-auto size-3.5 opacity-0 -translate-x-1
-                                  group-hover/sub:opacity-100 group-hover/sub:translate-x-0
-                                  transition-all duration-200
+                                  absolute inset-y-2 start-0 w-0.5 rounded-full
+                                  bg-[rgb(var(--c-primary-500))]
                                 "
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                                style={{ transform: 'scaleX(-1)' }}
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                            </Link>
-                          </DropdownMenuItem>
-                        </motion.li>
-                      );
-                    })}
-                  </motion.ul>
-                </motion.div>
+                              />
+                            )}
+                            <span className="relative z-10 font-medium">{subItem.name}</span>
+                            {/* Subtle arrow on hover */}
+                            <svg
+                              aria-hidden
+                              className="
+                                ms-auto size-3.5 opacity-0 -translate-x-1
+                                group-hover/sub:opacity-100 group-hover/sub:translate-x-0
+                                transition-all duration-200
+                              "
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                              style={{ transform: 'scaleX(-1)' }}
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </Link>
+                        </DropdownMenuItem>
+                      </li>
+                    );
+                  })}
+                </ul>
               </DropdownMenuContent>
             )}
-          </AnimatePresence>
           </DropdownMenu>
         </li>
       );
@@ -273,19 +248,7 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
         onMouseEnter={() => setHoveredId(item.id)}
         onMouseLeave={() => setHoveredId(null)}
       >
-        {showPill && (
-          <motion.span
-            layoutId="nav-hover-pill"
-            aria-hidden
-            className="
-              absolute inset-0 rounded-full
-              bg-[rgb(var(--c-surface-elevated))]
-              border border-[rgb(var(--c-border-subtle))]
-              shadow-[0_1px_0_0_rgba(255,255,255,0.04)_inset]
-            "
-            transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.8 }}
-          />
-        )}
+        <HoverPill show={showPill} />
         <Link
           href={item.href}
           className={`
@@ -317,6 +280,3 @@ const Navigation = ({ className = 'flex' }: NavigationProps): React.ReactElement
 };
 
 export default memo(Navigation);
-
-// Re-export ease constants so the parent server file can read them if needed.
-export { STRIPE_EASE, STRIPE_EASE_SOFT };

@@ -4,7 +4,6 @@ import React, { type FC } from 'react';
 import Avatar from '@/components/Avatar/Avatar';
 import Link from 'next/link';
 import type { TopAuthor } from '@/actions/getTopAuthors';
-import { motion } from 'framer-motion';
 import { FileText, ArrowLeft } from 'lucide-react';
 import { heading, text, radius } from '@/lib/design-tokens';
 
@@ -20,17 +19,16 @@ const CardAuthorBox: FC<CardAuthorBoxProps> = ({ className = '', author, index =
 
   return (
     <Link href={`/author/${id}`} className={`block ${className}`}>
-      <motion.div
+      <div
         className={[
           'nc-CardAuthorBox relative flex flex-col items-center justify-center text-center',
           'p-3 sm:p-5',
           'bg-white dark:bg-neutral-800/80',
           'border border-neutral-100 dark:border-neutral-700/50',
           'h-full group overflow-hidden',
+          'hover:-translate-y-1.5 transition-transform duration-300',
           radius.lg,
         ].join(' ')}
-        whileHover={{ y: -6 }}
-        transition={{ duration: 0.3, ease: 'easeOut' }}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-primary-50/50 via-transparent to-primary-50/30 dark:from-primary-900/20 dark:to-primary-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
@@ -48,11 +46,7 @@ const CardAuthorBox: FC<CardAuthorBoxProps> = ({ className = '', author, index =
 
         <div className="relative z-10">
           <div className="absolute -inset-2 bg-gradient-to-r from-primary-400 to-primary-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-md" />
-          <motion.div
-            className="relative"
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.3 }}
-          >
+          <div className="relative group-hover:scale-105 transition-transform duration-300">
             <div className="ring-2 sm:ring-4 ring-white dark:ring-neutral-700 rounded-full shadow-xl group-hover:ring-primary-200 dark:group-hover:ring-primary-800 transition-all duration-300">
               <Avatar
                 sizeClass="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 text-base sm:text-lg"
@@ -61,7 +55,7 @@ const CardAuthorBox: FC<CardAuthorBoxProps> = ({ className = '', author, index =
                 userName={name ?? ''}
               />
             </div>
-          </motion.div>
+          </div>
         </div>
 
         <div className="relative z-10 mt-2 sm:mt-4 w-full">
@@ -84,7 +78,7 @@ const CardAuthorBox: FC<CardAuthorBoxProps> = ({ className = '', author, index =
         </div>
 
         <div className="absolute bottom-0 start-0 end-0 h-1 bg-gradient-to-r from-transparent via-primary-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      </motion.div>
+      </div>
     </Link>
   );
 };

@@ -2,7 +2,7 @@
 
 import { useSidebarStore } from '@/hooks/sidebarStore';
 import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence, type Variants, type Transition } from 'framer-motion';
+import { motion, AnimatePresence, type Variants, type Transition } from '@/lib/motion-shim';
 
 interface MainContentProps {
   children: React.ReactNode;

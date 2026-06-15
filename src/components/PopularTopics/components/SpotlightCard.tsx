@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useMotionTemplate, useMotionValue } from 'framer-motion';
+import { motion, useMotionTemplate, useMotionValue } from '@/lib/motion-shim';
 import type { ReactNode } from 'react';
 import { useCallback, useRef } from 'react';
 

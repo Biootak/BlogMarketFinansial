@@ -3,7 +3,7 @@
 import { type FC, useState, useCallback, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from '@/lib/motion-shim';
 import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
 import {
   HiUser,

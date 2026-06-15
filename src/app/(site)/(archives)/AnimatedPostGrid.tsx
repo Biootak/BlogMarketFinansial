@@ -1,7 +1,7 @@
 'use client';
 
 import type React from 'react';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import Card11 from '@/components/Card11/Card11';
 import type { PostWithRelations } from '@/types/types';
 

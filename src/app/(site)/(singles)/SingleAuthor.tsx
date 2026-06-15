@@ -2,7 +2,7 @@
 
 import type React from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import { HiArrowLeft, HiPencilSquare } from 'react-icons/hi2';
 import Avatar from '@/components/Avatar/Avatar';
 import type { UserWithProfile } from '@/types/types';

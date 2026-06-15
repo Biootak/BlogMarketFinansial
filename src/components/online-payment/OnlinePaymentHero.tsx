@@ -2,7 +2,7 @@
 
 import type { FC } from 'react';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import { HiArrowDown } from 'react-icons/hi';
 
 const paymentMethods = [

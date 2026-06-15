@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion } from '@/lib/motion-shim';
 import type { ComponentProps } from 'react';
 
 // Re-export motion components with reduced motion support

@@ -1,9 +1,11 @@
+'use client';
+
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import Image from 'next/image';
 
 import { RiUploadCloud2Line, RiImageAddLine, RiCloseLine } from 'react-icons/ri';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import { toast } from '@/components/ui/use-toast';
 import type { UploadFolder } from '@/actions/uploadActions';
 

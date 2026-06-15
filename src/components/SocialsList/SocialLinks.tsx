@@ -1,11 +1,15 @@
-import * as motion from 'framer-motion/client';
+'use client';
+
+import { motion } from '@/lib/motion-shim';
 import Image from 'next/image';
+import type { SocialType } from '@/types/types';
 import { getSocialLinks } from '@/actions/socialLinkActions';
 
 interface SocialLinksProps {
   className?: string;
   itemClass?: string;
   iconSize?: number;
+  initialLinks?: SocialType[];
 }
 
 /**
@@ -23,9 +27,30 @@ const isValidIconSrc = (value: string | null | undefined): value is string => {
   );
 };
 
-const SocialLinks = async ({ className = '', itemClass = '', iconSize = 22 }: SocialLinksProps) => {
-  const result = await getSocialLinks();
-  const links = result.success ? result.data : [];
+import { useEffect, useState } from 'react';
+
+interface SocialLinkDb {
+  id: string;
+  name: string;
+  url: string;
+  icon: string | null;
+  color: string | null;
+}
+
+const SocialLinks = ({ className = '', itemClass = '', iconSize = 22, initialLinks = [] }: SocialLinksProps) => {
+  const [links, setLinks] = useState<SocialLinkDb[]>(initialLinks as unknown as SocialLinkDb[]);
+
+  useEffect(() => {
+    if (initialLinks.length > 0) return;
+    let cancelled = false;
+    getSocialLinks()
+      .then((result) => {
+        if (cancelled) return;
+        setLinks(result.success ? (result.data as unknown as SocialLinkDb[]) : []);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [initialLinks.length]);
 
   if (!links || links.length === 0) {
     return null;

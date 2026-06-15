@@ -2,7 +2,7 @@
 
 import Avatar from '@/components/Avatar/Avatar';
 import NewPostButton from './NewPostButton';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from '@/lib/motion-shim';
 import { HiOutlineSparkles, HiOutlineLightningBolt, HiOutlineShieldCheck, HiHand } from 'react-icons/hi';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useState } from 'react';

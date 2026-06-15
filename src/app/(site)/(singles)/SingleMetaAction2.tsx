@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, forwardRef, type FC } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from '@/lib/motion-shim';
 import type { PostWithRelations } from '@/types/types';
 import BookmarkCheck from '@/components/BookmarkCheck';
 import { Icon } from '@/components/ui/icon';

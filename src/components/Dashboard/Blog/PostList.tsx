@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from '@/lib/motion-shim';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { deletePostAndInvalidate, listAllPosts, updatePostStatusAndInvalidate } from '@/actions/postActions';
 import type { ActionResult, PostWithRelations, PostStatus } from '@/types/types';
