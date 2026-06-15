@@ -1,8 +1,5 @@
 'use client';
 
-import type React from 'react';
-import { useState } from 'react';
-
 /**
  * InfiniteTicker
  * ----------------------------------------------------------------------------
@@ -17,11 +14,13 @@ import { useState } from 'react';
  *    that moment the second copy is exactly where the first was —
  *    producing a seamless wrap.
  *  - `prefers-reduced-motion` is respected → animation paused.
- *  - Pauses on hover (configurable, via data-pause-on-hover — global CSS).
- *  - Pauses when the user holds mouse/touch (configurable, via data-holding).
+ *  - Pauses on hover/hold via `useTickerPause` (CSS + JS belt-and-braces).
  *  - RTL-safe: pass `dir="rtl"` for Persian/Arabic UIs.
- * ----------------------------------------------------------------------------
  */
+import type React from 'react';
+import { useMemo } from 'react';
+import { useTickerPause } from '@/hooks/useTickerPause';
+
 interface InfiniteTickerProps {
   children: React.ReactNode;
   /** Seconds for one full loop. Lower = faster. Default 40s. */
@@ -36,7 +35,6 @@ interface InfiniteTickerProps {
   className?: string;
 }
 
-// هم default هم named export تا با `import { InfiniteTicker }` و `import InfiniteTicker` سازگار باشه
 function InfiniteTickerFn({
   children,
   duration = 40,
@@ -46,23 +44,16 @@ function InfiniteTickerFn({
   className = '',
 }: InfiniteTickerProps) {
   const isRTL = dir === 'rtl';
-  const [isHolding, setIsHolding] = useState(false);
+  const { containerProps } = useTickerPause({ pauseOnHover, pauseOnHold });
 
   return (
     <div
-      dir={dir}
-      className={`infinite-ticker relative w-full overflow-hidden group ${
+      {...containerProps}
+      data-marquee-track="true"
+      className={`infinite-ticker relative w-full overflow-hidden ${
         pauseOnHover ? 'hover:cursor-default' : ''
       } ${className}`}
-      style={{ '--ticker-duration': `${duration}s` } as React.CSSProperties}
-      onMouseDown={pauseOnHold ? () => setIsHolding(true) : undefined}
-      onMouseUp={pauseOnHold ? () => setIsHolding(false) : undefined}
-      onMouseLeave={pauseOnHold ? () => setIsHolding(false) : undefined}
-      onTouchStart={pauseOnHold ? () => setIsHolding(true) : undefined}
-      onTouchEnd={pauseOnHold ? () => setIsHolding(false) : undefined}
-      onTouchCancel={pauseOnHold ? () => setIsHolding(false) : undefined}
-      data-pause-on-hover={pauseOnHover ? 'true' : undefined}
-      data-holding={isHolding ? 'true' : undefined}
+      style={{ '--ticker-duration': `${duration}s`, direction: dir } as React.CSSProperties}
     >
       {/* Scrolling track. `min-w-[200%]` guarantees the track is wider than
           the viewport even when there are very few children, so the loop
@@ -105,11 +96,19 @@ function InfiniteTickerFn({
           will-change: transform;
         }
 
-        /* Fallback local pause: وقتی به هر دلیلی selector global کار نکنه */
-        :global(.infinite-ticker:hover) .ticker-ltr,
-        :global(.infinite-ticker:hover) .ticker-rtl,
-        .ticker-ltr:hover,
-        .ticker-rtl:hover {
+        /* CSS fast-path: در hover هر wrapper با کلاس marquee-pause، track رو متوقف کن.
+           این اولین خط دفاعیه و در اکثر مواقع کافیه. */
+        :global(.marquee-pause:hover) .ticker-ltr,
+        :global(.marquee-pause:hover) .ticker-rtl,
+        :global(.marquee-pause:hover) .marquee-track {
+          animation-play-state: paused;
+        }
+
+        /* Fallback: اگه wrapper کلاس marquee-pause نداشت ولی data-paused=true داشت
+           (از JS)، track رو متوقف کن. */
+        [data-paused='true'] .ticker-ltr,
+        [data-paused='true'] .ticker-rtl,
+        [data-paused='true'] .marquee-track {
           animation-play-state: paused;
         }
 
@@ -127,4 +126,3 @@ function InfiniteTickerFn({
 // هر دو export تا API قدیم (default) و جدید (named) در دسترس باشن
 export default InfiniteTickerFn;
 export { InfiniteTickerFn as InfiniteTicker };
-

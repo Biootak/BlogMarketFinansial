@@ -4,16 +4,17 @@
  * Marquee — اسکرول بی‌نهایت (CSS-driven)
  *
  * استراتژی:
- *  - محتوا ۳ بار تکرار می‌شه
+ *  - محتوا `repeat` بار تکرار می‌شه (پیش‌فرض 3)
  *  - track با `direction: ltr` (حتی در RTL) — تا ترتیب المان‌ها LTR باشه
  *  - محتوای درون (children) خودش RTL هست
- *  - animation از 0% شروع و به -33.33% می‌ره → loop بی‌نهایت روان
- *  - وقتی به -33.33% رسید، یعنی دقیقاً یک تکرار کامل شده
- *  - چون کل track به سمت چپ می‌ره، متن RTL به نظر "از راست به چپ" می‌آد (طبیعی)
+ *  - animation از 0% شروع و به -translateStep% می‌ره → loop بی‌نهایت روان
+ *  - `useTickerPause` رفتار pause-on-hover و pause-on-hold رو تضمین می‌کنه
+ *    (هم با CSS `data-pause-on-hover` و هم با JS `animationPlayState`)
  */
 
-import { type ReactNode, useMemo, useState } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import { useTickerPause } from '@/hooks/useTickerPause';
 
 export interface MarqueeProps {
   children: ReactNode;
@@ -41,21 +42,16 @@ export function Marquee({
   // translateX اندازه: 100% / repeat (تا loop بی‌نهایت روان)
   const translateStep = 100 / repeat;
 
-  const [isHolding, setIsHolding] = useState(false);
+  // رفتار pause یکپارچه با TickerShell و InfiniteTicker
+  const { containerProps } = useTickerPause({ pauseOnHover, pauseOnHold });
 
   return (
     <div
+      {...containerProps}
+      data-marquee-track="true"
       className={cn('overflow-hidden contain-paint', className)}
       // track رو LTR کن تا ترتیب المان‌ها حفظ بشه
       style={{ direction: 'ltr' }}
-      onMouseDown={pauseOnHold ? () => setIsHolding(true) : undefined}
-      onMouseUp={pauseOnHold ? () => setIsHolding(false) : undefined}
-      onMouseLeave={pauseOnHold ? () => setIsHolding(false) : undefined}
-      onTouchStart={pauseOnHold ? () => setIsHolding(true) : undefined}
-      onTouchEnd={pauseOnHold ? () => setIsHolding(false) : undefined}
-      onTouchCancel={pauseOnHold ? () => setIsHolding(false) : undefined}
-      data-pause-on-hover={pauseOnHover ? 'true' : undefined}
-      data-holding={isHolding ? 'true' : undefined}
     >
       <div
         className="marquee-track flex w-max items-center gap-3"
