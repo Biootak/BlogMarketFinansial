@@ -22,11 +22,11 @@ const MainNav2: FC<MainNav2Props> = ({ className = "" }) => {
         <Input
           type="search"
           placeholder="Search items"
-          className="pr-5 md:pr-10 !w-40 md:!w-full group-hover:border-slate-300 dark:group-hover:border-slate-400 dark:placeholder:text-neutral-400"
-          sizeClass="h-[42px] pl-4 py-3"
+          className="w-full max-w-xs md:max-w-sm pe-9 md:pe-10 group-hover:border-slate-300 dark:group-hover:border-slate-400 dark:placeholder:text-neutral-400"
+          sizeClass="h-[42px] ps-4 py-3"
           autoFocus={false}
         />
-        <span className="absolute top-1/2 -translate-y-1/2 right-3 text-neutral-500 dark:text-neutral-400">
+        <span className="absolute top-1/2 -translate-y-1/2 end-3 text-neutral-500 dark:text-neutral-400">
           <svg
             className="h-5 w-5"
             viewBox="0 0 24 24"

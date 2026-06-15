@@ -282,8 +282,8 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
           {/* ================================================================== */}
           {/*  Header                                                            */}
           {/* ================================================================== */}
-          <header className="relative px-3.5 sm:px-7 lg:px-10 pt-5 sm:pt-9 pb-3 sm:pb-6">
-            <div className="relative flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-3 sm:flex-nowrap">
+          <header className="relative px-3.5 sm:px-6 md:px-7 @md/csp:px-8 lg:px-10 pt-5 sm:pt-9 pb-3 sm:pb-6">
+            <div className="relative flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-3">
               {/* Top row on mobile: icon + title + clock */}
               <div className="flex items-center gap-3 sm:gap-0 sm:flex-1 sm:min-w-0">
                 <motion.div
@@ -335,7 +335,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
 
                 <div className="min-w-0 flex-1 sm:flex-none sm:ml-5">
                   <div className="flex items-center gap-2">
-                    <h2 className="text-base sm:text-2xl lg:text-[26px] font-bold tracking-tight text-neutral-900 dark:text-white break-words text-balance">
+                    <h2 className="text-base sm:text-xl @md/csp:text-2xl @xl/csp:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white break-words text-balance">
                       آخرین مقالات
                     </h2>
                     <Sparkles
@@ -447,9 +447,9 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
             >
               <TabsList
                 className={cn(
-                  'relative inline-flex items-center gap-1 p-1 min-h-[40px] sm:min-h-0',
+                  'relative inline-flex items-center gap-1 p-1 min-h-[44px] @md/csp:min-h-0',
                   'w-full max-w-full overflow-x-auto overflow-y-hidden scrollbar-none',
-                  'sm:w-auto sm:max-w-none sm:flex-wrap sm:overflow-visible sm:scrollbar-custom',
+                  '@md/csp:w-auto @md/csp:max-w-none @md/csp:flex-wrap @md/csp:overflow-visible @md/csp:scrollbar-custom',
                   'rounded-2xl',
                   'bg-neutral-100/80 dark:bg-neutral-800/60',
                   'border border-neutral-200/60 dark:border-neutral-700/40',
@@ -602,7 +602,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
               </TabsList>
 
               {/* Active category hint */}
-              <div className="flex items-center gap-2 text-[10.5px] sm:text-[11px] text-neutral-500 dark:text-neutral-400 font-vazirmatn tabular-nums">
+              <div className="flex items-center gap-2 text-xs sm:text-[11px] @md/csp:text-xs text-neutral-500 dark:text-neutral-400 font-vazirmatn tabular-nums">
                 <span>نمایش</span>
                 <span
                   className="inline-flex items-center justify-center min-w-[1.5rem] h-5 sm:h-6 px-1.5 sm:px-2 rounded-md font-semibold"
@@ -624,7 +624,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
               <TabsContent
                 key={category}
                 value={category}
-                className="mt-0 px-3.5 sm:px-7 lg:px-10 py-5 sm:py-8 focus-visible:outline-none focus-visible:ring-0"
+                className="mt-0 px-3.5 sm:px-6 @md/csp:px-8 lg:px-10 py-5 sm:py-8 focus-visible:outline-none focus-visible:ring-0"
               >
                 {category === activeCategory ? (
                   <AnimatePresence mode="wait">

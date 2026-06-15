@@ -229,7 +229,7 @@ export default function PostGrid({
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0, transition: { duration: 0.3, ease: STRIPE_EASE } }}
           exit={{ opacity: 0, y: -4, transition: { duration: 0.15 } }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5 lg:gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6"
         >
           {pageItems.map((post) => (
             <PostItem key={post.id} post={post} />

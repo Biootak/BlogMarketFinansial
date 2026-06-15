@@ -24,17 +24,23 @@ import { User, Sparkles } from 'lucide-react';
  *  - Navigation خودش در center والد قرار می‌گیرد
  *  - Actions در سمت مخالف Logo با همان عرض تقریبی
  *  - حذف glow اضافی پشت Logo
+ *
+ * 2026-06-15: ریسپانسیو برای موبایل
+ *  - در موبایل: فقط logo + actions (بدون 3-col grid برای جلوگیری از squeeze)
+ *  - ساختار 3-col فقط در `@lg` (~1024px) فعال می‌شه
+ *  - استفاده از container queries + @container برای تقارن بهتر در سایزهای میانی
  */
 export default async function MainNav() {
   const session = await auth();
 
   return (
-    <nav className="relative z-10" aria-label="ناوبری اصلی سایت">
+    <nav className="relative z-10 @container/nav" aria-label="ناوبری اصلی سایت">
       <div className="container">
         <div
           className="
             grid items-center
-            grid-cols-[1fr_auto_1fr]
+            grid-cols-[auto_1fr]
+            @lg/nav:grid-cols-[1fr_auto_1fr]
             h-12 sm:h-14
             gap-2 sm:gap-4
           "
@@ -44,15 +50,15 @@ export default async function MainNav() {
             <Logo variant="modern" />
           </div>
 
-          {/* ستون وسط — Navigation */}
-          <div className="hidden lg:flex items-center justify-center min-w-0">
+          {/* ستون وسط — Navigation (فقط lg+) */}
+          <div className="hidden @lg/nav:flex items-center justify-center min-w-0 col-start-2 row-start-1">
             <Navigation />
           </div>
 
           {/* ستون چپ (در RTL: اکشن‌ها) */}
-          <div className="flex items-center justify-end gap-1 sm:gap-2 min-w-0">
+          <div className="flex items-center justify-end gap-1 sm:gap-2 min-w-0 col-start-2 @lg/nav:col-start-3 row-start-1">
             {/* موبایل: فقط hamburger + user/auth */}
-            <div className="flex lg:hidden items-center gap-1">
+            <div className="flex @lg/nav:hidden items-center gap-1">
               <div
                 className="
                   flex items-center justify-center
@@ -93,7 +99,7 @@ export default async function MainNav() {
             </div>
 
             {/* دسکتاپ: search + notify + avatar/sign-in */}
-            <div className="hidden lg:flex items-center gap-1.5">
+            <div className="hidden @lg/nav:flex items-center gap-1.5">
               <div
                 className="
                   flex items-center justify-center

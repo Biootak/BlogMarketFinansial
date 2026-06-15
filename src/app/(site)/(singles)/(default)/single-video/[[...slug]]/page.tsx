@@ -58,10 +58,10 @@ const PageSv = ({}) => {
   };
 
   return (
-    <header className="container relative py-14 lg:py-20 flex flex-col lg:flex-row lg:items-center">
-      <div className="nc-PageSingleVideo__headerWrap absolute inset-y-0 transform translate-x-1/2 end-1/2 w-screen lg:translate-x-0 lg:w-[calc(100vw/2)] bg-neutral-900 dark:bg-black dark:bg-opacity-50 lg:rounded-e-[40px]" />
-      <div className="pb-10 lg:pb-0 lg:pr-10 relative">{renderHeader()}</div>
-      <div className="relative lg:w-8/12 flex-shrink-0">
+    <header className="container relative py-10 sm:py-14 lg:py-20 flex flex-col lg:flex-row lg:items-center @container/sv-header">
+      <div className="nc-PageSingleVideo__headerWrap absolute inset-y-0 transform translate-x-1/2 end-1/2 w-screen @lg/sv-header:translate-x-0 @lg/sv-header:w-1/2 bg-neutral-900 dark:bg-black dark:bg-opacity-50 @lg/sv-header:rounded-e-[40px]" />
+      <div className="pb-6 sm:pb-8 lg:pb-0 @lg/sv-header:pe-10 relative">{renderHeader()}</div>
+      <div className="relative @lg/sv-header:w-7/12 flex-shrink-0">
         <div className="aspect-w-16 aspect-h-16 sm:aspect-h-9 border-4 border-neutral-300 dark:border-neutral-800 shadow-2xl bg-neutral-800 rounded-3xl overflow-hidden z-0">
           {renderMainVideo()}
         </div>

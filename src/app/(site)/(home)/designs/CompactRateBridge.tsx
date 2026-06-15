@@ -183,7 +183,7 @@ export default function CompactRateBridge({
       onMouseLeave={handleMouseLeave}
     >
       {/* Title block */}
-      <div className="flex flex-col items-start justify-center gap-0.5 px-2.5 sm:px-3 py-1.5 sm:py-2 border-l border-white/10 min-w-[88px] sm:min-w-[100px]">
+      <div className="flex flex-col items-start justify-center gap-0.5 px-2.5 sm:px-3 py-1.5 sm:py-2 border-l border-white/10 min-w-0 sm:min-w-[100px]">
         <div className="flex items-center gap-1">
           <span className="relative flex h-1.5 w-1.5 shrink-0">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -221,7 +221,7 @@ export default function CompactRateBridge({
       <Link
         href={orderHref}
         onClick={(e) => e.stopPropagation()}
-        className="relative min-w-[200px] sm:min-w-[260px] max-w-[280px] sm:max-w-[320px] overflow-hidden cursor-pointer hover:bg-white/5 transition-colors"
+        className="relative flex-1 min-w-0 sm:min-w-[260px] sm:max-w-[320px] overflow-hidden cursor-pointer hover:bg-white/5 transition-colors"
         aria-label={`ثبت سفارش ${current?.title}`}
       >
         <AnimatePresence mode="wait">

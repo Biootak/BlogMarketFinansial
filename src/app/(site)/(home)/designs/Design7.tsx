@@ -7,7 +7,7 @@
  *
  *   1. Ticker Bar زنده در بالا (نرخ ارز، طلا، رمزارز)
  *   2. Dynamic Theme — رنگ‌بندی بر اساس دسته‌بندی هر پست
- *   3. Sentiment Badge (▲ صعودی / ▼ نزولی / ◆ خنثی)
+ *   3. Top Tag Badge (مهم‌ترین تگ پست — بج گوشه اسلاید)
  *   4. Reading Progress Bar زیر اسلاید فعال
  *   5. Quick-Read Overlay با excerpt
  *   6. Keyboard Navigation (←/→/Space)
@@ -43,16 +43,10 @@ import { formatRelativeTime } from '@/lib/utils';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
 import type { MarketRateItem } from '@/actions/marketTickerRates';
 import MarketRatesTickerBar from './MarketRatesTickerBar';
-import SentimentBadge from './SentimentBadge';
 import MagneticSpotlightCard from './MagneticSpotlightCard';
 import CompactRateBridge from './CompactRateBridge';
-import {
-  getCategoryTheme,
-  detectSentiment,
-  SENTIMENT_CONFIG,
-  type CategoryTheme,
-  type SentimentType,
-} from './categoryTheme';
+import { getCategoryTheme, type CategoryTheme } from './categoryTheme';
+import { Tag as TagIcon } from 'lucide-react';
 
 type Props = {
   initialPosts: PostWithRelations[];
@@ -113,13 +107,9 @@ export default function Design7({ initialPosts, rates, marketRates, rateLists, c
   const mainPost = initialPosts[activeIndex];
   const otherPosts = initialPosts.filter((_, i) => i !== activeIndex);
 
-  // تم و sentiment پست اصلی
+  // تم پست اصلی
   const mainTheme: CategoryTheme = useMemo(
     () => getCategoryTheme(mainPost.categories?.[0]?.slug, mainPost.categories?.[0]?.name),
-    [mainPost],
-  );
-  const mainSentiment: SentimentType = useMemo(
-    () => detectSentiment(mainPost.title, mainPost.excerpt),
     [mainPost],
   );
 
@@ -127,10 +117,6 @@ export default function Design7({ initialPosts, rates, marketRates, rateLists, c
   const sideThemes = useMemo(
     () =>
       otherPosts.map((p) => getCategoryTheme(p.categories?.[0]?.slug, p.categories?.[0]?.name)),
-    [otherPosts],
-  );
-  const sideSentiments = useMemo(
-    () => otherPosts.map((p) => detectSentiment(p.title, p.excerpt)),
     [otherPosts],
   );
 
@@ -204,7 +190,7 @@ export default function Design7({ initialPosts, rates, marketRates, rateLists, c
 
       {/* ─── Main Container ─── */}
       <div
-        className="relative rounded-3xl overflow-hidden bg-neutral-50 dark:bg-neutral-900"
+        className="relative rounded-3xl overflow-hidden bg-neutral-50 dark:bg-neutral-900 @container/main-hero"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
@@ -251,7 +237,7 @@ export default function Design7({ initialPosts, rates, marketRates, rateLists, c
                   key={mainPost.id}
                   tiltStrength={0.4}
                   enableHolographic
-                  className="relative group h-[360px] sm:h-[440px] lg:h-[520px] overflow-hidden rounded-2xl"
+                  className="relative group h-[min(60dvh,360px)] sm:h-[440px] @lg/main-hero:h-[520px] @3xl/main-hero:h-[560px] overflow-hidden rounded-2xl"
                   innerClassName="relative h-full"
                 >
                   <motion.div
@@ -306,8 +292,13 @@ export default function Design7({ initialPosts, rates, marketRates, rateLists, c
                       ویژه
                     </span>
 
-                    {/* Sentiment badge */}
-                    <SentimentBadge sentiment={mainSentiment} size="sm" />
+                    {/* Top tag — بج تگ اصلی پست (اگه تگی وجود داشته باشه) */}
+                    {mainPost.tags && mainPost.tags.length > 0 && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 backdrop-blur-md text-white text-[11px] sm:text-xs font-bold rounded-full border border-white/20 shadow-lg">
+                        <TagIcon className="w-3 h-3" />
+                        {mainPost.tags[0].name}
+                      </span>
+                    )}
                   </motion.div>
 
                   {/* Top-right: index counter + pause toggle */}
@@ -515,14 +506,13 @@ export default function Design7({ initialPosts, rates, marketRates, rateLists, c
             <div className="lg:col-span-4 flex flex-row lg:flex-col gap-2 sm:gap-3 p-2 sm:p-3 bg-neutral-100/80 dark:bg-neutral-950/80 backdrop-blur-sm">
               {otherPosts.slice(0, 2).map((post, i) => {
                 const theme = sideThemes[i];
-                const sentiment = sideSentiments[i];
                 return (
                   <motion.article
                     key={post.id}
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2 + i * 0.1 }}
-                    className="flex-1 h-[140px] sm:h-[170px] lg:h-auto lg:flex-1"
+                    className="flex-1 h-[140px] sm:h-[170px] @md/main-hero:flex-1 @lg/main-hero:h-auto"
                     onClick={() => setActiveIndex(initialPosts.findIndex((p) => p.id === post.id))}
                   >
                     <MagneticSpotlightCard
@@ -566,10 +556,15 @@ export default function Design7({ initialPosts, rates, marketRates, rateLists, c
 
                     {/* Top badges row */}
                     <div className="absolute top-2 start-2 end-2 z-10 flex items-center justify-between gap-1.5">
-                      <SentimentBadge sentiment={sentiment} size="sm" showLabel={false} />
+                      {post.tags && post.tags.length > 0 && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-white/10 backdrop-blur-md text-white text-[9px] font-bold rounded-md border border-white/20 shadow-md line-clamp-1 max-w-[60%]">
+                          <TagIcon className="w-2.5 h-2.5 shrink-0" />
+                          <span className="truncate">{post.tags[0].name}</span>
+                        </span>
+                      )}
                       {post.categories?.[0] && (
                         <span
-                          className={`px-2 py-0.5 ${theme.badge} text-white text-[9px] font-bold rounded-md shadow-md line-clamp-1 max-w-[60%]`}
+                          className={`px-2 py-0.5 ${theme.badge} text-white text-[9px] font-bold rounded-md shadow-md line-clamp-1 max-w-full`}
                         >
                           {post.categories[0].name}
                         </span>
@@ -619,17 +614,19 @@ export default function Design7({ initialPosts, rates, marketRates, rateLists, c
 
         {/* ─── Navigation Arrows ───
              چیدمان ریسپانسیو:
-             • موبایل (پیش‌فرض): دکمه‌ها 36px، کنار هم در پایین-وسط، فاصله از لبه 12px
+             • موبایل: دکمه‌ها 36px، در طرفین، کمی بالاتر از وسط (دور از متن پایین)
              • تبلت (sm 640px+): دکمه‌ها 44px، در طرفین، وسط عمودی
              • دسکتاپ (lg 1024px+): دکمه‌ها 48px، در طرفین با فاصله بیشتر
         */}
         <div
           className="absolute z-30 flex items-center pointer-events-none
-                     /* موبایل: پایین-وسط، دکمه‌ها کوچک */
-                     bottom-3 start-1/2 -translate-x-1/2 gap-2
-                     /* تبلت: طرفین، وسط عمودی */
-                     sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 sm:start-0 sm:end-0 sm:translate-x-0 sm:justify-between sm:gap-0 sm:px-3
-                     /* دسکتاپ: فاصله بیشتر از لبه */
+                     /* موبایل: طرفین، ~۴۰٪ از بالا — فاصله از CompactRateBridge بالا و متن پایین */
+                     top-[40%] -translate-y-1/2 start-0 end-0 justify-between px-2
+                     /* تبلت: وسط عمودی */
+                     sm:top-1/2
+                     /* تبلت: فاصله بیشتر از لبه */
+                     sm:px-3
+                     /* دسکتاپ: فاصله بیشتر */
                      lg:px-4"
         >
           <button

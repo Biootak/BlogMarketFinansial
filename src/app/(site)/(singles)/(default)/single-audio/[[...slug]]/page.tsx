@@ -53,20 +53,20 @@ const PageSingleAudio = ({}) => {
 
   return (
     <>
-      <div className={'relative pt-8 lg:pt-16'}>
+      <div className={'relative pt-8 lg:pt-16 @container/sa'}>
         {/* Overlay */}
         <div className="bg-primary-50 dark:bg-neutral-800 absolute top-0 inset-x-0 h-60 w-full" />
 
         {/* SINGLE_AUDIO HEADER */}
-        <header className="relative container ">
-          <div className="bg-white dark:bg-neutral-900 shadow-2xl px-5 py-7 md:p-11 rounded-2xl md:rounded-[40px] flex flex-col sm:flex-row items-center justify-center gap-10 sm:gap-11">
-            <div className="w-1/2 sm:w-1/4 flex-shrink-0">
+        <header className="relative container">
+          <div className="bg-white dark:bg-neutral-900 shadow-2xl px-5 py-7 md:p-11 rounded-2xl md:rounded-[40px] flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-10 @md/sa:gap-11">
+            <div className="w-1/2 sm:w-1/3 @md/sa:w-1/4 flex-shrink-0">
               {/* <ButtonPlayMusicPlayer
 								renderChildren={renderButtonPlay}
 								post={DEMO_POSTS_AUDIO[1]}
 							/> */}
             </div>
-            <div className="flex flex-col space-y-5">
+            <div className="flex flex-col space-y-5 w-full sm:w-auto">
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                 <div>
                   <Badge name="S1 EP. 128" />

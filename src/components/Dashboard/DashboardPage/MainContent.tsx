@@ -24,7 +24,9 @@ const MainContent: React.FC<MainContentProps> = ({ children }) => {
     duration: 0.25,
   };
 
-  // Calculate margin based on sidebar state
+  // Calculate margin based on sidebar state.
+  // On mobile the sidebar is an overlay, so we never need to reserve its width
+  // on the main content. On desktop the margin tracks the open/closed width.
   const marginRight = isMobile ? 0 : isOpen ? 260 : 76;
 
   return (

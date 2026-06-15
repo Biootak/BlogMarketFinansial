@@ -89,8 +89,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 rtl">
       {/* Profile Images */}
-      <div className="relative">
-        <div className="relative w-full h-44 rounded-2xl overflow-hidden group">
+      <div className="relative @container/profile-cover">
+        <div className="relative w-full h-40 sm:h-48 @md/profile-cover:h-56 rounded-2xl overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800" />
           {bgImagePreview && <Image src={bgImagePreview} alt="Background" fill sizes="100vw" className="object-cover" />}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300" />
@@ -102,9 +102,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
           </button>
           {!bgImagePreview && <div className="absolute inset-0 flex items-center justify-center"><span className="text-slate-400 dark:text-slate-500 text-sm">تصویر پس‌زمینه</span></div>}
         </div>
-        <div className="absolute -bottom-12 right-6">
+        <div className="absolute -bottom-10 sm:-bottom-12 end-4 sm:end-6">
           <div className="relative group">
-            <div className="w-28 h-28 rounded-2xl overflow-hidden border-4 border-white dark:border-slate-900 shadow-xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800">
+            <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-4 border-white dark:border-slate-900 shadow-xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800">
               {avatarPreview ? <Image src={avatarPreview} alt="Avatar" fill sizes="112px" className="object-cover" /> : <div className="w-full h-full flex items-center justify-center"><User className="w-10 h-10 text-slate-400 dark:text-slate-500" /></div>}
             </div>
             <button type="button" onClick={() => setIsAvatarDialogOpen(true)} className="absolute -bottom-2 -left-2 w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg shadow-blue-500/30 flex items-center justify-center hover:scale-110 transition-transform duration-200">

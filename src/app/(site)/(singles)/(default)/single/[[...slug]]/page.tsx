@@ -102,12 +102,12 @@ export default async function PageSingle({ params }: PageProps) {
       <div className="absolute inset-0 bg-gradient-to-b from-neutral-50 via-white to-neutral-50/50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950/50 pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,119,198,0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,119,198,0.15),transparent)] pointer-events-none" />
       
-      <div className="relative container pt-6 pb-12 lg:pt-8 lg:pb-16">
+      <div className="relative container pt-6 pb-12 lg:pt-8 lg:pb-16 @container/single-layout">
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
           {/* Main Content Area */}
-          <article className="w-full lg:w-[68%] xl:w-[70%]">
+          <article className="w-full @lg/single-layout:basis-[68%] @xl/single-layout:basis-[70%] grow-0 shrink">
             {/* Hero Image with Overlay */}
-            <div className="relative aspect-[16/9] lg:aspect-[21/9] rounded-2xl lg:rounded-3xl overflow-hidden mb-8 group">
+            <div className="relative aspect-[16/9] md:aspect-[16/9] @lg/single-layout:aspect-[21/9] rounded-2xl @lg/single-layout:rounded-3xl overflow-hidden mb-8 group">
               {/* Gradient Overlays */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10" />
               <div className="absolute inset-0 bg-gradient-to-br from-primary-600/10 via-transparent to-violet-600/10 z-10 mix-blend-overlay" />
@@ -132,7 +132,7 @@ export default async function PageSingle({ params }: PageProps) {
             </div>
 
             {/* Header Section */}
-            <div className="relative -mt-24 lg:-mt-32 z-20 mx-4 lg:mx-8">
+            <div className="relative -mt-16 sm:-mt-20 @lg/single-layout:-mt-24 @xl/single-layout:-mt-32 z-20 mx-3 sm:mx-4 @lg/single-layout:mx-6 @xl/single-layout:mx-8">
               <SingleHeader post={post} />
             </div>
 
@@ -143,7 +143,7 @@ export default async function PageSingle({ params }: PageProps) {
           </article>
 
           {/* Sidebar */}
-          <aside className="w-full lg:w-[32%] xl:w-[30%]">
+          <aside className="w-full @lg/single-layout:basis-[32%] @xl/single-layout:basis-[30%] grow-0 shrink">
             <div className="sticky top-24 space-y-8">
               {/* Sidebar Card Wrapper */}
               <div className="relative">

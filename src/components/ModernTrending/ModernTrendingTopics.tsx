@@ -292,7 +292,7 @@ const ModernTrendingTopics: FC<ModernTrendingTopicsProps> = ({
             <h2
               className={cn(
                 'flex flex-wrap items-center gap-x-2 gap-y-1',
-                'text-xl sm:text-2xl md:text-[26px] font-bold',
+                'text-xl sm:text-2xl @xl/bento:text-3xl font-bold',
                 'tracking-[-0.022em]',
                 'text-neutral-900 dark:text-neutral-50',
               )}
@@ -395,7 +395,7 @@ function BentoGrid({
   return (
     <div
       className={cn(
-        'grid gap-2.5 sm:gap-3',
+        'grid gap-2.5 sm:gap-3 @container/bento',
         // ۲ ستون موبایل، ۳ ستون تبلت، ۴ ستون دسکتاپ — auto-fit
         'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4',
         'auto-rows-[minmax(140px,_auto)]',
@@ -454,7 +454,7 @@ function FeaturedCard({
         <Link
           href={`/archive/category/${category.slug}`}
           className={cn(
-            'group/feat relative flex h-full min-h-[300px] sm:min-h-[340px] flex-col justify-between',
+            'group/feat relative flex h-full flex-1 min-h-[260px] @sm/bento:min-h-[300px] @xl/bento:min-h-[340px] flex-col justify-between',
             'rounded-2xl overflow-hidden p-5 sm:p-7',
             'border border-neutral-200/70 dark:border-neutral-800/70',
             'bg-neutral-900 dark:bg-neutral-50',

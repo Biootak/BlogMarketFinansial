@@ -72,13 +72,13 @@ const Footer = async () => {
         </motion.div>
 
         {/* Main Grid */}
-        <div className={['grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mb-16', space.gapLg].join(' ')}>
+        <div className={['grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 mb-16', space.gapLg].join(' ')}>
           {/* Brand Column */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="lg:col-span-1"
+            className="sm:col-span-2 md:col-span-2 lg:col-span-1"
           >
             <div className="space-y-6">
               <div className="flex items-center gap-4">

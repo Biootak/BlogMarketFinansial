@@ -209,8 +209,17 @@ const Sidebar = ({ userRole }: SidebarProps) => {
     return pathname.startsWith(href);
   };
 
-  // Calculate width based on state
-  const sidebarWidth = isMobile ? (isOpen ? 280 : 0) : (isOpen ? 260 : 76);
+  // Calculate width based on state.
+  // On mobile we clamp to 85vw so a 320px screen still leaves room for content;
+  // the sidebar is overlaid on top of the content (see layout) so it never
+  // coexists with the main content area on phones.
+  const sidebarWidth = isMobile
+    ? isOpen
+      ? 'min(280px, 85vw)'
+      : 0
+    : isOpen
+      ? 260
+      : 76;
 
   return (
     <>

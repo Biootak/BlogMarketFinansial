@@ -5,12 +5,12 @@ import React, { type ReactNode } from 'react';
 
 const layout = ({ children }: { children: ReactNode }) => {
   return (
-    <div className={`relative`}>
+    <div className={`relative @container/has-sidebar`}>
       {children}
 
-      <div className="container flex flex-col my-10 lg:flex-row ">
-        <div className="w-full lg:w-3/5 xl:w-2/3 xl:pe-20">{/* <SingleContent /> */}</div>
-        <div className="w-full mt-12 lg:mt-0 lg:w-2/5 lg:ps-10 xl:ps-0 xl:w-1/3">
+      <div className="container grid grid-cols-1 my-10 gap-y-12 @md/has-sidebar:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] @xl/has-sidebar:grid-cols-[2fr_1fr] @md/has-sidebar:gap-10 @xl/has-sidebar:gap-12 @xl/has-sidebar:pe-12">
+        <div className="w-full">{/* <SingleContent /> */}</div>
+        <div className="w-full @md/has-sidebar:ps-6 @xl/has-sidebar:ps-0">
           {/* <Sidebar /> */}
         </div>
       </div>

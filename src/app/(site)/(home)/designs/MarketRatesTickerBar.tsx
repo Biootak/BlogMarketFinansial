@@ -79,7 +79,7 @@ export default function MarketRatesTickerBar({
                     </span>
 
                     {/* Name (فارسی) */}
-                    <span className="hidden md:inline text-[10px] sm:text-[11px] text-neutral-500 dark:text-neutral-400 truncate max-w-[8rem]">
+                    <span className="hidden xs:inline sm:inline text-[10px] sm:text-[11px] text-neutral-500 dark:text-neutral-400 truncate max-w-[6rem] sm:max-w-[8rem]">
                       {rate.name}
                     </span>
 

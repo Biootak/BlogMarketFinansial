@@ -226,7 +226,9 @@ const Navigation = ({ className = '' }: NavigationProps): React.ReactElement => 
                   sideOffset={10}
                   asChild
                   className={cn(
-                    'min-w-[220px] p-1.5',
+                    // dropdown رو به اندازه‌ی محتوا نگه می‌داریم ولی
+                    // از viewport بیرون نمی‌زنه: min در rem، max برابر 90vw
+                    'min-w-[14rem] max-w-[min(90vw,18rem)] p-1.5',
                     'bg-white/95 dark:bg-neutral-900/95',
                     'backdrop-blur-2xl',
                     'border border-neutral-200/80 dark:border-neutral-800/80',
