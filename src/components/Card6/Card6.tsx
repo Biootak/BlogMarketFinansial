@@ -5,11 +5,11 @@ import type { PostWithRelations } from '@/types/types';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
 import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
 import Link from 'next/link';
-import Image from 'next/image';
 import { getPostLink } from '@/lib/getPostLink';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { heading, text, radius } from '@/lib/design-tokens';
+import { SafeImage } from '@/components/SafeImage';
 
 export interface Card6Props {
   className?: string;
@@ -37,12 +37,13 @@ export default function Card6({ className = '', post }: Card6Props) {
         {/* Mobile Layout: Full-width image with content overlay */}
         <div className="sm:hidden relative aspect-[16/10] w-full">
           <Link href={postLink} className="block absolute inset-0">
-            <Image
+            <SafeImage
               sizes="100vw"
               className="object-cover"
               fill
-              src={featuredImage || '/images/placeholder-large.png'}
+              src={featuredImage}
               alt={title}
+              ratio="16/10"
               priority={false}
             />
 
@@ -103,12 +104,13 @@ export default function Card6({ className = '', post }: Card6Props) {
             href={postLink}
             className="block relative flex-shrink-0 w-24 md:w-32 lg:w-36 xl:w-40 2xl:w-44 aspect-[5/3] rounded-xl overflow-hidden shadow-md group-hover:shadow-xl transition-shadow duration-300 ring-1 ring-neutral-200/50 dark:ring-neutral-700/50 group-hover:ring-primary-400/50 dark:group-hover:ring-primary-500/50 group-hover:ring-2"
           >
-            <Image
+            <SafeImage
               sizes="(max-width: 768px) 128px, (max-width: 1024px) 144px, (max-width: 1280px) 160px, 176px"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
               fill
-              src={featuredImage || '/images/placeholder-large.png'}
+              src={featuredImage}
               alt={title}
+              ratio="5/3"
               priority={false}
             />
 

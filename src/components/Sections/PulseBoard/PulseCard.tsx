@@ -15,7 +15,6 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { motion, useMotionValue, useSpring, useReducedMotion } from 'framer-motion';
 import { Clock, Eye, MessageCircle, ArrowLeft } from 'lucide-react';
@@ -24,6 +23,7 @@ import { cn, toPersianNumber, formatNumber } from '@/lib/utils';
 import { getPostLink } from '@/lib/getPostLink';
 import { getCategoryAccent } from '@/components/Sections/effects/categoryAccent';
 import { STRIPE_EASE } from '@/lib/motion';
+import { SafeImage } from '@/components/SafeImage';
 
 interface PulseCardProps {
   post: PostWithRelations;
@@ -180,15 +180,17 @@ export function PulseCard({
             isLg ? 'aspect-[16/10]' : 'aspect-[16/9]',
           )}
         >
-          <Image
-            src={featuredImage || '/images/placeholder-large.png'}
+          <SafeImage
+            src={featuredImage}
             alt={title}
             fill
             sizes="(min-width: 1280px) 50vw, (min-width: 768px) 70vw, 100vw"
+            containerClassName="absolute inset-0"
             className={cn(
               'object-cover transition-transform duration-700 ease-out',
               !reduce && 'group-hover/pulse:scale-[1.05]',
             )}
+            ratio={isLg ? '16/10' : '16/9'}
             priority={isLg}
           />
 

@@ -1,8 +1,8 @@
 import type React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import type { PostWithRelations, TaxonomyType } from '@/types/types';
 import { getPostLink } from '@/lib/getPostLink';
+import { SafeImage } from '@/components/SafeImage';
 import { HiArrowLeft, HiOutlineClock, HiOutlineEye, HiOutlineChatBubbleLeftRight } from 'react-icons/hi2';
 import { BsFolder2Open, BsTag } from 'react-icons/bs';
 
@@ -73,26 +73,15 @@ const ArchiveCard11: React.FC<ArchiveCard11Props> = ({
         className="block arc-card-media relative focus:outline-none"
         aria-label={title}
       >
-        {featuredImage ? (
-          <Image
-            src={
-              featuredImage.startsWith('/') || featuredImage.startsWith('http')
-                ? featuredImage
-                : `/${featuredImage}`
-            }
-            alt={title || ''}
-            fill
-            sizes="(min-width: 1280px) 360px, (min-width: 768px) 33vw, 100vw"
-            className="object-cover"
-            loading={priority ? 'eager' : 'lazy'}
-            priority={priority}
-            unoptimized={featuredImage.includes('.svg')}
-          />
-        ) : (
-          <div className="absolute inset-0 grid place-items-center text-neutral-400 dark:text-neutral-600 text-xs">
-            تصویری موجود نیست
-          </div>
-        )}
+        <SafeImage
+          src={featuredImage}
+          alt={title || ''}
+          ratio={mediaRatio.replace('aspect-', '').replace('[', '').replace(']', '')}
+          containerClassName="absolute inset-0"
+          sizes="(min-width: 1280px) 360px, (min-width: 768px) 33vw, 100vw"
+          priority={priority}
+          className="object-cover"
+        />
         <div className="arc-card-media-overlay" />
 
         {primaryCategory && (
