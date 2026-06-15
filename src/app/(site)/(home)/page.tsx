@@ -133,10 +133,10 @@ export default async function Home() {
         </Suspense>
       </div>
 
-      {/* First Ad */}
+      {/* First Ad — spotlight hero */}
       {firstAd && (
         <div className="container relative mt-8 lg:mt-12">
-          <SectionAds className="" ad={firstAd} />
+          <SectionAds className="" ad={firstAd} variant="spotlight" />
         </div>
       )}
 
@@ -147,10 +147,10 @@ export default async function Home() {
         </div>
       )}
 
-      {/* Second Ad */}
+      {/* Second Ad — rich split card */}
       {secondAd && (
         <div className="container relative mt-8 lg:mt-12">
-          <SectionAds className="" ad={secondAd} />
+          <SectionAds className="" ad={secondAd} variant="rich" />
         </div>
       )}
 

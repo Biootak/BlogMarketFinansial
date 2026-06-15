@@ -1,25 +1,16 @@
-'use client';
-
-import type React from 'react';
 import BannerADS from './BannerADS';
 import type { Advertisement } from '@/types/types';
 
 interface LargeAdProps {
   ad: Advertisement;
   className?: string;
+  variant?: 'image' | 'spotlight' | 'rich' | 'minimal';
 }
 
-const LargeAd: React.FC<LargeAdProps> = ({ ad, className = '' }) => {
+export default function LargeAd({ ad, className = '', variant = 'image' }: LargeAdProps) {
   return (
     <div className={`nc-LargeAd ${className}`}>
-      <BannerADS
-        ad={ad}
-        className="w-full"
-        showAdLabel={false}
-        imageOnly={true}
-      />
+      <BannerADS ad={ad} className="w-full" variant={variant} />
     </div>
   );
-};
-
-export default LargeAd;
+}

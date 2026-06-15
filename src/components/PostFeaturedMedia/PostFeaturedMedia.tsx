@@ -102,16 +102,6 @@ const PostFeaturedMedia: FC<PostFeaturedMediaProps> = ({
       )}
 
       {renderContent}
-      {postType !== 'GALLERY' && (
-        <Link
-          href={postLink}
-          className={`block absolute inset-0 ${
-            postType === 'STANDARD'
-              ? 'bg-black/20 transition-opacity opacity-0 group-hover:opacity-100'
-              : ''
-          }`}
-        />
-      )}
     </div>
   );
 };

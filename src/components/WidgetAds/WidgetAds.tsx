@@ -20,7 +20,7 @@ const WidgetAds: React.FC<WidgetAdsProps> = ({ className = '', ads = [] }) => {
       <div className="flex flex-col w-full gap-4">
         {lastThreeAds.map((ad, index) => (
           <div key={index} className="w-full">
-            <BannerAds ad={ad} imageOnly={true} className="w-full" />
+            <BannerAds ad={ad} variant="minimal" className="w-full" />
           </div>
         ))}
       </div>
