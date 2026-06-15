@@ -6,6 +6,8 @@ import SocialLinks from '@/components/SocialsList/SocialLinks';
 import Logo from '@/components/Logo/Logo';
 import { Mail, Phone, ArrowUpLeft } from 'lucide-react';
 import { heading, text, space, radius } from '@/lib/design-tokens';
+import type { Advertisement } from '@/types/types';
+import BannerAds from '@/components/BannerADS/BannerADS';
 
 interface WidgetFooterMenu {
   id: string;
@@ -35,7 +37,11 @@ const widgetMenus: WidgetFooterMenu[] = [
   },
 ];
 
-const Footer = () => {
+interface FooterProps {
+  footerAd?: Advertisement | null;
+}
+
+const Footer = ({ footerAd }: FooterProps) => {
   const siteName = 'بیوتاک';
 
   return (
@@ -46,7 +52,19 @@ const Footer = () => {
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl" />
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent" />
 
-      <div className="container relative z-10 pt-20 pb-8">
+      {footerAd && (
+        <div className="relative z-10 pt-10 pb-2">
+          <div className="container max-w-4xl">
+            <div className="relative group rounded-3xl overflow-hidden shadow-lg hover:shadow-[0_20px_50px_rgba(99,102,241,0.15)] transition-all duration-500 border border-slate-200/40 dark:border-neutral-800/80 bg-white/30 dark:bg-neutral-900/30 backdrop-blur-xl">
+              <div className="absolute inset-0 bg-gradient-to-tr from-primary-500/5 via-transparent to-violet-500/5 opacity-40 pointer-events-none" />
+              <div className="absolute inset-0 border border-primary-500/0 group-hover:border-primary-500/20 rounded-3xl transition-colors duration-500 pointer-events-none" />
+              <BannerAds ad={footerAd} variant="rich" className="!border-0 !bg-transparent !shadow-none !backdrop-blur-none" />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="container relative z-10 pt-10 pb-8">
         {/* Social Section */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}

@@ -95,6 +95,13 @@ export default async function PageSingle({ params }: PageProps) {
     orderBy: 'createdAt',
     orderDirection: 'desc',
   });
+  const inContentAdsResult = await getActiveAdvertisements({
+    limit: 1,
+    position: 'IN_CONTENT',
+    orderBy: 'createdAt',
+    orderDirection: 'desc',
+  });
+  const inContentAd = inContentAdsResult.success && inContentAdsResult.data?.[0] ? inContentAdsResult.data[0] : null;
 
   return (
     <div className="nc-PageSingle relative min-h-screen">
@@ -138,7 +145,7 @@ export default async function PageSingle({ params }: PageProps) {
 
             {/* Content */}
             <div className="mt-8 lg:mt-10">
-              <SingleContent post={post} />
+              <SingleContent post={post} inContentAd={inContentAd} />
             </div>
           </article>
 

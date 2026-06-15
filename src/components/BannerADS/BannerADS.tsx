@@ -15,15 +15,15 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef, type CSSProperties } from 'react';
+import { useRef, useState, useEffect, type CSSProperties } from 'react';
 import {
   ArrowUpLeft,
   ExternalLink,
   Sparkles,
   Radio,
-  Eye,
   Calendar,
-  Zap,
+  Eye,
+  TrendingUp,
 } from 'lucide-react';
 import SafeImage from '@/components/SafeImage/SafeImage';
 import { cn, toPersianNumber, parseCustomDimensions } from '@/lib/utils';
@@ -226,44 +226,43 @@ function BannerCta({
 }
 
 function Sparkline() {
-  // Mini sparkline SVG که نشون‌دهنده «رشد» هست — برای حس داده‌محور بودن تبلیغ
   return (
     <svg
-      width="84"
-      height="28"
-      viewBox="0 0 84 28"
+      width="80"
+      height="24"
+      viewBox="0 0 80 24"
       fill="none"
       className="overflow-visible"
       aria-hidden
     >
       <defs>
         <linearGradient id="ad-spark-grad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="rgb(94 106 230)" stopOpacity="0.5" />
+          <stop offset="0%" stopColor="rgb(94 106 230)" stopOpacity="0.4" />
           <stop offset="100%" stopColor="rgb(94 106 230)" stopOpacity="0" />
         </linearGradient>
       </defs>
       <path
-        d="M2 22 L12 18 L22 20 L32 14 L42 16 L52 8 L62 11 L72 4 L82 6"
+        d="M2 18 C 10 12, 15 20, 25 10 C 35 0, 40 16, 50 8 C 60 0, 65 14, 78 4"
         stroke="rgb(94 106 230)"
-        strokeWidth="1.5"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
         fill="none"
       />
       <path
-        d="M2 22 L12 18 L22 20 L32 14 L42 16 L52 8 L62 11 L72 4 L82 6 L82 28 L2 28 Z"
+        d="M2 18 C 10 12, 15 20, 25 10 C 35 0, 40 16, 50 8 C 60 0, 65 14, 78 4 L 78 24 L 2 24 Z"
         fill="url(#ad-spark-grad)"
       />
-      <circle cx="82" cy="6" r="2.5" fill="rgb(94 106 230)">
+      <circle cx="78" cy="4" r="3" fill="rgb(94 106 230)">
         <animate
           attributeName="r"
-          values="2.5;4;2.5"
+          values="3;5;3"
           dur="2s"
           repeatCount="indefinite"
         />
         <animate
           attributeName="opacity"
-          values="1;0.5;1"
+          values="1;0.4;1"
           dur="2s"
           repeatCount="indefinite"
         />
@@ -312,6 +311,30 @@ export default function BannerAds({
   const showcaseParallax = useMouseParallax<HTMLDivElement>();
   const imageLinkParallax = useMouseParallax<HTMLAnchorElement>();
   const richParallax = useMouseParallax<HTMLDivElement>();
+
+  const [viewsCount, setViewsCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!ad?.id) return;
+    const recordView = async () => {
+      try {
+        const res = await fetch('/api/pageview', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ page: `ad:${ad.id}` }),
+        });
+        const data = await res.json();
+        if (data.success && typeof data.views === 'number') {
+          setViewsCount(data.views);
+        }
+      } catch (err) {
+        console.error('Failed to record ad view:', err);
+      }
+    };
+    recordView();
+  }, [ad?.id]);
 
   /* ------------------------------------------------------------------- */
   /*  Showcase — full-bleed editorial hero (the showpiece)               */
@@ -371,7 +394,7 @@ export default function BannerAds({
               </div>
             )}
 
-            <div className="relative z-10 grid grid-cols-1 md:grid-cols-[1.2fr_1fr] gap-6 md:gap-10 lg:gap-12 items-center p-6 sm:p-8 md:p-10 lg:p-12">
+            <div className="relative z-10 grid grid-cols-1 md:grid-cols-[1.2fr_1fr] gap-5 md:gap-7 items-center p-5 sm:p-6 md:p-8">
               {/* Image با mask reveal + hover zoom */}
               <div className="order-1 md:order-none">
                 <div
@@ -379,7 +402,7 @@ export default function BannerAds({
                     'relative w-full overflow-hidden rounded-2xl',
                     'ring-1 ring-[color:var(--hairline)]',
                     'shadow-[0_10px_40px_-12px_rgba(0,0,0,0.25)]',
-                    'aspect-[16/9] md:aspect-[16/10]',
+                    'aspect-[16/8] md:aspect-[16/9]',
                   )}
                 >
                   <div className="absolute inset-0 ad-mask-reveal">
@@ -387,7 +410,7 @@ export default function BannerAds({
                       src={imageUrl}
                       alt={title}
                       variant="hero"
-                      ratio="16/10"
+                      ratio="16/9"
                       sizes="(max-width: 768px) 100vw, 60vw"
                       priority={isLcp}
                       fill
@@ -404,20 +427,11 @@ export default function BannerAds({
                         'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.15) 100%)',
                     }}
                   />
-
-                  {/* Floating metric chip — روی تصویر، گوشه پایین-چپ (start) */}
-                  <div className="absolute bottom-3 start-3 sm:bottom-4 sm:start-4 z-20 flex items-center gap-2 rounded-full bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border border-[color:var(--hairline)] px-2.5 py-1.5 shadow-sm">
-                    <Zap className="h-3 w-3 text-amber-500" strokeWidth={2.5} aria-hidden />
-                    <span className="text-[10px] font-bold text-neutral-900 dark:text-white tabular-nums">
-                      <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>+۱۲۸٪</span>
-                    </span>
-                    <span className="text-[10px] text-neutral-500 dark:text-neutral-400">رشد</span>
-                  </div>
                 </div>
               </div>
 
               {/* Content */}
-              <div className="flex flex-col gap-3 sm:gap-4 min-w-0">
+              <div className="flex flex-col gap-2.5 sm:gap-3.5 min-w-0">
                 {showTitleResolved && (
                   <h2 className="text-2xl sm:text-3xl md:text-[32px] lg:text-[36px] font-semibold tracking-[-0.02em] leading-[1.1] text-neutral-900 dark:text-white line-clamp-2 text-balance">
                     {title}
@@ -430,19 +444,22 @@ export default function BannerAds({
                   </p>
                 )}
 
-                {/* Sparkline — سیگنال «زنده» / داده‌محور */}
-                <div className="flex items-center gap-3 pt-1">
-                  <Sparkline />
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-primary-500 dark:text-primary-300">
-                      روند ۷ روز اخیر
-                    </span>
-                    <span className="text-[11px] text-neutral-500 dark:text-neutral-400 tabular-nums">
-                      <Eye className="inline h-3 w-3 ms-1" strokeWidth={2.25} aria-hidden />
-                      <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>۱۲,۴۸۷</span> بازدید
-                    </span>
+                {/* Sparkline — سیگنال واقعی «زنده» / داده‌محور */}
+                {viewsCount !== null && (
+                  <div className="flex items-center gap-4 py-1.5 animate-fade-in">
+                    <Sparkline />
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[10px] uppercase tracking-[0.15em] font-bold text-primary-500 dark:text-primary-400 flex items-center gap-1">
+                        <TrendingUp className="h-3 w-3 text-emerald-500" />
+                        روند بازدید زنده
+                      </span>
+                      <span className="text-[11.5px] font-semibold text-neutral-600 dark:text-neutral-300 tabular-nums flex items-center gap-1.5">
+                        <Eye className="inline h-3.5 w-3.5 text-neutral-400 dark:text-neutral-500" strokeWidth={2.25} aria-hidden />
+                        <span>{toPersianNumber(viewsCount)}</span> بازدید واقعی
+                      </span>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Meta row — تاریخ + spacer */}
                 <div className="flex items-center gap-2 text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
@@ -645,14 +662,14 @@ export default function BannerAds({
           }}
         />
 
-        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-5 sm:gap-6 md:gap-8 items-center p-5 sm:p-6 md:p-7">
+        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-4 sm:gap-5 items-center p-4 sm:p-5 md:p-6">
           {/* Image — با hover scale 1.04 و ring glow */}
-          <div className="relative w-full sm:w-64 md:w-72 lg:w-80 aspect-[16/10] overflow-hidden rounded-2xl ring-1 ring-[color:var(--hairline)] shadow-sm transition-all duration-500 group-hover:ring-primary-500/30">
+          <div className="relative w-full sm:w-64 md:w-72 lg:w-80 aspect-[16/9] overflow-hidden rounded-2xl ring-1 ring-[color:var(--hairline)] shadow-sm transition-all duration-500 group-hover:ring-primary-500/30">
             <SafeImage
               src={imageUrl}
               alt={title}
               variant="card"
-              ratio="16/10"
+              ratio="16/9"
               sizes="(max-width: 640px) 100vw, 320px"
               fill
               className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"

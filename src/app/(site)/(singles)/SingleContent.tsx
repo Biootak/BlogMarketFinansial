@@ -1,12 +1,13 @@
-import type { PostWithRelations } from '@/types/types';
+import type { PostWithRelations, Advertisement } from '@/types/types';
 import SingleContentClient from './SingleContentClient';
 import getCurrentUser from '@/lib/current-user';
 
 interface SingleContentProps {
   post: PostWithRelations;
+  inContentAd?: Advertisement | null;
 }
 
-const SingleContent = async ({ post }: SingleContentProps) => {
+const SingleContent = async ({ post, inContentAd }: SingleContentProps) => {
   const user = await getCurrentUser();
   const currentUserId = user?.id;
 
@@ -23,6 +24,7 @@ const SingleContent = async ({ post }: SingleContentProps) => {
       initialLiked={isLiked}
       initialLikeCount={likeCount}
       commentCount={commentCount}
+      inContentAd={inContentAd}
     />
   );
 };

@@ -8,9 +8,10 @@ import SingleCommentLists from './SingleCommentLists';
 import useIntersectionObserver from '@/hooks/useIntersectionObserver';
 import PostCardCommentBtn from '@/components/PostCardCommentBtn/PostCardCommentBtn';
 import { HiArrowUp, HiHashtag, HiChatBubbleLeftRight } from 'react-icons/hi2';
-import type { PostWithRelations } from '@/types/types';
+import type { PostWithRelations, Advertisement } from '@/types/types';
 import MarkdownRenderer from './MarkdownRenderer';
 import EditorContentRenderer from '@/components/Editor1/EditorContentRenderer';
+import BannerAds from '@/components/BannerADS/BannerADS';
 import '@/components/Editor1/styles/renderer.scss';
 import { HiShare } from 'react-icons/hi2';
 import { getPostLink } from '@/lib/getPostLink';
@@ -21,11 +22,13 @@ interface SingleContentClientProps {
   initialLiked: boolean;
   initialLikeCount: number;
   commentCount: number;
+  inContentAd?: Advertisement | null;
 }
 
 const SingleContentClient = ({
   post,
   commentCount,
+  inContentAd,
 }: SingleContentClientProps) => {
   // ساخت URL کامل پست
   const getFullUrl = useCallback(() => {
@@ -105,6 +108,32 @@ const SingleContentClient = ({
                   try {
                     const parsed = JSON.parse(content);
                     if (parsed && parsed.type === 'doc') {
+                      if (inContentAd && Array.isArray(parsed.content)) {
+                        let paragraphCount = 0;
+                        let insertIndex = -1;
+                        for (let i = 0; i < parsed.content.length; i++) {
+                          if (parsed.content[i].type === 'paragraph') {
+                            paragraphCount++;
+                            if (paragraphCount === 3) {
+                              insertIndex = i + 1;
+                              break;
+                            }
+                          }
+                        }
+                        if (insertIndex !== -1 && insertIndex < parsed.content.length) {
+                          const part1 = { ...parsed, content: parsed.content.slice(0, insertIndex) };
+                          const part2 = { ...parsed, content: parsed.content.slice(insertIndex) };
+                          return (
+                            <div className="space-y-6">
+                              <EditorContentRenderer content={part1} />
+                              <div className="my-6">
+                                <BannerAds ad={inContentAd} variant="rich" />
+                              </div>
+                              <EditorContentRenderer content={part2} />
+                            </div>
+                          );
+                        }
+                      }
                       return <EditorContentRenderer content={parsed} />;
                     }
                   } catch {
@@ -113,6 +142,30 @@ const SingleContentClient = ({
                   
                   if (content.trim().startsWith('<')) {
                     const { sanitizeHtml } = require('@/lib/utils');
+                    if (inContentAd) {
+                      const paragraphs = content.split('</p>');
+                      if (paragraphs.length > 3) {
+                        const part1 = paragraphs.slice(0, 3).join('</p>') + '</p>';
+                        const part2 = paragraphs.slice(3).join('</p>');
+                        return (
+                          <div className="space-y-6">
+                            <div 
+                              className="editor-content prose lg:prose-lg dark:prose-invert prose-headings:text-neutral-900 dark:prose-headings:text-white prose-p:text-neutral-700 dark:prose-p:text-neutral-300 prose-a:text-primary-600 dark:prose-a:text-primary-400 prose-strong:text-neutral-900 dark:prose-strong:text-white"
+                              // biome-ignore lint/security/noDangerouslySetInnerHtml: Content is sanitized with DOMPurify
+                              dangerouslySetInnerHTML={{ __html: sanitizeHtml(part1) }}
+                            />
+                            <div className="my-6">
+                              <BannerAds ad={inContentAd} variant="rich" />
+                            </div>
+                            <div 
+                              className="editor-content prose lg:prose-lg dark:prose-invert prose-headings:text-neutral-900 dark:prose-headings:text-white prose-p:text-neutral-700 dark:prose-p:text-neutral-300 prose-a:text-primary-600 dark:prose-a:text-primary-400 prose-strong:text-neutral-900 dark:prose-strong:text-white"
+                              // biome-ignore lint/security/noDangerouslySetInnerHtml: Content is sanitized with DOMPurify
+                              dangerouslySetInnerHTML={{ __html: sanitizeHtml(part2) }}
+                            />
+                          </div>
+                        );
+                      }
+                    }
                     return (
                       <div 
                         className="editor-content prose lg:prose-lg dark:prose-invert prose-headings:text-neutral-900 dark:prose-headings:text-white prose-p:text-neutral-700 dark:prose-p:text-neutral-300 prose-a:text-primary-600 dark:prose-a:text-primary-400 prose-strong:text-neutral-900 dark:prose-strong:text-white"
@@ -122,6 +175,27 @@ const SingleContentClient = ({
                     );
                   }
                   
+                  if (inContentAd) {
+                    const paragraphs = content.split(/\n\s*\n/);
+                    if (paragraphs.length > 3) {
+                      const part1 = paragraphs.slice(0, 3).join('\n\n');
+                      const part2 = paragraphs.slice(3).join('\n\n');
+                      return (
+                        <div className="space-y-6">
+                          <div className="prose lg:prose-lg dark:prose-invert prose-headings:text-neutral-900 dark:prose-headings:text-white prose-p:text-neutral-700 dark:prose-p:text-neutral-300">
+                            <MarkdownRenderer content={part1} />
+                          </div>
+                          <div className="my-6">
+                            <BannerAds ad={inContentAd} variant="rich" />
+                          </div>
+                          <div className="prose lg:prose-lg dark:prose-invert prose-headings:text-neutral-900 dark:prose-headings:text-white prose-p:text-neutral-700 dark:prose-p:text-neutral-300">
+                            <MarkdownRenderer content={part2} />
+                          </div>
+                        </div>
+                      );
+                    }
+                  }
+
                   return (
                     <div className="prose lg:prose-lg dark:prose-invert prose-headings:text-neutral-900 dark:prose-headings:text-white prose-p:text-neutral-700 dark:prose-p:text-neutral-300">
                       <MarkdownRenderer content={content} />

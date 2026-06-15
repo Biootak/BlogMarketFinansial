@@ -21,6 +21,7 @@ import { getArchivePosts } from '@/actions/postActions';
 import { getCategories } from '@/actions/categoryActions';
 import { getTags } from '@/actions/getTags';
 import { getTopAuthors } from '@/actions/getTopAuthors';
+import { getActiveAdvertisements } from '@/actions/advertisementActions';
 import Image from 'next/image';
 import ModalCategories from '../../ModalCategories';
 import ModalTags from '../../ModalTags';
@@ -92,7 +93,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
     notFound();
   }
 
-  const [postsResult, categoriesResult, tagsResult, topAuthorsResult] = await Promise.all([
+  const [postsResult, categoriesResult, tagsResult, topAuthorsResult, betweenPostsAdsResult] = await Promise.all([
     getArchivePosts(
       currentPage,
       limit,
@@ -105,12 +106,19 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
     getCategories({ limit: 10, page: 1 }),
     getTags({ limit: 10, page: 1 }),
     getTopAuthors(5),
+    getActiveAdvertisements({
+      limit: 1,
+      position: 'BETWEEN_POSTS',
+      orderBy: 'createdAt',
+      orderDirection: 'desc',
+    }),
   ]);
 
   const { posts, total, pages } = postsResult.data || { posts: [], total: 0, pages: 0 };
   const categories = categoriesResult.data?.categories || [];
   const tags = tagsResult.data?.tags || [];
   const topAuthors = topAuthorsResult || [];
+  const betweenPostsAd = betweenPostsAdsResult.success && betweenPostsAdsResult.data?.[0] ? betweenPostsAdsResult.data[0] : null;
 
   const selectedCategory =
     type === 'category' ? categories.find((cat) => cat.slug === category) : null;
@@ -415,7 +423,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
 
       {/* Posts Grid */}
       <div className="container">
-        {posts.length > 0 ? <AnimatedPostGrid posts={posts} /> : <Empty />}
+        {posts.length > 0 ? <AnimatedPostGrid posts={posts} betweenPostsAd={betweenPostsAd} /> : <Empty />}
 
         {posts.length > 0 && (
           <div className="flex justify-center mt-12 mb-8">

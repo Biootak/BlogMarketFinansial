@@ -1,12 +1,14 @@
 'use client';
 
-import type React from 'react';
+import React, { Fragment } from 'react';
 import { motion } from '@/lib/motion-shim';
 import Card11 from '@/components/Card11/Card11';
-import type { PostWithRelations } from '@/types/types';
+import type { PostWithRelations, Advertisement } from '@/types/types';
+import BannerAds from '@/components/BannerADS/BannerADS';
 
 type AnimatedPostGridProps = {
   posts: PostWithRelations[];
+  betweenPostsAd?: Advertisement | null;
 };
 
 const containerVariants = {
@@ -34,7 +36,7 @@ const itemVariants = {
   },
 };
 
-const AnimatedPostGrid: React.FC<AnimatedPostGridProps> = ({ posts }) => {
+const AnimatedPostGrid: React.FC<AnimatedPostGridProps> = ({ posts, betweenPostsAd }) => {
   return (
     <motion.div
       className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6 lg:gap-7"
@@ -43,18 +45,27 @@ const AnimatedPostGrid: React.FC<AnimatedPostGridProps> = ({ posts }) => {
       animate="visible"
     >
       {posts.map((post, index) => (
-        <motion.div
-          key={post.id}
-          variants={itemVariants}
-          whileHover={{ 
-            y: -8,
-            transition: { type: 'spring', stiffness: 300, damping: 20 }
-          }}
-          whileTap={{ scale: 0.98 }}
-          className="group"
-        >
-          <Card11 post={post} />
-        </motion.div>
+        <Fragment key={post.id}>
+          {betweenPostsAd && index === 4 && (
+            <motion.div
+              variants={itemVariants}
+              className="col-span-full my-4"
+            >
+              <BannerAds ad={betweenPostsAd} variant="rich" />
+            </motion.div>
+          )}
+          <motion.div
+            variants={itemVariants}
+            whileHover={{ 
+              y: -8,
+              transition: { type: 'spring', stiffness: 300, damping: 20 }
+            }}
+            whileTap={{ scale: 0.98 }}
+            className="group"
+          >
+            <Card11 post={post} />
+          </motion.div>
+        </Fragment>
       ))}
     </motion.div>
   );
