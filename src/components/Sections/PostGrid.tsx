@@ -37,6 +37,7 @@ import Empty from '../Empty';
 
 interface PostGridProps {
   posts: PostWithRelations[];
+  ads?: import('@/types/types').Advertisement[];
   onLoadMore: () => void;
   isLoading: boolean;
   hasMore: boolean;
@@ -50,6 +51,7 @@ type ViewMode = (typeof VIEW_MODES)[number];
 
 export default function PostGrid({
   posts,
+  ads = [],
   onLoadMore,
   isLoading,
   hasMore,
@@ -93,7 +95,7 @@ export default function PostGrid({
   if (viewMode === 'compact') {
     return (
       <div className="space-y-8">
-        <PostsList posts={posts} />
+        <PostsList posts={posts} ads={ads} />
 
         {/* Sentinel + footer status */}
         {posts.length > 0 && (

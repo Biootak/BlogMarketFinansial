@@ -641,6 +641,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
                       {posts[category] && posts[category].length > 0 ? (
                         <PostGrid
                           posts={posts[category]}
+                          ads={ads}
                           onLoadMore={loadMorePosts}
                           isLoading={isLoading}
                           hasMore={hasMore[category] ?? false}

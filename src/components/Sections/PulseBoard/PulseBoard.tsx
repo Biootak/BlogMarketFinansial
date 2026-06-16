@@ -678,7 +678,7 @@ export function PulseBoard({
             >
               <span>مشاهده آرشیو کامل</span>
               <ArrowLeft
-                className="h-3.5 w-3.5 transition-transform duration-300 group-hover/all:-translate-x-1 rtl:rotate-180"
+                className="h-3.5 w-3.5 transition-transform duration-300 group-hover/all:translate-x-1"
                 strokeWidth={2.5}
                 aria-hidden
               />
