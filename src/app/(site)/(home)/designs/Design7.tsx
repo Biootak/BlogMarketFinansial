@@ -684,8 +684,10 @@ export default function Design7({ initialPosts, rates, marketRates, rateLists, c
                 key={post.id}
                 onClick={() => setActiveIndex(i)}
                 aria-label={`رفتن به اسلاید ${i + 1}`}
-                className={`group relative h-2 min-h-[24px] min-w-[24px] rounded-full transition-all duration-300 ${
-                  i === activeIndex ? 'w-10' : 'w-2 bg-neutral-300 dark:bg-neutral-700 hover:bg-neutral-400 dark:hover:bg-neutral-600'
+                className={`group relative h-2 rounded-full transition-all duration-300 ${
+                  i === activeIndex
+                    ? 'w-10'
+                    : 'w-2 bg-neutral-300 dark:bg-neutral-700 hover:bg-neutral-400 dark:hover:bg-neutral-600'
                 }`}
               >
                 {i === activeIndex && theme && (

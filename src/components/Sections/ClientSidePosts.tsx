@@ -319,11 +319,11 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
                       strokeWidth={1.75}
                     />
                     <span
-                      className="pointer-events-none absolute -end-1 -top-1 inline-flex h-3 w-3 items-center justify-center"
+                      className="pointer-events-none absolute -end-1 -top-1 inline-flex h-3 w-3 items-center justify-center overflow-hidden rounded-full"
                       aria-hidden
                     >
                       <span
-                        className="absolute inset-0 inline-flex h-full w-full animate-ping rounded-full opacity-60"
+                        className="absolute inset-0 inline-flex h-3 w-3 animate-ping rounded-full opacity-60"
                         style={{ backgroundColor: accent.color }}
                       />
                       <span
