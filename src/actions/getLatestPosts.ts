@@ -38,8 +38,21 @@ async function fetchLatestPosts(
     try {
       const whereClause = {
         status: PostStatus.PUBLISHED,
-        // فقط پست‌هایی که تصویر شاخص معتبر دارن — برای زیبایی بخش «آخرین مقالات»
-        featuredImage: { not: null },
+        featuredImage: {
+          not: null,
+        },
+        AND: [
+          {
+            featuredImage: {
+              not: '',
+            },
+          },
+          {
+            featuredImage: {
+              not: ' ',
+            },
+          },
+        ],
         ...(category && category !== 'همه'
           ? {
               categories: {

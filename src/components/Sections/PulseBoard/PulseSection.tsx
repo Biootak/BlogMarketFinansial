@@ -5,6 +5,7 @@ import { getLatestPostCategories } from '@/actions/getLatestPostCategories';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Advertisement, PostWithRelations } from '@/types/types';
 import type { MarketTickerItem } from '@/actions/marketTickerActions';
+import prisma from '@/lib/db';
 import PulseBoard from './PulseBoard';
 
 export interface PulseSectionProps {
@@ -31,20 +32,41 @@ function dedupeById(posts: PostWithRelations[]): PostWithRelations[] {
 export default async function PulseSection({ className = '' }: PulseSectionProps) {
   // 1) Categories — for filter chips
   const categoriesData = await getLatestPostCategories();
-  const categoryNames: string[] = ['همه', ...categoriesData.map((c) => c.name)];
+  const categories = [
+    { name: 'همه', slug: 'all' },
+    ...categoriesData.map((c) => ({ name: c.name, slug: c.slug })),
+  ];
 
   // 2) Posts — یک صفحه‌ی بزرگ برای بازطراحی
   const INITIAL = 24;
 
   // 3) Ticker + Ads + Posts (موازی)
-  const [tickerData, adsResult, latestPosts] = await Promise.all([
+  const [tickerData, adsResult, latestPosts, totalCount] = await Promise.all([
     getMarketTickerData(),
     getActiveAdvertisements({ limit: 2, size: 'MEDIUM' }),
     getLatestPosts({ count: INITIAL, skip: 0 }),
+    prisma.post.count({
+      where: {
+        status: 'PUBLISHED',
+        featuredImage: {
+          not: null,
+        },
+        AND: [
+          {
+            featuredImage: {
+              not: '',
+            },
+          },
+          {
+            featuredImage: {
+              not: ' ',
+            },
+          },
+        ],
+      },
+    }),
   ]);
 
-  // برای total فعلاً از همون length استفاده می‌کنیم (انیمیشنی نمایش داده می‌شه)
-  const totalCount = latestPosts.length;
   const posts: PostWithRelations[] = dedupeById(latestPosts);
 
   const initialAds: Advertisement[] = adsResult.success
@@ -55,7 +77,7 @@ export default async function PulseSection({ className = '' }: PulseSectionProps
     <div className={`nc-PulseSection ${className}`}>
       <PulseBoard
         posts={posts}
-        categoryNames={categoryNames}
+        categories={categories}
         initialAds={initialAds}
         initialTickerData={tickerData}
         totalCount={totalCount}

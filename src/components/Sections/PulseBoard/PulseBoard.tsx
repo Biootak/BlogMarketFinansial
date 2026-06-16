@@ -46,16 +46,22 @@ import LiveClock from '@/components/Sections/effects/LiveClock';
 import AnimatedNumber from '@/components/Sections/effects/AnimatedNumber';
 import { getMarketTickerData } from '@/actions/marketTickerActions';
 import { getCategoryAccent } from '@/components/Sections/effects/categoryAccent';
+import { getLatestPosts } from '@/actions/getLatestPosts';
 import { PulseCard } from './PulseCard';
 import { PulseRail } from './PulseRail';
 import { AdSlot } from './AdSlot';
 
 type ViewMode = 'bento' | 'rail';
 
+interface CategoryItem {
+  name: string;
+  slug: string;
+}
+
 interface PulseBoardProps {
   /** لیست مقالات (همه‌ی دسته‌ها) — حداقل ۸ عدد نیاز داریم برای ۱ hero + ۲ compact + ۵ rail */
   posts: PostWithRelations[];
-  categoryNames: string[];
+  categories: CategoryItem[];
   initialAds: Advertisement[];
   initialTickerData?: MarketTickerItem[];
   totalCount: number;
@@ -67,23 +73,23 @@ function normFa(s: string): string {
   return s.replace(/\s+/g, '').replace(/[‌]/g, '').toLowerCase();
 }
 
-function dedupeCategories(input: string[]): string[] {
+function dedupeCategories(input: CategoryItem[]): CategoryItem[] {
   const seen = new Set<string>();
-  const out: string[] = [];
-  for (const n of input) {
-    const t = n?.trim();
-    if (!t) continue;
-    const k = normFa(t);
-    if (seen.has(k)) continue;
-    seen.add(k);
-    out.push(t);
+  const out: CategoryItem[] = [];
+  for (const item of input) {
+    const name = item.name?.trim();
+    if (!name) continue;
+    const key = normFa(name);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(item);
   }
   return out;
 }
 
 export function PulseBoard({
   posts,
-  categoryNames,
+  categories,
   initialAds,
   initialTickerData = [],
   totalCount,
@@ -93,32 +99,129 @@ export function PulseBoard({
   const headerInView = useInView(containerRef, { once: true, margin: '-80px' });
 
   // ----- Filter state -----
-  const categories = useMemo(() => {
-    const hasAll = categoryNames.some((c) => normFa(c) === normFa('همه'));
-    const list = hasAll ? categoryNames : ['همه', ...categoryNames];
-    return dedupeCategories(list);
-  }, [categoryNames]);
+  const categoriesList = useMemo(() => {
+    return dedupeCategories(categories);
+  }, [categories]);
 
   const [activeCategory, setActiveCategory] = useState<string>('همه');
   const [viewMode, setViewMode] = useState<ViewMode>('bento');
 
-  // ----- Split posts: hero + 2 compact + 6 rail (از بین پست‌های فعلی) -----
-  // (اگه فیلتر اعمال شد، همین آرایه فیلتر می‌شه)
-  const filteredPosts = useMemo(() => {
-    if (activeCategory === 'همه') return posts;
+  // ----- Category Posts and Pagination State -----
+  const [categoryPosts, setCategoryPosts] = useState<Record<string, PostWithRelations[]>>(() => ({
+    'همه': posts,
+  }));
+  const [visibleCounts, setVisibleCounts] = useState<Record<string, number>>({
+    'همه': 9,
+  });
+  const [hasMoreMap, setHasMoreMap] = useState<Record<string, boolean>>({
+    'همه': true,
+  });
+  const [loading, setLoading] = useState(false);
+
+  // Sync initial posts from props if they change
+  useEffect(() => {
+    setCategoryPosts((prev) => ({
+      ...prev,
+      'همه': posts,
+    }));
+    setVisibleCounts((prev) => ({
+      ...prev,
+      'همه': 9,
+    }));
+    setHasMoreMap((prev) => ({
+      ...prev,
+      'همه': true,
+    }));
+  }, [posts]);
+
+  // Initialize category posts from local memory when category changes
+  useEffect(() => {
+    if (activeCategory !== 'همه' && !categoryPosts[activeCategory]) {
+      const inMemory = posts.filter((p) =>
+        p.categories?.some((c) => normFa(c.name) === normFa(activeCategory))
+      );
+      setCategoryPosts((prev) => ({
+        ...prev,
+        [activeCategory]: inMemory,
+      }));
+      setVisibleCounts((prev) => ({
+        ...prev,
+        [activeCategory]: 9,
+      }));
+      setHasMoreMap((prev) => ({
+        ...prev,
+        [activeCategory]: true,
+      }));
+    }
+  }, [activeCategory, categoryPosts, posts]);
+
+  const handleLoadMore = async () => {
+    if (loading) return;
+
+    const currentList = categoryPosts[activeCategory] || [];
+    const currentLimit = visibleCounts[activeCategory] ?? 9;
+
+    if (currentList.length > currentLimit) {
+      setVisibleCounts((prev) => ({
+        ...prev,
+        [activeCategory]: currentLimit + 6,
+      }));
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const nextPosts = await getLatestPosts({
+        count: 12,
+        skip: currentList.length,
+        category: activeCategory === 'همه' ? undefined : activeCategory,
+      });
+
+      const uniqueNext = nextPosts.filter((np) => !currentList.some((cl) => cl.id === np.id));
+      const newList = [...currentList, ...uniqueNext];
+
+      setCategoryPosts((prev) => ({
+        ...prev,
+        [activeCategory]: newList,
+      }));
+      setVisibleCounts((prev) => ({
+        ...prev,
+        [activeCategory]: currentLimit + 6,
+      }));
+      setHasMoreMap((prev) => ({
+        ...prev,
+        [activeCategory]: nextPosts.length === 12,
+      }));
+    } catch (err) {
+      console.error('[PulseBoard] loadMore error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const currentCategoryPosts = useMemo(() => {
+    if (categoryPosts[activeCategory]) {
+      return categoryPosts[activeCategory];
+    }
     return posts.filter((p) =>
-      p.categories?.some((c) => normFa(c.name) === normFa(activeCategory)),
+      p.categories?.some((c) => normFa(c.name) === normFa(activeCategory))
     );
-  }, [posts, activeCategory]);
+  }, [categoryPosts, activeCategory, posts]);
+
+  const activeCategoryObj = useMemo(() => {
+    return categoriesList.find((c) => c.name === activeCategory);
+  }, [categoriesList, activeCategory]);
+
+  const categorySlug = activeCategoryObj?.slug || '';
 
   const accent = getCategoryAccent(activeCategory);
-  const hero = filteredPosts[0];
-  const stack = filteredPosts.slice(1, 3);
-  const rail = filteredPosts.slice(3, 9);
+  const currentLimit = visibleCounts[activeCategory] ?? 9;
+  const hero = currentCategoryPosts[0];
+  const stack = currentCategoryPosts.slice(1, 3);
+  const rail = currentCategoryPosts.slice(3, currentLimit);
 
-  // ----- Filter overflow handling -----
-  const visibleFilters = categories.slice(0, MAX_VISIBLE_FILTERS);
-  const overflowFilters = categories.slice(MAX_VISIBLE_FILTERS);
+  const visibleFilters = categoriesList.slice(0, MAX_VISIBLE_FILTERS);
+  const overflowFilters = categoriesList.slice(MAX_VISIBLE_FILTERS);
 
   // ----- View Transition (اگه مرورگر پشتیبانی کنه) -----
   const supportsViewTransition = useMemo(() => {
@@ -353,15 +456,15 @@ export function PulseBoard({
                 aria-label="فیلتر دسته‌بندی"
               >
                 {visibleFilters.map((category) => {
-                  const isActive = activeCategory === category;
-                  const tabAccent = getCategoryAccent(category);
+                  const isActive = activeCategory === category.name;
+                  const tabAccent = getCategoryAccent(category.name);
                   return (
                     <button
-                      key={category}
+                      key={category.name}
                       type="button"
                       role="tab"
                       aria-selected={isActive}
-                      onClick={() => handleCategoryChange(category)}
+                      onClick={() => handleCategoryChange(category.name)}
                       className={cn(
                         'relative flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 sm:py-2',
                         'text-[12px] sm:text-[13px] font-medium rounded-xl whitespace-nowrap',
@@ -397,7 +500,7 @@ export function PulseBoard({
                           aria-hidden
                         />
                       )}
-                      <span className="relative z-10">{category}</span>
+                      <span className="relative z-10">{category.name}</span>
                     </button>
                   );
                 })}
@@ -420,35 +523,12 @@ export function PulseBoard({
                 <span>
                   نمایش{' '}
                   <span className="font-semibold text-neutral-900 dark:text-white">
-                    {toPersianNumber(formatNumber(filteredPosts.length))}
+                    {toPersianNumber(formatNumber(currentCategoryPosts.length))}
                   </span>{' '}
                   مقاله
                 </span>
               </div>
             </div>
-
-            {/* Row 2: Archive CTA (در سمت چپ RTL) */}
-            <Link
-              href={`/archive${activeCategory === 'همه' ? '' : `/${encodeURIComponent(activeCategory)}`}`}
-              className={cn(
-                'group/all inline-flex items-center gap-1.5 self-end sm:self-auto',
-                'px-3.5 py-1.5 rounded-full',
-                'text-[11.5px] sm:text-[12.5px] font-semibold text-white',
-                'transition-all duration-300 hover:gap-2.5',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
-              )}
-              style={{
-                backgroundColor: accent.color,
-                boxShadow: `0 4px 14px -4px ${accent.color}80`,
-              }}
-            >
-              <span>مشاهده آرشیو کامل</span>
-              <ArrowLeft
-                className="h-3.5 w-3.5 transition-transform duration-300 group-hover/all:-translate-x-1 rtl:rotate-180"
-                strokeWidth={2.5}
-                aria-hidden
-              />
-            </Link>
           </div>
         </header>
 
@@ -457,7 +537,7 @@ export function PulseBoard({
         {/* ================================================================== */}
         <div className="relative px-4 sm:px-7 lg:px-10 pb-5 sm:pb-8 pt-2 sm:pt-3">
           <AnimatePresence mode="wait">
-            {filteredPosts.length === 0 ? (
+            {currentCategoryPosts.length === 0 ? (
               <motion.div
                 key="empty"
                 initial={{ opacity: 0, y: 8 }}
@@ -537,14 +617,73 @@ export function PulseBoard({
                 exit={{ opacity: 0, transition: { duration: 0.18 } }}
                 className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-0"
               >
-                <PulseRail posts={filteredPosts.slice(0, Math.ceil(filteredPosts.length / 2))} />
-                <PulseRail
-                  posts={filteredPosts.slice(Math.ceil(filteredPosts.length / 2))}
-                  className="hidden md:block"
-                />
+                {(() => {
+                  const visiblePostsForRail = currentCategoryPosts.slice(0, currentLimit);
+                  return (
+                    <>
+                      <PulseRail posts={visiblePostsForRail.slice(0, Math.ceil(visiblePostsForRail.length / 2))} />
+                      <PulseRail
+                        posts={visiblePostsForRail.slice(Math.ceil(visiblePostsForRail.length / 2))}
+                        className="hidden md:block"
+                      />
+                    </>
+                  );
+                })()}
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Section Footer: Load More + View Archive */}
+          <div className="mt-8 flex flex-row items-center justify-center gap-3 sm:gap-4 border-t border-neutral-200/40 dark:border-neutral-800/40 pt-6">
+            {(currentCategoryPosts.length > currentLimit || hasMoreMap[activeCategory] !== false) && (
+              <button
+                type="button"
+                disabled={loading}
+                onClick={() => handleLoadMore()}
+                className={cn(
+                  'relative flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-2.5 sm:py-3 rounded-full',
+                  'text-[12px] sm:text-[14px] font-bold text-white',
+                  'transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed',
+                  'active:scale-95 hover:brightness-110 active:brightness-95',
+                )}
+                style={{
+                  backgroundColor: accent.color,
+                  boxShadow: `0 4px 14px -4px ${accent.color}80`,
+                }}
+              >
+                {loading && (
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                )}
+                <span>بارگذاری بیشتر</span>
+              </button>
+            )}
+
+            <Link
+              href={
+                activeCategory === 'همه'
+                  ? '/archive'
+                  : `/archive/category/${categorySlug}`
+              }
+              className={cn(
+                'group/all flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5',
+                'px-4 sm:px-6 py-2.5 sm:py-3 rounded-full border border-neutral-200/80 dark:border-neutral-700/60',
+                'text-[12px] sm:text-[14px] font-semibold text-neutral-800 dark:text-neutral-200',
+                'bg-white/50 dark:bg-neutral-800/40 backdrop-blur-sm hover:bg-white dark:hover:bg-neutral-850',
+                'transition-all duration-300 hover:gap-2.5',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
+              )}
+            >
+              <span>مشاهده آرشیو کامل</span>
+              <ArrowLeft
+                className="h-3.5 w-3.5 transition-transform duration-300 group-hover/all:-translate-x-1 rtl:rotate-180"
+                strokeWidth={2.5}
+                aria-hidden
+              />
+            </Link>
+          </div>
         </div>
       </motion.div>
     </section>
