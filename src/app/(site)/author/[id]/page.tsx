@@ -1,104 +1,137 @@
-import { Suspense } from 'react';
+/**
+ * @file /author/[id] — premium editorial author profile page
+ * @description Replaces the previous page that delegated to
+ * `author/Author/AuthorProfile` + `AuthorContent` with a single,
+ * server-rendered, premium composition. Backed by `getAuthorProfile`
+ * (cached 2 min) and the existing `getTopAuthors` (cached 10 min)
+ * for the related-authors rail.
+ */
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-
-import DynamicCategories from '@/components/DynamicCategories';
-import { getAuthorById } from '@/actions/authorActions';
-import { getCategories } from '@/actions/categoryActions';
+import {
+  AuthorProfileHero,
+  AuthorPostsGrid,
+  AuthorRelated,
+  AuthorsCTA,
+} from '@/components/AuthorsHub';
+import { getAuthorProfile } from '@/actions/getAuthorProfile';
 import { getTopAuthors } from '@/actions/getTopAuthors';
-import { getPostsByAuthor } from '@/actions/getPostsByAuthor';
-import AuthorProfile from '../Author/AuthorProfile';
-import AuthorContent from '../Author/AuthorContent';
-import SectionSliderNewAuthors from '@/components/SectionSliderNewAthors/SectionSliderNewAuthors';
-import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
-import { Skeleton } from '@/components/ui/skeleton';
 
-type PageAuthorProps = {
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://blogmarketfinansial.ir';
+
+export async function generateMetadata({
+  params,
+}: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-};
-
-export default async function PageAuthor({ params, searchParams }: PageAuthorProps) {
+}): Promise<Metadata> {
   const { id } = await params;
-  const searchParamsData = await searchParams;
-  const currentPage =
-    typeof searchParamsData.page === 'string' ? Number.parseInt(searchParamsData.page, 10) : 1;
-  const currentFilter = typeof searchParamsData.filter === 'string' ? searchParamsData.filter : 'جدیدترین';
+  const { author } = await getAuthorProfile(id, 1, 1);
+  if (!author) {
+    return { title: 'نویسنده یافت نشد' };
+  }
+  const name = author.name?.trim() || 'نویسنده';
+  const job = author.profile?.jobName ?? 'نویسنده';
+  const description =
+    author.profile?.bio?.slice(0, 160) ??
+    `مقالات و تحلیل‌های ${name} در بازارهای مالی.`;
+  return {
+    title: name,
+    description,
+    alternates: { canonical: `${SITE_URL}/author/${id}` },
+    openGraph: {
+      type: 'profile',
+      title: `${name} | ${job}`,
+      description,
+      url: `${SITE_URL}/author/${id}`,
+      images: author.profile?.avatar
+        ? [{ url: author.profile.avatar, alt: name }]
+        : undefined,
+      locale: 'fa_IR',
+    },
+    twitter: {
+      card: 'summary',
+      title: `${name} | ${job}`,
+      description,
+    },
+  };
+}
 
-  const authorResult = await getAuthorById(id);
-  if (!authorResult.success || !authorResult.data) {
+export const revalidate = 120;
+
+export default async function PageAuthor({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const [payload, topAuthors] = await Promise.all([
+    getAuthorProfile(id, 1, 9),
+    getTopAuthors(8),
+  ]);
+
+  if (!payload.author) {
     notFound();
   }
 
-  const author = authorResult.data;
-  const [categoriesResult, topAuthorsResult, postsResult] = await Promise.all([
-    getCategories({ limit: 10, page: 1 }),
-    getTopAuthors(5),
-    getPostsByAuthor(author.id, { page: currentPage, limit: 12, filter: currentFilter }),
-  ]);
+  const name = payload.author.name?.trim() || 'نویسنده';
+  const related = topAuthors
+    .filter((a) => a.id !== payload.author?.id)
+    .slice(0, 4);
+
+  // JSON-LD: Person + ItemList of blog posts
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ProfilePage',
+    mainEntity: {
+      '@type': 'Person',
+      name,
+      url: `${SITE_URL}/author/${id}`,
+      image: payload.author.profile?.avatar ?? undefined,
+      jobTitle: payload.author.profile?.jobName ?? undefined,
+      worksFor: payload.author.profile?.company ?? undefined,
+      description: payload.author.profile?.bio ?? undefined,
+      knowsAbout: payload.posts
+        .flatMap((p) => p.categories.map((c) => c.name))
+        .filter((value, index, self) => self.indexOf(value) === index)
+        .slice(0, 8),
+    },
+    hasPart: payload.posts.slice(0, 10).map((p) => ({
+      '@type': 'BlogPosting',
+      headline: p.title,
+      url: `${SITE_URL}/single/${p.slug}`,
+      datePublished:
+        typeof p.createdAt === 'string' ? p.createdAt : p.createdAt.toISOString(),
+      author: { '@type': 'Person', name },
+    })),
+  };
 
   return (
-    <div className="nc-PageAuthor bg-neutral-50 dark:bg-neutral-900">
-      <AuthorProfile author={author} />
+    <div
+      dir="rtl"
+      className="nc-PageAuthor bg-[color:var(--c-bg)] dark:bg-neutral-950"
+    >
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
-      <div className="container py-16 lg:pb-28 lg:pt-20 space-y-16 lg:space-y-28">
-        <AuthorContent
-          initialPosts={postsResult.data?.posts || []}
-          totalPages={postsResult.data?.pages || 1}
-          authorId={author.id}
-          initialPage={currentPage}
-          initialFilter={currentFilter}
+      <div className="container py-8 sm:py-12 lg:py-14 space-y-8 sm:space-y-12 lg:space-y-16">
+        <AuthorProfileHero
+          author={{
+            id: payload.author.id,
+            name: payload.author.name,
+            email: payload.author.email,
+            profile: payload.author.profile,
+            _count: payload.author._count,
+          }}
         />
 
-        <Suspense fallback={<CategorySkeleton />}>
-          <DynamicCategories
-            initialCategories={categoriesResult.data?.categories || []}
-            initialTotalCount={categoriesResult.data?.totalCount || 0}
-          />
-        </Suspense>
+        <AuthorPostsGrid posts={payload.posts} />
 
-        <Suspense fallback={<AuthorsSkeleton />}>
-          <SectionSliderNewAuthors
-            heading="قلم‌های برتر"
-            subHeading="با ذهن‌های خلاق پشت مقالات ما آشنا شوید"
-            authors={topAuthorsResult || []}
-            itemPerRow={4}
-          />
-        </Suspense>
+        <AuthorRelated authors={related} />
 
-        <SectionSubscribe2 />
-      </div>
-    </div>
-  );
-}
-
-function CategorySkeleton() {
-  return (
-    <div className="space-y-4">
-      <Skeleton className="h-8 w-48" />
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {Array(10)
-          .fill(0)
-          .map((_, index) => (
-            <Skeleton key={index} className="h-12 w-full" />
-          ))}
-      </div>
-    </div>
-  );
-}
-
-function AuthorsSkeleton() {
-  return (
-    <div className="space-y-4">
-      <Skeleton className="h-8 w-48" />
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {Array(5)
-          .fill(0)
-          .map((_, index) => (
-            <div key={index} className="space-y-2">
-              <Skeleton className="h-32 w-32 rounded-full mx-auto" />
-              <Skeleton className="h-4 w-24 mx-auto" />
-            </div>
-          ))}
+        <AuthorsCTA />
       </div>
     </div>
   );

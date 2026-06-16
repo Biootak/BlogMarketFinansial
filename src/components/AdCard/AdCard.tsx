@@ -66,7 +66,14 @@ function getRatioForAd(ad: Advertisement, variant: AdCardVariant): string {
   // اگر custom dimensions داره، استفاده کن
   if (ad.size === 'CUSTOM' && ad.customDimensions) {
     try {
-      const dims = JSON.parse(ad.customDimensions);
+      // 2026-06-16: Prisma's `customDimensions` is typed as
+      // `Prisma.JsonValue | null` (string | number | true | object | array).
+      // Coerce to string before parsing so the TS build doesn't break.
+      const raw =
+        typeof ad.customDimensions === 'string'
+          ? ad.customDimensions
+          : JSON.stringify(ad.customDimensions);
+      const dims = JSON.parse(raw);
       if (dims?.aspectRatio) return dims.aspectRatio;
     } catch {
       /* ignore */
