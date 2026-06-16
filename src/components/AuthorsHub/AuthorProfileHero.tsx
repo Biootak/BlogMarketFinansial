@@ -6,7 +6,7 @@
  */
 import * as React from 'react';
 import Image from 'next/image';
-import { Briefcase, Building2, FileText, MapPin } from 'lucide-react';
+import { Briefcase, Building2, FileText } from 'lucide-react';
 import { cn, toPersianNumber } from '@/lib/utils';
 import AuthorAvatar from '@/components/AuthorsHub/primitives/AuthorAvatar';
 
@@ -32,6 +32,21 @@ export interface AuthorProfileHeroProps {
 
 const FALLBACK_BG = '/images/placeholder-large-h.png';
 
+/**
+ * 2026-06-16: Cover image rendering. We previously used plain
+ * `<Image>` which throws at runtime if the source hostname is not
+ * whitelisted in `next.config.ts` (e.g. seed data with picsum.photos).
+ * To keep the profile page crash-proof while still respecting the
+ * `next/image` optimization when the host IS allowed, we:
+ *  1. only feed local /uploads/ paths to next/image
+ *  2. fall back to a plain <img> for absolute URLs (same pattern as
+ *     `Avatar.tsx`)
+ *  3. degrade to a CSS gradient when the image is missing
+ */
+const isLocalUploads = (raw: string): boolean => raw.startsWith('/uploads/');
+const isLocalAsset = (raw: string): boolean =>
+  raw.startsWith('/') && !raw.startsWith('//');
+
 const AuthorProfileHero: React.FC<AuthorProfileHeroProps> = ({
   author,
   className,
@@ -41,8 +56,11 @@ const AuthorProfileHero: React.FC<AuthorProfileHeroProps> = ({
   const company = author.profile?.company;
   const bio = author.profile?.bio;
   const avatar = author.profile?.avatar ?? null;
-  const bgImage = author.profile?.bgImage || FALLBACK_BG;
+  const bgImage = author.profile?.bgImage?.trim() || FALLBACK_BG;
   const postCount = author._count?.posts ?? 0;
+
+  const useNextImage = isLocalUploads(bgImage);
+  const usePlainImg = !useNextImage && !isLocalAsset(bgImage);
 
   return (
     <section
@@ -56,16 +74,36 @@ const AuthorProfileHero: React.FC<AuthorProfileHeroProps> = ({
       )}
       aria-label={`پروفایل ${name}`}
     >
-      {/* Cover */}
+      {/* Cover — CSS gradient base + conditional <Image> or <img> */}
       <div className="relative h-44 sm:h-60 lg:h-72 overflow-hidden">
-        <Image
-          src={bgImage}
-          alt={`تصویر پس‌زمینه ${name}`}
-          fill
-          sizes="(max-width: 1024px) 100vw, 1024px"
-          priority
-          className="object-cover"
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(135deg, oklch(28% 0.05 240) 0%, oklch(20% 0.04 260) 50%, oklch(15% 0.03 200) 100%)',
+          }}
         />
+        {useNextImage && (
+          <Image
+            src={bgImage}
+            alt={`تصویر پس‌زمینه ${name}`}
+            fill
+            sizes="(max-width: 1024px) 100vw, 1024px"
+            priority
+            className="object-cover"
+          />
+        )}
+        {usePlainImg && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={bgImage}
+            alt={`تصویر پس‌زمینه ${name}`}
+            className="absolute inset-0 h-full w-full object-cover"
+            loading="eager"
+            referrerPolicy="no-referrer"
+          />
+        )}
         <span
           aria-hidden
           className="absolute inset-0"

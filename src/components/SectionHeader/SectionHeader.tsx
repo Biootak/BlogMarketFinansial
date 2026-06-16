@@ -75,7 +75,7 @@ export function SectionHeader({
           >
             <span>{viewAll.label}</span>
             <ArrowLeft
-              className="h-3.5 w-3.5 transition-transform duration-200 group-hover/va:-translate-x-0.5 rtl:rotate-180"
+              className="h-3.5 w-3.5 transition-transform duration-200 group-hover/va:-translate-x-0.5"
               strokeWidth={2.25}
               aria-hidden
             />

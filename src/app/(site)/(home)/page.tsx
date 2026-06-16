@@ -18,7 +18,7 @@ const SectionMagazine7 = dynamic(() => import('@/components/Sections/SectionMaga
   ssr: true,
 });
 const SectionGridAuthorBox = dynamic(
-  () => import('@/components/SectionGridAuthorBox/SectionGridAuthorBox'),
+  () => import('@/components/TopAuthorsSection').then((m) => m.TopAuthorsSection),
   { loading: () => <Skeleton className="h-[400px] rounded-3xl" />, ssr: true },
 );
 const ModernTrendingTopics = dynamic(

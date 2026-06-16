@@ -174,6 +174,13 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'i.pravatar.cc',
       },
+      // 2026-06-16: picsum.photos is used by seed author cover images
+      // (e.g. Profile.bgImage). Without this, /author/[id] crashes
+      // with "hostname not configured under images".
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+      },
     ],
   },
 

@@ -71,7 +71,7 @@ const AuthorsCTA: React.FC<AuthorsCTAProps> = ({ className }) => {
             <Compass className="h-4 w-4" strokeWidth={2.5} aria-hidden />
             ارسال رزومه
             <ArrowLeft
-              className="h-3.5 w-3.5 rtl:rotate-180 transition-transform duration-200 group-hover:-translate-x-0.5"
+              className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5"
               strokeWidth={2.5}
               aria-hidden
             />

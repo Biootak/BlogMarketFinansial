@@ -62,7 +62,7 @@ const AuthorsExpertiseCloud: React.FC<AuthorsExpertiseCloudProps> = ({
                 className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-primary-600 dark:text-primary-300 hover:gap-1.5 transition-all"
               >
                 <span>مشاهده مقالات</span>
-                <ChevronLeft className="h-3 w-3 rtl:rotate-180" strokeWidth={2.5} aria-hidden />
+                <ChevronLeft className="h-3 w-3" strokeWidth={2.5} aria-hidden />
               </Link>
             </header>
 

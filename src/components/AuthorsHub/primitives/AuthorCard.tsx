@@ -206,13 +206,13 @@ const AuthorCard = React.forwardRef<HTMLAnchorElement, AuthorCardProps>(
             className={cn(
               'inline-flex items-center gap-1 text-[11.5px] font-semibold',
               'text-primary-600 dark:text-primary-300',
-              'opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0',
+              'opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 rtl:group-hover:translate-x-1',
               'transition-all duration-300',
             )}
           >
             مشاهده پروفایل
             <ArrowUpLeft
-              className="h-3.5 w-3.5 rtl:rotate-0"
+              className="h-3.5 w-3.5"
               strokeWidth={2.5}
               aria-hidden
             />
