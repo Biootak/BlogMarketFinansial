@@ -82,7 +82,7 @@ function RailItem({ post, index }: { post: PostWithRelations; index: number }) {
         aria-label={post.title}
         className={cn(
           'group/rail relative flex items-start gap-3 sm:gap-4',
-          'pe-5 sm:pe-7 ps-1 py-2.5 sm:py-3',
+          'pe-5 sm:pe-7 ps-1 py-3 sm:py-3.5',
           'rounded-xl sm:rounded-2xl',
           'transition-colors duration-300',
           'hover:bg-neutral-100/60 dark:hover:bg-neutral-800/50',
@@ -105,7 +105,7 @@ function RailItem({ post, index }: { post: PostWithRelations; index: number }) {
         <div
           className={cn(
             'relative shrink-0 overflow-hidden rounded-lg sm:rounded-xl',
-            'h-14 w-20 sm:h-16 sm:w-24',
+            'h-14 w-20 sm:h-[68px] sm:w-[100px]',
             'border border-neutral-200/60 dark:border-neutral-800/80',
           )}
         >
@@ -120,6 +120,7 @@ function RailItem({ post, index }: { post: PostWithRelations; index: number }) {
               !reduce && 'group-hover/rail:scale-110',
             )}
             variant="thumbnail"
+            ratio="4/3"
           />
           {/* Accent gradient on hover */}
           <div
@@ -148,7 +149,7 @@ function RailItem({ post, index }: { post: PostWithRelations; index: number }) {
                 {cat.name}
               </span>
             )}
-            <span className="text-neutral-500 dark:text-neutral-500">
+            <span className="text-neutral-500 dark:text-neutral-500 tabular-nums">
               {relativeTime(post.createdAt)}
             </span>
           </div>
@@ -156,7 +157,7 @@ function RailItem({ post, index }: { post: PostWithRelations; index: number }) {
           {/* Title */}
           <h4
             className={cn(
-              'text-[13px] sm:text-[14.5px] font-semibold leading-snug',
+              'text-[13px] sm:text-[14.5px] font-semibold leading-[1.45]',
               'text-neutral-900 dark:text-white',
               'line-clamp-2 text-balance',
               'transition-colors duration-300',

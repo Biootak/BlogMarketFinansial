@@ -199,7 +199,7 @@ export function PulseCard({
             className="absolute inset-0"
             style={{
               background:
-                'linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,0.55) 100%)',
+                'linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.65) 100%)',
             }}
             aria-hidden
           />
@@ -214,8 +214,8 @@ export function PulseCard({
                   'border backdrop-blur-md',
                 )}
                 style={{
-                  backgroundColor: `${accent}28`,
-                  borderColor: `${accent}55`,
+                  backgroundColor: `${accent}33`,
+                  borderColor: `${accent}66`,
                   color: '#fff',
                 }}
               >
@@ -230,7 +230,7 @@ export function PulseCard({
           )}
 
           {/* Reading time — bottom right (RTL) */}
-          <div className="absolute bottom-3 end-3 sm:bottom-4 sm:end-4 flex items-center gap-1 rounded-full bg-black/45 backdrop-blur-md px-2 py-1 text-[10.5px] sm:text-[11px] font-medium text-white tabular-nums">
+          <div className="absolute bottom-3 end-3 sm:bottom-4 sm:end-4 flex items-center gap-1 rounded-full bg-black/55 backdrop-blur-md px-2.5 py-1 text-[10.5px] sm:text-[11px] font-semibold text-white tabular-nums">
             <Clock className="h-3 w-3" strokeWidth={2.25} aria-hidden />
             <span>
               <span>{toPersianNumber(reading)}</span> دقیقه
@@ -239,10 +239,13 @@ export function PulseCard({
         </div>
 
         {/* Content */}
-        <div className="relative p-4 sm:p-5 space-y-2.5">
-          {/* Meta row: date + views + comments */}
+        <div className="relative px-4 sm:px-5 py-4 sm:py-5 space-y-3">
+          {/* Meta row: category + reading time + date */}
           <div className="flex items-center justify-between gap-2 text-[10.5px] sm:text-[11px] text-neutral-500 dark:text-neutral-400 font-vazirmatn tabular-nums">
-            <time dateTime={new Date(createdAt).toISOString()}>
+            <time
+              dateTime={new Date(createdAt).toISOString()}
+              className="font-medium"
+            >
               {toPersianNumber(formatJalaliDate(createdAt))}
             </time>
             <div className="flex items-center gap-2.5">
@@ -261,8 +264,8 @@ export function PulseCard({
           <h3
             className={cn(
               'font-bold tracking-tight text-neutral-900 dark:text-white',
-              'text-balance leading-snug line-clamp-2',
-              isLg ? 'text-lg sm:text-xl lg:text-2xl' : 'text-[15px] sm:text-base',
+              'text-balance leading-[1.35] line-clamp-2',
+              isLg ? 'text-lg sm:text-xl lg:text-[22px]' : 'text-[14.5px] sm:text-[15.5px]',
             )}
           >
             {title}
@@ -270,7 +273,7 @@ export function PulseCard({
 
           {/* Excerpt — only in lg */}
           {isLg && excerpt && (
-            <p className="text-[12.5px] sm:text-sm leading-relaxed text-neutral-600 dark:text-neutral-400 line-clamp-2 sm:line-clamp-3">
+            <p className="text-[12.5px] sm:text-[13.5px] leading-[1.65] text-neutral-600 dark:text-neutral-400 line-clamp-2 sm:line-clamp-3 text-pretty">
               {excerpt.replace(/<[^>]+>/g, ' ').trim().slice(0, 180)}
               {excerpt.length > 180 ? '…' : ''}
             </p>
@@ -278,7 +281,7 @@ export function PulseCard({
 
           {/* CTA */}
           <div
-            className="pt-1 flex items-center gap-1.5 text-[11.5px] sm:text-xs font-semibold tabular-nums"
+            className="pt-0.5 flex items-center gap-1.5 text-[11.5px] sm:text-xs font-semibold tabular-nums"
             style={{ color: accent }}
           >
             <span>ادامه مطلب</span>

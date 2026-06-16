@@ -564,6 +564,33 @@ p { line-height: var(--leading-relaxed); }
   100% { transform: translateX(200%) skewX(-12deg); }
 }
 
+/* Shine روی دکمه‌ی «بارگذاری بیشتر» در PulseBoard — همان keyframe،
+   فقط یه utility کم‌حجم که در hover روی عنصر فعال می‌شه. */
+.ad-load-shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.ad-load-shine > .ad-load-shine__beam {
+  position: absolute;
+  top: -25%;
+  bottom: -25%;
+  inset-inline-end: 100%;
+  width: 50%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.45),
+    transparent
+  );
+  transform: skewX(-20deg);
+  pointer-events: none;
+  z-index: 1;
+}
+.ad-load-shine:hover > .ad-load-shine__beam {
+  animation: ad-cta-shimmer 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 @keyframes ad-mask-reveal {
   from { mask-position: 0% 0%; }
   to   { mask-position: 100% 0%; }

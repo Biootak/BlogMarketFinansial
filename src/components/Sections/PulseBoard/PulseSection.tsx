@@ -38,6 +38,7 @@ export default async function PulseSection({ className = '' }: PulseSectionProps
   ];
 
   // 2) Posts — یک صفحه‌ی بزرگ برای بازطراحی
+  // 24 پست = 9 اولیه + 3 دست 10 تایی آماده (بدون round-trip شبکه)
   const INITIAL = 24;
 
   // 3) Ticker + Ads + Posts (موازی)
