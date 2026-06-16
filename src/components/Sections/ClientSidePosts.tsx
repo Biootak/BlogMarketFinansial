@@ -146,7 +146,9 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
     const map: Record<string, boolean> = {};
     for (const cat of categories) {
       const len = initialPosts[cat]?.length ?? 0;
-      map[cat] = len === initialPageSize;
+      // اگه حتی یک پست اومده، فرض می‌کنیم صفحه‌ی بعدی هم هست
+      // (PostGrid اگه آخر باشه خودش false می‌فرسته)
+      map[cat] = len > 0;
     }
     return map;
   });

@@ -53,8 +53,9 @@ export default async function SectionMagazine1({ className = '' }: SectionMagazi
   // 3) پست‌های همه‌ی دسته‌ها به‌صورت موازی
   //    - «همه»: ۲۴ پست (compact view خوب کار کنه + صفحه‌بندی)
   //    - هر دسته: ۱۲ پست (برای infinite scroll)
+  //    - همه‌ی صفحه‌ها یک اندازه هستن تا UI لگ نزنه
   const INITIAL_ALL = 24;
-  const INITIAL_PER_CATEGORY = 12;
+  const INITIAL_PER_CATEGORY = 24;
   const postsByCategoryPromises = categoryNames.map((name) =>
     name === 'همه'
       ? getLatestPosts({ count: INITIAL_ALL, skip: 0 })

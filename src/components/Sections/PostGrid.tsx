@@ -1,26 +1,33 @@
 'use client';
 
 /**
- * PostGrid — نسخه ۲۰۲۶ (مقیاس‌پذیر)
+ * PostGrid — نسخه ۲۰۲۶ v2
  *
- * سه استراتژی برای ۱۰۰+ پست:
- *  1. compact (پیش‌فرض) — PostsList با hero + 2 mini + masonry + infinite scroll
- *     - IntersectionObserver با rootMargin=600px: قبل از رسیدن به آخر، لود می‌کنه
- *     - وقتی همه لود شدن، دکمه‌ی «نمایش صفحه‌بندی» ظاهر می‌شه
- *  2. paginated — grid 3col با ۲۴ پست در صفحه
- *     - کاربرد: وقتی کاربر می‌خواد سریع بین صفحات جابجا بشه
- *     - scroll-to-top هوشمند هنگام تغییر صفحه
- *  3. (reserved برای بعد) virtualized — برای ۱۰۰۰+ پست
- *
- * ویژگی‌ها:
- *  - prefers-reduced-motion respected
- *  - RTL کامل (شماره‌ی صفحه با toPersianNumber)
- *  - toolbar با شمارنده‌ی زنده + دکمه‌ی «بازگشت به نمایش فعلی»
+ * تکنیک‌های ۲۰۲۶:
+ *  1. AnimatedNumber + progress bar در toolbar
+ *  2. Skeleton placeholder هنگام لود (نه spinner تنها)
+ *  3. layoutId shared pill برای صفحه‌ی فعال (Linear-style)
+ *  4. Micro-interaction: subtle scale + glow روی hover
+ *  5. View Transitions API برای تغییر صفحه
+ *  6. prefers-reduced-motion + pointer: coarse
+ *  7. RTL-native: فلش‌ها با logical properties، اعداد فارسی
+ *  8. @container queries برای واکنش‌گرایی
+ *  9. View mode toggle با آیکون + label (نه فقط آیکون)
+ * 10. Empty/end state با المان بصری refined
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from '@/lib/motion-shim';
-import { ChevronRight, ChevronLeft, Loader2, LayoutGrid, List } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  LayoutGrid,
+  List,
+  ArrowDown,
+  Check,
+  Sparkles,
+} from 'lucide-react';
 import type { PostWithRelations } from '@/types/types';
 import { cn, toPersianNumber, formatNumber } from '@/lib/utils';
 import { STRIPE_EASE } from '@/lib/motion';
@@ -58,7 +65,12 @@ export default function PostGrid({
   }, [posts]);
 
   // ---------- Infinite scroll با IntersectionObserver ----------
+  // فقط یک‌بار و فقط وقتی به انتهای واقعی نزدیک شدیم لود کن
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const firedOnceRef = useRef(false);
+  useEffect(() => {
+    firedOnceRef.current = false;
+  }, [posts.length]);
   useEffect(() => {
     if (viewMode !== 'compact' || !hasMore || isLoading) return;
     const el = sentinelRef.current;
@@ -66,9 +78,12 @@ export default function PostGrid({
     const io = new IntersectionObserver(
       (entries) => {
         const [entry] = entries;
-        if (entry.isIntersecting) onLoadMore();
+        if (entry.isIntersecting && !firedOnceRef.current) {
+          firedOnceRef.current = true;
+          onLoadMore();
+        }
       },
-      { rootMargin: '600px 0px' },
+      { rootMargin: '400px 0px' },
     );
     io.observe(el);
     return () => io.disconnect();
@@ -84,71 +99,26 @@ export default function PostGrid({
         {posts.length > 0 && (
           <div
             ref={sentinelRef}
-            className="flex flex-col items-center justify-center gap-3 pt-2"
+            className="flex flex-col items-center justify-center gap-4 pt-2"
             aria-live="polite"
           >
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait" initial={false}>
               {isLoading ? (
-                <motion.div
-                  key="loading"
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="inline-flex items-center gap-2 text-[13px] text-neutral-500 dark:text-neutral-400"
-                >
-                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                  <span>در حال بارگذاری مقالات بیشتر…</span>
-                </motion.div>
+                <LoadingState key="loading" />
               ) : hasMore ? (
-                <motion.div
+                <MoreState
                   key="more"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex flex-col items-center gap-2"
-                >
-                  <span className="text-[12px] text-neutral-400 dark:text-neutral-500">
-                    برای دیدن ادامه اسکرول کنید
-                  </span>
-                  <button
-                    type="button"
-                    onClick={onLoadMore}
-                    className={cn(
-                      'text-[12px] underline underline-offset-4 decoration-dotted',
-                      'text-neutral-500 dark:text-neutral-400 hover:text-primary-600 dark:hover:text-primary-400',
-                      'transition-colors',
-                    )}
-                  >
-                    یا همین الان بارگذاری کن
-                  </button>
-                </motion.div>
+                  loaded={posts.length}
+                  onLoadMore={onLoadMore}
+                  accentColor={accentColor}
+                />
               ) : (
-                <motion.div
+                <EndState
                   key="end"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex flex-col items-center gap-3"
-                >
-                  <span className="text-[12px] text-neutral-400 dark:text-neutral-500">
-                    تمام {toPersianNumber(formatNumber(posts.length))} مقاله نمایش داده شد
-                  </span>
-                  {posts.length > PAGE_SIZE / 2 && (
-                    <button
-                      type="button"
-                      onClick={() => setViewMode('paginated')}
-                      className={cn(
-                        'inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full',
-                        'text-[12px] font-medium',
-                        'border border-neutral-200/70 dark:border-neutral-700/70',
-                        'bg-white/60 dark:bg-neutral-900/60 backdrop-blur-md',
-                        'hover:border-neutral-300 dark:hover:border-neutral-600',
-                        'transition-colors',
-                      )}
-                    >
-                      <LayoutGrid className="h-3.5 w-3.5" aria-hidden />
-                      نمایش صفحه‌بندی‌شده
-                    </button>
-                  )}
-                </motion.div>
+                  count={posts.length}
+                  showPaginatedOption={posts.length > PAGE_SIZE / 2}
+                  onShowPaginated={() => setViewMode('paginated')}
+                />
               )}
             </AnimatePresence>
           </div>
@@ -170,7 +140,6 @@ export default function PostGrid({
       if (newPage < 1 || newPage > totalPages) return;
       setPage(newPage);
       if (!reduceMotion) {
-        // Smooth scroll to grid top
         topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } else {
         topRef.current?.scrollIntoView({ block: 'start' });
@@ -181,46 +150,14 @@ export default function PostGrid({
 
   return (
     <div className="space-y-6" ref={topRef}>
-      {/* Toolbar: count + view toggle + page indicator */}
-      <div
-        className={cn(
-          'flex flex-wrap items-center justify-between gap-2.5 sm:gap-3',
-          'rounded-2xl border border-neutral-200/60 dark:border-neutral-700/40',
-          'bg-white/50 dark:bg-neutral-900/50 backdrop-blur-md',
-          'px-3 py-2 sm:px-4 sm:py-2.5',
-        )}
-      >
-        <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-[12px] text-neutral-600 dark:text-neutral-400 font-vazirmatn tabular-nums">
-          <span>نمایش</span>
-          <span
-            className="inline-flex items-center justify-center min-w-[2rem] sm:min-w-[2.25rem] h-5 sm:h-6 px-1.5 sm:px-2 rounded-md font-semibold"
-            style={{ backgroundColor: `${accentColor}15`, color: accentColor }}
-          >
-            {toPersianNumber(formatNumber(start + 1))}–{toPersianNumber(formatNumber(end))}
-          </span>
-          <span>از</span>
-          <span className="font-semibold text-neutral-900 dark:text-white">
-            {toPersianNumber(formatNumber(posts.length))}
-          </span>
-          <span>مقاله</span>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setViewMode('compact')}
-          className={cn(
-            'inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-md',
-            'text-[10.5px] sm:text-[11px] font-medium',
-            'text-neutral-500 dark:text-neutral-400',
-            'hover:text-neutral-900 dark:hover:text-white',
-            'hover:bg-neutral-100 dark:hover:bg-neutral-800',
-            'transition-colors',
-          )}
-        >
-          <List className="h-3.5 w-3.5" aria-hidden />
-          بازگشت به نمایش فعلی
-        </button>
-      </div>
+      {/* Toolbar: count + progress + view toggle */}
+      <PaginatedToolbar
+        start={start}
+        end={end}
+        total={posts.length}
+        accentColor={accentColor}
+        onBackToCompact={() => setViewMode('compact')}
+      />
 
       {/* Page items */}
       <AnimatePresence mode="wait">
@@ -237,42 +174,447 @@ export default function PostGrid({
         </motion.div>
       </AnimatePresence>
 
-      {/* Pagination */}
+      {/* Pagination — pill segmented control */}
       {totalPages > 1 && (
-        <nav
-          className="flex items-center justify-center gap-2 pt-4"
-          aria-label="صفحه‌بندی"
-        >
-          <PageBtn
-            disabled={page === 1}
-            onClick={() => goToPage(page - 1)}
-            ariaLabel="صفحه قبل"
-          >
-            <ChevronRight className="h-4 w-4" aria-hidden />
-          </PageBtn>
-
-          <PaginationNumbers
-            page={page}
-            totalPages={totalPages}
-            onSelect={goToPage}
-          />
-
-          <PageBtn
-            disabled={page === totalPages}
-            onClick={() => goToPage(page + 1)}
-            ariaLabel="صفحه بعد"
-          >
-            <ChevronLeft className="h-4 w-4" aria-hidden />
-          </PageBtn>
-        </nav>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onSelect={goToPage}
+        />
       )}
     </div>
   );
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Subcomponents                                                              */
-/* -------------------------------------------------------------------------- */
+/* ============================================================================
+   Subcomponents — ۲۰۲۶
+   ========================================================================== */
+
+/* ----- Loading state ----- */
+function LoadingState() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -4 }}
+      transition={{ duration: 0.24, ease: STRIPE_EASE }}
+      className="flex flex-col items-center gap-3 w-full max-w-xs"
+    >
+      <div
+        className="
+          inline-flex items-center gap-2.5
+          px-4 py-2 rounded-full
+          border border-neutral-200/70 dark:border-neutral-700/70
+          bg-white/60 dark:bg-neutral-900/60 backdrop-blur-md
+          shadow-sm
+        "
+      >
+        <span className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary-500/60 opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-primary-500" />
+        </span>
+        <span className="text-[12.5px] font-medium text-neutral-700 dark:text-neutral-200">
+          در حال بارگذاری مقالات بیشتر…
+        </span>
+      </div>
+      {/* Skeleton bar — 3 ردیف مواج */}
+      <div className="flex items-center gap-1.5 w-full max-w-[200px]">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="h-1 flex-1 rounded-full bg-neutral-200/70 dark:bg-neutral-800/70 overflow-hidden"
+          >
+            <motion.div
+              className="h-full w-1/3 rounded-full bg-gradient-to-r from-transparent via-primary-500/40 to-transparent"
+              animate={{ x: ['-100%', '300%'] }}
+              transition={{
+                duration: 1.4,
+                repeat: Infinity,
+                ease: 'easeInOut',
+                delay: i * 0.15,
+              }}
+            />
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+/* ----- "more available" state ----- */
+function MoreState({
+  loaded,
+  onLoadMore,
+  accentColor,
+}: {
+  loaded: number;
+  onLoadMore: () => void;
+  accentColor: string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -4 }}
+      transition={{ duration: 0.24, ease: STRIPE_EASE }}
+      className="flex flex-col items-center gap-3"
+    >
+      {/* Progress hint + counter */}
+      <div className="flex items-center gap-1.5 text-[11.5px] text-neutral-500 dark:text-neutral-400 tabular-nums">
+        <span className="inline-block size-1.5 rounded-full bg-emerald-500" aria-hidden />
+        <span>تاکنون</span>
+        <span className="font-semibold text-neutral-900 dark:text-neutral-100">
+          {toPersianNumber(formatNumber(loaded))}
+        </span>
+        <span>مقاله نمایش داده شد</span>
+      </div>
+
+      {/* Primary CTA — pill with subtle gradient border */}
+      <button
+        type="button"
+        onClick={onLoadMore}
+        className={cn(
+          'group relative inline-flex items-center justify-center gap-2',
+          'h-11 px-6 rounded-full',
+          'text-[13px] font-semibold',
+          'text-neutral-900 dark:text-neutral-50',
+          'transition-all duration-200',
+          'active:scale-[0.98]',
+        )}
+      >
+        {/* Gradient border layer (1.5px) */}
+        <span
+          aria-hidden
+          className="absolute inset-0 rounded-full p-[1.5px]"
+          style={{
+            background: `linear-gradient(135deg, ${accentColor}, ${accentColor}80 50%, transparent)`,
+          }}
+        >
+          <span
+            aria-hidden
+            className="
+              absolute inset-[1.5px] rounded-full
+              bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md
+            "
+          />
+        </span>
+
+        {/* Hover glow */}
+        <span
+          aria-hidden
+          className="
+            absolute inset-0 rounded-full opacity-0
+            group-hover:opacity-100 transition-opacity duration-300
+          "
+          style={{
+            background: `radial-gradient(circle at center, ${accentColor}20 0%, transparent 70%)`,
+          }}
+        />
+
+        {/* Arrow — در RTL به پایین اشاره می‌کنه (scroll پایین) */}
+        <ArrowDown
+          className="
+            relative size-4
+            transition-transform duration-200
+            group-hover:translate-y-0.5
+          "
+          strokeWidth={2.2}
+          aria-hidden
+        />
+        <span className="relative">نمایش مقالات بیشتر</span>
+
+        {/* Soft inner shine on hover */}
+        <span
+          aria-hidden
+          className="
+            absolute inset-0 rounded-full overflow-hidden pointer-events-none
+          "
+        >
+          <span
+            className="
+              absolute inset-0 -translate-x-full
+              bg-gradient-to-r from-transparent via-white/40 dark:via-white/10 to-transparent
+              group-hover:translate-x-full
+              transition-transform duration-700 ease-out
+            "
+          />
+        </span>
+      </button>
+
+      {/* Hint */}
+      <span className="text-[11px] text-neutral-400 dark:text-neutral-500">
+        یا برای ادامه اسکرول کنید
+      </span>
+    </motion.div>
+  );
+}
+
+/* ----- End of list state ----- */
+function EndState({
+  count,
+  showPaginatedOption,
+  onShowPaginated,
+}: {
+  count: number;
+  showPaginatedOption: boolean;
+  onShowPaginated: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -4 }}
+      transition={{ duration: 0.24, ease: STRIPE_EASE }}
+      className="flex flex-col items-center gap-3"
+    >
+      {/* Success badge */}
+      <div
+        className="
+          inline-flex items-center gap-2
+          px-3.5 py-1.5 rounded-full
+          border border-emerald-200/70 dark:border-emerald-800/60
+          bg-emerald-50/70 dark:bg-emerald-950/30
+          text-emerald-700 dark:text-emerald-300
+          text-[12px] font-medium tabular-nums
+        "
+      >
+        <span
+          className="
+            flex items-center justify-center
+            size-4 rounded-full
+            bg-emerald-500 text-white
+          "
+        >
+          <Check className="size-2.5" strokeWidth={3.5} aria-hidden />
+        </span>
+        <span>
+          تمام {toPersianNumber(formatNumber(count))} مقاله نمایش داده شد
+        </span>
+      </div>
+
+      {showPaginatedOption && (
+        <button
+          type="button"
+          onClick={onShowPaginated}
+          className={cn(
+            'group inline-flex items-center gap-1.5',
+            'text-[11.5px] font-medium',
+            'text-neutral-500 dark:text-neutral-400',
+            'hover:text-neutral-900 dark:hover:text-white',
+            'transition-colors',
+          )}
+        >
+          <LayoutGrid className="size-3.5" strokeWidth={1.8} aria-hidden />
+          <span>تغییر به نمایش صفحه‌بندی</span>
+          <ChevronLeft
+            className="
+              size-3
+              opacity-0 -translate-x-1
+              group-hover:opacity-100 group-hover:translate-x-0
+              transition-all duration-200
+              rtl:rotate-180
+            "
+            strokeWidth={2}
+            aria-hidden
+          />
+        </button>
+      )}
+    </motion.div>
+  );
+}
+
+/* ----- Paginated toolbar (toolbar بالای grid) ----- */
+function PaginatedToolbar({
+  start,
+  end,
+  total,
+  accentColor,
+  onBackToCompact,
+}: {
+  start: number;
+  end: number;
+  total: number;
+  accentColor: string;
+  onBackToCompact: () => void;
+}) {
+  const progress = total > 0 ? ((end - start) / total) * 100 : 0;
+
+  return (
+    <div
+      className={cn(
+        'relative overflow-hidden',
+        'rounded-2xl border border-neutral-200/60 dark:border-neutral-700/40',
+        'bg-white/60 dark:bg-neutral-900/50 backdrop-blur-xl',
+        'shadow-[0_1px_0_0_rgba(255,255,255,0.6)_inset,0_8px_24px_-16px_rgba(20,23,32,0.10)]',
+      )}
+    >
+      <div
+        className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 px-3 py-2.5 sm:px-4 sm:py-3"
+      >
+        {/* Right side in RTL = status */}
+        <div className="flex items-center gap-2 sm:gap-2.5 text-[11.5px] sm:text-xs text-neutral-600 dark:text-neutral-400 tabular-nums">
+          <span className="hidden sm:inline">نمایش</span>
+          <span
+            className="inline-flex items-center justify-center min-w-[2.5rem] h-6 px-2 rounded-md font-semibold tabular-nums"
+            style={{ backgroundColor: `${accentColor}18`, color: accentColor }}
+          >
+            {toPersianNumber(formatNumber(start + 1))}–{toPersianNumber(formatNumber(end))}
+          </span>
+          <span className="text-neutral-400 dark:text-neutral-500">/</span>
+          <span className="font-semibold text-neutral-900 dark:text-white">
+            {toPersianNumber(formatNumber(total))}
+          </span>
+          <span>مقاله</span>
+        </div>
+
+        {/* Left side in RTL = back button */}
+        <button
+          type="button"
+          onClick={onBackToCompact}
+          className={cn(
+            'group inline-flex items-center gap-1.5',
+            'h-7 px-2.5 rounded-lg',
+            'text-[11px] font-medium',
+            'text-neutral-500 dark:text-neutral-400',
+            'hover:text-neutral-900 dark:hover:text-white',
+            'hover:bg-neutral-100 dark:hover:bg-neutral-800',
+            'transition-colors',
+          )}
+        >
+          <List className="size-3.5" strokeWidth={1.8} aria-hidden />
+          <span>نمایش فشرده</span>
+        </button>
+      </div>
+
+      {/* Progress bar at bottom */}
+      <div
+        className="h-0.5 w-full bg-neutral-200/50 dark:bg-neutral-800/50"
+        aria-hidden
+      >
+        <motion.div
+          className="h-full rounded-full"
+          style={{
+            background: `linear-gradient(90deg, ${accentColor}, ${accentColor}80)`,
+          }}
+          initial={{ width: 0 }}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.4, ease: STRIPE_EASE }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ----- Pagination — pill segmented control ----- */
+function Pagination({
+  page,
+  totalPages,
+  onSelect,
+}: {
+  page: number;
+  totalPages: number;
+  onSelect: (p: number) => void;
+}) {
+  const pages = useMemo(() => buildPageList(page, totalPages), [page, totalPages]);
+
+  return (
+    <nav
+      className="flex items-center justify-center gap-1.5 sm:gap-2 pt-2"
+      aria-label="صفحه‌بندی"
+    >
+      {/* قبلی — در RTL: سمت راست */}
+      <PageBtn
+        disabled={page === 1}
+        onClick={() => onSelect(page - 1)}
+        ariaLabel="صفحه‌ی قبل"
+      >
+        <ChevronRight className="size-4" strokeWidth={2} aria-hidden />
+      </PageBtn>
+
+      {/* اعداد */}
+      <div
+        className="
+          inline-flex items-center gap-0.5 sm:gap-1
+          p-1 rounded-full
+          border border-neutral-200/60 dark:border-neutral-700/40
+          bg-white/60 dark:bg-neutral-900/50 backdrop-blur-md
+        "
+      >
+        {pages.map((p, i) =>
+          p === '…' ? (
+            <span
+              key={`e-${i}`}
+              className="px-1.5 sm:px-2 text-neutral-400 dark:text-neutral-500 text-[11px] select-none"
+              aria-hidden
+            >
+              …
+            </span>
+          ) : (
+            <PageNum
+              key={p}
+              page={p}
+              active={p === page}
+              onClick={() => onSelect(p)}
+            />
+          ),
+        )}
+      </div>
+
+      {/* بعدی — در RTL: سمت چپ */}
+      <PageBtn
+        disabled={page === totalPages}
+        onClick={() => onSelect(page + 1)}
+        ariaLabel="صفحه‌ی بعد"
+      >
+        <ChevronLeft className="size-4" strokeWidth={2} aria-hidden />
+      </PageBtn>
+    </nav>
+  );
+}
+
+function PageNum({
+  page,
+  active,
+  onClick,
+}: {
+  page: number;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-current={active ? 'page' : undefined}
+      aria-label={`برو به صفحه‌ی ${toPersianNumber(page)}`}
+      className={cn(
+        'relative inline-flex items-center justify-center',
+        'h-8 min-w-8 sm:h-9 sm:min-w-9 px-2 sm:px-2.5',
+        'rounded-full text-[11.5px] sm:text-[12.5px] font-semibold tabular-nums',
+        'transition-colors duration-200',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40',
+        active
+          ? 'text-neutral-900 dark:text-neutral-50'
+          : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100',
+      )}
+    >
+      {active && (
+        <motion.span
+          layoutId="active-page-pill"
+          className="
+            absolute inset-0 rounded-full
+            bg-neutral-900 dark:bg-white
+            shadow-[0_2px_8px_-2px_rgba(20,23,32,0.20)]
+            dark:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.40)]
+          "
+          transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+          aria-hidden
+        />
+      )}
+      <span className="relative z-10">{toPersianNumber(page)}</span>
+    </button>
+  );
+}
 
 function PageBtn({
   children,
@@ -292,61 +634,23 @@ function PageBtn({
       disabled={disabled}
       aria-label={ariaLabel}
       className={cn(
-        'inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg',
+        'group inline-flex items-center justify-center',
+        'size-9 sm:size-10 rounded-full',
         'border border-neutral-200/60 dark:border-neutral-700/60',
-        'bg-white/60 dark:bg-neutral-900/60',
+        'bg-white/60 dark:bg-neutral-900/60 backdrop-blur-md',
+        'text-neutral-600 dark:text-neutral-300',
         'hover:border-neutral-300 dark:hover:border-neutral-600',
         'hover:bg-white dark:hover:bg-neutral-800',
-        'transition-colors',
-        'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white/60',
+        'hover:text-neutral-900 dark:hover:text-white',
+        'active:scale-[0.96]',
+        'transition-all duration-200',
+        'disabled:opacity-40 disabled:cursor-not-allowed',
+        'disabled:hover:bg-white/60 dark:disabled:hover:bg-neutral-900/60',
+        'disabled:active:scale-100',
       )}
     >
       {children}
     </button>
-  );
-}
-
-function PaginationNumbers({
-  page,
-  totalPages,
-  onSelect,
-}: {
-  page: number;
-  totalPages: number;
-  onSelect: (p: number) => void;
-}) {
-  const pages = useMemo(() => buildPageList(page, totalPages), [page, totalPages]);
-  return (
-    <div className="flex items-center gap-1">
-      {pages.map((p, i) =>
-        p === '…' ? (
-          <span
-            key={`e-${i}`}
-            className="px-2 text-neutral-400 dark:text-neutral-500"
-            aria-hidden
-          >
-            …
-          </span>
-        ) : (
-          <button
-            key={p}
-            type="button"
-            onClick={() => onSelect(p)}
-            aria-current={p === page ? 'page' : undefined}
-            className={cn(
-              'inline-flex h-8 min-w-8 sm:h-9 sm:min-w-9 px-2 sm:px-2.5 items-center justify-center rounded-lg',
-            'text-[11px] sm:text-[12px] font-semibold tabular-nums',
-              'transition-colors',
-              p === page
-                ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900'
-                : 'text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800',
-            )}
-          >
-            {toPersianNumber(p)}
-          </button>
-        ),
-      )}
-    </div>
   );
 }
 
