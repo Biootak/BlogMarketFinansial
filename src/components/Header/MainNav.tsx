@@ -13,11 +13,11 @@ import { User, Sparkles } from 'lucide-react';
  *
  * ساختار:
  *  - سه ستون مساوی با grid: `grid-cols-[1fr_auto_1fr]`
- *  - ستون وسط: Navigation دقیقاً در مرکز
+ *  - ستون وسط: Navigation دقیقاً در مرکز (فقط در دسکتاپ ≥1024px)
  *  - ستون راست (start در RTL): Logo
  *  - ستون چپ (end در RTL): Actions
- *  - در موبایل: hamburger + auth
- *  - در دسکتاپ: navigation وسط + auth در راست
+ *  - در موبایل و تبلت (<1024px): hamburger + auth
+ *  - در دسکتاپ (≥1024px): navigation وسط + auth در راست
  *
  * 2026-06-14: بازطراحی برای تقارن کامل
  *  - هر سه ستون flex-1 با items-center
@@ -27,58 +27,59 @@ import { User, Sparkles } from 'lucide-react';
  *
  * 2026-06-15: ریسپانسیو برای موبایل
  *  - در موبایل: فقط logo + actions (بدون 3-col grid برای جلوگیری از squeeze)
- *  - ساختار 3-col فقط در `@lg` (~1024px) فعال می‌شه
+ *  - ساختار 3-col فقط در `lg` (1024px) فعال می‌شه
  *  - استفاده از container queries + @container برای تقارن بهتر در سایزهای میانی
+ *
+ * 2026-06-16: اصلاح breakpoint
+ *  - Navigation فقط در دسکتاپ (≥1024px = lg) نمایش داده می‌شود
+ *  - MenuBar در تبلت و موبایل (<1024px) نمایش داده می‌شود
+ *  - تغییر از container query (@lg/nav) به media query استاندارد `lg:`
+ *    چون container query بر اساس عرض والد کار می‌کرد و در تبلت
+ *    ممکن بود Navigation در کانتینرهای کوچک نمایش داده نشود
  */
 export default async function MainNav() {
   const session = await auth();
 
   return (
-    <nav className="relative z-10 @container/nav" aria-label="ناوبری اصلی سایت">
+    <nav className="relative z-10" aria-label="ناوبری اصلی سایت">
       <div className="container">
         <div
           className="
-            relative flex items-center justify-between
-            @5xl/nav:grid
-            @5xl/nav:grid-cols-[1fr_auto_1fr]
-            h-14 @5xl/nav:h-16
+            grid items-center
+            grid-cols-[1fr_auto_1fr]
+            lg:grid-cols-[auto_1fr_auto]
+            lg:grid-rows-[auto_auto]
+            h-auto lg:py-2
             gap-2 sm:gap-4
           "
         >
-          {/* همبرگر منو: فعال در زیر دسکتاپ (موبایل و تبلت) */}
-          <div
-            className="
-              flex @5xl/nav:hidden items-center justify-center
-              size-10 rounded-xl
-              text-neutral-600 dark:text-neutral-300
-              hover:bg-neutral-100 dark:hover:bg-neutral-800/80
-              transition-colors duration-200
-            "
-          >
-            <MenuBar />
+          {/* ستون راست (در RTL: همبرگر منو - موبایل و تبلت <lg) */}
+          <div className="flex items-center justify-start min-w-0 col-start-1 row-start-1">
+            {/* موبایل و تبلت: همبرگر منو - در دسکتاپ مخفی */}
+            <div
+              className="
+                lg:hidden
+                flex items-center justify-center
+                size-10 rounded-xl
+                text-neutral-600 dark:text-neutral-300
+                hover:bg-neutral-100 dark:hover:bg-neutral-800/80
+                transition-colors duration-200
+              "
+            >
+              <MenuBar />
+            </div>
           </div>
 
-          {/* لوگو: با موضع‌گیری مطلق در وسط برای موبایل/تبلت و موضع‌گیری شبکه در سمت راست برای دسکتاپ */}
-          <div
-            className="
-              absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
-              @5xl/nav:static @5xl/nav:translate-x-0 @5xl/nav:translate-y-0
-              @5xl/nav:col-start-1 @5xl/nav:row-start-1
-              flex items-center justify-start min-w-0
-            "
-          >
+          {/* ستون وسط — Logo */}
+          <div className="flex items-center justify-center min-w-0 col-start-2 row-start-1
+                          lg:col-start-1 lg:row-start-1 lg:justify-start">
             <Logo variant="modern" />
           </div>
 
-          {/* منوی ناوبری افقی دسکتاپ: فعال در دسکتاپ و بالاتر */}
-          <div className="hidden @5xl/nav:flex items-center justify-center min-w-0 @5xl/nav:col-start-2 @5xl/nav:row-start-1">
-            <Navigation />
-          </div>
-
-          {/* ستون چپ (در RTL: اکشن‌ها/ورود) */}
-          <div className="flex items-center justify-end gap-1 sm:gap-2 min-w-0 @5xl/nav:col-start-3 @5xl/nav:row-start-1">
+          {/* ستون چپ (در RTL: اکشن‌ها/ورود — همه سایزها) */}
+          <div className="flex items-center justify-end gap-1 sm:gap-2 min-w-0 col-start-3 row-start-1">
             {/* موبایل و تبلت: فقط user/auth */}
-            <div className="flex @5xl/nav:hidden items-center gap-1">
+            <div className="flex lg:hidden items-center gap-1">
               {!session?.user ? (
                 <Link
                   href="/signin"
@@ -107,8 +108,8 @@ export default async function MainNav() {
               )}
             </div>
 
-            {/* دسکتاپ: search + notify + avatar/sign-in */}
-            <div className="hidden @5xl/nav:flex items-center gap-1.5">
+            {/* دسکتاپ (lg+): search + notify + avatar/sign-in */}
+            <div className="hidden lg:flex items-center gap-1.5">
               <div
                 className="
                   flex items-center justify-center
@@ -225,6 +226,13 @@ export default async function MainNav() {
                 </div>
               )}
             </div>
+          </div>
+
+          {/* ستون وسط ردیف دوم — Navigation (فقط lg+ = دسکتاپ) */}
+          <div className="hidden lg:flex items-center justify-center min-w-0
+                          col-span-3 row-start-2
+                          lg:col-span-1 lg:col-start-2 lg:row-start-1">
+            <Navigation />
           </div>
         </div>
       </div>
