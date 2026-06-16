@@ -425,19 +425,50 @@ export function PulseBoard({
                 })}
               </div>
 
-              {/* Live clock — desktop */}
+              {/* Live clocks — desktop (تهران + کابل) */}
               <div
                 className={cn(
                   'hidden lg:inline-flex items-center gap-1.5 shrink-0',
-                  'h-9 px-3.5 rounded-full',
+                  'h-9 px-1 rounded-full',
                   'border border-neutral-200/80 dark:border-neutral-700/60',
                   'bg-white/70 dark:bg-neutral-800/60 backdrop-blur-md',
-                  'text-[11px] sm:text-xs font-medium text-neutral-600 dark:text-neutral-300',
+                  'font-vazirmatn',
                 )}
+                aria-label="ساعت بازارهای منطقه"
               >
-                <LiveClock showIcon={false} showSeconds />
-                <span className="text-neutral-400 dark:text-neutral-500">·</span>
-                <span className="text-neutral-500 dark:text-neutral-400">تهران</span>
+                {/* تهران */}
+                <div
+                  className={cn(
+                    'inline-flex items-center gap-1.5',
+                    'h-7 px-2.5 rounded-full',
+                    'bg-neutral-100/70 dark:bg-neutral-900/50',
+                    'text-[11px] sm:text-xs font-medium text-neutral-600 dark:text-neutral-300',
+                  )}
+                  title="ساعت تهران"
+                >
+                  <LiveClock showIcon={false} showSeconds timeZone="Asia/Tehran" />
+                  <span className="text-neutral-400 dark:text-neutral-500">·</span>
+                  <span className="text-neutral-500 dark:text-neutral-400">تهران</span>
+                </div>
+
+                {/* کابل */}
+                <div
+                  className={cn(
+                    'inline-flex items-center gap-1.5',
+                    'h-7 px-2.5 rounded-full',
+                    'text-[11px] sm:text-xs font-medium text-neutral-600 dark:text-neutral-300',
+                    'transition-colors duration-300',
+                  )}
+                  style={{
+                    backgroundColor: `${accent.color}1a`,
+                    color: accent.color,
+                  }}
+                  title="ساعت کابل"
+                >
+                  <LiveClock showIcon={false} showSeconds timeZone="Asia/Kabul" />
+                  <span className="opacity-60" style={{ color: accent.color }}>·</span>
+                  <span className="font-semibold" style={{ color: accent.color }}>کابل</span>
+                </div>
               </div>
             </div>
 

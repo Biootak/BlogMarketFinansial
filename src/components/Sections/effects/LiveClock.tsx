@@ -1,10 +1,10 @@
 'use client';
 
 /**
- * LiveClock — ساعت تهران با pulse dot (CSS-driven, no framer-motion)
+ * LiveClock — ساعت زنده با پشتیبانی از timezone دلخواه (CSS-driven, no framer-motion)
  *
  * - به‌روزرسانی هر ثانیه با setInterval
- * - استفاده از Intl.DateTimeFormat با timezone Asia/Tehran
+ * - استفاده از Intl.DateTimeFormat با timezone قابل تنظیم
  * - PersianDigits
  * - Pulse dot و blink colon از CSS keyframe (anim-blink, anim-liveclock-pulse)
  * - prefers-reduced-motion توسط global rule در globals.css → animation حذف میشه
@@ -18,11 +18,16 @@ interface LiveClockProps {
   className?: string;
   showSeconds?: boolean;
   showIcon?: boolean;
+  /** منطقه‌ی زمانی (IANA). پیش‌فرض: Asia/Tehran */
+  timeZone?: string;
 }
 
-function getTehranTimeParts(showSeconds: boolean) {
+function getTimeParts(
+  showSeconds: boolean,
+  timeZone: string,
+): { hour: string; minute: string; second: string | undefined } {
   const formatter = new Intl.DateTimeFormat('fa-IR', {
-    timeZone: 'Asia/Tehran',
+    timeZone,
     hour: '2-digit',
     minute: '2-digit',
     second: showSeconds ? '2-digit' : undefined,
@@ -39,15 +44,16 @@ export default function LiveClock({
   className,
   showSeconds = true,
   showIcon = true,
+  timeZone = 'Asia/Tehran',
 }: LiveClockProps) {
-  const [time, setTime] = useState(() => getTehranTimeParts(showSeconds));
+  const [time, setTime] = useState(() => getTimeParts(showSeconds, timeZone));
 
   useEffect(() => {
-    const update = () => setTime(getTehranTimeParts(showSeconds));
+    const update = () => setTime(getTimeParts(showSeconds, timeZone));
     update();
     const id = setInterval(update, 1000);
     return () => clearInterval(id);
-  }, [showSeconds]);
+  }, [showSeconds, timeZone]);
 
   return (
     <div
