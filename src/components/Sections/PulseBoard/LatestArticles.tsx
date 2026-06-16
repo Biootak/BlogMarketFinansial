@@ -60,8 +60,13 @@ interface LatestArticlesProps {
 }
 
 const MAX_VISIBLE_FILTERS = 6;
-const INITIAL_VISIBLE = 9;
-const PAGE_SIZE = 9;
+const INITIAL_VISIBLE = 8;
+/**
+ * اندازه‌ی هر chunk از «بارگذاری بیشتر». 8 = یک ردیف 4 ستونه‌ی دسکتاپ
+ * + یک ردیف 2 ستونه‌ی موبایل؛ کاربر با هر کلیک دقیقاً همین تعداد مقاله‌ی
+ * تازه می‌بینه و تجربه‌ی پایدار داره.
+ */
+const PAGE_SIZE = 8;
 
 /* ---------- Helpers (no duplication) ---------- */
 function normFa(s: string): string {
@@ -186,6 +191,8 @@ export function LatestArticles({
     const currentList = categoryPosts[activeCategory] || [];
     const currentLimit = visibleCounts[activeCategory] ?? INITIAL_VISIBLE;
 
+    // اگه هنوز visible بیشتری داخل همون لیست فعلی هست، فقط پنجره رو جلو ببر
+    // (هیچ لود شبکه‌ای — هیچ رفتار غیرقابل پیش‌بینی).
     if (currentList.length > currentLimit) {
       setVisibleCounts((prev) => ({ ...prev, [activeCategory]: currentLimit + PAGE_SIZE }));
       return;
@@ -205,11 +212,13 @@ export function LatestArticles({
 
       setCategoryPosts((prev) => ({ ...prev, [activeCategory]: newList }));
 
-      const added = uniqueNext.length;
+      // پنجره‌ی visible رو دقیقاً به اندازه‌ی آیتم‌های واقعی جلو ببر
+      // (نه PAGE_SIZE). این تضمین می‌کنه کلیک بعدی منطق درست رو طی کنه.
       setVisibleCounts((prev) => ({
         ...prev,
-        [activeCategory]: currentLimit + Math.max(added, PAGE_SIZE),
+        [activeCategory]: currentLimit + uniqueNext.length,
       }));
+      // اگه سرور کمتر از PAGE_SIZE برگردوند، یعنی به انتها رسیدیم
       setHasMoreMap((prev) => ({
         ...prev,
         [activeCategory]: nextPosts.length >= PAGE_SIZE,

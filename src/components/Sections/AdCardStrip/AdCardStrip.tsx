@@ -110,19 +110,20 @@ export function AdCardStrip({
           <HeroAdCard
             ad={hero}
             accentColor={accentColor}
-            className={richItems.length === 0 ? 'md:col-span-1' : ''}
+            className={cn('h-full', richItems.length === 0 && 'md:col-span-1')}
           />
         )}
 
         {/* RICH CARDS — compact */}
         {richItems.map((ad, i) => (
-          <RichAdCard
-            key={ad.id}
-            ad={ad}
-            accentColor={accentColor}
-            index={i}
-            reduce={reduce ?? false}
-          />
+          <div key={ad.id} className="h-full">
+            <RichAdCard
+              ad={ad}
+              accentColor={accentColor}
+              index={i}
+              reduce={reduce ?? false}
+            />
+          </div>
         ))}
       </div>
     </section>
@@ -157,11 +158,11 @@ function HeroAdCard({
         rel="noopener noreferrer sponsored"
         aria-label={`تبلیغ: ${ad.title}`}
         className={cn(
-          'ad-spotlight-3d relative block overflow-hidden rounded-2xl sm:rounded-3xl',
+          'ad-spotlight-3d relative flex flex-col h-full overflow-hidden rounded-2xl sm:rounded-3xl',
           'border border-[color:var(--hairline)]',
           'bg-gradient-to-br from-white/80 to-neutral-50/40 dark:from-neutral-900/70 dark:to-neutral-900/40',
           'backdrop-blur-md',
-          'min-h-[260px] sm:min-h-[300px] lg:min-h-[340px]',
+          'min-h-[200px] sm:min-h-[220px] lg:min-h-[260px]',
           'shadow-[0_2px_24px_-12px_rgba(0,0,0,0.18)]',
           'transition-shadow duration-500',
           'hover:shadow-[0_24px_60px_-20px_rgba(94,106,230,0.4)]',
@@ -296,7 +297,7 @@ function RichAdCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-60px' }}
       transition={{ duration: 0.5, delay: 0.05 + index * 0.06, ease: [0.22, 1, 0.36, 1] }}
-      className="group/rich-ad relative"
+      className="group/rich-ad relative h-full"
     >
       <Link
         href={ad.linkUrl}
@@ -304,7 +305,7 @@ function RichAdCard({
         rel="noopener noreferrer sponsored"
         aria-label={`تبلیغ: ${ad.title}`}
         className={cn(
-          'relative block overflow-hidden rounded-2xl',
+          'relative flex flex-col h-full overflow-hidden rounded-2xl',
           'border border-[color:var(--hairline)]',
           'bg-white/75 dark:bg-neutral-900/65 backdrop-blur-md',
           'shadow-[0_1px_0_0_rgba(255,255,255,0.5)_inset,0_4px_16px_-8px_rgba(20,23,32,0.08)]',
@@ -315,8 +316,9 @@ function RichAdCard({
         )}
         style={{ ['--ad-accent' as string]: accentColor } as React.CSSProperties}
       >
-        {/* Image */}
-        <div className="relative aspect-[16/9] overflow-hidden">
+        {/* Image — نسبت تصویر طوری تنظیم شد که با hero هم‌خونی داشته باشه
+            و rich card ارتفاعش رو با hero هماهنگ کنه. */}
+        <div className="relative aspect-[16/10] overflow-hidden shrink-0">
           {ad.imageUrl ? (
             <SafeImage
               src={ad.imageUrl}
@@ -326,7 +328,7 @@ function RichAdCard({
               containerClassName="absolute inset-0"
               className="object-cover transition-transform duration-500 ease-out group-hover/rich-ad:scale-[1.05]"
               variant="card"
-              ratio="16/9"
+              ratio="16/10"
             />
           ) : (
             <div
@@ -377,8 +379,8 @@ function RichAdCard({
           </div>
         </div>
 
-        {/* Content */}
-        <div className="relative p-3.5 sm:p-4 space-y-1.5">
+        {/* Content — flex-1 پر کردن فضای خالی پایین */}
+        <div className="relative flex-1 min-h-0 p-3.5 sm:p-4 flex flex-col gap-1.5">
           <h4 className="text-[13px] sm:text-[14px] font-bold leading-[1.4] text-neutral-900 dark:text-white line-clamp-2 text-balance">
             {ad.title}
           </h4>
@@ -388,7 +390,7 @@ function RichAdCard({
             </p>
           )}
 
-          <div className="pt-1 flex items-center justify-between text-[10.5px] font-vazirmatn tabular-nums text-neutral-500 dark:text-neutral-400">
+          <div className="mt-auto pt-1 flex items-center justify-between text-[10.5px] font-vazirmatn tabular-nums text-neutral-500 dark:text-neutral-400">
             <span>پیشنهاد ویژه</span>
             <ArrowLeft
               className={cn(
