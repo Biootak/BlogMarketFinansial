@@ -1,6 +1,4 @@
-// PulseBoard — بارگذاری مقالات بر اساس دسته با view transitions
-export { default, default as PulseBoard } from './PulseBoard';
-export { default as PulseCard } from './PulseCard';
-export { default as PulseRail } from './PulseRail';
-export { default as AdSlot } from './AdSlot';
+// LatestArticles — بازطراحی کامل بخش «آخرین مقالات» (نسخه ۲۰۲۶)
+export { default, default as LatestArticles } from './LatestArticles';
+// PulseSection (server) + skeleton
 export { default as PulseSection, PulseSectionSkeleton } from './PulseSection';

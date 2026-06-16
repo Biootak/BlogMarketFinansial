@@ -45,51 +45,53 @@ const SectionExchangeRates = dynamic(
   () => import('@/components/Sections/SectionExchangeRates'),
   { loading: () => <Skeleton className="h-28 rounded-2xl" />, ssr: true },
 );
-const SectionAds = dynamic(() => import('@/components/Sections/SectionAds'), {
-  loading: () => <Skeleton className="h-[150px] lg:h-[250px] rounded-3xl" />,
-  ssr: true,
-});
+const AdCardStrip = dynamic(
+  () => import('@/components/Sections/AdCardStrip').then((m) => m.AdCardStrip),
+  {
+    loading: () => <Skeleton className="h-[260px] sm:h-[300px] rounded-3xl" />,
+    ssr: true,
+  },
+);
 
 export default async function Home() {
-  const [posts, topAuthors, firstAdResult, secondAdResult, categoriesResult] = await Promise.all([
-    getPosts(6),
-    getTopAuthors(5),
-    // Ads برای SectionAds بین اسلایدها
-    import('@/actions/advertisementActions').then((m) =>
-      m.getActiveAdvertisements({
-        limit: 1,
-        size: 'LARGE',
-        position: 'CUSTOM',
-        orderBy: 'order',
-        orderDirection: 'asc',
-      }),
-    ),
-    import('@/actions/advertisementActions').then((m) =>
-      m.getActiveAdvertisements({
-        limit: 1,
-        size: 'LARGE',
-        position: 'CUSTOM',
-        orderBy: 'order',
-        orderDirection: 'asc',
-        page: 2,
-      }),
-    ),
-    import('@/actions/categoryActions').then((m) => m.getPopularCategoriesForHome(16)),
-  ]);
+  // 1) Posts + Authors + Categories + Ads — همگی موازی
+  const [posts, topAuthors, firstStripResult, secondStripResult, categoriesResult] =
+    await Promise.all([
+      getPosts(6),
+      getTopAuthors(5),
+      // Strip 1: 4 ad برای hero+rich
+      import('@/actions/advertisementActions').then((m) =>
+        m.getActiveAdvertisements({
+          limit: 4,
+          size: 'LARGE',
+          position: 'CUSTOM',
+          orderBy: 'order',
+          orderDirection: 'asc',
+        }),
+      ),
+      // Strip 2: 3 ad جمع‌وجور بعد از گالری
+      import('@/actions/advertisementActions').then((m) =>
+        m.getActiveAdvertisements({
+          limit: 3,
+          size: 'MEDIUM',
+          position: 'CUSTOM',
+          orderBy: 'order',
+          orderDirection: 'asc',
+          page: 2,
+        }),
+      ),
+      import('@/actions/categoryActions').then((m) => m.getPopularCategoriesForHome(16)),
+    ]);
 
   const popularCategories =
     categoriesResult.success && categoriesResult.data?.categories
       ? categoriesResult.data.categories.filter((c) => c.count > 0)
       : [];
 
-  const firstAd =
-    firstAdResult.success && firstAdResult.data && firstAdResult.data.length > 0
-      ? firstAdResult.data[0]
-      : null;
-  const secondAd =
-    secondAdResult.success && secondAdResult.data && secondAdResult.data.length > 0
-      ? secondAdResult.data[0]
-      : null;
+  const firstStrip =
+    firstStripResult.success && firstStripResult.data ? firstStripResult.data : [];
+  const secondStrip =
+    secondStripResult.success && secondStripResult.data ? secondStripResult.data : [];
 
   return (
     <div className="nc-HomePage relative">
@@ -133,10 +135,12 @@ export default async function Home() {
         </Suspense>
       </div>
 
-      {/* First Ad — spotlight hero */}
-      {firstAd && (
+      {/* First Ad Strip — 1 hero + up to 3 rich cards (بجای ۱ تبلیغ بزرگ) */}
+      {firstStrip.length > 0 && (
         <div className="container relative mt-8 lg:mt-12">
-          <SectionAds className="" ad={firstAd} variant="spotlight" />
+          <Suspense fallback={<Skeleton className="h-[260px] sm:h-[300px] rounded-3xl" />}>
+            <AdCardStrip ads={firstStrip} accentColor="#5b6cff" />
+          </Suspense>
         </div>
       )}
 
@@ -147,10 +151,12 @@ export default async function Home() {
         </div>
       )}
 
-      {/* Second Ad — rich split card */}
-      {secondAd && (
+      {/* Second Ad Strip — تبلیغات متنوع‌تر پایین گالری */}
+      {secondStrip.length > 0 && (
         <div className="container relative mt-8 lg:mt-12">
-          <SectionAds className="" ad={secondAd} variant="rich" />
+          <Suspense fallback={<Skeleton className="h-[260px] sm:h-[300px] rounded-3xl" />}>
+            <AdCardStrip ads={secondStrip} accentColor="#22d3ee" eyebrow="پیشنهاد اخیر" />
+          </Suspense>
         </div>
       )}
 

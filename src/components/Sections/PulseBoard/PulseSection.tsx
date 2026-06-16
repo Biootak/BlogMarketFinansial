@@ -4,19 +4,10 @@ import { getMarketTickerData } from '@/actions/marketTickerActions';
 import { getLatestPostCategories } from '@/actions/getLatestPostCategories';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Advertisement, PostWithRelations } from '@/types/types';
-import type { MarketTickerItem } from '@/actions/marketTickerActions';
 import prisma from '@/lib/db';
-import PulseBoard from './PulseBoard';
-
-export interface PulseSectionProps {
-  className?: string;
-}
+import LatestArticles from './LatestArticles';
 
 /* ---------- Helpers ---------- */
-
-function normFa(s: string): string {
-  return s.replace(/\s+/g, '').replace(/[‌]/g, '').toLowerCase();
-}
 
 function dedupeById(posts: PostWithRelations[]): PostWithRelations[] {
   const seen = new Set<string>();
@@ -27,6 +18,10 @@ function dedupeById(posts: PostWithRelations[]): PostWithRelations[] {
     out.push(p);
   }
   return out;
+}
+
+export interface PulseSectionProps {
+  className?: string;
 }
 
 export default async function PulseSection({ className = '' }: PulseSectionProps) {
@@ -53,30 +48,19 @@ export default async function PulseSection({ className = '' }: PulseSectionProps
           not: null,
         },
         AND: [
-          {
-            featuredImage: {
-              not: '',
-            },
-          },
-          {
-            featuredImage: {
-              not: ' ',
-            },
-          },
+          { featuredImage: { not: '' } },
+          { featuredImage: { not: ' ' } },
         ],
       },
     }),
   ]);
 
   const posts: PostWithRelations[] = dedupeById(latestPosts);
-
-  const initialAds: Advertisement[] = adsResult.success
-    ? (adsResult.data ?? [])
-    : [];
+  const initialAds: Advertisement[] = adsResult.success ? (adsResult.data ?? []) : [];
 
   return (
     <div className={`nc-PulseSection ${className}`}>
-      <PulseBoard
+      <LatestArticles
         posts={posts}
         categories={categories}
         initialAds={initialAds}
