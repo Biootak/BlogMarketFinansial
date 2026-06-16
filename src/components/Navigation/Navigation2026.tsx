@@ -7,6 +7,12 @@
  * - Dropdown reveal با CSS keyframe (anim-fade-in-down).
  * - Stagger داخل dropdown با :nth-child(n) animation-delay.
  * - prefers-reduced-motion توسط global rule در globals.css مدیریت میشه.
+ *
+ * 2026-06-16: رندر شرطی بعد از mount
+ *  - Radix DropdownMenu در SSR و client ID های متفاوتی تولید می‌کنه
+ *  - برای جلوگیری از hydration mismatch، تا قبل از mount
+ *    یک placeholder با ابعاد یکسان رندر می‌شه
+ *  - بعد از mount (useEffect) نسخه واقعی جایگزین می‌شه
  */
 
 import { memo, useState, useRef, useEffect } from 'react';
@@ -80,7 +86,12 @@ const Navigation = ({ className = '' }: NavigationProps): React.ReactElement => 
   const [activeId, setActiveId] = useState<string | null>(null);
   const [showLeftFade, setShowLeftFade] = useState(false);
   const [showRightFade, setShowRightFade] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const scrollRef = useRef<HTMLUListElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     setHoveredId(null);
@@ -301,6 +312,7 @@ const Navigation = ({ className = '' }: NavigationProps): React.ReactElement => 
     <nav
       className={cn('relative flex items-center', className)}
       aria-label="ناوبری اصلی"
+      suppressHydrationWarning
     >
       <div
         aria-hidden
@@ -327,8 +339,24 @@ const Navigation = ({ className = '' }: NavigationProps): React.ReactElement => 
           scrollbar-none
         "
         style={{ scrollbarWidth: 'none' }}
+        suppressHydrationWarning
       >
-        {NAVBAR_LINKS.map(renderNavItem)}
+        {mounted
+          ? NAVBAR_LINKS.map(renderNavItem)
+          : NAVBAR_LINKS.map((item) => (
+              <li
+                key={item.id}
+                className="relative flex-shrink-0"
+                suppressHydrationWarning
+              >
+                <span
+                  className="inline-flex items-center gap-1 px-3 py-1.5 text-[13px] font-medium rounded-full whitespace-nowrap text-neutral-500 dark:text-neutral-400"
+                  suppressHydrationWarning
+                >
+                  {item.name}
+                </span>
+              </li>
+            ))}
       </ul>
     </nav>
   );
