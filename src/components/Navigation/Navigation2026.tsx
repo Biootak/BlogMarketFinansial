@@ -80,8 +80,6 @@ const NAVBAR_LINKS: readonly NavItem[] = [
     ],
   },
   { id: 'stock', name: 'بورس و سهام', href: '/archive/category/stock' },
-  // بازار — مگامنو با داده‌ی زنده RateList
-  { id: 'bazar', name: 'بازار', href: '/money-transfer', kind: 'mega' as const },
   { id: 'money-transfer', name: 'حواله', href: '/money-transfer' },
   { id: 'online-payment', name: 'پرداخت آنلاین', href: '/online-payment' },
   { id: 'urgent', name: 'اخبار فوری', href: '/archive/category/news-urgent', isNew: true },

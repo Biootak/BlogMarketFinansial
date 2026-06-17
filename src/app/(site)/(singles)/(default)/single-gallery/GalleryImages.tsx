@@ -1,39 +1,39 @@
 'use client';
 
-import { useState, useCallback, Fragment } from 'react';
+import { useState, useCallback, Fragment, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Dialog, Transition } from '@headlessui/react';
-import { Icon } from '@/components/ui/icon';
-import { cn } from '@/lib/utils'; // Import cn utility for conditional classnames
+import { cn, toPersianNumber } from '@/lib/utils';
+import { ChevronLeft, ChevronRight, Maximize2, X } from 'lucide-react';
 
-// Helper component for image with skeleton loading state
 const ImageWithSkeleton: React.FC<{
   src: string;
   alt: string;
-  fill: boolean;
-  sizes: string;
-  className: string;
-}> = ({ src, alt, fill, sizes, className }) => {
+  fill?: boolean;
+  sizes?: string;
+  className?: string;
+  priority?: boolean;
+}> = ({ src, alt, fill = true, sizes, className, priority = false }) => {
   const [isLoading, setLoading] = useState(true);
 
   return (
     <div className="relative w-full h-full">
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-xl" />
+        <div className="absolute inset-0 flex items-center justify-center bg-neutral-900 animate-pulse rounded-xl" />
       )}
       <Image
         alt={alt}
         src={src}
         fill={fill}
         sizes={sizes}
+        priority={priority}
         className={cn(
           className,
-          'transition-opacity duration-300',
-          isLoading ? 'opacity-0' : 'opacity-100'
+          'transition-all duration-300',
+          isLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
         )}
         onLoad={() => setLoading(false)}
-        onLoadingComplete={() => setLoading(false)} // Ensure loading state is false
       />
     </div>
   );
@@ -51,16 +51,16 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0); // Added for modal navigation
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const IMAGES_GALLERY =
     post.galleryImages.length > 0
       ? post.galleryImages
       : ([post.featuredImage].filter(Boolean) as string[]);
 
-  const handleOpenModalImageGallery = useCallback(() => {
+  const handleOpenModalImageGallery = useCallback((index: number = 0) => {
     setIsModalOpen(true);
-    setCurrentImageIndex(0); // Reset to first image when opening modal
+    setCurrentImageIndex(index);
     const newParams = new URLSearchParams(searchParams.toString());
     newParams.set('modal', 'PHOTO_TOUR_SCROLLABLE');
     router.push(`?${newParams.toString()}`, { scroll: false });
@@ -83,53 +83,127 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
     );
   }, [IMAGES_GALLERY.length]);
 
+  // Handle keyboard navigation for active slide controls & modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        handlePrevImage();
+      } else if (e.key === 'ArrowRight') {
+        handleNextImage();
+      } else if (e.key === 'Escape' && isModalOpen) {
+        handleCloseModal();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleNextImage, handlePrevImage, isModalOpen, handleCloseModal]);
+
   return (
     <>
-      <div className="relative grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 my-10">
-        <div
-          className="col-span-2 row-span-2 relative rounded-xl overflow-hidden cursor-pointer aspect-w-16 aspect-h-9"
-          onClick={handleOpenModalImageGallery}
-          onKeyDown={(e) => e.key === 'Enter' && handleOpenModalImageGallery()}
-          aria-label="Open image gallery"
-        >
-          <ImageWithSkeleton
-            alt={post.title}
-            src={IMAGES_GALLERY[0] || '/images/placeholder.png'}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="rounded-xl object-cover transition-transform duration-300 hover:scale-105"
-          />
-        </div>
-        {IMAGES_GALLERY.slice(1, 5).map((item, index) => (
-          <div
-            key={index}
-            className={`relative rounded-xl overflow-hidden cursor-pointer aspect-w-4 aspect-h-3 ${
-              index >= 2 ? 'hidden sm:block' : ''
-            }`}
-            onClick={handleOpenModalImageGallery}
-            onKeyDown={(e) => e.key === 'Enter' && handleOpenModalImageGallery()}
-            aria-label={`Open image gallery - image ${index + 2}`}
+      <div className="relative overflow-hidden rounded-2xl border border-neutral-200/40 dark:border-neutral-800/40 bg-neutral-900/10 dark:bg-neutral-950/30 p-4 sm:p-5 backdrop-blur-md shadow-2xl my-8">
+        
+        {/* Main Immersive Viewport */}
+        <div className="relative aspect-[16/9] lg:aspect-[21/9] w-full overflow-hidden rounded-xl bg-neutral-950 shadow-inner group/viewport">
+          
+          {/* Ambient Glow matching active image colors */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+            {IMAGES_GALLERY[currentImageIndex] && (
+              <Image
+                alt="Ambient Glow"
+                src={IMAGES_GALLERY[currentImageIndex]}
+                fill
+                className="object-cover blur-3xl opacity-20 dark:opacity-30 scale-110"
+                sizes="10vw"
+              />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30" />
+          </div>
+
+          {/* Large Main Image Display */}
+          <div 
+            className="relative w-full h-full z-10 cursor-zoom-in"
+            onClick={() => handleOpenModalImageGallery(currentImageIndex)}
           >
             <ImageWithSkeleton
-              alt={`${post.title} - image ${index + 2}`}
-              src={item || '/images/placeholder-small.png'}
+              alt={`${post.title} - ${currentImageIndex + 1}`}
+              src={IMAGES_GALLERY[currentImageIndex] || '/images/placeholder.png'}
               fill
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              className="rounded-xl object-cover transition-transform duration-300 hover:scale-105"
+              sizes="(max-width: 1024px) 100vw, 1200px"
+              priority={true}
+              className="object-contain"
             />
           </div>
-        ))}
-        <button
-          type="button"
-          className="absolute right-2 sm:right-4 bottom-2 sm:bottom-4 px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm md:text-base rounded-lg bg-white bg-opacity-90 dark:bg-gray-800 dark:bg-opacity-90 text-gray-800 dark:text-gray-200 font-semibold shadow-md hover:bg-opacity-100 dark:hover:bg-opacity-100 transition-all duration-200 z-10"
-          onClick={handleOpenModalImageGallery}
-        >
-          نمایش همه تصاویر
-        </button>
+
+          {/* HUD Overlay - Bottom Right (RTL) - Stats Counter */}
+          <div className="absolute bottom-4 right-4 z-20 flex items-center gap-3 px-3 py-1.5 rounded-full bg-neutral-950/70 backdrop-blur-md border border-neutral-800 text-xs text-neutral-300 select-none font-medium transition-opacity duration-300">
+            <span dir="ltr" className="unicode-bidi-isolate">
+              {toPersianNumber(currentImageIndex + 1)} / {toPersianNumber(IMAGES_GALLERY.length)}
+            </span>
+          </div>
+
+          {/* HUD Overlay - Bottom Left (RTL) - Zoom Trigger */}
+          <button
+            type="button"
+            onClick={() => handleOpenModalImageGallery(currentImageIndex)}
+            className="absolute bottom-4 left-4 z-20 flex items-center justify-center p-2 rounded-full bg-neutral-950/70 backdrop-blur-md border border-neutral-800 text-neutral-300 hover:text-white hover:bg-neutral-900 transition-all cursor-pointer"
+            aria-label="Open Fullscreen View"
+          >
+            <Maximize2 className="w-4 h-4" />
+          </button>
+
+          {/* Viewport Control Navigation Arrows */}
+          <button
+            type="button"
+            onClick={handlePrevImage}
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center bg-neutral-950/60 hover:bg-neutral-950/80 border border-neutral-800 text-white backdrop-blur-md transition-all duration-200 cursor-pointer opacity-0 group-hover/viewport:opacity-100"
+            aria-label="Previous image"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={handleNextImage}
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center bg-neutral-950/60 hover:bg-neutral-950/80 border border-neutral-800 text-white backdrop-blur-md transition-all duration-200 cursor-pointer opacity-0 group-hover/viewport:opacity-100"
+            aria-label="Next image"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Dynamic Filmstrip Navigation Carousel */}
+        {IMAGES_GALLERY.length > 1 && (
+          <div className="relative mt-4 flex items-center justify-start gap-3 overflow-x-auto py-2 scrollbar-none">
+            {IMAGES_GALLERY.map((item, index) => {
+              const isActive = index === currentImageIndex;
+              return (
+                <div
+                  key={index}
+                  onClick={() => setCurrentImageIndex(index)}
+                  className={cn(
+                    "relative w-20 h-14 sm:w-24 sm:h-16 flex-shrink-0 rounded-lg overflow-hidden cursor-pointer border-2 transition-all duration-300",
+                    isActive 
+                      ? "border-primary-500 scale-105 shadow-[0_0_12px_rgba(94,106,230,0.4)]" 
+                      : "border-transparent opacity-50 hover:opacity-100"
+                  )}
+                >
+                  <Image
+                    alt={`${post.title} thumb ${index + 1}`}
+                    src={item}
+                    fill
+                    sizes="100px"
+                    className="object-cover"
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
+      {/* Fullscreen Lightbox Modal Dialog */}
       <Transition appear show={isModalOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-50" onClose={handleCloseModal}>
+        <Dialog as="div" className="relative z-[9999]" onClose={handleCloseModal}>
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -139,10 +213,13 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-black bg-opacity-75 dark:bg-opacity-90" />
+            <div className="fixed inset-0 bg-neutral-950/95 backdrop-blur-xl transition-opacity" />
           </Transition.Child>
 
-          <div className="fixed inset-0 overflow-y-auto">
+          {/* SVG Grain Noise Overlay for Premium Depth */}
+          <div className="fixed inset-0 pointer-events-none opacity-[0.015] bg-[url('data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'2\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\'/%3E%3C/svg%3E')] z-10" />
+
+          <div className="fixed inset-0 overflow-y-auto z-20">
             <div className="flex min-h-full items-center justify-center p-4 text-center">
               <Transition.Child
                 as={Fragment}
@@ -153,54 +230,91 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-4xl transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-3 sm:p-6 text-right align-middle shadow-xl transition-all max-h-[90vh] flex flex-col">
-                  <Dialog.Title
-                    as="h3"
-                    className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 mb-4"
-                  >
-                    گالری
-                  </Dialog.Title>
+                <Dialog.Panel className="w-full max-w-6xl transform overflow-hidden rounded-2xl bg-transparent text-right align-middle transition-all flex flex-col items-center justify-between min-h-[90vh]">
+                  
+                  {/* Close Trigger Button */}
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="absolute top-4 left-4 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-200"
+                    className="absolute top-4 left-4 p-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 hover:text-white backdrop-blur-md transition-all cursor-pointer z-50"
+                    aria-label="Close Gallery Modal"
                   >
-                    <Icon name="x" className="w-6 h-6" />
+                    <X className="w-5 h-5" />
                   </button>
-                  <div className="relative overflow-hidden flex-grow flex items-center justify-center">
+
+                  <div className="relative w-full flex-grow flex items-center justify-center mt-12 mb-4">
+                    {/* Left arrow (RTL-aware next/prev logic) */}
                     <button
                       type="button"
                       onClick={handlePrevImage}
-                      className="absolute left-2 sm:left-4 z-20 p-2 rounded-full bg-white/75 dark:bg-gray-800/75 hover:bg-white dark:hover:bg-gray-700 transition-colors duration-200 shadow-md"
-                      aria-label="Previous image"
+                      className="absolute left-2 sm:left-4 z-20 p-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white backdrop-blur-md transition-all cursor-pointer"
+                      aria-label="Previous Image"
                     >
-                      <Icon name="arrow-left" className="w-6 h-6 text-gray-700 dark:text-gray-200" />
+                      <ChevronLeft className="w-6 h-6" />
                     </button>
 
-                    <div className="relative w-full h-[calc(100vh-200px)] max-h-[80vh] flex items-center justify-center">
-                      <div className="relative w-full pb-[56.25%]"> {/* 16:9 Aspect Ratio (9/16 = 0.5625) using padding-bottom */}
-                        <ImageWithSkeleton
-                          src={IMAGES_GALLERY[currentImageIndex] || '/images/placeholder.png'}
-                          alt={`${post.title} - image ${currentImageIndex + 1}`}
-                          fill
-                          sizes="100vw"
-                          className="rounded-lg object-contain absolute inset-0"
-                        />
-                      </div>
+                    {/* Main Fullscreen Viewport Display */}
+                    <div className="relative w-full h-[65vh] flex items-center justify-center">
+                      <Image
+                        src={IMAGES_GALLERY[currentImageIndex] || '/images/placeholder.png'}
+                        alt={`${post.title} large - ${currentImageIndex + 1}`}
+                        fill
+                        priority={true}
+                        sizes="100vw"
+                        className="object-contain rounded-lg select-none"
+                      />
                     </div>
 
+                    {/* Right arrow */}
                     <button
                       type="button"
                       onClick={handleNextImage}
-                      className="absolute right-2 sm:right-4 z-20 p-2 rounded-full bg-white/75 dark:bg-gray-800/75 hover:bg-white dark:hover:bg-gray-700 transition-colors duration-200 shadow-md"
-                      aria-label="Next image"
+                      className="absolute right-2 sm:right-4 z-20 p-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white backdrop-blur-md transition-all cursor-pointer"
+                      aria-label="Next Image"
                     >
-                      <Icon name="arrow-right" className="w-6 h-6 text-gray-700 dark:text-gray-200" />
+                      <ChevronRight className="w-6 h-6" />
                     </button>
                   </div>
-                  <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
-                    {currentImageIndex + 1} از {IMAGES_GALLERY.length}
+
+                  {/* Footer metadata details */}
+                  <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 border-t border-neutral-800 bg-neutral-950/80 backdrop-blur-md rounded-b-xl z-20">
+                    <span className="text-neutral-200 text-sm font-medium order-2 sm:order-1">
+                      {post.title}
+                    </span>
+                    <span dir="ltr" className="unicode-bidi-isolate text-neutral-400 text-xs font-semibold order-1 sm:order-2">
+                      {toPersianNumber(currentImageIndex + 1)} / {toPersianNumber(IMAGES_GALLERY.length)}
+                    </span>
                   </div>
+
+                  {/* Horizontal filmstrip navigation inside modal */}
+                  {IMAGES_GALLERY.length > 1 && (
+                    <div className="w-full max-w-4xl flex items-center justify-center gap-2 overflow-x-auto py-3 px-4 scrollbar-none z-20">
+                      {IMAGES_GALLERY.map((item, index) => {
+                        const isActive = index === currentImageIndex;
+                        return (
+                          <div
+                            key={index}
+                            onClick={() => setCurrentImageIndex(index)}
+                            className={cn(
+                              "relative w-14 h-10 flex-shrink-0 rounded overflow-hidden cursor-pointer border transition-all duration-300",
+                              isActive
+                                ? "border-primary-500 scale-105 shadow-[0_0_8px_rgba(94,106,230,0.4)]"
+                                : "border-neutral-800 opacity-40 hover:opacity-100"
+                            )}
+                          >
+                            <Image
+                              alt={`modal thumb ${index + 1}`}
+                              src={item}
+                              fill
+                              sizes="80px"
+                              className="object-cover"
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
                 </Dialog.Panel>
               </Transition.Child>
             </div>
