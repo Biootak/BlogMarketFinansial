@@ -13,9 +13,12 @@
  *  - برای جلوگیری از hydration mismatch، تا قبل از mount
  *    یک placeholder با ابعاد یکسان رندر می‌شه
  *  - بعد از mount (useEffect) نسخه واقعی جایگزین می‌شه
+ *
+ * 2026-06-17: اضافه شدن مگامنوی «بازار» (BazarMegaPanel) — لیست‌های فعال
+ *  RateList به‌صورت زنده از سرور به این نوار پاس داده می‌شه.
  */
 
-import { memo, useState, useRef, useEffect } from 'react';
+import { memo, useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -25,6 +28,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import type { RateListData } from '@/types/types';
+import BazarMegaPanel from './BazarMegaPanel';
 
 type NavItem = Readonly<{
   id: string;
@@ -32,10 +37,14 @@ type NavItem = Readonly<{
   name: string;
   subItems?: NavItem[];
   isNew?: boolean;
+  /** نوع آیتم: 'mega' یعنی پنل سفارشی به‌جای dropdown */
+  kind?: 'mega';
 }>;
 
 type NavigationProps = Readonly<{
   className?: string;
+  /** لیست‌های فعال RateList — برای مگامنوی «بازار» */
+  rateLists?: RateListData[];
 }>;
 
 const NAVBAR_LINKS: readonly NavItem[] = [
@@ -71,6 +80,8 @@ const NAVBAR_LINKS: readonly NavItem[] = [
     ],
   },
   { id: 'stock', name: 'بورس و سهام', href: '/archive/category/stock' },
+  // بازار — مگامنو با داده‌ی زنده RateList
+  { id: 'bazar', name: 'بازار', href: '/money-transfer', kind: 'mega' as const },
   { id: 'money-transfer', name: 'حواله', href: '/money-transfer' },
   { id: 'online-payment', name: 'پرداخت آنلاین', href: '/online-payment' },
   { id: 'urgent', name: 'اخبار فوری', href: '/archive/category/news-urgent', isNew: true },
@@ -80,7 +91,7 @@ const NAVBAR_LINKS: readonly NavItem[] = [
 const UNDERLINE_BASE = 'absolute inset-x-2 bottom-0.5 h-px bg-neutral-900 dark:bg-neutral-50';
 const HOVER_BG_BASE = 'absolute inset-0 rounded-full bg-neutral-100/60 dark:bg-neutral-800/40';
 
-const Navigation = ({ className = '' }: NavigationProps): React.ReactElement => {
+const Navigation = ({ className = '', rateLists = [] }: NavigationProps): React.ReactElement => {
   const pathname = usePathname();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -89,12 +100,19 @@ const Navigation = ({ className = '' }: NavigationProps): React.ReactElement => 
   const [mounted, setMounted] = useState(false);
   const scrollRef = useRef<HTMLUListElement>(null);
 
+  /* بستن پنل وقتی pathname عوض می‌شه (navigation رخ داده) */
+  const closePanel = useCallback(() => {
+    setActiveId(null);
+    setHoveredId(null);
+  }, []);
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
     setHoveredId(null);
+    setActiveId(null);
   }, [pathname]);
 
   const isActive = (item: NavItem) => {
@@ -130,6 +148,104 @@ const Navigation = ({ className = '' }: NavigationProps): React.ReactElement => 
   const renderNavItem = (item: NavItem) => {
     const active = isActive(item);
     const hovered = hoveredId === item.id;
+
+    if (item.kind === 'mega') {
+      return (
+        <li
+          key={item.id}
+          className="relative flex-shrink-0"
+          onMouseEnter={() => setHoveredId(item.id)}
+          onMouseLeave={() => setHoveredId(null)}
+        >
+          <DropdownMenu
+            dir="rtl"
+            onOpenChange={(open) => {
+              setActiveId(open ? item.id : null);
+              if (!open) setHoveredId(null);
+            }}
+          >
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                onFocus={() => setHoveredId(item.id)}
+                onBlur={() => setHoveredId(null)}
+                className={cn(
+                  'group/btn relative z-10 inline-flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-semibold',
+                  'rounded-full outline-none whitespace-nowrap',
+                  'transition-colors duration-200',
+                  active
+                    ? 'text-neutral-900 dark:text-neutral-50'
+                    : 'text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-50',
+                )}
+              >
+                {/* Live dot */}
+                <span className="relative inline-flex h-1.5 w-1.5 shrink-0" aria-hidden>
+                  <span className="absolute inset-0 inline-flex h-full w-full rounded-full bg-emerald-500/50 opacity-70 anim-ping-soft" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                </span>
+                <span className="relative z-10 tracking-[-0.005em]">{item.name}</span>
+
+                {active && (
+                  <span
+                    aria-hidden
+                    className={`${UNDERLINE_BASE} transition-opacity duration-200`}
+                  />
+                )}
+                {hovered && !active && (
+                  <span
+                    aria-hidden
+                    className={`${HOVER_BG_BASE} transition-opacity duration-150`}
+                  />
+                )}
+
+                <svg
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={cn(
+                    'relative z-10 opacity-60 transition-transform duration-200',
+                    activeId === item.id ? 'rotate-180' : '',
+                  )}
+                  aria-hidden
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+            </DropdownMenuTrigger>
+
+            {activeId === item.id && (
+              <DropdownMenuContent
+                forceMount
+                align="start"
+                sideOffset={10}
+                asChild
+                className={cn(
+                  'min-w-[min(90vw,720px)] max-w-[min(90vw,820px)] p-0',
+                  'bg-white/95 dark:bg-neutral-900/95',
+                  'backdrop-blur-2xl',
+                  'border border-neutral-200/80 dark:border-neutral-800/80',
+                  'rounded-2xl',
+                  'shadow-[0_8px_30px_-8px_rgba(20,23,32,0.12),0_0_0_1px_rgba(0,0,0,0.02)]',
+                  'dark:shadow-[0_8px_30px_-8px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.04)]',
+                  'overflow-hidden',
+                  'anim-fade-in-down',
+                )}
+              >
+                <BazarMegaPanel
+                  rateLists={rateLists}
+                  onNavigate={closePanel}
+                />
+              </DropdownMenuContent>
+            )}
+          </DropdownMenu>
+        </li>
+      );
+    }
 
     if (item.subItems) {
       return (

@@ -33,7 +33,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { motion, useInView, useReducedMotion } from '@/lib/motion-shim';
-import type { PostWithRelations, Advertisement } from '@/types/types';
+import type { PostWithRelations, Advertisement, RateListData } from '@/types/types';
 import type { MarketTickerItem } from '@/actions/marketTickerActions';
 import { cn, toPersianNumber, formatNumber } from '@/lib/utils';
 import { getPostLink } from '@/lib/getPostLink';
@@ -43,6 +43,7 @@ import { AuroraBackground } from '@/components/ModernTrending/effects/AuroraBack
 import AnimatedNumber from '@/components/Sections/effects/AnimatedNumber';
 import MarketTicker from '@/components/Sections/effects/MarketTicker';
 import LiveClock from '@/components/Sections/effects/LiveClock';
+import RateListsTicker from './RateListsTicker';
 import { getMarketTickerData } from '@/actions/marketTickerActions';
 import { getLatestPosts } from '@/actions/getLatestPosts';
 
@@ -57,6 +58,8 @@ interface LatestArticlesProps {
   initialAds: Advertisement[];
   initialTickerData?: MarketTickerItem[];
   totalCount: number;
+  /** لیست‌های فعال RateList — به نوار بالایی داده می‌شه */
+  rateLists?: RateListData[];
 }
 
 const MAX_VISIBLE_FILTERS = 6;
@@ -140,6 +143,7 @@ export function LatestArticles({
   initialAds,
   initialTickerData = [],
   totalCount,
+  rateLists = [],
 }: LatestArticlesProps) {
   const reduce = useReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -267,6 +271,14 @@ export function LatestArticles({
       className="relative isolate marquee-pause"
       aria-label="آخرین مقالات"
     >
+      {/* RateLists Ticker — نوار چرخشی نرخ‌های بازار (RateList از DB) */}
+      {rateLists.length > 0 && (
+        <RateListsTicker
+          rateLists={rateLists}
+          className="mb-3 sm:mb-4"
+        />
+      )}
+
       {/* Live Market Ticker */}
       {initialTickerData.length > 0 && (
         <MarketTicker

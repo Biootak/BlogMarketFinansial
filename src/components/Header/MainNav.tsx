@@ -7,6 +7,7 @@ import SearchModal from './SearchModal';
 import { auth } from '@/auth';
 import Link from 'next/link';
 import { User, Sparkles } from 'lucide-react';
+import type { RateListData } from '@/types/types';
 
 /**
  * MainNav — Premium Header با تراز کاملاً متقارن
@@ -19,25 +20,14 @@ import { User, Sparkles } from 'lucide-react';
  *  - در موبایل و تبلت (<1024px): hamburger + auth
  *  - در دسکتاپ (≥1024px): navigation وسط + auth در راست
  *
- * 2026-06-14: بازطراحی برای تقارن کامل
- *  - هر سه ستون flex-1 با items-center
- *  - Navigation خودش در center والد قرار می‌گیرد
- *  - Actions در سمت مخالف Logo با همان عرض تقریبی
- *  - حذف glow اضافی پشت Logo
- *
- * 2026-06-15: ریسپانسیو برای موبایل
- *  - در موبایل: فقط logo + actions (بدون 3-col grid برای جلوگیری از squeeze)
- *  - ساختار 3-col فقط در `lg` (1024px) فعال می‌شه
- *  - استفاده از container queries + @container برای تقارن بهتر در سایزهای میانی
- *
- * 2026-06-16: اصلاح breakpoint
- *  - Navigation فقط در دسکتاپ (≥1024px = lg) نمایش داده می‌شود
- *  - MenuBar در تبلت و موبایل (<1024px) نمایش داده می‌شود
- *  - تغییر از container query (@lg/nav) به media query استاندارد `lg:`
- *    چون container query بر اساس عرض والد کار می‌کرد و در تبلت
- *    ممکن بود Navigation در کانتینرهای کوچک نمایش داده نشود
+ * 2026-06-17: لیست‌های فعال RateList به Navigation پاس داده می‌شه
+ *  تا مگامنوی «بازار» با داده‌ی زنده رندر بشه.
  */
-export default async function MainNav() {
+export default async function MainNav({
+  activeRateLists = [],
+}: {
+  activeRateLists?: RateListData[];
+}) {
   const session = await auth();
 
   return (
@@ -232,7 +222,7 @@ export default async function MainNav() {
           <div className="hidden lg:flex items-center justify-center min-w-0
                           col-span-3 row-start-2
                           lg:col-span-1 lg:col-start-2 lg:row-start-1">
-            <Navigation />
+            <Navigation rateLists={activeRateLists} />
           </div>
         </div>
       </div>

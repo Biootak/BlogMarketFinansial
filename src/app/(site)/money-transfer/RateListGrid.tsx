@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from '@/lib/motion-shim';
 import { ChevronDown, Calendar, Layers, TrendingUp, TrendingDown } from 'lucide-react';
+import { parseRateItem } from '@/lib/rateItem';
 
 interface Rate {
   title: string;
@@ -19,7 +20,7 @@ interface RateList {
 
 const isSingleRateList = (rates: Rate[]) => {
   if (rates.length === 0) return true;
-  return !rates.some((rate) => rate.value.toString().includes('|'));
+  return !rates.some((rate) => String(rate.value).includes('|'));
 };
 
 interface RateListGridProps {
@@ -175,13 +176,9 @@ export default function RateListGrid({ rateLists, initialCount = 6 }: RateListGr
                   <div className="divide-y divide-slate-100/80 dark:divide-slate-800/60">
                     <AnimatePresence>
                       {rateList.rates.slice(0, currentDisplayCount).map((rate, index) => {
-                        const hasBuySell = rate.value.toString().includes('|');
-                        const buyValue = hasBuySell
-                          ? rate.value.toString().split('|')[0]?.replace('خرید:', '').trim()
-                          : rate.value;
-                        const sellValue = hasBuySell
-                          ? rate.value.toString().split('|')[1]?.replace('فروش:', '').trim()
-                          : null;
+                        const parsed = parseRateItem({ title: String(rate.title), value: String(rate.value) });
+                        const buyDisplay = parsed.buy;
+                        const sellDisplay = parsed.sell;
 
                         return (
                           <motion.div
@@ -194,19 +191,19 @@ export default function RateListGrid({ rateLists, initialCount = 6 }: RateListGr
                             <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">
                               {rate.title}
                             </span>
-                            
+
                             {/* Buy Price */}
                             <div className="flex items-center justify-center">
                               <span className="inline-flex items-center px-3 py-1.5 bg-gradient-to-br from-emerald-50 to-emerald-100/80 dark:from-emerald-900/30 dark:to-emerald-800/20 text-emerald-700 dark:text-emerald-300 rounded-xl text-sm font-bold tabular-nums shadow-sm shadow-emerald-500/10 border border-emerald-200/50 dark:border-emerald-700/30">
-                                {buyValue || '---'}
+                                {buyDisplay || '---'}
                               </span>
                             </div>
-                            
+
                             {/* Sell Price */}
                             {!isSingle && (
                               <div className="flex items-center justify-center">
                                 <span className="inline-flex items-center px-3 py-1.5 bg-gradient-to-br from-rose-50 to-rose-100/80 dark:from-rose-900/30 dark:to-rose-800/20 text-rose-700 dark:text-rose-300 rounded-xl text-sm font-bold tabular-nums shadow-sm shadow-rose-500/10 border border-rose-200/50 dark:border-rose-700/30">
-                                  {sellValue || '---'}
+                                  {sellDisplay || '---'}
                                 </span>
                               </div>
                             )}

@@ -2,8 +2,9 @@ import { getLatestPosts } from '@/actions/getLatestPosts';
 import { getActiveAdvertisements } from '@/actions/advertisementActions';
 import { getMarketTickerData } from '@/actions/marketTickerActions';
 import { getLatestPostCategories } from '@/actions/getLatestPostCategories';
+import { getRateListsWithCrypto } from '@/actions/rate-lists';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { Advertisement, PostWithRelations } from '@/types/types';
+import type { Advertisement, PostWithRelations, RateListData } from '@/types/types';
 import prisma from '@/lib/db';
 import LatestArticles from './LatestArticles';
 
@@ -36,8 +37,8 @@ export default async function PulseSection({ className = '' }: PulseSectionProps
   // 24 پست = 9 اولیه + 3 دست 10 تایی آماده (بدون round-trip شبکه)
   const INITIAL = 24;
 
-  // 3) Ticker + Ads + Posts (موازی)
-  const [tickerData, adsResult, latestPosts, totalCount] = await Promise.all([
+  // 3) Ticker + Ads + Posts + RateLists (موازی)
+  const [tickerData, adsResult, latestPosts, totalCount, rateLists] = await Promise.all([
     getMarketTickerData(),
     getActiveAdvertisements({ limit: 2, size: 'MEDIUM' }),
     getLatestPosts({ count: INITIAL, skip: 0 }),
@@ -53,10 +54,13 @@ export default async function PulseSection({ className = '' }: PulseSectionProps
         ],
       },
     }),
+    // dedup داخل لیست + fallback به crypto از Exir در صورت خالی بودن DB
+    getRateListsWithCrypto(),
   ]);
 
   const posts: PostWithRelations[] = dedupeById(latestPosts);
   const initialAds: Advertisement[] = adsResult.success ? (adsResult.data ?? []) : [];
+  const activeRateLists: RateListData[] = (rateLists ?? []).filter((l) => l.isActive);
 
   return (
     <div className={`nc-PulseSection ${className}`}>
@@ -66,6 +70,7 @@ export default async function PulseSection({ className = '' }: PulseSectionProps
         initialAds={initialAds}
         initialTickerData={tickerData}
         totalCount={totalCount}
+        rateLists={activeRateLists}
       />
     </div>
   );

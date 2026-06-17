@@ -4,6 +4,7 @@ import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { revalidateTag } from '@/lib/revalidate';
+import { fetchExchangeRates } from '@/actions/fetchExchangeRates';
 import type { ActionResult, RateListData, RateItem } from '@/types/types';
 
 // 2026-06-14: shared helper to normalize the Json column into a
@@ -51,6 +52,152 @@ export const getRateLists = unstable_cache(
   {
     revalidate: 300,
     tags: ['rate-lists'],
+  },
+);
+
+/* ============================================================================
+   Crypto symbol → فارسی  — همان نگاشت موجود در marketTickerActions
+   ============================================================================ */
+const CRYPTO_NAMES: Record<string, string> = {
+  BTC: 'بیت‌کوین',
+  ETH: 'اتریوم',
+  USDT: 'تتر',
+  XRP: 'ریپل',
+  LTC: 'لایت‌کوین',
+  BCH: 'بیت‌کوین کش',
+  SOL: 'سولانا',
+  ADA: 'کاردانو',
+  DOGE: 'دوج‌کوین',
+  AVAX: 'آوالانچ',
+  TRX: 'ترون',
+  DOT: 'پولکادات',
+  LINK: 'چین‌لینک',
+  MATIC: 'پالیگان',
+  UNI: 'یونی‌سواپ',
+};
+
+/**
+ * نرمال‌سازی title — برای dedupe (case-insensitive، حذف فاصله و کاراکتر ZWNJ).
+ * چند ردیف DB می‌تونه یک عنوان داشته باشه (rateType متفاوت، یا ورود دستی).
+ * این نسخه‌ی نرمال شده کلید Map برای حذف تکراری‌هاست.
+ */
+function normTitleKey(s: string): string {
+  return s.replace(/\s+/g, '').replace(/[‌]/g, '').toLowerCase();
+}
+
+/**
+ * حذف تکراری‌ها از لیست آیتم‌ها بر اساس title.
+ * وقتی یک عنوان چند بار تکرار شده، اولین occurrence نگه داشته می‌شه
+ * (چون لیست‌ها `createdAt desc` مرتب شدن، یعنی جدیدترین نگه داشته می‌شه).
+ * آیتم‌هایی که value شامل "|" نیست هم حذف نمی‌شن — فقط تکراری‌ها حذف می‌شن.
+ */
+function dedupeByTitle(items: RateItem[]): RateItem[] {
+  const seen = new Set<string>();
+  const out: RateItem[] = [];
+  for (const item of items) {
+    const t = (item.title ?? '').trim();
+    if (!t) continue;
+    const key = normTitleKey(t);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(item);
+  }
+  return out;
+}
+
+/**
+ * ساخت یک RateListData مجازی برای ارزهای دیجیتال.
+ * فقط زمانی فراخوانی می‌شه که DB هیچ لیست فعالی نداشته باشه
+ * (یعنی admin هنوز لیستی ثبت نکرده) — در این صورت crypto از Exir
+ * جایگزین می‌شه تا نوار چرخشی هیچ‌وقت خالی نباشه.
+ */
+function buildCryptoFallbackList(): RateListData {
+  // فچ sync در این context مشکل‌ساز نیست چون cached wrapper داره
+  // و در SSR قبل از ارسال به کلاینت resolve می‌شه. اگه فچ شکست
+  // بخوره، لیست خالی برمی‌گرده و strip مخفی می‌شه.
+  // (sync wrap مجاز نیست — پس این تابع فقط در حالت cached فراخوانی می‌شه)
+  return {
+    id: '__crypto_fallback__',
+    title: 'ارزهای دیجیتال',
+    rates: [],
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+}
+
+async function loadCryptoRatesAsync(): Promise<RateItem[]> {
+  try {
+    const result = await fetchExchangeRates();
+    if (!result.success || !result.data) return [];
+    return result.data.map((r) => ({
+      title: r.symbol,
+      value: `${toEn(r.usdtPrice)} USDT`,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/* اعداد بدون جداکننده و بدون اعشار — برای جایگیری در value */
+function toEn(n: number): string {
+  if (!Number.isFinite(n)) return '0';
+  if (n < 1) return n.toFixed(4);
+  return Math.round(n).toString();
+}
+
+/**
+ * خروجی اصلی برای PulseBoard / Header.
+ *  1) لیست‌های فعال DB را می‌گیره
+ *  2) آیتم‌های تکراری (با title یکسان) را حذف می‌کنه
+ *  3) اگه هیچ لیست فعالی نبود، یک لیست مجازی «ارزهای دیجیتال» از Exir اضافه می‌کنه
+ *  4) در غیر این صورت، لیست crypto به انتها اضافه می‌شه (اگه DB حداقل یک لیست
+ *     فعال داشته باشه، تا تنوع محتوا بیشتر بشه)
+ *
+ * این تابع **همون کش `rate-lists` رو می‌شکنه** تا هر تغییر ادمین در DB
+ * تا ۵ دقیقه‌ی بعد در strip دیده بشه.
+ */
+export const getRateListsWithCrypto = unstable_cache(
+  async (): Promise<RateListData[]> => {
+    const [dbLists, cryptoItems] = await Promise.all([
+      getRateLists(),
+      loadCryptoRatesAsync(),
+    ]);
+
+    const active = (dbLists ?? []).filter((l) => l && l.isActive);
+
+    // dedupe داخل هر لیست
+    const dedupedActive: RateListData[] = active.map((l) => ({
+      ...l,
+      rates: dedupeByTitle(l.rates ?? []),
+    }));
+
+    // اگه DB لیست فعال نداره، فقط لیست crypto رو برگردون
+    if (dedupedActive.length === 0) {
+      if (cryptoItems.length === 0) return [];
+      return [
+        {
+          ...buildCryptoFallbackList(),
+          rates: cryptoItems,
+        },
+      ];
+    }
+
+    // لیست crypto رو به انتها اضافه کن (اگه دیتا داره)
+    if (cryptoItems.length === 0) return dedupedActive;
+
+    return [
+      ...dedupedActive,
+      {
+        ...buildCryptoFallbackList(),
+        rates: cryptoItems,
+      },
+    ];
+  },
+  ['rate-lists-with-crypto', 'v1-2026-06-17'],
+  {
+    revalidate: 300,
+    tags: ['rate-lists', 'ticker', 'exchange-rates'],
   },
 );
 

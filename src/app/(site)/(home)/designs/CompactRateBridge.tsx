@@ -19,6 +19,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from '@/lib/motion-shim';
 import { ArrowLeftRight, TrendingUp, TrendingDown, Pause, Play, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { RateItem } from '@/types/types';
+import { parseRateItem } from '@/lib/rateItem';
 
 interface CompactRateBridgeProps {
   rates: RateItem[];
@@ -31,51 +32,6 @@ interface CompactRateBridgeProps {
   rotateInterval?: number;
   /** لینک پایه برای ثبت سفارش */
   orderLinkBase?: string;
-}
-
-interface ParsedRate {
-  title: string;
-  buy: string | null;
-  sell: string | null;
-  raw: string;
-}
-
-/**
- * Parse یک RateItem:
- *   - اگه value شامل "|" باشه → buy/sell جدا
- *   - در غیر این صورت تک‌نرخی
- */
-function parseRateValue(item: RateItem): ParsedRate {
-  const raw = String(item.value || '').trim();
-
-  if (raw.includes('|')) {
-    const parts = raw.split('|').map((p) => p.trim());
-    const buyPart = parts[0] || '';
-    const sellPart = parts[1] || '';
-    return {
-      title: item.title,
-      buy: buyPart.replace(/^خرید\s*[:：]?\s*/i, '').trim() || null,
-      sell: sellPart.replace(/^فروش\s*[:：]?\s*/i, '').trim() || null,
-      raw,
-    };
-  }
-
-  return {
-    title: item.title,
-    buy: raw,
-    sell: null,
-    raw,
-  };
-}
-
-/**
- * استخراج عدد از یک رشته نرخ (مثلاً "1234 افغانی" → 1234)
- */
-function extractNumeric(s: string | null | undefined): number {
-  if (!s) return 0;
-  const match = s.match(/[\d,٬\.]+/);
-  if (!match) return 0;
-  return parseFloat(match[0].replace(/[٬,]/g, '')) || 0;
 }
 
 export default function CompactRateBridge({
@@ -96,8 +52,8 @@ export default function CompactRateBridge({
   const activeIndex = internalIndex;
 
   // همه rate ها رو از اول parse کن (memoize)
-  const parsedRates = useMemo<ParsedRate[]>(
-    () => rates.map(parseRateValue),
+  const parsedRates = useMemo(
+    () => rates.map(parseRateItem),
     [rates],
   );
 
@@ -133,23 +89,17 @@ export default function CompactRateBridge({
   const current = parsedRates[activeIndex] || parsedRates[0];
 
   // morph حذف شد — عدد base مستقیماً نمایش داده می‌شه
-  const buyBase = extractNumeric(current?.buy);
+  const buyBase = current?.buyNum ?? 0;
   const buyDisplay = buyBase;
+  const buySuffix = current?.buySuffix ?? '';
 
   // morph فروش
-  const sellBase = extractNumeric(current?.sell);
+  const sellBase = current?.sellNum ?? 0;
   const sellDisplay = sellBase;
+  const sellSuffix = current?.sellSuffix ?? '';
 
   // لینک ثبت سفارش
   const orderHref = `${orderLinkBase}?currency=${encodeURIComponent(current?.title || '')}&type=INTERNATIONAL_TRANSFER#contact`;
-
-  // badge suffix (بعد از عدد، مثل "افغانی" یا "تومان")
-  const buySuffix = current?.buy
-    ? current.buy.replace(/[\d,٬\.\-+]+/g, '').trim()
-    : '';
-  const sellSuffix = current?.sell
-    ? current.sell.replace(/[\d,٬\.\-+]+/g, '').trim()
-    : '';
 
   // Handler های prev/next — pause رو فعال می‌کنن تا کاربر بتونه ببینه
   const goPrev = () => {

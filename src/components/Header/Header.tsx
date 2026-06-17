@@ -10,11 +10,15 @@
  *
  * 2026-06-14: ticker bar removed — live rates are no longer rendered here.
  *  The ad bar remains as the topmost element when active.
+ *
+ * 2026-06-17: لیست‌های فعال RateList از سرور برای مگامنوی «بازار» در MainNav
+ *  پاس داده می‌شه. منبع داده یک‌تا و مشترک با PulseBoard است.
  */
+import type { RateListData } from '@/types/types';
 import HeaderAdBar from './HeaderAdBar';
 import MainNav from './MainNav';
 
-const Header = () => {
+const Header = ({ activeRateLists = [] }: { activeRateLists?: RateListData[] }) => {
   return (
     <header
       className="sticky top-0 w-full z-40 isolate"
@@ -53,12 +57,12 @@ const Header = () => {
         aria-hidden
         className="
           absolute inset-x-0 bottom-0 h-px -z-10
-          bg-neutral-200/70 dark:bg-neutral-800/70
+          bg-neutral-200/70 dark:border-neutral-800/70
           header-border-scrolled
         "
       />
 
-      <MainNav />
+      <MainNav activeRateLists={activeRateLists} />
     </header>
   );
 };
