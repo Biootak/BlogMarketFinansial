@@ -8,11 +8,11 @@
  * - همه‌چی server-friendly (فقط لینک هستن)
  */
 
-import * as React from 'react';
-import Link from 'next/link';
-import { motion, AnimatePresence } from '@/lib/motion-shim';
-import { Filter, X, RotateCcw, Search, FolderOpen, Hash, ArrowDownAZ } from 'lucide-react';
+import { AnimatePresence, motion } from '@/lib/motion-shim';
 import type { TaxonomyType } from '@/types/types';
+import { ArrowDownAZ, Filter, FolderOpen, Hash, RotateCcw, Search, X } from 'lucide-react';
+import Link from 'next/link';
+import * as React from 'react';
 
 export type ActiveFilter = {
   type: 'q' | 'category' | 'subcategory' | 'tag' | 'filter';
@@ -83,7 +83,11 @@ export default function ActiveFilters({ filters, totalCount }: Props) {
         })}
       </AnimatePresence>
 
-      <Link href="/archive" className="arc-active-filters-v3__clear" aria-label="پاک کردن همه فیلترها">
+      <Link
+        href="/archive"
+        className="arc-active-filters-v3__clear"
+        aria-label="پاک کردن همه فیلترها"
+      >
         <RotateCcw className="w-3.5 h-3.5" aria-hidden />
         <span>پاک کردن همه</span>
       </Link>

@@ -1,16 +1,16 @@
-import * as React from 'react';
-import Link from 'next/link';
+import type { TaxonomyType } from '@/types/types';
+import { FolderOpen, Hash } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
+import * as React from 'react';
 import {
   HiArrowTrendingUp,
-  HiOutlineDocumentText,
-  HiOutlineSquares2X2,
   HiOutlineCalendarDays,
-  HiOutlineSparkles,
+  HiOutlineDocumentText,
   HiOutlineRectangleStack,
+  HiOutlineSparkles,
+  HiOutlineSquares2X2,
 } from 'react-icons/hi2';
-import { FolderOpen, Hash } from 'lucide-react';
-import type { TaxonomyType } from '@/types/types';
 
 /**
  * ArchiveHero — هیرو اصلی صفحه آرشیو (v3)
@@ -93,7 +93,17 @@ export default function ArchiveHero({
 
   return (
     <header className="arc-hero-v3">
-      <div className="arc-progress" aria-hidden />
+      {(() => {
+        // progress = 0..1 — چند درصد آرشیو رو تا این صفحه دیدی
+        const progress = totalPages > 1 ? Math.min(Math.max(currentPage / totalPages, 0), 1) : 0;
+        return (
+          <div
+            className="arc-progress"
+            aria-hidden
+            style={{ ['--arc-progress' as string]: String(progress) }}
+          />
+        );
+      })()}
       <span className="arc-hero-v2__orb arc-hero-v2__orb--a" aria-hidden />
       <span className="arc-hero-v2__orb arc-hero-v2__orb--b" aria-hidden />
       <div className="arc-mesh-bg" aria-hidden>
@@ -105,11 +115,7 @@ export default function ArchiveHero({
           <div className="arc-thumb-ring justify-self-center md:justify-self-start">
             <div className="arc-hero-v3__thumb">
               <Image
-                src={
-                  selectedCategory?.thumbnail ||
-                  selectedTag?.thumbnail ||
-                  defaultImage
-                }
+                src={selectedCategory?.thumbnail || selectedTag?.thumbnail || defaultImage}
                 alt={heading}
                 fill
                 sizes="(min-width: 1024px) 120px, (min-width: 640px) 104px, 88px"
@@ -138,9 +144,7 @@ export default function ArchiveHero({
               ) : null}
             </div>
 
-            <h1 className="arc-title text-neutral-900 dark:text-white mt-3 sm:mt-4">
-              {heading}
-            </h1>
+            <h1 className="arc-title text-neutral-900 dark:text-white mt-3 sm:mt-4">{heading}</h1>
 
             <p className="arc-lead text-neutral-600 dark:text-neutral-300 mt-2 sm:mt-3 max-w-2xl mx-auto md:mx-0">
               {lead}
@@ -163,9 +167,7 @@ export default function ArchiveHero({
                     </span>
                     <span className="truncate max-w-[10rem]">{cat.name}</span>
                     {typeof cat.count === 'number' ? (
-                      <span className="arc-suggestion__count">
-                        {formatNumberFa(cat.count)}
-                      </span>
+                      <span className="arc-suggestion__count">{formatNumberFa(cat.count)}</span>
                     ) : null}
                   </Link>
                 ))}
@@ -203,9 +205,7 @@ export default function ArchiveHero({
                 <HiOutlineSparkles className="w-4 h-4" />
               </span>
               <span className="arc-metric-card__body">
-                <span className="arc-metric-card__num">
-                  {formatNumberFa(trendingTags.length)}
-                </span>
+                <span className="arc-metric-card__num">{formatNumberFa(trendingTags.length)}</span>
                 <span className="arc-metric-card__label">برچسب پرطرفدار</span>
               </span>
             </div>
@@ -246,16 +246,6 @@ export default function ArchiveHero({
               </span>
             </div>
           )}
-
-          <div className="arc-metric-card">
-            <span className="arc-metric-card__icon arc-metric-card--rose" aria-hidden>
-              <HiOutlineCalendarDays className="w-4 h-4" />
-            </span>
-            <span className="arc-metric-card__body">
-              <span className="arc-metric-card__num">امروز</span>
-              <span className="arc-metric-card__label">آخرین به‌روزرسانی</span>
-            </span>
-          </div>
         </div>
       </div>
     </header>

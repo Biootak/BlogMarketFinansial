@@ -10,28 +10,24 @@
  * - data shape حفظ می‌شه (TaxonomyType[])
  */
 
-import * as React from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from '@/lib/motion-shim';
+import type { TaxonomyType } from '@/types/types';
 import {
-  HiOutlineMagnifyingGlass,
-  HiOutlineXMark,
-  HiArrowTrendingUp,
-} from 'react-icons/hi2';
-import {
-  FolderOpen,
-  Tag as TagIcon,
-  Hash,
-  CornerDownLeft,
   ArrowDown,
   ArrowUp,
-  ListFilter,
   Check,
+  CornerDownLeft,
+  FolderOpen,
+  Hash,
+  ListFilter,
   Sparkles,
+  Tag as TagIcon,
 } from 'lucide-react';
-import type { TaxonomyType } from '@/types/types';
 import { useRouter } from 'next/navigation';
+import type * as React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { HiArrowTrendingUp, HiOutlineMagnifyingGlass, HiOutlineXMark } from 'react-icons/hi2';
 
 export type CommandMode = 'category' | 'tag';
 
@@ -57,13 +53,16 @@ export type CommandPanelProps = {
   currentSlug?: string;
 };
 
-const MODE_META: Record<CommandMode, {
-  icon: React.ComponentType<{ className?: string }>;
-  iconClass: string;
-  accent: string;
-  allHref: string;
-  allLabel: string;
-}> = {
+const MODE_META: Record<
+  CommandMode,
+  {
+    icon: React.ComponentType<{ className?: string }>;
+    iconClass: string;
+    accent: string;
+    allHref: string;
+    allLabel: string;
+  }
+> = {
   category: {
     icon: FolderOpen,
     iconClass: '',
@@ -126,9 +125,7 @@ export default function CommandPanel({
   // اسکرول به activeIndex
   useEffect(() => {
     if (!open) return;
-    const el = listRef.current?.querySelector<HTMLElement>(
-      `[data-idx="${activeIndex}"]`,
-    );
+    const el = listRef.current?.querySelector<HTMLElement>(`[data-idx="${activeIndex}"]`);
     if (el) el.scrollIntoView({ block: 'nearest' });
   }, [activeIndex, open]);
 
@@ -139,8 +136,7 @@ export default function CommandPanel({
         router.push(meta.allHref);
         return;
       }
-      const href =
-        mode === 'category' ? `/archive/category/${slug}` : `/archive/tag/${slug}`;
+      const href = mode === 'category' ? `/archive/category/${slug}` : `/archive/tag/${slug}`;
       router.push(href);
     },
     [mode, meta.allHref, onOpenChange, router],
@@ -149,19 +145,33 @@ export default function CommandPanel({
   // keyboard navigation
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
+      const target = e.target as HTMLElement;
+      const inSearchInput = target === inputRef.current;
       if (e.key === 'Escape') {
         e.preventDefault();
         onOpenChange(false);
         return;
       }
-      if (e.key === 'ArrowDown' || (e.key === 'j' && !e.shiftKey)) {
+      // حروف j/k و ArrowUp/Down فقط وقتی focus روی search input نیست کار کنن
+      // (تا تایپ "javascript" با j اشتباه گرفته نشه)
+      if (e.key === 'ArrowDown' || (e.key === 'j' && !e.shiftKey && !inSearchInput)) {
         e.preventDefault();
         setActiveIndex((i) => Math.min(i + 1, filtered.length));
         return;
       }
-      if (e.key === 'ArrowUp' || (e.key === 'k' && !e.shiftKey)) {
+      if (e.key === 'ArrowUp' || (e.key === 'k' && !e.shiftKey && !inSearchInput)) {
         e.preventDefault();
         setActiveIndex((i) => Math.max(i - 1, 0));
+        return;
+      }
+      if (e.key === 'Home' && !inSearchInput) {
+        e.preventDefault();
+        setActiveIndex(0);
+        return;
+      }
+      if (e.key === 'End' && !inSearchInput) {
+        e.preventDefault();
+        setActiveIndex(filtered.length);
         return;
       }
       if (e.key === 'Enter') {
@@ -204,9 +214,11 @@ export default function CommandPanel({
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             className="arc-cmd w-full max-w-xl mt-12 md:mt-0"
+            // biome-ignore lint/a11y/useSemanticElements: native <dialog> clashes with createPortal + motion exit animations
             role="dialog"
             aria-modal="true"
             aria-label={title}
+            tabIndex={-1}
             onKeyDown={onKeyDown}
           >
             <div className="arc-cmd__head">
@@ -228,10 +240,7 @@ export default function CommandPanel({
             </div>
 
             <div className="arc-cmd__search">
-              <HiOutlineMagnifyingGlass
-                className="arc-cmd__search-icon w-4 h-4"
-                aria-hidden
-              />
+              <HiOutlineMagnifyingGlass className="arc-cmd__search-icon w-4 h-4" aria-hidden />
               <input
                 ref={inputRef}
                 value={query}
@@ -239,9 +248,7 @@ export default function CommandPanel({
                   setQuery(e.target.value);
                   setActiveIndex(0);
                 }}
-                placeholder={
-                  mode === 'category' ? 'جستجوی دسته‌بندی…' : 'جستجوی برچسب…'
-                }
+                placeholder={mode === 'category' ? 'جستجوی دسته‌بندی…' : 'جستجوی برچسب…'}
                 type="text"
                 autoComplete="off"
                 spellCheck={false}
@@ -252,7 +259,13 @@ export default function CommandPanel({
               </span>
             </div>
 
-            <div ref={listRef} className="arc-cmd__list" role="listbox">
+            <div
+              ref={listRef}
+              className="arc-cmd__list"
+              // biome-ignore lint/a11y/useSemanticElements: listbox role with custom <button> children is the ARIA-recommended pattern
+              role="listbox"
+              tabIndex={-1}
+            >
               <div className="arc-cmd__section">
                 <div className="arc-cmd__section-title">
                   <Sparkles className="w-3.5 h-3.5" aria-hidden />
@@ -271,9 +284,7 @@ export default function CommandPanel({
                   </span>
                   <span className="arc-cmd__item-body">
                     <span className="arc-cmd__item-name">{meta.allLabel}</span>
-                    <span className="arc-cmd__item-meta">
-                      نمایش تمام مقالات بدون فیلتر
-                    </span>
+                    <span className="arc-cmd__item-meta">نمایش تمام مقالات بدون فیلتر</span>
                   </span>
                   <span className="arc-cmd__item-trailing">
                     {currentSlug ? null : (
@@ -295,7 +306,9 @@ export default function CommandPanel({
                   <span>
                     {mode === 'category' ? 'دسته‌بندی‌ها' : 'برچسب‌ها'}
                     <span className="text-neutral-400 dark:text-neutral-500 mx-1">·</span>
-                    <span className="font-normal">{filtered.length.toLocaleString('fa-IR')} مورد</span>
+                    <span className="font-normal">
+                      {filtered.length.toLocaleString('fa-IR')} مورد
+                    </span>
                   </span>
                 </div>
 
@@ -344,7 +357,9 @@ export default function CommandPanel({
                             </span>
                           ) : (
                             <span className="arc-cmd__count tabular-nums">
-                              {typeof it.count === 'number' ? it.count.toLocaleString('fa-IR') : '—'}
+                              {typeof it.count === 'number'
+                                ? it.count.toLocaleString('fa-IR')
+                                : '—'}
                             </span>
                           )}
                         </span>

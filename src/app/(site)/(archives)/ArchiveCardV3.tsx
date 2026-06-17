@@ -1,15 +1,15 @@
-import * as React from 'react';
-import Link from 'next/link';
-import type { PostWithRelations, TaxonomyType } from '@/types/types';
-import { getPostLink } from '@/lib/getPostLink';
 import { SafeImage } from '@/components/SafeImage';
+import { getPostLink } from '@/lib/getPostLink';
+import type { PostWithRelations, TaxonomyType } from '@/types/types';
+import { FolderOpen } from 'lucide-react';
+import Link from 'next/link';
+import type * as React from 'react';
 import {
   HiArrowLeft,
+  HiOutlineChatBubbleLeftRight,
   HiOutlineClock,
   HiOutlineEye,
-  HiOutlineChatBubbleLeftRight,
 } from 'react-icons/hi2';
-import { FolderOpen } from 'lucide-react';
 
 /**
  * کارت مقاله — نسخه v3 (2026)
@@ -38,6 +38,13 @@ function formatJalaliDate(d: Date | string) {
   }
 }
 
+function formatCompactFa(n: number) {
+  if (n >= 1000) {
+    return `${(n / 1000).toLocaleString('fa-IR', { maximumFractionDigits: 1 })}K`;
+  }
+  return n.toLocaleString('fa-IR');
+}
+
 const ArchiveCardV3: React.FC<ArchiveCardV3Props> = ({
   post,
   ratio = 'aspect-[4/3]',
@@ -56,12 +63,13 @@ const ArchiveCardV3: React.FC<ArchiveCardV3Props> = ({
     excerpt,
     featuredImage,
     author,
+    viewCount,
     _count,
   } = post;
   const postLink = getPostLink(postType, slug);
   const primaryCategory = categories?.[0] as TaxonomyType | undefined;
   const commentCount = _count?.comments ?? 0;
-  const viewKey = `view-${slug}`;
+  const views = viewCount ?? 0;
 
   if (variant === 'list') {
     return (
@@ -136,7 +144,11 @@ const ArchiveCardV3: React.FC<ArchiveCardV3Props> = ({
                 </span>
               </span>
             ) : null}
-            {author ? <span aria-hidden className="opacity-40">·</span> : null}
+            {author ? (
+              <span aria-hidden className="opacity-40">
+                ·
+              </span>
+            ) : null}
             <time
               dateTime={new Date(createdAt).toISOString()}
               className="inline-flex items-center gap-1"
@@ -145,14 +157,17 @@ const ArchiveCardV3: React.FC<ArchiveCardV3Props> = ({
               {formatJalaliDate(createdAt)}
             </time>
             {commentCount > 0 ? (
-              <span className="inline-flex items-center gap-1" aria-label={`${commentCount} دیدگاه`}>
+              <span
+                className="inline-flex items-center gap-1"
+                aria-label={`${commentCount} دیدگاه`}
+              >
                 <HiOutlineChatBubbleLeftRight className="w-3 h-3" aria-hidden />
                 {commentCount}
               </span>
             ) : null}
-            <span className="inline-flex items-center gap-1" aria-hidden>
-              <HiOutlineEye className="w-3 h-3" />
-              <span data-view-count={viewKey}>—</span>
+            <span className="inline-flex items-center gap-1" aria-label={`${views} بازدید`}>
+              <HiOutlineEye className="w-3 h-3" aria-hidden />
+              <span>{formatCompactFa(views)}</span>
             </span>
 
             <Link
@@ -267,7 +282,11 @@ const ArchiveCardV3: React.FC<ArchiveCardV3Props> = ({
                 </span>
               </span>
             ) : null}
-            {author ? <span aria-hidden className="opacity-40 shrink-0">·</span> : null}
+            {author ? (
+              <span aria-hidden className="opacity-40 shrink-0">
+                ·
+              </span>
+            ) : null}
             <time
               dateTime={new Date(createdAt).toISOString()}
               className="inline-flex items-center gap-1 shrink-0"
@@ -287,18 +306,14 @@ const ArchiveCardV3: React.FC<ArchiveCardV3Props> = ({
                 {commentCount}
               </span>
             ) : null}
-            <span className="inline-flex items-center gap-1" aria-hidden>
-              <HiOutlineEye className="w-3.5 h-3.5" />
-              <span data-view-count={viewKey}>—</span>
+            <span className="inline-flex items-center gap-1" aria-label={`${views} بازدید`}>
+              <HiOutlineEye className="w-3.5 h-3.5" aria-hidden />
+              <span>{formatCompactFa(views)}</span>
             </span>
           </div>
         </div>
 
-        <Link
-          href={postLink}
-          className="arc-cta"
-          aria-label={`ادامه مطلب ${title}`}
-        >
+        <Link href={postLink} className="arc-cta" aria-label={`ادامه مطلب ${title}`}>
           <span>ادامه مطلب</span>
           <HiArrowLeft className="w-4 h-4" />
         </Link>

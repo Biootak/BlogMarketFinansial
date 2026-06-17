@@ -1,7 +1,7 @@
-import * as React from 'react';
-import { Fragment } from 'react';
-import type { Advertisement, PostWithRelations } from '@/types/types';
 import BannerAds from '@/components/BannerADS/BannerADS';
+import type { Advertisement, PostWithRelations } from '@/types/types';
+import type * as React from 'react';
+import { Fragment } from 'react';
 import ArchiveCardV3 from './ArchiveCardV3';
 import ArchiveFeaturedV3 from './ArchiveFeaturedV3';
 

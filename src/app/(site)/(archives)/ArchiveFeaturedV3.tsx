@@ -1,16 +1,16 @@
-import * as React from 'react';
-import Link from 'next/link';
-import type { PostWithRelations, TaxonomyType } from '@/types/types';
-import { getPostLink } from '@/lib/getPostLink';
 import { SafeImage } from '@/components/SafeImage';
+import { getPostLink } from '@/lib/getPostLink';
+import type { PostWithRelations, TaxonomyType } from '@/types/types';
+import { FolderOpen } from 'lucide-react';
+import Link from 'next/link';
+import type * as React from 'react';
 import {
   HiArrowLeft,
+  HiOutlineChatBubbleLeftRight,
   HiOutlineClock,
   HiOutlineEye,
-  HiOutlineChatBubbleLeftRight,
   HiSparkles,
 } from 'react-icons/hi2';
-import { FolderOpen } from 'lucide-react';
 
 /**
  * کارت ویژه (Featured) — نسخه v3 (2026)
@@ -35,6 +35,13 @@ function formatJalaliDate(d: Date | string) {
   }
 }
 
+function formatCompactFa(n: number) {
+  if (n >= 1000) {
+    return `${(n / 1000).toLocaleString('fa-IR', { maximumFractionDigits: 1 })}K`;
+  }
+  return n.toLocaleString('fa-IR');
+}
+
 const ArchiveFeaturedV3: React.FC<ArchiveFeaturedV3Props> = ({ post }) => {
   if (!post || !post.slug) return null;
 
@@ -47,11 +54,13 @@ const ArchiveFeaturedV3: React.FC<ArchiveFeaturedV3Props> = ({ post }) => {
     excerpt,
     featuredImage,
     author,
+    viewCount,
     _count,
   } = post;
   const postLink = getPostLink(postType, slug);
   const primaryCategory = categories?.[0] as TaxonomyType | undefined;
   const commentCount = _count?.comments ?? 0;
+  const views = viewCount ?? 0;
 
   return (
     <article className="arc-fcard-v3 group" data-arc-reveal>
@@ -148,7 +157,11 @@ const ArchiveFeaturedV3: React.FC<ArchiveFeaturedV3Props> = ({ post }) => {
               <span className="truncate font-medium max-w-[10rem]">{author.name}</span>
             </span>
           ) : null}
-          {author ? <span aria-hidden className="opacity-40">·</span> : null}
+          {author ? (
+            <span aria-hidden className="opacity-40">
+              ·
+            </span>
+          ) : null}
           <time
             dateTime={new Date(createdAt).toISOString()}
             className="inline-flex items-center gap-1"
@@ -162,17 +175,13 @@ const ArchiveFeaturedV3: React.FC<ArchiveFeaturedV3Props> = ({ post }) => {
               {commentCount.toLocaleString('fa-IR')} دیدگاه
             </span>
           ) : null}
-          <span className="inline-flex items-center gap-1" aria-hidden>
-            <HiOutlineEye className="w-3.5 h-3.5" />
-            <span>—</span>
+          <span className="inline-flex items-center gap-1" aria-label={`${views} بازدید`}>
+            <HiOutlineEye className="w-3.5 h-3.5" aria-hidden />
+            <span>{formatCompactFa(views)} بازدید</span>
           </span>
         </div>
 
-        <Link
-          href={postLink}
-          className="arc-cta"
-          aria-label={`ادامه مطلب ${title}`}
-        >
+        <Link href={postLink} className="arc-cta" aria-label={`ادامه مطلب ${title}`}>
           <span>ادامه مطلب</span>
           <HiArrowLeft className="w-4 h-4" />
         </Link>

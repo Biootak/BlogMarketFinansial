@@ -1,31 +1,39 @@
 'use client';
 
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { useState, useCallback, useTransition } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { HiOutlineMagnifyingGlass, HiXMark } from 'react-icons/hi2';
 
 interface ArchiveSearchInputProps {
   initialQuery?: string;
+  /** ثابت — تا میانبر `/` در FilterRail بتونه فوکوس کنه */
+  inputId?: string;
 }
 
-export default function ArchiveSearchInput({ initialQuery = '' }: ArchiveSearchInputProps) {
+/** id ثابت برای هدف‌گیری فوکوس از میانبر صفحه‌کلید */
+export const ARCHIVE_SEARCH_INPUT_ID = 'archive-search-input';
+
+export default function ArchiveSearchInput({
+  initialQuery = '',
+  inputId = ARCHIVE_SEARCH_INPUT_ID,
+}: ArchiveSearchInputProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [query, setQuery] = useState(initialQuery);
   const [isPending, startTransition] = useTransition();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleSearch = useCallback(
+  const runSearch = useCallback(
     (value: string) => {
       const params = new URLSearchParams(searchParams.toString());
-
-      if (value.length >= 2) {
-        params.set('q', value);
-        params.delete('page'); // Reset to page 1
+      const trimmed = value.trim();
+      if (trimmed.length >= 2) {
+        params.set('q', trimmed);
+        params.delete('page');
       } else {
         params.delete('q');
       }
-
       startTransition(() => {
         router.push(`${pathname}?${params.toString()}`);
       });
@@ -33,78 +41,70 @@ export default function ArchiveSearchInput({ initialQuery = '' }: ArchiveSearchI
     [pathname, router, searchParams],
   );
 
+  // جستجوی زنده با debounce — حس command-center
+  useEffect(() => {
+    if (query === initialQuery) return;
+    if (query.trim().length === 1) return; // منتظر ۲ کاراکتر بمون
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => runSearch(query), 350);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [query, initialQuery, runSearch]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    handleSearch(query);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    runSearch(query);
   };
 
   const handleClear = () => {
     setQuery('');
-    handleSearch('');
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    runSearch('');
   };
 
   return (
-    <form onSubmit={handleSubmit} className="relative w-full max-w-md">
-      <div className="relative">
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="جستجو در مقالات..."
-          className="
-            w-full h-12 pr-12 pl-12
-            bg-white dark:bg-neutral-800
-            border border-neutral-200/80 dark:border-neutral-700/80
-            rounded-xl
-            text-neutral-900 dark:text-white
-            placeholder:text-neutral-400 dark:placeholder:text-neutral-500
-            focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500
-            transition-all duration-300
-            text-sm
-          "
-        />
-        <button
-          type="submit"
-          disabled={isPending}
-          className="
-            absolute right-3 top-1/2 -translate-y-1/2
-            w-8 h-8 rounded-lg
-            flex items-center justify-center
-            bg-primary-50 dark:bg-primary-900/40
-            text-primary-600 dark:text-primary-400
-            hover:bg-primary-100 dark:hover:bg-primary-900/60
-            transition-colors duration-200
-          "
-        >
-          {isPending ? (
-            <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <HiOutlineMagnifyingGlass className="w-4 h-4" />
-          )}
-        </button>
-        {query && (
+    <form onSubmit={handleSubmit} className="arc-cmd-search-field" aria-label="جستجو در مقالات">
+      <HiOutlineMagnifyingGlass className="arc-cmd-search-field__icon w-4 h-4" aria-hidden />
+      <input
+        id={inputId}
+        type="text"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape' && query) {
+            e.preventDefault();
+            handleClear();
+          }
+        }}
+        placeholder="جستجو در مقالات…"
+        className="arc-cmd-search-field__input"
+        autoComplete="off"
+        spellCheck={false}
+        aria-label="جستجو در مقالات"
+      />
+      <span className="arc-cmd-search-field__trailing">
+        {isPending ? (
+          <span
+            className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin opacity-60"
+            aria-hidden
+          />
+        ) : query ? (
           <button
             type="button"
             onClick={handleClear}
-            className="
-              absolute left-3 top-1/2 -translate-y-1/2
-              w-6 h-6 rounded-full
-              flex items-center justify-center
-              text-neutral-400 hover:text-neutral-600
-              dark:text-neutral-500 dark:hover:text-neutral-300
-              hover:bg-neutral-100 dark:hover:bg-neutral-700
-              transition-colors duration-200
-            "
+            className="arc-cmd-search-field__clear arc-focus"
+            aria-label="پاک کردن جستجو"
           >
-            <HiXMark className="w-4 h-4" />
+            <HiXMark className="w-3.5 h-3.5" />
           </button>
+        ) : (
+          <kbd className="arc-search-kbd" aria-hidden>
+            /
+          </kbd>
         )}
-      </div>
-      {query && query.length < 2 && (
-        <p className="absolute -bottom-5 right-0 text-xs text-amber-600 dark:text-amber-400">
-          حداقل ۲ کاراکتر وارد کنید
-        </p>
-      )}
+      </span>
     </form>
   );
 }

@@ -9,8 +9,8 @@
  * - با کیبورد فعال می‌شه
  */
 
+import { ChevronDown, FolderOpen, Hash, X } from 'lucide-react';
 import * as React from 'react';
-import { FolderOpen, Hash, ChevronDown, X } from 'lucide-react';
 import type { CommandMode } from './CommandPanel';
 
 type Props = {
@@ -43,9 +43,7 @@ export default function CommandTrigger({
       <span className={`arc-cmd-trigger__icon${iconClass ? ` ${iconClass}` : ''}`}>
         <Icon className="w-3.5 h-3.5" />
       </span>
-      <span className="arc-cmd-trigger__label truncate max-w-[10rem]">
-        {label}
-      </span>
+      <span className="arc-cmd-trigger__label truncate max-w-[10rem]">{label}</span>
       {typeof count === 'number' && !selectedName ? (
         <span className="arc-cmd-trigger__count">{count.toLocaleString('fa-IR')}</span>
       ) : null}

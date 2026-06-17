@@ -1,25 +1,25 @@
+import { ArrowLeft, ChevronLeft, Home } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
-import { Home, ChevronLeft, ArrowLeft } from 'lucide-react';
 
 import { getActiveAdvertisements } from '@/actions/advertisementActions';
 import { getCategories } from '@/actions/categoryActions';
 import { getTags } from '@/actions/getTags';
 import { getTopAuthors } from '@/actions/getTopAuthors';
 import { getArchivePosts } from '@/actions/postActions';
-import Pagination from '@/components/Pagination/Pagination';
-import SectionSliderNewAuthors from '@/components/SectionSliderNewAthors/SectionSliderNewAuthors';
-import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
 import BackgroundSection from '@/components/BackgroundSection/BackgroundSection';
 import DynamicCategories from '@/components/DynamicCategories';
 import Empty from '@/components/Empty';
+import Pagination from '@/components/Pagination/Pagination';
+import SectionSliderNewAuthors from '@/components/SectionSliderNewAthors/SectionSliderNewAuthors';
+import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
+import ActiveFilters, { type ActiveFilter } from '../../ActiveFilters';
+import AnimatedPostGridV3 from '../../AnimatedPostGridV3';
 import ArchiveHero from '../../ArchiveHero';
 import FilterRail from '../../FilterRail';
 import MobileFilterSheet from '../../MobileFilterSheet';
-import ActiveFilters, { type ActiveFilter } from '../../ActiveFilters';
-import AnimatedPostGridV3 from '../../AnimatedPostGridV3';
 
 export async function generateMetadata({
   params,
@@ -173,6 +173,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
     <div className="nc-PageArchive max-w-full @container/archive @md/archive:overflow-x-visible">
       {/* ============================ Breadcrumb ============================ */}
       <div className="sticky top-0 z-40 bg-white/70 dark:bg-neutral-900/70 backdrop-blur-xl border-b border-neutral-200/50 dark:border-neutral-800/50">
+        <span className="arc-scroll-progress" aria-hidden />
         <div className="container">
           <nav className="flex py-3" aria-label="مسیر">
             <ol className="flex flex-wrap items-center gap-1">
@@ -307,19 +308,13 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
           <div className="arc-result-strip">
             <span className="arc-result-strip__count">
               نمایش{' '}
-              <span className="arc-result-strip__num">
-                {posts.length.toLocaleString('fa-IR')}
-              </span>{' '}
-              از{' '}
-              <span className="arc-result-strip__num">
-                {total.toLocaleString('fa-IR')}
-              </span>{' '}
+              <span className="arc-result-strip__num">{posts.length.toLocaleString('fa-IR')}</span>{' '}
+              از <span className="arc-result-strip__num">{total.toLocaleString('fa-IR')}</span>{' '}
               مقاله
             </span>
             {pages > 1 ? (
               <span className="text-xs text-neutral-400 dark:text-neutral-500 tabular-nums">
-                صفحه {currentPage.toLocaleString('fa-IR')} از{' '}
-                {pages.toLocaleString('fa-IR')}
+                صفحه {currentPage.toLocaleString('fa-IR')} از {pages.toLocaleString('fa-IR')}
               </span>
             ) : null}
             <span className="arc-result-strip__sep" aria-hidden />

@@ -8,15 +8,15 @@
  * - suggestion chips برای quick-pick
  */
 
-import * as React from 'react';
-import { useState, useTransition } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { LayoutGrid, Rows3, Search as SearchIcon, X } from 'lucide-react';
 import type { TaxonomyType } from '@/types/types';
+import { Search as SearchIcon } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import * as React from 'react';
+import { useEffect, useState, useTransition } from 'react';
+import ArchiveSearchInput, { ARCHIVE_SEARCH_INPUT_ID } from './ArchiveSearchInput';
+import ArchiveViewToggle from './ArchiveViewToggle';
 import CommandPanel from './CommandPanel';
 import CommandTrigger from './CommandTrigger';
-import ArchiveViewToggle from './ArchiveViewToggle';
-import ArchiveSearchInput from './ArchiveSearchInput';
 
 type Props = {
   filters: { name: string }[];
@@ -45,7 +45,7 @@ export default function FilterRail({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   const setFilter = (name: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -56,6 +56,35 @@ export default function FilterRail({
       router.push(`${pathname}?${params.toString()}`);
     });
   };
+
+  // میانبرهای سراسری صفحه‌کلید — حس command-center
+  //  ⌘K / Ctrl+K → باز کردن پنل دسته‌بندی
+  //  /           → فوکوس روی جستجو
+  useEffect(() => {
+    const isTypingTarget = (el: EventTarget | null) => {
+      const node = el as HTMLElement | null;
+      if (!node) return false;
+      const tag = node.tagName;
+      return tag === 'INPUT' || tag === 'TEXTAREA' || node.isContentEditable;
+    };
+
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        setCmdOpen((prev) => (prev ? null : 'category'));
+        return;
+      }
+      if (e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey && !isTypingTarget(e.target)) {
+        e.preventDefault();
+        const input = document.getElementById(ARCHIVE_SEARCH_INPUT_ID) as HTMLInputElement | null;
+        input?.focus();
+        input?.select();
+      }
+    };
+
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   return (
     <>
@@ -101,6 +130,15 @@ export default function FilterRail({
 
             <span className="w-px h-6 bg-neutral-200 dark:bg-neutral-700 mx-0.5" aria-hidden />
             <ArchiveViewToggle initialMode="grid" />
+
+            <span
+              className="arc-cmd-hint"
+              aria-hidden
+              title="میانبر: Ctrl+K برای دسته‌بندی، / برای جستجو"
+            >
+              <kbd className="arc-search-kbd">Ctrl</kbd>
+              <kbd className="arc-search-kbd">K</kbd>
+            </span>
           </div>
         </div>
 
@@ -122,9 +160,7 @@ export default function FilterRail({
                 </span>
                 <span className="truncate max-w-[8rem]">{tag.name}</span>
                 {typeof tag.count === 'number' ? (
-                  <span className="arc-suggestion__count">
-                    {tag.count.toLocaleString('fa-IR')}
-                  </span>
+                  <span className="arc-suggestion__count">{tag.count.toLocaleString('fa-IR')}</span>
                 ) : null}
               </button>
             ))}

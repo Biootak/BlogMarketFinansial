@@ -1,8 +1,5 @@
 'use client';
 
-import type React from 'react';
-import { useState, useCallback, useEffect } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -14,15 +11,18 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { motion, AnimatePresence } from '@/lib/motion-shim';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
+import { AnimatePresence, motion } from '@/lib/motion-shim';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { FolderOpen, Search, Sparkles, ChevronLeft } from 'lucide-react';
+import { ChevronLeft, FolderOpen, Search, Sparkles } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import type React from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
-import type { TaxonomyType } from '@/types/types';
 import Loading from '@/components/Button/Loading';
 import { useFilterStore } from '@/lib/store';
+import type { TaxonomyType } from '@/types/types';
 
 const searchSchema = z.object({
   searchTerm: z.string().max(100, 'جستجو نمی‌تواند بیشتر از 100 کاراکتر باشد'),
@@ -101,8 +101,8 @@ const ModalCategories: React.FC<ModalCategoriesProps> = ({ initialCategories }) 
     <div className="rtl">
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full md:w-auto relative overflow-hidden gap-2 px-4 py-2.5 rounded-xl border-neutral-200 dark:border-neutral-700 hover:border-primary-300 dark:hover:border-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all duration-200"
           >
             {isFiltering && (
@@ -124,14 +124,16 @@ const ModalCategories: React.FC<ModalCategoriesProps> = ({ initialCategories }) 
                 <FolderOpen className="w-5 h-5 text-white" />
               </div>
               <div>
-                <DialogTitle className="text-xl font-bold text-neutral-900 dark:text-white">دسته‌بندی‌ها</DialogTitle>
+                <DialogTitle className="text-xl font-bold text-neutral-900 dark:text-white">
+                  دسته‌بندی‌ها
+                </DialogTitle>
                 <DialogDescription className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
                   دسته‌بندی مورد نظر خود را انتخاب کنید
                 </DialogDescription>
               </div>
             </div>
           </DialogHeader>
-          
+
           <div className="px-6 py-4 border-b border-neutral-100 dark:border-neutral-800">
             <form onSubmit={handleSubmit(onSearchSubmit)} className="relative">
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
@@ -142,7 +144,7 @@ const ModalCategories: React.FC<ModalCategoriesProps> = ({ initialCategories }) 
               />
             </form>
           </div>
-          
+
           <ScrollArea className="flex-grow px-6 py-4">
             <Button
               variant="ghost"
@@ -186,7 +188,7 @@ const ModalCategories: React.FC<ModalCategoriesProps> = ({ initialCategories }) 
                 ))}
               </motion.div>
             </AnimatePresence>
-            
+
             {categories.length === 0 && (
               <div className="text-center py-12">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">

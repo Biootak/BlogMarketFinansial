@@ -10,24 +10,15 @@
  * - اعمال فیلتر با کلیک
  */
 
-import * as React from 'react';
-import { useState, useCallback, useTransition } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { motion, AnimatePresence } from '@/lib/motion-shim';
 import { Button } from '@/components/ui/button';
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetTrigger,
-  SheetClose,
-} from '@/components/ui/sheet';
-import {
-  HiOutlineMagnifyingGlass,
-  HiXMark,
-} from 'react-icons/hi2';
-import { SlidersHorizontal, ArrowUpDown, Check, Sparkles, X } from 'lucide-react';
+import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { AnimatePresence, motion } from '@/lib/motion-shim';
 import type { TaxonomyType } from '@/types/types';
+import { ArrowUpDown, Check, SlidersHorizontal, Sparkles, X } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import * as React from 'react';
+import { useCallback, useState, useTransition } from 'react';
+import { HiOutlineMagnifyingGlass, HiXMark } from 'react-icons/hi2';
 import CommandPanel from './CommandPanel';
 import CommandTrigger from './CommandTrigger';
 
@@ -108,9 +99,7 @@ export default function MobileFilterSheet({
 
           <div className="px-5 pt-2 pb-4 flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
-                فیلترهای آرشیو
-              </h2>
+              <h2 className="text-lg font-bold text-neutral-900 dark:text-white">فیلترهای آرشیو</h2>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
                 نتایج را دقیق‌تر کنید
               </p>
@@ -226,9 +215,7 @@ export default function MobileFilterSheet({
                 <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-200">
                   برچسب
                 </span>
-                {currentTag ? (
-                  <span className="arc-compact-stat">#{currentTag.name}</span>
-                ) : null}
+                {currentTag ? <span className="arc-compact-stat">#{currentTag.name}</span> : null}
               </div>
               <CommandTrigger
                 mode="tag"

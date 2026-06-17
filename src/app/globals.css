@@ -1065,17 +1065,24 @@ p { line-height: var(--leading-relaxed); }
   }
 
   /* ---- Title — fluid type via clamp() ------------------------------------- */
+  /* فارسی متصل است: tracking منفی باعث آسیب به اتصال حروف می‌شه.
+     برای همین tracking را خنثی نگه می‌داریم و عمق بصری را با وزن و
+     line-height می‌گیریم. optical sizing روی فونت متغیر فعال است. */
   .arc-title {
-    font-size: clamp(1.75rem, 1.1rem + 3.2vw, 3.25rem);
-    line-height: 1.05;
-    letter-spacing: -0.03em;
-    font-weight: 800;
+    font-size: clamp(1.875rem, 1.05rem + 3.6vw, 3.5rem);
+    line-height: 1.12;
+    letter-spacing: normal;
+    font-weight: 700;
     text-wrap: balance;
+    font-optical-sizing: auto;
+    font-feature-settings: "ss01", "kern";
   }
   .arc-lead {
-    font-size: clamp(0.9rem, 0.82rem + 0.4vw, 1.05rem);
-    line-height: 1.7;
+    font-size: clamp(0.95rem, 0.86rem + 0.45vw, 1.125rem);
+    line-height: 1.75;
+    letter-spacing: normal;
     text-wrap: pretty;
+    max-inline-size: 60ch;
   }
 
   /* ---- Stat tiles ---------------------------------------------------------- */
@@ -2912,15 +2919,24 @@ p { line-height: var(--leading-relaxed); }
     position: absolute;
     inset-block: 0;
     inset-inline-start: 0;
-    inset-inline-end: 50%;
-    background: linear-gradient(90deg, oklch(60% 0.10 220), oklch(50% 0.10 240));
+    inset-inline-end: 0;
+    background: linear-gradient(
+      90deg,
+      oklch(60% 0.10 220),
+      oklch(50% 0.10 240)
+    );
     transform-origin: left center;
-    transform: scaleX(0.4);
-    animation: arc-progress-pulse 6s ease-in-out infinite;
+    transform: scaleX(var(--arc-progress, 0.35));
+    transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+    opacity: 0.85;
   }
-  @keyframes arc-progress-pulse {
-    0%, 100% { transform: scaleX(0.3); opacity: 0.7; }
-    50%      { transform: scaleX(0.95); opacity: 1; }
+  .arc-progress:hover::after {
+    opacity: 1;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .arc-progress::after {
+      transition: none;
+    }
   }
 
   /* ---- Command Panel — پنل فرمان شگفت‌انگیز ---------------------------------- */
@@ -3227,6 +3243,127 @@ p { line-height: var(--leading-relaxed); }
     flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem 0.75rem;
+  }
+
+  /* ---- Command search field (inline, glass) --------------------------------- */
+  .arc-cmd-search-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 2.75rem;
+    padding-inline: 2.5rem 0.625rem;
+    border-radius: 0.875rem;
+    background: oklch(100% 0 0 / 0.7);
+    border: 1px solid oklch(90% 0.006 240 / 0.9);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.6) inset;
+    transition: border-color 280ms cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 280ms cubic-bezier(0.22, 1, 0.36, 1),
+                background 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .dark .arc-cmd-search-field {
+    background: oklch(20% 0.01 250 / 0.65);
+    border-color: oklch(30% 0.012 250 / 0.85);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.03) inset;
+  }
+  .arc-cmd-search-field:focus-within {
+    border-color: oklch(60% 0.10 220 / 0.65);
+    background: oklch(100% 0 0 / 0.96);
+    box-shadow: 0 0 0 4px oklch(60% 0.10 220 / 0.12);
+  }
+  .dark .arc-cmd-search-field:focus-within {
+    background: oklch(20% 0.01 250 / 0.9);
+    box-shadow: 0 0 0 4px oklch(60% 0.10 220 / 0.18);
+  }
+  .arc-cmd-search-field__icon {
+    position: absolute;
+    inset-inline-start: 0.85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: oklch(52% 0.02 240);
+    pointer-events: none;
+  }
+  .dark .arc-cmd-search-field__icon { color: oklch(70% 0.01 240); }
+  .arc-cmd-search-field__input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    background: transparent;
+    border: 0;
+    outline: none;
+    font-size: 0.875rem;
+    color: oklch(20% 0.01 240);
+  }
+  .arc-cmd-search-field__input::placeholder { color: oklch(58% 0.01 240); }
+  .dark .arc-cmd-search-field__input { color: oklch(95% 0.005 240); }
+  .dark .arc-cmd-search-field__input::placeholder { color: oklch(60% 0.01 240); }
+  .arc-cmd-search-field__trailing {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    color: oklch(55% 0.02 240);
+  }
+  .dark .arc-cmd-search-field__trailing { color: oklch(70% 0.01 240); }
+  .arc-cmd-search-field__clear {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 9999px;
+    color: oklch(52% 0.02 240);
+    transition: background 180ms, color 180ms;
+  }
+  .arc-cmd-search-field__clear:hover {
+    background: oklch(20% 0.02 240 / 0.08);
+    color: oklch(20% 0.02 240);
+  }
+  .dark .arc-cmd-search-field__clear { color: oklch(72% 0.01 240); }
+  .dark .arc-cmd-search-field__clear:hover {
+    background: oklch(95% 0.005 240 / 0.1);
+    color: oklch(95% 0.005 240);
+  }
+
+  /* ---- Command shortcut hint (Ctrl+K) --------------------------------------- */
+  .arc-cmd-hint {
+    display: none;
+    align-items: center;
+    gap: 0.2rem;
+    padding-inline-start: 0.25rem;
+  }
+  @media (min-width: 1024px) {
+    .arc-cmd-hint { display: inline-flex; }
+  }
+
+  /* ---- Scroll progress reading bar (CSS-only, scroll() timeline) ------------ */
+  /* یک خط موکوار نازک بالای صفحه که با پیشروی اسکرول پر می‌شه.
+     کاملاً CSS است؛ animation-timeline: scroll() بدون هیچ JS. */
+  .arc-scroll-progress {
+    position: absolute;
+    inset-block-end: -1px;
+    inset-inline: 0;
+    height: 2px;
+    transform-origin: left center;
+    transform: scaleX(0);
+    background: linear-gradient(
+      to inline-end,
+      oklch(60% 0.10 220),
+      oklch(72% 0.10 200)
+    );
+    animation: arc-scroll-fill linear both;
+    animation-timeline: scroll(root block);
+    z-index: 2;
+  }
+  [dir="rtl"] .arc-scroll-progress { transform-origin: right center; }
+  @keyframes arc-scroll-fill {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+  @supports not (animation-timeline: scroll()) {
+    .arc-scroll-progress { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .arc-scroll-progress { display: none; }
   }
 
   .arc-cmd-trigger {
@@ -3606,6 +3743,39 @@ p { line-height: var(--leading-relaxed); }
     z-index: 2;
   }
   .arc-card-v3:hover .arc-card-v3__media-overlay { opacity: 0.85; }
+
+  /* sheen sweep — یک نوار نور مورب که هنگام hover روی تصویر عبور می‌کنه.
+     کاملاً CSS، بدون مختصات اشاره‌گر و بدون JS. */
+  .arc-card-v3__media::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: linear-gradient(
+      105deg,
+      transparent 30%,
+      oklch(100% 0 0 / 0.18) 45%,
+      oklch(100% 0 0 / 0.28) 50%,
+      oklch(100% 0 0 / 0.18) 55%,
+      transparent 70%
+    );
+    background-size: 250% 100%;
+    background-position: 150% 0;
+    opacity: 0;
+    transition: opacity 200ms ease;
+  }
+  .arc-card-v3:hover .arc-card-v3__media::after {
+    opacity: 1;
+    animation: arc-sheen-sweep 900ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @keyframes arc-sheen-sweep {
+    from { background-position: 150% 0; }
+    to   { background-position: -100% 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .arc-card-v3__media::after { display: none; }
+  }
   .arc-card-v3__body {
     position: relative;
     z-index: 1;
@@ -3620,8 +3790,8 @@ p { line-height: var(--leading-relaxed); }
   }
   .arc-card-v3__title {
     font-size: 1.0625rem;
-    line-height: 1.4;
-    letter-spacing: -0.018em;
+    line-height: 1.5;
+    letter-spacing: normal;
     font-weight: 700;
     color: oklch(20% 0.01 240);
     text-wrap: balance;
@@ -3883,17 +4053,27 @@ p { line-height: var(--leading-relaxed); }
   }
 
   /* ---- Card reveal (view-timeline) ----------------------------------------- */
-  .arc-reveal-v3 {
-    animation: arc-card-reveal-in-v3 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  /* 2026: هر کارت/فیچرد با اتریبیوت data-arc-reveal، هنگام ورود به viewport
+     به‌صورت scroll-driven (بدون JS) ریوال می‌شه. روی مرورگرهای بدون
+     animation-timeline به‌سادگی نمایش داده می‌شن (بدون انیمیشن). */
+  .arc-reveal-v3,
+  [data-arc-reveal] {
+    animation: arc-card-reveal-in-v3 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
     animation-timeline: view();
-    animation-range: entry 1% cover 18%;
+    animation-range: entry 2% cover 22%;
   }
   @keyframes arc-card-reveal-in-v3 {
-    from { opacity: 0; transform: translate3d(0, 14px, 0); }
-    to   { opacity: 1; transform: translate3d(0, 0, 0); }
+    from { opacity: 0; transform: translate3d(0, 18px, 0) scale(0.985); }
+    to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
   }
+  /* مرورگرهایی که scroll-timeline ندارن یا کاربر motion رو کم کرده */
   @supports not (animation-timeline: view()) {
-    .arc-reveal-v3 { animation: none; opacity: 1; transform: none; }
+    .arc-reveal-v3,
+    [data-arc-reveal] { animation: none; opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .arc-reveal-v3,
+    [data-arc-reveal] { animation: none; opacity: 1; transform: none; }
   }
 
   /* ---- Quick pick row (داخل hero) ------------------------------------------ */
@@ -4010,11 +4190,12 @@ p { line-height: var(--leading-relaxed); }
   }
   .arc-fcard-v3__title {
     font-size: clamp(1.5rem, 1.1rem + 1.8vw, 2.25rem);
-    line-height: 1.15;
-    letter-spacing: -0.025em;
-    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: normal;
+    font-weight: 700;
     color: oklch(18% 0.012 240);
     text-wrap: balance;
+    font-optical-sizing: auto;
   }
   .dark .arc-fcard-v3__title { color: oklch(96% 0.004 240); }
   .arc-fcard-v3__excerpt {
