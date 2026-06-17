@@ -1,73 +1,69 @@
-'use client';
-
-import React, { Fragment } from 'react';
-import { motion } from '@/lib/motion-shim';
-import Card11 from '@/components/Card11/Card11';
-import type { PostWithRelations, Advertisement } from '@/types/types';
 import BannerAds from '@/components/BannerADS/BannerADS';
+import type { Advertisement, PostWithRelations } from '@/types/types';
+import type React from 'react';
+import { Fragment } from 'react';
+import ArchiveCard11 from './ArchiveCard11';
+import ArchiveHeroCard from './ArchiveHeroCard';
+import ArchiveListRow from './ArchiveListRow';
 
 type AnimatedPostGridProps = {
   posts: PostWithRelations[];
   betweenPostsAd?: Advertisement | null;
 };
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 24, scale: 0.96 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      type: 'spring' as const,
-      stiffness: 100,
-      damping: 15,
-    },
-  },
-};
-
+/**
+ * Server-rendered post grid — 2026 v2.
+ *
+ * سه حالت:
+ *  - Grid (پیش‌فرض): گرید magazine — کارت اول hero، بقیه ArchiveCard11.
+ *  - List (با data-archive-view="list" روی <html>): همه‌ی پست‌ها به‌صورت ردیف فشرده.
+ *  - بین دو حالت با CSS-only سوئیچ می‌شه؛ هیچ client JS لازم نیست.
+ *
+ * نکته: تبلیغ BETWEEN_POSTS فقط در grid نمایش داده می‌شه
+ * (در list view جایگاه منطقی نداره).
+ */
 const AnimatedPostGrid: React.FC<AnimatedPostGridProps> = ({ posts, betweenPostsAd }) => {
+  if (posts.length === 0) return null;
+
+  // grid: اولین کارت featured می‌شه
+  const [featured, ...rest] = posts;
+  // اگه فقط یه پست داریم، featured نکنیم — همون grid معمولی کافیه
+  const useFeatured = posts.length > 1;
+  const featuredPost = useFeatured ? featured : null;
+  const gridPosts = useFeatured ? rest : posts;
+  // برای محاسبه‌ی index تبلیغ در grid (بعد از ۴ کارت غیر featured = اندیس ۴ در grid)
+  const adAfterIndex = 4;
+
   return (
-    <motion.div
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6 lg:gap-7"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      {posts.map((post, index) => (
-        <Fragment key={post.id}>
-          {betweenPostsAd && index === 4 && (
-            <motion.div
-              variants={itemVariants}
-              className="col-span-full my-4"
-            >
-              <BannerAds ad={betweenPostsAd} variant="rich" />
-            </motion.div>
-          )}
-          <motion.div
-            variants={itemVariants}
-            whileHover={{ 
-              y: -8,
-              transition: { type: 'spring', stiffness: 300, damping: 20 }
-            }}
-            whileTap={{ scale: 0.98 }}
-            className="group"
-          >
-            <Card11 post={post} />
-          </motion.div>
-        </Fragment>
-      ))}
-    </motion.div>
+    <>
+      {/* ====== GRID VIEW (default) ====== */}
+      <div className="arc-grid-view stagger-children arc-grid-magazine">
+        {featuredPost && (
+          <div className="arc-grid-magazine__featured col-span-full">
+            <ArchiveHeroCard post={featuredPost} />
+          </div>
+        )}
+        {gridPosts.map((post, index) => (
+          <Fragment key={post.id}>
+            {betweenPostsAd && index === adAfterIndex && (
+              <div className="col-span-full my-2">
+                <BannerAds ad={betweenPostsAd} variant="rich" />
+              </div>
+            )}
+            <div className="group h-full">
+              <ArchiveCard11 post={post} />
+            </div>
+          </Fragment>
+        ))}
+      </div>
+
+      {/* ====== LIST VIEW (compact) ====== */}
+      <div className="arc-list-view stagger-children">
+        {posts.map((post) => (
+          <ArchiveListRow key={post.id} post={post} />
+        ))}
+      </div>
+    </>
   );
 };
 
