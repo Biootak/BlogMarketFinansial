@@ -42,7 +42,9 @@ import { getPostLink } from '@/lib/getPostLink';
 import { formatRelativeTime } from '@/lib/utils';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
 import type { MarketRateItem } from '@/actions/marketTickerRates';
+import type { NavasanTickerItem } from '@/actions/navasanTickerRates';
 import MarketRatesTickerBar from './MarketRatesTickerBar';
+import NavasanTickerBar from '@/components/Header/NavasanTickerBar';
 import MagneticSpotlightCard from './MagneticSpotlightCard';
 import CompactRateBridge from './CompactRateBridge';
 import { getCategoryTheme, type CategoryTheme } from './categoryTheme';
@@ -52,13 +54,15 @@ type Props = {
   initialPosts: PostWithRelations[];
   rates?: ExchangeRate[];
   marketRates?: MarketRateItem[];
+  /** نرخ‌های مستقیم Navasan برای نوار باریک «بازارها» — جایگزین marketRates شد. */
+  navasanRates?: NavasanTickerItem[];
   rateLists?: RateListData[];
   className?: string;
 };
 
 const AUTO_PLAY_INTERVAL = 6000; // ۶ ثانیه
 
-export default function Design7({ initialPosts, rates, marketRates, rateLists, className = '' }: Props) {
+export default function Design7({ initialPosts, rates, marketRates, navasanRates, rateLists, className = '' }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -181,12 +185,19 @@ export default function Design7({ initialPosts, rates, marketRates, rateLists, c
 
   return (
     <section className={`relative ${className}`}>
-      {/* ─── Ticker Bar بالای اسلایدر — نرخ‌های بازار واقعی (طلا، ارز، سکه) ─── */}
-      {marketRates && marketRates.length > 0 && (
+      {/* ─── Ticker Bar بالای اسلایدر — نرخ‌های مستقیم Navasan (بدون تبدیل) ───
+          مقادیر همان چیزی هستند که Navasan API برمی‌گردونه (تومان). اگه
+          به هر دلیلی Navasan در دسترس نبود، به‌عنوان fallback از
+          MarketRatesTickerBar (همون لایه‌بندی قبلی) استفاده می‌شه. */}
+      {navasanRates && navasanRates.length > 0 ? (
+        <div className="mb-3 sm:mb-4">
+          <NavasanTickerBar items={navasanRates} />
+        </div>
+      ) : marketRates && marketRates.length > 0 ? (
         <div className="mb-3 sm:mb-4">
           <MarketRatesTickerBar rates={marketRates} />
         </div>
-      )}
+      ) : null}
 
       {/* ─── Main Container ─── */}
       <div

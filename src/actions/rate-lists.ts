@@ -150,19 +150,23 @@ function toEn(n: number): string {
  * خروجی اصلی برای PulseBoard / Header.
  *  1) لیست‌های فعال DB را می‌گیره
  *  2) آیتم‌های تکراری (با title یکسان) را حذف می‌کنه
- *  3) اگه هیچ لیست فعالی نبود، یک لیست مجازی «ارزهای دیجیتال» از Exir اضافه می‌کنه
- *  4) در غیر این صورت، لیست crypto به انتها اضافه می‌شه (اگه DB حداقل یک لیست
- *     فعال داشته باشه، تا تنوع محتوا بیشتر بشه)
+ *  3) اگه هیچ لیست فعالی در DB نبود، **فقط در این حالت** یک لیست مجازی
+ *     «ارزهای دیجیتال» از Exir اضافه می‌کنه تا نوار هرگز خالی نباشه.
+ *
+ * نکته‌ی مهم: وقتی DB لیست فعال داره، لیست کریپتو **اضافه نمی‌شه** چون:
+ *  - کریپتو در `MarketTicker` (نوار زیرین PulseBoard) کامل پوشش داده شده.
+ *  - `MarketTicker` در هدر سایت هم رندر می‌شه.
+ *  - اگه اینجا هم اضافه بشه، کریپتو سه‌بار تکرار می‌شه و کاربر فقط
+ *    نوار بالایی و هدر رو می‌بینه که هر دو دارن BTC/ETH/USDT نشون می‌دن.
+ *  - نوار RateList باید روی نرخ‌های صرافی‌های داخلی متمرکز باشه
+ *    (سارای شاهزاده، نرخ تهران، صرافی ملی) که در هیچ جای دیگری نیست.
  *
  * این تابع **همون کش `rate-lists` رو می‌شکنه** تا هر تغییر ادمین در DB
  * تا ۵ دقیقه‌ی بعد در strip دیده بشه.
  */
 export const getRateListsWithCrypto = unstable_cache(
   async (): Promise<RateListData[]> => {
-    const [dbLists, cryptoItems] = await Promise.all([
-      getRateLists(),
-      loadCryptoRatesAsync(),
-    ]);
+    const dbLists = await getRateLists();
 
     const active = (dbLists ?? []).filter((l) => l && l.isActive);
 
@@ -172,8 +176,9 @@ export const getRateListsWithCrypto = unstable_cache(
       rates: dedupeByTitle(l.rates ?? []),
     }));
 
-    // اگه DB لیست فعال نداره، فقط لیست crypto رو برگردون
+    // اگه DB لیست فعال نداره، فقط لیست crypto رو به‌عنوان fallback برگردون
     if (dedupedActive.length === 0) {
+      const cryptoItems = await loadCryptoRatesAsync();
       if (cryptoItems.length === 0) return [];
       return [
         {
@@ -183,18 +188,12 @@ export const getRateListsWithCrypto = unstable_cache(
       ];
     }
 
-    // لیست crypto رو به انتها اضافه کن (اگه دیتا داره)
-    if (cryptoItems.length === 0) return dedupedActive;
-
-    return [
-      ...dedupedActive,
-      {
-        ...buildCryptoFallbackList(),
-        rates: cryptoItems,
-      },
-    ];
+    // DB لیست فعال داره → فقط همون‌ها رو برگردون.
+    // کریپتو توسط MarketTicker و هدر سایت نشون داده می‌شه و اینجا
+    // اضافه کردنش فقط باعث تکرار سه‌گانه می‌شه.
+    return dedupedActive;
   },
-  ['rate-lists-with-crypto', 'v1-2026-06-17'],
+  ['rate-lists-with-crypto', 'v2-no-crypto-when-db-active-2026-06-17'],
   {
     revalidate: 300,
     tags: ['rate-lists', 'ticker', 'exchange-rates'],

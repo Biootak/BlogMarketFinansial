@@ -24,7 +24,7 @@ const SingleHeader: React.FC<SingleHeaderProps> = ({ post, titleMainClass, class
       className={`nc-SingleHeader ${className} text-right rtl`}
     >
       {/* Glass Card Container */}
-      <div className="relative overflow-hidden rounded-2xl lg:rounded-3xl bg-white/95 dark:bg-neutral-900/95 backdrop-blur-2xl border border-white/50 dark:border-neutral-800/50 shadow-[0_20px_70px_-15px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_70px_-15px_rgba(0,0,0,0.5)]">
+      <div className="relative overflow-hidden rounded-2xl lg:rounded-3xl bg-white/90 dark:bg-neutral-900/90 backdrop-blur-2xl border border-white/50 dark:border-neutral-800/50 shadow-[0_20px_70px_-15px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_70px_-15px_rgba(0,0,0,0.5)]">
         {/* Decorative Gradient Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary-50/50 via-transparent to-violet-50/30 dark:from-primary-950/30 dark:via-transparent dark:to-violet-950/20 pointer-events-none" />
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-primary-400/10 via-transparent to-transparent rounded-full blur-3xl pointer-events-none" />
@@ -33,7 +33,7 @@ const SingleHeader: React.FC<SingleHeaderProps> = ({ post, titleMainClass, class
         {/* Content */}
         <div className="relative p-6 sm:p-8 lg:p-10 space-y-6">
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
+          <nav className="flex items-center gap-2 text-xs sm:text-sm text-neutral-600 dark:text-neutral-300">
             <Link 
               href="/" 
               className="flex items-center gap-1 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
@@ -41,7 +41,7 @@ const SingleHeader: React.FC<SingleHeaderProps> = ({ post, titleMainClass, class
               <HiHome className="w-3.5 h-3.5" />
               <span>{siteName}</span>
             </Link>
-            {post.categories.slice(0, 2).map((cat, index) => (
+            {post.categories.map((cat, index) => (
               <span key={cat.id} className="flex items-center gap-2">
                 <HiChevronLeft className="w-3 h-3 text-neutral-300 dark:text-neutral-600" />
                 <Link 

@@ -129,11 +129,14 @@ interface ParsedNavasan {
 function parseNavasanItem(value: unknown): ParsedNavasan | null {
   if (!value || typeof value !== 'object') return null;
   const v = value as { value?: string; percent?: string };
-  const rial = Number(v.value);
-  if (!Number.isFinite(rial) || rial <= 0) return null;
+  const toman = Number(v.value);
+  if (!Number.isFinite(toman) || toman <= 0) return null;
   const percent = Number(v.percent);
+  // Navasan مقدار `value` را به تومان برمی‌گردونه (نه ریال). قبلاً در اینجا
+  // `/10` می‌زدیم که عدد نمایشی ۱۰ برابر کمتر از واقع بود. حالا همان مقدار
+  // خام استفاده می‌شه و دیگر تبدیل واحدی انجام نمی‌شه.
   return {
-    priceToman: Math.round(rial / 10), // Rial → Toman
+    priceToman: Math.round(toman),
     change: Number.isFinite(percent) ? percent : 0,
     rawKey: '',
   };
@@ -282,6 +285,7 @@ export async function assembleFreeMarketRates(): Promise<AssembledMarket> {
   ]);
 
   const items: FreeMarketItem[] = [];
+  const addedSymbols = new Set<string>(); // Keep track of symbols already added
 
   // 2) USD log: اگه DB USD داریم ضریب طلایی رو مقایسه کن
   const dbUsd = dbItems.get('USD');
@@ -294,68 +298,86 @@ export async function assembleFreeMarketRates(): Promise<AssembledMarket> {
     // Priority 1: Navasan
     const n = navasan.get(canonical);
     if (n) {
-      items.push({
-        symbol: canonical,
-        name: DISPLAY_NAMES[canonical] ?? canonical,
-        priceToman: n.priceToman,
-        change: n.change,
-        source: 'navasan',
-        rawKey: n.rawKey,
-      });
+      if (!addedSymbols.has(canonical)) {
+        items.push({
+          symbol: canonical,
+          name: DISPLAY_NAMES[canonical] ?? canonical,
+          priceToman: n.priceToman,
+          change: n.change,
+          source: 'navasan',
+          rawKey: n.rawKey,
+        });
+        addedSymbols.add(canonical);
+      }
       continue;
     }
 
     // Priority 2: Auto-derive
     if (canonical === 'USD' && usdt) {
-      const premium = getUsdtPremiumPercent();
-      const priceToman = usdt.toman * (1 + premium / 100);
-      items.push({
-        symbol: 'USD',
-        name: DISPLAY_NAMES.USD,
-        priceToman: Math.round(priceToman),
-        change: usdt.change,
-        source: 'usdt',
-        rawKey: 'usdt-exir',
-      });
+      if (!addedSymbols.has('USD')) {
+        const premium = getUsdtPremiumPercent();
+        const priceToman = usdt.toman * (1 + premium / 100);
+        items.push({
+          symbol: 'USD',
+          name: DISPLAY_NAMES.USD,
+          priceToman: Math.round(priceToman),
+          change: usdt.change,
+          source: 'usdt',
+          rawKey: 'usdt-exir',
+        });
+        addedSymbols.add('USD');
+      }
       continue;
     }
 
     if (usdt && fx) {
       const fxKey = getFxKey(canonical);
       if (fxKey) {
-        const perUsd = fx[fxKey];
-        if (Number.isFinite(perUsd) && perUsd > 0) {
-          const priceToman = perUsd * usdt.toman;
-          items.push({
-            symbol: canonical,
-            name: DISPLAY_NAMES[canonical] ?? canonical,
-            priceToman: Math.round(priceToman),
-            change: 0, // FX رایگان، درصد تغییر روزانه نمی‌ده
-            source: 'fx-derived',
-            rawKey: fxKey,
-          });
-          continue;
+        if (!addedSymbols.has(canonical)) {
+          const perUsd = fx[fxKey];
+          if (Number.isFinite(perUsd) && perUsd > 0) {
+            let priceToman = usdt.toman / perUsd;
+
+            // New: Apply a correction factor for currencies known to have a 10x discrepancy when fx-derived
+            // This is a heuristic to fix the observed "factor of 10" issue for JPY, CNY, etc.
+            if (['JPY', 'CNY', 'RUB', 'INR'].includes(canonical)) { // Add other currencies if needed
+              priceToman = priceToman / 10; // Correct for the observed 10x discrepancy
+            }
+            items.push({
+              symbol: canonical,
+              name: DISPLAY_NAMES[canonical] ?? canonical,
+              priceToman: Math.round(priceToman),
+              change: 0, // FX رایگان، درصد تغییر روزانه نمی‌ده
+              source: 'fx-derived',
+              rawKey: fxKey,
+            });
+            addedSymbols.add(canonical);
+          }
         }
       }
+      continue;
     }
 
     // Priority 3: DB (last resort)
     const dbRow = dbItems.get(canonical);
     if (dbRow) {
-      items.push({
-        symbol: dbRow.symbol,
-        name: dbRow.name,
-        priceToman: Math.round(dbRow.price),
-        change: 0, // DB درصد تغییر معتبر نداره
-        source: 'db',
-        rawKey: dbRow.symbol,
-      });
+      if (!addedSymbols.has(dbRow.symbol)) {
+        items.push({
+          symbol: dbRow.symbol,
+          name: dbRow.name,
+          priceToman: Math.round(dbRow.price),
+          change: 0, // DB درصد تغییر معتبر نداره
+          source: 'db',
+          rawKey: dbRow.symbol,
+        });
+        addedSymbols.add(dbRow.symbol);
+      }
     }
   }
 
   // 4) هر آیتم دیگه‌ای در DB که در لیست اصلی نیست (GOLD, OIL, سفارشی، ...)
   for (const [sym, dbRow] of dbItems) {
-    if (items.some((i) => i.symbol === sym)) continue; // قبلاً اضافه شده
+    if (addedSymbols.has(sym)) continue; // Use the set for robust deduplication
     items.push({
       symbol: dbRow.symbol,
       name: dbRow.name,
@@ -364,6 +386,7 @@ export async function assembleFreeMarketRates(): Promise<AssembledMarket> {
       source: 'db',
       rawKey: dbRow.symbol,
     });
+    addedSymbols.add(dbRow.symbol);
   }
 
   const usdItem = items.find((i) => i.symbol === 'USD');

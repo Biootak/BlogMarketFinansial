@@ -62,12 +62,12 @@ const FADE_CLASSES = {
 
 const TONE_CLASSES = {
   glass:
-    'border border-neutral-200/70 dark:border-neutral-800/80 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-md',
-  rose: 'border border-rose-200/70 dark:border-rose-800/80 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-md',
+    'border border-neutral-200/70 dark:border-neutral-800/80 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-lg',
+  rose: 'border border-rose-200/70 dark:border-rose-800/80 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-lg',
   emerald:
-    'border border-neutral-200/70 dark:border-neutral-800/80 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-md',
+    'border border-neutral-200/70 dark:border-neutral-800/80 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-lg',
   neutral:
-    'border-b border-neutral-200/60 dark:border-neutral-800/60 bg-neutral-50/70 dark:bg-neutral-950/70 backdrop-blur-xl',
+    'border-b border-neutral-200/60 dark:border-neutral-800/60 bg-neutral-50/70 dark:bg-neutral-950/70 backdrop-blur-lg',
 } as const;
 
 /**

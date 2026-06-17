@@ -62,13 +62,15 @@ export default async function PulseSection({ className = '' }: PulseSectionProps
   const initialAds: Advertisement[] = adsResult.success ? (adsResult.data ?? []) : [];
   const activeRateLists: RateListData[] = (rateLists ?? []).filter((l) => l.isActive);
 
+  const cryptoTickerData = tickerData.filter((item) => item.category === 'crypto');
+
   return (
     <div className={`nc-PulseSection ${className}`}>
       <LatestArticles
         posts={posts}
         categories={categories}
         initialAds={initialAds}
-        initialTickerData={tickerData}
+        initialTickerData={cryptoTickerData}
         totalCount={totalCount}
         rateLists={activeRateLists}
       />

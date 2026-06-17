@@ -35,7 +35,7 @@ const CURRENCIES = [
 const CACHE_TTL = 60; // 1 minute
 const MAX_RETRIES = 2;
 const RETRY_DELAY = 500;
-const USE_MOCK_ON_FAILURE = true;
+const USE_MOCK_ON_FAILURE = false;
 
 // Mock data for fallback
 const MOCK_RATES: ExchangeRate[] = [

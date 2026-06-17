@@ -5,6 +5,39 @@ import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Dialog, Transition } from '@headlessui/react';
 import { Icon } from '@/components/ui/icon';
+import { cn } from '@/lib/utils'; // Import cn utility for conditional classnames
+
+// Helper component for image with skeleton loading state
+const ImageWithSkeleton: React.FC<{
+  src: string;
+  alt: string;
+  fill: boolean;
+  sizes: string;
+  className: string;
+}> = ({ src, alt, fill, sizes, className }) => {
+  const [isLoading, setLoading] = useState(true);
+
+  return (
+    <div className="relative w-full h-full">
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-xl" />
+      )}
+      <Image
+        alt={alt}
+        src={src}
+        fill={fill}
+        sizes={sizes}
+        className={cn(
+          className,
+          'transition-opacity duration-300',
+          isLoading ? 'opacity-0' : 'opacity-100'
+        )}
+        onLoad={() => setLoading(false)}
+        onLoadingComplete={() => setLoading(false)} // Ensure loading state is false
+      />
+    </div>
+  );
+};
 
 interface GalleryImagesProps {
   post: {
@@ -18,6 +51,7 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0); // Added for modal navigation
 
   const IMAGES_GALLERY =
     post.galleryImages.length > 0
@@ -26,6 +60,7 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
 
   const handleOpenModalImageGallery = useCallback(() => {
     setIsModalOpen(true);
+    setCurrentImageIndex(0); // Reset to first image when opening modal
     const newParams = new URLSearchParams(searchParams.toString());
     newParams.set('modal', 'PHOTO_TOUR_SCROLLABLE');
     router.push(`?${newParams.toString()}`, { scroll: false });
@@ -38,6 +73,16 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
     router.push(`?${newParams.toString()}`, { scroll: false });
   }, [router, searchParams]);
 
+  const handleNextImage = useCallback(() => {
+    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % IMAGES_GALLERY.length);
+  }, [IMAGES_GALLERY.length]);
+
+  const handlePrevImage = useCallback(() => {
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex === 0 ? IMAGES_GALLERY.length - 1 : prevIndex - 1
+    );
+  }, [IMAGES_GALLERY.length]);
+
   return (
     <>
       <div className="relative grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 my-10">
@@ -47,7 +92,7 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
           onKeyDown={(e) => e.key === 'Enter' && handleOpenModalImageGallery()}
           aria-label="Open image gallery"
         >
-          <Image
+          <ImageWithSkeleton
             alt={post.title}
             src={IMAGES_GALLERY[0] || '/images/placeholder.png'}
             fill
@@ -65,7 +110,7 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
             onKeyDown={(e) => e.key === 'Enter' && handleOpenModalImageGallery()}
             aria-label={`Open image gallery - image ${index + 2}`}
           >
-            <Image
+            <ImageWithSkeleton
               alt={`${post.title} - image ${index + 2}`}
               src={item || '/images/placeholder-small.png'}
               fill
@@ -122,20 +167,39 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
                   >
                     <Icon name="x" className="w-6 h-6" />
                   </button>
-                  <div className="overflow-y-auto flex-grow">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {IMAGES_GALLERY.map((image, index) => (
-                        <div key={index} className="relative aspect-w-16 aspect-h-9">
-                          <Image
-                            src={image || '/images/placeholder.png'}
-                            alt={`${post.title} - image ${index + 1}`}
-                            fill
-                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                            className="rounded-lg object-cover transition-opacity duration-300 hover:opacity-90"
-                          />
-                        </div>
-                      ))}
+                  <div className="relative overflow-hidden flex-grow flex items-center justify-center">
+                    <button
+                      type="button"
+                      onClick={handlePrevImage}
+                      className="absolute left-2 sm:left-4 z-20 p-2 rounded-full bg-white/75 dark:bg-gray-800/75 hover:bg-white dark:hover:bg-gray-700 transition-colors duration-200 shadow-md"
+                      aria-label="Previous image"
+                    >
+                      <Icon name="arrow-left" className="w-6 h-6 text-gray-700 dark:text-gray-200" />
+                    </button>
+
+                    <div className="relative w-full h-[calc(100vh-200px)] max-h-[80vh] flex items-center justify-center">
+                      <div className="relative w-full pb-[56.25%]"> {/* 16:9 Aspect Ratio (9/16 = 0.5625) using padding-bottom */}
+                        <ImageWithSkeleton
+                          src={IMAGES_GALLERY[currentImageIndex] || '/images/placeholder.png'}
+                          alt={`${post.title} - image ${currentImageIndex + 1}`}
+                          fill
+                          sizes="100vw"
+                          className="rounded-lg object-contain absolute inset-0"
+                        />
+                      </div>
                     </div>
+
+                    <button
+                      type="button"
+                      onClick={handleNextImage}
+                      className="absolute right-2 sm:right-4 z-20 p-2 rounded-full bg-white/75 dark:bg-gray-800/75 hover:bg-white dark:hover:bg-gray-700 transition-colors duration-200 shadow-md"
+                      aria-label="Next image"
+                    >
+                      <Icon name="arrow-right" className="w-6 h-6 text-gray-700 dark:text-gray-200" />
+                    </button>
+                  </div>
+                  <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
+                    {currentImageIndex + 1} از {IMAGES_GALLERY.length}
                   </div>
                 </Dialog.Panel>
               </Transition.Child>

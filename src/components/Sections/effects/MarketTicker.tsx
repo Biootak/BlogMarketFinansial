@@ -122,7 +122,7 @@ export default function MarketTicker({
         ariaLabel="نرخ‌های زنده"
         lead={liveLabel}
       >
-        <Marquee speed={-30} pauseOnHover pauseOnHold>
+        <Marquee speed={-10} pauseOnHover pauseOnHold>
           {data.map((item) => {
             const isUp = item.change >= 0;
             const Icon = isUp ? TrendingUp : TrendingDown;
@@ -130,7 +130,7 @@ export default function MarketTicker({
               <div
                 key={`${item.category}-${item.symbol}`}
                 className={cn(
-                  'group/item flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3',
+                  'group/item flex items-center gap-2 sm:gap-3 px-3 sm:px-4',
                   'text-[11px] sm:text-[13px]',
                   'text-neutral-700 dark:text-neutral-300',
                   'tabular-nums',

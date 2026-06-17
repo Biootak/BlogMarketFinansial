@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@plugin "@tailwindcss/container-queries";
 
 /* ============================================================================
    Refined Theme Tokens — Linear × Vercel × Stripe
