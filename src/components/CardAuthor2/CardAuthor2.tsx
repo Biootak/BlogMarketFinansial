@@ -1,7 +1,8 @@
-import React from 'react';
-import Link from 'next/link';
 import Avatar from '@/components/Avatar/Avatar';
+import { getReadingMinutes } from '@/lib/readingTime';
 import type { PostWithRelations } from '@/types/types';
+import Link from 'next/link';
+import React from 'react';
 import FormattedDate from '../FormattedDate';
 
 export interface CardAuthor2Props {
@@ -11,7 +12,12 @@ export interface CardAuthor2Props {
   lightText?: boolean;
 }
 
-const CardAuthor2 = ({ className = '', post, hoverReadingTime = true, lightText = false }: CardAuthor2Props) => {
+const CardAuthor2 = ({
+  className = '',
+  post,
+  hoverReadingTime = true,
+  lightText = false,
+}: CardAuthor2Props) => {
   if (!post) {
     return null;
   }
@@ -20,7 +26,7 @@ const CardAuthor2 = ({ className = '', post, hoverReadingTime = true, lightText 
   const { name: displayName, id: authorId, image: avatar } = author;
   const href = `/author/${authorId}`;
 
-  const readingTime = Math.ceil(post.content.split(' ').length / 200);
+  const readingTime = getReadingMinutes(post);
 
   const nameClass = lightText
     ? 'text-sm text-white hover:text-white/80 font-medium'
@@ -40,9 +46,7 @@ const CardAuthor2 = ({ className = '', post, hoverReadingTime = true, lightText 
         userName={displayName || ''}
       />
       <div>
-        <h2 className={nameClass}>
-          {displayName}
-        </h2>
+        <h2 className={nameClass}>{displayName}</h2>
         <span className={dateClass}>
           <FormattedDate date={createdAt} />
           {readingTime && hoverReadingTime && (

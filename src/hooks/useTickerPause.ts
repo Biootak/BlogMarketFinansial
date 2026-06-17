@@ -1,20 +1,25 @@
 'use client';
 
 /**
- * useTickerPause — یه هوک مشترک برای pause/resume انیمیشن track ها
+ * useTickerPause — هوک مشترک pause/resume برای نوارهای marquee/ticker
  * ----------------------------------------------------------------------------
- * همه‌ی نوارهای marquee/ticker (InfiniteTicker, Marquee) از همین hook
- * استفاده می‌کنن تا:
- *  - رفتار pause-on-hover و pause-on-hold یکسان باشه
- *  - CSS descendant selector کافی نباشه، JS هم مستقیماً animationPlayState
- *    روی track و descendants ست می‌کنه
- *  - وقتی children عوض می‌شن (re-render)، state با track جدید sync بشه
+ * pause کاملاً CSS-driven است (هیچ DOM scan یا getComputedStyle در کار نیست):
  *
- * استفاده:
- *   const { containerProps, isPaused } = useTickerPause({ pauseOnHover, pauseOnHold });
- *   return <div {...containerProps}>{children}</div>
+ *  - hover → اتربیوت ثابت `data-pause-on-hover="true"` روی container ست می‌شه و
+ *    قانون `[data-pause-on-hover='true']:hover .ticker-ltr/.ticker-rtl/...` در
+ *    globals.css انیمیشن track را متوقف می‌کند. هزینه‌ی runtime صفر.
+ *  - hold (click-and-hold / touch) → فقط یک اتربیوت `data-holding` روی همان
+ *    container toggle می‌شه (O(1))، و قانون `[data-holding='true'] .ticker-…`
+ *    در globals.css بقیه‌ی کار را می‌کند.
+ *
+ * چرا این بازنویسی؟ نسخه‌ی قبلی در یک useEffect بدون dependency array (هر
+ * render) کل زیردرخت را با `querySelectorAll('*')` + `getComputedStyle`
+ * پیمایش می‌کرد و روی هر گره یک reflow همگام تحمیل می‌کرد. با چند instance
+ * تیکر در صفحه‌ی اصلی این به layout thrashing مداوم روی main thread تبدیل
+ * می‌شد و INP را خراب می‌کرد. مسیر CSS از قبل وجود داشت و این JS کاملاً
+ * زائد بود.
  */
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 export interface UseTickerPauseOptions {
   /** pause وقتی mouse وارد wrapper می‌شه */
@@ -26,107 +31,50 @@ export interface UseTickerPauseOptions {
 export interface UseTickerPauseResult {
   containerProps: {
     ref: React.RefObject<HTMLDivElement | null>;
-    onMouseEnter: () => void;
-    onMouseLeave: () => void;
-    onMouseDown: () => void;
-    onMouseUp: () => void;
-    onTouchStart: () => void;
-    onTouchEnd: () => void;
-    onTouchCancel: () => void;
-    'data-paused'?: 'true' | 'false';
+    onMouseDown?: () => void;
+    onMouseUp?: () => void;
+    onMouseLeave?: () => void;
+    onTouchStart?: () => void;
+    onTouchEnd?: () => void;
+    onTouchCancel?: () => void;
+    'data-pause-on-hover'?: 'true';
+    'data-holding'?: 'true' | 'false';
   };
-  /** وضعیت فعلی pause (برای reactive UI اگه لازم شد) */
+  /** وضعیت فعلی pause-on-hold (برای reactive UI اگه لازم شد) */
   isPaused: boolean;
 }
-
-/**
- * Selectorهایی که هر slider/marquee ممکنه استفاده کنه. هر کدوم match بشه
- * animationPlayState روش set می‌شه.
- */
-const TRACK_SELECTORS = [
-  '.marquee-track',
-  '.ticker-track',
-  '.ticker-ltr',
-  '.ticker-rtl',
-  '[data-marquee-track]',
-  '.slick-track',
-] as const;
 
 export function useTickerPause({
   pauseOnHover = true,
   pauseOnHold = false,
 }: UseTickerPauseOptions = {}): UseTickerPauseResult {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const isHoveredRef = useRef(false);
-  const isHoldingRef = useRef(false);
-  // برای اینکه بتونیم isPaused رو reactive به parent تحویل بدیم
-  // (مثلاً برای نشون دادن آیکون play/pause)
-  const isPausedRef = useRef(false);
+  // hold یک رویداد نادر (فشردن کاربر) است؛ یک state ساده کافیه و روی
+  // hot path انیمیشن قرار نمی‌گیره.
+  const [holding, setHolding] = useState(false);
 
-  const setPaused = useCallback((paused: boolean) => {
-    isPausedRef.current = paused;
-    const root = containerRef.current;
-    if (!root) return;
-    for (const sel of TRACK_SELECTORS) {
-      const elements = root.querySelectorAll<HTMLElement>(sel);
-      elements.forEach((el) => {
-        el.style.animationPlayState = paused ? 'paused' : 'running';
-      });
-    }
-    // Fallback: هر descendant با animation غیر-none
-    const all = root.querySelectorAll<HTMLElement>('*');
-    all.forEach((el) => {
-      if (TRACK_SELECTORS.some((s) => el.matches(s))) return;
-      const cs = window.getComputedStyle(el);
-      if (cs.animationName && cs.animationName !== 'none') {
-        el.style.animationPlayState = paused ? 'paused' : 'running';
-      }
-    });
+  const startHold = useCallback(() => {
+    if (pauseOnHold) setHolding(true);
+  }, [pauseOnHold]);
+  const endHold = useCallback(() => {
+    setHolding(false);
   }, []);
 
-  const updatePause = useCallback(() => {
-    setPaused(isHoveredRef.current || isHoldingRef.current);
-  }, [setPaused]);
-
-  const onMouseEnter = useCallback(() => {
-    if (!pauseOnHover) return;
-    isHoveredRef.current = true;
-    updatePause();
-  }, [pauseOnHover, updatePause]);
-
-  const onMouseLeave = useCallback(() => {
-    isHoveredRef.current = false;
-    updatePause();
-  }, [updatePause]);
-
-  const onMouseDown = useCallback(() => {
-    if (!pauseOnHold) return;
-    isHoldingRef.current = true;
-    updatePause();
-  }, [pauseOnHold, updatePause]);
-
-  const onMouseUp = useCallback(() => {
-    isHoldingRef.current = false;
-    updatePause();
-  }, [updatePause]);
-
-  // هر بار children/re-render، اگه hovered هستیم دوباره pause کن
-  useEffect(() => {
-    updatePause();
-  });
-
-  return {
-    containerProps: {
-      ref: containerRef,
-      onMouseEnter,
-      onMouseLeave,
-      onMouseDown,
-      onMouseUp,
-      onTouchStart: onMouseDown,
-      onTouchEnd: onMouseUp,
-      onTouchCancel: onMouseUp,
-      'data-paused': isPausedRef.current ? 'true' : 'false',
-    },
-    isPaused: isPausedRef.current,
+  const containerProps: UseTickerPauseResult['containerProps'] = {
+    ref: containerRef,
+    ...(pauseOnHover ? { 'data-pause-on-hover': 'true' as const } : {}),
+    ...(pauseOnHold
+      ? {
+          onMouseDown: startHold,
+          onMouseUp: endHold,
+          onMouseLeave: endHold,
+          onTouchStart: startHold,
+          onTouchEnd: endHold,
+          onTouchCancel: endHold,
+          'data-holding': holding ? ('true' as const) : ('false' as const),
+        }
+      : {}),
   };
+
+  return { containerProps, isPaused: holding };
 }

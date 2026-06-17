@@ -1,5 +1,6 @@
 'use client';
 
+import { useTickerPause } from '@/hooks/useTickerPause';
 /**
  * InfiniteTicker
  * ----------------------------------------------------------------------------
@@ -19,7 +20,6 @@
  */
 import type React from 'react';
 import { useMemo } from 'react';
-import { useTickerPause } from '@/hooks/useTickerPause';
 
 interface InfiniteTickerProps {
   children: React.ReactNode;
@@ -96,19 +96,19 @@ function InfiniteTickerFn({
           will-change: transform;
         }
 
-        /* CSS fast-path: در hover هر wrapper با کلاس marquee-pause، track رو متوقف کن.
-           این اولین خط دفاعیه و در اکثر مواقع کافیه. */
+        /* CSS fast-path: hover روی همین container (که data-pause-on-hover
+           داره) یا هر parent با کلاس marquee-pause، track رو متوقف می‌کنه.
+           pause کاملاً CSS-driven هست — هیچ JS DOM-scan در کار نیست. */
+        [data-pause-on-hover='true']:hover .ticker-ltr,
+        [data-pause-on-hover='true']:hover .ticker-rtl,
         :global(.marquee-pause:hover) .ticker-ltr,
-        :global(.marquee-pause:hover) .ticker-rtl,
-        :global(.marquee-pause:hover) .marquee-track {
+        :global(.marquee-pause:hover) .ticker-rtl {
           animation-play-state: paused;
         }
 
-        /* Fallback: اگه wrapper کلاس marquee-pause نداشت ولی data-paused=true داشت
-           (از JS)، track رو متوقف کن. */
-        [data-paused='true'] .ticker-ltr,
-        [data-paused='true'] .ticker-rtl,
-        [data-paused='true'] .marquee-track {
+        /* hold (click/touch-and-hold) → از data-holding روی همین container. */
+        [data-holding='true'] .ticker-ltr,
+        [data-holding='true'] .ticker-rtl {
           animation-play-state: paused;
         }
 

@@ -10,6 +10,7 @@ export const getPosts = unstable_cache(
     take: limit,
     where: { status: 'PUBLISHED', postType: 'GALLERY' },
     orderBy: { createdAt: 'desc' },
+    omit: { content: true },
     include: {
       author: {
         include: { profile: true },
@@ -27,7 +28,7 @@ export const getPosts = unstable_cache(
     },
   });
 
-    return posts;
+    return posts as PostWithRelations[];
   },
   ['gallery-posts'],
   {

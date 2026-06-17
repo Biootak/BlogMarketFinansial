@@ -15,6 +15,7 @@ async function fetchFeaturedPosts(limit: number): Promise<ActionResult<PostWithR
         },
         take: limit,
         orderBy: { createdAt: 'desc' },
+        omit: { content: true },
         include: {
           author: {
             select: {

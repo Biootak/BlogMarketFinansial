@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 /**
  * TickerShell — پوسته‌ی مشترک برای همه‌ی نوارهای قیمت (ticker / marquee)
  * ----------------------------------------------------------------------------
@@ -9,23 +10,17 @@
  *  - **JS event listener** برای pause/resume روان با hover (نه فقط CSS)
  *  - children (معمولاً Marquee یا InfiniteTicker) رو در track قرار می‌ده
  *
- * چرا JS؟ کلاس `.marquee-pause` به تنهایی کافی نیست چون:
- *  - track ممکنه در چند لایه‌ی div تو در تو باشه و descendant selector
- *    ممکنه در برخی مرورگرها fail بشه
- *  - برخی animation libraries (slick-carousel) animation رو در سطح
- *    خودشون کنترل می‌کنن نه با CSS keyframes
- *  - استایل‌های `framer-motion` ممکنه با CSS specificity بالاتر بیان
+ * pause کاملاً CSS-driven است: کلاس `.marquee-pause` (برای hover) و اتربیوت
+ * `data-holding` (برای click-and-hold) روی همین wrapper ست می‌شن و قوانین
+ * موجود در globals.css (`.marquee-pause:hover .ticker-…` و
+ * `[data-holding='true'] .ticker-…`) انیمیشن track را متوقف می‌کنند.
  *
- * راه‌حل: در mount و هر hover، مستقیماً `animationPlayState` روی
- * همه‌ی descendants (`.marquee-track`, `.ticker-track`, `.ticker-ltr`,
- * `.ticker-rtl`, `[data-marquee-track]`, `*` با animation) ست می‌کنیم.
- * این تضمین می‌کنه حتی اگه CSS selector fail بشه، pause کار کنه.
- *
- * برای react-slick (که animationPlayState نداره و از translateX استفاده
- * می‌کنه) یه data attribute ست می‌کنیم که در slick override می‌شه.
+ * نسخه‌ی قبلی در یک useEffect بدون deps کل زیردرخت را با
+ * `querySelectorAll('*')` + `getComputedStyle` پیمایش می‌کرد و روی هر گره یک
+ * reflow همگام تحمیل می‌کرد؛ با چند tiker در صفحه این به layout thrashing
+ * مداوم و افت INP منجر می‌شد. مسیر CSS کافی است و آن JS حذف شد.
  */
-import { useCallback, useEffect, useRef, type ReactNode } from 'react';
-import { cn } from '@/lib/utils';
+import { type ReactNode, useCallback, useState } from 'react';
 
 export interface TickerShellProps {
   /** محتوای track (معمولاً Marquee یا InfiniteTicker با item map) */
@@ -70,19 +65,6 @@ const TONE_CLASSES = {
     'border-b border-neutral-200/60 dark:border-neutral-800/60 bg-neutral-50/70 dark:bg-neutral-950/70 backdrop-blur-lg',
 } as const;
 
-/**
- * همه‌ی selectorهایی که ممکنه track تکراری داشته باشن.
- * هر کدوم که در DOM پیدا بشه، animationPlayState روش set می‌شه.
- */
-const TRACK_SELECTORS = [
-  '.marquee-track',
-  '.ticker-track',
-  '.ticker-ltr',
-  '.ticker-rtl',
-  '[data-marquee-track]',
-  '.slick-track',
-] as const;
-
 export default function TickerShell({
   children,
   lead,
@@ -98,81 +80,19 @@ export default function TickerShell({
   const fadeClass = FADE_CLASSES[fadeSize];
   const toneClass = TONE_CLASSES[tone];
 
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const isHoveredRef = useRef(false);
-  const isHoldingRef = useRef(false);
+  // hover کاملاً با CSS (`.marquee-pause:hover`) هندل می‌شه. فقط hold
+  // (click/touch-and-hold) به یک state سبک نیاز داره که اتربیوت
+  // `data-holding` رو toggle کنه؛ بقیه‌ی کار با قانون globals.css انجام می‌شه.
+  const [holding, setHolding] = useState(false);
 
-  /**
-   * Pause/Resume همه‌ی track های درون wrapper.
-   * این تابع idempotent هست: چند بار صدا زده بشه نتیجه یکسانه.
-   */
-  const setPaused = useCallback((paused: boolean) => {
-    const root = wrapperRef.current;
-    if (!root) return;
-    for (const sel of TRACK_SELECTORS) {
-      const elements = root.querySelectorAll<HTMLElement>(sel);
-      elements.forEach((el) => {
-        el.style.animationPlayState = paused ? 'paused' : 'running';
-      });
-    }
-    // همچنین به همه‌ی descendants که animation دارن، اعمال می‌کنیم
-    // (fallback برای هر slider که selector بالا رو نداره)
-    const all = root.querySelectorAll<HTMLElement>('*');
-    all.forEach((el) => {
-      const cs = window.getComputedStyle(el);
-      if (
-        cs.animationName &&
-        cs.animationName !== 'none' &&
-        !TRACK_SELECTORS.some((s) => el.matches(s))
-      ) {
-        el.style.animationPlayState = paused ? 'paused' : 'running';
-      }
-    });
-  }, []);
-
-  /**
-   * هربار که hover/hold عوض می‌شه، pause/resume رو sync کن.
-   * چرا در onMouseEnter نه useEffect: چون می‌خواهیم فقط وقتی واقعاً
-   * وارد wrapper می‌شه pause کنیم، نه با re-render.
-   */
-  const updatePause = useCallback(() => {
-    setPaused(isHoveredRef.current || isHoldingRef.current);
-  }, [setPaused]);
-
-  const onMouseEnter = useCallback(() => {
-    isHoveredRef.current = true;
-    updatePause();
-  }, [updatePause]);
-
-  const onMouseLeave = useCallback(() => {
-    isHoveredRef.current = false;
-    // وقتی موس می‌ره، اگه hold هم نیست، resume کن
-    if (!isHoldingRef.current) updatePause();
-  }, [updatePause]);
-
-  const onMouseDown = useCallback(() => {
-    isHoldingRef.current = true;
-    updatePause();
-  }, [updatePause]);
-
-  const onMouseUp = useCallback(() => {
-    isHoldingRef.current = false;
-    updatePause();
-  }, [updatePause]);
-
-  // وقتی children عوض می‌شن (مثلاً re-render بعد از polling)،
-  // track های جدید با animationPlayState: 'running' میان. اگه
-  // در حالت hover باشیم، باید دوباره pause کنیم.
-  useEffect(() => {
-    updatePause();
-  });
+  const startHold = useCallback(() => setHolding(true), []);
+  const endHold = useCallback(() => setHolding(false), []);
 
   return (
-    <div
-      ref={wrapperRef}
+    <section
       dir={dir}
-      // marquee-pause: CSS اول کار می‌کنه (سریع‌ترین پاسخ). JS در mount
-      // و در هر hover به‌عنوان safety net کار می‌کنه.
+      data-holding={holding ? 'true' : 'false'}
+      // marquee-pause: hover کاملاً CSS-driven (سریع‌ترین پاسخ، بدون reflow).
       className={cn(
         'marquee-pause relative flex items-center gap-2 sm:gap-3 rounded-2xl overflow-hidden',
         heightClass,
@@ -181,15 +101,13 @@ export default function TickerShell({
         'dark:shadow-[0_1px_0_0_rgba(255,255,255,0.04)_inset,0_2px_8px_-4px_rgba(0,0,0,0.3)]',
         className,
       )}
-      role="region"
       aria-label={ariaLabel}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      onMouseDown={onMouseDown}
-      onMouseUp={onMouseUp}
-      onTouchStart={onMouseDown}
-      onTouchEnd={onMouseUp}
-      onTouchCancel={onMouseUp}
+      onMouseDown={startHold}
+      onMouseUp={endHold}
+      onMouseLeave={endHold}
+      onTouchStart={startHold}
+      onTouchEnd={endHold}
+      onTouchCancel={endHold}
     >
       {/* Lead badge (مثل LIVE / بازارها) */}
       {lead && (
@@ -205,7 +123,9 @@ export default function TickerShell({
       )}
 
       {/* Vertical divider بعد از lead */}
-      {lead && <div className="w-px h-1/2 bg-gradient-to-b from-transparent via-neutral-300 dark:via-neutral-700 to-transparent shrink-0" />}
+      {lead && (
+        <div className="w-px h-1/2 bg-gradient-to-b from-transparent via-neutral-300 dark:via-neutral-700 to-transparent shrink-0" />
+      )}
 
       {/* Track area — children معمولاً Marquee/InfiniteTicker هستن */}
       <div className="flex-1 min-w-0">{children}</div>
@@ -225,6 +145,6 @@ export default function TickerShell({
           fadeClass,
         )}
       />
-    </div>
+    </section>
   );
 }

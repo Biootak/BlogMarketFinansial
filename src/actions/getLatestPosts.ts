@@ -69,6 +69,9 @@ async function fetchLatestPosts(
         take: count,
         skip: skip,
         orderBy: { createdAt: 'desc' },
+        // بدنه‌ی کامل مقاله (content) در کارت‌های لیست استفاده نمی‌شه؛ حذفش
+        // از payload (DB → RSC → hydration) حجم صفحه‌ی اصلی رو کم می‌کنه.
+        omit: { content: true },
         include: {
           author: {
             select: {

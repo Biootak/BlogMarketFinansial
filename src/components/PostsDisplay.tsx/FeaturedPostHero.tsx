@@ -19,25 +19,19 @@
  * 11.  respects prefers-reduced-motion
  */
 
-import { useEffect, useRef, useState } from 'react';
-import { SafeImage } from '@/components/SafeImage';
-import Link from 'next/link';
-import {
-  Clock,
-  Calendar,
-  ArrowLeft,
-  Sparkles,
-  Eye,
-  MessageCircle,
-} from 'lucide-react';
-import type { PostWithRelations } from '@/types/types';
-import { cn, toPersianNumber, formatNumber } from '@/lib/utils';
-import { getPostLink } from '@/lib/getPostLink';
-import { TiltCard } from '@/components/ModernTrending/effects/TiltCard';
-import { Shimmer } from '@/components/ModernTrending/effects/Shimmer';
-import Spotlight from '@/components/Sections/effects/Spotlight';
 import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
+import { Shimmer } from '@/components/ModernTrending/effects/Shimmer';
+import { TiltCard } from '@/components/ModernTrending/effects/TiltCard';
 import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
+import { SafeImage } from '@/components/SafeImage';
+import Spotlight from '@/components/Sections/effects/Spotlight';
+import { getPostLink } from '@/lib/getPostLink';
+import { getReadingMinutes } from '@/lib/readingTime';
+import { cn, formatNumber, toPersianNumber } from '@/lib/utils';
+import type { PostWithRelations } from '@/types/types';
+import { ArrowLeft, Calendar, Clock, Eye, MessageCircle, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
 
 interface FeaturedPostHeroProps {
   post: PostWithRelations;
@@ -53,16 +47,7 @@ function formatJalaliDate(d: Date | string): string {
   }).format(date);
 }
 
-function estimateReadingMinutes(excerpt: string | undefined | null): number {
-  if (!excerpt) return 3;
-  const words = excerpt.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).length;
-  return Math.max(2, Math.round(words / 150));
-}
-
-export default function FeaturedPostHero({
-  post,
-  className,
-}: FeaturedPostHeroProps) {
+export default function FeaturedPostHero({ post, className }: FeaturedPostHeroProps) {
   const {
     title,
     slug,
@@ -72,7 +57,6 @@ export default function FeaturedPostHero({
     excerpt,
     createdAt,
     viewCount,
-    readingTime,
     _count,
   } = post;
   const postLink = getPostLink(postType, slug);
@@ -82,10 +66,7 @@ export default function FeaturedPostHero({
     setDateStr(formatJalaliDate(createdAt));
   }, [createdAt]);
 
-  const readingMin =
-    typeof readingTime === 'number' && readingTime > 0
-      ? readingTime
-      : estimateReadingMinutes(excerpt ?? '');
+  const readingMin = getReadingMinutes(post);
 
   /* ---------- Parallax: rAF-driven smoothing مستقیم روی transform ---------- */
   const cardRef = useRef<HTMLDivElement>(null);
@@ -108,8 +89,7 @@ export default function FeaturedPostHero({
       s.x += (s.tx - s.x) * 0.12;
       s.y += (s.ty - s.y) * 0.12;
       if (imgRef.current) {
-        imgRef.current.style.transform =
-          `translate3d(${(s.x * -12).toFixed(2)}px, ${(s.y * -12).toFixed(2)}px, 0) scale(1.08)`;
+        imgRef.current.style.transform = `translate3d(${(s.x * -12).toFixed(2)}px, ${(s.y * -12).toFixed(2)}px, 0) scale(1.08)`;
       }
       rafId = requestAnimationFrame(tick);
     };
@@ -129,16 +109,9 @@ export default function FeaturedPostHero({
   };
 
   return (
-    <article
-      className={cn('group/hero relative h-full anim-fade-in-up', className)}
-      dir="rtl"
-    >
+    <article className={cn('group/hero relative h-full anim-fade-in-up', className)} dir="rtl">
       <TiltCard intensity={3} perspective={1400} className="h-full w-full">
-        <Spotlight
-          className="h-full w-full"
-          intensity={0.4}
-          size={500}
-        >
+        <Spotlight className="h-full w-full" intensity={0.4} size={500}>
           <div
             ref={cardRef}
             onMouseMove={handleMouseMove}
@@ -156,15 +129,8 @@ export default function FeaturedPostHero({
           >
             {/* Image */}
             <div className="relative aspect-[16/10] sm:aspect-[16/10] md:aspect-[16/10] lg:aspect-[16/11] xl:aspect-[16/10] overflow-hidden">
-              <Link
-                href={postLink}
-                className="absolute inset-0 block"
-                aria-label={title}
-              >
-                <div
-                  ref={imgRef}
-                  className="absolute inset-0 will-change-transform"
-                >
+              <Link href={postLink} className="absolute inset-0 block" aria-label={title}>
+                <div ref={imgRef} className="absolute inset-0 will-change-transform">
                   <SafeImage
                     fill
                     priority
@@ -295,7 +261,11 @@ export default function FeaturedPostHero({
                 </Link>
                 {categories && categories.length > 0 && (
                   <span className="hidden sm:inline-flex items-center gap-1 text-[10px] uppercase tracking-wide text-neutral-400 dark:text-neutral-500 font-semibold">
-                    <Sparkles className="h-3 w-3 text-amber-500/80" strokeWidth={1.75} aria-hidden />
+                    <Sparkles
+                      className="h-3 w-3 text-amber-500/80"
+                      strokeWidth={1.75}
+                      aria-hidden
+                    />
                     ویژه
                   </span>
                 )}

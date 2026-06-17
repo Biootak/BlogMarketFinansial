@@ -13,18 +13,19 @@
  * - prefers-reduced-motion: global rule
  */
 
-import { useEffect, useRef, useState } from 'react';
+import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
+import { Shimmer } from '@/components/ModernTrending/effects/Shimmer';
+import { TiltCard } from '@/components/ModernTrending/effects/TiltCard';
+import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
+import Spotlight from '@/components/Sections/effects/Spotlight';
+import { getPostLink } from '@/lib/getPostLink';
+import { getReadingMinutes } from '@/lib/readingTime';
+import { cn, formatNumber, toPersianNumber } from '@/lib/utils';
+import type { PostWithRelations } from '@/types/types';
+import { ArrowLeft, Calendar, Clock, Eye } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Calendar, Clock, Eye, ArrowLeft } from 'lucide-react';
-import type { PostWithRelations } from '@/types/types';
-import { cn, toPersianNumber, formatNumber } from '@/lib/utils';
-import { getPostLink } from '@/lib/getPostLink';
-import { TiltCard } from '@/components/ModernTrending/effects/TiltCard';
-import { Shimmer } from '@/components/ModernTrending/effects/Shimmer';
-import Spotlight from '@/components/Sections/effects/Spotlight';
-import CategoryBadgeList from '@/components/CategoryBadgeList/CategoryBadgeList';
-import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
+import { useEffect, useRef, useState } from 'react';
 
 interface CompactPostCardProps {
   post: PostWithRelations;
@@ -40,24 +41,8 @@ function formatJalaliDate(d: Date | string): string {
   }).format(date);
 }
 
-function estimateReadingMinutes(excerpt: string | undefined | null): number {
-  if (!excerpt) return 3;
-  const words = excerpt.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).length;
-  return Math.max(2, Math.round(words / 150));
-}
-
 export default function CompactPostCard({ post, className }: CompactPostCardProps) {
-  const {
-    title,
-    slug,
-    featuredImage,
-    categories,
-    postType,
-    excerpt,
-    createdAt,
-    viewCount,
-    readingTime,
-  } = post;
+  const { title, slug, featuredImage, categories, postType, createdAt, viewCount } = post;
   const postLink = getPostLink(postType, slug);
 
   const [dateStr, setDateStr] = useState<string>('');
@@ -65,10 +50,7 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
     setDateStr(formatJalaliDate(createdAt));
   }, [createdAt]);
 
-  const readingMin =
-    typeof readingTime === 'number' && readingTime > 0
-      ? readingTime
-      : estimateReadingMinutes(excerpt ?? '');
+  const readingMin = getReadingMinutes(post);
 
   // Parallax: rAF-driven smoothing مستقیم روی transform
   const cardRef = useRef<HTMLDivElement>(null);
@@ -92,8 +74,7 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
       s.x += (s.tx - s.x) * 0.12;
       s.y += (s.ty - s.y) * 0.12;
       if (imgRef.current) {
-        imgRef.current.style.transform =
-          `translate3d(${(s.x * -8).toFixed(2)}px, ${(s.y * -8).toFixed(2)}px, 0) scale(1.05)`;
+        imgRef.current.style.transform = `translate3d(${(s.x * -8).toFixed(2)}px, ${(s.y * -8).toFixed(2)}px, 0) scale(1.05)`;
       }
       rafId = requestAnimationFrame(tick);
     };
@@ -113,16 +94,9 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
   };
 
   return (
-    <article
-      className={cn('group relative h-full', className)}
-      dir="rtl"
-    >
+    <article className={cn('group relative h-full', className)} dir="rtl">
       <TiltCard intensity={3} perspective={1400} className="h-full w-full">
-        <Spotlight
-          className="h-full w-full"
-          intensity={0.35}
-          size={300}
-        >
+        <Spotlight className="h-full w-full" intensity={0.35} size={300}>
           <div
             ref={cardRef}
             onMouseMove={handleMouseMove}
@@ -139,15 +113,8 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
             )}
           >
             <div className="relative aspect-[16/10] sm:aspect-[16/10] md:aspect-[16/10] lg:aspect-[16/11] xl:aspect-[16/10] overflow-hidden">
-              <Link
-                href={postLink}
-                className="absolute inset-0 block"
-                aria-label={title}
-              >
-                <div
-                  ref={imgRef}
-                  className="absolute inset-0 will-change-transform"
-                >
+              <Link href={postLink} className="absolute inset-0 block" aria-label={title}>
+                <div ref={imgRef} className="absolute inset-0 will-change-transform">
                   <Image
                     fill
                     sizes="(max-width: 1024px) 100vw, 33vw"
@@ -234,21 +201,11 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
                 )}
               >
                 <span className="inline-flex items-center gap-1.5">
-                  <Calendar
-                    className="h-3 w-3 text-neutral-400"
-                    strokeWidth={2}
-                    aria-hidden
-                  />
-                  <time dateTime={new Date(createdAt).toISOString()}>
-                    {dateStr}
-                  </time>
+                  <Calendar className="h-3 w-3 text-neutral-400" strokeWidth={2} aria-hidden />
+                  <time dateTime={new Date(createdAt).toISOString()}>{dateStr}</time>
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                  <Clock
-                    className="h-3 w-3 text-neutral-400"
-                    strokeWidth={2}
-                    aria-hidden
-                  />
+                  <Clock className="h-3 w-3 text-neutral-400" strokeWidth={2} aria-hidden />
                   {toPersianNumber(readingMin)} دقیقه
                 </span>
               </div>
@@ -290,11 +247,7 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
                   )}
                 >
                   <span>ادامه</span>
-                  <ArrowLeft
-                    className="h-2.5 w-2.5"
-                    strokeWidth={2.5}
-                    aria-hidden
-                  />
+                  <ArrowLeft className="h-2.5 w-2.5" strokeWidth={2.5} aria-hidden />
                 </Link>
               </div>
             </div>
