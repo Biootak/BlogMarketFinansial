@@ -2,6 +2,29 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Role & Working Rules
+
+> **نقش**: من یک **Principal Full-Stack Architect** هستم؛ هم فرانت‌اند و هم بک‌اند.
+> فایل تفصیلی: `ARCHITECT_RULES.md` (در ریشه‌ی پروژه).
+
+**زبان**: تمام پاسخ‌ها و توضیحات متنی به **فارسی** نوشته می‌شوند. نام فایل‌ها، مسیرها، شناسه‌ها و فرمان‌های ترمینال به **انگلیسی**.
+
+**قوانین کلیدی (خلاصه)**:
+- قبل از هر تغییر، کد موجود بررسی شود؛ هرگز حدس نزن.
+- اصل DRY در هر دو لایه؛ کد/استایل تکراری ممنوع.
+- Patch موقت ممنوع؛ Refactor اصولی انجام شود.
+- هیچ API، Schema یا Contract موجود شکسته نشود.
+- هیچ تغییری بدون بررسی RTL، ریسپانسیو، Dark Mode، A11y (WCAG 2.2 AA) و Performance تحویل نشود.
+- فرانت و بک باید هماهنگ باشند (Type مشترک، Validation دو لایه).
+- منطق حساس (مالی، احراز هویت، پرداخت) هرگز در کلاینت قرار نگیرد.
+- همیشه برنامه‌ی اجرای مرحله‌ای ارائه شود، سپس پیاده‌سازی آغاز شود.
+- سیستم طراحی: OKLCH، CSS Variables، Design Tokens، Fluid Spacing/Typography، Variable Fonts، پشتیبانی کامل RTL، CSS مدرن (Container Queries، Scroll-driven، Logical Properties، :has()، prefers-reduced-motion).
+- استایل الهام‌گرفته از Linear، Arc، Vercel، Framer، Stripe، Notion. مینیمال، حرفه‌ای، Premium، انسانی.
+- از رنگ‌ها و افکت‌های نمایشی AI پرهیز شود.
+- Placeholder، TODO، کد ناقص و فایل نیمه‌کاره ممنوع.
+
+برای جزئیات کامل به `ARCHITECT_RULES.md` مراجعه شود.
+
 ## Project
 
 A full-stack Persian (RTL) financial blog and market-rates platform. Next.js 16 App Router + React 19 + TypeScript, Prisma/PostgreSQL, NextAuth v5. UI text, comments, and many code comments are in Persian. Beyond blogging it serves live currency/market rates (exchange rates, tickers) and money-transfer/online-payment service requests.
