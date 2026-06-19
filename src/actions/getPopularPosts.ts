@@ -70,7 +70,10 @@ export async function getPopularPosts(): Promise<
       id: post.id,
       title: post.title,
       views: post.viewCount,
-      publishDate: post.createdAt.toLocaleDateString('fa-IR'),
+      // 2026-06-19: unstable_cache JSON-serializes the return value, so
+      // Prisma's Date becomes an ISO string on cache hits. Wrap with
+      // new Date() which accepts both Date and string.
+      publishDate: new Date(post.createdAt).toLocaleDateString('fa-IR'),
       author: post.author.name || 'ناشناس',
       slug: post.slug,
     }));

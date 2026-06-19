@@ -63,7 +63,10 @@ export async function getRecentDrafts(): Promise<
     const formattedDrafts = recentDrafts.map((draft) => ({
       id: draft.id,
       title: draft.title,
-      date: draft.updatedAt.toLocaleDateString('fa-IR'),
+      // 2026-06-19: unstable_cache JSON-serializes the return value, so
+      // Prisma's Date becomes an ISO string on cache hits. Wrap with
+      // new Date() which accepts both Date and string.
+      date: new Date(draft.updatedAt).toLocaleDateString('fa-IR'),
       author: draft.author.name || 'ناشناس',
     }));
 

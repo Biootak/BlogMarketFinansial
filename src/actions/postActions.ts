@@ -1121,25 +1121,6 @@ export async function getStats(): Promise<
     drafts: { total: number; data: number[] };
   }>
 > {
-  return getCachedStats();
-}
-
-// ---------- Cache wrapper for getStats ----------
-// 2026-06-14: dashboard's getStats ran 12 queries in a transaction (4 metrics
-// × today/weekly). Dashboard renders this on every load. Wrap in
-// unstable_cache with 120s TTL + tag 'dashboard-stats'. The 'posts' tag
-// (already invalidated on every post write via revalidatePostCache) busts
-// it on real changes; the TTL keeps the data fresh even without writes.
-async function fetchStatsRaw(): Promise<
-  ActionResult<{
-    views: { today: number; data: number[] };
-    comments: { new: number; data: number[] };
-    shares: { total: number; data: number[] };
-    likes: { total: number; data: number[] };
-    publishedPosts: { total: number; data: number[] };
-    drafts: { total: number; data: number[] };
-  }>
-> {
   const session = await auth();
   const user = session?.user;
 
@@ -1150,6 +1131,30 @@ async function fetchStatsRaw(): Promise<
     };
   }
 
+  // 2026-06-19: auth()/headers() can't run inside unstable_cache (Next 16
+  // forbids dynamic data sources in a cache scope). Resolve the user above
+  // and pass the role scope in as an argument. unstable_cache keys on
+  // [name, ...args], so the authorId arg also scopes the cache per-author
+  // (previously the key was global, which leaked AUTHOR views across users).
+  return getCachedStats({ authorId: user.role === 'AUTHOR' ? user.id : undefined });
+}
+
+// ---------- Cache wrapper for getStats ----------
+// 2026-06-14: dashboard's getStats ran 12 queries in a transaction (4 metrics
+// × today/weekly). Dashboard renders this on every load. Wrap in
+// unstable_cache with 120s TTL + tag 'dashboard-stats'. The 'posts' tag
+// (already invalidated on every post write via revalidatePostCache) busts
+// it on real changes; the TTL keeps the data fresh even without writes.
+async function fetchStatsRaw(roleScope: { authorId?: string }): Promise<
+  ActionResult<{
+    views: { today: number; data: number[] };
+    comments: { new: number; data: number[] };
+    shares: { total: number; data: number[] };
+    likes: { total: number; data: number[] };
+    publishedPosts: { total: number; data: number[] };
+    drafts: { total: number; data: number[] };
+  }>
+> {
   try {
     // شرط‌های پایه برای کوئری
     const baseWhere: Prisma.PostWhereInput = {
@@ -1161,8 +1166,8 @@ async function fetchStatsRaw(): Promise<
     };
 
     // اگر نویسنده است، فقط پست‌های خودش را ببیند
-    if (user.role === 'AUTHOR') {
-      baseWhere.authorId = user.id;
+    if (roleScope.authorId) {
+      baseWhere.authorId = roleScope.authorId;
     }
 
     const today = new Date();

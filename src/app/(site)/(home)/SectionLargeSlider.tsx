@@ -5,7 +5,7 @@ import { getMarketTickerRates } from '@/actions/marketTickerRates';
 import { getNavasanTickerRates } from '@/actions/navasanTickerRates';
 import { getRateLists } from '@/actions/rate-lists';
 import type { PostWithRelations, ActionResult, RateListData } from '@/types/types';
-import SectionLargeSliderClient from './SectionLargeSliderClient';
+import DeferredDesign7 from './deferred/DeferredDesign7';
 import Empty from '@/components/Empty';
 
 const getFeaturedPostsCached = cache(getFeaturedPosts);
@@ -24,7 +24,6 @@ export default async function SectionLargeSlider() {
   ]);
 
   if (postsResult.error) {
-    // اگر خطایی رخ داده باشد، می‌توانید آن را مدیریت کنید
     console.error('Error fetching featured posts:', postsResult.error);
     return <Empty />;
   }
@@ -33,12 +32,11 @@ export default async function SectionLargeSlider() {
     return <Empty />;
   }
 
-  // فقط rate-list های فعال
   const activeRateLists: RateListData[] = rateLists.filter((l) => l.isActive);
 
   return (
     <div>
-      <SectionLargeSliderClient
+      <DeferredDesign7
         initialPosts={postsResult.data}
         rates={ratesResult.success ? ratesResult.data : undefined}
         marketRates={marketRates}

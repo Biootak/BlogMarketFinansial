@@ -1,6 +1,6 @@
 import { SafeImage } from '@/components/SafeImage';
 import { getPostLink } from '@/lib/getPostLink';
-import type { PostWithRelations, TaxonomyType } from '@/types/types';
+import type { PostWithRelations } from '@/types/types';
 import { FolderOpen } from 'lucide-react';
 import Link from 'next/link';
 import type * as React from 'react';
@@ -58,7 +58,7 @@ const ArchiveFeaturedV3: React.FC<ArchiveFeaturedV3Props> = ({ post }) => {
     _count,
   } = post;
   const postLink = getPostLink(postType, slug);
-  const primaryCategory = categories?.[0] as TaxonomyType | undefined;
+  const primaryCategory = categories?.[0];
   const commentCount = _count?.comments ?? 0;
   const views = viewCount ?? 0;
 

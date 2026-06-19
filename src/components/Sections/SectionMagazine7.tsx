@@ -1,9 +1,6 @@
-'use client';
-
 import Card10 from '@/components/Card10/Card10';
 import Card10V3 from '@/components/Card10/Card10V3';
 import type { PostWithRelations } from '@/types/types';
-import { motion } from '@/lib/motion-shim';
 import { Images, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import type { FC } from 'react';
@@ -13,29 +10,9 @@ export interface SectionMagazine7Props {
   className?: string;
 }
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: 'easeOut' as const },
-  },
-};
-
 const SectionMagazine7: FC<SectionMagazine7Props> = ({ posts = [], className = '' }) => {
   return (
     <section className={`nc-SectionMagazine7 relative ${className}`}>
-      {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-10">
         <div className="flex items-center gap-3 sm:gap-5">
           <div className="relative">
@@ -53,8 +30,8 @@ const SectionMagazine7: FC<SectionMagazine7Props> = ({ posts = [], className = '
             </p>
           </div>
         </div>
-        
-        <Link 
+
+        <Link
           href="/archive"
           className="group flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2.5 sm:py-3 bg-neutral-100 dark:bg-neutral-800/80 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-2xl transition-all duration-300"
         >
@@ -65,38 +42,28 @@ const SectionMagazine7: FC<SectionMagazine7Props> = ({ posts = [], className = '
         </Link>
       </div>
 
-      {/* Content Grid */}
-      <motion.div 
-        className="grid grid-cols-1 gap-5 sm:gap-7 md:gap-8"
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: '-50px' }}
-      >
-        {/* Featured Row - 2 Large Cards */}
+      <div className="grid grid-cols-1 gap-5 sm:gap-7 md:gap-8 stagger-children">
         <div className="grid gap-4 sm:gap-5 md:gap-6 lg:grid-cols-2">
           {posts.slice(0, 2).map((post, index) => (
-            <motion.div key={post.id} variants={itemVariants} className="group">
+            <div key={post.id} className="group anim-fade-in-up">
               <div className="relative overflow-hidden rounded-3xl bg-white/70 dark:bg-neutral-800/60 backdrop-blur border border-neutral-200/60 dark:border-neutral-700/60 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1.5">
                 <Card10V3 post={post} galleryType={index === 1 ? 2 : 1} className="h-full" />
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
-        {/* Secondary Row - Smaller Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
           {posts.slice(2, 6).map((post) => (
-            <motion.div key={post.id} variants={itemVariants} className="group">
+            <div key={post.id} className="group anim-fade-in-up">
               <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-white/70 dark:bg-neutral-800/60 backdrop-blur border border-neutral-200/60 dark:border-neutral-700/60 transition-all duration-500 hover:shadow-xl hover:-translate-y-1">
                 <Card10 post={post} className="h-full" />
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
-      </motion.div>
+      </div>
 
-      {/* Background Decoration */}
       <div className="absolute -top-24 -end-24 w-72 h-72 bg-primary-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-28 -start-24 w-72 h-72 bg-cyan-400/10 rounded-full blur-3xl pointer-events-none" />
     </section>
