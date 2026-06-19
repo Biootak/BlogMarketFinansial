@@ -1,9 +1,8 @@
 import BannerAds from '@/components/BannerADS/BannerADS';
 import type { Advertisement, PostWithRelations } from '@/types/types';
-import type * as React from 'react';
 import { Fragment } from 'react';
-import ArchiveCardV3 from './ArchiveCardV3';
-import ArchiveFeaturedV3 from './ArchiveFeaturedV3';
+import ArchiveCard from './ArchiveCard';
+import ArchiveFeatured from './ArchiveFeatured';
 
 type Props = {
   posts: PostWithRelations[];
@@ -11,13 +10,12 @@ type Props = {
 };
 
 /**
- * AnimatedPostGrid — نسخه v3
- * - featured اول + بقیه به صورت کارت
- * - list view به صورت ردیفی
- * - CSS-only سوئیچ بین دو حالت
- * - server component
+ * ArchiveGrid — چیدمان اصلی صفحه‌ی Archive
+ * - grid mode: featured در ابتدا + auto-fit grid
+ * - list mode: همه‌ی پست‌ها در یک ستون (ArchiveCard variant="list")
+ * - CSS-only mode-switch با [data-archive-view] روی <html>
  */
-const AnimatedPostGridV3: React.FC<Props> = ({ posts, betweenPostsAd }) => {
+const ArchiveGrid: React.FC<Props> = ({ posts, betweenPostsAd }) => {
   if (posts.length === 0) return null;
 
   const [featured, ...rest] = posts;
@@ -29,34 +27,32 @@ const AnimatedPostGridV3: React.FC<Props> = ({ posts, betweenPostsAd }) => {
   return (
     <>
       {/* GRID VIEW */}
-      <div className="arc-grid-view stagger-children arc-grid-magazine">
+      <div className="archive-grid-view archive-grid">
         {featuredPost ? (
-          <div className="arc-grid-magazine__featured col-span-full">
-            <ArchiveFeaturedV3 post={featuredPost} />
+          <div className="archive-grid__featured">
+            <ArchiveFeatured post={featuredPost} />
           </div>
         ) : null}
         {gridPosts.map((post, index) => (
           <Fragment key={post.id}>
             {betweenPostsAd && index === adAfterIndex ? (
-              <div className="col-span-full my-2">
+              <div className="archive-grid__ad">
                 <BannerAds ad={betweenPostsAd} variant="rich" />
               </div>
             ) : null}
-            <div className="group h-full">
-              <ArchiveCardV3 post={post} ratio="aspect-[4/3]" />
-            </div>
+            <ArchiveCard post={post} ratio="4/3" />
           </Fragment>
         ))}
       </div>
 
       {/* LIST VIEW */}
-      <div className="arc-list-view stagger-children arc-list-v3">
+      <div className="archive-list-view">
         {posts.map((post) => (
-          <ArchiveCardV3 key={post.id} post={post} variant="list" />
+          <ArchiveCard key={post.id} post={post} variant="list" />
         ))}
       </div>
     </>
   );
 };
 
-export default AnimatedPostGridV3;
+export default ArchiveGrid;
