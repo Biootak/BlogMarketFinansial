@@ -4539,4 +4539,266 @@ p { line-height: var(--leading-relaxed); }
     isolation: isolate;
     flex-shrink: 0;
   }
+
+  /* ============================================================================
+     DEPRECATED: backward-compat aliases for filter/rail classes
+     ----------------------------------------------------------------------------
+     کلاس‌های filter rail (FilterRail, CommandPanel, MobileFilterSheet) هنوز
+     از این selector ها استفاده می‌کنند. به تدریج در tasks آینده به DS مهاجرت
+     می‌کنند. تا آن زمان، این استایل‌ها همان رفتار قبلی را دارند.
+     ============================================================================ */
+
+  /* Filter rail (sticky glassmorphism) */
+  .arc-rail-v3 {
+    position: sticky;
+    inset-block-start: 0.5rem;
+    z-index: 30;
+    border-radius: var(--ds-radius-xl);
+    background: var(--ds-surface);
+    border: 1px solid var(--ds-border-subtle);
+    box-shadow: var(--ds-shadow-sm);
+    backdrop-filter: blur(14px) saturate(1.4);
+    padding: var(--ds-space-3) var(--ds-space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds-space-3);
+  }
+  .arc-rail-v3__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ds-space-2);
+  }
+
+  /* Search field داخل rail */
+  .arc-cmd-search-field {
+    display: inline-flex;
+    align-items: center;
+    inline-size: 100%;
+    block-size: 2.5rem;
+    padding-inline: var(--ds-space-3);
+    gap: var(--ds-space-2);
+    border-radius: var(--ds-radius-md);
+    background: var(--ds-surface-recessed);
+    border: 1px solid var(--ds-border-subtle);
+    transition: border-color var(--ds-duration-fast);
+  }
+  .arc-cmd-search-field:focus-within { border-color: var(--ds-brand-500); }
+  .arc-cmd-search-field__icon { color: var(--ds-text-muted); display: inline-flex; }
+  .arc-cmd-search-field__input {
+    flex: 1;
+    min-inline-size: 0;
+    border: 0;
+    background: transparent;
+    font-size: var(--ds-text-sm);
+    color: var(--ds-text-primary);
+    outline: none;
+  }
+  .arc-cmd-search-field__input::placeholder { color: var(--ds-text-muted); }
+  .arc-cmd-search-field__trailing { display: inline-flex; align-items: center; }
+
+  /* Command trigger (دکمه‌ی بازکننده‌ی command panel) */
+  .arc-cmd-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ds-space-1);
+    padding: var(--ds-space-1) var(--ds-space-3);
+    border-radius: var(--ds-radius-full);
+    font-size: var(--ds-text-xs);
+    font-weight: var(--ds-weight-semibold);
+    color: var(--ds-text-primary);
+    background: var(--ds-surface-elevated);
+    border: 1px solid var(--ds-border-default);
+    cursor: pointer;
+    transition: all var(--ds-duration-fast) var(--ds-ease-out-quart);
+  }
+  .arc-cmd-trigger:hover { background: var(--ds-brand-50); border-color: var(--ds-brand-500); }
+  .arc-cmd-trigger__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+    border-radius: var(--ds-radius-full);
+    color: white;
+    background: var(--ds-accent-slate);
+  }
+  .arc-cmd-trigger__icon.--emerald { background: linear-gradient(135deg, var(--ds-accent-emerald), color-mix(in oklch, var(--ds-accent-emerald), black 30%)); }
+  .arc-cmd-trigger__count {
+    font-size: 10px;
+    color: var(--ds-text-muted);
+    padding-inline-start: var(--ds-space-1);
+    border-inline-start: 1px solid var(--ds-border-subtle);
+  }
+
+  /* Segmented control (مرتب‌سازی) */
+  .arc-segmented-v3 {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px;
+    border-radius: var(--ds-radius-md);
+    background: var(--ds-surface-recessed);
+    border: 1px solid var(--ds-border-subtle);
+    gap: 2px;
+  }
+  .arc-segmented-v3__item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ds-space-1);
+    padding: var(--ds-space-1) var(--ds-space-3);
+    border-radius: calc(var(--ds-radius-md) - 2px);
+    font-size: var(--ds-text-xs);
+    font-weight: var(--ds-weight-semibold);
+    color: var(--ds-text-secondary);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    transition: all var(--ds-duration-fast) var(--ds-ease-out-quart);
+  }
+  .arc-segmented-v3__item[aria-selected="true"] {
+    color: var(--ds-text-primary);
+    background: var(--ds-surface-elevated);
+    box-shadow: var(--ds-shadow-sm);
+  }
+
+  /* View toggle */
+  .arc-view-toggle {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px;
+    border-radius: var(--ds-radius-md);
+    background: var(--ds-surface-recessed);
+    border: 1px solid var(--ds-border-subtle);
+  }
+  .arc-view-toggle__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2rem;
+    block-size: 2rem;
+    border-radius: calc(var(--ds-radius-md) - 2px);
+    color: var(--ds-text-secondary);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    transition: all var(--ds-duration-fast) var(--ds-ease-out-quart);
+  }
+  .arc-view-toggle__btn[aria-pressed="true"] {
+    color: var(--ds-text-primary);
+    background: var(--ds-surface-elevated);
+    box-shadow: var(--ds-shadow-sm);
+  }
+
+  /* Suggestion (quick-pick tags) */
+  .arc-suggestion {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ds-space-1);
+    padding: var(--ds-space-1) var(--ds-space-2);
+    border-radius: var(--ds-radius-full);
+    font-size: var(--ds-text-xs);
+    color: var(--ds-text-primary);
+    background: var(--ds-surface-elevated);
+    border: 1px solid var(--ds-border-subtle);
+    transition: all var(--ds-duration-fast) var(--ds-ease-out-quart);
+  }
+  .arc-suggestion:hover { background: var(--ds-brand-50); border-color: var(--ds-brand-500); }
+  .arc-suggestion__icon { color: var(--ds-brand-500); }
+  .arc-suggestion__count {
+    font-size: 10px;
+    color: var(--ds-text-muted);
+    padding-inline-start: var(--ds-space-1);
+    border-inline-start: 1px solid var(--ds-border-subtle);
+  }
+  .arc-quickpick-v3__label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ds-space-1);
+    font-size: var(--ds-text-xs);
+    color: var(--ds-text-muted);
+    font-weight: var(--ds-weight-semibold);
+  }
+
+  /* Search kbd hint */
+  .arc-search-kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 1.5rem;
+    block-size: 1.25rem;
+    padding: 0 var(--ds-space-1);
+    border-radius: 0.25rem;
+    font-size: 10px;
+    font-weight: var(--ds-weight-semibold);
+    color: var(--ds-text-muted);
+    background: var(--ds-surface-elevated);
+    border: 1px solid var(--ds-border-subtle);
+    font-family: ui-monospace, monospace;
+  }
+  .arc-cmd-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    color: var(--ds-text-muted);
+  }
+
+  /* Result strip (meta line) */
+  .arc-result-strip {
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-3);
+    padding: var(--ds-space-3) 0;
+    font-size: var(--ds-text-sm);
+    color: var(--ds-text-secondary);
+  }
+  .arc-result-strip__count { font-weight: var(--ds-weight-semibold); }
+  .arc-result-strip__num { color: var(--ds-text-primary); font-weight: var(--ds-weight-bold); }
+  .arc-result-strip__sep {
+    inline-size: 1px;
+    block-size: 1rem;
+    background: var(--ds-border-default);
+  }
+
+  /* Mobile FAB (floating action button) */
+  .arc-fab {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ds-space-2);
+    padding: var(--ds-space-3) var(--ds-space-4);
+    border-radius: var(--ds-radius-full);
+    background: var(--ds-brand-500);
+    color: var(--ds-text-inverse);
+    font-size: var(--ds-text-sm);
+    font-weight: var(--ds-weight-semibold);
+    box-shadow: var(--ds-shadow-md);
+    border: 0;
+    cursor: pointer;
+    transition: all var(--ds-duration-fast) var(--ds-ease-out-quart);
+  }
+  .arc-fab:hover { background: var(--ds-brand-600); }
+  .arc-fab__icon { display: inline-flex; }
+  .arc-fab__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 1.25rem;
+    block-size: 1.25rem;
+    padding: 0 var(--ds-space-1);
+    border-radius: var(--ds-radius-full);
+    background: var(--ds-accent-rose);
+    color: white;
+    font-size: 10px;
+    font-weight: var(--ds-weight-bold);
+  }
+
+  /* Focus ring (alias) */
+  .arc-focus:focus-visible {
+    outline: 2px solid var(--ds-brand-500);
+    outline-offset: 2px;
+  }
+
+  /* Reveal animation (alias) */
+  .arc-reveal {
+    animation: ds-reveal-in var(--ds-duration-page) var(--ds-ease-out-quart) both;
+  }
 }
