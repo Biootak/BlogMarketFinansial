@@ -15,11 +15,11 @@ import Empty from '@/components/Empty';
 import Pagination from '@/components/Pagination/Pagination';
 import SectionSliderNewAuthors from '@/components/SectionSliderNewAthors/SectionSliderNewAuthors';
 import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
-import ActiveFilters, { type ActiveFilter } from '../../ActiveFilters';
-import AnimatedPostGridV3 from '../../AnimatedPostGridV3';
-import ArchiveHero from '../../ArchiveHero';
-import FilterRail from '../../FilterRail';
-import MobileFilterSheet from '../../MobileFilterSheet';
+import ActiveFilters, { type ActiveFilter } from '../../_components/ActiveFilters';
+import ArchiveGrid from '../../_components/ArchiveGrid';
+import ArchiveHero from '../../_components/ArchiveHero';
+import FilterRail from '../../_components/FilterRail';
+import MobileFilterSheet from '../../_components/MobileFilterSheet';
 
 export async function generateMetadata({
   params,
@@ -325,7 +325,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
       {/* ============================ Posts grid ============================ */}
       <div className="container">
         {posts.length > 0 ? (
-          <AnimatedPostGridV3 posts={posts} betweenPostsAd={betweenPostsAd} />
+          <ArchiveGrid posts={posts} betweenPostsAd={betweenPostsAd} />
         ) : (
           <Empty />
         )}
