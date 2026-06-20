@@ -19,7 +19,6 @@ import { useTickerPause } from '@/hooks/useTickerPause';
  *  - RTL-safe: pass `dir="rtl"` for Persian/Arabic UIs.
  */
 import type React from 'react';
-import { useMemo } from 'react';
 
 interface InfiniteTickerProps {
   children: React.ReactNode;

@@ -104,6 +104,7 @@ const WANTED_CANONICAL: readonly string[] = [
   'TRY',
   // Coins & gold
   'SEKKEH',
+  'BAHAR',
   'NIM',
   'ROB',
   'GERAMI',
@@ -111,6 +112,15 @@ const WANTED_CANONICAL: readonly string[] = [
   'OUNCE_GOLD',
 ];
 
+/**
+ * CRYPTO_LIKE — فیلتر ارزهای دیجیتال هنگام خواندن ردیف‌های DB.
+ *
+ * این مجموعه به‌صراحت برای `getDbMarketItems` نگه داشته شده، حتی اگر
+ * در حال حاضر خروجی‌اش به track تیکر اضافه نمی‌شود (Priority 3 DB
+ * در ۲۰۲۶-۰۶-۲۰ حذف شد). اگر در آینده DB fallback برگردد، منطق
+ * فیلتر کریپتو در جا باشد تا ارزهای دیجیتال در تیکر فیات/طلا
+ * نمایش داده نشوند.
+ */
 const CRYPTO_LIKE = new Set([
   'BTC',
   'ETH',
@@ -144,7 +154,7 @@ const CRYPTO_LIKE = new Set([
 /*  منبع داده برای هر آیتم                                                    */
 /* -------------------------------------------------------------------------- */
 
-export type MarketSource = 'tgju' | 'usdt' | 'fx-derived' | 'db';
+export type MarketSource = 'tgju' | 'usdt' | 'fx-derived';
 
 export interface FreeMarketItem {
   symbol: string; // canonical uppercase: 'USD', 'EUR', 'SEKKEH', ...
@@ -363,7 +373,7 @@ export async function assembleFreeMarketRates(): Promise<AssembledMarket> {
       continue;
     }
 
-    // Priority 2: Auto-derive
+    // Priority 2: Auto-derive (USDT × premium)
     if (canonical === 'USD' && usdt) {
       if (!addedSymbols.has('USD')) {
         const premium = getUsdtPremiumPercent();
@@ -381,20 +391,17 @@ export async function assembleFreeMarketRates(): Promise<AssembledMarket> {
       continue;
     }
 
+    // Priority 2b: Auto-derive (USDT × FX)
     if (usdt && fx) {
       const fxKey = getFxKey(canonical);
       if (fxKey) {
         if (!addedSymbols.has(canonical)) {
           const perUsd = fx[fxKey];
           if (Number.isFinite(perUsd) && perUsd > 0) {
-            let priceToman = usdt.toman / perUsd;
-
-            // New: Apply a correction factor for currencies known to have a 10x discrepancy when fx-derived
-            // This is a heuristic to fix the observed "factor of 10" issue for JPY, CNY, etc.
-            if (['JPY', 'CNY', 'RUB', 'INR'].includes(canonical)) {
-              // Add other currencies if needed
-              priceToman = priceToman / 10; // Correct for the observed 10x discrepancy
-            }
+            // exchangerate-api.com (verified 2026-06-20) برای هر ۱ USD
+            // مقدار per-1-USD برمی‌گرداند (JPY=161.26، CNY=6.78، RUB=73.34).
+            // فرمول تومان = usdtToman / perUsd صحیح است.
+            const priceToman = usdt.toman / perUsd;
             items.push({
               symbol: canonical,
               name: DISPLAY_NAMES[canonical] ?? canonical,
@@ -410,36 +417,17 @@ export async function assembleFreeMarketRates(): Promise<AssembledMarket> {
       continue;
     }
 
-    // Priority 3: DB (last resort)
-    const dbRow = dbItems.get(canonical);
-    if (dbRow) {
-      if (!addedSymbols.has(dbRow.symbol)) {
-        items.push({
-          symbol: dbRow.symbol,
-          name: dbRow.name,
-          priceToman: Math.round(dbRow.price),
-          change: 0, // DB درصد تغییر معتبر نداره
-          source: 'db',
-          rawKey: dbRow.symbol,
-        });
-        addedSymbols.add(dbRow.symbol);
-      }
-    }
+    // Priority 3 (DB fallback) حذف شد 2026-06-20:
+    // ادمین می‌تواند نرخ‌ها را در `/dashboard/exchange-rates` وارد کند،
+    // ولی این نوار قیمت «بازار زنده» است و باید فقط داده‌ی real-time
+    // (TGJU / USDT-derived / FX) نمایش دهد. اگه سه منبع اصلی موفق
+    // نشدند، نوار پنهان می‌شود (نه اینکه fallback دستی نشان داده شود).
   }
 
-  // 4) هر آیتم دیگه‌ای در DB که در لیست اصلی نیست (GOLD, OIL, سفارشی، ...)
-  for (const [sym, dbRow] of dbItems) {
-    if (addedSymbols.has(sym)) continue; // Use the set for robust deduplication
-    items.push({
-      symbol: dbRow.symbol,
-      name: dbRow.name,
-      priceToman: Math.round(dbRow.price),
-      change: 0,
-      source: 'db',
-      rawKey: dbRow.symbol,
-    });
-    addedSymbols.add(dbRow.symbol);
-  }
+  // 4) حذف fallback DB در خروجی: فقط real-time (tgju/usdt/fx-derived).
+  // آیتم‌های DB در `assembleFreeMarketRates` اضافه نمی‌شوند چون کاربر
+  // انتظار real-time دارد. اگه آینده نیاز شد، می‌توانیم یک flag
+  // `includeDbFallback` اضافه کنیم.
 
   const usdItem = items.find((i) => i.symbol === 'USD');
   return {

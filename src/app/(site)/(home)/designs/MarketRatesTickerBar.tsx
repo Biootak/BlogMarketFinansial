@@ -12,7 +12,7 @@
 import type { MarketRateItem } from '@/actions/marketRates';
 import { InfiniteTicker } from '@/components/InfiniteTicker';
 import { TickerShell } from '@/components/TickerShell';
-import { TrendingUp, TrendingDown, Radio } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Radio } from 'lucide-react';
 import { cn, toPersianNumber, formatNumber } from '@/lib/utils';
 
 interface MarketRatesTickerBarProps {
@@ -27,8 +27,10 @@ export default function MarketRatesTickerBar({
 }: MarketRatesTickerBarProps) {
   if (!rates || rates.length === 0) return null;
 
-  // کپی برای seamless loop
-  const items = [...rates, ...rates];
+  // InfiniteTicker خودش دو کپی از children می‌سازد (یکی aria-hidden)
+  // تا حلقه‌ی seamless با translateX -50% کار کنه. duplicate در اینجا
+  // ۴ کپی روی track می‌گذارد و یک پرش بزرگ در حلقه ایجاد می‌کنه.
+  const items = rates;
 
   return (
     <TickerShell
@@ -36,6 +38,7 @@ export default function MarketRatesTickerBar({
       fadeSize="md"
       tone="glass"
       ariaLabel="نرخ‌های بازار"
+      showLiveDot
       lead={
         <span className="flex items-center gap-1.5">
           <Radio className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
@@ -45,14 +48,29 @@ export default function MarketRatesTickerBar({
       }
     >
       <InfiniteTicker duration={60} dir="rtl" pauseOnHover pauseOnHold>
-        <div className="flex items-center divide-x divide-neutral-200/70 dark:divide-neutral-800/70">
+        <div className="flex items-stretch">
           {items.map((rate, idx) => {
-            const isPositive = rate.change >= 0;
+            const hasChange = Number.isFinite(rate.change);
+            const isPositive = hasChange && rate.change > 0;
+            const isNegative = hasChange && rate.change < 0;
+            const isFlat = !isPositive && !isNegative;
+            const isLast = idx === items.length - 1;
             const formattedToman = toPersianNumber(formatNumber(Math.round(rate.price)));
+            const changeColor = isPositive
+              ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-500/10'
+              : isNegative
+                ? 'text-rose-700 dark:text-rose-300 bg-rose-100 dark:bg-rose-500/10'
+                : 'text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800/60';
             return (
               <div
                 key={`${rate.symbol}-${idx}`}
-                className="flex items-center gap-2 px-3 sm:px-4 py-2 shrink-0"
+                className={cn(
+                  'flex items-center gap-2 px-3 sm:px-4 py-2 shrink-0',
+                  // خط جداکننده‌ی عمودی بین آیتم‌ها به‌صورت border-r
+                  // (در RTL همیشه سمت راست هر آیتم). روی آخرین آیتم حذف می‌شود
+                  // تا در wrap-around حلقه دوتایی نشه.
+                  !isLast && 'border-l border-neutral-200/70 dark:border-l-neutral-800/70',
+                )}
               >
                 {/* Symbol */}
                 <span className="text-[12px] sm:text-[13px] font-bold text-neutral-900 dark:text-neutral-100 tabular-nums">
@@ -72,20 +90,21 @@ export default function MarketRatesTickerBar({
                   </span>
                 </span>
 
-                {/* Change */}
-                {rate.change !== 0 && (
+                {/* Change — حتی وقتی 0 هست pill خاکستری با آیکون Minus نشون داده می‌شه
+                    تا کاربر بدونه تغییر لحظه‌ای موجود نیست (نه اینکه دیتا غایبه). */}
+                {hasChange && (
                   <span
                     className={cn(
                       'flex items-center gap-0.5 text-[10px] sm:text-[11px] font-bold tabular-nums px-1.5 py-0.5 rounded-md',
-                      isPositive
-                        ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-500/10'
-                        : 'text-rose-700 dark:text-rose-300 bg-rose-100 dark:bg-rose-500/10',
+                      changeColor,
                     )}
                   >
                     {isPositive ? (
                       <TrendingUp className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                    ) : (
+                    ) : isNegative ? (
                       <TrendingDown className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                    ) : (
+                      <Minus className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                     )}
                     {isPositive ? '+' : ''}
                     {toPersianNumber(rate.change.toFixed(2))}%
