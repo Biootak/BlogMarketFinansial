@@ -1,0 +1,234 @@
+// src/app/dashboard/exchange-rates/_components/ExchangeRatesTable.tsx
+// 2026-06-20: جدول با sort و filter client-side + empty state
+
+'use client';
+
+import { useMemo, useState } from 'react';
+import { ChevronUp, ChevronDown } from 'lucide-react';
+import ExchangeRateRow, { type RateRowData } from './ExchangeRateRow';
+import type { SourceFilter, GroupFilter } from './ExchangeRatesToolbar';
+
+interface TableProps {
+  rows: RateRowData[];
+  query: string;
+  source: SourceFilter;
+  group: GroupFilter;
+  onEdit: (row: RateRowData) => void;
+  onDelete: (row: RateRowData) => void;
+}
+
+type SortKey = 'priority' | 'displayNameFa' | 'updatedAt';
+type SortDir = 'asc' | 'desc';
+
+interface ColumnDef {
+  key: SortKey | null;
+  label: string;
+  sortable: boolean;
+  align?: 'start' | 'end' | 'center';
+}
+
+const COLUMNS: ColumnDef[] = [
+  { key: 'priority', label: 'اولویت', sortable: true },
+  { key: 'displayNameFa', label: 'نام', sortable: true },
+  { key: null, label: 'نماد', sortable: false },
+  { key: null, label: 'گروه', sortable: false },
+  { key: null, label: 'مقدار', sortable: false },
+  { key: null, label: 'منبع', sortable: false },
+  { key: null, label: 'وضعیت', sortable: false },
+  { key: null, label: '', sortable: false, align: 'end' },
+];
+
+export default function ExchangeRatesTable({
+  rows,
+  query,
+  source,
+  group,
+  onEdit,
+  onDelete,
+}: TableProps) {
+  const [sortKey, setSortKey] = useState<SortKey>('priority');
+  const [sortDir, setSortDir] = useState<SortDir>('asc');
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return rows.filter((r) => {
+      if (source !== 'all' && r.provider !== source) return false;
+      if (group !== 'all' && r.group !== group) return false;
+      if (!q) return true;
+      return (
+        r.displayNameFa.toLowerCase().includes(q) ||
+        r.symbol.toLowerCase().includes(q)
+      );
+    });
+  }, [rows, query, source, group]);
+
+  const sorted = useMemo(() => {
+    const list = [...filtered];
+    list.sort((a, b) => {
+      let cmp = 0;
+      if (sortKey === 'priority') cmp = a.priority - b.priority;
+      else if (sortKey === 'displayNameFa')
+        cmp = a.displayNameFa.localeCompare(b.displayNameFa, 'fa-IR');
+      else if (sortKey === 'updatedAt')
+        cmp = a.updatedAt.getTime() - b.updatedAt.getTime();
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+    return list;
+  }, [filtered, sortKey, sortDir]);
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortDir('asc');
+    }
+  };
+
+  if (sorted.length === 0) {
+    return (
+      <div
+        className="flex flex-col items-center justify-center"
+        style={{
+          padding: 'var(--ds-space-10) var(--ds-space-6)',
+          gap: 'var(--ds-space-3)',
+          background: 'var(--ds-surface)',
+          border: '1px dashed var(--ds-border-default)',
+          borderRadius: 'var(--ds-radius-lg)',
+        }}
+      >
+        <div
+          aria-hidden
+          style={{
+            width: '3rem',
+            height: '3rem',
+            borderRadius: 'var(--ds-radius-full)',
+            background:
+              'color-mix(in oklch, var(--ds-brand-500) 12%, transparent)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1.5rem',
+          }}
+        >
+          ◌
+        </div>
+        <p
+          className="font-semibold"
+          style={{
+            fontSize: 'var(--ds-text-base)',
+            color: 'var(--ds-text-primary)',
+            margin: 0,
+          }}
+        >
+          نرخی با این فیلترها پیدا نشد
+        </p>
+        <p
+          style={{
+            fontSize: 'var(--ds-text-sm)',
+            color: 'var(--ds-text-muted)',
+            margin: 0,
+          }}
+        >
+          فیلترها را تغییر دهید یا نرخ جدیدی اضافه کنید.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="overflow-x-auto backdrop-blur-sm"
+      style={{
+        background: 'var(--ds-surface)',
+        border: '1px solid var(--ds-border-subtle)',
+        borderRadius: 'var(--ds-radius-lg)',
+        boxShadow: 'var(--ds-shadow-sm)',
+      }}
+    >
+      <table
+        className="w-full"
+        role="grid"
+        aria-label="جدول نرخ‌های بازار"
+        aria-rowcount={sorted.length + 1}
+        style={{ borderCollapse: 'separate', borderSpacing: 0 }}
+      >
+        <thead>
+          <tr style={{ background: 'var(--ds-canvas-subtle)' }}>
+            {COLUMNS.map((col, i) => {
+              const align = col.align ?? 'start';
+              return (
+                <th
+                  key={i}
+                  scope="col"
+                  aria-sort={
+                    sortKey === col.key
+                      ? sortDir === 'asc'
+                        ? 'ascending'
+                        : 'descending'
+                      : 'none'
+                  }
+                  className="font-semibold uppercase"
+                  style={{
+                    padding: 'var(--ds-space-3) var(--ds-space-4)',
+                    fontSize: 'var(--ds-text-xs)',
+                    letterSpacing: '0.06em',
+                    color: 'var(--ds-text-muted)',
+                    textAlign: align,
+                    whiteSpace: 'nowrap',
+                    borderBottom: '1px solid var(--ds-border-subtle)',
+                  }}
+                >
+                  {col.sortable && col.key ? (
+                    <button
+                      type="button"
+                      onClick={() => toggleSort(col.key as SortKey)}
+                      className="inline-flex items-center gap-1 transition-colors"
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        padding: 0,
+                        color: 'inherit',
+                        font: 'inherit',
+                        letterSpacing: 'inherit',
+                        textTransform: 'inherit',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {col.label}
+                      {sortKey === col.key ? (
+                        sortDir === 'asc' ? (
+                          <ChevronUp
+                            aria-hidden
+                            style={{ width: '0.75rem', height: '0.75rem' }}
+                          />
+                        ) : (
+                          <ChevronDown
+                            aria-hidden
+                            style={{ width: '0.75rem', height: '0.75rem' }}
+                          />
+                        )
+                      ) : null}
+                    </button>
+                  ) : (
+                    col.label
+                  )}
+                </th>
+              );
+            })}
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((row) => (
+            <ExchangeRateRow
+              key={row.id}
+              row={row}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
