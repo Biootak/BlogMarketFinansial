@@ -14,7 +14,7 @@
  * ----------------------------------------------------------------------------
  */
 
-import { fetchExchangeRates } from '@/actions/fetchExchangeRates';
+import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
 import prisma from '@/lib/db';
 import { fetchNavasanLatest, type NavasanResponse } from '@/lib/navasan';
 
@@ -172,7 +172,7 @@ interface UsdtRate { toman: number; change: number; }
 
 async function getUsdtRate(): Promise<UsdtRate | null> {
   try {
-    const r = await fetchExchangeRates();
+    const r = await fetchCryptoTickerRates();
     if (!r.success || !r.data) return null;
     const usdt = r.data.find((x) => x.symbol.toUpperCase() === 'USDT');
     if (!usdt) return null;

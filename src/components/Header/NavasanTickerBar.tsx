@@ -19,14 +19,14 @@
  * - بدون framer-motion (CSS keyframe در InfiniteTicker)
  */
 
-import type { NavasanTickerItem } from '@/actions/navasanTickerRates';
+import type { NavasanRateItem } from '@/actions/navasanRates';
 import { InfiniteTicker } from '@/components/InfiniteTicker';
 import { TickerShell } from '@/components/TickerShell';
 import { TrendingUp, TrendingDown, Radio } from 'lucide-react';
 import { cn, toPersianNumber, formatNumber } from '@/lib/utils';
 
 interface NavasanTickerBarProps {
-  items: NavasanTickerItem[];
+  items: NavasanRateItem[];
   /** عنوان بخش (مثلاً "بازارها" یا "بازار زنده"). */
   label?: string;
 }

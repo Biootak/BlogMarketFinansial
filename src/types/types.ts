@@ -354,7 +354,16 @@ export type SearchResult = {
   avatar?: string | null;
 };
 
-export interface ExchangeRate {
+/**
+ * CryptoTickerRate — یک ردیف نرخ لحظه‌ای کریپتو از Exir.
+ *
+ * نکته: این تایپ **اختصاصی** داده‌های Exir (نوار بالای هوم) است و
+ * ربطی به مدل Prisma `ExchangeRate` (نرخ‌های صرافی/طلای ادمین) ندارد.
+ * قبلاً با نام `ExchangeRate` گیج‌کننده بود؛ rename شد تا با
+ * `ExchangeRateData` (که از DB می‌آید) و کلاس‌های CSS
+ * `nc-SectionExchangeRates` تداخل پیدا نکنه.
+ */
+export interface CryptoTickerRate {
   symbol: string;
   usdtPrice: number;
   irrPrice: number;
@@ -362,10 +371,10 @@ export interface ExchangeRate {
   globalPrice?: number;
 }
 
-export interface ExchangeRatesResult {
+export interface CryptoTickerResult {
   success: boolean;
   message: string;
-  data?: ExchangeRate[];
+  data?: CryptoTickerRate[];
   error?: string;
 }
 

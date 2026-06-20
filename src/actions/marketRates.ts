@@ -1,5 +1,5 @@
 /**
- * getMarketTickerRates — نرخ‌های بازار آزاد برای تیکر پایین اسلایدر
+ * marketRates — نرخ‌های بازار آزاد (بدون وابستگی به رندر تیکر)
  *
  * منبع داده: src/lib/freeMarketRates.ts
  *   1. USD/Toman از قیمت تتر (Exir — رایگان، بدون کلید)
@@ -36,15 +36,15 @@ async function load(): Promise<MarketRateItem[]> {
   } catch (err) {
     if (process.env.NODE_ENV !== 'production') {
       // eslint-disable-next-line no-console
-      console.warn('[marketTickerRates] assemble failed:', err);
+      console.warn('[marketRates] assemble failed:', err);
     }
     return [];
   }
 }
 
-export const getMarketTickerRates = unstable_cache(
+export const getMarketRates = unstable_cache(
   load,
-  ['market-ticker-rates', 'v3-freemarket-2026-06-14'],
+  ['market-rates', 'v3-freemarket-2026-06-14'],
   {
     revalidate: 60,
     tags: ['ticker', 'exchange-rates'],

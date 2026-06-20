@@ -4,7 +4,7 @@ import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { revalidateTag } from '@/lib/revalidate';
-import { fetchExchangeRates } from '@/actions/fetchExchangeRates';
+import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
 import type { ActionResult, RateListData, RateItem } from '@/types/types';
 
 // 2026-06-14: shared helper to normalize the Json column into a
@@ -128,7 +128,7 @@ function buildCryptoFallbackList(): RateListData {
 
 async function loadCryptoRatesAsync(): Promise<RateItem[]> {
   try {
-    const result = await fetchExchangeRates();
+    const result = await fetchCryptoTickerRates();
     if (!result.success || !result.data) return [];
     return result.data.map((r) => ({
       title: r.symbol,

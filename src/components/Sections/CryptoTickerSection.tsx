@@ -1,10 +1,10 @@
-import { Suspense } from 'react';
-import { fetchExchangeRates } from '@/actions/fetchExchangeRates';
-import ExchangeRateSlider from '@/components/ExchangeRateSlider';
+import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
+import CryptoTickerSlider from '@/components/CryptoTickerSlider';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Suspense } from 'react';
 
-async function ExchangeRatesContent() {
-  const result = await fetchExchangeRates();
+async function CryptoTickerContent() {
+  const result = await fetchCryptoTickerRates();
 
   if (!result.success || !result.data) {
     return (
@@ -24,19 +24,30 @@ async function ExchangeRatesContent() {
   if (result.data.length === 0) {
     return (
       <div className="flex items-center justify-center p-4 sm:p-6 bg-amber-50 dark:bg-amber-900/20 rounded-xl sm:rounded-2xl border border-amber-200 dark:border-amber-800">
-        <p className="text-amber-600 dark:text-amber-400 text-sm sm:text-base">هیچ نرخ ارزی یافت نشد</p>
+        <p className="text-amber-600 dark:text-amber-400 text-sm sm:text-base">
+          هیچ نرخ ارزی یافت نشد
+        </p>
       </div>
     );
   }
 
-  return <ExchangeRateSlider rates={result.data} />;
+  return <CryptoTickerSlider rates={result.data} />;
 }
 
-export default function SectionExchangeRates() {
+/**
+ * CryptoTickerSection — نوار بالای صفحه‌ی اصلی که نرخ‌های زنده‌ی
+ * کریپتو را از Exir نشان می‌ده.
+ *
+ * قبلاً `SectionExchangeRates` نام داشت. نام جدید واقعیت را نشون
+ * می‌ده (فقط کریپتو) و با مدل Prisma `ExchangeRate` و صفحه‌ی داشبورد
+ * `/dashboard/exchange-rates` (که با نرخ‌های صرافی ادمین سروکار داره)
+ * تداخل نداره.
+ */
+export default function CryptoTickerSection() {
   return (
-    <section className="nc-SectionExchangeRates py-1">
+    <section className="nc-CryptoTickerSection py-1">
       <Suspense fallback={<LoadingSkeleton />}>
-        <ExchangeRatesContent />
+        <CryptoTickerContent />
       </Suspense>
     </section>
   );

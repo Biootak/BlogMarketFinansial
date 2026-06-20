@@ -9,7 +9,7 @@
  * از TickerShell برای glassmorphism + pause-on-hover استفاده می‌کنه.
  * سازگار با RTL و prefers-reduced-motion.
  */
-import type { MarketRateItem } from '@/actions/marketTickerRates';
+import type { MarketRateItem } from '@/actions/marketRates';
 import { InfiniteTicker } from '@/components/InfiniteTicker';
 import { TickerShell } from '@/components/TickerShell';
 import { TrendingUp, TrendingDown, Radio } from 'lucide-react';

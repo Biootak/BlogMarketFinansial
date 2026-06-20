@@ -14,7 +14,7 @@
  */
 
 import { unstable_cache } from 'next/cache';
-import { fetchExchangeRates } from '@/actions/fetchExchangeRates';
+import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
 import prisma from '@/lib/db';
 
 export interface MarketTickerItem {
@@ -97,7 +97,7 @@ async function loadMarketTickerData(): Promise<MarketTickerItem[]> {
 
   /* ---------- 1) Crypto (Exir) ---------- */
   try {
-    const ratesResult = await fetchExchangeRates();
+    const ratesResult = await fetchCryptoTickerRates();
     if (ratesResult.success && ratesResult.data) {
       for (const rate of ratesResult.data) {
         items.push({

@@ -15,7 +15,7 @@
  */
 
 import { unstable_cache } from 'next/cache';
-import { fetchExchangeRates } from '@/actions/fetchExchangeRates';
+import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
 import prisma from '@/lib/db';
 import type { TickerItem } from '@/components/Header/TickerBar';
 
@@ -32,7 +32,7 @@ async function fetchTickerData(): Promise<TickerItem[]> {
 
   // 1. Crypto rates
   try {
-    const ratesResult = await fetchExchangeRates();
+    const ratesResult = await fetchCryptoTickerRates();
     if (ratesResult.success && ratesResult.data) {
       const topCryptos = ratesResult.data.slice(0, 8);
       for (const rate of topCryptos) {
@@ -76,7 +76,7 @@ async function fetchTickerData(): Promise<TickerItem[]> {
 // 2026-06-14: Data Cache wrapper. Tags: 'ticker' for any admin edit to
 // ExchangeRate rows, 'ticker-crypto' if/when we bust the crypto leg
 // independently. The crypto leg is already cached inside
-// `src/lib/exchange-rates.ts` (fetch with revalidate: 60), so a 60s TTL
+// `src/lib/exir-crypto-rates.ts` (fetch with revalidate: 60), so a 60s TTL
 // here is fine and acts as the second layer.
 const getCachedTickerData = unstable_cache(
   fetchTickerData,

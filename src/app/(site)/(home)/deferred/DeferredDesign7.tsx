@@ -2,15 +2,15 @@
 
 import dynamic from 'next/dynamic';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
-import type { PostWithRelations, ExchangeRate, RateListData } from '@/types/types';
-import type { MarketRateItem } from '@/actions/marketTickerRates';
-import type { NavasanTickerItem } from '@/actions/navasanTickerRates';
+import type { PostWithRelations, CryptoTickerRate, RateListData } from '@/types/types';
+import type { MarketRateItem } from '@/actions/marketRates';
+import type { NavasanRateItem } from '@/actions/navasanRates';
 
 interface DeferredDesign7Props {
   initialPosts: PostWithRelations[];
-  rates?: ExchangeRate[];
+  rates?: CryptoTickerRate[];
   marketRates?: MarketRateItem[];
-  navasanRates?: NavasanTickerItem[];
+  navasanRates?: NavasanRateItem[];
   rateLists?: RateListData[];
   className?: string;
 }

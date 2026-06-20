@@ -3,16 +3,16 @@
 // فعلاً طرح 7 رو نشون میدم
 import Design7 from './designs/Design7';
 
-import type { PostWithRelations, ExchangeRate, RateListData } from '@/types/types';
-import type { MarketRateItem } from '@/actions/marketTickerRates';
-import type { NavasanTickerItem } from '@/actions/navasanTickerRates';
+import type { PostWithRelations, CryptoTickerRate, RateListData } from '@/types/types';
+import type { MarketRateItem } from '@/actions/marketRates';
+import type { NavasanRateItem } from '@/actions/navasanRates';
 
 type Props = {
   initialPosts: PostWithRelations[];
-  rates?: ExchangeRate[];
+  rates?: CryptoTickerRate[];
   marketRates?: MarketRateItem[];
   /** نرخ‌های مستقیم Navasan — مستقیم از API، بدون تبدیل واحد. */
-  navasanRates?: NavasanTickerItem[];
+  navasanRates?: NavasanRateItem[];
   rateLists?: RateListData[];
   className?: string;
 };

@@ -7,7 +7,7 @@ import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
 
 import SectionLargeSlider from './SectionLargeSlider';
 import SectionMagazine7 from '@/components/Sections/SectionMagazine7';
-import SectionExchangeRates from '@/components/Sections/SectionExchangeRates';
+import CryptoTickerSection from '@/components/Sections/CryptoTickerSection';
 import { TopAuthorsSection } from '@/components/TopAuthorsSection';
 import PulseSection from '@/components/Sections/PulseBoard/PulseSection';
 import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
@@ -68,7 +68,7 @@ export default async function Home() {
       ) : null}
       <div className="container relative">
         <Suspense fallback={<Skeleton className="h-28 rounded-2xl" />}>
-          <SectionExchangeRates />
+          <CryptoTickerSection />
         </Suspense>
 
         <Suspense fallback={<CardLarge1Skeleton />}>

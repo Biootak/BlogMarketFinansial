@@ -1,5 +1,5 @@
 /**
- * navasanTickerRates — نوار باریک «بازارها» از Navasan مستقیم
+ * navasanRates — نرخ‌های خام «بازارها» از Navasan مستقیم
  * ----------------------------------------------------------------------------
  * این ماژول **مستقیماً** به API رسمی Navasan وصل می‌شه و همان مقادیر
  * خام را (بدون هیچ‌گونه تبدیل واحد، محاسبه‌ی نرخ طلایی، یا ادغام با
@@ -32,7 +32,7 @@ import { fetchNavasanLatest, type NavasanResponse } from '@/lib/navasan';
    تایپ‌ها
    ============================================================================ */
 
-export interface NavasanTickerItem {
+export interface NavasanRateItem {
   /** کلید اصلی Navasan (مثلاً `usd_buy`, `sekkeh`, `eur_hav`). */
   key: string;
   /** نماد کوتاه فارسی برای نمایش (مثلاً «دلار خرید»، «سکه طرح جدید»). */
@@ -76,8 +76,8 @@ const KEY_MAP: Array<{ key: string; symbol: string; name: string }> = [
 /* ============================================================================
    تبدیل پاسخ Navasan به آرایه‌ی نوار
    ============================================================================ */
-function buildItems(data: NavasanResponse): NavasanTickerItem[] {
-  const items: NavasanTickerItem[] = [];
+function buildItems(data: NavasanResponse): NavasanRateItem[] {
+  const items: NavasanRateItem[] = [];
   for (const { key, symbol, name } of KEY_MAP) {
     const raw = data[key];
     if (!raw) continue;
@@ -98,21 +98,21 @@ function buildItems(data: NavasanResponse): NavasanTickerItem[] {
 /* ============================================================================
    Cached loader
    ============================================================================ */
-async function load(): Promise<NavasanTickerItem[]> {
+async function load(): Promise<NavasanRateItem[]> {
   const result = await fetchNavasanLatest();
   if (!result.ok || !result.data) return [];
   return buildItems(result.data);
 }
 
 /**
- * خروجی اصلی برای نوار باریک «بازارها».
+ * نرخ‌های خام «بازارها» از Navasan.
  * - فقط از Navasan می‌خونه؛ هیچ ضریب طلایی، FX، یا DB ترکیب نمی‌شه.
  * - مقادیر همان چیزی هستند که Navasan API برمی‌گردونه (تومان).
  * - کش ۶۰ ثانیه‌ای برای جلوگیری از rate-limit پلن رایگان.
  */
-export const getNavasanTickerRates = unstable_cache(
+export const getNavasanRates = unstable_cache(
   load,
-  ['navasan-ticker-rates', 'v1-direct-2026-06-17'],
+  ['navasan-rates', 'v1-direct-2026-06-17'],
   {
     revalidate: 60,
     tags: ['ticker', 'navasan'],

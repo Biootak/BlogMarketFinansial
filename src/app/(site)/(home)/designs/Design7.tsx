@@ -36,13 +36,13 @@ import {
   Activity,
   Calendar,
 } from 'lucide-react';
-import type { PostWithRelations, ExchangeRate, RateListData, RateItem } from '@/types/types';
+import type { PostWithRelations, CryptoTickerRate, RateListData, RateItem } from '@/types/types';
 import Avatar from '@/components/Avatar/Avatar';
 import { getPostLink } from '@/lib/getPostLink';
 import { formatRelativeTime } from '@/lib/utils';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
-import type { MarketRateItem } from '@/actions/marketTickerRates';
-import type { NavasanTickerItem } from '@/actions/navasanTickerRates';
+import type { MarketRateItem } from '@/actions/marketRates';
+import type { NavasanRateItem } from '@/actions/navasanRates';
 import MarketRatesTickerBar from './MarketRatesTickerBar';
 import NavasanTickerBar from '@/components/Header/NavasanTickerBar';
 import MagneticSpotlightCard from './MagneticSpotlightCard';
@@ -52,10 +52,10 @@ import { Tag as TagIcon } from 'lucide-react';
 
 type Props = {
   initialPosts: PostWithRelations[];
-  rates?: ExchangeRate[];
+  rates?: CryptoTickerRate[];
   marketRates?: MarketRateItem[];
   /** نرخ‌های مستقیم Navasan برای نوار باریک «بازارها» — جایگزین marketRates شد. */
-  navasanRates?: NavasanTickerItem[];
+  navasanRates?: NavasanRateItem[];
   rateLists?: RateListData[];
   className?: string;
 };

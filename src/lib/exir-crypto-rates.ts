@@ -1,5 +1,5 @@
+import type { CryptoTickerRate, CryptoTickerResult } from '@/types/types';
 import { cache } from 'react';
-import type { ExchangeRate, ExchangeRatesResult } from '@/types/types';
 
 // Exir API Base URL
 const EXIR_API_BASE = 'https://api.exir.io/v2';
@@ -38,7 +38,7 @@ const RETRY_DELAY = 500;
 const USE_MOCK_ON_FAILURE = false;
 
 // Mock data for fallback
-const MOCK_RATES: ExchangeRate[] = [
+const MOCK_RATES: CryptoTickerRate[] = [
   { symbol: 'BTC', usdtPrice: 97500, irrPrice: 11190000000, change: 2.5, globalPrice: 97500 },
   { symbol: 'ETH', usdtPrice: 3650, irrPrice: 378800000, change: 1.8, globalPrice: 3650 },
   { symbol: 'USDT', usdtPrice: 1, irrPrice: 120800, change: 0, globalPrice: 1 },
@@ -53,13 +53,12 @@ const MOCK_RATES: ExchangeRate[] = [
 
 const logger = {
   error: (message: string, error?: unknown) => {
-    console.error(`[ExchangeRates Error] ${message}`, error);
+    console.error(`[ExirCryptoRates Error] ${message}`, error);
   },
   info: (message: string) => {
-    console.info(`[ExchangeRates Info] ${message}`);
+    console.info(`[ExirCryptoRates Info] ${message}`);
   },
 };
-
 
 // Exir Tickers API Response Type
 interface ExirTicker {
@@ -137,8 +136,8 @@ function calculateDayChange(open: number, close: number): number {
 /**
  * پردازش داده‌های نرخ ارز از پاسخ Exir API
  */
-function processExirRates(tickers: ExirTickersResponse): ExchangeRate[] {
-  const rates: ExchangeRate[] = [];
+function processExirRates(tickers: ExirTickersResponse): CryptoTickerRate[] {
+  const rates: CryptoTickerRate[] = [];
   const usdtIrtRate = tickers['usdt-irt']?.last || 120800; // نرخ تتر به تومان
 
   for (const currency of CURRENCIES) {
@@ -199,10 +198,9 @@ function processExirRates(tickers: ExirTickersResponse): ExchangeRate[] {
   return rates;
 }
 
-
-export const getExchangeRates = cache(async (): Promise<ExchangeRatesResult> => {
+export const getExirCryptoRates = cache(async (): Promise<CryptoTickerResult> => {
   try {
-    logger.info('Fetching exchange rates from Exir API...');
+    logger.info('Fetching crypto ticker rates from Exir API...');
 
     const tickers = await fetchExirTickers();
 
@@ -227,7 +225,7 @@ export const getExchangeRates = cache(async (): Promise<ExchangeRatesResult> => 
       message: 'نرخ‌ها با موفقیت دریافت شد',
     };
   } catch (error) {
-    logger.error('Error in getExchangeRates:', error);
+    logger.error('Error in getExirCryptoRates:', error);
 
     if (USE_MOCK_ON_FAILURE) {
       logger.info('Using mock data due to API failure');
