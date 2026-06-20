@@ -487,6 +487,76 @@ async function seedSocialLinks() {
   console.log(`   ✅ ${added} لینک اجتماعی`);
 }
 
+/* ─── 14b) ExchangeRates from SYMBOL_REGISTRY ─────────────────── */
+async function seedExchangeRates() {
+  const SYMBOL_REGISTRY = [
+    { symbol: 'AFGHANI_USD',  displayNameFa: 'دلار هرات',     group: 'afghan',     unit: 'toman', divisor: 10, decimals: 0, priority: 2 },
+    { symbol: 'AFGHANI_AFN',  displayNameFa: 'افغانی',        group: 'afghan',     unit: 'toman', divisor: 10, decimals: 0, priority: 3 },
+    { symbol: 'IRAN_USD',     displayNameFa: 'دلار تهران',    tgjuKey: 'price_dollar_rl', group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 1 },
+    { symbol: 'IRAN_EUR',     displayNameFa: 'یورو',          tgjuKey: 'price_eur',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 7 },
+    { symbol: 'IRAN_GBP',     displayNameFa: 'پوند انگلیس',   tgjuKey: 'price_gbp',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 9 },
+    { symbol: 'IRAN_AED',     displayNameFa: 'درهم امارات',   tgjuKey: 'price_aed',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 8 },
+    { symbol: 'IRAN_TRY',     displayNameFa: 'لیر ترکیه',     tgjuKey: 'price_try',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 11 },
+    { symbol: 'IRAN_CHF',     displayNameFa: 'فرانک سوئیس',   tgjuKey: 'price_chf',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 17 },
+    { symbol: 'IRAN_CAD',     displayNameFa: 'دلار کانادا',   tgjuKey: 'price_cad',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 18 },
+    { symbol: 'IRAN_AUD',     displayNameFa: 'دلار استرالیا', tgjuKey: 'price_aud',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 19 },
+    { symbol: 'IRAN_CNY',     displayNameFa: 'یوان چین',      tgjuKey: 'price_cny',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 12 },
+    { symbol: 'IRAN_JPY',     displayNameFa: 'ین ژاپن',       tgjuKey: 'price_jpy',       group: 'minor',      unit: 'toman', divisor: 10, decimals: 0, priority: 20 },
+    { symbol: 'IRAN_RUB',     displayNameFa: 'روبل روسیه',    tgjuKey: 'price_rub',       group: 'minor',      unit: 'toman', divisor: 10, decimals: 0, priority: 21 },
+    { symbol: 'IRAN_INR',     displayNameFa: 'روپیه هند',     tgjuKey: 'price_inr',       group: 'minor',      unit: 'toman', divisor: 10, decimals: 0, priority: 22 },
+    { symbol: 'IRAN_COIN_EMAMI',   displayNameFa: 'سکه امامی',         tgjuKey: 'retail_sekee',   group: 'iran-coin',  unit: 'toman', divisor: 10, decimals: 0, priority: 4 },
+    { symbol: 'IRAN_COIN_BAHAR',   displayNameFa: 'سکه بهار آزادی',   tgjuKey: 'retail_sekeb',   group: 'iran-coin',  unit: 'toman', divisor: 10, decimals: 0, priority: 10 },
+    { symbol: 'IRAN_COIN_NIM',     displayNameFa: 'نیم سکه',           tgjuKey: 'retail_nim',     group: 'iran-coin',  unit: 'toman', divisor: 10, decimals: 0, priority: 13 },
+    { symbol: 'IRAN_COIN_ROB',     displayNameFa: 'ربع سکه',           tgjuKey: 'retail_rob',     group: 'iran-coin',  unit: 'toman', divisor: 10, decimals: 0, priority: 14 },
+    { symbol: 'IRAN_COIN_GERAMI',  displayNameFa: 'سکه گرمی',          tgjuKey: 'retail_gerami',  group: 'iran-coin',  unit: 'toman', divisor: 10, decimals: 0, priority: 15 },
+    { symbol: 'IRAN_GOLD_18K',     displayNameFa: 'طلای ۱۸ عیار',      tgjuKey: 'geram18',        group: 'iran-gold',  unit: 'toman', divisor: 10, decimals: 0, priority: 5 },
+    { symbol: 'IRAN_GOLD_MESGHAL', displayNameFa: 'مثقال طلا',         tgjuKey: 'mesghal',        group: 'iran-gold',  unit: 'toman', divisor: 10, decimals: 0, priority: 16 },
+    { symbol: 'GLOBAL_OUNCE_GOLD', displayNameFa: 'انس طلا',           tgjuKey: 'ons',            group: 'global',     unit: 'usd',   divisor: 1,  decimals: 2, priority: 6 },
+  ];
+
+  let added = 0, updated = 0;
+  for (const entry of SYMBOL_REGISTRY) {
+    const existing = await p.exchangeRate.findUnique({ where: { symbol: entry.symbol } });
+    if (existing) {
+      await p.exchangeRate.update({
+        where: { id: existing.id },
+        data: {
+          displayNameFa: entry.displayNameFa,
+          group: entry.group,
+          unit: entry.unit,
+          divisor: entry.divisor,
+          decimals: entry.decimals,
+          priority: entry.priority,
+          provider: 'auto',
+          tgjuKey: entry.tgjuKey || null,
+          active: true,
+        },
+      });
+      updated++;
+    } else {
+      await p.exchangeRate.create({
+        data: {
+          symbol: entry.symbol,
+          name: entry.displayNameFa,
+          currency: entry.symbol.replace('IRAN_', '').replace('AFGHANI_', '').replace('GLOBAL_', ''),
+          displayNameFa: entry.displayNameFa,
+          group: entry.group,
+          unit: entry.unit,
+          divisor: entry.divisor,
+          decimals: entry.decimals,
+          priority: entry.priority,
+          provider: 'auto',
+          tgjuKey: entry.tgjuKey || null,
+          active: true,
+          rateType: 'BUY_SELL',
+        },
+      });
+      added++;
+    }
+  }
+  console.log(`   ✅ ${added} ایجاد، ${updated} به‌روزرسانی`);
+}
+
 /* ─── 15) RateLists (نرخ ارز و طلا) ─────────────────────────── */
 async function seedRateLists() {
   const lists = [
@@ -746,6 +816,9 @@ async function main() {
 
   console.log('\n2️⃣0️⃣  Accounts:');
   await seedAccounts(users);
+
+  console.log('\n2️⃣1️⃣  ExchangeRates:');
+  await seedExchangeRates();
 
   /* ─── گزارش نهایی ─── */
   const stats = {
