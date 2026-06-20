@@ -135,6 +135,28 @@ body {
 
 p { line-height: var(--leading-relaxed); }
 
+/* 2026-06-20: ds-stat-card — استفاده در ExchangeRatesHeader (Server Component).
+   چون Server Component نمی‌تواند onMouseEnter پاس دهد، hover/focus
+   به‌صورت CSS-driven پیاده‌سازی شد. */
+.ds-stat-card {
+  transition:
+    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart),
+    transform var(--ds-duration-base) var(--ds-ease-out-quart);
+}
+.ds-stat-card:hover {
+  box-shadow: var(--ds-shadow-md);
+  transform: translateY(-2px);
+}
+.ds-stat-card:focus-within {
+  box-shadow: var(--ds-shadow-md);
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ds-stat-card { transition: none; }
+  .ds-stat-card:hover { transform: none; }
+}
+
 :root {
   --background: 247 248 250;
   --foreground: 20 23 32;

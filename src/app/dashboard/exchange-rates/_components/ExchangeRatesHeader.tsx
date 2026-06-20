@@ -116,19 +116,13 @@ function StatCard({
   return (
     <div
       role="listitem"
-      className="flex flex-col gap-1.5 backdrop-blur-sm transition-shadow"
+      className="ds-stat-card flex flex-col gap-1.5 backdrop-blur-sm transition-shadow"
       style={{
         background: 'var(--ds-surface)',
         border: '1px solid var(--ds-border-subtle)',
         borderRadius: 'var(--ds-radius-lg)',
         padding: 'var(--ds-space-4) var(--ds-space-5)',
         boxShadow: 'var(--ds-shadow-sm)',
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.boxShadow = 'var(--ds-shadow-md)';
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.boxShadow = 'var(--ds-shadow-sm)';
       }}
     >
       <dt
