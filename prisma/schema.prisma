@@ -326,6 +326,19 @@ model ExchangeRate {
   id          String   @id @default(cuid())
   name        String   @unique
   currency    String
+  // 2026-06-20: اضافه شدن فیلدهای registry — symbol, displayNameFa, group, unit,
+  // divisor, decimals, priority, provider, tgjuKey, active
+  symbol      String?  @unique
+  displayNameFa String?
+  group       String?
+  unit        String?
+  divisor     Int      @default(1)
+  decimals    Int      @default(0)
+  priority    Int      @default(99)
+  provider    String   @default("auto")
+  tgjuKey     String?
+  active      Boolean  @default(true)
+
   rateType    RateType @default(BUY_SELL)
   buyRate     String?
   sellRate    String?
@@ -333,13 +346,13 @@ model ExchangeRate {
   bulkRate    String?
   description String?
   imageUrl    String?
+  manualNote  String?
   updatedAt   DateTime @updatedAt
   createdAt   DateTime @default(now())
 
-  // 2026-06-14: getTickerData does `orderBy: { createdAt: 'desc' } take: 5`
-  // and the dashboard exchange-rates page sorts the same way. Without this
-  // index the query degrades to a sort+limit on the full table.
   @@index([createdAt(sort: Desc)])
+  @@index([active, priority])
+  @@index([symbol])
 }
 
 model RateList {
