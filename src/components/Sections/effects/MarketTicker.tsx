@@ -8,7 +8,7 @@
  * polling/refresh مختص این کامپوننت هست.
  *
  * تکنیک‌ها:
- *  1. Server Action (`getMarketTickerData`) — initial data از سرور
+ *  1. Server Action (`getCryptoTickerData`) — initial data از سرور
  *  2. SWR-style polling — هر ۶۰ ثانیه refresh می‌کنه
  *  3. Smooth color transition برای تغییرات قیمت
  *  4. Marquee از ModernTrending
@@ -16,12 +16,12 @@
  *  6. respects prefers-reduced-motion
  */
 
-import { useEffect, useState, useTransition } from 'react';
-import { TrendingUp, TrendingDown, Activity, RefreshCw } from 'lucide-react';
+import type { MarketTickerItem } from '@/actions/marketTickerActions';
 import { Marquee } from '@/components/ModernTrending/effects/Marquee';
 import { TickerShell } from '@/components/TickerShell';
-import { cn, toPersianNumber, formatNumber } from '@/lib/utils';
-import type { MarketTickerItem } from '@/actions/marketTickerActions';
+import { cn, formatNumber, toPersianNumber } from '@/lib/utils';
+import { Activity, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
+import { useEffect, useState, useTransition } from 'react';
 
 interface MarketTickerProps {
   initialData?: MarketTickerItem[];
@@ -38,6 +38,9 @@ function formatPrice(item: MarketTickerItem): string {
 
   if (!Number.isFinite(price)) return '—';
 
+  // 2026-06-20: بعد از محدودسازی getCryptoTickerData به فقط crypto،
+  // type MarketTickerItem.category فقط 'crypto' است. اگر در آینده
+  // category های دیگری هم اضافه شد، منطق این تابع باید بازنگری شود.
   if (category === 'crypto' && unit === 'usd') {
     if (price < 1) {
       return `$${toPersianNumber(price.toFixed(4))}`;
@@ -45,11 +48,7 @@ function formatPrice(item: MarketTickerItem): string {
     return `$${toPersianNumber(formatNumber(Math.round(price)))}`;
   }
 
-  if (category === 'commodity' && unit === 'usd') {
-    return `$${toPersianNumber(price.toFixed(2))}`;
-  }
-
-  // بقیه: تومان (پیش‌فرض)
+  // بقیه: تومان (پیش‌فرض) — در حال حاضر فقط fallback برای type safety است.
   return toPersianNumber(formatNumber(Math.round(price)));
 }
 
@@ -112,16 +111,8 @@ export default function MarketTicker({
   );
 
   return (
-    <div
-      className={cn('relative anim-fade-in-down', className)}
-    >
-      <TickerShell
-        height="md"
-        tone="emerald"
-        showLiveDot
-        ariaLabel="نرخ‌های زنده"
-        lead={liveLabel}
-      >
+    <div className={cn('relative anim-fade-in-down', className)}>
+      <TickerShell height="md" tone="emerald" showLiveDot ariaLabel="نرخ‌های زنده" lead={liveLabel}>
         <Marquee speed={-10} pauseOnHover pauseOnHold>
           {data.map((item) => {
             const isUp = item.change >= 0;
@@ -137,15 +128,11 @@ export default function MarketTicker({
                   'font-vazirmatn',
                 )}
               >
-                <span className="font-bold text-neutral-900 dark:text-white">
-                  {item.symbol}
-                </span>
+                <span className="font-bold text-neutral-900 dark:text-white">{item.symbol}</span>
                 <span className="text-neutral-500 dark:text-neutral-400 text-[10px] sm:text-[11px] hidden sm:inline">
                   {item.name}
                 </span>
-                <span className="font-medium tabular-nums">
-                  {formatPrice(item)}
-                </span>
+                <span className="font-medium tabular-nums">{formatPrice(item)}</span>
                 <span
                   className={cn(
                     'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md',
@@ -159,10 +146,7 @@ export default function MarketTicker({
                   {isUp ? '+' : ''}
                   {toPersianNumber(item.change.toFixed(2))}%
                 </span>
-                <span
-                  className="text-neutral-300 dark:text-neutral-700"
-                  aria-hidden
-                >
+                <span className="text-neutral-300 dark:text-neutral-700" aria-hidden>
                   ·
                 </span>
               </div>
@@ -209,10 +193,7 @@ export default function MarketTicker({
             )}
             aria-label="بروزرسانی قیمت‌ها"
           >
-            <RefreshCw
-              className={cn('h-3 w-3', isPending && 'animate-spin')}
-              strokeWidth={2.25}
-            />
+            <RefreshCw className={cn('h-3 w-3', isPending && 'animate-spin')} strokeWidth={2.25} />
           </button>
         </div>
       )}

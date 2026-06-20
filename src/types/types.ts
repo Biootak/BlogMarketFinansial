@@ -1,27 +1,27 @@
 // types.ts
 
+import type {
+  CreatePostSchema,
+  ForgotPasswordSchema,
+  LoginSchema,
+  MagicLinkSchema,
+  PostSchema,
+  RegisterSchema,
+  UpdatePostSchema,
+  UpdateProfileSchema,
+} from '@/schemas';
 import {
-  Prisma,
-  type Role,
-  type PostType,
-  type PostStatus,
   type Category,
   type Post,
+  type PostStatus,
+  type PostType,
+  Prisma,
+  type Role,
   type Tag,
   type User,
 } from '@prisma/client';
-import type { z } from 'zod';
-import type {
-  LoginSchema,
-  ForgotPasswordSchema,
-  MagicLinkSchema,
-  CreatePostSchema,
-  UpdatePostSchema,
-  PostSchema,
-  RegisterSchema,
-  UpdateProfileSchema,
-} from '@/schemas';
 import type { IconType } from 'react-icons';
+import type { z } from 'zod';
 
 // Prisma Exact Types
 const userWithRelations = Prisma.validator<Prisma.UserDefaultArgs>()({
@@ -175,8 +175,7 @@ export type PostWithRelations = Prisma.PostGetPayload<typeof basePostWithRelatio
   savedBy?: Prisma.PostGetPayload<typeof fullPostWithRelations>['savedBy'];
 };
 
-export type { PostType, PostStatus,Role } from '@prisma/client';
-
+export type { PostType, PostStatus, Role } from '@prisma/client';
 
 export type SchemaInfer<T extends z.ZodType<any, any>> = z.infer<T>;
 export type RegisterInput = SchemaInfer<typeof RegisterSchema>;
@@ -446,6 +445,17 @@ export interface SearchResultData {
 }
 export type SearchActionResult = ActionResult<SearchResultData>;
 
+// Header Ticker Item — نوار بالای Header که crypto + DB rates را mixed نشان می‌دهد.
+// قبلاً به‌صورت inline در src/components/Header/TickerBar.tsx تعریف شده بود
+// (anti-pattern: domain type در لایه UI). 2026-06-20 منتقل شد.
+export interface HeaderTickerItem {
+  id: string;
+  name: string;
+  symbol?: string;
+  value: string;
+  change?: number;
+}
+
 // Rate List Types
 export interface RateItem {
   title: string;
@@ -464,11 +474,11 @@ export interface RateListData {
 export type RateList = RateListData;
 
 export type Rate = {
-  type: string;      // نوع ارز یا عنوان نرخ (مثلا "دلار"، "50 افغانی")
-  buyRate?: string;  // نرخ خرید (برای سرای شاهزاده)
+  type: string; // نوع ارز یا عنوان نرخ (مثلا "دلار"، "50 افغانی")
+  buyRate?: string; // نرخ خرید (برای سرای شاهزاده)
   sellRate?: string; // نرخ فروش (برای سرای شاهزاده)
-  value?: string;    // مقدار تکی (برای کردیت کارت و نرخ تهران)
-}
+  value?: string; // مقدار تکی (برای کردیت کارت و نرخ تهران)
+};
 
 export interface SidebarData {
   recentPosts: PostWithRelations[];

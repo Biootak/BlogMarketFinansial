@@ -1,21 +1,26 @@
 'use server';
 
 /**
- * getMarketTickerData — دیتای نوار قیمت «آخرین مقالات»
+ * getCryptoTickerData — دیتای نوار قیمت «آخرین مقالات»
  *
- * ترکیب:
- *  1. نرخ ارزهای دیجیتال از Exir API (با mock fallback)
- *  2. نرخ طلا/ارز/سکه از دیتابیس (ExchangeRate)
- *  3. شاخص‌های منتخب (اگه در DB باشن)
+ * فقط نرخ ارزهای دیجیتال از Exir API را برمی‌گرداند.
  *
- * کش: unstable_cache با 60s TTL (نه خیلی کوتاه که API رو بزنه، نه بلند که آپدیت نشه)
+ * تغییرات:
+ *  - 2026-06-20: قبلاً این تابع `getMarketTickerData` نام داشت و کل
+ *    pool (crypto + forex + gold + commodity + index) را برمی‌گردوند.
+ *    PulseSection بعد در سمت سرور فیلتر می‌کرد:
+ *      `tickerData.filter((item) => item.category === 'crypto')`
+ *    یعنی ۹۰٪ دیتا دور ریخته می‌شد. حالا این تابع فقط crypto را
+ *    برمی‌گرداند (dedup داخلی بر اساس symbol).
+ *  - کش: unstable_cache با 60s TTL و تگ 'crypto-ticker' که مستقل از
+ *    سایر تگ‌های ticker قابل invalidate است.
  *
- * خروجی: آرایه‌ای از MarketTickerItem که مستقیماً در <MarketTicker/> استفاده می‌شه.
+ * خروجی: آرایه‌ای از MarketTickerItem که مستقیماً در <MarketTicker/>
+ * استفاده می‌شود (در PulseBoard و Magazine).
  */
 
-import { unstable_cache } from 'next/cache';
 import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
-import prisma from '@/lib/db';
+import { unstable_cache } from 'next/cache';
 
 export interface MarketTickerItem {
   /** کلید یکتا (symbol) */
@@ -26,10 +31,11 @@ export interface MarketTickerItem {
   price: number;
   /** درصد تغییر (مثبت = سبز، منفی = قرمز) */
   change: number;
-  /** نوع دسته‌بندی */
-  category: 'crypto' | 'forex' | 'gold' | 'commodity' | 'index';
-  /** واحد (تومان، دلار، درصد و...) */
-  unit?: 'toman' | 'usd' | 'percent';
+  /** نوع دسته‌بندی — این تابع همیشه 'crypto' برمی‌گرداند. فیلد
+   *  برای سازگاری با MarketTicker client component حفظ شده. */
+  category: 'crypto';
+  /** واحد (این تابع همیشه 'usd' برمی‌گرداند) */
+  unit: 'usd';
 }
 
 /* -------------------------------------------------------------------------- */
@@ -59,125 +65,57 @@ const CRYPTO_NAMES: Record<string, string> = {
   MKR: 'میکر',
   SNX: 'سینتتیکس',
   CRV: 'کرو دائو',
-};
-
-const FOREX_NAMES: Record<string, string> = {
-  USD: 'دلار آمریکا',
-  EUR: 'یورو',
-  GBP: 'پوند',
-  AED: 'درهم امارات',
-  TRY: 'لیر ترکیه',
-  CHF: 'فرانک سوئیس',
-  CAD: 'دلار کانادا',
-  AUD: 'دلار استرالیا',
-};
-
-const GOLD_NAMES: Record<string, string> = {
-  GOLD: 'طلا (گرم)',
-  COIN: 'سکه طرح جدید',
-  COIN_OLD: 'سکه طرح قدیم',
-  HALF_COIN: 'نیم سکه',
-  QUARTER_COIN: 'ربع سکه',
-  OUNCE: 'انس طلا (جهانی)',
-};
-
-const COMMODITY_NAMES: Record<string, string> = {
-  OIL: 'نفت برنت',
-  OIL_WTI: 'نفت WTI',
-  GAS: 'گاز طبیعی',
-  SILVER: 'نقره (گرم)',
+  XRP: 'ریپل',
+  LTC: 'لایت‌کوین',
+  BCH: 'بیت‌کوین کش',
+  SOL: 'سولانا',
+  ADA: 'کاردانو',
+  DOGE: 'دوج‌کوین',
+  AVAX: 'آوالانچ',
+  TRX: 'ترون',
+  DOT: 'پولکادات',
+  LINK: 'چین‌لینک',
+  MATIC: 'پالیگان',
+  UNI: 'یونی‌سواپ',
+  SHIB: 'شیبا اینو',
+  XLM: 'استلار',
+  EOS: 'ایاس',
+  AAVE: 'آوه',
+  FTM: 'فانتوم',
+  SAND: 'سندباکس',
+  MANA: 'دسنترالند',
+  AXS: 'اکسی اینفینیتی',
+  ATOM: 'کاسموس',
 };
 
 /* -------------------------------------------------------------------------- */
 /*  Cached loader — 60 ثانیه                                                  */
 /* -------------------------------------------------------------------------- */
 
-async function loadMarketTickerData(): Promise<MarketTickerItem[]> {
+async function loadCryptoTickerData(): Promise<MarketTickerItem[]> {
   const items: MarketTickerItem[] = [];
 
-  /* ---------- 1) Crypto (Exir) ---------- */
   try {
     const ratesResult = await fetchCryptoTickerRates();
-    if (ratesResult.success && ratesResult.data) {
-      for (const rate of ratesResult.data) {
-        items.push({
-          symbol: rate.symbol,
-          name: CRYPTO_NAMES[rate.symbol] ?? rate.symbol,
-          price: rate.usdtPrice,
-          change: rate.change,
-          category: 'crypto',
-          unit: 'usd',
-        });
-      }
-    }
-  } catch {
-    // silent
-  }
+    if (!ratesResult.success || !ratesResult.data) return [];
 
-  /* ---------- 2) DB rates (forex, gold, commodity) ---------- */
-  try {
-    const dbRates = await prisma.exchangeRate.findMany({
-      take: 30,
-      orderBy: { createdAt: 'desc' },
-    });
-
-    for (const rate of dbRates) {
-      const value = rate.buyRate || rate.singleRate;
-      if (!value) continue;
-      const price = parseFloat(value);
-      if (Number.isNaN(price) || price <= 0) continue;
-
-      // تخمین درصد تغییر (اگه فیلد change در DB نیست، از buy/sell تخمین بزن)
-      let change = 0;
-      if (rate.buyRate && rate.sellRate) {
-        const buy = parseFloat(rate.buyRate);
-        const sell = parseFloat(rate.sellRate);
-        if (buy > 0) {
-          change = Number((((sell - buy) / buy) * 100).toFixed(2));
-        }
-      }
-
-      // تشخیص category از currency
-      const currency = rate.currency.toUpperCase();
-      let category: MarketTickerItem['category'] = 'forex';
-      let unit: MarketTickerItem['unit'] = 'toman';
-
-      if (currency.includes('GOLD') || currency.includes('COIN') || currency === 'XAU' || currency === 'XAG') {
-        category = 'gold';
-      } else if (currency.includes('OIL') || currency.includes('GAS')) {
-        category = 'commodity';
-        unit = 'usd';
-      } else if (FOREX_NAMES[currency]) {
-        category = 'forex';
-      } else if (GOLD_NAMES[currency]) {
-        category = 'gold';
-      }
-
-      const name =
-        rate.name ||
-        GOLD_NAMES[currency] ||
-        FOREX_NAMES[currency] ||
-        COMMODITY_NAMES[currency] ||
-        currency;
-
+    for (const rate of ratesResult.data) {
       items.push({
-        symbol: currency,
-        name,
-        price,
-        change,
-        category,
-        unit,
+        symbol: rate.symbol,
+        name: CRYPTO_NAMES[rate.symbol] ?? rate.symbol,
+        price: rate.usdtPrice,
+        change: rate.change,
+        category: 'crypto',
+        unit: 'usd',
       });
     }
   } catch {
-    // silent
+    // silent — نوار قیمت اختیاری است
   }
 
   /* ---------- Dedupe by symbol ----------
-   * چند ردیف DB می‌تونه یک currency داشته باشه (rateType های متفاوت، یا
-   * تکرار دستی). اگه symbol تکراری توی آرایه بمونه، React در <Marquee/>
-   * که children رو ۳ بار تکرار می‌کنه با warning «duplicate key» می‌ترکه.
-   * اولین occurrence (که جدیدترین هست چون orderBy createdAt desc) نگه داشته می‌شه.
+   * اگر Exir برای یک symbol چند ردیف برگرداند (معمولاً نمی‌شود ولی
+   * ایمن باشیم)، اولین occurrence نگه داشته می‌شود.
    */
   const seen = new Set<string>();
   const unique: MarketTickerItem[] = [];
@@ -193,13 +131,13 @@ async function loadMarketTickerData(): Promise<MarketTickerItem[]> {
 /**
  * Cached wrapper با 60s TTL.
  * - revalidate: 60s — بعد ۶۰ ثانیه دوباره fetch می‌کنه
- * - tag: 'market-ticker' — می‌تونیم با revalidateTag('market-ticker') invalidate کنیم
+ * - tag: 'crypto-ticker' — می‌تونیم با revalidateTag('crypto-ticker') invalidate کنیم
  */
-export const getMarketTickerData = unstable_cache(
-  loadMarketTickerData,
-  ['market-ticker-data'],
+export const getCryptoTickerData = unstable_cache(
+  loadCryptoTickerData,
+  ['crypto-ticker-data', 'v2-crypto-only-2026-06-20'],
   {
     revalidate: 60,
-    tags: ['market-ticker'],
+    tags: ['crypto-ticker'],
   },
 );

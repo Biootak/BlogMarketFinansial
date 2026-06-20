@@ -1,8 +1,8 @@
-import { getLatestPosts, getPublishedPostCount } from '@/actions/getLatestPosts';
 import { getActiveAdvertisements } from '@/actions/advertisementActions';
-import { getMarketTickerData } from '@/actions/marketTickerActions';
 import { getLatestPostCategories } from '@/actions/getLatestPostCategories';
-import { getRateListsWithCrypto } from '@/actions/rate-lists';
+import { getLatestPosts, getPublishedPostCount } from '@/actions/getLatestPosts';
+import { getCryptoTickerData } from '@/actions/marketTickerActions';
+import { getActiveRateListsOrCryptoFallback } from '@/actions/rate-lists';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Advertisement, PostWithRelations, RateListData } from '@/types/types';
 import LatestArticles from './LatestArticles';
@@ -35,12 +35,12 @@ export default async function PulseSection({ className = '' }: PulseSectionProps
   // است و totalCount از `getPublishedPostCount` (unstable_cache) میاد.
   const [tickerData, adsResult, latestPosts, totalCount, rateLists, categoriesData] =
     await Promise.all([
-      getMarketTickerData(),
+      getCryptoTickerData(),
       getActiveAdvertisements({ limit: 2, size: 'MEDIUM' }),
       getLatestPosts({ count: INITIAL, skip: 0 }),
       getPublishedPostCount(),
       // dedup داخل لیست + fallback به crypto از Exir در صورت خالی بودن DB
-      getRateListsWithCrypto(),
+      getActiveRateListsOrCryptoFallback(),
       getLatestPostCategories(),
     ]);
 
@@ -53,7 +53,9 @@ export default async function PulseSection({ className = '' }: PulseSectionProps
   const initialAds: Advertisement[] = adsResult.success ? (adsResult.data ?? []) : [];
   const activeRateLists: RateListData[] = (rateLists ?? []).filter((l) => l.isActive);
 
-  const cryptoTickerData = tickerData.filter((item) => item.category === 'crypto');
+  // 2026-06-20: getCryptoTickerData فقط crypto برمی‌گردونه، پس فیلتر
+  // دیگر لازم نیست. نام مستعار برای خوانایی مصرف‌کننده پایین نگه داشته شد.
+  const cryptoTickerData = tickerData;
 
   return (
     <div className={`nc-PulseSection ${className}`}>

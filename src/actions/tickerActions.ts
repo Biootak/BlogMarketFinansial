@@ -1,7 +1,7 @@
 'use server';
 
 /**
- * Ticker data loader — دیتای نوار بالای Header
+ * getHeaderTickerData — دیتای نوار بالای Header
  *
  * ترکیب:
  * - نرخ ارزهای دیجیتال از Exir API (fallback به mock در صورت خطا)
@@ -12,12 +12,17 @@
  * rendered on every layout pass, so the per-request memoization was
  * useless across navigations. Tags let admin edits bust the cache
  * immediately.
+ *
+ * 2026-06-20: rename از `getTickerData` → `getHeaderTickerData` تا
+ * جایگاه استفاده (Header) در نام واضح باشد. نوع `TickerItem` از
+ * کامپوننت UI به `src/types/types.ts` به‌عنوان `HeaderTickerItem`
+ * منتقل شد (domain type نباید در UI باشد).
  */
 
-import { unstable_cache } from 'next/cache';
 import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
 import prisma from '@/lib/db';
-import type { TickerItem } from '@/components/Header/TickerBar';
+import type { HeaderTickerItem } from '@/types/types';
+import { unstable_cache } from 'next/cache';
 
 function formatNumber(num: number, decimals = 0): string {
   return num.toLocaleString('fa-IR', {
@@ -27,8 +32,8 @@ function formatNumber(num: number, decimals = 0): string {
 }
 
 // Internal fetch function — not cached, called by the wrapper.
-async function fetchTickerData(): Promise<TickerItem[]> {
-  const items: TickerItem[] = [];
+async function fetchHeaderTickerData(): Promise<HeaderTickerItem[]> {
+  const items: HeaderTickerItem[] = [];
 
   // 1. Crypto rates
   try {
@@ -62,7 +67,7 @@ async function fetchTickerData(): Promise<TickerItem[]> {
           id: `rate-${rate.id}`,
           name: rate.name,
           symbol: rate.currency,
-          value: formatNumber(parseFloat(value), 0),
+          value: formatNumber(Number.parseFloat(value), 0),
         });
       }
     }
@@ -78,15 +83,15 @@ async function fetchTickerData(): Promise<TickerItem[]> {
 // independently. The crypto leg is already cached inside
 // `src/lib/exir-crypto-rates.ts` (fetch with revalidate: 60), so a 60s TTL
 // here is fine and acts as the second layer.
-const getCachedTickerData = unstable_cache(
-  fetchTickerData,
-  ['ticker-data', 'v1-2026-06-14'],
+const getCachedHeaderTickerData = unstable_cache(
+  fetchHeaderTickerData,
+  ['header-ticker-data', 'v2-renamed-2026-06-20'],
   {
     revalidate: 60, // 1 minute
     tags: ['ticker', 'exchange-rates'],
   },
 );
 
-export const getTickerData = async (): Promise<TickerItem[]> => {
-  return getCachedTickerData();
+export const getHeaderTickerData = async (): Promise<HeaderTickerItem[]> => {
+  return getCachedHeaderTickerData();
 };

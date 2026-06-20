@@ -1,11 +1,11 @@
 'use server';
 
-import { unstable_cache } from 'next/cache';
-import prisma from '@/lib/db';
-import { revalidatePath } from 'next/cache';
-import { revalidateTag } from '@/lib/revalidate';
 import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
-import type { ActionResult, RateListData, RateItem } from '@/types/types';
+import prisma from '@/lib/db';
+import { revalidateTag } from '@/lib/revalidate';
+import type { ActionResult, RateItem, RateListData } from '@/types/types';
+import { unstable_cache } from 'next/cache';
+import { revalidatePath } from 'next/cache';
 
 // 2026-06-14: shared helper to normalize the Json column into a
 // typed array. Prisma 6 returns the Json value already parsed, so
@@ -163,8 +163,13 @@ function toEn(n: number): string {
  *
  * این تابع **همون کش `rate-lists` رو می‌شکنه** تا هر تغییر ادمین در DB
  * تا ۵ دقیقه‌ی بعد در strip دیده بشه.
+ *
+ * 2026-06-20: rename از `getRateListsWithCrypto` → `getActiveRateListsOrCryptoFallback`
+ * تا رفتار واقعی (DB active اولویت دارد، کریپتو فقط fallback) در نام
+ * منعکس شود. قبلاً «WithCrypto» در ۹۰٪ مواقع (وقتی DB لیست فعال دارد)
+ * کریپتو اضافه نمی‌کرد و نام دروغ می‌گفت.
  */
-export const getRateListsWithCrypto = unstable_cache(
+export const getActiveRateListsOrCryptoFallback = unstable_cache(
   async (): Promise<RateListData[]> => {
     const dbLists = await getRateLists();
 
@@ -193,7 +198,7 @@ export const getRateListsWithCrypto = unstable_cache(
     // اضافه کردنش فقط باعث تکرار سه‌گانه می‌شه.
     return dedupedActive;
   },
-  ['rate-lists-with-crypto', 'v2-no-crypto-when-db-active-2026-06-17'],
+  ['active-rate-lists-or-crypto-fallback', 'v3-renamed-2026-06-20'],
   {
     revalidate: 300,
     tags: ['rate-lists', 'ticker', 'exchange-rates'],

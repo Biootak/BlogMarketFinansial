@@ -1,10 +1,10 @@
-import Header from '@/components/Header/Header';
+import { getActiveAdvertisements } from '@/actions/advertisementActions';
+import { getActiveRateListsOrCryptoFallback } from '@/actions/rate-lists';
 import Footer from '@/components/Footer/Footer';
-import type { Metadata } from 'next';
+import Header from '@/components/Header/Header';
 import { SiteSettingsProvider } from '@/components/SiteSettingsProvider';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
-import { getActiveAdvertisements } from '@/actions/advertisementActions';
-import { getRateListsWithCrypto } from '@/actions/rate-lists';
+import type { Metadata } from 'next';
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSystemSettingsData();
@@ -36,9 +36,10 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     }),
     // داده‌ی نوار چرخشی و مگامنوی بازار — یک‌بار در سرور فچ می‌شه
     // و به Header و سایر بخش‌ها پاس داده می‌شه. dedup + crypto fallback.
-    getRateListsWithCrypto(),
+    getActiveRateListsOrCryptoFallback(),
   ]);
-  const footerAd = footerAdsResult.success && footerAdsResult.data?.[0] ? footerAdsResult.data[0] : null;
+  const footerAd =
+    footerAdsResult.success && footerAdsResult.data?.[0] ? footerAdsResult.data[0] : null;
   const activeRateLists = (rateLists ?? []).filter((l) => l.isActive);
 
   return (

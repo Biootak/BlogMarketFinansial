@@ -26,21 +26,9 @@
  *  - Slug-aware category filter (نه name-based)
  */
 
-import type React from 'react';
-import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { AnimatePresence, motion } from '@/lib/motion-shim';
-import {
-  Newspaper,
-  AlertCircle,
-  Sparkles,
-  ChevronDown,
-  Check,
-  MoreHorizontal,
-} from 'lucide-react';
 import { getLatestPosts } from '@/actions/getLatestPosts';
-import { getMarketTickerData, type MarketTickerItem } from '@/actions/marketTickerActions';
-import type { Advertisement, PostWithRelations } from '@/types/types';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { type MarketTickerItem, getCryptoTickerData } from '@/actions/marketTickerActions';
+import { AuroraBackground } from '@/components/ModernTrending/effects/AuroraBackground';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,14 +37,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { STRIPE_EASE, STRIPE_EASE_SOFT } from '@/lib/motion';
+import { AnimatePresence, motion } from '@/lib/motion-shim';
+import { cn, toPersianNumber } from '@/lib/utils';
+import type { Advertisement, PostWithRelations } from '@/types/types';
+import { AlertCircle, Check, ChevronDown, MoreHorizontal, Newspaper, Sparkles } from 'lucide-react';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Empty from '../Empty';
 import PostGrid from './PostGrid';
-import { cn, toPersianNumber } from '@/lib/utils';
-import { AuroraBackground } from '@/components/ModernTrending/effects/AuroraBackground';
-import { STRIPE_EASE, STRIPE_EASE_SOFT } from '@/lib/motion';
-import MarketTicker from './effects/MarketTicker';
-import LiveClock from './effects/LiveClock';
 import AnimatedNumber from './effects/AnimatedNumber';
+import LiveClock from './effects/LiveClock';
+import MarketTicker from './effects/MarketTicker';
 import { getCategoryAccent } from './effects/categoryAccent';
 
 interface ClientSidePostsProps {
@@ -96,10 +89,7 @@ const tabsListVariants = {
 /* -------------------------------------------------------------------------- */
 
 function normFa(s: string): string {
-  return s
-    .replace(/\s+/g, '')
-    .replace(/[‌]/g, '')
-    .toLowerCase();
+  return s.replace(/\s+/g, '').replace(/[‌]/g, '').toLowerCase();
 }
 
 function dedupeCategoryNames(input: string[]): string[] {
@@ -245,7 +235,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
       {/* Market Ticker */}
       <MarketTicker
         initialData={initialTickerData}
-        refetchAction={getMarketTickerData}
+        refetchAction={getCryptoTickerData}
         pollInterval={60_000}
       />
 
@@ -294,7 +284,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
                   animate={{ scale: [1, 1.05, 1] }}
                   transition={{
                     duration: 2.4,
-                    repeat: Infinity,
+                    repeat: Number.POSITIVE_INFINITY,
                     ease: 'easeInOut',
                   }}
                 >
@@ -353,7 +343,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
                 <div
                   className={cn(
                     'sm:hidden inline-flex items-center gap-1 shrink-0',
-                  'h-7 px-2 rounded-full',
+                    'h-7 px-2 rounded-full',
                     'border border-neutral-200/80 dark:border-neutral-700/60',
                     'bg-white/70 dark:bg-neutral-800/60 backdrop-blur-md',
                     'text-[10px] font-medium text-neutral-600 dark:text-neutral-300',
@@ -377,10 +367,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
                       ·
                     </span>
                     <span className="tabular-nums text-neutral-700 dark:text-neutral-300">
-                      <AnimatedNumber
-                        value={totalCount}
-                        suffix=" مطلب"
-                      />
+                      <AnimatedNumber value={totalCount} suffix=" مطلب" />
                     </span>
                   </>
                 )}
@@ -532,7 +519,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
                         type="button"
                         className={cn(
                           'relative flex items-center gap-1.5 px-3 sm:px-4 py-2',
-                        'text-[12.5px] sm:text-sm font-medium rounded-xl whitespace-nowrap',
+                          'text-[12.5px] sm:text-sm font-medium rounded-xl whitespace-nowrap',
                           'transition-colors duration-200',
                           'text-neutral-600 dark:text-neutral-400',
                           'hover:text-neutral-900 dark:hover:text-neutral-200',
@@ -580,7 +567,9 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
                               )}
                             >
                               <span className="flex items-center gap-2 min-w-0">
-                                {isActive && <Check className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} />}
+                                {isActive && (
+                                  <Check className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} />
+                                )}
                                 <span className="truncate">{category}</span>
                               </span>
                               {count > 0 && (

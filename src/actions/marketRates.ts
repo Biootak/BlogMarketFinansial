@@ -1,5 +1,5 @@
 /**
- * marketRates — نرخ‌های بازار آزاد (بدون وابستگی به رندر تیکر)
+ * freeMarketRates — نرخ‌های بازار آزاد (بدون وابستگی به رندر تیکر)
  *
  * منبع داده: src/lib/freeMarketRates.ts
  *   1. USD/Toman از قیمت تتر (Exir — رایگان، بدون کلید)
@@ -8,18 +8,26 @@
  *
  * هیچ‌کدوم از این منابع نیاز به ثبت‌نام یا API key ندارن. کش ۶۰ ثانیه‌ای
  * فشار روی منابع رایگان را کنترل می‌کنه.
+ *
+ * 2026-06-20: rename از `getMarketRates` → `getFreeMarketRates` تا منبع
+ * (freeMarketRates.ts) در نام واضح باشد. کلید کش جدید تا کش قبلی
+ * invalidated شود (تگ‌ها یکسان می‌ماند).
  */
 
+import {
+  type FreeMarketItem,
+  type MarketSource,
+  assembleFreeMarketRates,
+} from '@/lib/freeMarketRates';
 import { unstable_cache } from 'next/cache';
-import { assembleFreeMarketRates, type FreeMarketItem, type MarketSource } from '@/lib/freeMarketRates';
 
 export type { FreeMarketItem, MarketSource };
 
 export interface MarketRateItem {
   symbol: string;
   name: string;
-  price: number;       // تومان
-  change: number;      // درصد
+  price: number; // تومان
+  change: number; // درصد
   source: MarketSource; // برای دیباگ
 }
 
@@ -36,15 +44,15 @@ async function load(): Promise<MarketRateItem[]> {
   } catch (err) {
     if (process.env.NODE_ENV !== 'production') {
       // eslint-disable-next-line no-console
-      console.warn('[marketRates] assemble failed:', err);
+      console.warn('[freeMarketRates] assemble failed:', err);
     }
     return [];
   }
 }
 
-export const getMarketRates = unstable_cache(
+export const getFreeMarketRates = unstable_cache(
   load,
-  ['market-rates', 'v3-freemarket-2026-06-14'],
+  ['free-market-rates', 'v4-renamed-2026-06-20'],
   {
     revalidate: 60,
     tags: ['ticker', 'exchange-rates'],

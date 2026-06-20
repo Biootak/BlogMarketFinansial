@@ -1,16 +1,16 @@
-import { cache } from 'react';
-import { getFeaturedPosts } from '@/actions/getFeaturedPosts';
 import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
-import { getMarketRates } from '@/actions/marketRates';
+import { getFeaturedPosts } from '@/actions/getFeaturedPosts';
+import { getFreeMarketRates } from '@/actions/marketRates';
 import { getNavasanRates } from '@/actions/navasanRates';
 import { getRateLists } from '@/actions/rate-lists';
-import type { PostWithRelations, ActionResult, RateListData } from '@/types/types';
-import DeferredDesign7 from './deferred/DeferredDesign7';
 import Empty from '@/components/Empty';
+import type { ActionResult, PostWithRelations, RateListData } from '@/types/types';
+import { cache } from 'react';
+import DeferredDesign7 from './deferred/DeferredDesign7';
 
 const getFeaturedPostsCached = cache(getFeaturedPosts);
 const getCryptoTickerRatesCached = cache(fetchCryptoTickerRates);
-const getMarketRatesCached = cache(getMarketRates);
+const getFreeMarketRatesCached = cache(getFreeMarketRates);
 const getNavasanRatesCached = cache(getNavasanRates);
 const getRateListsCached = cache(getRateLists);
 
@@ -18,7 +18,7 @@ export default async function SectionLargeSlider() {
   const [postsResult, ratesResult, marketRates, navasanRates, rateLists] = await Promise.all([
     getFeaturedPostsCached(3),
     getCryptoTickerRatesCached(),
-    getMarketRatesCached(),
+    getFreeMarketRatesCached(),
     getNavasanRatesCached(),
     getRateListsCached(),
   ]);

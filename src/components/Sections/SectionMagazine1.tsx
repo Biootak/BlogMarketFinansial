@@ -1,11 +1,14 @@
-import { Suspense } from 'react';
-import { getLatestPosts } from '@/actions/getLatestPosts';
 import { getActiveAdvertisements } from '@/actions/advertisementActions';
-import { getMarketTickerData } from '@/actions/marketTickerActions';
-import { getLatestPostCategories, type LatestPostCategory } from '@/actions/getLatestPostCategories';
-import ClientSidePosts from './ClientSidePosts';
+import {
+  type LatestPostCategory,
+  getLatestPostCategories,
+} from '@/actions/getLatestPostCategories';
+import { getLatestPosts } from '@/actions/getLatestPosts';
+import { getCryptoTickerData } from '@/actions/marketTickerActions';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Advertisement, PostWithRelations } from '@/types/types';
+import { Suspense } from 'react';
+import ClientSidePosts from './ClientSidePosts';
 
 export interface SectionMagazine1Props {
   className?: string;
@@ -31,9 +34,7 @@ function filterByCategory(
   // اول سعی می‌کنیم به slug تبدیل کنیم
   const slug = slugLookup.get(normFa(slugOrName)) ?? slugOrName;
   return posts.filter((post) =>
-    post.categories?.some(
-      (cat) => cat.slug === slug || normFa(cat.name) === normFa(slugOrName),
-    ),
+    post.categories?.some((cat) => cat.slug === slug || normFa(cat.name) === normFa(slugOrName)),
   );
 }
 
@@ -67,14 +68,12 @@ export default async function SectionMagazine1({ className = '' }: SectionMagazi
   );
 
   const [tickerData, mediumAdsResult, ...postsResults] = await Promise.all([
-    getMarketTickerData(),
+    getCryptoTickerData(),
     getActiveAdvertisements({ limit: 10, size: 'MEDIUM' }),
     ...postsByCategoryPromises,
   ]);
 
-  const initialAds: Advertisement[] = mediumAdsResult.success
-    ? (mediumAdsResult.data ?? [])
-    : [];
+  const initialAds: Advertisement[] = mediumAdsResult.success ? (mediumAdsResult.data ?? []) : [];
 
   // 4) ساخت categorizedPosts — dedupe پست‌ها در «همه»
   const seen = new Set<string>();

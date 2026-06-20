@@ -13,8 +13,19 @@
  * - prefers-reduced-motion → keyframe global clamp
  */
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
+import { getLatestPosts } from '@/actions/getLatestPosts';
+import type { MarketTickerItem } from '@/actions/marketTickerActions';
+import { getCryptoTickerData } from '@/actions/marketTickerActions';
+import { AuroraBackground } from '@/components/ModernTrending/effects/AuroraBackground';
+import SafeImage from '@/components/SafeImage/SafeImage';
+import AnimatedNumber from '@/components/Sections/effects/AnimatedNumber';
+import LiveClock from '@/components/Sections/effects/LiveClock';
+import MarketTicker from '@/components/Sections/effects/MarketTicker';
+import { getCategoryAccent } from '@/components/Sections/effects/categoryAccent';
+import { getPostLink } from '@/lib/getPostLink';
+import { motion, useInView, useReducedMotion } from '@/lib/motion-shim';
+import { cn, formatNumber, toPersianNumber } from '@/lib/utils';
+import type { Advertisement, PostWithRelations, RateListData } from '@/types/types';
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -32,20 +43,9 @@ import {
   Sparkles,
   TrendingUp,
 } from 'lucide-react';
-import { motion, useInView, useReducedMotion } from '@/lib/motion-shim';
-import type { PostWithRelations, Advertisement, RateListData } from '@/types/types';
-import type { MarketTickerItem } from '@/actions/marketTickerActions';
-import { cn, toPersianNumber, formatNumber } from '@/lib/utils';
-import { getPostLink } from '@/lib/getPostLink';
-import { getCategoryAccent } from '@/components/Sections/effects/categoryAccent';
-import SafeImage from '@/components/SafeImage/SafeImage';
-import { AuroraBackground } from '@/components/ModernTrending/effects/AuroraBackground';
-import AnimatedNumber from '@/components/Sections/effects/AnimatedNumber';
-import MarketTicker from '@/components/Sections/effects/MarketTicker';
-import LiveClock from '@/components/Sections/effects/LiveClock';
+import Link from 'next/link';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import RateListsTicker from './RateListsTicker';
-import { getMarketTickerData } from '@/actions/marketTickerActions';
-import { getLatestPosts } from '@/actions/getLatestPosts';
 
 interface CategoryItem {
   name: string;
@@ -103,7 +103,10 @@ function dedupePosts(posts: PostWithRelations[]): PostWithRelations[] {
 
 function readingMin(text: string | null | undefined): number {
   if (!text) return 3;
-  const words = text.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).length;
+  const words = text
+    .replace(/<[^>]+>/g, ' ')
+    .trim()
+    .split(/\s+/).length;
   return Math.max(2, Math.round(words / 180));
 }
 
@@ -153,20 +156,20 @@ export function LatestArticles({
 
   const [activeCategory, setActiveCategory] = useState<string>('همه');
   const [categoryPosts, setCategoryPosts] = useState<Record<string, PostWithRelations[]>>({
-    'همه': initialPosts,
+    همه: initialPosts,
   });
   const [visibleCounts, setVisibleCounts] = useState<Record<string, number>>({
-    'همه': INITIAL_VISIBLE,
+    همه: INITIAL_VISIBLE,
   });
-  const [hasMoreMap, setHasMoreMap] = useState<Record<string, boolean>>({ 'همه': true });
+  const [hasMoreMap, setHasMoreMap] = useState<Record<string, boolean>>({ همه: true });
   const [loading, setLoading] = useState(false);
   const [bookmarked, setBookmarked] = useState<Set<string>>(new Set());
 
   // sync initial posts if they change (e.g. HMR)
   useEffect(() => {
-    setCategoryPosts((prev) => ({ ...prev, 'همه': initialPosts }));
-    setVisibleCounts((prev) => ({ ...prev, 'همه': INITIAL_VISIBLE }));
-    setHasMoreMap((prev) => ({ ...prev, 'همه': true }));
+    setCategoryPosts((prev) => ({ ...prev, همه: initialPosts }));
+    setVisibleCounts((prev) => ({ ...prev, همه: INITIAL_VISIBLE }));
+    setHasMoreMap((prev) => ({ ...prev, همه: true }));
   }, [initialPosts]);
 
   // in-memory filter for non-`همه` categories (server filter happens on load-more)
@@ -272,18 +275,13 @@ export function LatestArticles({
       aria-label="آخرین مقالات"
     >
       {/* RateLists Ticker — نوار چرخشی نرخ‌های بازار (RateList از DB) */}
-      {rateLists.length > 0 && (
-        <RateListsTicker
-          rateLists={rateLists}
-          className="mb-3 sm:mb-4"
-        />
-      )}
+      {rateLists.length > 0 && <RateListsTicker rateLists={rateLists} className="mb-3 sm:mb-4" />}
 
       {/* Live Market Ticker */}
       {initialTickerData.length > 0 && (
         <MarketTicker
           initialData={initialTickerData}
-          refetchAction={getMarketTickerData}
+          refetchAction={getCryptoTickerData}
           pollInterval={60_000}
           className="mb-3 sm:mb-5"
         />
@@ -419,8 +417,12 @@ export function LatestArticles({
                   title="ساعت کابل"
                 >
                   <LiveClock showIcon={false} showSeconds timeZone="Asia/Kabul" />
-                  <span className="opacity-60" style={{ color: accent.color }}>·</span>
-                  <span className="font-semibold" style={{ color: accent.color }}>کابل</span>
+                  <span className="opacity-60" style={{ color: accent.color }}>
+                    ·
+                  </span>
+                  <span className="font-semibold" style={{ color: accent.color }}>
+                    کابل
+                  </span>
                 </div>
               </div>
             </div>
@@ -563,11 +565,7 @@ export function LatestArticles({
               {/*  EDITORIAL DIVIDER + AD STRIP (one small ad)                   */}
               {/* ============================================================== */}
               {adForYou && (
-                <EditorialAdStrip
-                  ad={adForYou}
-                  accentColor={accent.color}
-                  eyebrow="پیشنهاد ویژه"
-                />
+                <EditorialAdStrip ad={adForYou} accentColor={accent.color} eyebrow="پیشنهاد ویژه" />
               )}
 
               {/* ============================================================== */}
@@ -600,7 +598,11 @@ export function LatestArticles({
                     const right = list.slice(half);
                     return (
                       <>
-                        <ListColumn posts={left} bookmarked={bookmarked} onToggleBookmark={toggleBookmark} />
+                        <ListColumn
+                          posts={left}
+                          bookmarked={bookmarked}
+                          onToggleBookmark={toggleBookmark}
+                        />
                         <ListColumn
                           posts={right}
                           className="hidden md:block"
@@ -618,7 +620,10 @@ export function LatestArticles({
               {/* ============================================================== */}
               {visiblePosts[0]?.excerpt && (
                 <QuoteHighlight
-                  text={visiblePosts[0].excerpt.replace(/<[^>]+>/g, ' ').trim().slice(0, 220)}
+                  text={visiblePosts[0].excerpt
+                    .replace(/<[^>]+>/g, ' ')
+                    .trim()
+                    .slice(0, 220)}
                   authorName={visiblePosts[0].author?.name ?? 'نویسنده'}
                   accentColor={accent.color}
                 />
@@ -769,7 +774,10 @@ function HeroCard({
             </h3>
             {post.excerpt && (
               <p className="mt-2 text-[12.5px] sm:text-[13.5px] leading-[1.7] text-white/85 line-clamp-2 sm:line-clamp-3 max-w-2xl text-pretty">
-                {post.excerpt.replace(/<[^>]+>/g, ' ').trim().slice(0, 200)}
+                {post.excerpt
+                  .replace(/<[^>]+>/g, ' ')
+                  .trim()
+                  .slice(0, 200)}
                 {post.excerpt.length > 200 ? '…' : ''}
               </p>
             )}
@@ -1297,7 +1305,9 @@ function InlineAdBanner({
           ) : (
             <div
               className="absolute inset-0"
-              style={{ background: `linear-gradient(135deg, ${accentColor}40 0%, ${accentColor}10 100%)` }}
+              style={{
+                background: `linear-gradient(135deg, ${accentColor}40 0%, ${accentColor}10 100%)`,
+              }}
               aria-hidden
             />
           )}
@@ -1414,7 +1424,8 @@ function QuoteHighlight({
             نکته‌ی کلیدی
           </div>
           <blockquote className="text-[14px] sm:text-[15.5px] lg:text-[16.5px] leading-[1.7] text-neutral-800 dark:text-neutral-200 text-balance font-medium">
-            «{text}{text.length >= 220 ? '…' : ''}»
+            «{text}
+            {text.length >= 220 ? '…' : ''}»
           </blockquote>
           <figcaption className="mt-2 text-[11px] sm:text-[12px] text-neutral-500 dark:text-neutral-400 font-vazirmatn">
             از مقاله‌ی «{authorName}»
@@ -1515,10 +1526,8 @@ function FooterActions({
           backgroundImage:
             'linear-gradient(to right, var(--hairline) 1px, transparent 1px), linear-gradient(to bottom, var(--hairline) 1px, transparent 1px)',
           backgroundSize: '24px 24px',
-          maskImage:
-            'radial-gradient(ellipse 70% 60% at center, black 35%, transparent 75%)',
-          WebkitMaskImage:
-            'radial-gradient(ellipse 70% 60% at center, black 35%, transparent 75%)',
+          maskImage: 'radial-gradient(ellipse 70% 60% at center, black 35%, transparent 75%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at center, black 35%, transparent 75%)',
         }}
       />
 
@@ -1583,7 +1592,11 @@ function FooterActions({
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
           )}
         >
-          <Library className="h-3.5 w-3.5 text-neutral-500 dark:text-neutral-400" strokeWidth={2.25} aria-hidden />
+          <Library
+            className="h-3.5 w-3.5 text-neutral-500 dark:text-neutral-400"
+            strokeWidth={2.25}
+            aria-hidden
+          />
           <span>آرشیو کامل</span>
           <ArrowLeft
             className="h-3.5 w-3.5 transition-transform duration-300 group-hover/all:-translate-x-1"

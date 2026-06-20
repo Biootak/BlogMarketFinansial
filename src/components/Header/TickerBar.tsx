@@ -10,17 +10,10 @@
 import { Marquee } from '@/components/ModernTrending/effects/Marquee';
 import { TickerShell } from '@/components/TickerShell';
 import { cn } from '@/lib/utils';
-
-export interface TickerItem {
-  id: string;
-  name: string;
-  symbol?: string;
-  value: string;
-  change?: number;
-}
+import type { HeaderTickerItem } from '@/types/types';
 
 export interface TickerBarProps {
-  items: TickerItem[];
+  items: HeaderTickerItem[];
   className?: string;
   /** سرعت marquee — منفی برای RTL scroll */
   speed?: number;
@@ -39,10 +32,7 @@ export function TickerBar({ items, className, speed = -30 }: TickerBarProps) {
     >
       <Marquee speed={speed} className="h-full" repeat={3} pauseOnHold>
         {items.map((item) => (
-          <div
-            key={item.id}
-            className="flex shrink-0 items-center gap-1.5 px-3 py-1"
-          >
+          <div key={item.id} className="flex shrink-0 items-center gap-1.5 px-3 py-1">
             <span className="text-[10px] font-medium uppercase tracking-[0.04em] text-neutral-500 dark:text-neutral-400">
               {item.name}
             </span>
@@ -67,10 +57,7 @@ export function TickerBar({ items, className, speed = -30 }: TickerBarProps) {
                 {Math.abs(item.change).toFixed(2)}%
               </span>
             )}
-            <span
-              aria-hidden
-              className="ms-2 h-3 w-px bg-neutral-300/60 dark:bg-neutral-700/60"
-            />
+            <span aria-hidden className="ms-2 h-3 w-px bg-neutral-300/60 dark:bg-neutral-700/60" />
           </div>
         ))}
       </Marquee>
