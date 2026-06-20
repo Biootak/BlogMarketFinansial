@@ -28,9 +28,16 @@ export async function invalidatePublicCache() {
 }
 
 export async function invalidateHomePageCache() {
+  // 2026-06-19: `posts` is the umbrella tag that getLatestPosts,
+  // getPublishedPostCount, getPosts (gallery) and getFeaturedPosts all
+  // listen on. Without busting it, a freshly published post stays stale
+  // on the home page for up to 60s.
+  revalidateTag('posts');
   revalidateTag('featured-posts');
   revalidateTag('latest-posts');
   revalidateTag('popular-posts');
+  revalidateTag('gallery-posts');
+  revalidateTag('top-authors');
 }
 
 export async function invalidatePostCache(postId: string) {

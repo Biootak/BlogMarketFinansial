@@ -144,6 +144,44 @@ export async function getLatestPosts({
   return getCachedLatestPosts(count, skip, category);
 }
 
+/* ---------- CACHED PUBLISHED-POST COUNT ----------
+ * 2026-06-19: PulseSection ran a raw `prisma.post.count` with the same
+ * featuredImage filter as fetchLatestPosts on EVERY home render — an
+ * uncached DB round-trip on the hottest page. Same WHERE clause as
+ * fetchLatestPosts (minus the category branch, which the count UI does
+ * not need) so the number stays consistent with what getLatestPosts
+ * paginates over. 60s revalidate, tag `posts` so every publish invalidates.
+ */
+async function fetchPublishedPostCount(): Promise<number> {
+  try {
+    return await prisma.post.count({
+      where: {
+        status: PostStatus.PUBLISHED,
+        featuredImage: { not: null },
+        AND: [{ featuredImage: { not: '' } }, { featuredImage: { not: ' ' } }],
+      },
+    });
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[getPublishedPostCount] error:', error);
+    }
+    return 0;
+  }
+}
+
+const getCachedPublishedPostCount = unstable_cache(
+  fetchPublishedPostCount,
+  ['published-post-count', CACHE_VERSION],
+  {
+    revalidate: 60,
+    tags: ['posts', 'latest-posts'],
+  },
+);
+
+export async function getPublishedPostCount(): Promise<number> {
+  return getCachedPublishedPostCount();
+}
+
 export async function invalidatePostsCache() {
   revalidatePath('/posts');
   revalidateTag('posts');

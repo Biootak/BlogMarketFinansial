@@ -8,6 +8,7 @@ import { auth } from '@/auth';
 import { checkRole, generateSlug, generateUniqueId, validateSlug } from '@/lib/utils';
 import { createUniqueSlug } from '@/lib/slugUtils';
 import { logActivity } from '@/lib/activity-logger';
+import { invalidateHomePageCache } from '@/actions/cacheActions';
 import type {
   ActionResult,
   CreatePostInput,
@@ -102,6 +103,10 @@ export async function createPost(data: CreatePostInput): Promise<ActionResult<Po
     revalidateTag('post-slug');
     revalidateTag('archive');
     revalidateTag('dashboard-stats');
+    // 2026-06-19: bust home-page data caches so a newly published/updated
+    // post appears on the home grid + count immediately instead of after
+    // the 60s revalidate window.
+    await invalidateHomePageCache();
 
     // ثبت فعالیت
     await logActivity('ایجاد پست', `پست "${post.title}" ایجاد شد`);
@@ -243,6 +248,7 @@ export async function updatePost(
     revalidateTag('post-slug');
     revalidateTag('archive');
     revalidateTag('dashboard-stats');
+    await invalidateHomePageCache();
 
     // ثبت فعالیت
     await logActivity('ویرایش پست', `پست "${post.title}" ویرایش شد`);
@@ -365,6 +371,9 @@ export async function updatePostStatus(
     revalidateTag('post-slug');
     revalidateTag('archive');
     revalidateTag('dashboard-stats');
+    // 2026-06-19: status change (draft→published or unpublish) must
+    // immediately reflect on the home grid and post count.
+    await invalidateHomePageCache();
 
     // ثبت فعالیت
     const statusLabels: Record<PostStatus, string> = {
@@ -462,6 +471,7 @@ export async function deletePost(postId: string): Promise<ActionResult> {
     revalidateTag('archive');
     revalidateTag('comments');
     revalidateTag('dashboard-stats');
+    await invalidateHomePageCache();
 
     // ثبت فعالیت
     await logActivity('حذف پست', `پست "${postTitle}" حذف شد`);

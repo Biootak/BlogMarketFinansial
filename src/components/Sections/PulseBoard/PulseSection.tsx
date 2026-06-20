@@ -1,11 +1,10 @@
-import { getLatestPosts } from '@/actions/getLatestPosts';
+import { getLatestPosts, getPublishedPostCount } from '@/actions/getLatestPosts';
 import { getActiveAdvertisements } from '@/actions/advertisementActions';
 import { getMarketTickerData } from '@/actions/marketTickerActions';
 import { getLatestPostCategories } from '@/actions/getLatestPostCategories';
 import { getRateListsWithCrypto } from '@/actions/rate-lists';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Advertisement, PostWithRelations, RateListData } from '@/types/types';
-import prisma from '@/lib/db';
 import LatestArticles from './LatestArticles';
 
 /* ---------- Helpers ---------- */
@@ -26,37 +25,29 @@ export interface PulseSectionProps {
 }
 
 export default async function PulseSection({ className = '' }: PulseSectionProps) {
-  // 1) Categories — for filter chips
-  const categoriesData = await getLatestPostCategories();
+  // 24 پست = 9 اولیه + 3 دست 10 تایی آماده (بدون round-trip شبکه)
+  const INITIAL = 24;
+
+  // 2026-06-19: همه‌ی واکشی‌ها (شامل categories و totalCount) در یک
+  // Promise.all. قبلاً categories جدا awaited می‌شد و totalCount یک
+  // uncached `prisma.post.count` بود — یعنی هر رندر home دو round-trip
+  // اضافه به DB (Neon cross-region) می‌زد. حالا categories از قبل cached
+  // است و totalCount از `getPublishedPostCount` (unstable_cache) میاد.
+  const [tickerData, adsResult, latestPosts, totalCount, rateLists, categoriesData] =
+    await Promise.all([
+      getMarketTickerData(),
+      getActiveAdvertisements({ limit: 2, size: 'MEDIUM' }),
+      getLatestPosts({ count: INITIAL, skip: 0 }),
+      getPublishedPostCount(),
+      // dedup داخل لیست + fallback به crypto از Exir در صورت خالی بودن DB
+      getRateListsWithCrypto(),
+      getLatestPostCategories(),
+    ]);
+
   const categories = [
     { name: 'همه', slug: 'all' },
     ...categoriesData.map((c) => ({ name: c.name, slug: c.slug })),
   ];
-
-  // 2) Posts — یک صفحه‌ی بزرگ برای بازطراحی
-  // 24 پست = 9 اولیه + 3 دست 10 تایی آماده (بدون round-trip شبکه)
-  const INITIAL = 24;
-
-  // 3) Ticker + Ads + Posts + RateLists (موازی)
-  const [tickerData, adsResult, latestPosts, totalCount, rateLists] = await Promise.all([
-    getMarketTickerData(),
-    getActiveAdvertisements({ limit: 2, size: 'MEDIUM' }),
-    getLatestPosts({ count: INITIAL, skip: 0 }),
-    prisma.post.count({
-      where: {
-        status: 'PUBLISHED',
-        featuredImage: {
-          not: null,
-        },
-        AND: [
-          { featuredImage: { not: '' } },
-          { featuredImage: { not: ' ' } },
-        ],
-      },
-    }),
-    // dedup داخل لیست + fallback به crypto از Exir در صورت خالی بودن DB
-    getRateListsWithCrypto(),
-  ]);
 
   const posts: PostWithRelations[] = dedupeById(latestPosts);
   const initialAds: Advertisement[] = adsResult.success ? (adsResult.data ?? []) : [];

@@ -1,6 +1,8 @@
 'use server';
 
 import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
+import { revalidateTag } from '@/lib/revalidate';
 import prisma from '@/lib/db';
 import { generateColor, generateSlug, validateSlug } from '@/lib/utils';
 import { logActivity } from '@/lib/activity-logger';
@@ -205,6 +207,10 @@ export async function createCategory(
     // ثبت فعالیت
     await logActivity('ایجاد دسته‌بندی', `دسته‌بندی "${name}" ایجاد شد`);
 
+    // 2026-06-19: bust category caches so the home page + archive pick
+    // up the new category without waiting for the 60s TTL.
+    revalidateTag('categories');
+
     return {
       success: true,
       message: 'دسته‌بندی با موفقیت ایجاد شد.',
@@ -347,6 +353,8 @@ export async function updateCategory(
     // ثبت فعالیت
     await logActivity('ویرایش دسته‌بندی', `دسته‌بندی "${name}" ویرایش شد`);
 
+    revalidateTag('categories');
+
     return {
       success: true,
       message: 'دسته‌بندی با موفقیت به‌روزرسانی شد.',
@@ -391,6 +399,8 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
 
     // ثبت فعالیت
     await logActivity('حذف دسته‌بندی', `دسته‌بندی "${categoryName}" حذف شد`);
+
+    revalidateTag('categories');
 
     return {
       success: true,
@@ -474,64 +484,81 @@ export const getAllParentCategories = cache(async (): Promise<ActionResult<Taxon
 });
 
 /**
- * 2026-06-14: returns top-N categories by post count for the home page
- * trending topics section. Single source of truth for the format the
- * home page expects: `{ categories: TaxonomyType[] }` so that the
- * caller can do `result.data?.categories` consistently.
+ * 2026-06-19: previously wrapped only with `cache` (react.cache) which is
+ * per-request dedupe — every new request re-hit the DB. On Neon (autosuspend
+ * + cross-region RTT) that meant a fresh ~1.7s round-trip on every home-page
+ * load. Wrapping with `unstable_cache` (60s, tag `categories`) eliminates
+ * the round-trip on cache hits while the inner `cache` still dedupes
+ * multiple consumers within one render. Mirrors the `getTopAuthors` pattern.
  */
-export const getPopularCategoriesForHome = cache(
-  async (limit: number = 16): Promise<ActionResult<{ categories: TaxonomyType[] }>> => {
-    try {
-      const safeLimit = Math.max(1, Math.min(50, Math.floor(limit)));
-      const rows = await prisma.category.findMany({
-        where: { parentCategories: { none: {} } },
-        take: safeLimit,
-        orderBy: { posts: { _count: 'desc' } },
-        include: {
-          _count: { select: { posts: true } },
-          childCategories: {
-            include: { _count: { select: { posts: true } } },
-          },
+async function fetchPopularCategoriesForHomeRaw(
+  limit = 16,
+): Promise<ActionResult<{ categories: TaxonomyType[] }>> {
+  try {
+    const safeLimit = Math.max(1, Math.min(50, Math.floor(limit)));
+    const rows = await prisma.category.findMany({
+      where: { parentCategories: { none: {} } },
+      take: safeLimit,
+      orderBy: { posts: { _count: 'desc' } },
+      include: {
+        _count: { select: { posts: true } },
+        childCategories: {
+          include: { _count: { select: { posts: true } } },
         },
-      });
+      },
+    });
 
-      const categories: TaxonomyType[] = rows.map((category) => ({
-        id: category.id,
-        name: category.name,
-        slug: category.slug,
-        thumbnail: category.thumbnail,
-        taxonomy: 'category',
-        color: generateColor(category.id),
-        count: category._count.posts,
-        childCategories: category.childCategories.map((child) => ({
-          id: child.id,
-          name: child.name,
-          slug: child.slug,
-          thumbnail: child.thumbnail,
-          taxonomy: 'subcategory',
-          color: generateColor(child.id),
-          count: child._count.posts,
-          createdAt: child.createdAt,
-          updatedAt: child.updatedAt,
-        })),
-        parentCategories: [],
-        createdAt: category.createdAt,
-        updatedAt: category.updatedAt,
-      }));
+    const categories: TaxonomyType[] = rows.map((category) => ({
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      thumbnail: category.thumbnail,
+      taxonomy: 'category',
+      color: generateColor(category.id),
+      count: category._count.posts,
+      childCategories: category.childCategories.map((child) => ({
+        id: child.id,
+        name: child.name,
+        slug: child.slug,
+        thumbnail: child.thumbnail,
+        taxonomy: 'subcategory',
+        color: generateColor(child.id),
+        count: child._count.posts,
+        createdAt: child.createdAt,
+        updatedAt: child.updatedAt,
+      })),
+      parentCategories: [],
+      createdAt: category.createdAt,
+      updatedAt: category.updatedAt,
+    }));
 
-      return {
-        success: true,
-        message: 'دسته‌بندی‌های محبوب با موفقیت بازیابی شدند.',
-        data: { categories },
-      };
-    } catch (error) {
-      console.error('خطا در دریافت دسته‌بندی‌های محبوب:', error);
-      return {
-        success: false,
-        message: 'خطا در دریافت دسته‌بندی‌های محبوب. لطفاً دوباره تلاش کنید.',
-        error: error instanceof Error ? error.message : String(error),
-      };
-    }
+    return {
+      success: true,
+      message: 'دسته‌بندی‌های محبوب با موفقیت بازیابی شدند.',
+      data: { categories },
+    };
+  } catch (error) {
+    console.error('خطا در دریافت دسته‌بندی‌های محبوب:', error);
+    return {
+      success: false,
+      message: 'خطا در دریافت دسته‌بندی‌های محبوب. لطفاً دوباره تلاش کنید.',
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+const getCachedPopularCategoriesForHome = unstable_cache(
+  fetchPopularCategoriesForHomeRaw,
+  ['popular-categories-home', 'v1-2026-06-19'],
+  {
+    revalidate: 60,
+    tags: ['categories', 'popular-categories-home'],
+  },
+);
+
+export const getPopularCategoriesForHome = cache(
+  async (limit = 16): Promise<ActionResult<{ categories: TaxonomyType[] }>> => {
+    return getCachedPopularCategoriesForHome(limit);
   },
 );
 
