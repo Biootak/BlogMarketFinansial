@@ -1,375 +1,63 @@
-'use client';
+// src/app/dashboard/exchange-rates/page.tsx
+// 2026-06-20: server-side view (قبلا client-side با dialog سنگین بود).
+// لیست + RateForm جدید (DiscoveryDropdown + createMarketRate).
 
-import type React from 'react';
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { useForm, type SubmitHandler } from 'react-hook-form';
-import { HiOutlinePencil, HiOutlineTrash, HiOutlinePlus, HiOutlineCurrencyDollar } from 'react-icons/hi2';
-import {
-  createExchangeRate,
-  updateExchangeRate,
-  deleteExchangeRate,
-  getExchangeRates,
-} from '@/actions/exchange-rates';
-import type { ExchangeRateData, RateType } from '@/types/types';
-import { useToast } from '@/components/ui/use-toast';
-import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ExchangeRatesSkeleton } from '@/components/Skeletons';
-import {
-  DashboardPageHeader,
-  DashboardTableContainer,
-  DashboardTable,
-  DashboardTableHeader,
-  DashboardTableHead,
-  DashboardTableBody,
-  DashboardTableRow,
-  DashboardTableCell,
-  ActionButton,
-  PrimaryActionButton,
-  EmptyState,
-} from '@/components/Dashboard/shared/DashboardTableWrapper';
+import { getExchangeRateList } from '@/actions/market-rates';
+import { formatWithUnit } from '@/lib/market-rates/format';
+import type { MarketRateUnit } from '@/lib/market-rates';
+import RateForm from './components/RateForm';
 
-interface ExchangeRateFormValues {
-  name: string;
-  currency: string;
-  rateType: RateType;
-  buyRate: string;
-  sellRate: string;
-  singleRate: string;
-  bulkRate: string;
-  imageUrl: string | null;
-  description: string | null;
-}
+export const dynamic = 'force-dynamic';
 
-const ExchangeRatesPage: React.FC = () => {
-  const [exchangeRates, setExchangeRates] = useState<ExchangeRateData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [editingExchangeRate, setEditingExchangeRate] = useState<ExchangeRateData | null>(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const { toast } = useToast();
-
-  const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm<ExchangeRateFormValues>({
-    defaultValues: { rateType: 'BUY_SELL' },
-  });
-
-  const rateType = watch('rateType');
-
-  useEffect(() => {
-    const fetchRates = async () => {
-      setIsLoading(true);
-      const result = await getExchangeRates();
-      setExchangeRates(result);
-      setIsLoading(false);
-    };
-    fetchRates();
-  }, []);
-
-  const handleCreateSubmit: SubmitHandler<ExchangeRateFormValues> = async (data) => {
-    try {
-      const result = await createExchangeRate(data);
-      if (result.success) {
-        toast({ title: 'موفقیت', description: result.message });
-        setExchangeRates([...exchangeRates, result.data!]);
-        setShowCreateModal(false);
-        reset();
-      } else {
-        toast({ title: 'خطا', description: result.message, variant: 'destructive' });
-      }
-    } catch (error: any) {
-      toast({ title: 'خطا', description: 'خطایی در ایجاد ارز رخ داد.', variant: 'destructive' });
-    }
-  };
-
-  const handleEditSubmit: SubmitHandler<ExchangeRateFormValues> = async (data) => {
-    if (!editingExchangeRate) return;
-    const result = await updateExchangeRate(editingExchangeRate.id, data);
-    if (result.success) {
-      toast({ title: 'موفقیت', description: result.message });
-      setExchangeRates(exchangeRates.map((rate) => (rate.id === editingExchangeRate.id ? result.data! : rate)));
-      setEditingExchangeRate(null);
-      reset();
-    } else {
-      toast({ title: 'خطا', description: result.message, variant: 'destructive' });
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (window.confirm('آیا مطمئن هستید که می‌خواهید این ارز را حذف کنید؟')) {
-      const result = await deleteExchangeRate(id);
-      if (result.success) {
-        toast({ title: 'موفقیت', description: result.message });
-        setExchangeRates(exchangeRates.filter((rate) => rate.id !== id));
-      } else {
-        toast({ title: 'خطا', description: result.message, variant: 'destructive' });
-      }
-    }
-  };
-
-  const handleImageUpload = (urls: string[]) => setValue('imageUrl', urls[0]);
-  const handleImageRemove = () => setValue('imageUrl', null);
-
-  const handleEdit = (exchangeRate: ExchangeRateData) => {
-    const sanitizedExchangeRate = Object.fromEntries(
-      Object.entries(exchangeRate).map(([key, value]) => [key, value === null ? '' : value])
-    ) as ExchangeRateFormValues;
-    setEditingExchangeRate(exchangeRate);
-    reset(sanitizedExchangeRate);
-  };
-
-  const inputClassName = 'h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80';
-
-  if (isLoading) return <ExchangeRatesSkeleton />;
-
+export default async function ExchangeRatesPage() {
+  const rows = await getExchangeRateList();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 p-4 sm:p-6 lg:p-8 dark:from-neutral-900 dark:via-neutral-900 dark:to-primary-950/20" dir="rtl">
-      <DashboardPageHeader title="مدیریت ارزها" description="مشاهده و مدیریت نرخ ارزها">
-        <PrimaryActionButton onClick={() => setShowCreateModal(true)}>
-          <HiOutlinePlus className="h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
-          <span>افزودن ارز</span>
-        </PrimaryActionButton>
-      </DashboardPageHeader>
+    <div className="container py-8 space-y-8">
+      <h1 className="text-2xl font-bold">مدیریت نرخ‌های بازار</h1>
 
-      {exchangeRates.length === 0 ? (
-        <DashboardTableContainer>
-          <EmptyState
-            title="ارزی یافت نشد"
-            description="هنوز هیچ ارزی در سیستم ثبت نشده است."
-            icon={<HiOutlineCurrencyDollar className="h-8 w-8 text-neutral-400" />}
-          />
-        </DashboardTableContainer>
-      ) : (
-        <DashboardTableContainer>
-          <DashboardTable>
-            <DashboardTableHeader>
+      <RateForm />
+
+      <div>
+        <h2 className="text-xl font-bold mb-4">نرخ‌های فعلی</h2>
+        <div className="overflow-x-auto border border-neutral-200 dark:border-neutral-800 rounded-2xl">
+          <table className="w-full text-sm">
+            <thead className="bg-neutral-50 dark:bg-neutral-900">
               <tr>
-                <DashboardTableHead>نماد</DashboardTableHead>
-                <DashboardTableHead>نام</DashboardTableHead>
-                <DashboardTableHead hidden>ارز</DashboardTableHead>
-                <DashboardTableHead hidden>نوع نرخ</DashboardTableHead>
-                <DashboardTableHead>مقادیر</DashboardTableHead>
-                <DashboardTableHead>عملیات</DashboardTableHead>
+                <th className="px-3 py-2 text-right">اولویت</th>
+                <th className="px-3 py-2 text-right">نام</th>
+                <th className="px-3 py-2 text-right">Symbol</th>
+                <th className="px-3 py-2 text-right">گروه</th>
+                <th className="px-3 py-2 text-right">واحد</th>
+                <th className="px-3 py-2 text-right">مقدار</th>
+                <th className="px-3 py-2 text-right">منبع</th>
+                <th className="px-3 py-2 text-right">وضعیت</th>
               </tr>
-            </DashboardTableHeader>
-            <DashboardTableBody>
-              {exchangeRates.map((exchangeRate) => (
-                <DashboardTableRow key={exchangeRate.id}>
-                  <DashboardTableCell>
-                    {exchangeRate.imageUrl ? (
-                      <div className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-white shadow-md dark:ring-neutral-700">
-                        {/* 2026-06-14: raw <img> replaced by
-                            next/image — same resize/format benefits
-                            as the ads table. The onError handler
-                            hides the parent container now, since
-                            next/image's element is wrapped. */}
-                        <Image
-                          src={exchangeRate.imageUrl}
-                          alt={exchangeRate.currency}
-                          width={40}
-                          height={40}
-                          sizes="40px"
-                          className="h-full w-full rounded-full object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                          }}
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary-100 to-primary-200 text-primary-600 dark:from-primary-900/50 dark:to-primary-800/50 dark:text-primary-400">
-                        <HiOutlineCurrencyDollar className="h-5 w-5" />
-                      </div>
-                    )}
-                  </DashboardTableCell>
-                  <DashboardTableCell>
-                    <span className="font-medium text-neutral-900 dark:text-neutral-100">{exchangeRate.name}</span>
-                  </DashboardTableCell>
-                  <DashboardTableCell hidden>
-                    <span className="text-neutral-600 dark:text-neutral-400">{exchangeRate.currency}</span>
-                  </DashboardTableCell>
-                  <DashboardTableCell hidden>
-                    <span className="inline-flex rounded-full bg-primary-50 px-2.5 py-1 text-xs font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-400">
-                      {exchangeRate.rateType === 'BUY_SELL' ? 'خرید/فروش' : 'پرچون/عمده'}
-                    </span>
-                  </DashboardTableCell>
-                  <DashboardTableCell>
-                    {exchangeRate.rateType === 'BUY_SELL' ? (
-                      <div className="flex flex-col gap-1 text-sm">
-                        <span className="text-emerald-600 dark:text-emerald-400">خرید: {exchangeRate.buyRate || '-'}</span>
-                        <span className="text-red-600 dark:text-red-400">فروش: {exchangeRate.sellRate || '-'}</span>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col gap-1 text-sm">
-                        <span>پرچون: {exchangeRate.singleRate || '-'}</span>
-                        <span>عمده: {exchangeRate.bulkRate || '-'}</span>
-                      </div>
-                    )}
-                  </DashboardTableCell>
-                  <DashboardTableCell>
-                    <div className="flex items-center gap-2">
-                      <ActionButton variant="edit" onClick={() => handleEdit(exchangeRate)}>
-                        <HiOutlinePencil className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">ویرایش</span>
-                      </ActionButton>
-                      <ActionButton variant="delete" onClick={() => handleDelete(exchangeRate.id)}>
-                        <HiOutlineTrash className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">حذف</span>
-                      </ActionButton>
-                    </div>
-                  </DashboardTableCell>
-                </DashboardTableRow>
-              ))}
-            </DashboardTableBody>
-          </DashboardTable>
-        </DashboardTableContainer>
-      )}
-
-
-      {/* Create Modal */}
-      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent className="max-h-[90vh] w-full max-w-lg overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
-          <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-6 py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
-            <DialogTitle className="text-xl font-bold text-neutral-900 dark:text-neutral-50">افزودن ارز جدید</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit(handleCreateSubmit)} className="max-h-[calc(90vh-120px)] space-y-5 overflow-y-auto p-6">
-            <div className="grid gap-5 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نام ارز</Label>
-                <Input {...register('name', { required: 'نام ارز الزامی است' })} placeholder="نام ارز" className={inputClassName} />
-                {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">ارز</Label>
-                <Input {...register('currency', { required: 'ارز الزامی است' })} placeholder="تومان به افغانی" className={inputClassName} />
-                {errors.currency && <p className="text-xs text-red-500">{errors.currency.message}</p>}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نوع نرخ</Label>
-              <Select onValueChange={(value: RateType) => { setValue('rateType', value); if (value === 'SINGLE_BULK') { setValue('buyRate', ''); setValue('sellRate', ''); } else { setValue('singleRate', ''); setValue('bulkRate', ''); } }} defaultValue="BUY_SELL">
-                <SelectTrigger className={inputClassName}><SelectValue placeholder="انتخاب نوع نرخ" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="BUY_SELL">خرید/فروش</SelectItem>
-                  <SelectItem value="SINGLE_BULK">پرچون/عمده</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {rateType !== 'SINGLE_BULK' && (
-              <div className="grid gap-5 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نرخ خرید</Label>
-                  <Input {...register('buyRate')} placeholder="نرخ خرید" className={inputClassName} />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نرخ فروش</Label>
-                  <Input {...register('sellRate')} placeholder="نرخ فروش" className={inputClassName} />
-                </div>
-              </div>
-            )}
-            {rateType === 'SINGLE_BULK' && (
-              <div className="grid gap-5 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نرخ پرچون</Label>
-                  <Input {...register('singleRate')} placeholder="نرخ پرچون" className={inputClassName} />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نرخ عمده</Label>
-                  <Input {...register('bulkRate')} placeholder="نرخ عمده" className={inputClassName} />
-                </div>
-              </div>
-            )}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">توضیحات</Label>
-              <Input {...register('description')} placeholder="توضیحات" className={inputClassName} />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">تصویر</Label>
-              <ImageUploader onImageUpload={handleImageUpload} onImageRemove={handleImageRemove} folder="general" />
-            </div>
-            <DialogFooter className="pt-4">
-              <Button type="submit" className="w-full rounded-xl bg-gradient-to-l from-primary-500 to-primary-600 py-3 font-medium text-white shadow-lg">ایجاد ارز</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-
-      {/* Edit Modal */}
-      <Dialog open={!!editingExchangeRate} onOpenChange={() => setEditingExchangeRate(null)}>
-        <DialogContent className="max-h-[90vh] w-full max-w-lg overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
-          <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-6 py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
-            <DialogTitle className="text-xl font-bold text-neutral-900 dark:text-neutral-50">ویرایش ارز</DialogTitle>
-          </DialogHeader>
-          {editingExchangeRate && (
-            <form onSubmit={handleSubmit(handleEditSubmit)} className="max-h-[calc(90vh-120px)] space-y-5 overflow-y-auto p-6">
-              <div className="grid gap-5 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نام ارز</Label>
-                  <Input {...register('name', { required: 'نام ارز الزامی است' })} placeholder="نام ارز" className={inputClassName} />
-                  {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">ارز</Label>
-                  <Input {...register('currency', { required: 'ارز الزامی است' })} placeholder="تومان به دلار" className={inputClassName} />
-                  {errors.currency && <p className="text-xs text-red-500">{errors.currency.message}</p>}
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نوع نرخ</Label>
-                <Select onValueChange={(value: RateType) => { setValue('rateType', value); if (value === 'SINGLE_BULK') { setValue('buyRate', ''); setValue('sellRate', ''); } else { setValue('singleRate', ''); setValue('bulkRate', ''); } }} defaultValue={editingExchangeRate.rateType}>
-                  <SelectTrigger className={inputClassName}><SelectValue placeholder="انتخاب نوع نرخ" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="BUY_SELL">خرید/فروش</SelectItem>
-                    <SelectItem value="SINGLE_BULK">پرچون/عمده</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {rateType !== 'SINGLE_BULK' && (
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نرخ خرید</Label>
-                    <Input {...register('buyRate')} placeholder="نرخ خرید" className={inputClassName} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نرخ فروش</Label>
-                    <Input {...register('sellRate')} placeholder="نرخ فروش" className={inputClassName} />
-                  </div>
-                </div>
-              )}
-              {rateType === 'SINGLE_BULK' && (
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نرخ پرچون</Label>
-                    <Input {...register('singleRate')} placeholder="نرخ پرچون" className={inputClassName} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نرخ عمده</Label>
-                    <Input {...register('bulkRate')} placeholder="نرخ عمده" className={inputClassName} />
-                  </div>
-                </div>
-              )}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">توضیحات</Label>
-                <Input {...register('description')} placeholder="توضیحات" className={inputClassName} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">تصویر</Label>
-                <ImageUploader onImageUpload={handleImageUpload} onImageRemove={handleImageRemove} initialPreviews={editingExchangeRate.imageUrl ? [editingExchangeRate.imageUrl] : []} folder="general" />
-              </div>
-              <DialogFooter className="pt-4">
-                <Button type="submit" className="w-full rounded-xl bg-gradient-to-l from-primary-500 to-primary-600 py-3 font-medium text-white shadow-lg">ذخیره تغییرات</Button>
-              </DialogFooter>
-            </form>
-          )}
-        </DialogContent>
-      </Dialog>
+            </thead>
+            <tbody>
+              {rows.map((r) => {
+                const value = r.singleRate ? Number.parseFloat(r.singleRate) / (r.divisor || 1) : null;
+                return (
+                  <tr key={r.id} className="border-t border-neutral-100 dark:border-neutral-800">
+                    <td className="px-3 py-2">{r.priority}</td>
+                    <td className="px-3 py-2 font-medium">{r.displayNameFa ?? r.name}</td>
+                    <td className="px-3 py-2 font-mono text-xs">{r.symbol ?? r.currency}</td>
+                    <td className="px-3 py-2">{r.group ?? '—'}</td>
+                    <td className="px-3 py-2">{r.unit ?? '—'}</td>
+                    <td className="px-3 py-2 tabular-nums" dir="ltr">
+                      {value !== null && r.unit
+                        ? formatWithUnit(value, r.unit as MarketRateUnit, r.decimals ?? 0)
+                        : '—'}
+                    </td>
+                    <td className="px-3 py-2">{r.provider}</td>
+                    <td className="px-3 py-2">{r.active ? '✓' : '✗'}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
-};
-
-export default ExchangeRatesPage;
+}
