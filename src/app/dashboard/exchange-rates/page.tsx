@@ -15,10 +15,14 @@ export default async function ExchangeRatesPage() {
   const total = rows.length;
   const auto = rows.filter((r) => r.provider === 'auto').length;
   const manual = rows.filter((r) => r.provider === 'manual').length;
-  const lastSyncAt = rows.reduce<Date | null>(
-    (max, r) => (max === null || r.updatedAt > max ? r.updatedAt : max),
-    null,
-  );
+  // normalize: prisma Date ممکن است پس از unstable_cache و RSC serialize
+  // به string تبدیل شده باشد. در سرور به Date برگردانیم تا Client/Header
+  // همیشه نوع قابل اعتماد داشته باشد.
+  const lastSyncAt = rows.reduce<Date | null>((max, r) => {
+    const d = r.updatedAt instanceof Date ? r.updatedAt : new Date(r.updatedAt);
+    if (Number.isNaN(d.getTime())) return max;
+    return max === null || d > max ? d : max;
+  }, null);
 
   // نگاشت به فرمت مورد نیاز Client Component
   const tableRows: RateRowData[] = rows.map((r) => ({

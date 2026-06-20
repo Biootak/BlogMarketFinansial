@@ -11,9 +11,12 @@ interface HeaderProps {
 
 type Accent = 'brand' | 'emerald' | 'amber';
 
-function formatLastSync(lastSyncAt: Date | null): string {
+function formatLastSync(lastSyncAt: Date | string | null): string {
   if (!lastSyncAt) return 'هنوز همگام‌سازی نشده';
-  const diffMinutes = Math.round((Date.now() - lastSyncAt.getTime()) / 60_000);
+  // defensive: ممکن است از RSC serialization به صورت string درآمده باشد
+  const d = lastSyncAt instanceof Date ? lastSyncAt : new Date(lastSyncAt);
+  if (Number.isNaN(d.getTime())) return 'هنوز همگام‌سازی نشده';
+  const diffMinutes = Math.round((Date.now() - d.getTime()) / 60_000);
   const rtf = new Intl.RelativeTimeFormat('fa-IR', { numeric: 'auto' });
   if (Math.abs(diffMinutes) < 60) return rtf.format(diffMinutes, 'minute');
   const diffHours = Math.round(diffMinutes / 60);
