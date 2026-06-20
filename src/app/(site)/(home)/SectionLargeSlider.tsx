@@ -1,25 +1,22 @@
 import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
 import { getFeaturedPosts } from '@/actions/getFeaturedPosts';
 import { getFreeMarketRates } from '@/actions/marketRates';
-import { getNavasanRates } from '@/actions/navasanRates';
 import { getRateLists } from '@/actions/rate-lists';
 import Empty from '@/components/Empty';
-import type { ActionResult, PostWithRelations, RateListData } from '@/types/types';
+import type { PostWithRelations, RateListData } from '@/types/types';
 import { cache } from 'react';
 import DeferredDesign7 from './deferred/DeferredDesign7';
 
 const getFeaturedPostsCached = cache(getFeaturedPosts);
 const getCryptoTickerRatesCached = cache(fetchCryptoTickerRates);
 const getFreeMarketRatesCached = cache(getFreeMarketRates);
-const getNavasanRatesCached = cache(getNavasanRates);
 const getRateListsCached = cache(getRateLists);
 
 export default async function SectionLargeSlider() {
-  const [postsResult, ratesResult, marketRates, navasanRates, rateLists] = await Promise.all([
+  const [postsResult, ratesResult, marketRates, rateLists] = await Promise.all([
     getFeaturedPostsCached(3),
     getCryptoTickerRatesCached(),
     getFreeMarketRatesCached(),
-    getNavasanRatesCached(),
     getRateListsCached(),
   ]);
 
@@ -32,7 +29,9 @@ export default async function SectionLargeSlider() {
     return <Empty />;
   }
 
-  const activeRateLists: RateListData[] = rateLists.filter((l) => l.isActive);
+  const activeRateLists: RateListData[] = rateLists.filter(
+    (l: RateListData) => l.isActive,
+  );
 
   return (
     <div>
@@ -40,7 +39,6 @@ export default async function SectionLargeSlider() {
         initialPosts={postsResult.data}
         rates={ratesResult.success ? ratesResult.data : undefined}
         marketRates={marketRates}
-        navasanRates={navasanRates}
         rateLists={activeRateLists}
         className="pt-4 pb-3 md:py-5 lg:pt-5"
       />

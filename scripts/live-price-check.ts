@@ -35,7 +35,7 @@ interface FreeMarketItem {
 /*  Realistic Iranian market snapshot (خرداد ۱۴۰۵ ~ June 2026)                 */
 /* -------------------------------------------------------------------------- */
 /*                                                                             */
-/*  منبع: navasan.net (واقعی — بر اساس USDT اکسیر ≈ ۷۴,۲۰۰ تومان)              */
+/*  منبع: tgju.org (واقعی — بر اساس USDT اکسیر ≈ ۷۴,۲۰۰ تومان)              */
 /*                                                                             */
 /*  در ۱۴۰۵:                                                                    */
 /*  USD/USDT ≈ 74,200 toman                                                      */
@@ -44,10 +44,10 @@ interface FreeMarketItem {
 /*  GOLD18 ≈ 3,300,000 toman/gram (۳.۳ میلیون)                                    */
 /*  OUNCE_GOLD ≈ 2,300,000,000 toman (۲.۳ میلیارد)                                 */
 /*                                                                             */
-/*  مقدار value در Navasan به ریال است؛ تقسیم بر ۱۰ = تومان.                    */
+/*  مقدار value در TGJU به تومان است (مستقیم، نه ریال).                    */
 /* -------------------------------------------------------------------------- */
 
-const REALISTIC_NAVASAN = {
+const REALISTIC_TGJU = {
   // Forex — مقادیر به ریال (تقسیم بر ۱۰ = تومان)
   usd:    { value: '742000',   percent: '1.2' },   // 74,200 toman
   eur:    { value: '870000',   percent: '0.8' },   // 87,000 toman (GBP usually > EUR; here GBP/EUR ~1.08)
@@ -105,17 +105,17 @@ const WANTED = [
 ];
 
 function assemble(
-  navasanData: typeof REALISTIC_NAVASAN | null,
+  tgjuData: typeof REALISTIC_TGJU | null,
   usdt: typeof REALISTIC_USDT | null,
   fx: typeof REALISTIC_FX | null,
   premiumPercent: number,
 ): FreeMarketItem[] {
   const items: FreeMarketItem[] = [];
   for (const canonical of WANTED) {
-    if (navasanData) {
+    if (tgjuData) {
       const key = NAVASAN_KEY[canonical];
       if (key) {
-        const item = (navasanData as Record<string, { value: string; percent?: string } | undefined>)[key];
+        const item = (tgjuData as Record<string, { value: string; percent?: string } | undefined>)[key];
         if (item) {
           const rial = Number(item.value);
           if (Number.isFinite(rial) && rial > 0) {
@@ -125,7 +125,7 @@ function assemble(
               name: DISPLAY_NAMES[canonical] ?? canonical,
               priceToman: Math.round(rial / 10),
               change: Number.isFinite(percent) ? percent : 0,
-              source: 'navasan',
+              source: 'tgju',
             });
             continue;
           }
@@ -199,10 +199,10 @@ console.log('  تست جامع قیمت‌های تیکر — داده‌های 
 console.log('═'.repeat(70));
 
 // ============================================================
-// سناریو A: Navasan کار می‌کنه (mock شده با داده‌های واقعی)
+// سناریو A: TGJU کار می‌کنه (mock شده با داده‌های واقعی)
 // ============================================================
-console.log('\n━━━ A. Navasan primary (realistic snapshot) ━━━');
-const itemsA = assemble(REALISTIC_NAVASAN, REALISTIC_USDT, REALISTIC_FX, 0);
+console.log('\n━━━ A. TGJU primary (realistic snapshot) ━━━');
+const itemsA = assemble(REALISTIC_TGJU, REALISTIC_USDT, REALISTIC_FX, 0);
 
 console.log('\n' + 'symbol'.padEnd(12) + 'name'.padEnd(28) + 'price (T)'.padEnd(15) + 'change'.padEnd(8) + 'source');
 console.log('─'.repeat(75));
@@ -230,7 +230,7 @@ for (const it of itemsA) {
   );
   check(
     `${it.symbol}: source is one of known values`,
-    ['navasan', 'usdt', 'fx-derived', 'db'].includes(it.source),
+    ['tgju', 'usdt', 'fx-derived', 'db'].includes(it.source),
     `source=${it.source}`,
   );
 }
@@ -295,9 +295,9 @@ check(
 );
 
 // ============================================================
-// سناریو B: Navasan down → fallback USDT × premium + FX
+// سناریو B: TGJU down → fallback USDT × premium + FX
 // ============================================================
-console.log('\n━━━ B. Navasan down → USDT×premium + FX×USDT ━━━');
+console.log('\n━━━ B. TGJU down → USDT×premium + FX×USDT ━━━');
 const itemsB = assemble(null, REALISTIC_USDT, REALISTIC_FX, 1.5);
 console.log('\n' + 'symbol'.padEnd(12) + 'name'.padEnd(28) + 'price (T)'.padEnd(15) + 'change'.padEnd(8) + 'source');
 console.log('─'.repeat(75));
@@ -323,7 +323,7 @@ check('B: EUR source = fx-derived', eurB.source === 'fx-derived', `got=${eurB.so
 check('B: GBP = 0.746 × 74,200 = 55,353', gbpB.priceToman === 55353, `got=${gbpB.priceToman}`);
 check('B: AED = 3.67 × 74,200 = 272,314', aedB.priceToman === 272314, `got=${aedB.priceToman}`);
 
-check('B: no SEKKEH (Navasan down, no DB in this test)', !itemsB.some((i) => i.symbol === 'SEKKEH'), '');
+check('B: no SEKKEH (TGJU down, no DB in this test)', !itemsB.some((i) => i.symbol === 'SEKKEH'), '');
 
 // ============================================================
 // سناریو C: ضریب طلایی متفاوت — تست ۰٪ و ۳٪
@@ -350,29 +350,29 @@ check('C: premium 3% = 76,426', usd30 === 76426, `got=${usd30}`);
 check('C: premium 5% = 77,910', usd50 === 77910, `got=${usd50}`);
 
 // ============================================================
-// سناریو D: Navasan ناقص (فقط چند آیتم) + USDT + FX
+// سناریو D: TGJU ناقص (فقط چند آیتم) + USDT + FX
 // ============================================================
-console.log('\n━━━ D. Navasan partial (only USD) + USDT + FX ━━━');
+console.log('\n━━━ D. TGJU partial (فقط USD) + USDT + FX ━━━');
 // Cast به `any` چون این سناریو عمداً ناقصه تا partial coverage رو تست کنه
-const partialNavasan: any = {
-  usd: REALISTIC_NAVASAN.usd,
-  sekkeh: REALISTIC_NAVASAN.sekkeh,  // has SEKKEH but not EUR
+const partialTgju: any = {
+  usd: REALISTIC_TGJU.usd,
+  sekkeh: REALISTIC_TGJU.sekkeh,  // has SEKKEH but not EUR
 };
-const itemsD = assemble(partialNavasan, REALISTIC_USDT, REALISTIC_FX, 1.5);
+const itemsD = assemble(partialTgju, REALISTIC_USDT, REALISTIC_FX, 1.5);
 const usdD = itemsD.find((i) => i.symbol === 'USD')!;
 const eurD = itemsD.find((i) => i.symbol === 'EUR')!;
 const sekkehD = itemsD.find((i) => i.symbol === 'SEKKEH')!;
 const nimD = itemsD.find((i) => i.symbol === 'NIM');
 
-console.log(`  USD source: ${usdD.source} (expected: navasan)`);
+console.log(`  USD source: ${usdD.source} (expected: tgju)`);
 console.log(`  EUR source: ${eurD.source} (expected: fx-derived)`);
-console.log(`  SEKKEH source: ${sekkehD.source} (expected: navasan)`);
-console.log(`  NIM source: ${nimD?.source ?? '(skipped)'} (expected: skipped — NIM not in Navasan, no FX)`);
+console.log(`  SEKKEH source: ${sekkehD.source} (expected: tgju)`);
+console.log(`  NIM source: ${nimD?.source ?? '(skipped)'} (expected: skipped — NIM not in TGJU, no FX)`);
 
-check('D: USD from Navasan', usdD.source === 'navasan', '');
-check('D: EUR from fx-derived (not in Navasan)', eurD.source === 'fx-derived', '');
-check('D: SEKKEH from Navasan', sekkehD.source === 'navasan', '');
-check('D: NIM correctly skipped (not in Navasan, no FX)', nimD === undefined, '');
+check('D: USD from TGJU', usdD.source === 'tgju', '');
+check('D: EUR from fx-derived (not in TGJU)', eurD.source === 'fx-derived', '');
+check('D: SEKKEH from TGJU', sekkehD.source === 'tgju', '');
+check('D: NIM correctly skipped (not in TGJU, no FX)', nimD === undefined, '');
 
 // ============================================================
 // نتیجه‌ی نهایی

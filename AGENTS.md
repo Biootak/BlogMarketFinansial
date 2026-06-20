@@ -11,7 +11,7 @@
 - `src/app/api/` — route handlers (`auth/[...nextauth]`, `upload`, `uploads/[...path]`, `public/*`, `pageview`, `reports/*`).
 - `src/app/setup/` — bootstrap page that creates the first `SUPER_ADMIN`. **IP-gated in production** by `ALLOWED_SETUP_IPS`.
 - `src/actions/*.ts` — every file starts with `'use server';`. Write paths here are the only place that can `revalidateTag`.
-- `src/lib/` — `db.ts` (Prisma singleton), `auth.ts`, `rate-limiter.ts` (Upstash Redis + in-memory LRU fallback), `storage.ts` (S3/Liara), `revalidate.ts` (Next-16-safe `revalidateTag` wrapper), `exchange-rates.ts`, `navasan.ts`, `freeMarketRates.ts`.
+- `src/lib/` — `db.ts` (Prisma singleton), `auth.ts`, `rate-limiter.ts` (Upstash Redis + in-memory LRU fallback), `storage.ts` (S3/Liara), `revalidate.ts` (Next-16-safe `revalidateTag` wrapper), `exchange-rates.ts`, `tgju.ts` (scraper client), `freeMarketRates.ts`.
 - `src/components/ui/` — shadcn-style primitives. Do not recreate; add new components there.
 - `prisma/` — `schema.prisma`, one-time `migrations/20240822064751_biotak/`, `seed.js` (idempotent, covers 22 models).
 
@@ -35,7 +35,7 @@ Postgres is provided by `docker-compose.yml` (`registry.docker.ir/library/postgr
 
 ## Required env (.env.example is the source of truth)
 
-`DATABASE_URL`, `AUTH_SECRET` (generate with `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`), `NEXTAUTH_URL`, `AUTH_GOOGLE_ID/SECRET`, `AUTH_GITHUB_ID/SECRET`, `RESEND_API_KEY`, `LIARA_ENDPOINT/ACCESS_KEY/SECRET_KEY/BUCKET_NAME`, `TELEGRAM_BOT_TOKEN/ADMIN_CHAT_ID`, `NEXT_PUBLIC_SENTRY_DSN/SENTRY_ORG/SENTRY_PROJECT/SENTRY_AUTH_TOKEN`, `UPSTASH_REDIS_REST_URL/TOKEN`, `NEXT_PUBLIC_APP_URL`, `ALLOWED_SETUP_IPS`, `DEBUG_MODE`, `USDT_PREMIUM_PERCENT`, `NAVASAN_API_KEY` (optional).
+`DATABASE_URL`, `AUTH_SECRET` (generate with `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`), `NEXTAUTH_URL`, `AUTH_GOOGLE_ID/SECRET`, `AUTH_GITHUB_ID/SECRET`, `RESEND_API_KEY`, `LIARA_ENDPOINT/ACCESS_KEY/SECRET_KEY/BUCKET_NAME`, `TELEGRAM_BOT_TOKEN/ADMIN_CHAT_ID`, `NEXT_PUBLIC_SENTRY_DSN/SENTRY_ORG/SENTRY_PROJECT/SENTRY_AUTH_TOKEN`, `UPSTASH_REDIS_REST_URL/TOKEN`, `NEXT_PUBLIC_APP_URL`, `ALLOWED_SETUP_IPS`, `DEBUG_MODE`, `USDT_PREMIUM_PERCENT`, `CRON_SECRET` (for `/api/cron/sync-bazaar`; random 32+ chars). `TGJU_SCRAPER_ENABLED` (default `true`; set `false` to disable the TGJU scraper without redeploying).
 
 `NEXT_PUBLIC_SENTRY_DSN` + `NODE_ENV=production` is what triggers Sentry wrapping in `next.config.ts` — leaving it unset in dev avoids an extra middleware hop.
 
@@ -53,6 +53,7 @@ Postgres is provided by `docker-compose.yml` (`registry.docker.ir/library/postgr
 - **Cache tag conventions** used by `unstable_cache` wrappers and `cacheActions.ts`: `posts`, `archive`, `featured-posts`, `latest-posts`, `popular-posts`, `post-{id}`, `post-slug`, `post-by-slug`, `comments`, `categories`, `tags`, `sidebar-data`, `dashboard-stats`, `ticker`, `exchange-rates`, `header-ad`, `advertisements`, `rate-lists`, `dashboard-{section}`. New write paths should invalidate the matching tag(s).
 - **Setup bootstrap**: visit `/setup` once after migrations to create the initial `SUPER_ADMIN`. In production the server action enforces `ALLOWED_SETUP_IPS`. After a SUPER_ADMIN exists the action refuses to create another.
 - **Debug middleware** by setting `DEBUG_MODE=true`; it logs to `console.log` for `/dashboard/*` requests.
+- **Bazaar rates sync (TGJU scraping)**: `/api/cron/sync-bazaar` scrapes `tgju.org` (ArvanCloud-fronted, realistic browser UA, 12s timeout) and upserts 19 currencies into `ExchangeRate` rows. Auth is `CRON_SECRET` (Bearer header or `?secret=` query). Schedule every 10 min via Vercel Cron or external cron. On scrape failure the route returns `502` and DB stays untouched (last successful values remain). Disable temporarily with `TGJU_SCRAPER_ENABLED=false` (falls back to USDT-derived + FX).
 
 ## Style / tooling
 

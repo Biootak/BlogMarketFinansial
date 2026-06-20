@@ -4,7 +4,7 @@
  * منبع داده‌ی تیکر بازار آزاد (دلار، یورو، طلا، سکه).
  *
  * اولویت برای هر ارز (manual یعنی DB = آخرین چاره):
- *   1) Navasan API    (اگه NAVASAN_API_KEY تنظیم شده و فراخوانی موفق باشه)
+ *   1) TGJU scraper (رایگان، بدون کلید، از tgju.org)
  *   2) Auto-derive    (رایگان، همیشه در دسترس):
  *                        - USD از قیمت تتر (Exir) × ضریب طلایی
  *                        - سایر ارزها از FX جهانی × USD
@@ -16,7 +16,7 @@
 
 import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
 import prisma from '@/lib/db';
-import { fetchNavasanLatest, type NavasanResponse } from '@/lib/navasan';
+import { type TgjuResponse, fetchTgjuLatest } from '@/lib/tgju';
 
 const EXR_BASE = 'https://api.exchangerate-api.com/v4/latest/USD';
 const REQUEST_TIMEOUT_MS = 8_000;
@@ -33,34 +33,36 @@ function getUsdtPremiumPercent(): number {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Symbol mapping (canonical ↔ Navasan key ↔ FX key)                          */
+/*  Symbol mapping (canonical ↔ TGJU key ↔ FX key)                            */
 /* -------------------------------------------------------------------------- */
 /*                                                                             */
 /*  نگاشت از نام استاندارد ارز (USD, EUR, SEKKEH, ...) به کلید واقعی          */
-/*  Navasan در پاسخ API. مثلاً Navasan کلید "try" داره نه "try_".              */
+/*  در جدول tgju.org. مثلاً TGJU کلید "price_dollar_rl" داره برای دلار.       */
 /*                                                                             */
 
-const NAVASAN_KEY: Record<string, string> = {
-  USD: 'usd',
-  EUR: 'eur',
-  GBP: 'gbp',
-  AED: 'aed',
-  CHF: 'chf',
-  CAD: 'cad',
-  AUD: 'aud',
-  CNY: 'cny',
-  JPY: 'jpy',
-  RUB: 'rub',
-  INR: 'inr',
-  TRY: 'try', // ⚠️ Navasan returns "try" — not "try_"
-  SEKKEH: 'sekkeh',
-  BAHAR: 'bahar',
-  NIM: 'nim',
-  ROB: 'rob',
-  GERAMI: 'gerami',
-  GOLD18: '18ayar',
-  ABSHODEH: 'abshodeh',
-  OUNCE_GOLD: 'xau',
+const TGJU_KEY: Record<string, string> = {
+  // Forex (TGJU prefix: "price_")
+  USD: 'price_dollar_rl',
+  EUR: 'price_eur',
+  GBP: 'price_gbp',
+  AED: 'price_aed',
+  CHF: 'price_chf',
+  CAD: 'price_cad',
+  AUD: 'price_aud',
+  CNY: 'price_cny',
+  JPY: 'price_jpy',
+  RUB: 'price_rub',
+  INR: 'price_inr',
+  TRY: 'price_try',
+  // Coins & gold (TGJU key برابر با canonical یا با prefix متفاوت)
+  SEKKEH: 'retail_sekee', // قیمت «محرم» (خرده‌فروشی) سکه امامی
+  BAHAR: 'retail_sekeb', // سکه بهار آزادی
+  NIM: 'retail_nim', // نیم سکه
+  ROB: 'retail_rob', // ربع سکه
+  GERAMI: 'retail_gerami', // سکه گرمی
+  GOLD18: 'geram18', // طلای ۱۸ عیار (گرم)
+  ABSHODEH: 'mesghal', // مثقال طلای آبشده
+  OUNCE_GOLD: 'ons', // انس طلا (جهانی)
 };
 
 const DISPLAY_NAMES: Record<string, string> = {
@@ -88,68 +90,108 @@ const DISPLAY_NAMES: Record<string, string> = {
 
 const WANTED_CANONICAL: readonly string[] = [
   // Forex
-  'USD', 'EUR', 'GBP', 'AED', 'CHF', 'CAD', 'AUD', 'CNY', 'JPY', 'RUB', 'INR', 'TRY',
+  'USD',
+  'EUR',
+  'GBP',
+  'AED',
+  'CHF',
+  'CAD',
+  'AUD',
+  'CNY',
+  'JPY',
+  'RUB',
+  'INR',
+  'TRY',
   // Coins & gold
-  'SEKKEH', 'NIM', 'ROB', 'GERAMI', 'GOLD18', 'OUNCE_GOLD',
+  'SEKKEH',
+  'NIM',
+  'ROB',
+  'GERAMI',
+  'GOLD18',
+  'OUNCE_GOLD',
 ];
 
 const CRYPTO_LIKE = new Set([
-  'BTC', 'ETH', 'USDT', 'XRP', 'LTC', 'BCH', 'EOS',
-  'XLM', 'TRX', 'LINK', 'UNI', 'AAVE', 'DOT', 'ADA',
-  'DOGE', 'SHIB', 'MATIC', 'SOL', 'AVAX', 'ATOM', 'FTM',
-  'SAND', 'MANA', 'AXS', 'BNB', 'DASH',
+  'BTC',
+  'ETH',
+  'USDT',
+  'XRP',
+  'LTC',
+  'BCH',
+  'EOS',
+  'XLM',
+  'TRX',
+  'LINK',
+  'UNI',
+  'AAVE',
+  'DOT',
+  'ADA',
+  'DOGE',
+  'SHIB',
+  'MATIC',
+  'SOL',
+  'AVAX',
+  'ATOM',
+  'FTM',
+  'SAND',
+  'MANA',
+  'AXS',
+  'BNB',
+  'DASH',
 ]);
 
 /* -------------------------------------------------------------------------- */
 /*  منبع داده برای هر آیتم                                                    */
 /* -------------------------------------------------------------------------- */
 
-export type MarketSource = 'navasan' | 'usdt' | 'fx-derived' | 'db';
+export type MarketSource = 'tgju' | 'usdt' | 'fx-derived' | 'db';
 
 export interface FreeMarketItem {
-  symbol: string;       // canonical uppercase: 'USD', 'EUR', 'SEKKEH', ...
-  name: string;         // نام فارسی
-  priceToman: number;   // قیمت به تومان
-  change: number;       // درصد تغییر (0 اگه موجود نباشه)
+  symbol: string; // canonical uppercase: 'USD', 'EUR', 'SEKKEH', ...
+  name: string; // نام فارسی
+  priceToman: number; // قیمت به تومان
+  change: number; // درصد تغییر (0 اگه موجود نباشه)
   source: MarketSource;
   /** کلید اصلی در منبع — برای دیباگ. */
   rawKey?: string;
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Step 1 — Navasan                                                            */
+/*  Step 1 — TGJU (scraper)                                                   */
 /* -------------------------------------------------------------------------- */
 
-interface ParsedNavasan {
+interface ParsedTgju {
   priceToman: number;
   change: number;
   rawKey: string;
 }
 
-function parseNavasanItem(value: unknown): ParsedNavasan | null {
+/**
+ * پارس یک آیتم از TgjuResponse.
+ * ساختار: `{ value: number; change: number }` که قبلاً در `parseTgjuHtml`
+ * ساخته شده (با حذف کاماها و تبدیل به عدد).
+ */
+function parseTgjuItem(value: unknown): ParsedTgju | null {
   if (!value || typeof value !== 'object') return null;
-  const v = value as { value?: string; percent?: string };
+  const v = value as { value?: number; change?: number };
   const toman = Number(v.value);
   if (!Number.isFinite(toman) || toman <= 0) return null;
-  const percent = Number(v.percent);
-  // Navasan مقدار `value` را به تومان برمی‌گردونه (نه ریال). قبلاً در اینجا
-  // `/10` می‌زدیم که عدد نمایشی ۱۰ برابر کمتر از واقع بود. حالا همان مقدار
-  // خام استفاده می‌شه و دیگر تبدیل واحدی انجام نمی‌شه.
+  const change = Number(v.change ?? 0);
   return {
     priceToman: Math.round(toman),
-    change: Number.isFinite(percent) ? percent : 0,
+    change: Number.isFinite(change) ? change : 0,
     rawKey: '',
   };
 }
 
-/** نگاشت canonical → item از Navasan. */
-function buildNavasanMap(data: NavasanResponse | null): Map<string, ParsedNavasan> {
-  const out = new Map<string, ParsedNavasan>();
+/** نگاشت canonical → item از TGJU. */
+function buildTgjuMap(data: TgjuResponse | null): Map<string, ParsedTgju> {
+  const out = new Map<string, ParsedTgju>();
   if (!data) return out;
   for (const canonical of WANTED_CANONICAL) {
-    const key = NAVASAN_KEY[canonical];
+    const key = TGJU_KEY[canonical];
     if (!key) continue;
-    const item = parseNavasanItem(data[key]);
+    const item = parseTgjuItem(data[key]);
     if (item) {
       item.rawKey = key;
       out.set(canonical, item);
@@ -158,17 +200,20 @@ function buildNavasanMap(data: NavasanResponse | null): Map<string, ParsedNavasa
   return out;
 }
 
-async function fetchNavasanMap(): Promise<Map<string, ParsedNavasan>> {
-  const res = await fetchNavasanLatest();
+async function fetchTgjuMap(): Promise<Map<string, ParsedTgju>> {
+  const res = await fetchTgjuLatest();
   if (!res.ok || !res.data) return new Map();
-  return buildNavasanMap(res.data);
+  return buildTgjuMap(res.data);
 }
 
 /* -------------------------------------------------------------------------- */
 /*  Step 2 — USDT (Exir)                                                       */
 /* -------------------------------------------------------------------------- */
 
-interface UsdtRate { toman: number; change: number; }
+interface UsdtRate {
+  toman: number;
+  change: number;
+}
 
 async function getUsdtRate(): Promise<UsdtRate | null> {
   try {
@@ -188,7 +233,9 @@ async function getUsdtRate(): Promise<UsdtRate | null> {
 /*  Step 3 — Global FX (exchangerate-api.com)                                  */
 /* -------------------------------------------------------------------------- */
 
-interface FxMap { [currency: string]: number; }
+interface FxMap {
+  [currency: string]: number;
+}
 
 async function getGlobalFxRates(): Promise<FxMap | null> {
   const controller = new AbortController();
@@ -220,7 +267,11 @@ function getFxKey(canonical: string): string | null {
 /*  Step 4 — DB rows                                                            */
 /* -------------------------------------------------------------------------- */
 
-interface DbRow { symbol: string; name: string; price: number; }
+interface DbRow {
+  symbol: string;
+  name: string;
+  price: number;
+}
 
 async function getDbMarketItems(): Promise<Map<string, DbRow>> {
   try {
@@ -235,7 +286,7 @@ async function getDbMarketItems(): Promise<Map<string, DbRow>> {
       if (map.has(sym)) continue;
       const value = row.buyRate || row.singleRate;
       if (!value) continue;
-      const price = parseFloat(value);
+      const price = Number.parseFloat(value);
       if (Number.isNaN(price) || price <= 0) continue;
       map.set(sym, { symbol: sym, name: row.name || sym, price });
     }
@@ -277,8 +328,8 @@ export interface AssembledMarket {
 
 export async function assembleFreeMarketRates(): Promise<AssembledMarket> {
   // 1) همه‌ی منابع موازی
-  const [navasan, usdt, fx, dbItems] = await Promise.all([
-    fetchNavasanMap(),
+  const [tgju, usdt, fx, dbItems] = await Promise.all([
+    fetchTgjuMap(),
     getUsdtRate(),
     getGlobalFxRates(),
     getDbMarketItems(),
@@ -295,17 +346,17 @@ export async function assembleFreeMarketRates(): Promise<AssembledMarket> {
 
   // 3) برای هر ارز در لیست اصلی، اولویت‌ها رو امتحان کن
   for (const canonical of WANTED_CANONICAL) {
-    // Priority 1: Navasan
-    const n = navasan.get(canonical);
-    if (n) {
+    // Priority 1: TGJU
+    const t = tgju.get(canonical);
+    if (t) {
       if (!addedSymbols.has(canonical)) {
         items.push({
           symbol: canonical,
           name: DISPLAY_NAMES[canonical] ?? canonical,
-          priceToman: n.priceToman,
-          change: n.change,
-          source: 'navasan',
-          rawKey: n.rawKey,
+          priceToman: t.priceToman,
+          change: t.change,
+          source: 'tgju',
+          rawKey: t.rawKey,
         });
         addedSymbols.add(canonical);
       }
@@ -340,7 +391,8 @@ export async function assembleFreeMarketRates(): Promise<AssembledMarket> {
 
             // New: Apply a correction factor for currencies known to have a 10x discrepancy when fx-derived
             // This is a heuristic to fix the observed "factor of 10" issue for JPY, CNY, etc.
-            if (['JPY', 'CNY', 'RUB', 'INR'].includes(canonical)) { // Add other currencies if needed
+            if (['JPY', 'CNY', 'RUB', 'INR'].includes(canonical)) {
+              // Add other currencies if needed
               priceToman = priceToman / 10; // Correct for the observed 10x discrepancy
             }
             items.push({
