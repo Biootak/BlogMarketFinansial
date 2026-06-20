@@ -165,8 +165,7 @@ const ArchiveCard: React.FC<ArchiveCardProps> = ({
         href={postLink}
         className="ds-card__media block relative focus:outline-none"
         aria-label={title}
-      >
-        <SafeImage
+      >        <SafeImage
           src={featuredImage}
           alt={title || ''}
           ratio={ratio}

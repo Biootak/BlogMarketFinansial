@@ -4218,6 +4218,420 @@ p { line-height: var(--leading-relaxed); }
      Archive page-specific styles
      ============================================================================ */
 
+  /* ============================================================================
+     Archive Breadcrumb Header (2026 — شگفت‌انگیز)
+     ----------------------------------------------------------------------------
+     - glass blur چندلایه با aurora glows
+     - conic gradient border متحرک
+     - scroll-driven shrink (با animation-timeline: scroll())
+     - crunb pill با micro-interactions (lift, rotate arrow, glow)
+     - active crumb با conic ring + pulse dot
+     - progress bar پایین هدر (scroll progress)
+     ============================================================================ */
+
+  @property --arc-crumbs-progress {
+    syntax: "<number>";
+    inherits: false;
+    initial-value: 0;
+  }
+  @property --arc-crumbs-angle {
+    syntax: "<angle>";
+    inherits: false;
+    initial-value: 0deg;
+  }
+
+  .arc-breadcrumb-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    isolation: isolate;
+    overflow: hidden;
+    background:
+      linear-gradient(
+        180deg,
+        oklch(99% 0.003 240 / 0.85) 0%,
+        oklch(99% 0.003 240 / 0.7) 100%
+      );
+    border-block-end: 1px solid oklch(92% 0.005 240 / 0.7);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.6) inset,
+      0 8px 24px -16px oklch(40% 0.08 245 / 0.4);
+    backdrop-filter: blur(20px) saturate(1.5);
+    -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  }
+  .dark .arc-breadcrumb-header {
+    background:
+      linear-gradient(
+        180deg,
+        oklch(16% 0.012 250 / 0.85) 0%,
+        oklch(16% 0.012 250 / 0.7) 100%
+      );
+    border-block-end-color: oklch(30% 0.012 250 / 0.7);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.04) inset,
+      0 8px 24px -12px oklch(0% 0 0 / 0.7);
+  }
+
+  /* conic border animated (بالای header) */
+  .arc-breadcrumb-header::before {
+    content: "";
+    position: absolute;
+    inset-block-start: -1px;
+    inset-inline: 0;
+    block-size: 1.5px;
+    background: conic-gradient(
+      from var(--arc-crumbs-angle, 0deg),
+      oklch(60% 0.10 220 / 0) 0%,
+      oklch(60% 0.10 220 / 0.55) 12%,
+      oklch(72% 0.13 70 / 0.65) 30%,
+      oklch(65% 0.10 165 / 0.55) 48%,
+      oklch(70% 0.13 290 / 0.55) 66%,
+      oklch(60% 0.10 220 / 0) 100%
+    );
+    -webkit-mask: linear-gradient(to bottom, #000 0%, transparent 100%);
+            mask: linear-gradient(to bottom, #000 0%, transparent 100%);
+    opacity: 0.7;
+    pointer-events: none;
+    z-index: 1;
+    animation: arc-crumbs-rotate 18s linear infinite;
+  }
+  @keyframes arc-crumbs-rotate {
+    from { --arc-crumbs-angle: 0deg; }
+    to   { --arc-crumbs-angle: 360deg; }
+  }
+
+  /* aurora glows — دو blob که آروم drift می‌کنن */
+  .arc-breadcrumb-header__glow {
+    position: absolute;
+    z-index: -1;
+    border-radius: 9999px;
+    pointer-events: none;
+    filter: blur(40px);
+    opacity: 0.55;
+    will-change: transform;
+  }
+  .arc-breadcrumb-header__glow--a {
+    inline-size: 18rem;
+    block-size: 18rem;
+    inset-block-start: -8rem;
+    inset-inline-start: 20%;
+    background: radial-gradient(closest-side, oklch(60% 0.10 220 / 0.35), transparent 70%);
+    animation: arc-mesh-drift-a 22s ease-in-out infinite;
+  }
+  .arc-breadcrumb-header__glow--b {
+    inline-size: 14rem;
+    block-size: 14rem;
+    inset-block-end: -7rem;
+    inset-inline-end: 15%;
+    background: radial-gradient(closest-side, oklch(72% 0.13 70 / 0.28), transparent 70%);
+    animation: arc-mesh-drift-b 28s ease-in-out infinite;
+    animation-delay: -6s;
+  }
+  .dark .arc-breadcrumb-header__glow--a { opacity: 0.4; }
+  .dark .arc-breadcrumb-header__glow--b { opacity: 0.35; }
+
+  /* hairline gradient بالای header (subtle) */
+  .arc-breadcrumb-header__line {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
+    block-size: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      oklch(60% 0.10 220 / 0.5) 30%,
+      oklch(72% 0.13 70 / 0.7) 50%,
+      oklch(60% 0.10 220 / 0.5) 70%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: arc-rail-shine 6s linear infinite;
+    pointer-events: none;
+    opacity: 0.7;
+  }
+
+  /* scroll progress پایین هدر */
+  .arc-breadcrumb-header__scroll {
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline: 0;
+    block-size: 2px;
+    background: linear-gradient(
+      90deg,
+      oklch(60% 0.10 220) 0%,
+      oklch(72% 0.13 70) 50%,
+      oklch(65% 0.10 165) 100%
+    );
+    transform-origin: right center;
+    transform: scaleX(0);
+    animation: arc-crumbs-scroll-fill linear both;
+    animation-timeline: scroll(root block);
+    z-index: 2;
+    pointer-events: none;
+  }
+  [dir="rtl"] .arc-breadcrumb-header__scroll {
+    transform-origin: left center;
+  }
+  @keyframes arc-crumbs-scroll-fill {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+  @supports not (animation-timeline: scroll()) {
+    .arc-breadcrumb-header__scroll { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .arc-breadcrumb-header__scroll { display: none; }
+    .arc-breadcrumb-header::before { animation: none; }
+    .arc-breadcrumb-header__glow { animation: none; }
+    .arc-breadcrumb-header__line { animation: none; }
+  }
+
+  .arc-breadcrumb-header__inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: clamp(0.75rem, 0.5rem + 0.5vw, 1.25rem);
+    min-block-size: clamp(3.25rem, 3rem + 0.5vw, 3.75rem);
+    padding-block: clamp(0.4rem, 0.3rem + 0.4vw, 0.625rem);
+  }
+
+  /* ============ Crumb list (right side, RTL) ============ */
+  .arc-breadcrumb {
+    min-inline-size: 0;
+    flex: 1;
+  }
+  .arc-breadcrumb__list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .arc-breadcrumb__item {
+    display: inline-flex;
+    align-items: center;
+    min-inline-size: 0;
+  }
+  .arc-breadcrumb__sep {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: oklch(70% 0.01 240 / 0.6);
+    margin-inline: 0.1rem;
+  }
+  .dark .arc-breadcrumb__sep { color: oklch(45% 0.01 240 / 0.7); }
+
+  /* ============ Crumb pill ============ */
+  .arc-crumb {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.5rem 0.35rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1;
+    color: oklch(45% 0.01 240);
+    background: oklch(100% 0 0 / 0.55);
+    border: 1px solid oklch(88% 0.006 240 / 0.85);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.6) inset;
+    text-decoration: none;
+    transition:
+      transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
+      background 240ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 240ms cubic-bezier(0.22, 1, 0.36, 1),
+      color 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .dark .arc-crumb {
+    color: oklch(75% 0.01 240);
+    background: oklch(22% 0.01 250 / 0.55);
+    border-color: oklch(32% 0.012 250 / 0.85);
+  }
+  .arc-crumb:hover {
+    transform: translateY(-1px);
+    color: oklch(20% 0.01 240);
+    background: oklch(100% 0 0 / 0.95);
+    border-color: oklch(60% 0.10 220 / 0.55);
+  }
+  .dark .arc-crumb:hover {
+    color: oklch(95% 0.005 240);
+    background: oklch(22% 0.01 250 / 0.92);
+  }
+  .arc-crumb__icon {
+    inline-size: 1.1rem;
+    block-size: 1.1rem;
+    border-radius: 0.3rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: oklch(98% 0.005 240);
+    background: linear-gradient(135deg, oklch(60% 0.10 220), oklch(50% 0.10 240));
+    flex-shrink: 0;
+    transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .arc-crumb:hover .arc-crumb__icon { transform: scale(1.06) rotate(-4deg); }
+  .arc-crumb__label { white-space: nowrap; }
+  .arc-crumb__arrow {
+    opacity: 0;
+    transform: translateX(-3px);
+    transition:
+      opacity 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  [dir="rtl"] .arc-crumb__arrow {
+    transform: translateX(3px) scaleX(-1);
+  }
+  .arc-crumb:hover .arc-crumb__arrow {
+    opacity: 0.6;
+    transform: translateX(0);
+  }
+
+  /* ============ Crumb current (active page) ============ */
+  .arc-crumb--current {
+    color: oklch(98% 0.005 240);
+    background: oklch(35% 0.04 245);
+    border-color: oklch(35% 0.04 245);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.12) inset,
+      0 4px 12px -4px oklch(35% 0.04 245 / 0.4);
+    cursor: default;
+  }
+  .arc-crumb--current .arc-crumb__icon {
+    background: linear-gradient(135deg, oklch(70% 0.12 215), oklch(80% 0.10 200));
+    color: oklch(20% 0.01 250);
+  }
+  .arc-crumb--current:hover { transform: none; }
+  .arc-crumb--current .arc-crumb__arrow { display: none; }
+
+  /* conic ring دور crumb فعال (بدون mask اضافه، فقط box-shadow inset چندلایه) */
+  .arc-crumb--current::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    z-index: -1;
+    border-radius: 9999px;
+    padding: 1.5px;
+    background: conic-gradient(
+      from var(--arc-crumbs-angle, 0deg),
+      oklch(60% 0.10 220 / 0) 0%,
+      oklch(60% 0.10 220 / 0.7) 25%,
+      oklch(72% 0.13 70 / 0.8) 50%,
+      oklch(60% 0.10 220 / 0.7) 75%,
+      oklch(60% 0.10 220 / 0) 100%
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    opacity: 0.6;
+    pointer-events: none;
+    animation: arc-crumbs-rotate 6s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .arc-crumb--current::before { animation: none; }
+  }
+
+  /* pulse dot کنار crumb فعال */
+  .arc-crumb__pulse {
+    inline-size: 0.4rem;
+    block-size: 0.4rem;
+    border-radius: 9999px;
+    background: oklch(98% 0.005 240);
+    box-shadow: 0 0 0 0 oklch(98% 0.005 240 / 0.6);
+    animation: arc-crumbs-pulse 1.8s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes arc-crumbs-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 oklch(98% 0.005 240 / 0.6); }
+    50%      { box-shadow: 0 0 0 5px oklch(98% 0.005 240 / 0); }
+  }
+
+  /* ============ Accent variants (رنگ متفاوت) ============ */
+  .arc-crumb--brand .arc-crumb__icon {
+    background: linear-gradient(135deg, oklch(60% 0.10 220), oklch(50% 0.10 240));
+  }
+  .arc-crumb--violet .arc-crumb__icon {
+    background: linear-gradient(135deg, oklch(62% 0.13 290), oklch(50% 0.14 270));
+  }
+  .arc-crumb--emerald .arc-crumb__icon {
+    background: linear-gradient(135deg, oklch(70% 0.12 165), oklch(55% 0.10 160));
+  }
+  .arc-crumb--amber .arc-crumb__icon {
+    background: linear-gradient(135deg, oklch(78% 0.13 80), oklch(65% 0.12 60));
+  }
+  .arc-crumb--rose .arc-crumb__icon {
+    background: linear-gradient(135deg, oklch(70% 0.13 20), oklch(55% 0.12 10));
+  }
+  .arc-crumb--slate .arc-crumb__icon {
+    background: linear-gradient(135deg, oklch(60% 0.02 250), oklch(45% 0.02 250));
+  }
+
+  /* variant های رنگی برای حالت active (current) */
+  .arc-crumb--brand.arc-crumb--current {
+    background: oklch(35% 0.04 245);
+    border-color: oklch(35% 0.04 245);
+  }
+  .arc-crumb--violet.arc-crumb--current {
+    background: oklch(50% 0.14 290);
+    border-color: oklch(50% 0.14 290);
+  }
+  .arc-crumb--emerald.arc-crumb--current {
+    background: oklch(55% 0.10 160);
+    border-color: oklch(55% 0.10 160);
+  }
+  .arc-crumb--amber.arc-crumb--current {
+    background: oklch(65% 0.12 60);
+    border-color: oklch(65% 0.12 60);
+  }
+  .arc-crumb--rose.arc-crumb--current {
+    background: oklch(55% 0.12 10);
+    border-color: oklch(55% 0.12 10);
+  }
+  .arc-crumb--slate.arc-crumb--current {
+    background: oklch(45% 0.02 250);
+    border-color: oklch(45% 0.02 250);
+  }
+
+  /* ============ Trailing (badge و actions) ============ */
+  .arc-breadcrumb-header__trailing {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .arc-breadcrumb-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.625rem 0.35rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: oklch(40% 0.06 235);
+    background: oklch(96% 0.03 235 / 0.6);
+    border: 1px solid oklch(82% 0.06 235 / 0.4);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.5) inset;
+  }
+  .dark .arc-breadcrumb-badge {
+    color: oklch(80% 0.10 215);
+    background: oklch(25% 0.04 245 / 0.6);
+    border-color: oklch(45% 0.08 245 / 0.4);
+  }
+  .arc-breadcrumb-badge__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 1rem;
+    block-size: 1rem;
+    border-radius: 9999px;
+    color: oklch(98% 0.005 240);
+    background: linear-gradient(135deg, oklch(60% 0.10 220), oklch(50% 0.10 240));
+    flex-shrink: 0;
+  }
+
   /* Hero shell */
   .archive-hero {
     position: relative;
@@ -4822,5 +5236,1567 @@ p { line-height: var(--leading-relaxed); }
   /* Reveal animation (alias) */
   .arc-reveal {
     animation: ds-reveal-in var(--ds-duration-page) var(--ds-ease-out-quart) both;
+  }
+
+  /* ============================================================================
+     2026 v4 — بازطراحی شگفت‌انگیز صفحه‌ی آرشیو
+     ----------------------------------------------------------------------------
+     - Aurora mesh gradient چندلایه با @property انیمیشن نرم
+     - Bento grid با reveal staggered
+     - Marquee ribbon برای آمار پویا
+     - Morphing icon button با spring
+     - View transition برای جابجایی grid/list
+     - Floating meter (animated)
+     - Spotlight effect روی hero
+     - scroll-snap در grid
+     - sticky filter rail با پس‌زمینه‌ی متحرک
+     - typography variable با optical sizing
+     - conic mesh برای accent
+     - micro-interactions در hover (scale, rotate, glow)
+     prefers-reduced-motion: توسط global rule بالای فایل clamp می‌شه
+     ============================================================================ */
+
+  /* ---- @property برای انیمیشن‌های عددی/رنگی نرم ----------------------------- */
+  @supports (background: paint(something)) or (image-set: 1x url("x.png)") or (-webkit-background-clip: text)) {
+    @property --arc-bento-progress {
+      syntax: "<number>";
+      inherits: false;
+      initial-value: 0;
+    }
+    @property --arc-spotlight {
+      syntax: "<percentage>";
+      inherits: false;
+      initial-value: 0%;
+    }
+    @property --arc-counter {
+      syntax: "<number>";
+      inherits: false;
+      initial-value: 0;
+    }
+  }
+
+  /* ---- Aurora Canvas — پس‌زمینه‌ی متحرک برای hero v4 ----------------------- */
+  @keyframes arc-aurora-canvas {
+    0%, 100% { background-position: 0% 50%, 100% 50%, 50% 0%; }
+    50%      { background-position: 30% 70%, 70% 30%, 60% 50%; }
+  }
+  .arc-aurora-canvas {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background:
+      radial-gradient(60% 80% at 12% 18%, oklch(60% 0.12 235 / 0.18), transparent 65%),
+      radial-gradient(60% 80% at 88% 78%, oklch(72% 0.13 70 / 0.16), transparent 65%),
+      radial-gradient(80% 60% at 50% 100%, oklch(65% 0.10 165 / 0.10), transparent 70%),
+      linear-gradient(180deg, oklch(99% 0.004 240), oklch(97% 0.005 240));
+    background-size: 200% 200%, 200% 200%, 200% 200%, 100% 100%;
+    animation: arc-aurora-canvas 28s ease-in-out infinite;
+  }
+  .dark .arc-aurora-canvas {
+    background:
+      radial-gradient(60% 80% at 12% 18%, oklch(60% 0.12 235 / 0.25), transparent 65%),
+      radial-gradient(60% 80% at 88% 78%, oklch(72% 0.13 70 / 0.20), transparent 65%),
+      radial-gradient(80% 60% at 50% 100%, oklch(65% 0.10 165 / 0.14), transparent 70%),
+      linear-gradient(180deg, oklch(18% 0.012 250), oklch(14% 0.012 250));
+    background-size: 200% 200%, 200% 200%, 200% 200%, 100% 100%;
+  }
+  /* fine grid overlay — texture */
+  .arc-aurora-canvas::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      linear-gradient(oklch(50% 0.02 250 / 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(50% 0.02 250 / 0.04) 1px, transparent 1px);
+    background-size: 56px 56px;
+    -webkit-mask-image: radial-gradient(140% 100% at 50% 0%, #000 0%, transparent 75%);
+            mask-image: radial-gradient(140% 100% at 50% 0%, #000 0%, transparent 75%);
+  }
+  .dark .arc-aurora-canvas::before {
+    background-image:
+      linear-gradient(oklch(80% 0.02 250 / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(80% 0.02 250 / 0.05) 1px, transparent 1px);
+  }
+
+  /* ---- Noise overlay (texture ریز) ----------------------------------------- */
+  .arc-noise::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.04;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .dark .arc-noise::after { opacity: 0.06; }
+
+  /* ---- Hero v4 — با aurora canvas و conic border متحرک --------------------- */
+  .arc-hero-v4 {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border-radius: clamp(1.25rem, 1rem + 1.5vw, 2rem);
+    border: 1px solid oklch(92% 0.005 240 / 0.85);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.6) inset,
+      0 50px 120px -40px oklch(40% 0.08 245 / 0.4);
+  }
+  .dark .arc-hero-v4 {
+    border-color: oklch(30% 0.012 250 / 0.8);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.04) inset,
+      0 60px 140px -40px oklch(0% 0 0 / 0.8);
+  }
+  .arc-hero-v4__inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(1.25rem, 1rem + 1vw, 2rem);
+    padding: clamp(1.25rem, 0.8rem + 2vw, 2.5rem);
+  }
+
+  /* Conic border animated — border چرخان دور hero */
+  .arc-hero-v4::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(
+      from var(--arc-angle, 0deg),
+      oklch(60% 0.10 220 / 0) 0%,
+      oklch(60% 0.10 220 / 0.45) 18%,
+      oklch(72% 0.13 70 / 0.5) 35%,
+      oklch(65% 0.10 165 / 0.45) 55%,
+      oklch(70% 0.13 290 / 0.45) 75%,
+      oklch(60% 0.10 220 / 0) 100%
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    -webkit-mask-mode: match;
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 600ms cubic-bezier(0.22, 1, 0.36, 1);
+    animation: arc-rotate-slow 24s linear infinite;
+  }
+  @keyframes arc-rotate-slow {
+    from { --arc-angle: 0deg; }
+    to   { --arc-angle: 360deg; }
+  }
+  .arc-hero-v4:hover::after { opacity: 0.9; }
+
+  /* Spotlight (radial) که با mouse حرکت می‌کنه — توسط JS کنترل می‌شه */
+  .arc-hero-v4__spotlight {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      circle 380px at var(--mx, 50%) var(--my, 50%),
+      oklch(72% 0.13 70 / 0.12),
+      transparent 70%
+    );
+    opacity: 0;
+    transition: opacity 400ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .arc-hero-v4:hover .arc-hero-v4__spotlight { opacity: 1; }
+
+  /* ---- Bento Grid (1+3 cells با span متغیر) ------------------------------- */
+  .arc-bento {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-auto-rows: minmax(0, auto);
+    gap: clamp(0.75rem, 0.5rem + 0.5vw, 1rem);
+  }
+  @media (min-width: 640px) {
+    .arc-bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1024px) {
+    .arc-bento { grid-template-columns: 1.5fr 1fr 1fr; }
+  }
+  .arc-bento__cell {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: clamp(1rem, 0.8rem + 0.8vw, 1.5rem);
+    border-radius: clamp(0.875rem, 0.7rem + 0.5vw, 1.25rem);
+    background: oklch(100% 0 0 / 0.6);
+    border: 1px solid oklch(92% 0.005 240 / 0.85);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.6) inset,
+      0 12px 32px -22px oklch(20% 0.01 240 / 0.2);
+    backdrop-filter: blur(12px) saturate(1.4);
+    transition:
+      transform 360ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 360ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 360ms cubic-bezier(0.22, 1, 0.36, 1);
+    overflow: hidden;
+  }
+  .dark .arc-bento__cell {
+    background: oklch(20% 0.01 250 / 0.6);
+    border-color: oklch(32% 0.012 250 / 0.85);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.04) inset,
+      0 16px 40px -16px oklch(0% 0 0 / 0.55);
+  }
+  .arc-bento__cell:hover {
+    transform: translate3d(0, -2px, 0);
+    border-color: oklch(65% 0.10 200 / 0.45);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.6) inset,
+      0 20px 48px -18px oklch(40% 0.10 250 / 0.4);
+  }
+  /* cell spotlight — radial که از مرکز پخش می‌شه */
+  .arc-bento__cell::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    z-index: -1;
+    border-radius: inherit;
+    background: radial-gradient(
+      500px circle at var(--mx, 50%) var(--my, 50%),
+      oklch(72% 0.13 70 / 0.08),
+      transparent 50%
+    );
+    opacity: 0;
+    transition: opacity 400ms cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+  }
+  .arc-bento__cell:hover::before { opacity: 1; }
+
+  /* Cell اول (محتوا) — بزرگ‌تر در دسکتاپ */
+  .arc-bento__cell--lead {
+    grid-column: 1 / -1;
+  }
+  @media (min-width: 1024px) {
+    .arc-bento__cell--lead { grid-column: span 1; }
+  }
+
+  /* Cell متغیر — اگه محتوای زیاد باشه کل row رو می‌گیره */
+  .arc-bento__cell--wide {
+    grid-column: 1 / -1;
+  }
+
+  /* ---- Marquee Ribbon — نوار اعداد متحرک ----------------------------------- */
+  @keyframes arc-marquee-x {
+    from { transform: translateX(0); }
+    to   { transform: translateX(50%); }
+  }
+  .arc-marquee {
+    display: flex;
+    width: max-content;
+    animation: arc-marquee-x 36s linear infinite;
+    will-change: transform;
+  }
+  .arc-marquee:hover { animation-play-state: paused; }
+  .arc-marquee__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: oklch(45% 0.01 240);
+    border-inline-end: 1px solid oklch(92% 0.005 240 / 0.6);
+  }
+  .dark .arc-marquee__item { color: oklch(72% 0.01 240); border-inline-end-color: oklch(30% 0.012 250 / 0.6); }
+  .arc-marquee__num {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: oklch(20% 0.01 240);
+  }
+  .dark .arc-marquee__num { color: oklch(96% 0.005 240); }
+
+  /* ---- Floating meter (نوار متریک متحرک) ---------------------------------- */
+  .arc-meter {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem 0.5rem 0.5rem;
+    border-radius: 9999px;
+    background: oklch(96% 0.004 240 / 0.85);
+    border: 1px solid oklch(90% 0.006 240 / 0.9);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.6) inset;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: oklch(45% 0.01 240);
+  }
+  .dark .arc-meter {
+    background: oklch(22% 0.01 250 / 0.7);
+    border-color: oklch(32% 0.012 250 / 0.85);
+    color: oklch(75% 0.01 240);
+  }
+  .arc-meter__dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: oklch(70% 0.18 150);
+    box-shadow: 0 0 0 0 oklch(70% 0.18 150 / 0.55);
+    animation: arc-pulse-dot 1.8s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  .arc-meter__dot--amber { background: oklch(78% 0.16 70); box-shadow: 0 0 0 0 oklch(78% 0.16 70 / 0.55); }
+  .arc-meter__dot--rose { background: oklch(70% 0.18 20); box-shadow: 0 0 0 0 oklch(70% 0.18 20 / 0.55); }
+  .arc-meter__dot--blue { background: oklch(65% 0.15 235); box-shadow: 0 0 0 0 oklch(65% 0.15 235 / 0.55); }
+  @keyframes arc-pulse-dot {
+    0%, 100% { box-shadow: 0 0 0 0 oklch(70% 0.18 150 / 0.55); }
+    50%      { box-shadow: 0 0 0 6px oklch(70% 0.18 150 / 0); }
+  }
+
+  /* ---- Staggered reveal (با --arc-bento-progress) --------------------------- */
+  .arc-bento__cell {
+    animation: arc-bento-cell-in 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(80ms * var(--arc-cell-index, 0));
+  }
+  @keyframes arc-bento-cell-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 14px, 0) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .arc-bento__cell { animation: none; opacity: 1; transform: none; }
+  }
+
+  /* ---- Counter (animated number) ------------------------------------------- */
+  @supports (background: paint(something)) or (-webkit-background-clip: text) {
+    @property --arc-counter {
+      syntax: "<number>";
+      inherits: false;
+      initial-value: 0;
+    }
+  }
+  .arc-counter {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum", "lnum", "ss01";
+    letter-spacing: -0.02em;
+    font-weight: 700;
+    background: linear-gradient(
+      180deg,
+      oklch(20% 0.01 240) 0%,
+      oklch(30% 0.04 245) 100%
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+  .dark .arc-counter {
+    background: linear-gradient(
+      180deg,
+      oklch(98% 0.005 240) 0%,
+      oklch(80% 0.06 215) 100%
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+  .arc-counter--brand {
+    background: linear-gradient(
+      135deg,
+      oklch(60% 0.12 235) 0%,
+      oklch(50% 0.14 245) 100%
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+  .dark .arc-counter--brand {
+    background: linear-gradient(
+      135deg,
+      oklch(75% 0.13 215) 0%,
+      oklch(85% 0.10 200) 100%
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* ---- Filter Rail v4 — glass sticky با نوار متحرک ------------------------ */
+  .arc-rail-v4 {
+    position: sticky;
+    inset-block-start: 0.5rem;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: clamp(0.75rem, 0.6rem + 0.4vw, 1rem);
+    border-radius: clamp(1rem, 0.8rem + 0.5vw, 1.25rem);
+    background: oklch(99% 0.003 240 / 0.7);
+    border: 1px solid oklch(90% 0.006 240 / 0.85);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.6) inset,
+      0 18px 48px -22px oklch(40% 0.08 245 / 0.4);
+    backdrop-filter: blur(24px) saturate(1.5);
+    -webkit-backdrop-filter: blur(24px) saturate(1.5);
+    transition:
+      border-color 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .dark .arc-rail-v4 {
+    background: oklch(15% 0.01 250 / 0.7);
+    border-color: oklch(30% 0.012 250 / 0.8);
+  }
+  /* top accent bar متحرک */
+  .arc-rail-v4::before {
+    content: "";
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 1rem;
+    inset-inline-end: 1rem;
+    height: 1.5px;
+    border-radius: 9999px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      oklch(60% 0.10 220 / 0.5) 30%,
+      oklch(72% 0.13 70 / 0.7) 50%,
+      oklch(60% 0.10 220 / 0.5) 70%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: arc-rail-shine 4s linear infinite;
+    opacity: 0.6;
+  }
+  @keyframes arc-rail-shine {
+    0%   { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+  }
+  .arc-rail-v4:has(input:focus),
+  .arc-rail-v4:has(.arc-cmd-trigger:focus) {
+    border-color: oklch(60% 0.10 220 / 0.6);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.6) inset,
+      0 20px 52px -20px oklch(40% 0.10 250 / 0.5);
+  }
+  .arc-rail-v4__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+  }
+
+  /* ---- Segmented v4 — indicator متحرک با ::before ------------------------- */
+  .arc-segmented-v4 {
+    position: relative;
+    display: inline-flex;
+    align-items: stretch;
+    padding: 0.2rem;
+    border-radius: 9999px;
+    background: oklch(96% 0.004 240 / 0.85);
+    border: 1px solid oklch(90% 0.006 240 / 0.9);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.6) inset;
+  }
+  .dark .arc-segmented-v4 {
+    background: oklch(22% 0.01 250 / 0.7);
+    border-color: oklch(30% 0.012 250 / 0.8);
+  }
+  .arc-segmented-v4__item {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: oklch(45% 0.01 240);
+    line-height: 1;
+    transition: color 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .dark .arc-segmented-v4__item { color: oklch(72% 0.01 240); }
+  .arc-segmented-v4__item:hover { color: oklch(20% 0.01 240); }
+  .dark .arc-segmented-v4__item:hover { color: oklch(95% 0.005 240); }
+  .arc-segmented-v4__item[aria-current="true"] {
+    color: oklch(98% 0.005 240);
+  }
+  .dark .arc-segmented-v4__item[aria-current="true"] {
+    color: oklch(20% 0.01 250);
+  }
+  .arc-segmented-v4__indicator {
+    position: absolute;
+    z-index: 0;
+    top: 0.2rem;
+    bottom: 0.2rem;
+    inset-inline-start: 0.2rem;
+    border-radius: 9999px;
+    background: oklch(35% 0.04 245);
+    box-shadow: 0 4px 12px -6px oklch(35% 0.04 245 / 0.6);
+    transition:
+      transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+      width 420ms cubic-bezier(0.22, 1, 0.36, 1),
+      background 240ms;
+  }
+  .dark .arc-segmented-v4__indicator {
+    background: oklch(80% 0.10 215);
+  }
+  /* item active glow */
+  .arc-segmented-v4__item[aria-current="true"]::after {
+    content: "";
+    position: absolute;
+    inset: -0.4rem;
+    border-radius: 9999px;
+    background: radial-gradient(closest-side, oklch(60% 0.10 220 / 0.15), transparent 70%);
+    z-index: -1;
+    animation: arc-pulse-soft 2.4s ease-in-out infinite;
+  }
+  @keyframes arc-pulse-soft {
+    0%, 100% { opacity: 0.6; }
+    50%      { opacity: 1; }
+  }
+
+  /* ---- Pill v4 (با morphing انیمیشن) -------------------------------------- */
+  .arc-pill-v4 {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.4rem 0.5rem 0.4rem 0.875rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1;
+    color: oklch(35% 0.04 240);
+    background: oklch(97% 0.005 240 / 0.85);
+    border: 1px solid oklch(88% 0.008 240 / 0.9);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.6) inset;
+    transition:
+      transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      background 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .dark .arc-pill-v4 {
+    color: oklch(85% 0.01 240);
+    background: oklch(22% 0.01 250 / 0.7);
+    border-color: oklch(32% 0.012 250 / 0.85);
+  }
+  .arc-pill-v4:hover {
+    transform: translateY(-1px) scale(1.02);
+    border-color: oklch(60% 0.10 220 / 0.5);
+    background: oklch(100% 0 0 / 0.96);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.6) inset,
+      0 8px 24px -12px oklch(40% 0.10 250 / 0.4);
+  }
+  .dark .arc-pill-v4:hover { background: oklch(22% 0.01 250 / 0.9); }
+  .arc-pill-v4__remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.15rem;
+    height: 1.15rem;
+    border-radius: 9999px;
+    color: oklch(50% 0.02 240);
+    background: oklch(20% 0.02 240 / 0.06);
+    transition: all 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .arc-pill-v4:hover .arc-pill-v4__remove {
+    background: oklch(60% 0.13 25);
+    color: oklch(98% 0.005 240);
+    transform: rotate(90deg) scale(1.05);
+  }
+  .dark .arc-pill-v4__remove { color: oklch(72% 0.01 240); }
+  .arc-pill-v4--brand {
+    color: oklch(98% 0.005 240);
+    background: oklch(35% 0.04 245);
+    border-color: oklch(35% 0.04 245);
+  }
+  .arc-pill-v4--brand .arc-pill-v4__remove { color: oklch(85% 0.04 220); background: oklch(98% 0.005 240 / 0.18); }
+  .arc-pill-v4--brand:hover .arc-pill-v4__remove { background: oklch(98% 0.005 240); color: oklch(20% 0.01 250); }
+  .arc-pill-v4--accent {
+    color: oklch(98% 0.005 240);
+    background: oklch(70% 0.12 165);
+    border-color: oklch(70% 0.12 165);
+  }
+  .arc-pill-v4--accent .arc-pill-v4__remove { color: oklch(98% 0.005 240); background: oklch(20% 0.04 165 / 0.18); }
+  .arc-pill-v4--accent:hover .arc-pill-v4__remove { background: oklch(98% 0.005 240); color: oklch(35% 0.12 165); }
+
+  /* ---- Grid v4 (مجله‌ای با auto-flow dense) ------------------------------- */
+  .arc-grid-magazine-v4 {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-auto-flow: dense;
+    gap: clamp(0.875rem, 0.7rem + 0.5vw, 1.25rem);
+  }
+  @media (min-width: 640px) {
+    .arc-grid-magazine-v4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1024px) {
+    .arc-grid-magazine-v4 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  }
+  .arc-grid-magazine-v4 > .arc-grid-magazine-v4__featured {
+    grid-column: 1 / -1;
+  }
+  @media (min-width: 1024px) {
+    .arc-grid-magazine-v4 > .arc-grid-magazine-v4__featured { grid-column: span 4; }
+  }
+  @media (min-width: 1280px) {
+    .arc-grid-magazine-v4 > .arc-grid-magazine-v4__featured { grid-column: span 4; }
+  }
+  .arc-grid-magazine-v4 > .arc-grid-magazine-v4__side {
+    grid-column: 1 / -1;
+  }
+  @media (min-width: 1024px) {
+    .arc-grid-magazine-v4 > .arc-grid-magazine-v4__side { grid-column: span 2; }
+  }
+
+  /* ---- Grid hero-3col: featured 2 ستون + 2 ستون کنار + 4 ستون بقیه ----------- */
+  .arc-grid-hero-3col {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-auto-flow: dense;
+    gap: clamp(0.875rem, 0.7rem + 0.5vw, 1.25rem);
+  }
+  @media (min-width: 640px) {
+    .arc-grid-hero-3col { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1024px) {
+    .arc-grid-hero-3col { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+  /* featured — 2 ستون در دسکتاپ (یعنی نصف عرض 4-col) */
+  .arc-grid-hero-3col__featured {
+    grid-column: 1 / -1;
+  }
+  @media (min-width: 1024px) {
+    .arc-grid-hero-3col__featured { grid-column: span 2; }
+  }
+  /* side posts — هرکدوم 1 ستون */
+  .arc-grid-hero-3col__side {
+    grid-column: 1 / -1;
+  }
+  @media (min-width: 640px) {
+    .arc-grid-hero-3col__side { grid-column: span 1; }
+  }
+  @media (min-width: 1024px) {
+    .arc-grid-hero-3col__side { grid-column: span 1; }
+  }
+  /* بقیه‌ی کارت‌ها هرکدوم 1 ستون (یعنی 4 ستون در دسکتاپ) */
+  .arc-grid-hero-3col__cell {
+    grid-column: span 1;
+  }
+  @media (max-width: 639px) {
+    .arc-grid-hero-3col__cell { grid-column: 1 / -1; }
+  }
+  .arc-grid-hero-3col__ad {
+    grid-column: 1 / -1;
+  }
+  @media (min-width: 1024px) {
+    .arc-grid-hero-3col__ad { grid-column: span 2; }
+  }
+
+  /* ---- Card v4 (با 3D tilt optional) --------------------------------------- */
+  .arc-card-v4 {
+    container-type: inline-size;
+    container-name: arcCardV4;
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border-radius: clamp(1rem, 0.85rem + 0.4vw, 1.25rem);
+    overflow: clip;
+    background: oklch(100% 0 0 / 0.78);
+    border: 1px solid oklch(92% 0.005 240 / 0.85);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.7) inset,
+      0 1px 2px oklch(20% 0.01 240 / 0.04),
+      0 16px 40px -22px oklch(20% 0.01 240 / 0.18);
+    backdrop-filter: blur(10px) saturate(1.3);
+    transform-style: preserve-3d;
+    transition:
+      transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 420ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .dark .arc-card-v4 {
+    background: oklch(20% 0.01 250 / 0.7);
+    border-color: oklch(30% 0.012 250 / 0.85);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.04) inset,
+      0 1px 2px oklch(0% 0 0 / 0.4),
+      0 20px 48px -16px oklch(0% 0 0 / 0.55);
+  }
+  .arc-card-v4::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(
+      from 220deg,
+      oklch(60% 0.10 220 / 0) 0%,
+      oklch(60% 0.10 220 / 0.55) 22%,
+      oklch(72% 0.13 70 / 0.55) 50%,
+      oklch(60% 0.10 220 / 0.55) 78%,
+      oklch(60% 0.10 220 / 0) 100%
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 360ms cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+    z-index: 3;
+  }
+  .arc-card-v4:hover::before,
+  .arc-card-v4:focus-within::before { opacity: 1; }
+  .arc-card-v4:hover {
+    transform: translate3d(0, -4px, 0);
+    border-color: oklch(82% 0.04 220 / 0.7);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.7) inset,
+      0 28px 64px -20px oklch(45% 0.10 250 / 0.4);
+  }
+  .dark .arc-card-v4:hover {
+    border-color: oklch(35% 0.05 240 / 0.9);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.04) inset,
+      0 32px 76px -20px oklch(0% 0 0 / 0.75);
+  }
+
+  .arc-card-v4__media {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, oklch(96% 0.005 240), oklch(92% 0.008 240));
+    isolation: isolate;
+  }
+  .dark .arc-card-v4__media {
+    background: linear-gradient(135deg, oklch(22% 0.01 250), oklch(18% 0.01 250));
+  }
+  .arc-card-v4__media > :is(img, [data-next-image]) {
+    transition: transform 800ms cubic-bezier(0.22, 1, 0.36, 1),
+                filter 800ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .arc-card-v4:hover .arc-card-v4__media > :is(img, [data-next-image]) {
+    transform: scale(1.06);
+    filter: saturate(1.08) contrast(1.02);
+  }
+  .arc-card-v4__media-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, oklch(20% 0.02 250 / 0) 50%, oklch(20% 0.02 250 / 0.55) 100%);
+    opacity: 0.5;
+    transition: opacity 360ms cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 2;
+  }
+  .arc-card-v4:hover .arc-card-v4__media-overlay { opacity: 0.85; }
+  /* sheen sweep — مثل قبل ولی پرسرعت‌تر */
+  .arc-card-v4__media::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: linear-gradient(
+      105deg,
+      transparent 30%,
+      oklch(100% 0 0 / 0.18) 45%,
+      oklch(100% 0 0 / 0.32) 50%,
+      oklch(100% 0 0 / 0.18) 55%,
+      transparent 70%
+    );
+    background-size: 250% 100%;
+    background-position: 150% 0;
+    opacity: 0;
+    transition: opacity 200ms ease;
+  }
+  .arc-card-v4:hover .arc-card-v4__media::after {
+    opacity: 1;
+    animation: arc-sheen-sweep 1000ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .arc-card-v4__body {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: clamp(0.875rem, 0.7rem + 0.5vw, 1.2rem);
+    flex: 1;
+  }
+  .arc-card-v4__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: none;
+    color: oklch(50% 0.06 235);
+    letter-spacing: 0.01em;
+  }
+  .dark .arc-card-v4__eyebrow { color: oklch(75% 0.10 215); }
+  .arc-card-v4__title {
+    font-size: clamp(1rem, 0.92rem + 0.3vw, 1.125rem);
+    line-height: 1.45;
+    letter-spacing: normal;
+    font-weight: 700;
+    color: oklch(20% 0.01 240);
+    text-wrap: balance;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    transition: color 280ms;
+  }
+  .dark .arc-card-v4__title { color: oklch(95% 0.005 240); }
+  .arc-card-v4:hover .arc-card-v4__title {
+    color: color-mix(in oklch, oklch(20% 0.01 240), oklch(55% 0.10 235) 40%);
+  }
+  .dark .arc-card-v4:hover .arc-card-v4__title {
+    color: color-mix(in oklch, oklch(95% 0.005 240), oklch(78% 0.10 215) 35%);
+  }
+  .arc-card-v4__excerpt {
+    font-size: 0.875rem;
+    line-height: 1.65;
+    color: oklch(45% 0.01 240);
+    text-wrap: pretty;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .dark .arc-card-v4__excerpt { color: oklch(70% 0.01 240); }
+  .arc-card-v4__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-block-start: auto;
+    padding-block-start: 0.7rem;
+    border-block-start: 1px solid oklch(92% 0.005 240 / 0.7);
+    font-size: 0.75rem;
+    color: oklch(50% 0.01 240);
+  }
+  .dark .arc-card-v4__foot {
+    border-block-start-color: oklch(30% 0.012 250 / 0.7);
+    color: oklch(70% 0.01 240);
+  }
+  .arc-card-v4__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: oklch(55% 0.10 235);
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: gap 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .arc-card-v4__cta:hover { gap: 0.55rem; }
+  .dark .arc-card-v4__cta { color: oklch(78% 0.10 215); }
+
+  /* ---- Featured card v4 (با spotlight + media بزرگ) ------------------------ */
+  .arc-fcard-v4 {
+    container-type: inline-size;
+    container-name: arcFCardV4;
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-column: 1 / -1;
+    overflow: clip;
+    border-radius: clamp(1.25rem, 1rem + 0.8vw, 1.75rem);
+    background: oklch(99% 0.004 240 / 0.88);
+    border: 1px solid oklch(90% 0.006 240 / 0.9);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.6) inset,
+      0 36px 88px -32px oklch(40% 0.08 245 / 0.4);
+    backdrop-filter: blur(12px) saturate(1.4);
+    transition:
+      transform 480ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 480ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .dark .arc-fcard-v4 {
+    background: oklch(18% 0.012 250 / 0.85);
+    border-color: oklch(30% 0.012 250 / 0.85);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.04) inset,
+      0 44px 110px -28px oklch(0% 0 0 / 0.75);
+  }
+  .arc-fcard-v4:hover {
+    transform: translate3d(0, -3px, 0);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.6) inset,
+      0 48px 110px -28px oklch(40% 0.10 245 / 0.5);
+  }
+  @media (min-width: 1024px) {
+    .arc-fcard-v4 { grid-template-columns: 1.2fr 1fr; }
+  }
+  .arc-fcard-v4__media {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 16 / 10;
+    background: linear-gradient(135deg, oklch(94% 0.01 240), oklch(88% 0.02 245));
+  }
+  @media (min-width: 1024px) {
+    .arc-fcard-v4__media { aspect-ratio: auto; min-height: 100%; }
+  }
+  .arc-fcard-v4__media > :is(img, [data-next-image]) {
+    transition: transform 1100ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .arc-fcard-v4:hover .arc-fcard-v4__media > :is(img, [data-next-image]) { transform: scale(1.05); }
+  .arc-fcard-v4__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    padding: clamp(1.1rem, 0.9rem + 1vw, 2rem);
+  }
+  @media (min-width: 1024px) {
+    .arc-fcard-v4__body { padding: clamp(1.5rem, 1rem + 1.5vw, 2.5rem); gap: 1.1rem; }
+  }
+  .arc-fcard-v4__title {
+    font-size: clamp(1.5rem, 1.1rem + 1.8vw, 2.5rem);
+    line-height: 1.15;
+    letter-spacing: normal;
+    font-weight: 800;
+    color: oklch(18% 0.012 240);
+    text-wrap: balance;
+    font-optical-sizing: auto;
+  }
+  .dark .arc-fcard-v4__title { color: oklch(96% 0.004 240); }
+  .arc-fcard-v4__excerpt {
+    font-size: clamp(0.95rem, 0.85rem + 0.3vw, 1.1rem);
+    line-height: 1.7;
+    color: oklch(45% 0.01 240);
+    text-wrap: pretty;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .dark .arc-fcard-v4__excerpt { color: oklch(72% 0.01 240); }
+  .arc-fcard-v4__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.25rem;
+    margin-block-start: auto;
+    padding-block-start: 1rem;
+    border-block-start: 1px solid oklch(92% 0.005 240 / 0.7);
+    font-size: 0.8125rem;
+    color: oklch(50% 0.01 240);
+  }
+  .dark .arc-fcard-v4__foot {
+    border-block-start-color: oklch(30% 0.012 250 / 0.7);
+    color: oklch(70% 0.01 240);
+  }
+  /* gradient sheen بالای featured body */
+  .arc-fcard-v4::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    block-size: 30%;
+    background: linear-gradient(180deg, transparent, oklch(60% 0.10 220 / 0.04));
+    pointer-events: none;
+    border-end-start-radius: inherit;
+    border-end-end-radius: inherit;
+  }
+
+  /* ---- List row v4 (خارج از list view) ------------------------------------- */
+  .arc-list-v4 {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+  .arc-list-row-v4 {
+    position: relative;
+    display: grid;
+    grid-template-columns: 88px 1fr;
+    gap: 0.875rem;
+    padding: 0.75rem;
+    border-radius: clamp(0.875rem, 0.7rem + 0.4vw, 1.125rem);
+    background: oklch(100% 0 0 / 0.72);
+    border: 1px solid oklch(92% 0.005 240 / 0.85);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.6) inset;
+    transition:
+      transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @media (min-width: 640px) {
+    .arc-list-row-v4 { grid-template-columns: 160px 1fr; gap: 1.25rem; padding: 1rem; }
+  }
+  .dark .arc-list-row-v4 {
+    background: oklch(20% 0.01 250 / 0.7);
+    border-color: oklch(30% 0.012 250 / 0.85);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.03) inset;
+  }
+  .arc-list-row-v4:hover {
+    transform: translate3d(0, -2px, 0);
+    border-color: oklch(82% 0.04 220 / 0.7);
+    box-shadow: 0 18px 40px -20px oklch(40% 0.08 245 / 0.4);
+  }
+  .arc-list-row-v4__media {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.75rem;
+    aspect-ratio: 4 / 3;
+    background: linear-gradient(135deg, oklch(96% 0.005 240), oklch(92% 0.008 240));
+  }
+  .arc-list-row-v4__media > :is(img, [data-next-image]) {
+    transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .arc-list-row-v4:hover .arc-list-row-v4__media > :is(img, [data-next-image]) { transform: scale(1.06); }
+
+  /* ---- Pagination v4 ------------------------------------------------------- */
+  .arc-pagination-v4 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.4rem;
+    border-radius: 9999px;
+    background: oklch(99% 0.003 240 / 0.7);
+    border: 1px solid oklch(90% 0.006 240 / 0.85);
+    box-shadow: 0 12px 32px -22px oklch(40% 0.08 245 / 0.4);
+    backdrop-filter: blur(10px) saturate(1.3);
+  }
+  .dark .arc-pagination-v4 {
+    background: oklch(19% 0.01 250 / 0.7);
+    border-color: oklch(30% 0.012 250 / 0.8);
+  }
+  .arc-pagination-v4__item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 2.25rem;
+    block-size: 2.25rem;
+    padding: 0 0.65rem;
+    border-radius: 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: oklch(50% 0.01 240);
+    transition:
+      transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      color 220ms,
+      background 220ms,
+      border-color 220ms;
+  }
+  .dark .arc-pagination-v4__item { color: oklch(72% 0.01 240); }
+  .arc-pagination-v4__item:hover {
+    transform: translate3d(0, -1px, 0);
+    color: oklch(20% 0.01 240);
+    background: oklch(60% 0.10 220 / 0.06);
+  }
+  .dark .arc-pagination-v4__item:hover { color: oklch(95% 0.005 240); }
+  .arc-pagination-v4__item[aria-current="true"] {
+    color: oklch(98% 0.005 240);
+    background: oklch(35% 0.04 245);
+    box-shadow: 0 6px 16px -8px oklch(35% 0.04 245 / 0.6);
+  }
+  .dark .arc-pagination-v4__item[aria-current="true"] {
+    background: oklch(80% 0.10 215);
+    color: oklch(20% 0.01 250);
+  }
+
+  /* ---- Active filters v4 (با انیمیشن morph) ------------------------------- */
+  .arc-active-filters-v4 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 0.875rem;
+    border-radius: clamp(0.75rem, 0.6rem + 0.4vw, 1rem);
+    background: oklch(99% 0.003 240 / 0.7);
+    border: 1px solid oklch(90% 0.006 240 / 0.85);
+    box-shadow: 0 8px 24px -16px oklch(40% 0.08 245 / 0.4);
+    backdrop-filter: blur(14px) saturate(1.4);
+  }
+  .dark .arc-active-filters-v4 {
+    background: oklch(19% 0.01 250 / 0.65);
+    border-color: oklch(30% 0.012 250 / 0.8);
+  }
+  .arc-active-filters-v4__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: oklch(50% 0.01 240);
+    padding-inline-end: 0.4rem;
+  }
+  .dark .arc-active-filters-v4__label { color: oklch(70% 0.01 240); }
+  .arc-active-filters-v4__clear {
+    margin-inline-start: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: oklch(50% 0.05 25);
+    padding: 0.3rem 0.7rem;
+    border-radius: 9999px;
+    transition:
+      background 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      color 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .arc-active-filters-v4__clear:hover {
+    background: oklch(60% 0.13 25 / 0.12);
+    color: oklch(45% 0.13 25);
+  }
+  .dark .arc-active-filters-v4__clear { color: oklch(72% 0.10 25); }
+  .dark .arc-active-filters-v4__clear:hover { background: oklch(60% 0.13 25 / 0.18); }
+
+  /* ---- Result meta v4 ------------------------------------------------------ */
+  .arc-result-meta-v4 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.625rem 1rem;
+    padding: 0.5rem 0;
+    font-size: 0.8125rem;
+    color: oklch(50% 0.01 240);
+  }
+  .dark .arc-result-meta-v4 { color: oklch(70% 0.01 240); }
+  .arc-result-meta-v4__num {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: oklch(20% 0.01 240);
+  }
+  .dark .arc-result-meta-v4__num { color: oklch(95% 0.005 240); }
+  .arc-result-meta-v4__sep {
+    flex: 1;
+    block-size: 1px;
+    background: linear-gradient(
+      to end,
+      transparent 0%,
+      oklch(88% 0.005 240 / 0.7) 50%,
+      transparent 100%
+    );
+    min-inline-size: 2rem;
+  }
+  [dir="rtl"] .arc-result-meta-v4__sep {
+    background: linear-gradient(
+      to start,
+      transparent 0%,
+      oklch(88% 0.005 240 / 0.7) 50%,
+      transparent 100%
+    );
+  }
+  .dark .arc-result-meta-v4__sep {
+    background: linear-gradient(
+      to end,
+      transparent 0%,
+      oklch(30% 0.012 250 / 0.7) 50%,
+      transparent 100%
+    );
+  }
+  [dir="rtl"] .dark .arc-result-meta-v4__sep {
+    background: linear-gradient(
+      to start,
+      transparent 0%,
+      oklch(30% 0.012 250 / 0.7) 50%,
+      transparent 100%
+    );
+  }
+
+  /* ---- Reveal scroll-driven (نسل جدید — ترکیب fade + scale + translate) --- */
+  .arc-reveal-v4,
+  [data-arc-reveal-v4] {
+    animation: arc-reveal-v4-in 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 22%;
+  }
+  @keyframes arc-reveal-v4-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 24px, 0) scale(0.97);
+      filter: blur(2px);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0) scale(1);
+      filter: blur(0);
+    }
+  }
+  @supports not (animation-timeline: view()) {
+    .arc-reveal-v4,
+    [data-arc-reveal-v4] { animation: none; opacity: 1; transform: none; filter: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .arc-reveal-v4,
+    [data-arc-reveal-v4] { animation: none; opacity: 1; transform: none; filter: none; }
+  }
+
+  /* ---- View transitions برای جابجایی grid/list --------------------------- */
+  @view-transition { navigation: auto; }
+  ::view-transition-old(arc-grid),
+  ::view-transition-new(arc-grid) {
+    animation-duration: 320ms;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  ::view-transition-old(arc-grid) {
+    animation: arc-fade-scale-out 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  ::view-transition-new(arc-grid) {
+    animation: arc-fade-scale-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes arc-fade-scale-out {
+    from { opacity: 1; transform: scale(1); }
+    to   { opacity: 0; transform: scale(0.98); }
+  }
+  @keyframes arc-fade-scale-in {
+    from { opacity: 0; transform: scale(1.02); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(arc-grid),
+    ::view-transition-new(arc-grid) { animation: none; }
+  }
+
+  /* ---- Eyebrow v4 (badge با conic glow) ---------------------------------- */
+  .arc-eyebrow-v4 {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.875rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.005em;
+    color: oklch(45% 0.04 240);
+    background: oklch(96% 0.005 240 / 0.85);
+    border: 1px solid oklch(88% 0.006 240 / 0.9);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.5) inset;
+  }
+  .dark .arc-eyebrow-v4 {
+    color: oklch(82% 0.04 240);
+    background: oklch(22% 0.01 250 / 0.7);
+    border-color: oklch(32% 0.012 250 / 0.85);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.04) inset;
+  }
+  .arc-eyebrow-v4__icon {
+    width: 1.15rem;
+    height: 1.15rem;
+    border-radius: 0.3rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: oklch(98% 0.005 240);
+    background: linear-gradient(135deg, oklch(60% 0.10 220), oklch(50% 0.10 240));
+  }
+  .arc-eyebrow-v4__icon--emerald { background: linear-gradient(135deg, oklch(70% 0.12 165), oklch(55% 0.10 160)); }
+  .arc-eyebrow-v4__icon--amber { background: linear-gradient(135deg, oklch(78% 0.13 80), oklch(65% 0.12 60)); }
+  .arc-eyebrow-v4__icon--rose { background: linear-gradient(135deg, oklch(70% 0.13 20), oklch(55% 0.12 10)); }
+  .arc-eyebrow-v4__icon--violet { background: linear-gradient(135deg, oklch(62% 0.13 290), oklch(50% 0.14 270)); }
+  .arc-eyebrow-v4__icon--slate { background: linear-gradient(135deg, oklch(60% 0.02 250), oklch(45% 0.02 250)); }
+
+  /* ---- Sheet v4 (bottom sheet) ------------------------------------------- */
+  .arc-sheet-v4 {
+    background: oklch(99% 0.003 240 / 0.96);
+    backdrop-filter: blur(24px) saturate(1.5);
+    -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  }
+  .dark .arc-sheet-v4 {
+    background: oklch(15% 0.01 250 / 0.96);
+  }
+  .arc-sheet-v4__handle {
+    inline-size: 2.5rem;
+    block-size: 0.25rem;
+    border-radius: 9999px;
+    background: oklch(50% 0.02 240 / 0.4);
+    margin: 0.625rem auto 0.4rem;
+    transition: background 200ms;
+  }
+  .arc-sheet-v4__handle:hover { background: oklch(50% 0.02 240 / 0.6); }
+  .dark .arc-sheet-v4__handle { background: oklch(70% 0.01 240 / 0.4); }
+
+  /* ---- Floating Action Button v4 (conic) --------------------------------- */
+  .arc-fab-v4 {
+    position: fixed;
+    z-index: 50;
+    inset-block-end: 1.25rem;
+    inset-inline-end: 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem 0.75rem 0.75rem;
+    border-radius: 9999px;
+    color: oklch(98% 0.005 240);
+    background: oklch(20% 0.012 250);
+    border: 1px solid oklch(35% 0.012 250 / 0.85);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.08) inset,
+      0 20px 48px -12px oklch(0% 0 0 / 0.6),
+      0 0 0 6px oklch(60% 0.10 220 / 0.08);
+    backdrop-filter: blur(12px) saturate(1.4);
+    -webkit-backdrop-filter: blur(12px) saturate(1.4);
+    transition:
+      transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .arc-fab-v4::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: 9999px;
+    padding: 1px;
+    background: conic-gradient(
+      from var(--arc-angle, 0deg),
+      oklch(60% 0.10 220 / 0.7),
+      oklch(72% 0.13 70 / 0.55),
+      oklch(60% 0.10 220 / 0)
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    opacity: 0.85;
+    pointer-events: none;
+    animation: arc-rotate-slow 12s linear infinite;
+  }
+  .arc-fab-v4:hover {
+    transform: translate3d(0, -2px, 0);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.1) inset,
+      0 28px 60px -12px oklch(0% 0 0 / 0.7),
+      0 0 0 8px oklch(60% 0.10 220 / 0.14);
+  }
+  .arc-fab-v4__icon {
+    inline-size: 2rem;
+    block-size: 2rem;
+    border-radius: 9999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, oklch(60% 0.10 220), oklch(50% 0.10 240));
+    color: oklch(98% 0.005 240);
+    flex-shrink: 0;
+  }
+  .arc-fab-v4__label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .arc-fab-v4__count {
+    font-size: 0.6875rem;
+    font-variant-numeric: tabular-nums;
+    color: oklch(85% 0.04 220);
+    background: oklch(98% 0.005 240 / 0.14);
+    border: 1px solid oklch(98% 0.005 240 / 0.22);
+    padding: 0.1rem 0.5rem;
+    border-radius: 9999px;
+    line-height: 1;
+  }
+
+  /* ---- Quick pick v4 (داخل hero) ----------------------------------------- */
+  .arc-quickpick-v4 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .arc-quickpick-v4__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: oklch(50% 0.01 240);
+    padding-inline-end: 0.4rem;
+  }
+  .dark .arc-quickpick-v4__label { color: oklch(70% 0.01 240); }
+  .arc-quickpick-v4__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.75rem 0.35rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: oklch(35% 0.04 240);
+    background: oklch(98% 0.004 240 / 0.7);
+    border: 1px solid oklch(88% 0.006 240 / 0.85);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.5) inset;
+    transition:
+      transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      background 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      color 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .dark .arc-quickpick-v4__item {
+    color: oklch(85% 0.01 240);
+    background: oklch(22% 0.01 250 / 0.6);
+    border-color: oklch(30% 0.012 250 / 0.8);
+  }
+  .arc-quickpick-v4__item:hover {
+    transform: translateY(-1px);
+    color: oklch(98% 0.005 240);
+    background: oklch(35% 0.04 245);
+    border-color: oklch(35% 0.04 245);
+  }
+  .arc-quickpick-v4__item[aria-current="true"] {
+    color: oklch(98% 0.005 240);
+    background: oklch(35% 0.04 245);
+    border-color: oklch(35% 0.04 245);
+  }
+  .arc-quickpick-v4__icon {
+    inline-size: 1.1rem;
+    block-size: 1.1rem;
+    border-radius: 0.3rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: oklch(98% 0.005 240);
+    background: linear-gradient(135deg, oklch(60% 0.10 220), oklch(50% 0.10 240));
+  }
+  .arc-quickpick-v4__count {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: oklch(55% 0.02 240);
+    padding-inline-start: 0.4rem;
+    border-inline-start: 1px solid oklch(85% 0.006 240 / 0.9);
+    font-variant-numeric: tabular-nums;
+  }
+  .dark .arc-quickpick-v4__count { color: oklch(72% 0.01 240); border-inline-start-color: oklch(30% 0.012 250 / 0.7); }
+  .arc-quickpick-v4__item:hover .arc-quickpick-v4__count,
+  .arc-quickpick-v4__item[aria-current="true"] .arc-quickpick-v4__count {
+    color: oklch(85% 0.04 220);
+    border-inline-start-color: oklch(85% 0.04 220 / 0.4);
+  }
+
+  /* ---- Search field v4 (input) ------------------------------------------ */
+  .arc-search-field-v4 {
+    position: relative;
+    display: flex;
+    align-items: center;
+    inline-size: 100%;
+    block-size: clamp(2.5rem, 2.2rem + 0.5vw, 2.875rem);
+    padding-inline: 2.5rem 0.625rem;
+    border-radius: clamp(0.75rem, 0.6rem + 0.4vw, 0.875rem);
+    background: oklch(100% 0 0 / 0.7);
+    border: 1px solid oklch(90% 0.006 240 / 0.9);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.6) inset;
+    transition:
+      border-color 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      background 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .dark .arc-search-field-v4 {
+    background: oklch(20% 0.01 250 / 0.65);
+    border-color: oklch(30% 0.012 250 / 0.85);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.03) inset;
+  }
+  .arc-search-field-v4:focus-within {
+    border-color: oklch(60% 0.10 220 / 0.65);
+    background: oklch(100% 0 0 / 0.96);
+    box-shadow:
+      0 0 0 4px oklch(60% 0.10 220 / 0.12),
+      0 1px 0 oklch(100% 0 0 / 0.6) inset;
+  }
+  .dark .arc-search-field-v4:focus-within {
+    background: oklch(20% 0.01 250 / 0.9);
+    box-shadow:
+      0 0 0 4px oklch(60% 0.10 220 / 0.18),
+      0 1px 0 oklch(100% 0 0 / 0.04) inset;
+  }
+  .arc-search-field-v4__icon {
+    position: absolute;
+    inset-inline-start: 0.85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: oklch(52% 0.02 240);
+    pointer-events: none;
+  }
+  .dark .arc-search-field-v4__icon { color: oklch(70% 0.01 240); }
+  .arc-search-field-v4__input {
+    flex: 1;
+    min-inline-size: 0;
+    block-size: 100%;
+    background: transparent;
+    border: 0;
+    outline: none;
+    font-size: 0.875rem;
+    color: oklch(20% 0.01 240);
+  }
+  .arc-search-field-v4__input::placeholder { color: oklch(58% 0.01 240); }
+  .dark .arc-search-field-v4__input { color: oklch(95% 0.005 240); }
+  .dark .arc-search-field-v4__input::placeholder { color: oklch(60% 0.01 240); }
+  .arc-search-field-v4__trailing {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    color: oklch(55% 0.02 240);
+    gap: 0.4rem;
+  }
+  .dark .arc-search-field-v4__trailing { color: oklch(70% 0.01 240); }
+
+  /* ---- Command trigger v4 (دکمه‌های انتخاب) ------------------------------ */
+  .arc-cmd-trigger-v4 {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.75rem 0.45rem 0.5rem;
+    border-radius: 0.75rem;
+    background: oklch(100% 0 0 / 0.6);
+    border: 1px solid oklch(88% 0.006 240 / 0.85);
+    color: oklch(45% 0.01 240);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    transition:
+      transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      background 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      color 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .arc-cmd-trigger-v4:hover {
+    transform: translateY(-1px);
+    border-color: oklch(60% 0.10 220 / 0.6);
+    color: oklch(20% 0.01 240);
+    background: oklch(100% 0 0 / 0.92);
+  }
+  .dark .arc-cmd-trigger-v4 {
+    background: oklch(22% 0.01 250 / 0.7);
+    border-color: oklch(32% 0.012 250 / 0.85);
+    color: oklch(75% 0.01 240);
+  }
+  .dark .arc-cmd-trigger-v4:hover {
+    color: oklch(95% 0.005 240);
+    background: oklch(22% 0.01 250 / 0.92);
+  }
+  .arc-cmd-trigger-v4__icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 0.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: oklch(98% 0.005 240);
+    background: linear-gradient(135deg, oklch(60% 0.10 220), oklch(50% 0.10 240));
+    flex-shrink: 0;
+  }
+  .arc-cmd-trigger-v4__icon--emerald { background: linear-gradient(135deg, oklch(70% 0.12 165), oklch(55% 0.10 160)); }
+  .arc-cmd-trigger-v4__icon--slate { background: linear-gradient(135deg, oklch(60% 0.02 250), oklch(45% 0.02 250)); }
+  .arc-cmd-trigger-v4__icon--amber { background: linear-gradient(135deg, oklch(78% 0.13 80), oklch(65% 0.12 60)); }
+  .arc-cmd-trigger-v4__label { line-height: 1; }
+  .arc-cmd-trigger-v4__count {
+    font-size: 0.65rem;
+    color: oklch(50% 0.01 240);
+    background: oklch(94% 0.005 240 / 0.7);
+    border: 1px solid oklch(88% 0.006 240 / 0.85);
+    padding: 0.05rem 0.4rem;
+    border-radius: 9999px;
+    font-variant-numeric: tabular-nums;
+  }
+  .dark .arc-cmd-trigger-v4__count {
+    color: oklch(70% 0.01 240);
+    background: oklch(22% 0.01 250 / 0.7);
+    border-color: oklch(32% 0.012 250 / 0.85);
   }
 }

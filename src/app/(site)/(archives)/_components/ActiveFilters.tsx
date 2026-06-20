@@ -1,15 +1,15 @@
 'use client';
 
 /**
- * ActiveFilters — نوار فیلترهای فعال با انیمیشن حذف
+ * ActiveFilters — نوار فیلترهای فعال (v4 — 2026)
  * ----------------------------------------------------------------------------
- * - هر pill با انیمیشن نرم حذف می‌شه
+ * - هر pill با انیمیشن morph نرم (rotate روی remove)
  * - layout راست‌چین برای RTL
  * - همه‌چی server-friendly (فقط لینک هستن)
+ * - glass blur با conic accent بالای strip
  */
 
 import { AnimatePresence, motion } from '@/lib/motion-shim';
-import type { TaxonomyType } from '@/types/types';
 import { ArrowDownAZ, Filter, FolderOpen, Hash, RotateCcw, Search, X } from 'lucide-react';
 import Link from 'next/link';
 import * as React from 'react';
@@ -39,8 +39,8 @@ export default function ActiveFilters({ filters, totalCount }: Props) {
   if (filters.length === 0) return null;
 
   return (
-    <div className="arc-active-filters-v3">
-      <span className="arc-active-filters-v3__label">
+    <div className="arc-active-filters-v4">
+      <span className="arc-active-filters-v4__label">
         <Filter className="w-3.5 h-3.5" aria-hidden />
         <span>
           فیلترهای فعال
@@ -54,9 +54,9 @@ export default function ActiveFilters({ filters, totalCount }: Props) {
           const Icon = f.icon ? ICONS[f.icon] : null;
           const variantClass =
             f.variant === 'primary'
-              ? 'arc-pill--primary'
+              ? 'arc-pill-v4--brand'
               : f.variant === 'accent'
-                ? 'arc-pill--accent'
+                ? 'arc-pill-v4--accent'
                 : '';
           return (
             <motion.div
@@ -64,17 +64,17 @@ export default function ActiveFilters({ filters, totalCount }: Props) {
               initial={{ opacity: 0, scale: 0.85, y: 4 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.85, y: -2 }}
-              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
               layout
             >
               <Link
                 href={f.href}
-                className={`arc-pill ${variantClass}`}
+                className={`arc-pill-v4 ${variantClass}`}
                 aria-label={`حذف فیلتر ${f.label}`}
               >
                 {Icon ? <Icon className="w-3 h-3" aria-hidden /> : null}
                 <span className="max-w-[14rem] truncate">{f.label}</span>
-                <span className="arc-pill__remove" aria-hidden>
+                <span className="arc-pill-v4__remove" aria-hidden>
                   <X className="w-3 h-3" />
                 </span>
               </Link>
@@ -85,7 +85,7 @@ export default function ActiveFilters({ filters, totalCount }: Props) {
 
       <Link
         href="/archive"
-        className="arc-active-filters-v3__clear"
+        className="arc-active-filters-v4__clear"
         aria-label="پاک کردن همه فیلترها"
       >
         <RotateCcw className="w-3.5 h-3.5" aria-hidden />

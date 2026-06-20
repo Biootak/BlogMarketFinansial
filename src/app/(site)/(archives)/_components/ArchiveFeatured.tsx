@@ -57,10 +57,10 @@ const ArchiveFeatured: React.FC<ArchiveFeaturedProps> = ({ post }) => {
   const views = viewCount ?? 0;
 
   return (
-    <Card variant="featured" reveal className="archive-featured">
+    <Card variant="featured" reveal className="arc-fcard-v4">
       <Link
         href={postLink}
-        className="ds-card__media block relative focus:outline-none"
+        className="arc-fcard-v4__media block relative focus:outline-none"
         aria-label={title}
       >
         <SafeImage
@@ -98,7 +98,7 @@ const ArchiveFeatured: React.FC<ArchiveFeaturedProps> = ({ post }) => {
         ) : null}
       </Link>
 
-      <div className="ds-card__body archive-featured__body">
+      <div className="arc-fcard-v4__body">
         {postType && postType !== 'STANDARD' ? (
           <span
             className="inline-flex items-center gap-1.5 self-start px-2.5 py-1 rounded-full text-[11px] font-semibold"
@@ -120,14 +120,14 @@ const ArchiveFeatured: React.FC<ArchiveFeaturedProps> = ({ post }) => {
         ) : null}
 
         <Link href={postLink} className="focus:outline-none focus-visible:underline underline-offset-4">
-          <h2 className="archive-featured__title" title={title}>
+          <h2 className="arc-fcard-v4__title" title={title}>
             {title}
           </h2>
         </Link>
 
-        {excerpt ? <p className="archive-featured__excerpt">{excerpt}</p> : null}
+        {excerpt ? <p className="arc-fcard-v4__excerpt">{excerpt}</p> : null}
 
-        <div className="ds-card__foot">
+        <div className="arc-fcard-v4__foot">
           <div className="ds-card__foot-meta">
             {author ? (
               <span className="inline-flex items-center gap-1.5 min-w-0">

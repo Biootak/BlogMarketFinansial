@@ -10,45 +10,54 @@ type Props = {
 };
 
 /**
- * ArchiveGrid — چیدمان اصلی صفحه‌ی Archive
- * - grid mode: featured در ابتدا + auto-fit grid
- * - list mode: همه‌ی پست‌ها در یک ستون (ArchiveCard variant="list")
- * - CSS-only mode-switch با [data-archive-view] روی <html>
+ * ArchiveGrid — چیدمان اصلی صفحه‌ی Archive (نسخه ۲۰۲۶)
+ * - چیدمان مجله‌ای: featured (2 ستون) + دو کارت کنار (هرکدوم 1 ستون) در یک ردیف
+ * - بقیه‌ی کارت‌ها در 4 ستون برابر
+ * - grid mode تنها (list view حذف شد)
  */
 const ArchiveGrid: React.FC<Props> = ({ posts, betweenPostsAd }) => {
   if (posts.length === 0) return null;
 
-  const [featured, ...rest] = posts;
-  const useFeatured = posts.length > 1;
-  const featuredPost = useFeatured ? featured : null;
-  const gridPosts = useFeatured ? rest : posts;
+  const [first, second, third, ...rest] = posts;
+  const hasTopRow = posts.length >= 2;
+  const featuredPost = hasTopRow ? first : null;
+  const sidePost = hasTopRow ? second : null;
+  const sidePost2 = posts.length >= 3 ? third : null;
+  const gridPosts = hasTopRow ? rest : posts;
   const adAfterIndex = 4;
 
   return (
     <>
-      {/* GRID VIEW */}
-      <div className="archive-grid-view archive-grid">
+      <div className="archive-grid-view arc-grid-hero-3col">
+        {/* Top row: featured (2 col) + side post (1 col) */}
         {featuredPost ? (
-          <div className="archive-grid__featured">
+          <div className="arc-grid-hero-3col__featured" data-arc-reveal-v4>
             <ArchiveFeatured post={featuredPost} />
           </div>
         ) : null}
+        {sidePost ? (
+          <div className="arc-grid-hero-3col__side" data-arc-reveal-v4>
+            <ArchiveCard post={sidePost} ratio="3/4" priority />
+          </div>
+        ) : null}
+        {sidePost2 ? (
+          <div className="arc-grid-hero-3col__side" data-arc-reveal-v4>
+            <ArchiveCard post={sidePost2} ratio="3/4" />
+          </div>
+        ) : null}
+
+        {/* 4-col grid برای بقیه */}
         {gridPosts.map((post, index) => (
           <Fragment key={post.id}>
             {betweenPostsAd && index === adAfterIndex ? (
-              <div className="archive-grid__ad">
+              <div className="arc-grid-hero-3col__ad" data-arc-reveal-v4>
                 <BannerAds ad={betweenPostsAd} variant="rich" />
               </div>
             ) : null}
-            <ArchiveCard post={post} ratio="4/3" />
+            <div className="arc-grid-hero-3col__cell" data-arc-reveal-v4>
+              <ArchiveCard post={post} ratio="4/3" />
+            </div>
           </Fragment>
-        ))}
-      </div>
-
-      {/* LIST VIEW */}
-      <div className="archive-list-view">
-        {posts.map((post) => (
-          <ArchiveCard key={post.id} post={post} variant="list" />
         ))}
       </div>
     </>

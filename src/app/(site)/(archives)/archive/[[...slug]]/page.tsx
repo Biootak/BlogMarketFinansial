@@ -16,6 +16,8 @@ import Pagination from '@/components/Pagination/Pagination';
 import SectionSliderNewAuthors from '@/components/SectionSliderNewAthors/SectionSliderNewAuthors';
 import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
 import ActiveFilters, { type ActiveFilter } from '../../_components/ActiveFilters';
+import ArchiveBreadcrumb from '../../_components/ArchiveBreadcrumb';
+import { buildArchiveCrumbs } from '../../_components/buildArchiveCrumbs';
 import ArchiveGrid from '../../_components/ArchiveGrid';
 import ArchiveHero from '../../_components/ArchiveHero';
 import FilterRail from '../../_components/FilterRail';
@@ -171,79 +173,18 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
 
   return (
     <div className="nc-PageArchive max-w-full @container/archive @md/archive:overflow-x-visible">
-      {/* ============================ Breadcrumb ============================ */}
-      <div className="sticky top-0 z-40 bg-white/70 dark:bg-neutral-900/70 backdrop-blur-xl border-b border-neutral-200/50 dark:border-neutral-800/50">
-        <span className="arc-scroll-progress" aria-hidden />
-        <div className="container">
-          <nav className="flex py-3" aria-label="مسیر">
-            <ol className="flex flex-wrap items-center gap-1">
-              <li>
-                <Link
-                  href="/"
-                  className="group flex items-center gap-1.5 px-2.5 py-1.5 text-neutral-500 hover:text-primary-600 dark:text-neutral-400 dark:hover:text-primary-400 text-sm font-medium rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all duration-200"
-                >
-                  <Home className="w-4 h-4" />
-                  <span className="hidden sm:inline">خانه</span>
-                </Link>
-              </li>
+      {/* ============================ Breadcrumb Header (v4) ============================ */}
+      <ArchiveBreadcrumb
+        {...buildArchiveCrumbs({
+          type,
+          selectedCategory,
+          selectedSubcategory,
+          selectedTag,
+          total,
+        })}
+      />
 
-              <li className="flex items-center">
-                <ChevronLeft className="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
-                <Link
-                  href="/archive"
-                  className="px-2.5 py-1.5 text-neutral-500 hover:text-primary-600 dark:text-neutral-400 dark:hover:text-primary-400 text-sm font-medium rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all duration-200"
-                >
-                  آرشیو
-                </Link>
-              </li>
-
-              {type ? (
-                <li className="flex items-center">
-                  <ChevronLeft className="w-4 h-4 text-neutral-300 dark:text-neutral-600" />
-                  <Link
-                    href={type === 'category' ? '/archive/category' : '/archive/tag'}
-                    className="px-2.5 py-1.5 text-neutral-500 hover:text-primary-600 dark:text-neutral-400 dark:hover:text-primary-400 text-sm font-medium rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all duration-200"
-                  >
-                    {type === 'category' ? 'دسته‌بندی' : 'برچسب'}
-                  </Link>
-                </li>
-              ) : null}
-
-              {selectedCategory ? (
-                <li className="flex items-center min-w-0">
-                  <ChevronLeft className="w-4 h-4 text-neutral-300 dark:text-neutral-600 shrink-0" />
-                  <Link
-                    href={`/archive/category/${selectedCategory.slug}`}
-                    className="px-2.5 py-1.5 text-neutral-700 dark:text-neutral-200 text-sm font-semibold rounded-lg bg-primary-50 dark:bg-primary-900/30 truncate max-w-[10rem] sm:max-w-[14rem] md:max-w-[18rem]"
-                  >
-                    {selectedCategory.name}
-                  </Link>
-                </li>
-              ) : null}
-
-              {selectedSubcategory ? (
-                <li className="flex items-center min-w-0">
-                  <ChevronLeft className="w-4 h-4 text-neutral-300 dark:text-neutral-600 shrink-0" />
-                  <span className="px-2.5 py-1.5 text-primary-600 dark:text-primary-400 text-sm font-semibold bg-primary-100 dark:bg-primary-900/50 rounded-lg truncate max-w-[10rem] sm:max-w-[14rem] md:max-w-[18rem]">
-                    {selectedSubcategory.name}
-                  </span>
-                </li>
-              ) : null}
-
-              {selectedTag ? (
-                <li className="flex items-center min-w-0">
-                  <ChevronLeft className="w-4 h-4 text-neutral-300 dark:text-neutral-600 shrink-0" />
-                  <span className="px-2.5 py-1.5 text-primary-600 dark:text-primary-400 text-sm font-semibold bg-primary-100 dark:bg-primary-900/50 rounded-lg truncate max-w-[10rem] sm:max-w-[14rem] md:max-w-[18rem]">
-                    {selectedTag.name}
-                  </span>
-                </li>
-              ) : null}
-            </ol>
-          </nav>
-        </div>
-      </div>
-
-      {/* ============================ Hero v3 ============================ */}
+      {/* ============================ Hero v4 ============================ */}
       <div className="container mt-4 sm:mt-6 mb-6 sm:mb-8">
         <ArchiveHero
           total={total}
@@ -269,7 +210,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
       <div className="container mb-6 sm:mb-8 hidden md:block">
         <Suspense
           fallback={
-            <div className="arc-rail-v3">
+            <div className="arc-rail-v4">
               <div className="arc-shimmer h-10 w-full" />
             </div>
           }
@@ -305,11 +246,16 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
       {/* ============================ Result meta ============================ */}
       {posts.length > 0 ? (
         <div className="container">
-          <div className="arc-result-strip">
-            <span className="arc-result-strip__count">
+          <div className="arc-result-meta-v4">
+            <span>
               نمایش{' '}
-              <span className="arc-result-strip__num">{posts.length.toLocaleString('fa-IR')}</span>{' '}
-              از <span className="arc-result-strip__num">{total.toLocaleString('fa-IR')}</span>{' '}
+              <span className="arc-result-meta-v4__num">
+                {posts.length.toLocaleString('fa-IR')}
+              </span>{' '}
+              از{' '}
+              <span className="arc-result-meta-v4__num">
+                {total.toLocaleString('fa-IR')}
+              </span>{' '}
               مقاله
             </span>
             {pages > 1 ? (
@@ -317,7 +263,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
                 صفحه {currentPage.toLocaleString('fa-IR')} از {pages.toLocaleString('fa-IR')}
               </span>
             ) : null}
-            <span className="arc-result-strip__sep" aria-hidden />
+            <span className="arc-result-meta-v4__sep" aria-hidden />
           </div>
         </div>
       ) : null}

@@ -65,8 +65,8 @@ export default function ArchiveSearchInput({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="arc-cmd-search-field" aria-label="جستجو در مقالات">
-      <HiOutlineMagnifyingGlass className="arc-cmd-search-field__icon w-4 h-4" aria-hidden />
+    <form onSubmit={handleSubmit} className="arc-search-field-v4" aria-label="جستجو در مقالات">
+      <HiOutlineMagnifyingGlass className="arc-search-field-v4__icon w-4 h-4" aria-hidden />
       <input
         id={inputId}
         type="text"
@@ -79,12 +79,12 @@ export default function ArchiveSearchInput({
           }
         }}
         placeholder="جستجو در مقالات…"
-        className="arc-cmd-search-field__input"
+        className="arc-search-field-v4__input"
         autoComplete="off"
         spellCheck={false}
         aria-label="جستجو در مقالات"
       />
-      <span className="arc-cmd-search-field__trailing">
+      <span className="arc-search-field-v4__trailing">
         {isPending ? (
           <span
             className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin opacity-60"
@@ -94,7 +94,7 @@ export default function ArchiveSearchInput({
           <button
             type="button"
             onClick={handleClear}
-            className="arc-cmd-search-field__clear arc-focus"
+            className="arc-search-field-v4__clear arc-focus"
             aria-label="پاک کردن جستجو"
           >
             <HiXMark className="w-3.5 h-3.5" />

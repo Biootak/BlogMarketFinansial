@@ -37,18 +37,18 @@ export default function CommandTrigger({
     <button
       type="button"
       onClick={onClick}
-      className={`arc-cmd-trigger arc-focus ${className}`}
+      className={`arc-cmd-trigger-v4 arc-focus ${className}`}
       aria-label={`${isCategory ? 'انتخاب دسته‌بندی' : 'انتخاب برچسب'}${selectedName ? ` — ${selectedName}` : ''}`}
     >
-      <span className={`arc-cmd-trigger__icon${iconClass ? ` ${iconClass}` : ''}`}>
+      <span className={`arc-cmd-trigger-v4__icon${iconClass ? ` ${iconClass}` : ''}`}>
         <Icon className="w-3.5 h-3.5" />
       </span>
-      <span className="arc-cmd-trigger__label truncate max-w-[10rem]">{label}</span>
+      <span className="arc-cmd-trigger-v4__label truncate max-w-[10rem]">{label}</span>
       {typeof count === 'number' && !selectedName ? (
-        <span className="arc-cmd-trigger__count">{count.toLocaleString('fa-IR')}</span>
+        <span className="arc-cmd-trigger-v4__count">{count.toLocaleString('fa-IR')}</span>
       ) : null}
       {selectedName ? (
-        <span className="arc-cmd-trigger__count">
+        <span className="arc-cmd-trigger-v4__count">
           <X className="w-3 h-3" aria-hidden />
         </span>
       ) : (

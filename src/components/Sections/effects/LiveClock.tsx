@@ -46,14 +46,26 @@ export default function LiveClock({
   showIcon = true,
   timeZone = 'Asia/Tehran',
 }: LiveClockProps) {
-  const [time, setTime] = useState(() => getTimeParts(showSeconds, timeZone));
+  // server snapshot: خالی. client بعد از mount populate می‌کنه.
+  // این کار از hydration mismatch (به‌دلیل تفاوت ثانیه‌ی سرور و کلاینت) جلوگیری می‌کنه.
+  const [time, setTime] = useState<{ hour: string; minute: string; second: string | undefined }>({
+    hour: '۰۰',
+    minute: '۰۰',
+    second: undefined,
+  });
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const update = () => setTime(getTimeParts(showSeconds, timeZone));
     update();
     const id = setInterval(update, 1000);
     return () => clearInterval(id);
   }, [showSeconds, timeZone]);
+
+  // تا قبل از mount، فقط hour:minute بدون ثانیه نمایش بده
+  // تا HTML سرور و کلاینت یکسان باشن
+  const renderSecond = mounted && showSeconds && time.second;
 
   return (
     <div
@@ -81,14 +93,14 @@ export default function LiveClock({
       <span className="font-semibold text-neutral-800 dark:text-neutral-200">
         {time.minute}
       </span>
-      {showSeconds && time.second && (
+      {showSeconds && renderSecond ? (
         <>
           <span className="text-neutral-400 anim-blink" aria-hidden>:</span>
           <span className="text-neutral-500 dark:text-neutral-400">
-            {toPersianNumber(time.second)}
+            {toPersianNumber(time.second!)}
           </span>
         </>
-      )}
+      ) : null}
       <span
         className="ms-1 inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500 anim-liveclock-pulse"
         aria-hidden

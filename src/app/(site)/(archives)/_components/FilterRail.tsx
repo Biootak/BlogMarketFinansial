@@ -1,11 +1,13 @@
 'use client';
 
 /**
- * FilterRail — نوار فیلتر مدرن (v3)
+ * FilterRail — نوار فیلتر مدرن (v4 — 2026)
  * ----------------------------------------------------------------------------
- * - استیکی هنگام اسکرول
+ * - استیکی هنگام اسکرول با glass blur 24px
+ * - top accent bar متحرک
  * - search + cmd trigger + sort + view toggle
  * - suggestion chips برای quick-pick
+ * - کیبورد شورتکات ⌘K (Ctrl+K) و `/`
  */
 
 import type { TaxonomyType } from '@/types/types';
@@ -58,8 +60,6 @@ export default function FilterRail({
   };
 
   // میانبرهای سراسری صفحه‌کلید — حس command-center
-  //  ⌘K / Ctrl+K → باز کردن پنل دسته‌بندی
-  //  /           → فوکوس روی جستجو
   useEffect(() => {
     const isTypingTarget = (el: EventTarget | null) => {
       const node = el as HTMLElement | null;
@@ -88,8 +88,8 @@ export default function FilterRail({
 
   return (
     <>
-      <div className="arc-rail-v3">
-        <div className="arc-rail-v3__row">
+      <div className="arc-rail-v4">
+        <div className="arc-rail-v4__row">
           <div className="flex-1 min-w-0 max-w-xl">
             <ArchiveSearchInput initialQuery={initialQuery} />
           </div>
@@ -108,7 +108,7 @@ export default function FilterRail({
               selectedName={currentTag?.name ?? null}
             />
 
-            <div className="arc-segmented-v3" role="tablist" aria-label="مرتب‌سازی">
+            <div className="arc-segmented-v4" role="tablist" aria-label="مرتب‌سازی">
               {filters.map((f) => {
                 const isActive = initialFilter === f.name;
                 return (
@@ -118,7 +118,7 @@ export default function FilterRail({
                     role="tab"
                     aria-selected={isActive}
                     aria-current={isActive ? 'true' : undefined}
-                    className="arc-segmented-v3__item"
+                    className="arc-segmented-v4__item"
                     onClick={() => setFilter(f.name)}
                     title={f.name}
                   >
@@ -143,8 +143,8 @@ export default function FilterRail({
         </div>
 
         {showSuggestions && quickPickTags.length > 0 ? (
-          <div className="arc-rail-v3__row">
-            <span className="arc-quickpick-v3__label">
+          <div className="arc-rail-v4__row">
+            <span className="arc-quickpick-v4__label">
               <SearchIcon className="w-3.5 h-3.5" aria-hidden />
               <span>جستجوی پرطرفدار</span>
             </span>
@@ -152,15 +152,17 @@ export default function FilterRail({
               <button
                 key={tag.id}
                 type="button"
-                className="arc-suggestion"
+                className="arc-quickpick-v4__item"
                 onClick={() => router.push(`/archive/tag/${tag.slug}`)}
               >
-                <span className="arc-suggestion__icon">
-                  <span className="text-xs font-bold">#</span>
+                <span className="arc-quickpick-v4__icon">
+                  <span className="text-[10px] font-bold">#</span>
                 </span>
                 <span className="truncate max-w-[8rem]">{tag.name}</span>
                 {typeof tag.count === 'number' ? (
-                  <span className="arc-suggestion__count">{tag.count.toLocaleString('fa-IR')}</span>
+                  <span className="arc-quickpick-v4__count">
+                    {tag.count.toLocaleString('fa-IR')}
+                  </span>
                 ) : null}
               </button>
             ))}

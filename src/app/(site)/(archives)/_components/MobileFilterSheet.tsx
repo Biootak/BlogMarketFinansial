@@ -79,22 +79,22 @@ export default function MobileFilterSheet({
     <>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <button type="button" className="arc-fab arc-focus" aria-label="باز کردن فیلترها">
-            <span className="arc-fab__icon" aria-hidden>
+          <button type="button" className="arc-fab-v4 arc-focus" aria-label="باز کردن فیلترها">
+            <span className="arc-fab-v4__icon" aria-hidden>
               <SlidersHorizontal className="w-4 h-4" />
             </span>
-            <span className="arc-fab__label">فیلترها</span>
+            <span className="arc-fab-v4__label">فیلترها</span>
             {activeFilterCount > 0 ? (
-              <span className="arc-fab__count">{activeFilterCount.toLocaleString('fa-IR')}</span>
+              <span className="arc-fab-v4__count">{activeFilterCount.toLocaleString('fa-IR')}</span>
             ) : null}
           </button>
         </SheetTrigger>
 
         <SheetContent
           side="bottom"
-          className="arc-sheet rounded-t-3xl border-0 p-0 h-[90dvh] flex flex-col [&>button]:hidden"
+          className="arc-sheet-v4 rounded-t-3xl border-0 p-0 h-[90dvh] flex flex-col [&>button]:hidden"
         >
-          <div className="arc-sheet__handle" aria-hidden />
+          <div className="arc-sheet-v4__handle" aria-hidden />
           <SheetTitle className="sr-only">فیلترهای آرشیو</SheetTitle>
 
           <div className="px-5 pt-2 pb-4 flex items-center justify-between">
@@ -164,7 +164,7 @@ export default function MobileFilterSheet({
                   مرتب‌سازی
                 </span>
               </div>
-              <div className="arc-segmented-v3 w-full" role="tablist" aria-label="مرتب‌سازی">
+              <div className="arc-segmented-v4 w-full" role="tablist" aria-label="مرتب‌سازی">
                 {filters.map((f) => {
                   const isActive = filter === f.name;
                   return (
@@ -174,7 +174,7 @@ export default function MobileFilterSheet({
                       role="tab"
                       aria-selected={isActive}
                       aria-current={isActive ? 'true' : undefined}
-                      className="arc-segmented-v3__item flex-1 justify-center"
+                      className="arc-segmented-v4__item flex-1 justify-center"
                       onClick={() => {
                         setFilter(f.name);
                         handleApply({ filter: f.name });
