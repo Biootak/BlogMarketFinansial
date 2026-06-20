@@ -13,8 +13,18 @@ const UNIT_LABELS: Record<MarketRateUnit, string> = {
 
 /**
  * فرمت عدد + واحد پولی.
- * مثال: formatWithUnit(161500, 'toman', 0) → '۱۶۱,۵۰۰ تومان'
- * مثال: formatWithUnit(4160.26, 'usd', 2) → '۴,۱۶۰.۲۶ دلار'
+ *
+ * Source order: «${value} ${unit}» (عدد قبل از واحد)
+ * در container با dir="rtl"، BiDi algorithm این ترتیب را به صورت
+ * بصری «${unit} ${value}» نمایش می‌دهد (واحد سمت چپ، عدد سمت راست).
+ *
+ * مثال: formatWithUnit(161500, 'toman', 0)
+ *   source: '۱۶۱٬۵۰۰ تومان'
+ *   visual: 'تومان ۱۶۱٬۵۰۰'
+ *
+ * مثال: formatWithUnit(4160.26, 'usd', 2)
+ *   source: '۴٬۱۶۰٫۲۶ دلار'
+ *   visual: 'دلار ۴٬۱۶۰٫۲۶'
  */
 export function formatWithUnit(
   value: number,

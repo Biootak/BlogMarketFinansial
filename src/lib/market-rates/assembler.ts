@@ -35,36 +35,17 @@ type RegistryEntry = import('./types').SymbolRegistryEntry;
  *   5. هیچ‌کدام → null (در ticker نمایش داده نمی‌شود)
  *
  * خروجی: آرایه‌ی مرتب‌شده بر اساس priority.
+ *
+ * نکته: پس از migration `20260620120000_add_exchange_rate_registry_fields`
+ * همهٔ ستون‌های registry (symbol, displayNameFa, group, unit, divisor,
+ * decimals, priority, provider, tgjuKey, active) روی ExchangeRate
+ * تضمین‌شده‌اند. نیازی به fallback نیست.
  */
 export async function assembleMarketRates(): Promise<MarketRateItem[]> {
-  // 2026-06-20: dual-mode — schema جدید (symbol/active/priority) ممکن است
-  // در production هنوز migration نشده باشد. ابتدا با select کامل امتحان
-  // می‌کنیم؛ اگر Prisma خطا داد (ستون ناشناس)، به legacy mode برمی‌گردیم.
-  let dbRows: DbRow[];
-  try {
-    dbRows = await prisma.exchangeRate.findMany({
-      where: { active: true },
-      orderBy: { priority: 'asc' },
-    });
-  } catch {
-    // fallback: select قدیمی (currency, name, singleRate)
-    const legacyRows = await prisma.exchangeRate.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
-    dbRows = legacyRows.map((r) => ({
-      ...r,
-      symbol: null,
-      displayNameFa: null,
-      group: null,
-      unit: null,
-      divisor: 1,
-      decimals: 0,
-      priority: 50,
-      provider: 'manual',
-      tgjuKey: null,
-      active: true,
-    })) as unknown as DbRow[];
-  }
+  const dbRows = await prisma.exchangeRate.findMany({
+    where: { active: true },
+    orderBy: { priority: 'asc' },
+  });
 
   const [tgjuResult, usdt, fx] = await Promise.all([
     fetchTgjuLatest(),

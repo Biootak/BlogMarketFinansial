@@ -27,6 +27,7 @@ test('TGJU key ons', TGJU_KEY_TO_SYMBOL.get('ons'), 'GLOBAL_OUNCE_GOLD');
 
 console.log('=== formatWithUnit (probe values from 2026-06-20) ===');
 // Intl fa-IR از ٬ (U+066C) برای هزارگان و ٫ (U+066B) برای اعشار استفاده می‌کند
+// source order: value قبل از unit (در RTL بصری: unit سمت چپ، value سمت راست)
 test('USD 161,500 toman', formatWithUnit(161500, 'toman', 0), '۱۶۱٬۵۰۰ تومان');
 test('SEKKEH 167,990,000 toman', formatWithUnit(167990000, 'toman', 0), '۱۶۷٬۹۹۰٬۰۰۰ تومان');
 test('GOLD18K 16,221,000 toman', formatWithUnit(16221000, 'toman', 0), '۱۶٬۲۲۱٬۰۰۰ تومان');
