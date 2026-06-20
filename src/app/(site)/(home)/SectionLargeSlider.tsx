@@ -1,6 +1,6 @@
 import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
 import { getFeaturedPosts } from '@/actions/getFeaturedPosts';
-import { getFreeMarketRates } from '@/actions/marketRates';
+import { getMarketRates } from '@/actions/market-rates';
 import { getRateLists } from '@/actions/rate-lists';
 import Empty from '@/components/Empty';
 import type { PostWithRelations, RateListData } from '@/types/types';
@@ -9,14 +9,14 @@ import DeferredDesign7 from './deferred/DeferredDesign7';
 
 const getFeaturedPostsCached = cache(getFeaturedPosts);
 const getCryptoTickerRatesCached = cache(fetchCryptoTickerRates);
-const getFreeMarketRatesCached = cache(getFreeMarketRates);
+const getMarketRatesCached = cache(getMarketRates);
 const getRateListsCached = cache(getRateLists);
 
 export default async function SectionLargeSlider() {
   const [postsResult, ratesResult, marketRates, rateLists] = await Promise.all([
     getFeaturedPostsCached(3),
     getCryptoTickerRatesCached(),
-    getFreeMarketRatesCached(),
+    getMarketRatesCached(),
     getRateListsCached(),
   ]);
 

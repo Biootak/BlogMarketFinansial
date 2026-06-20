@@ -15,7 +15,7 @@
  * ----------------------------------------------------------------------------
  */
 
-import type { MarketRateItem } from '@/actions/marketRates';
+import type { MarketRateItem } from '@/lib/market-rates';
 import Avatar from '@/components/Avatar/Avatar';
 import { SafeImage } from '@/components/SafeImage';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
