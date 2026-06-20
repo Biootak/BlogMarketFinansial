@@ -91,7 +91,10 @@ export default function MarketRatesTickerBar({
                 </span>
 
                 {/* Change — حتی وقتی 0 هست pill خاکستری با آیکون Minus نشون داده می‌شه
-                    تا کاربر بدونه تغییر لحظه‌ای موجود نیست (نه اینکه دیتا غایبه). */}
+                    تا کاربر بدونه تغییر لحظه‌ای موجود نیست (نه اینکه دیتا غایبه).
+                    عدد در یک <span dir="ltr"> ایزوله می‌شه تا الگوریتم BiDi در یک
+                    container RTL، ارقام فارسی را معکوس نکند (مثلا '+۳.۱۹%' به
+                    صورت '%۳.۱۹+' دیده نشود). */}
                 {hasChange && (
                   <span
                     className={cn(
@@ -106,8 +109,10 @@ export default function MarketRatesTickerBar({
                     ) : (
                       <Minus className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                     )}
-                    {isPositive ? '+' : ''}
-                    {toPersianNumber(rate.change.toFixed(2))}%
+                    <span dir="ltr" className="inline-block">
+                      {isPositive ? '+' : ''}
+                      {toPersianNumber(rate.change.toFixed(2))}%
+                    </span>
                   </span>
                 )}
               </div>
