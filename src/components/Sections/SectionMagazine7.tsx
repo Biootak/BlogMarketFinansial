@@ -23,10 +23,10 @@ const SectionMagazine7: FC<SectionMagazine7Props> = ({ posts = [], className = '
           </div>
           <div>
             <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
-              مرور محتواهای دیدنی
+              روایت‌های تصویری
             </h2>
             <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-              بیش از {posts.length} مقاله با گالری
+              {posts.length > 0 ? `بیش از ${posts.length.toLocaleString('fa-IR')} روایت تصویری` : 'روایت‌هایی که با تصویر جان می‌گیرند'}
             </p>
           </div>
         </div>

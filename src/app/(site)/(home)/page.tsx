@@ -81,8 +81,8 @@ export default async function Home() {
           <DeferredTrending
             categories={popularCategories}
             maxItems={9}
-            title="موضوعات پرطرفدار"
-            subtitle="این دسته‌بندیها الان بیشتر از همه خونده میشن"
+            title="موضوعات داغ"
+            subtitle="پرطرفدارترین دسته‌بندی‌هایی که الان در بازار می‌درخشند"
             viewAllHref="/archive"
           />
         </div>
@@ -115,7 +115,7 @@ export default async function Home() {
 
       {secondStrip.length > 0 && (
         <div className="container relative mt-8 lg:mt-12" style={{ minHeight: '300px' }}>
-          <DeferredAdStrip ads={secondStrip} accentColor="#22d3ee" eyebrow="پیشنهاد اخیر" />
+          <DeferredAdStrip ads={secondStrip} accentColor="#22d3ee" eyebrow="تازه‌های پیشنهادی" />
         </div>
       )}
 

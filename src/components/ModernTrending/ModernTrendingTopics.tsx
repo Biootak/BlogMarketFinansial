@@ -156,8 +156,8 @@ const ModernTrendingTopics: FC<ModernTrendingTopicsProps> = ({
   className,
   maxItems,
   viewAllHref = '/archive',
-  title = 'موضوعات پرطرفدار',
-  subtitle = 'این دسته‌بندی‌ها الان بیشتر از همه خونده می‌شن',
+  title = 'موضوعات داغ',
+  subtitle = 'پرطرفدارترین دسته‌بندی‌هایی که الان در بازار می‌درخشند',
 }) => {
   // همه دسته‌ها (بدون محدودیت) — برای Ticker
   const allCategories = useMemo(
@@ -199,7 +199,7 @@ const ModernTrendingTopics: FC<ModernTrendingTopicsProps> = ({
         'contain-paint',
         className,
       )}
-      aria-label="موضوعات پرطرفدار"
+      aria-label="موضوعات داغ"
     >
       {/* AURORA — refined */}
       <AuroraBackground intensity={0.55} />

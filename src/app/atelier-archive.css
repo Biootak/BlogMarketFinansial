@@ -12,6 +12,14 @@
   .atl-page {
     --atl-gap: var(--ds-space-5);
     --atl-rule: var(--ds-border-default);
+    /* Harmonize the whole archive surface with the site's real brand (indigo
+       --primary-*), so chips, focus rings, card accents and the command panel
+       match the rest of the site instead of the DS default blue. */
+    --ds-brand-50: var(--color-primary-50);
+    --ds-brand-100: var(--color-primary-100);
+    --ds-brand-500: var(--color-primary-500);
+    --ds-brand-600: var(--color-primary-600);
+    --ds-brand-700: var(--color-primary-700);
     position: relative;
     color: var(--ds-text-primary);
   }
@@ -67,6 +75,8 @@
   @media (min-width: 64rem) {
     .atl-hero { grid-template-columns: 0.95fr 1.05fr; }
   }
+  /* No featured story → collapse to a single column (avoid an empty panel) */
+  .atl-hero--solo { grid-template-columns: 1fr !important; }
   .atl-hero::before {
     /* faint editorial grid, only on the intro side */
     content: "";
@@ -265,7 +275,7 @@
   /* ============================ Toolbar (sticky) ============================ */
   .atl-toolbar {
     position: sticky;
-    top: 0.75rem;
+    inset-block-start: 0.5rem;
     z-index: 30;
     display: flex;
     align-items: center;
@@ -336,9 +346,18 @@
   .atl-result-meta__rule { flex: 1; height: 1px; background: var(--atl-rule); }
 
   /* ============================ Dense editorial grid ============================ */
+  /* Feed = complete grids separated by ad strips (no row-breaking inside a grid) */
+  .atl-feed {
+    display: flex;
+    flex-direction: column;
+    gap: var(--atl-gap);
+  }
+
   .atl-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16.5rem), 1fr));
+    /* auto-fit (نه auto-fill): وقتی تعداد کارت‌ها کم است ستون‌ها کش می‌آیند و
+       کل عرض را پر می‌کنند، به‌جای رها کردن ستون‌های خالی کنار صفحه. */
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16.5rem), 1fr));
     gap: var(--atl-gap);
   }
 
@@ -416,33 +435,277 @@
   .atl-card__stats { display: inline-flex; align-items: center; gap: var(--ds-space-3); flex: none; }
   .atl-card__stats span { display: inline-flex; align-items: center; gap: 0.25rem; }
 
-  /* ============================ Ad band (own section) ============================ */
-  .atl-ad {
-    position: relative;
-    margin-block: var(--ds-space-8);
-    padding: var(--ds-space-3);
-    border-radius: var(--ds-radius-2xl);
-    background: var(--ds-surface-recessed);
-    border: 1px dashed var(--ds-border-default);
+  /* ============================ Ad strip (woven, compact) ================== */
+  .atl-adstrip {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds-space-2);
+    margin-block: var(--ds-space-1);
   }
-  .atl-ad__label {
-    position: absolute;
-    inset-block-start: calc(var(--ds-space-3) * -0.5);
-    inset-inline-start: var(--ds-space-5);
-    padding: 0.1rem 0.6rem;
-    border-radius: var(--ds-radius-full);
-    background: var(--ds-canvas);
-    border: 1px solid var(--ds-border-default);
+  .atl-adstrip__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    align-self: flex-start;
     font-size: 0.65rem;
     letter-spacing: 0.08em;
     color: var(--ds-text-muted);
   }
-  .atl-ad__inner { border-radius: var(--ds-radius-xl); overflow: hidden; }
+  .atl-adstrip__label::before {
+    content: "";
+    width: 0.35rem; height: 0.35rem;
+    border-radius: 50%;
+    background: var(--ds-accent-amber);
+  }
+  .atl-adstrip__row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    gap: var(--atl-gap);
+  }
+  .atl-adstrip__item {
+    border-radius: var(--ds-radius-xl);
+    overflow: hidden;
+    border: 1px solid var(--ds-border-subtle);
+    background: var(--ds-surface-recessed);
+  }
 
   /* ============================ Section divider ============================ */
   .atl-section {
     margin-top: var(--ds-space-10);
     padding-top: var(--ds-space-8);
     border-top: 1px solid var(--atl-rule);
+  }
+
+  /* ============================ Command palette (categories / tags) ======== */
+  .atl-cmd-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: var(--ds-space-3);
+    background: oklch(15% 0.012 250 / 0.5);
+    backdrop-filter: blur(10px) saturate(120%);
+  }
+  @media (min-width: 48rem) {
+    .atl-cmd-overlay { align-items: center; padding: var(--ds-space-6); }
+  }
+  .atl-cmd {
+    width: 100%;
+    max-width: 36rem;
+    margin-top: 3rem;
+    display: flex;
+    flex-direction: column;
+    max-height: min(34rem, 82vh);
+    overflow: hidden;
+    border-radius: var(--ds-radius-2xl);
+    background: var(--ds-canvas);
+    border: 1px solid var(--ds-border-strong);
+    box-shadow: var(--ds-shadow-lg);
+  }
+  @media (min-width: 48rem) { .atl-cmd { margin-top: 0; } }
+
+  .atl-cmd__head {
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-3);
+    padding: var(--ds-space-4) var(--ds-space-4) var(--ds-space-3);
+  }
+  .atl-cmd__icon {
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    width: 2.5rem; height: 2.5rem;
+    flex: none;
+    border-radius: var(--ds-radius-lg);
+    color: var(--ds-text-inverse);
+    background: linear-gradient(135deg, var(--ds-brand-500), var(--ds-brand-700));
+  }
+  .atl-cmd__icon.--emerald {
+    background: linear-gradient(135deg, var(--ds-accent-emerald),
+      color-mix(in oklch, var(--ds-accent-emerald), black 28%));
+  }
+  .atl-cmd__title { font-size: var(--ds-text-lg); font-weight: var(--ds-weight-bold); color: var(--ds-text-primary); line-height: 1.2; }
+  .atl-cmd__sub { font-size: var(--ds-text-xs); color: var(--ds-text-muted); margin-top: 0.15rem; }
+  .atl-cmd__close {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 2.25rem; height: 2.25rem; flex: none;
+    border-radius: var(--ds-radius-md);
+    color: var(--ds-text-muted);
+    transition: background var(--ds-duration-fast), color var(--ds-duration-fast);
+  }
+  .atl-cmd__close:hover { background: var(--ds-surface-recessed); color: var(--ds-text-primary); }
+
+  .atl-cmd__search {
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-2);
+    margin: 0 var(--ds-space-4) var(--ds-space-3);
+    padding: 0 var(--ds-space-3);
+    height: 2.85rem;
+    border-radius: var(--ds-radius-lg);
+    background: var(--ds-surface-recessed);
+    border: 1px solid var(--ds-border-default);
+    transition: border-color var(--ds-duration-fast), box-shadow var(--ds-duration-fast);
+  }
+  .atl-cmd__search:focus-within {
+    border-color: color-mix(in oklch, var(--ds-brand-500), transparent 40%);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500), transparent 85%);
+  }
+  .atl-cmd__search-icon { color: var(--ds-text-muted); flex: none; }
+  .atl-cmd__search input {
+    flex: 1; min-width: 0;
+    background: transparent; border: 0; outline: 0;
+    font-size: var(--ds-text-sm);
+    color: var(--ds-text-primary);
+  }
+  .atl-cmd__search input::placeholder { color: var(--ds-text-muted); }
+
+  .atl-cmd__list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 var(--ds-space-3) var(--ds-space-2);
+    scrollbar-width: thin;
+  }
+  .atl-cmd__section { padding-bottom: var(--ds-space-2); }
+  .atl-cmd__section-title {
+    display: flex; align-items: center; gap: 0.4rem;
+    padding: var(--ds-space-2) var(--ds-space-2);
+    font-size: var(--ds-text-xs);
+    font-weight: var(--ds-weight-semibold);
+    color: var(--ds-text-muted);
+    position: sticky; top: 0;
+    background: var(--ds-canvas);
+    z-index: 1;
+  }
+  .atl-cmd__item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-3);
+    width: 100%;
+    padding: 0.6rem var(--ds-space-2);
+    border-radius: var(--ds-radius-md);
+    text-align: start;
+    cursor: pointer;
+    transition: background var(--ds-duration-fast);
+  }
+  .atl-cmd__item::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block: 0.5rem;
+    width: 3px;
+    border-radius: var(--ds-radius-full);
+    background: var(--ds-brand-500);
+    opacity: 0;
+    transition: opacity var(--ds-duration-fast);
+  }
+  .atl-cmd__item[aria-selected="true"] { background: var(--ds-surface-recessed); }
+  .atl-cmd__item[aria-selected="true"]::before { opacity: 1; }
+  .atl-cmd__item-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 2.1rem; height: 2.1rem; flex: none;
+    border-radius: var(--ds-radius-md);
+    color: var(--ds-brand-600);
+    background: color-mix(in oklch, var(--ds-brand-500), var(--ds-canvas) 85%);
+  }
+  .atl-cmd__item-icon.--emerald {
+    color: color-mix(in oklch, var(--ds-accent-emerald), black 18%);
+    background: color-mix(in oklch, var(--ds-accent-emerald), var(--ds-canvas) 85%);
+  }
+  .atl-cmd__item-icon.--slate {
+    color: var(--ds-text-secondary);
+    background: var(--ds-surface-recessed);
+  }
+  .atl-cmd__item-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.1rem; }
+  .atl-cmd__item-name {
+    font-size: var(--ds-text-sm);
+    font-weight: var(--ds-weight-medium);
+    color: var(--ds-text-primary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .atl-cmd__item-meta { font-size: var(--ds-text-xs); color: var(--ds-text-muted); }
+  .atl-cmd__item-trailing { flex: none; }
+  .atl-cmd__count {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 1.6rem; height: 1.6rem; padding: 0 0.4rem;
+    border-radius: var(--ds-radius-full);
+    font-size: var(--ds-text-xs);
+    font-variant-numeric: tabular-nums;
+    color: var(--ds-text-secondary);
+    background: var(--ds-surface-recessed);
+  }
+  .atl-cmd__item[aria-selected="true"] .atl-cmd__count {
+    color: var(--ds-brand-600);
+    background: color-mix(in oklch, var(--ds-brand-500), var(--ds-canvas) 82%);
+  }
+  .atl-cmd__empty {
+    padding: var(--ds-space-8) var(--ds-space-4);
+    text-align: center;
+    font-size: var(--ds-text-sm);
+    color: var(--ds-text-muted);
+  }
+
+  .atl-cmd__foot {
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-4);
+    flex-wrap: wrap;
+    padding: var(--ds-space-3) var(--ds-space-4);
+    border-top: 1px solid var(--ds-border-subtle);
+    font-size: var(--ds-text-xs);
+    color: var(--ds-text-muted);
+    background: var(--ds-canvas-subtle);
+  }
+  .atl-cmd__foot > span { display: inline-flex; align-items: center; gap: 0.35rem; }
+  .atl-kbd {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 1.4rem; height: 1.4rem; padding: 0 0.35rem;
+    border-radius: var(--ds-radius-sm);
+    background: var(--ds-surface);
+    border: 1px solid var(--ds-border-default);
+    box-shadow: 0 1px 0 var(--ds-border-default);
+    font-size: 0.7rem;
+    color: var(--ds-text-secondary);
+  }
+
+  /* ============================ Focus visibility (a11y) ==================== */
+  /* Media/feature links sit inside overflow:hidden wrappers, so an offset
+     outline would be clipped — use an inset ring instead. */
+  .atl-hero__feature:focus-visible,
+  .atl-card__media:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 3px var(--ds-brand-500);
+  }
+  .atl-chip:focus-visible,
+  .atl-sort__item:focus-visible,
+  .atl-active__pill:focus-visible,
+  .atl-active__clear:focus-visible,
+  .atl-cmd__item:focus-visible {
+    outline: 2px solid var(--ds-brand-500);
+    outline-offset: 2px;
+  }
+  .atl-card__title:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
+
+  /* ============================ Responsive guards ========================= */
+  /* On narrow viewports the hero feature should keep a sensible height and
+     not dominate the fold. */
+  @media (max-width: 40rem) {
+    .atl-hero__feature { min-height: 15rem; aspect-ratio: 16/10; }
+    .atl-stats { gap: var(--ds-space-4); }
+    .atl-grid { gap: var(--ds-space-4); }
+    .atl-toolbar { border-radius: var(--ds-radius-2xl); }
+    .atl-toolbar__group { width: 100%; }
+    /* Sort segments can be wider than the screen — let them scroll, never break */
+    .atl-sort {
+      flex: 1;
+      max-width: 100%;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .atl-sort::-webkit-scrollbar { display: none; }
+    .atl-sort__item { flex: none; }
   }
 }

@@ -9,7 +9,6 @@ import { getTags } from '@/actions/getTags';
 import { getTopAuthors } from '@/actions/getTopAuthors';
 import { getArchivePosts } from '@/actions/postActions';
 import BackgroundSection from '@/components/BackgroundSection/BackgroundSection';
-import BannerAds from '@/components/BannerADS/BannerADS';
 import DynamicCategories from '@/components/DynamicCategories';
 import Empty from '@/components/Empty';
 import Pagination from '@/components/Pagination/Pagination';
@@ -28,20 +27,21 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const [type, category, subcategory] = slug || [];
-  let title = 'گنجینه مقالات | دنیای دانش و الهام';
-  let description = 'کاوش در مجموعه گسترده مقالات ما: از علم تا هنر، از فناوری تا فلسفه';
+  let title = 'روایت‌های بازار | روایت، تحلیل و کشف روندهای تازه';
+  let description =
+    'روایت‌ها و تحلیل‌های برگزیده از بازارهای مالی، اقتصاد و فناوری؛ هر مقاله پنجره‌ای تازه به دنیای سرمایه.';
 
   if (type === 'category') {
     if (subcategory) {
-      title = `مقالات ${subcategory} در دسته‌بندی ${category} | ${title}`;
-      description = `مطالب مرتبط با ${subcategory} در دسته‌بندی ${category}`;
+      title = `${subcategory} در دسته‌بندی ${category} | ${title}`;
+      description = `تازه‌ترین مقالات و تحلیل‌های مرتبط با «${subcategory}» در دسته‌بندی ${category}.`;
     } else {
       title = `مقالات دسته‌بندی ${category} | ${title}`;
-      description = `مطالب مرتبط با دسته‌بندی ${category}`;
+      description = `هر آنچه درباره‌ی «${category}» نوشته‌ایم؛ از تحلیل تخصصی تا آموزش کاربردی.`;
     }
   } else if (type === 'tag') {
     title = `مقالات با برچسب ${category} | ${title}`;
-    description = `مطالب مرتبط با برچسب ${category}`;
+    description = `همه‌ی مطالب نشان‌دار شده با «${category}»، یکجا و مرتب.`;
   }
 
   return { title, description };
@@ -93,7 +93,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
       getTags({ limit: 12, page: 1 }),
       getTopAuthors(5),
       getActiveAdvertisements({
-        limit: 1,
+        limit: 6,
         position: 'BETWEEN_POSTS',
         orderBy: 'createdAt',
         orderDirection: 'desc',
@@ -104,10 +104,10 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
   const categories = categoriesResult.data?.categories || [];
   const tags = tagsResult.data?.tags || [];
   const topAuthors = topAuthorsResult || [];
-  const betweenPostsAd =
-    betweenPostsAdsResult.success && betweenPostsAdsResult.data?.[0]
-      ? betweenPostsAdsResult.data[0]
-      : null;
+  const betweenPostsAds =
+    betweenPostsAdsResult.success && Array.isArray(betweenPostsAdsResult.data)
+      ? betweenPostsAdsResult.data
+      : [];
 
   const selectedCategory =
     type === 'category' ? categories.find((cat) => cat.slug === category) : null;
@@ -125,7 +125,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
       ? selectedCategory.name
       : selectedTag
         ? `#${selectedTag.name}`
-        : 'گنجینه مقالات';
+        : 'روایت‌های بازار';
 
   const mastheadKicker = selectedSubcategory
     ? 'زیرمجموعه'
@@ -133,21 +133,21 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
       ? 'دسته‌بندی'
       : selectedTag
         ? 'برچسب'
-        : 'آرشیو زنده و به‌روز';
+        : 'به‌روزرسانی روزانه';
 
   const mastheadIndex = selectedCategory
     ? `دسته‌بندی · ${selectedCategory.name}`
     : selectedTag
       ? 'مرور بر اساس برچسب'
-      : 'مجموعه‌ی کامل مقالات';
+      : 'آرشیو کامل تحلیل‌ها';
 
   const mastheadLead = selectedSubcategory
-    ? `تازه‌ترین تحلیل‌ها و یادداشت‌های تخصصی در ${selectedSubcategory.name}.`
+    ? `جدیدترین تحلیل‌ها و یادداشت‌های تخصصی پیرامون ${selectedSubcategory.name} را اینجا دنبال کنید.`
     : selectedCategory
-      ? `مجموعه‌ای گزینش‌شده از مقالات ${selectedCategory.name} — از تحلیل تا آموزش.`
+      ? `گزیده‌ای از بهترین مقالات ${selectedCategory.name}؛ از تحلیل‌های عمیق تا آموزش‌های گام‌به‌گام.`
       : selectedTag
-        ? `هر آنچه درباره‌ی «${selectedTag.name}» نوشته‌ایم، یکجا و دسته‌بندی‌شده.`
-        : 'از بازارهای مالی تا فناوری و اقتصاد کلان؛ یک اتاق مطالعه‌ی آرام برای کاوش عمیق.';
+        ? `هر آنچه درباره‌ی «${selectedTag.name}» منتشر کرده‌ایم، یکجا و آماده‌ی مطالعه.`
+        : 'از تحلیل بازارهای مالی تا فناوری و اقتصاد کلان؛ فضایی آرام برای مطالعه‌ی عمیق و کشف ایده‌های تازه.';
 
   // ---- Active filters ----
   const activeFilters: ActiveFilter[] = [];
@@ -231,28 +231,27 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
         ) : null}
 
         {posts.length > 0 ? (
-          <AtelierGrid posts={gridPosts} />
+          <AtelierGrid posts={gridPosts} ads={betweenPostsAds} />
         ) : (
           <Empty />
         )}
 
-        {betweenPostsAd ? (
-          <div className="atl-ad atl-reveal">
-            <span className="atl-ad__label">محتوای تجاری</span>
-            <div className="atl-ad__inner">
-              <BannerAds ad={betweenPostsAd} variant="rich" />
-            </div>
-          </div>
-        ) : null}
-
         {posts.length > 0 && pages > 1 ? (
-          <div className="flex justify-center mt-12 mb-8">
+          <div
+            className="flex justify-center"
+            style={{
+              marginBlock: 'var(--ds-space-10) var(--ds-space-8)',
+            }}
+          >
             <Pagination currentPage={currentPage} totalPages={pages} />
           </div>
         ) : null}
 
         {posts.length === 0 ? (
-          <div className="flex justify-center mt-8 mb-8">
+          <div
+            className="flex justify-center"
+            style={{ marginBlock: 'var(--ds-space-8) var(--ds-space-8)' }}
+          >
             <Link
               href="/archive"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-sm font-medium text-neutral-700 dark:text-neutral-200 transition-colors"
@@ -266,7 +265,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
 
       <div className="relative atl-section atl-reveal">
         <BackgroundSection />
-        <div className="container relative z-10 py-4">
+        <div className="container relative z-10" style={{ paddingBlock: 'var(--ds-space-2)' }}>
           <DynamicCategories
             initialCategories={categories}
             initialTotalCount={categoriesResult.data?.totalCount || 0}
@@ -276,14 +275,16 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
 
       <div className="container atl-section atl-reveal">
         <SectionSliderNewAuthors
-          heading="قلم‌های برتر"
-          subHeading="با ذهن‌های خلاق پشت مقالات ما آشنا شوید"
+          heading="صدای تحلیلگران"
+          subHeading="با ذهن‌هایی آشنا شوید که پشت هر روایت، نگاه تیزبین و قلم بی‌طرفی دارند"
           authors={topAuthors}
           itemPerRow={5}
         />
       </div>
 
-      <SectionSubscribe2 />
+      <div className="container atl-section atl-reveal mb-10 lg:mb-16">
+        <SectionSubscribe2 />
+      </div>
     </div>
   );
 }

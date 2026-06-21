@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
-import { HiOutlineMagnifyingGlass, HiXMark } from 'react-icons/hi2';
+import { Search, X } from 'lucide-react';
 
 interface ArchiveSearchInputProps {
   initialQuery?: string;
@@ -66,7 +66,7 @@ export default function ArchiveSearchInput({
 
   return (
     <form onSubmit={handleSubmit} className="arc-search-field-v4" aria-label="جستجو در مقالات">
-      <HiOutlineMagnifyingGlass className="arc-search-field-v4__icon w-4 h-4" aria-hidden />
+      <Search className="arc-search-field-v4__icon w-4 h-4" strokeWidth={1.5} aria-hidden />
       <input
         id={inputId}
         type="text"
@@ -97,7 +97,7 @@ export default function ArchiveSearchInput({
             className="arc-search-field-v4__clear arc-focus"
             aria-label="پاک کردن جستجو"
           >
-            <HiXMark className="w-3.5 h-3.5" />
+            <X className="w-3.5 h-3.5" strokeWidth={1.5} />
           </button>
         ) : (
           <kbd className="arc-search-kbd" aria-hidden>

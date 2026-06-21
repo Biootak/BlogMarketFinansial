@@ -167,7 +167,7 @@ export default function AtelierToolbar({
         mode="category"
         items={categories}
         title="انتخاب دسته‌بندی"
-        description="موضوعات را مرور یا جستجو کنید"
+        description="موضوع مورد علاقه‌ات را پیدا کن و واردش شو"
         currentSlug={currentCategory?.slug}
       />
       <CommandPanel
@@ -176,7 +176,7 @@ export default function AtelierToolbar({
         mode="tag"
         items={tags}
         title="انتخاب برچسب"
-        description="مقالات مرتبط با یک موضوع خاص"
+        description="مقاله‌ها را بر اساس موضوع‌های دقیق دنبال کن"
         currentSlug={currentTag?.slug}
       />
     </>

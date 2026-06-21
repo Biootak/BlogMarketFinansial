@@ -1,7 +1,6 @@
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Eye, MessagesSquare } from 'lucide-react';
 import Link from 'next/link';
 import * as React from 'react';
-import { HiOutlineChatBubbleLeftRight, HiOutlineEye } from 'react-icons/hi2';
 import { SafeImage } from '@/components/SafeImage';
 import { getPostLink } from '@/lib/getPostLink';
 import type { PostWithRelations, TaxonomyType } from '@/types/types';
@@ -89,7 +88,7 @@ export default function AtelierMasthead({
         </ol>
       </nav>
 
-      <header className="atl-hero atl-reveal">
+      <header className={`atl-hero atl-reveal${fp ? '' : ' atl-hero--solo'}`}>
         {/* Intro side */}
         <div className="atl-hero__intro">
           <p className="atl-hero__index">
@@ -173,12 +172,12 @@ export default function AtelierMasthead({
                 {fp.author ? <span>{fp.author.name}</span> : null}
                 {fpComments > 0 ? (
                   <span>
-                    <HiOutlineChatBubbleLeftRight className="w-3.5 h-3.5" aria-hidden />
+                    <MessagesSquare className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden />
                     {fa(fpComments)}
                   </span>
                 ) : null}
                 <span>
-                  <HiOutlineEye className="w-3.5 h-3.5" aria-hidden />
+                  <Eye className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden />
                   {compactFa(fpViews)}
                 </span>
               </div>

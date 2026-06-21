@@ -23,7 +23,7 @@ import type { TopAuthor } from '@/actions/getTopAuthors';
 export interface TopAuthorsSectionProps {
   authors: TopAuthor[];
   className?: string;
-  /** Optional title override (default: "نویسندگان برتر") */
+  /** Optional title override (default: "صدای برتر") */
   title?: string;
   /** Optional subtitle override */
   subtitle?: string;
@@ -48,7 +48,7 @@ const toCardAuthor = (a: TopAuthor): AuthorCardAuthor => ({
 const TopAuthorsSection: React.FC<TopAuthorsSectionProps> = ({
   authors,
   className,
-  title = 'نویسندگان برتر',
+  title = 'صدای برتر',
   subtitle,
   limit = 5,
 }) => {
@@ -71,7 +71,7 @@ const TopAuthorsSection: React.FC<TopAuthorsSectionProps> = ({
         title={title}
         subtitle={
           subtitle ??
-          `${toPersianNumber(sorted.length)} نویسنده فعال این ماه بر اساس تعداد مقالات`
+          `${toPersianNumber(sorted.length)} تحلیلگر فعال که صدایشان در روایت‌های این ماه می‌درخشد`
         }
         accent="amber"
         viewAll={{ label: 'مشاهده همه', href: '/authors' }}

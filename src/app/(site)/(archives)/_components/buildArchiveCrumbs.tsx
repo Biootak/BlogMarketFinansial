@@ -6,13 +6,7 @@
  * Component (ArchiveBreadcrumb) پاس داده می‌شود.
  */
 
-import { Home } from 'lucide-react';
-import {
-  HiOutlineDocumentText,
-  HiOutlineRectangleStack,
-  HiOutlineTag,
-  HiSparkles,
-} from 'react-icons/hi2';
+import { FileText, Home, Layers, Sparkles, Tag } from 'lucide-react';
 import type { Crumb } from './ArchiveBreadcrumb';
 
 type BuildArgs = {
@@ -45,7 +39,7 @@ export function buildArchiveCrumbs({
     {
       href: '/archive',
       label: 'آرشیو',
-      icon: HiOutlineDocumentText,
+      icon: FileText,
       accent: 'brand',
     },
   ];
@@ -54,20 +48,20 @@ export function buildArchiveCrumbs({
     crumbs.push({
       href: '/archive/category',
       label: 'دسته‌بندی',
-      icon: HiOutlineRectangleStack,
+      icon: Layers,
       accent: 'slate',
     });
     crumbs.push({
       href: `/archive/category/${selectedCategory.slug}`,
       label: selectedCategory.name,
-      icon: HiOutlineRectangleStack,
+      icon: Layers,
       accent: 'violet',
     });
     if (selectedSubcategory) {
       crumbs.push({
         href: `/archive/category/${selectedCategory.slug}/${selectedSubcategory.slug}`,
         label: selectedSubcategory.name,
-        icon: HiSparkles,
+        icon: Sparkles,
         accent: 'violet',
         current: true,
       });
@@ -78,13 +72,13 @@ export function buildArchiveCrumbs({
     crumbs.push({
       href: '/archive/tag',
       label: 'برچسب',
-      icon: HiOutlineTag,
+      icon: Tag,
       accent: 'slate',
     });
     crumbs.push({
       href: `/archive/tag/${selectedTag.slug}`,
       label: `#${selectedTag.name}`,
-      icon: HiOutlineTag,
+      icon: Tag,
       accent: 'emerald',
       current: true,
     });
@@ -96,7 +90,7 @@ export function buildArchiveCrumbs({
     typeof total === 'number'
       ? {
           label: total.toLocaleString('fa-IR'),
-          icon: <HiOutlineDocumentText className="w-3 h-3" aria-hidden />,
+          icon: <FileText className="w-3 h-3" strokeWidth={1.5} aria-hidden />,
         }
       : undefined;
 

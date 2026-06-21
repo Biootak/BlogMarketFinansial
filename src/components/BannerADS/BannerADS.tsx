@@ -554,10 +554,12 @@ export default function BannerAds({
               alt={title}
               variant={imageVariant}
               ratio={ratio}
+              containerClassName="absolute inset-0"
               sizes={isMinimal ? '(max-width: 1024px) 100vw, 320px' : '100vw'}
               priority={isLcp}
               fill
-              className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/ad:scale-[1.04]"
+              fillMode="ambient"
+              className="transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/ad:scale-[1.04]"
             />
           </div>
 

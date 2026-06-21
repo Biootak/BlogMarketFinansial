@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type * as React from 'react';
-import { HiOutlineChatBubbleLeftRight, HiOutlineEye } from 'react-icons/hi2';
+import { Eye, MessagesSquare } from 'lucide-react';
 import { SafeImage } from '@/components/SafeImage';
 import { getPostLink } from '@/lib/getPostLink';
 import type { PostWithRelations } from '@/types/types';
@@ -90,12 +90,12 @@ const AtelierCard: React.FC<AtelierCardProps> = ({ post, priority = false }) => 
           <span className="atl-card__stats">
             {commentCount > 0 ? (
               <span aria-label={`${commentCount} دیدگاه`}>
-                <HiOutlineChatBubbleLeftRight className="w-3.5 h-3.5" aria-hidden />
+                <MessagesSquare className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden />
                 {commentCount.toLocaleString('fa-IR')}
               </span>
             ) : null}
             <span aria-label={`${views} بازدید`}>
-              <HiOutlineEye className="w-3.5 h-3.5" aria-hidden />
+              <Eye className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden />
               {formatCompactFa(views)}
             </span>
           </span>

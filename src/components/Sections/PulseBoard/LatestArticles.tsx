@@ -272,7 +272,7 @@ export function LatestArticles({
       ref={containerRef}
       dir="rtl"
       className="relative isolate marquee-pause"
-      aria-label="آخرین مقالات"
+      aria-label="تازه‌های بازار"
     >
       {/* RateLists Ticker — نوار چرخشی نرخ‌های بازار (RateList از DB) */}
       {rateLists.length > 0 && <RateListsTicker rateLists={rateLists} className="mb-3 sm:mb-4" />}
@@ -366,7 +366,7 @@ export function LatestArticles({
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <h2 className="text-lg sm:text-xl lg:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white text-balance">
-                    آخرین مقالات
+                    تازه‌های بازار
                   </h2>
                   <Sparkles
                     className="hidden sm:block h-4 w-4 text-amber-500/80"
@@ -375,7 +375,7 @@ export function LatestArticles({
                   />
                 </div>
                 <p className="mt-0.5 text-[11.5px] sm:text-[12.5px] text-neutral-500 dark:text-neutral-400 font-vazirmatn">
-                  تازه‌ترین تحلیل‌ها و گزارش‌های بازارهای مالی
+                  تازه‌ترین روایت‌ها، تحلیل‌ها و گزارش‌ها از قلب بازار
                 </p>
               </div>
 

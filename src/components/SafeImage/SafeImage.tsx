@@ -37,6 +37,14 @@ export interface SafeImageProps
   placeholderIcon?: React.ReactNode;
   /** متن کوچک زیر آیکون (مثلاً "بدون تصویر"). */
   placeholderLabel?: string;
+  /**
+   * نحوه‌ی پر کردن کادر:
+   *  - `cover`   → object-cover (پیش‌فرض رفتار قبلی؛ پر می‌کند ولی برش می‌زند)
+   *  - `ambient` → تکنیک ۲۰۲۶: تصویرِ کامل با object-contain روی یک پس‌زمینه‌ی
+   *                محو و هم‌رنگ از همان تصویر. هم کل کادر پر می‌شود و هم تصویر
+   *                کامل و بدون برش دیده می‌شود (مثل YouTube / Apple TV).
+   */
+  fillMode?: 'cover' | 'ambient';
 }
 
 const RATIO_BY_VARIANT: Record<ImageVariant, string> = {
@@ -72,6 +80,7 @@ export default function SafeImage({
   fill = true,
   placeholderIcon,
   placeholderLabel,
+  fillMode = 'cover',
   ...props
 }: SafeImageProps) {
   const [hasError, setHasError] = useState(false);
@@ -126,6 +135,30 @@ export default function SafeImage({
             )}
           </div>
         </div>
+      ) : fillMode === 'ambient' ? (
+        // Ambient blurred backdrop (2026): تصویرِ کامل روی پس‌زمینه‌ی محوِ هم‌رنگ.
+        <>
+          <Image
+            aria-hidden
+            className="object-cover scale-110 blur-2xl brightness-[0.85] saturate-150"
+            alt=""
+            sizes={sizes}
+            priority={priority}
+            fill
+            src={src as string}
+            {...props}
+          />
+          <Image
+            className={cn('object-contain', className === 'object-cover' ? undefined : className)}
+            alt={alt}
+            sizes={sizes}
+            priority={priority}
+            fill={fill}
+            src={src as string}
+            onError={() => setHasError(true)}
+            {...props}
+          />
+        </>
       ) : (
         <Image
           className={className}

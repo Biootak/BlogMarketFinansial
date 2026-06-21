@@ -73,7 +73,7 @@ function ArchiveHero({
       ? selectedCategory.name
       : selectedTag
         ? selectedTag.name
-        : 'گنجینه مقالات';
+        : 'روایت‌های بازار';
 
   type EyebrowAccent = 'violet' | 'slate' | 'emerald' | 'brand' | 'amber';
   const eyebrowAccent: EyebrowAccent = selectedSubcategory

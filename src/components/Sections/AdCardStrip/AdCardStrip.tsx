@@ -50,7 +50,7 @@ interface AdCardStripProps {
 export function AdCardStrip({
   ads,
   className,
-  eyebrow = 'پیشنهادهای ویژه',
+  eyebrow = 'پیشنهاد سردبیران',
   accentColor = '#5b6cff',
 }: AdCardStripProps) {
   const reduce = useReducedMotion();
