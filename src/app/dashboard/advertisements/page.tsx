@@ -404,8 +404,21 @@ function AdvertisementForm({
     form.setValue('imageUrl', urls[0]);
   };
 
+  // 2026-06-21: ابعاد واقعی تصویر را بعد از آپلود در customDimensions ذخیره
+  // می‌کنیم تا ArchiveAdCard با aspect-ratio درست رندر شود (بدون fallback 16:6).
+  const handleImageUploadComplete = (files: Array<{ url: string; width?: number | null; height?: number | null }>) => {
+    const f = files[0];
+    if (!f || !f.width || !f.height) return;
+    form.setValue('customDimensions', {
+      width: String(f.width),
+      height: String(f.height),
+      aspectRatio: `${f.width}/${f.height}`,
+    });
+  };
+
   const handleImageRemove = () => {
     form.setValue('imageUrl', '');
+    form.setValue('customDimensions', {});
   };
 
   const inputClassName = 'h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80 dark:text-neutral-100';
@@ -535,6 +548,7 @@ function AdvertisementForm({
                       <FormControl>
                         <ImageUploader
                           onImageUpload={handleImageUpload}
+                          onUploadComplete={handleImageUploadComplete}
                           onImageRemove={handleImageRemove}
                           initialPreviews={field.value ? [field.value] : []}
                           folder="ads"

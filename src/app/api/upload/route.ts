@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import sharp from 'sharp';
 import { uploadFile } from '@/lib/storage';
+import { IMAGE_WIDTHS, type ImageWidth } from '@/lib/image-sizes';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
@@ -70,6 +71,29 @@ async function optimizeImage(buffer: Buffer, mimeType: string): Promise<Buffer> 
   }
 
   return image.gif().toBuffer();
+}
+
+// 2026-06-21: تولید سایزهای مختلف برای responsive images.
+// کاربر ممکن است 4K آپلود کند؛ به جای سرو کردن فایل 4K به همه، اینجا
+// چند سایز کوچک‌تر تولید می‌کنیم. مرورگر با srcset بهترین را انتخاب می‌کند.
+// هزینه: یک‌بار CPU در لحظه‌ی آپلود. هزینه‌ی runtime: صفر.
+async function generateResponsiveVariants(
+  sourceBuffer: Buffer,
+  mimeType: string,
+  sourceWidth: number,
+): Promise<Map<ImageWidth, Buffer>> {
+  const variants = new Map<ImageWidth, Buffer>();
+  if (mimeType === 'image/svg+xml' || mimeType === 'image/gif') return variants;
+
+  for (const w of IMAGE_WIDTHS) {
+    if (w >= sourceWidth) break; // بزرگ‌نمایی نکن
+    const buf = await sharp(sourceBuffer)
+      .resize(w, null, { withoutEnlargement: true, fit: 'inside' })
+      .webp({ quality: 82 })
+      .toBuffer();
+    variants.set(w, buf);
+  }
+  return variants;
 }
 
 // تولید نام فایل
@@ -165,8 +189,36 @@ export async function POST(request: NextRequest) {
         ? file.type
         : 'image/webp';
 
-      const result = await uploadFile(optimizedBuffer, filename, folder, contentType);
-      results.push(result);
+      // 2026-06-21: capture dimensions for next/image srcset + CLS prevention.
+      const fullMeta = await sharp(optimizedBuffer).metadata();
+      const dims = {
+        width: typeof fullMeta.width === 'number' ? fullMeta.width : null,
+        height: typeof fullMeta.height === 'number' ? fullMeta.height : null,
+      };
+
+      // فایل اصلی
+      const result = await uploadFile(optimizedBuffer, filename, folder, contentType, dims);
+      const variantUrls: Record<string, string> = {};
+
+      // 2026-06-21: سایزهای responsive (400/800/1200/1920)
+      if (dims.width && dims.width > 400) {
+        const variants = await generateResponsiveVariants(
+          optimizedBuffer,
+          file.type,
+          dims.width,
+        );
+        const baseNoExt = filename.replace(/\.[^/.]+$/, '');
+        for (const [w, buf] of variants) {
+          const variantName = `${baseNoExt}-${w}.webp`;
+          const vResult = await uploadFile(buf, variantName, folder, 'image/webp', {
+            width: w,
+            height: dims.height ? Math.round((dims.height * w) / dims.width) : null,
+          });
+          variantUrls[String(w)] = vResult.url;
+        }
+      }
+
+      results.push({ ...result, variants: variantUrls });
     }
 
     return NextResponse.json({

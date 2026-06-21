@@ -11,7 +11,9 @@
     "db:seed": "node prisma/seed.js",
     "db:reset": "node scripts/reset-and-seed-50-posts.js",
     "db:fresh": "prisma migrate reset --force && npm run db:seed",
-    "db:stats": "node scripts/db-stats.js"
+    "db:stats": "node scripts/db-stats.js",
+    "db:migrate-ads": "node scripts/migrate-ad-images.js",
+    "db:migrate-ads:dry": "node scripts/migrate-ad-images.js --dry-run"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.4",

@@ -47,6 +47,9 @@ const EditPostForm: React.FC<EditPostFormProps> = ({
     videoUrl: initialData.videoUrl || '',
     audioUrl: initialData.audioUrl || '',
     featuredImage: initialData.featuredImage || '',
+    // 2026-06-21: ابعاد تصویر شاخص از دیتابیس
+    featuredImageWidth: initialData.featuredImageWidth ?? undefined,
+    featuredImageHeight: initialData.featuredImageHeight ?? undefined,
     galleryImages: initialData.galleryImages || [],
     categories: initialData.categories.map((cat) => cat.id),
     tags: initialData.tags.map((tag) => tag.name),

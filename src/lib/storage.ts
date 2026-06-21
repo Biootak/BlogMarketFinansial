@@ -34,6 +34,12 @@ export interface UploadResult {
   localPath: string;
   filename: string;
   size: number;
+  /**
+   * 2026-06-21: ابعاد تصویر (پیکسل) برای استفاده در next/image و جلوگیری از CLS.
+   * برای فایل‌های غیرتصویری (که الان سرو نمی‌شود) null برمی‌گردد.
+   */
+  width?: number | null;
+  height?: number | null;
 }
 
 /**
@@ -44,7 +50,8 @@ export async function uploadFile(
   buffer: Buffer,
   filename: string,
   folder: string,
-  contentType: string
+  contentType: string,
+  dims?: { width?: number | null; height?: number | null }
 ): Promise<UploadResult> {
   const key = `${folder}/${filename}`;
   const localPath = `/uploads/${folder}/${filename}`;
@@ -88,6 +95,8 @@ export async function uploadFile(
     localPath,
     filename,
     size: buffer.length,
+    width: dims?.width ?? null,
+    height: dims?.height ?? null,
   };
 }
 

@@ -233,6 +233,9 @@ export type TaxonomyType = {
   name: string;
   slug: string;
   thumbnail: string | null;
+  // 2026-06-21: ابعاد thumbnail برای CLS-safe رندر + انتخاب variant
+  thumbnailWidth?: number | null;
+  thumbnailHeight?: number | null;
   taxonomy: 'category' | 'subcategory' | 'tag';
   color?: TwMainColor | string;
   count: number;
@@ -408,6 +411,9 @@ export type CreateCategoryInput = {
   slug: string;
   parentIds: string[];
   thumbnail: string | null;
+  // 2026-06-21: ابعاد thumbnail برای CLS-safe رندر
+  thumbnailWidth?: number | null;
+  thumbnailHeight?: number | null;
 };
 
 export type UpdateCategoryInput = CreateCategoryInput & {};

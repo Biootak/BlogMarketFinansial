@@ -114,7 +114,7 @@ export async function createCategory(
   data: CreateCategoryInput,
 ): Promise<ActionResult<TaxonomyType>> {
   try {
-    const { name, slug: providedSlug, thumbnail, parentIds = [] } = data;
+    const { name, slug: providedSlug, thumbnail, thumbnailWidth, thumbnailHeight, parentIds = [] } = data;
 
     if (!name) {
       return {
@@ -172,6 +172,8 @@ export async function createCategory(
         name,
         slug: uniqueSlug,
         thumbnail,
+        thumbnailWidth: thumbnailWidth ?? null,
+        thumbnailHeight: thumbnailHeight ?? null,
         parentCategories: {
           connect: Array.isArray(parentIds) ? parentIds.map((id) => ({ id })) : [],
         },
@@ -231,7 +233,7 @@ export async function updateCategory(
   data: UpdateCategoryInput,
 ): Promise<ActionResult<TaxonomyType>> {
   try {
-    const { name, slug: providedSlug, thumbnail, parentIds = [] } = data;
+    const { name, slug: providedSlug, thumbnail, thumbnailWidth, thumbnailHeight, parentIds = [] } = data;
 
     if (!name) {
       return {
@@ -302,6 +304,8 @@ export async function updateCategory(
         name,
         slug: uniqueSlug,
         thumbnail,
+        thumbnailWidth: thumbnailWidth ?? null,
+        thumbnailHeight: thumbnailHeight ?? null,
         parentCategories: {
           set: Array.isArray(parentIds) ? parentIds.map((id) => ({ id })) : [],
         },

@@ -74,6 +74,9 @@ export const CreatePostSchema = z.object({
   videoUrl: z.union([z.string().url('لطفاً آدرس ویدئو معتبر وارد کنید'), z.literal('')]).optional(),
   audioUrl: z.union([z.string().url('لطفاً آدرس صوتی معتبر وارد کنید'), z.literal('')]).optional(),
   featuredImage: imageUrlSchema('لطفاً آدرس تصویر معتبر وارد کنید').optional(),
+  // 2026-06-21: ابعاد تصویر شاخص برای CLS-safe رندر + responsive variants
+  featuredImageWidth: z.number().int().positive().optional(),
+  featuredImageHeight: z.number().int().positive().optional(),
   galleryImages: z.array(imageUrlSchema('لطفاً آدرس تصویر معتبر وارد کنید')).optional(),
   status: z.nativeEnum(PostStatus),
   categories: CategorySchema,

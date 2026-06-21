@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import BannerAds from '@/components/BannerADS/BannerADS';
 import type { Advertisement, PostWithRelations } from '@/types/types';
+import ArchiveAdCard from './ArchiveAdCard';
 import AtelierCard from './AtelierCard';
 
 /**
@@ -27,7 +27,7 @@ function AdStrip({ ads }: { ads: Advertisement[] }) {
       <div className="atl-adstrip__row">
         {ads.map((ad) => (
           <div key={ad.id} className="atl-adstrip__item">
-            <BannerAds ad={ad} variant="image" />
+            <ArchiveAdCard ad={ad} />
           </div>
         ))}
       </div>

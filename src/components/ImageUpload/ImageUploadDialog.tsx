@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
+import { ImageUploader, type UploadedFile } from '@/components/ImageUpload/ImageUploader';
 import type { UploadFolder } from '@/actions/uploadActions';
 
 interface ImageUploadDialogProps {
@@ -11,6 +11,7 @@ interface ImageUploadDialogProps {
   onClose: () => void;
   onImageUpload: (urls: string[]) => void;
   onImageRemove: () => void;
+  onImageUploadComplete?: (files: UploadedFile[]) => void;
   initialPreview: string;
   title: string;
   folder?: UploadFolder;
@@ -21,6 +22,7 @@ const ImageUploadDialog: React.FC<ImageUploadDialogProps> = ({
   onClose,
   onImageUpload,
   onImageRemove,
+  onImageUploadComplete,
   initialPreview,
   title,
   folder = 'general',
@@ -48,6 +50,7 @@ const ImageUploadDialog: React.FC<ImageUploadDialogProps> = ({
         <div className="py-4">
           <ImageUploader
             onImageUpload={handleImageUpload}
+            onUploadComplete={onImageUploadComplete}
             onImageRemove={handleImageRemove}
             initialPreviews={preview ? [preview] : []}
             folder={folder}

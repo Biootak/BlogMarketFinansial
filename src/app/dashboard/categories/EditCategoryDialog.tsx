@@ -18,6 +18,7 @@ import { useToast } from '@/components/ui/use-toast';
 import type { TaxonomyType, UpdateCategoryInput } from '@/types/types';
 import { updateCategory } from '@/actions/categoryActions';
 import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
+import { pickDims } from '@/lib/image-dims';
 import { useRouter } from 'next/navigation';
 import {
   Select,
@@ -39,6 +40,9 @@ const categorySchema = z.object({
   name: z.string().min(1, 'نام دسته‌بندی الزامی است'),
   slug: z.string().min(1, 'اسلاگ الزامی است'),
   thumbnail: z.string().nullable(),
+  // 2026-06-21: ابعاد thumbnail
+  thumbnailWidth: z.number().int().positive().nullable().optional(),
+  thumbnailHeight: z.number().int().positive().nullable().optional(),
   parentIds: z.array(z.string()).default([]),
 });
 
@@ -60,6 +64,8 @@ export default function EditCategoryDialog({
       name: category.name,
       slug: category.slug,
       thumbnail: category.thumbnail || null,
+      thumbnailWidth: category.thumbnailWidth ?? null,
+      thumbnailHeight: category.thumbnailHeight ?? null,
       parentIds: category.parentCategories?.map((pc) => pc.id) || [],
     },
   });
@@ -69,6 +75,8 @@ export default function EditCategoryDialog({
       name: category.name,
       slug: category.slug,
       thumbnail: category.thumbnail || null,
+      thumbnailWidth: category.thumbnailWidth ?? null,
+      thumbnailHeight: category.thumbnailHeight ?? null,
       parentIds: category.parentCategories?.map((pc) => pc.id) || [],
     });
   }, [category, form]);
@@ -80,6 +88,8 @@ export default function EditCategoryDialog({
       slug: data.slug,
       parentIds: data.parentIds,
       thumbnail: data.thumbnail || null,
+      thumbnailWidth: data.thumbnailWidth ?? null,
+      thumbnailHeight: data.thumbnailHeight ?? null,
     };
 
     const result = await updateCategory(category.id, updateData);
@@ -194,10 +204,20 @@ export default function EditCategoryDialog({
                   <FormControl>
                     <ImageUploader
                       onImageUpload={(urls) => form.setValue('thumbnail', urls[0])}
-                      onImageRemove={() => form.setValue('thumbnail', null)}
+                      onUploadComplete={(files) => {
+                        const d = pickDims(files);
+                        if (!d) return;
+                        form.setValue('thumbnailWidth', d.width);
+                        form.setValue('thumbnailHeight', d.height);
+                      }}
+                      onImageRemove={() => {
+                        form.setValue('thumbnail', null);
+                        form.setValue('thumbnailWidth', null);
+                        form.setValue('thumbnailHeight', null);
+                      }}
                       maxFiles={1}
                       multiple={false}
-                      initialPreviews={field.value ? [field.value] : []}
+                      initialPreviews={category.thumbnail ? [category.thumbnail] : []}
                       folder="categories"
                     />
                   </FormControl>

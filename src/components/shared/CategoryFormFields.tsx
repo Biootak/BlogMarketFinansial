@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
+import { pickDims } from '@/lib/image-dims';
 import type { TaxonomyType } from '@/types/types';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,9 @@ const categorySchema = z.object({
   name: z.string().min(1, 'نام دسته‌بندی الزامی است'),
   slug: z.string().min(1, 'اسلاگ الزامی است'),
   thumbnail: z.string().nullable(),
+  // 2026-06-21: ابعاد thumbnail
+  thumbnailWidth: z.number().int().positive().nullable().optional(),
+  thumbnailHeight: z.number().int().positive().nullable().optional(),
   parentIds: z.array(z.string()).default([]),
 });
 
@@ -140,7 +144,17 @@ export function CategoryFormFields({
               <FormControl>
                 <ImageUploader
                   onImageUpload={(urls) => form.setValue('thumbnail', urls[0])}
-                  onImageRemove={() => form.setValue('thumbnail', null)}
+                  onUploadComplete={(files) => {
+                    const d = pickDims(files);
+                    if (!d) return;
+                    form.setValue('thumbnailWidth', d.width);
+                    form.setValue('thumbnailHeight', d.height);
+                  }}
+                  onImageRemove={() => {
+                    form.setValue('thumbnail', null);
+                    form.setValue('thumbnailWidth', null);
+                    form.setValue('thumbnailHeight', null);
+                  }}
                   maxFiles={1}
                   multiple={false}
                   initialPreviews={field.value ? [field.value] : []}

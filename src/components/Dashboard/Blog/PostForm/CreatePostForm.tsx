@@ -51,7 +51,6 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({
     tags: [],
     slug: '',
   };
-
   const handleCreatePost = async (data: CreatePostInput) => {
     setIsSubmitting(true);
     try {

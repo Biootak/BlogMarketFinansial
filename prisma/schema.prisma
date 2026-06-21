@@ -58,6 +58,9 @@ model User {
   emailVerified DateTime?
   phoneNumber   String?
   image         String?
+  // 2026-06-21: ابعاد تصویر پروفایل برای CLS-safe رندر + انتخاب variant
+  imageWidth    Int?
+  imageHeight   Int?
 
   accounts      Account[]
   sessions      Session[]
@@ -129,6 +132,11 @@ model Profile {
   bio     String?
   avatar  String?
   bgImage String?
+  // 2026-06-21: ابعاد تصاویر پروفایل برای CLS-safe رندر
+  avatarWidth  Int?
+  avatarHeight Int?
+  bgImageWidth Int?
+  bgImageHeight Int?
   jobName String?
   company String?
   userId  String  @unique
@@ -144,6 +152,9 @@ model Post {
   isFeatured    Boolean    @default(false)
   status        PostStatus @default(DRAFT)
   featuredImage String?
+  // 2026-06-21: ابعاد تصویر شاخص برای CLS-safe رندر + انتخاب variant responsive
+  featuredImageWidth  Int?
+  featuredImageHeight Int?
   galleryImages String[]   @default([])
   postType      PostType   @default(STANDARD)
   videoUrl      String?
@@ -248,6 +259,9 @@ model Category {
   name             String
   slug             String     @unique
   thumbnail        String?
+  // 2026-06-21: ابعاد thumbnail برای CLS-safe رندر
+  thumbnailWidth   Int?
+  thumbnailHeight  Int?
   posts            Post[]
   parentCategories Category[] @relation("CategoryToParent")
   childCategories  Category[] @relation("CategoryToParent")
@@ -261,6 +275,9 @@ model Tag {
   name      String  @unique
   slug      String  @unique
   thumbnail String?
+  // 2026-06-21: ابعاد thumbnail برای CLS-safe رندر
+  thumbnailWidth   Int?
+  thumbnailHeight  Int?
   posts     Post[]
 
   createdAt DateTime @default(now())
@@ -462,6 +479,9 @@ model SocialLink {
   name      String
   url       String
   icon      String?
+  // 2026-06-21: ابعاد آیکون برای CLS-safe رندر
+  iconWidth  Int?
+  iconHeight Int?
   color     String?
   order     Int            @default(0)
   isActive  Boolean        @default(true)

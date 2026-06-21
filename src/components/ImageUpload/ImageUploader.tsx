@@ -16,9 +16,22 @@ interface ImageUploaderProps {
   multiple?: boolean;
   initialPreviews?: string[];
   folder?: UploadFolder;
+  /**
+   * اختیاری — اگر داده شود، بعد از هر آپلود موفق، اطلاعات کامل هر فایل
+   * (url، width، height، variants) هم به این کالبک پاس داده می‌شود.
+   * برای فرم‌هایی که ابعاد تصویر را در DB ذخیره می‌کنند (مثل تبلیغات).
+   */
+  onUploadComplete?: (results: UploadedFile[]) => void;
 }
 
-async function uploadToLocal(file: File, folder: UploadFolder): Promise<string> {
+export interface UploadedFile {
+  url: string;
+  width?: number | null;
+  height?: number | null;
+  variants?: Record<string, string>;
+}
+
+async function uploadToLocal(file: File, folder: UploadFolder): Promise<UploadedFile> {
   const formData = new FormData();
   formData.append('files', file);
   formData.append('folder', folder);
@@ -34,12 +47,18 @@ async function uploadToLocal(file: File, folder: UploadFolder): Promise<string> 
   }
 
   const data = await response.json();
-  return data.files[0].url;
+  return {
+    url: data.files[0].url,
+    width: data.files[0].width ?? null,
+    height: data.files[0].height ?? null,
+    variants: data.files[0].variants ?? {},
+  };
 }
 
 const ImageUploader: React.FC<ImageUploaderProps> = ({
   onImageUpload,
   onImageRemove,
+  onUploadComplete,
   maxFiles = 1,
   multiple = false,
   initialPreviews = [],
@@ -58,11 +77,13 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
       try {
         const uploadedUrls: string[] = [];
+        const uploadedFiles: UploadedFile[] = [];
 
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
-          const url = await uploadToLocal(file, folder);
-          uploadedUrls.push(url);
+          const result = await uploadToLocal(file, folder);
+          uploadedUrls.push(result.url);
+          uploadedFiles.push(result);
 
           setProgress((prev) => {
             const newProgress = [...prev];
@@ -73,6 +94,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
         setPreviews(uploadedUrls);
         onImageUpload(uploadedUrls);
+        if (onUploadComplete) onUploadComplete(uploadedFiles);
         toast({
           title: 'موفقیت',
           description: 'تصاویر با موفقیت آپلود شدند',
@@ -91,7 +113,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         setSelectedFiles([]);
       }
     },
-    [folder, onImageUpload],
+    [folder, onImageUpload, onUploadComplete],
   );
 
   const onDrop = useCallback(

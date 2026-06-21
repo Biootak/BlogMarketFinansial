@@ -38,6 +38,7 @@ import { CategorySelectDialog } from './CategorySelectDialog';
 import { TagSelectDialog } from './TagSelectDialog';
 import { useToast } from '@/components/ui/use-toast';
 import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
+import { pickDims } from '@/lib/image-dims';
 // 2026-06-14: Tiptap editor (~150KB gzipped) was eagerly imported into
 // the dashboard post-form chunk. Lazy-loading it shaves ~100ms off the
 // initial dashboard TTFB, especially on the posts list page that pulls
@@ -703,7 +704,18 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                         <FormControl>
                           <ImageUploader
                             onImageUpload={(urls) => { setFeaturedImage(urls[0]); field.onChange(urls[0]); }}
-                            onImageRemove={() => { setFeaturedImage(undefined); field.onChange(undefined); }}
+                            onUploadComplete={(files) => {
+                              const d = pickDims(files);
+                              if (!d) return;
+                              form.setValue('featuredImageWidth', d.width ?? undefined);
+                              form.setValue('featuredImageHeight', d.height ?? undefined);
+                            }}
+                            onImageRemove={() => {
+                              setFeaturedImage(undefined);
+                              field.onChange(undefined);
+                              form.setValue('featuredImageWidth', undefined);
+                              form.setValue('featuredImageHeight', undefined);
+                            }}
                             maxFiles={1}
                             multiple={false}
                             initialPreviews={featuredImage ? [featuredImage] : []}
