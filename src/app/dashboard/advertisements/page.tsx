@@ -225,7 +225,7 @@ export default function AdvertisementsPage() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 p-4 sm:p-6 lg:p-8 dark:from-neutral-900 dark:via-neutral-900 dark:to-primary-950/20" dir="rtl">
+    <div className="min-h-screen p-4 sm:p-6 lg:p-8" dir="rtl">
       <DashboardPageHeader title="مدیریت تبلیغات" description="مشاهده و مدیریت تبلیغات سایت">
         <DashboardSearchInput
           value={searchTerm}
@@ -254,25 +254,25 @@ export default function AdvertisementsPage() {
 
       {/* Summary Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="rounded-2xl border border-neutral-200/60 dark:border-neutral-700/50 bg-white/70 dark:bg-neutral-850/70 p-4 backdrop-blur-md shadow-sm transition-all duration-300 hover:shadow-md">
+        <div className="dash-panel dash-panel--hover p-4">
           <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">کل تبلیغات</div>
           <div className="text-2xl font-bold mt-1 text-neutral-900 dark:text-white tabular-nums">
             {toPersianNumber(ads.length)}
           </div>
         </div>
-        <div className="rounded-2xl border border-neutral-200/60 dark:border-neutral-700/50 bg-white/70 dark:bg-neutral-850/70 p-4 backdrop-blur-md shadow-sm transition-all duration-300 hover:shadow-md">
+        <div className="dash-panel dash-panel--hover p-4">
           <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">تبلیغات فعال</div>
           <div className="text-2xl font-bold mt-1 text-emerald-600 dark:text-emerald-400 tabular-nums">
             {toPersianNumber(ads.filter(a => a.isActive).length)}
           </div>
         </div>
-        <div className="rounded-2xl border border-neutral-200/60 dark:border-neutral-700/50 bg-white/70 dark:bg-neutral-850/70 p-4 backdrop-blur-md shadow-sm transition-all duration-300 hover:shadow-md">
+        <div className="dash-panel dash-panel--hover p-4">
           <div className="text-xs font-semibold text-primary-600 dark:text-primary-400">جایگاه سربرگ</div>
           <div className="text-2xl font-bold mt-1 text-primary-600 dark:text-primary-400 tabular-nums">
             {toPersianNumber(ads.filter(a => a.position === 'HEADER').length)}
           </div>
         </div>
-        <div className="rounded-2xl border border-neutral-200/60 dark:border-neutral-700/50 bg-white/70 dark:bg-neutral-850/70 p-4 backdrop-blur-md shadow-sm transition-all duration-300 hover:shadow-md">
+        <div className="dash-panel dash-panel--hover p-4">
           <div className="text-xs font-semibold text-amber-600 dark:text-amber-400">سایر جایگاه‌ها</div>
           <div className="text-2xl font-bold mt-1 text-amber-600 dark:text-amber-400 tabular-nums">
             {toPersianNumber(ads.filter(a => a.position !== 'HEADER').length)}

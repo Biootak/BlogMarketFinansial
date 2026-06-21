@@ -73,10 +73,7 @@ export function DashboardTableContainer({ children, className }: DashboardTableC
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-2xl',
-        'border border-neutral-200/60 bg-white/70 shadow-lg shadow-neutral-900/5',
-        'backdrop-blur-xl transition-all duration-300',
-        'dark:border-neutral-700/50 dark:bg-neutral-800/70 dark:shadow-neutral-900/20',
+        'dash-panel overflow-hidden',
         className
       )}
     >

@@ -245,21 +245,23 @@ const Sidebar = ({ userRole }: SidebarProps) => {
         className="fixed top-0 right-0 h-full z-40 overflow-hidden flex flex-col transition-all duration-300 ease-out"
         style={{
           width: sidebarWidth,
-          background: 'linear-gradient(180deg, #1e1b4b 0%, #312e81 50%, #3730a3 100%)',
+          background:
+            'linear-gradient(180deg, oklch(16% 0.03 260) 0%, oklch(12% 0.025 258) 55%, oklch(10% 0.02 255) 100%)',
           boxShadow: isOpen
-            ? '0 0 40px rgba(99, 102, 241, 0.2), -4px 0 15px rgba(0, 0, 0, 0.15)'
-            : '-2px 0 8px rgba(0, 0, 0, 0.08)',
+            ? '0 0 50px rgba(56, 189, 248, 0.10), -4px 0 24px rgba(0, 0, 0, 0.45)'
+            : '-2px 0 12px rgba(0, 0, 0, 0.35)',
+          borderInlineStart: '1px solid oklch(40% 0.03 255 / 0.35)',
         }}
       >
-        {/* Background decorations */}
+        {/* Aurora decorations — navy + emerald */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div
-            className="absolute -top-20 -right-20 w-40 h-40 rounded-full opacity-20"
-            style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.5) 0%, transparent 70%)' }}
+            className="absolute -top-24 -right-16 w-48 h-48 rounded-full opacity-40 anim-aurora-a"
+            style={{ background: 'radial-gradient(circle, oklch(62% 0.16 255 / 0.55) 0%, transparent 70%)', filter: 'blur(28px)' }}
           />
           <div
-            className="absolute bottom-20 -left-10 w-32 h-32 rounded-full opacity-15"
-            style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.5) 0%, transparent 70%)' }}
+            className="absolute bottom-24 -left-12 w-40 h-40 rounded-full opacity-30 anim-aurora-b"
+            style={{ background: 'radial-gradient(circle, oklch(68% 0.13 165 / 0.5) 0%, transparent 70%)', filter: 'blur(28px)' }}
           />
         </div>
 
@@ -304,13 +306,13 @@ const Sidebar = ({ userRole }: SidebarProps) => {
                         onClick={() => toggleSubmenu(item.label)}
                         className={`flex items-center w-full p-3 rounded-xl transition-all duration-200 hover:translate-x-1 ${
                           isActive
-                            ? 'bg-white/20 text-white shadow-lg'
-                            : 'text-white/70 hover:bg-white/10 hover:text-white'
+                            ? 'bg-gradient-to-l from-emerald-400/15 to-indigo-500/15 text-white shadow-[0_0_0_1px_oklch(70%_0.14_200_/_0.35),0_8px_24px_-12px_oklch(62%_0.16_220_/_0.6)] ring-1 ring-emerald-300/20'
+                            : 'text-white/65 hover:bg-white/10 hover:text-white'
                         }`}
                       >
                         <div
                           className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors duration-200 ${
-                            isActive ? 'bg-white/20' : 'bg-white/5'
+                            isActive ? 'dash-ico dash-ico--emerald !shadow-none' : 'bg-white/5 text-white/80'
                           }`}
                         >
                           {item.icon}
@@ -358,13 +360,13 @@ const Sidebar = ({ userRole }: SidebarProps) => {
                       <span
                         className={`flex items-center p-3 rounded-xl transition-all duration-200 hover:translate-x-1 ${
                           isActive
-                            ? 'bg-white/20 text-white shadow-lg'
-                            : 'text-white/70 hover:bg-white/10 hover:text-white'
+                            ? 'bg-gradient-to-l from-emerald-400/15 to-indigo-500/15 text-white shadow-[0_0_0_1px_oklch(70%_0.14_200_/_0.35),0_8px_24px_-12px_oklch(62%_0.16_220_/_0.6)] ring-1 ring-emerald-300/20'
+                            : 'text-white/65 hover:bg-white/10 hover:text-white'
                         }`}
                       >
                         <div
                           className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors duration-200 ${
-                            isActive ? 'bg-white/20' : 'bg-white/5'
+                            isActive ? 'dash-ico dash-ico--emerald !shadow-none' : 'bg-white/5 text-white/80'
                           }`}
                         >
                           {item.icon}

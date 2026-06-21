@@ -88,6 +88,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
           color: 'blue',
           trend: 'up',
           percentage: 5.2,
+          data: viewStats.data,
         },
         {
           title: 'نظرات جدید',
@@ -96,6 +97,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
           color: 'green',
           trend: 'neutral',
           percentage: 0.1,
+          data: stats.comments.data,
         },
         {
           title: 'اشتراک‌گذاری‌ها',
@@ -104,6 +106,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
           color: 'purple',
           trend: 'up',
           percentage: 12.3,
+          data: stats.shares.data,
         },
         {
           title: 'لایک‌ها',
@@ -112,6 +115,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
           color: 'red',
           trend: 'down',
           percentage: 2.5,
+          data: stats.likes.data,
         },
         {
           title: 'پست‌های منتشر شده',
@@ -120,6 +124,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
           color: 'orange',
           trend: 'up',
           percentage: 10.5,
+          data: stats.publishedPosts.data,
         },
         {
           title: 'پیش‌نویس‌ها',
@@ -128,6 +133,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
           color: 'blue',
           trend: 'neutral',
           percentage: 1,
+          data: stats.drafts.data,
         },
       ] as const,
     [stats, viewStats],
@@ -145,10 +151,10 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
         <WelcomeSection />
       </motion.div>
 
-      {/* Stats Grid */}
-      <motion.div 
+      {/* Stats Grid — Bento */}
+      <motion.div
         variants={containerVariants}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-5"
       >
         {blogStatCards.map((card, index) => (
           <motion.div
@@ -163,6 +169,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
               color={card.color}
               trend={card.trend}
               percentage={card.percentage}
+              data={card.data ? [...card.data] : undefined}
             />
           </motion.div>
         ))}
@@ -205,15 +212,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden"
-              style={{
-                boxShadow: `
-                  0 0 0 1px rgba(0,0,0,0.03),
-                  0 4px 6px rgba(0,0,0,0.02),
-                  0 12px 24px rgba(0,0,0,0.04),
-                  0 24px 48px rgba(0,0,0,0.04)
-                `,
-              }}
+              className="relative dash-panel overflow-hidden"
             >
               {/* Header */}
               <div className="px-7 py-6 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50/50 to-white dark:from-slate-800/50 dark:to-slate-900">
@@ -249,15 +248,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden"
-              style={{
-                boxShadow: `
-                  0 0 0 1px rgba(0,0,0,0.03),
-                  0 4px 6px rgba(0,0,0,0.02),
-                  0 12px 24px rgba(0,0,0,0.04),
-                  0 24px 48px rgba(0,0,0,0.04)
-                `,
-              }}
+              className="relative dash-panel overflow-hidden"
             >
               {/* Header */}
               <div className="px-7 py-6 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50/50 to-white dark:from-slate-800/50 dark:to-slate-900">

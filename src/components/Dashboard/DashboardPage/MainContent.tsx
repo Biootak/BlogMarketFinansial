@@ -31,9 +31,11 @@ const MainContent: React.FC<MainContentProps> = ({ children }) => {
 
   return (
     <main
-      className="flex-1 overflow-auto bg-slate-50 dark:bg-slate-900 transition-[margin] duration-300 ease-out"
+      className="dash-scope dash-grid-texture flex-1 overflow-auto transition-[margin] duration-300 ease-out"
       style={{ marginRight }}
     >
+      {/* Aurora drift backdrop — پشت کل محتوای داشبورد */}
+      <div className="dash-aurora" aria-hidden="true" />
       <AnimatePresence mode="wait">
         <motion.div
           key={pathname}

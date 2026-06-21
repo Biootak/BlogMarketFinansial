@@ -109,7 +109,7 @@ const SettingToggleRow = ({ title, description, enabled, onChange, disabled }: {
 
 // Card Section Component
 const CardSection = ({ title, description, children }: { title: string; description: string; children: React.ReactNode }) => (
-  <div className="relative overflow-hidden rounded-3xl bg-white/70 backdrop-blur-xl border border-gray-200/60 shadow-xl shadow-gray-200/40 transition-all duration-500 ease-out hover:shadow-2xl dark:bg-gray-900/70 dark:border-gray-700/60">
+  <div className="dash-panel relative overflow-hidden">
     <div className="absolute inset-0 bg-gradient-to-br from-[rgb(var(--c-primary-50))]/30 via-transparent to-transparent pointer-events-none" />
     <div className="absolute -left-20 -top-20 h-40 w-40 rounded-full bg-[rgb(var(--c-primary-200))]/20 blur-3xl" />
     <div className="relative p-6 sm:p-8 lg:p-10">
@@ -325,7 +325,7 @@ export default function SettingsPage() {
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
             {/* Sidebar Navigation */}
             <nav className="lg:w-72 shrink-0 lg:sticky lg:top-6 lg:self-start">
-              <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-gray-200/60 shadow-xl p-3 dark:bg-gray-900/70 dark:border-gray-700/60">
+              <div className="dash-panel p-3">
                 <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
                   {tabs.map((tab) => {
                     const IconComponent = tab.icon;

@@ -246,7 +246,7 @@ export default function UsersPage() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 p-4 sm:p-6 lg:p-8 dark:from-neutral-900 dark:via-neutral-900 dark:to-primary-950/20" dir="rtl">
+    <div className="min-h-screen p-4 sm:p-6 lg:p-8" dir="rtl">
       <DashboardPageHeader title="مدیریت کاربران" description="مشاهده و مدیریت کاربران سیستم">
         <FilterSelect value={statusFilter} onChange={setStatusFilter} options={statusOptions} />
         <FilterSelect value={roleFilter} onChange={setRoleFilter} options={roleOptions} />

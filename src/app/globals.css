@@ -6801,3 +6801,245 @@ p { line-height: var(--leading-relaxed); }
     border-color: oklch(32% 0.012 250 / 0.85);
   }
 }
+
+/* ============================================================================
+   Dashboard 2026 — Fintech Aurora / OLED  (دامنه: .dash-scope)
+   ----------------------------------------------------------------------------
+   زبان طراحی: navy عمیق + aurora drift + اکسنت emerald برای روند مثبت
+   (زبان بازار مالی). همه‌چیز CSS-only و GPU-friendly؛ reduced-motion توسط
+   rule سراسری بالای فایل clamp می‌شود. منطق داده دست‌نخورده است — این لایه
+   فقط ظاهر را ارتقا می‌دهد و با توکن‌های ds/author/arc هماهنگ است.
+
+   پالت hue: 245 (navy/indigo) پایه، 165 (emerald) مثبت، 25 (rose) منفی،
+   210 (cyan) خنثای داده.
+   ============================================================================ */
+@property --dash-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@layer utilities {
+  /* ---- Canvas: پس‌زمینه‌ی aurora کل ناحیه‌ی محتوا --------------------------- */
+  .dash-scope {
+    position: relative;
+    isolation: isolate;
+    color: oklch(28% 0.02 250);
+    background:
+      radial-gradient(120% 90% at 100% -10%, oklch(70% 0.10 245 / 0.10), transparent 55%),
+      radial-gradient(110% 90% at 0% 0%, oklch(72% 0.12 165 / 0.07), transparent 50%),
+      linear-gradient(180deg, oklch(98.5% 0.004 245), oklch(96.5% 0.006 245));
+  }
+  .dark .dash-scope {
+    color: oklch(90% 0.01 245);
+    background:
+      radial-gradient(120% 90% at 100% -10%, oklch(55% 0.16 255 / 0.20), transparent 55%),
+      radial-gradient(120% 100% at -5% 5%, oklch(60% 0.13 165 / 0.10), transparent 52%),
+      radial-gradient(100% 120% at 50% 120%, oklch(50% 0.14 280 / 0.12), transparent 60%),
+      linear-gradient(180deg, oklch(15% 0.02 255), oklch(10.5% 0.018 255));
+  }
+  /* aurora blob های شناور داخل canvas */
+  .dash-aurora {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .dash-aurora::before,
+  .dash-aurora::after {
+    content: "";
+    position: absolute;
+    width: 42rem;
+    height: 42rem;
+    border-radius: 9999px;
+    filter: blur(80px);
+    opacity: 0.5;
+    will-change: transform;
+  }
+  .dash-aurora::before {
+    inset-block-start: -16rem;
+    inset-inline-end: -10rem;
+    background: radial-gradient(closest-side, oklch(62% 0.16 255 / 0.55), transparent 70%);
+    animation: motion-aurora-a 34s ease-in-out infinite;
+  }
+  .dash-aurora::after {
+    inset-block-end: -18rem;
+    inset-inline-start: -12rem;
+    background: radial-gradient(closest-side, oklch(68% 0.13 165 / 0.40), transparent 70%);
+    animation: motion-aurora-b 40s ease-in-out infinite;
+  }
+  .dark .dash-aurora::before { opacity: 0.55; }
+  .dark .dash-aurora::after  { opacity: 0.40; }
+
+  /* fine grid overlay برای بافت editorial */
+  .dash-grid-texture::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      linear-gradient(oklch(50% 0.02 250 / 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(50% 0.02 250 / 0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    -webkit-mask-image: radial-gradient(120% 90% at 100% 0%, #000 0%, transparent 65%);
+            mask-image: radial-gradient(120% 90% at 100% 0%, #000 0%, transparent 65%);
+  }
+  .dark .dash-grid-texture::before {
+    background-image:
+      linear-gradient(oklch(85% 0.02 250 / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(85% 0.02 250 / 0.05) 1px, transparent 1px);
+  }
+
+  /* ---- Panel: سطح گلَس کارت‌ها --------------------------------------------- */
+  .dash-panel {
+    position: relative;
+    border-radius: var(--ds-radius-2xl);
+    background: linear-gradient(180deg, oklch(100% 0 0 / 0.9), oklch(99% 0.003 245 / 0.78));
+    border: 1px solid oklch(90% 0.006 245 / 0.9);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.7) inset,
+      0 18px 40px -28px oklch(45% 0.08 255 / 0.30);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .dark .dash-panel {
+    background: linear-gradient(180deg, oklch(20% 0.018 255 / 0.72), oklch(16% 0.016 255 / 0.62));
+    border: 1px solid oklch(34% 0.02 255 / 0.7);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.04) inset,
+      0 28px 60px -34px oklch(0% 0 0 / 0.75);
+  }
+  .dash-panel--hover {
+    transition:
+      transform var(--ds-duration-base) var(--ds-ease-out-quart),
+      box-shadow var(--ds-duration-base) var(--ds-ease-out-quart),
+      border-color var(--ds-duration-base) var(--ds-ease-out-quart);
+  }
+  .dash-panel--hover:hover {
+    transform: translateY(-4px);
+    border-color: oklch(70% 0.12 245 / 0.5);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.06) inset,
+      0 30px 70px -30px oklch(55% 0.16 255 / 0.45);
+  }
+
+  /* conic glow border روی hover / active */
+  .dash-glow {
+    position: relative;
+    isolation: isolate;
+  }
+  .dash-glow::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(
+      from var(--dash-angle),
+      oklch(70% 0.16 255 / 0) 0%,
+      oklch(70% 0.16 255 / 0.6) 25%,
+      oklch(72% 0.14 165 / 0.5) 50%,
+      oklch(70% 0.16 255 / 0.6) 75%,
+      oklch(70% 0.16 255 / 0) 100%
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    opacity: 0;
+    transition: opacity var(--ds-duration-base) var(--ds-ease-out-quart);
+    pointer-events: none;
+    z-index: 2;
+  }
+  .dash-glow:hover::before,
+  .dash-glow:focus-within::before,
+  .dash-glow[data-active="true"]::before {
+    opacity: 1;
+    animation: dash-spin 6s linear infinite;
+  }
+  @keyframes dash-spin {
+    to { --dash-angle: 360deg; }
+  }
+  @supports not (background: conic-gradient(from var(--dash-angle), #000, #000)) {
+    .dash-glow:hover::before { opacity: 1; animation: none; }
+  }
+
+  /* ---- Accent tints (برای آیکن‌ها و trend) -------------------------------- */
+  .dash-ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--ds-radius-lg);
+    color: #fff;
+    box-shadow: 0 8px 20px -8px var(--dash-ico-glow, oklch(55% 0.16 255 / 0.6));
+  }
+  .dash-ico--indigo  { background: linear-gradient(135deg, oklch(65% 0.16 270), oklch(52% 0.16 260)); --dash-ico-glow: oklch(55% 0.16 265 / 0.6); }
+  .dash-ico--emerald { background: linear-gradient(135deg, oklch(72% 0.14 165), oklch(58% 0.13 162)); --dash-ico-glow: oklch(62% 0.14 165 / 0.6); }
+  .dash-ico--cyan    { background: linear-gradient(135deg, oklch(72% 0.13 210), oklch(58% 0.13 225)); --dash-ico-glow: oklch(62% 0.13 215 / 0.6); }
+  .dash-ico--violet  { background: linear-gradient(135deg, oklch(66% 0.17 300), oklch(54% 0.16 295)); --dash-ico-glow: oklch(58% 0.16 298 / 0.6); }
+  .dash-ico--rose    { background: linear-gradient(135deg, oklch(68% 0.18 20), oklch(56% 0.17 15)); --dash-ico-glow: oklch(60% 0.18 18 / 0.6); }
+  .dash-ico--amber   { background: linear-gradient(135deg, oklch(80% 0.14 80), oklch(68% 0.14 62)); --dash-ico-glow: oklch(72% 0.14 70 / 0.6); }
+
+  /* trend pill */
+  .dash-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .dash-trend--up   { color: oklch(52% 0.14 162); background: oklch(72% 0.14 165 / 0.14); }
+  .dash-trend--down { color: oklch(55% 0.17 18);  background: oklch(68% 0.18 20 / 0.14); }
+  .dash-trend--flat { color: oklch(55% 0.02 250); background: oklch(60% 0.02 250 / 0.12); }
+  .dark .dash-trend--up   { color: oklch(80% 0.14 165); }
+  .dark .dash-trend--down { color: oklch(78% 0.16 22); }
+  .dark .dash-trend--flat { color: oklch(75% 0.02 250); }
+
+  /* ---- Bento grid ---------------------------------------------------------- */
+  .dash-bento {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+  @media (min-width: 768px)  { .dash-bento { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; } }
+  @media (min-width: 1280px) { .dash-bento { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+  .dash-bento__wide { grid-column: span 2; }
+  @media (min-width: 1280px) { .dash-bento__wide { grid-column: span 2; } }
+
+  /* numeric display */
+  .dash-num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum", "lnum", "ss01";
+    letter-spacing: -0.02em;
+  }
+
+  /* shimmer برای ارزش‌های کلیدی */
+  .dash-value-shine {
+    background: linear-gradient(120deg,
+      currentColor 0%, currentColor 40%,
+      oklch(85% 0.10 245) 50%,
+      currentColor 60%, currentColor 100%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+            background-clip: text;
+    color: transparent;
+    animation: dash-value-shine 6s ease-in-out infinite;
+  }
+  @keyframes dash-value-shine {
+    0%, 100% { background-position: 150% 0; }
+    50%      { background-position: -50% 0; }
+  }
+
+  /* live dot */
+  .dash-livedot {
+    width: 7px; height: 7px; border-radius: 9999px;
+    background: oklch(72% 0.16 162);
+    box-shadow: 0 0 0 0 oklch(72% 0.16 162 / 0.6);
+    animation: liveclock-pulse 2.2s ease-in-out infinite;
+  }
+}

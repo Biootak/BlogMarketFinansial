@@ -13,18 +13,18 @@ export default function WelcomeSection() {
       className="relative overflow-hidden rounded-3xl text-white"
       style={{
         boxShadow: `
-          0 0 0 1px rgba(255,255,255,0.1),
-          0 4px 6px -1px rgba(0,0,0,0.1),
-          0 20px 25px -5px rgba(124,58,237,0.25),
-          0 40px 60px -12px rgba(79,70,229,0.3),
-          inset 0 1px 0 rgba(255,255,255,0.1)
+          0 0 0 1px rgba(255,255,255,0.08),
+          0 4px 6px -1px rgba(0,0,0,0.15),
+          0 24px 40px -12px oklch(45% 0.14 255 / 0.45),
+          0 50px 70px -20px oklch(30% 0.10 255 / 0.5),
+          inset 0 1px 0 rgba(255,255,255,0.08)
         `,
       }}
     >
-      {/* Multi-layer gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700" />
-      <div className="absolute inset-0 bg-gradient-to-tr from-fuchsia-600/40 via-transparent to-cyan-500/20" />
-      <div className="absolute inset-0 bg-gradient-to-bl from-rose-500/20 via-transparent to-blue-600/30" />
+      {/* Multi-layer aurora gradient — navy × indigo × emerald */}
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, oklch(32% 0.10 260) 0%, oklch(26% 0.09 255) 45%, oklch(20% 0.07 250) 100%)' }} />
+      <div className="absolute inset-0" style={{ background: 'radial-gradient(110% 130% at 100% 0%, oklch(62% 0.16 255 / 0.45), transparent 55%)' }} />
+      <div className="absolute inset-0" style={{ background: 'radial-gradient(100% 120% at 0% 100%, oklch(68% 0.13 165 / 0.30), transparent 55%)' }} />
       
       {/* Animated background elements */}
       <WelcomeSectionBackground />

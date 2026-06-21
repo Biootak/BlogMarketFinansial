@@ -45,14 +45,14 @@ const Header: React.FC = () => {
     <header className="relative z-30">
       {/* Glass background */}
       <div
-        className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50"
+        className="absolute inset-0 bg-white/70 dark:bg-[oklch(14%_0.018_255_/_0.7)] backdrop-blur-xl border-b border-slate-200/50 dark:border-[oklch(40%_0.02_255_/_0.4)]"
         style={{
-          boxShadow: '0 4px 30px rgba(0,0,0,0.03)',
+          boxShadow: '0 4px 30px rgba(0,0,0,0.06)',
         }}
       />
 
-      {/* Gradient accent line */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-500/20 to-transparent" />
+      {/* Gradient accent line — cyan→emerald aurora */}
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent dark:via-emerald-400/30" />
 
       <div className="relative max-w-full mx-auto py-3 px-4 sm:px-6 lg:px-8 flex flex-row-reverse justify-between items-center">
         {/* Left side - User section */}

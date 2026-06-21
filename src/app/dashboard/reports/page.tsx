@@ -61,12 +61,6 @@ export default function ReportsPage() {
 
   return (
     <div className="min-h-screen py-6 md:py-8 lg:py-10 px-4 md:px-6" dir="rtl">
-      {/* Background Effects */}
-      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-[rgb(var(--c-primary-200))]/30 to-transparent rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-[rgb(var(--c-primary-100))]/40 to-transparent rounded-full blur-3xl" />
-      </div>
-
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header Section */}
         <header className="relative">
@@ -166,15 +160,7 @@ export default function ReportsPage() {
         {/* Content Area */}
         <main className="relative">
           {/* Glass Card Container */}
-          <div
-            className={cn(
-              'relative overflow-hidden rounded-2xl',
-              'bg-white/60 backdrop-blur-xl',
-              'border border-white/80',
-              'shadow-2xl shadow-[rgb(var(--c-primary-300))]/20',
-              'ring-1 ring-[rgb(var(--c-primary-100))]'
-            )}
-          >
+          <div className="dash-panel relative overflow-hidden">
             {/* Top Gradient Line */}
             <div
               className={cn(
@@ -184,7 +170,7 @@ export default function ReportsPage() {
             />
 
             {/* Inner Glow Effect */}
-            <div className="absolute inset-0 bg-gradient-to-b from-white/50 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/40 to-transparent dark:from-white/[0.03] pointer-events-none" />
 
             {/* Content */}
             <div className="relative p-6 md:p-8 lg:p-10 min-h-[500px]">

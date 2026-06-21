@@ -293,7 +293,7 @@ const RateListsPage = () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 p-4 sm:p-6 lg:p-8 dark:from-neutral-900 dark:via-neutral-900 dark:to-primary-950/20" dir="rtl">
+    <div className="min-h-screen p-4 sm:p-6 lg:p-8" dir="rtl">
       <DashboardPageHeader title="مدیریت لیست‌های نرخ" description="مشاهده و مدیریت لیست‌های نرخ ارز">
         <DashboardSearchInput value={filterOptions.search} onChange={(v) => setFilterOptions((p) => ({ ...p, search: v }))} placeholder="جستجو..." />
         <FilterSelect value={filterOptions.currency} onChange={(v) => setFilterOptions((p) => ({ ...p, currency: v }))} options={currencyOptions} />

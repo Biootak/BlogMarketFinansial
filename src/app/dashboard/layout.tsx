@@ -23,7 +23,7 @@ export default async function DashboardLayout({
       }}
     >
       <div
-        className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-300"
+        className="flex h-screen overflow-hidden bg-slate-50 dark:bg-[oklch(10%_0.018_255)] transition-colors duration-300"
         dir="rtl"
       >
         <SidebarInitializer />

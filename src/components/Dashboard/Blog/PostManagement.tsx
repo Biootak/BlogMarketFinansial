@@ -189,14 +189,7 @@ const StatCard: React.FC<{
       className="group relative overflow-hidden"
     >
       <div 
-        className={`relative bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 border-b-4 ${colors.border} transition-all duration-500`}
-        style={{
-          boxShadow: `
-            0 0 0 1px rgba(0,0,0,0.03),
-            0 2px 4px rgba(0,0,0,0.02),
-            0 8px 16px rgba(0,0,0,0.04)
-          `,
-        }}
+        className={`relative dash-panel dash-panel--hover dash-glow p-6 border-b-4 ${colors.border}`}
       >
         {/* Hover glow */}
         <div 
@@ -229,16 +222,7 @@ const StatCard: React.FC<{
 
 
 const PopularPosts: React.FC<{ posts: PostManagementProps['popularPosts'] }> = ({ posts }) => (
-  <div 
-    className="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden"
-    style={{
-      boxShadow: `
-        0 0 0 1px rgba(0,0,0,0.03),
-        0 4px 6px rgba(0,0,0,0.02),
-        0 12px 24px rgba(0,0,0,0.04)
-      `,
-    }}
-  >
+  <div className="relative dash-panel overflow-hidden">
     {/* Header */}
     <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50/50 to-white dark:from-slate-800/50 dark:to-slate-900">
       <div className="flex justify-between items-center">
@@ -299,16 +283,7 @@ const PopularPosts: React.FC<{ posts: PostManagementProps['popularPosts'] }> = (
 );
 
 const RecentDrafts: React.FC<{ drafts: PostManagementProps['recentDrafts'] }> = ({ drafts }) => (
-  <div 
-    className="relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden"
-    style={{
-      boxShadow: `
-        0 0 0 1px rgba(0,0,0,0.03),
-        0 4px 6px rgba(0,0,0,0.02),
-        0 12px 24px rgba(0,0,0,0.04)
-      `,
-    }}
-  >
+  <div className="relative dash-panel overflow-hidden">
     {/* Header */}
     <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50/50 to-white dark:from-slate-800/50 dark:to-slate-900">
       <div className="flex justify-between items-center">
