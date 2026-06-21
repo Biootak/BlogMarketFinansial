@@ -1,0 +1,448 @@
+/* ============================================================================
+   ATELIER — Archive 2026  ·  Editorial, cinematic, dense
+   ----------------------------------------------------------------------------
+   A premium magazine archive. Hero pairs the section intro with the featured
+   story as a large image (no dead space). Dense fluid grid. Ads live in their
+   own labeled band. Techniques: scroll-driven reveals, subgrid bodies,
+   :has()-driven states, fluid OKLCH tokens, full RTL. Tokens only.
+   Namespace: .atl-*
+   ============================================================================ */
+
+@layer components {
+  .atl-page {
+    --atl-gap: var(--ds-space-5);
+    --atl-rule: var(--ds-border-default);
+    position: relative;
+    color: var(--ds-text-primary);
+  }
+
+  /* ---- Scroll-driven reveal (progressive enhancement) ---- */
+  .atl-reveal { opacity: 1; transform: none; }
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .atl-reveal {
+        opacity: 0.001;
+        transform: translateY(22px);
+        animation: atl-rise linear both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 18%;
+      }
+    }
+  }
+  @keyframes atl-rise { to { opacity: 1; transform: none; } }
+
+  /* ============================ Top bar (crumbs) ============================ */
+  .atl-crumbs {
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-2);
+    flex-wrap: wrap;
+    font-size: var(--ds-text-xs);
+    color: var(--ds-text-muted);
+    margin: 0;
+  }
+  .atl-crumbs a {
+    color: var(--ds-text-secondary);
+    transition: color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  }
+  .atl-crumbs a:hover { color: var(--ds-brand-500); }
+  .atl-crumbs__sep { opacity: 0.4; display: inline-flex; }
+  .atl-crumbs__current { color: var(--ds-text-primary); font-weight: var(--ds-weight-medium); }
+
+  /* ============================ Hero ============================ */
+  .atl-hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--ds-radius-2xl);
+    border: 1px solid var(--ds-border-default);
+    background:
+      radial-gradient(120% 120% at 100% 0%,
+        color-mix(in oklch, var(--ds-brand-500), transparent 88%), transparent 55%),
+      linear-gradient(180deg, var(--ds-surface-elevated), var(--ds-canvas-subtle));
+    box-shadow: var(--ds-shadow-md);
+    display: grid;
+    grid-template-columns: 1fr;
+    isolation: isolate;
+  }
+  @media (min-width: 64rem) {
+    .atl-hero { grid-template-columns: 0.95fr 1.05fr; }
+  }
+  .atl-hero::before {
+    /* faint editorial grid, only on the intro side */
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      var(--ds-border-subtle) 0,
+      var(--ds-border-subtle) 1px,
+      transparent 1px,
+      transparent 2.75rem
+    );
+    -webkit-mask-image: linear-gradient(to bottom, black, transparent 60%);
+    mask-image: linear-gradient(to bottom, black, transparent 60%);
+    opacity: 0.4;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .atl-hero__intro {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds-space-3);
+    padding: clamp(1.5rem, 1rem + 3vw, 3rem);
+  }
+  .atl-hero__index {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5ch;
+    font-variant-numeric: tabular-nums;
+    font-size: var(--ds-text-xs);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ds-text-muted);
+  }
+  .atl-hero__kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ds-space-2);
+    align-self: flex-start;
+    padding: 0.3rem 0.7rem;
+    border-radius: var(--ds-radius-full);
+    background: var(--ds-surface);
+    border: 1px solid var(--ds-border-default);
+    backdrop-filter: blur(10px);
+    font-size: var(--ds-text-xs);
+    font-weight: var(--ds-weight-medium);
+    color: var(--ds-text-secondary);
+  }
+  .atl-dot {
+    width: 0.45rem; height: 0.45rem;
+    border-radius: 50%;
+    background: var(--ds-accent-emerald);
+    animation: atl-pulse 2.4s var(--ds-ease-out-quart) infinite;
+  }
+  @keyframes atl-pulse {
+    0%   { box-shadow: 0 0 0 0 color-mix(in oklch, var(--ds-accent-emerald), transparent 40%); }
+    70%  { box-shadow: 0 0 0 0.5rem color-mix(in oklch, var(--ds-accent-emerald), transparent 100%); }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+  .atl-title {
+    font-weight: var(--ds-weight-extrabold);
+    font-size: clamp(2rem, 1.3rem + 3.5vw, 3.75rem);
+    line-height: var(--ds-leading-tight);
+    letter-spacing: -0.02em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .atl-title__accent {
+    background: linear-gradient(120deg, var(--ds-brand-500), var(--ds-accent-violet));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .atl-lead {
+    max-width: 46ch;
+    font-size: var(--ds-text-base);
+    line-height: var(--ds-leading-relaxed);
+    color: var(--ds-text-secondary);
+    text-wrap: pretty;
+  }
+
+  .atl-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ds-space-5);
+    margin-top: auto;
+    padding-top: var(--ds-space-4);
+  }
+  .atl-stat { display: flex; flex-direction: column; gap: 0.15rem; }
+  .atl-stat__num {
+    font-size: var(--ds-text-xl);
+    font-weight: var(--ds-weight-bold);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    color: var(--ds-text-primary);
+  }
+  .atl-stat__label { font-size: var(--ds-text-xs); color: var(--ds-text-muted); }
+
+  .atl-quicklinks {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--ds-space-2);
+  }
+  .atl-quicklinks__label { font-size: var(--ds-text-xs); color: var(--ds-text-muted); margin-inline-end: 0.25rem; }
+  .atl-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: var(--ds-radius-full);
+    background: var(--ds-surface);
+    border: 1px solid var(--ds-border-default);
+    font-size: var(--ds-text-xs);
+    font-weight: var(--ds-weight-medium);
+    color: var(--ds-text-secondary);
+    transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart),
+                border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+                color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  }
+  .atl-chip:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in oklch, var(--ds-brand-500), transparent 50%);
+    color: var(--ds-text-primary);
+  }
+  .atl-chip__count { font-variant-numeric: tabular-nums; font-size: 0.7rem; color: var(--ds-text-muted); }
+
+  /* ---- Hero feature (the lead story, full-bleed image with overlay) ---- */
+  .atl-hero__feature {
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    min-height: 20rem;
+    display: flex;
+  }
+  @media (min-width: 64rem) {
+    .atl-hero__feature { min-height: 26rem; }
+  }
+  .atl-hero__feature img { transition: transform var(--ds-duration-slow) var(--ds-ease-out-quart); }
+  .atl-hero__feature:hover img { transform: scale(1.04); }
+  .atl-hero__scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: linear-gradient(
+      to top,
+      oklch(12% 0.02 250 / 0.92) 0%,
+      oklch(12% 0.02 250 / 0.45) 38%,
+      transparent 72%
+    );
+    pointer-events: none;
+  }
+  .atl-hero__feature-body {
+    position: relative;
+    z-index: 3;
+    margin-top: auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ds-space-2);
+    padding: clamp(1.25rem, 1rem + 2vw, 2.25rem);
+    color: oklch(98% 0.005 240);
+  }
+  .atl-hero__feature-eyebrow {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    align-self: flex-start;
+    padding: 0.25rem 0.65rem;
+    border-radius: var(--ds-radius-full);
+    background: oklch(100% 0 0 / 0.14);
+    border: 1px solid oklch(100% 0 0 / 0.2);
+    backdrop-filter: blur(8px);
+    font-size: var(--ds-text-xs);
+    font-weight: var(--ds-weight-semibold);
+  }
+  .atl-hero__feature-title {
+    font-size: clamp(1.35rem, 1rem + 1.8vw, 2.25rem);
+    font-weight: var(--ds-weight-bold);
+    line-height: var(--ds-leading-tight);
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .atl-hero__feature-meta {
+    display: flex; align-items: center; gap: var(--ds-space-3);
+    font-size: var(--ds-text-xs);
+    color: oklch(98% 0.005 240 / 0.82);
+  }
+  .atl-hero__feature-meta span { display: inline-flex; align-items: center; gap: 0.3rem; }
+
+  /* ============================ Toolbar (sticky) ============================ */
+  .atl-toolbar {
+    position: sticky;
+    top: 0.75rem;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: var(--ds-space-3);
+    flex-wrap: wrap;
+    padding: var(--ds-space-2) var(--ds-space-3);
+    border-radius: var(--ds-radius-full);
+    background: var(--ds-surface-elevated);
+    border: 1px solid var(--ds-border-default);
+    box-shadow: var(--ds-shadow-md);
+    backdrop-filter: blur(20px) saturate(140%);
+  }
+  .atl-toolbar__search { flex: 1 1 16rem; min-width: 0; }
+  .atl-toolbar__group { display: flex; align-items: center; gap: var(--ds-space-2); flex-wrap: wrap; }
+  .atl-sort {
+    display: inline-flex;
+    padding: 0.2rem;
+    border-radius: var(--ds-radius-full);
+    background: var(--ds-surface-recessed);
+    border: 1px solid var(--ds-border-subtle);
+    gap: 0.1rem;
+  }
+  .atl-sort__item {
+    appearance: none; border: 0; background: transparent;
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--ds-radius-full);
+    font-size: var(--ds-text-xs);
+    font-weight: var(--ds-weight-medium);
+    color: var(--ds-text-secondary);
+    cursor: pointer; white-space: nowrap;
+    transition: color var(--ds-duration-fast), background var(--ds-duration-fast);
+  }
+  .atl-sort__item:hover { color: var(--ds-text-primary); }
+  .atl-sort__item[aria-selected="true"] {
+    background: var(--ds-canvas);
+    color: var(--ds-brand-500);
+    box-shadow: var(--ds-shadow-sm);
+  }
+
+  /* ============================ Active filters ============================ */
+  .atl-active { display: flex; align-items: center; flex-wrap: wrap; gap: var(--ds-space-2); font-size: var(--ds-text-xs); }
+  .atl-active__label { color: var(--ds-text-muted); margin-inline-end: 0.25rem; }
+  .atl-active__pill {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.3rem 0.4rem 0.3rem 0.7rem;
+    border-radius: var(--ds-radius-full);
+    background: var(--ds-surface);
+    border: 1px solid var(--ds-border-default);
+    color: var(--ds-text-secondary);
+    transition: border-color var(--ds-duration-fast), color var(--ds-duration-fast);
+  }
+  .atl-active__pill:hover { border-color: color-mix(in oklch, var(--ds-accent-rose), transparent 50%); color: var(--ds-text-primary); }
+  .atl-active__pill .atl-x {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.1rem; height: 1.1rem; border-radius: 50%;
+    background: var(--ds-surface-recessed);
+  }
+  .atl-active__clear { display: inline-flex; align-items: center; gap: 0.35rem; color: var(--ds-accent-rose); font-weight: var(--ds-weight-medium); }
+
+  /* ============================ Result meta ============================ */
+  .atl-result-meta {
+    display: flex; align-items: center; gap: var(--ds-space-3);
+    font-size: var(--ds-text-sm);
+    color: var(--ds-text-secondary);
+    margin-block: var(--ds-space-5) var(--ds-space-4);
+  }
+  .atl-result-meta b { color: var(--ds-text-primary); font-variant-numeric: tabular-nums; }
+  .atl-result-meta__rule { flex: 1; height: 1px; background: var(--atl-rule); }
+
+  /* ============================ Dense editorial grid ============================ */
+  .atl-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16.5rem), 1fr));
+    gap: var(--atl-gap);
+  }
+
+  .atl-card {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    border-radius: var(--ds-radius-xl);
+    overflow: hidden;
+    background: var(--ds-surface);
+    border: 1px solid var(--ds-border-default);
+    transition: transform var(--ds-duration-base) var(--ds-ease-out-quart),
+                box-shadow var(--ds-duration-base) var(--ds-ease-out-quart),
+                border-color var(--ds-duration-base) var(--ds-ease-out-quart);
+  }
+  .atl-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--ds-shadow-lg);
+    border-color: color-mix(in oklch, var(--ds-brand-500), transparent 55%);
+  }
+  .atl-card__media {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 16/10;
+    background: var(--ds-surface-recessed);
+  }
+  .atl-card__media img { transition: transform var(--ds-duration-slow) var(--ds-ease-out-quart); }
+  .atl-card:hover .atl-card__media img { transform: scale(1.06); }
+  .atl-card__badge {
+    position: absolute;
+    inset-block-start: var(--ds-space-3);
+    inset-inline-start: var(--ds-space-3);
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: var(--ds-radius-full);
+    font-size: 0.7rem; font-weight: var(--ds-weight-semibold);
+    color: oklch(98% 0.005 240);
+    background: oklch(12% 0.02 250 / 0.6);
+    backdrop-filter: blur(8px);
+  }
+  .atl-card__body {
+    display: flex; flex-direction: column; gap: var(--ds-space-2);
+    padding: var(--ds-space-4) var(--ds-space-4) var(--ds-space-3);
+  }
+  .atl-card__kicker {
+    font-size: var(--ds-text-xs);
+    font-weight: var(--ds-weight-semibold);
+    letter-spacing: 0.04em;
+    color: var(--ds-brand-500);
+  }
+  .atl-card__title {
+    font-size: var(--ds-text-base);
+    font-weight: var(--ds-weight-semibold);
+    line-height: var(--ds-leading-snug);
+    color: var(--ds-text-primary);
+    letter-spacing: -0.01em;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    transition: color var(--ds-duration-fast);
+  }
+  .atl-card:hover .atl-card__title { color: var(--ds-brand-600); }
+  .atl-card__excerpt {
+    font-size: var(--ds-text-sm);
+    line-height: var(--ds-leading-normal);
+    color: var(--ds-text-secondary);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .atl-card__foot {
+    margin-top: auto;
+    padding-top: var(--ds-space-3);
+    border-top: 1px solid var(--ds-border-subtle);
+    display: flex; align-items: center; justify-content: space-between; gap: var(--ds-space-2);
+    font-size: var(--ds-text-xs); color: var(--ds-text-muted);
+  }
+  .atl-card__author { display: inline-flex; align-items: center; gap: 0.4rem; min-width: 0; color: var(--ds-text-secondary); font-weight: var(--ds-weight-medium); }
+  .atl-dot2 { width: 0.4rem; height: 0.4rem; border-radius: 50%; background: var(--ds-brand-500); flex: none; }
+  .atl-card__stats { display: inline-flex; align-items: center; gap: var(--ds-space-3); flex: none; }
+  .atl-card__stats span { display: inline-flex; align-items: center; gap: 0.25rem; }
+
+  /* ============================ Ad band (own section) ============================ */
+  .atl-ad {
+    position: relative;
+    margin-block: var(--ds-space-8);
+    padding: var(--ds-space-3);
+    border-radius: var(--ds-radius-2xl);
+    background: var(--ds-surface-recessed);
+    border: 1px dashed var(--ds-border-default);
+  }
+  .atl-ad__label {
+    position: absolute;
+    inset-block-start: calc(var(--ds-space-3) * -0.5);
+    inset-inline-start: var(--ds-space-5);
+    padding: 0.1rem 0.6rem;
+    border-radius: var(--ds-radius-full);
+    background: var(--ds-canvas);
+    border: 1px solid var(--ds-border-default);
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    color: var(--ds-text-muted);
+  }
+  .atl-ad__inner { border-radius: var(--ds-radius-xl); overflow: hidden; }
+
+  /* ============================ Section divider ============================ */
+  .atl-section {
+    margin-top: var(--ds-space-10);
+    padding-top: var(--ds-space-8);
+    border-top: 1px solid var(--atl-rule);
+  }
+}

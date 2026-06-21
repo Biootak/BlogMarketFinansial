@@ -1,8 +1,7 @@
-import { ArrowLeft, ChevronLeft, Home } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Suspense } from 'react';
 
 import { getActiveAdvertisements } from '@/actions/advertisementActions';
 import { getCategories } from '@/actions/categoryActions';
@@ -10,18 +9,17 @@ import { getTags } from '@/actions/getTags';
 import { getTopAuthors } from '@/actions/getTopAuthors';
 import { getArchivePosts } from '@/actions/postActions';
 import BackgroundSection from '@/components/BackgroundSection/BackgroundSection';
+import BannerAds from '@/components/BannerADS/BannerADS';
 import DynamicCategories from '@/components/DynamicCategories';
 import Empty from '@/components/Empty';
 import Pagination from '@/components/Pagination/Pagination';
 import SectionSliderNewAuthors from '@/components/SectionSliderNewAthors/SectionSliderNewAuthors';
 import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
-import ActiveFilters, { type ActiveFilter } from '../../_components/ActiveFilters';
-import ArchiveBreadcrumb from '../../_components/ArchiveBreadcrumb';
+import type { ActiveFilter } from '../../_components/ActiveFilters';
+import AtelierGrid from '../../_components/AtelierGrid';
+import AtelierMasthead from '../../_components/AtelierMasthead';
+import AtelierToolbar from '../../_components/AtelierToolbar';
 import { buildArchiveCrumbs } from '../../_components/buildArchiveCrumbs';
-import ArchiveGrid from '../../_components/ArchiveGrid';
-import ArchiveHero from '../../_components/ArchiveHero';
-import FilterRail from '../../_components/FilterRail';
-import MobileFilterSheet from '../../_components/MobileFilterSheet';
 
 export async function generateMetadata({
   params,
@@ -46,10 +44,7 @@ export async function generateMetadata({
     description = `مطالب مرتبط با برچسب ${category}`;
   }
 
-  return {
-    title,
-    description,
-  };
+  return { title, description };
 }
 
 const FILTERS = [
@@ -121,20 +116,43 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
     : null;
   const selectedTag = type === 'tag' ? tags.find((tag) => tag.slug === category) : null;
 
-  const defaultImage = '/images/crypto/crypto.png';
+  const quickPickCategories = categories.slice(0, 5);
 
-  const quickPickCategories = categories.slice(0, 4);
-  const trendingTags = tags.slice(0, 6);
+  // ---- Masthead copy (context-aware) ----
+  const mastheadTitle = selectedSubcategory
+    ? selectedSubcategory.name
+    : selectedCategory
+      ? selectedCategory.name
+      : selectedTag
+        ? `#${selectedTag.name}`
+        : 'گنجینه مقالات';
 
-  // ساخت لیست فیلترهای فعال برای نمایش
+  const mastheadKicker = selectedSubcategory
+    ? 'زیرمجموعه'
+    : selectedCategory
+      ? 'دسته‌بندی'
+      : selectedTag
+        ? 'برچسب'
+        : 'آرشیو زنده و به‌روز';
+
+  const mastheadIndex = selectedCategory
+    ? `دسته‌بندی · ${selectedCategory.name}`
+    : selectedTag
+      ? 'مرور بر اساس برچسب'
+      : 'مجموعه‌ی کامل مقالات';
+
+  const mastheadLead = selectedSubcategory
+    ? `تازه‌ترین تحلیل‌ها و یادداشت‌های تخصصی در ${selectedSubcategory.name}.`
+    : selectedCategory
+      ? `مجموعه‌ای گزینش‌شده از مقالات ${selectedCategory.name} — از تحلیل تا آموزش.`
+      : selectedTag
+        ? `هر آنچه درباره‌ی «${selectedTag.name}» نوشته‌ایم، یکجا و دسته‌بندی‌شده.`
+        : 'از بازارهای مالی تا فناوری و اقتصاد کلان؛ یک اتاق مطالعه‌ی آرام برای کاوش عمیق.';
+
+  // ---- Active filters ----
   const activeFilters: ActiveFilter[] = [];
   if (searchQuery) {
-    activeFilters.push({
-      type: 'q',
-      label: `«${searchQuery}»`,
-      href: '/archive',
-      icon: 'search',
-    });
+    activeFilters.push({ type: 'q', label: `«${searchQuery}»`, href: '/archive', icon: 'search' });
   }
   if (selectedCategory) {
     activeFilters.push({
@@ -154,127 +172,78 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
     });
   }
   if (selectedTag) {
-    activeFilters.push({
-      type: 'tag',
-      label: `#${selectedTag.name}`,
-      href: '/archive',
-      icon: 'tag',
-      variant: 'accent',
-    });
+    activeFilters.push({ type: 'tag', label: `#${selectedTag.name}`, href: '/archive', icon: 'tag', variant: 'accent' });
   }
   if (filter && filter !== DEFAULT_FILTER) {
-    activeFilters.push({
-      type: 'filter',
-      label: `مرتب‌سازی: ${filter}`,
-      href: '/archive',
-      icon: 'sort',
-    });
+    activeFilters.push({ type: 'filter', label: `مرتب‌سازی: ${filter}`, href: '/archive', icon: 'sort' });
   }
 
+  const { crumbs } = buildArchiveCrumbs({
+    type,
+    selectedCategory,
+    selectedSubcategory,
+    selectedTag,
+    total,
+  });
+
+  const featuredPost = posts.length > 0 ? posts[0] : null;
+  const gridPosts = posts.length > 1 ? posts.slice(1) : [];
+
   return (
-    <div className="nc-PageArchive max-w-full @container/archive @md/archive:overflow-x-visible">
-      {/* ============================ Breadcrumb Header (v4) ============================ */}
-      <ArchiveBreadcrumb
-        {...buildArchiveCrumbs({
-          type,
-          selectedCategory,
-          selectedSubcategory,
-          selectedTag,
-          total,
-        })}
+    <div className="atl-page">
+      <AtelierMasthead
+        crumbs={crumbs}
+        indexLabel={mastheadIndex}
+        kicker={mastheadKicker}
+        title={mastheadTitle}
+        lead={mastheadLead}
+        total={total}
+        currentPage={currentPage}
+        totalPages={pages}
+        categoryCount={categoriesResult.data?.totalCount || categories.length}
+        quickPickCategories={quickPickCategories}
+        showQuickLinks={!selectedCategory && !selectedTag}
+        featuredPost={featuredPost}
       />
 
-      {/* ============================ Hero v4 ============================ */}
-      <div className="container mt-4 sm:mt-6 mb-6 sm:mb-8">
-        <ArchiveHero
-          total={total}
-          currentPage={currentPage}
-          totalPages={pages}
-          selectedCategory={selectedCategory}
-          selectedSubcategory={selectedSubcategory}
-          selectedTag={selectedTag}
-          quickPickCategories={quickPickCategories}
-          trendingTags={trendingTags}
-          defaultImage={defaultImage}
-        />
-      </div>
-
-      {/* ============================ Active filters ============================ */}
-      {activeFilters.length > 0 ? (
-        <div className="container mb-3">
-          <ActiveFilters filters={activeFilters} totalCount={total} />
-        </div>
-      ) : null}
-
-      {/* ============================ Filter rail (desktop) ============================ */}
-      <div className="container mb-6 sm:mb-8 hidden md:block">
-        <Suspense
-          fallback={
-            <div className="arc-rail-v4">
-              <div className="arc-shimmer h-10 w-full" />
-            </div>
-          }
-        >
-          <FilterRail
-            filters={FILTERS}
-            initialFilter={filter}
-            initialQuery={searchQuery}
-            categories={categories}
-            tags={tags}
-            currentCategory={selectedCategory}
-            currentTag={selectedTag}
-            quickPickTags={trendingTags}
-            showSuggestions={!selectedTag && !selectedCategory}
-          />
-        </Suspense>
-      </div>
-
-      {/* ============================ Mobile filter ============================ */}
-      <div className="md:hidden">
-        <MobileFilterSheet
-          categories={categories}
-          tags={tags}
+      <div className="container" style={{ marginTop: 'var(--ds-space-6)' }}>
+        <AtelierToolbar
           filters={FILTERS}
+          defaultFilter={DEFAULT_FILTER}
           initialFilter={filter}
           initialQuery={searchQuery}
+          categories={categories}
+          tags={tags}
           currentCategory={selectedCategory}
           currentTag={selectedTag}
-          activeFilterCount={activeFilters.length}
+          activeFilters={activeFilters}
+          totalCount={total}
         />
-      </div>
 
-      {/* ============================ Result meta ============================ */}
-      {posts.length > 0 ? (
-        <div className="container">
-          <div className="arc-result-meta-v4">
+        {gridPosts.length > 0 ? (
+          <div className="atl-result-meta">
             <span>
-              نمایش{' '}
-              <span className="arc-result-meta-v4__num">
-                {posts.length.toLocaleString('fa-IR')}
-              </span>{' '}
-              از{' '}
-              <span className="arc-result-meta-v4__num">
-                {total.toLocaleString('fa-IR')}
-              </span>{' '}
-              مقاله
+              نمایش <b>{posts.length.toLocaleString('fa-IR')}</b> از{' '}
+              <b>{total.toLocaleString('fa-IR')}</b> مقاله
             </span>
-            {pages > 1 ? (
-              <span className="text-xs text-neutral-400 dark:text-neutral-500 tabular-nums">
-                صفحه {currentPage.toLocaleString('fa-IR')} از {pages.toLocaleString('fa-IR')}
-              </span>
-            ) : null}
-            <span className="arc-result-meta-v4__sep" aria-hidden />
+            <span className="atl-result-meta__rule" aria-hidden />
           </div>
-        </div>
-      ) : null}
+        ) : null}
 
-      {/* ============================ Posts grid ============================ */}
-      <div className="container">
         {posts.length > 0 ? (
-          <ArchiveGrid posts={posts} betweenPostsAd={betweenPostsAd} />
+          <AtelierGrid posts={gridPosts} />
         ) : (
           <Empty />
         )}
+
+        {betweenPostsAd ? (
+          <div className="atl-ad atl-reveal">
+            <span className="atl-ad__label">محتوای تجاری</span>
+            <div className="atl-ad__inner">
+              <BannerAds ad={betweenPostsAd} variant="rich" />
+            </div>
+          </div>
+        ) : null}
 
         {posts.length > 0 && pages > 1 ? (
           <div className="flex justify-center mt-12 mb-8">
@@ -295,9 +264,9 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
         ) : null}
       </div>
 
-      <div className="relative py-12 sm:py-16 arc-reveal">
+      <div className="relative atl-section atl-reveal">
         <BackgroundSection />
-        <div className="container relative z-10">
+        <div className="container relative z-10 py-4">
           <DynamicCategories
             initialCategories={categories}
             initialTotalCount={categoriesResult.data?.totalCount || 0}
@@ -305,7 +274,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
         </div>
       </div>
 
-      <div className="container py-12 sm:py-16 arc-reveal">
+      <div className="container atl-section atl-reveal">
         <SectionSliderNewAuthors
           heading="قلم‌های برتر"
           subHeading="با ذهن‌های خلاق پشت مقالات ما آشنا شوید"
