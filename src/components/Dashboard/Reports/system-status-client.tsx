@@ -134,7 +134,7 @@ export function SystemStatusClient({ data, error }: SystemStatusClientProps) {
       </Card>
 
       {/* System Health Status */}
-      <Alert variant={data.health.status === 'healthy' ? 'default' : 'destructive'}>
+      <Alert variant={data.health.status === 'healthy' ? 'default' : 'destructive'} hideIcon>
         <div className="flex items-center gap-2">
           {data.health.status === 'healthy' ? (
             <CheckCircle2 className="h-5 w-5" />

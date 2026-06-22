@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { sendMagicLink } from '@/actions/auth-actions';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import Logo from '../Logo/Logo';
 import Loading from '../Button/Loading';
 import NcLink from '../NcLink/NcLink';
@@ -104,12 +104,17 @@ export function ForgotPasswordForm() {
         </form>
 
         {formState.error && (
-          <Alert variant="destructive">
+          <Alert
+            variant="destructive"
+            onDismiss={() => setFormState({ error: null, success: null })}
+          >
+            <AlertTitle>ارسال لینک ناموفق بود</AlertTitle>
             <AlertDescription>{formState.error}</AlertDescription>
           </Alert>
         )}
         {formState.success && (
           <Alert variant="success">
+            <AlertTitle>لینک بازیابی ارسال شد ✉️</AlertTitle>
             <AlertDescription>{formState.success}</AlertDescription>
           </Alert>
         )}

@@ -121,7 +121,7 @@ export async function loginUser(formData: FormData): Promise<AuthResult> {
     // ثبت فعالیت ورود
     await logLoginActivity(existingUser.id, 'ورود به سیستم', `کاربر "${existingUser.name || existingUser.email}" وارد سیستم شد`);
 
-    return { success: true, message: 'ورود موفقیت‌آمیز. در حال انتقال به صفحه اصلی...' };
+    return { success: true, message: 'خوش آمدید! 🎉 در حال انتقال به صفحه اصلی…' };
   } catch (error) {
     return handleAuthError(error);
   }

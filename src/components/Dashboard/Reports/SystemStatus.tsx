@@ -91,7 +91,7 @@ export default function SystemStatus() {
 
   if (error) {
     return (
-      <Alert variant="destructive">
+      <Alert variant="destructive" hideIcon>
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>خطا</AlertTitle>
         <AlertDescription>{error}</AlertDescription>
@@ -101,7 +101,7 @@ export default function SystemStatus() {
 
   if (!status) {
     return (
-      <Alert>
+      <Alert hideIcon>
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>خطا</AlertTitle>
         <AlertDescription>اطلاعات سیستم در دسترس نیست</AlertDescription>
@@ -119,7 +119,7 @@ export default function SystemStatus() {
     <div className="space-y-6">
       {/* System Alerts */}
       {status.cpu?.temperature && status.cpu.temperature > 80 && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" hideIcon>
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>هشدار دمای CPU</AlertTitle>
           <AlertDescription>
@@ -129,7 +129,7 @@ export default function SystemStatus() {
       )}
 
       {status.memory && memoryUsagePercent > 90 && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" hideIcon>
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>هشدار حافظه</AlertTitle>
           <AlertDescription>
@@ -139,7 +139,7 @@ export default function SystemStatus() {
       )}
 
       {status.disk && diskUsagePercent > 90 && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" hideIcon>
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>هشدار فضای دیسک</AlertTitle>
           <AlertDescription>

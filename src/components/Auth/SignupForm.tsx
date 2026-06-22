@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { RegisterSchema } from '@/schemas';
 import { sendMagicLink, registerUser } from '@/actions/auth-actions';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useSearchParams } from 'next/navigation';
 import Logo from '../Logo/Logo';
 import SocialProviders from './SocialProviders';
@@ -192,16 +192,22 @@ export function SignupForm() {
 
         {urlError && (
           <Alert variant="warning">
+            <AlertTitle>توجه</AlertTitle>
             <AlertDescription>{urlError}</AlertDescription>
           </Alert>
         )}
         {formState.error && (
-          <Alert variant="destructive">
+          <Alert
+            variant="destructive"
+            onDismiss={() => setFormState({ error: null, success: null })}
+          >
+            <AlertTitle>ثبت‌نام ناموفق بود</AlertTitle>
             <AlertDescription>{formState.error}</AlertDescription>
           </Alert>
         )}
         {formState.success && (
           <Alert variant="success">
+            <AlertTitle>حساب شما ساخته شد 🎉</AlertTitle>
             <AlertDescription>{formState.success}</AlertDescription>
           </Alert>
         )}

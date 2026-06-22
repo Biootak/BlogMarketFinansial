@@ -184,7 +184,7 @@ export default function SystemLogs() {
 
   if (error) {
     return (
-      <Alert variant="destructive">
+      <Alert variant="destructive" hideIcon>
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>خطا</AlertTitle>
         <AlertDescription>{error}</AlertDescription>

@@ -10,7 +10,7 @@ import { LoginSchema } from '@/schemas';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { DEFAULT_REDIRECT } from '@/config/routes';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import Logo from '../Logo/Logo';
 import SocialProviders from './SocialProviders';
 import Loading from '../Button/Loading';
@@ -64,10 +64,13 @@ export function SigninForm() {
       if (result.success) {
         setFormState({
           error: null,
-          success: result.message || '',
+          success: result.message || 'خوش آمدید!',
         });
-        router.push(DEFAULT_REDIRECT);
-        router.refresh();
+        // کمی تأخیر برای لذت بردن کاربر از پیام خوش‌آمدگویی قبل از redirect
+        setTimeout(() => {
+          router.push(DEFAULT_REDIRECT);
+          router.refresh();
+        }, 600);
       } else {
         setFormState({
           error: result.error || 'خطایی در ورود رخ داده است. لطفاً دوباره تلاش کنید.',
@@ -81,7 +84,8 @@ export function SigninForm() {
         success: null,
       });
     } finally {
-      setIsSubmitting(false);
+      // isSubmitting را فقط برای حالت خطاروشن نگه می‌داریم؛ موفقیت قبل از redirect رخ می‌دهد
+      if (!formState.success) setIsSubmitting(false);
     }
   };
 
@@ -190,16 +194,22 @@ export function SigninForm() {
 
         {urlError && (
           <Alert variant="warning">
+            <AlertTitle>توجه</AlertTitle>
             <AlertDescription>{urlError}</AlertDescription>
           </Alert>
         )}
         {formState.error && (
-          <Alert variant="destructive">
+          <Alert
+            variant="destructive"
+            onDismiss={() => setFormState({ error: null, success: null })}
+          >
+            <AlertTitle>ورود ناموفق بود</AlertTitle>
             <AlertDescription>{formState.error}</AlertDescription>
           </Alert>
         )}
         {formState.success && (
           <Alert variant="success">
+            <AlertTitle>خوش آمدید 👋</AlertTitle>
             <AlertDescription>{formState.success}</AlertDescription>
           </Alert>
         )}
