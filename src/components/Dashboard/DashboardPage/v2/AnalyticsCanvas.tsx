@@ -92,17 +92,32 @@ export default function AnalyticsCanvas({ scheduledPosts }: AnalyticsCanvasProps
   );
 
   // Persist tab + period in the URL using replace() so back/forward still
-  // walks through logical pages.
+  // walks through logical pages. We only write when the URL is actually out
+  // of sync with state — otherwise the effect fires on every mount under
+  // StrictMode and every parent re-render in App Router, producing a
+  // self-perpetuating /dashboard RSC fetch loop.
+  const lastWrittenRef = useRef<string | null>(null);
   useEffect(() => {
-    const params = new URLSearchParams(searchParams?.toString() ?? '');
-    if (tab === 'traffic') params.delete('tab');
-    else params.set('tab', tab);
-    if (period === '7d') params.delete('period');
-    else params.set('period', period);
-    const qs = params.toString();
+    const desiredTab = tab === 'traffic' ? null : tab;
+    const desiredPeriod = period === '7d' ? null : period;
+    const currentTab = searchParams?.get('tab') ?? null;
+    const currentPeriod = searchParams?.get('period') ?? null;
+
+    if (desiredTab === currentTab && desiredPeriod === currentPeriod) {
+      lastWrittenRef.current = searchParams?.toString() ?? '';
+      return;
+    }
+
+    const next = new URLSearchParams(searchParams?.toString() ?? '');
+    if (desiredTab) next.set('tab', desiredTab);
+    else next.delete('tab');
+    if (desiredPeriod) next.set('period', desiredPeriod);
+    else next.delete('period');
+    const qs = next.toString();
+    if (qs === lastWrittenRef.current) return;
+    lastWrittenRef.current = qs;
     router.replace(`${pathname}${qs ? `?${qs}` : ''}`, { scroll: false });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab, period]);
+  }, [tab, period, searchParams, pathname, router]);
 
   const activePeriod = PERIODS.find((p) => p.id === period) ?? PERIODS[0];
 

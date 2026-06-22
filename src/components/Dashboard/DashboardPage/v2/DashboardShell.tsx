@@ -32,7 +32,7 @@
  * are mapped 1:1 to the new subcomponents.
  */
 
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import HeroSection from './HeroSection';
 import KpiGrid from './KpiGrid';
@@ -128,10 +128,18 @@ const DashboardShell: React.FC<DashboardShellProps> = (props) => {
   );
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable');
 
-  // Sync URL → state on back/forward navigation.
+  // Sync URL → state on back/forward navigation only.
+  // Next.js 16 returns a new ReadonlyURLSearchParams reference on every
+  // render, so depending on the object directly would loop. Key off the
+  // serialized value instead, and only fire when the key actually changes.
+  const lastUrlKeyRef = useRef<string | null>(null);
   useEffect(() => {
+    const key = searchParams?.toString() ?? '';
+    if (key === lastUrlKeyRef.current) return;
+    lastUrlKeyRef.current = key;
     const r = (searchParams?.get('range') as Range) || 'all';
-    const a = (searchParams?.get('activity') as 'today' | 'week' | 'all') || 'today';
+    const a =
+      (searchParams?.get('activity') as 'today' | 'week' | 'all') || 'today';
     setRange(r);
     setActivityRange(a);
   }, [searchParams]);

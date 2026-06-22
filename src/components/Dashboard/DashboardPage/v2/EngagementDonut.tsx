@@ -206,7 +206,7 @@ export default function EngagementDonut({
                   onBlur={() => setHoveredKey(null)}
                 >
                   <title>
-                    {slice.label}: {slice.values[range].toLocaleString('fa-IR')} ({pct.toFixed(0)}٪)
+                    {`${slice.label}: ${slice.values[range].toLocaleString('fa-IR')} (${pct.toFixed(0)}٪)`}
                   </title>
                 </motion.path>
               ))}

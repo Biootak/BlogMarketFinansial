@@ -88,19 +88,27 @@ export default function WorkspaceToolbar({
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  // Persist the range into ?range= so reloads keep state.
+  // Persist the range into ?range= so reloads keep state. Skip the write
+  // when the URL already agrees, and remember the last value we wrote so
+  // we don't churn the URL on subsequent renders.
+  const lastWrittenRangeRef = useRef<string | null>(null);
   useEffect(() => {
+    const current = search?.get('range') ?? null;
+    const desired = range === 'all' ? null : range;
+    if (desired === current) {
+      lastWrittenRangeRef.current = current;
+      return;
+    }
     const params = new URLSearchParams(search?.toString() ?? '');
-    const current = params.get('range');
-    if (current === range) return;
-    if (range === 'all') params.delete('range');
-    else params.set('range', range);
+    if (desired) params.set('range', desired);
+    else params.delete('range');
     const qs = params.toString();
+    if (qs === lastWrittenRangeRef.current) return;
+    lastWrittenRangeRef.current = qs;
     startTransition(() => {
       router.replace(`${pathname}${qs ? `?${qs}` : ''}`, { scroll: false });
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [range]);
+  }, [range, search, pathname, router, startTransition]);
 
   const openPalette = () => {
     window.dispatchEvent(new CustomEvent('cmd-palette:open'));
