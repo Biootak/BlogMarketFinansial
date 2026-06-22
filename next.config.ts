@@ -199,6 +199,18 @@ const nextConfig: NextConfig = {
   //   * optimizePackageImports: tree-shakes lucide-react and
   //     react-icons, both of which are imported widely here and
   //     easily bloat the first-load JS by 100KB+ without this.
+  //   * optimizeCss: explicitly OFF. Next.js 16 uses Turbopack by
+  //     default for `next dev`, and Turbopack hard-wires its CSS
+  //     pipeline to `lightningcss` 1.0.0-alpha.68 (Rust) — there is
+  //     no Turbopack-side opt-out. That alpha build panics on the
+  //     OKLCH + color-mix(in oklch, ...) tokens used in
+  //     `src/app/globals.css` and `src/components/ds/styles/tokens.css`,
+  //     taking down the whole dev server with "Failed to write app
+  //     endpoint". `optimizeCss: false` only governs webpack, so to
+  //     actually keep the PostCSS pipeline we also pass `--webpack`
+  //     to `next dev` (see package.json). Revisit when lightningcss
+  //     hits a stable release — at that point we can drop the
+  //     `--webpack` flag and let Turbopack handle CSS again.
   experimental: {
     ppr: 'incremental',
     staleTimes: {
@@ -206,6 +218,7 @@ const nextConfig: NextConfig = {
       static: 180,
     },
     optimizePackageImports: ['lucide-react', 'react-icons'],
+    optimizeCss: false,
   },
 
   // 2026-06-14: keepAlive on the global HTTP agent. Re-establishing
