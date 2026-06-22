@@ -61,7 +61,7 @@ export default function ServiceRequestsWidget() {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 animate-pulse">
+      <div className="dash-panel p-6 animate-pulse">
         <div className="h-6 w-40 bg-slate-200 dark:bg-slate-700 rounded mb-4" />
         <div className="space-y-3">
           {[...Array(3)].map((_, i) => (
@@ -76,7 +76,7 @@ export default function ServiceRequestsWidget() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-lg"
+      className="dash-panel overflow-hidden"
     >
       {/* Header */}
       <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-l from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20">

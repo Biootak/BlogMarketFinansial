@@ -48,13 +48,7 @@ function StatCard({ title, value, icon, badges, gradient, iconBg, delay = 0 }: S
   return (
     <div
       className={cn(
-        'group relative overflow-hidden rounded-2xl',
-        'bg-white/80 backdrop-blur-sm',
-        'border border-white/60',
-        'shadow-lg shadow-gray-200/50',
-        'hover:shadow-2xl hover:shadow-gray-300/40',
-        'hover:border-white/80 hover:-translate-y-1',
-        'transition-all duration-500 ease-out'
+        'dash-panel dash-panel--hover group relative overflow-hidden'
       )}
       style={{ animationDelay: `${delay}ms` }}
     >
@@ -73,8 +67,8 @@ function StatCard({ title, value, icon, badges, gradient, iconBg, delay = 0 }: S
         </div>
 
         <div className="space-y-3">
-          <p className="text-sm font-medium text-gray-500">{title}</p>
-          <p className="text-3xl font-bold text-gray-900 tracking-tight">
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
             {value.toLocaleString('fa-IR')}
           </p>
           
@@ -84,7 +78,7 @@ function StatCard({ title, value, icon, badges, gradient, iconBg, delay = 0 }: S
                 key={idx}
                 className={cn(
                   'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium',
-                  'bg-gray-100/80 text-gray-700',
+                  'bg-gray-100/80 dark:bg-white/10 text-gray-700 dark:text-gray-200',
                   'border border-gray-200/50',
                   'transition-colors duration-200',
                   'hover:bg-gray-200/80'
@@ -112,13 +106,13 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-2xl border border-gray-100">
-        <p className="font-semibold text-gray-900 mb-2">{label}</p>
+        <p className="font-semibold text-gray-900 dark:text-white mb-2">{label}</p>
         <div className="space-y-1.5">
           {payload.map((entry: any, index: number) => (
             <div key={index} className="flex items-center gap-2 text-sm">
               <span className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
               <span className="text-gray-600">{entry.name}:</span>
-              <span className="font-medium text-gray-900">{entry.value?.toLocaleString('fa-IR')}</span>
+              <span className="font-medium text-gray-900 dark:text-white">{entry.value?.toLocaleString('fa-IR')}</span>
             </div>
           ))}
         </div>
@@ -256,8 +250,8 @@ export default function SystemReports() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">نمای کلی آمار</h2>
-          <p className="text-sm text-gray-500 mt-1">خلاصه‌ای از وضعیت کلی سیستم</p>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">نمای کلی آمار</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">خلاصه‌ای از وضعیت کلی سیستم</p>
         </div>
         <Button
           onClick={handleDownload}
@@ -295,21 +289,16 @@ export default function SystemReports() {
 
       {/* Chart Section */}
       <div
-        className={cn(
-          'relative overflow-hidden rounded-2xl',
-          'bg-white/80 backdrop-blur-sm',
-          'border border-white/60',
-          'shadow-lg shadow-gray-200/50'
-        )}
+        className={cn('dash-panel relative overflow-hidden')}
       >
-        <div className="p-6 border-b border-gray-100">
+        <div className="p-6 border-b border-gray-100 dark:border-white/10">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
               <BarChart3 className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">نمودار آماری</h3>
-              <p className="text-sm text-gray-500">مقایسه آمار بخش‌های مختلف</p>
+              <h3 className="font-semibold text-gray-900 dark:text-white">نمودار آماری</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">مقایسه آمار بخش‌های مختلف</p>
             </div>
           </div>
         </div>

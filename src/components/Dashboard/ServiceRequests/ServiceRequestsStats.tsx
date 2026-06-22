@@ -117,7 +117,7 @@ export default function ServiceRequestsStats() {
           />
 
           {/* Card */}
-          <div className="relative bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl rounded-2xl p-5 border border-neutral-200/60 dark:border-neutral-700/60 shadow-sm hover:shadow-xl hover:shadow-neutral-200/50 dark:hover:shadow-neutral-900/50 transition-all duration-300 hover:-translate-y-1">
+          <div className="dash-panel dash-panel--hover relative p-5">
             <div className="flex items-start justify-between gap-3">
               {/* Icon */}
               <div className={`p-2.5 rounded-xl ${card.iconBg} transition-transform duration-300 group-hover:scale-110`}>

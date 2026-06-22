@@ -150,7 +150,7 @@ export default function ServiceRequestsTable() {
       className="relative"
     >
       {/* Main Card */}
-      <div className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl rounded-3xl border border-neutral-200/60 dark:border-neutral-700/60 shadow-xl shadow-neutral-200/40 dark:shadow-neutral-900/40 overflow-hidden">
+      <div className="dash-panel overflow-hidden">
         {/* Filters Header */}
         <div className="p-6 border-b border-neutral-200/60 dark:border-neutral-700/60 bg-gradient-to-l from-neutral-50/80 to-white/80 dark:from-neutral-800/80 dark:to-neutral-900/80">
           <div className="flex flex-wrap items-center gap-4">
@@ -411,7 +411,7 @@ export default function ServiceRequestsTable() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="bg-white dark:bg-neutral-900 rounded-3xl p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-neutral-200/60 dark:border-neutral-700/60"
+              className="dash-panel p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto"
               onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
             >
               {/* Modal Header */}

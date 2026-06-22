@@ -44,7 +44,7 @@ export function CategorySelectDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden rtl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-2xl">
+      <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden rtl dash-panel">
         {/* Header */}
         <div className="p-6 pb-4 border-b border-slate-200 dark:border-slate-700">
           <div className="h-1 bg-gradient-to-r from-blue-500 to-indigo-500 -mt-6 -mx-6 mb-4" />

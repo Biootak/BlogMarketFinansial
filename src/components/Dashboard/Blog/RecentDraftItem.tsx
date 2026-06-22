@@ -11,7 +11,7 @@ interface RecentDraftItemProps {
 
 const RecentDraftItem: React.FC<RecentDraftItemProps> = ({ id, title, date, author }) => {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow duration-300">
+    <div className="dash-panel dash-panel--hover p-3">
       <div className="flex justify-between items-center">
         <h5 className="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2 hover:text-purple-600 dark:hover:text-purple-400 transition-colors duration-300">
           {title}

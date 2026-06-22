@@ -174,7 +174,7 @@ export default function SystemSettings() {
             </TabsList>
 
             <TabsContent value="general" className="space-y-6">
-              <Card className="bg-white dark:bg-gray-800 shadow-sm">
+              <Card className="dash-panel">
                 <CardHeader>
                   <CardTitle>تنظیمات عمومی سایت</CardTitle>
                 </CardHeader>
@@ -275,7 +275,7 @@ export default function SystemSettings() {
             </TabsContent>
 
             <TabsContent value="email" className="space-y-6">
-              <Card className="bg-white dark:bg-gray-800 shadow-sm">
+              <Card className="dash-panel">
                 <CardHeader>
                   <CardTitle>تنظیمات ایمیل</CardTitle>
                 </CardHeader>
@@ -368,7 +368,7 @@ export default function SystemSettings() {
             </TabsContent>
 
             <TabsContent value="social" className="space-y-6">
-              <Card className="bg-white dark:bg-gray-800 shadow-sm">
+              <Card className="dash-panel">
                 <CardHeader>
                   <CardTitle>شبکه‌های اجتماعی</CardTitle>
                 </CardHeader>

@@ -123,17 +123,7 @@ const CardList: FC<CardListProps> = ({
       className={cn('group relative', className)}
     >
       {/* Card Container */}
-      <div 
-        className="relative flex flex-col h-full rounded-3xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 transition-all duration-500"
-        style={{
-          boxShadow: `
-            0 0 0 1px rgba(0,0,0,0.03),
-            0 2px 4px rgba(0,0,0,0.02),
-            0 8px 16px rgba(0,0,0,0.04),
-            0 16px 32px rgba(0,0,0,0.04)
-          `,
-        }}
-      >
+      <div className="dash-panel dash-glow relative flex flex-col h-full overflow-hidden">
         {/* Hover glow effect */}
         <div 
           className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"

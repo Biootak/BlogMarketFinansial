@@ -328,7 +328,7 @@ export default function SystemLogs() {
 
       <div className="space-y-4">
         {data.map((log: any, index: number) => (
-          <div key={index} className="p-4 rounded-lg bg-white/50 backdrop-blur-sm border border-[rgb(var(--c-primary-100))]">
+          <div key={index} className="dash-panel p-4">
             <div className="flex justify-between items-start">
               <div>
                 <h4 className={`font-medium ${
@@ -339,7 +339,7 @@ export default function SystemLogs() {
                   {log.message}
                 </h4>
                 {log.details && (
-                  <p className="text-sm text-gray-600 mt-1">{log.details}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{log.details}</p>
                 )}
               </div>
               <div className="text-sm text-gray-500">

@@ -310,7 +310,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
               <div className={activeSection === 'content' ? 'space-y-6' : 'hidden'}>
                 {/* Title */}
                 <div className="group">
-                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden transition-shadow duration-200 focus-within:shadow-lg focus-within:shadow-violet-500/5 focus-within:border-violet-500/30">
+                  <div className="dash-panel overflow-hidden transition-shadow duration-200 focus-within:shadow-lg focus-within:shadow-violet-500/5 focus-within:border-violet-500/30">
                     <div className="h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500 opacity-0 group-focus-within:opacity-100 transition-opacity duration-200" />
                     <FormField
                       control={form.control}
@@ -340,7 +340,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                 </div>
 
                 {/* Slug */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div className="dash-panel overflow-hidden">
                   <FormField
                     control={form.control}
                     name="slug"
@@ -398,7 +398,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                 </div>
 
                 {/* Editor */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div className="dash-panel overflow-hidden">
                   <div className="h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500" />
                   <FormField
                     control={form.control}
@@ -434,7 +434,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                 </div>
 
                 {/* Excerpt */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div className="dash-panel overflow-hidden">
                   <FormField
                     control={form.control}
                     name="excerpt"
@@ -459,7 +459,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
               {/* Meta Section */}
               <div className={activeSection === 'meta' ? 'grid grid-cols-1 lg:grid-cols-2 gap-6' : 'hidden'}>
                 {/* Categories */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 overflow-hidden">
+                <div className="dash-panel p-6 overflow-hidden">
                   <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
                   <FormField
                     control={form.control}
@@ -505,7 +505,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                 </div>
 
                 {/* Tags */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 overflow-hidden">
+                <div className="dash-panel p-6 overflow-hidden">
                   <FormField
                     control={form.control}
                     name="tags"
@@ -547,7 +547,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                 </div>
 
                 {/* Post Status */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+                <div className="dash-panel p-6">
                   <FormField
                     control={form.control}
                     name="status"
@@ -582,7 +582,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                 </div>
 
                 {/* Post Type */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+                <div className="dash-panel p-6">
                   <FormField
                     control={form.control}
                     name="postType"
@@ -619,7 +619,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                 </div>
 
                 {/* Featured toggle */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 lg:col-span-2">
+                <div className="dash-panel p-6 lg:col-span-2">
                   <FormField
                     control={form.control}
                     name="isFeatured"
@@ -644,7 +644,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
 
                 {/* Video URL */}
                 {form.watch('postType') === 'VIDEO' && (
-                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 lg:col-span-2">
+                  <div className="dash-panel p-6 lg:col-span-2">
                     <FormField
                       control={form.control}
                       name="videoUrl"
@@ -666,7 +666,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
 
                 {/* Audio URL */}
                 {form.watch('postType') === 'AUDIO' && (
-                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 lg:col-span-2">
+                  <div className="dash-panel p-6 lg:col-span-2">
                     <FormField
                       control={form.control}
                       name="audioUrl"
@@ -690,7 +690,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
               {/* Media Section */}
               <div className={activeSection === 'media' ? 'space-y-6' : 'hidden'}>
                 {/* Featured Image */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+                <div className="dash-panel p-6">
                   <div className="h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500 -mt-6 -mx-6 mb-6 rounded-t-2xl" />
                   <FormField
                     control={form.control}
@@ -730,7 +730,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
 
                 {/* Gallery Images - only show when post type is GALLERY */}
                 {form.watch('postType') === 'GALLERY' && (
-                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
+                  <div className="dash-panel p-6">
                     <div className="h-1 bg-gradient-to-r from-emerald-500 to-teal-500 -mt-6 -mx-6 mb-6 rounded-t-2xl" />
                     <FormField
                       control={form.control}

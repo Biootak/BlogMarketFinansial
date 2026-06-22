@@ -178,7 +178,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
       {/* Tabs Section */}
       <motion.div variants={itemVariants}>
         <Tabs dir="rtl" defaultValue="traffic" className="w-full">
-          <TabsList className="inline-flex p-1.5 gap-1.5 mb-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50">
+          <TabsList className="dash-panel inline-flex p-1.5 gap-1.5 mb-8">
             <TabsTrigger
               value="traffic"
               className="px-5 py-3 rounded-xl text-sm font-semibold transition-all duration-300

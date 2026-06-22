@@ -22,8 +22,8 @@ const Notifications: React.FC = () => {
   }, []);
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-      <h3 className="text-lg font-semibold mb-4 dark:text-white flex items-center">
+    <div className="dash-panel p-6">
+      <h3 className="text-lg font-semibold mb-4 text-slate-900 dark:text-white flex items-center">
         <HiOutlineBell className="w-6 h-6 mr-2 text-purple-500" />
         اعلان‌ها
       </h3>

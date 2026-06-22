@@ -17,18 +17,18 @@ interface ActivityTableProps {
 function getActionColor(action: string) {
   const actionLower = action.toLowerCase();
   if (actionLower.includes('create') || actionLower.includes('ایجاد')) {
-    return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+    return 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800';
   }
   if (actionLower.includes('update') || actionLower.includes('ویرایش')) {
-    return 'bg-blue-100 text-blue-700 border-blue-200';
+    return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800';
   }
   if (actionLower.includes('delete') || actionLower.includes('حذف')) {
-    return 'bg-red-100 text-red-700 border-red-200';
+    return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800';
   }
   if (actionLower.includes('login') || actionLower.includes('ورود')) {
-    return 'bg-violet-100 text-violet-700 border-violet-200';
+    return 'bg-violet-100 text-violet-700 border-violet-200 dark:bg-violet-900/30 dark:text-violet-400 dark:border-violet-800';
   }
-  return 'bg-gray-100 text-gray-700 border-gray-200';
+  return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-white/10 dark:text-gray-300 dark:border-white/10';
 }
 
 export default function ActivityTable({
@@ -49,17 +49,12 @@ export default function ActivityTable({
     <div className="space-y-5">
       {/* Table Container */}
       <div
-        className={cn(
-          'overflow-hidden rounded-xl',
-          'bg-white/80 backdrop-blur-sm',
-          'border border-gray-200/60',
-          'shadow-lg shadow-gray-200/30'
-        )}
+        className={cn('dash-panel overflow-hidden')}
       >
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-gradient-to-l from-gray-50 to-gray-100/80 border-b border-gray-200">
+              <tr className="bg-gradient-to-l from-gray-50 to-gray-100/80 dark:from-white/5 dark:to-transparent border-b border-gray-200 dark:border-white/10">
                 <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
@@ -94,7 +89,7 @@ export default function ActivityTable({
                       <div className="p-4 rounded-full bg-gray-100">
                         <FileText className="w-8 h-8 text-gray-400" />
                       </div>
-                      <p className="text-gray-500">هیچ فعالیتی یافت نشد</p>
+                      <p className="text-gray-500 dark:text-gray-400">هیچ فعالیتی یافت نشد</p>
                     </div>
                   </td>
                 </tr>
@@ -120,10 +115,10 @@ export default function ActivityTable({
                           {(activity.user.name || activity.user.email || '?').charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">
+                          <p className="font-medium text-gray-900 dark:text-white">
                             {activity.user.name || 'کاربر ناشناس'}
                           </p>
-                          <p className="text-xs text-gray-500">{activity.user.email}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{activity.user.email}</p>
                         </div>
                       </div>
                     </td>
@@ -138,12 +133,12 @@ export default function ActivityTable({
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <p className="text-sm text-gray-700 max-w-xs truncate" title={activity.details}>
+                      <p className="text-sm text-gray-700 dark:text-gray-300 max-w-xs truncate" title={activity.details}>
                         {activity.details || '-'}
                       </p>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                         <Clock className="w-4 h-4" />
                         <span>
                           {new Intl.DateTimeFormat('fa-IR', {
@@ -169,19 +164,19 @@ export default function ActivityTable({
         <div
           className={cn(
             'px-4 py-2 rounded-lg',
-            'bg-gray-100/80 text-gray-600 text-sm'
+            'bg-gray-100/80 dark:bg-white/10 text-gray-600 dark:text-gray-300 text-sm'
           )}
         >
           نمایش{' '}
-          <span className="font-semibold text-gray-900">
+          <span className="font-semibold text-gray-900 dark:text-white">
             {((page - 1) * limit + 1).toLocaleString('fa-IR')}
           </span>{' '}
           تا{' '}
-          <span className="font-semibold text-gray-900">
+          <span className="font-semibold text-gray-900 dark:text-white">
             {Math.min(page * limit, total).toLocaleString('fa-IR')}
           </span>{' '}
           از{' '}
-          <span className="font-semibold text-gray-900">{total.toLocaleString('fa-IR')}</span> مورد
+          <span className="font-semibold text-gray-900 dark:text-white">{total.toLocaleString('fa-IR')}</span> مورد
         </div>
 
         <div className="flex items-center gap-2">

@@ -52,9 +52,9 @@ function getLevelConfig(level: string) {
     default:
       return {
         icon: <Info className="w-4 h-4" />,
-        bg: 'bg-gray-100',
-        text: 'text-gray-700',
-        border: 'border-gray-200',
+        bg: 'bg-gray-100 dark:bg-white/10',
+        text: 'text-gray-700 dark:text-gray-300',
+        border: 'border-gray-200 dark:border-white/10',
         label: level,
       };
   }
@@ -114,8 +114,8 @@ export default function SystemLogsData() {
             <Terminal className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900">لاگ‌های سیستم</h3>
-            <p className="text-sm text-gray-500">مشاهده و فیلتر لاگ‌های سیستم</p>
+            <h3 className="font-semibold text-gray-900 dark:text-white">لاگ‌های سیستم</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">مشاهده و فیلتر لاگ‌های سیستم</p>
           </div>
         </div>
 
@@ -149,45 +149,45 @@ export default function SystemLogsData() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <div className={cn('p-4 rounded-xl', 'bg-gradient-to-br from-blue-50 to-indigo-50', 'border border-blue-100')}>
-          <div className="flex items-center gap-2 text-blue-600 mb-1">
+        <div className={cn('p-4 rounded-xl', 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20', 'border border-blue-100 dark:border-blue-800/40')}>
+          <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-1">
             <Info className="w-4 h-4" />
             <span className="text-xs font-medium">اطلاعات</span>
           </div>
-          <p className="text-xl font-bold text-blue-700">
+          <p className="text-xl font-bold text-blue-700 dark:text-blue-300">
             {logs.filter((l) => l.level === 'INFO').length.toLocaleString('fa-IR')}
           </p>
         </div>
-        <div className={cn('p-4 rounded-xl', 'bg-gradient-to-br from-amber-50 to-orange-50', 'border border-amber-100')}>
-          <div className="flex items-center gap-2 text-amber-600 mb-1">
+        <div className={cn('p-4 rounded-xl', 'bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20', 'border border-amber-100 dark:border-amber-800/40')}>
+          <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 mb-1">
             <AlertTriangle className="w-4 h-4" />
             <span className="text-xs font-medium">هشدار</span>
           </div>
-          <p className="text-xl font-bold text-amber-700">
+          <p className="text-xl font-bold text-amber-700 dark:text-amber-300">
             {logs.filter((l) => l.level === 'WARNING').length.toLocaleString('fa-IR')}
           </p>
         </div>
-        <div className={cn('p-4 rounded-xl', 'bg-gradient-to-br from-red-50 to-rose-50', 'border border-red-100')}>
-          <div className="flex items-center gap-2 text-red-600 mb-1">
+        <div className={cn('p-4 rounded-xl', 'bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20', 'border border-red-100 dark:border-red-800/40')}>
+          <div className="flex items-center gap-2 text-red-600 dark:text-red-400 mb-1">
             <AlertCircle className="w-4 h-4" />
             <span className="text-xs font-medium">خطا</span>
           </div>
-          <p className="text-xl font-bold text-red-700">
+          <p className="text-xl font-bold text-red-700 dark:text-red-300">
             {logs.filter((l) => l.level === 'ERROR').length.toLocaleString('fa-IR')}
           </p>
         </div>
       </div>
 
       {/* Logs Table */}
-      <div className={cn('overflow-hidden rounded-xl', 'bg-white/80 backdrop-blur-sm', 'border border-gray-200/60', 'shadow-lg shadow-gray-200/30')}>
+      <div className={cn('dash-panel overflow-hidden')}>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-gradient-to-l from-gray-50 to-gray-100/80 border-b border-gray-200">
-                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider w-28">سطح</th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">پیام</th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider w-32">منبع</th>
-                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider w-44">زمان</th>
+              <tr className="bg-gradient-to-l from-gray-50 to-gray-100/80 dark:from-white/5 dark:to-transparent border-b border-gray-200 dark:border-white/10">
+                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-28">سطح</th>
+                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">پیام</th>
+                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-32">منبع</th>
+                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider w-44">زمان</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -214,15 +214,15 @@ export default function SystemLogsData() {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <p className="text-sm text-gray-700 line-clamp-2">{log.message}</p>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">{log.message}</p>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={cn('inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium', 'bg-gray-100 text-gray-600')}>
+                        <span className={cn('inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium', 'bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300')}>
                           {log.source}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm text-gray-500">{new Date(log.timestamp).toLocaleString('fa-IR')}</span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">{new Date(log.timestamp).toLocaleString('fa-IR')}</span>
                       </td>
                     </tr>
                   );
@@ -235,9 +235,9 @@ export default function SystemLogsData() {
 
       {/* Pagination */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className={cn('px-4 py-2 rounded-lg', 'bg-gray-100/80 text-gray-600 text-sm')}>
-          نمایش <span className="font-semibold text-gray-900">{Math.min(page * limit, total).toLocaleString('fa-IR')}</span> از{' '}
-          <span className="font-semibold text-gray-900">{total.toLocaleString('fa-IR')}</span> مورد
+        <div className={cn('px-4 py-2 rounded-lg', 'bg-gray-100/80 dark:bg-white/10 text-gray-600 dark:text-gray-300 text-sm')}>
+          نمایش <span className="font-semibold text-gray-900 dark:text-white">{Math.min(page * limit, total).toLocaleString('fa-IR')}</span> از{' '}
+          <span className="font-semibold text-gray-900 dark:text-white">{total.toLocaleString('fa-IR')}</span> مورد
         </div>
 
         <div className="flex items-center gap-2">
