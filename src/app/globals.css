@@ -10,18 +10,22 @@
 @theme {
   --font-vazirmatn: var(--font-vazirmatn), system-ui, sans-serif;
   --font-family: var(--font-vazirmatn);
-  --color-background: rgb(20, 23, 32);
-  --color-foreground: rgb(228, 230, 238);
-  --color-card: rgb(26, 30, 41);
-  --color-card-foreground: rgb(228, 230, 238);
-  --color-popover: rgb(36, 41, 54);
-  --color-popover-foreground: rgb(228, 230, 238);
-  --color-muted: rgb(36, 41, 54);
-  --color-muted-foreground: rgb(152, 161, 178);
-  --color-accent: rgb(46, 52, 68);
-  --color-accent-foreground: rgb(228, 230, 238);
-  --color-border: rgb(46, 52, 68);
-  --color-input: rgb(46, 52, 68);
+  /* LIGHT (default) — matching the :root values further down so bg-background
+     and friends actually flip when next-themes toggles `.dark` on <html>.
+     قبل از 2026-06-22 مقادیر اینجا فقط dark بودند و light mode نامرئی رندر
+     می‌شد (input ها و کارت‌ها با bg-background سیاه می‌شدند). */
+  --color-background: rgb(247, 248, 250);
+  --color-foreground: rgb(20, 23, 32);
+  --color-card: rgb(255, 255, 255);
+  --color-card-foreground: rgb(20, 23, 32);
+  --color-popover: rgb(255, 255, 255);
+  --color-popover-foreground: rgb(20, 23, 32);
+  --color-muted: rgb(240, 242, 246);
+  --color-muted-foreground: rgb(110, 119, 137);
+  --color-accent: rgb(240, 242, 246);
+  --color-accent-foreground: rgb(20, 23, 32);
+  --color-border: rgb(224, 228, 235);
+  --color-input: rgb(224, 228, 235);
   --color-ring: rgb(94, 106, 230);
 
   --color-primary-50: rgb(235, 240, 255);
@@ -59,6 +63,32 @@
   --color-neutral-850: rgb(26, 30, 41);
   --color-neutral-900: rgb(20, 23, 32);
   --color-neutral-950: rgb(12, 14, 21);
+
+  --color-surface-canvas: rgb(247, 248, 250);
+  --color-surface-elevated: rgb(255, 255, 255);
+  --color-surface-overlay: rgb(240, 242, 246);
+  --color-surface-glass: rgb(240, 242, 246);
+  --color-border-subtle: rgb(224, 228, 235);
+  --color-border-default: rgb(210, 217, 230);
+  --color-border-strong: rgb(180, 190, 210);
+}
+
+/* Dark overrides — only the tokens that actually differ between modes.
+   `.dark` comes from next-themes on <html>. */
+.dark {
+  --color-background: rgb(20, 23, 32);
+  --color-foreground: rgb(228, 230, 238);
+  --color-card: rgb(26, 30, 41);
+  --color-card-foreground: rgb(228, 230, 238);
+  --color-popover: rgb(36, 41, 54);
+  --color-popover-foreground: rgb(228, 230, 238);
+  --color-muted: rgb(36, 41, 54);
+  --color-muted-foreground: rgb(152, 161, 178);
+  --color-accent: rgb(46, 52, 68);
+  --color-accent-foreground: rgb(228, 230, 238);
+  --color-border: rgb(46, 52, 68);
+  --color-input: rgb(46, 52, 68);
+  --color-ring: rgb(94, 106, 230);
 
   --color-surface-canvas: rgb(20, 23, 32);
   --color-surface-elevated: rgb(26, 30, 41);
@@ -171,7 +201,7 @@ p { line-height: var(--leading-relaxed); }
   --accent-foreground: 20 23 32;
   --border: 224 228 235;
   --input: 224 228 235;
-  --ring: 94 106  230;
+  --ring: 94 106 230;
   --radius: 0.625rem;
 
   /* 2026-06-14: tightened the type ramp.  The previous scale was
