@@ -11,7 +11,7 @@
 - `src/app/api/` — route handlers (`auth/[...nextauth]`, `upload`, `uploads/[...path]`, `public/*`, `pageview`, `reports/*`, `health/dashboard`).
 - `src/app/setup/` — bootstrap page that creates the first `SUPER_ADMIN`. **IP-gated in production** by `ALLOWED_SETUP_IPS`.
 - `src/actions/*.ts` — every file starts with `'use server';`. Write paths here are the only place that can `revalidateTag`.
-- `src/lib/` — `db.ts` (Prisma singleton), `auth.ts`, `require-auth.ts` (server-action auth helpers: `requireUser`/`requireRole`/`requireAdmin`/`requireSuperAdmin`/`requireAuthor` - 2026-06-23 audit), `rate-limiter.ts` (Upstash Redis + in-memory LRU fallback), `storage.ts` (S3/Liara), `revalidate.ts` (Next-16-safe `revalidateTag` wrapper), `exchange-rates.ts`, `tgju.ts` (scraper client), `freeMarketRates.ts`, `safe-cache.ts` / `safe-fetch.ts` (network wrappers).
+- `src/lib/` — `db.ts` (Prisma singleton), `auth.ts`, `require-auth.ts` (server-action auth helpers: `requireUser`/`requireRole`/`requireAdmin`/`requireSuperAdmin`/`requireAuthor` - 2026-06-23 audit), `rate-limiter.ts` (Upstash Redis + in-memory LRU fallback), `storage.ts` (S3/Liara), `revalidate.ts` (Next-16-safe `revalidateTag` wrapper), `exchange-rates.ts`, `tgju.ts` (scraper client), `freeMarketRates.ts`, `safe-cache.ts` / `safe-fetch.ts` (network wrappers), `email/` (provider-neutral abstraction: `index.ts` factory + `resend.ts` / `smtp.ts` / `console.ts` impls + `templates.ts` + `types.ts`; swap vendor via `EMAIL_PROVIDER` env without touching callers). `mail.ts` is a legacy wrapper - delete after migrating `auth-actions.ts` to the factory.
 - `src/components/ui/` — shadcn-style primitives. Do not recreate; add new components there.
 - `prisma/` — `schema.prisma`, one-time `migrations/20240822064751_biotak/`, `seed.js` (idempotent, covers 22 models).
 - `src/components/Dashboard/DashboardPage/v2/` — June 2026 dashboard redesign. CSS lives at the tail of `src/app/globals.css` (search `Dashboard 2026 (June 22)`).
@@ -36,7 +36,7 @@ Postgres is provided by `docker-compose.yml` (`registry.docker.ir/library/postgr
 
 ## Required env (.env.example is the source of truth)
 
-`DATABASE_URL`, `AUTH_SECRET` (generate with `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`), `NEXTAUTH_URL`, `AUTH_GOOGLE_ID/SECRET`, `AUTH_GITHUB_ID/SECRET`, `RESEND_API_KEY`, `LIARA_ENDPOINT/ACCESS_KEY/SECRET_KEY/BUCKET_NAME`, `TELEGRAM_BOT_TOKEN/ADMIN_CHAT_ID`, `NEXT_PUBLIC_SENTRY_DSN/SENTRY_ORG/SENTRY_PROJECT/SENTRY_AUTH_TOKEN`, `UPSTASH_REDIS_REST_URL/TOKEN`, `NEXT_PUBLIC_APP_URL`, `ALLOWED_SETUP_IPS`, `DEBUG_MODE`, `USDT_PREMIUM_PERCENT`, `CRON_SECRET` (for `/api/cron/sync-bazaar`; random 32+ chars). `TGJU_SCRAPER_ENABLED` (default `true`; set `false` to disable the TGJU scraper without redeploying).
+`DATABASE_URL`, `AUTH_SECRET` (generate with `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`), `NEXTAUTH_URL`, `AUTH_GOOGLE_ID/SECRET`, `AUTH_GITHUB_ID/SECRET`, `EMAIL_PROVIDER` (resend|smtp|console; default resend), `RESEND_API_KEY`+`RESEND_FROM`, SMTP_* (when EMAIL_PROVIDER=smtp), `LIARA_ENDPOINT/ACCESS_KEY/SECRET_KEY/BUCKET_NAME`, `TELEGRAM_BOT_TOKEN/ADMIN_CHAT_ID`, `NEXT_PUBLIC_SENTRY_DSN/SENTRY_ORG/SENTRY_PROJECT/SENTRY_AUTH_TOKEN`, `UPSTASH_REDIS_REST_URL/TOKEN`, `NEXT_PUBLIC_APP_URL`, `ALLOWED_SETUP_IPS`, `DEBUG_MODE`, `USDT_PREMIUM_PERCENT`, `CRON_SECRET` (for `/api/cron/sync-bazaar`; random 32+ chars). `TGJU_SCRAPER_ENABLED` (default `true`; set `false` to disable the TGJU scraper without redeploying).
 
 `NEXT_PUBLIC_SENTRY_DSN` + `NODE_ENV=production` is what triggers Sentry wrapping in `next.config.ts` — leaving it unset in dev avoids an extra middleware hop.
 
@@ -365,4 +365,7 @@ Before delivering UI code, verify these items:
 - [ ] Form inputs have labels
 - [ ] Color is not the only indicator
 - [ ] `prefers-reduced-motion` respected
+
+
+
 

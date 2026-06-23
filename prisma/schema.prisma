@@ -118,13 +118,27 @@ model Session {
   updatedAt DateTime @updatedAt
 }
 
+// 2026-06-23: unified OTP model.
+// Token is a 6-digit string ("472938") — used by all auth flows:
+// register / login (passwordless OAuth-only users) / reverify / recover.
+// UUID v4 token flow has been retired.
 model VerificationToken {
-  id      String   @id @default(cuid())
-  email   String
-  token   String   @unique
-  expires DateTime
+  id       String   @id @default(cuid())
+  email    String
+  token    String   @unique
+  expires  DateTime
+  // Brute-force counter — max 5 attempts before the token is invalidated.
+  // Lets us send a refreshing code while keeping attempt-budget per code.
+  attempts Int      @default(0)
+  // Why this code was issued. Drives both server-side effects after a
+  // successful verify (set emailVerified, create user, etc.) and the
+  // email copy. Keep values in sync with VerificationEmailIntent in
+  // src/lib/tokens.ts.
+  intent   String   @default("register")
 
   @@unique([email, token])
+  @@index([email])
+  @@index([expires])
 }
 
 model Profile {
