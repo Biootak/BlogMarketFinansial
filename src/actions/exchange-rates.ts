@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { revalidateTag } from '@/lib/revalidate';
 import { z } from 'zod';
 import type { ActionResult, ExchangeRateData } from '@/types/types';
+import { requireAdmin, authFailureToActionResult } from '@/lib/require-auth';
 
 const exchangeRateSchema = z.object({
   name: z.string(),
@@ -29,6 +30,8 @@ export async function createExchangeRate(
   data: Omit<ExchangeRateData, 'id' | 'createdAt' | 'updatedAt'>,
 ): Promise<ActionResult<ExchangeRateData>> {
   try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     const validationResult = exchangeRateSchema.safeParse(data);
     if (!validationResult.success) {
       return {
@@ -69,6 +72,8 @@ export async function updateExchangeRate(
   data: Partial<Omit<ExchangeRateData, 'id' | 'createdAt' | 'updatedAt'>>,
 ): Promise<ActionResult<ExchangeRateData>> {
   try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     const validationResult = exchangeRateSchema.partial().safeParse(data);
     if (!validationResult.success) {
       return {
@@ -107,6 +112,8 @@ export async function updateExchangeRate(
 
 export async function deleteExchangeRate(id: string): Promise<ActionResult> {
   try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     await prisma.exchangeRate.delete({ where: { id } });
     revalidatePath('/dashboard/admin/exchange-rates');
     revalidateTag('ticker');

@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { revalidateTag } from '@/lib/revalidate';
 import prisma from '@/lib/db';
 import type { SocialLinkType } from '@prisma/client';
+import { requireAdmin, authFailureToActionResult } from '@/lib/require-auth';
 
 export interface SocialLinkData {
   id?: string;
@@ -74,6 +75,8 @@ export async function getAllSocialLinks(type?: SocialLinkType) {
 // Create social link
 export async function createSocialLink(data: SocialLinkData) {
   try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     const type = data.type || 'SOCIAL';
     // 2026-06-14: instead of doing aggregate + create (which had a
     // race window and 2 round-trips), use the database's own
@@ -119,6 +122,8 @@ export async function createSocialLink(data: SocialLinkData) {
 // Update social link
 export async function updateSocialLink(id: string, data: Partial<SocialLinkData>) {
   try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     const link = await prisma.socialLink.update({
       where: { id },
       data: {
@@ -145,6 +150,8 @@ export async function updateSocialLink(id: string, data: Partial<SocialLinkData>
 // Delete social link
 export async function deleteSocialLink(id: string) {
   try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     await prisma.socialLink.delete({ where: { id } });
 
     revalidatePath('/dashboard/settings');
@@ -160,6 +167,8 @@ export async function deleteSocialLink(id: string) {
 // Toggle social link active status
 export async function toggleSocialLink(id: string) {
   try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     // 2026-06-14: collapsed findUnique + update into a single
     // update. Saves a round-trip. We do need to read the current
     // value to flip it, but Prisma's $executeRaw is the fastest
@@ -184,6 +193,8 @@ export async function toggleSocialLink(id: string) {
 // Reorder social links
 export async function reorderSocialLinks(orderedIds: string[]) {
   try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     // 2026-06-14: previous version did N parallel updates which
     // can deadlock or overload the connection pool with large
     // lists. Now wrapped in a single $transaction so it's atomic

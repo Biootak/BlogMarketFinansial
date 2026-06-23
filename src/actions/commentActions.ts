@@ -110,7 +110,7 @@ export async function deleteComment(commentId: string): Promise<ActionResult<voi
       };
     }
 
-    if (comment.authorId !== session.user.id && session.user.role !== 'ADMIN') {
+    if (comment.authorId !== session.user.id && session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN') {
       return {
         success: false,
         message: 'شما اجازه حذف این کامنت را ندارید.',
@@ -175,7 +175,7 @@ export async function editComment(
       };
     }
 
-    if (comment.authorId !== session.user.id && session.user.role !== 'ADMIN') {
+    if (comment.authorId !== session.user.id && session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN') {
       return {
         success: false,
         message: 'شما اجازه ویرایش این کامنت را ندارید.',

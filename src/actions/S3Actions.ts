@@ -2,6 +2,8 @@
 
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { requireUser } from '@/lib/require-auth';
+import { authFailureToActionResult } from '@/lib/require-auth';
 
 const s3Client = new S3Client({
   region: 'default',
@@ -12,9 +14,50 @@ const s3Client = new S3Client({
   },
 });
 
-export async function getPresignedUrl(fileName: string, fileType: string): Promise<string> {
+// 2026-06-23: lock the presigned-URL helper behind authentication and a
+// MIME allowlist. Before, any caller could request a presigned PUT URL
+// to any key in the bucket, which is a critical-severity issue (it lets
+// anonymous attackers turn the bucket into their personal malware host
+// using our credentials).
+const ALLOWED_FILE_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'image/svg+xml',
+]);
+
+const SAFE_NAME = /^[a-zA-Z0-9._-]+$/;
+
+export async function getPresignedUrl(
+  fileName: string,
+  fileType: string,
+): Promise<{ success: true; url: string; key: string } | { success: false; message: string; error: string }> {
+  const auth = await requireUser();
+  if (!auth.success) return authFailureToActionResult(auth);
+
   if (!fileName || !fileType) {
-    throw new Error('نام فایل و نوع فایل باید مشخص شود');
+    return {
+      success: false,
+      message: 'نام فایل و نوع فایل الزامی است.',
+      error: 'INVALID_INPUT',
+    };
+  }
+
+  if (!ALLOWED_FILE_TYPES.has(fileType)) {
+    return {
+      success: false,
+      message: `نوع فایل مجاز نیست. فقط ${[...ALLOWED_FILE_TYPES].join(', ')} پشتیبانی می‌شود.`,
+      error: 'UNSUPPORTED_FILE_TYPE',
+    };
+  }
+
+  if (!SAFE_NAME.test(fileName)) {
+    return {
+      success: false,
+      message: 'نام فایل فقط می‌تواند شامل حروف، اعداد، نقطه، خط فاصله و زیرخط باشد.',
+      error: 'INVALID_FILE_NAME',
+    };
   }
 
   const key = `${Date.now()}-${fileName}`;
@@ -27,9 +70,13 @@ export async function getPresignedUrl(fileName: string, fileType: string): Promi
 
   try {
     const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-    return presignedUrl;
+    return { success: true, url: presignedUrl, key };
   } catch (error) {
     console.error('خطا در ایجاد Presigned URL:', error);
-    throw new Error('ایجاد Presigned URL با شکست مواجه شد');
+    return {
+      success: false,
+      message: 'ایجاد Presigned URL با خطا مواجه شد.',
+      error: 'INTERNAL_ERROR',
+    };
   }
 }

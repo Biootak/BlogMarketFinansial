@@ -8,28 +8,23 @@ import { Button } from '@/components/ui/button';
 import { sendMagicLink } from '@/actions/auth-actions';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/components/ui/use-toast';
 import Logo from '../Logo/Logo';
 import Loading from '../Button/Loading';
 import NcLink from '../NcLink/NcLink';
 import { z } from 'zod';
 
 const ForgotPasswordSchema = z.object({
-  email: z.string().min(1, 'ایمیل الزامی است').email('فرمت ایمیل نامعتبر است'),
+  email: z.string().min(1, 'ایمیل الزامی است').email('فرمت ایمیل صحیح نیست'),
 });
 
 type FormData = z.infer<typeof ForgotPasswordSchema>;
 
-interface FormState {
-  error: string | null;
-  success: string | null;
-}
-
 export function ForgotPasswordForm() {
-  const [formState, setFormState] = useState<FormState>({
-    error: null,
-    success: null,
-  });
+  const [formError, setFormError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const {
     register,
@@ -44,24 +39,23 @@ export function ForgotPasswordForm() {
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsSubmitting(true);
-    setFormState({ error: null, success: null });
+    setFormError(null);
+    setSuccessMessage(null);
 
     try {
       const formData = new FormData();
       formData.append('email', data.email);
       await sendMagicLink(formData);
-      setFormState({
-        error: null,
-        success: 'لینک بازیابی رمز عبور به ایمیل شما ارسال شد.',
-      });
+      const message = 'لینک بازنشانی رمز عبور به ایمیل شما ارسال شد.';
+      setSuccessMessage(message);
+      toast({ title: 'ایمیل ارسال شد', description: message, variant: 'success' });
     } catch (error) {
-      setFormState({
-        error:
-          error instanceof Error
-            ? error.message
-            : 'متأسفانه خطایی رخ داده است. لطفاً دوباره تلاش کنید.',
-        success: null,
-      });
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'ارسال لینک با خطا مواجه شد. لطفاً دوباره تلاش کنید.';
+      setFormError(message);
+      toast({ title: 'خطا', description: message, variant: 'destructive' });
     } finally {
       setIsSubmitting(false);
     }
@@ -75,7 +69,7 @@ export function ForgotPasswordForm() {
         </div>
         <h1 className="text-2xl font-semibold">فراموشی رمز عبور</h1>
         <p className="text-sm text-muted-foreground">
-          ایمیل خود را وارد کنید تا لینک بازیابی برایتان ارسال شود
+          ایمیل خود را وارد کنید تا لینک بازنشانی رمز عبور را دریافت کنید
         </p>
       </div>
 
@@ -87,47 +81,42 @@ export function ForgotPasswordForm() {
               id="email"
               type="email"
               placeholder="ایمیل خود را وارد کنید"
-              {...register('email')}
               aria-invalid={errors.email ? 'true' : 'false'}
               aria-describedby={errors.email ? 'email-error' : undefined}
+              {...register('email')}
             />
             {errors.email && (
-              <p id="email-error" className="text-sm text-destructive" role="alert">
+              <p id="email-error" role="alert" className="text-sm text-destructive">
                 {errors.email.message}
               </p>
             )}
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? <Loading /> : 'ارسال لینک بازیابی'}
+            {isSubmitting ? <Loading /> : 'ارسال لینک بازنشانی'}
           </Button>
         </form>
 
-        {formState.error && (
+        {(formError || successMessage) && (
           <Alert
-            variant="destructive"
-            onDismiss={() => setFormState({ error: null, success: null })}
+            variant={successMessage ? 'success' : 'destructive'}
+            onDismiss={() => {
+              setFormError(null);
+              setSuccessMessage(null);
+            }}
           >
-            <AlertTitle>ارسال لینک ناموفق بود</AlertTitle>
-            <AlertDescription>{formState.error}</AlertDescription>
-          </Alert>
-        )}
-        {formState.success && (
-          <Alert variant="success">
-            <AlertTitle>لینک بازیابی ارسال شد ✉️</AlertTitle>
-            <AlertDescription>{formState.success}</AlertDescription>
+            <AlertTitle>{successMessage ? 'عملیات موفق' : 'خطا'}</AlertTitle>
+            <AlertDescription>{successMessage || formError}</AlertDescription>
           </Alert>
         )}
 
         <p className="text-center text-sm text-muted-foreground">
-          به یاد آوردید؟{' '}
+          رمز عبور خود را به یاد دارید؟{' '}
           <NcLink href="/signin" className="underline">
-            ورود به حساب
+            وارد شوید
           </NcLink>
         </p>
       </div>
     </div>
   );
 }
-
-export default ForgotPasswordForm;

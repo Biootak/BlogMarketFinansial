@@ -12,6 +12,7 @@ import type {
   CreateCategoryInput,
   UpdateCategoryInput,
 } from '@/types/types';
+import { requireAdmin, authFailureToActionResult } from '@/lib/require-auth';
 
 export const getCategories = cache(
   async (
@@ -114,6 +115,8 @@ export async function createCategory(
   data: CreateCategoryInput,
 ): Promise<ActionResult<TaxonomyType>> {
   try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     const { name, slug: providedSlug, thumbnail, thumbnailWidth, thumbnailHeight, parentIds = [] } = data;
 
     if (!name) {
@@ -233,6 +236,8 @@ export async function updateCategory(
   data: UpdateCategoryInput,
 ): Promise<ActionResult<TaxonomyType>> {
   try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     const { name, slug: providedSlug, thumbnail, thumbnailWidth, thumbnailHeight, parentIds = [] } = data;
 
     if (!name) {
@@ -376,6 +381,8 @@ export async function updateCategory(
 
 export async function deleteCategory(id: string): Promise<ActionResult> {
   try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     const category = await prisma.category.findUnique({
       where: { id },
       include: { childCategories: true },

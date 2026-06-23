@@ -6,6 +6,7 @@ import { safeCache } from '@/lib/safe-cache';
 import { revalidateTag } from '@/lib/revalidate';
 import type { ActionResult, RateItem, RateListData } from '@/types/types';
 import { revalidatePath } from 'next/cache';
+import { requireAdmin, authFailureToActionResult } from '@/lib/require-auth';
 
 // 2026-06-14: shared helper to normalize the Json column into a
 // typed array. Prisma 6 returns the Json value already parsed, so
@@ -216,6 +217,8 @@ export async function createRateList(
   data: Omit<RateListData, 'id' | 'createdAt' | 'updatedAt'>,
 ): Promise<ActionResult<RateListData>> {
   try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     // 2026-06-14: Prisma's Json column type serializes for us. The
     // previous `JSON.stringify` was redundant and meant the column
     // stored a string-in-string which broke read paths.
@@ -254,6 +257,8 @@ export async function updateRateList(
   data: Partial<Omit<RateListData, 'id' | 'createdAt' | 'updatedAt'>>,
 ): Promise<ActionResult<RateListData>> {
   try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     // Same fix as createRateList: don't JSON.stringify the Json
     // column. Let Prisma handle serialization.
     const rateList = await prisma.rateList.update({
@@ -289,6 +294,8 @@ export async function updateRateList(
 
 export async function deleteRateList(id: string): Promise<ActionResult> {
   try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     await prisma.rateList.delete({ where: { id } });
     revalidatePath('/dashboard/rate-lists');
     revalidateTag('rate-lists');

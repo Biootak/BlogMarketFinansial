@@ -81,10 +81,11 @@ export async function checkRole(requiredRoles: Role[]) {
   const session = await auth();
   if (!session?.user) {
     redirect('/unauthorized');
+    return null;
   }
 
   const userRole = session.user.role as Role;
-  
+
   // SUPER_ADMIN has access to everything
   if (userRole === 'SUPER_ADMIN') {
     return session;
@@ -92,8 +93,9 @@ export async function checkRole(requiredRoles: Role[]) {
 
   if (!requiredRoles.includes(userRole)) {
     redirect('/unauthorized');
+    return null;
   }
-  
+
   return session;
 }
 

@@ -20,6 +20,9 @@ import { CreatePostSchema, UpdatePostSchema } from '@/schemas';
 
 export async function createPost(data: CreatePostInput): Promise<ActionResult<PostWithRelations>> {
   const session = await checkRole(['ADMIN', 'AUTHOR']);
+  if (!session) {
+    return { success: false, message: 'شما دسترسی لازم برای ایجاد پست را ندارید.' };
+  }
 
   try {
     const validatedData = CreatePostSchema.parse(data);
@@ -1030,6 +1033,9 @@ export async function likeItem(
   itemType: 'post' | 'comment',
 ): Promise<ActionResult> {
   const session = await checkRole(['USER', 'AUTHOR', 'ADMIN']);
+  if (!session) {
+    return { success: false, message: 'برای ثبت پسند باید وارد شوید.' };
+  }
 
   try {
     const existingLike = await prisma.like.findFirst({

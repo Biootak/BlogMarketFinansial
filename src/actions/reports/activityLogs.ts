@@ -2,6 +2,7 @@
 
 import db from '@/lib/db';
 import { revalidatePath } from 'next/cache';
+import { checkReportAccess } from './auth';
 
 export type ActivityLog = {
   id: string;
@@ -17,6 +18,7 @@ export type ActivityLog = {
 
 export async function getActivityLog(page = 1, limit = 10) {
   try {
+    await checkReportAccess();
     const skip = (page - 1) * limit;
 
     const [activities, total] = await Promise.all([

@@ -2,6 +2,7 @@
 
 import prisma from '@/lib/db';
 import { revalidatePath } from 'next/cache';
+import { requireAdmin, requireSuperAdmin, authFailureToActionResult } from '@/lib/require-auth';
 
 export interface SystemSettingsData {
   siteName?: string;
@@ -42,6 +43,8 @@ export async function updateGeneralSettings(data: {
   siteDescription: string;
 }) {
   try {
+    const authCheck = await requireSuperAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     let settings = await prisma.systemSettings.findFirst();
 
     if (settings) {
@@ -80,6 +83,8 @@ export async function updateEmailSettings(data: {
   smtpPassword: string;
 }) {
   try {
+    const authCheck = await requireSuperAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     let settings = await prisma.systemSettings.findFirst();
 
     if (settings) {
@@ -119,6 +124,8 @@ export async function updateSocialSettings(data: {
   whatsapp: string;
 }) {
   try {
+    const authCheck = await requireSuperAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     let settings = await prisma.systemSettings.findFirst();
 
     if (settings) {
@@ -156,6 +163,8 @@ export async function updateSocialSettings(data: {
 // Update cache settings
 export async function updateCacheSettings(data: { cacheEnabled: boolean }) {
   try {
+    const authCheck = await requireSuperAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     let settings = await prisma.systemSettings.findFirst();
 
     if (settings) {
@@ -184,6 +193,8 @@ export async function updateCacheSettings(data: { cacheEnabled: boolean }) {
 // Update maintenance mode
 export async function updateMaintenanceMode(data: { maintenanceMode: boolean }) {
   try {
+    const authCheck = await requireSuperAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     let settings = await prisma.systemSettings.findFirst();
 
     if (settings) {
@@ -212,6 +223,8 @@ export async function updateMaintenanceMode(data: { maintenanceMode: boolean }) 
 // Generate new API key
 export async function generateApiKey() {
   try {
+    const authCheck = await requireSuperAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     const apiKey = `bk_${crypto.randomUUID().replace(/-/g, '')}`;
     return { success: true, data: { apiKey } };
   } catch (error) {
@@ -228,6 +241,8 @@ export async function testSmtpConnection(data: {
   smtpPassword: string;
 }) {
   try {
+    const authCheck = await requireSuperAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     // Simulate SMTP test - in production, you'd actually test the connection
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
@@ -245,6 +260,8 @@ export async function testSmtpConnection(data: {
 // Test database connection
 export async function testDatabaseConnection() {
   try {
+    const authCheck = await requireSuperAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     await prisma.$queryRaw`SELECT 1`;
     return { success: true, message: 'اتصال به پایگاه داده برقرار است' };
   } catch (error) {

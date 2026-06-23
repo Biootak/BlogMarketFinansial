@@ -11,7 +11,7 @@
 - `src/app/api/` — route handlers (`auth/[...nextauth]`, `upload`, `uploads/[...path]`, `public/*`, `pageview`, `reports/*`, `health/dashboard`).
 - `src/app/setup/` — bootstrap page that creates the first `SUPER_ADMIN`. **IP-gated in production** by `ALLOWED_SETUP_IPS`.
 - `src/actions/*.ts` — every file starts with `'use server';`. Write paths here are the only place that can `revalidateTag`.
-- `src/lib/` — `db.ts` (Prisma singleton), `auth.ts`, `rate-limiter.ts` (Upstash Redis + in-memory LRU fallback), `storage.ts` (S3/Liara), `revalidate.ts` (Next-16-safe `revalidateTag` wrapper), `exchange-rates.ts`, `tgju.ts` (scraper client), `freeMarketRates.ts`, `safe-cache.ts` / `safe-fetch.ts` (network wrappers).
+- `src/lib/` — `db.ts` (Prisma singleton), `auth.ts`, `require-auth.ts` (server-action auth helpers: `requireUser`/`requireRole`/`requireAdmin`/`requireSuperAdmin`/`requireAuthor` - 2026-06-23 audit), `rate-limiter.ts` (Upstash Redis + in-memory LRU fallback), `storage.ts` (S3/Liara), `revalidate.ts` (Next-16-safe `revalidateTag` wrapper), `exchange-rates.ts`, `tgju.ts` (scraper client), `freeMarketRates.ts`, `safe-cache.ts` / `safe-fetch.ts` (network wrappers).
 - `src/components/ui/` — shadcn-style primitives. Do not recreate; add new components there.
 - `prisma/` — `schema.prisma`, one-time `migrations/20240822064751_biotak/`, `seed.js` (idempotent, covers 22 models).
 - `src/components/Dashboard/DashboardPage/v2/` — June 2026 dashboard redesign. CSS lives at the tail of `src/app/globals.css` (search `Dashboard 2026 (June 22)`).
@@ -365,3 +365,4 @@ Before delivering UI code, verify these items:
 - [ ] Form inputs have labels
 - [ ] Color is not the only indicator
 - [ ] `prefers-reduced-motion` respected
+

@@ -9,6 +9,7 @@ import { RegisterSchema } from '@/schemas';
 import { sendMagicLink, registerUser } from '@/actions/auth-actions';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/components/ui/use-toast';
 import { useSearchParams } from 'next/navigation';
 import Logo from '../Logo/Logo';
 import SocialProviders from './SocialProviders';
@@ -18,20 +19,14 @@ import type { z } from 'zod';
 
 type FormData = z.infer<typeof RegisterSchema>;
 
-interface FormState {
-  error: string | null;
-  success: string | null;
-}
-
 export function SignupForm() {
-  const [formState, setFormState] = useState<FormState>({
-    error: null,
-    success: null,
-  });
+  const [formError, setFormError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showEmailPassword, setShowEmailPassword] = useState(false);
-
   const searchParams = useSearchParams();
+  const { toast } = useToast();
+
   const urlError =
     searchParams.get('error') === 'OAuthAccountNotLinked'
       ? 'این ایمیل قبلاً با روش دیگری ثبت شده است. لطفاً از همان روش استفاده کنید.'
@@ -53,30 +48,29 @@ export function SignupForm() {
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsSubmitting(true);
-    setFormState({ error: null, success: null });
+    setFormError(null);
+    setSuccessMessage(null);
 
     try {
       const formData = new FormData();
       Object.entries(data).forEach(([key, value]) => formData.append(key, value));
       const result = await registerUser(formData);
 
-      if (result.success) {
-        setFormState({
-          error: null,
-          success: result.message || 'ثبت‌نام شما با موفقیت انجام شد.',
-        });
+      if (result?.success) {
+        const message = result.message || 'ثبت‌نام شما با موفقیت انجام شد.';
+        setSuccessMessage(message);
+        toast({ title: 'ثبت‌نام موفق', description: message, variant: 'success' });
       } else {
-        setFormState({
-          error: result.error || 'خطایی در ثبت‌نام رخ داده است. لطفاً دوباره تلاش کنید.',
-          success: null,
-        });
+        const message = result?.error || 'خطایی در ثبت‌نام رخ داده است. لطفاً دوباره تلاش کنید.';
+        setFormError(message);
+        toast({ title: 'ثبت‌نام ناموفق', description: message, variant: 'destructive' });
       }
     } catch (error) {
       console.error('Registration error:', error);
-      setFormState({
-        error: error instanceof Error ? error.message : 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.',
-        success: null,
-      });
+      const message =
+        error instanceof Error ? error.message : 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.';
+      setFormError(message);
+      toast({ title: 'خطا', description: message, variant: 'destructive' });
     } finally {
       setIsSubmitting(false);
     }
@@ -84,24 +78,23 @@ export function SignupForm() {
 
   const handleMagicLinkSubmit: SubmitHandler<{ email: string }> = async (data) => {
     setIsSubmitting(true);
-    setFormState({ error: null, success: null });
+    setFormError(null);
+    setSuccessMessage(null);
 
     try {
       const formData = new FormData();
       formData.append('email', data.email);
       await sendMagicLink(formData);
-      setFormState({
-        error: null,
-        success: 'لینک ثبت‌نام به ایمیل شما ارسال شد.',
-      });
+      const message = 'لینک ورود به ایمیل شما ارسال شد.';
+      setSuccessMessage(message);
+      toast({ title: 'لینک ارسال شد', description: message, variant: 'success' });
     } catch (error) {
-      setFormState({
-        error:
-          error instanceof Error
-            ? error.message
-            : 'متأسفانه خطایی رخ داده است. لطفاً دوباره تلاش کنید.',
-        success: null,
-      });
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'ارسال لینک با خطا مواجه شد. لطفاً دوباره تلاش کنید.';
+      setFormError(message);
+      toast({ title: 'خطا', description: message, variant: 'destructive' });
     } finally {
       setIsSubmitting(false);
     }
@@ -110,7 +103,8 @@ export function SignupForm() {
   const toggleAuthMethod = () => {
     setShowEmailPassword(!showEmailPassword);
     reset();
-    setFormState({ error: null, success: null });
+    setFormError(null);
+    setSuccessMessage(null);
   };
 
   return (
@@ -120,7 +114,7 @@ export function SignupForm() {
           <Logo />
         </div>
         <h1 className="text-2xl font-semibold">ایجاد حساب کاربری</h1>
-        <p className="text-sm text-muted-foreground">برای استفاده از خدمات ما، لطفاً ثبت‌نام کنید</p>
+        <p className="text-sm text-muted-foreground">به جمع ما بپیوندید و از خدمات ما بهره‌مند شوید</p>
       </div>
 
       <div className="max-w-md mx-auto space-y-6">
@@ -141,12 +135,18 @@ export function SignupForm() {
                 id="magic-link-email"
                 type="email"
                 placeholder="ایمیل خود را وارد کنید"
+                aria-invalid={errors.email ? 'true' : 'false'}
+                aria-describedby={errors.email ? 'magic-email-error' : undefined}
                 {...register('email')}
               />
-              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+              {errors.email && (
+                <p id="magic-email-error" role="alert" className="text-sm text-destructive">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? <Loading /> : 'ارسال لینک یکبار مصرف'}
+              {isSubmitting ? <Loading /> : 'ارسال لینک جادویی'}
             </Button>
           </form>
         ) : (
@@ -157,9 +157,15 @@ export function SignupForm() {
                 id="name"
                 type="text"
                 placeholder="نام خود را وارد کنید"
+                aria-invalid={errors.name ? 'true' : 'false'}
+                aria-describedby={errors.name ? 'name-error' : undefined}
                 {...register('name')}
               />
-              {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+              {errors.name && (
+                <p id="name-error" role="alert" className="text-sm text-destructive">
+                  {errors.name.message}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">ایمیل</Label>
@@ -167,9 +173,15 @@ export function SignupForm() {
                 id="email"
                 type="email"
                 placeholder="ایمیل خود را وارد کنید"
+                aria-invalid={errors.email ? 'true' : 'false'}
+                aria-describedby={errors.email ? 'email-error' : undefined}
                 {...register('email')}
               />
-              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+              {errors.email && (
+                <p id="email-error" role="alert" className="text-sm text-destructive">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">رمز عبور</Label>
@@ -177,10 +189,14 @@ export function SignupForm() {
                 id="password"
                 type="password"
                 placeholder="رمز عبور خود را وارد کنید"
+                aria-invalid={errors.password ? 'true' : 'false'}
+                aria-describedby={errors.password ? 'password-error' : undefined}
                 {...register('password')}
               />
               {errors.password && (
-                <p className="text-sm text-destructive">{errors.password.message}</p>
+                <p id="password-error" role="alert" className="text-sm text-destructive">
+                  {errors.password.message}
+                </p>
               )}
             </div>
 
@@ -190,36 +206,31 @@ export function SignupForm() {
           </form>
         )}
 
-        {urlError && (
-          <Alert variant="warning">
-            <AlertTitle>توجه</AlertTitle>
-            <AlertDescription>{urlError}</AlertDescription>
-          </Alert>
-        )}
-        {formState.error && (
+        {/* 2026-06-23: alert فقط برای پیام متنی طولانی که کاربر باید بخواند. */}
+        {(urlError || formError) && (
           <Alert
-            variant="destructive"
-            onDismiss={() => setFormState({ error: null, success: null })}
+            variant={urlError ? 'warning' : 'destructive'}
+            onDismiss={() => setFormError(null)}
           >
-            <AlertTitle>ثبت‌نام ناموفق بود</AlertTitle>
-            <AlertDescription>{formState.error}</AlertDescription>
+            <AlertTitle>{urlError ? 'توجه' : 'خطای ثبت‌نام'}</AlertTitle>
+            <AlertDescription>{urlError || formError}</AlertDescription>
           </Alert>
         )}
-        {formState.success && (
-          <Alert variant="success">
-            <AlertTitle>حساب شما ساخته شد 🎉</AlertTitle>
-            <AlertDescription>{formState.success}</AlertDescription>
+        {successMessage && (
+          <Alert variant="success" onDismiss={() => setSuccessMessage(null)}>
+            <AlertTitle>عملیات موفق</AlertTitle>
+            <AlertDescription>{successMessage}</AlertDescription>
           </Alert>
         )}
 
         <Button variant="link" onClick={toggleAuthMethod} className="w-full">
-          {showEmailPassword ? 'استفاده از لینک یکبار مصرف' : 'استفاده از ایمیل و رمز عبور'}
+          {showEmailPassword ? 'استفاده از لینک جادویی' : 'استفاده از ایمیل و رمز عبور'}
         </Button>
 
         <p className="text-center text-sm text-muted-foreground">
           قبلاً ثبت‌نام کرده‌اید؟{' '}
           <NcLink href="/signin" className="underline">
-            ورود به حساب
+            وارد شوید
           </NcLink>
         </p>
       </div>

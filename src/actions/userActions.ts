@@ -5,8 +5,20 @@ import prisma from '@/lib/db';
 import { hash } from 'bcryptjs';
 import type { ActionResult, UserWithProfile } from '@/types/types';
 import type { Prisma, Role } from '@prisma/client';
+import { requireUser } from '@/lib/require-auth';
 import { auth } from '@/auth';
 import { logActivity } from '@/lib/activity-logger';
+
+
+// 2026-06-23: role hierarchy for ownership/permission checks.
+// SUPER_ADMIN (4) > ADMIN (3) > AUTHOR (2) > USER (1).
+// A user can mutate another user only if their level is STRICTLY greater.
+const ROLE_HIERARCHY: Record<Role, number> = {
+  SUPER_ADMIN: 4,
+  ADMIN: 3,
+  AUTHOR: 2,
+  USER: 1,
+};
 
 type GetUsersParams = {
   limit?: number;
@@ -105,15 +117,8 @@ export async function createUser(data: CreateUserData): Promise<ActionResult<Use
     }
 
     const currentUserRole = session.user.role;
-    const roleHierarchy = {
-      'SUPER_ADMIN': 4,
-      'ADMIN': 3,
-      'AUTHOR': 2,
-      'USER': 1
-    };
-
-    // Check if user has permission to create users with the specified role
-    if (roleHierarchy[currentUserRole] <= roleHierarchy[data.role]) {
+// Check if user has permission to create users with the specified role
+    if (ROLE_HIERARCHY[currentUserRole] <= ROLE_HIERARCHY[data.role]) {
       return { success: false, message: 'شما مجوز ایجاد کاربر با این نقش را ندارید' };
     }
 
@@ -174,21 +179,13 @@ export async function updateUser(
     if (!targetUser) {
       return { success: false, message: 'کاربر یافت نشد' };
     }
-
-    const roleHierarchy = {
-      'SUPER_ADMIN': 4,
-      'ADMIN': 3,
-      'AUTHOR': 2,
-      'USER': 1
-    };
-
-    // Check if user has permission to update this user
-    if (roleHierarchy[currentUserRole] <= roleHierarchy[targetUser.role]) {
+// Check if user has permission to update this user
+    if (ROLE_HIERARCHY[currentUserRole] <= ROLE_HIERARCHY[targetUser.role]) {
       return { success: false, message: 'شما مجوز ویرایش این کاربر را ندارید' };
     }
 
     // Check if user has permission to assign the new role
-    if (data.role && roleHierarchy[currentUserRole] <= roleHierarchy[data.role]) {
+    if (data.role && (ROLE_HIERARCHY[currentUserRole] <= ROLE_HIERARCHY[data.role] || (targetUser.id === session.user.id && ROLE_HIERARCHY[data.role] >= ROLE_HIERARCHY[currentUserRole]))) {
       return { success: false, message: 'شما مجوز تغییر به این نقش را ندارید' };
     }
 
@@ -247,18 +244,11 @@ export async function updateUserRole(userId: string, newRole: Role) {
     }
 
     // Check role hierarchy
-    const roleHierarchy = {
-      'SUPER_ADMIN': 4,
-      'ADMIN': 3,
-      'AUTHOR': 2,
-      'USER': 1
-    };
-
-    if (roleHierarchy[currentUserRole] <= roleHierarchy[targetUser.role]) {
+if (ROLE_HIERARCHY[currentUserRole] <= ROLE_HIERARCHY[targetUser.role]) {
       return { success: false, message: 'شما مجوز تغییر نقش این کاربر را ندارید' };
     }
 
-    if (roleHierarchy[currentUserRole] <= roleHierarchy[newRole]) {
+    if (ROLE_HIERARCHY[currentUserRole] <= ROLE_HIERARCHY[newRole]) {
       return { success: false, message: 'شما نمی‌توانید این نقش را اعطا کنید' };
     }
 
@@ -294,16 +284,8 @@ export async function deleteUser(id: string): Promise<ActionResult> {
     if (!targetUser) {
       return { success: false, message: 'کاربر یافت نشد' };
     }
-
-    const roleHierarchy = {
-      'SUPER_ADMIN': 4,
-      'ADMIN': 3,
-      'AUTHOR': 2,
-      'USER': 1
-    };
-
-    // Check if user has permission to delete this user
-    if (roleHierarchy[currentUserRole] <= roleHierarchy[targetUser.role]) {
+// Check if user has permission to delete this user
+    if (ROLE_HIERARCHY[currentUserRole] <= ROLE_HIERARCHY[targetUser.role]) {
       return { success: false, message: 'شما مجوز حذف این کاربر را ندارید' };
     }
 

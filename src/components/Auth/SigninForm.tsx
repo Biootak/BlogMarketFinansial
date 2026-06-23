@@ -11,6 +11,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { DEFAULT_REDIRECT } from '@/config/routes';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/components/ui/use-toast';
 import Logo from '../Logo/Logo';
 import SocialProviders from './SocialProviders';
 import Loading from '../Button/Loading';
@@ -19,20 +20,13 @@ import type { z } from 'zod';
 
 type FormData = z.infer<typeof LoginSchema>;
 
-interface FormState {
-  error: string | null;
-  success: string | null;
-}
-
 export function SigninForm() {
-  const [formState, setFormState] = useState<FormState>({
-    error: null,
-    success: null,
-  });
+  const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showEmailPassword, setShowEmailPassword] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { toast } = useToast();
 
   const {
     register,
@@ -54,7 +48,7 @@ export function SigninForm() {
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsSubmitting(true);
-    setFormState({ error: null, success: null });
+    setFormError(null);
 
     try {
       const formData = new FormData();
@@ -62,25 +56,22 @@ export function SigninForm() {
       const result = await loginUser(formData);
 
       if (result?.success) {
-        setFormState({
-          error: null,
-          success: result.message || 'خوش آمدید!',
+        toast({
+          title: 'خوش آمدید!',
+          description: result.message,
+          variant: 'success',
         });
         setTimeout(() => {
           router.push(result.redirect || DEFAULT_REDIRECT);
           router.refresh();
-        }, 600);
+        }, 500);
       } else {
-        setFormState({
-          error: result?.error || 'خطایی در ورود رخ داده است. لطفاً دوباره تلاش کنید.',
-          success: null,
-        });
+        const message = result?.error || 'خطایی در ورود رخ داده است. لطفاً دوباره تلاش کنید.';
+        setFormError(message);
+        toast({ title: 'ورود ناموفق', description: message, variant: 'destructive' });
         setIsSubmitting(false);
       }
     } catch (error) {
-      // 2026-06-23: NEXT_REDIRECT یک خطای فریم‌ورکی است که Next.js برای انتقال
-      // مرورگر پرتاب می‌کند. اگر digest با NEXT_REDIRECT شروع شود یعنی signIn
-      // موفق بوده و سرور در حال هدایت است؛ نباید به کاربر خطا نشان دهیم.
       if (
         error &&
         typeof error === 'object' &&
@@ -91,37 +82,36 @@ export function SigninForm() {
         return;
       }
       console.error('Login error:', error);
-      setFormState({
-        error:
-          error instanceof Error
-            ? error.message
-            : 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.',
-        success: null,
-      });
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.';
+      setFormError(message);
+      toast({ title: 'خطا', description: message, variant: 'destructive' });
       setIsSubmitting(false);
     }
   };
 
   const handleMagicLinkSubmit: SubmitHandler<{ email: string }> = async (data) => {
     setIsSubmitting(true);
-    setFormState({ error: null, success: null });
+    setFormError(null);
 
     try {
       const formData = new FormData();
       formData.append('email', data.email);
       await sendMagicLink(formData);
-      setFormState({
-        error: null,
-        success: 'لینک ورود به ایمیل شما ارسال شد.',
+      toast({
+        title: 'لینک جادویی ارسال شد',
+        description: 'لطفاً صندوق ورودی ایمیل خود را بررسی کنید.',
+        variant: 'success',
       });
     } catch (error) {
-      setFormState({
-        error:
-          error instanceof Error
-            ? error.message
-            : 'متأسفانه خطایی رخ داده است. لطفاً دوباره تلاش کنید.',
-        success: null,
-      });
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'ارسال لینک با خطا مواجه شد. لطفاً دوباره تلاش کنید.';
+      setFormError(message);
+      toast({ title: 'خطا', description: message, variant: 'destructive' });
     } finally {
       setIsSubmitting(false);
     }
@@ -130,7 +120,7 @@ export function SigninForm() {
   const toggleAuthMethod = () => {
     setShowEmailPassword(!showEmailPassword);
     reset();
-    setFormState({ error: null, success: null });
+    setFormError(null);
   };
 
   return (
@@ -139,8 +129,8 @@ export function SigninForm() {
         <div className="flex items-center justify-center mb-4 sm:mb-6">
           <Logo />
         </div>
-        <h1 className="text-2xl font-semibold">خوش آمدید</h1>
-        <p className="text-sm text-muted-foreground">برای ادامه وارد حساب کاربری خود شوید</p>
+        <h1 className="text-2xl font-semibold">ورود به حساب</h1>
+        <p className="text-sm text-muted-foreground">به حساب کاربری خود وارد شوید</p>
       </div>
 
       <div className="max-w-md mx-auto space-y-6">
@@ -161,12 +151,22 @@ export function SigninForm() {
                 id="magic-link-email"
                 type="email"
                 placeholder="ایمیل خود را وارد کنید"
+                aria-invalid={errors.email ? 'true' : 'false'}
+                aria-describedby={errors.email ? 'magic-email-error' : undefined}
                 {...register('email')}
               />
-              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+              {errors.email && (
+                <p
+                  id="magic-email-error"
+                  role="alert"
+                  className="text-sm text-destructive"
+                >
+                  {errors.email.message}
+                </p>
+              )}
             </div>
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? <Loading /> : 'ارسال لینک یکبار مصرف'}
+              {isSubmitting ? <Loading /> : 'ارسال لینک جادویی'}
             </Button>
           </form>
         ) : (
@@ -177,9 +177,15 @@ export function SigninForm() {
                 id="email"
                 type="email"
                 placeholder="ایمیل خود را وارد کنید"
+                aria-invalid={errors.email ? 'true' : 'false'}
+                aria-describedby={errors.email ? 'email-error' : undefined}
                 {...register('email')}
               />
-              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+              {errors.email && (
+                <p id="email-error" role="alert" className="text-sm text-destructive">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <div className="flex justify-between items-center">
@@ -192,10 +198,14 @@ export function SigninForm() {
                 id="password"
                 type="password"
                 placeholder="رمز عبور خود را وارد کنید"
+                aria-invalid={errors.password ? 'true' : 'false'}
+                aria-describedby={errors.password ? 'password-error' : undefined}
                 {...register('password')}
               />
               {errors.password && (
-                <p className="text-sm text-destructive">{errors.password.message}</p>
+                <p id="password-error" role="alert" className="text-sm text-destructive">
+                  {errors.password.message}
+                </p>
               )}
             </div>
 
@@ -205,30 +215,18 @@ export function SigninForm() {
           </form>
         )}
 
-        {urlError && (
-          <Alert variant="warning">
-            <AlertTitle>توجه</AlertTitle>
-            <AlertDescription>{urlError}</AlertDescription>
-          </Alert>
-        )}
-        {formState.error && (
+        {(urlError || formError) && (
           <Alert
-            variant="destructive"
-            onDismiss={() => setFormState({ error: null, success: null })}
+            variant={urlError ? 'warning' : 'destructive'}
+            onDismiss={() => setFormError(null)}
           >
-            <AlertTitle>ورود ناموفق بود</AlertTitle>
-            <AlertDescription>{formState.error}</AlertDescription>
-          </Alert>
-        )}
-        {formState.success && (
-          <Alert variant="success">
-            <AlertTitle>خوش آمدید 👋</AlertTitle>
-            <AlertDescription>{formState.success}</AlertDescription>
+            <AlertTitle>{urlError ? 'توجه' : 'خطای ورود'}</AlertTitle>
+            <AlertDescription>{urlError || formError}</AlertDescription>
           </Alert>
         )}
 
         <Button variant="link" onClick={toggleAuthMethod} className="w-full">
-          {showEmailPassword ? 'استفاده از لینک یکبار مصرف' : 'استفاده از ایمیل و رمز عبور'}
+          {showEmailPassword ? 'استفاده از لینک جادویی' : 'استفاده از ایمیل و رمز عبور'}
         </Button>
 
         <p className="text-center text-sm text-muted-foreground">

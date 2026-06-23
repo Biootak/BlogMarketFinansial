@@ -6,6 +6,7 @@ import type { ActionResult, Advertisement, AdSize, AdPosition } from '@/types/ty
 import type { Prisma } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { revalidateTag } from '@/lib/revalidate';
+import { requireAdmin, authFailureToActionResult } from '@/lib/require-auth';
 
 // Internal function for fetching ads (not cached)
 async function fetchActiveAdsInternal(
@@ -169,6 +170,8 @@ export async function createAdvertisement(
   data: Omit<Prisma.AdvertisementCreateInput, 'id' | 'createdAt' | 'updatedAt'>,
 ): Promise<ActionResult<Advertisement>> {
   try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     const newAd = await prisma.advertisement.create({
       data: {
         ...data,
@@ -199,6 +202,8 @@ export async function updateAdvertisement(
   data: Partial<Omit<Prisma.AdvertisementUpdateInput, 'id' | 'createdAt' | 'updatedAt'>>,
 ): Promise<ActionResult<Advertisement>> {
   try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     const updatedAd = await prisma.advertisement.update({
       where: { id },
       data: {
@@ -227,6 +232,8 @@ export async function updateAdvertisement(
 
 export async function deleteAdvertisement(id: string): Promise<ActionResult> {
   try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
     await prisma.advertisement.delete({ where: { id } });
     revalidatePath('/advertisements');
     revalidateTag('advertisements');
