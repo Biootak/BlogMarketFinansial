@@ -11,12 +11,14 @@
  */
 import { Vazirmatn } from 'next/font/google';
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 import { Toaster } from '@/components/ui/toaster';
 
 import './globals.css';
 import '@/styles/index.scss';
 
 import Providers from '@/components/providers';
+import STRIP_EXTENSION_ATTRS_SCRIPT from '@/lib/strip-extension-attrs';
 
 /* ============================================================================
    SEO Metadata (vercel.com-style defaults)
@@ -80,6 +82,14 @@ export default function RootLayout({
       className={`${vazirmatn.variable} rtl`}
       suppressHydrationWarning
     >
+      <head>
+        <Script
+          id="strip-extension-attrs"
+          strategy="beforeInteractive"
+        >
+          {STRIP_EXTENSION_ATTRS_SCRIPT}
+        </Script>
+      </head>
       <body
         className="bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 antialiased font-vazirmatn"
         suppressHydrationWarning

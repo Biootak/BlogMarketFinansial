@@ -61,31 +61,44 @@ export function SigninForm() {
       Object.entries(data).forEach(([key, value]) => formData.append(key, value));
       const result = await loginUser(formData);
 
-      if (result.success) {
+      if (result?.success) {
         setFormState({
           error: null,
           success: result.message || 'خوش آمدید!',
         });
-        // کمی تأخیر برای لذت بردن کاربر از پیام خوش‌آمدگویی قبل از redirect
         setTimeout(() => {
-          router.push(DEFAULT_REDIRECT);
+          router.push(result.redirect || DEFAULT_REDIRECT);
           router.refresh();
         }, 600);
       } else {
         setFormState({
-          error: result.error || 'خطایی در ورود رخ داده است. لطفاً دوباره تلاش کنید.',
+          error: result?.error || 'خطایی در ورود رخ داده است. لطفاً دوباره تلاش کنید.',
           success: null,
         });
+        setIsSubmitting(false);
       }
     } catch (error) {
+      // 2026-06-23: NEXT_REDIRECT یک خطای فریم‌ورکی است که Next.js برای انتقال
+      // مرورگر پرتاب می‌کند. اگر digest با NEXT_REDIRECT شروع شود یعنی signIn
+      // موفق بوده و سرور در حال هدایت است؛ نباید به کاربر خطا نشان دهیم.
+      if (
+        error &&
+        typeof error === 'object' &&
+        'digest' in error &&
+        typeof (error as { digest?: string }).digest === 'string' &&
+        (error as { digest: string }).digest.startsWith('NEXT_REDIRECT')
+      ) {
+        return;
+      }
       console.error('Login error:', error);
       setFormState({
-        error: error instanceof Error ? error.message : 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'خطایی رخ داده است. لطفاً دوباره تلاش کنید.',
         success: null,
       });
-    } finally {
-      // isSubmitting را فقط برای حالت خطاروشن نگه می‌داریم؛ موفقیت قبل از redirect رخ می‌دهد
-      if (!formState.success) setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 

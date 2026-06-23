@@ -8,21 +8,9 @@ import { AuthError } from 'next-auth';
 import { ForgotPasswordSchema, LoginSchema, MagicLinkSchema, RegisterSchema } from '@/schemas';
 import { getUserByEmail } from '@/data/user';
 import { DEFAULT_REDIRECT } from '@/config/routes';
-import { redirect } from 'next/navigation';
 import { generateVerificationToken } from '@/lib/tokens';
 import { sendVerificationEmail } from '@/lib/mail';
 import { getVerificationTokenByToken } from '@/data/verfication-token';
-
-// تابع کمکی برای ثبت فعالیت ورود (بدون نیاز به session)
-async function logLoginActivity(userId: string, action: string, details: string) {
-  try {
-    await prisma.activityLog.create({
-      data: { userId, action, details },
-    });
-  } catch (error) {
-    console.error('Error logging activity:', error);
-  }
-}
 
 type AuthResult = {
   success: boolean;
@@ -40,12 +28,17 @@ function handleAuthError(error: unknown): AuthResult {
       case 'CredentialsSignin':
         return {
           success: false,
-          error: 'مشکلی در ورود به حساب پیش آمده. لطفاً دوباره تلاش کنید',
+          error: 'ایمیل یا رمز عبور اشتباه است. لطفاً دوباره تلاش کنید',
+        };
+      case 'AccessDenied':
+        return {
+          success: false,
+          error: 'دسترسی به این حساب مسدود است یا ایمیل هنوز تأیید نشده است',
         };
       default:
         return {
           success: false,
-          error: 'ایمیل یا رمز عبور اشتباه است. لطفاً دوباره تلاش کنید',
+          error: 'مشکلی در ورود به حساب پیش آمده. لطفاً دوباره تلاش کنید',
         };
     }
   }
@@ -85,45 +78,24 @@ export async function loginUser(formData: FormData): Promise<AuthResult> {
       };
     }
 
-    const result = await signIn('credentials', {
+    // 2026-06-23: باید از redirectTo استفاده کنیم تا Auth.js کوکی سشن
+    // را روی مرورگر ست کند. حالت redirect:false کوکی را فقط در پاسخ
+    // fetch داخلی ست می‌کند که هرگز به کلاینت نمی‌رسد؛ در نتیجه حتی
+    // بعد از authorize موفق، middleware کاربر را به /signin برمی‌گرداند.
+    await signIn('credentials', {
       email,
       password,
-      redirect: false,
+      redirectTo: DEFAULT_REDIRECT,
     });
 
-    if (result?.error) {
-      return { success: false, error: result.error };
-    }
-
-    if (result?.ok) {
-      // به‌روزرسانی سشن با اطلاعات جدید کاربر
-      const session = await auth();
-      if (session) {
-        session.user = {
-          ...session.user,
-          role: existingUser.role,
-          id: existingUser.id,
-          email: existingUser.email,
-          name: existingUser.name,
-        };
-      }
-
-      // ثبت فعالیت ورود
-      await logLoginActivity(existingUser.id, 'ورود به سیستم', `کاربر "${existingUser.name || existingUser.email}" وارد سیستم شد`);
-
-      return {
-        success: true,
-        message: 'ورود موفقیت‌آمیز',
-        redirect: '/dashboard',
-      };
-    }
-
-    // ثبت فعالیت ورود
-    await logLoginActivity(existingUser.id, 'ورود به سیستم', `کاربر "${existingUser.name || existingUser.email}" وارد سیستم شد`);
-
-    return { success: true, message: 'خوش آمدید! 🎉 در حال انتقال به صفحه اصلی…' };
+    // این خط اجرا نمی‌شود چون signIn در صورت موفقیت NEXT_REDIRECT پرتاب می‌کند.
+    return { success: true, message: 'ورود موفقیت‌آمیز', redirect: DEFAULT_REDIRECT };
   } catch (error) {
-    return handleAuthError(error);
+    if (error instanceof AuthError) {
+      return handleAuthError(error);
+    }
+    // NEXT_REDIRECT و سایر خطاهای فریم‌ورکی دوباره پرتاب شوند تا Next.js هدایت کند.
+    throw error;
   }
 }
 
@@ -179,25 +151,22 @@ export async function sendMagicLink(formData: FormData): Promise<AuthResult> {
 
 export async function logout(): Promise<AuthResult> {
   try {
-    // دریافت اطلاعات کاربر قبل از خروج
-    const session = await auth();
-    const userId = session?.user?.id;
-    const userName = session?.user?.name || session?.user?.email;
+    // 2026-06-23: signOut نیز همانند signIn باید redirect:true داشته باشد تا
+    // کوکی سشن از مرورگر پاک شود. ثبت فعالیت خروج در رویداد signOut در
+    // src/auth.ts انجام می‌شود چون پس از redirect این کد اجرا نمی‌شود.
+    await signOut({ redirectTo: '/signin' });
 
-    await signOut({ redirect: false });
-
-    // ثبت فعالیت خروج
-    if (userId) {
-      await logLoginActivity(userId, 'خروج از سیستم', `کاربر "${userName}" از سیستم خارج شد`);
-    }
-
+    // در حالت موفقیت این خط اجرا نمی‌شود چون signOut پس از پاک کردن کوکی NEXT_REDIRECT پرتاب می‌کند.
     return {
       success: true,
       message: 'خروج موفقیت‌آمیز بود',
       redirect: '/signin',
     };
   } catch (error) {
-    return handleAuthError(error);
+    if (error instanceof AuthError) {
+      return handleAuthError(error);
+    }
+    throw error;
   }
 }
 

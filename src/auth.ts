@@ -22,12 +22,47 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!existingUser.emailVerified) {
         throw new Error('ایمیل تأیید نشده است.');
       }
+
+      // 2026-06-23: ثبت فعالیت ورود در اینجا انجام می‌شود چون loginUser
+      // پس از signIn موفق بلافاصله NEXT_REDIRECT پرتاب می‌کند و کد بعد
+      // از آن اجرا نمی‌شود. این رویداد تنها پس از authorize موفق اجرا می‌شود.
+      try {
+        await prisma.activityLog.create({
+          data: {
+            userId: existingUser.id,
+            action: 'ورود به سیستم',
+            details: `کاربر "${existingUser.name || existingUser.email}" وارد سیستم شد`,
+          },
+        });
+      } catch (error) {
+        console.error('Error logging login activity:', error);
+      }
     },
     async linkAccount({ user }) {
       await prisma.user.update({
         where: { id: user.id },
         data: { emailVerified: new Date() },
       });
+    },
+    // 2026-06-23: ثبت فعالیت خروج در این رویداد انجام می‌شود چون logout پس
+    // از signOut موفق NEXT_REDIRECT پرتاب می‌کند و کد بعد از آن اجرا نمی‌شود.
+    async signOut(message) {
+      const token = (message as { token?: { sub?: string } | null } | undefined)?.token;
+      const userId = token?.sub;
+      if (!userId) return;
+      try {
+        const existingUser = await getUserById(userId);
+        const userName = existingUser?.name || existingUser?.email;
+        await prisma.activityLog.create({
+          data: {
+            userId,
+            action: 'خروج از سیستم',
+            details: `کاربر "${userName}" از سیستم خارج شد`,
+          },
+        });
+      } catch (error) {
+        console.error('Error logging logout activity:', error);
+      }
     },
   },
   callbacks: {
