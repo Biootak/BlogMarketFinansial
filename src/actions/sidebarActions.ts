@@ -1,178 +1,150 @@
 'use server';
 
-import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/db';
+import { safeCache } from '@/lib/safe-cache';
 import { generateColor } from '@/lib/utils';
 import type { ActionResult, TaxonomyType, PostWithRelations, SidebarData } from '@/types/types';
 import { getTopAuthors, type TopAuthor } from './getTopAuthors';
 
-export const getRecentPosts = unstable_cache(
+// 2026-06-21: همه‌ی cached functions در این فایل از safeCache استفاده می‌کنند.
+// قبلاً unstable_cache بود که در Next.js 16 خطای DB را re-throw می‌کرد.
+// حالا اگر DB قطع باشد، stale value (اگر قبلاً موفق بود) یا fallback.
+
+export const getRecentPosts = safeCache(
   async (limit: number): Promise<PostWithRelations[]> => {
-    try {
-      const recentPosts = await prisma.post.findMany({
-        where: { status: 'PUBLISHED' },
-        orderBy: { createdAt: 'desc' },
-        take: limit,
-        // 2026-06-14: trim the include — author.password was being
-        // selected and shipped through the unstable_cache JSON, which
-        // is a security risk (cache entries can be inspected by anyone
-        // with read access to the data store). Same fix applied to
-        // getSidebarData below.
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          excerpt: true,
-          featuredImage: true,
-          postType: true,
-          status: true,
-          createdAt: true,
-          updatedAt: true,
-          viewCount: true,
-          readingTime: true,
-          authorId: true,
-          author: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-              role: true,
-              profile: {
-                select: {
-                  avatar: true,
-                  jobName: true,
-                },
+    const recentPosts = await prisma.post.findMany({
+      where: { status: 'PUBLISHED' },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      // 2026-06-14: trim the include — author.password was being
+      // selected and shipped through the unstable_cache JSON, which
+      // is a security risk (cache entries can be inspected by anyone
+      // with read access to the data store). Same fix applied to
+      // getSidebarData below.
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        excerpt: true,
+        featuredImage: true,
+        postType: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        viewCount: true,
+        readingTime: true,
+        authorId: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            role: true,
+            profile: {
+              select: {
+                avatar: true,
+                jobName: true,
               },
             },
           },
-          categories: {
-            select: { id: true, name: true, slug: true, thumbnail: true },
-          },
-          tags: {
-            select: { id: true, name: true, slug: true },
-          },
-          _count: {
-            select: {
-              comments: true,
-              likes: true,
-              savedBy: true,
-            },
+        },
+        categories: {
+          select: { id: true, name: true, slug: true, thumbnail: true },
+        },
+        tags: {
+          select: { id: true, name: true, slug: true },
+        },
+        _count: {
+          select: {
+            comments: true,
+            likes: true,
+            savedBy: true,
           },
         },
-      });
+      },
+    });
 
-      return recentPosts as unknown as PostWithRelations[];
-    } catch (error) {
-      console.error('خطا در بازیابی پست‌های اخیر:', error);
-      return [];
-    }
+    return recentPosts as unknown as PostWithRelations[];
   },
-  ['recent-posts'],
-  {
-    tags: ['recent-posts'],
-    revalidate: 3600, // Cache for 1 hour
-  },
+  [],
+  { key: 'recent-posts', ttl: 3600, tags: ['recent-posts'] },
 );
 
-export const getPopularTags = unstable_cache(
+export const getPopularTags = safeCache(
   async (limit: number): Promise<TaxonomyType[]> => {
-    try {
-      const popularTags = await prisma.tag.findMany({
-        take: limit,
-        orderBy: {
-          posts: {
-            _count: 'desc',
-          },
+    const popularTags = await prisma.tag.findMany({
+      take: limit,
+      orderBy: {
+        posts: {
+          _count: 'desc',
         },
-        include: {
-          _count: {
-            select: { posts: true },
-          },
+      },
+      include: {
+        _count: {
+          select: { posts: true },
         },
-      });
+      },
+    });
 
-      return popularTags.map((tag) => ({
-        id: tag.id,
-        name: tag.name,
-        slug: tag.slug,
-        thumbnail: null,
-        taxonomy: 'tag',
-        color: generateColor(tag.id),
-        count: tag._count.posts,
-        createdAt: tag.createdAt,
-        updatedAt: tag.updatedAt,
-      }));
-    } catch (error) {
-      console.error('خطا در بازیابی تگ‌های محبوب:', error);
-      return [];
-    }
+    return popularTags.map((tag) => ({
+      id: tag.id,
+      name: tag.name,
+      slug: tag.slug,
+      thumbnail: null,
+      taxonomy: 'tag',
+      color: generateColor(tag.id),
+      count: tag._count.posts,
+      createdAt: tag.createdAt,
+      updatedAt: tag.updatedAt,
+    }));
   },
-  ['popular-tags'],
-  {
-    tags: ['popular-tags'],
-    revalidate: 3600, // Cache for 1 hour
-  },
+  [],
+  { key: 'popular-tags', ttl: 3600, tags: ['popular-tags'] },
 );
 
-export const getPopularCategories = unstable_cache(
+export const getPopularCategories = safeCache(
   async (limit: number): Promise<TaxonomyType[]> => {
-    try {
-      const popularCategories = await prisma.category.findMany({
-        take: limit,
-        orderBy: {
-          posts: {
-            _count: 'desc',
-          },
+    const popularCategories = await prisma.category.findMany({
+      take: limit,
+      orderBy: {
+        posts: {
+          _count: 'desc',
         },
-        include: {
-          _count: {
-            select: { posts: true },
-          },
-          parentCategories: true,
+      },
+      include: {
+        _count: {
+          select: { posts: true },
         },
-      });
+        parentCategories: true,
+      },
+    });
 
-      return popularCategories.map((category) => ({
-        id: category.id,
-        name: category.name,
-        slug: category.slug,
-        thumbnail: category.thumbnail,
-        taxonomy: category.parentCategories.length > 0 ? 'subcategory' : 'category',
-        color: generateColor(category.id),
-        count: category._count.posts,
-        createdAt: category.createdAt,
-        updatedAt: category.updatedAt,
-      }));
-    } catch (error) {
-      console.error('خطا در بازیابی دسته‌بندی‌های محبوب:', error);
-      return [];
-    }
+    return popularCategories.map((category) => ({
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      thumbnail: category.thumbnail,
+      taxonomy: category.parentCategories.length > 0 ? 'subcategory' : 'category',
+      color: generateColor(category.id),
+      count: category._count.posts,
+      createdAt: category.createdAt,
+      updatedAt: category.updatedAt,
+    }));
   },
-  ['popular-categories'],
-  {
-    tags: ['popular-categories'],
-    revalidate: 3600, // Cache for 1 hour
-  },
+  [],
+  { key: 'popular-categories', ttl: 3600, tags: ['popular-categories'] },
 );
 
-export const getPopularAuthors = unstable_cache(
+export const getPopularAuthors = safeCache(
   async (limit: number): Promise<TopAuthor[]> => {
-    try {
-      return await getTopAuthors(limit);
-    } catch (error) {
-      console.error('خطا در بازیابی نویسندگان محبوب:', error);
-      return [];
-    }
+    return await getTopAuthors(limit);
   },
-  ['popular-authors'],
-  {
-    tags: ['popular-authors'],
-    revalidate: 3600, // Cache for 1 hour
-  },
+  [],
+  { key: 'popular-authors', ttl: 3600, tags: ['popular-authors'] },
 );
 
 export async function getSidebarData(): Promise<SidebarData> {
-  return unstable_cache(
+  return safeCache(
     async () => {
       const [posts, tags, categories, authors, ads] = await Promise.all([
         prisma.post.findMany({
@@ -305,8 +277,17 @@ export async function getSidebarData(): Promise<SidebarData> {
         ads: ads,
       };
     },
-    ['sidebar-data'],
+    // 2026-06-21: fallback ایمن — sidebar سایدبار با همه‌ی فیلدهای خالی
     {
+      recentPosts: [],
+      popularTags: [],
+      popularCategories: [],
+      popularAuthors: [],
+      ads: [],
+    } as SidebarData,
+    {
+      key: 'sidebar-data',
+      ttl: 3600,
       tags: [
         'sidebar-data',
         'sidebar-posts',
@@ -315,7 +296,6 @@ export async function getSidebarData(): Promise<SidebarData> {
         'sidebar-authors',
         'sidebar-ads',
       ],
-      revalidate: 3600, // Cache for 1 hour
     },
   )();
 }

@@ -1,7 +1,7 @@
 'use server';
 
-import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/db';
+import { safeCache } from '@/lib/safe-cache';
 import type { ActionResult, Advertisement, AdSize, AdPosition } from '@/types/types';
 import type { Prisma } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
@@ -50,14 +50,24 @@ async function fetchActiveAdsInternal(
   }
 }
 
-// Cached version
-const getCachedActiveAds = unstable_cache(
+// 2026-06-21: قبلاً unstable_cache بود که خطای DB را re-throw می‌کرد.
+// حالا safeCache — اگر DB قطع باشد، stale value یا fallback.
+// Fallback باید ActionResult ساختار داشته باشد تا call-site ها
+// بدون تغییر کار کنند.
+const EMPTY_ADS_RESULT: ActionResult<Advertisement[]> = {
+  success: true,
+  message: 'تبلیغات فعال (fallback)',
+  data: [],
+};
+
+const getCachedActiveAds = safeCache(
   fetchActiveAdsInternal,
-  ['active-advertisements'],
+  EMPTY_ADS_RESULT,
   {
-    revalidate: 300, // 5 minutes
+    key: 'active-advertisements',
+    ttl: 300,
     tags: ['advertisements'],
-  }
+  },
 );
 
 // Public API with object params

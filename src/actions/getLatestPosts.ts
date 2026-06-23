@@ -1,7 +1,7 @@
 'use server';
 
-import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/db';
+import { safeCache } from '@/lib/safe-cache';
 import { PostStatus } from '@prisma/client';
 import type { PostWithRelations } from '@/types/types';
 import { revalidatePath } from 'next/cache';
@@ -124,15 +124,16 @@ async function fetchLatestPosts(
     }
 }
 
-// Cached version
-const getCachedLatestPosts = unstable_cache(
+// 2026-06-21: قبلاً unstable_cache بود. حالا safeCache.
+// CACHE_VERSION در key هست تا با تغییرش کش قبلی invalidate شود.
+const getCachedLatestPosts = safeCache(
   fetchLatestPosts,
-  // کلید cache — VERSION توش هست تا با عوض شدنش، کش قبلی باطل بشه
-  ['latest-posts', CACHE_VERSION],
+  [],
   {
-    revalidate: 60, // 1 minute
+    key: `latest-posts::${CACHE_VERSION}`,
+    ttl: 60,
     tags: ['posts', 'latest-posts'],
-  }
+  },
 );
 
 // Public API
@@ -169,11 +170,12 @@ async function fetchPublishedPostCount(): Promise<number> {
   }
 }
 
-const getCachedPublishedPostCount = unstable_cache(
+const getCachedPublishedPostCount = safeCache(
   fetchPublishedPostCount,
-  ['published-post-count', CACHE_VERSION],
+  0,
   {
-    revalidate: 60,
+    key: `published-post-count::${CACHE_VERSION}`,
+    ttl: 60,
     tags: ['posts', 'latest-posts'],
   },
 );

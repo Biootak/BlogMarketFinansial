@@ -1,8 +1,8 @@
 'use server';
 
-import { unstable_cache } from 'next/cache';
 import { PostStatus } from '@prisma/client';
 import prisma from '@/lib/db';
+import { safeCache } from '@/lib/safe-cache';
 import type { ActionResult, PostWithRelations } from '@/types/types';
 
 // Internal fetch function
@@ -69,14 +69,20 @@ async function fetchFeaturedPosts(limit: number): Promise<ActionResult<PostWithR
     }
 }
 
-// Cached version
-const getCachedFeaturedPosts = unstable_cache(
+const EMPTY_FEATURED: ActionResult<PostWithRelations[]> = {
+  success: true,
+  message: 'پست‌های ویژه (fallback)',
+  data: [],
+};
+
+const getCachedFeaturedPosts = safeCache(
   fetchFeaturedPosts,
-  ['featured-posts'],
+  EMPTY_FEATURED,
   {
-    revalidate: 60, // 1 minute
+    key: 'featured-posts',
+    ttl: 60,
     tags: ['posts', 'featured-posts'],
-  }
+  },
 );
 
 // Public API

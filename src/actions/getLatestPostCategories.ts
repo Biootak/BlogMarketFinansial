@@ -18,8 +18,8 @@
  *      ClientSidePosts لازم نباشه در مورد ساختار درختی فکر کنه.
  */
 
-import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/db';
+import { safeCache } from '@/lib/safe-cache';
 import { PostStatus } from '@prisma/client';
 
 export interface LatestPostCategory {
@@ -77,11 +77,12 @@ async function loadLatestPostCategories(): Promise<LatestPostCategory[]> {
   }
 }
 
-export const getLatestPostCategories = unstable_cache(
+export const getLatestPostCategories = safeCache(
   loadLatestPostCategories,
-  ['latest-post-categories-v1'],
+  [],
   {
-    revalidate: 60,
+    key: 'latest-post-categories',
+    ttl: 60,
     tags: ['latest-post-categories', 'posts', 'categories'],
   },
 );

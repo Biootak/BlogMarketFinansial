@@ -1,7 +1,7 @@
 'use server';
 
 import type { CryptoTickerResult } from '@/types/types';
-import { unstable_cache } from 'next/cache';
+import { safeCache } from '@/lib/safe-cache';
 import { getExirCryptoRates } from '../lib/exir-crypto-rates';
 
 /* 2026-06-20: این اکشن قبلاً `fetchExchangeRates` نام داشت که با مدل
@@ -16,11 +16,20 @@ import { getExirCryptoRates } from '../lib/exir-crypto-rates';
  * `getExirCryptoRates` داخلی همچنان `next: {revalidate:60}` دارد پس
  * در cache miss از Exir HTTP-cached می‌گیره.
  */
-const getCachedCryptoTickerRates = unstable_cache(
+// 2026-06-21: قبلاً unstable_cache بود. حالا safeCache.
+// Fallback اگر Exir fail شود.
+const FALLBACK_CRYPTO: CryptoTickerResult = {
+  success: false,
+  message: 'crypto fallback (DB/API fail)',
+  data: [],
+};
+
+const getCachedCryptoTickerRates = safeCache(
   async (): Promise<CryptoTickerResult> => getExirCryptoRates(),
-  ['crypto-ticker-rates', 'v2-2026-06-20'],
+  FALLBACK_CRYPTO,
   {
-    revalidate: 60,
+    key: 'crypto-ticker-rates',
+    ttl: 60,
     tags: ['exchange-rates'],
   },
 );

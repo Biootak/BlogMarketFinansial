@@ -1,9 +1,9 @@
 'use server';
 
 import { cache } from 'react';
-import { unstable_cache } from 'next/cache';
 import { Role, type User, type Profile } from '@prisma/client';
 import prisma from '@/lib/db';
+import { safeCache } from '@/lib/safe-cache';
 
 export type TopAuthor = Pick<User, 'id' | 'name' | 'image'> & {
   profile: Pick<Profile, 'avatar' | 'bio' | 'jobName'> | null;
@@ -51,11 +51,12 @@ const fetchTopAuthorsRaw = async (limit: number): Promise<TopAuthor[]> => {
   }
 };
 
-const getCachedTopAuthors = unstable_cache(
+const getCachedTopAuthors = safeCache(
   fetchTopAuthorsRaw,
-  ['top-authors', 'v1-2026-06-14'],
+  [],
   {
-    revalidate: 600,
+    key: 'top-authors',
+    ttl: 600,
     tags: ['top-authors', 'posts'],
   },
 );

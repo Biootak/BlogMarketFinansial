@@ -4,10 +4,17 @@ import Footer from '@/components/Footer/Footer';
 import Header from '@/components/Header/Header';
 import { SiteSettingsProvider } from '@/components/SiteSettingsProvider';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
+import { safe, safeArray } from '@/lib/safe-fetch';
 import type { Metadata } from 'next';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSystemSettingsData();
+  // 2026-06-21: اگر دیتابیس قطع باشد، metadata با fallback ساخته می‌شود
+  // تا سایت کرش نکند.
+  const settings = await safe(
+    getSystemSettingsData(),
+    { siteName: '', siteDescription: '' } as Awaited<ReturnType<typeof getSystemSettingsData>>,
+    'generateMetadata/settings',
+  );
 
   return {
     title: settings.siteName || 'Market Financial',
@@ -26,20 +33,37 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
+  // 2026-06-21: هر سه call با safe/safeArray محافظت می‌شوند. اگر دیتابیس
+  // قطع باشد (مثلاً Neon در حالت idle)، هر کدام مقدار fallback برمی‌گرداند
+  // و سایت همچنان render می‌شود. در dev خطا در console لاگ می‌شود.
   const [settings, footerAdsResult, rateLists] = await Promise.all([
-    getSystemSettingsData(),
-    getActiveAdvertisements({
-      limit: 1,
-      position: 'FOOTER',
-      orderBy: 'createdAt',
-      orderDirection: 'desc',
-    }),
-    // داده‌ی نوار چرخشی و مگامنوی بازار — یک‌بار در سرور فچ می‌شه
-    // و به Header و سایر بخش‌ها پاس داده می‌شه. dedup + crypto fallback.
-    getActiveRateListsOrCryptoFallback(),
+    safe(
+      getSystemSettingsData(),
+      { siteName: '', siteDescription: '' } as Awaited<ReturnType<typeof getSystemSettingsData>>,
+      'SiteLayout/settings',
+    ),
+    safe(
+      getActiveAdvertisements({
+        limit: 1,
+        position: 'FOOTER',
+        orderBy: 'createdAt',
+        orderDirection: 'desc',
+      }),
+      { success: true, data: [] } as Awaited<ReturnType<typeof getActiveAdvertisements>>,
+      'SiteLayout/footerAds',
+    ),
+    // 2026-06-21: این call قبلاً کل سایت را کرش می‌کرد وقتی DB
+    // در دسترس نبود. حالا با safeArray ایمن شده و crypto fallback
+    // داخل خودش هم کار می‌کند.
+    safeArray(
+      getActiveRateListsOrCryptoFallback(),
+      'SiteLayout/rateLists',
+    ),
   ]);
   const footerAd =
-    footerAdsResult.success && footerAdsResult.data?.[0] ? footerAdsResult.data[0] : null;
+    footerAdsResult.success && Array.isArray(footerAdsResult.data) && footerAdsResult.data[0]
+      ? footerAdsResult.data[0]
+      : null;
   const activeRateLists = (rateLists ?? []).filter((l) => l.isActive);
 
   return (

@@ -1,4 +1,4 @@
-import { unstable_cache } from 'next/cache';
+import { safeCache } from '@/lib/safe-cache';
 import prisma from '@/lib/db';
 
 export interface SiteSettings {
@@ -12,23 +12,29 @@ export interface SiteSettings {
   cacheEnabled: boolean;
 }
 
-// Fetch settings from database with caching (revalidate every 5 minutes)
-export const getSystemSettingsData = unstable_cache(
+const SETTINGS_FALLBACK: SiteSettings = {
+  siteName: null,
+  siteDescription: null,
+  telegram: null,
+  instagram: null,
+  twitter: null,
+  whatsapp: null,
+  maintenanceMode: false,
+  cacheEnabled: true,
+};
+
+// 2026-06-21: قبلاً `unstable_cache` بود که در Next.js 16 خطای DB را
+// در سطح cache-layer re-throw می‌کرد و try/catch داخل function بی‌اثر
+// بود. حالا با `safeCache` خودمان:
+//   - بین request ها share می‌شود (مثل unstable_cache)
+//   - خطا → stale value (اگر قبلاً موفق بود) یا fallback
+//   - حتی اگر DB کاملاً قطع باشد، layout/page کرش نمی‌کند
+export const getSystemSettingsData = safeCache(
   async (): Promise<SiteSettings> => {
-  try {
     const settings = await prisma.systemSettings.findFirst();
 
     if (!settings) {
-      return {
-        siteName: null,
-        siteDescription: null,
-        telegram: null,
-        instagram: null,
-        twitter: null,
-        whatsapp: null,
-        maintenanceMode: false,
-        cacheEnabled: true,
-      };
+      return SETTINGS_FALLBACK;
     }
 
     return {
@@ -37,27 +43,15 @@ export const getSystemSettingsData = unstable_cache(
       telegram: settings.telegram,
       instagram: settings.instagram,
       twitter: settings.twitter,
-      whatsapp: settings.whatsapp,
+      whatsapp: settings.whatsApp,
       maintenanceMode: settings.maintenanceMode,
       cacheEnabled: settings.cacheEnabled,
     };
-  } catch (error) {
-    console.error('Error fetching system settings:', error);
-    return {
-      siteName: null,
-      siteDescription: null,
-      telegram: null,
-      instagram: null,
-      twitter: null,
-      whatsapp: null,
-      maintenanceMode: false,
-      cacheEnabled: true,
-    };
-  }
-},
-  ['system-settings'],
+  },
+  SETTINGS_FALLBACK,
   {
-    revalidate: 300, // 5 minutes
+    key: 'system-settings',
+    ttl: 300, // 5 minutes
     tags: ['system-settings'],
-  }
+  },
 );

@@ -1,7 +1,7 @@
 'use server';
 
 import { cache } from 'react';
-import { unstable_cache } from 'next/cache';
+import { safeCache } from '@/lib/safe-cache'; // 2026-06-21: جایگزین unstable_cache شد
 import { revalidateTag } from '@/lib/revalidate';
 import prisma from '@/lib/db';
 import { generateColor, generateSlug, validateSlug } from '@/lib/utils';
@@ -551,11 +551,20 @@ async function fetchPopularCategoriesForHomeRaw(
   }
 }
 
-const getCachedPopularCategoriesForHome = unstable_cache(
+// 2026-06-21: قبلاً unstable_cache بود. حالا safeCache که اگر DB
+// قطع باشد stale value یا fallback برمی‌گرداند.
+const FALLBACK_POPULAR_CATS: ActionResult<{ categories: TaxonomyType[] }> = {
+  success: true,
+  message: 'دسته‌بندی‌های محبوب (fallback)',
+  data: { categories: [] },
+};
+
+const getCachedPopularCategoriesForHome = safeCache(
   fetchPopularCategoriesForHomeRaw,
-  ['popular-categories-home', 'v1-2026-06-19'],
+  FALLBACK_POPULAR_CATS,
   {
-    revalidate: 60,
+    key: 'popular-categories-home',
+    ttl: 60,
     tags: ['categories', 'popular-categories-home'],
   },
 );

@@ -137,9 +137,7 @@ export default function DonutChart({
             }}
             style={{ transformOrigin: `${cx}px ${cy}px` }}
           >
-            <title>
-              {slice.label}: {slice.value.toLocaleString('fa-IR')}
-            </title>
+            <title>{`${slice.label}: ${slice.value.toLocaleString('fa-IR')}`}</title>
           </motion.path>
         ))}
         <text

@@ -1,8 +1,20 @@
 'use client';
 
+/**
+ * NewPostButton — 2026 redesign.
+ *
+ * The previous version used a perpetual CSS shimmer animation, an inline
+ * sparkle that slid in on hover and a hard-coded white→slate gradient.
+ * Those have all been removed in favor of:
+ *   • a single high-contrast gradient that reads on both light/dark
+ *   • a static ⌘N keyboard hint chip (Linear style)
+ *   • focus-visible ring (WCAG 2.2 AA)
+ *   • no perpetual CSS animation
+ */
+
 import { motion } from '@/lib/motion-shim';
 import { useRouter } from 'next/navigation';
-import { HiOutlinePencilSquare, HiOutlineSparkles } from 'react-icons/hi2';
+import { HiOutlinePencilSquare } from 'react-icons/hi2';
 
 export default function NewPostButton() {
   const router = useRouter();
@@ -10,55 +22,41 @@ export default function NewPostButton() {
   return (
     <motion.button
       type="button"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.4, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ scale: 1.04, y: -2 }}
-      whileTap={{ scale: 0.96 }}
-      className="group relative inline-flex items-center gap-3 px-6 py-3.5 rounded-2xl font-bold text-sm overflow-hidden transition-all duration-300"
       onClick={() => router.push('/dashboard/posts/create')}
+      whileTap={{ scale: 0.97 }}
+      className="group relative inline-flex items-center gap-2.5 ps-2.5 pe-3.5 h-10 rounded-xl font-semibold text-sm text-white overflow-hidden transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[oklch(18%_0.045_260)] focus-visible:ring-cyan-300/80"
       style={{
-        background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-        boxShadow: `
-          0 0 0 1px rgba(255,255,255,0.5),
-          0 4px 6px -1px rgba(0,0,0,0.1),
-          0 10px 20px -5px rgba(124,58,237,0.3),
-          inset 0 1px 0 rgba(255,255,255,1)
-        `,
+        background:
+          'linear-gradient(135deg, oklch(70% 0.16 270) 0%, oklch(58% 0.16 285) 100%)',
+        boxShadow:
+          '0 1px 0 oklch(100% 0 0 / 0.18) inset, 0 8px 24px -10px oklch(55% 0.18 280 / 0.55), 0 1px 2px oklch(0% 0 0 / 0.2)',
       }}
     >
-      {/* Hover gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-violet-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      
-      {/* Shimmer effect */}
-      <div 
-        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+      {/* Subtle inner ring on hover only — no shimmer loop. */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"
         style={{
-          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
-          animation: 'shimmer 2s infinite',
+          boxShadow: '0 0 0 1px oklch(100% 0 0 / 0.18) inset, 0 12px 32px -8px oklch(60% 0.18 280 / 0.7)',
         }}
       />
-      
-      {/* Icon container */}
-      <span className="relative flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-lg group-hover:shadow-violet-500/40 transition-shadow duration-300">
-        <HiOutlinePencilSquare className="w-4 h-4" />
-      </span>
-      
-      {/* Text */}
-      <span className="relative bg-gradient-to-r from-violet-700 to-indigo-700 bg-clip-text text-transparent">
-        نوشتن پست جدید
-      </span>
-      
-      {/* Sparkle icon */}
-      <HiOutlineSparkles className="relative w-4 h-4 text-amber-500 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
 
-      {/* CSS for shimmer */}
-      <style jsx>{`
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-      `}</style>
+      <span
+        className="relative flex items-center justify-center w-6 h-6 rounded-md bg-white/15 group-hover:bg-white/25 transition-colors"
+        aria-hidden="true"
+      >
+        <HiOutlinePencilSquare className="w-3.5 h-3.5 text-white" />
+      </span>
+
+      <span className="relative">نوشتن پست جدید</span>
+
+      <span
+        aria-hidden="true"
+        className="relative hidden sm:inline-flex items-center gap-0.5 ms-1 text-[10px] font-mono font-semibold tracking-wider text-white/70"
+      >
+        <kbd className="rounded border border-white/20 bg-white/10 px-1.5 py-0.5">⌘</kbd>
+        <kbd className="rounded border border-white/20 bg-white/10 px-1.5 py-0.5">N</kbd>
+      </span>
     </motion.button>
   );
 }

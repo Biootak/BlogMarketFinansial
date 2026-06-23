@@ -1,25 +1,44 @@
 'use client';
 
-import { useMemo, memo } from 'react';
+/**
+ * DashboardPage — 2026 redesign.
+ *
+ * Composes the redesigned dashboard from focused subcomponents:
+ *   1. WelcomeSection   — Linear/Vercel hero with date, role, CTAs
+ *   2. KpiBento         — Asymmetric 6-card grid with a hero sparkline
+ *   3. AnalyticsPanel   — Stripe-style traffic/calendar switcher
+ *      + 7d/30d/90d period switcher
+ *   4. Quick stats row  — DonutChart (engagement breakdown) +
+ *                         ActivityFeed (recent system events)
+ *   5. PostManagement   — Popular posts + recent drafts
+ *   6. CommandPalette   — ⌘K command palette (rendered globally)
+ *
+ * The page keeps the existing props contract; the Server Component
+ * (page.tsx) only adds one new fetch (`getRecentActivity`).
+ *
+ * SWR is intentionally dropped: the server actions wrap the queries in
+ * `unstable_cache` with sensible TTLs, and the chart poll interval is
+ * owned by TrafficChart itself.
+ *
+ * Accessibility & motion:
+ *   • Each section exposes a real <section> with an aria-label.
+ *   • Animations use a single, calm ease curve and respect
+ *     `prefers-reduced-motion` (handled by motion-shim).
+ *   • RTL is honored throughout (no hard-coded left/right).
+ *   • All colors come from the existing `dash-ico--*` palette — no
+ *     bespoke flashy tones are introduced here.
+ */
+
+import { memo } from 'react';
 import { motion } from '@/lib/motion-shim';
-import useSWR from 'swr';
-import {
-  HiOutlineEye,
-  HiOutlineChatBubbleLeftEllipsis,
-  HiOutlineShare,
-  HiOutlineHeart,
-  HiOutlineDocumentText,
-  HiOutlinePencilSquare,
-  HiOutlineChartBar,
-  HiOutlineCalendarDays,
-} from 'react-icons/hi2';
 import WelcomeSection from './WelcomeSection/WelcomeSection';
-import BlogStatCard from '@/components/Dashboard/DashboardPage/BlogStatCard';
-import PostManagement from '../Blog/PostManagement';
-import PublishingCalendar from '../Calendar/PublishingCalendar';
-import TrafficChart from './TrafficChart';
+import KpiBento from './KpiBento';
+import AnalyticsPanel from './AnalyticsPanel';
+import DonutChart, { type DonutSlice } from './DonutChart';
+import ActivityFeed, { type ActivityItem } from './ActivityFeed';
+import CommandPalette from './CommandPalette';
+import PostManagement from '@/components/Dashboard/Blog/PostManagement';
 import type { PostWithRelations } from '@/types/types';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface DashboardPageProps {
   stats: {
@@ -46,254 +65,151 @@ interface DashboardPageProps {
     totalViews: number;
     todayViews: number;
   };
+  recentActivity: ActivityItem[];
+  userRole: 'SUPER_ADMIN' | 'ADMIN' | 'AUTHOR';
 }
 
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    transition: { staggerChildren: 0.1, delayChildren: 0.05 },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const } 
+  hidden: { opacity: 0, y: 12 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as const },
   },
 };
 
-const DashboardPage: React.FC<DashboardPageProps> = ({
-  stats: initialStats,
-  scheduledPosts: initialScheduledPosts,
-  popularPosts: initialPopularPosts,
-  recentDrafts: initialRecentDrafts,
-  viewStats: initialViewStats,
-}) => {
-  const { data: stats } = useSWR('/api/dashboard/stats', { fallbackData: initialStats, revalidateOnFocus: true });
-  const { data: scheduledPosts } = useSWR('/api/dashboard/scheduled-posts', { fallbackData: initialScheduledPosts });
-  const { data: popularPosts } = useSWR('/api/dashboard/popular-posts', { fallbackData: initialPopularPosts });
-  const { data: recentDrafts } = useSWR('/api/dashboard/recent-drafts', { fallbackData: initialRecentDrafts });
-  const { data: viewStats } = useSWR('/api/dashboard/view-stats', { fallbackData: initialViewStats });
+const DONUT_COLORS = {
+  views: 'oklch(70% 0.16 270)',
+  likes: 'oklch(70% 0.18 20)',
+  comments: 'oklch(70% 0.14 165)',
+  shares: 'oklch(70% 0.13 215)',
+} as const;
 
-  const blogStatCards = useMemo(
-    () =>
-      [
-        {
-          title: 'بازدیدهای امروز',
-          value: viewStats.todayViews,
-          icon: <HiOutlineEye className="w-5 h-5" />,
-          color: 'blue',
-          trend: 'up',
-          percentage: 5.2,
-          data: viewStats.data,
-        },
-        {
-          title: 'نظرات جدید',
-          value: stats.comments.new,
-          icon: <HiOutlineChatBubbleLeftEllipsis className="w-5 h-5" />,
-          color: 'green',
-          trend: 'neutral',
-          percentage: 0.1,
-          data: stats.comments.data,
-        },
-        {
-          title: 'اشتراک‌گذاری‌ها',
-          value: stats.shares.total,
-          icon: <HiOutlineShare className="w-5 h-5" />,
-          color: 'purple',
-          trend: 'up',
-          percentage: 12.3,
-          data: stats.shares.data,
-        },
-        {
-          title: 'لایک‌ها',
-          value: stats.likes.total,
-          icon: <HiOutlineHeart className="w-5 h-5" />,
-          color: 'red',
-          trend: 'down',
-          percentage: 2.5,
-          data: stats.likes.data,
-        },
-        {
-          title: 'پست‌های منتشر شده',
-          value: stats.publishedPosts.total,
-          icon: <HiOutlineDocumentText className="w-5 h-5" />,
-          color: 'orange',
-          trend: 'up',
-          percentage: 10.5,
-          data: stats.publishedPosts.data,
-        },
-        {
-          title: 'پیش‌نویس‌ها',
-          value: stats.drafts.total,
-          icon: <HiOutlinePencilSquare className="w-5 h-5" />,
-          color: 'blue',
-          trend: 'neutral',
-          percentage: 1,
-          data: stats.drafts.data,
-        },
-      ] as const,
-    [stats, viewStats],
-  );
+const DashboardPage: React.FC<DashboardPageProps> = ({
+  stats,
+  scheduledPosts,
+  popularPosts,
+  recentDrafts,
+  viewStats,
+  recentActivity,
+  userRole,
+}) => {
+  const donutSlices: DonutSlice[] = [
+    {
+      key: 'views',
+      label: 'بازدید',
+      value: viewStats.totalViews,
+      color: DONUT_COLORS.views,
+    },
+    {
+      key: 'likes',
+      label: 'لایک',
+      value: stats.likes.total,
+      color: DONUT_COLORS.likes,
+    },
+    {
+      key: 'comments',
+      label: 'نظر',
+      value: stats.comments.new,
+      color: DONUT_COLORS.comments,
+    },
+    {
+      key: 'shares',
+      label: 'اشتراک‌گذاری',
+      value: stats.shares.total,
+      color: DONUT_COLORS.shares,
+    },
+  ];
+  const donutTotal = donutSlices.reduce((acc, s) => acc + s.value, 0);
 
   return (
-    <motion.main
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-      className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 space-y-8"
-    >
-      {/* Welcome Section */}
-      <motion.div variants={itemVariants}>
-        <WelcomeSection />
-      </motion.div>
-
-      {/* Stats Grid — Bento */}
-      <motion.div
+    <>
+      <motion.main
+        initial="hidden"
+        animate="visible"
         variants={containerVariants}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-5"
+        className="min-h-screen py-6 sm:py-8 px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8"
       >
-        {blogStatCards.map((card, index) => (
-          <motion.div
-            key={card.title}
-            variants={itemVariants}
-            custom={index}
+        {/* Hero strip */}
+        <motion.div variants={itemVariants}>
+          <WelcomeSection />
+        </motion.div>
+
+        {/* Bento KPIs */}
+        <motion.div variants={itemVariants}>
+          <KpiBento stats={stats} viewStats={viewStats} />
+        </motion.div>
+
+        {/* Donut + Activity row */}
+        <motion.div
+          variants={itemVariants}
+          className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5"
+        >
+          <section
+            aria-label="سهم تعامل"
+            className="dash-panel overflow-hidden lg:col-span-7 xl:col-span-5"
           >
-            <BlogStatCard
-              title={card.title}
-              value={card.value}
-              icon={card.icon}
-              color={card.color}
-              trend={card.trend}
-              percentage={card.percentage}
-              data={card.data ? [...card.data] : undefined}
-            />
-          </motion.div>
-        ))}
-      </motion.div>
-
-      {/* Tabs Section */}
-      <motion.div variants={itemVariants}>
-        <Tabs dir="rtl" defaultValue="traffic" className="w-full">
-          <TabsList className="dash-panel inline-flex p-1.5 gap-1.5 mb-8">
-            <TabsTrigger
-              value="traffic"
-              className="px-5 py-3 rounded-xl text-sm font-semibold transition-all duration-300
-                         data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-indigo-600 
-                         data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-violet-500/30
-                         text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white
-                         hover:bg-slate-100 dark:hover:bg-slate-800"
-            >
-              <span className="flex items-center gap-2.5">
-                <HiOutlineChartBar className="w-4 h-4" />
-                آمار بازدید
-              </span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="calendar"
-              className="px-5 py-3 rounded-xl text-sm font-semibold transition-all duration-300
-                         data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-600 data-[state=active]:to-teal-600 
-                         data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-500/30
-                         text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white
-                         hover:bg-slate-100 dark:hover:bg-slate-800"
-            >
-              <span className="flex items-center gap-2.5">
-                <HiOutlineCalendarDays className="w-4 h-4" />
-                تقویم انتشار
-              </span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="traffic" className="mt-0">
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="relative dash-panel overflow-hidden"
-            >
-              {/* Header */}
-              <div className="px-7 py-6 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50/50 to-white dark:from-slate-800/50 dark:to-slate-900">
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl blur-lg opacity-40" />
-                    <div className="relative p-3.5 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-xl">
-                      <HiOutlineChartBar className="w-5 h-5" />
-                    </div>
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                      آمار بازدید
-                    </h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                      نمودار بازدید سایت در روزهای اخیر
-                    </p>
-                  </div>
+            <header className="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                سهم تعامل
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                توزیع بازدید، لایک، نظر و اشتراک‌گذاری
+              </p>
+            </header>
+            <div className="p-5 sm:p-6">
+              {donutTotal > 0 ? (
+                <DonutChart
+                  slices={donutSlices}
+                  total={donutTotal}
+                  caption="کل تعامل"
+                  subCaption="۷ روز اخیر"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center text-center py-10 text-sm text-slate-500 dark:text-slate-400">
+                  <p>هنوز داده‌ای برای نمایش وجود ندارد.</p>
                 </div>
-              </div>
-              
-              {/* Chart */}
-              <div className="p-7">
-                <div className="h-[400px]">
-                  <TrafficChart />
-                </div>
-              </div>
-            </motion.div>
-          </TabsContent>
+              )}
+            </div>
+          </section>
 
-          <TabsContent value="calendar" className="mt-0">
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="relative dash-panel overflow-hidden"
-            >
-              {/* Header */}
-              <div className="px-7 py-6 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50/50 to-white dark:from-slate-800/50 dark:to-slate-900">
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl blur-lg opacity-40" />
-                    <div className="relative p-3.5 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-xl">
-                      <HiOutlineCalendarDays className="w-5 h-5" />
-                    </div>
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                      تقویم انتشار
-                    </h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                      برنامه‌ریزی انتشار پست‌های آینده
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Calendar */}
-              <div className="p-7">
-                <div className="h-[400px]">
-                  <PublishingCalendar scheduledPosts={scheduledPosts} />
-                </div>
-              </div>
-            </motion.div>
-          </TabsContent>
-        </Tabs>
-      </motion.div>
+          <div className="lg:col-span-5 xl:col-span-7">
+            <ActivityFeed items={recentActivity} />
+          </div>
+        </motion.div>
 
-      {/* Post Management */}
-      <motion.div variants={itemVariants}>
-        <PostManagement
-          stats={{
-            totalPosts: stats.publishedPosts.total + stats.drafts.total,
-            totalDrafts: stats.drafts.total,
-            totalViews: viewStats.totalViews,
-          }}
-          popularPosts={popularPosts}
-          recentDrafts={recentDrafts}
-        />
-      </motion.div>
-    </motion.main>
+        {/* Analytics — traffic chart + publishing calendar */}
+        <motion.div variants={itemVariants}>
+          <AnalyticsPanel scheduledPosts={scheduledPosts} />
+        </motion.div>
+
+        {/* Posts lists */}
+        <motion.div variants={itemVariants}>
+          <PostManagement
+            showHeaderStats={false}
+            showCreateButton={false}
+            stats={{
+              totalPosts: stats.publishedPosts.total + stats.drafts.total,
+              totalDrafts: stats.drafts.total,
+              totalViews: viewStats.totalViews,
+            }}
+            popularPosts={popularPosts}
+            recentDrafts={recentDrafts}
+          />
+        </motion.div>
+      </motion.main>
+
+      {/* ⌘K command palette — fixed overlay, role-gated */}
+      <CommandPalette role={userRole} />
+    </>
   );
 };
 

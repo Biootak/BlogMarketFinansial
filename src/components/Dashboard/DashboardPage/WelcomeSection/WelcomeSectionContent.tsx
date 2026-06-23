@@ -1,11 +1,34 @@
 'use client';
 
+/**
+ * WelcomeSectionContent — 2026 redesign.
+ *
+ * Linear/Vercel/Stripe inspired hero strip:
+ *  • Top row: tabular date (Asia/Tehran) on the right, role pill on the left
+ *  • Greeting + name in a single tight headline (no wave emoji / shimmer)
+ *  • Compact avatar with online status dot — no rotating conic ring
+ *  • Primary CTA + 3 secondary shortcut actions (with ⌘K-style hints)
+ *  • Live Tehran time on the right for editorial weight
+ *
+ * All interactive elements use visible focus rings and Persian labels
+ * (WCAG 2.2 AA). The previous `style jsx` for the rotating conic ring and
+ * the looping hand-emoji animation were dropped in favor of a single
+ * entrance motion that respects `prefers-reduced-motion`.
+ */
+
+import { useEffect, useState } from 'react';
+import { motion } from '@/lib/motion-shim';
+import {
+  HiOutlineDocumentText,
+  HiOutlineCalendarDays,
+  HiOutlineChartBar,
+  HiOutlineShieldCheck,
+} from 'react-icons/hi2';
 import Avatar from '@/components/Avatar/Avatar';
 import NewPostButton from './NewPostButton';
-import { motion, AnimatePresence } from '@/lib/motion-shim';
-import { HiOutlineSparkles, HiOutlineLightningBolt, HiOutlineShieldCheck, HiHand } from 'react-icons/hi';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 const roleLabels: Record<string, string> = {
   SUPER_ADMIN: 'مدیر ارشد',
@@ -14,193 +37,245 @@ const roleLabels: Record<string, string> = {
   USER: 'کاربر',
 };
 
-const roleColors: Record<string, { bg: string; border: string; text: string }> = {
-  SUPER_ADMIN: { bg: 'from-rose-500 to-pink-600', border: 'border-rose-400/50', text: 'text-white' },
-  ADMIN: { bg: 'from-violet-500 to-purple-600', border: 'border-violet-400/50', text: 'text-white' },
-  AUTHOR: { bg: 'from-amber-500 to-orange-500', border: 'border-amber-400/50', text: 'text-white' },
-  USER: { bg: 'from-slate-500 to-gray-600', border: 'border-slate-400/50', text: 'text-white' },
+const roleStyles: Record<string, { dot: string; chip: string; label: string }> = {
+  SUPER_ADMIN: {
+    dot: 'bg-slate-300/80',
+    chip: 'bg-white/[0.08] text-slate-100 ring-white/15',
+    label: 'text-slate-100',
+  },
+  ADMIN: {
+    dot: 'bg-slate-300/80',
+    chip: 'bg-white/[0.08] text-slate-100 ring-white/15',
+    label: 'text-slate-100',
+  },
+  AUTHOR: {
+    dot: 'bg-slate-300/80',
+    chip: 'bg-white/[0.08] text-slate-100 ring-white/15',
+    label: 'text-slate-100',
+  },
+  USER: {
+    dot: 'bg-slate-300/80',
+    chip: 'bg-white/[0.08] text-slate-100 ring-white/15',
+    label: 'text-slate-100',
+  },
 };
+
+const PERSIAN_WEEKDAYS = [
+  'یکشنبه',
+  'دوشنبه',
+  'سه‌شنبه',
+  'چهارشنبه',
+  'پنج‌شنبه',
+  'جمعه',
+  'شنبه',
+];
+
+const PERSIAN_MONTHS = [
+  'فروردین',
+  'اردیبهشت',
+  'خرداد',
+  'تیر',
+  'مرداد',
+  'شهریور',
+  'مهر',
+  'آبان',
+  'آذر',
+  'دی',
+  'بهمن',
+  'اسفند',
+];
+
+function pad2(n: number) {
+  return n < 10 ? `0${n}` : String(n);
+}
+
+function formatTehranDate(d: Date) {
+  // Uses fa-IR locale for the weekday + month, then assembles the final string.
+  const weekday = PERSIAN_WEEKDAYS[(d.getDay() + 1) % 7];
+  const day = d.toLocaleDateString('fa-IR', { day: 'numeric' });
+  const month = PERSIAN_MONTHS[d.getMonth()];
+  const year = d.toLocaleDateString('fa-IR', { year: 'numeric' });
+  return { weekday, day, month, year };
+}
+
+function formatTehranTime(d: Date) {
+  return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+}
 
 export default function WelcomeSectionContent() {
   const user = useCurrentUser();
-  const [showRolePopup, setShowRolePopup] = useState(false);
+  const router = useRouter();
   const userRole = user?.role || 'USER';
-  const roleStyle = roleColors[userRole] || roleColors.USER;
+  const role = roleStyles[userRole] ?? roleStyles.USER;
+  const roleLabel = roleLabels[userRole] ?? 'کاربر';
+
+  // Tehran time clock — kept client-side; SSR gets the static placeholder.
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => {
+    const update = () => setNow(new Date());
+    update();
+    const t = window.setInterval(update, 30_000);
+    return () => window.clearInterval(t);
+  }, []);
+
+  const date = now
+    ? formatTehranDate(now)
+    : { weekday: 'یکشنبه', day: '—', month: '—', year: '—' };
+  const time = now ? formatTehranTime(now) : '--:--';
+
+  // Time-of-day greeting in Persian (uses device-local hours — the same
+  // clock the rest of the dashboard shows).
+  const hour = now ? now.getHours() : 12;
+  const timeOfDay =
+    hour < 5
+      ? 'بامداد بخیر'
+      : hour < 12
+        ? 'صبح بخیر'
+        : hour < 17
+          ? 'بعدازظهر بخیر'
+          : hour < 20
+            ? 'عصر بخیر'
+            : 'شب بخیر';
 
   return (
-    <div className="relative flex flex-col items-center sm:flex-row sm:items-center sm:justify-between gap-8">
-      {/* Avatar Section with Role Badge */}
-      <motion.div 
-        className="relative sm:order-last flex-shrink-0"
-        initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
-        animate={{ opacity: 1, scale: 1, rotate: 0 }}
-        transition={{ delay: 0.2, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      >
-        {/* Outer glow ring */}
-        <div className="absolute -inset-4 rounded-full opacity-60"
-          style={{
-            background: 'conic-gradient(from 0deg, rgba(236,72,153,0.5), rgba(168,85,247,0.5), rgba(59,130,246,0.5), rgba(236,72,153,0.5))',
-            filter: 'blur(20px)',
-            animation: 'spin 8s linear infinite',
-          }}
-        />
-        
-        {/* Inner glow */}
-        <div className="absolute -inset-2 bg-gradient-to-r from-pink-500/50 via-violet-500/50 to-indigo-500/50 rounded-full blur-xl" />
-        
-        <motion.div 
-          className="relative"
-          whileHover={{ scale: 1.08, rotate: 5 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
+      {/* Top status row — full width on small, spans the upper edge on lg */}
+      <div className="lg:col-span-12 flex items-center justify-between gap-3 flex-wrap">
+        {/* Right side (RTL) — date chip */}
+        <div
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium ring-1 backdrop-blur-md bg-white/[0.06] ring-white/15 text-white/80"
+          aria-label={`امروز ${date.weekday} ${date.day} ${date.month} ${date.year}`}
         >
-          {/* Avatar border ring */}
-          <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-pink-500 via-violet-500 to-indigo-500 p-[3px]">
-            <div className="w-full h-full rounded-full bg-violet-600" />
-          </div>
-          
-          <Avatar
-            imgUrl={(user?.profile?.avatar || user?.image) ?? undefined}
-            userName={user?.name ?? undefined}
-            sizeClass="h-28 w-28 sm:h-32 sm:w-32"
-            containerClassName="relative border-[4px] border-white/20 shadow-2xl"
-          />
-          
-          {/* Role Badge - Clickable */}
-          <motion.button
-            type="button"
-            className={`absolute -bottom-1 -right-1 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r ${roleStyle.bg} ${roleStyle.border} border shadow-lg cursor-pointer`}
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.5, type: 'spring', stiffness: 500 }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setShowRolePopup(!showRolePopup)}
-          >
-            <HiOutlineSparkles className="w-3.5 h-3.5 text-white/90" />
-            <span className={`text-xs font-bold ${roleStyle.text}`}>
-              {roleLabels[userRole]}
-            </span>
-          </motion.button>
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
+          </span>
+          <time className="tabular-nums tracking-wide">
+            {date.weekday}، {date.day} {date.month} {date.year}
+          </time>
+          <span aria-hidden="true" className="h-3 w-px bg-white/15" />
+          <span className="tabular-nums text-white/70">{time}</span>
+          <span className="text-white/50">تهران</span>
+        </div>
 
-          {/* Role Popup */}
-          <AnimatePresence>
-            {showRolePopup && (
-              <motion.div
-                initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                transition={{ duration: 0.2 }}
-                className="absolute -bottom-24 right-0 z-50 min-w-[180px] p-4 rounded-2xl bg-white/95 backdrop-blur-xl shadow-2xl border border-white/20"
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-xl bg-gradient-to-r ${roleStyle.bg}`}>
-                    <HiOutlineShieldCheck className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-gray-500">سطح دسترسی</p>
-                    <p className="text-sm font-bold text-gray-800">{roleLabels[userRole]}</p>
-                  </div>
-                </div>
-                {/* Arrow */}
-                <div className="absolute -top-2 right-6 w-4 h-4 bg-white/95 rotate-45 border-t border-l border-white/20" />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-      </motion.div>
+        {/* Left side — role pill */}
+        <div
+          className={cn(
+            'inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold ring-1 backdrop-blur-md',
+            role.chip,
+          )}
+        >
+          <HiOutlineShieldCheck className="w-3.5 h-3.5 opacity-90" />
+          <span>{roleLabel}</span>
+        </div>
+      </div>
 
-      {/* Text Content */}
-      <motion.div 
-        className="text-center sm:text-right flex-1 max-w-lg"
-        initial={{ opacity: 0, x: -30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      >
-        {/* Status badges row */}
-        <motion.div 
-          className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-4"
-          initial={{ opacity: 0, y: -15 }}
+      {/* Main content: greeting + actions (col-span 8) */}
+      <div className="lg:col-span-8 order-2 lg:order-1 flex flex-col gap-5">
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
         >
-          {/* Online badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-medium shadow-lg">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold leading-tight tracking-tight text-white">
+            <span className="opacity-80 font-semibold">{timeOfDay}،</span>{' '}
+            <span className="bg-gradient-to-l from-white via-cyan-100 to-emerald-100 bg-clip-text text-transparent">
+              {user?.name ?? 'کاربر'}
             </span>
-            <span>آنلاین</span>
-          </div>
-          
-          {/* Pro badge */}
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-md border border-amber-400/30 text-xs font-medium shadow-lg">
-            <HiOutlineSparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span className="text-amber-200">نویسنده حرفه‌ای</span>
-          </div>
+            <span className="opacity-80">.</span>
+          </h1>
+          <p className="mt-2 text-sm sm:text-base text-white/70 max-w-xl leading-relaxed">
+            یک نمای ۳۰ ثانیه‌ای از وبلاگ — آمار، انتشارهای اخیر و اقدام‌هایی که
+            امروز ارزش انجام دارند.
+          </p>
         </motion.div>
 
-        {/* Greeting - Without "خوش آمدید" */}
-        <motion.h2 
-          className="text-3xl sm:text-4xl font-black mb-3 leading-tight"
-          initial={{ opacity: 0, y: 20 }}
+        {/* Primary CTA + secondary shortcuts */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          style={{
-            textShadow: '0 2px 20px rgba(0,0,0,0.3)',
-          }}
-        >
-          <span className="inline-block">سلام،</span>{' '}
-          <span className="inline-block bg-gradient-to-r from-white via-pink-100 to-white bg-clip-text text-transparent">
-            {user?.name ?? 'کاربر'}
-          </span>{' '}
-          <motion.span
-            className="inline-block origin-bottom-right"
-            animate={{ rotate: [0, 14, -8, 14, -4, 10, 0] }}
-            transition={{ duration: 2.5, repeat: Number.POSITIVE_INFINITY, repeatDelay: 3 }}
-          >
-            <HiHand className="inline-block w-8 h-8 sm:w-10 sm:h-10 text-amber-300" aria-label="سلام" />
-          </motion.span>
-        </motion.h2>
-        
-        {/* Description - Updated */}
-        <motion.p 
-          className="text-white/80 mb-6 text-base sm:text-lg leading-relaxed"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.35 }}
-        >
-          <span className="text-white/90 font-medium">آماده خلق محتوای جدید هستید؟</span>
-        </motion.p>
-        
-        {/* Action buttons */}
-        <motion.div 
-          className="flex flex-wrap items-center justify-center sm:justify-start gap-3"
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.45 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+          className="flex flex-wrap items-center gap-2.5"
         >
           <NewPostButton />
-          
-          {/* Quick stats button */}
-          <motion.button
-            type="button"
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white/90 font-medium text-sm hover:bg-white/20 transition-all duration-300 shadow-lg"
-          >
-            <HiOutlineLightningBolt className="w-4 h-4" />
-            <span>آمار سریع</span>
-          </motion.button>
+          <ShortcutButton
+            icon={<HiOutlineDocumentText className="w-4 h-4" />}
+            label="پست‌ها"
+            onClick={() => router.push('/dashboard/posts')}
+            hint="G P"
+          />
+          <ShortcutButton
+            icon={<HiOutlineChartBar className="w-4 h-4" />}
+            label="گزارش‌ها"
+            onClick={() => router.push('/dashboard/reports')}
+            hint="G R"
+          />
+          <ShortcutButton
+            icon={<HiOutlineCalendarDays className="w-4 h-4" />}
+            label="تقویم"
+            onClick={() => router.push('/dashboard/posts?view=calendar')}
+            hint="G C"
+          />
         </motion.div>
-      </motion.div>
+      </div>
 
-      {/* CSS for spin animation */}
-      <style jsx>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
+      {/* Avatar block (col-span 4) */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
+        className="lg:col-span-4 order-1 lg:order-2 flex items-center justify-start lg:justify-end"
+      >
+        <button
+          type="button"
+          onClick={() => router.push('/dashboard/edit-profile')}
+          aria-label="ویرایش پروفایل"
+          className="group relative inline-flex items-center gap-3 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] ring-1 ring-white/10 hover:ring-white/20 backdrop-blur-md p-2 ps-4 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70"
+        >
+          <div className="text-end">
+            <p className="text-sm font-bold text-white/90 leading-tight">
+              {user?.name ?? 'کاربر'}
+            </p>
+            <p className={cn('text-[11px] font-medium mt-0.5', role.label)}>
+              {roleLabel}
+            </p>
+          </div>
+          <div className="relative">
+            <Avatar
+              imgUrl={(user?.profile?.avatar || user?.image) ?? undefined}
+              userName={user?.name ?? undefined}
+              sizeClass="h-12 w-12"
+              containerClassName="rounded-xl ring-2 ring-white/15"
+            />
+            <span className="absolute -bottom-0.5 -end-0.5 w-3.5 h-3.5 rounded-full bg-emerald-400 ring-2 ring-[oklch(18%_0.045_260)] shadow-[0_0_10px_oklch(72%_0.14_165_/_0.65)]" />
+          </div>
+        </button>
+      </motion.div>
     </div>
+  );
+}
+
+interface ShortcutButtonProps {
+  icon: React.ReactNode;
+  label: string;
+  hint?: string;
+  onClick: () => void;
+}
+
+function ShortcutButton({ icon, label, hint, onClick }: ShortcutButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group inline-flex items-center gap-2 px-3.5 h-10 rounded-xl text-sm font-medium text-white/85 bg-white/[0.05] hover:bg-white/[0.10] ring-1 ring-white/10 hover:ring-white/20 backdrop-blur-md transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70"
+    >
+      <span className="text-white/70 group-hover:text-white transition-colors">{icon}</span>
+      <span>{label}</span>
+      {hint && (
+        <kbd className="hidden sm:inline-flex items-center gap-1 me-1 text-[10px] font-mono font-medium text-white/45 border border-white/10 rounded-md px-1.5 py-0.5 bg-white/[0.02]">
+          {hint}
+        </kbd>
+      )}
+    </button>
   );
 }

@@ -1,96 +1,65 @@
 'use client';
 
+/**
+ * WelcomeSectionBackground — calm aurora backdrop.
+ *
+ * 2026-06-22 (redesign): removed looping orbs / particles / pulsing rings
+ * to satisfy `prefers-reduced-motion` and avoid continuous CPU work. The
+ * three layered radial gradients provide depth while staying GPU-cheap.
+ * All decorative nodes carry `aria-hidden`.
+ */
 export default function WelcomeSectionBackground() {
   return (
-    <>
-      {/* Animated gradient mesh */}
-      <div className="absolute inset-0 overflow-hidden">
-        {/* Primary orb */}
-        <div
-          className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full animate-pulse"
-          style={{
-            background: 'radial-gradient(circle, rgba(236,72,153,0.4) 0%, rgba(168,85,247,0.2) 40%, transparent 70%)',
-            filter: 'blur(60px)',
-            animation: 'float 8s ease-in-out infinite',
-          }}
-        />
-        
-        {/* Secondary orb */}
-        <div
-          className="absolute -bottom-40 -left-40 w-[450px] h-[450px] rounded-full"
-          style={{
-            background: 'radial-gradient(circle, rgba(59,130,246,0.35) 0%, rgba(99,102,241,0.15) 50%, transparent 70%)',
-            filter: 'blur(70px)',
-            animation: 'float 10s ease-in-out infinite reverse',
-          }}
-        />
-
-        {/* Accent orb */}
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full opacity-30"
-          style={{
-            background: 'radial-gradient(circle, rgba(251,191,36,0.3) 0%, transparent 60%)',
-            filter: 'blur(50px)',
-            animation: 'pulse 6s ease-in-out infinite',
-          }}
-        />
-      </div>
-
-      {/* Noise texture overlay */}
-      <div 
-        className="absolute inset-0 opacity-[0.015] mix-blend-overlay"
+    <div aria-hidden="true" className="absolute inset-0 overflow-hidden">
+      {/* Primary aurora — cool cyan from top-left */}
+      <div
+        className="absolute -top-32 -right-24 w-[520px] h-[520px] rounded-full"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-        }}
-      />
-      
-      {/* Elegant grid pattern */}
-      <div 
-        className="absolute inset-0 opacity-[0.04]"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px)
-          `,
-          backgroundSize: '40px 40px',
+          background:
+            'radial-gradient(circle, oklch(70% 0.14 215 / 0.32) 0%, oklch(58% 0.13 230 / 0.12) 40%, transparent 70%)',
+          filter: 'blur(40px)',
         }}
       />
 
-      {/* Floating particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(6)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-white/30 rounded-full"
-            style={{
-              top: `${20 + i * 15}%`,
-              left: `${10 + i * 15}%`,
-              animation: `floatParticle ${4 + i}s ease-in-out infinite`,
-              animationDelay: `${i * 0.5}s`,
-            }}
-          />
-        ))}
-      </div>
+      {/* Secondary aurora — emerald from bottom-right */}
+      <div
+        className="absolute -bottom-40 -left-32 w-[460px] h-[460px] rounded-full"
+        style={{
+          background:
+            'radial-gradient(circle, oklch(74% 0.13 165 / 0.22) 0%, oklch(58% 0.12 175 / 0.08) 50%, transparent 70%)',
+          filter: 'blur(48px)',
+        }}
+      />
 
-      {/* Gradient line accents */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      {/* Center accent — keeps the focus around the CTA */}
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] h-[320px] rounded-full"
+        style={{
+          background:
+            'radial-gradient(circle, oklch(80% 0.14 80 / 0.12) 0%, transparent 60%)',
+          filter: 'blur(36px)',
+        }}
+      />
 
-      {/* CSS Animations */}
-      <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          50% { transform: translate(20px, -20px) scale(1.05); }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
-          50% { opacity: 0.5; transform: translate(-50%, -50%) scale(1.1); }
-        }
-        @keyframes floatParticle {
-          0%, 100% { transform: translateY(0) translateX(0); opacity: 0.3; }
-          50% { transform: translateY(-20px) translateX(10px); opacity: 0.6; }
-        }
-      `}</style>
-    </>
+      {/* Editorial grid — very low contrast, gives the surface a Notion feel */}
+      <div
+        className="absolute inset-0 opacity-[0.045]"
+        style={{
+          backgroundImage:
+            'linear-gradient(oklch(100% 0 0 / 0.55) 1px, transparent 1px), linear-gradient(90deg, oklch(100% 0 0 / 0.55) 1px, transparent 1px)',
+          backgroundSize: '44px 44px',
+        }}
+      />
+
+      {/* Hairline divider lines for a magazine spread feel */}
+      <div
+        className="absolute top-0 inset-x-0 h-px"
+        style={{ background: 'linear-gradient(to right, transparent, oklch(100% 0 0 / 0.18), transparent)' }}
+      />
+      <div
+        className="absolute bottom-0 inset-x-0 h-px"
+        style={{ background: 'linear-gradient(to right, transparent, oklch(100% 0 0 / 0.10), transparent)' }}
+      />
+    </div>
   );
 }

@@ -2,9 +2,9 @@
 
 import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
 import prisma from '@/lib/db';
+import { safeCache } from '@/lib/safe-cache';
 import { revalidateTag } from '@/lib/revalidate';
 import type { ActionResult, RateItem, RateListData } from '@/types/types';
-import { unstable_cache } from 'next/cache';
 import { revalidatePath } from 'next/cache';
 
 // 2026-06-14: shared helper to normalize the Json column into a
@@ -29,29 +29,26 @@ const normalizeRates = (raw: unknown): RateItem[] => {
   return [];
 };
 
-export const getRateLists = unstable_cache(
+// 2026-06-21: قبلاً unstable_cache بود که در Next.js 16 خطای DB را
+// re-throw می‌کرد. حالا safeCache — اگر DB قطع باشد، stale value
+// (اگر قبلاً موفق بود) یا آرایه‌ی خالی برمی‌گرداند.
+export const getRateLists = safeCache(
   async (): Promise<RateListData[]> => {
-    try {
-      const rateLists = await prisma.rateList.findMany({
-        orderBy: { createdAt: 'desc' },
-        take: 100,
-      });
+    const rateLists = await prisma.rateList.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
 
-      return rateLists.map((list) => ({
-        ...list,
-        rates: normalizeRates(list.rates),
-      }));
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error fetching rate lists:', error);
-      }
-      return [];
-    }
+    return rateLists.map((list) => ({
+      ...list,
+      rates: normalizeRates(list.rates),
+    }));
   },
-  ['rate-lists', 'v1-2026-06-14'],
+  [],
   {
-    revalidate: 300,
-    tags: ['rate-lists'],
+    key: 'rate-lists',
+    ttl: 300,
+    tags: ['rate-lists', 'ticker', 'exchange-rates'],
   },
 );
 
@@ -169,7 +166,11 @@ function toEn(n: number): string {
  * منعکس شود. قبلاً «WithCrypto» در ۹۰٪ مواقع (وقتی DB لیست فعال دارد)
  * کریپتو اضافه نمی‌کرد و نام دروغ می‌گفت.
  */
-export const getActiveRateListsOrCryptoFallback = unstable_cache(
+// 2026-06-21: قبلاً `unstable_cache` بود که در Next.js 16 خطای DB را
+// re-throw می‌کرد. حالا safeCache که اگر DB قطع باشد:
+//   1. stale value (اگر قبلاً موفق بود) → برمی‌گرداند
+//   2. در غیر این صورت → crypto fallback
+export const getActiveRateListsOrCryptoFallback = safeCache(
   async (): Promise<RateListData[]> => {
     const dbLists = await getRateLists();
 
@@ -181,16 +182,21 @@ export const getActiveRateListsOrCryptoFallback = unstable_cache(
       rates: dedupeByTitle(l.rates ?? []),
     }));
 
-    // اگه DB لیست فعال نداره، فقط لیست crypto رو به‌عنوان fallback برگردون
+    // اگه DB لیست فعال نداره (یا اصلاً در دسترس نیست)، فقط لیست crypto
+    // رو به‌عنوان fallback برگردون
     if (dedupedActive.length === 0) {
-      const cryptoItems = await loadCryptoRatesAsync();
-      if (cryptoItems.length === 0) return [];
-      return [
-        {
-          ...buildCryptoFallbackList(),
-          rates: cryptoItems,
-        },
-      ];
+      try {
+        const cryptoItems = await loadCryptoRatesAsync();
+        if (cryptoItems.length === 0) return [];
+        return [
+          {
+            ...buildCryptoFallbackList(),
+            rates: cryptoItems,
+          },
+        ];
+      } catch {
+        return [];
+      }
     }
 
     // DB لیست فعال داره → فقط همون‌ها رو برگردون.
@@ -198,9 +204,10 @@ export const getActiveRateListsOrCryptoFallback = unstable_cache(
     // اضافه کردنش فقط باعث تکرار سه‌گانه می‌شه.
     return dedupedActive;
   },
-  ['active-rate-lists-or-crypto-fallback', 'v3-renamed-2026-06-20'],
+  [],
   {
-    revalidate: 300,
+    key: 'active-rate-lists-or-crypto-fallback',
+    ttl: 300,
     tags: ['rate-lists', 'ticker', 'exchange-rates'],
   },
 );

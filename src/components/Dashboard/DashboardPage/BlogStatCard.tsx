@@ -2,6 +2,7 @@
 
 import { memo, useId } from 'react';
 import { motion } from '@/lib/motion-shim';
+import CountUp from './CountUp';
 
 export interface BlogStatCardProps {
   title: string;
@@ -116,7 +117,7 @@ const BlogStatCard: React.FC<BlogStatCardProps> = ({
         {/* value + title */}
         <div className="relative space-y-1">
           <div className="dash-num text-[1.7rem] font-extrabold text-slate-900 dark:text-white leading-none">
-            {typeof value === 'number' ? value.toLocaleString('fa-IR') : value}
+            {typeof value === 'number' ? <CountUp value={value} duration={700} /> : value}
           </div>
           <h3 className="text-slate-500 dark:text-slate-400 text-[0.8rem] font-medium">{title}</h3>
         </div>
