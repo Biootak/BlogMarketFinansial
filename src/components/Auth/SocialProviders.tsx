@@ -1,23 +1,32 @@
-'use client';
-
 import type React from 'react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { Button } from '@/components/ui/button';
+import { Github, Loader2 } from 'lucide-react';
 import { FcGoogle } from 'react-icons/fc';
-import { FaGithub } from 'react-icons/fa';
 import { DEFAULT_REDIRECT } from '@/config/routes';
-import Loading from '@/components/Button/Loading';
+
+const PROVIDERS = [
+  {
+    id: 'google' as const,
+    label: 'ادامه با گوگل',
+    icon: <FcGoogle aria-hidden="true" />,
+  },
+  {
+    id: 'github' as const,
+    label: 'ادامه با گیت‌هاب',
+    icon: <Github aria-hidden="true" strokeWidth={1.8} />,
+  },
+];
 
 const SocialProviders: React.FC = () => {
-  const [isLoadingGoogle, setIsLoadingGoogle] = useState(false);
-  const [isLoadingGithub, setIsLoadingGithub] = useState(false);
+  const [loadingProvider, setLoadingProvider] = useState<'google' | 'github' | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const disabled = useMemo(() => loadingProvider !== null, [loadingProvider]);
+
   const handleLogin = async (provider: 'google' | 'github') => {
-    const setLoading = provider === 'google' ? setIsLoadingGoogle : setIsLoadingGithub;
     try {
-      setLoading(true);
+      setLoadingProvider(provider);
       setError(null);
 
       const result = await signIn(provider, {
@@ -26,51 +35,43 @@ const SocialProviders: React.FC = () => {
       });
 
       if (result?.error) {
-        setError(`خطا در ورود با ${provider === 'google' ? 'گوگل' : 'گیتهاب'}`);
+        setError(`ورود با ${provider === 'google' ? 'گوگل' : 'گیت‌هاب'} ناموفق بود. لطفاً دوباره تلاش کنید.`);
+        return;
+      }
+
+      if (result?.url) {
+        window.location.assign(result.url);
       }
     } catch (err) {
-      setError('خطای غیرمنتظره رخ داد');
-      console.error(`خطا در ورود با ${provider}:`, err);
+      setError('اتصال به سرویس احراز هویت ناموفق بود. لطفاً کمی بعد دوباره تلاش کنید.');
+      console.error(`Social sign-in (${provider}) failed:`, err);
     } finally {
-      setLoading(false);
+      setLoadingProvider(null);
     }
   };
 
   return (
-    <div className="flex flex-col space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Button
-          variant="outline"
-          size="lg"
-          onClick={() => handleLogin('google')}
-          disabled={isLoadingGoogle}
-          aria-label="ورود با گوگل"
-          className="w-full"
-        >
-          {isLoadingGoogle ? (
-            <Loading size="md" variant="primary" type="spinner" />
-          ) : (
-            <FcGoogle className=" h-5 w-5" />
-          )}
-        </Button>
+    <div className="auth-social-stack" role="group" aria-label="ورود با ارائه‌دهنده‌های اجتماعی">
+      {PROVIDERS.map((provider) => {
+        const busy = loadingProvider === provider.id;
 
-        <Button
-          variant="outline"
-          size="lg"
-          onClick={() => handleLogin('github')}
-          disabled={isLoadingGithub}
-          aria-label="ورود با گیتهاب"
-          className="w-full"
-        >
-          {isLoadingGithub ? (
-            <Loading size="md" variant="primary" type="spinner" />
-          ) : (
-            <FaGithub className=" h-5 w-5" />
-          )}
-        </Button>
-      </div>
+        return (
+          <button
+            key={provider.id}
+            type="button"
+            className="auth-social-btn"
+            onClick={() => handleLogin(provider.id)}
+            disabled={disabled}
+            aria-label={provider.label}
+            aria-busy={busy || undefined}
+          >
+            {busy ? <Loader2 className="animate-spin" aria-hidden="true" /> : provider.icon}
+            <span>{provider.label}</span>
+          </button>
+        );
+      })}
 
-      {error && <p className="text-red-500 mt-2 text-center">{error}</p>}
+      {error ? <p className="auth-error auth-error--center">{error}</p> : null}
     </div>
   );
 };

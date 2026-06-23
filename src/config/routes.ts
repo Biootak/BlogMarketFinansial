@@ -129,15 +129,20 @@ export const publicRoutes = [
 /**
  * Routes related to authentication
  * @type {string[]}
+ *
+ * 2026-06-23: /auth is the canonical entry — /signin, /signup, and
+ * /forgot-password now redirect there. /verify-request is kept for
+ * Auth.js's internal redirect target and standalone errors.
  */
 export const authRoutes = [
+  '/auth',
   '/signin',
   '/signup',
+  '/forgot-password',
   '/error',
   '/verify-request',
   '/verify-email',
   '/reset-password',
-  '/forgot-password'
 ];
 
 /**

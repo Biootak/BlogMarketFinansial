@@ -175,11 +175,13 @@ const Sidebar = ({ userRole }: SidebarProps) => {
           description: 'شما با موفقیت از حساب کاربری خود خارج شدید.',
           variant: 'success',
         });
-        router.push('/signin');
+        router.push('/auth');
       } else {
         toast({
           title: 'خطا در خروج',
-          description: result.message || 'مشکلی در خروج از حساب کاربری پیش آمد.',
+          description:
+            extractMessage(result) ||
+            'مشکلی در خروج از حساب کاربری پیش آمد.',
           variant: 'destructive',
         });
       }
@@ -441,3 +443,13 @@ const Sidebar = ({ userRole }: SidebarProps) => {
 };
 
 export default Sidebar;
+
+// 2026-06-23: AuthResult fields are `message` for success and
+// `error` for failure. Pick whichever is present.
+function extractMessage(r: any): string | undefined {
+  if (r && typeof r === 'object') {
+    if (typeof r.error === 'string') return r.error;
+    if (typeof r.message === 'string') return r.message;
+  }
+  return undefined;
+}

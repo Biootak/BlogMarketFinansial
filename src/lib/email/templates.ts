@@ -1,31 +1,63 @@
-// 2026-06-23: shared email templates. Pure functions → identical output
-// across every provider.
+// 2026-06-23: single OTP email template.
 //
-// 2026 best practice for transactional email:
-//   - HTML body + plaintext fallback (deliverability)
-//   - inline CSS only (Gmail strips <style>)
-//   - explicit subject in Persian + English for support tickets
-//   - single CTA button (not a link farm)
+// One function, four intents. The body copy is Persian + a short English
+// line for support tickets; HTML uses inline CSS (Gmail strips <style>),
+// the code is rendered in a high-contrast box with letter-spacing so
+// 6 digits stay readable on mobile.
 
 import type { EmailMessage } from './types';
 
-export interface VerificationEmailArgs {
+export type OtpEmailIntent =
+  | 'register'
+  | 'login'
+  | 'reverify'
+  | 'recover';
+
+export interface OtpEmailArgs {
   to: string;
-  /** Absolute URL of the verification page, including the token. */
-  url: string;
-  /** ISO-formatted, e.g. "دو ساعت دیگر". */
+  code: string;
+  intent: OtpEmailIntent;
   expiresLabel: string;
 }
 
-export function verificationEmail({ to, url, expiresLabel }: VerificationEmailArgs): EmailMessage {
-  const subject = 'تأیید ایمیل — Verify your email';
+const COPY: Record<
+  OtpEmailIntent,
+  { subject: string; heading: string; body: string }
+> = {
+  register: {
+    subject: 'کد تأیید ثبت‌نام / Verification code',
+    heading: 'تأیید ثبت‌نام',
+    body: 'برای فعال‌سازی حساب خود، این کد ۶ رقمی را در صفحهٔ باز شده وارد کنید.',
+  },
+  login: {
+    subject: 'کد ورود / Sign-in code',
+    heading: 'ورود به حساب',
+    body: 'برای ورود بدون رمز عبور، این کد ۶ رقمی را در صفحهٔ باز شده وارد کنید.',
+  },
+  reverify: {
+    subject: 'تأیید ایمیل / Verify your email',
+    heading: 'تأیید ایمیل',
+    body: 'برای تأیید ایمیل خود، این کد ۶ رقمی را در صفحهٔ باز شده وارد کنید.',
+  },
+  recover: {
+    subject: 'بازنشانی رمز عبور / Reset password',
+    heading: 'بازنشانی رمز عبور',
+    body: 'برای تنظیم رمز عبور جدید، این کد ۶ رقمی را در صفحهٔ باز شده وارد کنید.',
+  },
+};
+
+export function otpEmail(args: OtpEmailArgs): EmailMessage {
+  const copy = COPY[args.intent];
+
   const text = [
-    'سلام،',
+    copy.heading,
     '',
-    'برای فعال‌سازی حساب خود روی لینک زیر کلیک کنید:',
-    url,
+    copy.body,
     '',
-    `این لینک تا ${expiresLabel} معتبر است.`,
+    'کد تأیید شما:',
+    args.code,
+    '',
+    `این کد تا ${args.expiresLabel} معتبر است. اگر شما این درخواست را نداده‌اید، این ایمیل را نادیده بگیرید.`,
     '',
     '— تیم بلاگ بازار مالی',
   ].join('\n');
@@ -38,20 +70,19 @@ export function verificationEmail({ to, url, expiresLabel }: VerificationEmailAr
         <table role="presentation" width="480" cellpadding="0" cellspacing="0"
                style="background:#ffffff;border-radius:12px;padding:32px;border:1px solid #e5e7eb">
           <tr><td>
-            <h1 style="margin:0 0 16px 0;font-size:20px;color:#111827">تأیید ایمیل</h1>
-            <p style="margin:0 0 24px 0;line-height:1.7;color:#374151">
-              برای فعال‌سازی حساب خود روی دکمه زیر کلیک کنید. این لینک تا ${expiresLabel} معتبر است.
-            </p>
-            <p style="margin:0 0 24px 0;text-align:center">
-              <a href="${url}"
-                 style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;
-                        padding:12px 24px;border-radius:8px;font-weight:600">
-                تأیید ایمیل
-              </a>
-            </p>
+            <h1 style="margin:0 0 8px 0;font-size:20px;color:#111827">${copy.heading}</h1>
+            <p style="margin:0 0 24px 0;line-height:1.7;color:#374151">${copy.body}</p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                   style="background:#f3f4f6;border:1px dashed #d1d5db;border-radius:8px;margin:0 0 24px 0">
+              <tr><td align="center" style="padding:20px 16px">
+                <span style="font-family:Menlo,Consolas,'Courier New',monospace;font-size:32px;font-weight:700;letter-spacing:8px;color:#111827">${args.code}</span>
+              </td></tr>
+            </table>
             <p style="margin:0;font-size:12px;color:#6b7280;line-height:1.6">
-              اگر دکمه کار نکرد، این لینک را در مرورگر کپی کنید:<br>
-              <span style="word-break:break-all;color:#374151">${url}</span>
+              این کد تا ${args.expiresLabel} معتبر است و فقط یک‌بار قابل استفاده است.
+            </p>
+            <p style="margin:8px 0 0 0;font-size:12px;color:#9ca3af;line-height:1.6">
+              If you didn't request this code you can safely ignore this email.
             </p>
           </td></tr>
         </table>
@@ -60,5 +91,16 @@ export function verificationEmail({ to, url, expiresLabel }: VerificationEmailAr
   </body>
 </html>`;
 
-  return { to, subject, html, text, tags: [{ name: 'category', value: 'verification' }] };
+  return {
+    to: args.to,
+    subject: copy.subject,
+    html,
+    text,
+    tags: [{ name: 'category', value: `otp:${args.intent}` }],
+  };
+}
+
+/** "۱۰ دقیقهٔ دیگر" — reused in the UI copy for consistency. */
+export function otpExpiresLabel(): string {
+  return '۱۰ دقیقهٔ دیگر';
 }

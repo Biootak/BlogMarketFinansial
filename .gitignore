@@ -14,7 +14,9 @@
 .screenshots
 # Testing
 /coverage
+.agent_tmp/
 
+scripts/
 # Logs
 *.log
 npm-debug.log*

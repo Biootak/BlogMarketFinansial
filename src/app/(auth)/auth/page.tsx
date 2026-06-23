@@ -1,0 +1,67 @@
+import { Suspense } from 'react';
+import Link from 'next/link';
+import type { Metadata, Viewport } from 'next';
+
+import AuthFlow from '@/components/Auth/AuthFlow';
+
+export const metadata: Metadata = {
+  title: 'ورود و ثبت‌نام امن — بازار مالی',
+  description: 'ورود، ثبت‌نام و بازیابی رمز عبور در یک مسیر یکپارچه و امن برای کاربران بازار مالی.',
+  robots: { index: false, follow: false },
+  openGraph: {
+    title: 'ورود و ثبت‌نام امن — بازار مالی',
+    description: 'دسترسی ایمن به داشبورد، تحلیل‌ها و امکانات اختصاصی بازار مالی.',
+    type: 'website',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#0f172a',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+};
+
+export const dynamic = 'force-dynamic';
+
+export default function AuthPage() {
+  return (
+    <main className="auth-page-root" dir="rtl">
+      <div className="auth-aurora" aria-hidden="true" />
+
+      <header className="auth-page-header">
+        <Link href="/" className="auth-brand" aria-label="بازار مالی — صفحه اصلی">
+          <span className="auth-brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="4" y="11" width="4" height="9" rx="1.2" fill="currentColor" opacity="0.55" />
+              <rect x="10" y="7" width="4" height="13" rx="1.2" fill="currentColor" opacity="0.8" />
+              <rect x="16" y="4" width="4" height="16" rx="1.2" fill="currentColor" />
+            </svg>
+          </span>
+          <span className="auth-brand-copy">
+            <span className="auth-brand-name">بازار مالی</span>
+            <span className="auth-brand-tagline">احراز هویت یکپارچه و امن</span>
+          </span>
+        </Link>
+      </header>
+
+      <div className="auth-card-shell">
+        <Suspense
+          fallback={
+            <div className="auth-card" aria-busy="true" style={{ minHeight: '32rem' }}>
+              <div className="auth-card-inner" />
+            </div>
+          }
+        >
+          <AuthFlow />
+        </Suspense>
+      </div>
+
+      <nav className="auth-foot" aria-label="پیوندهای پاورقی">
+        <Link href="/terms" prefetch={false}>قوانین و مقررات</Link>
+        <span aria-hidden="true" className="auth-foot-separator">·</span>
+        <Link href="/privacy-policy" prefetch={false}>حریم خصوصی</Link>
+      </nav>
+    </main>
+  );
+}

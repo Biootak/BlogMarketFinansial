@@ -144,7 +144,7 @@ export const getPopularAuthors = safeCache(
 );
 
 export async function getSidebarData(): Promise<SidebarData> {
-  return safeCache(
+  return safeCache<[], SidebarData>(
     async () => {
       const [posts, tags, categories, authors, ads] = await Promise.all([
         prisma.post.findMany({
@@ -299,3 +299,4 @@ export async function getSidebarData(): Promise<SidebarData> {
     },
   )();
 }
+

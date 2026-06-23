@@ -43,7 +43,7 @@ export const getSystemSettingsData = safeCache(
       telegram: settings.telegram,
       instagram: settings.instagram,
       twitter: settings.twitter,
-      whatsapp: settings.whatsApp,
+      whatsapp: settings.whatsapp,
       maintenanceMode: settings.maintenanceMode,
       cacheEnabled: settings.cacheEnabled,
     };

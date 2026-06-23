@@ -2,6 +2,7 @@ import type React from 'react';
 import Tag from '@/components/Tag/Tag';
 import WidgetHeading1 from '@/components/WidgetHeading1/WidgetHeading1';
 import type { TaxonomyType } from '@/types/types';
+import type { Tag as TagEntity } from '@prisma/client';
 import { Icon } from '../ui/icon';
 
 export interface WidgetTagsProps {
@@ -24,9 +25,20 @@ const WidgetTags: React.FC<WidgetTagsProps> = ({ className = '', tags }) => {
         viewAll={{ label: 'مشاهده همه', href: '/archive' }}
       />
       <div className="flex flex-wrap p-4 xl:p-5">
-        {tags.map((tag) => (
-          <Tag className="ml-2 mb-2" key={tag.id} tag={tag} />
-        ))}
+        {tags.map((tag) => {
+          const tagEntity: TagEntity = {
+            id: tag.id,
+            name: tag.name,
+            slug: tag.slug,
+            createdAt: tag.createdAt,
+            updatedAt: tag.updatedAt,
+            thumbnail: tag.thumbnail,
+            thumbnailWidth: tag.thumbnailWidth ?? null,
+            thumbnailHeight: tag.thumbnailHeight ?? null,
+          };
+
+          return <Tag className="ml-2 mb-2" key={tag.id} tag={tagEntity} postCount={tag.count} />;
+        })}
       </div>
     </div>
   );

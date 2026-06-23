@@ -48,6 +48,24 @@ export const ForgotPasswordSchema = z.object({ email: emailSchema });
 
 export const MagicLinkSchema = z.object({ email: emailSchema });
 
+// 2026-06-23: OTP pipeline schemas.
+const otpCodeSchema = z
+  .string()
+  .regex(/^\d{6}$/, 'کد باید دقیقاً ۶ رقم باشد');
+
+export const EmailLookupSchema = z.object({ email: emailSchema });
+
+export const VerifyOtpSchema = z.object({
+  email: emailSchema,
+  code: otpCodeSchema,
+  intent: z.enum(['register', 'login', 'reverify', 'recover']),
+});
+
+export const SetPasswordSchema = z.object({
+  email: emailSchema,
+  password: passwordSchema,
+});
+
 
 
 

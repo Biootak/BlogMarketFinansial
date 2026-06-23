@@ -49,7 +49,11 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         orderBy: 'createdAt',
         orderDirection: 'desc',
       }),
-      { success: true, data: [] } as Awaited<ReturnType<typeof getActiveAdvertisements>>,
+      {
+        success: true,
+        message: 'تبلیغ فعالی برای فوتر پیدا نشد',
+        data: [],
+      } satisfies Awaited<ReturnType<typeof getActiveAdvertisements>>,
       'SiteLayout/footerAds',
     ),
     // 2026-06-21: این call قبلاً کل سایت را کرش می‌کرد وقتی DB

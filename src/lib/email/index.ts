@@ -56,7 +56,13 @@ export async function getEmailProviderAsync(): Promise<EmailProvider> {
   if (cached) return cached;
   const name = (process.env[EMAIL_ENV.provider] ?? 'resend') as EmailProviderName;
   if (name === 'smtp') {
-    const { createSmtpProvider } = await import('./smtp');
+    // 2026-06-23: webpackIgnore keeps the nodemailer import out of the
+    // server-action bundle when the SMTP provider isn't in use. Without
+    // it, Next 16's webpack trace walks the dynamic import and fails
+    // the build even though `process.env.EMAIL_PROVIDER` is 'resend'.
+    const { createSmtpProvider } = await import(
+      /* webpackIgnore: true */ './smtp'
+    );
     cached = await createSmtpProvider();
     return cached;
   }
