@@ -7,6 +7,9 @@
     "enabled": true,
     "rules": {
       "recommended": true,
+      "a11y": {
+        "noAutofocus": "warn"
+      },
       "correctness": {
         "noUnusedVariables": "error",
         "useHookAtTopLevel": "error"
