@@ -1,5 +1,6 @@
 // app/dashboard/posts/create/page.tsx
 import { Suspense } from 'react';
+import { cacheLife } from 'next/cache';
 import { notFound } from 'next/navigation';
 import CreatePostForm from '@/components/Dashboard/Blog/PostForm/CreatePostForm';
 import { PageHeader } from '@/components/Dashboard/primitives';
@@ -7,9 +8,13 @@ import SkeletonLoader from '@/components/SkeletonLoader';
 import { getCategories } from '@/actions/categoryActions';
 import { getTags } from '@/actions/getTags';
 
-export const revalidate = 3600; // Revalidate every hour
 
 export default async function CreatePostPage() {
+  // 2026-06-24: replaced `export const revalidate = 3600` with
+  // `'use cache'` + `cacheLife('hours')`. The default `hours` profile
+  // revalidates every 1h — matches the old cadence exactly.
+  'use cache';
+  cacheLife('hours');
   const [categoriesResult, tagsResult] = await Promise.all([
     getCategories({ limit: 100, page: 1 }),
     getTags({ limit: 100, page: 1 }),

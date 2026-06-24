@@ -179,6 +179,13 @@ export default function UsersPage() {
       status: user.status as string,
       phoneNumber: user?.phoneNumber ?? '',
       company: user.profile?.company || '',
+      // 2026-06-24: must include ALL fields declared in defaultValues,
+      // otherwise `form.reset({...})` replaces the form state and any
+      // missing field becomes `undefined` — which makes the next render
+      // of the corresponding `<Input>` transition from uncontrolled
+      // (value=undefined) to controlled (value='') and React logs:
+      // "A component is changing an uncontrolled input to be controlled".
+      password: '',
     });
     setIsEditDialogOpen(true);
   };

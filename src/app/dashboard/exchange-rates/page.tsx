@@ -1,6 +1,7 @@
 // src/app/dashboard/exchange-rates/page.tsx
 // 2026-06-20: بازطراحی کامل — Server fetch + Client workspace
 
+import { cacheLife } from 'next/cache';
 import { getExchangeRateList } from '@/actions/market-rates';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import ExchangeRatesHeader from './_components/ExchangeRatesHeader';
@@ -8,9 +9,15 @@ import ExchangeRatesWorkspace from './_components/ExchangeRatesWorkspace';
 import type { MarketRateProvider, MarketRateUnit } from '@/lib/market-rates';
 import type { RateRowData } from './_components/ExchangeRateRow';
 
-export const revalidate = 30;
 
 export default async function ExchangeRatesPage() {
+  // 2026-06-24: replaced `export const revalidate = 30` with
+  // `'use cache'` + `cacheLife('minutes')`. Note: the previous 30s
+  // cadence was faster than the built-in `minutes` profile (60s) —
+  // define a custom profile in next.config.ts `cacheLife` if exact
+  // 30s timing matters.
+  'use cache';
+  cacheLife('minutes');
   const rows = await getExchangeRateList();
 
   const total = rows.length;

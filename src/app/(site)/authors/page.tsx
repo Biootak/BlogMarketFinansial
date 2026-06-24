@@ -4,6 +4,8 @@
  * the categories they specialize in. Server-rendered, fully cached.
  */
 import type { Metadata } from 'next';
+import { cacheLife } from 'next/cache';
+import { connection } from 'next/server';
 import {
   AuthorsHero,
   AuthorsGrid,
@@ -16,6 +18,11 @@ import { getSystemSettingsData } from '@/data/getSystemSettings';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://blogmarketfinansial.ir';
 
 export async function generateMetadata(): Promise<Metadata> {
+  // 2026-06-24: same reason as (site)/layout.tsx — `getSystemSettingsData`
+  // routes through `safeCache` which calls `Date.now()`. Without an
+  // explicit dynamic signal, this errors in a static context.
+  await connection();
+
   const settings = await getSystemSettingsData();
   const siteName = settings.siteName ?? 'بازارهای مالی';
   const title = 'نویسندگان';
@@ -41,9 +48,14 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export const revalidate = 300;
 
 export default async function AuthorsPage() {
+  // 2026-06-24: replaced `export const revalidate = 300` with
+  // `'use cache'` + `cacheLife('minutes')` (closest default profile;
+  // the old 5-min cadence was bespoke — define a custom profile in
+  // next.config.ts `cacheLife` if exact timing matters).
+  'use cache';
+  cacheLife('minutes');
   const data = await getAuthorsHubData(12, 6);
 
   const [feature, ...rest] = data.topAuthors;

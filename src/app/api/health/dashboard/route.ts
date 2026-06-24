@@ -22,8 +22,6 @@ import { checkRateLimit } from '@/lib/rate-limiter';
  *   }
  */
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
 
 const STALE_THRESHOLD_MS = 30 * 60 * 1000; // 30 min — cron fires every 10 min.
 

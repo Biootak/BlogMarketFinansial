@@ -34,6 +34,12 @@ const nextConfig: NextConfig = {
   ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
   output: 'standalone',
   reactStrictMode: true,
+  // 2026-06-24: PPR moved out of `experimental.ppr` in Next.js 16; the
+  // boolean top-level `cacheComponents` is the new on/off switch. Same
+  // effect as the old `experimental.ppr: 'incremental'`: the static
+  // shell streams first, dynamic segments (comments widget, exchange
+  // rates, user-specific data) defer.
+  cacheComponents: true,
   compress: true,
   poweredByHeader: false,
   // Enable static asset compression (gzip). For production behind a CDN
@@ -197,9 +203,8 @@ const nextConfig: NextConfig = {
   },
 
   // 2026-06-14: experimental flags tuned for the public/blog
-  // workload:
-  //   * ppr: enables Partial Prerendering — single post pages can
-  //     stream the static shell first and defer the comments widget.
+  // workload (2026-06-24: `ppr` removed — it moved to the top-level
+  // `cacheComponents` flag in Next.js 16):
   //   * staleTimes: client router cache stays warm across back/
   //     forward navigations, which is the dominant nav pattern on
   //     long-form blog reading.
@@ -219,7 +224,6 @@ const nextConfig: NextConfig = {
   //     hits a stable release — at that point we can drop the
   //     `--webpack` flag and let Turbopack handle CSS again.
   experimental: {
-    ppr: 'incremental',
     staleTimes: {
       dynamic: 30,
       static: 180,
@@ -235,7 +239,7 @@ const nextConfig: NextConfig = {
     keepAlive: true,
   },
 
-  transpilePackages: ['@aws-sdk/client-s3', '@aws-sdk/s3-request-presigner'],
+  transpilePackages: ['@aws-sdk/client-s3', '@aws-sdk/s3-request-presigner', 'framer-motion'],
 };
 
 // Sentry configuration

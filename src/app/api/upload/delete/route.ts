@@ -48,4 +48,3 @@ export async function DELETE(request: NextRequest) {
   }
 }
 
-export const runtime = 'nodejs';

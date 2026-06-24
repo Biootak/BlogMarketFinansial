@@ -3,8 +3,6 @@ import { auth } from '@/auth';
 import db from '@/lib/db';
 import { checkDiskSpace, getSystemMetrics } from '@/lib/system';
 
-// Mark this route as dynamic
-export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {

@@ -3,8 +3,6 @@ import db from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 
-// Mark this route as dynamic
-export const dynamic = 'force-dynamic';
 
 interface MonthlyStats {
   month: Date;

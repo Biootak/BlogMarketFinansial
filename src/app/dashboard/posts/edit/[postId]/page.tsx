@@ -14,7 +14,6 @@ interface EditPostPageProps {
   }>;
 }
 
-export const revalidate = 0; // No caching for edit page
 
 export default async function EditPostPage({ params }: EditPostPageProps) {
   const { postId } = await params;

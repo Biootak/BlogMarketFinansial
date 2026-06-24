@@ -22,10 +22,12 @@ import Link from 'next/link';
  * The wizard itself is a client component — see `SetupWizard.tsx`.
  */
 
-// This page must always be dynamic — it queries the database on every
-// request to detect a previously-completed bootstrap.
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// 2026-06-24: `export const dynamic`/`export const revalidate` are no
+// longer supported under Next.js 16 `cacheComponents: true`. This page
+// stays dynamic because it calls `await headers()` below — any of
+// `headers()` / `cookies()` / `searchParams` / `connection()` opts the
+// route into dynamic rendering. See
+// https://nextjs.org/docs/app/api-reference/directives/use-cache
 
 // We instantiate a private Prisma client here (not the shared singleton)
 // because this page may run before the singleton bootstrap in early

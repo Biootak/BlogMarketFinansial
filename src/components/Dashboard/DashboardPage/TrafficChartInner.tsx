@@ -48,7 +48,7 @@ interface AnimatedRectProps {
 }
 
 const AnimatedRect: React.FC<AnimatedRectProps> = (props) => {
-  const { x = 0, y = 0, width = 0, height = 0, index = 0, ...rest } = props;
+  const { x = 0, y = 0, width = 0, height = 0, index = 0, fill } = props;
   const ref = useRef<SVGRectElement>(null);
   const reduced = usePrefersReducedMotion();
 
@@ -87,8 +87,21 @@ const AnimatedRect: React.FC<AnimatedRectProps> = (props) => {
     ? {}
     : { transformOrigin: 'bottom', transformBox: 'fill-box', transform: 'scaleY(0)' };
 
-  const { radius: _radius, ...safeRest } = rest;
-  return <rect ref={ref} x={x} y={y} width={width} height={height} style={style} {...safeRest} />;
+  // Recharts shape props include non-SVG fields like dataKey/payload/name/value.
+  // Spreading them onto <rect> causes React "unknown prop" warnings; we whitelist
+  // only the SVG-valid ones (fill). Radius (corner rounding) is omitted on purpose —
+  // raw <rect> doesn't support Recharts' array radius; use rx/ry if needed.
+  return (
+    <rect
+      ref={ref}
+      x={x}
+      y={y}
+      width={width}
+      height={height}
+      fill={fill}
+      style={style}
+    />
+  );
 };
 
 const TrafficChartInner: React.FC<InnerChartProps> = ({ data, tooltip }) => {

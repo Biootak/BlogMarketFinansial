@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { ShieldAlert } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'خطا در ورود — بازار مالی',

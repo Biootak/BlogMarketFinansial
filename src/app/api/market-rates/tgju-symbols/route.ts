@@ -4,7 +4,6 @@ import { auth } from '@/auth';
 import { discoverTgjuSymbols } from '@/lib/market-rates/discovery';
 import { TGJU_KEY_TO_SYMBOL } from '@/lib/market-rates/registry';
 
-export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const session = await auth();

@@ -6,8 +6,18 @@ import { SiteSettingsProvider } from '@/components/SiteSettingsProvider';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
 import { safe, safeArray } from '@/lib/safe-fetch';
 import type { Metadata } from 'next';
+import { connection } from 'next/server';
 
 export async function generateMetadata(): Promise<Metadata> {
+  // 2026-06-24: generateMetadata is evaluated as a static server
+  // component by default under `cacheComponents: true`. The settings
+  // fetch below routes through `safeCache` (see `data/getSystemSettings.ts`
+  // → `lib/safe-cache.ts`), which calls `Date.now()` for in-memory TTL
+  // bookkeeping — forbidden in a static context unless preceded by a
+  // request-data access. `await connection()` opts this metadata function
+  // into dynamic rendering so the safe-cache TTL semantics work.
+  await connection();
+
   // 2026-06-21: اگر دیتابیس قطع باشد، metadata با fallback ساخته می‌شود
   // تا سایت کرش نکند.
   const settings = await safe(
@@ -33,6 +43,15 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
+  // 2026-06-24: under `cacheComponents: true`, server components are
+  // static by default. The safe-cache wrappers below call `Date.now()`
+  // for in-memory TTL bookkeeping, which counts as dynamic data access
+  // and is forbidden in a static context unless preceded by a request-
+  // data access. `await connection()` explicitly opts this layout into
+  // dynamic rendering so the per-request TTL semantics of safe-cache
+  // work as designed.
+  await connection();
+
   // 2026-06-21: هر سه call با safe/safeArray محافظت می‌شوند. اگر دیتابیس
   // قطع باشد (مثلاً Neon در حالت idle)، هر کدام مقدار fallback برمی‌گرداند
   // و سایت همچنان render می‌شود. در dev خطا در console لاگ می‌شود.

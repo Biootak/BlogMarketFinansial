@@ -2,9 +2,6 @@ import prisma from '@/lib/db';
 import { type NextRequest, NextResponse } from 'next/server';
 import { LRUCache } from 'lru-cache';
 
-// تنظیم: route باید dynamic باشه چون به IP request وابسته است
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs'; // Prisma به nodejs runtime نیاز دارد
 
 // Rate limiter in-memory با LRU bounded cache (حداکثر 10,000 IP)
 // جایگزین Map بی‌نهایت قبلی - خودکار entryهای قدیمی/کم‌استفاده را حذف می‌کند

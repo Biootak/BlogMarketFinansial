@@ -232,5 +232,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export const runtime = 'nodejs';
+// 2026-06-24: `export const runtime` removed — incompatible with
+// Next.js 16 `cacheComponents: true`. Node.js is the default runtime
+// for API routes in Next.js 16, so the explicit declaration is redundant.
 export const maxDuration = 60;
