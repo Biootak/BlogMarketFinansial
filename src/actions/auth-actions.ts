@@ -10,8 +10,11 @@
 //   2. register form / login form submit
 //      → either creates the user or runs verify (depending on state)
 //   3. verifyOtp({email, code, intent})
-//      → consumes the code, applies intent-specific side-effects,
-//        then signIn('credentials', {kind:'after_otp', intent})
+//      → consumes the code, applies intent-specific side-effects.
+//        For non-recover intents: signIn('credentials', {kind:'after_otp'}).
+//        For recover: mints a short-lived reset secret the client must
+//        hand back to setNewPassword. Without that secret, setNewPassword
+//        refuses to rewrite the password — closing P0-1.
 //   4. Auth.js Credentials.authorize stays the single session gate:
 //      password → bcrypt + emailVerified; after_otp → trust pre-verified marker.
 
@@ -24,6 +27,8 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import {
   generateOtpToken,
   consumeOtpToken,
+  generatePasswordResetToken,
+  consumePasswordResetToken,
   invalidateOtpTokens,
   type VerificationEmailIntent,
 } from '@/lib/tokens';
@@ -31,11 +36,21 @@ import {
   EmailLookupSchema,
   LoginSchema,
   RegisterSchema,
+  ResendOtpSchema,
   SetPasswordSchema,
   VerifyOtpSchema,
 } from '@/schemas';
-import { getEmailProvider } from '@/lib/email';
+import { getEmailProviderAsync } from '@/lib/email';
 import { otpEmail, otpExpiresLabel } from '@/lib/email/templates';
+
+const BCRYPT_COST = 12;
+
+// 2026-06-24: only allow overwriting an unverified user row when the
+// row is "fresh" (created less than this many minutes ago). Outside the
+// window, a brand-new create attempt should be rejected even if no
+// verified user exists, so an attacker can't squat on an abandoned
+// email by repeatedly calling registerUser.
+const REGISTER_OVERWRITE_WINDOW_MS = 30 * 60 * 1000;
 
 type AuthStep =
   | 'login'
@@ -51,6 +66,9 @@ export type AuthResult =
       step?: AuthStep;
       email?: string;
       intent?: VerificationEmailIntent;
+      // 2026-06-24: present only on `recover` verify success. Client must
+      // hand it back to setNewPassword in the same browser session.
+      resetToken?: string;
       redirect?: string;
     }
   | {
@@ -60,34 +78,48 @@ export type AuthResult =
     };
 
 function handleZodError(error: z.ZodError): AuthResult {
-  return { success: false, error: error.errors[0]?.message ?? 'ورودی نامعتبر است' };
+  return {
+    success: false,
+    error: error.errors[0]?.message ?? 'ورودی نامعتبر است',
+  };
 }
 
-function handleAuthError(error: unknown): AuthResult {
+/**
+ * 2026-06-24: never leak internal error messages (Prisma constraints,
+ * bcrypt failures, network errors) to the client. Only known auth errors
+ * get specific copy; everything else falls back to a generic message and
+ * is logged on the server for ops.
+ */
+function handleAuthError(error: unknown, context: string): AuthResult {
   if (error instanceof z.ZodError) return handleZodError(error);
   if (error instanceof AuthError) {
     switch (error.type) {
       case 'CredentialsSignin':
         return {
           success: false,
-          error: 'ایمیل یا رمز عبور اشتباه است. لطفاً دوباره تلاش کنید',
+          error:
+            'ایمیل یا رمز عبور اشتباه است. لطفاً دوباره تلاش کنید',
         };
       case 'AccessDenied':
         return {
           success: false,
-          error: 'دسترسی به این حساب مسدود است یا ایمیل هنوز تأیید نشده است',
+          error:
+            'دسترسی به این حساب مسدود است یا ایمیل هنوز تأیید نشده است',
         };
       default:
         return {
           success: false,
-          error: 'مشکلی در ورود به حساب پیش آمده. لطفاً دوباره تلاش کنید',
+          error:
+            'مشکلی در ورود به حساب پیش آمده. لطفاً دوباره تلاش کنید',
         };
     }
   }
-  if (error instanceof Error) {
-    return { success: false, error: error.message };
-  }
-  return { success: false, error: 'خطای ناشناخته' };
+  // Unknown / internal — log with context, return generic.
+  console.error(`[auth-actions] ${context}:`, error);
+  return {
+    success: false,
+    error: 'خطای موقتی در سامانه. لطفاً لحظاتی دیگر دوباره تلاش کنید',
+  };
 }
 
 function getFormString(formData: FormData, key: string): string {
@@ -95,15 +127,32 @@ function getFormString(formData: FormData, key: string): string {
   return typeof value === 'string' ? value : '';
 }
 
-const EMAIL_COOLDOWN_REGEX = /(لطفاً|ثانیه|دقیقه|صبر)/;
 async function dispatchOtpEmail(
   email: string,
   code: string,
   intent: VerificationEmailIntent,
 ): Promise<void> {
-  await getEmailProvider().send(
+  const provider = await getEmailProviderAsync();
+  await provider.send(
     otpEmail({ to: email, code, intent, expiresLabel: otpExpiresLabel() }),
   );
+}
+
+/**
+ * Internal: mints and dispatches an OTP for the given (email, intent).
+ * Returns false on resend cooldown so the caller can surface the wait
+ * message instead of fabricating a "code sent" success.
+ */
+async function issueOtp(
+  email: string,
+  intent: VerificationEmailIntent,
+): Promise<{ ok: true } | { ok: false; retryAfterMs: number }> {
+  const minted = await generateOtpToken({ email, intent });
+  if (!minted.ok) {
+    return { ok: false, retryAfterMs: minted.retryAfterMs };
+  }
+  await dispatchOtpEmail(email, minted.code, intent);
+  return { ok: true };
 }
 
 /**
@@ -147,7 +196,8 @@ export async function lookupEmail(formData: FormData): Promise<AuthResult> {
         step: 'verify',
         email,
         intent: 'reverify',
-        message: 'کد تأیید به ایمیل شما ارسال شد. لطفاً ایمیل خود را بررسی کنید',
+        message:
+          'کد تأیید به ایمیل شما ارسال شد. لطفاً ایمیل خود را بررسی کنید',
       };
     }
 
@@ -170,25 +220,8 @@ export async function lookupEmail(formData: FormData): Promise<AuthResult> {
     };
   } catch (error) {
     if (error instanceof z.ZodError) return handleZodError(error);
-    return handleAuthError(error);
+    return handleAuthError(error, 'lookupEmail');
   }
-}
-
-/**
- * Internal: mints and dispatches an OTP for the given (email, intent).
- * Returns false on resend cooldown so the caller can surface the wait
- * message instead of fabricating a "code sent" success.
- */
-async function issueOtp(
-  email: string,
-  intent: VerificationEmailIntent,
-): Promise<{ ok: true } | { ok: false; retryAfterMs: number }> {
-  const minted = await generateOtpToken({ email, intent });
-  if (!minted.ok) {
-    return { ok: false, retryAfterMs: minted.retryAfterMs };
-  }
-  await dispatchOtpEmail(email, minted.code, intent);
-  return { ok: true };
 }
 
 /**
@@ -198,10 +231,12 @@ async function issueOtp(
  * types the 6-digit code.
  *
  * Failure modes the UI cares about:
- *   - existing email → 409-ish, ask user to use signin
+ *   - existing verified email → 409-ish, ask user to use signin
  *   - resend cooldown → bubble cooldownMs up
- *   - signup with an existing-but-unverified email is allowed —
- *     we re-issue the register code and overwrite.
+ *   - signup with an existing-but-unverified email is allowed ONLY
+ *     when the row was created in the last REGISTER_OVERWRITE_WINDOW_MS
+ *     minutes. Older abandoned rows are treated like verified rows so
+ *     attackers can't squat on them by spamming register calls.
  */
 export async function registerUser(formData: FormData): Promise<AuthResult> {
   try {
@@ -232,10 +267,23 @@ export async function registerUser(formData: FormData): Promise<AuthResult> {
       };
     }
 
-    const hashedPassword = await bcrypt.hash(input.password, 12);
+    if (existing && !existing.emailVerified) {
+      // 2026-06-24: only allow overwrite inside the freshness window.
+      const ageMs = Date.now() - existing.createdAt.getTime();
+      if (ageMs > REGISTER_OVERWRITE_WINDOW_MS) {
+        return {
+          success: false,
+          error:
+            'پیش از این برای این ایمیل ثبت‌نام ناتمامی ثبت شده که منقضی شده است. لطفاً از مسیر بازیابی رمز عبور اقدام کنید یا با پشتیبانی تماس بگیرید',
+        };
+      }
+    }
+
+    const hashedPassword = await bcrypt.hash(input.password, BCRYPT_COST);
 
     if (existing && !existing.emailVerified) {
-      // Reuse the row — overwrite password, drop any prior verification token.
+      // Reuse the row inside the freshness window — overwrite password,
+      // drop any prior verification tokens.
       await prisma.user.update({
         where: { id: existing.id },
         data: { name: input.name, password: hashedPassword },
@@ -269,7 +317,7 @@ export async function registerUser(formData: FormData): Promise<AuthResult> {
     };
   } catch (error) {
     if (error instanceof z.ZodError) return handleZodError(error);
-    return handleAuthError(error);
+    return handleAuthError(error, 'registerUser');
   }
 }
 
@@ -279,7 +327,9 @@ export async function registerUser(formData: FormData): Promise<AuthResult> {
  * don't get stuck. The sign-in is delegated to Auth.js so the cookie
  * write happens in one place.
  */
-export async function loginWithPassword(formData: FormData): Promise<AuthResult> {
+export async function loginWithPassword(
+  formData: FormData,
+): Promise<AuthResult> {
   try {
     const input = await LoginSchema.parseAsync({
       email: getFormString(formData, 'email'),
@@ -331,13 +381,19 @@ export async function loginWithPassword(formData: FormData): Promise<AuthResult>
           'ایمیل یا رمز عبور اشتباه است. لطفاً دوباره تلاش کنید',
       };
     }
-    return handleAuthError(error);
+    return handleAuthError(error, 'loginWithPassword');
   }
 }
 
 /**
  * Step 3: consume a 6-digit code and apply intent-specific side-effects.
- * On success, mint an Auth.js session via signIn('credentials', {kind:'after_otp'}).
+ *
+ * For non-recover intents: signIn('credentials', {kind:'after_otp'}).
+ * For recover: mints a short-lived reset secret and returns it. The
+ * client threads this secret back to setNewPassword — without it,
+ * setNewPassword refuses. The secret is single-use (TTL 5min) and is
+ * never emailed or persisted anywhere outside the VerificationToken
+ * row.
  */
 export async function verifyOtp(formData: FormData): Promise<AuthResult> {
   try {
@@ -351,7 +407,8 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
     if (!rate.success) {
       return {
         success: false,
-        error: 'تعداد تلاش‌های تأیید بیش از حد مجاز است. لحظاتی دیگر دوباره تلاش کنید',
+        error:
+          'تعداد تلاش‌های تأیید بیش از حد مجاز است. لحظاتی دیگر دوباره تلاش کنید',
       };
     }
 
@@ -362,41 +419,59 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
     });
 
     if (!result.ok) {
-      switch (result.reason) {
-        case 'too-many-attempts':
-          return {
-            success: false,
-            error: 'تعداد تلاش‌های اشتباه به حد مجاز رسید. لطفاً کد جدید درخواست کنید',
-          };
-        case 'expired':
-          return {
-            success: false,
-            error: 'این کد منقضی شده است. لطفاً کد جدید درخواست کنید',
-          };
-        default:
-          return { success: false, error: 'کد وارد شده صحیح نیست' };
+      // 2026-06-24: unified error message — don't reveal whether the
+      // token exists, expired, or had a wrong code. Only the explicit
+      // "too-many-attempts" path keeps its distinct copy so users
+      // know to request a fresh code.
+      if (result.reason === 'too-many-attempts') {
+        return {
+          success: false,
+          error:
+            'تعداد تلاش‌های اشتباه به حد مجاز رسید. لطفاً کد جدید درخواست کنید',
+        };
       }
+      return {
+        success: false,
+        error:
+          'کد نامعتبر یا منقضی شده است. لطفاً دوباره درخواست دهید',
+      };
     }
 
     await applyIntent(input.email, input.intent);
 
-    // Recover intent is special — it doesn't sign the user in; it
-    // hands control to setNewPassword.
+    // Recover intent: don't sign the user in — mint a reset secret
+    // and hand control to setNewPassword.
     if (input.intent === 'recover') {
+      const reset = await generatePasswordResetToken(input.email);
       return {
         success: true,
         step: 'set-password',
         email: input.email,
-        message: 'کد تأیید شد. رمز عبور جدید را انتخاب کنید',
+        resetToken: reset.token,
+        message:
+          'کد تأیید شد. برای ادامه، رمز عبور جدید را وارد کنید',
       };
     }
 
-    await signIn('credentials', {
-      email: input.email,
-      kind: 'after_otp',
-      intent: input.intent,
-      redirect: false,
-    });
+    // B1: signIn can fail after OTP was consumed (DB blip in
+    // events.signIn). Wrap and surface a clear error; the user will
+    // need to request a new code, but that's an acceptable cost vs.
+    // a half-authenticated session.
+    try {
+      await signIn('credentials', {
+        email: input.email,
+        kind: 'after_otp',
+        intent: input.intent,
+        redirect: false,
+      });
+    } catch (signInErr) {
+      console.error('[verifyOtp] signIn failed after OTP consume', signInErr);
+      return {
+        success: false,
+        error:
+          'تأیید موفق بود ولی ورود با خطا مواجه شد. لطفاً دوباره درخواست کد کنید',
+      };
+    }
 
     return {
       success: true,
@@ -405,7 +480,7 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
     };
   } catch (error) {
     if (error instanceof z.ZodError) return handleZodError(error);
-    return handleAuthError(error);
+    return handleAuthError(error, 'verifyOtp');
   }
 }
 
@@ -413,22 +488,19 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
  * Step 3.5: user clicked "code didn't arrive / send again".
  * Returns the same step state (verify) so the UI doesn't have to
  * navigate; emits the cooldown so the button can disable itself.
+ *
+ * B5: validate `intent` with Zod (was an Array.includes before, which
+ * silently accepted typos and let attackers overwrite recovery tokens
+ * with register tokens).
  */
 export async function resendOtp(formData: FormData): Promise<AuthResult> {
   try {
-    const { email } = await EmailLookupSchema.parseAsync({
+    const input = await ResendOtpSchema.parseAsync({
       email: getFormString(formData, 'email'),
+      intent: getFormString(formData, 'intent'),
     });
-    const intent = getFormString(
-      formData,
-      'intent',
-    ) as VerificationEmailIntent;
 
-    if (!['register', 'login', 'reverify', 'recover'].includes(intent)) {
-      return { success: false, error: 'درخواست نامعتبر' };
-    }
-
-    const rate = await checkRateLimit(`resend:${email}`, 'auth');
+    const rate = await checkRateLimit(`resend:${input.email}`, 'auth');
     if (!rate.success) {
       return {
         success: false,
@@ -436,7 +508,7 @@ export async function resendOtp(formData: FormData): Promise<AuthResult> {
       };
     }
 
-    const sent = await issueOtp(email, intent);
+    const sent = await issueOtp(input.email, input.intent);
     if (!sent.ok) {
       return {
         success: false,
@@ -447,14 +519,14 @@ export async function resendOtp(formData: FormData): Promise<AuthResult> {
 
     return {
       success: true,
-      email,
-      intent,
+      email: input.email,
+      intent: input.intent,
       step: 'verify',
       message: 'کد جدید به ایمیل شما ارسال شد',
     };
   } catch (error) {
     if (error instanceof z.ZodError) return handleZodError(error);
-    return handleAuthError(error);
+    return handleAuthError(error, 'resendOtp');
   }
 }
 
@@ -462,7 +534,9 @@ export async function resendOtp(formData: FormData): Promise<AuthResult> {
  * Forgot-password entry point. Same shape as lookupEmail's verify path
  * but with intent=recover so consumeOtpToken matches the right code.
  */
-export async function recoverPassword(formData: FormData): Promise<AuthResult> {
+export async function recoverPassword(
+  formData: FormData,
+): Promise<AuthResult> {
   try {
     const { email } = await EmailLookupSchema.parseAsync({
       email: getFormString(formData, 'email'),
@@ -507,27 +581,51 @@ export async function recoverPassword(formData: FormData): Promise<AuthResult> {
     };
   } catch (error) {
     if (error instanceof z.ZodError) return handleZodError(error);
-    return handleAuthError(error);
+    return handleAuthError(error, 'recoverPassword');
   }
 }
 
 /**
  * Step 4 (recover only): the user just verified with intent=recover
- * and is now picking a new password. We trust the previous verifyOtp
- * call — there is no fresh OTP to consume here.
+ * and is now picking a new password. They MUST present the resetToken
+ * returned by verifyOtp — without it, anyone who guesses the email
+ * could rewrite the password. The token is single-use and 5-min TTL.
+ *
+ * Side effect: the email is now considered verified (the user proved
+ * ownership by submitting a valid OTP).
  */
-export async function setNewPassword(formData: FormData): Promise<AuthResult> {
+export async function setNewPassword(
+  formData: FormData,
+): Promise<AuthResult> {
   try {
     const input = await SetPasswordSchema.parseAsync({
       email: getFormString(formData, 'email'),
+      resetToken: getFormString(formData, 'resetToken'),
       password: getFormString(formData, 'password'),
     });
 
-    const rate = await checkRateLimit(`set-password:${input.email}`, 'auth');
+    const rate = await checkRateLimit(
+      `set-password:${input.email}`,
+      'auth',
+    );
     if (!rate.success) {
       return {
         success: false,
         error: 'تعداد تلاش‌های تغییر رمز عبور بیش از حد مجاز است',
+      };
+    }
+
+    const consumed = await consumePasswordResetToken({
+      email: input.email,
+      token: input.resetToken,
+    });
+    if (!consumed.ok) {
+      return {
+        success: false,
+        error:
+          consumed.reason === 'expired'
+            ? 'نشست بازنشانی منقضی شده است. لطفاً دوباره درخواست کد کنید'
+            : 'نشست بازنشانی نامعتبر است. لطفاً از ابتدا اقدام کنید',
       };
     }
 
@@ -541,11 +639,14 @@ export async function setNewPassword(formData: FormData): Promise<AuthResult> {
       };
     }
 
-    const hashedPassword = await bcrypt.hash(input.password, 12);
+    const hashedPassword = await bcrypt.hash(input.password, BCRYPT_COST);
     await prisma.user.update({
       where: { id: user.id },
       data: {
         password: hashedPassword,
+        // 2026-06-24: password reset proves email ownership — set
+        // emailVerified as a side effect of the OTP we already consumed
+        // (applyIntent skipped it for recover).
         emailVerified: user.emailVerified ?? new Date(),
       },
     });
@@ -560,10 +661,16 @@ export async function setNewPassword(formData: FormData): Promise<AuthResult> {
     };
   } catch (error) {
     if (error instanceof z.ZodError) return handleZodError(error);
-    return handleAuthError(error);
+    return handleAuthError(error, 'setNewPassword');
   }
 }
 
+/**
+ * 2026-06-24: simplified logout. signOut({redirect:false}) clears the
+ * session cookie via the headers it returns; the client then pushes
+ * `/auth` so the AuthGroupLayout kicks in fresh. We don't need a
+ * manual redirect here — the action result just signals success.
+ */
 export async function logout(): Promise<AuthResult> {
   try {
     await signOut({ redirect: false });
@@ -573,8 +680,12 @@ export async function logout(): Promise<AuthResult> {
       redirect: '/auth',
     };
   } catch (error) {
-    if (error instanceof AuthError) return handleAuthError(error);
-    throw error;
+    if (error instanceof AuthError) return handleAuthError(error, 'logout');
+    console.error('[auth-actions] logout:', error);
+    return {
+      success: false,
+      error: 'خروج با خطا مواجه شد. لطفاً دوباره تلاش کنید',
+    };
   }
 }
 
@@ -582,11 +693,13 @@ async function applyIntent(
   email: string,
   intent: VerificationEmailIntent,
 ): Promise<void> {
-  if (intent === 'recover') return; // setNewPassword handles password update
+  // For recover, the password update + emailVerified flip happen in
+  // setNewPassword. We don't touch the user row here so a half-reset
+  // (verify ok, set-password never called) leaves the account intact.
+  if (intent === 'recover') return;
 
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) return;
-
   if (user.emailVerified) return;
 
   await prisma.user.update({

@@ -136,6 +136,12 @@ model VerificationToken {
   // src/lib/tokens.ts.
   intent   String   @default("register")
 
+  // 2026-06-24: enforce at most one active OTP per (email, intent).
+  // Without this, a race could mint two 'register' tokens for the same
+  // email and consumeOtpToken couldn't tell which was authoritative.
+  // The (email, token) unique is kept as a defense-in-depth so the
+  // same 6-digit code can't be issued twice under the same email.
+  @@unique([email, intent])
   @@unique([email, token])
   @@index([email])
   @@index([expires])

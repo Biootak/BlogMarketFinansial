@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useMemo, useState, useTransition } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   Eye,
   EyeOff,
+  KeyRound,
   Loader2,
   Mail,
   ShieldCheck,
@@ -36,9 +37,9 @@ import {
 } from '@/actions/auth-actions';
 import type { VerificationEmailIntent } from '@/lib/tokens';
 
-import OtpDialPad from './OtpDialPad';
+import OtpDialPad, { type OtpDialPadHandle } from './OtpDialPad';
 import SocialProviders from './SocialProviders';
-import StepProgress, { type InternalStep } from './StepProgress';
+import type { InternalStep } from './StepProgress';
 
 type FlowIntent = VerificationEmailIntent;
 type NoticeTone = 'error' | 'success' | 'info';
@@ -60,41 +61,41 @@ const RESEND_COOLDOWN_MS = 60_000;
 
 const STEP_COPY: Record<InternalStep, StepCopy> = {
   email: {
-    eyebrow: 'ورود امن و یکپارچه',
-    title: 'به حساب بازار مالی وارد شوید',
-    subtitle: 'با ایمیل خود ادامه دهید تا بهترین مسیر ورود یا ثبت‌نام برای شما فعال شود.',
-    aside: 'برای کاربران جدید، ساخت حساب و تأیید ایمیل در همان مسیر انجام می‌شود.',
+    eyebrow: 'ورود یا ساخت حساب',
+    title: 'با ایمیل یا حساب اجتماعی ادامه دهید',
+    subtitle: 'ایمیل‌تان را وارد کنید تا سریع‌ترین مسیر مناسب حسابتان را ببینید.',
+    aside: 'اگر قبلاً با گوگل یا گیت‌هاب ثبت‌نام کرده‌اید، می‌توانید همان‌جا ادامه دهید یا ایمیل را وارد کنید تا مسیر درست برایتان باز شود.',
   },
   register: {
-    eyebrow: 'ساخت حساب جدید',
-    title: 'حساب حرفه‌ای خود را بسازید',
-    subtitle: 'نام نمایشی، ایمیل و یک رمز عبور قدرتمند انتخاب کنید.',
-    aside: 'پس از ساخت حساب، کد تأیید برای فعال‌سازی ایمیل شما ارسال می‌شود.',
+    eyebrow: 'ساخت حساب',
+    title: 'حساب جدیدتان را تکمیل کنید',
+    subtitle: 'یک نام نمایشی و رمز عبور امن انتخاب کنید تا حساب‌تان آماده شود.',
+    aside: 'بعد از ثبت اطلاعات، یک کد شش‌رقمی برای تأیید ایمیل دریافت می‌کنید.',
   },
   login: {
-    eyebrow: 'ورود به حساب',
-    title: 'خوش برگشتید',
-    subtitle: 'با رمز عبور خود وارد شوید یا از ارائه‌دهنده‌های اجتماعی استفاده کنید.',
-    aside: 'اگر حساب شما فقط با ارائه‌دهنده اجتماعی ساخته شده باشد، ورود با کد یک‌بارمصرف فعال می‌شود.',
+    eyebrow: 'ورود',
+    title: 'به حساب خود برگردید',
+    subtitle: 'رمز عبور را وارد کنید یا با ارائه‌دهنده اجتماعی وارد شوید.',
+    aside: 'اگر این حساب قبلاً فقط با گوگل یا گیت‌هاب ساخته شده باشد، ورود با کد ایمیلی برایتان فعال می‌شود.',
   },
   verify: {
-    eyebrow: 'تأیید هویت',
-    title: 'کد شش‌رقمی را وارد کنید',
-    subtitle: 'برای امنیت بیشتر، تأیید نهایی ورود یا ثبت‌نام با کد یک‌بارمصرف انجام می‌شود.',
-    aside: 'کد به همان ایمیلی ارسال شده که در مرحله قبل وارد کرده‌اید.',
-    help: 'پس از وارد کردن شش رقم، تأیید به‌صورت خودکار انجام می‌شود.',
+    eyebrow: 'تأیید ایمیل',
+    title: 'کد شش‌رقمی را بررسی و تأیید کنید',
+    subtitle: 'کد ارسال‌شده به ایمیل‌تان را وارد کنید. پس از کامل شدن کد، دکمه تأیید برای ادامه فعال می‌شود.',
+    aside: 'اگر کدی دریافت نکردید، چند ثانیه صبر کنید و سپس دوباره ارسال را بزنید. پوشه spam را هم بررسی کنید.',
+    help: 'کد را دقیق وارد کنید؛ بعد از کامل شدن، با دکمه «تأیید و ادامه» مسیرتان تکمیل می‌شود.',
   },
   recover: {
-    eyebrow: 'بازیابی دسترسی',
-    title: 'رمز عبور را بازنشانی کنید',
-    subtitle: 'ایمیل خود را وارد کنید تا در صورت وجود حساب، کد بازیابی ارسال شود.',
-    aside: 'برای جلوگیری از افشای وجود حساب، پاسخ این مرحله برای همه ایمیل‌ها یکسان است.',
+    eyebrow: 'بازیابی رمز عبور',
+    title: 'دسترسی به حساب را برگردانید',
+    subtitle: 'ایمیل حساب را وارد کنید تا در صورت وجود، کد بازیابی برایتان ارسال شود.',
+    aside: 'برای حفظ حریم خصوصی، نتیجه این مرحله برای همه ایمیل‌ها مشابه نمایش داده می‌شود.',
   },
   'set-password': {
-    eyebrow: 'تکمیل بازیابی',
-    title: 'رمز عبور جدید تعریف کنید',
-    subtitle: 'رمزی انتخاب کنید که قوی، منحصربه‌فرد و مناسب استفاده روزمره باشد.',
-    aside: 'پس از ثبت رمز جدید، می‌توانید فوراً وارد داشبورد شوید.',
+    eyebrow: 'رمز عبور جدید',
+    title: 'یک رمز عبور تازه تعریف کنید',
+    subtitle: 'رمزی انتخاب کنید که استفاده روزانه و امنیت مناسب را هم‌زمان پوشش دهد.',
+    aside: 'پس از ثبت رمز جدید، بلافاصله می‌توانید وارد داشبورد شوید.',
   },
 };
 
@@ -106,9 +107,9 @@ const INTENT_LABEL: Record<FlowIntent, string> = {
 };
 
 const SECURITY_POINTS = [
-  'تمام عملیات حساس فقط در سمت سرور انجام می‌شود.',
-  'کدهای یک‌بارمصرف محدودیت تعداد تلاش و زمان انقضا دارند.',
-  'نرخ درخواست‌ها برای ورود، ثبت‌نام و بازیابی کنترل می‌شود.',
+  'اگر قبلاً با گوگل یا گیت‌هاب حساب ساخته‌اید، از همان دکمه‌ها یا ایمیل اصلی‌تان استفاده کنید.',
+  'اگر کد به دستتان نرسید، spam را بررسی کنید و پس از پایان شمارش، ارسال مجدد را بزنید.',
+  'تمام عملیات حساس روی سرور انجام می‌شود و کدها زمان انقضا و محدودیت تلاش دارند.',
 ] as const;
 
 function scorePassword(password: string): { score: 0 | 1 | 2 | 3 | 4; label: string } {
@@ -248,6 +249,31 @@ function NoticeBanner({ notice }: { notice: AuthNotice | null }) {
   );
 }
 
+function ContextSummary({ step, email, intent }: { step: InternalStep; email: string; intent: FlowIntent }) {
+  const summary =
+    step === 'email'
+      ? 'ایمیل را وارد کنید یا مستقیماً با گوگل و گیت‌هاب ادامه دهید.'
+      : step === 'register'
+        ? 'تنها چند اطلاعات پایه مانده تا حسابتان ساخته شود.'
+        : step === 'login'
+          ? 'اگر رمز عبور یادتان نیست، همین‌جا مسیر بازیابی را باز کنید.'
+          : step === 'recover'
+            ? 'پس از دریافت کد، می‌توانید رمز عبور جدید تعریف کنید.'
+            : step === 'set-password'
+              ? 'بعد از ثبت رمز جدید، ورود شما بلافاصله تکمیل می‌شود.'
+              : `کد برای ${email ? `ایمیل ${email}` : 'ایمیل شما'} ارسال شده و برای ${INTENT_LABEL[intent]} استفاده می‌شود.`;
+
+  return (
+    <div className="auth-context" aria-live="polite">
+      <span className="auth-context-badge">
+        <KeyRound aria-hidden="true" />
+        وضعیت فعلی
+      </span>
+      <p className="auth-context-copy">{summary}</p>
+    </div>
+  );
+}
+
 export default function AuthFlow() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -266,6 +292,12 @@ export default function AuthFlow() {
   const [notice, setNotice] = useState<AuthNotice | null>(null);
   const [cooldownMs, setCooldownMs] = useState(0);
   const [otpInvalid, setOtpInvalid] = useState(false);
+  // 2026-06-24: P0-1. Holds the single-use secret minted by
+  // verifyOtp when intent='recover'. setNewPassword MUST receive this
+  // — without it, password reset is wide open. Held in React state so
+  // a hard refresh forces the user through OTP again (which also
+  // invalidates any leaked token after 5 min).
+  const [resetToken, setResetToken] = useState<string | null>(null);
 
   const statusRegionId = useId();
   const copy = STEP_COPY[step];
@@ -306,6 +338,11 @@ export default function AuthFlow() {
     if (options && 'notice' in options) {
       setNotice(options.notice ?? null);
     }
+    // Clear the reset secret when we leave the set-password step —
+    // any subsequent navigate forward must re-verify.
+    if (nextStep !== 'set-password') {
+      setResetToken(null);
+    }
     syncUrl(nextStep, nextEmail, nextIntent);
   };
 
@@ -322,6 +359,15 @@ export default function AuthFlow() {
     const nextIntent = (result.intent ?? intent) as FlowIntent;
     setEmail(nextEmail);
     setIntent(nextIntent);
+
+    // 2026-06-24: P0-1 — capture the reset secret for set-password step.
+    if (typeof result.resetToken === 'string') {
+      setResetToken(result.resetToken);
+    }
+
+    // F4: surface the success notice even on the redirect path so
+    // screen-reader users hear "تأیید شد، در حال انتقال" before the
+    // page changes.
     setNotice({ tone: 'success', message: result.message });
 
     if (result.redirect) {
@@ -351,7 +397,7 @@ export default function AuthFlow() {
               </div>
             </div>
 
-            <StepProgress step={step} id={`${statusRegionId}-progress`} />
+            <ContextSummary step={step} email={email} intent={intent} />
 
             <div id={statusRegionId} className="sr-only" aria-live="polite" aria-atomic="true">
               {notice?.message ?? ''}
@@ -411,8 +457,12 @@ export default function AuthFlow() {
             {step === 'set-password' ? (
               <SetPasswordStep
                 email={email}
+                resetToken={resetToken}
                 onResult={handleResult}
-                onBack={() => moveTo('verify', { notice: null, intent: 'recover' })}
+                onBack={() => {
+                  setResetToken(null);
+                  moveTo('verify', { notice: null, intent: 'recover' });
+                }}
               />
             ) : null}
 
@@ -422,19 +472,19 @@ export default function AuthFlow() {
             </p>
           </div>
 
-          <aside className="auth-aside-panel" aria-label="جزئیات امنیت و مزایا">
+          <aside className="auth-aside-panel" aria-label="راهنمای احراز هویت">
             <div className="auth-aside-hero">
               <span className="auth-aside-kicker">
                 <ShieldCheck aria-hidden="true" />
-                استاندارد عملیاتی Production
+                راهنمای سریع
               </span>
               <p className="auth-aside-copy">{copy.aside}</p>
             </div>
 
-            <div className="auth-aside-metric" aria-label="مسیر فعال فعلی">
-              <span className="auth-aside-metric-label">مسیر فعال</span>
+            <div className="auth-aside-metric" aria-label="خلاصه مسیر فعلی">
+              <span className="auth-aside-metric-label">اکنون در این بخش هستید</span>
               <strong className="auth-aside-metric-value">
-                {step === 'verify' ? INTENT_LABEL[intent] : copy.eyebrow}
+                {step === 'verify' ? INTENT_LABEL[intent] : copy.title}
               </strong>
             </div>
 
@@ -783,6 +833,9 @@ function VerifyStep({
   onBack: () => void;
 }) {
   const [isPending, startTransition] = useTransition();
+  const otpRef = useRef<OtpDialPadHandle>(null);
+  const [otpCode, setOtpCode] = useState('');
+  const canSubmitOtp = otpCode.length === 6 && !isPending;
 
   const submitCode = (code: string) => {
     startTransition(async () => {
@@ -792,6 +845,9 @@ function VerifyStep({
       formData.append('intent', intent);
       const result = await verifyOtp(formData);
       onInvalidChange(!result.success);
+      if (!result.success) {
+        otpRef.current?.focus();
+      }
       onResult(result);
     });
   };
@@ -804,6 +860,8 @@ function VerifyStep({
       formData.append('email', email);
       formData.append('intent', intent);
       const result = await resendOtp(formData);
+      onInvalidChange(false);
+      setOtpCode('');
       onResult(result);
       if (result.success) {
         onCooldownChange(RESEND_COOLDOWN_MS);
@@ -830,40 +888,67 @@ function VerifyStep({
       <div className="auth-fieldset">
         <label htmlFor="otp-input" className="auth-label">کد یک‌بارمصرف</label>
         <OtpDialPad
+          ref={otpRef}
           onComplete={submitCode}
+          onChange={(value) => {
+            setOtpCode(value);
+            if (invalid) onInvalidChange(false);
+          }}
           invalid={invalid}
           disabled={isPending}
+          autoSubmit={false}
           describedBy="otp-help"
         />
         <p id="otp-help" className="auth-helper">{helpText}</p>
       </div>
 
-      <button
-        type="button"
-        className="auth-cta-secondary"
-        onClick={handleResend}
-        disabled={isPending || cooldownMs > 0}
-        aria-busy={isPending || undefined}
-      >
-        {isPending ? <Loader2 className="animate-spin" aria-hidden="true" /> : null}
-        {cooldownMs > 0 ? `ارسال مجدد در ${formatCooldown(cooldownMs)} ثانیه` : 'ارسال مجدد کد'}
-      </button>
+      <div className="auth-verify-actions">
+        <button
+          type="button"
+          className="auth-cta"
+          onClick={() => submitCode(otpCode)}
+          disabled={!canSubmitOtp}
+          aria-busy={isPending || undefined}
+        >
+          {isPending ? <Loader2 className="animate-spin" aria-hidden="true" /> : null}
+          {isPending ? 'در حال تأیید…' : 'تأیید و ادامه'}
+        </button>
+
+        <button
+          type="button"
+          className="auth-cta-secondary"
+          onClick={handleResend}
+          disabled={isPending || cooldownMs > 0}
+          aria-busy={isPending || undefined}
+        >
+          {isPending ? <Loader2 className="animate-spin" aria-hidden="true" /> : null}
+          {cooldownMs > 0 ? `ارسال مجدد در ${formatCooldown(cooldownMs)} ثانیه` : 'ارسال دوباره کد'}
+        </button>
+      </div>
     </form>
   );
 }
 
 function SetPasswordStep({
   email,
+  resetToken,
   onResult,
   onBack,
 }: {
   email: string;
+  // 2026-06-24: P0-1. setNewPassword refuses without this. If it's
+  // null (e.g. the user refreshed the page), we force them back to
+  // re-verify rather than render a form that would 403 on submit.
+  resetToken: string | null;
   onResult: (result: AuthResult) => void;
   onBack: () => void;
 }) {
   type Values = z.infer<typeof SetPasswordSchema>;
   const form = useForm<Values>({
     resolver: zodResolver(SetPasswordSchema),
+    // F6: validate on blur instead of only on submit, so the user
+    // sees errors as they fix them rather than after a round-trip.
+    mode: 'onBlur',
     defaultValues: {
       email,
       password: '',
@@ -876,10 +961,19 @@ function SetPasswordStep({
   const busy = isPending || form.formState.isSubmitting;
 
   const onSubmit: SubmitHandler<Values> = (values) => {
+    if (!resetToken) {
+      onResult({
+        success: false,
+        error:
+          'نشست بازنشانی منقضی شده است. لطفاً دوباره درخواست کد کنید',
+      });
+      return;
+    }
     startTransition(async () => {
       const formData = new FormData();
       formData.append('email', values.email);
       formData.append('password', values.password);
+      formData.append('resetToken', resetToken);
       const result = await setNewPassword(formData);
       onResult(result);
     });

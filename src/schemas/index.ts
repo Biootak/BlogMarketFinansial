@@ -61,8 +61,23 @@ export const VerifyOtpSchema = z.object({
   intent: z.enum(['register', 'login', 'reverify', 'recover']),
 });
 
+// 2026-06-24: schema for the resetToken + password submission. We don't
+// validate the token shape here beyond length — the DB lookup is the
+// ground truth. This schema's job is to refuse empty/missing values
+// before we hit the DB.
+export const ResendOtpSchema = z.object({
+  email: emailSchema,
+  intent: z.enum(['register', 'login', 'reverify', 'recover']),
+});
+
 export const SetPasswordSchema = z.object({
   email: emailSchema,
+  // 2026-06-24: resetToken is the single-use secret minted by verifyOtp
+  // (intent='recover'). Without it, anyone with the email could rewrite
+  // the password. We accept any non-empty string here and let the server
+  // action match it against the DB row — the schema just guarantees the
+  // client passed *something*.
+  resetToken: z.string().min(16, 'توکن بازنشانی نامعتبر است'),
   password: passwordSchema,
 });
 

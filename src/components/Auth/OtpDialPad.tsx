@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { Delete } from 'lucide-react';
 import type React from 'react';
 
 // 2026-06-23: production-grade OTP input.
@@ -33,6 +34,7 @@ interface OtpDialPadProps {
   initialValue?: string;
   describedBy?: string;
   disabled?: boolean;
+  autoSubmit?: boolean;
 }
 
 const CELLS = 6;
@@ -47,6 +49,7 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(
       initialValue = '',
       describedBy,
       disabled = false,
+      autoSubmit = true,
     },
     ref,
   ) {
@@ -77,6 +80,7 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(
       onChange?.(next);
 
       if (
+        autoSubmit &&
         next.length === CELLS &&
         next !== lastSubmitRef.current
       ) {
@@ -85,12 +89,27 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(
       }
     };
 
+    const handleKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
+      if (event.key === 'Enter' && value.length === CELLS && !disabled) {
+        event.preventDefault();
+        lastSubmitRef.current = value;
+        onComplete(value);
+      }
+    };
+
+    const handleClear = () => {
+      setValue('');
+      lastSubmitRef.current = '';
+      onChange?.('');
+      inputRef.current?.focus({ preventScroll: true });
+    };
+
     const cells: string[] = Array.from({ length: CELLS });
     for (let i = 0; i < CELLS; i++) cells[i] = value[i] ?? '';
 
     return (
       <div
-        className="relative isolate"
+        className="auth-otp-shell"
         aria-label="کد ۶ رقمی را وارد کنید"
       >
         <div
@@ -108,7 +127,7 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(
             return (
               <div key={i} className={cls}>
                 <span className="block text-center" dir="ltr">
-                  {char.replace(/./g, '•')}
+                  {char || '–'}
                 </span>
               </div>
             );
@@ -116,6 +135,7 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(
         </div>
         <input
           ref={inputRef}
+          id="otp-input"
           type="text"
           inputMode="numeric"
           autoComplete="one-time-code"
@@ -125,10 +145,22 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(
           disabled={disabled}
           value={value}
           onChange={(e) => handleChange(e.target.value)}
+          onKeyDown={handleKeyDown}
           aria-describedby={describedBy}
           aria-invalid={invalid || undefined}
           className="auth-otp-input"
         />
+        <div className="auth-otp-toolbar">
+          <button
+            type="button"
+            className="auth-link-row auth-link-row--inline"
+            onClick={handleClear}
+            disabled={disabled || value.length === 0}
+          >
+            <Delete aria-hidden="true" />
+            پاک کردن کد
+          </button>
+        </div>
       </div>
     );
   },

@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import type { Metadata, Viewport } from 'next';
 
 import AuthFlow from '@/components/Auth/AuthFlow';
@@ -16,7 +17,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0f172a',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f7f8fa' },
+    { media: '(prefers-color-scheme: dark)', color: '#14171f' },
+  ],
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
@@ -32,11 +36,14 @@ export default function AuthPage() {
       <header className="auth-page-header">
         <Link href="/" className="auth-brand" aria-label="بازار مالی — صفحه اصلی">
           <span className="auth-brand-mark" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <rect x="4" y="11" width="4" height="9" rx="1.2" fill="currentColor" opacity="0.55" />
-              <rect x="10" y="7" width="4" height="13" rx="1.2" fill="currentColor" opacity="0.8" />
-              <rect x="16" y="4" width="4" height="16" rx="1.2" fill="currentColor" />
-            </svg>
+            <Image
+              src="/favicon.svg"
+              alt=""
+              width={36}
+              height={36}
+              priority
+              className="auth-brand-logo"
+            />
           </span>
           <span className="auth-brand-copy">
             <span className="auth-brand-name">بازار مالی</span>

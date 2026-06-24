@@ -1,5 +1,6 @@
 import NextAuth from 'next-auth';
 import bcrypt from 'bcryptjs';
+import { z } from 'zod';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import authConfig from '@/auth.config';
 import prisma from '@/lib/db';
@@ -7,6 +8,26 @@ import { getUserByEmail } from '@/data/user';
 import type { Role, UserProfile } from '@/types/types';
 import Credentials from 'next-auth/providers/credentials';
 import { LoginSchema } from '@/schemas';
+
+// 2026-06-24: P1-3. Credentials provider accepts two *internal* fields
+// (`kind` and `intent`) that are not in the public schema. Auth.js v5
+// is permissive about unknown fields, but we still validate them here
+// so the authorize function gets typed input and a malformed call from
+// a tampered client is rejected at the boundary.
+const InternalCredentialsKindSchema = z.enum(['password', 'after_otp']);
+const InternalCredentialsIntentSchema = z.enum([
+  'register',
+  'login',
+  'reverify',
+  'recover',
+]);
+
+const InternalCredentialsSchema = z.object({
+  email: z.string().email(),
+  password: z.string().optional().default(''),
+  kind: InternalCredentialsKindSchema.optional(),
+  intent: InternalCredentialsIntentSchema.optional(),
+});
 
 // 2026-06-23: One Credentials provider handles two flows:
 //   kind='password'   → bcrypt verify against stored hash
@@ -125,15 +146,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
+        const internal = InternalCredentialsSchema.safeParse(credentials);
+        if (!internal.success) return null;
+
+        const { email } = internal.data;
+        const kind = internal.data.kind ?? 'password';
+
         const parsed = LoginSchema.safeParse({
-          email: credentials?.email,
-          password: credentials?.password ?? '',
+          email,
+          password: internal.data.password ?? '',
         });
         if (!parsed.success) return null;
-
-        const { email } = parsed.data;
-        const kind =
-          (credentials as { kind?: string } | undefined)?.kind ?? 'password';
 
         const user = await getUserByEmail(email);
         if (!user) return null;
