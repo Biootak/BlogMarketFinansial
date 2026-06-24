@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { AuroraBackdrop } from '@/components/Setup/AuroraBackdrop';
 import { SecurityNotice } from '@/components/Setup/SecurityNotice';
 import { SetupWizard } from '@/components/Setup/SetupWizard';
@@ -8,33 +9,58 @@ import { headers } from 'next/headers';
 import Link from 'next/link';
 
 /**
- * Setup page (server component).
+ * Setup page (server component shell).
+ *
+ * 2026-06-25: Refactored to avoid the `blocking-route` error under
+ * Next.js 16 `cacheComponents: true`. The page shell renders immediately
+ * and streams the dynamic content (headers + DB probe) inside a <Suspense>
+ * boundary.
  *
  * Responsibilities:
- *   1. Probe the database for an existing SUPER_ADMIN. If one exists, the
- *      bootstrap is already complete and we show an "already configured"
- *      panel rather than re-rendering the wizard (defence in depth — the
- *      action would refuse too, but UX should match).
- *   2. Read the client IP from request headers for the trust notice in
- *      production environments (mirrors what the action will check).
- *   3. Render the aurora backdrop + glass shell + SetupWizard.
- *
- * The wizard itself is a client component — see `SetupWizard.tsx`.
+ *   1. Render the skip-link and static brand nav immediately.
+ *   2. Stream <SetupContent> which probes the DB and reads request headers.
  */
-
-// 2026-06-24: `export const dynamic`/`export const revalidate` are no
-// longer supported under Next.js 16 `cacheComponents: true`. This page
-// stays dynamic because it calls `await headers()` below — any of
-// `headers()` / `cookies()` / `searchParams` / `connection()` opts the
-// route into dynamic rendering. See
-// https://nextjs.org/docs/app/api-reference/directives/use-cache
 
 // We instantiate a private Prisma client here (not the shared singleton)
 // because this page may run before the singleton bootstrap in early
 // request cycles. Mirrors the same pattern in `actions/createSuperAdmin.ts`.
 const prisma = new PrismaClient();
 
-export default async function SetupPage() {
+/**
+ * SetupSkeleton — visual placeholder that matches the glass shell so the
+ * page does not layout-shift while the DB probe / headers resolve.
+ */
+function SetupSkeleton() {
+  return (
+    <main className="setup-page" lang="fa-IR" dir="rtl" aria-busy="true">
+      <AuroraBackdrop />
+
+      <header className="setup-page__topbar">
+        <div className="setup-page__brand">
+          <span className="setup-page__brand-mark" aria-hidden="true">
+            <ShieldCheckGlyph />
+          </span>
+          <span className="setup-page__brand-text">blogmarketfinansial.ir</span>
+        </div>
+      </header>
+
+      <section className="setup-page__stage">
+        <article className="setup-page__shell" aria-describedby="setup-trust">
+          <div className="setup-page__shell-glow" aria-hidden="true" />
+          <div className="setup-page__shell-inner">
+            <div className="setup-skeleton h-96 animate-pulse rounded-2xl bg-white/10" />
+          </div>
+        </article>
+      </section>
+    </main>
+  );
+}
+
+/**
+ * SetupContent — async data component. All dynamic request access
+ * (`headers()` and the DB probe) lives here, inside <Suspense>.
+ */
+async function SetupContent() {
   const isProduction = process.env.NODE_ENV === 'production';
 
   // Read the client IP once on the server; surfaced in the trust footer
@@ -90,7 +116,7 @@ export default async function SetupPage() {
             {existingAdmin ? (
               <AlreadyConfigured email={existingAdmin.email ?? ''} />
             ) : (
-              <SetupWizard isProduction={isProduction} />
+              <SetupWizard />
             )}
           </div>
         </article>
@@ -105,6 +131,14 @@ export default async function SetupPage() {
         </p>
       </section>
     </main>
+  );
+}
+
+export default function SetupPage() {
+  return (
+    <Suspense fallback={<SetupSkeleton />}>
+      <SetupContent />
+    </Suspense>
   );
 }
 

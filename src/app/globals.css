@@ -5323,7 +5323,7 @@ p { line-height: var(--leading-relaxed); }
      ============================================================================ */
 
   /* ---- @property برای انیمیشن‌های عددی/رنگی نرم ----------------------------- */
-  @supports (background: paint(something)) or (image-set: 1x url("x.png)") or (-webkit-background-clip: text)) {
+  @supports (background: paint(something)) or (image-set: 1x url("x.png")) or (-webkit-background-clip: text)) {
     @property --arc-bento-progress {
       syntax: "<number>";
       inherits: false;

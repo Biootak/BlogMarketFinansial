@@ -240,6 +240,20 @@ const nextConfig: NextConfig = {
   },
 
   transpilePackages: ['@aws-sdk/client-s3', '@aws-sdk/s3-request-presigner', 'framer-motion'],
+
+  // 2026-06-25: cssnano-simple crashes on `@property` at-rules and OKLCH
+  // color tokens in globals.css. Until Next.js ships a compatible CSS
+  // minimizer, we disable CSS minification in webpack builds. JS is still
+  // minified by Terser; CSS is served gzip/brotli by the CDN/server.
+  webpack: (config) => {
+    if (config.optimization?.minimizer) {
+      config.optimization.minimizer = config.optimization.minimizer.filter(
+        (plugin: { constructor?: { name?: string } }) =>
+          plugin?.constructor?.name !== 'CssMinimizerPlugin',
+      );
+    }
+    return config;
+  },
 };
 
 // Sentry configuration
