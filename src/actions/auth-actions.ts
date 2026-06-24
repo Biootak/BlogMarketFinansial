@@ -18,19 +18,18 @@
 //   4. Auth.js Credentials.authorize stays the single session gate:
 //      password → bcrypt + emailVerified; after_otp → trust pre-verified marker.
 
-import { z } from 'zod';
-import bcrypt from 'bcryptjs';
-import { AuthError } from 'next-auth';
 import { signIn, signOut } from '@/auth';
 import prisma from '@/lib/db';
+import { getEmailProviderAsync } from '@/lib/email';
+import { otpEmail, otpExpiresLabel } from '@/lib/email/templates';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import {
-  generateOtpToken,
-  consumeOtpToken,
-  generatePasswordResetToken,
-  consumePasswordResetToken,
-  invalidateOtpTokens,
   type VerificationEmailIntent,
+  consumeOtpToken,
+  consumePasswordResetToken,
+  generateOtpToken,
+  generatePasswordResetToken,
+  invalidateOtpTokens,
 } from '@/lib/tokens';
 import {
   EmailLookupSchema,
@@ -40,8 +39,9 @@ import {
   SetPasswordSchema,
   VerifyOtpSchema,
 } from '@/schemas';
-import { getEmailProviderAsync } from '@/lib/email';
-import { otpEmail, otpExpiresLabel } from '@/lib/email/templates';
+import bcrypt from 'bcryptjs';
+import { AuthError } from 'next-auth';
+import { z } from 'zod';
 
 const BCRYPT_COST = 12;
 
@@ -52,12 +52,7 @@ const BCRYPT_COST = 12;
 // email by repeatedly calling registerUser.
 const REGISTER_OVERWRITE_WINDOW_MS = 30 * 60 * 1000;
 
-type AuthStep =
-  | 'login'
-  | 'register'
-  | 'verify'
-  | 'recover'
-  | 'set-password';
+type AuthStep = 'login' | 'register' | 'verify' | 'recover' | 'set-password';
 
 export type AuthResult =
   | {
@@ -97,20 +92,17 @@ function handleAuthError(error: unknown, context: string): AuthResult {
       case 'CredentialsSignin':
         return {
           success: false,
-          error:
-            'ایمیل یا رمز عبور اشتباه است. لطفاً دوباره تلاش کنید',
+          error: 'ایمیل یا رمز عبور اشتباه است. لطفاً دوباره تلاش کنید',
         };
       case 'AccessDenied':
         return {
           success: false,
-          error:
-            'دسترسی به این حساب مسدود است یا ایمیل هنوز تأیید نشده است',
+          error: 'دسترسی به این حساب مسدود است یا ایمیل هنوز تأیید نشده است',
         };
       default:
         return {
           success: false,
-          error:
-            'مشکلی در ورود به حساب پیش آمده. لطفاً دوباره تلاش کنید',
+          error: 'مشکلی در ورود به حساب پیش آمده. لطفاً دوباره تلاش کنید',
         };
     }
   }
@@ -133,9 +125,7 @@ async function dispatchOtpEmail(
   intent: VerificationEmailIntent,
 ): Promise<void> {
   const provider = await getEmailProviderAsync();
-  await provider.send(
-    otpEmail({ to: email, code, intent, expiresLabel: otpExpiresLabel() }),
-  );
+  await provider.send(otpEmail({ to: email, code, intent, expiresLabel: otpExpiresLabel() }));
 }
 
 /**
@@ -173,8 +163,7 @@ export async function lookupEmail(formData: FormData): Promise<AuthResult> {
     if (!rate.success) {
       return {
         success: false,
-        error:
-          'تعداد درخواست‌ها بیش از حد مجاز است. لحظاتی دیگر دوباره تلاش کنید',
+        error: 'تعداد درخواست‌ها بیش از حد مجاز است. لحظاتی دیگر دوباره تلاش کنید',
       };
     }
 
@@ -196,8 +185,7 @@ export async function lookupEmail(formData: FormData): Promise<AuthResult> {
         step: 'verify',
         email,
         intent: 'reverify',
-        message:
-          'کد تأیید به ایمیل شما ارسال شد. لطفاً ایمیل خود را بررسی کنید',
+        message: 'کد تأیید به ایمیل شما ارسال شد. لطفاً ایمیل خود را بررسی کنید',
       };
     }
 
@@ -250,8 +238,7 @@ export async function registerUser(formData: FormData): Promise<AuthResult> {
     if (!rate.success) {
       return {
         success: false,
-        error:
-          'تعداد ثبت‌نام‌ها برای این ایمیل بیش از حد مجاز است. لحظاتی دیگر دوباره تلاش کنید',
+        error: 'تعداد ثبت‌نام‌ها برای این ایمیل بیش از حد مجاز است. لحظاتی دیگر دوباره تلاش کنید',
       };
     }
 
@@ -259,11 +246,10 @@ export async function registerUser(formData: FormData): Promise<AuthResult> {
       where: { email: input.email },
     });
 
-    if (existing && existing.emailVerified) {
+    if (existing?.emailVerified) {
       return {
         success: false,
-        error:
-          'این ایمیل قبلاً ثبت شده است. لطفاً از ایمیل دیگری استفاده کنید یا وارد شوید',
+        error: 'این ایمیل قبلاً ثبت شده است. لطفاً از ایمیل دیگری استفاده کنید یا وارد شوید',
       };
     }
 
@@ -327,9 +313,7 @@ export async function registerUser(formData: FormData): Promise<AuthResult> {
  * don't get stuck. The sign-in is delegated to Auth.js so the cookie
  * write happens in one place.
  */
-export async function loginWithPassword(
-  formData: FormData,
-): Promise<AuthResult> {
+export async function loginWithPassword(formData: FormData): Promise<AuthResult> {
   try {
     const input = await LoginSchema.parseAsync({
       email: getFormString(formData, 'email'),
@@ -340,8 +324,7 @@ export async function loginWithPassword(
     if (!rate.success) {
       return {
         success: false,
-        error:
-          'تعداد تلاش‌های ورود بیش از حد مجاز است. لحظاتی دیگر دوباره تلاش کنید',
+        error: 'تعداد تلاش‌های ورود بیش از حد مجاز است. لحظاتی دیگر دوباره تلاش کنید',
       };
     }
 
@@ -377,8 +360,7 @@ export async function loginWithPassword(
       }
       return {
         success: false,
-        error:
-          'ایمیل یا رمز عبور اشتباه است. لطفاً دوباره تلاش کنید',
+        error: 'ایمیل یا رمز عبور اشتباه است. لطفاً دوباره تلاش کنید',
       };
     }
     return handleAuthError(error, 'loginWithPassword');
@@ -407,8 +389,7 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
     if (!rate.success) {
       return {
         success: false,
-        error:
-          'تعداد تلاش‌های تأیید بیش از حد مجاز است. لحظاتی دیگر دوباره تلاش کنید',
+        error: 'تعداد تلاش‌های تأیید بیش از حد مجاز است. لحظاتی دیگر دوباره تلاش کنید',
       };
     }
 
@@ -426,14 +407,12 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
       if (result.reason === 'too-many-attempts') {
         return {
           success: false,
-          error:
-            'تعداد تلاش‌های اشتباه به حد مجاز رسید. لطفاً کد جدید درخواست کنید',
+          error: 'تعداد تلاش‌های اشتباه به حد مجاز رسید. لطفاً کد جدید درخواست کنید',
         };
       }
       return {
         success: false,
-        error:
-          'کد نامعتبر یا منقضی شده است. لطفاً دوباره درخواست دهید',
+        error: 'کد نامعتبر یا منقضی شده است. لطفاً دوباره درخواست دهید',
       };
     }
 
@@ -448,8 +427,7 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
         step: 'set-password',
         email: input.email,
         resetToken: reset.token,
-        message:
-          'کد تأیید شد. برای ادامه، رمز عبور جدید را وارد کنید',
+        message: 'کد تأیید شد. برای ادامه، رمز عبور جدید را وارد کنید',
       };
     }
 
@@ -468,8 +446,7 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
       console.error('[verifyOtp] signIn failed after OTP consume', signInErr);
       return {
         success: false,
-        error:
-          'تأیید موفق بود ولی ورود با خطا مواجه شد. لطفاً دوباره درخواست کد کنید',
+        error: 'تأیید موفق بود ولی ورود با خطا مواجه شد. لطفاً دوباره درخواست کد کنید',
       };
     }
 
@@ -534,9 +511,7 @@ export async function resendOtp(formData: FormData): Promise<AuthResult> {
  * Forgot-password entry point. Same shape as lookupEmail's verify path
  * but with intent=recover so consumeOtpToken matches the right code.
  */
-export async function recoverPassword(
-  formData: FormData,
-): Promise<AuthResult> {
+export async function recoverPassword(formData: FormData): Promise<AuthResult> {
   try {
     const { email } = await EmailLookupSchema.parseAsync({
       email: getFormString(formData, 'email'),
@@ -558,8 +533,7 @@ export async function recoverPassword(
         step: 'verify',
         email,
         intent: 'recover',
-        message:
-          'اگر این ایمیل در سیستم ما وجود داشته باشد، کد بازنشانی ارسال شده است',
+        message: 'اگر این ایمیل در سیستم ما وجود داشته باشد، کد بازنشانی ارسال شده است',
       };
     }
 
@@ -594,9 +568,7 @@ export async function recoverPassword(
  * Side effect: the email is now considered verified (the user proved
  * ownership by submitting a valid OTP).
  */
-export async function setNewPassword(
-  formData: FormData,
-): Promise<AuthResult> {
+export async function setNewPassword(formData: FormData): Promise<AuthResult> {
   try {
     const input = await SetPasswordSchema.parseAsync({
       email: getFormString(formData, 'email'),
@@ -604,10 +576,7 @@ export async function setNewPassword(
       password: getFormString(formData, 'password'),
     });
 
-    const rate = await checkRateLimit(
-      `set-password:${input.email}`,
-      'auth',
-    );
+    const rate = await checkRateLimit(`set-password:${input.email}`, 'auth');
     if (!rate.success) {
       return {
         success: false,
@@ -689,10 +658,7 @@ export async function logout(): Promise<AuthResult> {
   }
 }
 
-async function applyIntent(
-  email: string,
-  intent: VerificationEmailIntent,
-): Promise<void> {
+async function applyIntent(email: string, intent: VerificationEmailIntent): Promise<void> {
   // For recover, the password update + emailVerified flip happen in
   // setNewPassword. We don't touch the user row here so a half-reset
   // (verify ok, set-password never called) leaves the account intact.

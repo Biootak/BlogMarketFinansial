@@ -1,8 +1,8 @@
-// 2026-06-23: (auth) group layout — no Header/Footer chrome.
+// 2026-06-24: (auth) group layout — bare shell, no Header/Footer chrome.
 //
-// Already-authenticated users land on /auth from a stale link?
-// We bounce them to /dashboard. Everyone else gets the AuthTopBar
-// + AuthSidecar + AuthFooter chrome via the page files themselves.
+// Already-authenticated users land on /auth from a stale link? We
+// bounce them to /dashboard. Everyone else gets the page-level chrome
+// (header, sidecar hints, fineprint) rendered inside each page file.
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 

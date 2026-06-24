@@ -1,13 +1,13 @@
-import NextAuth from 'next-auth';
-import bcrypt from 'bcryptjs';
-import { z } from 'zod';
-import { PrismaAdapter } from '@auth/prisma-adapter';
 import authConfig from '@/auth.config';
-import prisma from '@/lib/db';
 import { getUserByEmail } from '@/data/user';
-import type { Role, UserProfile } from '@/types/types';
-import Credentials from 'next-auth/providers/credentials';
+import prisma from '@/lib/db';
 import { LoginSchema } from '@/schemas';
+import type { Role, UserProfile } from '@/types/types';
+import { PrismaAdapter } from '@auth/prisma-adapter';
+import bcrypt from 'bcryptjs';
+import NextAuth from 'next-auth';
+import Credentials from 'next-auth/providers/credentials';
+import { z } from 'zod';
 
 // 2026-06-24: P1-3. Credentials provider accepts two *internal* fields
 // (`kind` and `intent`) that are not in the public schema. Auth.js v5
@@ -15,12 +15,7 @@ import { LoginSchema } from '@/schemas';
 // so the authorize function gets typed input and a malformed call from
 // a tampered client is rejected at the boundary.
 const InternalCredentialsKindSchema = z.enum(['password', 'after_otp']);
-const InternalCredentialsIntentSchema = z.enum([
-  'register',
-  'login',
-  'reverify',
-  'recover',
-]);
+const InternalCredentialsIntentSchema = z.enum(['register', 'login', 'reverify', 'recover']);
 
 const InternalCredentialsSchema = z.object({
   email: z.string().email(),
@@ -75,9 +70,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       });
     },
     async signOut(message) {
-      const token = (
-        message as { token?: { sub?: string } | null } | undefined
-      )?.token;
+      const token = (message as { token?: { sub?: string } | null } | undefined)?.token;
       const userId = token?.sub;
       if (!userId) return;
       try {

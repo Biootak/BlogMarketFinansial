@@ -31,7 +31,17 @@ const STRIP_EXTENSION_ATTRS_SCRIPT = `(function(){
   }
 
   function stripAll(root){
-    if (!root) return;
+    // 2026-06-24: bug fix. MutationObserver addedNodes can contain
+    // Text, CDATA, Comment, or DocumentType nodes — none of which
+    // implement querySelectorAll. Earlier versions only guarded strip()
+    // (which already checks nodeType !== 1), but stripAll blindly
+    // called querySelectorAll on whatever Node the observer handed us.
+    // On a heavy hydration pass this threw TypeError and crashed the
+    // observer loop. We now bail out unless root is something we can
+    // actually walk (Element / Document / DocumentFragment).
+    // NOTE: comments inside this template literal must NOT contain
+    // backticks — they terminate the outer string literal early.
+    if (!root || typeof root.querySelectorAll !== 'function') return;
     strip(root);
     var all = root.querySelectorAll('*');
     for (var i = 0; i < all.length; i++) strip(all[i]);

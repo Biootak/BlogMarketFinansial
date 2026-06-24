@@ -1,13 +1,7 @@
 'use client';
 
-import {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'react';
 import { Delete } from 'lucide-react';
+import { forwardRef, useEffect, useId, useImperativeHandle, useRef, useState } from 'react';
 import type React from 'react';
 
 // 2026-06-23: production-grade OTP input.
@@ -40,130 +34,134 @@ interface OtpDialPadProps {
 const CELLS = 6;
 const VALID = /^\d{0,6}$/;
 
-const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(
-  function OtpDialPad(
-    {
-      onComplete,
-      onChange,
-      invalid = false,
-      initialValue = '',
-      describedBy,
-      disabled = false,
-      autoSubmit = true,
-    },
-    ref,
-  ) {
-    const [value, setValue] = useState<string>(() =>
-      initialValue.replace(/\D/g, '').slice(0, CELLS),
-    );
-    const inputRef = useRef<HTMLInputElement>(null);
-    const lastSubmitRef = useRef<string>('');
+const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(function OtpDialPad(
+  {
+    onComplete,
+    onChange,
+    invalid = false,
+    initialValue = '',
+    describedBy,
+    disabled = false,
+    autoSubmit = true,
+  },
+  ref,
+) {
+  const [value, setValue] = useState<string>(() => initialValue.replace(/\D/g, '').slice(0, CELLS));
+  const inputRef = useRef<HTMLInputElement>(null);
+  const lastSubmitRef = useRef<string>('');
+  // 2026-06-24: A1 / F1 — replace hard-coded `id="otp-input"` with a
+  // stable per-instance id so multiple OtpDialPads (or even one
+  // mounted twice during a Suspense boundary) don't collide on
+  // `<label htmlFor>`.
+  const inputId = useId();
+  const invalidMessageId = `${inputId}-invalid`;
 
-    useEffect(() => {
-      inputRef.current?.focus({ preventScroll: true });
-    }, []);
+  useEffect(() => {
+    inputRef.current?.focus({ preventScroll: true });
+  }, []);
 
-    useImperativeHandle(ref, () => ({
-      focus: () => inputRef.current?.focus({ preventScroll: true }),
-      clear: () => {
-        setValue('');
-        lastSubmitRef.current = '';
-        inputRef.current?.focus({ preventScroll: true });
-      },
-      getValue: () => value,
-    }));
-
-    const handleChange = (raw: string) => {
-      const next = raw.replace(/\D/g, '').slice(0, CELLS);
-      if (!VALID.test(next)) return;
-      setValue(next);
-      onChange?.(next);
-
-      if (
-        autoSubmit &&
-        next.length === CELLS &&
-        next !== lastSubmitRef.current
-      ) {
-        lastSubmitRef.current = next;
-        onComplete(next);
-      }
-    };
-
-    const handleKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
-      if (event.key === 'Enter' && value.length === CELLS && !disabled) {
-        event.preventDefault();
-        lastSubmitRef.current = value;
-        onComplete(value);
-      }
-    };
-
-    const handleClear = () => {
+  useImperativeHandle(ref, () => ({
+    focus: () => inputRef.current?.focus({ preventScroll: true }),
+    clear: () => {
       setValue('');
       lastSubmitRef.current = '';
-      onChange?.('');
       inputRef.current?.focus({ preventScroll: true });
-    };
+    },
+    getValue: () => value,
+  }));
 
-    const cells: string[] = Array.from({ length: CELLS });
-    for (let i = 0; i < CELLS; i++) cells[i] = value[i] ?? '';
+  const handleChange = (raw: string) => {
+    const next = raw.replace(/\D/g, '').slice(0, CELLS);
+    if (!VALID.test(next)) return;
+    setValue(next);
+    onChange?.(next);
 
-    return (
-      <div
-        className="auth-otp-shell"
-        aria-label="کد ۶ رقمی را وارد کنید"
-      >
-        <div
-          className="auth-otp-grid"
-          aria-hidden="true"
-        >
-          {cells.map((char, i) => {
-            const cls = [
-              'auth-otp-cell',
-              char && 'auth-otp-cell--filled',
-              invalid && char && 'auth-otp-cell--invalid',
-            ]
-              .filter(Boolean)
-              .join(' ');
-            return (
-              <div key={i} className={cls}>
-                <span className="block text-center" dir="ltr">
-                  {char || '–'}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-        <input
-          ref={inputRef}
-          id="otp-input"
-          type="text"
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          pattern="\d{6}"
-          maxLength={CELLS}
-          dir="ltr"
-          disabled={disabled}
-          value={value}
-          onChange={(e) => handleChange(e.target.value)}
-          onKeyDown={handleKeyDown}
-          aria-describedby={describedBy}
-          aria-invalid={invalid || undefined}
-          className="auth-otp-input"
-        />
-        <div className="auth-otp-toolbar">
-          <button
-            type="button"
-            className="auth-link-row auth-link-row--inline"
-            onClick={handleClear}
-            disabled={disabled || value.length === 0}
-          >
-            <Delete aria-hidden="true" />
-            پاک کردن کد
-          </button>
-        </div>
+    if (autoSubmit && next.length === CELLS && next !== lastSubmitRef.current) {
+      lastSubmitRef.current = next;
+      onComplete(next);
+    }
+  };
+
+  const handleKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
+    if (event.key === 'Enter' && value.length === CELLS && !disabled) {
+      event.preventDefault();
+      lastSubmitRef.current = value;
+      onComplete(value);
+    }
+  };
+
+  const handleClear = () => {
+    setValue('');
+    lastSubmitRef.current = '';
+    onChange?.('');
+    inputRef.current?.focus({ preventScroll: true });
+  };
+
+  const cells: string[] = Array.from({ length: CELLS });
+  for (let i = 0; i < CELLS; i++) cells[i] = value[i] ?? '';
+
+  return (
+    <div className="auth-otp-shell" aria-label="کد ۶ رقمی را وارد کنید">
+      <div className="auth-otp-grid" aria-hidden="true">
+        {cells.map((char, i) => {
+          const cls = [
+            'auth-otp-cell',
+            char && 'auth-otp-cell--filled',
+            invalid && char && 'auth-otp-cell--invalid',
+          ]
+            .filter(Boolean)
+            .join(' ');
+          return (
+            <div key={i} className={cls}>
+              <span className="block text-center" dir="ltr">
+                {char || '–'}
+              </span>
+            </div>
+          );
+        })}
       </div>
-    );
-  },
-);
+      <input
+        ref={inputRef}
+        id={inputId}
+        type="text"
+        inputMode="numeric"
+        autoComplete="one-time-code"
+        pattern="\d{6}"
+        maxLength={CELLS}
+        dir="ltr"
+        disabled={disabled}
+        value={value}
+        onChange={(e) => handleChange(e.target.value)}
+        onKeyDown={handleKeyDown}
+        aria-describedby={
+          invalid && value.length > 0
+            ? [describedBy, invalidMessageId].filter(Boolean).join(' ')
+            : describedBy
+        }
+        aria-invalid={invalid || undefined}
+        className="auth-otp-input"
+      />
+      {/* F2 / A3: screen-reader announcement for invalid state. */}
+      <p
+        id={invalidMessageId}
+        role={invalid && value.length > 0 ? 'alert' : undefined}
+        className="sr-only"
+      >
+        {invalid && value.length > 0 ? 'کد وارد شده نادرست است. لطفاً دوباره وارد کنید' : ''}
+      </p>
+      <div className="auth-otp-toolbar">
+        <button
+          type="button"
+          className="auth-link-row auth-link-row--inline"
+          onClick={handleClear}
+          disabled={disabled || value.length === 0}
+        >
+          <Delete aria-hidden="true" />
+          پاک کردن کد
+        </button>
+      </div>
+    </div>
+  );
+});
 
 export default OtpDialPad;

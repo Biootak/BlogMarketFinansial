@@ -49,9 +49,7 @@ export const ForgotPasswordSchema = z.object({ email: emailSchema });
 export const MagicLinkSchema = z.object({ email: emailSchema });
 
 // 2026-06-23: OTP pipeline schemas.
-const otpCodeSchema = z
-  .string()
-  .regex(/^\d{6}$/, 'کد باید دقیقاً ۶ رقم باشد');
+const otpCodeSchema = z.string().regex(/^\d{6}$/, 'کد باید دقیقاً ۶ رقم باشد');
 
 export const EmailLookupSchema = z.object({ email: emailSchema });
 
@@ -81,9 +79,6 @@ export const SetPasswordSchema = z.object({
   password: passwordSchema,
 });
 
-
-
-
 const CategorySchema = createArraySchema(
   1,
   5,
@@ -91,7 +86,6 @@ const CategorySchema = createArraySchema(
   'حداکثر 5 دسته‌بندی می‌توانید انتخاب کنید',
 );
 const TagSchema = z.array(z.string()).max(10, 'حداکثر 10 برچسب می‌توانید اضافه کنید').optional();
-
 
 export const CreatePostSchema = z.object({
   title: createStringSchema(
@@ -123,8 +117,7 @@ export const CreatePostSchema = z.object({
     }),
 });
 
-
-export const UpdatePostSchema = CreatePostSchema.partial()
+export const UpdatePostSchema = CreatePostSchema.partial();
 
 const IdSchema = z.string().cuid();
 
@@ -145,12 +138,28 @@ export const UpdateProfileSchema = z
   .object({
     name: z.string().min(2, 'نام باید حداقل 2 حرف باشد').optional().or(z.literal('')),
     email: z.string().email('ایمیل نامعتبر است').optional().or(z.literal('')),
-    bio: z.string().max(500, 'بیوگرافی نمی‌تواند بیشتر از 500 کاراکتر باشد').optional().or(z.literal('')),
+    bio: z
+      .string()
+      .max(500, 'بیوگرافی نمی‌تواند بیشتر از 500 کاراکتر باشد')
+      .optional()
+      .or(z.literal('')),
     imageUrl: z.string().url('آدرس تصویر نامعتبر است').optional().or(z.literal('')),
     bgImage: z.string().url('آدرس تصویر پس‌زمینه نامعتبر است').optional().or(z.literal('')),
-    jobName: z.string().max(100, 'نام شغل نمی‌تواند بیشتر از 100 کاراکتر باشد').optional().or(z.literal('')),
-    currentPassword: z.string().min(6, 'رمز عبور باید حداقل 6 کاراکتر باشد').optional().or(z.literal('')),
-    newPassword: z.string().min(6, 'رمز عبور جدید باید حداقل 6 کاراکتر باشد').optional().or(z.literal('')),
+    jobName: z
+      .string()
+      .max(100, 'نام شغل نمی‌تواند بیشتر از 100 کاراکتر باشد')
+      .optional()
+      .or(z.literal('')),
+    currentPassword: z
+      .string()
+      .min(6, 'رمز عبور باید حداقل 6 کاراکتر باشد')
+      .optional()
+      .or(z.literal('')),
+    newPassword: z
+      .string()
+      .min(6, 'رمز عبور جدید باید حداقل 6 کاراکتر باشد')
+      .optional()
+      .or(z.literal('')),
     confirmNewPassword: z.string().optional().or(z.literal('')),
   })
   .refine(
@@ -171,7 +180,6 @@ export const UpdateProfileSchema = z
       path: ['confirmNewPassword'],
     },
   );
-
 
 // Service Request Schema - for online payment and money transfer forms
 export const ServiceRequestSchema = z.object({

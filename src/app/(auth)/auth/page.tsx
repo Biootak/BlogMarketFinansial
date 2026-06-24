@@ -1,9 +1,9 @@
-import { Suspense } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
 import type { Metadata, Viewport } from 'next';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Suspense } from 'react';
 
-import AuthFlow from '@/components/Auth/AuthFlow';
+import AuthFlow from '@/components/Auth/AuthFlow.redesign';
 
 export const metadata: Metadata = {
   title: 'ورود و ثبت‌نام امن — بازار مالی',
@@ -65,9 +65,15 @@ export default function AuthPage() {
       </div>
 
       <nav className="auth-foot" aria-label="پیوندهای پاورقی">
-        <Link href="/terms" prefetch={false}>قوانین و مقررات</Link>
-        <span aria-hidden="true" className="auth-foot-separator">·</span>
-        <Link href="/privacy-policy" prefetch={false}>حریم خصوصی</Link>
+        <Link href="/terms" prefetch={false}>
+          قوانین و مقررات
+        </Link>
+        <span aria-hidden="true" className="auth-foot-separator">
+          ·
+        </span>
+        <Link href="/privacy-policy" prefetch={false}>
+          حریم خصوصی
+        </Link>
       </nav>
     </main>
   );

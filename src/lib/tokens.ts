@@ -11,11 +11,7 @@
 import { randomBytes, randomInt } from 'node:crypto';
 import prisma from '@/lib/db';
 
-export type VerificationEmailIntent =
-  | 'register'
-  | 'login'
-  | 'reverify'
-  | 'recover';
+export type VerificationEmailIntent = 'register' | 'login' | 'reverify' | 'recover';
 
 export const OTP_EXPIRES_MS = 10 * 60 * 1000;
 export const OTP_RESEND_COOLDOWN_MS = 60 * 1000;
@@ -85,11 +81,7 @@ export type ConsumeOtpResult =
   | { ok: true; intent: VerificationEmailIntent }
   | {
       ok: false;
-      reason:
-        | 'not-found'
-        | 'expired'
-        | 'too-many-attempts'
-        | 'wrong-code';
+      reason: 'not-found' | 'expired' | 'too-many-attempts' | 'wrong-code';
     };
 
 /**
@@ -201,9 +193,7 @@ export async function generatePasswordResetToken(email: string): Promise<{
   return { token, expiresAt };
 }
 
-export type ConsumeResetResult =
-  | { ok: true }
-  | { ok: false; reason: 'not-found' | 'expired' };
+export type ConsumeResetResult = { ok: true } | { ok: false; reason: 'not-found' | 'expired' };
 
 /**
  * 2026-06-24: consume a reset secret. Atomic via deleteMany with the
