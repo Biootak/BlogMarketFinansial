@@ -3,12 +3,15 @@
 import { useSidebarStore } from '@/hooks/sidebarStore';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence, type Variants, type Transition } from '@/lib/motion-shim';
+import { AmbientBackground } from '@/components/Dashboard/primitives';
 
 interface MainContentProps {
   children: React.ReactNode;
+  /** When true, render the AmbientBackground drift behind the page content. */
+  ambient?: boolean;
 }
 
-const MainContent: React.FC<MainContentProps> = ({ children }) => {
+const MainContent: React.FC<MainContentProps> = ({ children, ambient = false }) => {
   const { isOpen, isMobile } = useSidebarStore();
   const pathname = usePathname();
 
@@ -34,21 +37,23 @@ const MainContent: React.FC<MainContentProps> = ({ children }) => {
       className="dash-scope dash-grid-texture flex-1 overflow-auto transition-[margin] duration-300 ease-out"
       style={{ marginRight }}
     >
-      {/* Aurora drift backdrop — پشت کل محتوای داشبورد */}
-      <div className="dash-aurora" aria-hidden="true" />
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={pathname}
-          initial="initial"
-          animate="in"
-          exit="out"
-          variants={pageVariants}
-          transition={pageTransition}
-          className="relative min-h-full"
-        >
-          {children}
-        </motion.div>
-      </AnimatePresence>
+        {/* Ambient drift backdrop — only on the home route, sits behind everything */}
+        {ambient ? <AmbientBackground intensity="med" /> : null}
+        {/* Aurora drift backdrop — پشت کل محتوای داشبورد */}
+        <div className="dash-aurora" aria-hidden="true" />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={pathname}
+            initial="initial"
+            animate="in"
+            exit="out"
+            variants={pageVariants}
+            transition={pageTransition}
+            className="relative min-h-full"
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
     </main>
   );
 };

@@ -12,6 +12,7 @@ interface DashboardPageHeaderProps {
   children?: React.ReactNode;
 }
 
+/** @deprecated Use `PageHeader` from `@/components/Dashboard/primitives`. Will be removed in v3. */
 export function DashboardPageHeader({ title, description, children }: DashboardPageHeaderProps) {
   return (
     <div className="mb-8">
@@ -280,6 +281,7 @@ interface EmptyStateProps {
   action?: React.ReactNode;
 }
 
+/** @deprecated Use `EmptyState` from `@/components/Dashboard/primitives`. Will be removed in v3. */
 export function EmptyState({
   title = 'موردی یافت نشد',
   description = 'هنوز هیچ موردی اضافه نشده است.',

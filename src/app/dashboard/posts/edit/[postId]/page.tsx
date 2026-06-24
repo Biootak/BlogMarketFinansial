@@ -2,6 +2,7 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import EditPostForm from '@/components/Dashboard/Blog/PostForm/EditPostForm';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import { getPostById } from '@/actions/postActions';
 import { getCategories } from '@/actions/categoryActions';
 import { getTags } from '@/actions/getTags';
@@ -33,14 +34,25 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
   const totalTags = tagsResult.data?.totalCount ?? 0;
 
   return (
-    <Suspense fallback={<SkeletonLoader variant="text" count={6} />}>
-      <EditPostForm
-        initialData={postResult.data}
-        initialCategories={initialCategories}
-        initialTags={initialTags}
-        totalCategories={totalCategories}
-        totalTags={totalTags}
+    <div className="dash2-page">
+      <PageHeader
+        breadcrumb={[
+          { label: 'داشبورد', href: '/dashboard' },
+          { label: 'پست‌ها', href: '/dashboard/posts' },
+          { label: 'ویرایش پست' },
+        ]}
+        title="ویرایش پست"
+        description="ویرایش محتوای پست موجود"
       />
-    </Suspense>
+      <Suspense fallback={<SkeletonLoader variant="text" count={6} />}>
+        <EditPostForm
+          initialData={postResult.data}
+          initialCategories={initialCategories}
+          initialTags={initialTags}
+          totalCategories={totalCategories}
+          totalTags={totalTags}
+        />
+      </Suspense>
+    </div>
   );
 }

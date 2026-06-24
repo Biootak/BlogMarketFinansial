@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Activity, BarChart3, Terminal, RefreshCw, Sparkles } from 'lucide-react';
+import { Activity, BarChart3, Terminal, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import dynamic from 'next/dynamic';
 import { ReportsSkeleton } from '@/components/Skeletons';
 import { cn } from '@/lib/utils';
+import { PageHeader } from '@/components/Dashboard/primitives';
 
 const SystemReports = dynamic(() => import('@/components/Dashboard/Reports/SystemReports'), {
   loading: () => <ReportsSkeleton />,
@@ -62,28 +63,14 @@ export default function ReportsPage() {
   return (
     <div className="min-h-screen py-6 md:py-8 lg:py-10 px-4 md:px-6" dir="rtl">
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header Section */}
-        <header className="relative">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-[rgb(var(--c-primary-500))] to-[rgb(var(--c-primary-700))] rounded-xl blur-lg opacity-40" />
-                  <div className="relative p-3 bg-gradient-to-br from-[rgb(var(--c-primary-500))] to-[rgb(var(--c-primary-700))] rounded-xl shadow-lg">
-                    <Sparkles className="w-6 h-6 text-white" />
-                  </div>
-                </div>
-                <div>
-                  <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-l from-[rgb(var(--c-primary-900))] to-[rgb(var(--c-primary-700))] bg-clip-text text-transparent">
-                    گزارش‌های سیستم
-                  </h1>
-                  <p className="text-sm md:text-base text-[rgb(var(--c-primary-600))] mt-1">
-                    مشاهده وضعیت، آمار و گزارش‌های جامع سیستم
-                  </p>
-                </div>
-              </div>
-            </div>
-
+        <PageHeader
+          breadcrumb={[
+            { label: 'داشبورد', href: '/dashboard' },
+            { label: 'گزارش‌ها' },
+          ]}
+          title="گزارش‌ها"
+          description="گزارش‌های سیستمی و فعالیت‌ها"
+          actions={
             <Button
               variant="outline"
               size="icon"
@@ -106,8 +93,8 @@ export default function ReportsPage() {
                 )}
               />
             </Button>
-          </div>
-        </header>
+          }
+        />
 
         {/* Tabs Navigation */}
         <nav className="relative">

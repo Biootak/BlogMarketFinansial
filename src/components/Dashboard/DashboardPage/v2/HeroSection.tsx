@@ -19,6 +19,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from '@/lib/motion-shim';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   HiOutlineSparkles,
   HiOutlineDocumentText,
@@ -29,6 +30,7 @@ import {
 } from 'react-icons/hi2';
 import Avatar from '@/components/Avatar/Avatar';
 import CountUp from '@/components/Dashboard/DashboardPage/CountUp';
+import { MagneticButton, NoiseTexture } from '@/components/Dashboard/primitives';
 import HeroSparkline from './HeroSparkline';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { cn } from '@/lib/utils';
@@ -103,6 +105,21 @@ export default function HeroSection({ sparkData, todayViews, totalViews }: HeroS
     return () => window.clearInterval(t);
   }, []);
 
+  // Detect prefers-reduced-motion on mount. We gate the word-reveal stagger
+  // on this so motion-sensitive users get the static headline instead. The
+  // CSS keyframe block (below) also short-circuits via @media, but the JS
+  // check lets us avoid emitting per-span animationDelay inline when it
+  // would never animate.
+  const [reduceMotion, setReduceMotion] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReduceMotion(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setReduceMotion(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
   const date = now
     ? formatTehran(now)
     : { weekday: 'یکشنبه', day: '—', month: '—', year: '—', time: '--:--' };
@@ -135,6 +152,7 @@ export default function HeroSection({ sparkData, todayViews, totalViews }: HeroS
                 {date.day} {date.month} {date.year}
               </time>
               <span aria-hidden className="hidden sm:inline h-3 w-px bg-white/15" />
+              <span className="dash-livedot" aria-hidden />
               <span className="tabular-nums text-white/70">{date.time}</span>
               <span className="hidden sm:inline text-white/50">تهران</span>
             </span>
@@ -163,11 +181,24 @@ export default function HeroSection({ sparkData, todayViews, totalViews }: HeroS
               transition={{ duration: 0.45, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
               className="dash-hero__headline"
             >
-              <span className="opacity-80 font-semibold">{greeting}،</span>{' '}
-              <span className="bg-gradient-to-l from-white via-cyan-100 to-emerald-100 bg-clip-text text-transparent">
+              <span
+                className="opacity-80 font-semibold dash2-word-reveal"
+                style={reduceMotion ? undefined : { animationDelay: '0ms' }}
+              >
+                {greeting}،
+              </span>{' '}
+              <span
+                className="bg-gradient-to-l from-white via-cyan-100 to-emerald-100 bg-clip-text text-transparent dash2-word-reveal"
+                style={reduceMotion ? undefined : { animationDelay: '40ms' }}
+              >
                 {user?.name ?? 'کاربر'}
               </span>
-              <span className="opacity-80">.</span>
+              <span
+                className="opacity-80 dash2-word-reveal"
+                style={reduceMotion ? undefined : { animationDelay: '80ms' }}
+              >
+                .
+              </span>
             </motion.h1>
 
             <motion.p
@@ -188,12 +219,16 @@ export default function HeroSection({ sparkData, todayViews, totalViews }: HeroS
               transition={{ duration: 0.45, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
               className="mt-6 flex flex-wrap items-center gap-2.5"
             >
-              <button
+              <MagneticButton
+                asChild
+                magnetRange={6}
                 type="button"
-                onClick={() => router.push('/dashboard/posts/create')}
                 className={cn(
                   'group inline-flex items-center gap-2.5 ps-2.5 pe-3.5 h-11 rounded-xl font-semibold text-sm text-white',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[oklch(18%_0.045_260)]',
+                  // shadcn's default Button has hover:scale + active:scale; the
+                  // magnetic inline transform would otherwise be overridden.
+                  '!hover:scale-100 active:!scale-100',
                 )}
                 style={{
                   background:
@@ -202,15 +237,17 @@ export default function HeroSection({ sparkData, todayViews, totalViews }: HeroS
                     '0 1px 0 oklch(100% 0 0 / 0.18) inset, 0 8px 24px -10px oklch(55% 0.18 280 / 0.55)',
                 }}
               >
-                <span className="inline-flex w-6 h-6 items-center justify-center rounded-md bg-white/15 group-hover:bg-white/25 transition-colors">
-                  <HiOutlinePencilSquare className="w-3.5 h-3.5" />
-                </span>
-                <span>نوشتن پست جدید</span>
-                <span aria-hidden className="hidden sm:inline-flex items-center gap-0.5 ms-1 text-[10px] font-mono text-white/70">
-                  <kbd className="rounded border border-white/20 bg-white/10 px-1.5 py-0.5">⌘</kbd>
-                  <kbd className="rounded border border-white/20 bg-white/10 px-1.5 py-0.5">N</kbd>
-                </span>
-              </button>
+                <Link href="/dashboard/posts/create" aria-label="نوشتن پست جدید">
+                  <span className="inline-flex w-6 h-6 items-center justify-center rounded-md bg-white/15 group-hover:bg-white/25 transition-colors">
+                    <HiOutlinePencilSquare className="w-3.5 h-3.5" />
+                  </span>
+                  <span>نوشتن پست جدید</span>
+                  <span aria-hidden className="hidden sm:inline-flex items-center gap-0.5 ms-1 text-[10px] font-mono text-white/70">
+                    <kbd className="rounded border border-white/20 bg-white/10 px-1.5 py-0.5">⌘</kbd>
+                    <kbd className="rounded border border-white/20 bg-white/10 px-1.5 py-0.5">N</kbd>
+                  </span>
+                </Link>
+              </MagneticButton>
 
               <Shortcut
                 icon={<HiOutlineDocumentText className="w-4 h-4" />}
@@ -280,7 +317,7 @@ export default function HeroSection({ sparkData, todayViews, totalViews }: HeroS
           <button
             type="button"
             onClick={() => router.push('/dashboard/edit-profile')}
-            className="group inline-flex items-center gap-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] ring-1 ring-white/10 hover:ring-white/20 backdrop-blur-md p-1.5 ps-4 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70"
+            className="group inline-flex items-center gap-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] ring-1 ring-white/10 hover:ring-2 hover:ring-blue-500/30 backdrop-blur-md p-1.5 ps-4 transition-[background-color,box-shadow,border-color] duration-[var(--ds-duration-base)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70"
             aria-label="ویرایش پروفایل"
           >
             <div className="text-end">
@@ -307,6 +344,41 @@ export default function HeroSection({ sparkData, todayViews, totalViews }: HeroS
           </p>
         </div>
       </div>
+
+      {/* Noise overlay — sits on top of every hero layer (gradient, grid,
+          headline, KPI card). Pointer-events-none is set inside the primitive.
+          Slightly higher than the default 0.025 because the dark hero needs
+          more grain to read. */}
+      <NoiseTexture opacity={0.03} />
+
+      {/* Scoped keyframes for the headline word reveal. The CSS @media rule
+          below disables the animation for prefers-reduced-motion users, so the
+          JSX-side reduceMotion check is just an optimization that skips the
+          inline animationDelay style emission. */}
+      <style jsx global>{`
+        @keyframes dash2-word-reveal {
+          from {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .dash2-word-reveal {
+          display: inline-block;
+          opacity: 0;
+          animation: dash2-word-reveal 300ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)) both;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .dash2-word-reveal {
+            animation: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+          }
+        }
+      `}</style>
     </motion.section>
   );
 }

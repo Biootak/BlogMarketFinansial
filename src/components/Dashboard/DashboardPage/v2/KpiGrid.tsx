@@ -19,19 +19,18 @@
  *     not pay paint cost on first scroll.
  */
 
-import { useId } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import { motion } from '@/lib/motion-shim';
 import {
   HiOutlineHeart,
   HiOutlineChatBubbleLeftEllipsis,
   HiOutlineShare,
   HiOutlinePencilSquare,
-  HiOutlineArrowTrendingUp,
-  HiOutlineArrowTrendingDown,
-  HiOutlineMinus,
 } from 'react-icons/hi2';
+import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react';
 import CountUp from '@/components/Dashboard/DashboardPage/CountUp';
 import { cn } from '@/lib/utils';
+import { type Range } from './WorkspaceToolbar';
 
 interface Stats {
   views: { today: number; data: number[] };
@@ -52,6 +51,7 @@ interface ViewStats {
 interface KpiGridProps {
   stats: Stats;
   viewStats: ViewStats;
+  range?: Range;
 }
 
 type Trend = 'up' | 'down' | 'flat';
@@ -68,7 +68,18 @@ function pickTrend(data: number[]): { trend: Trend; delta: number } {
   return { trend: t, delta: d };
 }
 
-function MiniSparkline({ data, stroke, gradId }: { data: number[]; stroke: string; gradId: string }) {
+function MiniSparkline({
+  data,
+  stroke,
+  gradId,
+  range,
+}: {
+  data: number[];
+  stroke: string;
+  gradId: string;
+  range?: Range;
+}) {
+  const pathRef = useRef<SVGPathElement>(null);
   const w = 100;
   const h = 28;
   if (!data.length) {
@@ -87,6 +98,36 @@ function MiniSparkline({ data, stroke, gradId }: { data: number[]; stroke: strin
     .map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`)
     .join(' ');
   const area = `${line} L${w},${h} L0,${h} Z`;
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const el = pathRef.current;
+    if (!el) return;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      el.style.strokeDashoffset = '0';
+      return;
+    }
+
+    el.style.strokeDashoffset = '1';
+    const duration = 800;
+    let raf = 0;
+    let start: number | null = null;
+    const easeOutExpo = (t: number) => (t >= 1 ? 1 : 1 - Math.pow(2, -10 * t));
+
+    const step = (ts: number) => {
+      if (start === null) start = ts;
+      const t = Math.min(1, (ts - start) / duration);
+      el.style.strokeDashoffset = String(1 - easeOutExpo(t));
+      if (t < 1) {
+        raf = window.requestAnimationFrame(step);
+      }
+    };
+
+    raf = window.requestAnimationFrame(step);
+    return () => window.cancelAnimationFrame(raf);
+  }, [range, line]);
+
   return (
     <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="w-full h-7" aria-hidden>
       <defs>
@@ -97,6 +138,7 @@ function MiniSparkline({ data, stroke, gradId }: { data: number[]; stroke: strin
       </defs>
       <path d={area} fill={`url(#${gradId})`} />
       <path
+        ref={pathRef}
         d={line}
         fill="none"
         stroke={stroke}
@@ -104,23 +146,25 @@ function MiniSparkline({ data, stroke, gradId }: { data: number[]; stroke: strin
         strokeLinecap="round"
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
+        pathLength={1}
+        style={{ strokeDasharray: 1, strokeDashoffset: 1 }}
       />
     </svg>
   );
 }
 
 function DeltaBadge({ trend, delta }: { trend: Trend; delta: number }) {
-  const Icon =
-    trend === 'up' ? HiOutlineArrowTrendingUp : trend === 'down' ? HiOutlineArrowTrendingDown : HiOutlineMinus;
-  const cls =
-    trend === 'up'
-      ? 'dash-trend dash-trend--up'
-      : trend === 'down'
-        ? 'dash-trend dash-trend--down'
-        : 'dash-trend dash-trend--flat';
+  const isUp = trend === 'up';
+  const isDown = trend === 'down';
+  const Icon = isUp ? ArrowUpRight : isDown ? ArrowDownRight : Minus;
+  const pillCls = isUp
+    ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/10'
+    : isDown
+      ? 'text-rose-700 dark:text-rose-400 bg-rose-500/10'
+      : 'text-slate-600 dark:text-slate-400 bg-slate-500/10';
   return (
-    <span className={cn(cls, 'text-[11px] gap-1 tabular-nums')}>
-      <Icon className="w-3.5 h-3.5" />
+    <span className={cn('dash-trend text-[11px] gap-1 tabular-nums', pillCls)}>
+      <Icon className="w-3.5 h-3.5" aria-hidden />
       <span>{`${delta > 0 ? '+' : ''}${delta.toFixed(1)}٪`}</span>
     </span>
   );
@@ -134,9 +178,10 @@ interface CompactProps {
   stroke: string; // oklch()
   data: number[];
   suffix?: string;
+  range?: Range;
 }
 
-function CompactPane({ title, value, icon, iconClass, stroke, data, suffix }: CompactProps) {
+function CompactPane({ title, value, icon, iconClass, stroke, data, suffix, range }: CompactProps) {
   const gradId = useId();
   const { trend, delta } = pickTrend(data);
   return (
@@ -159,20 +204,20 @@ function CompactPane({ title, value, icon, iconClass, stroke, data, suffix }: Co
 
       <div>
         <p className="dash-pane__value">
-          <CountUp value={value} duration={800} />
+          <CountUp value={value} duration={600} />
           {suffix && <span className="text-base font-medium text-slate-500 dark:text-slate-400 ms-1.5">{suffix}</span>}
         </p>
         <p className="dash-pane__sub">هفت روز اخیر</p>
       </div>
 
       <div className="-mx-2">
-        <MiniSparkline data={data} stroke={stroke} gradId={`g-${gradId}`} />
+        <MiniSparkline data={data} stroke={stroke} gradId={`g-${gradId}`} range={range} />
       </div>
     </motion.article>
   );
 }
 
-export default function KpiGrid({ stats, viewStats }: KpiGridProps) {
+export default function KpiGrid({ stats, viewStats, range }: KpiGridProps) {
   const { trend: heroTrend, delta: heroDelta } = pickTrend(viewStats.data);
 
   return (
@@ -201,7 +246,7 @@ export default function KpiGrid({ stats, viewStats }: KpiGridProps) {
 
         <div>
           <p className="dash-pane__value text-5xl sm:text-6xl">
-            <CountUp value={viewStats.todayViews} duration={900} />
+            <CountUp value={viewStats.todayViews} duration={600} />
           </p>
           <p className="dash-pane__sub mt-1">
             از {viewStats.totalViews.toLocaleString('fa-IR')} بازدید کل — میانگین روزانه{' '}
@@ -210,7 +255,7 @@ export default function KpiGrid({ stats, viewStats }: KpiGridProps) {
         </div>
 
         <div className="-mx-3 h-24 sm:h-28">
-          <MiniSparkline data={viewStats.data} stroke="oklch(72% 0.13 220)" gradId="hero-spark" />
+          <MiniSparkline data={viewStats.data} stroke="oklch(72% 0.13 220)" gradId="hero-spark" range={range} />
         </div>
       </motion.article>
 
@@ -221,6 +266,7 @@ export default function KpiGrid({ stats, viewStats }: KpiGridProps) {
         iconClass="dash-ico--rose"
         stroke="oklch(68% 0.18 20)"
         data={stats.likes.data}
+        range={range}
       />
 
       <CompactPane
@@ -230,6 +276,7 @@ export default function KpiGrid({ stats, viewStats }: KpiGridProps) {
         iconClass="dash-ico--emerald"
         stroke="oklch(72% 0.14 165)"
         data={stats.comments.data}
+        range={range}
       />
 
       <CompactPane
@@ -239,6 +286,7 @@ export default function KpiGrid({ stats, viewStats }: KpiGridProps) {
         iconClass="dash-ico--violet"
         stroke="oklch(66% 0.17 300)"
         data={stats.shares.data}
+        range={range}
       />
 
       <CompactPane
@@ -248,6 +296,7 @@ export default function KpiGrid({ stats, viewStats }: KpiGridProps) {
         iconClass="dash-ico--amber"
         stroke="oklch(80% 0.14 80)"
         data={stats.drafts.data}
+        range={range}
       />
     </section>
   );

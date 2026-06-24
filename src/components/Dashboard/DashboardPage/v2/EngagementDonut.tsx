@@ -14,7 +14,7 @@
  *     GPU-friendly and respect prefers-reduced-motion.
  */
 
-import { useId, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from '@/lib/motion-shim';
 import {
   HiOutlinePresentationChartLine,
@@ -91,23 +91,66 @@ export default function EngagementDonut({
     [slices, range],
   );
 
+  const rMid = (rOuter + rInner) / 2;
+  const circumference = 2 * Math.PI * rMid;
+
   const arcs = useMemo(() => {
     const positive = slices.filter((s) => (s.values[range] || 0) > 0);
     const sum = positive.reduce((acc, s) => acc + s.values[range], 0);
-    if (sum <= 0) return [] as Array<{ slice: EngagementSlice; d: string; pct: number }>;
+    if (sum <= 0) {
+      return [] as Array<{
+        slice: EngagementSlice;
+        start: number;
+        arcLength: number;
+        pct: number;
+      }>;
+    }
     let cursor = 0;
     return positive.map((slice) => {
       const sweep = (slice.values[range] / sum) * 360;
       const start = cursor;
-      const end = Math.min(360, cursor + sweep - 2);
-      cursor = end + 2;
+      cursor += sweep;
+      const arcLength = (sweep / 360) * circumference;
       return {
         slice,
-        d: arcPath(cx, cy, rOuter, rInner, start, end),
+        start,
+        arcLength,
         pct: (slice.values[range] / sum) * 100,
       };
     });
-  }, [slices, range, cx, cy, rOuter, rInner]);
+  }, [slices, range, circumference]);
+
+  const [offsets, setOffsets] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (arcs.length === 0) return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) {
+      setOffsets(arcs.map(() => 0));
+      return;
+    }
+    setOffsets(arcs.map((a) => a.arcLength));
+    const startTs = performance.now();
+    const duration = 600;
+    const stagger = 80;
+    const easeOutExpo = (t: number) => (t >= 1 ? 1 : 1 - Math.pow(2, -10 * t));
+    let raf = 0;
+    const tick = (now: number) => {
+      const elapsed = now - startTs;
+      const next = arcs.map((a, i) => {
+        const t = Math.max(0, Math.min(1, (elapsed - i * stagger) / duration));
+        return a.arcLength * (1 - easeOutExpo(t));
+      });
+      setOffsets(next);
+      if (elapsed < duration + (arcs.length - 1) * stagger) {
+        raf = requestAnimationFrame(tick);
+      }
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [arcs]);
+
+  const hoveredArc = arcs.find((a) => a.slice.key === hoveredKey);
 
   const hasData = total > 0;
 
@@ -173,42 +216,47 @@ export default function EngagementDonut({
               height={size}
               role="img"
               aria-label={`نمودار دایره‌ای ${caption}: مجموع ${total.toLocaleString('fa-IR')}`}
-              className="block mx-auto"
+              className="block mx-auto overflow-visible"
             >
               <circle
                 cx={cx}
                 cy={cy}
-                r={(rOuter + rInner) / 2}
+                r={rMid}
                 fill="none"
                 stroke="currentColor"
                 strokeWidth={thickness - 4}
                 className="text-slate-100/70 dark:text-slate-800/50"
               />
-              {arcs.map(({ slice, d, pct }, i) => (
-                <motion.path
+              {arcs.map(({ slice, start, arcLength, pct }, i) => (
+                <g
                   key={`${id}-${slice.key}-${range}`}
-                  d={d}
-                  fill={slice.color}
-                  initial={{ opacity: 0, scale: 0.96 }}
-                  animate={{
-                    opacity: hoveredKey && hoveredKey !== slice.key ? 0.35 : 1,
-                    scale: 1,
-                  }}
-                  transition={{
-                    duration: 0.45,
-                    delay: 0.04 * i,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
-                  style={{ transformOrigin: `${cx}px ${cy}px`, cursor: 'pointer' }}
-                  onMouseEnter={() => setHoveredKey(slice.key)}
-                  onMouseLeave={() => setHoveredKey(null)}
-                  onFocus={() => setHoveredKey(slice.key)}
-                  onBlur={() => setHoveredKey(null)}
+                  transform={`rotate(${start} ${cx} ${cy})`}
                 >
-                  <title>
-                    {`${slice.label}: ${slice.values[range].toLocaleString('fa-IR')} (${pct.toFixed(0)}٪)`}
-                  </title>
-                </motion.path>
+                  <circle
+                    cx={cx}
+                    cy={cy}
+                    r={rMid}
+                    fill="none"
+                    stroke={slice.color}
+                    strokeWidth={thickness}
+                    strokeLinecap="butt"
+                    strokeDasharray={`${arcLength} ${circumference}`}
+                    strokeDashoffset={offsets[i] ?? arcLength}
+                    className={cn(
+                      'origin-center cursor-pointer transition-transform duration-200 hover:scale-105 hover:brightness-110',
+                      hoveredKey && hoveredKey !== slice.key && 'opacity-[0.35]',
+                    )}
+                    onMouseEnter={() => setHoveredKey(slice.key)}
+                    onMouseLeave={() => setHoveredKey(null)}
+                    onFocus={() => setHoveredKey(slice.key)}
+                    onBlur={() => setHoveredKey(null)}
+                    aria-label={`${slice.label}: ${pct.toFixed(0)}%`}
+                  >
+                    <title>
+                      {`${slice.label}: ${slice.values[range].toLocaleString('fa-IR')} (${pct.toFixed(0)}٪)`}
+                    </title>
+                  </circle>
+                </g>
               ))}
               <text
                 x={cx}
@@ -217,7 +265,7 @@ export default function EngagementDonut({
                 className="fill-slate-500 dark:fill-slate-400"
                 style={{ fontSize: 11, fontWeight: 600 }}
               >
-                {caption}
+                {hoveredArc ? hoveredArc.slice.label : caption}
               </text>
               <text
                 x={cx}
@@ -226,7 +274,9 @@ export default function EngagementDonut({
                 className="fill-slate-900 dark:fill-white"
                 style={{ fontSize: 20, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}
               >
-                {total.toLocaleString('fa-IR')}
+                {hoveredArc
+                  ? hoveredArc.slice.values[range].toLocaleString('fa-IR')
+                  : total.toLocaleString('fa-IR')}
               </text>
               <text
                 x={cx}
@@ -235,7 +285,9 @@ export default function EngagementDonut({
                 className="fill-slate-400 dark:fill-slate-500"
                 style={{ fontSize: 9 }}
               >
-                {RANGES.find((r) => r.id === range)?.label}
+                {hoveredArc
+                  ? `${hoveredArc.pct.toFixed(0)}%`
+                  : RANGES.find((r) => r.id === range)?.label}
               </text>
             </svg>
           </div>

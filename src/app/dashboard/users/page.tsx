@@ -12,12 +12,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/components/ui/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import SubmitButton from '@/components/SubmitButton';
 import LoadingMore from '@/components/LoadingMore';
 import { UsersTableSkeleton } from '@/components/Skeletons';
 import { useSession } from 'next-auth/react';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import {
-  DashboardPageHeader,
   DashboardSearchInput,
   DashboardTableContainer,
   DashboardTable,
@@ -247,7 +248,21 @@ export default function UsersPage() {
 
   return (
     <div className="min-h-screen p-4 sm:p-6 lg:p-8" dir="rtl">
-      <DashboardPageHeader title="مدیریت کاربران" description="مشاهده و مدیریت کاربران سیستم">
+      <PageHeader
+        breadcrumb={[
+          { label: 'داشبورد', href: '/dashboard' },
+          { label: 'کاربران' },
+        ]}
+        title="کاربران"
+        description="مدیریت کاربران و دسترسی‌ها"
+        actions={
+          <Button onClick={() => { setEditingUser(null); form.reset(); setIsDialogOpen(true); }}>
+            افزودن کاربر
+          </Button>
+        }
+      />
+
+      <div className="mt-4 flex flex-wrap items-center gap-3">
         <FilterSelect value={statusFilter} onChange={setStatusFilter} options={statusOptions} />
         <FilterSelect value={roleFilter} onChange={setRoleFilter} options={roleOptions} />
         <DashboardSearchInput
@@ -255,27 +270,23 @@ export default function UsersPage() {
           onChange={setSearchTerm}
           placeholder="جستجوی کاربر..."
         />
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <PrimaryActionButton onClick={() => { setEditingUser(null); form.reset(); }}>
-              <HiOutlinePlus className="h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
-              <span>افزودن کاربر</span>
-            </PrimaryActionButton>
-          </DialogTrigger>
-          <DialogContent className="max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
-            <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-6 py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
-              <DialogTitle className="text-xl font-bold text-neutral-900 dark:text-neutral-50">
-                افزودن کاربر جدید
-              </DialogTitle>
-            </DialogHeader>
-            <div className="max-h-[calc(90vh-120px)] overflow-y-auto p-6">
-              <UserForm form={form} onSubmit={onSubmit} />
-            </div>
-          </DialogContent>
-        </Dialog>
-      </DashboardPageHeader>
+      </div>
 
-      {isLoading && page === 1 ? (
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
+          <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-6 py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
+            <DialogTitle className="text-xl font-bold text-neutral-900 dark:text-neutral-50">
+              افزودن کاربر جدید
+            </DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[calc(90vh-120px)] overflow-y-auto p-6">
+            <UserForm form={form} onSubmit={onSubmit} />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <div className="ds2-card mt-4">
+        {isLoading && page === 1 ? (
         <UsersTableSkeleton rows={8} />
       ) : users.length === 0 ? (
         <DashboardTableContainer>
@@ -354,6 +365,7 @@ export default function UsersPage() {
           <div ref={infiniteScrollRef} style={{ height: '1px' }} />
         </DashboardTableContainer>
       )}
+      </div>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">

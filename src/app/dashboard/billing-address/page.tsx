@@ -3,10 +3,20 @@ import Input from "@/components/Input/Input";
 import ButtonPrimary from "@/components/Button/ButtonPrimary";
 import Select from "@/components/Select/Select";
 import Label from "@/components/Label/Label";
+import { PageHeader } from '@/components/Dashboard/primitives';
 
 const page = () => {
   return (
-    <div className="rounded-xl md:border md:border-neutral-100 dark:border-neutral-800 md:p-6">
+    <div className="space-y-6">
+      <PageHeader
+        breadcrumb={[
+          { label: 'داشبورد', href: '/dashboard' },
+          { label: 'آدرس صورتحساب' },
+        ]}
+        title="آدرس صورتحساب"
+      />
+
+      <div className="rounded-xl md:border md:border-neutral-100 dark:border-neutral-800 md:p-6">
       <form className="grid md:grid-cols-2 gap-6" action="#" method="post">
         <label className="block">
           <Label>Country</Label>
@@ -51,6 +61,7 @@ const page = () => {
           Update Billing address
         </ButtonPrimary>
       </form>
+    </div>
     </div>
   );
 };

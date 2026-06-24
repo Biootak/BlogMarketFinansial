@@ -239,11 +239,11 @@ export default function AnalyticsCanvas({ scheduledPosts }: AnalyticsCanvasProps
         </div>
 
         <TabsContent value="traffic" className="mt-0 focus-visible:outline-none">
-          <div className="dash-vt">
+          <div className="dash-vt dash2-chart-reveal">
             {period === '7d' ? (
               <div className="p-4 sm:p-5 md:p-7">
                 <div className="h-[320px] sm:h-[380px]">
-                  <TrafficChart />
+                  <TrafficChart key={`traffic-${tab}`} />
                 </div>
               </div>
             ) : (
@@ -269,7 +269,7 @@ export default function AnalyticsCanvas({ scheduledPosts }: AnalyticsCanvasProps
         </TabsContent>
 
         <TabsContent value="calendar" className="mt-0 focus-visible:outline-none">
-          <div className="dash-vt">
+          <div className="dash-vt dash2-chart-reveal">
             <div className="p-4 sm:p-5 md:p-7">
               <div className="min-h-[420px]">
                 <PublishingCalendar scheduledPosts={scheduledPosts} />

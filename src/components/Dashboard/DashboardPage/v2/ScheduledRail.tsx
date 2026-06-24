@@ -13,7 +13,7 @@
  * mirrors correctly in RTL.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { motion } from '@/lib/motion-shim';
 import {
@@ -72,6 +72,59 @@ export default function ScheduledRail({ scheduledPosts }: ScheduledRailProps) {
   const monthCells = useMemo(() => getMonthGrid(today), [today]);
   const monthName = PERSIAN_MONTH_NAMES[today.getMonth()];
   const yearFa = today.toLocaleDateString('fa-IR', { year: 'numeric' });
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  const moveFocus = (direction: 'up' | 'down' | 'left' | 'right') => {
+    const grid = gridRef.current;
+    if (!grid) return;
+    const cells = Array.from(
+      grid.querySelectorAll<HTMLElement>('.dash-minical__cell:not(.dash-minical__cell--muted)'),
+    );
+    if (cells.length === 0) return;
+
+    const active = document.activeElement as HTMLElement | null;
+    let idx = cells.findIndex((cell) => cell === active);
+    if (idx === -1) {
+      idx = cells.findIndex((cell) => cell.classList.contains('dash-minical__cell--today'));
+    }
+    if (idx === -1) idx = 0;
+
+    const cols = 7;
+    let next = idx;
+    switch (direction) {
+      case 'right':
+        next = idx + 1;
+        break;
+      case 'left':
+        next = idx - 1;
+        break;
+      case 'down':
+        next = idx + cols;
+        break;
+      case 'up':
+        next = idx - cols;
+        break;
+    }
+    next = Math.max(0, Math.min(cells.length - 1, next));
+
+    cells.forEach((cell, i) => {
+      cell.setAttribute('tabindex', i === next ? '0' : '-1');
+    });
+    cells[next]?.focus();
+  };
+
+  const handleGridKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const key = event.key;
+    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) return;
+    event.preventDefault();
+    const map: Record<string, 'up' | 'down' | 'left' | 'right'> = {
+      ArrowUp: 'up',
+      ArrowDown: 'down',
+      ArrowLeft: 'left',
+      ArrowRight: 'right',
+    };
+    moveFocus(map[key]);
+  };
 
   const scheduledByDay = useMemo(() => {
     const map = new Map<string, PostWithRelations[]>();
@@ -126,7 +179,13 @@ export default function ScheduledRail({ scheduledPosts }: ScheduledRailProps) {
             </span>
           ))}
         </div>
-        <div className="dash-minical" role="grid" aria-label="روزهای ماه جاری">
+        <div
+          ref={gridRef}
+          className="dash-minical"
+          role="grid"
+          aria-label="روزهای ماه جاری"
+          onKeyDown={handleGridKeyDown}
+        >
           {monthCells.map((cell, idx) => {
             if (cell.date === null) {
               return (
@@ -140,14 +199,16 @@ export default function ScheduledRail({ scheduledPosts }: ScheduledRailProps) {
             const key = cell.date.toISOString().slice(0, 10);
             const isToday = cell.date.getTime() === today.getTime();
             const has = scheduledByDay.has(key);
+            const postCount = scheduledByDay.get(key)?.length ?? 0;
             return (
               <span
                 key={key}
                 role="gridcell"
+                tabIndex={isToday ? 0 : -1}
                 aria-current={isToday ? 'date' : undefined}
                 aria-label={
                   has
-                    ? `${cell.day} ${monthName} — ${scheduledByDay.get(key)!.length} پست برنامه‌ریزی‌شده`
+                    ? `${cell.day} ${monthName} - ${postCount} پست زمان‌بندی‌شده`
                     : `${cell.day} ${monthName}`
                 }
                 className={cn(

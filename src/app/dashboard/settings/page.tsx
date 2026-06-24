@@ -10,11 +10,11 @@ import {
   Wrench,
   Check,
   RefreshCw,
-  Sparkles,
   Loader2,
   type LucideIcon,
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import {
   getSystemSettings,
   updateGeneralSettings,
@@ -295,38 +295,17 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen rtl py-6 sm:py-8 lg:py-10" style={{ direction: 'rtl' }}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-        <div className="flex flex-col gap-8 lg:gap-10">
-          {/* Hero Header */}
-          <header className="relative overflow-hidden rounded-3xl bg-gradient-to-bl from-[rgb(var(--c-primary-600))] via-[rgb(var(--c-primary-500))] to-[rgb(var(--c-primary-400))] shadow-2xl shadow-[rgb(var(--c-primary-500))]/30">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/5 opacity-50" />
-            <div className="absolute -left-32 -top-32 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-            <div className="absolute -right-32 -bottom-32 h-64 w-64 rounded-full bg-[rgb(var(--c-primary-300))]/20 blur-3xl" />
-            <div className="relative p-6 sm:p-8 lg:p-12">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-                <div className="space-y-4">
-                  <div className="inline-flex items-center gap-2 rounded-full bg-white/15 backdrop-blur-md px-4 py-2 text-sm font-medium text-white/90 border border-white/20">
-                    <Sparkles className="h-4 w-4" />
-                    <span>تنظیمات سیستم</span>
-                  </div>
-                  <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">پیکربندی و مدیریت</h1>
-                  <p className="text-base sm:text-lg text-white/80 max-w-xl">تمامی تنظیمات سیستم، ایمیل، امنیت و شبکه‌های اجتماعی را از اینجا مدیریت کنید</p>
-                </div>
-                <div className="flex gap-4">
-                  <div className="flex flex-col items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md px-6 py-4 border border-white/20">
-                    <span className="text-2xl font-bold text-white">۶</span>
-                    <span className="text-xs text-white/70">بخش تنظیمات</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </header>
+        <PageHeader
+          breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'تنظیمات' }]}
+          title="تنظیمات"
+          description="تنظیمات سیستم، امنیت، ایمیل و شبکه‌های اجتماعی"
+        />
 
-          {/* Main Content */}
+        <div className="ds2-card mt-4 p-4 sm:p-6">
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
             {/* Sidebar Navigation */}
             <nav className="lg:w-72 shrink-0 lg:sticky lg:top-6 lg:self-start">
-              <div className="dash-panel p-3">
-                <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
+              <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
                   {tabs.map((tab) => {
                     const IconComponent = tab.icon;
                     const isActive = activeTab === tab.id;
@@ -342,7 +321,6 @@ export default function SettingsPage() {
                     );
                   })}
                 </div>
-              </div>
             </nav>
 
             {/* Tab Content */}

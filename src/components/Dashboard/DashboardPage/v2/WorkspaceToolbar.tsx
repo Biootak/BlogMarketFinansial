@@ -44,6 +44,12 @@ const RANGES: { id: Range; label: string }[] = [
   { id: 'week', label: 'هفتگی' },
 ];
 
+const DENSITY_STORAGE_KEY = 'dash2:density';
+const LEGACY_DENSITY_STORAGE_KEY = 'dashboard:density';
+
+const isDensity = (value: unknown): value is Density =>
+  value === 'comfortable' || value === 'compact';
+
 const DENSITIES: { id: Density; label: string; icon: React.ReactNode }[] = [
   {
     id: 'comfortable',
@@ -113,6 +119,39 @@ export default function WorkspaceToolbar({
   const openPalette = () => {
     window.dispatchEvent(new CustomEvent('cmd-palette:open'));
   };
+
+  // Hydrate density from localStorage on mount. Migrate any legacy value
+  // stored under the old key into the new primitives namespace.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      let stored = window.localStorage.getItem(DENSITY_STORAGE_KEY);
+      if (stored === null) {
+        const legacy = window.localStorage.getItem(LEGACY_DENSITY_STORAGE_KEY);
+        if (legacy !== null) {
+          window.localStorage.setItem(DENSITY_STORAGE_KEY, legacy);
+          window.localStorage.removeItem(LEGACY_DENSITY_STORAGE_KEY);
+          stored = legacy;
+        }
+      }
+      if (stored !== null && isDensity(stored) && stored !== density) {
+        onDensityChange(stored);
+      }
+    } catch {
+      // localStorage may be restricted or unavailable; fall back to prop value.
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persist density changes to localStorage.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(DENSITY_STORAGE_KEY, density);
+    } catch {
+      // Ignore write failures.
+    }
+  }, [density]);
 
   return (
     <div className="dash-toolbar" role="toolbar" aria-label="ابزارهای داشبورد">

@@ -2,6 +2,7 @@
 // 2026-06-20: بازطراحی کامل — Server fetch + Client workspace
 
 import { getExchangeRateList } from '@/actions/market-rates';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import ExchangeRatesHeader from './_components/ExchangeRatesHeader';
 import ExchangeRatesWorkspace from './_components/ExchangeRatesWorkspace';
 import type { MarketRateProvider, MarketRateUnit } from '@/lib/market-rates';
@@ -50,6 +51,14 @@ export default async function ExchangeRatesPage() {
         gap: 'var(--ds-space-8)',
       }}
     >
+      <PageHeader
+        breadcrumb={[
+          { label: 'داشبورد', href: '/dashboard' },
+          { label: 'نرخ ارزها' },
+        ]}
+        title="نرخ ارزها"
+        description="مدیریت نرخ‌های ارز و فلزات گرانبها"
+      />
       <ExchangeRatesHeader
         total={total}
         auto={auto}

@@ -13,7 +13,9 @@
  */
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { motion } from '@/lib/motion-shim';
+import { cn } from '@/lib/utils';
 import {
   HiOutlineChartBar,
   HiOutlineClock,
@@ -41,9 +43,58 @@ interface PostsSpotlightProps {
   }>;
 }
 
+type PostsFilter = 'all' | 'popular' | 'drafts';
+
+const FILTERS: { id: PostsFilter; label: string }[] = [
+  { id: 'all', label: 'همه' },
+  { id: 'popular', label: 'محبوب' },
+  { id: 'drafts', label: 'پیش‌نویس‌ها' },
+];
+
+const FILTER_STORAGE_KEY = 'dash2:posts-filter';
+
+const isPostsFilter = (value: unknown): value is PostsFilter =>
+  value === 'all' || value === 'popular' || value === 'drafts';
+
 export default function PostsSpotlight({ popularPosts, recentDrafts }: PostsSpotlightProps) {
-  const featured = popularPosts.slice(0, 3);
-  const morePopular = popularPosts.slice(3);
+  const [activeFilter, setActiveFilter] = useState<PostsFilter>(() => {
+    if (typeof window === 'undefined') return 'all';
+    try {
+      const stored = window.localStorage.getItem(FILTER_STORAGE_KEY);
+      return isPostsFilter(stored) ? stored : 'all';
+    } catch {
+      return 'all';
+    }
+  });
+  const [displayFilter, setDisplayFilter] = useState<PostsFilter>(activeFilter);
+  const [isFading, setIsFading] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(FILTER_STORAGE_KEY, activeFilter);
+    } catch {
+      // Ignore write failures.
+    }
+  }, [activeFilter]);
+
+  useEffect(() => {
+    if (activeFilter === displayFilter) return;
+    setIsFading(true);
+    let fadeInTimer: number | undefined;
+    const fadeOutTimer = window.setTimeout(() => {
+      setDisplayFilter(activeFilter);
+      fadeInTimer = window.setTimeout(() => setIsFading(false), 120);
+    }, 120);
+    return () => {
+      window.clearTimeout(fadeOutTimer);
+      if (fadeInTimer !== undefined) window.clearTimeout(fadeInTimer);
+    };
+  }, [activeFilter, displayFilter]);
+
+  const featured = displayFilter === 'drafts' ? [] : popularPosts.slice(0, 3);
+  const morePopular = displayFilter === 'drafts' ? [] : popularPosts.slice(3);
+  const visibleDrafts = displayFilter === 'popular' ? [] : recentDrafts;
 
   return (
     <section
@@ -77,7 +128,37 @@ export default function PostsSpotlight({ popularPosts, recentDrafts }: PostsSpot
         </div>
       </header>
 
-      {featured.length > 0 && (
+      <div className="px-4 sm:px-5 md:px-7 pt-3 sm:pt-4">
+        <div
+          className="inline-flex items-center gap-1 p-1 rounded-xl bg-slate-100/70 dark:bg-slate-800/60 ring-1 ring-slate-200/60 dark:ring-slate-700/60"
+          role="radiogroup"
+          aria-label="فیلتر پست‌ها"
+        >
+          {FILTERS.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              role="radio"
+              aria-checked={activeFilter === f.id}
+              tabIndex={activeFilter === f.id ? 0 : -1}
+              onClick={() => setActiveFilter(f.id)}
+              data-active={activeFilter === f.id ? 'true' : undefined}
+              className="dash-chip !h-8 !px-3 !text-xs"
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div
+        className={cn(
+          'transition-opacity ease-out',
+          isFading ? 'opacity-0' : 'opacity-100',
+        )}
+        style={{ transitionDuration: '120ms' }}
+      >
+        {featured.length > 0 && (
         <div className="px-4 sm:px-5 md:px-7 pt-4 sm:pt-5">
           <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3 inline-flex items-center gap-1.5">
             <HiOutlineSparkles className="w-4 h-4 text-violet-500" />
@@ -174,11 +255,11 @@ export default function PostsSpotlight({ popularPosts, recentDrafts }: PostsSpot
           icon={<HiOutlineClock className="w-5 h-5" />}
           viewAllHref="/dashboard/posts?filter=draft"
         >
-          {recentDrafts.length === 0 ? (
+          {visibleDrafts.length === 0 ? (
             <EmptyState label="پیش‌نویس تازه‌ای ندارید." />
           ) : (
             <ul className="space-y-0.5">
-              {recentDrafts.map((draft, i) => (
+              {visibleDrafts.map((draft, i) => (
                 <motion.li
                   key={draft.id}
                   initial={{ opacity: 0, x: 6 }}
@@ -211,6 +292,7 @@ export default function PostsSpotlight({ popularPosts, recentDrafts }: PostsSpot
             </ul>
           )}
         </Panel>
+      </div>
       </div>
     </section>
   );

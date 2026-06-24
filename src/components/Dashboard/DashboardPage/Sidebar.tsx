@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from '@/lib/motion-shim';
 import { logout } from '@/actions/auth-actions';
 import { useToast } from '@/components/ui/use-toast';
+import { DropdownMenu, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Logo from '@/components/Logo/Logo';
 import {
   HiOutlineHome,
@@ -28,6 +29,19 @@ import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Avatar from '@/components/Avatar/Avatar';
 
+const HOTKEY_MAP: Record<string, string> = {
+  'داشبورد': '1',
+  'پست‌ها': '2',
+  'کاربران': '3',
+  'دسته‌بندی': '4',
+  'تبلیغات': '5',
+  'تبلیغ بالای هدر': '6',
+  'درخواست‌های خدمات': '7',
+  'تنظیمات سیستم': 'S',
+  'گزارش‌ها': 'R',
+  'پروفایل من': 'P',
+};
+
 interface SubmenuItem {
   href: string;
   label: string;
@@ -37,6 +51,7 @@ interface MenuItem {
   href: string;
   icon: React.ReactNode;
   label: string;
+  title?: string;
   submenu?: SubmenuItem[];
 }
 
@@ -293,6 +308,21 @@ const Sidebar = ({ userRole }: SidebarProps) => {
           </div>
         </div>
 
+        {/* Workspace switcher */}
+        <div className="sticky top-0 z-10 h-12 px-3 flex items-center bg-inherit">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="flex items-center justify-between w-full px-3 h-10 rounded-lg text-white/90 hover:bg-white/10 transition-colors"
+              >
+                <span className="font-medium truncate">وبلاگ اصلی</span>
+                <HiOutlineChevronDown className="w-4 h-4 opacity-70" />
+              </button>
+            </DropdownMenuTrigger>
+          </DropdownMenu>
+        </div>
+
         {/* Navigation */}
         <div className="relative flex-1 overflow-y-auto sidebar-scroll px-3 py-2">
           <ul className="space-y-1.5">
@@ -306,10 +336,10 @@ const Sidebar = ({ userRole }: SidebarProps) => {
                       <button
                         type="button"
                         onClick={() => toggleSubmenu(item.label)}
-                        className={`flex items-center w-full p-3 rounded-xl transition-all duration-200 hover:translate-x-1 ${
+                        className={`relative flex items-center w-full p-3 rounded-xl transition-all duration-200 transition-colors duration-[var(--ds-duration-fast)] ease-[var(--ds-ease-out-expo)] hover:translate-x-1 ${
                           isActive
-                            ? 'bg-gradient-to-l from-emerald-400/15 to-indigo-500/15 text-white shadow-[0_0_0_1px_oklch(70%_0.14_200_/_0.35),0_8px_24px_-12px_oklch(62%_0.16_220_/_0.6)] ring-1 ring-emerald-300/20'
-                            : 'text-white/65 hover:bg-white/10 hover:text-white'
+                            ? 'bg-gradient-to-l from-emerald-400/15 to-indigo-500/15 text-white shadow-[0_0_0_1px_oklch(70%_0.14_200_/_0.35),0_8px_24px_-12px_oklch(62%_0.16_220_/_0.6)] ring-1 ring-emerald-300/20 before:absolute before:start-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-0.5 before:rounded-full before:bg-gradient-to-b before:from-cyan-500 before:to-emerald-500'
+                            : 'text-white/65 hover:bg-[color:var(--ds-color-surface-2)] hover:text-white'
                         }`}
                       >
                         <div
@@ -321,7 +351,14 @@ const Sidebar = ({ userRole }: SidebarProps) => {
                         </div>
                         {isOpen && (
                           <div className="mr-3 flex-1 flex items-center justify-between">
-                            <span className="font-medium">{item.label}</span>
+                            <span className="font-medium flex items-center gap-2">
+                              {item.label}
+                              {HOTKEY_MAP[item.title || item.label] && (
+                                <kbd className="text-[10px] font-mono text-muted-foreground bg-muted px-1 rounded">
+                                  {HOTKEY_MAP[item.title || item.label]}
+                                </kbd>
+                              )}
+                            </span>
                             <HiOutlineChevronDown
                               className="w-4 h-4 transition-transform duration-200"
                               style={{
@@ -360,10 +397,10 @@ const Sidebar = ({ userRole }: SidebarProps) => {
                   ) : (
                     <Link href={item.href} onClick={handleItemClick}>
                       <span
-                        className={`flex items-center p-3 rounded-xl transition-all duration-200 hover:translate-x-1 ${
+                        className={`relative flex items-center p-3 rounded-xl transition-all duration-200 transition-colors duration-[var(--ds-duration-fast)] ease-[var(--ds-ease-out-expo)] hover:translate-x-1 ${
                           isActive
-                            ? 'bg-gradient-to-l from-emerald-400/15 to-indigo-500/15 text-white shadow-[0_0_0_1px_oklch(70%_0.14_200_/_0.35),0_8px_24px_-12px_oklch(62%_0.16_220_/_0.6)] ring-1 ring-emerald-300/20'
-                            : 'text-white/65 hover:bg-white/10 hover:text-white'
+                            ? 'bg-gradient-to-l from-emerald-400/15 to-indigo-500/15 text-white shadow-[0_0_0_1px_oklch(70%_0.14_200_/_0.35),0_8px_24px_-12px_oklch(62%_0.16_220_/_0.6)] ring-1 ring-emerald-300/20 before:absolute before:start-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-0.5 before:rounded-full before:bg-gradient-to-b before:from-cyan-500 before:to-emerald-500'
+                            : 'text-white/65 hover:bg-[color:var(--ds-color-surface-2)] hover:text-white'
                         }`}
                       >
                         <div
@@ -373,7 +410,16 @@ const Sidebar = ({ userRole }: SidebarProps) => {
                         >
                           {item.icon}
                         </div>
-                        {isOpen && <span className="mr-3 font-medium">{item.label}</span>}
+                        {isOpen && (
+                          <span className="mr-3 font-medium flex items-center gap-2">
+                            {item.label}
+                            {HOTKEY_MAP[item.title || item.label] && (
+                              <kbd className="text-[10px] font-mono text-muted-foreground bg-muted px-1 rounded">
+                                {HOTKEY_MAP[item.title || item.label]}
+                              </kbd>
+                            )}
+                          </span>
+                        )}
                       </span>
                     </Link>
                   )}
@@ -384,8 +430,9 @@ const Sidebar = ({ userRole }: SidebarProps) => {
         </div>
 
         {/* Footer */}
-        <div className="relative flex-shrink-0 p-3 border-t border-white/10">
-          {/* Logout button */}
+        <div className="ds2-card mt-auto border-t border-[color:var(--ds-color-border-subtle)]">
+          <div className="relative flex-shrink-0 p-3">
+            {/* Logout button */}
           <button
             type="button"
             onClick={handleLogout}
@@ -419,6 +466,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
               </div>
             )}
           </div>
+          </div>
         </div>
       </nav>
 
@@ -446,10 +494,11 @@ export default Sidebar;
 
 // 2026-06-23: AuthResult fields are `message` for success and
 // `error` for failure. Pick whichever is present.
-function extractMessage(r: any): string | undefined {
+function extractMessage(r: unknown): string | undefined {
   if (r && typeof r === 'object') {
-    if (typeof r.error === 'string') return r.error;
-    if (typeof r.message === 'string') return r.message;
+    const record = r as Record<string, unknown>;
+    if (typeof record.error === 'string') return record.error;
+    if (typeof record.message === 'string') return record.message;
   }
   return undefined;
 }

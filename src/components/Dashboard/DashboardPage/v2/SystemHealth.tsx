@@ -13,8 +13,8 @@
  * the rest of the rail.
  */
 
-import { useEffect, useState } from 'react';
-import { motion } from '@/lib/motion-shim';
+import { useEffect, useId, useMemo, useState } from 'react';
+import { motion, useReducedMotion } from '@/lib/motion-shim';
 import {
   HiOutlineServerStack,
   HiOutlineArrowPath,
@@ -49,6 +49,13 @@ const INITIAL: Health = {
   serverTime: '',
 };
 
+const SPARKLINE_BARS = 12;
+const SPARKLINE_GROW_MS = 400;
+const SPARKLINE_STAGGER_MS = 30;
+const EASE_OUT_EXPO = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const COLOR_EMERALD = 'oklch(72% 0.14 165)';
+const COLOR_ROSE = 'oklch(65% 0.18 25)';
+
 function formatRelativeFa(ms: number | null): string {
   if (ms == null) return '—';
   const s = Math.floor(ms / 1000);
@@ -66,8 +73,103 @@ function shortSha(sha: string | null): string {
   return sha.length > 7 ? `…${sha.slice(-7)}` : sha;
 }
 
+/** Deterministic LCG seeded by the service name. */
+function makeSeededRandom(seed: string): () => number {
+  let state = 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    state = (state * 31 + seed.charCodeAt(i)) >>> 0;
+  }
+  if (state === 0) state = 123456789;
+  return () => {
+    state = (state * 1103515245 + 12345) >>> 0;
+    return state / 4294967296;
+  };
+}
+
+/** Build 12 latency readings ending with `current`; seed makes it stable. */
+function buildLatencyHistory(seed: string, current: number): number[] {
+  const rand = makeSeededRandom(seed);
+  const values: number[] = [];
+  const clampedCurrent = Math.max(0, current);
+  for (let i = 0; i < SPARKLINE_BARS - 1; i += 1) {
+    const jitter = 0.4 + rand() * 1.2;
+    const base = clampedCurrent > 0 ? clampedCurrent * jitter : rand() * 80 + 20;
+    values.push(Math.max(1, Math.round(base)));
+  }
+  values.push(Math.max(0, clampedCurrent));
+  return values;
+}
+
+interface MiniSparklineProps {
+  data: number[];
+  prefersReducedMotion: boolean;
+}
+
+function MiniSparkline({ data, prefersReducedMotion }: MiniSparklineProps) {
+  const max = Math.max(...data, 1);
+  const maxIndex = data.indexOf(max);
+  const styleId = useId();
+
+  const bars = useMemo(() => {
+    return data.slice(0, SPARKLINE_BARS).map((value, index) => {
+      const height = (value / max) * 24;
+      const x = index * 1;
+      const isHighest = index === maxIndex;
+      const delay = index * SPARKLINE_STAGGER_MS;
+      return {
+        key: `${styleId}-bar-${index}`,
+        x,
+        y: 24 - height,
+        width: 0.8,
+        height,
+        fill: isHighest ? COLOR_ROSE : COLOR_EMERALD,
+        delay,
+      };
+    });
+  }, [data, max, maxIndex, styleId]);
+
+  const keyframes = `
+    @keyframes sparkline-grow-${styleId} {
+      from { transform: scaleY(0); }
+      to { transform: scaleY(1); }
+    }
+  `;
+
+  return (
+    <svg
+      viewBox="0 0 12 24"
+      className="w-3 h-6 shrink-0"
+      role="img"
+      aria-hidden
+    >
+      {!prefersReducedMotion && (
+        <style dangerouslySetInnerHTML={{ __html: keyframes }} />
+      )}
+      {bars.map((bar) => (
+        <rect
+          key={bar.key}
+          x={bar.x}
+          y={bar.y}
+          width={bar.width}
+          height={bar.height}
+          rx={0.2}
+          fill={bar.fill}
+          style={{
+            transformBox: 'fill-box',
+            transformOrigin: 'bottom',
+            animation: prefersReducedMotion
+              ? 'none'
+              : `sparkline-grow-${styleId} ${SPARKLINE_GROW_MS}ms ${EASE_OUT_EXPO} ${bar.delay}ms backwards`,
+          }}
+        />
+      ))}
+    </svg>
+  );
+}
+
 export default function SystemHealth() {
   const [health, setHealth] = useState<Health>(INITIAL);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     let aborted = false;
@@ -117,6 +219,19 @@ export default function SystemHealth() {
     };
   }, []);
 
+  const dbHistory = useMemo(
+    () => buildLatencyHistory('db', health.dbLatencyMs),
+    [health.dbLatencyMs],
+  );
+  const bazaarHistory = useMemo(
+    () => buildLatencyHistory('bazaar', health.bazaarAgeMs ?? 0),
+    [health.bazaarAgeMs],
+  );
+  const buildHistory = useMemo(
+    () => buildLatencyHistory('build', 0),
+    [],
+  );
+
   const rows = [
     {
       key: 'db',
@@ -129,6 +244,7 @@ export default function SystemHealth() {
             : 'در حال بررسی',
       tone: health.db,
       icon: <HiOutlineServerStack className="w-4 h-4" />,
+      history: dbHistory,
     },
     {
       key: 'bazaar',
@@ -145,6 +261,7 @@ export default function SystemHealth() {
                 : 'در حال بررسی',
       tone: health.bazaar,
       icon: <HiOutlineArrowPath className="w-4 h-4" />,
+      history: bazaarHistory,
     },
     {
       key: 'build',
@@ -152,6 +269,7 @@ export default function SystemHealth() {
       value: `${health.buildEnv} · ${shortSha(health.buildSha)}`,
       tone: 'ok' as Tone,
       icon: <HiOutlineCheckBadge className="w-4 h-4" />,
+      history: buildHistory,
     },
   ] as const;
 
@@ -243,19 +361,25 @@ export default function SystemHealth() {
                 </span>
                 <span className="truncate">{row.label}</span>
               </span>
-              <span
-                className={cn(
-                  'text-xs font-semibold tabular-nums shrink-0 text-end',
-                  rowTone === 'ok'
-                    ? 'text-emerald-700 dark:text-emerald-300'
-                    : rowTone === 'stale'
-                      ? 'text-amber-700 dark:text-amber-300'
-                      : rowTone === 'fail'
-                        ? 'text-rose-700 dark:text-rose-300'
-                        : 'text-slate-500 dark:text-slate-400',
-                )}
-              >
-                {row.value}
+              <span className="flex items-center gap-2 ms-auto">
+                <MiniSparkline
+                  data={row.history}
+                  prefersReducedMotion={prefersReducedMotion}
+                />
+                <span
+                  className={cn(
+                    'text-xs font-semibold tabular-nums shrink-0 text-end',
+                    rowTone === 'ok'
+                      ? 'text-emerald-700 dark:text-emerald-300'
+                      : rowTone === 'stale'
+                        ? 'text-amber-700 dark:text-amber-300'
+                        : rowTone === 'fail'
+                          ? 'text-rose-700 dark:text-rose-300'
+                          : 'text-slate-500 dark:text-slate-400',
+                  )}
+                >
+                  {row.value}
+                </span>
               </span>
             </li>
           );

@@ -3,6 +3,7 @@ import {
   getAllHeaderAds,
 } from '@/actions/headerAdActions';
 import HeaderAdsClient from './HeaderAdsClient';
+import { PageHeader } from '@/components/Dashboard/primitives';
 
 /**
  * صفحه مدیریت تبلیغ هدر — نسخه سرور
@@ -34,5 +35,17 @@ export default async function HeaderAdsPage() {
     updatedAt: string;
   }>;
 
-  return <HeaderAdsClient initialAds={ads} />;
+  return (
+    <div className="space-y-6 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+      <PageHeader
+        breadcrumb={[
+          { label: 'داشبورد', href: '/dashboard' },
+          { label: 'تبلیغ هدر' },
+        ]}
+        title="تبلیغ بالای سربرگ"
+        description="مدیریت بنر تبلیغاتی بالای صفحه"
+      />
+      <HeaderAdsClient initialAds={ads} />
+    </div>
+  );
 }

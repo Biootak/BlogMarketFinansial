@@ -25,6 +25,13 @@ const ContentSecurityPolicy = `
 `.replace(/\s{2,}/g, ' ').trim();
 
 const nextConfig: NextConfig = {
+  // 2026-06-24: support redirecting the build/dev cache to a native
+  // Linux path via NEXT_DIST_DIR. On WSL 9p mounts (/mnt/c) the
+  // dev server's lockfile creation fails with EACCES because the
+  // 9p protocol doesn't fully support POSIX file locking. Setting
+  // NEXT_DIST_DIR=/tmp/next-dev-$USER routes the .next directory
+  // (and its lockfile) to native ext4 where locking works.
+  ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
   output: 'standalone',
   reactStrictMode: true,
   compress: true,

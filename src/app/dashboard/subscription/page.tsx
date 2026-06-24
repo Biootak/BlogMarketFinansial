@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/Dashboard/primitives";
 import React from "react";
 
 const data = [
@@ -10,6 +11,14 @@ const data = [
 const DashboardSubcription = () => {
   return (
     <div className="dash-panel overflow-hidden sm:rounded-lg">
+      <PageHeader
+        breadcrumb={[
+          { label: "داشبورد", href: "/dashboard" },
+          { label: "اشتراک" },
+        ]}
+        title="اشتراک"
+        description="مدیریت اشتراک و پلن‌ها"
+      />
       <div className="px-4 py-5 sm:px-6">
         <h3 className="text-lg leading-6 font-medium text-neutral-900 dark:text-neutral-200">
           Package Information

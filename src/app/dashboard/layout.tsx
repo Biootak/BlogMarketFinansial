@@ -1,8 +1,5 @@
 import { checkRole } from '@/lib/auth';
-import Header from '@/components/Dashboard/DashboardPage/Header';
-import Sidebar from '@/components/Dashboard/DashboardPage/Sidebar';
-import SidebarInitializer from '@/components/Dashboard/DashboardPage/SidebarInitializer';
-import MainContent from '@/components/Dashboard/DashboardPage/MainContent';
+import { DashboardProviders } from '@/components/Dashboard/DashboardPage/DashboardProviders';
 import { SiteSettingsProvider } from '@/components/SiteSettingsProvider';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
 
@@ -22,17 +19,7 @@ export default async function DashboardLayout({
         siteDescription: settings.siteDescription,
       }}
     >
-      <div
-        className="flex h-screen overflow-hidden bg-slate-50 dark:bg-[oklch(10%_0.018_255)] transition-colors duration-300"
-        dir="rtl"
-      >
-        <SidebarInitializer />
-        <Sidebar userRole={user.role} />
-        <div className="flex flex-col flex-1 overflow-hidden">
-          <Header />
-          <MainContent>{children}</MainContent>
-        </div>
-      </div>
+      <DashboardProviders userRole={user.role}>{children}</DashboardProviders>
     </SiteSettingsProvider>
   );
 }
