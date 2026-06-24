@@ -102,7 +102,9 @@ export default function WorkspaceToolbar({
     const current = search?.get('range') ?? null;
     const desired = range === 'all' ? null : range;
     if (desired === current) {
-      lastWrittenRangeRef.current = current;
+      // Store the full serialized query string so the compare below
+      // is apples-to-apples (qs is params.toString(), not the raw value).
+      lastWrittenRangeRef.current = search?.toString() ?? '';
       return;
     }
     const params = new URLSearchParams(search?.toString() ?? '');
