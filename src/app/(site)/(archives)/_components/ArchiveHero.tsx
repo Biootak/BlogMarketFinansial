@@ -170,7 +170,7 @@ function ArchiveHero({
                     ) : null}
                   </div>
 
-                  <h1 className="arc-counter arc-counter--brand text-3xl sm:text-4xl lg:text-5xl mb-3">
+                  <h1 className="arc-counter arc-counter--brand text-3xl sm:text-4xl lg:text-4xl mb-3">
                     {heading}
                   </h1>
                   <p className="arc-lead text-neutral-600 dark:text-neutral-300 max-w-2xl">

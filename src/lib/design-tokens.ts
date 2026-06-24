@@ -30,17 +30,17 @@ import { cn } from './utils';
  */
 export const heading = {
   // Page title — used in DashboardPageHeader, hero sections, single post.
-  h1: 'text-lg sm:text-xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50',
+  h1: 'text-base sm:text-lg font-bold tracking-tight text-neutral-900 dark:text-neutral-50',
   // Section title — used in SectionMagazine*, SectionLargeSlider etc.
-  h2: 'text-base sm:text-lg font-bold tracking-tight text-neutral-900 dark:text-neutral-50',
+  h2: 'text-sm sm:text-base font-bold tracking-tight text-neutral-900 dark:text-neutral-50',
   // Sub-section / card group title.
-  h3: 'text-sm sm:text-base font-semibold tracking-tight text-neutral-900 dark:text-neutral-50',
+  h3: 'text-xs sm:text-sm font-semibold tracking-tight text-neutral-900 dark:text-neutral-50',
   // Card title (post list, magazine cards).
-  h4: 'text-[13px] sm:text-sm font-semibold tracking-tight text-neutral-900 dark:text-neutral-100',
+  h4: 'text-xs sm:text-[13px] font-semibold tracking-tight text-neutral-900 dark:text-neutral-100',
   // Eyebrow / overline — uppercase, tight tracking.
   h5: 'text-[10px] font-semibold uppercase tracking-[0.08em] text-neutral-500 dark:text-neutral-400',
   // Strong inline label.
-  h6: 'text-[11px] sm:text-xs font-semibold tracking-tight text-neutral-900 dark:text-neutral-100',
+  h6: 'text-[10px] sm:text-[11px] font-semibold tracking-tight text-neutral-900 dark:text-neutral-100',
 } as const;
 
 /**

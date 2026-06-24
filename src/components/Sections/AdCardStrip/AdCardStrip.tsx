@@ -211,7 +211,7 @@ function HeroAdCard({
           </div>
 
           {/* Content */}
-          <div className="relative h-full flex flex-col justify-between p-5 sm:p-6 lg:p-7 min-h-[inherit] text-white">
+          <div className="relative h-full flex flex-col justify-between p-4 sm:p-5 lg:p-6 min-h-[inherit] text-white">
             <div className="flex items-center gap-2">
               <span
                 className={cn(
@@ -318,7 +318,7 @@ function RichAdCard({
       >
         {/* Image — نسبت تصویر طوری تنظیم شد که با hero هم‌خونی داشته باشه
             و rich card ارتفاعش رو با hero هماهنگ کنه. */}
-        <div className="relative aspect-[16/10] overflow-hidden shrink-0">
+        <div className="relative aspect-[16/9] overflow-hidden shrink-0">
           {ad.imageUrl ? (
             <SafeImage
               src={ad.imageUrl}

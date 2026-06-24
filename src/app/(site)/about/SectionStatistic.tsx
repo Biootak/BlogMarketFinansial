@@ -44,7 +44,7 @@ const SectionStatistic = () => {
             key={item.id}
             className="p-6 bg-white dark:bg-black/20 rounded-2xl dark:border-neutral-800"
           >
-            <h3 className="text-2xl font-semibold leading-none text-neutral-900 md:text-4xl dark:text-neutral-200">
+            <h3 className="text-2xl font-semibold leading-none text-neutral-900 md:text-3xl dark:text-neutral-200">
               {item.heading}
             </h3>
             <span className="block text-sm text-neutral-500 mt-3 sm:text-base dark:text-neutral-400">

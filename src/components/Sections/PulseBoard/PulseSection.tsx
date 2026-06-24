@@ -76,7 +76,7 @@ export function PulseSectionSkeleton() {
   return (
     <div className="space-y-4">
       <Skeleton className="h-10 w-full rounded-2xl" />
-      <Skeleton className="h-[480px] w-full rounded-3xl" />
+      <Skeleton className="h-[360px] w-full rounded-3xl" />
     </div>
   );
 }

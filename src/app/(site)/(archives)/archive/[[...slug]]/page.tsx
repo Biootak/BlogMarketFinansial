@@ -206,7 +206,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
         featuredPost={featuredPost}
       />
 
-      <div className="container" style={{ marginTop: 'var(--ds-space-6)' }}>
+      <div className="container" style={{ marginTop: 'var(--ds-space-4)' }}>
         <AtelierToolbar
           filters={FILTERS}
           defaultFilter={DEFAULT_FILTER}
@@ -282,7 +282,7 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
         />
       </div>
 
-      <div className="container atl-section atl-reveal mb-10 lg:mb-16">
+      <div className="container atl-section atl-reveal mb-8 lg:mb-12">
         <SectionSubscribe2 />
       </div>
     </div>

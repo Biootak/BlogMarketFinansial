@@ -192,7 +192,7 @@ const PopularTopicsBento: FC<PopularTopicsBentoProps> = ({
             </motion.div>
 
             <div>
-              <h2 className="flex items-center gap-2 text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50">
+              <h2 className="flex items-center gap-2 text-xl sm:text-2xl md:text-2xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-50">
                 {title}
                 <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500 animate-pulse" />
               </h2>

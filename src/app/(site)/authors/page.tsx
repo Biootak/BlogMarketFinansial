@@ -77,7 +77,7 @@ export default async function AuthorsPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <div className="container py-8 sm:py-12 lg:py-16 space-y-10 sm:space-y-14">
+      <div className="container py-6 sm:py-10 lg:py-12 space-y-8 sm:space-y-12">
         <AuthorsHero
           totalAuthors={data.totalAuthors}
           totalPosts={data.totalPosts}
@@ -161,7 +161,7 @@ function FeaturedSpotlight({
         </div>
 
         <div className="min-w-0">
-          <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-neutral-900 dark:text-neutral-50 line-clamp-1">
+          <h2 className="text-2xl sm:text-2xl font-black tracking-tight text-neutral-900 dark:text-neutral-50 line-clamp-1">
             {author.name ?? 'نویسنده'}
           </h2>
           {author.profile?.jobName && (

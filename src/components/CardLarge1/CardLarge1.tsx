@@ -53,9 +53,9 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-center min-h-[360px] lg:min-h-[420px]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-6 items-center min-h-[260px] lg:min-h-[320px]">
           {/* Content Section */}
-          <div className="order-2 lg:order-1 space-y-4 lg:space-y-5 p-4 lg:p-0">
+          <div className="order-2 lg:order-1 space-y-3 lg:space-y-4 p-4 lg:p-0">
             {/* Category Badge */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -67,7 +67,7 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
 
             {/* Title */}
             <motion.h1
-              className="text-xl sm:text-2xl lg:text-3xl font-bold text-neutral-900 dark:text-white leading-snug"
+              className="text-lg sm:text-xl lg:text-2xl font-bold text-neutral-900 dark:text-white leading-snug"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
@@ -84,7 +84,7 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
             {/* Excerpt */}
             {excerpt && (
               <motion.p
-                className="text-sm lg:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed line-clamp-2"
+                className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed line-clamp-2"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
@@ -95,14 +95,14 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
 
             {/* Author & Meta */}
             <motion.div
-              className="flex items-center justify-between pt-4 border-t border-neutral-200 dark:border-neutral-700"
+              className="flex items-center justify-between pt-3 border-t border-neutral-200 dark:border-neutral-700"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
             >
               <Link href={`/author/${author.id}`} className="flex items-center gap-3 group">
                 <Avatar
-                  sizeClass="h-12 w-12"
+                  sizeClass="h-9 w-9"
                   radius="rounded-full"
                   imgUrl={author.profile?.avatar || author.image}
                   userName={author.name || ''}
@@ -111,7 +111,7 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
                   <p className="font-semibold text-neutral-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                     {author.name}
                   </p>
-                  <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400">
+                  <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
                     <FormattedDate date={createdAt} />
                     <span>•</span>
                     <span>{readingTime} دقیقه مطالعه</span>
@@ -123,17 +123,17 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
               <div className="flex items-center gap-2">
                 <button
                   onClick={onClickPrev}
-                  className="w-11 h-11 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-500 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-lg hover:scale-105"
+                  className="w-9 h-9 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-500 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-lg hover:scale-105"
                   aria-label="قبلی"
                 >
-                  <HiChevronRight className="w-5 h-5" />
+                  <HiChevronRight className="w-4 h-4" />
                 </button>
                 <button
                   onClick={onClickNext}
-                  className="w-11 h-11 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-500 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-lg hover:scale-105"
+                  className="w-9 h-9 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-primary-500 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm hover:shadow-lg hover:scale-105"
                   aria-label="بعدی"
                 >
-                  <HiChevronLeft className="w-5 h-5" />
+                  <HiChevronLeft className="w-4 h-4" />
                 </button>
               </div>
             </motion.div>
@@ -164,7 +164,7 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
           >
             <Link
               href={getPostLink(postType, slug)}
-              className="block relative aspect-[4/3] lg:aspect-[4/3] rounded-2xl lg:rounded-3xl overflow-hidden group"
+              className="block relative aspect-[16/10] lg:aspect-[16/9] rounded-xl lg:rounded-2xl overflow-hidden group"
             >
               {/* Main Image */}
               <NcImage
@@ -183,9 +183,9 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
               {/* Play Button for Video Posts */}
               {postType === 'VIDEO' && (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
                     <svg
-                      className="w-6 h-6 lg:w-8 lg:h-8 text-primary-600 ms-1"
+                      className="w-4 h-4 lg:w-5 lg:h-5 text-primary-600 ms-1"
                       fill="currentColor"
                       viewBox="0 0 24 24"
                     >
@@ -197,8 +197,8 @@ const CardLarge1: React.FC<CardLarge1Props> = React.memo(
             </Link>
 
             {/* Decorative Elements */}
-            <div className="absolute -bottom-4 -start-4 w-24 h-24 bg-primary-500/10 rounded-full blur-2xl -z-10" />
-            <div className="absolute -top-4 -end-4 w-32 h-32 bg-secondary-500/10 rounded-full blur-2xl -z-10" />
+            <div className="absolute -bottom-2 -start-2 w-16 h-16 bg-primary-500/10 rounded-full blur-xl -z-10" />
+            <div className="absolute -top-2 -end-2 w-20 h-20 bg-secondary-500/10 rounded-full blur-xl -z-10" />
           </motion.div>
         </div>
       </motion.div>

@@ -33,7 +33,7 @@ const Card3Small: React.FC<Card3SmallProps> = ({ className = 'h-full', post }) =
         aria-label={title}
         className="block w-20 flex-shrink-0 relative rounded-lg overflow-hidden z-0 ms-4 group"
       >
-        <div className="w-full aspect-[3/2]">
+        <div className="w-full aspect-[16/10]">
           <SafeImage
             alt={title}
             sizes="(max-width: 640px) 80px, 100px"

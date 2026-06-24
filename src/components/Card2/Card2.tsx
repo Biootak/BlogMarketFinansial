@@ -38,8 +38,8 @@ export default function Card2({ className = 'h-full', size = 'normal', post }: C
           href={postLink}
           className={`block relative w-full overflow-hidden ${
             isLarge
-              ? 'aspect-[16/10] sm:aspect-[16/9] lg:aspect-[16/10]'
-              : 'aspect-[4/3] sm:aspect-[16/10]'
+              ? 'aspect-[16/9] sm:aspect-[16/10] lg:aspect-[16/9]'
+              : 'aspect-[16/10] sm:aspect-[3/2]'
           }`}
         >
           <Image

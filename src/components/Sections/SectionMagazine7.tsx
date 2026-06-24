@@ -22,7 +22,7 @@ const SectionMagazine7: FC<SectionMagazine7Props> = ({ posts = [], className = '
             </div>
           </div>
           <div>
-            <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
+            <h2 className="text-lg sm:text-2xl lg:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
               روایت‌های تصویری
             </h2>
             <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1">
@@ -42,8 +42,8 @@ const SectionMagazine7: FC<SectionMagazine7Props> = ({ posts = [], className = '
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 sm:gap-7 md:gap-8 stagger-children">
-        <div className="grid gap-4 sm:gap-5 md:gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:gap-5 md:gap-6 stagger-children">
+        <div className="grid gap-3 sm:gap-4 md:gap-5 lg:grid-cols-2">
           {posts.slice(0, 2).map((post, index) => (
             <div key={post.id} className="group anim-fade-in-up">
               <div className="relative overflow-hidden rounded-3xl bg-white/70 dark:bg-neutral-800/60 backdrop-blur border border-neutral-200/60 dark:border-neutral-700/60 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1.5">
@@ -53,7 +53,7 @@ const SectionMagazine7: FC<SectionMagazine7Props> = ({ posts = [], className = '
           ))}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
           {posts.slice(2, 6).map((post) => (
             <div key={post.id} className="group anim-fade-in-up">
               <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-white/70 dark:bg-neutral-800/60 backdrop-blur border border-neutral-200/60 dark:border-neutral-700/60 transition-all duration-500 hover:shadow-xl hover:-translate-y-1">

@@ -19,7 +19,7 @@ const SingleHeader4: FC<SingleHeader4Props> = ({ hiddenDesc = false, className =
             categories={[DEMO_CATEGORIES[1]]}
           /> */}
           <SingleTitle
-            mainClass="text-neutral-900 font-bold text-xl md:text-4xl md:!leading-[120%] lg:text-5xl 2xl:text-6xl dark:text-neutral-100"
+            mainClass="text-neutral-900 font-bold text-xl md:text-4xl md:!leading-[120%] lg:text-4xl 2xl:text-5xl dark:text-neutral-100"
             title={'Trending web & landing page designs in 2023'}
           />
           {!hiddenDesc && (

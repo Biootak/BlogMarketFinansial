@@ -56,7 +56,7 @@ const SingleHeader: React.FC<SingleHeaderProps> = ({ post, titleMainClass, class
 
           {/* Title */}
           <SingleTitle
-            mainClass={`${titleMainClass || ''} text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight tracking-tight text-neutral-900 dark:text-white`}
+            mainClass={`${titleMainClass || ''} text-2xl sm:text-3xl lg:text-3xl font-bold leading-tight tracking-tight text-neutral-900 dark:text-white`}
             title={post.title}
           />
 

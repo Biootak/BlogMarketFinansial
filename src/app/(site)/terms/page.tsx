@@ -66,7 +66,7 @@ const termsAndConditions = [
 
 export default function TermsPage() {
   return (
-    <div className="container py-8">
+    <div className="container py-6">
       <Card className="w-full max-w-4xl mx-auto">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-center mb-6">

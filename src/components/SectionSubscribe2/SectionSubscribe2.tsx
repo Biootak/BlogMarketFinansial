@@ -35,7 +35,7 @@ const SectionSubscribe2: FC<SectionSubscribe2Props> = async ({ className = '' })
           </div>
 
           {/* Title — یک‌خطی، جمع‌وجور */}
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-white leading-tight">
+          <h2 className="text-xl sm:text-2xl lg:text-2xl font-black text-white leading-tight">
             به <span className="text-amber-300">خبرنامه ما</span> بپیوندید
           </h2>
 

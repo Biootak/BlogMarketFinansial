@@ -97,7 +97,7 @@ export function PopularTopicCard({
         {/* Content */}
         <div
           className={cn(
-            'relative z-10 flex h-full flex-col justify-between p-5 sm:p-6',
+            'relative z-10 flex h-full flex-col justify-between p-4 sm:p-5',
             featured ? 'min-h-[180px] sm:min-h-[200px]' : 'min-h-[140px] sm:min-h-[150px]',
           )}
         >

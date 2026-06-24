@@ -110,7 +110,7 @@ export default async function PageSingle({ params }: PageProps) {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,119,198,0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,119,198,0.15),transparent)] pointer-events-none" />
       
       <div className="relative container pt-6 pb-12 lg:pt-8 lg:pb-16 @container/single-layout">
-        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* Main Content Area */}
           <article className="w-full @lg/single-layout:basis-[68%] @xl/single-layout:basis-[70%] grow-0 shrink">
             {/* Hero Image with Overlay */}

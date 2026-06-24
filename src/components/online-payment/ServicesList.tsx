@@ -120,7 +120,7 @@ const ServicesList: FC = () => {
         >
           {services.map((service) => (
             <motion.li key={service.title} variants={itemVariants}>
-              <div className="group h-full p-5 sm:p-6 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl border border-neutral-100 dark:border-neutral-700/50 hover:border-primary-200 dark:hover:border-primary-700/50 transition-all duration-300 hover:shadow-lg hover:shadow-neutral-200/50 dark:hover:shadow-neutral-900/50">
+              <div className="group h-full p-4 sm:p-5 bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl border border-neutral-100 dark:border-neutral-700/50 hover:border-primary-200 dark:hover:border-primary-700/50 transition-all duration-300 hover:shadow-lg hover:shadow-neutral-200/50 dark:hover:shadow-neutral-900/50">
                 {/* Icon */}
                 <div
                   className={`inline-flex items-center justify-center w-12 h-12 rounded-xl ${service.bgColor} mb-4 group-hover:scale-110 transition-transform duration-300`}

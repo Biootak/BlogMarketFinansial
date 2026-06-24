@@ -25,7 +25,7 @@ const info = [
 const PageContact = () => {
   return (
     <div className="rtl @container/contact">
-      <header className="text-center max-w-2xl mx-auto mb-8 sm:mb-12 @md/contact:mb-16 @xl/contact:mb-28 @container/contact">
+      <header className="text-center max-w-2xl mx-auto mb-8 sm:mb-10 @md/contact:mb-12 @xl/contact:mb-24 @container/contact">
         <Heading2>تماس با ما</Heading2>
         <span className="block text-sm mt-2 text-neutral-700 sm:text-base dark:text-neutral-200">
           پیام خود را برای ما ارسال کنید، ما با شما تماس خواهیم گرفت.

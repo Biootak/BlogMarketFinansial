@@ -77,7 +77,7 @@ export default async function Home() {
       </div>
 
       {popularCategories.length > 0 && (
-        <div className="container relative mt-8 lg:mt-12" style={{ minHeight: '420px' }}>
+        <div className="container relative mt-6 lg:mt-8" style={{ minHeight: '420px' }}>
           <DeferredTrending
             categories={popularCategories}
             maxItems={9}
@@ -88,7 +88,7 @@ export default async function Home() {
         </div>
       )}
 
-      <div className="container relative mt-8 lg:mt-12">
+      <div className="container relative mt-6 lg:mt-8">
         <Suspense
           fallback={
             <div className="space-y-4">
@@ -102,30 +102,30 @@ export default async function Home() {
       </div>
 
       {firstStrip.length > 0 && (
-        <div className="container relative mt-8 lg:mt-12" style={{ minHeight: '300px' }}>
+        <div className="container relative mt-6 lg:mt-8" style={{ minHeight: '300px' }}>
           <DeferredAdStrip ads={firstStrip} accentColor="#5b6cff" />
         </div>
       )}
 
       {posts.length > 0 && (
-        <div className="container relative mt-8 lg:mt-12">
+        <div className="container relative mt-6 lg:mt-8">
           <SectionMagazine7 className="" posts={posts} />
         </div>
       )}
 
       {secondStrip.length > 0 && (
-        <div className="container relative mt-8 lg:mt-12" style={{ minHeight: '300px' }}>
+        <div className="container relative mt-6 lg:mt-8" style={{ minHeight: '300px' }}>
           <DeferredAdStrip ads={secondStrip} accentColor="#22d3ee" eyebrow="تازه‌های پیشنهادی" />
         </div>
       )}
 
       {topAuthors.length > 0 && (
-        <div className="container relative mt-8 lg:mt-12">
+        <div className="container relative mt-6 lg:mt-8">
           <TopAuthorsSection className="" authors={topAuthors} />
         </div>
       )}
 
-      <div className="container relative mt-8 lg:mt-12 mb-10 lg:mb-16">
+      <div className="container relative mt-6 lg:mt-8 mb-8 lg:mb-12">
         <SectionSubscribe2 className="" />
       </div>
     </div>

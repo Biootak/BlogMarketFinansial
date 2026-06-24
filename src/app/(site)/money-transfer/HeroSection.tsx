@@ -57,7 +57,7 @@ export default function HeroSection() {
               <span className="text-sm font-medium text-white/90">صرافی آنلاین معتبر</span>
             </motion.div>
 
-            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight mb-4 sm:mb-6">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white leading-tight mb-4 sm:mb-6">
               انتقال ارز
               <br />
               <span className="bg-gradient-to-l from-blue-200 via-white to-blue-200 bg-clip-text text-transparent">

@@ -26,7 +26,7 @@ const Card10: FC<Card10Props> = ({ className = 'h-full', post }) => {
       onMouseLeave={() => setIsHover(false)}
     >
       <Link href={getPostLink(postType, slug)} className="absolute inset-0" tabIndex={-1} />
-      <div className="block group rounded-xl sm:rounded-2xl flex-shrink-0 relative w-full aspect-[4/3] sm:aspect-[9/8] overflow-hidden z-0">
+      <div className="block group rounded-xl sm:rounded-2xl flex-shrink-0 relative w-full aspect-[16/10] sm:aspect-[3/2] overflow-hidden z-0">
         <div>
           <PostFeaturedMedia post={post} isHover={isHover} />
         </div>

@@ -328,7 +328,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
 
                 <div className="min-w-0 flex-1 sm:flex-none sm:ml-5">
                   <div className="flex items-center gap-2">
-                    <h2 className="text-base sm:text-xl @md/csp:text-2xl @xl/csp:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white break-words text-balance">
+                    <h2 className="text-base sm:text-xl @md/csp:text-2xl @xl/csp:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white break-words text-balance">
                       آخرین مقالات
                     </h2>
                     <Sparkles

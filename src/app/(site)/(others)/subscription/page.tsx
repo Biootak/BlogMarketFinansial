@@ -60,7 +60,7 @@ const PageSubcription = ({}) => {
           <h3 className="block text-sm uppercase tracking-widest text-neutral-6000 dark:text-neutral-300 mb-2 font-medium">
             {pricing.name}
           </h3>
-          <h2 className="text-5xl leading-none flex items-center text-neutral-700 dark:text-neutral-300">
+          <h2 className="text-4xl leading-none flex items-center text-neutral-700 dark:text-neutral-300">
             <span>{pricing.pricing}</span>
             <span className="text-lg ms-1 font-normal text-neutral-500 dark:text-neutral-300">
               {pricing.per}
@@ -93,7 +93,7 @@ const PageSubcription = ({}) => {
 
   return (
     <div className="rtl">
-      <header className="text-center max-w-2xl mx-auto - mb-14 sm:mb-16 lg:mb-20">
+      <header className="text-center max-w-2xl mx-auto - mb-12 sm:mb-12 lg:mb-16">
         <Heading2 icon={Gem}>طرح‌های اشتراک</Heading2>
         <span className="block text-sm mt-2 text-neutral-700 sm:text-base dark:text-neutral-200">
           قیمت‌گذاری مناسب برای هر نوع کسب و کار

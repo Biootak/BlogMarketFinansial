@@ -242,7 +242,7 @@ export default function Design7({
                   key={mainPost.id}
                   tiltStrength={0.4}
                   enableHolographic
-                  className="relative group h-[min(60dvh,360px)] sm:h-[440px] @lg/main-hero:h-[520px] @3xl/main-hero:h-[560px] overflow-hidden rounded-2xl"
+                  className="relative group h-[min(60dvh,280px)] sm:h-[360px] @lg/main-hero:h-[420px] @3xl/main-hero:h-[460px] overflow-hidden rounded-2xl"
                   innerClassName="relative h-full"
                 >
                   <motion.div
@@ -356,7 +356,7 @@ export default function Design7({
                       {/* Title */}
                       <motion.h2
                         key={`title-${mainPost.id}`}
-                        className="text-base sm:text-xl lg:text-2xl xl:text-3xl font-black text-white leading-snug mb-3 sm:mb-4 line-clamp-2 drop-shadow-lg"
+                        className="text-base sm:text-lg lg:text-xl xl:text-2xl font-black text-white leading-snug mb-3 sm:mb-4 line-clamp-2 drop-shadow-lg"
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.35 }}

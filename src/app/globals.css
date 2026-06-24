@@ -137,7 +137,7 @@ html {
 
 body {
   font-size: var(--fs-base);
-  line-height: var(--leading-normal);
+  line-height: 1.45;
   font-weight: 400;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -209,15 +209,15 @@ p { line-height: var(--leading-relaxed); }
      and Vercel use 14/16/18/22/26/30 instead.  This pulls every visible
      text element down one step on average, which is what the user is
      asking for when they say "texts feel too large". */
-  --fs-base: 14px;
-  --fs-sm: 12px;
-  --fs-xs: 11px;
-  --fs-lg: 15px;
-  --fs-xl: 16px;
-  --fs-2xl: 18px;
-  --fs-3xl: 22px;
-  --fs-4xl: 26px;
-  --fs-5xl: 30px;
+  --fs-base: 12px;
+  --fs-sm: 10px;
+  --fs-xs: 9px;
+  --fs-lg: 13px;
+  --fs-xl: 14px;
+  --fs-2xl: 15px;
+  --fs-3xl: 17px;
+  --fs-4xl: 19px;
+  --fs-5xl: 22px;
   --leading-tight: 1.2;
   --leading-snug: 1.35;
   --leading-normal: 1.5;
@@ -340,9 +340,9 @@ p { line-height: var(--leading-relaxed); }
 }
 @media (min-width: 640px) { .container { padding-inline: 1.25rem; } }
 @media (min-width: 768px) { .container { padding-inline: 1.5rem; } }
-@media (min-width: 1024px) { .container { max-width: 1200px; padding-inline: 2rem; } }
-@media (min-width: 1280px) { .container { max-width: 1400px; } }
-@media (min-width: 1536px) { .container { max-width: 1600px; } }
+@media (min-width: 1024px) { .container { max-width: 1200px; padding-inline: 1.25rem; } }
+@media (min-width: 1280px) { .container { max-width: 1320px; } }
+@media (min-width: 1536px) { .container { max-width: 1440px; } }
 
 .container-wide {
   width: 100%;
@@ -8078,19 +8078,27 @@ p { line-height: var(--leading-relaxed); }
   .auth-progress__indicator {
     block-size: 100%;
     border-radius: inherit;
-    background: linear-gradient(90deg, oklch(57% 0.13 255), oklch(68% 0.12 245));
+    /* 2026-06-24: brand-color progress gradient matching the CTA +
+       favicon. Sky on the left, indigo on the right. */
+    background: linear-gradient(
+      90deg,
+      oklch(70% 0.13 230),
+      oklch(46% 0.16 265)
+    );
     transition: width var(--ds-duration-slow) var(--ds-ease-out-quart);
   }
 
   .auth-stage-form,
   .auth-stage-form--compact {
-    gap: 0.95rem;
+    /* 2026-06-24: round to 1rem on the 8pt rhythm (was 0.95rem). */
+    gap: 1rem;
   }
 
   .auth-fieldset {
     display: flex;
     flex-direction: column;
-    gap: 0.45rem;
+    /* 2026-06-24: round to 0.5rem on the 8pt rhythm (was 0.45rem). */
+    gap: 0.5rem;
   }
 
   .auth-label-row {
@@ -8108,6 +8116,11 @@ p { line-height: var(--leading-relaxed); }
 
   .auth-input-wrap {
     position: relative;
+    /* 2026-06-24: leave room on the inline-start side so the action
+       button (eye toggle, clear, etc.) doesn't overlap with the
+       input's first character in RTL pages. The 3rem clearance is
+       wider than the 2.2rem button for breathing room. */
+    padding-inline-start: 0;
   }
 
   .auth-input {
@@ -8161,23 +8174,38 @@ p { line-height: var(--leading-relaxed); }
   .auth-input-action {
     position: absolute;
     inset-block-start: 50%;
-    inset-inline-end: 0.5rem;
+    /* 2026-06-24: was `inset-inline-end` which in RTL resolves to
+       the visual LEFT — exactly where the LTR `dir`d password input
+       puts its cursor and first character. The icon overlaid the
+       text, blinked in and out as the user typed, and disappeared
+       against the dark input surface. `inset-inline-start` resolves
+       to the visual RIGHT in RTL (the natural reading-end) so the
+       toggle now sits in the empty tail of the field. */
+    inset-inline-start: 0.5rem;
     translate: 0 -50%;
     display: inline-grid;
     place-items: center;
-    inline-size: 2.1rem;
-    block-size: 2.1rem;
+    inline-size: 2.2rem;
+    block-size: 2.2rem;
     border: 0;
     border-radius: 0.7rem;
-    background: transparent;
-    color: oklch(72% 0.02 240);
+    /* Subtle glass surface so the icon doesn't disappear against
+       the dark input bg on light-on-dark inputs. */
+    background: oklch(100% 0 0 / 0.04);
+    color: oklch(82% 0.03 240);
+    /* Stay above the input on touch devices that focus the input
+       through the action button. */
+    z-index: 1;
     cursor: pointer;
-    transition: background-color var(--ds-duration-fast) var(--ds-ease-out-quart), color var(--ds-duration-fast) var(--ds-ease-out-quart);
+    transition:
+      background-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+      color var(--ds-duration-fast) var(--ds-ease-out-quart),
+      transform var(--ds-duration-fast) var(--ds-ease-out-quart);
   }
 
   .auth-input-action:hover {
-    background: oklch(100% 0 0 / 0.06);
-    color: oklch(94% 0.01 240);
+    background: oklch(100% 0 0 / 0.1);
+    color: oklch(98% 0.01 240);
   }
 
   .auth-input-action:focus-visible,
@@ -8188,7 +8216,10 @@ p { line-height: var(--leading-relaxed); }
   .auth-context-link:focus-visible,
   .auth-social-btn:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px oklch(60% 0.13 255 / 0.22);
+    /* 2026-06-24: brand-color focus ring. Matches the sky→blue→indigo
+       gradient baked into /favicon.svg so keyboard focus is consistent
+       with the page's visual identity. */
+    box-shadow: 0 0 0 3px oklch(64% 0.12 230 / 0.32);
   }
 
   .auth-helper {
@@ -8321,19 +8352,28 @@ p { line-height: var(--leading-relaxed); }
   .auth-cta {
     border: 0;
     color: oklch(99% 0.01 240);
-    background: linear-gradient(135deg, oklch(60% 0.13 255), oklch(49% 0.14 260));
+    /* 2026-06-24: brand gradient pulled from /favicon.svg
+       (#0EA5E9 sky-500 → #2563EB blue-600 → #1E40AF blue-800).
+       Mirrors the logo's three-stop so the CTA looks like an
+       extension of the brand mark instead of a generic indigo. */
+    background: linear-gradient(
+      135deg,
+      oklch(70% 0.13 230) 0%,
+      oklch(60% 0.16 255) 50%,
+      oklch(46% 0.16 265) 100%
+    );
     box-shadow:
-      0 22px 40px -24px oklch(45% 0.12 255 / 0.8),
-      inset 0 1px 0 oklch(100% 0 0 / 0.12);
+      0 22px 40px -24px oklch(45% 0.14 255 / 0.85),
+      inset 0 1px 0 oklch(100% 0 0 / 0.18);
     cursor: pointer;
   }
 
   .auth-cta:hover {
     transform: translateY(-1px);
-    filter: brightness(1.05);
+    filter: brightness(1.06) saturate(1.05);
     box-shadow:
-      0 26px 46px -24px oklch(45% 0.12 255 / 0.9),
-      inset 0 1px 0 oklch(100% 0 0 / 0.14);
+      0 26px 46px -24px oklch(45% 0.14 255 / 0.95),
+      inset 0 1px 0 oklch(100% 0 0 / 0.2);
   }
 
   .auth-cta-secondary {

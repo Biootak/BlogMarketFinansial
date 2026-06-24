@@ -92,7 +92,7 @@ const SingleContentClient = ({
         {/* Article Content */}
         <div
           id="single-entry-content"
-          className="max-w-full"
+          className="max-w-3xl mx-auto"
           ref={contentRef}
         >
           {/* Content Card */}

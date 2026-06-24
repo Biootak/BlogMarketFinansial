@@ -548,7 +548,7 @@ function ShowcaseAd({
             </div>
 
             {/* Content */}
-            <div className="relative flex flex-col gap-3 sm:gap-4 p-5 sm:p-6 md:p-7">
+            <div className="relative flex flex-col gap-3 sm:gap-4 p-4 sm:p-5 md:p-6">
               <div className="flex items-center gap-2">
                 <AdLabel accentColor={accentColor} />
                 <span

@@ -116,7 +116,7 @@ export default async function PageAuthor({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <div className="container py-8 sm:py-12 lg:py-14 space-y-8 sm:space-y-12 lg:space-y-16">
+      <div className="container py-6 sm:py-10 lg:py-12 space-y-8 sm:space-y-10 lg:space-y-12">
         <AuthorProfileHero
           author={{
             id: payload.author.id,

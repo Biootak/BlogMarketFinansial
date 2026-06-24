@@ -71,7 +71,7 @@ const Card10V3: React.FC<Card10V3Props> = ({ className = 'h-full', post, gallery
       onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => setIsHover(false)}
     >
-      <div className="block group rounded-xl sm:rounded-2xl flex-shrink-0 relative w-full aspect-[4/3] sm:aspect-[16/10] overflow-hidden z-0">
+      <div className="block group rounded-xl sm:rounded-2xl flex-shrink-0 relative w-full aspect-[16/10] sm:aspect-[3/2] overflow-hidden z-0">
         {postType !== 'GALLERY' || !galleryImages || galleryImages.length === 0 ? (
           <PostFeaturedMedia post={post} isHover={isHover} />
         ) : (

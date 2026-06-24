@@ -365,7 +365,7 @@ export function LatestArticles({
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-lg sm:text-xl lg:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white text-balance">
+                  <h2 className="text-base sm:text-lg lg:text-xl font-bold tracking-tight text-neutral-900 dark:text-white text-balance">
                     تازه‌های بازار
                   </h2>
                   <Sparkles
@@ -697,7 +697,7 @@ function HeroCard({
         )}
         style={{ ['--hero-accent' as string]: accentColor } as React.CSSProperties}
       >
-        <div className="relative aspect-[16/10] overflow-hidden">
+        <div className="relative aspect-[16/9] overflow-hidden">
           <SafeImage
             src={post.featuredImage}
             alt={post.title}
@@ -706,7 +706,7 @@ function HeroCard({
             containerClassName="absolute inset-0"
             className="object-cover transition-transform duration-700 ease-out group-hover/hero:scale-[1.04]"
             variant="hero"
-            ratio="16/10"
+            ratio="16/9"
             priority
           />
 
@@ -1396,7 +1396,7 @@ function QuoteHighlight({
         'border border-[color:var(--hairline)]',
         'bg-gradient-to-br from-white/70 to-neutral-50/60 dark:from-neutral-900/70 dark:to-neutral-900/40',
         'backdrop-blur-md',
-        'p-5 sm:p-6 lg:p-7',
+        'p-4 sm:p-5 lg:p-6',
       )}
     >
       <div

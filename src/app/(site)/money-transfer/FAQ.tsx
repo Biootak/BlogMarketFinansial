@@ -52,7 +52,7 @@ export default function FAQ() {
           <HelpCircle className="w-4 h-4 text-violet-600 dark:text-violet-400" />
           <span className="text-sm font-medium text-violet-600 dark:text-violet-400">پاسخ به سوالات شما</span>
         </div>
-        <h2 className="text-2xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-4">
+        <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white mb-4">
           سؤالات متداول
         </h2>
         <p className="text-slate-500 dark:text-slate-400 max-w-lg mx-auto">

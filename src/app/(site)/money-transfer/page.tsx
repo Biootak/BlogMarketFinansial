@@ -26,7 +26,7 @@ export default async function MoneyTransferPage() {
       {/* Hero Section */}
       <HeroSection />
 
-      <div className="container py-8 sm:py-16 lg:py-24 space-y-12 sm:space-y-24 px-4 sm:px-6">
+      <div className="container py-6 sm:py-10 lg:py-14 space-y-10 sm:space-y-16 px-4 sm:px-6">
         {/* Exchange Rates Section */}
         <section id="rates" className="relative overflow-hidden">
           {/* Decorative Elements */}
@@ -41,7 +41,7 @@ export default async function MoneyTransferPage() {
                   <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
                   <span className="text-sm font-medium text-blue-600 dark:text-blue-400">به‌روزرسانی لحظه‌ای</span>
                 </div>
-                <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white">
+                <h2 className="text-2xl lg:text-2xl font-bold text-slate-900 dark:text-white">
                   نرخ‌های لحظه‌ای ارز
                 </h2>
                 <p className="text-slate-500 dark:text-slate-400 max-w-md">
@@ -75,11 +75,11 @@ export default async function MoneyTransferPage() {
 
         {/* Rate Lists Section */}
         <section className="relative">
-          <div className="text-center mb-12 lg:mb-16">
+          <div className="text-center mb-10 lg:mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-50 dark:bg-indigo-500/10 rounded-full mb-4">
               <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400">نرخ‌های ویژه</span>
             </div>
-            <h2 className="text-2xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-4">
+            <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white mb-4">
               لیست نرخ‌های ارز
             </h2>
             <p className="text-slate-500 dark:text-slate-400 max-w-lg mx-auto">
@@ -109,11 +109,11 @@ export default async function MoneyTransferPage() {
 
         {/* Services Section */}
         <section id="services">
-          <div className="text-center mb-12 lg:mb-16">
+          <div className="text-center mb-10 lg:mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-50 dark:bg-emerald-500/10 rounded-full mb-4">
               <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">چرا ما؟</span>
             </div>
-            <h2 className="text-2xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-4">
+            <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white mb-4">
               خدمات ویژه ما
             </h2>
             <p className="text-slate-500 dark:text-slate-400 max-w-lg mx-auto">
