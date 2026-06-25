@@ -23,20 +23,10 @@
  * onDensityChange }. DashboardShell does not need to be modified.
  */
 
-import {
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  useTransition,
-} from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import {
-  HiOutlineSquares2X2,
-  HiOutlineRectangleStack,
-} from 'react-icons/hi2';
 import { cn } from '@/lib/utils';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { HiOutlineRectangleStack, HiOutlineSquares2X2 } from 'react-icons/hi2';
 
 export type Range = 'all' | 'today' | 'week';
 export type Density = 'comfortable' | 'compact';
@@ -65,8 +55,7 @@ const LEGACY_DENSITY_STORAGE_KEY = 'dashboard:density';
 const isDensity = (value: unknown): value is Density =>
   value === 'comfortable' || value === 'compact';
 
-const useIsomorphicLayoutEffect =
-  typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export default function WorkspaceToolbar({
   range,
@@ -177,10 +166,7 @@ export default function WorkspaceToolbar({
     }
   }, [density]);
 
-  const activeRange = useMemo(
-    () => RANGES.find((r) => r.id === range) ?? RANGES[0],
-    [range],
-  );
+  const activeRange = useMemo(() => RANGES.find((r) => r.id === range) ?? RANGES[0], [range]);
 
   return (
     <div
@@ -194,10 +180,6 @@ export default function WorkspaceToolbar({
 
       {/* Zone 1 — context (start, RTL: right) ---------------------------- */}
       <div className="dash-toolbar__zone dash-toolbar__zone--context">
-        <span className="dash-toolbar__eyebrow" aria-hidden>
-          <span className="dash-toolbar__eyebrow-dot" />
-          <span className="dash-toolbar__eyebrow-text">داشبورد</span>
-        </span>
         <h2 className="dash-toolbar__title">نمای کلی</h2>
       </div>
 
@@ -236,11 +218,7 @@ export default function WorkspaceToolbar({
         </div>
 
         {/* Density toggle */}
-        <div
-          className="dash-toolbar__density"
-          role="radiogroup"
-          aria-label="چگالی نمایش"
-        >
+        <div className="dash-toolbar__density" role="radiogroup" aria-label="چگالی نمایش">
           {DENSITIES.map((d) => (
             <button
               key={d.id}

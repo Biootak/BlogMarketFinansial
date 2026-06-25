@@ -27,43 +27,38 @@
  * `cmd-palette:open` event for the search field.
  */
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { motion, AnimatePresence } from '@/lib/motion-shim';
-import { useSidebarStore } from '@/hooks/sidebarStore';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
-import SwitchDarkMode from '@/components/SwitchDarkMode/SwitchDarkMode';
+import { logout } from '@/actions/auth-actions';
 import Avatar from '@/components/Avatar/Avatar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import SwitchDarkMode from '@/components/SwitchDarkMode/SwitchDarkMode';
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { logout } from '@/actions/auth-actions';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useSidebarStore } from '@/hooks/sidebarStore';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { AnimatePresence, motion } from '@/lib/motion-shim';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import {
-  HiOutlineBars3,
-  HiOutlineSparkles,
-  HiOutlineShieldCheck,
-  HiOutlineCommandLine,
-  HiOutlineBell,
-  HiOutlineUserCircle,
-  HiOutlineCog6Tooth,
   HiOutlineArrowRightOnRectangle,
-  HiOutlineMagnifyingGlass,
-  HiOutlineCheckCircle,
-  HiOutlineExclamationCircle,
-  HiOutlineDocumentText,
-  HiOutlineUsers,
+  HiOutlineBars3,
+  HiOutlineBell,
   HiOutlineChartBarSquare,
+  HiOutlineCheckCircle,
+  HiOutlineCog6Tooth,
+  HiOutlineDocumentText,
+  HiOutlineExclamationCircle,
+  HiOutlineMagnifyingGlass,
+  HiOutlineShieldCheck,
+  HiOutlineSparkles,
+  HiOutlineUserCircle,
+  HiOutlineUsers,
 } from 'react-icons/hi2';
 
 const getRoleBadge = (role?: string) => {
@@ -204,7 +199,6 @@ const Header: React.FC = () => {
 
   return (
     <header
-      role="banner"
       data-scrolled={scrolled ? 'true' : undefined}
       className="dash-header"
       style={{
@@ -242,10 +236,7 @@ const Header: React.FC = () => {
         {/* ── Zone 2 — search (fluid center) ──────────────────────────────── */}
         <div className="dash-header__zone dash-header__zone--search">
           <label className="dash-header__search" htmlFor="dash-header-search">
-            <HiOutlineMagnifyingGlass
-              className="w-4 h-4 opacity-60 shrink-0"
-              aria-hidden
-            />
+            <HiOutlineMagnifyingGlass className="w-4 h-4 opacity-60 shrink-0" aria-hidden />
             <input
               id="dash-header-search"
               type="search"
@@ -263,16 +254,6 @@ const Header: React.FC = () => {
               className="dash-header__search-input"
               aria-label="جستجو در داشبورد"
             />
-            <button
-              type="button"
-              onClick={openCommandPalette}
-              className="hidden sm:inline-flex items-center gap-0.5 text-[10px] font-mono text-slate-500 dark:text-slate-400 border border-slate-200/70 dark:border-slate-700/70 rounded-md px-1.5 py-0.5 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60"
-              aria-label="باز کردن جستجوی فرمان‌ها"
-              title="باز کردن جستجوی فرمان‌ها"
-            >
-              <HiOutlineCommandLine className="w-3 h-3" aria-hidden />
-              <span>K</span>
-            </button>
           </label>
         </div>
 
@@ -285,9 +266,7 @@ const Header: React.FC = () => {
             aria-label={`ساعت تهران ${clock ?? 'در حال بارگذاری'}`}
           >
             <span className="dash-header__status-dot" aria-hidden />
-            <span className="dash-header__status-time tabular-nums">
-              {clock ?? '--:--'}
-            </span>
+            <span className="dash-header__status-time tabular-nums">{clock ?? '--:--'}</span>
             <span className="dash-header__status-city">تهران</span>
           </div>
 
@@ -315,9 +294,7 @@ const Header: React.FC = () => {
               <header className="dash-header__popover-head">
                 <div className="flex items-center justify-between gap-2">
                   <div>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">
-                      اعلان‌ها
-                    </p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">اعلان‌ها</p>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                       آخرین رویدادهای داشبورد
                     </p>
@@ -333,9 +310,7 @@ const Header: React.FC = () => {
 
               {SAMPLE_NOTIFICATIONS.length === 0 ? (
                 <div className="px-6 py-10 text-center">
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
-                    اعلان تازه‌ای ندارید.
-                  </p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">اعلان تازه‌ای ندارید.</p>
                 </div>
               ) : (
                 <ul className="max-h-96 overflow-y-auto py-1">
@@ -352,10 +327,7 @@ const Header: React.FC = () => {
                           ease: [0.22, 1, 0.36, 1],
                         }}
                       >
-                        <Link
-                          href={n.href ?? '#'}
-                          className="dash-header__notif group"
-                        >
+                        <Link href={n.href ?? '#'} className="dash-header__notif group">
                           <span
                             className={cn(
                               'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg',
@@ -404,15 +376,9 @@ const Header: React.FC = () => {
           {/* User dropdown menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                aria-label="منوی کاربر"
-                className="dash-header__avatar"
-              >
+              <button type="button" aria-label="منوی کاربر" className="dash-header__avatar">
                 <div className="dash-header__avatar-inner">
-                  <span className="dash-header__avatar-name">
-                    {user?.name || 'کاربر'}
-                  </span>
+                  <span className="dash-header__avatar-name">{user?.name || 'کاربر'}</span>
                   <span className="dash-header__avatar-role">
                     <HiOutlineSparkles className="w-3 h-3 opacity-80" aria-hidden />
                     <span>{roleBadge.label}</span>
