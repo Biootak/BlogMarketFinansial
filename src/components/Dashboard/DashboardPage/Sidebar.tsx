@@ -2,11 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from '@/lib/motion-shim';
+import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { logout } from '@/actions/auth-actions';
 import { useToast } from '@/components/ui/use-toast';
-import { DropdownMenu, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Logo from '@/components/Logo/Logo';
+import Avatar from '@/components/Avatar/Avatar';
+import { useSidebarStore } from '@/hooks/sidebarStore';
 import {
   HiOutlineHome,
   HiOutlineDocumentText,
@@ -19,16 +21,14 @@ import {
   HiOutlineUserCircle,
   HiOutlineArrowRightOnRectangle,
   HiOutlineChevronDown,
-  HiOutlineBars3,
+  HiOutlineChevronLeft,
+  HiOutlineXMark,
   HiOutlineClipboardDocumentList,
   HiOutlineSparkles,
 } from 'react-icons/hi2';
-import { useSidebarStore } from '@/hooks/sidebarStore';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
-import { useState } from 'react';
-import { useSession } from 'next-auth/react';
-import Avatar from '@/components/Avatar/Avatar';
 
+// Hotkey badges are decorative; no keyboard handlers are wired.
+// They remain in the DOM to preserve the v1 visual without misleading users.
 const HOTKEY_MAP: Record<string, string> = {
   'داشبورد': '1',
   'پست‌ها': '2',
@@ -59,58 +59,58 @@ interface SidebarProps {
   userRole: 'USER' | 'AUTHOR' | 'ADMIN' | 'SUPER_ADMIN';
 }
 
-const getMenuItems = (role: string) => {
-  const baseItems = [
+const getMenuItems = (role: string): MenuItem[] => {
+  const baseItems: MenuItem[] = [
     {
       title: 'داشبورد',
       href: '/dashboard',
-      icon: <HiOutlineHome className="w-5 h-5" />,
+      icon: <HiOutlineHome className="w-[18px] h-[18px]" />,
       label: 'داشبورد',
     },
   ];
 
-  const postItem = {
+  const postItem: MenuItem = {
     title: 'پست‌ها',
     href: '/dashboard/posts',
-    icon: <HiOutlineDocumentText className="w-5 h-5" />,
+    icon: <HiOutlineDocumentText className="w-[18px] h-[18px]" />,
     label: 'پست ها',
   };
 
-  const adminItems = [
+  const adminItems: MenuItem[] = [
     {
       title: 'کاربران',
       href: '/dashboard/users',
-      icon: <HiOutlineUsers className="w-5 h-5" />,
+      icon: <HiOutlineUsers className="w-[18px] h-[18px]" />,
       label: 'کاربران',
     },
     {
       title: 'دسته بندی',
       href: '/dashboard/categories',
-      icon: <HiOutlineSquares2X2 className="w-5 h-5" />,
+      icon: <HiOutlineSquares2X2 className="w-[18px] h-[18px]" />,
       label: 'دسته بندی',
     },
     {
       title: 'تبلیغات',
       href: '/dashboard/advertisements',
-      icon: <HiOutlineMegaphone className="w-5 h-5" />,
+      icon: <HiOutlineMegaphone className="w-[18px] h-[18px]" />,
       label: 'تبلیغات',
     },
     {
       title: 'تبلیغ بالای هدر',
       href: '/dashboard/header-ad',
-      icon: <HiOutlineSparkles className="w-5 h-5" />,
+      icon: <HiOutlineSparkles className="w-[18px] h-[18px]" />,
       label: 'تبلیغ هدر',
     },
     {
       title: 'درخواست‌های خدمات',
       href: '/dashboard/service-requests',
-      icon: <HiOutlineClipboardDocumentList className="w-5 h-5" />,
+      icon: <HiOutlineClipboardDocumentList className="w-[18px] h-[18px]" />,
       label: 'درخواست‌ها',
     },
     {
       title: 'نرخ ارزها',
       href: '#',
-      icon: <HiOutlineCurrencyDollar className="w-5 h-5" />,
+      icon: <HiOutlineCurrencyDollar className="w-[18px] h-[18px]" />,
       label: 'نرخ ارزها',
       submenu: [
         { href: '/dashboard/exchange-rates', label: 'نرخ تکی' },
@@ -119,26 +119,26 @@ const getMenuItems = (role: string) => {
     },
   ];
 
-  const superAdminItems = [
+  const superAdminItems: MenuItem[] = [
     ...adminItems,
     {
       title: 'تنظیمات سیستم',
       href: '/dashboard/settings',
-      icon: <HiOutlineCog6Tooth className="w-5 h-5" />,
+      icon: <HiOutlineCog6Tooth className="w-[18px] h-[18px]" />,
       label: 'تنظیمات سیستم',
     },
     {
       title: 'گزارش‌ها',
       href: '/dashboard/reports',
-      icon: <HiOutlineChartBarSquare className="w-5 h-5" />,
+      icon: <HiOutlineChartBarSquare className="w-[18px] h-[18px]" />,
       label: 'گزارش‌ها',
     },
   ];
 
-  const profileItem = {
+  const profileItem: MenuItem = {
     title: 'پروفایل من',
     href: '/dashboard/edit-profile',
-    icon: <HiOutlineUserCircle className="w-5 h-5" />,
+    icon: <HiOutlineUserCircle className="w-[18px] h-[18px]" />,
     label: 'پروفایل من',
   };
 
@@ -154,7 +154,7 @@ const getMenuItems = (role: string) => {
         {
           title: 'دسته بندی',
           href: '/dashboard/categories',
-          icon: <HiOutlineSquares2X2 className="w-5 h-5" />,
+          icon: <HiOutlineSquares2X2 className="w-[18px] h-[18px]" />,
           label: 'دسته بندی',
         },
         profileItem,
@@ -164,10 +164,96 @@ const getMenuItems = (role: string) => {
   }
 };
 
-// Site Name Component
-const SiteName = () => {
-  const siteName = useSiteSettings((state) => state.siteName);
-  return <span className="text-lg font-bold text-white">{siteName || 'داشبورد'}</span>;
+/* SiteName + brand-text + brand-tag removed: the brand header now renders
+   only the logo. Site name + the "پروژه‌ی فعال" tag were visual noise at
+   the top of a navigation chrome. */
+
+interface NavItemProps {
+  item: MenuItem;
+  isOpen: boolean;
+  isActive: boolean;
+  expandedItems: string[];
+  setExpandedItems: React.Dispatch<React.SetStateAction<string[]>>;
+  handleItemClick: () => void;
+}
+
+const NavItem: React.FC<NavItemProps> = ({
+  item,
+  isOpen,
+  isActive,
+  expandedItems,
+  setExpandedItems,
+  handleItemClick,
+}) => {
+  const pathname = usePathname();
+  const isExpanded = expandedItems.includes(item.label);
+  const hotkey = HOTKEY_MAP[item.title || item.label];
+
+  if (item.submenu) {
+    const isSubActive = item.submenu.some((s) => pathname === s.href);
+    return (
+      <li>
+        <button
+          type="button"
+          className="dash-side__item"
+          data-active={isSubActive || undefined}
+          data-expanded={isExpanded || undefined}
+          aria-expanded={isExpanded}
+          aria-controls={`dash-side-sub-${item.label}`}
+          onClick={() =>
+            setExpandedItems((p) =>
+              p.includes(item.label) ? p.filter((x) => x !== item.label) : [...p, item.label],
+            )
+          }
+        >
+          <span className="dash-side__item-ico">{item.icon}</span>
+          {isOpen && <span className="dash-side__item-label">{item.label}</span>}
+          {isOpen && hotkey && (
+            <kbd className="dash-side__item-kbd">{hotkey}</kbd>
+          )}
+          {isOpen && (
+            <HiOutlineChevronDown className="dash-side__item-chev" aria-hidden />
+          )}
+        </button>
+        <div
+          id={`dash-side-sub-${item.label}`}
+          className="dash-side__sub"
+          data-open={isExpanded || undefined}
+        >
+          <div className="dash-side__sub-inner">
+            {item.submenu.map((sub) => (
+              <Link
+                key={sub.href}
+                href={sub.href}
+                onClick={handleItemClick}
+                className="dash-side__item"
+                data-active={pathname === sub.href || undefined}
+                aria-current={pathname === sub.href ? 'page' : undefined}
+              >
+                <span className="dash-side__item-label">{sub.label}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </li>
+    );
+  }
+
+  return (
+    <li>
+      <Link
+        href={item.href}
+        onClick={handleItemClick}
+        className="dash-side__item"
+        data-active={isActive || undefined}
+        aria-current={isActive ? 'page' : undefined}
+      >
+        <span className="dash-side__item-ico">{item.icon}</span>
+        {isOpen && <span className="dash-side__item-label">{item.label}</span>}
+        {isOpen && hotkey && <kbd className="dash-side__item-kbd">{hotkey}</kbd>}
+      </Link>
+    </li>
+  );
 };
 
 const Sidebar = ({ userRole }: SidebarProps) => {
@@ -209,12 +295,6 @@ const Sidebar = ({ userRole }: SidebarProps) => {
     }
   };
 
-  const toggleSubmenu = (label: string) => {
-    setExpandedItems((prev) =>
-      prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label],
-    );
-  };
-
   const handleItemClick = () => {
     if (isMobile) {
       setIsOpen(false);
@@ -226,263 +306,111 @@ const Sidebar = ({ userRole }: SidebarProps) => {
     return pathname.startsWith(href);
   };
 
-  // Calculate width based on state.
-  // On mobile we clamp to 85vw so a 320px screen still leaves room for content;
-  // the sidebar is overlaid on top of the content (see layout) so it never
-  // coexists with the main content area on phones.
-  const sidebarWidth = isMobile
+  // data-state drives the CSS width; the attribute value must stay in sync
+  // with the rules in globals.css (.dash-side[data-state="..."]).
+  const dataState: string = isMobile
     ? isOpen
-      ? 'min(280px, 85vw)'
-      : 0
+      ? 'mobile-open'
+      : 'mobile-closed'
     : isOpen
-      ? 260
-      : 76;
+      ? 'expanded'
+      : 'rail';
 
   return (
     <>
-      {/* Custom scrollbar styles */}
-      <style jsx global>{`
-        .sidebar-scroll::-webkit-scrollbar {
-          width: 6px;
-        }
-        .sidebar-scroll::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .sidebar-scroll::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 3px;
-        }
-        .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.3);
-        }
-      `}</style>
-
-      <nav
-        dir="rtl"
-        className="fixed top-0 right-0 h-full z-40 overflow-hidden flex flex-col transition-all duration-300 ease-out"
-        style={{
-          width: sidebarWidth,
-          background:
-            'linear-gradient(180deg, oklch(16% 0.03 260) 0%, oklch(12% 0.025 258) 55%, oklch(10% 0.02 255) 100%)',
-          boxShadow: isOpen
-            ? '0 0 50px rgba(56, 189, 248, 0.10), -4px 0 24px rgba(0, 0, 0, 0.45)'
-            : '-2px 0 12px rgba(0, 0, 0, 0.35)',
-          borderInlineStart: '1px solid oklch(40% 0.03 255 / 0.35)',
-        }}
-      >
-        {/* Aurora decorations — navy + emerald */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div
-            className="absolute -top-24 -right-16 w-48 h-48 rounded-full opacity-40 anim-aurora-a"
-            style={{ background: 'radial-gradient(circle, oklch(62% 0.16 255 / 0.55) 0%, transparent 70%)', filter: 'blur(28px)' }}
-          />
-          <div
-            className="absolute bottom-24 -left-12 w-40 h-40 rounded-full opacity-30 anim-aurora-b"
-            style={{ background: 'radial-gradient(circle, oklch(68% 0.13 165 / 0.5) 0%, transparent 70%)', filter: 'blur(28px)' }}
-          />
-        </div>
-
-        {/* Header */}
-        <div className="relative flex-shrink-0 p-4">
-          <div className="flex justify-between items-center">
-            {isOpen && (
-              <div className="flex items-center gap-3 transition-opacity duration-200">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-white/20 rounded-xl blur-lg" />
-                  <Logo className="relative w-10 h-10 rounded-xl" />
-                </div>
-                <SiteName />
-              </div>
-            )}
+      <aside className="dash-side" data-state={dataState} aria-label="منوی داشبورد">
+        {/* Logo header — site name + tag were removed; the logo stands alone.
+            On mobile, an X close button is rendered here when the drawer is open. */}
+        <header className="dash-side__top">
+          <div className={`dash-side__brand ${isOpen ? '' : 'justify-center'}`}>
+            <Logo className="h-8 w-8 shrink-0" />
+          </div>
+          {isMobile && isOpen && (
             <button
               type="button"
-              onClick={() => setIsOpen(!isOpen)}
-              className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-all duration-200 hover:scale-105 active:scale-95"
-              aria-label={isOpen ? 'بستن منو' : 'باز کردن منو'}
+              className="dash-side__close"
+              onClick={() => setIsOpen(false)}
+              aria-label="بستن منو"
             >
-              <HiOutlineBars3
-                className="w-5 h-5 transition-transform duration-300"
-                style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
-              />
+              <HiOutlineXMark className="w-5 h-5" aria-hidden />
             </button>
-          </div>
-        </div>
+          )}
+        </header>
 
-        {/* Workspace switcher */}
-        <div className="sticky top-0 z-10 h-12 px-3 flex items-center bg-inherit">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="flex items-center justify-between w-full px-3 h-10 rounded-lg text-white/90 hover:bg-white/10 transition-colors"
-              >
-                <span className="font-medium truncate">وبلاگ اصلی</span>
-                <HiOutlineChevronDown className="w-4 h-4 opacity-70" />
-              </button>
-            </DropdownMenuTrigger>
-          </DropdownMenu>
-        </div>
-
-        {/* Navigation */}
-        <div className="relative flex-1 overflow-y-auto sidebar-scroll px-3 py-2">
-          <ul className="space-y-1.5">
-            {menuItems.map((item) => {
-              const isActive = isActiveRoute(item.href);
-
-              return (
-                <li key={item.href}>
-                  {item.submenu ? (
-                    <div>
-                      <button
-                        type="button"
-                        onClick={() => toggleSubmenu(item.label)}
-                        className={`relative flex items-center w-full p-3 rounded-xl transition-all duration-200 transition-colors duration-[var(--ds-duration-fast)] ease-[var(--ds-ease-out-expo)] hover:translate-x-1 ${
-                          isActive
-                            ? 'bg-gradient-to-l from-emerald-400/15 to-indigo-500/15 text-white shadow-[0_0_0_1px_oklch(70%_0.14_200_/_0.35),0_8px_24px_-12px_oklch(62%_0.16_220_/_0.6)] ring-1 ring-emerald-300/20 before:absolute before:start-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-0.5 before:rounded-full before:bg-gradient-to-b before:from-cyan-500 before:to-emerald-500'
-                            : 'text-white/65 hover:bg-[color:var(--ds-color-surface-2)] hover:text-white'
-                        }`}
-                      >
-                        <div
-                          className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors duration-200 ${
-                            isActive ? 'dash-ico dash-ico--emerald !shadow-none' : 'bg-white/5 text-white/80'
-                          }`}
-                        >
-                          {item.icon}
-                        </div>
-                        {isOpen && (
-                          <div className="mr-3 flex-1 flex items-center justify-between">
-                            <span className="font-medium flex items-center gap-2">
-                              {item.label}
-                              {HOTKEY_MAP[item.title || item.label] && (
-                                <kbd className="text-[10px] font-mono text-muted-foreground bg-muted px-1 rounded">
-                                  {HOTKEY_MAP[item.title || item.label]}
-                                </kbd>
-                              )}
-                            </span>
-                            <HiOutlineChevronDown
-                              className="w-4 h-4 transition-transform duration-200"
-                              style={{
-                                transform: expandedItems.includes(item.label) ? 'rotate(180deg)' : 'rotate(0deg)',
-                              }}
-                            />
-                          </div>
-                        )}
-                      </button>
-
-                      {isOpen && expandedItems.includes(item.label) && (
-                        <ul className="pr-12 mt-1.5 space-y-1 overflow-hidden">
-                          {item.submenu.map((submenuItem) => (
-                            <li key={submenuItem.href}>
-                              <Link href={submenuItem.href} onClick={handleItemClick}>
-                                <span
-                                  className={`flex items-center gap-3 p-2.5 rounded-lg transition-all duration-200 hover:translate-x-1 ${
-                                    pathname === submenuItem.href
-                                      ? 'bg-white/15 text-white'
-                                      : 'text-white/60 hover:bg-white/10 hover:text-white'
-                                  }`}
-                                >
-                                  <span
-                                    className={`w-1.5 h-1.5 rounded-full transition-colors duration-200 ${
-                                      pathname === submenuItem.href ? 'bg-violet-300' : 'bg-white/40'
-                                    }`}
-                                  />
-                                  <span className="text-sm font-medium">{submenuItem.label}</span>
-                                </span>
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  ) : (
-                    <Link href={item.href} onClick={handleItemClick}>
-                      <span
-                        className={`relative flex items-center p-3 rounded-xl transition-all duration-200 transition-colors duration-[var(--ds-duration-fast)] ease-[var(--ds-ease-out-expo)] hover:translate-x-1 ${
-                          isActive
-                            ? 'bg-gradient-to-l from-emerald-400/15 to-indigo-500/15 text-white shadow-[0_0_0_1px_oklch(70%_0.14_200_/_0.35),0_8px_24px_-12px_oklch(62%_0.16_220_/_0.6)] ring-1 ring-emerald-300/20 before:absolute before:start-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-0.5 before:rounded-full before:bg-gradient-to-b before:from-cyan-500 before:to-emerald-500'
-                            : 'text-white/65 hover:bg-[color:var(--ds-color-surface-2)] hover:text-white'
-                        }`}
-                      >
-                        <div
-                          className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors duration-200 ${
-                            isActive ? 'dash-ico dash-ico--emerald !shadow-none' : 'bg-white/5 text-white/80'
-                          }`}
-                        >
-                          {item.icon}
-                        </div>
-                        {isOpen && (
-                          <span className="mr-3 font-medium flex items-center gap-2">
-                            {item.label}
-                            {HOTKEY_MAP[item.title || item.label] && (
-                              <kbd className="text-[10px] font-mono text-muted-foreground bg-muted px-1 rounded">
-                                {HOTKEY_MAP[item.title || item.label]}
-                              </kbd>
-                            )}
-                          </span>
-                        )}
-                      </span>
-                    </Link>
-                  )}
-                </li>
-              );
-            })}
+        {/* Scrollable nav */}
+        <nav id="dash-side-nav" className="dash-side__nav" aria-label="ناوبری اصلی">
+          <ul className="dash-side__list" role="list">
+            {menuItems.map((item) => (
+              <NavItem
+                key={item.href}
+                item={item}
+                isOpen={isOpen}
+                isActive={isActiveRoute(item.href)}
+                expandedItems={expandedItems}
+                setExpandedItems={setExpandedItems}
+                handleItemClick={handleItemClick}
+              />
+            ))}
           </ul>
-        </div>
+        </nav>
 
-        {/* Footer */}
-        <div className="ds2-card mt-auto border-t border-[color:var(--ds-color-border-subtle)]">
-          <div className="relative flex-shrink-0 p-3">
-            {/* Logout button */}
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="flex items-center w-full p-3 mb-3 rounded-xl text-white/70 hover:bg-rose-500/20 hover:text-rose-300 transition-all duration-200 hover:translate-x-1"
-          >
-            <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/5">
-              <HiOutlineArrowRightOnRectangle className="w-5 h-5" />
-            </div>
-            {isOpen && <span className="mr-3 font-medium">خروج</span>}
-          </button>
-
-          {/* User info */}
-          <div
-            className={`flex items-center p-3 rounded-xl bg-white/10 backdrop-blur-sm transition-all duration-200 ${
-              !isOpen ? 'justify-center' : ''
-            }`}
-          >
-            <div className="relative flex-shrink-0">
+        {/* Footer: user card + logout */}
+        <footer className="dash-side__foot">
+          {isOpen ? (
+            <div className="dash-side__user-card">
               <Avatar
                 imgUrl={userInfo?.image}
                 userName={userInfo?.name}
-                sizeClass="w-10 h-10"
-                containerClassName="ring-2 ring-white/30"
+                sizeClass="h-8 w-8"
+                containerClassName="rounded-lg ring-2 ring-white/40 dark:ring-white/15"
               />
-              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full ring-2 ring-indigo-900" />
-            </div>
-            {isOpen && (
-              <div className="mr-3 overflow-hidden">
-                <p className="font-semibold text-white truncate">{userInfo?.name || 'کاربر'}</p>
-                <p className="text-xs text-white/60 truncate">{userInfo?.email}</p>
+              <div className="dash-side__user-meta">
+                <p className="dash-side__user-name">{userInfo?.name || 'کاربر'}</p>
+                <p className="dash-side__user-email">{userInfo?.email}</p>
               </div>
-            )}
-          </div>
-          </div>
-        </div>
-      </nav>
+            </div>
+          ) : (
+            <Avatar
+              imgUrl={userInfo?.image}
+              userName={userInfo?.name}
+              sizeClass="h-8 w-8 mx-auto"
+              containerClassName="rounded-lg"
+            />
+          )}
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="dash-side__item dash-side__logout"
+            aria-label="خروج از حساب"
+          >
+            <span className="dash-side__item-ico">
+              <HiOutlineArrowRightOnRectangle className="w-[18px] h-[18px]" aria-hidden />
+            </span>
+            {isOpen && <span className="dash-side__item-label">خروج</span>}
+          </button>
+        </footer>
+
+        {/* Floating pill toggle — desktop only, appears on hover (Arc/Linear pattern) */}
+        {!isMobile && (
+          <button
+            type="button"
+            className="dash-side__pill"
+            onClick={() => setIsOpen(!isOpen)}
+            aria-label={isOpen ? 'بستن منو' : 'باز کردن منو'}
+            aria-expanded={isOpen}
+            aria-controls="dash-side-nav"
+          >
+            <HiOutlineChevronLeft className="w-4 h-4" aria-hidden />
+          </button>
+        )}
+      </aside>
 
       {/* Mobile overlay */}
       {isMobile && isOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 transition-opacity duration-300"
+        <button
+          type="button"
+          className="dash-side__overlay"
           onClick={() => setIsOpen(false)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              setIsOpen(false);
-            }
-          }}
-          role="button"
-          tabIndex={0}
           aria-label="بستن منو"
         />
       )}
