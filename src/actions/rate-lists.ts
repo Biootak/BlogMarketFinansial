@@ -2,11 +2,11 @@
 
 import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
 import prisma from '@/lib/db';
-import { safeCache } from '@/lib/safe-cache';
+import { authFailureToActionResult, requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
+import { safeCache } from '@/lib/safe-cache';
 import type { ActionResult, RateItem, RateListData } from '@/types/types';
 import { revalidatePath } from 'next/cache';
-import { requireAdmin, authFailureToActionResult } from '@/lib/require-auth';
 
 // 2026-06-14: shared helper to normalize the Json column into a
 // typed array. Prisma 6 returns the Json value already parsed, so
@@ -14,9 +14,9 @@ import { requireAdmin, authFailureToActionResult } from '@/lib/require-auth';
 // path.
 const normalizeRates = (raw: unknown): RateItem[] => {
   if (Array.isArray(raw)) {
-    return raw.map((rate: any) => ({
-      title: String(rate?.title ?? ''),
-      value: String(rate?.value ?? ''),
+    return raw.map((rate: unknown) => ({
+      title: String((rate as { title?: unknown })?.title ?? ''),
+      value: String((rate as { value?: unknown })?.value ?? ''),
     }));
   }
   if (typeof raw === 'string') {
@@ -56,7 +56,7 @@ export const getRateLists = safeCache(
 /* ============================================================================
    Crypto symbol → فارسی  — همان نگاشت موجود در marketTickerActions
    ============================================================================ */
-const CRYPTO_NAMES: Record<string, string> = {
+const _CRYPTO_NAMES: Record<string, string> = {
   BTC: 'بیت‌کوین',
   ETH: 'اتریوم',
   USDT: 'تتر',
@@ -175,7 +175,7 @@ export const getActiveRateListsOrCryptoFallback = safeCache(
   async (): Promise<RateListData[]> => {
     const dbLists = await getRateLists();
 
-    const active = (dbLists ?? []).filter((l) => l && l.isActive);
+    const active = (dbLists ?? []).filter((l) => l?.isActive);
 
     // dedupe داخل هر لیست
     const dedupedActive: RateListData[] = active.map((l) => ({
@@ -230,7 +230,7 @@ export async function createRateList(
       },
     });
 
-    revalidatePath('/dashboard/rate-lists');
+    revalidatePath('/dashboard/exchange-rates');
     revalidateTag('rate-lists');
 
     return {
@@ -270,7 +270,7 @@ export async function updateRateList(
       },
     });
 
-    revalidatePath('/dashboard/rate-lists');
+    revalidatePath('/dashboard/exchange-rates');
     revalidateTag('rate-lists');
 
     return {
@@ -297,7 +297,7 @@ export async function deleteRateList(id: string): Promise<ActionResult> {
     const authCheck = await requireAdmin();
     if (!authCheck.success) return authFailureToActionResult(authCheck);
     await prisma.rateList.delete({ where: { id } });
-    revalidatePath('/dashboard/rate-lists');
+    revalidatePath('/dashboard/exchange-rates');
     revalidateTag('rate-lists');
     return {
       success: true,
