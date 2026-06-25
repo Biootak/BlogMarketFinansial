@@ -10,6 +10,7 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   HiOutlineArrowRightOnRectangle,
   HiOutlineChartBarSquare,
@@ -348,6 +349,16 @@ const Sidebar = ({ userRole }: SidebarProps) => {
   const { toast } = useToast();
   const { isOpen, setIsOpen, isMobile } = useSidebarStore();
   const [expandedItems, setExpandedItems] = useState<string[]>(['exchangeRates']);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const sideWidth = useMemo(() => {
+    if (isMobile) return '0';
+    return isOpen ? 'var(--ds-side-w-expanded)' : 'var(--ds-side-w-rail)';
+  }, [isOpen, isMobile]);
   const menu = useMemo(() => getMenu(userRole), [userRole]);
   const { data: session } = useSession();
   const userInfo = session?.user;
@@ -590,18 +601,23 @@ const Sidebar = ({ userRole }: SidebarProps) => {
           </button>
         </footer>
 
-        {!isMobile && (
-          <button
-            type="button"
-            className="dash-side__pill"
-            onClick={() => setIsOpen(!isOpen)}
-            aria-label={isOpen ? 'بستن منو' : 'باز کردن منو'}
-            aria-expanded={isOpen}
-            aria-controls="dash-side-nav"
-          >
-            <HiOutlineChevronLeft className="w-4 h-4" aria-hidden />
-          </button>
-        )}
+        {mounted &&
+          !isMobile &&
+          createPortal(
+            <button
+              type="button"
+              className="dash-side__pill"
+              onClick={() => setIsOpen(!isOpen)}
+              aria-label={isOpen ? 'بستن منو' : 'باز کردن منو'}
+              aria-expanded={isOpen}
+              aria-controls="dash-side-nav"
+              data-open={isOpen}
+              style={{ right: `calc(${sideWidth} - 14px)` }}
+            >
+              <HiOutlineChevronLeft className="w-4 h-4" aria-hidden />
+            </button>,
+            document.body,
+          )}
       </aside>
 
       {isMobile && isOpen && (
