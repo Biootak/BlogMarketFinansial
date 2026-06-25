@@ -1,19 +1,29 @@
 'use client';
 
 /**
- * HeroSection — 2026 editorial hero.
+ * HeroSection — 2026 editorial greeting + KPI hero card.
  *
- * Linear/Vercel/Stripe inspired:
- *   • A live, tabular Persian date + Tehran clock as the first focal point
- *   • A greeting line that updates with time-of-day
- *   • A headline KPI ("بازدید امروز") that doubles as the visual anchor
- *     — its huge count + sparkline fills the right column on desktop
- *   • Three quick-action shortcuts with persistent keyboard hints
- *   • Skip-to-main, skip-to-rail anchors for WCAG 2.2 AA bypass blocks
+ * Rendered only on `/dashboard`. Identity chrome (avatar, role, Tehran
+ * clock, page breadcrumb) now lives in the persistent `Header`, so the
+ * hero is focused on the two things that genuinely belong on the home
+ * canvas:
  *
- * The hero lives inside .dash-shell__main and uses .dash-hero from globals.css.
- * All animations honor prefers-reduced-motion (CountUp already does, the
- * aurora after-glow is gated by an @media rule).
+ *   1. A greeting line that updates with time-of-day.
+ *   2. A headline KPI ("بازدید امروز") with a 7-day sparkline as the
+ *      visual anchor, plus three quick-action shortcuts.
+ *
+ * Design language (Linear × Stripe × Resend):
+ *   • Asymmetric layout: greeting + actions on the start, KPI hero card
+ *     on the end (RTL flips automatically).
+ *   • Word-by-word headline reveal gated by prefers-reduced-motion.
+ *   • Noise grain overlay (`.dash2-noise`) for premium texture.
+ *   • Anchor strip (TOC) for in-page jump navigation.
+ *   • Magnetic primary CTA with a persisted ⌘N shortcut hint.
+ *
+ * Accessibility:
+ *   • Skip-to-rail anchor (live in the parent main).
+ *   • All actions are real <button>s / <Link>s with visible focus rings.
+ *   • `prefers-reduced-motion` short-circuits the word-reveal animation.
  */
 
 import { useEffect, useState } from 'react';
@@ -28,55 +38,11 @@ import {
   HiOutlinePencilSquare,
   HiOutlineArrowLeft,
 } from 'react-icons/hi2';
-import Avatar from '@/components/Avatar/Avatar';
 import CountUp from '@/components/Dashboard/DashboardPage/CountUp';
 import { MagneticButton, NoiseTexture } from '@/components/Dashboard/primitives';
 import HeroSparkline from './HeroSparkline';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { cn } from '@/lib/utils';
-
-const PERSIAN_WEEKDAYS = [
-  'یکشنبه',
-  'دوشنبه',
-  'سه‌شنبه',
-  'چهارشنبه',
-  'پنج‌شنبه',
-  'جمعه',
-  'شنبه',
-] as const;
-
-const PERSIAN_MONTHS = [
-  'فروردین',
-  'اردیبهشت',
-  'خرداد',
-  'تیر',
-  'مرداد',
-  'شهریور',
-  'مهر',
-  'آبان',
-  'آذر',
-  'دی',
-  'بهمن',
-  'اسفند',
-] as const;
-
-function pad2(n: number) {
-  return n < 10 ? `0${n}` : String(n);
-}
-
-function formatTehran(d: Date) {
-  const weekday = PERSIAN_WEEKDAYS[(d.getDay() + 1) % 7];
-  const day = d.toLocaleDateString('fa-IR', { day: 'numeric' });
-  const month = PERSIAN_MONTHS[d.getMonth()];
-  const year = d.toLocaleDateString('fa-IR', { year: 'numeric' });
-  return {
-    weekday,
-    day,
-    month,
-    year,
-    time: `${pad2(d.getHours())}:${pad2(d.getMinutes())}`,
-  };
-}
 
 function timeOfDay(hour: number) {
   if (hour < 5) return 'بامداد بخیر';
@@ -96,20 +62,19 @@ interface HeroSectionProps {
 export default function HeroSection({ sparkData, todayViews, totalViews }: HeroSectionProps) {
   const router = useRouter();
   const user = useCurrentUser();
-  const [now, setNow] = useState<Date | null>(null);
+  const [hour, setHour] = useState<number>(12);
 
+  // Greeting hour — updates once per 5 minutes so the toast doesn't tick.
   useEffect(() => {
-    const tick = () => setNow(new Date());
-    tick();
-    const t = window.setInterval(tick, 30_000);
+    const update = () => setHour(new Date().getHours());
+    update();
+    const t = window.setInterval(update, 5 * 60_000);
     return () => window.clearInterval(t);
   }, []);
 
-  // Detect prefers-reduced-motion on mount. We gate the word-reveal stagger
-  // on this so motion-sensitive users get the static headline instead. The
-  // CSS keyframe block (below) also short-circuits via @media, but the JS
-  // check lets us avoid emitting per-span animationDelay inline when it
-  // would never animate.
+  // Detect prefers-reduced-motion on mount. The CSS keyframe block also
+  // short-circuits via @media, but the JS check lets us avoid emitting
+  // per-span animationDelay inline when it would never animate.
   const [reduceMotion, setReduceMotion] = useState(false);
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -120,10 +85,6 @@ export default function HeroSection({ sparkData, todayViews, totalViews }: HeroS
     return () => mq.removeEventListener('change', onChange);
   }, []);
 
-  const date = now
-    ? formatTehran(now)
-    : { weekday: 'یکشنبه', day: '—', month: '—', year: '—', time: '--:--' };
-  const hour = now ? now.getHours() : 12;
   const greeting = timeOfDay(hour);
 
   return (
@@ -136,41 +97,17 @@ export default function HeroSection({ sparkData, todayViews, totalViews }: HeroS
       className="dash-hero"
     >
       <div className="dash-hero__inner">
-        {/* Top status row — date chip (right) + role pill (left, RTL) */}
-        <div className="dash-hero__top">
-          <div className="dash-hero__chips">
-            <span
-              className="inline-flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-medium ring-1 ring-white/10 bg-white/[0.06] text-white/85"
-              aria-label={`امروز ${date.weekday} ${date.day} ${date.month} ${date.year} ساعت ${date.time}`}
-            >
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-70 animate-ping" />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
-              </span>
-              <time className="tabular-nums tracking-wide">
-                <span className="hidden sm:inline">{date.weekday}، </span>
-                {date.day} {date.month} {date.year}
-              </time>
-              <span aria-hidden className="hidden sm:inline h-3 w-px bg-white/15" />
-              <span className="dash-livedot" aria-hidden />
-              <span className="tabular-nums text-white/70">{date.time}</span>
-              <span className="hidden sm:inline text-white/50">تهران</span>
-            </span>
-
-            <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/[0.06] text-white/85 ring-1 ring-white/10">
-              <HiOutlineSparkles className="w-3.5 h-3.5 opacity-80" />
-              <span>{user?.role === 'SUPER_ADMIN' ? 'مدیر ارشد' : user?.role === 'ADMIN' ? 'مدیر' : 'نویسنده'}</span>
-            </span>
-          </div>
-
-          {/* Anchor strip — TOC inside the hero (helps both discoverability + a11y) */}
-          <nav aria-label="پرش به بخش‌های داشبورد" className="dash-anchors text-white/70 hidden sm:inline-flex">
-            <a href="#dash-kpis" className="text-white/70">شاخص‌ها</a>
-            <a href="#dash-engagement" className="text-white/70">تعامل</a>
-            <a href="#dash-analytics" className="text-white/70">تحلیل</a>
-            <a href="#dash-posts" className="text-white/70">پست‌ها</a>
-          </nav>
-        </div>
+        {/* Anchor strip — in-page TOC. Identity + clock now live in the
+            persistent Header so this strip doesn't duplicate them. */}
+        <nav
+          aria-label="پرش به بخش‌های داشبورد"
+          className="dash-anchors text-white/70 hidden sm:inline-flex"
+        >
+          <a href="#dash-kpis">شاخص‌ها</a>
+          <a href="#dash-engagement">تعامل</a>
+          <a href="#dash-analytics">تحلیل</a>
+          <a href="#dash-posts">پست‌ها</a>
+        </nav>
 
         {/* Main grid: greeting + actions (col 1) | KPI hero (col 2) */}
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] items-end">
@@ -185,8 +122,8 @@ export default function HeroSection({ sparkData, todayViews, totalViews }: HeroS
                 className="opacity-80 font-semibold dash2-word-reveal"
                 style={reduceMotion ? undefined : { animationDelay: '0ms' }}
               >
-                {greeting}،
-              </span>{' '}
+                {greeting}،&nbsp;
+              </span>
               <span
                 className="bg-gradient-to-l from-white via-cyan-100 to-emerald-100 bg-clip-text text-transparent dash2-word-reveal"
                 style={reduceMotion ? undefined : { animationDelay: '40ms' }}
@@ -208,7 +145,10 @@ export default function HeroSection({ sparkData, todayViews, totalViews }: HeroS
               className="dash-hero__sub"
             >
               یک نمای ۳۰ ثانیه‌ای از وبلاگ — شاخص‌ها، فعالیت‌های اخیر و برنامه‌ی
-              انتشار پست‌های پیش‌رو. کلید <kbd className="font-mono text-[0.7rem] mx-1 px-1.5 py-0.5 rounded-md bg-white/10 border border-white/15">⌘ K</kbd>
+              انتشار پست‌های پیش‌رو. کلید{' '}
+              <kbd className="font-mono text-[0.7rem] mx-1 px-1.5 py-0.5 rounded-md bg-white/10 border border-white/15">
+                ⌘ K
+              </kbd>{' '}
               برای جستجوی سریع فرمان‌ها.
             </motion.p>
 
@@ -226,8 +166,6 @@ export default function HeroSection({ sparkData, todayViews, totalViews }: HeroS
                 className={cn(
                   'group inline-flex items-center gap-2.5 ps-2.5 pe-3.5 h-11 rounded-xl font-semibold text-sm text-white',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[oklch(18%_0.045_260)]',
-                  // shadcn's default Button has hover:scale + active:scale; the
-                  // magnetic inline transform would otherwise be overridden.
                   '!hover:scale-100 active:!scale-100',
                 )}
                 style={{
@@ -242,7 +180,10 @@ export default function HeroSection({ sparkData, todayViews, totalViews }: HeroS
                     <HiOutlinePencilSquare className="w-3.5 h-3.5" />
                   </span>
                   <span>نوشتن پست جدید</span>
-                  <span aria-hidden className="hidden sm:inline-flex items-center gap-0.5 ms-1 text-[10px] font-mono text-white/70">
+                  <span
+                    aria-hidden
+                    className="hidden sm:inline-flex items-center gap-0.5 ms-1 text-[10px] font-mono text-white/70"
+                  >
                     <kbd className="rounded border border-white/20 bg-white/10 px-1.5 py-0.5">⌘</kbd>
                     <kbd className="rounded border border-white/20 bg-white/10 px-1.5 py-0.5">N</kbd>
                   </span>
@@ -253,19 +194,36 @@ export default function HeroSection({ sparkData, todayViews, totalViews }: HeroS
                 icon={<HiOutlineDocumentText className="w-4 h-4" />}
                 label="پست‌ها"
                 onClick={() => router.push('/dashboard/posts')}
-                hint="G P"
               />
               <Shortcut
                 icon={<HiOutlineCalendarDays className="w-4 h-4" />}
                 label="تقویم"
-                onClick={() => router.push('/dashboard?view=calendar')}
-                hint="G C"
+                onClick={() => {
+                  // Bridge to AnalyticsCanvas via a window CustomEvent so
+                  // the tab switch happens in-place without a route
+                  // roundtrip. Pairs with the listener in AnalyticsCanvas.
+                  window.dispatchEvent(
+                    new CustomEvent('dash:set-analytics-tab', {
+                      detail: { tab: 'calendar' },
+                    }),
+                  );
+                  document
+                    .getElementById('dash-analytics')
+                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
               />
               <Shortcut
                 icon={<HiOutlineChartBarSquare className="w-4 h-4" />}
                 label="گزارش‌ها"
                 onClick={() => router.push('/dashboard/reports')}
-                hint="G R"
+              />
+              <Shortcut
+                icon={<HiOutlineSparkles className="w-4 h-4" />}
+                label="میان‌بر"
+                hint="K"
+                onClick={() =>
+                  window.dispatchEvent(new CustomEvent('cmd-palette:open'))
+                }
               />
             </motion.div>
           </div>
@@ -311,50 +269,19 @@ export default function HeroSection({ sparkData, todayViews, totalViews }: HeroS
             </div>
           </motion.div>
         </div>
-
-        {/* Bottom row — avatar + name (right) / trend chip (left) */}
-        <div className="flex items-center justify-between gap-3 flex-wrap pt-2 border-t border-white/10">
-          <button
-            type="button"
-            onClick={() => router.push('/dashboard/edit-profile')}
-            className="group inline-flex items-center gap-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] ring-1 ring-white/10 hover:ring-2 hover:ring-blue-500/30 backdrop-blur-md p-1.5 ps-4 transition-[background-color,box-shadow,border-color] duration-[var(--ds-duration-base)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70"
-            aria-label="ویرایش پروفایل"
-          >
-            <div className="text-end">
-              <p className="text-sm font-bold text-white/95 leading-tight">
-                {user?.name ?? 'کاربر'}
-              </p>
-              <p className="text-[11px] text-white/65 mt-0.5 font-medium">
-                {user?.email ?? '—'}
-              </p>
-            </div>
-            <div className="relative">
-              <Avatar
-                imgUrl={(user?.profile?.avatar || user?.image) ?? undefined}
-                userName={user?.name ?? undefined}
-                sizeClass="h-10 w-10"
-                containerClassName="rounded-xl ring-2 ring-white/15"
-              />
-              <span className="absolute -bottom-0.5 -end-0.5 w-3 h-3 rounded-full bg-emerald-400 ring-2 ring-[oklch(18%_0.045_260)]" />
-            </div>
-          </button>
-          <p className="text-xs text-white/55">
-            <span className="hidden sm:inline">آخرین به‌روزرسانی: </span>
-            <time className="tabular-nums">{date.time}</time>
-          </p>
-        </div>
       </div>
 
       {/* Noise overlay — sits on top of every hero layer (gradient, grid,
-          headline, KPI card). Pointer-events-none is set inside the primitive.
-          Slightly higher than the default 0.025 because the dark hero needs
-          more grain to read. */}
+          headline, KPI card). Pointer-events-none is set inside the
+          primitive. Slightly higher than the default 0.025 because the
+          dark hero needs more grain to read. */}
       <NoiseTexture opacity={0.03} />
 
-      {/* Scoped keyframes for the headline word reveal. The CSS @media rule
-          below disables the animation for prefers-reduced-motion users, so the
-          JSX-side reduceMotion check is just an optimization that skips the
-          inline animationDelay style emission. */}
+      {/* Scoped keyframes for the headline word reveal. The CSS @media
+          rule below disables the animation for prefers-reduced-motion
+          users, so the JSX-side reduceMotion check is just an
+          optimization that skips the inline animationDelay style
+          emission. */}
       <style jsx global>{`
         @keyframes dash2-word-reveal {
           from {
@@ -397,7 +324,9 @@ function Shortcut({ icon, label, hint, onClick }: ShortcutProps) {
       onClick={onClick}
       className="group inline-flex items-center gap-2 px-3.5 h-11 rounded-xl text-sm font-medium text-white/85 bg-white/[0.05] hover:bg-white/[0.10] ring-1 ring-white/10 hover:ring-white/20 backdrop-blur-md transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70"
     >
-      <span className="text-white/70 group-hover:text-white transition-colors">{icon}</span>
+      <span className="text-white/70 group-hover:text-white transition-colors">
+        {icon}
+      </span>
       <span>{label}</span>
       {hint && (
         <kbd className="hidden sm:inline-flex items-center gap-1 me-1 text-[10px] font-mono font-medium text-white/45 border border-white/10 rounded-md px-1.5 py-0.5 bg-white/[0.02]">

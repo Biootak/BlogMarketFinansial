@@ -39,6 +39,9 @@ export type { MagneticButtonProps } from './MagneticButton';
 export { AmbientBackground } from './AmbientBackground';
 export type { AmbientBackgroundProps, AmbientTone } from './AmbientBackground';
 
+export { DashboardEmpty } from './DashboardEmpty';
+export type { DashboardEmptyProps, DashboardEmptyTone } from './DashboardEmpty';
+
 export { NoiseTexture } from './NoiseTexture';
 export type { NoiseTextureProps } from './NoiseTexture';
 

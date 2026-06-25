@@ -1,30 +1,39 @@
 'use client';
 
 /**
- * DashboardShell — 2026 (June 22) workspace orchestrator.
+ * DashboardShell — 2026 (June 22 → June 25 refresh) workspace orchestrator.
  *
  * Replaces the v1 DashboardPage. The composition is:
  *
  *   ┌─ skip-link + main ──────────────────────────────────────┐
- *   │  WorkspaceToolbar (sticky, search + range chips)         │
+ *   │  WorkspaceToolbar (sticky, range + density — home-only)  │
  *   │  ┌─────────────────────── main canvas ─────────┬─ rail ─┐│
- *   │  │ HeroSection (greeting + headline KPI + CTA) │ Sch.  ││
+ *   │  │ HeroSection (greeting + KPI + actions)      │ Sch.  ││
  *   │  │ KpiGrid (12-col bento + hero sparkline)     │ SysH  ││
- *   │  │ EngagementDonut (range-aware)               │        ││
- *   │  │ ActivityRail (range-aware, day-grouped)     │        ││
+ *   │  │ EngagementDonut (range-driven)              │        ││
+ *   │  │ ActivityRail (range-driven, day-grouped)    │        ││
  *   │  │ AnalyticsCanvas (traffic/calendar + URL)    │        ││
- *   │  │ PostsSpotlight (featured + popular+drafts)  │        ││
+ *   │  │ PostsSpotlight (tab-style filter)           │        ││
  *   │  └────────────────────────────────────────────┴────────┘│
  *   │  CommandPalette (⌘K — renders the global modal)         │
  *   └─────────────────────────────────────────────────────────┘
  *
- * Modern 2026 techniques used:
+ * 2026 refresh notes:
+ *   • The persistent `Header` (DashboardPage/Header.tsx) now owns the
+ *     search field, theme switcher, avatar, and notifications. The
+ *     WorkspaceToolbar below the header is strictly home-only context:
+ *     range + density + a page-context anchor.
+ *   • The `range` state is unified: the same value drives both the
+ *     engagement donut and the activity rail (previously they had
+ *     independent ranges). Selection is persisted in the URL via
+ *     `?range=…` so reload / back navigation restore the state.
+ *
+ * Modern techniques used:
  *   • CSS subgrid + container queries via .dash-bento2
  *   • View Transitions API for the analytics tab cross-fade
  *   • content-visibility: auto on every pane for cheap off-screen paint
  *   • URL search-param persistence (?range=…&tab=…&period=…)
  *   • scroll-driven animations gated by prefers-reduced-motion
- *   • field-sizing: content on the toolbar search field
  *   • Logical CSS properties throughout (RTL integrity)
  *
  * Backend contract is unchanged: the same server action results (stats,
@@ -44,6 +53,7 @@ import ScheduledRail from './ScheduledRail';
 import SystemHealth from './SystemHealth';
 import PostsSpotlight from './PostsSpotlight';
 import CommandPalette from '@/components/Dashboard/DashboardPage/CommandPalette';
+import { AmbientBackground } from '@/components/Dashboard/primitives';
 
 interface DashboardShellProps {
   stats: {
@@ -123,9 +133,6 @@ const DashboardShell: React.FC<DashboardShellProps> = (props) => {
   const [range, setRange] = useState<Range>(
     () => (searchParams?.get('range') as Range) || 'all',
   );
-  const [activityRange, setActivityRange] = useState<'today' | 'week' | 'all'>(
-    () => ((searchParams?.get('activity') as 'today' | 'week' | 'all') || 'today'),
-  );
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable');
 
   // Sync URL → state on back/forward navigation only.
@@ -138,10 +145,7 @@ const DashboardShell: React.FC<DashboardShellProps> = (props) => {
     if (key === lastUrlKeyRef.current) return;
     lastUrlKeyRef.current = key;
     const r = (searchParams?.get('range') as Range) || 'all';
-    const a =
-      (searchParams?.get('activity') as 'today' | 'week' | 'all') || 'today';
     setRange(r);
-    setActivityRange(a);
   }, [searchParams]);
 
   const slices = buildSlices(props);
@@ -155,7 +159,9 @@ const DashboardShell: React.FC<DashboardShellProps> = (props) => {
         id="dash-main"
         className="min-h-screen py-3 sm:py-5 lg:py-8 px-3 sm:px-4 lg:px-6 xl:px-8 space-y-4 sm:space-y-6 max-w-[1600px] mx-auto"
         aria-label="داشبورد"
+        data-density={density}
       >
+        <AmbientBackground intensity="low" />
         <WorkspaceToolbar
           range={range}
           density={density}
@@ -177,14 +183,9 @@ const DashboardShell: React.FC<DashboardShellProps> = (props) => {
               <EngagementDonut
                 slices={slices}
                 range={range}
-                onRangeChange={setRange}
                 caption="سهم تعامل"
               />
-              <ActivityRail
-                items={props.recentActivity}
-                range={activityRange}
-                onRangeChange={setActivityRange}
-              />
+              <ActivityRail items={props.recentActivity} range={range} />
             </div>
 
             <AnalyticsCanvas scheduledPosts={props.scheduledPosts} />

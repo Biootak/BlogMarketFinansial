@@ -91,6 +91,43 @@ export default function AnalyticsCanvas({ scheduledPosts }: AnalyticsCanvasProps
     ((searchParams?.get('period') as PeriodId) || '7d') as PeriodId,
   );
 
+  // Wraps a state change in `document.startViewTransition` when available so
+  // the global .dash-vt CSS animation can take over. Declared above any
+  // effect that uses it so the closure never hits a temporal dead zone.
+  const vt = useCallback(
+    (fn: () => void) => {
+      const doc = typeof document !== 'undefined' ? document : null;
+      const startVT =
+        (doc as Document & { startViewTransition?: (cb: () => void) => unknown })
+          ?.startViewTransition;
+      if (typeof startVT === 'function') {
+        startVT.call(doc, fn);
+      } else {
+        fn();
+      }
+    },
+    [],
+  );
+
+  // Cross-component bridge: HeroSection's "تقویم" shortcut dispatches
+  // `dash:set-analytics-tab` so the user can hop directly to the publishing
+  // calendar tab without going through the URL. We run it through the same
+  // view-transition wrapper as the local Tabs onValueChange so the visual
+  // cross-fade is consistent with the in-canvas interaction.
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<{ tab?: TabId }>).detail;
+      const next = detail?.tab;
+      if (next !== 'traffic' && next !== 'calendar') return;
+      if (next === tab) return;
+      vt(() => setTab(next));
+    };
+    window.addEventListener('dash:set-analytics-tab', handler);
+    return () => window.removeEventListener('dash:set-analytics-tab', handler);
+    // vt is a stable useCallback below; we intentionally do not list `tab`
+    // because we want the listener to reflect the latest closure value.
+  }, [tab]);
+
   // Persist tab + period in the URL using replace() so back/forward still
   // walks through logical pages. We only write when the URL is actually out
   // of sync with state — otherwise the effect fires on every mount under
@@ -131,23 +168,6 @@ export default function AnalyticsCanvas({ scheduledPosts }: AnalyticsCanvasProps
       setPeriod(PERIODS[(idx - 1 + PERIODS.length) % PERIODS.length].id);
     }
   };
-
-  // Wraps a state change in `document.startViewTransition` when available so
-  // the global .dash-vt CSS animation can take over.
-  const vt = useCallback(
-    (fn: () => void) => {
-      const doc = typeof document !== 'undefined' ? document : null;
-      const startVT =
-        (doc as Document & { startViewTransition?: (cb: () => void) => unknown })
-          ?.startViewTransition;
-      if (typeof startVT === 'function') {
-        startVT.call(doc, fn);
-      } else {
-        fn();
-      }
-    },
-    [],
-  );
 
   const onTabChange = (next: string) => {
     if (next === tab) return;

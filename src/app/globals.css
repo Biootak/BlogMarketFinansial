@@ -7214,6 +7214,1218 @@ p { line-height: var(--leading-relaxed); }
   @media (min-width: 640px) {
     .dash-toolbar { padding: 0.75rem 1rem; gap: 1rem; }
   }
+
+  /* ---- Toolbar (editorial 2026) -------------------------------------------
+     Adds a 3-zone grid (context | search | actions), scroll-aware condensed
+     state, live status pill, sliding segmented control, and magnetic avatar
+     trigger. Implemented as an additive variant so the original flex-wrap
+     layout keeps working for callers that have not opted in.
+     ------------------------------------------------------------------------ */
+  .dash-toolbar--editorial {
+    position: sticky;
+    inset-block-start: 0.625rem;
+    z-index: 30;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 0.625rem;
+    row-gap: 0.5rem;
+    padding: 0.5rem 0.625rem;
+    border-radius: var(--ds-radius-xl);
+    background:
+      linear-gradient(180deg, oklch(100% 0 0 / 0.82) 0%, oklch(99% 0.003 245 / 0.66) 100%);
+    border: 1px solid oklch(90% 0.006 245 / 0.85);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.7) inset,
+      0 1px 0 oklch(0% 0 0 / 0.02) inset,
+      0 14px 32px -22px oklch(45% 0.08 255 / 0.32),
+      0 2px 8px -4px oklch(45% 0.08 255 / 0.18);
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    transition:
+      padding-block var(--ds-duration-base) var(--ds-ease-out-quart),
+      border-color var(--ds-duration-base) var(--ds-ease-out-quart),
+      box-shadow var(--ds-duration-base) var(--ds-ease-out-quart),
+      background var(--ds-duration-base) var(--ds-ease-out-quart);
+  }
+  @media (min-width: 640px) {
+    .dash-toolbar--editorial {
+      column-gap: 0.875rem;
+      padding: 0.625rem 0.875rem;
+    }
+  }
+  @media (min-width: 1024px) {
+    .dash-toolbar--editorial {
+      column-gap: 1.125rem;
+      padding: 0.75rem 1rem;
+    }
+  }
+  .dash-toolbar--editorial::before {
+    content: '';
+    position: absolute;
+    inset-inline: 0.5rem;
+    inset-block-end: -1px;
+    height: 1px;
+    border-radius: 999px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      oklch(75% 0.04 250 / 0.35) 20%,
+      oklch(75% 0.04 250 / 0.55) 50%,
+      oklch(75% 0.04 250 / 0.35) 80%,
+      transparent 100%
+    );
+    opacity: 0;
+    transition: opacity var(--ds-duration-base) var(--ds-ease-out-quart);
+    pointer-events: none;
+  }
+  .dark .dash-toolbar--editorial {
+    background:
+      linear-gradient(180deg, oklch(22% 0.018 255 / 0.72) 0%, oklch(17% 0.016 255 / 0.58) 100%);
+    border-color: oklch(34% 0.02 255 / 0.7);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.04) inset,
+      0 24px 56px -30px oklch(0% 0 0 / 0.75),
+      0 2px 10px -4px oklch(0% 0 0 / 0.5);
+  }
+  .dark .dash-toolbar--editorial::before {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      oklch(70% 0.08 200 / 0.25) 20%,
+      oklch(70% 0.08 200 / 0.45) 50%,
+      oklch(70% 0.08 200 / 0.25) 80%,
+      transparent 100%
+    );
+  }
+
+  /* Scroll-aware condensed state — hairline shadow appears, padding
+     tightens, the eyebrow label fades, and the city suffix on the
+     status pill disappears. Triggered by IntersectionObserver on
+     .dash-toolbar__sentinel. */
+  .dash-toolbar--editorial[data-scrolled='true'] {
+    padding-block: 0.4375rem;
+    border-color: oklch(88% 0.006 245 / 0.95);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.7) inset,
+      0 18px 36px -22px oklch(45% 0.08 255 / 0.42),
+      0 1px 0 oklch(45% 0.08 255 / 0.08);
+  }
+  .dash-toolbar--editorial[data-scrolled='true']::before { opacity: 1; }
+  .dark .dash-toolbar--editorial[data-scrolled='true'] {
+    border-color: oklch(36% 0.02 255 / 0.85);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.04) inset,
+      0 22px 44px -24px oklch(0% 0 0 / 0.7),
+      0 1px 0 oklch(70% 0.08 200 / 0.08);
+  }
+  .dash-toolbar--editorial[data-scrolled='true'] .dash-toolbar__eyebrow-text,
+  .dash-toolbar--editorial[data-scrolled='true'] .dash-toolbar__status-city,
+  .dash-toolbar--editorial[data-scrolled='true'] .dash-toolbar__title {
+    max-width: 0;
+    opacity: 0;
+    margin-inline-start: 0;
+    padding-inline-start: 0;
+  }
+  .dash-toolbar--editorial[data-scrolled='true'] .dash-toolbar__eyebrow-text,
+  .dash-toolbar--editorial[data-scrolled='true'] .dash-toolbar__status-city {
+    width: 0;
+    overflow: hidden;
+  }
+
+  /* Sentinel — 1px line at the top, observed by IntersectionObserver.
+     Positioned off-screen so it does not affect layout but stays visible
+     to the IO. */
+  .dash-toolbar__sentinel {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: -1px;
+    height: 1px;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  /* ---- Zone wrappers ------------------------------------------------------ */
+  .dash-toolbar__zone {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+  }
+  .dash-toolbar__zone--context {
+    gap: 0.5rem;
+    min-width: 0;
+  }
+  .dash-toolbar__zone--actions {
+    gap: 0.375rem;
+    flex-wrap: nowrap;
+  }
+  @media (min-width: 640px) {
+    .dash-toolbar__zone--actions { gap: 0.5rem; }
+  }
+
+  /* ---- Context: eyebrow + title ------------------------------------------- */
+  .dash-toolbar__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    height: 1.5rem;
+    padding-inline: 0.5rem;
+    border-radius: 999px;
+    background: oklch(96% 0.012 245 / 0.7);
+    border: 1px solid oklch(90% 0.01 245 / 0.7);
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: oklch(40% 0.02 250);
+    white-space: nowrap;
+    transition:
+      background var(--ds-duration-base) var(--ds-ease-out-quart),
+      border-color var(--ds-duration-base) var(--ds-ease-out-quart);
+  }
+  .dark .dash-toolbar__eyebrow {
+    background: oklch(28% 0.02 250 / 0.55);
+    border-color: oklch(38% 0.02 250 / 0.7);
+    color: oklch(85% 0.02 245);
+  }
+  .dash-toolbar__eyebrow-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, oklch(70% 0.16 200), oklch(65% 0.16 260));
+    box-shadow: 0 0 8px oklch(70% 0.16 200 / 0.55);
+  }
+  .dash-toolbar__eyebrow-text {
+    transition:
+      max-width var(--ds-duration-base) var(--ds-ease-out-quart),
+      opacity var(--ds-duration-base) var(--ds-ease-out-quart),
+      margin var(--ds-duration-base) var(--ds-ease-out-quart);
+  }
+  .dash-toolbar__title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: -0.005em;
+    color: oklch(20% 0.02 255);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition:
+      max-width var(--ds-duration-base) var(--ds-ease-out-quart),
+      opacity var(--ds-duration-base) var(--ds-ease-out-quart);
+  }
+  @media (min-width: 640px) {
+    .dash-toolbar__title { font-size: 1.0625rem; }
+  }
+  .dark .dash-toolbar__title { color: oklch(96% 0.005 245); }
+
+  /* ---- Live status pill --------------------------------------------------- */
+  .dash-toolbar__status {
+    display: none;
+    align-items: center;
+    gap: 0.4rem;
+    height: 1.875rem;
+    padding-inline: 0.625rem;
+    border-radius: 999px;
+    background: oklch(96% 0.012 245 / 0.7);
+    border: 1px solid oklch(90% 0.01 245 / 0.7);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: oklch(40% 0.02 250);
+    white-space: nowrap;
+    transition:
+      background var(--ds-duration-base) var(--ds-ease-out-quart),
+      border-color var(--ds-duration-base) var(--ds-ease-out-quart);
+  }
+  @media (min-width: 768px) {
+    .dash-toolbar__status { display: inline-flex; }
+  }
+  .dark .dash-toolbar__status {
+    background: oklch(28% 0.02 250 / 0.55);
+    border-color: oklch(38% 0.02 250 / 0.7);
+    color: oklch(85% 0.02 245);
+  }
+  .dash-toolbar__status-dot {
+    position: relative;
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: oklch(72% 0.18 150);
+    box-shadow: 0 0 0 2px oklch(72% 0.18 150 / 0.18);
+  }
+  .dash-toolbar__status-dot::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 999px;
+    background: oklch(72% 0.18 150 / 0.45);
+    animation: dash2-status-pulse 2.4s var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)) infinite;
+  }
+  @keyframes dash2-status-pulse {
+    0%   { transform: scale(0.7); opacity: 0.55; }
+    70%  { transform: scale(1.8); opacity: 0; }
+    100% { transform: scale(1.8); opacity: 0; }
+  }
+  .dash-toolbar__status-time {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+  }
+  .dash-toolbar__status-city {
+    color: oklch(55% 0.02 250);
+    font-weight: 500;
+    transition:
+      max-width var(--ds-duration-base) var(--ds-ease-out-quart),
+      opacity var(--ds-duration-base) var(--ds-ease-out-quart),
+      padding var(--ds-duration-base) var(--ds-ease-out-quart);
+  }
+  .dark .dash-toolbar__status-city { color: oklch(70% 0.02 245); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dash-toolbar__status-dot::after { animation: none; }
+  }
+
+  /* ---- Range segmented control (Linear-style sliding indicator) ----------- */
+  .dash-toolbar__segment {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    height: 2rem;
+    padding: 3px;
+    border-radius: 0.75rem;
+    background: oklch(94% 0.006 245 / 0.8);
+    border: 1px solid oklch(88% 0.006 245 / 0.7);
+    box-shadow: 0 1px 0 oklch(0% 0 0 / 0.02) inset;
+    isolation: isolate;
+  }
+  .dark .dash-toolbar__segment {
+    background: oklch(20% 0.014 250 / 0.7);
+    border-color: oklch(32% 0.014 250 / 0.7);
+  }
+  .dash-toolbar__segment-indicator {
+    position: absolute;
+    inset-block: 3px;
+    inset-inline-start: 0;
+    width: var(--seg-w, 0px);
+    transform: translateX(var(--seg-x, 0px));
+    border-radius: 0.5625rem;
+    background: linear-gradient(
+      180deg,
+      oklch(100% 0 0) 0%,
+      oklch(98% 0.003 245) 100%
+    );
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.8) inset,
+      0 1px 2px oklch(0% 0 0 / 0.08),
+      0 4px 12px -6px oklch(45% 0.08 255 / 0.25);
+    transition:
+      transform var(--ds-duration-base) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      width var(--ds-duration-base) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+    z-index: 0;
+    pointer-events: none;
+  }
+  .dark .dash-toolbar__segment-indicator {
+    background: linear-gradient(
+      180deg,
+      oklch(96% 0.005 245) 0%,
+      oklch(88% 0.008 245) 100%
+    );
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.1) inset,
+      0 1px 2px oklch(0% 0 0 / 0.3),
+      0 4px 12px -6px oklch(0% 0 0 / 0.6);
+  }
+  .dash-toolbar__segment-btn {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+    height: calc(2rem - 6px);
+    padding-inline: 0.625rem;
+    border: 0;
+    background: transparent;
+    color: oklch(45% 0.02 250);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  }
+  .dash-toolbar__segment-btn:hover {
+    color: oklch(22% 0.02 255);
+  }
+  .dash-toolbar__segment-btn[data-active='true'] {
+    color: oklch(20% 0.02 255);
+  }
+  .dark .dash-toolbar__segment-btn { color: oklch(70% 0.02 245); }
+  .dark .dash-toolbar__segment-btn:hover { color: oklch(95% 0.005 245); }
+  .dark .dash-toolbar__segment-btn[data-active='true'] { color: oklch(98% 0.005 245); }
+  .dash-toolbar__segment-btn:focus-visible {
+    outline: 2px solid oklch(72% 0.13 210);
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+  }
+
+  /* Hide segmented + density under very small screens (search + actions
+     stay; range/density collapse into the menu). */
+  @media (max-width: 639px) {
+    .dash-toolbar__segment,
+    .dash-toolbar__density,
+    .dash-toolbar__status { display: none; }
+  }
+
+  /* ---- Density toggle (icon-only) ---------------------------------------- */
+  .dash-toolbar__density {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px;
+    border-radius: 0.75rem;
+    background: oklch(94% 0.006 245 / 0.8);
+    border: 1px solid oklch(88% 0.006 245 / 0.7);
+  }
+  .dark .dash-toolbar__density {
+    background: oklch(20% 0.014 250 / 0.7);
+    border-color: oklch(32% 0.014 250 / 0.7);
+  }
+  .dash-toolbar__density-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.875rem;
+    height: calc(2rem - 6px);
+    border: 0;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: oklch(45% 0.02 250);
+    cursor: pointer;
+    transition:
+      background var(--ds-duration-fast) var(--ds-ease-out-quart),
+      color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  }
+  .dash-toolbar__density-btn:hover {
+    color: oklch(22% 0.02 255);
+  }
+  .dash-toolbar__density-btn[data-active='true'] {
+    background: oklch(100% 0 0);
+    color: oklch(20% 0.02 255);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.7) inset,
+      0 1px 2px oklch(0% 0 0 / 0.08);
+  }
+  .dark .dash-toolbar__density-btn { color: oklch(70% 0.02 245); }
+  .dark .dash-toolbar__density-btn:hover { color: oklch(95% 0.005 245); }
+  .dark .dash-toolbar__density-btn[data-active='true'] {
+    background: oklch(96% 0.005 245);
+    color: oklch(22% 0.02 255);
+  }
+  .dash-toolbar__density-btn:focus-visible {
+    outline: 2px solid oklch(72% 0.13 210);
+    outline-offset: 2px;
+  }
+
+  /* ---- Generic icon button (used by notifications + theme) --------------- */
+  .dash-toolbar__iconbtn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid oklch(90% 0.006 245 / 0.7);
+    border-radius: 0.75rem;
+    background: oklch(100% 0 0 / 0.55);
+    color: oklch(40% 0.02 250);
+    cursor: pointer;
+    transition:
+      background var(--ds-duration-fast) var(--ds-ease-out-quart),
+      border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+      color var(--ds-duration-fast) var(--ds-ease-out-quart),
+      transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+  }
+  .dash-toolbar__iconbtn:hover {
+    background: oklch(100% 0 0 / 0.85);
+    border-color: oklch(82% 0.01 245 / 0.9);
+    color: oklch(22% 0.02 255);
+  }
+  .dash-toolbar__iconbtn:active {
+    transform: scale(0.95);
+  }
+  .dark .dash-toolbar__iconbtn {
+    background: oklch(22% 0.014 250 / 0.6);
+    border-color: oklch(34% 0.014 250 / 0.7);
+    color: oklch(82% 0.02 245);
+  }
+  .dark .dash-toolbar__iconbtn:hover {
+    background: oklch(28% 0.016 250 / 0.85);
+    border-color: oklch(44% 0.016 250 / 0.85);
+    color: oklch(98% 0.005 245);
+  }
+  .dash-toolbar__iconbtn:focus-visible {
+    outline: 2px solid oklch(72% 0.13 210);
+    outline-offset: 2px;
+  }
+
+  /* Theme switcher — stack of 3 icons (sun / moon / sys), only one is
+     visible at a time via opacity + scale; the swap is a spring-like
+     transition. We don't render the third icon visually until V2 of the
+     settings module ships — for now sun ↔ moon. */
+  .dash-toolbar__iconbtn-stack {
+    position: relative;
+    width: 15px;
+    height: 15px;
+  }
+  .dash-toolbar__iconbtn-icon {
+    position: absolute;
+    inset: 0;
+    width: 15px;
+    height: 15px;
+    opacity: 0;
+    transform: scale(0.6) rotate(-25deg);
+    transition:
+      opacity var(--ds-duration-base) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      transform var(--ds-duration-base) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  .dash-toolbar__iconbtn-icon.is-active {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+
+  /* Notification badge dot */
+  .dash-toolbar__iconbtn--badge .dash-toolbar__iconbtn-badge {
+    position: absolute;
+    top: 6px;
+    inset-inline-end: 6px;
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: oklch(70% 0.18 25);
+    box-shadow:
+      0 0 0 2px oklch(100% 0 0 / 0.9),
+      0 0 8px oklch(70% 0.18 25 / 0.6);
+  }
+  .dark .dash-toolbar__iconbtn--badge .dash-toolbar__iconbtn-badge {
+    box-shadow:
+      0 0 0 2px oklch(22% 0.018 255 / 0.9),
+      0 0 8px oklch(70% 0.18 25 / 0.6);
+  }
+
+  /* ---- Quick actions menu popover ---------------------------------------- */
+  .dash-toolbar__menu {
+    position: relative;
+  }
+  .dash-toolbar__menu-panel {
+    position: absolute;
+    inset-block-start: calc(100% + 0.5rem);
+    inset-inline-end: 0;
+    z-index: 50;
+    width: clamp(15rem, 18rem, 90vw);
+    border-radius: var(--ds-radius-xl);
+    background: linear-gradient(180deg, oklch(100% 0 0 / 0.96), oklch(99% 0.003 245 / 0.92));
+    border: 1px solid oklch(88% 0.006 245 / 0.85);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.7) inset,
+      0 24px 48px -22px oklch(45% 0.08 255 / 0.4),
+      0 4px 12px -6px oklch(45% 0.08 255 / 0.25);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    padding: 0.5rem;
+    animation: dash2-menu-in 220ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  .dark .dash-toolbar__menu-panel {
+    background: linear-gradient(180deg, oklch(22% 0.018 255 / 0.92), oklch(17% 0.016 255 / 0.86));
+    border-color: oklch(34% 0.02 255 / 0.75);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.04) inset,
+      0 28px 56px -22px oklch(0% 0 0 / 0.7),
+      0 4px 12px -6px oklch(0% 0 0 / 0.45);
+  }
+  @keyframes dash2-menu-in {
+    from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dash-toolbar__menu-panel { animation: none; }
+  }
+  .dash-toolbar__menu-head {
+    padding: 0.5rem 0.625rem 0.375rem;
+    border-bottom: 1px solid oklch(90% 0.006 245 / 0.7);
+  }
+  .dark .dash-toolbar__menu-head { border-color: oklch(30% 0.012 250 / 0.7); }
+  .dash-toolbar__menu-eyebrow {
+    display: block;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: oklch(40% 0.02 250);
+  }
+  .dash-toolbar__menu-sub {
+    display: block;
+    margin-block-start: 0.125rem;
+    font-size: 0.6875rem;
+    color: oklch(55% 0.01 245);
+  }
+  .dark .dash-toolbar__menu-eyebrow { color: oklch(82% 0.02 245); }
+  .dark .dash-toolbar__menu-sub { color: oklch(65% 0.02 245); }
+  .dash-toolbar__menu-list {
+    margin: 0;
+    padding: 0.25rem;
+    list-style: none;
+  }
+  .dash-toolbar__menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    width: 100%;
+    padding: 0.5rem 0.625rem;
+    border: 0;
+    background: transparent;
+    border-radius: 0.625rem;
+    color: oklch(28% 0.02 255);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    text-align: start;
+    cursor: pointer;
+    transition:
+      background var(--ds-duration-fast) var(--ds-ease-out-quart),
+      color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  }
+  .dash-toolbar__menu-item:hover {
+    background: oklch(95% 0.012 245 / 0.85);
+    color: oklch(20% 0.02 255);
+  }
+  .dark .dash-toolbar__menu-item {
+    color: oklch(88% 0.005 245);
+  }
+  .dark .dash-toolbar__menu-item:hover {
+    background: oklch(28% 0.014 250 / 0.7);
+    color: oklch(98% 0.005 245);
+  }
+  .dash-toolbar__menu-item:focus-visible {
+    outline: 2px solid oklch(72% 0.13 210);
+    outline-offset: 2px;
+  }
+  .dash-toolbar__menu-item-ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 0.5rem;
+    background: oklch(94% 0.012 245 / 0.7);
+    color: oklch(40% 0.02 250);
+  }
+  .dark .dash-toolbar__menu-item-ico {
+    background: oklch(28% 0.014 250 / 0.7);
+    color: oklch(82% 0.02 245);
+  }
+  .dash-toolbar__menu-item-label { flex: 1 1 auto; min-width: 0; }
+  .dash-toolbar__menu-foot {
+    padding: 0.375rem 0.25rem 0.125rem;
+    border-top: 1px solid oklch(90% 0.006 245 / 0.7);
+  }
+  .dark .dash-toolbar__menu-foot { border-color: oklch(30% 0.012 250 / 0.7); }
+  .dash-toolbar__menu-foot-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.4375rem 0.625rem;
+    border: 0;
+    background: transparent;
+    border-radius: 0.625rem;
+    color: oklch(40% 0.02 250);
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-align: start;
+    cursor: pointer;
+    transition:
+      background var(--ds-duration-fast) var(--ds-ease-out-quart),
+      color var(--ds-duration-fast) var(--ds-ease-out-quart);
+  }
+  .dash-toolbar__menu-foot-btn:hover {
+    background: oklch(95% 0.012 245 / 0.85);
+    color: oklch(20% 0.02 255);
+  }
+  .dark .dash-toolbar__menu-foot-btn {
+    color: oklch(82% 0.02 245);
+  }
+  .dark .dash-toolbar__menu-foot-btn:hover {
+    background: oklch(28% 0.014 250 / 0.7);
+    color: oklch(98% 0.005 245);
+  }
+  .dash-toolbar__menu-foot-btn > span { flex: 1 1 auto; }
+
+  /* ---- Avatar trigger (magnetic) ----------------------------------------- */
+  .dash-toolbar__avatar {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition:
+      transform 220ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+    will-change: transform;
+  }
+  .dash-toolbar__avatar:hover { background: oklch(94% 0.012 245 / 0.5); }
+  .dark .dash-toolbar__avatar:hover { background: oklch(28% 0.014 250 / 0.5); }
+  .dash-toolbar__avatar:focus-visible {
+    outline: 2px solid oklch(72% 0.13 210);
+    outline-offset: 2px;
+  }
+  .dash-toolbar__avatar-dot {
+    position: absolute;
+    inset-block-end: 4px;
+    inset-inline-end: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: oklch(72% 0.18 150);
+    box-shadow:
+      0 0 0 2px oklch(100% 0 0 / 0.9),
+      0 0 6px oklch(72% 0.18 150 / 0.5);
+  }
+  .dark .dash-toolbar__avatar-dot {
+    box-shadow:
+      0 0 0 2px oklch(22% 0.018 255 / 0.9),
+      0 0 6px oklch(72% 0.18 150 / 0.5);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dash-toolbar__avatar { transition: none; }
+  }
+
+  /* Fluid spacer used between the context label and the actions zone in
+     WorkspaceToolbar so the segmented control hugs the visual end. */
+  .dash-toolbar__spacer {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  /* Range indicator chip used by EngagementDonut / ActivityRail to
+     surface the currently-active range without owning the segmented
+     control (that lives on the persistent Header / WorkspaceToolbar). */
+  .dash-pane__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    height: 1.5rem;
+    padding-inline: 0.625rem;
+    border-radius: 999px;
+    background: oklch(96% 0.012 245 / 0.7);
+    border: 1px solid oklch(90% 0.01 245 / 0.7);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: oklch(40% 0.02 250);
+    white-space: nowrap;
+  }
+  .dark .dash-pane__chip {
+    background: oklch(28% 0.02 250 / 0.55);
+    border-color: oklch(38% 0.02 250 / 0.7);
+    color: oklch(85% 0.02 245);
+  }
+
+  /* ---- Persistent header (2026) ------------------------------------------
+     The primary chrome of the dashboard. Three-zone editorial layout with
+     a glass surface, scroll-aware shadow, live Tehran clock pulse, and
+     a premium avatar trigger that shows name + role on wider screens.
+     ------------------------------------------------------------------------ */
+  .dash-header {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 40;
+    background:
+      linear-gradient(180deg, oklch(100% 0 0 / 0.86) 0%, oklch(99% 0.003 245 / 0.72) 100%);
+    border-block-end: 1px solid oklch(90% 0.006 245 / 0.85);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    transition:
+      background var(--ds-duration-base) var(--ds-ease-out-quart),
+      border-color var(--ds-duration-base) var(--ds-ease-out-quart),
+      box-shadow var(--ds-duration-base) var(--ds-ease-out-quart);
+  }
+  .dark .dash-header {
+    background:
+      linear-gradient(180deg, oklch(15% 0.018 255 / 0.78) 0%, oklch(11% 0.016 255 / 0.62) 100%);
+    border-block-end-color: oklch(28% 0.018 255 / 0.7);
+  }
+
+  /* Scroll-aware state — hairline shadow appears under the header once the
+     user scrolls past the first 8px so the bar feels anchored. */
+  .dash-header[data-scrolled='true'] {
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.7) inset,
+      0 14px 28px -22px oklch(45% 0.08 255 / 0.35);
+  }
+  .dark .dash-header[data-scrolled='true'] {
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.04) inset,
+      0 22px 40px -24px oklch(0% 0 0 / 0.7);
+  }
+
+  .dash-header__inner {
+    display: grid;
+    grid-template-columns: minmax(0, auto) minmax(0, 1fr) minmax(0, auto);
+    align-items: center;
+    column-gap: 0.625rem;
+    row-gap: 0.5rem;
+    min-height: 3.25rem;
+    padding-block: 0.4375rem;
+    padding-inline: 0.75rem;
+    max-width: 100%;
+    margin-inline: auto;
+  }
+  @media (min-width: 640px) {
+    .dash-header__inner {
+      column-gap: 0.875rem;
+      padding-block: 0.5rem;
+      padding-inline: 1rem;
+    }
+  }
+  @media (min-width: 1024px) {
+    .dash-header__inner {
+      column-gap: 1.125rem;
+      min-height: 3.5rem;
+      padding-inline: 1.25rem;
+    }
+  }
+
+  /* ---- Zone wrappers ------------------------------------------------------ */
+  .dash-header__zone {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+  }
+  .dash-header__zone--start {
+    gap: 0.5rem;
+  }
+  .dash-header__zone--search {
+    min-width: 0;
+  }
+  .dash-header__zone--end {
+    gap: 0.375rem;
+    justify-content: end;
+  }
+  @media (min-width: 640px) {
+    .dash-header__zone--end { gap: 0.5rem; }
+  }
+
+  /* ---- Eyebrow + breadcrumb ---------------------------------------------- */
+  .dash-header__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    height: 1.5rem;
+    padding-inline: 0.5rem;
+    border-radius: 999px;
+    background: oklch(96% 0.012 245 / 0.7);
+    border: 1px solid oklch(90% 0.01 245 / 0.7);
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: oklch(40% 0.02 250);
+    white-space: nowrap;
+  }
+  .dark .dash-header__eyebrow {
+    background: oklch(28% 0.02 250 / 0.55);
+    border-color: oklch(38% 0.02 250 / 0.7);
+    color: oklch(85% 0.02 245);
+  }
+  .dash-header__eyebrow-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, oklch(70% 0.16 200), oklch(65% 0.16 260));
+    box-shadow: 0 0 8px oklch(70% 0.16 200 / 0.55);
+  }
+  .dash-header__eyebrow-text {
+    color: oklch(45% 0.02 250);
+  }
+  .dark .dash-header__eyebrow-text { color: oklch(80% 0.02 245); }
+
+  .dash-header__breadcrumb {
+    min-width: 0;
+  }
+  .dash-header__breadcrumb ol {
+    gap: 0.375rem;
+    color: oklch(50% 0.02 250);
+  }
+  .dark .dash-header__breadcrumb ol { color: oklch(72% 0.02 245); }
+  .dash-header__breadcrumb a {
+    border-radius: 4px;
+    padding-inline: 0.25rem;
+  }
+
+  /* Mobile single-line title — the eyebrow / breadcrumb collapse into this. */
+  .dash-header__mobile-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: oklch(20% 0.02 255);
+    letter-spacing: -0.005em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .dark .dash-header__mobile-title { color: oklch(96% 0.005 245); }
+
+  /* ---- Search field (zone 2) --------------------------------------------- */
+  .dash-header__search {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    min-width: 0;
+    height: 2.375rem;
+    padding-inline: 0.75rem;
+    border-radius: 0.75rem;
+    background: oklch(96% 0.004 245 / 0.7);
+    border: 1px solid oklch(90% 0.006 245 / 0.7);
+    transition:
+      border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+      box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart),
+      background var(--ds-duration-fast) var(--ds-ease-out-quart);
+  }
+  @media (min-width: 1024px) {
+    .dash-header__search { height: 2.5rem; }
+  }
+  .dash-header__search:focus-within {
+    border-color: oklch(72% 0.13 210 / 0.7);
+    box-shadow: 0 0 0 3px oklch(72% 0.13 210 / 0.18);
+    background: oklch(100% 0 0 / 0.95);
+  }
+  .dark .dash-header__search {
+    background: oklch(22% 0.012 250 / 0.6);
+    border-color: oklch(32% 0.012 250 / 0.7);
+  }
+  .dark .dash-header__search:focus-within {
+    background: oklch(22% 0.012 250 / 0.85);
+  }
+  .dash-header__search-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    background: transparent;
+    border: 0;
+    outline: 0;
+    font-size: 0.875rem;
+    color: oklch(22% 0.02 255);
+    field-sizing: content;
+  }
+  .dark .dash-header__search-input { color: oklch(95% 0.005 245); }
+  .dash-header__search-input::placeholder { color: oklch(55% 0.01 245); }
+
+  /* ---- Icon buttons (mobile menu, notifications, theme) ------------------ */
+  .dash-header__iconbtn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 1px solid oklch(90% 0.006 245 / 0.7);
+    border-radius: 0.75rem;
+    background: oklch(100% 0 0 / 0.55);
+    color: oklch(40% 0.02 250);
+    cursor: pointer;
+    transition:
+      background var(--ds-duration-fast) var(--ds-ease-out-quart),
+      border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+      color var(--ds-duration-fast) var(--ds-ease-out-quart),
+      transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+  }
+  .dash-header__iconbtn:hover {
+    background: oklch(100% 0 0 / 0.85);
+    border-color: oklch(82% 0.01 245 / 0.9);
+    color: oklch(22% 0.02 255);
+  }
+  .dash-header__iconbtn:active { transform: scale(0.95); }
+  .dark .dash-header__iconbtn {
+    background: oklch(22% 0.014 250 / 0.6);
+    border-color: oklch(34% 0.014 250 / 0.7);
+    color: oklch(82% 0.02 245);
+  }
+  .dark .dash-header__iconbtn:hover {
+    background: oklch(28% 0.016 250 / 0.85);
+    border-color: oklch(44% 0.016 250 / 0.85);
+    color: oklch(98% 0.005 245);
+  }
+  .dash-header__iconbtn:focus-visible {
+    outline: 2px solid oklch(72% 0.13 210);
+    outline-offset: 2px;
+  }
+
+  .dash-header__iconbtn-badge {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    transform: translate(35%, -25%);
+    min-width: 1.05rem;
+    height: 1.05rem;
+    padding-inline: 0.3rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: oklch(62% 0.21 25);
+    color: oklch(99% 0.005 25);
+    font-size: 0.5625rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    box-shadow:
+      0 0 0 2px oklch(100% 0 0 / 0.92),
+      0 4px 10px -4px oklch(62% 0.21 25 / 0.55);
+  }
+  .dark .dash-header__iconbtn-badge {
+    box-shadow:
+      0 0 0 2px oklch(15% 0.018 255 / 0.92),
+      0 4px 10px -4px oklch(62% 0.21 25 / 0.55);
+  }
+
+  /* ---- Live status pill (Tehran clock) ----------------------------------- */
+  .dash-header__status {
+    display: none;
+    align-items: center;
+    gap: 0.4rem;
+    height: 2.125rem;
+    padding-inline: 0.625rem;
+    border-radius: 999px;
+    background: oklch(96% 0.012 245 / 0.7);
+    border: 1px solid oklch(90% 0.01 245 / 0.7);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: oklch(40% 0.02 250);
+    white-space: nowrap;
+    transition:
+      background var(--ds-duration-base) var(--ds-ease-out-quart),
+      border-color var(--ds-duration-base) var(--ds-ease-out-quart);
+  }
+  @media (min-width: 768px) {
+    .dash-header__status { display: inline-flex; }
+  }
+  .dark .dash-header__status {
+    background: oklch(28% 0.02 250 / 0.55);
+    border-color: oklch(38% 0.02 250 / 0.7);
+    color: oklch(85% 0.02 245);
+  }
+  .dash-header__status-dot {
+    position: relative;
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: oklch(72% 0.18 150);
+    box-shadow: 0 0 0 2px oklch(72% 0.18 150 / 0.18);
+  }
+  .dash-header__status-dot::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 999px;
+    background: oklch(72% 0.18 150 / 0.45);
+    animation: dash-header-status-pulse 2.4s var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)) infinite;
+  }
+  @keyframes dash-header-status-pulse {
+    0%   { transform: scale(0.7); opacity: 0.55; }
+    70%  { transform: scale(1.8); opacity: 0; }
+    100% { transform: scale(1.8); opacity: 0; }
+  }
+  .dash-header__status-time {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+  }
+  .dash-header__status-city {
+    color: oklch(55% 0.02 250);
+    font-weight: 500;
+  }
+  .dark .dash-header__status-city { color: oklch(70% 0.02 245); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dash-header__status-dot::after { animation: none; }
+  }
+
+  /* ---- Notifications popover --------------------------------------------- */
+  .dash-header__popover {
+    border-radius: var(--ds-radius-xl);
+    border: 1px solid oklch(88% 0.006 245 / 0.85);
+    background: linear-gradient(180deg, oklch(100% 0 0 / 0.96), oklch(99% 0.003 245 / 0.92));
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.7) inset,
+      0 24px 48px -22px oklch(45% 0.08 255 / 0.4),
+      0 4px 12px -6px oklch(45% 0.08 255 / 0.25);
+    overflow: hidden;
+  }
+  .dark .dash-header__popover {
+    background: linear-gradient(180deg, oklch(22% 0.018 255 / 0.92), oklch(17% 0.016 255 / 0.86));
+    border-color: oklch(34% 0.02 255 / 0.75);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.04) inset,
+      0 28px 56px -22px oklch(0% 0 0 / 0.7),
+      0 4px 12px -6px oklch(0% 0 0 / 0.45);
+  }
+  .dash-header__popover-head {
+    padding: 0.75rem 1rem;
+    border-block-end: 1px solid oklch(90% 0.006 245 / 0.7);
+  }
+  .dark .dash-header__popover-head {
+    border-block-end-color: oklch(30% 0.012 250 / 0.7);
+  }
+  .dash-header__popover-foot {
+    padding: 0.5rem 1rem;
+    border-block-start: 1px solid oklch(90% 0.006 245 / 0.7);
+    text-align: center;
+  }
+  .dark .dash-header__popover-foot {
+    border-block-start-color: oklch(30% 0.012 250 / 0.7);
+  }
+  .dash-header__notif {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
+  }
+  .dash-header__notif:hover {
+    background: oklch(96% 0.012 245 / 0.6);
+  }
+  .dark .dash-header__notif:hover {
+    background: oklch(28% 0.014 250 / 0.5);
+  }
+
+  /* ---- Avatar trigger (zone 3) ------------------------------------------- */
+  .dash-header__avatar {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.25rem 0.5rem 0.25rem 0.75rem;
+    border: 1px solid oklch(90% 0.006 245 / 0.7);
+    border-radius: 999px;
+    background: oklch(100% 0 0 / 0.55);
+    color: oklch(28% 0.02 255);
+    cursor: pointer;
+    transition:
+      background var(--ds-duration-fast) var(--ds-ease-out-quart),
+      border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+      transform var(--ds-duration-base) var(--ds-ease-out-quart);
+  }
+  .dash-header__avatar:hover {
+    background: oklch(100% 0 0 / 0.85);
+    border-color: oklch(82% 0.01 245 / 0.9);
+  }
+  .dash-header__avatar:active { transform: scale(0.98); }
+  .dark .dash-header__avatar {
+    background: oklch(22% 0.014 250 / 0.6);
+    border-color: oklch(34% 0.014 250 / 0.7);
+    color: oklch(88% 0.005 245);
+  }
+  .dark .dash-header__avatar:hover {
+    background: oklch(28% 0.016 250 / 0.85);
+    border-color: oklch(44% 0.016 250 / 0.85);
+  }
+  .dash-header__avatar:focus-visible {
+    outline: 2px solid oklch(72% 0.13 210);
+    outline-offset: 2px;
+  }
+  .dash-header__avatar-inner {
+    display: none;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.1;
+    min-width: 0;
+  }
+  @media (min-width: 1024px) {
+    .dash-header__avatar-inner {
+      display: inline-flex;
+      max-width: 8rem;
+    }
+  }
+  .dash-header__avatar-name {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: oklch(22% 0.02 255);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+  .dark .dash-header__avatar-name { color: oklch(96% 0.005 245); }
+  .dash-header__avatar-role {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: oklch(55% 0.02 250);
+    margin-top: 0.125rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+  .dark .dash-header__avatar-role { color: oklch(72% 0.02 245); }
+  .dash-header__avatar-dot {
+    position: absolute;
+    inset-block-end: 2px;
+    inset-inline-start: 2px;
+    width: 9px;
+    height: 9px;
+    border-radius: 999px;
+    background: oklch(72% 0.18 150);
+    box-shadow:
+      0 0 0 2px oklch(100% 0 0 / 0.9),
+      0 0 6px oklch(72% 0.18 150 / 0.5);
+  }
+  .dark .dash-header__avatar-dot {
+    box-shadow:
+      0 0 0 2px oklch(15% 0.018 255 / 0.9),
+      0 0 6px oklch(72% 0.18 150 / 0.5);
+  }
+
+  /* Hairline divider below the header — visible always, brighter on scroll */
+  .dash-header__divider {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: -1px;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      oklch(75% 0.04 250 / 0.3) 20%,
+      oklch(75% 0.04 250 / 0.55) 50%,
+      oklch(75% 0.04 250 / 0.3) 80%,
+      transparent 100%
+    );
+    opacity: 0;
+    transition: opacity var(--ds-duration-base) var(--ds-ease-out-quart);
+    pointer-events: none;
+  }
+  .dash-header[data-scrolled='true'] .dash-header__divider { opacity: 1; }
+  .dark .dash-header__divider {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      oklch(70% 0.08 200 / 0.25) 20%,
+      oklch(70% 0.08 200 / 0.5) 50%,
+      oklch(70% 0.08 200 / 0.25) 80%,
+      transparent 100%
+    );
+  }
+
+  /* Hide search label and status pill on very small screens so the zone
+     2 search doesn't compete with the avatar for room. */
+  @media (max-width: 639px) {
+    .dash-header__status { display: none; }
+  }
   .dash-toolbar__search {
     display: inline-flex;
     align-items: center;
@@ -10400,3 +11612,124 @@ p { line-height: var(--leading-relaxed); }
 }
 
 /* ===== END Setup Surface 2026 — Aurora / Editorial Glass ===== */
+
+/* ============================================================================
+   Dashboard Density (June 25 redesign)
+   ----------------------------------------------------------------------------
+   The WorkspaceToolbar's density state drives `data-density` on the dashboard
+   <main>. "comfortable" (default) preserves the editorial 2026 spacing;
+   "compact" tightens paddings, font sizes, and gaps so power users can fit
+   more rows on screen. Selectors are written with the data-attribute prefix
+   to keep specificity (0,1,1) so they override the default .dash-* utilities
+   without resorting to !important.
+   ============================================================================ */
+@layer utilities {
+
+  /* Shell + main gaps shrink */
+  [data-density="compact"] .dash-shell,
+  [data-density="compact"] .dash-shell__main,
+  [data-density="compact"] .dash-shell__rail {
+    gap: 0.75rem;
+  }
+
+  /* Pane padding contracts across all variants */
+  [data-density="compact"] .dash-pane {
+    padding: 0.875rem;
+  }
+  [data-density="compact"] .dash-pane--hero {
+    padding: 1rem;
+  }
+  [data-density="compact"] .dash-pane--compact {
+    padding: 0.75rem;
+  }
+  [data-density="compact"] .dash-pane--tall {
+    padding: 0.875rem;
+  }
+
+  /* KPI value font sizes step down */
+  [data-density="compact"] .dash-pane__value {
+    font-size: 1.5rem;
+    line-height: 1.15;
+  }
+  [data-density="compact"] .dash-pane--hero .dash-pane__value {
+    font-size: 2.25rem;
+  }
+  [data-density="compact"] .dash-pane__title-text {
+    font-size: 0.8125rem;
+  }
+
+  /* Toolbar tighter */
+  [data-density="compact"] .dash-toolbar {
+    padding: 0.375rem 0.625rem;
+    gap: 0.5rem;
+  }
+  [data-density="compact"] .dash-toolbar .dash-chip {
+    height: 1.75rem;
+    padding-inline: 0.5rem;
+    font-size: 0.6875rem;
+  }
+
+  /* Hero compact */
+  [data-density="compact"] .dash-hero {
+    padding: 1.25rem;
+  }
+  [data-density="compact"] .dash-hero__headline {
+    font-size: 1.75rem;
+  }
+  [data-density="compact"] .dash-hero__stat {
+    padding: 0.875rem;
+  }
+
+  /* Card links (list rows) compress */
+  [data-density="compact"] .dash-cardlink {
+    padding-block: 0.375rem;
+  }
+  [data-density="compact"] .dash-cardlink__title {
+    font-size: 0.8125rem;
+  }
+
+  /* Bento grid gaps contract */
+  [data-density="compact"] .dash-bento2 {
+    gap: 0.625rem;
+  }
+
+  /* Mini calendar cells shrink */
+  [data-density="compact"] .dash-minical__cell {
+    font-size: 0.625rem;
+  }
+
+  /* Empty state copy stays legible but icon block shrinks */
+  [data-density="compact"] .dash-pane .w-12.h-12 {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  /* Transition for density changes — keeps it buttery, no layout flash */
+  [data-density] .dash-pane,
+  [data-density] .dash-toolbar,
+  [data-density] .dash-hero,
+  [data-density] .dash-bento2,
+  [data-density] .dash-shell,
+  [data-density] .dash-shell__main,
+  [data-density] .dash-shell__rail {
+    transition:
+      padding var(--ds-duration-fast, 180ms) var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)),
+      gap var(--ds-duration-fast, 180ms) var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)),
+      font-size var(--ds-duration-fast, 180ms) var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+  }
+
+  /* Honor reduced motion: density switch snaps, doesn't transition */
+  @media (prefers-reduced-motion: reduce) {
+    [data-density] .dash-pane,
+    [data-density] .dash-toolbar,
+    [data-density] .dash-hero,
+    [data-density] .dash-bento2,
+    [data-density] .dash-shell,
+    [data-density] .dash-shell__main,
+    [data-density] .dash-shell__rail {
+      transition: none;
+    }
+  }
+}
+
+/* ===== END Dashboard Density (June 25 redesign) ===== */

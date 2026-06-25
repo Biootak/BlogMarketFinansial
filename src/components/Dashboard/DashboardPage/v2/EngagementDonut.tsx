@@ -1,17 +1,23 @@
 'use client';
 
 /**
- * EngagementDonut — interactive 2026 donut.
+ * EngagementDonut — 2026 interactive donut (range-driven).
  *
- * Improvements over the v1 DonutChart:
+ * The range filter (all / today / week) is now controlled from the
+ * persistent Header / WorkspaceToolbar. This component is a pure
+ * presentation surface: it receives `range` as a prop and re-weights
+ * the slice totals without touching state itself.
+ *
+ * Modern techniques:
  *   • Hover-state on each slice darkens the others (CSS-only via :has()).
- *   • Range filter chips at the top drive the totals — "all / today / week"
- *     each re-weight the slice totals without a server round-trip (the
- *     parent passes pre-computed numbers per range).
- *   • Legend rows are real <button>s; pressing one expands a small detail
- *     panel showing the slice's % and a 7-bar mini sparkline.
- *   • All animations use opacity/scale on transform-only paths so they are
- *     GPU-friendly and respect prefers-reduced-motion.
+ *   • Slice animation uses opacity/scale on transform-only paths so it
+ *     is GPU-friendly and respects prefers-reduced-motion.
+ *   • All colors are oklch for predictable contrast in light + dark.
+ *
+ * Accessibility:
+ *   • `<svg role="img">` with a real `<title>` per slice for SR users.
+ *   • Legend rows are real <button>s so keyboard users can step through
+ *     the slices with focus.
  */
 
 import { useEffect, useId, useMemo, useState } from 'react';
@@ -33,47 +39,18 @@ export interface EngagementSlice {
 interface EngagementDonutProps {
   slices: EngagementSlice[];
   range: 'all' | 'today' | 'week';
-  onRangeChange: (next: 'all' | 'today' | 'week') => void;
   caption: string;
 }
 
-const RANGES = [
-  { id: 'all' as const, label: 'کل' },
-  { id: 'today' as const, label: 'امروز' },
-  { id: 'week' as const, label: 'هفتگی' },
-];
-
-function polar(cx: number, cy: number, r: number, angle: number) {
-  const rad = ((angle - 90) * Math.PI) / 180;
-  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
-}
-
-function arcPath(
-  cx: number,
-  cy: number,
-  rOuter: number,
-  rInner: number,
-  start: number,
-  end: number,
-): string {
-  const largeArc = end - start > 180 ? 1 : 0;
-  const a1 = polar(cx, cy, rOuter, start);
-  const a2 = polar(cx, cy, rOuter, end);
-  const b1 = polar(cx, cy, rInner, end);
-  const b2 = polar(cx, cy, rInner, start);
-  return [
-    `M ${a1.x} ${a1.y}`,
-    `A ${rOuter} ${rOuter} 0 ${largeArc} 1 ${a2.x} ${a2.y}`,
-    `L ${b1.x} ${b1.y}`,
-    `A ${rInner} ${rInner} 0 ${largeArc} 0 ${b2.x} ${b2.y}`,
-    'Z',
-  ].join(' ');
-}
+const RANGE_LABEL: Record<'all' | 'today' | 'week', string> = {
+  all: 'کل',
+  today: 'امروز',
+  week: 'هفتگی',
+};
 
 export default function EngagementDonut({
   slices,
   range,
-  onRangeChange,
   caption,
 }: EngagementDonutProps) {
   const id = useId();
@@ -85,14 +62,13 @@ export default function EngagementDonut({
   const cy = size / 2;
   const rOuter = size / 2 - 4;
   const rInner = rOuter - thickness;
+  const rMid = (rOuter + rInner) / 2;
+  const circumference = 2 * Math.PI * rMid;
 
   const total = useMemo(
     () => slices.reduce((acc, s) => acc + (s.values[range] || 0), 0),
     [slices, range],
   );
-
-  const rMid = (rOuter + rInner) / 2;
-  const circumference = 2 * Math.PI * rMid;
 
   const arcs = useMemo(() => {
     const positive = slices.filter((s) => (s.values[range] || 0) > 0);
@@ -151,7 +127,6 @@ export default function EngagementDonut({
   }, [arcs]);
 
   const hoveredArc = arcs.find((a) => a.slice.key === hoveredKey);
-
   const hasData = total > 0;
 
   return (
@@ -170,32 +145,9 @@ export default function EngagementDonut({
           </span>
           <span className="dash-pane__title-text">{caption}</span>
         </span>
-
-        <div
-          className="inline-flex items-center gap-1 p-1 rounded-xl bg-slate-100/70 dark:bg-slate-800/60 ring-1 ring-slate-200/60 dark:ring-slate-700/60"
-          role="radiogroup"
-          aria-label="بازه‌ی نمودار"
-        >
-          {RANGES.map((r) => (
-            <button
-              key={r.id}
-              type="button"
-              role="radio"
-              aria-checked={range === r.id}
-              tabIndex={range === r.id ? 0 : -1}
-              onClick={() => onRangeChange(r.id)}
-              data-active={range === r.id ? 'true' : undefined}
-              className={cn(
-                'dash-chip !h-7 !px-2.5 !text-[11px]',
-                range === r.id
-                  ? '!bg-slate-900 !text-white !border-slate-900 dark:!bg-white dark:!text-slate-900 dark:!border-white'
-                  : '',
-              )}
-            >
-              {r.label}
-            </button>
-          ))}
-        </div>
+        <span className="dash-pane__chip" aria-live="polite">
+          {RANGE_LABEL[range]}
+        </span>
       </header>
 
       {!hasData ? (
@@ -287,7 +239,7 @@ export default function EngagementDonut({
               >
                 {hoveredArc
                   ? `${hoveredArc.pct.toFixed(0)}%`
-                  : RANGES.find((r) => r.id === range)?.label}
+                  : RANGE_LABEL[range]}
               </text>
             </svg>
           </div>

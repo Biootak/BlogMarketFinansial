@@ -1,30 +1,40 @@
 'use client';
 
 /**
- * WorkspaceToolbar — 2026 sticky contextual toolbar.
+ * WorkspaceToolbar — 2026 home-only context bar.
  *
- * Lives at the top of the dashboard canvas. Three slots:
- *   1. A search field (`/`) that mirrors the global ⌘K palette. Pressing
- *      ⌘K or `/` opens the palette; pressing `/` focuses the search.
- *   2. A density toggle (compact / comfortable) — wired through a context
- *      so all panes can read it.
- *   3. Filter chips ("همه" / "امروز" / "هفتگی") that drive the engagement
- *      donut + activity timeline. Selection is persisted in the URL via
- *      `?range=…` so reload / back navigation restore the state.
+ * Renders only on `/dashboard` (the home canvas). Identity and global
+ * utilities (search, theme, avatar, notifications, mobile menu) live on
+ * the persistent `Header` (DashboardPage/Header.tsx); the toolbar is
+ * strictly for canvas-scoped controls that don't make sense on every
+ * page:
  *
- * The toolbar is rendered as a `.dash-toolbar` element with a backdrop
- * blur and a thin gradient border. It participates in the .dash-shell
- * container query (collapses to one column under 720px).
+ *   • A page-context anchor (eyebrow + title) so the user always knows
+ *     they're on the home overview.
+ *   • A range segmented control that drives the engagement donut, the
+ *     activity rail's filter, and the analytics period (7d / 30d / 90d).
+ *   • A density toggle (comfortable / compact) — wired via localStorage.
+ *
+ * The toolbar is sticky + scroll-aware: once the user scrolls, the
+ * context label condenses, padding tightens, and the eyebrow text slides
+ * off-canvas.
+ *
+ * Public API is unchanged from v1: { range, density, onRangeChange,
+ * onDensityChange }. DashboardShell does not need to be modified.
  */
 
-import { useEffect, useRef, useState, useTransition } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
-  HiOutlineMagnifyingGlass,
-  HiOutlineAdjustmentsHorizontal,
   HiOutlineSquares2X2,
   HiOutlineRectangleStack,
-  HiOutlineCommandLine,
 } from 'react-icons/hi2';
 import { cn } from '@/lib/utils';
 
@@ -38,10 +48,15 @@ interface WorkspaceToolbarProps {
   onDensityChange: (next: Density) => void;
 }
 
-const RANGES: { id: Range; label: string }[] = [
-  { id: 'all', label: 'همه' },
-  { id: 'today', label: 'امروز' },
-  { id: 'week', label: 'هفتگی' },
+const RANGES: ReadonlyArray<{ id: Range; label: string; hint: string }> = [
+  { id: 'all', label: 'همه', hint: 'تمام زمان' },
+  { id: 'today', label: 'امروز', hint: '۲۴ ساعت اخیر' },
+  { id: 'week', label: 'هفتگی', hint: '۷ روز اخیر' },
+];
+
+const DENSITIES: ReadonlyArray<{ id: Density; label: string; icon: React.ReactNode }> = [
+  { id: 'comfortable', label: 'راحت', icon: <HiOutlineSquares2X2 className="w-3.5 h-3.5" /> },
+  { id: 'compact', label: 'فشرده', icon: <HiOutlineRectangleStack className="w-3.5 h-3.5" /> },
 ];
 
 const DENSITY_STORAGE_KEY = 'dash2:density';
@@ -50,18 +65,8 @@ const LEGACY_DENSITY_STORAGE_KEY = 'dashboard:density';
 const isDensity = (value: unknown): value is Density =>
   value === 'comfortable' || value === 'compact';
 
-const DENSITIES: { id: Density; label: string; icon: React.ReactNode }[] = [
-  {
-    id: 'comfortable',
-    label: 'راحت',
-    icon: <HiOutlineSquares2X2 className="w-3.5 h-3.5" />,
-  },
-  {
-    id: 'compact',
-    label: 'فشرده',
-    icon: <HiOutlineRectangleStack className="w-3.5 h-3.5" />,
-  },
-];
+const useIsomorphicLayoutEffect =
+  typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export default function WorkspaceToolbar({
   range,
@@ -69,41 +74,64 @@ export default function WorkspaceToolbar({
   onRangeChange,
   onDensityChange,
 }: WorkspaceToolbarProps) {
-  const inputRef = useRef<HTMLInputElement | null>(null);
   const router = useRouter();
   const pathname = usePathname();
   const search = useSearchParams();
-  const [query, setQuery] = useState('');
   const [, startTransition] = useTransition();
 
-  // `/` focuses the search field, just like GitHub / Linear.
+  // ---- Scroll-aware shell -------------------------------------------------
+  // A 1px sentinel pinned to the very top is observed via IntersectionObserver;
+  // when it leaves the viewport we flip the toolbar into its condensed state.
+  const [scrolled, setScrolled] = useState(false);
+  const sentinelRef = useRef<HTMLSpanElement | null>(null);
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement | null;
-      const isTyping =
-        target &&
-        (target.tagName === 'INPUT' ||
-          target.tagName === 'TEXTAREA' ||
-          target.isContentEditable);
-      if (e.key === '/' && !isTyping && !e.metaKey && !e.ctrlKey) {
-        e.preventDefault();
-        inputRef.current?.focus();
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    const el = sentinelRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry) return;
+        setScrolled(entry.intersectionRatio === 0);
+      },
+      { threshold: [0, 1] },
+    );
+    io.observe(el);
+    return () => io.disconnect();
   }, []);
 
-  // Persist the range into ?range= so reloads keep state. Skip the write
-  // when the URL already agrees, and remember the last value we wrote so
-  // we don't churn the URL on subsequent renders.
+  // ---- Range segmented: sliding indicator --------------------------------
+  // We measure the active button's bounding rect and write --seg-x + --seg-w
+  // to the parent. The indicator uses `transform: translateX(var(--seg-x))`
+  // so motion happens on the compositor only.
+  const segmentRef = useRef<HTMLDivElement | null>(null);
+  const segmentBtnRefs = useRef<Partial<Record<Range, HTMLButtonElement | null>>>({});
+  useIsomorphicLayoutEffect(() => {
+    const parent = segmentRef.current;
+    const btn = segmentBtnRefs.current[range];
+    if (!parent || !btn) return;
+    const measure = () => {
+      const parentRect = parent.getBoundingClientRect();
+      const btnRect = btn.getBoundingClientRect();
+      const x = btnRect.left - parentRect.left;
+      parent.style.setProperty('--seg-x', `${x}px`);
+      parent.style.setProperty('--seg-w', `${btnRect.width}px`);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(parent);
+    btn && ro.observe(btn);
+    window.addEventListener('resize', measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, [range]);
+
+  // ---- Persist range into URL --------------------------------------------
   const lastWrittenRangeRef = useRef<string | null>(null);
   useEffect(() => {
     const current = search?.get('range') ?? null;
     const desired = range === 'all' ? null : range;
     if (desired === current) {
-      // Store the full serialized query string so the compare below
-      // is apples-to-apples (qs is params.toString(), not the raw value).
       lastWrittenRangeRef.current = search?.toString() ?? '';
       return;
     }
@@ -118,12 +146,7 @@ export default function WorkspaceToolbar({
     });
   }, [range, search, pathname, router, startTransition]);
 
-  const openPalette = () => {
-    window.dispatchEvent(new CustomEvent('cmd-palette:open'));
-  };
-
-  // Hydrate density from localStorage on mount. Migrate any legacy value
-  // stored under the old key into the new primitives namespace.
+  // ---- Density: hydrate + persist ----------------------------------------
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
@@ -145,7 +168,6 @@ export default function WorkspaceToolbar({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Persist density changes to localStorage.
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
@@ -155,64 +177,67 @@ export default function WorkspaceToolbar({
     }
   }, [density]);
 
-  return (
-    <div className="dash-toolbar" role="toolbar" aria-label="ابزارهای داشبورد">
-      <label className="dash-toolbar__search" htmlFor="dash-search">
-        <HiOutlineMagnifyingGlass className="w-4 h-4 opacity-60 shrink-0" aria-hidden />
-        <input
-          id="dash-search"
-          ref={inputRef}
-          className="dash-toolbar__input"
-          type="search"
-          inputMode="search"
-          placeholder="جستجو در داشبورد…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && query.trim()) {
-              openPalette();
-            }
-          }}
-          aria-label="جستجو"
-        />
-        <button
-          type="button"
-          onClick={openPalette}
-          className="hidden sm:inline-flex items-center gap-1 text-[10px] font-mono text-slate-500 dark:text-slate-400 border border-slate-200/70 dark:border-slate-700/70 rounded-md px-1.5 py-0.5 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60"
-          aria-label="باز کردن جستجوی فرمان‌ها"
-        >
-          <HiOutlineCommandLine className="w-3 h-3" />
-          <span>K</span>
-        </button>
-      </label>
+  const activeRange = useMemo(
+    () => RANGES.find((r) => r.id === range) ?? RANGES[0],
+    [range],
+  );
 
-      <div className="flex items-center gap-2 flex-wrap justify-end">
+  return (
+    <div
+      role="toolbar"
+      aria-label="ابزارهای نمای کلی"
+      data-scrolled={scrolled ? 'true' : undefined}
+      className={cn('dash-toolbar dash-toolbar--editorial')}
+    >
+      {/* Sentinel sits above the toolbar; we observe it to derive scrolled */}
+      <span ref={sentinelRef} className="dash-toolbar__sentinel" aria-hidden />
+
+      {/* Zone 1 — context (start, RTL: right) ---------------------------- */}
+      <div className="dash-toolbar__zone dash-toolbar__zone--context">
+        <span className="dash-toolbar__eyebrow" aria-hidden>
+          <span className="dash-toolbar__eyebrow-dot" />
+          <span className="dash-toolbar__eyebrow-text">داشبورد</span>
+        </span>
+        <h2 className="dash-toolbar__title">نمای کلی</h2>
+      </div>
+
+      {/* Zone 2 — fluid spacer ------------------------------------------- */}
+      <span aria-hidden className="dash-toolbar__spacer" />
+
+      {/* Zone 3 — controls (end, RTL: left) ------------------------------ */}
+      <div className="dash-toolbar__zone dash-toolbar__zone--actions">
+        {/* Range segmented control with sliding indicator */}
         <div
-          className="inline-flex items-center gap-1 p-1 rounded-xl bg-slate-100/70 dark:bg-slate-800/60 ring-1 ring-slate-200/60 dark:ring-slate-700/60"
+          ref={segmentRef}
+          className="dash-toolbar__segment"
           role="radiogroup"
           aria-label="بازه‌ی داده"
         >
+          <span className="dash-toolbar__segment-indicator" aria-hidden />
           {RANGES.map((r) => (
             <button
               key={r.id}
+              ref={(el) => {
+                segmentBtnRefs.current[r.id] = el;
+              }}
               type="button"
               role="radio"
               aria-checked={range === r.id}
+              aria-label={`${r.label} — ${r.hint}`}
+              title={r.hint}
               tabIndex={range === r.id ? 0 : -1}
               onClick={() => onRangeChange(r.id)}
               data-active={range === r.id ? 'true' : undefined}
-              className={cn(
-                'dash-chip !h-8 !px-3 !text-xs',
-                range === r.id ? '!bg-slate-900 !text-white !border-slate-900 dark:!bg-white dark:!text-slate-900 dark:!border-white' : '',
-              )}
+              className="dash-toolbar__segment-btn"
             >
-              {r.label}
+              <span>{r.label}</span>
             </button>
           ))}
         </div>
 
+        {/* Density toggle */}
         <div
-          className="hidden sm:inline-flex items-center gap-1 p-1 rounded-xl bg-slate-100/70 dark:bg-slate-800/60 ring-1 ring-slate-200/60 dark:ring-slate-700/60"
+          className="dash-toolbar__density"
           role="radiogroup"
           aria-label="چگالی نمایش"
         >
@@ -225,28 +250,20 @@ export default function WorkspaceToolbar({
               tabIndex={density === d.id ? 0 : -1}
               onClick={() => onDensityChange(d.id)}
               data-active={density === d.id ? 'true' : undefined}
-              className={cn(
-                'inline-flex items-center gap-1 h-8 px-2.5 rounded-lg text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60',
-                density === d.id
-                  ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-white'
-                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white',
-              )}
+              title={`چگالی ${d.label}`}
+              className="dash-toolbar__density-btn"
             >
               {d.icon}
-              <span>{d.label}</span>
             </button>
           ))}
         </div>
-
-        <button
-          type="button"
-          className="hidden md:inline-flex items-center gap-1.5 h-10 px-3 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60"
-          aria-label="تنظیمات سریع"
-        >
-          <HiOutlineAdjustmentsHorizontal className="w-4 h-4" />
-          <span>تنظیم</span>
-        </button>
       </div>
+
+      {/* Screen-reader-only echo of the active range so assistive tech
+          gets the same context as the visual segmented control. */}
+      <span className="sr-only" aria-live="polite">
+        بازه‌ی فعال: {activeRange.label}
+      </span>
     </div>
   );
 }

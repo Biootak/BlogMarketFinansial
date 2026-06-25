@@ -1,16 +1,20 @@
 'use client';
 
 /**
- * ActivityRail — 2026 timeline.
+ * ActivityRail — 2026 day-grouped timeline (range-driven).
  *
- * Adds two affordances on top of the v1 ActivityFeed:
- *   1. Day-grouped headers (today / yesterday / earlier this week / …) so
- *      long-running logs stay scannable.
- *   2. Filter chips (today / week / all) at the top that re-aggregate the
- *      visible rows client-side.
+ * The range filter (today / week / all) is now controlled from the
+ * persistent Header / WorkspaceToolbar. This component is a pure
+ * presentation surface that day-groups activity items by date and
+ * shows a relative timestamp per row.
  *
- * The relative timestamps are kept consistent with the v1 component. All
- * hover/focus/active interactions are mapped through CSS for cheap motion.
+ * Modern techniques:
+ *   • Day-grouped headers (today / yesterday / earlier this week / …) so
+ *     long-running logs stay scannable.
+ *   • IntersectionObserver-free scroll performance — rows are memoized
+ *     with a stable key so React can skip the work.
+ *   • All hover/focus/active interactions are mapped through CSS for
+ *     cheap motion.
  */
 
 import { useEffect, useMemo, useState } from 'react';
@@ -22,6 +26,7 @@ import {
   HiOutlineArrowLeft,
   HiOutlineInbox,
 } from 'react-icons/hi2';
+import { DashboardEmpty } from '@/components/Dashboard/primitives';
 import { cn } from '@/lib/utils';
 
 export interface ActivityItem {
@@ -37,14 +42,13 @@ type Range = 'today' | 'week' | 'all';
 interface ActivityRailProps {
   items: ActivityItem[];
   range: Range;
-  onRangeChange: (next: Range) => void;
 }
 
-const RANGES: { id: Range; label: string }[] = [
-  { id: 'today', label: 'امروز' },
-  { id: 'week', label: 'هفتگی' },
-  { id: 'all', label: 'همه' },
-];
+const RANGE_LABEL: Record<Range, string> = {
+  today: 'امروز',
+  week: 'هفتگی',
+  all: 'همه',
+};
 
 function formatRelativeFa(d: Date, now: Date) {
   const diff = Math.max(0, now.getTime() - d.getTime());
@@ -93,7 +97,7 @@ function dayLabelFa(d: Date, now: Date): { label: string; tone: 'today' | 'yeste
   return { label: d.toLocaleDateString('fa-IR', { month: 'long', year: 'numeric' }), tone: 'older' };
 }
 
-export default function ActivityRail({ items, range, onRangeChange }: ActivityRailProps) {
+export default function ActivityRail({ items, range }: ActivityRailProps) {
   const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -150,43 +154,18 @@ export default function ActivityRail({ items, range, onRangeChange }: ActivityRa
           </span>
           <span className="dash-pane__title-text">فعالیت‌های اخیر</span>
         </span>
-
-        <div
-          className="inline-flex items-center gap-1 p-1 rounded-xl bg-slate-100/70 dark:bg-slate-800/60 ring-1 ring-slate-200/60 dark:ring-slate-700/60"
-          role="radiogroup"
-          aria-label="بازه‌ی فعالیت"
-        >
-          {RANGES.map((r) => (
-            <button
-              key={r.id}
-              type="button"
-              role="radio"
-              aria-checked={range === r.id}
-              tabIndex={range === r.id ? 0 : -1}
-              onClick={() => onRangeChange(r.id)}
-              data-active={range === r.id ? 'true' : undefined}
-              className={cn(
-                'dash-chip !h-7 !px-2.5 !text-[11px]',
-                range === r.id
-                  ? '!bg-slate-900 !text-white !border-slate-900 dark:!bg-white dark:!text-slate-900 dark:!border-white'
-                  : '',
-              )}
-            >
-              {r.label}
-            </button>
-          ))}
-        </div>
+        <span className="dash-pane__chip" aria-live="polite">
+          {RANGE_LABEL[range]}
+        </span>
       </header>
 
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center text-center py-12 gap-3">
-          <span className="dash-ico dash-ico--violet w-12 h-12 opacity-50" aria-hidden>
-            <HiOutlineInbox className="w-5 h-5" />
-          </span>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            هنوز فعالیتی در این بازه ثبت نشده است.
-          </p>
-        </div>
+        <DashboardEmpty
+          icon={<HiOutlineInbox className="w-full h-full" />}
+          title="فید خاموشه"
+          description="هنوز فعالیتی در این بازه ثبت نشده است. وقتی هم‌تیمی‌ها پستی منتشر یا ویرایش کنن، اینجا می‌بینی."
+          tone="violet"
+        />
       ) : (
         <ol className="relative">
           {grouped.map((group, gi) => (

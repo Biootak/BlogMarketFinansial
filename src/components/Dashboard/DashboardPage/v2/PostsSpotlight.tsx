@@ -3,17 +3,22 @@
 /**
  * PostsSpotlight — 2026 editorial posts surface.
  *
- * Composition (top to bottom):
- *   1. Featured strip — the top 3 popular posts rendered as a horizontal
- *      hero row, each carrying a rank pill + view count + author meta.
+ * The content filter (همه / محبوب / پیش‌نویس‌ها) is a category filter,
+ * not a time-range filter — it stays on this section rather than moving
+ * to the persistent Header. Rendered as a sliding indicator tab strip
+ * (Linear/Resend pattern) instead of generic chips.
+ *
+ * Composition:
+ *   1. Featured strip — top 3 popular posts as a hero row.
  *   2. Two-column list section: Popular (left) and Recent drafts (right).
  *
- * Every row is a real <Link> with a visible focus ring. The list rows use
- * .dash-cardlink so the hover state is consistent across the dashboard.
+ * Every row is a real <Link> with a visible focus ring. The list rows
+ * use the shared `.dash-cardlink` so the hover state stays consistent
+ * with the rest of the dashboard.
  */
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion } from '@/lib/motion-shim';
 import { cn } from '@/lib/utils';
 import {
@@ -45,7 +50,7 @@ interface PostsSpotlightProps {
 
 type PostsFilter = 'all' | 'popular' | 'drafts';
 
-const FILTERS: { id: PostsFilter; label: string }[] = [
+const FILTERS: ReadonlyArray<{ id: PostsFilter; label: string; hint?: string }> = [
   { id: 'all', label: 'همه' },
   { id: 'popular', label: 'محبوب' },
   { id: 'drafts', label: 'پیش‌نویس‌ها' },
@@ -56,18 +61,31 @@ const FILTER_STORAGE_KEY = 'dash2:posts-filter';
 const isPostsFilter = (value: unknown): value is PostsFilter =>
   value === 'all' || value === 'popular' || value === 'drafts';
 
+const useIsomorphicLayoutEffect =
+  typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
 export default function PostsSpotlight({ popularPosts, recentDrafts }: PostsSpotlightProps) {
-  const [activeFilter, setActiveFilter] = useState<PostsFilter>(() => {
-    if (typeof window === 'undefined') return 'all';
+  // Initial state must mirror SSR (where window/localStorage are unavailable).
+  // We hydrate from storage in an effect *after* the first paint so the
+  // server-rendered HTML and the first client render match exactly.
+  const [activeFilter, setActiveFilter] = useState<PostsFilter>('all');
+  const [displayFilter, setDisplayFilter] = useState<PostsFilter>('all');
+  const [isFading, setIsFading] = useState(false);
+
+  // Hydrate the persisted filter once on mount. StrictMode-safe: we only
+  // read when the persisted value actually differs from the current state.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
     try {
       const stored = window.localStorage.getItem(FILTER_STORAGE_KEY);
-      return isPostsFilter(stored) ? stored : 'all';
+      if (isPostsFilter(stored) && stored !== activeFilter) {
+        setActiveFilter(stored);
+      }
     } catch {
-      return 'all';
+      // localStorage may be restricted; keep the default.
     }
-  });
-  const [displayFilter, setDisplayFilter] = useState<PostsFilter>(activeFilter);
-  const [isFading, setIsFading] = useState(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -77,6 +95,32 @@ export default function PostsSpotlight({ popularPosts, recentDrafts }: PostsSpot
       // Ignore write failures.
     }
   }, [activeFilter]);
+
+  // Sliding indicator on the filter tab strip — same Resend/Linear
+  // pattern used in the persistent header's range segmented control.
+  const filterRef = useRef<HTMLDivElement | null>(null);
+  const filterBtnRefs = useRef<Partial<Record<PostsFilter, HTMLButtonElement | null>>>({});
+  useIsomorphicLayoutEffect(() => {
+    const parent = filterRef.current;
+    const btn = filterBtnRefs.current[displayFilter];
+    if (!parent || !btn) return;
+    const measure = () => {
+      const parentRect = parent.getBoundingClientRect();
+      const btnRect = btn.getBoundingClientRect();
+      const x = btnRect.left - parentRect.left;
+      parent.style.setProperty('--pf-x', `${x}px`);
+      parent.style.setProperty('--pf-w', `${btnRect.width}px`);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(parent);
+    btn && ro.observe(btn);
+    window.addEventListener('resize', measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, [displayFilter]);
 
   useEffect(() => {
     if (activeFilter === displayFilter) return;
@@ -92,9 +136,27 @@ export default function PostsSpotlight({ popularPosts, recentDrafts }: PostsSpot
     };
   }, [activeFilter, displayFilter]);
 
-  const featured = displayFilter === 'drafts' ? [] : popularPosts.slice(0, 3);
-  const morePopular = displayFilter === 'drafts' ? [] : popularPosts.slice(3);
-  const visibleDrafts = displayFilter === 'popular' ? [] : recentDrafts;
+  const featured = useMemo(
+    () => (displayFilter === 'drafts' ? [] : popularPosts.slice(0, 3)),
+    [displayFilter, popularPosts],
+  );
+  const morePopular = useMemo(
+    () => (displayFilter === 'drafts' ? [] : popularPosts.slice(3)),
+    [displayFilter, popularPosts],
+  );
+  const visibleDrafts = useMemo(
+    () => (displayFilter === 'popular' ? [] : recentDrafts),
+    [displayFilter, recentDrafts],
+  );
+
+  const counts = useMemo(
+    () => ({
+      all: popularPosts.length + recentDrafts.length,
+      popular: popularPosts.length,
+      drafts: recentDrafts.length,
+    }),
+    [popularPosts.length, recentDrafts.length],
+  );
 
   return (
     <section
@@ -117,35 +179,42 @@ export default function PostsSpotlight({ popularPosts, recentDrafts }: PostsSpot
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <Link
-            href="/dashboard/posts"
-            className="inline-flex items-center gap-1.5 text-violet-600 hover:text-violet-700 dark:text-violet-400 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60 rounded-md px-2 py-1"
-          >
-            <span>همه پست‌ها</span>
-            <HiOutlineArrowLeft className="w-4 h-4" />
-          </Link>
-        </div>
+        <Link
+          href="/dashboard/posts"
+          className="inline-flex items-center gap-1.5 text-violet-600 hover:text-violet-700 dark:text-violet-400 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60 rounded-md px-2 py-1"
+        >
+          <span>همه پست‌ها</span>
+          <HiOutlineArrowLeft className="w-4 h-4" />
+        </Link>
       </header>
 
-      <div className="px-4 sm:px-5 md:px-7 pt-3 sm:pt-4">
+      {/* Tab-style filter — sliding indicator (Linear/Resend pattern). */}
+      <div className="px-4 sm:px-5 md:px-7 pt-4">
         <div
-          className="inline-flex items-center gap-1 p-1 rounded-xl bg-slate-100/70 dark:bg-slate-800/60 ring-1 ring-slate-200/60 dark:ring-slate-700/60"
-          role="radiogroup"
+          ref={filterRef}
+          className="dash-toolbar__segment"
+          role="tablist"
           aria-label="فیلتر پست‌ها"
         >
+          <span className="dash-toolbar__segment-indicator" aria-hidden />
           {FILTERS.map((f) => (
             <button
               key={f.id}
+              ref={(el) => {
+                filterBtnRefs.current[f.id] = el;
+              }}
               type="button"
-              role="radio"
-              aria-checked={activeFilter === f.id}
+              role="tab"
+              aria-selected={activeFilter === f.id}
               tabIndex={activeFilter === f.id ? 0 : -1}
               onClick={() => setActiveFilter(f.id)}
               data-active={activeFilter === f.id ? 'true' : undefined}
-              className="dash-chip !h-8 !px-3 !text-xs"
+              className="dash-toolbar__segment-btn"
             >
-              {f.label}
+              <span>{f.label}</span>
+              <span className="ms-1.5 text-[10px] tabular-nums opacity-60">
+                {counts[f.id].toLocaleString('fa-IR')}
+              </span>
             </button>
           ))}
         </div>
@@ -159,140 +228,142 @@ export default function PostsSpotlight({ popularPosts, recentDrafts }: PostsSpot
         style={{ transitionDuration: '120ms' }}
       >
         {featured.length > 0 && (
-        <div className="px-4 sm:px-5 md:px-7 pt-4 sm:pt-5">
-          <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3 inline-flex items-center gap-1.5">
-            <HiOutlineSparkles className="w-4 h-4 text-violet-500" />
-            <span>ویژه‌ی این هفته</span>
-          </h3>
-          <ul className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {featured.map((post, i) => (
-              <motion.li
-                key={post.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.45,
-                  delay: 0.05 * i,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-              >
-                <Link
-                  href={`/single/${post.slug}`}
-                  className="group relative block h-full rounded-2xl border border-slate-200/70 dark:border-slate-700/70 bg-gradient-to-br from-slate-50 to-white dark:from-slate-800/40 dark:to-slate-800/10 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-violet-300/70 dark:hover:border-violet-500/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow">
-                      {i + 1}
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-700 dark:text-violet-300 tabular-nums">
-                      <HiOutlineEye className="w-3 h-3" />
-                      {post.views.toLocaleString('fa-IR')}
-                    </span>
-                  </div>
-                  <p className="font-semibold text-sm text-slate-900 dark:text-white line-clamp-2 group-hover:text-violet-700 dark:group-hover:text-violet-300 transition-colors">
-                    {post.title}
-                  </p>
-                  <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 tabular-nums">
-                    <span className="truncate max-w-[7rem]">{post.author}</span>
-                    <span>{post.publishDate}</span>
-                  </div>
-                </Link>
-              </motion.li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <div className="px-4 sm:px-5 md:px-7 py-4 sm:py-5 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
-        <Panel
-          title="پربازدیدترین‌ها"
-          tone="violet"
-          icon={<HiOutlineChartBar className="w-5 h-5" />}
-          viewAllHref="/dashboard/posts?sort=views"
-        >
-          {morePopular.length === 0 ? (
-            <EmptyState label="هنوز پست پربازدیدی ثبت نشده است." />
-          ) : (
-            <ul className="space-y-0.5">
-              {morePopular.map((post, i) => (
+          <div className="px-4 sm:px-5 md:px-7 pt-5">
+            <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3 inline-flex items-center gap-1.5">
+              <HiOutlineSparkles className="w-4 h-4 text-violet-500" />
+              <span>ویژه‌ی این هفته</span>
+            </h3>
+            <ul className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {featured.map((post, i) => (
                 <motion.li
                   key={post.id}
-                  initial={{ opacity: 0, x: 6 }}
-                  animate={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{
-                    duration: 0.4,
-                    delay: Math.min(0.04 * i, 0.25),
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
-                >
-                  <Link href={`/single/${post.slug}`} className="dash-cardlink group">
-                    <span className="dash-ico dash-ico--violet w-9 h-9 shrink-0" aria-hidden>
-                      <HiOutlineDocumentText className="w-4 h-4" />
-                    </span>
-                    <span className="min-w-0">
-                      <p className="dash-cardlink__title">{post.title}</p>
-                      <p className="dash-cardlink__meta">
-                        <span className="truncate max-w-[7rem]">{post.author}</span>
-                        <span className="dash-cardlink__dot" aria-hidden />
-                        <span>{post.publishDate}</span>
-                        <span className="dash-cardlink__dot" aria-hidden />
-                        <span className="text-violet-600 dark:text-violet-400 font-semibold">
-                          {post.views.toLocaleString('fa-IR')} بازدید
-                        </span>
-                      </p>
-                    </span>
-                    <HiOutlineArrowLeft className="w-3.5 h-3.5 text-slate-400 transition-transform group-hover:-translate-x-0.5" />
-                  </Link>
-                </motion.li>
-              ))}
-            </ul>
-          )}
-        </Panel>
-
-        <Panel
-          title="پیش‌نویس‌های اخیر"
-          tone="cyan"
-          icon={<HiOutlineClock className="w-5 h-5" />}
-          viewAllHref="/dashboard/posts?filter=draft"
-        >
-          {visibleDrafts.length === 0 ? (
-            <EmptyState label="پیش‌نویس تازه‌ای ندارید." />
-          ) : (
-            <ul className="space-y-0.5">
-              {visibleDrafts.map((draft, i) => (
-                <motion.li
-                  key={draft.id}
-                  initial={{ opacity: 0, x: 6 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{
-                    duration: 0.4,
-                    delay: Math.min(0.04 * i, 0.25),
+                    duration: 0.45,
+                    delay: 0.05 * i,
                     ease: [0.22, 1, 0.36, 1],
                   }}
                 >
                   <Link
-                    href={`/dashboard/posts/edit/${draft.id}`}
-                    className="dash-cardlink group"
+                    href={`/single/${post.slug}`}
+                    className="group relative block h-full rounded-2xl border border-slate-200/70 dark:border-slate-700/70 bg-gradient-to-br from-slate-50 to-white dark:from-slate-800/40 dark:to-slate-800/10 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-violet-300/70 dark:hover:border-violet-500/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60"
                   >
-                    <span className="dash-ico dash-ico--cyan w-9 h-9 shrink-0" aria-hidden>
-                      <HiOutlinePencil className="w-4 h-4" />
-                    </span>
-                    <span className="min-w-0">
-                      <p className="dash-cardlink__title">{draft.title}</p>
-                      <p className="dash-cardlink__meta">
-                        <span className="truncate max-w-[7rem]">{draft.author}</span>
-                        <span className="dash-cardlink__dot" aria-hidden />
-                        <span>{draft.date}</span>
-                      </p>
-                    </span>
-                    <HiOutlineArrowLeft className="w-3.5 h-3.5 text-slate-400 transition-transform group-hover:-translate-x-0.5" />
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow">
+                        {i + 1}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-700 dark:text-violet-300 tabular-nums">
+                        <HiOutlineEye className="w-3 h-3" />
+                        {post.views.toLocaleString('fa-IR')}
+                      </span>
+                    </div>
+                    <p className="font-semibold text-sm text-slate-900 dark:text-white line-clamp-2 group-hover:text-violet-700 dark:group-hover:text-violet-300 transition-colors">
+                      {post.title}
+                    </p>
+                    <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 tabular-nums">
+                      <span className="truncate max-w-[7rem]">{post.author}</span>
+                      <span>{post.publishDate}</span>
+                    </div>
                   </Link>
                 </motion.li>
               ))}
             </ul>
-          )}
-        </Panel>
-      </div>
+          </div>
+        )}
+
+        <div className="px-4 sm:px-5 md:px-7 py-4 sm:py-5 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+          <Panel
+            title="پربازدیدترین‌ها"
+            tone="violet"
+            icon={<HiOutlineChartBar className="w-5 h-5" />}
+            viewAllHref="/dashboard/posts?sort=views"
+            hidden={displayFilter === 'drafts'}
+          >
+            {morePopular.length === 0 ? (
+              <EmptyState label="هنوز پست پربازدیدی ثبت نشده است." />
+            ) : (
+              <ul className="space-y-0.5">
+                {morePopular.map((post, i) => (
+                  <motion.li
+                    key={post.id}
+                    initial={{ opacity: 0, x: 6 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{
+                      duration: 0.4,
+                      delay: Math.min(0.04 * i, 0.25),
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
+                  >
+                    <Link href={`/single/${post.slug}`} className="dash-cardlink group">
+                      <span className="dash-ico dash-ico--violet w-9 h-9 shrink-0" aria-hidden>
+                        <HiOutlineDocumentText className="w-4 h-4" />
+                      </span>
+                      <span className="min-w-0">
+                        <p className="dash-cardlink__title">{post.title}</p>
+                        <p className="dash-cardlink__meta">
+                          <span className="truncate max-w-[7rem]">{post.author}</span>
+                          <span className="dash-cardlink__dot" aria-hidden />
+                          <span>{post.publishDate}</span>
+                          <span className="dash-cardlink__dot" aria-hidden />
+                          <span className="text-violet-600 dark:text-violet-400 font-semibold">
+                            {post.views.toLocaleString('fa-IR')} بازدید
+                          </span>
+                        </p>
+                      </span>
+                      <HiOutlineArrowLeft className="w-3.5 h-3.5 text-slate-400 transition-transform group-hover:-translate-x-0.5" />
+                    </Link>
+                  </motion.li>
+                ))}
+              </ul>
+            )}
+          </Panel>
+
+          <Panel
+            title="پیش‌نویس‌های اخیر"
+            tone="cyan"
+            icon={<HiOutlineClock className="w-5 h-5" />}
+            viewAllHref="/dashboard/posts?filter=draft"
+            hidden={displayFilter === 'popular'}
+          >
+            {visibleDrafts.length === 0 ? (
+              <EmptyState label="پیش‌نویس تازه‌ای ندارید." />
+            ) : (
+              <ul className="space-y-0.5">
+                {visibleDrafts.map((draft, i) => (
+                  <motion.li
+                    key={draft.id}
+                    initial={{ opacity: 0, x: 6 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{
+                      duration: 0.4,
+                      delay: Math.min(0.04 * i, 0.25),
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
+                  >
+                    <Link
+                      href={`/dashboard/posts/edit/${draft.id}`}
+                      className="dash-cardlink group"
+                    >
+                      <span className="dash-ico dash-ico--cyan w-9 h-9 shrink-0" aria-hidden>
+                        <HiOutlinePencil className="w-4 h-4" />
+                      </span>
+                      <span className="min-w-0">
+                        <p className="dash-cardlink__title">{draft.title}</p>
+                        <p className="dash-cardlink__meta">
+                          <span className="truncate max-w-[7rem]">{draft.author}</span>
+                          <span className="dash-cardlink__dot" aria-hidden />
+                          <span>{draft.date}</span>
+                        </p>
+                      </span>
+                      <HiOutlineArrowLeft className="w-3.5 h-3.5 text-slate-400 transition-transform group-hover:-translate-x-0.5" />
+                    </Link>
+                  </motion.li>
+                ))}
+              </ul>
+            )}
+          </Panel>
+        </div>
       </div>
     </section>
   );
@@ -303,10 +374,12 @@ interface PanelProps {
   tone: 'violet' | 'cyan';
   icon: React.ReactNode;
   viewAllHref: string;
+  hidden?: boolean;
   children: React.ReactNode;
 }
 
-function Panel({ title, tone, icon, viewAllHref, children }: PanelProps) {
+function Panel({ title, tone, icon, viewAllHref, hidden, children }: PanelProps) {
+  if (hidden) return null;
   const accent =
     tone === 'violet' ? 'dash-ico--violet' : 'dash-ico--cyan';
   const link =
