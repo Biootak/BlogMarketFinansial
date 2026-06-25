@@ -1,47 +1,75 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import Image from 'next/image';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineMegaphone } from 'react-icons/hi2';
 import {
   createAdvertisement,
-  updateAdvertisement,
   deleteAdvertisement,
   getAllAdvertisements,
+  updateAdvertisement,
 } from '@/actions/advertisementActions';
-import type { Advertisement, AdSize, AdPosition, CustomAdDimensions } from '@/types/types';
-import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/components/ui/use-toast';
-import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
-import { PersianDatePicker } from '@/components/ui/PersianDatePicker';
-import SubmitButton from '@/components/SubmitButton';
-import LoadingMore from '@/components/LoadingMore';
-import { AdvertisementsSkeleton } from '@/components/Skeletons';
-import { CustomSwitch } from '@/components/ui/CustomSwitch';
+import { getAllHeaderAds } from '@/actions/headerAdActions';
+import HeaderAdsClient, { type HeaderAdData } from '@/app/dashboard/header-ad/HeaderAdsClient';
 import BannerADS from '@/components/BannerADS/BannerADS';
-import { toPersianNumber, cn } from '@/lib/utils';
 import {
+  ActionButton,
   DashboardPageHeader,
   DashboardSearchInput,
-  DashboardTableContainer,
   DashboardTable,
-  DashboardTableHeader,
-  DashboardTableHead,
   DashboardTableBody,
-  DashboardTableRow,
   DashboardTableCell,
-  StatusBadge,
-  ActionButton,
-  PrimaryActionButton,
+  DashboardTableContainer,
+  DashboardTableHead,
+  DashboardTableHeader,
+  DashboardTableRow,
   EmptyState,
+  PrimaryActionButton,
+  StatusBadge,
 } from '@/components/Dashboard/shared/DashboardTableWrapper';
+import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
+import LoadingMore from '@/components/LoadingMore';
+import { AdvertisementsSkeleton } from '@/components/Skeletons';
+import SubmitButton from '@/components/SubmitButton';
+import { CustomSwitch } from '@/components/ui/CustomSwitch';
+import { PersianDatePicker } from '@/components/ui/PersianDatePicker';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/components/ui/use-toast';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { cn, toPersianNumber } from '@/lib/utils';
+import type { AdPosition, AdSize, Advertisement, CustomAdDimensions } from '@/types/types';
+import { zodResolver } from '@hookform/resolvers/zod';
+import Image from 'next/image';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import {
+  HiOutlineMegaphone,
+  HiOutlinePencil,
+  HiOutlinePlus,
+  HiOutlineTrash,
+} from 'react-icons/hi2';
+import * as z from 'zod';
 
 const advertisementSchema = z.object({
   title: z.string().min(1, 'عنوان الزامی است'),
@@ -55,15 +83,16 @@ const advertisementSchema = z.object({
   position: z.enum(['HEADER', 'FOOTER', 'SIDEBAR', 'IN_CONTENT', 'BETWEEN_POSTS', 'CUSTOM']),
   customPosition: z.string().optional(),
   order: z.coerce.number().int().positive(),
-  customDimensions: z.object({
-    width: z.string().optional(),
-    height: z.string().optional(),
-    aspectRatio: z.string().optional(),
-  }).optional(),
+  customDimensions: z
+    .object({
+      width: z.string().optional(),
+      height: z.string().optional(),
+      aspectRatio: z.string().optional(),
+    })
+    .optional(),
 });
 
 type AdvertisementFormData = z.infer<typeof advertisementSchema>;
-
 
 const sizeLabels: Record<string, string> = {
   SMALL: 'کوچک',
@@ -82,6 +111,12 @@ const positionLabels: Record<string, string> = {
 };
 
 export default function AdvertisementsPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<'advertisements' | 'header'>(
+    searchParams.get('tab') === 'header' ? 'header' : 'advertisements',
+  );
+
   const [ads, setAds] = useState<Advertisement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -92,6 +127,9 @@ export default function AdvertisementsPage() {
   const [page, setPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(true);
   const [_totalCount, setTotalCount] = useState(0);
+
+  const [headerAds, setHeaderAds] = useState<HeaderAdData[]>([]);
+  const [isHeaderAdsLoading, setIsHeaderAdsLoading] = useState(false);
 
   const form = useForm<AdvertisementFormData>({
     resolver: zodResolver(advertisementSchema),
@@ -115,6 +153,29 @@ export default function AdvertisementsPage() {
     fetchAds(1, debouncedSearchTerm);
   }, [debouncedSearchTerm]);
 
+  const fetchHeaderAds = useCallback(async () => {
+    setIsHeaderAdsLoading(true);
+    const result = await getAllHeaderAds();
+    if (result.success && result.data) {
+      setHeaderAds(result.data as HeaderAdData[]);
+    } else {
+      toast({ title: 'خطا', description: result.message, variant: 'destructive' });
+    }
+    setIsHeaderAdsLoading(false);
+  }, [toast]);
+
+  useEffect(() => {
+    if (activeTab === 'header') {
+      fetchHeaderAds();
+    }
+  }, [activeTab, fetchHeaderAds]);
+
+  const handleTabChange = (value: string) => {
+    const next = value as 'advertisements' | 'header';
+    setActiveTab(next);
+    router.replace(`/dashboard/advertisements?tab=${next}`, { scroll: false });
+  };
+
   const fetchAds = useCallback(
     async (pageNumber: number, search: string) => {
       setIsLoading(true);
@@ -133,7 +194,7 @@ export default function AdvertisementsPage() {
       }
       setIsLoading(false);
     },
-    [toast]
+    [toast],
   );
 
   const loadMore = useCallback(() => {
@@ -223,175 +284,214 @@ export default function AdvertisementsPage() {
     setIsDialogOpen(true);
   };
 
-
   return (
     <div className="min-h-screen p-4 sm:p-6 lg:p-8" dir="rtl">
-      <DashboardPageHeader title="مدیریت تبلیغات" description="مشاهده و مدیریت تبلیغات سایت">
-        <DashboardSearchInput
-          value={searchTerm}
-          onChange={setSearchTerm}
-          placeholder="جستجوی تبلیغ..."
-        />
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <PrimaryActionButton onClick={openNewAdDialog}>
-              <HiOutlinePlus className="h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
-              <span>افزودن تبلیغ</span>
-            </PrimaryActionButton>
-          </DialogTrigger>
-          <DialogContent className="max-h-[90vh] w-full max-w-5xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
-            <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-6 py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
-              <DialogTitle className="text-xl font-bold text-neutral-900 dark:text-neutral-50">
-                {editingAd ? 'ویرایش تبلیغ' : 'افزودن تبلیغ جدید'}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="max-h-[calc(90vh-120px)] overflow-y-auto p-6">
-              <AdvertisementForm form={form} onSubmit={onSubmit} />
-            </div>
-          </DialogContent>
-        </Dialog>
+      <DashboardPageHeader
+        title={activeTab === 'header' ? 'تبلیغ بالای هدر' : 'مدیریت تبلیغات'}
+        description={
+          activeTab === 'header'
+            ? 'نوار باریک تبلیغ که در بالای سایت نمایش داده می‌شود. فقط یک تبلیغ فعال در لحظه.'
+            : 'مشاهده و مدیریت تبلیغات سایت'
+        }
+      >
+        {activeTab === 'advertisements' && (
+          <>
+            <DashboardSearchInput
+              value={searchTerm}
+              onChange={setSearchTerm}
+              placeholder="جستجوی تبلیغ..."
+            />
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <PrimaryActionButton onClick={openNewAdDialog}>
+                  <HiOutlinePlus className="h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
+                  <span>افزودن تبلیغ</span>
+                </PrimaryActionButton>
+              </DialogTrigger>
+              <DialogContent
+                className="max-h-[90vh] w-full max-w-5xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95"
+                dir="rtl"
+              >
+                <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-6 py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
+                  <DialogTitle className="text-xl font-bold text-neutral-900 dark:text-neutral-50">
+                    {editingAd ? 'ویرایش تبلیغ' : 'افزودن تبلیغ جدید'}
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="max-h-[calc(90vh-120px)] overflow-y-auto p-6">
+                  <AdvertisementForm form={form} onSubmit={onSubmit} />
+                </div>
+              </DialogContent>
+            </Dialog>
+          </>
+        )}
       </DashboardPageHeader>
 
-      {/* Summary Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="dash-panel dash-panel--hover p-4">
-          <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">کل تبلیغات</div>
-          <div className="text-2xl font-bold mt-1 text-neutral-900 dark:text-white tabular-nums">
-            {toPersianNumber(ads.length)}
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="mt-4">
+        <TabsList>
+          <TabsTrigger value="advertisements">تبلیغات</TabsTrigger>
+          <TabsTrigger value="header">تبلیغ هدر</TabsTrigger>
+        </TabsList>
+        <TabsContent value="advertisements">
+          {/* Summary Stats Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="dash-panel dash-panel--hover p-4">
+              <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                کل تبلیغات
+              </div>
+              <div className="text-2xl font-bold mt-1 text-neutral-900 dark:text-white tabular-nums">
+                {toPersianNumber(ads.length)}
+              </div>
+            </div>
+            <div className="dash-panel dash-panel--hover p-4">
+              <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                تبلیغات فعال
+              </div>
+              <div className="text-2xl font-bold mt-1 text-emerald-600 dark:text-emerald-400 tabular-nums">
+                {toPersianNumber(ads.filter((a) => a.isActive).length)}
+              </div>
+            </div>
+            <div className="dash-panel dash-panel--hover p-4">
+              <div className="text-xs font-semibold text-primary-600 dark:text-primary-400">
+                جایگاه سربرگ
+              </div>
+              <div className="text-2xl font-bold mt-1 text-primary-600 dark:text-primary-400 tabular-nums">
+                {toPersianNumber(ads.filter((a) => a.position === 'HEADER').length)}
+              </div>
+            </div>
+            <div className="dash-panel dash-panel--hover p-4">
+              <div className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                سایر جایگاه‌ها
+              </div>
+              <div className="text-2xl font-bold mt-1 text-amber-600 dark:text-amber-400 tabular-nums">
+                {toPersianNumber(ads.filter((a) => a.position !== 'HEADER').length)}
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="dash-panel dash-panel--hover p-4">
-          <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">تبلیغات فعال</div>
-          <div className="text-2xl font-bold mt-1 text-emerald-600 dark:text-emerald-400 tabular-nums">
-            {toPersianNumber(ads.filter(a => a.isActive).length)}
-          </div>
-        </div>
-        <div className="dash-panel dash-panel--hover p-4">
-          <div className="text-xs font-semibold text-primary-600 dark:text-primary-400">جایگاه سربرگ</div>
-          <div className="text-2xl font-bold mt-1 text-primary-600 dark:text-primary-400 tabular-nums">
-            {toPersianNumber(ads.filter(a => a.position === 'HEADER').length)}
-          </div>
-        </div>
-        <div className="dash-panel dash-panel--hover p-4">
-          <div className="text-xs font-semibold text-amber-600 dark:text-amber-400">سایر جایگاه‌ها</div>
-          <div className="text-2xl font-bold mt-1 text-amber-600 dark:text-amber-400 tabular-nums">
-            {toPersianNumber(ads.filter(a => a.position !== 'HEADER').length)}
-          </div>
-        </div>
-      </div>
 
-      {isLoading && page === 1 ? (
-        <AdvertisementsSkeleton />
-      ) : ads.length === 0 ? (
-        <DashboardTableContainer>
-          <EmptyState
-            title="تبلیغی یافت نشد"
-            description="هنوز هیچ تبلیغی در سیستم ثبت نشده است."
-            icon={<HiOutlineMegaphone className="h-8 w-8 text-neutral-400" />}
-          />
-        </DashboardTableContainer>
-      ) : (
-        <DashboardTableContainer>
-          <DashboardTable>
-            <DashboardTableHeader>
-              <tr>
-                <DashboardTableHead>تصویر</DashboardTableHead>
-                <DashboardTableHead>عنوان</DashboardTableHead>
-                <DashboardTableHead hidden>اندازه</DashboardTableHead>
-                <DashboardTableHead hidden>موقعیت</DashboardTableHead>
-                <DashboardTableHead hidden>وضعیت فعال</DashboardTableHead>
-                <DashboardTableHead>عملیات</DashboardTableHead>
-              </tr>
-            </DashboardTableHeader>
-            <DashboardTableBody>
-              {ads.map((ad) => (
-                <DashboardTableRow key={ad.id}>
-                  <DashboardTableCell>
-                    <div className="relative h-16 w-28 overflow-hidden rounded-xl ring-1 ring-neutral-200/60 dark:ring-neutral-700/50">
-                      <Image
-                        src={ad.imageUrl}
-                        alt={ad.title}
-                        width={112}
-                        height={64}
-                        sizes="112px"
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = '/images/placeholder-small.png';
-                        }}
-                      />
-                    </div>
-                  </DashboardTableCell>
-                  <DashboardTableCell>
-                    <span className="font-medium text-neutral-900 dark:text-neutral-100">
-                      {ad.title}
-                    </span>
-                  </DashboardTableCell>
-                  <DashboardTableCell hidden>
-                    <span className="text-sm text-neutral-600 dark:text-neutral-400">
-                      {sizeLabels[ad.size] || ad.size}
-                    </span>
-                  </DashboardTableCell>
-                  <DashboardTableCell hidden>
-                    <span className="text-sm text-neutral-600 dark:text-neutral-400">
-                      {positionLabels[ad.position] || ad.position}
-                    </span>
-                  </DashboardTableCell>
-                  <DashboardTableCell hidden>
-                    <div className="flex items-center h-full">
-                      <CustomSwitch
-                        checked={ad.isActive}
-                        onCheckedChange={async (checked) => {
-                          // Optimistic update
-                          setAds((prev) =>
-                            prev.map((a) => (a.id === ad.id ? { ...a, isActive: checked } : a))
-                          );
-                          const result = await updateAdvertisement(ad.id, { isActive: checked });
-                          if (result.success) {
-                            toast({
-                              title: 'موفقیت',
-                              description: 'وضعیت فعال بودن تبلیغ تغییر کرد.',
-                              variant: 'success',
-                            });
-                          } else {
-                            // Rollback
-                            setAds((prev) =>
-                              prev.map((a) => (a.id === ad.id ? { ...a, isActive: !checked } : a))
-                            );
-                            toast({
-                              title: 'خطا',
-                              description: result.message,
-                              variant: 'destructive',
-                            });
-                          }
-                        }}
-                      />
-                    </div>
-                  </DashboardTableCell>
-                  <DashboardTableCell>
-                    <div className="flex items-center gap-2">
-                      <ActionButton variant="edit" onClick={() => handleEdit(ad)}>
-                        <HiOutlinePencil className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">ویرایش</span>
-                      </ActionButton>
-                      <ActionButton variant="delete" onClick={() => handleDelete(ad.id)}>
-                        <HiOutlineTrash className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">حذف</span>
-                      </ActionButton>
-                    </div>
-                  </DashboardTableCell>
-                </DashboardTableRow>
-              ))}
-            </DashboardTableBody>
-          </DashboardTable>
-          {isLoading && page > 1 && <LoadingMore message="در حال دریافت تبلیغات بیشتر..." />}
-          <div ref={infiniteScrollRef} style={{ height: '1px' }} />
-        </DashboardTableContainer>
-      )}
+          {isLoading && page === 1 ? (
+            <AdvertisementsSkeleton />
+          ) : ads.length === 0 ? (
+            <DashboardTableContainer>
+              <EmptyState
+                title="تبلیغی یافت نشد"
+                description="هنوز هیچ تبلیغی در سیستم ثبت نشده است."
+                icon={<HiOutlineMegaphone className="h-8 w-8 text-neutral-400" />}
+              />
+            </DashboardTableContainer>
+          ) : (
+            <DashboardTableContainer>
+              <DashboardTable>
+                <DashboardTableHeader>
+                  <tr>
+                    <DashboardTableHead>تصویر</DashboardTableHead>
+                    <DashboardTableHead>عنوان</DashboardTableHead>
+                    <DashboardTableHead hidden>اندازه</DashboardTableHead>
+                    <DashboardTableHead hidden>موقعیت</DashboardTableHead>
+                    <DashboardTableHead hidden>وضعیت فعال</DashboardTableHead>
+                    <DashboardTableHead>عملیات</DashboardTableHead>
+                  </tr>
+                </DashboardTableHeader>
+                <DashboardTableBody>
+                  {ads.map((ad) => (
+                    <DashboardTableRow key={ad.id}>
+                      <DashboardTableCell>
+                        <div className="relative h-16 w-28 overflow-hidden rounded-xl ring-1 ring-neutral-200/60 dark:ring-neutral-700/50">
+                          <Image
+                            src={ad.imageUrl}
+                            alt={ad.title}
+                            width={112}
+                            height={64}
+                            sizes="112px"
+                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = '/images/placeholder-small.png';
+                            }}
+                          />
+                        </div>
+                      </DashboardTableCell>
+                      <DashboardTableCell>
+                        <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                          {ad.title}
+                        </span>
+                      </DashboardTableCell>
+                      <DashboardTableCell hidden>
+                        <span className="text-sm text-neutral-600 dark:text-neutral-400">
+                          {sizeLabels[ad.size] || ad.size}
+                        </span>
+                      </DashboardTableCell>
+                      <DashboardTableCell hidden>
+                        <span className="text-sm text-neutral-600 dark:text-neutral-400">
+                          {positionLabels[ad.position] || ad.position}
+                        </span>
+                      </DashboardTableCell>
+                      <DashboardTableCell hidden>
+                        <div className="flex items-center h-full">
+                          <CustomSwitch
+                            checked={ad.isActive}
+                            onCheckedChange={async (checked) => {
+                              // Optimistic update
+                              setAds((prev) =>
+                                prev.map((a) => (a.id === ad.id ? { ...a, isActive: checked } : a)),
+                              );
+                              const result = await updateAdvertisement(ad.id, {
+                                isActive: checked,
+                              });
+                              if (result.success) {
+                                toast({
+                                  title: 'موفقیت',
+                                  description: 'وضعیت فعال بودن تبلیغ تغییر کرد.',
+                                  variant: 'success',
+                                });
+                              } else {
+                                // Rollback
+                                setAds((prev) =>
+                                  prev.map((a) =>
+                                    a.id === ad.id ? { ...a, isActive: !checked } : a,
+                                  ),
+                                );
+                                toast({
+                                  title: 'خطا',
+                                  description: result.message,
+                                  variant: 'destructive',
+                                });
+                              }
+                            }}
+                          />
+                        </div>
+                      </DashboardTableCell>
+                      <DashboardTableCell>
+                        <div className="flex items-center gap-2">
+                          <ActionButton variant="edit" onClick={() => handleEdit(ad)}>
+                            <HiOutlinePencil className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">ویرایش</span>
+                          </ActionButton>
+                          <ActionButton variant="delete" onClick={() => handleDelete(ad.id)}>
+                            <HiOutlineTrash className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">حذف</span>
+                          </ActionButton>
+                        </div>
+                      </DashboardTableCell>
+                    </DashboardTableRow>
+                  ))}
+                </DashboardTableBody>
+              </DashboardTable>
+              {isLoading && page > 1 && <LoadingMore message="در حال دریافت تبلیغات بیشتر..." />}
+              <div ref={infiniteScrollRef} style={{ height: '1px' }} />
+            </DashboardTableContainer>
+          )}
+        </TabsContent>
+        <TabsContent value="header">
+          {isHeaderAdsLoading ? (
+            <AdvertisementsSkeleton />
+          ) : (
+            <HeaderAdsClient initialAds={headerAds} onRefresh={fetchHeaderAds} />
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
-
 
 function AdvertisementForm({
   form,
@@ -406,7 +506,9 @@ function AdvertisementForm({
 
   // 2026-06-21: ابعاد واقعی تصویر را بعد از آپلود در customDimensions ذخیره
   // می‌کنیم تا ArchiveAdCard با aspect-ratio درست رندر شود (بدون fallback 16:6).
-  const handleImageUploadComplete = (files: Array<{ url: string; width?: number | null; height?: number | null }>) => {
+  const handleImageUploadComplete = (
+    files: Array<{ url: string; width?: number | null; height?: number | null }>,
+  ) => {
     const f = files[0];
     if (!f || !f.width || !f.height) return;
     form.setValue('customDimensions', {
@@ -421,14 +523,17 @@ function AdvertisementForm({
     form.setValue('customDimensions', {});
   };
 
-  const inputClassName = 'h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80 dark:text-neutral-100';
-  const selectClassName = 'h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80 dark:text-neutral-100';
+  const inputClassName =
+    'h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80 dark:text-neutral-100';
+  const selectClassName =
+    'h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80 dark:text-neutral-100';
 
   // Construct preview ad matching database type
   const previewAd: Advertisement = {
     id: 'preview',
     title: watchedValues.title || 'عنوان نمونه تبلیغ شما',
-    description: watchedValues.description || 'توضیحات نمونه تبلیغات در این قسمت نمایش داده خواهد شد.',
+    description:
+      watchedValues.description || 'توضیحات نمونه تبلیغات در این قسمت نمایش داده خواهد شد.',
     imageUrl: watchedValues.imageUrl || '',
     linkUrl: watchedValues.linkUrl || 'https://google.com',
     size: watchedValues.size || 'MEDIUM',
@@ -455,10 +560,10 @@ function AdvertisementForm({
                 type="button"
                 onClick={() => setActiveTab('content')}
                 className={cn(
-                  "pb-3 text-sm font-semibold border-b-2 transition-all duration-200 px-2 cursor-pointer",
+                  'pb-3 text-sm font-semibold border-b-2 transition-all duration-200 px-2 cursor-pointer',
                   activeTab === 'content'
-                    ? "border-primary-500 text-neutral-900 dark:text-white"
-                    : "border-transparent text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                    ? 'border-primary-500 text-neutral-900 dark:text-white'
+                    : 'border-transparent text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300',
                 )}
               >
                 ۱. محتوا و مقصد
@@ -467,10 +572,10 @@ function AdvertisementForm({
                 type="button"
                 onClick={() => setActiveTab('placement')}
                 className={cn(
-                  "pb-3 text-sm font-semibold border-b-2 transition-all duration-200 px-2 cursor-pointer",
+                  'pb-3 text-sm font-semibold border-b-2 transition-all duration-200 px-2 cursor-pointer',
                   activeTab === 'placement'
-                    ? "border-primary-500 text-neutral-900 dark:text-white"
-                    : "border-transparent text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                    ? 'border-primary-500 text-neutral-900 dark:text-white'
+                    : 'border-transparent text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300',
                 )}
               >
                 ۲. جایگاه و ابعاد
@@ -479,10 +584,10 @@ function AdvertisementForm({
                 type="button"
                 onClick={() => setActiveTab('schedule')}
                 className={cn(
-                  "pb-3 text-sm font-semibold border-b-2 transition-all duration-200 px-2 cursor-pointer",
+                  'pb-3 text-sm font-semibold border-b-2 transition-all duration-200 px-2 cursor-pointer',
                   activeTab === 'schedule'
-                    ? "border-primary-500 text-neutral-900 dark:text-white"
-                    : "border-transparent text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                    ? 'border-primary-500 text-neutral-900 dark:text-white'
+                    : 'border-transparent text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300',
                 )}
               >
                 ۳. زمان‌بندی و انتشار
@@ -497,9 +602,15 @@ function AdvertisementForm({
                   name="title"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">عنوان تبلیغ</FormLabel>
+                      <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                        عنوان تبلیغ
+                      </FormLabel>
                       <FormControl>
-                        <Input placeholder="مثال: جشنواره زمستانه بورس‌مارکت" {...field} className={inputClassName} />
+                        <Input
+                          placeholder="مثال: جشنواره زمستانه بورس‌مارکت"
+                          {...field}
+                          className={inputClassName}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -511,7 +622,9 @@ function AdvertisementForm({
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">توضیحات کوتاه</FormLabel>
+                      <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                        توضیحات کوتاه
+                      </FormLabel>
                       <FormControl>
                         <textarea
                           {...field}
@@ -530,9 +643,15 @@ function AdvertisementForm({
                   name="linkUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">لینک مقصد (URL)</FormLabel>
+                      <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                        لینک مقصد (URL)
+                      </FormLabel>
                       <FormControl>
-                        <Input placeholder="https://example.com/landing" {...field} className={inputClassName} />
+                        <Input
+                          placeholder="https://example.com/landing"
+                          {...field}
+                          className={inputClassName}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -544,7 +663,9 @@ function AdvertisementForm({
                   name="imageUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">تصویر بنر</FormLabel>
+                      <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                        تصویر بنر
+                      </FormLabel>
                       <FormControl>
                         <ImageUploader
                           onImageUpload={handleImageUpload}
@@ -576,13 +697,15 @@ function AdvertisementForm({
                         type="button"
                         onClick={() => form.setValue('position', 'HEADER')}
                         className={cn(
-                          "w-full py-2.5 rounded-lg border text-xs font-semibold transition-all duration-300 cursor-pointer",
+                          'w-full py-2.5 rounded-lg border text-xs font-semibold transition-all duration-300 cursor-pointer',
                           watchedValues.position === 'HEADER'
-                            ? "bg-primary-500/10 border-primary-500 text-primary-600 shadow-[0_0_12px_rgba(94,106,230,0.15)] scale-[1.01]"
-                            : "bg-neutral-50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-700/60 text-neutral-500 hover:border-neutral-300 dark:hover:border-neutral-600"
+                            ? 'bg-primary-500/10 border-primary-500 text-primary-600 shadow-[0_0_12px_rgba(94,106,230,0.15)] scale-[1.01]'
+                            : 'bg-neutral-50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-700/60 text-neutral-500 hover:border-neutral-300 dark:hover:border-neutral-600',
                         )}
                       >
-                        {watchedValues.position === 'HEADER' ? '✓ سربرگ (Header)' : 'سربرگ (Header)'}
+                        {watchedValues.position === 'HEADER'
+                          ? '✓ سربرگ (Header)'
+                          : 'سربرگ (Header)'}
                       </button>
 
                       {/* Body mock */}
@@ -592,40 +715,46 @@ function AdvertisementForm({
                             type="button"
                             onClick={() => form.setValue('position', 'IN_CONTENT')}
                             className={cn(
-                              "w-full py-5 rounded-lg border text-xs font-semibold transition-all duration-300 cursor-pointer",
+                              'w-full py-5 rounded-lg border text-xs font-semibold transition-all duration-300 cursor-pointer',
                               watchedValues.position === 'IN_CONTENT'
-                                ? "bg-primary-500/10 border-primary-500 text-primary-600 shadow-[0_0_12px_rgba(94,106,230,0.15)] scale-[1.01]"
-                                : "bg-neutral-50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-700/60 text-neutral-500 hover:border-neutral-300 dark:hover:border-neutral-600"
+                                ? 'bg-primary-500/10 border-primary-500 text-primary-600 shadow-[0_0_12px_rgba(94,106,230,0.15)] scale-[1.01]'
+                                : 'bg-neutral-50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-700/60 text-neutral-500 hover:border-neutral-300 dark:hover:border-neutral-600',
                             )}
                           >
-                            {watchedValues.position === 'IN_CONTENT' ? '✓ داخل محتوای پست' : 'داخل محتوای پست'}
+                            {watchedValues.position === 'IN_CONTENT'
+                              ? '✓ داخل محتوای پست'
+                              : 'داخل محتوای پست'}
                           </button>
                           <button
                             type="button"
                             onClick={() => form.setValue('position', 'BETWEEN_POSTS')}
                             className={cn(
-                              "w-full py-3.5 rounded-lg border text-xs font-semibold transition-all duration-300 cursor-pointer",
+                              'w-full py-3.5 rounded-lg border text-xs font-semibold transition-all duration-300 cursor-pointer',
                               watchedValues.position === 'BETWEEN_POSTS'
-                                ? "bg-primary-500/10 border-primary-500 text-primary-600 shadow-[0_0_12px_rgba(94,106,230,0.15)] scale-[1.01]"
-                                : "bg-neutral-50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-700/60 text-neutral-500 hover:border-neutral-300 dark:hover:border-neutral-600"
+                                ? 'bg-primary-500/10 border-primary-500 text-primary-600 shadow-[0_0_12px_rgba(94,106,230,0.15)] scale-[1.01]'
+                                : 'bg-neutral-50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-700/60 text-neutral-500 hover:border-neutral-300 dark:hover:border-neutral-600',
                             )}
                           >
-                            {watchedValues.position === 'BETWEEN_POSTS' ? '✓ بین پست‌های لیست' : 'بین پست‌های لیست'}
+                            {watchedValues.position === 'BETWEEN_POSTS'
+                              ? '✓ بین پست‌های لیست'
+                              : 'بین پست‌های لیست'}
                           </button>
                         </div>
-                        
+
                         {/* Sidebar mock */}
                         <button
                           type="button"
                           onClick={() => form.setValue('position', 'SIDEBAR')}
                           className={cn(
-                            "w-full h-full flex items-center justify-center rounded-lg border text-xs font-semibold transition-all duration-300 cursor-pointer",
+                            'w-full h-full flex items-center justify-center rounded-lg border text-xs font-semibold transition-all duration-300 cursor-pointer',
                             watchedValues.position === 'SIDEBAR'
-                              ? "bg-primary-500/10 border-primary-500 text-primary-600 shadow-[0_0_12px_rgba(94,106,230,0.15)] scale-[1.01]"
-                              : "bg-neutral-50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-700/60 text-neutral-500 hover:border-neutral-300 dark:hover:border-neutral-600"
+                              ? 'bg-primary-500/10 border-primary-500 text-primary-600 shadow-[0_0_12px_rgba(94,106,230,0.15)] scale-[1.01]'
+                              : 'bg-neutral-50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-700/60 text-neutral-500 hover:border-neutral-300 dark:hover:border-neutral-600',
                           )}
                         >
-                          {watchedValues.position === 'SIDEBAR' ? '✓ نوار کناری (Sidebar)' : 'نوار کناری'}
+                          {watchedValues.position === 'SIDEBAR'
+                            ? '✓ نوار کناری (Sidebar)'
+                            : 'نوار کناری'}
                         </button>
                       </div>
 
@@ -634,13 +763,15 @@ function AdvertisementForm({
                         type="button"
                         onClick={() => form.setValue('position', 'FOOTER')}
                         className={cn(
-                          "w-full py-2 rounded-lg border text-xs font-semibold transition-all duration-300 cursor-pointer",
+                          'w-full py-2 rounded-lg border text-xs font-semibold transition-all duration-300 cursor-pointer',
                           watchedValues.position === 'FOOTER'
-                            ? "bg-primary-500/10 border-primary-500 text-primary-600 shadow-[0_0_12px_rgba(94,106,230,0.15)] scale-[1.01]"
-                            : "bg-neutral-50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-700/60 text-neutral-500 hover:border-neutral-300 dark:hover:border-neutral-600"
+                            ? 'bg-primary-500/10 border-primary-500 text-primary-600 shadow-[0_0_12px_rgba(94,106,230,0.15)] scale-[1.01]'
+                            : 'bg-neutral-50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-700/60 text-neutral-500 hover:border-neutral-300 dark:hover:border-neutral-600',
                         )}
                       >
-                        {watchedValues.position === 'FOOTER' ? '✓ پاورقی (Footer)' : 'پاورقی (Footer)'}
+                        {watchedValues.position === 'FOOTER'
+                          ? '✓ پاورقی (Footer)'
+                          : 'پاورقی (Footer)'}
                       </button>
                     </div>
                     <div className="text-[10px] text-neutral-400 dark:text-neutral-500 text-center font-medium">
@@ -654,7 +785,9 @@ function AdvertisementForm({
                   name="size"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">اندازه نمایش بنر</FormLabel>
+                      <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                        اندازه نمایش بنر
+                      </FormLabel>
                       <Select dir="rtl" onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger className={selectClassName}>
@@ -680,9 +813,15 @@ function AdvertisementForm({
                       name="customDimensions.width"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-xs font-semibold text-neutral-600 dark:text-neutral-400">عرض سفارشی</FormLabel>
+                          <FormLabel className="text-xs font-semibold text-neutral-600 dark:text-neutral-400">
+                            عرض سفارشی
+                          </FormLabel>
                           <FormControl>
-                            <Input placeholder="مثال: 300px یا 100%" {...field} className={inputClassName} />
+                            <Input
+                              placeholder="مثال: 300px یا 100%"
+                              {...field}
+                              className={inputClassName}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -693,9 +832,15 @@ function AdvertisementForm({
                       name="customDimensions.height"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-xs font-semibold text-neutral-600 dark:text-neutral-400">ارتفاع سفارشی</FormLabel>
+                          <FormLabel className="text-xs font-semibold text-neutral-600 dark:text-neutral-400">
+                            ارتفاع سفارشی
+                          </FormLabel>
                           <FormControl>
-                            <Input placeholder="مثال: 250px" {...field} className={inputClassName} />
+                            <Input
+                              placeholder="مثال: 250px"
+                              {...field}
+                              className={inputClassName}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -706,7 +851,9 @@ function AdvertisementForm({
                       name="customDimensions.aspectRatio"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-xs font-semibold text-neutral-600 dark:text-neutral-400">نسبت تصویر</FormLabel>
+                          <FormLabel className="text-xs font-semibold text-neutral-600 dark:text-neutral-400">
+                            نسبت تصویر
+                          </FormLabel>
                           <FormControl>
                             <Input placeholder="مثال: 16/9" {...field} className={inputClassName} />
                           </FormControl>
@@ -728,7 +875,9 @@ function AdvertisementForm({
                     name="startDate"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">تاریخ شروع نمایش</FormLabel>
+                        <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                          تاریخ شروع نمایش
+                        </FormLabel>
                         <FormControl>
                           <PersianDatePicker value={field.value} onChange={field.onChange} />
                         </FormControl>
@@ -741,7 +890,9 @@ function AdvertisementForm({
                     name="endDate"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">تاریخ پایان نمایش</FormLabel>
+                        <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                          تاریخ پایان نمایش
+                        </FormLabel>
                         <FormControl>
                           <PersianDatePicker value={field.value} onChange={field.onChange} />
                         </FormControl>
@@ -757,7 +908,9 @@ function AdvertisementForm({
                     name="order"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">اولویت نمایش (ترتیب)</FormLabel>
+                        <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                          اولویت نمایش (ترتیب)
+                        </FormLabel>
                         <FormControl>
                           <Input type="number" {...field} className={inputClassName} />
                         </FormControl>
@@ -834,19 +987,27 @@ function AdvertisementForm({
           {/* Left Side: Real-time Live Preview Pane */}
           <div className="lg:sticky lg:top-0 border border-neutral-200/60 dark:border-neutral-700/50 rounded-2xl p-5 bg-neutral-50/40 dark:bg-neutral-900/20 space-y-4">
             <div className="flex items-center justify-between border-b border-neutral-200/60 dark:border-neutral-700/50 pb-2">
-              <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400">پیش‌نمایش زنده کارت تبلیغ</span>
-              <span className="text-[9px] bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-full font-bold">زنده</span>
+              <span className="text-xs font-bold text-neutral-500 dark:text-neutral-400">
+                پیش‌نمایش زنده کارت تبلیغ
+              </span>
+              <span className="text-[9px] bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-full font-bold">
+                زنده
+              </span>
             </div>
-            
+
             <div className="flex items-center justify-center p-3 bg-neutral-950/5 dark:bg-neutral-950/20 rounded-xl overflow-hidden min-h-[160px] border border-neutral-200/40 dark:border-neutral-800/40">
               {previewAd.imageUrl ? (
                 <div className="w-full scale-90 sm:scale-100 origin-center transition-all duration-300">
                   <BannerADS
                     ad={previewAd}
                     variant={
-                      previewAd.size === 'LARGE' ? 'showcase' :
-                      previewAd.size === 'MEDIUM' ? 'rich' :
-                      previewAd.size === 'SMALL' ? 'minimal' : 'image'
+                      previewAd.size === 'LARGE'
+                        ? 'showcase'
+                        : previewAd.size === 'MEDIUM'
+                          ? 'rich'
+                          : previewAd.size === 'SMALL'
+                            ? 'minimal'
+                            : 'image'
                     }
                     className="w-full"
                   />
@@ -856,7 +1017,9 @@ function AdvertisementForm({
                   <div className="h-10 w-10 mx-auto rounded-full bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center text-neutral-400">
                     <HiOutlineMegaphone className="h-5 w-5" />
                   </div>
-                  <div className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">در حال انتظار برای تصویر...</div>
+                  <div className="text-neutral-500 dark:text-neutral-400 text-xs font-medium">
+                    در حال انتظار برای تصویر...
+                  </div>
                   <div className="text-neutral-400 dark:text-neutral-550 text-[10px] max-w-[200px] mx-auto leading-relaxed">
                     با وارد کردن اطلاعات و آپلود تصویر، شکل زنده تبلیغ را اینجا مشاهده خواهید کرد.
                   </div>
@@ -866,7 +1029,9 @@ function AdvertisementForm({
 
             {/* Quick Tips */}
             <div className="p-3 bg-primary-500/5 rounded-xl border border-primary-500/10 text-[11px] text-primary-600 dark:text-primary-400 leading-relaxed">
-              💡 <strong>راهنما:</strong> ابعاد بزرگ (LARGE) دارای افکت تعاملی سه‌بعدی و بازتاب ماوس است. ابعاد متوسط (MEDIUM) به صورت متنی-تصویری غنی، و ابعاد کوچک (SMALL) متناسب با سایدبار نمایش داده می‌شود.
+              💡 <strong>راهنما:</strong> ابعاد بزرگ (LARGE) دارای افکت تعاملی سه‌بعدی و بازتاب ماوس
+              است. ابعاد متوسط (MEDIUM) به صورت متنی-تصویری غنی، و ابعاد کوچک (SMALL) متناسب با
+              سایدبار نمایش داده می‌شود.
             </div>
           </div>
         </div>

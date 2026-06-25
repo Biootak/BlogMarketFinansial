@@ -11,37 +11,27 @@
  *  ۲۰۲۶-۰۶-۱۴: هماهنگ با کامپوننت‌های shared داشبورد
  */
 
-import { useState, useTransition } from 'react';
-import {
-  HiOutlinePlus,
-  HiOutlinePencil,
-  HiOutlineTrash,
-  HiOutlineSparkles,
-  HiOutlineXMark,
-} from 'react-icons/hi2';
 import {
   createHeaderAd,
-  updateHeaderAd,
   deleteHeaderAd,
   toggleHeaderAd,
+  updateHeaderAd,
 } from '@/actions/headerAdActions';
-import { useToast } from '@/components/ui/use-toast';
 import {
-  DashboardPageHeader,
-  DashboardTableContainer,
-  DashboardTable,
-  DashboardTableHeader,
-  DashboardTableHead,
-  DashboardTableBody,
-  DashboardTableRow,
-  DashboardTableCell,
-  StatusBadge,
   ActionButton,
-  PrimaryActionButton,
+  DashboardPageHeader,
+  DashboardTable,
+  DashboardTableBody,
+  DashboardTableCell,
+  DashboardTableContainer,
+  DashboardTableHead,
+  DashboardTableHeader,
+  DashboardTableRow,
   EmptyState,
+  PrimaryActionButton,
+  StatusBadge,
 } from '@/components/Dashboard/shared/DashboardTableWrapper';
-import { Switch } from '@/components/ui/switch';
-import { Input } from '@/components/ui/input';
+import SubmitButton from '@/components/SubmitButton';
 import {
   Dialog,
   DialogContent,
@@ -49,12 +39,24 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import SubmitButton from '@/components/SubmitButton';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { useToast } from '@/components/ui/use-toast';
+import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
+import { useState, useTransition } from 'react';
+import {
+  HiOutlinePencil,
+  HiOutlinePlus,
+  HiOutlineSparkles,
+  HiOutlineTrash,
+  HiOutlineXMark,
+} from 'react-icons/hi2';
 
 type Theme = 'PRIMARY' | 'ACCENT' | 'NEUTRAL' | 'DARK' | 'GRADIENT';
 type Variant = 'TEXT' | 'IMAGE' | 'MIXED';
 
-interface Ad {
+export interface HeaderAdData {
   id: string;
   text: string;
   subtext?: string | null;
@@ -94,19 +96,26 @@ const themeBadge: Record<Theme, string> = {
   GRADIENT: 'bg-gradient-to-l from-primary-500 to-purple-500 text-white',
 };
 
-export default function HeaderAdsClient({ initialAds }: { initialAds: Ad[] }) {
-  const [ads, setAds] = useState<Ad[]>(initialAds);
-  const [editing, setEditing] = useState<Ad | null>(null);
+export default function HeaderAdsClient({
+  initialAds,
+  className,
+  onRefresh,
+}: {
+  initialAds: HeaderAdData[];
+  className?: string;
+  onRefresh?: () => void | Promise<void>;
+}) {
+  const [editing, setEditing] = useState<HeaderAdData | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const router = useRouter();
 
   const refresh = async () => {
-    const res = await fetch('/api/header-ad', { method: 'GET' }).then((r) => r.json());
-    // لیست کامل از طریق server component reload می‌شود؛ فقط toast نمایش بده
-    if (res?.success) {
-      // نیاز به router refresh برای getAllHeaderAds
-      window.location.reload();
+    if (onRefresh) {
+      await onRefresh();
+    } else {
+      router.refresh();
     }
   };
 
@@ -171,16 +180,13 @@ export default function HeaderAdsClient({ initialAds }: { initialAds: Ad[] }) {
     setIsOpen(true);
   };
 
-  const openEdit = (ad: Ad) => {
+  const openEdit = (ad: HeaderAdData) => {
     setEditing(ad);
     setIsOpen(true);
   };
 
   return (
-    <div
-      className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 p-4 sm:p-6 lg:p-8 dark:from-neutral-900 dark:via-neutral-900 dark:to-primary-950/20"
-      dir="rtl"
-    >
+    <div className={cn('min-h-[50vh]', className)} dir="rtl">
       <DashboardPageHeader
         title="تبلیغ بالای هدر"
         description="نوار باریک تبلیغ که در بالای سایت نمایش داده می‌شود. فقط یک تبلیغ فعال در لحظه."
@@ -204,11 +210,7 @@ export default function HeaderAdsClient({ initialAds }: { initialAds: Ad[] }) {
             <div className="max-h-[calc(90vh-120px)] overflow-y-auto p-6">
               <form action={handleSubmit} className="space-y-4">
                 <Field label="متن اصلی *" name="text" defaultValue={editing?.text} required />
-                <Field
-                  label="زیرنویس"
-                  name="subtext"
-                  defaultValue={editing?.subtext ?? ''}
-                />
+                <Field label="زیرنویس" name="subtext" defaultValue={editing?.subtext ?? ''} />
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field
                     label="متن دکمه (CTA)"
@@ -245,7 +247,10 @@ export default function HeaderAdsClient({ initialAds }: { initialAds: Ad[] }) {
                     label="Variant"
                     name="variant"
                     defaultValue={editing?.variant ?? 'TEXT'}
-                    options={Object.entries(variantLabels).map(([k, v]) => ({ value: k, label: v }))}
+                    options={Object.entries(variantLabels).map(([k, v]) => ({
+                      value: k,
+                      label: v,
+                    }))}
                   />
                   <SelectField
                     label="Theme"
@@ -280,7 +285,7 @@ export default function HeaderAdsClient({ initialAds }: { initialAds: Ad[] }) {
         </Dialog>
       </DashboardPageHeader>
 
-      {ads.length === 0 ? (
+      {initialAds.length === 0 ? (
         <DashboardTableContainer>
           <EmptyState
             title="تبلیغی برای هدر ساخته نشده"
@@ -302,7 +307,7 @@ export default function HeaderAdsClient({ initialAds }: { initialAds: Ad[] }) {
               </tr>
             </DashboardTableHeader>
             <DashboardTableBody>
-              {ads.map((ad) => (
+              {initialAds.map((ad) => (
                 <DashboardTableRow key={ad.id}>
                   <DashboardTableCell>
                     <div
@@ -388,10 +393,14 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+      <label
+        htmlFor={name}
+        className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+      >
         {label}
       </label>
       <Input
+        id={name}
         name={name}
         type={type}
         defaultValue={defaultValue as string | number | undefined}
@@ -417,10 +426,14 @@ function SelectField({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+      <label
+        htmlFor={name}
+        className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+      >
         {label}
       </label>
       <select
+        id={name}
         name={name}
         defaultValue={defaultValue}
         className="h-11 w-full rounded-xl border border-neutral-200/60 bg-white/80 px-3 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80"

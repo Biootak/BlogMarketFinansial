@@ -23,7 +23,6 @@ import {
   HiOutlineDocumentText,
   HiOutlineHome,
   HiOutlineMegaphone,
-  HiOutlineSparkles,
   HiOutlineSquares2X2,
   HiOutlineUserCircle,
   HiOutlineUsers,
@@ -89,9 +88,8 @@ const SHORTCUT_KEYS: Record<string, string> = {
   users: '3',
   categories: '4',
   advertisements: '5',
-  headerAd: '6',
-  serviceRequests: '7',
-  exchangeRates: '8',
+  serviceRequests: '6',
+  exchangeRates: '7',
   settings: 'S',
   reports: 'R',
   profile: 'P',
@@ -141,15 +139,6 @@ function getMenu(role: UserRole): NavSection[] {
     label: 'تبلیغات',
     title: 'تبلیغات',
     shortcut: SHORTCUT_KEYS.advertisements,
-  };
-
-  const headerAd: MenuItem = {
-    id: 'headerAd',
-    href: '/dashboard/header-ad',
-    icon: <HiOutlineSparkles className="w-[18px] h-[18px]" />,
-    label: 'تبلیغ هدر',
-    title: 'تبلیغ هدر',
-    shortcut: SHORTCUT_KEYS.headerAd,
   };
 
   const serviceRequests: MenuItem = {
@@ -205,7 +194,7 @@ function getMenu(role: UserRole): NavSection[] {
         {
           id: 'operations',
           label: 'عملیات',
-          items: [exchangeRates, advertisements, headerAd, serviceRequests],
+          items: [exchangeRates, advertisements, serviceRequests],
         },
         { id: 'admin', label: 'مدیریت', items: [users, reports, settings] },
         { id: 'account', label: 'حساب', items: [profile] },
@@ -217,7 +206,7 @@ function getMenu(role: UserRole): NavSection[] {
         {
           id: 'operations',
           label: 'عملیات',
-          items: [exchangeRates, advertisements, headerAd, serviceRequests],
+          items: [exchangeRates, advertisements, serviceRequests],
         },
         { id: 'admin', label: 'مدیریت', items: [users] },
         { id: 'account', label: 'حساب', items: [profile] },
@@ -493,7 +482,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
 
         <header className="dash-side__top">
           <div className="dash-side__brand">
-            <Logo className="h-8 w-8 shrink-0" />
+            <Logo className="h-8 w-8 shrink-0 flex items-center justify-center" />
           </div>
           {isMobile && isOpen && (
             <button
