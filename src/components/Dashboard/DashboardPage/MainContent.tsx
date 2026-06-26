@@ -1,9 +1,8 @@
 'use client';
 
-import { useSidebarStore } from '@/hooks/sidebarStore';
-import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence, type Variants, type Transition } from '@/lib/motion-shim';
 import { AmbientBackground } from '@/components/Dashboard/primitives';
+import { AnimatePresence, type Transition, type Variants, motion } from '@/lib/motion-shim';
+import { usePathname } from 'next/navigation';
 
 interface MainContentProps {
   children: React.ReactNode;
@@ -12,7 +11,6 @@ interface MainContentProps {
 }
 
 const MainContent: React.FC<MainContentProps> = ({ children, ambient = false }) => {
-  const { isOpen, isMobile } = useSidebarStore();
   const pathname = usePathname();
 
   const pageVariants: Variants = {
@@ -27,33 +25,28 @@ const MainContent: React.FC<MainContentProps> = ({ children, ambient = false }) 
     duration: 0.25,
   };
 
-  // Calculate margin based on sidebar state.
-  // On mobile the sidebar is an overlay, so we never need to reserve its width
-  // on the main content. On desktop the margin tracks the open/closed width.
-  const marginRight = isMobile ? 0 : isOpen ? 260 : 76;
-
+  // On desktop the sidebar is now a flex child (not fixed), so no margin
+  // offset is needed — the flex layout handles spacing automatically.
+  // On mobile the sidebar is a fixed overlay, so no margin either.
   return (
-    <main
-      className="dash-scope dash-grid-texture flex-1 overflow-auto transition-[margin] duration-300 ease-out"
-      style={{ marginRight }}
-    >
-        {/* Ambient drift backdrop — only on the home route, sits behind everything */}
-        {ambient ? <AmbientBackground intensity="med" /> : null}
-        {/* Aurora drift backdrop — پشت کل محتوای داشبورد */}
-        <div className="dash-aurora" aria-hidden="true" />
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={pathname}
-            initial="initial"
-            animate="in"
-            exit="out"
-            variants={pageVariants}
-            transition={pageTransition}
-            className="relative min-h-full"
-          >
-            {children}
-          </motion.div>
-        </AnimatePresence>
+    <main className="dash-scope dash-grid-texture flex-1 overflow-auto">
+      {/* Ambient drift backdrop — only on the home route, sits behind everything */}
+      {ambient ? <AmbientBackground intensity="med" /> : null}
+      {/* Aurora drift backdrop — پشت کل محتوای داشبورد */}
+      <div className="dash-aurora" aria-hidden="true" />
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={pathname}
+          initial="initial"
+          animate="in"
+          exit="out"
+          variants={pageVariants}
+          transition={pageTransition}
+          className="relative min-h-full"
+        >
+          {children}
+        </motion.div>
+      </AnimatePresence>
     </main>
   );
 };

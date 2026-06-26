@@ -183,30 +183,10 @@ const Header: React.FC = () => {
 
   const unreadCount = SAMPLE_NOTIFICATIONS.length;
 
-  // Reserve space for the fixed-positioned sidebar so the header never
-  // overlaps it on desktop. On mobile the sidebar overlays the content,
-  // so no margin is reserved there. The transition matches the sidebar's
-  // own 300ms width animation.
-  //
-  // `marginInlineStart` is used (not `marginInlineEnd`) so the offset
-  // always lands on the same side as the sidebar regardless of writing
-  // direction:
-  //   LTR → sidebar on left  → inline-start = left  margin
-  //   RTL → sidebar on right → inline-start = right margin
-  // Using `marginInlineEnd` here would put the offset on the wrong side
-  // in RTL and cause the header to paint over the sidebar.
-  const sidebarOffset = isMobile ? 0 : isOpen ? 260 : 76;
-
+  // The sidebar is now a flex child (not fixed), so the header needs no
+  // margin offset — the flex layout handles spacing automatically.
   return (
-    <header
-      data-scrolled={scrolled ? 'true' : undefined}
-      className="dash-header"
-      style={{
-        marginInlineEnd: 0,
-        marginInlineStart: sidebarOffset,
-        transition: 'margin-inline-start 300ms cubic-bezier(0.22, 1, 0.36, 1)',
-      }}
-    >
+    <header data-scrolled={scrolled ? 'true' : undefined} className="dash-header">
       <div className="dash-header__inner">
         {/* ── Zone 1 — context (mobile menu + page-context eyebrow) ──────── */}
         <div className="dash-header__zone dash-header__zone--start">

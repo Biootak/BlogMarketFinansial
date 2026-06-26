@@ -7166,32 +7166,48 @@ p { line-height: var(--leading-relaxed); }
     outline-offset: 2px;
   }
 
-  /* ---- Shell grid: main + rail -------------------------------------------- */
+  /* ---- 2026 Bento Shell — unified 12-col grid ----------------------------
+     Replaces the old two-column [main|rail] shell. Every card participates
+     in one 12-column bento so there are no empty voids. Span modifiers:
+       .dash-span-12          — full width (all sizes)
+       .dash-span-md-6        — half width at ≥640px
+       .dash-span-md-6 .dash-span-lg-4  — quarter width at ≥1024px
+     The grid is a single 12-col track on desktop, 6-col on tablet, 1-col
+     on mobile. No separate rail column. */
   .dash-shell {
     display: grid;
-    gap: 1rem;
+    gap: 0.625rem;
     align-items: start;
     grid-template-columns: minmax(0, 1fr);
+    max-width: 1600px;
+    margin-inline: auto;
   }
-  .dash-shell__main {
-    display: grid;
-    gap: 1rem;
-    min-width: 0;
-  }
-  .dash-shell__rail {
-    display: grid;
-    gap: 1rem;
-    min-width: 0;
-  }
+  .dash-span-12 { grid-column: 1 / -1; min-width: 0; }
+
   @media (min-width: 640px) {
-    .dash-shell { gap: 1.25rem; }
-    .dash-shell__main { gap: 1.25rem; }
-  }
-  @media (min-width: 1280px) {
     .dash-shell {
-      grid-template-columns: minmax(0, 1fr) clamp(280px, 22vw, 340px);
-      gap: 1.5rem;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 0.75rem;
     }
+    .dash-span-12 { grid-column: 1 / -1; }
+    .dash-span-md-6 { grid-column: span 6; }
+    .dash-span-md-3 { grid-column: span 3; }
+  }
+
+  @media (min-width: 1024px) {
+    .dash-shell {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 0.875rem;
+    }
+    .dash-span-md-6 { grid-column: span 6; }
+    .dash-span-lg-4 { grid-column: span 4; }
+    .dash-span-lg-6 { grid-column: span 6; }
+    .dash-span-lg-8 { grid-column: span 8; }
+    .dash-span-lg-3 { grid-column: span 3; }
+  }
+
+  @media (min-width: 1280px) {
+    .dash-shell { gap: 1rem; }
   }
 
   /* ---- Paired row (donut + activity) — asymmetric, visually cohesive -- */
@@ -7212,7 +7228,7 @@ p { line-height: var(--leading-relaxed); }
   }
   @container (min-width: 1024px) {
     .dash-shell {
-      grid-template-columns: minmax(0, 1fr) clamp(280px, 22vw, 340px);
+      grid-template-columns: minmax(0, 1fr) clamp(260px, 20vw, 320px);
     }
   }
 
@@ -8551,12 +8567,12 @@ p { line-height: var(--leading-relaxed); }
   /* ---- Bento 2 (asymmetric 12-col bento + container queries) ------------- */
   .dash-bento2 {
     display: grid;
-    gap: 0.75rem;
+    gap: 0.625rem;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     container-type: inline-size;
   }
   @media (min-width: 640px) {
-    .dash-bento2 { gap: 1rem; }
+    .dash-bento2 { gap: 0.875rem; }
   }
   @media (min-width: 1024px) {
     .dash-bento2 {
@@ -8575,8 +8591,8 @@ p { line-height: var(--leading-relaxed); }
   .dash-pane {
     position: relative;
     display: grid;
-    gap: 0.625rem;
-    padding: 1rem;
+    gap: 0.5rem;
+    padding: 0.875rem;
     border-radius: var(--ds-radius-xl);
     background: linear-gradient(180deg, oklch(100% 0 0 / 0.92), oklch(99% 0.003 245 / 0.78));
     border: 1px solid oklch(90% 0.006 245 / 0.85);
@@ -8600,7 +8616,7 @@ p { line-height: var(--leading-relaxed); }
       0 24px 50px -30px oklch(0% 0 0 / 0.75);
   }
   @media (min-width: 640px) {
-    .dash-pane { padding: 1.25rem; gap: 0.75rem; }
+    .dash-pane { padding: 1.125rem; gap: 0.625rem; }
   }
   .dash-pane--compact {
     grid-column: span 2;
@@ -8630,10 +8646,10 @@ p { line-height: var(--leading-relaxed); }
     grid-column: 1 / -1;
   }
   @container (min-width: 720px) {
-    .dash-pane--tall { grid-column: span 3; }
+    .dash-pane--tall { grid-column: span 6; }
   }
   @container (min-width: 1024px) {
-    .dash-pane--tall { grid-column: span 4; }
+    .dash-pane--tall { grid-column: span 6; }
   }
 
   /* Subtle hover affordance - panels never move more than 2px */
@@ -9128,12 +9144,13 @@ p { line-height: var(--leading-relaxed); }
    ============================================================================ */
 
 .dash-side {
-  position: fixed;
-  inset-block: 0;
-  inset-inline-start: 0;
+  /* Desktop: flex child of the dashboard shell — no fixed positioning.
+     Mobile: switches to fixed overlay (drawer) via the data-state below. */
+  position: relative;
   z-index: 40;
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   background: var(--ds-color-side);
   border-inline-end: 1px solid var(--ds-color-border-subtle);
   transition: width 320ms var(--ds-ease-out-expo);
@@ -9143,6 +9160,15 @@ p { line-height: var(--leading-relaxed); }
 
 .dash-side[data-state="expanded"] { width: var(--ds-side-w-expanded); --side-w: var(--ds-side-w-expanded); }
 .dash-side[data-state="rail"]     { width: var(--ds-side-w-rail); --side-w: var(--ds-side-w-rail); }
+
+/* Mobile: sidebar becomes a fixed overlay drawer on top of content.
+   No flex flow participation — it floats above. */
+.dash-side[data-state="mobile-open"],
+.dash-side[data-state="mobile-closed"] {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-start: 0;
+}
 .dash-side[data-state="mobile-open"]  { width: min(280px, 85vw); --side-w: min(280px, 85vw); }
 .dash-side[data-state="mobile-closed"] { width: 0; border-inline-end: none; --side-w: 0; }
 

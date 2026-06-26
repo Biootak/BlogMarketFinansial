@@ -63,6 +63,12 @@ export function safeCache<TArgs extends unknown[], T>(
   const { key: baseKey, ttl, tags = [] } = options;
 
   return async (...args: TArgs): Promise<T> => {
+    // 2026-06-26: Under Next.js 16 `cacheComponents: true`, `Date.now()`
+    // is forbidden only in the static prerender shell. Every call-site
+    // of `safeCache` is already in a dynamic context — inside `'use cache'`,
+    // inside `<Suspense>`, or after `connection()` — so `Date.now()` is
+    // permitted without any runtime-API opt-in. Calling `headers()` or
+    // `connection()` here would crash inside `'use cache'` scopes.
     const now = Date.now();
     const fullKey = makeKey(baseKey, args);
     const cached = memoryStore.get(fullKey) as CacheEntry<T> | undefined;
