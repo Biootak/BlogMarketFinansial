@@ -41,19 +41,19 @@
  * are mapped 1:1 to the new subcomponents.
  */
 
-import { memo, useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import HeroSection from './HeroSection';
-import KpiGrid from './KpiGrid';
-import WorkspaceToolbar, { type Range } from './WorkspaceToolbar';
-import EngagementDonut, { type EngagementSlice } from './EngagementDonut';
-import ActivityRail from './ActivityRail';
-import AnalyticsCanvas from './AnalyticsCanvas';
-import ScheduledRail from './ScheduledRail';
-import SystemHealth from './SystemHealth';
-import PostsSpotlight from './PostsSpotlight';
 import CommandPalette from '@/components/Dashboard/DashboardPage/CommandPalette';
 import { AmbientBackground } from '@/components/Dashboard/primitives';
+import { useSearchParams } from 'next/navigation';
+import { memo, useEffect, useRef, useState } from 'react';
+import ActivityRail from './ActivityRail';
+import AnalyticsCanvas from './AnalyticsCanvas';
+import EngagementDonut, { type EngagementSlice } from './EngagementDonut';
+import HeroSection from './HeroSection';
+import KpiGrid from './KpiGrid';
+import PostsSpotlight from './PostsSpotlight';
+import ScheduledRail from './ScheduledRail';
+import SystemHealth from './SystemHealth';
+import WorkspaceToolbar, { type Range } from './WorkspaceToolbar';
 
 interface DashboardShellProps {
   stats: {
@@ -130,9 +130,7 @@ function buildSlices(props: DashboardShellProps): EngagementSlice[] {
 
 const DashboardShell: React.FC<DashboardShellProps> = (props) => {
   const searchParams = useSearchParams();
-  const [range, setRange] = useState<Range>(
-    () => (searchParams?.get('range') as Range) || 'all',
-  );
+  const [range, setRange] = useState<Range>(() => (searchParams?.get('range') as Range) || 'all');
   const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable');
 
   // Sync URL → state on back/forward navigation only.
@@ -171,35 +169,21 @@ const DashboardShell: React.FC<DashboardShellProps> = (props) => {
 
         <div className="dash-shell">
           <div className="dash-shell__main">
-            <HeroSection
-              sparkData={props.viewStats.data}
-              todayViews={props.viewStats.todayViews}
-              totalViews={props.viewStats.totalViews}
-            />
+            <HeroSection />
 
-            <KpiGrid stats={props.stats} viewStats={props.viewStats} />
+            <KpiGrid stats={props.stats} viewStats={props.viewStats} range={range} />
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
-              <EngagementDonut
-                slices={slices}
-                range={range}
-                caption="سهم تعامل"
-              />
+            <div className="dash-shell__pair">
+              <EngagementDonut slices={slices} range={range} caption="سهم تعامل" />
               <ActivityRail items={props.recentActivity} range={range} />
             </div>
 
             <AnalyticsCanvas scheduledPosts={props.scheduledPosts} />
 
-            <PostsSpotlight
-              popularPosts={props.popularPosts}
-              recentDrafts={props.recentDrafts}
-            />
+            <PostsSpotlight popularPosts={props.popularPosts} recentDrafts={props.recentDrafts} />
           </div>
 
-          <aside
-            className="dash-shell__rail"
-            aria-label="میان‌برها و تقویم"
-          >
+          <aside className="dash-shell__rail" aria-label="میان‌برها و تقویم">
             <ScheduledRail scheduledPosts={props.scheduledPosts} />
             <SystemHealth />
           </aside>

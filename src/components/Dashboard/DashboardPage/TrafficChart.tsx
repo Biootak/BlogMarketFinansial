@@ -1,10 +1,10 @@
 'use client';
 
-import type React from 'react';
-import dynamic from 'next/dynamic';
 import { motion } from '@/lib/motion-shim';
+import dynamic from 'next/dynamic';
+import type React from 'react';
+import { HiExclamation, HiOutlineCalendar, HiOutlineEye } from 'react-icons/hi';
 import useSWR from 'swr';
-import { HiOutlineEye, HiOutlineCalendar, HiExclamation } from 'react-icons/hi';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -45,8 +45,17 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const TrafficChart: React.FC = () => {
-  const { data: trafficStats, error, isLoading } = useSWR('/api/traffic-stats', fetcher, {
+interface TrafficChartProps {
+  /** Stats period — drives the API query param. */
+  period?: '7d' | '30d' | '90d';
+}
+
+const TrafficChart: React.FC<TrafficChartProps> = ({ period = '7d' }) => {
+  const {
+    data: trafficStats,
+    error,
+    isLoading,
+  } = useSWR(`/api/traffic-stats?period=${period}`, fetcher, {
     refreshInterval: 60000,
   });
 

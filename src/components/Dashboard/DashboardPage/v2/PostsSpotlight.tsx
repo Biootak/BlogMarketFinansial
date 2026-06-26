@@ -17,18 +17,18 @@
  * with the rest of the dashboard.
  */
 
-import Link from 'next/link';
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion } from '@/lib/motion-shim';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
+  HiOutlineArrowLeft,
   HiOutlineChartBar,
   HiOutlineClock,
-  HiOutlineArrowLeft,
-  HiOutlinePencil,
-  HiOutlineEye,
-  HiOutlineSparkles,
   HiOutlineDocumentText,
+  HiOutlineEye,
+  HiOutlinePencil,
+  HiOutlineSparkles,
 } from 'react-icons/hi2';
 
 interface PostsSpotlightProps {
@@ -61,8 +61,7 @@ const FILTER_STORAGE_KEY = 'dash2:posts-filter';
 const isPostsFilter = (value: unknown): value is PostsFilter =>
   value === 'all' || value === 'popular' || value === 'drafts';
 
-const useIsomorphicLayoutEffect =
-  typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export default function PostsSpotlight({ popularPosts, recentDrafts }: PostsSpotlightProps) {
   // Initial state must mirror SSR (where window/localStorage are unavailable).
@@ -159,14 +158,13 @@ export default function PostsSpotlight({ popularPosts, recentDrafts }: PostsSpot
   );
 
   return (
-    <section
-      id="dash-posts"
-      aria-label="مدیریت پست‌ها"
-      className="dash-pane dash-pane--tall !p-0"
-    >
+    <section id="dash-posts" aria-label="مدیریت پست‌ها" className="dash-pane dash-pane--tall !p-0">
       <header className="px-4 sm:px-5 md:px-7 py-4 sm:py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
-          <span className="dash-ico dash-ico--violet w-10 h-10 sm:w-11 sm:h-11 shrink-0" aria-hidden>
+          <span
+            className="dash-ico dash-ico--violet w-10 h-10 sm:w-11 sm:h-11 shrink-0"
+            aria-hidden
+          >
             <HiOutlineDocumentText className="w-5 h-5" />
           </span>
           <div className="min-w-0">
@@ -221,10 +219,7 @@ export default function PostsSpotlight({ popularPosts, recentDrafts }: PostsSpot
       </div>
 
       <div
-        className={cn(
-          'transition-opacity ease-out',
-          isFading ? 'opacity-0' : 'opacity-100',
-        )}
+        className={cn('transition-opacity ease-out', isFading ? 'opacity-0' : 'opacity-100')}
         style={{ transitionDuration: '120ms' }}
       >
         {featured.length > 0 && (
@@ -247,7 +242,7 @@ export default function PostsSpotlight({ popularPosts, recentDrafts }: PostsSpot
                 >
                   <Link
                     href={`/single/${post.slug}`}
-                    className="group relative block h-full rounded-2xl border border-slate-200/70 dark:border-slate-700/70 bg-gradient-to-br from-slate-50 to-white dark:from-slate-800/40 dark:to-slate-800/10 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-violet-300/70 dark:hover:border-violet-500/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60"
+                    className="group relative block h-full rounded-2xl border border-slate-200/70 dark:border-slate-700/70 bg-gradient-to-br from-slate-50 to-white dark:from-slate-800/40 dark:to-slate-800/10 p-4 transition-[border-color,box-shadow] duration-200 hover:border-violet-300/70 dark:hover:border-violet-500/40 hover:shadow-lg hover:shadow-violet-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60"
                   >
                     <div className="flex items-center justify-between mb-3">
                       <span className="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow">
@@ -380,8 +375,7 @@ interface PanelProps {
 
 function Panel({ title, tone, icon, viewAllHref, hidden, children }: PanelProps) {
   if (hidden) return null;
-  const accent =
-    tone === 'violet' ? 'dash-ico--violet' : 'dash-ico--cyan';
+  const accent = tone === 'violet' ? 'dash-ico--violet' : 'dash-ico--cyan';
   const link =
     tone === 'violet'
       ? 'text-violet-600 hover:text-violet-700 dark:text-violet-400 focus-visible:ring-violet-400/60'

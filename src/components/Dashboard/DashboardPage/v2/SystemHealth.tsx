@@ -1,27 +1,35 @@
 'use client';
 
 /**
- * SystemHealth — operational snapshot rail.
+ * SystemHealth — operational snapshot rail (2026-06-26 redesign).
  *
  * Surfaces three signals, all read live from `/api/health/dashboard`:
  *   • Database connectivity (probed via `SELECT 1`)
  *   • Bazaar cron last-sync (most recent ExchangeRate.updatedAt)
  *   • Build / version stamp (NODE_ENV + git SHA + DB latency)
  *
+ * 2026-06-26 fix: the previous implementation generated fake "latency
+ * history" via a seeded LCG random number generator — misleading on a
+ * production dashboard. Replaced with a real polling approach: the
+ * component polls /api/health/dashboard every 30s, accumulates up to 12
+ * real latency samples, and renders a sparkline from actual data. On
+ * first load (before enough samples exist), the sparkline shows a
+ * skeleton bar instead of fabricated numbers.
+ *
  * The fetch is best-effort and degrades gracefully: any network failure
  * flips the indicator to a "fail" tone but the component keeps rendering
  * the rest of the rail.
  */
 
-import { useEffect, useId, useMemo, useState } from 'react';
 import { motion, useReducedMotion } from '@/lib/motion-shim';
+import { cn } from '@/lib/utils';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
-  HiOutlineServerStack,
   HiOutlineArrowPath,
   HiOutlineCheckBadge,
   HiOutlineExclamationTriangle,
+  HiOutlineServerStack,
 } from 'react-icons/hi2';
-import { cn } from '@/lib/utils';
 
 type Tone = 'ok' | 'fail' | 'pending' | 'stale' | 'unknown';
 
@@ -49,7 +57,9 @@ const INITIAL: Health = {
   serverTime: '',
 };
 
-const SPARKLINE_BARS = 12;
+const MAX_SAMPLES = 12;
+const POLL_INTERVAL_MS = 30_000;
+const SPARKLINE_BARS = MAX_SAMPLES;
 const SPARKLINE_GROW_MS = 400;
 const SPARKLINE_STAGGER_MS = 30;
 const EASE_OUT_EXPO = 'cubic-bezier(0.16, 1, 0.3, 1)';
@@ -73,33 +83,6 @@ function shortSha(sha: string | null): string {
   return sha.length > 7 ? `…${sha.slice(-7)}` : sha;
 }
 
-/** Deterministic LCG seeded by the service name. */
-function makeSeededRandom(seed: string): () => number {
-  let state = 0;
-  for (let i = 0; i < seed.length; i += 1) {
-    state = (state * 31 + seed.charCodeAt(i)) >>> 0;
-  }
-  if (state === 0) state = 123456789;
-  return () => {
-    state = (state * 1103515245 + 12345) >>> 0;
-    return state / 4294967296;
-  };
-}
-
-/** Build 12 latency readings ending with `current`; seed makes it stable. */
-function buildLatencyHistory(seed: string, current: number): number[] {
-  const rand = makeSeededRandom(seed);
-  const values: number[] = [];
-  const clampedCurrent = Math.max(0, current);
-  for (let i = 0; i < SPARKLINE_BARS - 1; i += 1) {
-    const jitter = 0.4 + rand() * 1.2;
-    const base = clampedCurrent > 0 ? clampedCurrent * jitter : rand() * 80 + 20;
-    values.push(Math.max(1, Math.round(base)));
-  }
-  values.push(Math.max(0, clampedCurrent));
-  return values;
-}
-
 interface MiniSparklineProps {
   data: number[];
   prefersReducedMotion: boolean;
@@ -110,11 +93,19 @@ function MiniSparkline({ data, prefersReducedMotion }: MiniSparklineProps) {
   const maxIndex = data.indexOf(max);
   const styleId = useId();
 
+  // Pad with zeros if we don't have enough samples yet — the skeleton bars
+  // are rendered at height 0 so they're invisible, keeping the layout stable.
+  const padded = useMemo(() => {
+    const arr = [...data];
+    while (arr.length < SPARKLINE_BARS) arr.push(0);
+    return arr.slice(-SPARKLINE_BARS);
+  }, [data]);
+
   const bars = useMemo(() => {
-    return data.slice(0, SPARKLINE_BARS).map((value, index) => {
+    return padded.map((value, index) => {
       const height = (value / max) * 24;
       const x = index * 1;
-      const isHighest = index === maxIndex;
+      const isHighest = index === maxIndex && value > 0;
       const delay = index * SPARKLINE_STAGGER_MS;
       return {
         key: `${styleId}-bar-${index}`,
@@ -126,7 +117,7 @@ function MiniSparkline({ data, prefersReducedMotion }: MiniSparklineProps) {
         delay,
       };
     });
-  }, [data, max, maxIndex, styleId]);
+  }, [padded, max, maxIndex, styleId]);
 
   const keyframes = `
     @keyframes sparkline-grow-${styleId} {
@@ -136,15 +127,9 @@ function MiniSparkline({ data, prefersReducedMotion }: MiniSparklineProps) {
   `;
 
   return (
-    <svg
-      viewBox="0 0 12 24"
-      className="w-3 h-6 shrink-0"
-      role="img"
-      aria-hidden
-    >
-      {!prefersReducedMotion && (
-        <style dangerouslySetInnerHTML={{ __html: keyframes }} />
-      )}
+    <svg viewBox={`0 0 ${SPARKLINE_BARS} 24`} className="w-4 h-6 shrink-0" role="img" aria-hidden>
+      <title>نمودار تأخیر</title>
+      {!prefersReducedMotion && <style>{keyframes}</style>}
       {bars.map((bar) => (
         <rect
           key={bar.key}
@@ -171,18 +156,22 @@ export default function SystemHealth() {
   const [health, setHealth] = useState<Health>(INITIAL);
   const prefersReducedMotion = useReducedMotion();
 
+  // Real latency history — accumulated from polling, NOT from a random
+  // generator. Capped at MAX_SAMPLES; oldest samples drop off.
+  const dbHistoryRef = useRef<number[]>([]);
+  const bazaarHistoryRef = useRef<number[]>([]);
+  const [dbHistory, setDbHistory] = useState<number[]>([]);
+  const [bazaarHistory, setBazaarHistory] = useState<number[]>([]);
+
   useEffect(() => {
     let aborted = false;
 
     const apply = (raw: Partial<Health>) => {
       if (aborted) return;
-      setHealth((prev) => ({
-        ...prev,
-        ...raw,
-      }));
+      setHealth((prev) => ({ ...prev, ...raw }));
     };
 
-    (async () => {
+    const poll = async () => {
       try {
         const res = await fetch('/api/health/dashboard', {
           method: 'GET',
@@ -198,6 +187,24 @@ export default function SystemHealth() {
             })
           | null;
         if (aborted || !json) return;
+
+        const dbLatency = json.dbLatencyMs ?? 0;
+        const bazaarAge = json.bazaarAgeMs ?? 0;
+
+        // Push real samples into the history buffers.
+        if (json.db) {
+          dbHistoryRef.current = [...dbHistoryRef.current, Math.max(0, dbLatency)].slice(
+            -MAX_SAMPLES,
+          );
+          setDbHistory([...dbHistoryRef.current]);
+        }
+        if (json.bazaar) {
+          bazaarHistoryRef.current = [...bazaarHistoryRef.current, Math.max(0, bazaarAge)].slice(
+            -MAX_SAMPLES,
+          );
+          setBazaarHistory([...bazaarHistoryRef.current]);
+        }
+
         apply({
           db: json.db ?? 'fail',
           bazaar: json.bazaar ?? 'unknown',
@@ -206,31 +213,23 @@ export default function SystemHealth() {
           buildEnv: json.build?.env ?? 'production',
           buildSha: json.build?.sha ?? null,
           buildVersion: json.build?.version ?? '0.0.0',
-          dbLatencyMs: json.dbLatencyMs ?? 0,
+          dbLatencyMs: dbLatency,
           serverTime: json.serverTime ?? new Date().toISOString(),
         });
       } catch {
         if (!aborted) apply({ db: 'fail', bazaar: 'fail' });
       }
-    })();
+    };
+
+    // Initial poll immediately, then every 30s.
+    poll();
+    const interval = window.setInterval(poll, POLL_INTERVAL_MS);
 
     return () => {
       aborted = true;
+      window.clearInterval(interval);
     };
   }, []);
-
-  const dbHistory = useMemo(
-    () => buildLatencyHistory('db', health.dbLatencyMs),
-    [health.dbLatencyMs],
-  );
-  const bazaarHistory = useMemo(
-    () => buildLatencyHistory('bazaar', health.bazaarAgeMs ?? 0),
-    [health.bazaarAgeMs],
-  );
-  const buildHistory = useMemo(
-    () => buildLatencyHistory('build', 0),
-    [],
-  );
 
   const rows = [
     {
@@ -269,7 +268,7 @@ export default function SystemHealth() {
       value: `${health.buildEnv} · ${shortSha(health.buildSha)}`,
       tone: 'ok' as Tone,
       icon: <HiOutlineCheckBadge className="w-4 h-4" />,
-      history: buildHistory,
+      history: [] as number[],
     },
   ] as const;
 
@@ -362,10 +361,9 @@ export default function SystemHealth() {
                 <span className="truncate">{row.label}</span>
               </span>
               <span className="flex items-center gap-2 ms-auto">
-                <MiniSparkline
-                  data={row.history}
-                  prefersReducedMotion={prefersReducedMotion}
-                />
+                {row.history.length > 0 && (
+                  <MiniSparkline data={row.history} prefersReducedMotion={prefersReducedMotion} />
+                )}
                 <span
                   className={cn(
                     'text-xs font-semibold tabular-nums shrink-0 text-end',

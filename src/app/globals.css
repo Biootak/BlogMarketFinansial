@@ -7193,6 +7193,23 @@ p { line-height: var(--leading-relaxed); }
       gap: 1.5rem;
     }
   }
+
+  /* ---- Paired row (donut + activity) — asymmetric, visually cohesive -- */
+  .dash-shell__pair {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    align-items: stretch;
+  }
+  @media (min-width: 640px) {
+    .dash-shell__pair { gap: 1.25rem; }
+  }
+  @media (min-width: 1024px) {
+    .dash-shell__pair {
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      gap: 1.25rem;
+    }
+  }
   @container (min-width: 1024px) {
     .dash-shell {
       grid-template-columns: minmax(0, 1fr) clamp(280px, 22vw, 340px);
@@ -8908,6 +8925,38 @@ p { line-height: var(--leading-relaxed); }
   }
   @media (min-width: 1024px) {
     .dash-hero__stat { padding: 1.25rem; }
+  }
+
+  /* ---- Hero compact variant (June 26 redesign) --------------------------
+     The KPI stat card has been removed from the hero — KpiGrid now owns
+     all metrics. The hero is a compact greeting + action bar, ~40% shorter
+     than the original two-column layout. Keeps the premium dark gradient
+     + grid texture + noise overlay but reduces vertical footprint.
+     ------------------------------------------------------------------------ */
+  .dash-hero--compact {
+    border-radius: var(--ds-radius-2xl);
+  }
+  .dash-hero--compact .dash-hero__headline {
+    font-size: clamp(1.125rem, 3.5vw, 1.75rem);
+  }
+  .dash-hero--compact .dash-hero__sub {
+    font-size: clamp(0.8125rem, 1.4vw, 0.875rem);
+    max-width: 32rem;
+    margin-top: 0.25rem;
+  }
+  .dash-hero__inner--compact {
+    padding: 1rem 1.25rem;
+    gap: 0.75rem;
+  }
+  @media (min-width: 640px) {
+    .dash-hero__inner--compact {
+      padding: 1.25rem 1.5rem;
+    }
+  }
+  @media (min-width: 1024px) {
+    .dash-hero__inner--compact {
+      padding: 1.25rem 1.75rem;
+    }
   }
   .dash-anchors {
     display: inline-flex;

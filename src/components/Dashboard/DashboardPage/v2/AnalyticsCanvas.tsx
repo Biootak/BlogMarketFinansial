@@ -22,25 +22,15 @@
  *     keys off of to drive the view-transition cross-fade.
  */
 
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
-import Link from 'next/link';
-import dynamic from 'next/dynamic';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion } from '@/lib/motion-shim';
-import {
-  HiOutlineChartBar,
-  HiOutlineCalendarDays,
-  HiOutlineArrowLeft,
-  HiOutlineInformationCircle,
-} from 'react-icons/hi2';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
-import type { PostWithRelations } from '@/types/types';
 import { cn } from '@/lib/utils';
+import type { PostWithRelations } from '@/types/types';
+import dynamic from 'next/dynamic';
+import Link from 'next/link';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { type KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { HiOutlineArrowLeft, HiOutlineCalendarDays, HiOutlineChartBar } from 'react-icons/hi2';
 
 // Lazy-load the heavy chart + calendar — neither is needed for first paint.
 const TrafficChart = dynamic(() => import('@/components/Dashboard/DashboardPage/TrafficChart'), {
@@ -84,9 +74,7 @@ export default function AnalyticsCanvas({ scheduledPosts }: AnalyticsCanvasProps
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [tab, setTab] = useState<TabId>(
-    (searchParams?.get('tab') as TabId) || 'traffic',
-  );
+  const [tab, setTab] = useState<TabId>((searchParams?.get('tab') as TabId) || 'traffic');
   const [period, setPeriod] = useState<PeriodId>(
     ((searchParams?.get('period') as PeriodId) || '7d') as PeriodId,
   );
@@ -94,20 +82,16 @@ export default function AnalyticsCanvas({ scheduledPosts }: AnalyticsCanvasProps
   // Wraps a state change in `document.startViewTransition` when available so
   // the global .dash-vt CSS animation can take over. Declared above any
   // effect that uses it so the closure never hits a temporal dead zone.
-  const vt = useCallback(
-    (fn: () => void) => {
-      const doc = typeof document !== 'undefined' ? document : null;
-      const startVT =
-        (doc as Document & { startViewTransition?: (cb: () => void) => unknown })
-          ?.startViewTransition;
-      if (typeof startVT === 'function') {
-        startVT.call(doc, fn);
-      } else {
-        fn();
-      }
-    },
-    [],
-  );
+  const vt = useCallback((fn: () => void) => {
+    const doc = typeof document !== 'undefined' ? document : null;
+    const startVT = (doc as Document & { startViewTransition?: (cb: () => void) => unknown })
+      ?.startViewTransition;
+    if (typeof startVT === 'function') {
+      startVT.call(doc, fn);
+    } else {
+      fn();
+    }
+  }, []);
 
   // Cross-component bridge: HeroSection's "تقویم" shortcut dispatches
   // `dash:set-analytics-tab` so the user can hop directly to the publishing
@@ -185,7 +169,10 @@ export default function AnalyticsCanvas({ scheduledPosts }: AnalyticsCanvasProps
     >
       <header className="px-4 sm:px-5 md:px-7 py-4 sm:py-5 border-b border-slate-100 dark:border-slate-800 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
-          <span className="dash-ico dash-ico--violet w-10 h-10 sm:w-11 sm:h-11 shrink-0" aria-hidden>
+          <span
+            className="dash-ico dash-ico--violet w-10 h-10 sm:w-11 sm:h-11 shrink-0"
+            aria-hidden
+          >
             <HiOutlineChartBar className="w-5 h-5" />
           </span>
           <div className="min-w-0">
@@ -260,31 +247,11 @@ export default function AnalyticsCanvas({ scheduledPosts }: AnalyticsCanvasProps
 
         <TabsContent value="traffic" className="mt-0 focus-visible:outline-none">
           <div className="dash-vt dash2-chart-reveal">
-            {period === '7d' ? (
-              <div className="p-4 sm:p-5 md:p-7">
-                <div className="h-[320px] sm:h-[380px]">
-                  <TrafficChart key={`traffic-${tab}`} />
-                </div>
+            <div className="p-4 sm:p-5 md:p-7">
+              <div className="h-[320px] sm:h-[380px]">
+                <TrafficChart key={`traffic-${tab}-${period}`} period={period} />
               </div>
-            ) : (
-              <div className="p-4 sm:p-5 md:p-7">
-                <div
-                  className="flex flex-col items-center justify-center text-center py-14 px-6 rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 ring-1 ring-slate-200/60 dark:ring-slate-700/60"
-                  role="status"
-                >
-                  <span className="dash-ico dash-ico--cyan w-12 h-12 mb-3" aria-hidden>
-                    <HiOutlineInformationCircle className="w-5 h-5" />
-                  </span>
-                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                    نمودار بازه‌ی {activePeriod.label} به‌زودی فعال می‌شود.
-                  </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm">
-                    در حال حاضر داده‌ی ۷ روز اخیر در دسترس است. برای بازه‌های
-                    بلندتر با پشتیبانی هماهنگ کنید.
-                  </p>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         </TabsContent>
 
