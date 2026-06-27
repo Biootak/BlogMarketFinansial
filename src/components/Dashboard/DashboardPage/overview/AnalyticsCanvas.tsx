@@ -205,9 +205,9 @@ export default function AnalyticsCanvas({ scheduledPosts }: AnalyticsCanvasProps
                   className={cn(
                     'inline-flex items-center justify-center min-w-[2.5rem] sm:min-w-[3rem] h-8 px-2 sm:px-3 rounded-lg text-xs font-semibold transition-colors',
                     isActive
-                      ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-white'
+                      ? 'bg-white/75 backdrop-blur-[24px] border-[0.5px] border-white/80 text-slate-900 shadow-sm dark:bg-slate-900/75 dark:text-white'
                       : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/60',
                   )}
                 >
                   {p.label}
@@ -218,7 +218,7 @@ export default function AnalyticsCanvas({ scheduledPosts }: AnalyticsCanvasProps
 
           <Link
             href="/dashboard/reports"
-            className="hidden md:inline-flex items-center gap-1.5 text-violet-600 hover:text-violet-700 dark:text-violet-400 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60 rounded-md px-2 py-1"
+            className="hidden md:inline-flex dash-link text-sm px-2 py-1"
           >
             <span>گزارش کامل</span>
             <HiOutlineArrowLeft className="w-4 h-4" />
@@ -236,7 +236,7 @@ export default function AnalyticsCanvas({ scheduledPosts }: AnalyticsCanvasProps
               <TabsTrigger
                 key={t.id}
                 value={t.id}
-                className="inline-flex items-center gap-2 px-4 h-9 rounded-lg text-sm font-semibold text-slate-600 dark:text-slate-300 transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:text-slate-900 dark:data-[state=active]:text-white data-[state=active]:shadow-sm hover:text-slate-900 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60"
+                className="inline-flex items-center gap-2 px-4 h-9 rounded-lg text-sm font-semibold text-slate-600 dark:text-slate-300 transition-all data-[state=active]:bg-white/75 data-[state=active]:backdrop-blur-[24px] data-[state=active]:border data-[state=active]:border-white/80 data-[state=active]:text-slate-900 dark:data-[state=active]:bg-slate-900/75 dark:data-[state=active]:text-white data-[state=active]:shadow-sm hover:text-slate-900 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/60"
               >
                 {t.icon}
                 <span>{t.label}</span>

@@ -56,7 +56,7 @@ type Props = {
   className?: string;
 };
 
-const AUTO_PLAY_INTERVAL = 6000; // ۶ ثانیه
+const AUTO_PLAY_INTERVAL = 8000; // ۸ ثانیه (قبلاً ۶ — کندتر برای کاهش re-render)
 
 export default function Design7({
   initialPosts,

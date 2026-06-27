@@ -6900,22 +6900,29 @@ p { line-height: var(--leading-relaxed); }
 
 @layer utilities {
   /* ---- Canvas: پس‌زمینه‌ی aurora کل ناحیه‌ی محتوا --------------------------- */
+  /* 2026-06-26: Premium glassmorphic canvas — visible lavender / indigo
+     ambient light on a smooth cool-tinted gradient. Layered with the
+     <AmbientBackground /> radial blobs (indigo / violet / cyan) for
+     atmospheric depth. Opacities dialed to 16–20% so the depth reads
+     immediately on first paint; the panes' glass layer still wins as
+     the focal element because it carries its own shadow + blur. */
   .dash-scope {
     position: relative;
     isolation: isolate;
-    color: oklch(28% 0.02 250);
+    color: oklch(25% 0.015 250);
     background:
-      radial-gradient(120% 90% at 100% -10%, oklch(70% 0.10 245 / 0.10), transparent 55%),
-      radial-gradient(110% 90% at 0% 0%, oklch(72% 0.12 165 / 0.07), transparent 50%),
-      linear-gradient(180deg, oklch(98.5% 0.004 245), oklch(96.5% 0.006 245));
+      radial-gradient(120% 90% at 95% -5%, rgba(165, 145, 255, 0.22) 0%, transparent 55%),
+      radial-gradient(110% 80% at -8% 110%, rgba(129, 140, 248, 0.20) 0%, transparent 55%),
+      radial-gradient(90% 70% at 50% 40%, rgba(196, 181, 253, 0.10) 0%, transparent 65%),
+      linear-gradient(180deg, #f4f3fa 0%, #ecebf4 100%);
   }
   .dark .dash-scope {
-    color: oklch(90% 0.01 245);
+    color: oklch(88% 0.008 245);
     background:
-      radial-gradient(120% 90% at 100% -10%, oklch(55% 0.16 255 / 0.20), transparent 55%),
-      radial-gradient(120% 100% at -5% 5%, oklch(60% 0.13 165 / 0.10), transparent 52%),
-      radial-gradient(100% 120% at 50% 120%, oklch(50% 0.14 280 / 0.12), transparent 60%),
-      linear-gradient(180deg, oklch(15% 0.02 255), oklch(10.5% 0.018 255));
+      radial-gradient(120% 90% at 95% -5%, rgba(129, 140, 248, 0.28) 0%, transparent 55%),
+      radial-gradient(110% 80% at -8% 110%, rgba(124, 58, 237, 0.22) 0%, transparent 55%),
+      radial-gradient(90% 70% at 50% 40%, rgba(99, 102, 241, 0.12) 0%, transparent 65%),
+      linear-gradient(180deg, oklch(14% 0.018 255) 0%, oklch(11% 0.015 255) 100%);
   }
   /* aurora blob های شناور داخل canvas */
   .dash-aurora {
@@ -6945,7 +6952,7 @@ p { line-height: var(--leading-relaxed); }
   .dash-aurora::after {
     inset-block-end: -18rem;
     inset-inline-start: -12rem;
-    background: radial-gradient(closest-side, oklch(68% 0.13 165 / 0.40), transparent 70%);
+    background: radial-gradient(closest-side, oklch(65% 0.14 285 / 0.35), transparent 70%);
     animation: motion-aurora-b 40s ease-in-out infinite;
   }
   .dark .dash-aurora::before { opacity: 0.55; }
@@ -7053,12 +7060,32 @@ p { line-height: var(--leading-relaxed); }
     color: #fff;
     box-shadow: 0 8px 20px -8px var(--dash-ico-glow, oklch(55% 0.16 255 / 0.6));
   }
-  .dash-ico--indigo  { background: linear-gradient(135deg, oklch(65% 0.16 270), oklch(52% 0.16 260)); --dash-ico-glow: oklch(55% 0.16 265 / 0.6); }
-  .dash-ico--emerald { background: linear-gradient(135deg, oklch(72% 0.14 165), oklch(58% 0.13 162)); --dash-ico-glow: oklch(62% 0.14 165 / 0.6); }
-  .dash-ico--cyan    { background: linear-gradient(135deg, oklch(72% 0.13 210), oklch(58% 0.13 225)); --dash-ico-glow: oklch(62% 0.13 215 / 0.6); }
-  .dash-ico--violet  { background: linear-gradient(135deg, oklch(66% 0.17 300), oklch(54% 0.16 295)); --dash-ico-glow: oklch(58% 0.16 298 / 0.6); }
-  .dash-ico--rose    { background: linear-gradient(135deg, oklch(68% 0.18 20), oklch(56% 0.17 15)); --dash-ico-glow: oklch(60% 0.18 18 / 0.6); }
-  .dash-ico--amber   { background: linear-gradient(135deg, oklch(80% 0.14 80), oklch(68% 0.14 62)); --dash-ico-glow: oklch(72% 0.14 70 / 0.6); }
+  .dash-ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.625rem;
+    color: oklch(45% 0.02 250);
+    transition: transform 200ms ease;
+  }
+  .dash-pane:hover .dash-ico {
+    transform: scale(1.05);
+  }
+  /* 2026-06-26: unified icon palette — subtle tinted backgrounds instead
+     of rainbow gradients. All icons use the same brand color family with
+     only the hue tint varying slightly, giving a cohesive professional look. */
+  .dash-ico--indigo  { background: oklch(95% 0.02 270 / 0.8); color: oklch(45% 0.16 270); }
+  .dash-ico--emerald { background: oklch(95% 0.02 165 / 0.8); color: oklch(42% 0.14 165); }
+  .dash-ico--cyan    { background: oklch(95% 0.02 210 / 0.8); color: oklch(42% 0.13 210); }
+  .dash-ico--violet  { background: oklch(95% 0.02 300 / 0.8); color: oklch(42% 0.16 300); }
+  .dash-ico--rose    { background: oklch(95% 0.02 20 / 0.8);  color: oklch(42% 0.18 20); }
+  .dash-ico--amber   { background: oklch(95% 0.02 80 / 0.8);  color: oklch(48% 0.14 80); }
+  .dark .dash-ico--indigo  { background: oklch(28% 0.03 270 / 0.5); color: oklch(72% 0.14 270); }
+  .dark .dash-ico--emerald { background: oklch(28% 0.03 165 / 0.5); color: oklch(72% 0.12 165); }
+  .dark .dash-ico--cyan    { background: oklch(28% 0.03 210 / 0.5); color: oklch(72% 0.11 210); }
+  .dark .dash-ico--violet  { background: oklch(28% 0.03 300 / 0.5); color: oklch(72% 0.14 300); }
+  .dark .dash-ico--rose    { background: oklch(28% 0.03 20 / 0.5);  color: oklch(72% 0.16 20); }
+  .dark .dash-ico--amber   { background: oklch(28% 0.03 80 / 0.5);  color: oklch(75% 0.12 80); }
 
   /* trend pill */
   .dash-trend {
@@ -7067,10 +7094,11 @@ p { line-height: var(--leading-relaxed); }
     gap: 0.25rem;
     padding: 0.2rem 0.55rem;
     border-radius: 9999px;
-    font-size: 0.7rem;
+    font-size: 0.625rem;
     font-weight: 700;
     line-height: 1;
     font-variant-numeric: tabular-nums;
+    transition: transform 200ms ease;
   }
   .dash-trend--up   { color: oklch(52% 0.14 162); background: oklch(72% 0.14 165 / 0.14); }
   .dash-trend--down { color: oklch(55% 0.17 18);  background: oklch(68% 0.18 20 / 0.14); }
@@ -7177,7 +7205,7 @@ p { line-height: var(--leading-relaxed); }
   .dash-shell {
     display: grid;
     gap: 0.625rem;
-    align-items: start;
+    align-items: stretch;
     grid-template-columns: minmax(0, 1fr);
     max-width: 1600px;
     margin-inline: auto;
@@ -7226,11 +7254,10 @@ p { line-height: var(--leading-relaxed); }
       gap: 1.25rem;
     }
   }
-  @container (min-width: 1024px) {
-    .dash-shell {
-      grid-template-columns: minmax(0, 1fr) clamp(260px, 20vw, 320px);
-    }
-  }
+  /* 2026-06-26: حذف قانون @container قدیمی که گرید ۱۲ ستونی bento را
+     به ۲ ستون (main+sidebar) تبدیل می‌کرد و با span ها تداخل داشت.
+     این قانون از لایه‌بندی قبلی [main|rail] باقی مانده بود و باعث
+     می‌شد کارت‌ها به‌جای قرار گرفتن در ۱۲ ستون، در ۲ ستون شکسته شوند. */
 
   /* ---- Workspace toolbar (sticky contextual bar) ------------------------- */
   .dash-toolbar {
@@ -7970,13 +7997,13 @@ p { line-height: var(--leading-relaxed); }
     font-size: 0.6875rem;
     font-weight: 700;
     letter-spacing: 0.02em;
-    color: oklch(40% 0.02 250);
+    color: rgb(100, 116, 139); /* text-slate-500 */
     white-space: nowrap;
   }
   .dark .dash-pane__chip {
     background: oklch(28% 0.02 250 / 0.55);
     border-color: oklch(38% 0.02 250 / 0.7);
-    color: oklch(85% 0.02 245);
+    color: rgb(148, 163, 184); /* text-slate-400 */
   }
 
   /* ---- Persistent header (2026) ------------------------------------------
@@ -8587,36 +8614,65 @@ p { line-height: var(--leading-relaxed); }
     .dash-bento2 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
   }
 
-  /* ---- Pane: the universal card ------------------------------------------ */
+  /* ---- Pane: the universal card — 2026 minimal redesign ------------------ */
+  /* 2026-06-26 (round 2): aligned to the strict 2026 spec —
+       bg-white/45 backdrop-blur-[24px] border-[0.5px] border-white/60
+       shadow-[0_8px_32px_0_rgba(31,38,135,0.03)].
+     Inner highlight (1px inset top edge light) added on top for the
+     Linear-style "edge light" effect, hover affordance strengthened so
+     the card visibly lifts and glows on mouse-over. */
   .dash-pane {
     position: relative;
     display: grid;
-    gap: 0.5rem;
-    padding: 0.875rem;
-    border-radius: var(--ds-radius-xl);
-    background: linear-gradient(180deg, oklch(100% 0 0 / 0.92), oklch(99% 0.003 245 / 0.78));
-    border: 1px solid oklch(90% 0.006 245 / 0.85);
+    gap: 0.625rem;
+    padding: 1.25rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border: 0.5px solid rgba(255, 255, 255, 0.60);
     box-shadow:
-      0 1px 0 oklch(100% 0 0 / 0.7) inset,
-      0 14px 30px -24px oklch(45% 0.08 255 / 0.28);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+      0 1px 0 oklch(100% 0 0 / 0.85) inset,
+      0 8px 32px 0 rgba(31, 38, 135, 0.03),
+      0 2px 8px -2px rgba(31, 38, 135, 0.04);
     content-visibility: auto;
-    contain-intrinsic-size: 8rem;
-    transition:
-      border-color var(--ds-duration-base) var(--ds-ease-out-quart),
-      transform var(--ds-duration-base) var(--ds-ease-out-quart),
-      box-shadow var(--ds-duration-base) var(--ds-ease-out-quart);
+    contain-intrinsic-size: auto 8rem;
+    height: 100%;
+    transition: box-shadow 240ms ease, transform 240ms ease, border-color 240ms ease;
+  }
+  .dash-pane:hover {
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.95) inset,
+      0 12px 36px -6px oklch(45% 0.12 270 / 0.18),
+      0 4px 12px -2px oklch(45% 0.12 270 / 0.10);
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.85);
   }
   .dark .dash-pane {
-    background: linear-gradient(180deg, oklch(20% 0.018 255 / 0.7), oklch(16% 0.016 255 / 0.6));
-    border-color: oklch(34% 0.02 255 / 0.7);
+    background: rgba(15, 23, 42, 0.45);
+    border-color: rgba(255, 255, 255, 0.08);
     box-shadow:
-      0 1px 0 oklch(100% 0 0 / 0.04) inset,
-      0 24px 50px -30px oklch(0% 0 0 / 0.75);
+      0 1px 0 oklch(100% 0 0 / 0.06) inset,
+      0 8px 32px 0 rgba(0, 0, 0, 0.25),
+      0 2px 8px -2px rgba(0, 0, 0, 0.15);
+  }
+  .dark .dash-pane:hover {
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.10) inset,
+      0 12px 36px -6px oklch(0% 0 0 / 0.45),
+      0 4px 12px -2px oklch(0% 0 0 / 0.30);
+    border-color: rgba(255, 255, 255, 0.14);
   }
   @media (min-width: 640px) {
-    .dash-pane { padding: 1.125rem; gap: 0.625rem; }
+    .dash-pane { padding: 1.5rem; gap: 0.875rem; }
+  }
+
+  .dash-shell > div {
+    min-width: 0;
+    min-height: 0;
+  }
+  @media (min-width: 1024px) {
+    .dash-shell > div { height: 100%; }
   }
   .dash-pane--compact {
     grid-column: span 2;
@@ -8654,10 +8710,10 @@ p { line-height: var(--leading-relaxed); }
 
   /* Subtle hover affordance - panels never move more than 2px */
   .dash-pane:hover {
-    border-color: oklch(82% 0.012 245 / 0.9);
+    border-color: rgba(255, 255, 255, 0.8);
   }
   .dark .dash-pane:hover {
-    border-color: oklch(42% 0.02 255 / 0.85);
+    border-color: rgba(255, 255, 255, 0.10);
   }
 
   .dash-pane__head {
@@ -8676,9 +8732,9 @@ p { line-height: var(--leading-relaxed); }
   }
   .dark .dash-pane__title { color: oklch(95% 0.005 245); }
   .dash-pane__title-text {
-    font-size: 0.875rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
+    font-size: 0.8125rem;
+    font-weight: 800;
+    letter-spacing: -0.015em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -8687,24 +8743,25 @@ p { line-height: var(--leading-relaxed); }
     .dash-pane__title-text { font-size: 0.9375rem; }
   }
   .dash-pane__value {
-    font-size: 1.5rem;
-    font-weight: 800;
-    letter-spacing: -0.025em;
+    font-size: 1.625rem;
+    font-weight: 900;
+    letter-spacing: -0.03em;
     line-height: 1.05;
-    color: oklch(22% 0.02 255);
+    color: oklch(20% 0.02 255);
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum", "lnum";
   }
-  .dark .dash-pane__value { color: oklch(95% 0.005 245); }
+  .dark .dash-pane__value { color: oklch(96% 0.005 245); }
   @media (min-width: 640px) {
-    .dash-pane__value { font-size: 1.75rem; }
+    .dash-pane__value { font-size: 2rem; }
   }
   .dash-pane__sub {
-    font-size: 0.75rem;
-    color: oklch(50% 0.01 245);
+    font-size: 0.6875rem;
+    color: rgb(100 116 139 / 0.90); /* text-slate-500/90 — refined hierarchy */
     font-variant-numeric: tabular-nums;
+    font-weight: 500;
   }
-  .dark .dash-pane__sub { color: oklch(70% 0.01 245); }
+  .dark .dash-pane__sub { color: rgb(148 163 184 / 0.90); /* text-slate-400/90 */ }
 
   /* ---- Divider (used inside panes) ---------------------------------------- */
   .dash-divider {
@@ -8767,10 +8824,10 @@ p { line-height: var(--leading-relaxed); }
     transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
   }
   .dash-cardlink:hover {
-    background: oklch(96% 0.004 245 / 0.75);
+    background: rgba(255, 255, 255, 0.60);
   }
   .dark .dash-cardlink:hover {
-    background: oklch(26% 0.014 250 / 0.55);
+    background: rgba(15, 23, 42, 0.35);
   }
   .dash-cardlink:focus-visible {
     outline: 2px solid oklch(72% 0.13 210);
@@ -8793,11 +8850,11 @@ p { line-height: var(--leading-relaxed); }
     align-items: center;
     gap: 0.4rem;
     font-size: 0.6875rem;
-    color: oklch(55% 0.01 245);
+    color: rgb(100 116 139 / 0.90); /* text-slate-500/90 — refined hierarchy */
     font-variant-numeric: tabular-nums;
     margin-top: 0.25rem;
   }
-  .dark .dash-cardlink__meta { color: oklch(70% 0.01 245); }
+  .dark .dash-cardlink__meta { color: rgb(148 163 184 / 0.90); /* text-slate-400/90 */ }
   .dash-cardlink__dot {
     width: 3px;
     height: 3px;
@@ -8868,15 +8925,13 @@ p { line-height: var(--leading-relaxed); }
     position: relative;
     overflow: hidden;
     isolation: isolate;
-    border-radius: var(--ds-radius-2xl);
+    border-radius: 1rem;
     color: oklch(96% 0.005 245);
     background:
-      radial-gradient(120% 100% at 100% -10%, oklch(60% 0.18 280 / 0.45), transparent 60%),
-      radial-gradient(120% 100% at 0% 110%, oklch(58% 0.14 165 / 0.30), transparent 60%),
-      linear-gradient(135deg, oklch(22% 0.05 270), oklch(18% 0.045 260) 60%, oklch(15% 0.04 255));
-    box-shadow:
-      0 1px 0 oklch(100% 0 0 / 0.08) inset,
-      0 30px 60px -28px oklch(45% 0.18 280 / 0.50);
+      radial-gradient(120% 100% at 100% -10%, oklch(55% 0.15 270 / 0.35), transparent 60%),
+      radial-gradient(120% 100% at 0% 110%, oklch(52% 0.12 165 / 0.20), transparent 60%),
+      linear-gradient(135deg, oklch(20% 0.04 270), oklch(16% 0.035 260) 60%, oklch(13% 0.03 255));
+    box-shadow: 0 1px 3px 0 oklch(0% 0 0 / 0.08), 0 1px 2px -1px oklch(0% 0 0 / 0.06);
   }
   .dash-hero::before {
     content: "";
@@ -8917,16 +8972,17 @@ p { line-height: var(--leading-relaxed); }
   }
   .dash-hero__headline {
     font-size: clamp(1.25rem, 5vw, 2.25rem);
-    font-weight: 800;
+    font-weight: 900;
     line-height: 1.1;
-    letter-spacing: -0.025em;
+    letter-spacing: -0.03em;
     color: oklch(98% 0.005 245);
     margin: 0;
   }
   .dash-hero__sub {
-    font-size: clamp(0.875rem, 1.6vw, 0.9375rem);
+    font-size: clamp(0.75rem, 1.4vw, 0.8125rem);
     line-height: 1.6;
-    color: oklch(85% 0.01 245);
+    color: oklch(75% 0.008 245);
+    font-weight: 500;
     max-width: 38rem;
   }
   .dash-hero__stat {
@@ -8934,10 +8990,14 @@ p { line-height: var(--leading-relaxed); }
     gap: 0.5rem;
     padding: 1rem;
     border-radius: var(--ds-radius-xl);
-    background: linear-gradient(180deg, oklch(100% 0 0 / 0.08), oklch(100% 0 0 / 0.02));
-    border: 1px solid oklch(100% 0 0 / 0.10);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background:
+      linear-gradient(180deg, oklch(100% 0 0 / 0.14), oklch(100% 0 0 / 0.04));
+    border: 1px solid oklch(100% 0 0 / 0.18);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.25) inset,
+      0 8px 24px -12px rgba(0, 0, 0, 0.30);
   }
   @media (min-width: 1024px) {
     .dash-hero__stat { padding: 1.25rem; }
@@ -9111,6 +9171,210 @@ p { line-height: var(--leading-relaxed); }
   /* ---- Print: hide redesigned chrome ------------------------------------ */
   @media print{ .dash2-pageheader, .dash2-toolbar, .dash2-ambient, .dash2-noise{ display:none !important; } .dash2-page, .dash2-section, .dash2-card, .dash2-statcard{ border-color: oklch(85% 0 0) !important; box-shadow: none !important; background: white !important; } }
 
+  /* ---- Chunk 1 overrides: glass + monochrome neutralization ------------ */
+  /* These rules intentionally live in the June 24 block (later in the same
+     @layer utilities) so they cascade over the Aurora/June-22 definitions
+     above without touching those files. */
+
+  /* 1.4 Nested panel fill utility — used by inline cards inside .dash-pane */
+  .dash-pane__fill {
+    background: rgba(255, 255, 255, 0.8);
+    border: 0.5px solid rgba(255, 255, 255, 0.8);
+    border-radius: var(--ds-radius-lg, 0.625rem);
+  }
+  .dark .dash-pane__fill {
+    background: rgba(15, 23, 42, 0.55);
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  /* 1.5 Icon neutralization — collapses all hue variants to a single slate */
+  .dash-ico {
+    background: rgba(51, 65, 85, 0.10); /* slate-700/10 */
+    color: rgba(51, 65, 85, 0.80);      /* slate-700/80 */
+  }
+  .dark .dash-ico {
+    background: rgba(148, 163, 184, 0.12); /* slate-400/12 */
+    color: rgba(203, 213, 225, 0.85);      /* slate-300/85 */
+  }
+
+  .dash-ico--indigo,
+  .dash-ico--emerald,
+  .dash-ico--cyan,
+  .dash-ico--violet,
+  .dash-ico--rose,
+  .dash-ico--amber {
+    background: rgba(51, 65, 85, 0.10);
+    color: rgba(51, 65, 85, 0.80);
+  }
+  .dark .dash-ico--indigo,
+  .dark .dash-ico--emerald,
+  .dark .dash-ico--cyan,
+  .dark .dash-ico--violet,
+  .dark .dash-ico--rose,
+  .dark .dash-ico--amber {
+    background: rgba(148, 163, 184, 0.12);
+    color: rgba(203, 213, 225, 0.85);
+  }
+
+  /* 1.6 Trend pill neutralization — semantic meaning lives in the arrow icon,
+     not in pill color. */
+  .dash-trend--up,
+  .dash-trend--down,
+  .dash-trend--flat {
+    color: rgba(51, 65, 85, 0.80);
+    background: rgba(100, 116, 139, 0.10);
+  }
+  .dark .dash-trend--up,
+  .dark .dash-trend--down,
+  .dark .dash-trend--flat {
+    color: rgba(203, 213, 225, 0.85);
+    background: rgba(148, 163, 184, 0.12);
+  }
+
+  /* 1.7 Status pill — monochrome backing replaces the rainbow
+     emerald/amber/rose/cyan/indigo backgrounds that previously lived inline
+     on KPI badges, SystemHealth, ScheduledRail, ActivityRail, and the
+     editorial chrome. Semantic state is carried by the leading icon + label
+     (per the June 24 trend-pill rationale), not by hue. The pill stays
+     visually quiet so the dashboard reads as editorial, not as a status log. */
+  .dash-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding-inline: 0.5rem;
+    padding-block: 0.25rem;
+    border-radius: 9999px;
+    font-size: 0.6875rem; /* 11px — sub-label tier per spec */
+    font-weight: 600;
+    line-height: 1;
+    color: rgba(51, 65, 85, 0.85); /* slate-700/85 */
+    background: rgba(100, 116, 139, 0.10); /* slate-500/10 */
+    border: 0.5px solid rgba(100, 116, 139, 0.18);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    transition: background-color var(--ds-duration-fast) var(--ds-ease-out-expo);
+  }
+  .dark .dash-status {
+    color: rgba(203, 213, 225, 0.85); /* slate-300/85 */
+    background: rgba(148, 163, 184, 0.10); /* slate-400/10 */
+    border-color: rgba(148, 163, 184, 0.18);
+  }
+  .dash-status[data-tone="ok"]   { font-weight: 700; }
+  .dash-status[data-tone="fail"] {
+    background: rgba(51, 65, 85, 0.14);
+    border-color: rgba(51, 65, 85, 0.24);
+  }
+  .dark .dash-status[data-tone="fail"] {
+    background: rgba(203, 213, 225, 0.14);
+    border-color: rgba(203, 213, 225, 0.24);
+  }
+  .dash-status[data-tone="muted"] {
+    color: rgba(100, 116, 139, 0.75);
+    background: transparent;
+    border-color: rgba(100, 116, 139, 0.18);
+  }
+  .dark .dash-status[data-tone="muted"] {
+    color: rgba(148, 163, 184, 0.75);
+    border-color: rgba(148, 163, 184, 0.18);
+  }
+
+  /* 1.8 Status dot — kept semantic. Dots are tiny state indicators (≤8px)
+     and removing their hue would erase operational meaning (DB ok vs DB
+     fail). The pill BACKGROUND is neutralized (above) but the DOT retains
+     a controlled palette drawn from a single brand family (emerald for ok,
+     amber for stale/warn, rose for fail, indigo for info, slate-500 for
+     neutral). Mirrors the Linear/Resend pattern. */
+  .dash-status-dot {
+    display: inline-block;
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    border-radius: 9999px;
+    background: rgba(100, 116, 139, 0.55);
+    flex-shrink: 0;
+  }
+  .dash-status-dot[data-tone="ok"]      { background: oklch(58% 0.13 162); }
+  .dash-status-dot[data-tone="emerald"] { background: oklch(58% 0.13 162); }
+  .dash-status-dot[data-tone="warn"]    { background: oklch(70% 0.13 75); }
+  .dash-status-dot[data-tone="stale"]   { background: oklch(70% 0.13 75); }
+  .dash-status-dot[data-tone="amber"]   { background: oklch(70% 0.13 75); }
+  .dash-status-dot[data-tone="fail"]    { background: oklch(60% 0.18 25); }
+  .dash-status-dot[data-tone="rose"]    { background: oklch(60% 0.18 25); }
+  .dash-status-dot[data-tone="info"]    { background: oklch(58% 0.14 250); }
+  .dash-status-dot[data-tone="indigo"]  { background: oklch(58% 0.14 250); }
+  .dash-status-dot[data-tone="violet"]  { background: oklch(58% 0.16 300); }
+  .dash-status-dot[data-tone="cyan"]    { background: oklch(60% 0.13 210); }
+  .dash-status-dot[data-tone="neutral"] { background: rgba(100, 116, 139, 0.55); }
+  .dash-status-dot--lg {
+    inline-size: 0.875rem;
+    block-size: 0.875rem;
+    border: 2px solid var(--ds-color-side, white);
+    inset-block-end: -2px;
+    inset-inline-start: -2px;
+    position: absolute;
+  }
+
+  /* 1.9 Monochrome link — replaces the rainbow text-violet/text-emerald/
+     text-cyan link tones previously applied to "view all" / "see more"
+     affordances in ActivityRail, AnalyticsCanvas, PostsSpotlight, and
+     ScheduledRail. The active sidebar spotlight is governed by
+     .dash-side__spotlight (not by this utility). */
+  .dash-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: rgba(51, 65, 85, 0.80); /* slate-700/80 — spec literal */
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 0.25rem;
+    transition: color var(--ds-duration-fast) var(--ds-ease-out-expo);
+  }
+  .dash-link:hover { color: rgba(15, 23, 42, 1); }
+  .dark .dash-link { color: rgba(203, 213, 225, 0.85); }
+  .dark .dash-link:hover { color: rgba(248, 250, 252, 1); }
+  .dash-link:focus-visible {
+    outline: 2px solid var(--ds-color-blue, oklch(72% 0.13 210));
+    outline-offset: 2px;
+  }
+
+  /* 1.10 KPI micro-icon tile — uniform dark-slate icon container.
+     Companion to §1.5: collapses the rainbow `.dash-ico--*` hue variants
+     into a single 28px slate tile so KPI metrics read as a family. */
+  .dash-kpi-ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+    border-radius: 0.625rem;
+    background: rgba(51, 65, 85, 0.08);
+    color: rgba(51, 65, 85, 0.80);
+    border: 0.5px solid rgba(51, 65, 85, 0.10);
+    flex-shrink: 0;
+  }
+  .dark .dash-kpi-ico {
+    background: rgba(148, 163, 184, 0.10);
+    color: rgba(203, 213, 225, 0.85);
+    border-color: rgba(148, 163, 184, 0.12);
+  }
+  .dash-kpi-ico--lg {
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
+  }
+
+  /* 1.11 Meta line — strict micro-typography tier for timestamps, counters,
+     sub-labels, and date stamps. Forces the hierarchy called out in §3:
+     bold headings stand out, metadata retreats. text-[11px] / text-slate-500
+     are the spec literal. Tabular nums enforced so Persian digit columns
+     align. */
+  .dash-meta {
+    font-size: 0.6875rem; /* 11px */
+    line-height: 1.3;
+    color: rgb(100 116 139 / 0.90); /* text-slate-500/90 — refined hierarchy */
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .dark .dash-meta { color: rgb(148 163 184 / 0.90); } /* text-slate-400/90 */
+
 } /* end @layer utilities */
 
 /* ---- Foundation component layer (chunk 1 primitives) --------------------- */
@@ -9145,17 +9409,36 @@ p { line-height: var(--leading-relaxed); }
 
 .dash-side {
   /* Desktop: flex child of the dashboard shell — no fixed positioning.
-     Mobile: switches to fixed overlay (drawer) via the data-state below. */
+     Mobile: switches to fixed overlay (drawer) via the data-state below.
+     2026-06-26: backdrop upgraded to a layered glass — vertical gradient
+     with a faint lavender wash at the top edge (echoes the ambient blobs)
+     plus a backdrop-blur so the aurora behind it reads through subtly. */
   position: relative;
   z-index: 40;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  background: var(--ds-color-side);
-  border-inline-end: 1px solid var(--ds-color-border-subtle);
+  background:
+    linear-gradient(180deg, rgba(165, 145, 255, 0.08) 0%, transparent 22%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78) 0%, rgba(248, 248, 252, 0.72) 100%);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border-inline-end: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow:
+    1px 0 0 oklch(100% 0 0 / 0.6) inset,
+    4px 0 24px -8px rgba(31, 38, 135, 0.06);
   transition: width 320ms var(--ds-ease-out-expo);
   overflow: visible;
   contain: layout paint;
+}
+.dark .dash-side {
+  background:
+    linear-gradient(180deg, rgba(129, 140, 248, 0.12) 0%, transparent 22%),
+    linear-gradient(180deg, rgba(20, 24, 38, 0.72) 0%, rgba(15, 18, 30, 0.68) 100%);
+  border-inline-end: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    1px 0 0 oklch(100% 0 0 / 0.06) inset,
+    4px 0 24px -8px rgba(0, 0, 0, 0.30);
 }
 
 .dash-side[data-state="expanded"] { width: var(--ds-side-w-expanded); --side-w: var(--ds-side-w-expanded); }
@@ -9398,15 +9681,22 @@ p { line-height: var(--leading-relaxed); }
 .dash-side__nav::-webkit-scrollbar-thumb { background: var(--ds-color-border-default); border-radius: 9999px; }
 
 /* Sliding spotlight behind the active item. Position is driven by inline
-   styles set from React after measuring the active DOM node. */
+   styles set from React after measuring the active DOM node.
+   2026-06-26: aligned to the active-link spec — clean white capsule with a
+   soft micro-shadow (`shadow-sm`). The two-layer shadow matches Tailwind's
+   `shadow-sm` literally so the active state reads as the same family used
+   elsewhere in the dashboard, not a custom chrome accent. */
 .dash-side__spotlight {
   position: absolute;
   inset-inline: 0.5rem;
   top: var(--spotlight-top, 0);
   block-size: var(--spotlight-height, 2.25rem);
   border-radius: var(--ds-radius-md);
-  background: var(--ds-color-side-active-bg);
-  border: 1px solid oklch(70% 0.08 250 / 0.12);
+  background: rgba(255, 255, 255, 1); /* clean white capsule — spec literal */
+  border: 0.5px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    0 1px 3px 0 rgb(15 23 42 / 0.08),
+    0 1px 2px -1px rgb(15 23 42 / 0.06);
   pointer-events: none;
   z-index: 0;
   transition:
@@ -9415,8 +9705,11 @@ p { line-height: var(--leading-relaxed); }
     opacity 160ms var(--ds-ease-out-expo);
 }
 .dark .dash-side__spotlight {
-  background: var(--ds-color-side-active-bg);
-  border-color: oklch(55% 0.06 250 / 0.18);
+  background: rgba(30, 41, 59, 0.85); /* slate-800/85 */
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 1px 3px 0 rgb(0 0 0 / 0.20),
+    0 1px 2px -1px rgb(0 0 0 / 0.12);
 }
 .dash-side[data-state="rail"] .dash-side__spotlight {
   inset-inline: 0.5rem;
@@ -9492,13 +9785,19 @@ p { line-height: var(--leading-relaxed); }
   block-size: 1.75rem;
   flex: 0 0 auto;
   border-radius: var(--ds-radius-md);
-  color: currentColor;
+  /* 2026-06-26: unified dark slate per spec — all sidebar structural icons
+     use text-slate-700/80 (light) / slate-300/85 (dark), regardless of
+     active state. The active state is communicated by the white spotlight
+     capsule, not by icon color shift. */
+  color: rgba(51, 65, 85, 0.80); /* text-slate-700/80 — spec literal */
   transition: transform 180ms var(--ds-ease-spring), background-color 180ms var(--ds-ease-out-expo);
 }
-.dash-side__item:hover .dash-side__item-ico { transform: scale(1.08); }
-.dash-side__item[data-active="true"] .dash-side__item-ico {
-  color: oklch(55% 0.18 245);
+.dark .dash-side__item-ico {
+  color: rgba(203, 213, 225, 0.85); /* slate-300/85 */
 }
+.dash-side__item:hover .dash-side__item-ico { transform: scale(1.08); }
+/* Active-state icon color rule removed — spotlight capsule carries the
+   active signal, so the icon stays at the unified slate-700/80. */
 .dash-side__item-label {
   flex: 1 1 auto;
   min-inline-size: 0;

@@ -130,7 +130,7 @@ export default function HeroSection() {
               type="button"
               className={cn(
                 'group inline-flex items-center gap-2.5 ps-2.5 pe-3.5 h-11 rounded-xl font-semibold text-sm text-white',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[oklch(18%_0.045_260)]',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[oklch(18%_0.045_260)]',
                 '!hover:scale-100 active:!scale-100',
               )}
               style={{
@@ -232,7 +232,7 @@ function Shortcut({ icon, label, hint, onClick }: ShortcutProps) {
     <button
       type="button"
       onClick={onClick}
-      className="group inline-flex items-center gap-2 px-3.5 h-11 rounded-xl text-sm font-medium text-white/85 bg-white/[0.05] hover:bg-white/[0.10] ring-1 ring-white/10 hover:ring-white/20 backdrop-blur-md transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70"
+      className="group inline-flex items-center gap-2 px-3.5 h-11 rounded-xl text-sm font-medium text-white/85 bg-white/[0.05] hover:bg-white/[0.10] ring-1 ring-white/10 hover:ring-white/20 backdrop-blur-md transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 cursor-pointer"
     >
       <span className="text-white/70 group-hover:text-white transition-colors">{icon}</span>
       <span>{label}</span>

@@ -179,7 +179,7 @@ export default function PostsSpotlight({ popularPosts, recentDrafts }: PostsSpot
 
         <Link
           href="/dashboard/posts"
-          className="inline-flex items-center gap-1.5 text-violet-600 hover:text-violet-700 dark:text-violet-400 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60 rounded-md px-2 py-1"
+          className="dash-link text-sm px-2 py-1"
         >
           <span>همه پست‌ها</span>
           <HiOutlineArrowLeft className="w-4 h-4" />
@@ -225,7 +225,7 @@ export default function PostsSpotlight({ popularPosts, recentDrafts }: PostsSpot
         {featured.length > 0 && (
           <div className="px-4 sm:px-5 md:px-7 pt-5">
             <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3 inline-flex items-center gap-1.5">
-              <HiOutlineSparkles className="w-4 h-4 text-violet-500" />
+              <HiOutlineSparkles className="w-4 h-4 text-slate-500" />
               <span>ویژه‌ی این هفته</span>
             </h3>
             <ul className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -242,18 +242,18 @@ export default function PostsSpotlight({ popularPosts, recentDrafts }: PostsSpot
                 >
                   <Link
                     href={`/single/${post.slug}`}
-                    className="group relative block h-full rounded-2xl border border-slate-200/70 dark:border-slate-700/70 bg-gradient-to-br from-slate-50 to-white dark:from-slate-800/40 dark:to-slate-800/10 p-4 transition-[border-color,box-shadow] duration-200 hover:border-violet-300/70 dark:hover:border-violet-500/40 hover:shadow-lg hover:shadow-violet-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60"
+                    className="group relative block h-full rounded-2xl border border-slate-200/70 dark:border-slate-700/70 bg-gradient-to-br from-slate-50 to-white dark:from-slate-800/40 dark:to-slate-800/10 p-4 transition-[border-color,box-shadow] duration-200 hover:border-slate-300/80 dark:hover:border-slate-600/60 hover:shadow-lg hover:shadow-slate-900/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/60"
                   >
                     <div className="flex items-center justify-between mb-3">
-                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow">
+                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold bg-gradient-to-br from-slate-700 to-slate-900 dark:from-slate-200 dark:to-slate-400 text-white dark:text-slate-900 shadow">
                         {i + 1}
                       </span>
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-700 dark:text-violet-300 tabular-nums">
+                      <span className="inline-flex items-center gap-1 dash-meta font-semibold">
                         <HiOutlineEye className="w-3 h-3" />
                         {post.views.toLocaleString('fa-IR')}
                       </span>
                     </div>
-                    <p className="font-semibold text-sm text-slate-900 dark:text-white line-clamp-2 group-hover:text-violet-700 dark:group-hover:text-violet-300 transition-colors">
+                    <p className="font-semibold text-sm text-slate-900 dark:text-white line-clamp-2 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">
                       {post.title}
                     </p>
                     <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 tabular-nums">
@@ -301,7 +301,7 @@ export default function PostsSpotlight({ popularPosts, recentDrafts }: PostsSpot
                           <span className="dash-cardlink__dot" aria-hidden />
                           <span>{post.publishDate}</span>
                           <span className="dash-cardlink__dot" aria-hidden />
-                          <span className="text-violet-600 dark:text-violet-400 font-semibold">
+                          <span className="text-slate-700/80 dark:text-slate-300/85 font-semibold">
                             {post.views.toLocaleString('fa-IR')} بازدید
                           </span>
                         </p>
@@ -375,13 +375,14 @@ interface PanelProps {
 
 function Panel({ title, tone, icon, viewAllHref, hidden, children }: PanelProps) {
   if (hidden) return null;
-  const accent = tone === 'violet' ? 'dash-ico--violet' : 'dash-ico--cyan';
-  const link =
-    tone === 'violet'
-      ? 'text-violet-600 hover:text-violet-700 dark:text-violet-400 focus-visible:ring-violet-400/60'
-      : 'text-cyan-700 hover:text-cyan-800 dark:text-cyan-400 focus-visible:ring-cyan-400/60';
+  // 2026-06-26: monochrome control shift — accent + link collapsed to
+  // slate. The .dash-ico--violet / .dash-ico--cyan hue variants are
+  // already neutralized in globals.css §1.5; we keep a single class
+  // here so JSX stays declarative.
+  const accent = 'dash-ico';
+  const link = 'dash-link';
   return (
-    <article className="rounded-2xl border border-slate-200/70 dark:border-slate-700/70 overflow-hidden bg-white/60 dark:bg-slate-900/40">
+    <article className="rounded-2xl border border-slate-200/70 dark:border-slate-700/70 overflow-hidden bg-white/45 backdrop-blur-[24px] dark:bg-slate-900/45">
       <header className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
         <h4 className="text-sm font-bold text-slate-900 dark:text-white inline-flex items-center gap-2">
           <span className={`dash-ico ${accent} w-8 h-8`} aria-hidden>

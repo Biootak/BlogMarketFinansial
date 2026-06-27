@@ -40,7 +40,7 @@ export default function CompactRateBridge({
   onHoverChange,
   title = 'نرخ حواله',
   autoRotate = true,
-  rotateInterval = 3000,
+  rotateInterval = 6000,
   orderLinkBase = '/money-transfer',
 }: CompactRateBridgeProps) {
   const [internalIndex, setInternalIndex] = useState(0);

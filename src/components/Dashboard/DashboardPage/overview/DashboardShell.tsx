@@ -127,7 +127,10 @@ const DashboardShell: React.FC<DashboardShellProps> = (props) => {
         aria-label="داشبورد"
         data-density={density}
       >
-        <AmbientBackground intensity="low" />
+        {/* AmbientBackground is rendered by MainContent.tsx (single source
+            of truth) — do NOT render it here, it would double-stack the
+            blobs and double the opacity. The .dash-scope canvas + aurora
+            div above us already provide the ambient depth. */}
 
         {/* Row 0 — Toolbar strip (full width, compact) */}
         <div className="dash-span-12">

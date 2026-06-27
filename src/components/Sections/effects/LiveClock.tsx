@@ -3,7 +3,7 @@
 /**
  * LiveClock — ساعت زنده با پشتیبانی از timezone دلخواه (CSS-driven, no framer-motion)
  *
- * - به‌روزرسانی هر ثانیه با setInterval
+ * - به‌روزرسانی هر ۳۰ ثانیه (قبلاً هر ۱ ثانیه بود — باعث re-render بی‌وقفه می‌شد)
  * - استفاده از Intl.DateTimeFormat با timezone قابل تنظیم
  * - PersianDigits
  * - Pulse dot و blink colon از CSS keyframe (anim-blink, anim-liveclock-pulse)
@@ -16,6 +16,9 @@ import { cn, toPersianNumber } from '@/lib/utils';
 
 interface LiveClockProps {
   className?: string;
+  /** نمایش ثانیه — پیش‌فرض false (قبلاً true بود و هر ثانیه re-render داشت)
+   *  2026-06-26: فقط برای جلوگیری از re-render هر ۱ ثانیه.
+   *  اگه true باشد، فرکانس به ۱ ثانیه برمی‌گردد. */
   showSeconds?: boolean;
   showIcon?: boolean;
   /** منطقه‌ی زمانی (IANA). پیش‌فرض: Asia/Tehran */
@@ -42,7 +45,7 @@ function getTimeParts(
 
 export default function LiveClock({
   className,
-  showSeconds = true,
+  showSeconds = false,
   showIcon = true,
   timeZone = 'Asia/Tehran',
 }: LiveClockProps) {
@@ -59,7 +62,10 @@ export default function LiveClock({
     setMounted(true);
     const update = () => setTime(getTimeParts(showSeconds, timeZone));
     update();
-    const id = setInterval(update, 1000);
+    // 2026-06-26: قبلاً هر ۱ ثانیه آپدیت می‌شد — وقتی showSeconds=false
+    // باشد نیازی به آپدیت هر ثانیه نیست، پس ۳۰ ثانیه کافیه.
+    const interval = showSeconds ? 1000 : 30_000;
+    const id = setInterval(update, interval);
     return () => clearInterval(id);
   }, [showSeconds, timeZone]);
 

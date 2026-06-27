@@ -278,7 +278,7 @@ export default function ScheduledRail({ scheduledPosts }: ScheduledRailProps) {
               return (
                 <li key={p.id}>
                   <Link href={`/dashboard/posts/edit/${p.id}`} className="dash-cardlink !py-1.5">
-                    <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 w-14 shrink-0">
+                    <span className="dash-meta font-bold w-14 shrink-0">
                       {when ? <FormattedDate date={new Date(when)} /> : '—'}
                     </span>
                     <span className="min-w-0">
@@ -296,7 +296,7 @@ export default function ScheduledRail({ scheduledPosts }: ScheduledRailProps) {
       <footer className="pt-2 border-t border-slate-100 dark:border-slate-800">
         <Link
           href="/dashboard/posts?view=calendar"
-          className="inline-flex items-center gap-1 text-emerald-700 hover:text-emerald-800 dark:text-emerald-400 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60 rounded-md px-1"
+          className="dash-link text-xs px-1"
         >
           <span>مشاهده تقویم کامل</span>
           <HiOutlineArrowLeft className="w-3.5 h-3.5" />

@@ -282,7 +282,7 @@ export function LatestArticles({
         <MarketTicker
           initialData={initialTickerData}
           refetchAction={getCryptoTickerData}
-          pollInterval={60_000}
+          pollInterval={120_000}
           className="mb-3 sm:mb-5"
         />
       )}

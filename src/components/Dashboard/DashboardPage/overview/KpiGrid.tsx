@@ -157,13 +157,12 @@ function DeltaBadge({ trend, delta }: { trend: Trend; delta: number }) {
   const isUp = trend === 'up';
   const isDown = trend === 'down';
   const Icon = isUp ? ArrowUpRight : isDown ? ArrowDownRight : Minus;
-  const pillCls = isUp
-    ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/10'
-    : isDown
-      ? 'text-rose-700 dark:text-rose-400 bg-rose-500/10'
-      : 'text-slate-600 dark:text-slate-400 bg-slate-500/10';
+  // 2026-06-26: monochrome — semantic meaning lives in the arrow icon
+  // (ArrowUpRight / ArrowDownRight / Minus) and the +/- glyph, not in the
+  // pill color. dash-trend--{up,down,flat} collapse to a single slate tone
+  // in both light and dark modes (see globals.css §1.6).
   return (
-    <span className={cn('dash-trend text-[11px] gap-1 tabular-nums', pillCls)}>
+    <span className={cn('dash-trend dash-trend--flat text-[11px] gap-1 tabular-nums')}>
       <Icon className="w-3.5 h-3.5" aria-hidden />
       <span>{`${delta > 0 ? '+' : ''}${delta.toFixed(1)}٪`}</span>
     </span>

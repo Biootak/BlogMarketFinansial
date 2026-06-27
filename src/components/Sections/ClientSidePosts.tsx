@@ -236,7 +236,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
       <MarketTicker
         initialData={initialTickerData}
         refetchAction={getCryptoTickerData}
-        pollInterval={60_000}
+        pollInterval={120_000}
       />
 
       {/* Main panel */}

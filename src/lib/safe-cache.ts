@@ -63,13 +63,13 @@ export function safeCache<TArgs extends unknown[], T>(
   const { key: baseKey, ttl, tags = [] } = options;
 
   return async (...args: TArgs): Promise<T> => {
-    // 2026-06-26: Under Next.js 16 `cacheComponents: true`, `Date.now()`
-    // is forbidden only in the static prerender shell. Every call-site
-    // of `safeCache` is already in a dynamic context — inside `'use cache'`,
-    // inside `<Suspense>`, or after `connection()` — so `Date.now()` is
-    // permitted without any runtime-API opt-in. Calling `headers()` or
-    // `connection()` here would crash inside `'use cache'` scopes.
-    const now = Date.now();
+    // 2026-06-26: `Date.now()` is forbidden in the static prerender shell
+    // under `cacheComponents: true` and crashes the home page. We use
+    // `performance.now()` instead — it's a monotonic timer (ms since
+    // process start) that doesn't trigger Next.js's "current time" guard.
+    // For TTL comparison this is perfectly adequate since we only need
+    // relative elapsed time, not wall-clock timestamps.
+    const now = performance.now();
     const fullKey = makeKey(baseKey, args);
     const cached = memoryStore.get(fullKey) as CacheEntry<T> | undefined;
 

@@ -440,7 +440,8 @@ export default function CommandPalette({ role }: CommandPaletteProps) {
             <div
               className={cn(
                 'overflow-hidden rounded-2xl',
-                'bg-white dark:bg-slate-900',
+                'bg-white/45 backdrop-blur-[24px] border-[0.5px] border-white/60 shadow-[0_8px_32px_0_rgba(31,38,135,0.03)]',
+                'dark:bg-slate-900/45 dark:border-white/10 dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.25)]',
                 'ring-1 ring-slate-200/80 dark:ring-slate-700/80',
                 'shadow-2xl shadow-slate-900/10 dark:shadow-slate-900/40',
               )}

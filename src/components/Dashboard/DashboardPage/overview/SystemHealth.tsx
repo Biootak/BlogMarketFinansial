@@ -58,7 +58,7 @@ const INITIAL: Health = {
 };
 
 const MAX_SAMPLES = 12;
-const POLL_INTERVAL_MS = 30_000;
+const POLL_INTERVAL_MS = 120_000; // ۲ دقیقه (قبلاً ۳۰ ثانیه بود)
 const SPARKLINE_BARS = MAX_SAMPLES;
 const SPARKLINE_GROW_MS = 400;
 const SPARKLINE_STAGGER_MS = 30;
@@ -221,13 +221,26 @@ export default function SystemHealth() {
       }
     };
 
-    // Initial poll immediately, then every 30s.
+    // Initial poll immediately, then every POLL_INTERVAL_MS.
     poll();
     const interval = window.setInterval(poll, POLL_INTERVAL_MS);
+
+    // 2026-06-26: وقتی tab dashboard فعال نیست (کاربر روی tab دیگه‌ست)،
+    // polling را متوقف کن تا بار اضافی روی سرور نیاد. وقتی کاربر برگرده،
+    // یک poll فوری + interval مجدد شروع می‌شه.
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        window.clearInterval(interval);
+      } else {
+        poll();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
 
     return () => {
       aborted = true;
       window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, []);
 
@@ -306,28 +319,20 @@ export default function SystemHealth() {
           <span className="dash-pane__title-text">سلامت سیستم</span>
         </span>
         <span
-          className={cn(
-            'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tabular-nums',
-            overallTone === 'ok'
-              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
-              : overallTone === 'stale'
-                ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
-                : overallTone === 'fail'
-                  ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300'
-                  : 'bg-slate-100 text-slate-700 dark:bg-slate-800/50 dark:text-slate-300',
-          )}
+          className="dash-status"
+          data-tone={overallTone === 'ok' ? 'ok' : overallTone === 'fail' ? 'fail' : 'muted'}
           aria-live="polite"
         >
           <span
             className={cn(
-              'w-1.5 h-1.5 rounded-full',
+              'dash-status-dot',
               overallTone === 'ok'
-                ? 'bg-emerald-500'
+                ? '[background:oklch(58%_0.13_162)]'
                 : overallTone === 'stale'
-                  ? 'bg-amber-500'
+                  ? '[background:oklch(70%_0.13_75)]'
                   : overallTone === 'fail'
-                    ? 'bg-rose-500'
-                    : 'bg-slate-400 animate-pulse',
+                    ? '[background:oklch(60%_0.18_25)]'
+                    : 'animate-pulse',
             )}
           />
           {overallLabel}
@@ -344,16 +349,8 @@ export default function SystemHealth() {
             >
               <span className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200 min-w-0">
                 <span
-                  className={cn(
-                    'inline-flex items-center justify-center w-7 h-7 rounded-md shrink-0',
-                    rowTone === 'ok'
-                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
-                      : rowTone === 'stale'
-                        ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
-                        : rowTone === 'fail'
-                          ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300'
-                          : 'bg-slate-100 text-slate-500 dark:bg-slate-800/70 dark:text-slate-400',
-                  )}
+                  className="dash-kpi-ico w-7 h-7"
+                  data-tone={rowTone === 'ok' ? 'ok' : rowTone === 'fail' ? 'fail' : rowTone === 'stale' ? 'warn' : 'neutral'}
                   aria-hidden
                 >
                   {row.icon}
@@ -367,13 +364,9 @@ export default function SystemHealth() {
                 <span
                   className={cn(
                     'text-xs font-semibold tabular-nums shrink-0 text-end',
-                    rowTone === 'ok'
-                      ? 'text-emerald-700 dark:text-emerald-300'
-                      : rowTone === 'stale'
-                        ? 'text-amber-700 dark:text-amber-300'
-                        : rowTone === 'fail'
-                          ? 'text-rose-700 dark:text-rose-300'
-                          : 'text-slate-500 dark:text-slate-400',
+                    'text-slate-700/80 dark:text-slate-300/85',
+                    rowTone === 'fail' && 'text-slate-900 dark:text-white font-bold',
+                    rowTone === 'ok' && 'font-bold',
                   )}
                 >
                   {row.value}
@@ -385,13 +378,13 @@ export default function SystemHealth() {
       </ul>
 
       {health.db === 'fail' && (
-        <p className="flex items-center gap-1.5 text-[11px] text-rose-700 dark:text-rose-300 mt-1">
+        <p className="flex items-center gap-1.5 dash-meta mt-1">
           <HiOutlineExclamationTriangle className="w-3.5 h-3.5" aria-hidden />
           <span>اگر مشکل ادامه داشت، با پشتیبانی تماس بگیرید.</span>
         </p>
       )}
       {health.bazaar === 'stale' && health.db === 'ok' && (
-        <p className="flex items-center gap-1.5 text-[11px] text-amber-700 dark:text-amber-300 mt-1">
+        <p className="flex items-center gap-1.5 dash-meta mt-1">
           <HiOutlineExclamationTriangle className="w-3.5 h-3.5" aria-hidden />
           <span>کرون نرخ بازار بیش از ۳۰ دقیقه به‌روزرسانی نشده است.</span>
         </p>

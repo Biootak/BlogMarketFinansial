@@ -55,7 +55,7 @@ function formatPrice(item: MarketTickerItem): string {
 export default function MarketTicker({
   initialData = [],
   className,
-  pollInterval = 60_000,
+  pollInterval = 120_000,
   refetchAction,
 }: MarketTickerProps) {
   const [data, setData] = useState<MarketTickerItem[]>(initialData);

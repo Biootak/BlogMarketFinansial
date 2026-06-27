@@ -72,11 +72,23 @@ function actionTone(action: string): 'violet' | 'cyan' | 'emerald' | 'amber' | '
 }
 
 const TONE_DOT: Record<ReturnType<typeof actionTone>, string> = {
-  violet: 'bg-violet-500',
-  cyan: 'bg-cyan-500',
-  emerald: 'bg-emerald-500',
-  amber: 'bg-amber-500',
-  rose: 'bg-rose-500',
+  // 2026-06-26: monochrome dot mapping — each tone now points to a
+  // .dash-status-dot[data-tone="..."] rule (defined in globals.css §1.8).
+  // The semantic dot color is retained for state communication, but the
+  // pill / link / icon chrome around it is neutralized separately.
+  violet: 'dash-status-dot',
+  cyan: 'dash-status-dot',
+  emerald: 'dash-status-dot',
+  amber: 'dash-status-dot',
+  rose: 'dash-status-dot',
+};
+
+const TONE_DOT_DATA: Record<ReturnType<typeof actionTone>, 'violet' | 'cyan' | 'emerald' | 'amber' | 'rose'> = {
+  violet: 'violet',
+  cyan: 'cyan',
+  emerald: 'emerald',
+  amber: 'amber',
+  rose: 'rose',
 };
 
 function isSameDay(a: Date, b: Date) {
@@ -198,9 +210,9 @@ export default function ActivityRail({ items, range }: ActivityRailProps) {
                       <span
                         aria-hidden
                         className={cn(
-                          'absolute start-[10px] top-3 w-2.5 h-2.5 rounded-full ring-2 ring-white dark:ring-slate-900',
-                          TONE_DOT[tone],
+                          'dash-status-dot absolute start-[10px] top-3 w-2.5 h-2.5 ring-2 ring-white dark:ring-slate-900',
                         )}
+                        data-tone={TONE_DOT_DATA[tone]}
                       />
                       <div className="dash-cardlink !py-2">
                         <Avatar
@@ -240,7 +252,7 @@ export default function ActivityRail({ items, range }: ActivityRailProps) {
       <footer className="pt-2 border-t border-slate-100 dark:border-slate-800">
         <Link
           href="/dashboard/reports"
-          className="inline-flex items-center gap-1 text-violet-600 hover:text-violet-700 dark:text-violet-400 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60 rounded-md px-1"
+          className="dash-link text-xs px-1"
         >
           <span>مشاهده همه در گزارش‌ها</span>
           <HiOutlineArrowLeft className="w-3.5 h-3.5" />
