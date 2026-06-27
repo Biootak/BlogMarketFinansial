@@ -168,7 +168,7 @@ export default function PostsSpotlight({ popularPosts, recentDrafts }: PostsSpot
             <HiOutlineDocumentText className="w-5 h-5" />
           </span>
           <div className="min-w-0">
-            <h2 className="text-base sm:text-lg md:text-xl font-extrabold text-slate-900 dark:text-white tracking-tight truncate">
+            <h2 className="text-base sm:text-lg md:text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight truncate">
               مدیریت پست‌ها
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 truncate">
@@ -242,7 +242,7 @@ export default function PostsSpotlight({ popularPosts, recentDrafts }: PostsSpot
                 >
                   <Link
                     href={`/single/${post.slug}`}
-                    className="group relative block h-full rounded-2xl border border-slate-200/70 dark:border-slate-700/70 bg-gradient-to-br from-slate-50 to-white dark:from-slate-800/40 dark:to-slate-800/10 p-4 transition-[border-color,box-shadow] duration-200 hover:border-slate-300/80 dark:hover:border-slate-600/60 hover:shadow-lg hover:shadow-slate-900/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/60"
+                    className="group relative block h-full rounded-2xl border-[0.5px] border-white/70 dark:border-slate-700/30 bg-white/40 dark:bg-[#131926]/40 backdrop-blur-[24px] shadow-[0_8px_32px_0_rgba(31,38,135,0.02)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.5)] p-4 transition-[border-color,box-shadow] duration-200 hover:border-white/90 dark:hover:border-slate-600/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/60"
                   >
                     <div className="flex items-center justify-between mb-3">
                       <span className="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold bg-gradient-to-br from-slate-700 to-slate-900 dark:from-slate-200 dark:to-slate-400 text-white dark:text-slate-900 shadow">
@@ -253,7 +253,7 @@ export default function PostsSpotlight({ popularPosts, recentDrafts }: PostsSpot
                         {post.views.toLocaleString('fa-IR')}
                       </span>
                     </div>
-                    <p className="font-semibold text-sm text-slate-900 dark:text-white line-clamp-2 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">
+                    <p className="font-semibold text-sm text-slate-900 dark:text-slate-100 line-clamp-2 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">
                       {post.title}
                     </p>
                     <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 tabular-nums">
@@ -382,9 +382,9 @@ function Panel({ title, tone, icon, viewAllHref, hidden, children }: PanelProps)
   const accent = 'dash-ico';
   const link = 'dash-link';
   return (
-    <article className="rounded-2xl border border-slate-200/70 dark:border-slate-700/70 overflow-hidden bg-white/45 backdrop-blur-[24px] dark:bg-slate-900/45">
+    <article className="rounded-2xl border-[0.5px] border-white/70 dark:border-slate-700/30 overflow-hidden bg-white/40 dark:bg-[#131926]/40 backdrop-blur-[24px] shadow-[0_8px_32px_0_rgba(31,38,135,0.02)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.5)]">
       <header className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
-        <h4 className="text-sm font-bold text-slate-900 dark:text-white inline-flex items-center gap-2">
+        <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 inline-flex items-center gap-2">
           <span className={`dash-ico ${accent} w-8 h-8`} aria-hidden>
             {icon}
           </span>

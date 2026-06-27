@@ -262,7 +262,7 @@ export default function ScheduledRail({ scheduledPosts }: ScheduledRailProps) {
 
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white">انتشارهای پیش‌رو</h3>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">انتشارهای پیش‌رو</h3>
           <span className="text-[10px] tabular-nums text-slate-400 dark:text-slate-500">
             {upcoming.length.toLocaleString('fa-IR')} مورد
           </span>

@@ -376,7 +376,7 @@ const Header: React.FC = () => {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" sideOffset={10} className="min-w-[260px] p-2">
-              <div className="flex items-center gap-3 px-2 py-2.5 rounded-lg bg-slate-50/60 dark:bg-slate-800/40 mb-1">
+              <div className="flex items-center gap-3 px-2 py-2.5 rounded-lg bg-white/75 dark:bg-[#1e293b]/50 border-[0.5px] border-white/90 dark:border-slate-600/20 mb-1">
                 <div className={cn('p-2.5 rounded-xl bg-gradient-to-br', roleBadge.color)}>
                   <HiOutlineShieldCheck className="w-5 h-5 text-white" />
                 </div>

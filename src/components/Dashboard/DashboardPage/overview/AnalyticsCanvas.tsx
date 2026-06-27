@@ -176,7 +176,7 @@ export default function AnalyticsCanvas({ scheduledPosts }: AnalyticsCanvasProps
             <HiOutlineChartBar className="w-5 h-5" />
           </span>
           <div className="min-w-0">
-            <h2 className="text-base sm:text-lg md:text-xl font-extrabold text-slate-900 dark:text-white tracking-tight truncate">
+            <h2 className="text-base sm:text-lg md:text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight truncate">
               تحلیل و تقویم
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 truncate">
@@ -190,7 +190,7 @@ export default function AnalyticsCanvas({ scheduledPosts }: AnalyticsCanvasProps
             role="radiogroup"
             aria-label="بازه زمانی"
             onKeyDown={onPeriodKey}
-            className="inline-flex p-1 gap-1 rounded-xl bg-slate-100/70 dark:bg-slate-800/60 ring-1 ring-slate-200/60 dark:ring-slate-700/60 shrink-0"
+            className="inline-flex p-1 gap-1 rounded-xl bg-white/75 dark:bg-[#1e293b]/50 border-[0.5px] border-white/90 dark:border-slate-600/20 ring-0 shrink-0"
           >
             {PERIODS.map((p) => {
               const isActive = p.id === period;
@@ -205,8 +205,8 @@ export default function AnalyticsCanvas({ scheduledPosts }: AnalyticsCanvasProps
                   className={cn(
                     'inline-flex items-center justify-center min-w-[2.5rem] sm:min-w-[3rem] h-8 px-2 sm:px-3 rounded-lg text-xs font-semibold transition-colors',
                     isActive
-                      ? 'bg-white/75 backdrop-blur-[24px] border-[0.5px] border-white/80 text-slate-900 shadow-sm dark:bg-slate-900/75 dark:text-white'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white',
+                      ? 'bg-white/75 dark:bg-[#1e293b]/50 border-[0.5px] border-white/90 dark:border-slate-600/20 text-slate-900 dark:text-slate-100 shadow-sm'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/60',
                   )}
                 >
@@ -229,14 +229,14 @@ export default function AnalyticsCanvas({ scheduledPosts }: AnalyticsCanvasProps
       <Tabs dir="rtl" value={tab} onValueChange={onTabChange} className="w-full">
         <div className="px-4 sm:px-5 md:px-7 pt-3 sm:pt-4 overflow-x-auto">
           <TabsList
-            className="inline-flex p-1 gap-1 rounded-xl bg-slate-100/70 dark:bg-slate-800/60 ring-1 ring-slate-200/60 dark:ring-slate-700/60"
+            className="inline-flex p-1 gap-1 rounded-xl bg-white/75 dark:bg-[#1e293b]/50 border-[0.5px] border-white/90 dark:border-slate-600/20 ring-0"
             aria-label="انتخاب نمای تحلیل"
           >
             {TABS.map((t) => (
               <TabsTrigger
                 key={t.id}
                 value={t.id}
-                className="inline-flex items-center gap-2 px-4 h-9 rounded-lg text-sm font-semibold text-slate-600 dark:text-slate-300 transition-all data-[state=active]:bg-white/75 data-[state=active]:backdrop-blur-[24px] data-[state=active]:border data-[state=active]:border-white/80 data-[state=active]:text-slate-900 dark:data-[state=active]:bg-slate-900/75 dark:data-[state=active]:text-white data-[state=active]:shadow-sm hover:text-slate-900 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/60"
+                className="inline-flex items-center gap-2 px-4 h-9 rounded-lg text-sm font-semibold text-slate-600 dark:text-slate-400 transition-all data-[state=active]:bg-white/75 dark:data-[state=active]:bg-[#1e293b]/50 data-[state=active]:border-[0.5px] data-[state=active]:border-white/90 dark:data-[state=active]:border-slate-600/20 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-100 data-[state=active]:shadow-sm hover:text-slate-900 dark:hover:text-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/60"
               >
                 {t.icon}
                 <span>{t.label}</span>

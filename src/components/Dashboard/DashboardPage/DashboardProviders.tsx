@@ -19,7 +19,7 @@ export function DashboardProviders({ userRole, children }: DashboardProvidersPro
   return (
     <DirectionProvider dir="rtl">
       <div
-        className="flex h-screen overflow-hidden bg-slate-50 dark:bg-[oklch(10%_0.018_255)] transition-colors duration-300"
+        className="flex h-screen overflow-hidden bg-gradient-to-br from-[#f3f4f6] via-[#eef2f6] to-[#e0e7ff] dark:bg-gradient-to-br dark:from-[#090d16] dark:via-[#0f172a] dark:to-[#0b0f19] transition-colors duration-300"
         dir="rtl"
       >
         <SidebarInitializer />

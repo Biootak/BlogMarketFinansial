@@ -6,7 +6,7 @@ import { getPopularPosts } from '@/actions/getPopularPosts';
 import { getRecentDrafts } from '@/actions/getRecentDrafts';
 import { getViewStats } from '@/actions/getViewStats';
 import { getRecentActivity } from '@/actions/getRecentActivity';
-import DashboardShell from '@/components/Dashboard/DashboardPage/v2/DashboardShell';
+import DashboardShell from '@/components/Dashboard/DashboardPage/overview/DashboardShell';
 import { checkRole } from '@/lib/auth';
 import ServiceRequestsWidget from '@/components/Dashboard/ServiceRequests/ServiceRequestsWidget';
 
