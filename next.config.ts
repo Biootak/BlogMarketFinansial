@@ -131,7 +131,13 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Turbopack configuration
+  // Turbopack configuration — dev only.
+  // `next dev` uses Turbopack (default since Next.js 16). The previous
+  // lightningcss alpha panic on OKLCH/color-mix tokens is resolved for
+  // dev (PostCSS uses lightningcss 1.30.2 from npm). However, `next build`
+  // still uses the lightningcss alpha embedded in the Turbopack binary
+  // which panics on `color-mix(in oklch, ...)`, so `build` runs with
+  // `--webpack` until Turbopack bundles a stable lightningcss.
   turbopack: {
     resolveAlias: {
       // Suppress source map warnings from node_modules
@@ -139,6 +145,18 @@ const nextConfig: NextConfig = {
   },
 
   images: {
+    // 2026-06-27: `images.unsplash.com` resolves to a public IPv6
+    // address (`2001:4188:2:600:10:10:34:36`) whose `10:10:34:36`
+    // segment is falsely matched as the private IPv4 `10.10.34.36`
+    // by Next.js 16's SSRF guard, blocking the image fetch.
+    // `dangerouslyAllowPrivateIPs` was removed in Next.js 16.
+    // The dev script sets `NODE_OPTIONS=--dns-result-order=ipv4first`
+    // so Node prefers IPv4 A-records, sidestepping the bug in dev.
+    // Production (Vercel edge optimizer) is unaffected.
+    // When the dev machine cannot reach remote image hosts (e.g.
+    // network restrictions), skip the Image Optimization fetch so the
+    // server does not log ECONNRESET errors on every remote image.
+    unoptimized: process.env.NODE_ENV === 'development',
     // افزایش timeout برای لود تصاویر
     minimumCacheTTL: 60,
     // فرمت‌های مجاز
@@ -211,18 +229,11 @@ const nextConfig: NextConfig = {
   //   * optimizePackageImports: tree-shakes lucide-react and
   //     react-icons, both of which are imported widely here and
   //     easily bloat the first-load JS by 100KB+ without this.
-  //   * optimizeCss: explicitly OFF. Next.js 16 uses Turbopack by
-  //     default for `next dev`, and Turbopack hard-wires its CSS
-  //     pipeline to `lightningcss` 1.0.0-alpha.68 (Rust) — there is
-  //     no Turbopack-side opt-out. That alpha build panics on the
-  //     OKLCH + color-mix(in oklch, ...) tokens used in
-  //     `src/app/globals.css` and `src/components/ds/styles/tokens.css`,
-  //     taking down the whole dev server with "Failed to write app
-  //     endpoint". `optimizeCss: false` only governs webpack, so to
-  //     actually keep the PostCSS pipeline we also pass `--webpack`
-  //     to `next dev` (see package.json). Revisit when lightningcss
-  //     hits a stable release — at that point we can drop the
-  //     `--webpack` flag and let Turbopack handle CSS again.
+  //   * optimizeCss: explicitly OFF. Only governs webpack fallback
+  //     builds. Turbopack (now the default) uses its own CSS pipeline
+  //     via lightningcss 1.30.2 (stable) — the previous alpha panic
+  //     on OKLCH/color-mix tokens is resolved. Kept OFF as a
+  //     precaution for any `next build --webpack` fallback.
   experimental: {
     staleTimes: {
       dynamic: 30,
@@ -230,6 +241,15 @@ const nextConfig: NextConfig = {
     },
     optimizePackageImports: ['lucide-react', 'react-icons'],
     optimizeCss: false,
+    // 2026-06-27: Turbopack's embedded lightningcss 1.0.0-alpha.70 panics on
+    // some oklch()/color-mix() constructs in globals.css. Excluding the polar
+    // color features from transpilation lets the CSS pass through unchanged,
+    // avoiding the parser/transformer panic while keeping modern browsers that
+    // natively support oklch().
+    useLightningcss: true,
+    lightningCssFeatures: {
+      exclude: ['oklab-colors', 'lab-colors', 'color-function'],
+    },
   },
 
   // 2026-06-14: keepAlive on the global HTTP agent. Re-establishing
@@ -242,14 +262,37 @@ const nextConfig: NextConfig = {
   transpilePackages: ['@aws-sdk/client-s3', '@aws-sdk/s3-request-presigner', 'framer-motion'],
 
   // 2026-06-25: cssnano-simple crashes on `@property` at-rules and OKLCH
-  // color tokens in globals.css. Until Next.js ships a compatible CSS
-  // minimizer, we disable CSS minification in webpack builds. JS is still
-  // minified by Terser; CSS is served gzip/brotli by the CDN/server.
+  // color tokens in globals.css. This webpack config block is only used
+  // for `next build --webpack` fallback builds; under Turbopack (default)
+  // it is ignored. JS is still minified by Terser; CSS is served
+  // gzip/brotli by the CDN/server.
   webpack: (config) => {
+    // 2026-06-27: Disable CSS minification. `cssnano-simple` (bundled
+    // inside Next.js) crashes on `@property` at-rules and some
+    // `color-mix()`/`oklch()` constructs in globals.css. In next@16.2.9
+    // the minimizer is a function (not a class instance), so we can't
+    // filter by constructor.name. Instead we override the entire
+    // minimizer list to keep only SWC/Terser (JS minification) and
+    // drop the CSS minimizer function. CSS is served gzip/brotli by
+    // the CDN/server, so unminified CSS only costs a few KB after
+    // compression.
     if (config.optimization?.minimizer) {
       config.optimization.minimizer = config.optimization.minimizer.filter(
-        (plugin: { constructor?: { name?: string } }) =>
-          plugin?.constructor?.name !== 'CssMinimizerPlugin',
+        (plugin: unknown) => {
+          // Class instances: filter by name
+          if (plugin && typeof plugin === 'object' && 'constructor' in plugin) {
+            const name = (plugin as { constructor?: { name?: string } }).constructor?.name;
+            if (name === 'CssMinimizerPlugin') return false;
+          }
+          // Functions: check if the function source references cssnano
+          if (typeof plugin === 'function') {
+            const src = plugin.toString();
+            if (src.includes('CssMinimizerPlugin') || src.includes('cssnano')) {
+              return false;
+            }
+          }
+          return true;
+        },
       );
     }
     return config;

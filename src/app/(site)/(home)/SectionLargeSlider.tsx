@@ -4,20 +4,20 @@ import { getMarketRates } from '@/actions/market-rates';
 import { getRateLists } from '@/actions/rate-lists';
 import Empty from '@/components/Empty';
 import type { PostWithRelations, RateListData } from '@/types/types';
-import { cache } from 'react';
 import DeferredDesign7 from './deferred/DeferredDesign7';
 
-const getFeaturedPostsCached = cache(getFeaturedPosts);
-const getCryptoTickerRatesCached = cache(fetchCryptoTickerRates);
-const getMarketRatesCached = cache(getMarketRates);
-const getRateListsCached = cache(getRateLists);
-
+// 2026-06-27: Removed `react.cache()` wrappers around the server actions.
+// Under `cacheComponents: true` (Next 16), wrapping a 'use server' export
+// in `cache()` causes the flight loader's `registerServerReference` to
+// run twice during the 'use cache' prerender pass, throwing
+// `Cannot redefine property: $$FORM_ACTION`. Server actions already dedupe
+// per-request; `safeCache` handles cross-request caching.
 export default async function SectionLargeSlider() {
   const [postsResult, ratesResult, marketRates, rateLists] = await Promise.all([
-    getFeaturedPostsCached(3),
-    getCryptoTickerRatesCached(),
-    getMarketRatesCached(),
-    getRateListsCached(),
+    getFeaturedPosts(3),
+    fetchCryptoTickerRates(),
+    getMarketRates(),
+    getRateLists(),
   ]);
 
   if (postsResult.error) {

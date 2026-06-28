@@ -20,8 +20,8 @@
 
 ```bash
 npm install            # also runs `prisma generate` via postinstall
-npm run dev            # next dev --webpack (Turbopack panics on globals.css via lightningcss)
-npm run build          # next build  (next.config.ts: output: 'standalone')
+npm run dev            # next dev (Turbopack — fast dev, lightningcss 1.30.2 via PostCSS)
+npm run build          # next build --webpack (Turbopack build panics on embedded lightningcss alpha)
 npm run lint           # next lint   (ESLint; NOT biome — biome.json has no script)
 npx tsc --noEmit       # no typecheck script in package.json — use this
 npm run db:seed        # node prisma/seed.js — idempotent, dev only
@@ -66,9 +66,9 @@ Postgres is provided by `docker-compose.yml` (`registry.docker.ir/library/postgr
 
 ## Gotchas that are easy to miss
 
-- **Turbopack panics on `globals.css`** — `lightningcss-1.0.0-alpha.68` unwraps an `Err` at color.rs:441 against the current stylesheet. `package.json` already pins `next dev --webpack` (commit `ae82673`); using `npx next dev` (no flag) falls back to Turbopack and crashes the compile. The dev console will surface the panic verbatim — react with `npm run dev` instead.
+- **Turbopack for dev, webpack for build** (since 2026-06-27). `next dev` uses Turbopack (default) — the previous `lightningcss-1.0.0-alpha.68` panic on OKLCH/color-mix tokens is resolved for dev because PostCSS uses `lightningcss@1.30.2` from npm. However, `next build` with Turbopack still panics because it uses the `lightningcss` alpha embedded in the Turbopack binary (alpha.70 in next@16.2.9). So `build` runs with `--webpack` until Turbopack bundles a stable lightningcss. If you need to test a Turbopack build, run `npx next build` (no flag) — it will crash on `globals.css`.
 - **Dashboard 2026 v2 CSS is large (~660 lines) and lives at the tail of `globals.css`** — a previous failed `git stash pop` lost the whole block. If `dash-bento2`, `dash-pane--hero/--compact/--tall`, `dash-toolbar`, `dash-hero*`, `dash-minical`, etc. render unstyled, search the file for `Dashboard 2026 (June 22)` — that header is the only marker. The block must be wrapped in its own `@layer utilities` (the Aurora `.dash-scope` block uses the same layer above).
-- **Disposing dev servers** — `npx next dev --webpack` keeps a `next-server` child even after the parent shell exits. Use `Get-NetTCPConnection -LocalPort <port> | Stop-Process -Id $_.OwningProcess -Force` to clean up; a bare `Stop-Job` leaves the port bound.
+- **Disposing dev servers** — `npx next dev` keeps a `next-server` child even after the parent shell exits. Use `Get-NetTCPConnection -LocalPort <port> | Stop-Process -Id $_.OwningProcess -Force` to clean up; a bare `Stop-Job` leaves the port bound.
 - **`scripts/test-safe-cache.js` / `scripts/test-safe-fetch.js`** — disposable helpers used while verifying the v2 dashboard's data layer. Not committed to git; safe to delete after use.
 
 ## When in doubt

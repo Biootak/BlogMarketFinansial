@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ShieldAlert } from 'lucide-react';
+import { Suspense } from 'react';
 
 
 export const metadata = {
@@ -7,7 +8,10 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function AuthErrorPage({
+// 2026-06-27: `cacheComponents: true` — `searchParams` is a runtime API.
+// Per the migration guide, we move the runtime access into a component
+// wrapped in <Suspense> so the static shell prerenders.
+async function ErrorContent({
   searchParams,
 }: {
   searchParams: Promise<{ error?: string; callbackUrl?: string }>;
@@ -86,5 +90,17 @@ export default async function AuthErrorPage({
         <Link href="/privacy-policy" prefetch={false}>حریم خصوصی</Link>
       </nav>
     </main>
+  );
+}
+
+export default function AuthErrorPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; callbackUrl?: string }>;
+}) {
+  return (
+    <Suspense fallback={null}>
+      <ErrorContent searchParams={searchParams} />
+    </Suspense>
   );
 }

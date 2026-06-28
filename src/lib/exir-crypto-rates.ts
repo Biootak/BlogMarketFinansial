@@ -106,7 +106,7 @@ async function fetchWithRetry(
       return response;
     } catch (error) {
       if (i === 0) {
-        logger.error(`API request failed (will retry ${retries - 1} more times)`);
+        logger.error(`API request failed (will retry ${retries - 1} more times)`, error);
       }
       if (i === retries - 1) throw error;
       await new Promise((resolve) => setTimeout(resolve, delay));

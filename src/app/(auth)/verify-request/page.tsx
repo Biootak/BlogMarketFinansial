@@ -3,7 +3,6 @@ import Link from 'next/link';
 
 import VerifyRequestClient from '@/components/Auth/VerifyRequestClient';
 
-
 export const metadata = {
   title: 'تأیید ایمیل — بازار مالی',
   robots: { index: false, follow: false },

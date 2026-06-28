@@ -5,6 +5,9 @@ import { Suspense } from 'react';
 
 import AuthFlow from '@/components/Auth/AuthFlow.redesign';
 
+// 2026-06-27: `cacheComponents: true` — auth pages read cookies via
+// the (auth) layout, so they can't be statically prerendered.
+
 export const metadata: Metadata = {
   title: 'ورود و ثبت‌نام امن — بازار مالی',
   description: 'ورود، ثبت‌نام و بازیابی رمز عبور در یک مسیر یکپارچه و امن برای کاربران بازار مالی.',
@@ -27,7 +30,7 @@ export const viewport: Viewport = {
 };
 
 
-export default function AuthPage() {
+export default async function AuthPage() {
   return (
     <main className="auth-page-root" dir="rtl">
       <div className="auth-aurora" aria-hidden="true" />
