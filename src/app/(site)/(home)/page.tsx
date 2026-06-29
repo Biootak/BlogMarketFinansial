@@ -1,5 +1,4 @@
 import { Suspense } from 'react';
-import { cacheLife } from 'next/cache';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getPosts } from '@/actions/getPosts';
 import { getTopAuthors } from '@/actions/getTopAuthors';
@@ -15,14 +14,9 @@ import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2'
 import DeferredTrending from './deferred/DeferredTrending';
 import DeferredAdStrip from './deferred/DeferredAdStrip';
 
+export const revalidate = 60;
 
 export default async function Home() {
-  // 2026-06-24: replaced `export const revalidate = 60` (removed under
-  // `cacheComponents: true`). `'use cache'` with `minutes` profile
-  // caches the page for ~60s before revalidating — matches the old
-  // behaviour.
-  'use cache';
-  cacheLife('minutes');
   const [posts, topAuthors, firstStripResult, secondStripResult, categoriesResult, featuredResult] =
     await Promise.all([
       getPosts(6),

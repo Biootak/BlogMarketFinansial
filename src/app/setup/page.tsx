@@ -16,6 +16,12 @@ import Link from 'next/link';
  * and streams the dynamic content (headers + DB probe) inside a <Suspense>
  * boundary.
  *
+ * 2026-06-29: With `cacheComponents: true`, using `headers()` automatically
+ * opts this page into dynamic rendering at request time. No need for
+ * `export const dynamic = 'force-dynamic'` (which conflicts with cacheComponents).
+ * The headers() call in SetupContent ensures this page never attempts static
+ * generation at build time.
+ *
  * Responsibilities:
  *   1. Render the skip-link and static brand nav immediately.
  *   2. Stream <SetupContent> which probes the DB and reads request headers.

@@ -7,7 +7,6 @@
  * for the related-authors rail.
  */
 import type { Metadata } from 'next';
-import { cacheLife } from 'next/cache';
 import { notFound } from 'next/navigation';
 import {
   AuthorProfileHero,
@@ -58,16 +57,13 @@ export async function generateMetadata({
 }
 
 
+export const revalidate = 60;
+
 export default async function PageAuthor({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  // 2026-06-24: replaced `export const revalidate = 120` with
-  // `'use cache'` + `cacheLife('minutes')`. `params` is part of the
-  // cache key, so each author profile is cached independently.
-  'use cache';
-  cacheLife('minutes');
   const { id } = await params;
   const [payload, topAuthors] = await Promise.all([
     getAuthorProfile(id, 1, 9),

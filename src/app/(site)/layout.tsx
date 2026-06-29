@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
 import { getSystemSettingsCached } from '@/data/getSystemSettingsCached';
 import SiteHeaderData, {
   HeaderSkeleton,
@@ -11,11 +10,9 @@ import SiteFooterData, {
 import SiteSettingsData from '@/app/(site)/_components/SiteSettingsData';
 
 export async function generateMetadata(): Promise<Metadata> {
-  // 2026-06-25: Under Next.js 16 `cacheComponents: true`, metadata cannot
-  // await dynamic request APIs (like `connection()`) without blocking the
-  // static shell. We use the `"use cache"` variant of the settings fetch so
-  // the page can be prerendered and revalidated via the `system-settings`
-  // cache tag.
+  // 2026-06-29: `getSystemSettingsCached` (unstable_cache, 60s revalidate)
+  // lets metadata be statically prerendered and revalidated alongside the
+  // page under ISR — no dynamic request API needed.
   const settings = await getSystemSettingsCached();
 
   return {
@@ -37,29 +34,23 @@ export async function generateMetadata(): Promise<Metadata> {
 /**
  * SiteLayout — public marketing/blog layout.
  *
- * 2026-06-25: Refactored to avoid the `blocking-route` error under
- * Next.js 16 `cacheComponents: true`. The layout itself is now synchronous
- * and streams three dynamic data boundaries inside <Suspense>:
+ * The layout streams three DB/cache-dependent data boundaries inside
+ * <Suspense> so the static shell paints instantly:
  *   - Header data (active rate lists for the market mega-menu)
  *   - Main page content (children) — renders immediately
  *   - Footer data (footer advertisement)
  *   - Site settings hydration (no visual impact)
  *
- * This lets the static shell paint instantly while DB/cache-dependent pieces
- * resolve in parallel. The `safeCache` wrappers inside the async components
- * still guarantee graceful fallbacks if the database is unreachable.
+ * The `safeCache` wrappers inside the async components guarantee graceful
+ * fallbacks if the database is unreachable. With `cacheComponents: false`,
+ * pages are prerendered and revalidated via their own `revalidate` exports
+ * (ISR) — no force-dynamic / request-API guards needed here.
  */
 export default async function SiteLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // 2026-06-28: Satisfy Next.js 16's "current time" guard for any descendant
-  // that reads the wall clock (e.g. Footer copyright year). Reading headers()
-  // marks this layout boundary as dynamic-input-dependent, which allows new Date()
-  // calls further down the tree during static prerender without crashing.
-  headers();
-
   return (
     <>
       <Suspense fallback={<HeaderSkeleton />}>

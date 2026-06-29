@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { cacheLife } from 'next/cache';
 import { getExchangeRates } from '@/actions/exchange-rates';
 import { getRateLists } from '@/actions/rate-lists';
 import InfoCards from './InfoCards';
@@ -16,13 +15,9 @@ export const metadata: Metadata = {
 };
 
 
+export const revalidate = 3600;
+
 export default async function MoneyTransferPage() {
-  // 2026-06-24: under `cacheComponents: true`, the route segment
-  // config `revalidate = 1800` is no longer supported. The Next.js 16
-  // replacement is the `'use cache'` directive with a `cacheLife`
-  // profile. `hours` matches the old 30-min cadence closely.
-  'use cache';
-  cacheLife('hours');
   const exchangeRates = await getExchangeRates();
   const rateLists = await getRateLists();
   const activeRateLists = rateLists.filter((list) => list.isActive);

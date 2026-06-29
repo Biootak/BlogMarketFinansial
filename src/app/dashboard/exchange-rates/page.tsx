@@ -5,15 +5,13 @@ import { getExchangeRateList } from '@/actions/market-rates';
 import { getRateLists } from '@/actions/rate-lists';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import type { MarketRateProvider, MarketRateUnit } from '@/lib/market-rates';
-import { cacheLife } from 'next/cache';
 import type { RateRowData } from './_components/ExchangeRateRow';
 import ExchangeRatesHeader from './_components/ExchangeRatesHeader';
 import ExchangeRatesShell from './_components/ExchangeRatesShell';
 
-export default async function ExchangeRatesPage() {
-  'use cache';
-  cacheLife('minutes');
+export const revalidate = 60;
 
+export default async function ExchangeRatesPage() {
   const [rows, lists] = await Promise.all([getExchangeRateList(), getRateLists()]);
 
   const total = rows.length;

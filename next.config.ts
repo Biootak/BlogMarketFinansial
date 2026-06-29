@@ -34,12 +34,11 @@ const nextConfig: NextConfig = {
   ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
   output: 'standalone',
   reactStrictMode: true,
-  // 2026-06-24: PPR moved out of `experimental.ppr` in Next.js 16; the
-  // boolean top-level `cacheComponents` is the new on/off switch. Same
-  // effect as the old `experimental.ppr: 'incremental'`: the static
-  // shell streams first, dynamic segments (comments widget, exchange
-  // rates, user-specific data) defer.
-  cacheComponents: true,
+  // 2026-06-29: TEMPORARILY disabled cacheComponents to fix build-time DB
+  // connection issues. When enabled, cacheComponents requires all pages to
+  // opt out of static generation individually (can't use export const dynamic).
+  // TODO: Re-enable after migrating to proper ISR/dynamic rendering patterns.
+  cacheComponents: false,
   compress: true,
   poweredByHeader: false,
   // Enable static asset compression (gzip). For production behind a CDN
@@ -239,8 +238,13 @@ const nextConfig: NextConfig = {
       dynamic: 30,
       static: 180,
     },
+    // 2026-06-29: Optimized for build performance with database connections
+    // - staticGenerationRetryCount: 1 (fail fast, don't retry failed pages)
+    // - staticGenerationMaxConcurrency: 8 (increased from 4, per Next.js docs)
+    // - staticGenerationMinPagesPerWorker: 25 (batch pages per worker)
     staticGenerationRetryCount: 1,
-    staticGenerationMaxConcurrency: 4,
+    staticGenerationMaxConcurrency: 8,
+    staticGenerationMinPagesPerWorker: 25,
     optimizePackageImports: ['lucide-react', 'react-icons'],
     optimizeCss: false,
     // 2026-06-27: Turbopack's embedded lightningcss 1.0.0-alpha.70 panics on
