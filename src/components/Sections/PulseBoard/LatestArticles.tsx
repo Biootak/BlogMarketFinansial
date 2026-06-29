@@ -616,6 +616,18 @@ function LatestArticles({
               )}
 
               {/* ============================================================== */}
+              {/*  FOOTER: load more + archive                                   */}
+              {/* ============================================================== */}
+              <FooterActions
+                hasMore={hasMorePosts}
+                loading={loading}
+                accent={accent.color}
+                archiveHref={archiveHref}
+                onLoadMore={handleLoadMore}
+                totalCount={currentCategoryPosts.length}
+              />
+
+              {/* ============================================================== */}
               {/*  HIGHLIGHT QUOTE — editorial touch                             */}
               {/* ============================================================== */}
               {visiblePosts[0]?.excerpt && (
@@ -636,17 +648,7 @@ function LatestArticles({
                 <InlineAdBanner ad={adSpot} accentColor={accent.color} />
               )}
 
-              {/* ============================================================== */}
-              {/*  FOOTER: load more + archive                                   */}
-              {/* ============================================================== */}
-              <FooterActions
-                hasMore={hasMorePosts}
-                loading={loading}
-                accent={accent.color}
-                archiveHref={archiveHref}
-                onLoadMore={handleLoadMore}
-                totalCount={currentCategoryPosts.length}
-              />
+
             </div>
           )}
         </div>

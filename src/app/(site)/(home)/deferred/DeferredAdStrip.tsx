@@ -13,7 +13,7 @@ interface DeferredAdStripProps {
 
 const AdCardStrip = dynamic(
   () => import('@/components/Sections/AdCardStrip').then((m) => m.AdCardStrip),
-  { loading: () => <Skeleton className="h-[260px] sm:h-[300px] rounded-3xl" />, ssr: false },
+  { loading: () => <Skeleton className="h-[260px] sm:h-[300px] rounded-3xl" /> },
 );
 
 export default function DeferredAdStrip(props: DeferredAdStripProps) {
