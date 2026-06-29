@@ -7,10 +7,8 @@ import type {
   SocialType,
 } from '@/types/types';
 import { type ClassValue, clsx } from 'clsx';
-import type { Session } from 'next-auth';
 import { twMerge } from 'tailwind-merge';
-import { auth } from '../auth';
-import { redirect } from 'next/navigation';
+import type { Session } from 'next-auth';
 import DOMPurify from 'dompurify';
 import { customAlphabet } from 'nanoid';
 import type { JSONContent } from '@tiptap/core';
@@ -75,28 +73,6 @@ export function generateColor(str: string): string {
 
 export function getInitials(name: string | null): string {
   return name ? name.charAt(0).toUpperCase() : '';
-}
-
-export async function checkRole(requiredRoles: Role[]) {
-  const session = await auth();
-  if (!session?.user) {
-    redirect('/unauthorized');
-    return null;
-  }
-
-  const userRole = session.user.role as Role;
-
-  // SUPER_ADMIN has access to everything
-  if (userRole === 'SUPER_ADMIN') {
-    return session;
-  }
-
-  if (!requiredRoles.includes(userRole)) {
-    redirect('/unauthorized');
-    return null;
-  }
-
-  return session;
 }
 
 export const socialToDropdownItem = (

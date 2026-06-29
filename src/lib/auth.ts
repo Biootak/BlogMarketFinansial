@@ -9,12 +9,17 @@ export async function checkRole(allowedRoles: string[]) {
     redirect('/signin');
   }
 
+  // SUPER_ADMIN has access to everything.
+  if (session.user.role === 'SUPER_ADMIN') {
+    return session;
+  }
+
   const hasRequiredRole = allowedRoles.includes(session.user.role);
   if (!hasRequiredRole) {
     redirect('/');
   }
 
-  return session.user;
+  return session;
 }
 
 export async function checkSuperAdmin() {
