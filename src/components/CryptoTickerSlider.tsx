@@ -2,6 +2,7 @@
 
 import type { CryptoTickerRate } from '@/types/types';
 import type React from 'react';
+import { memo } from 'react';
 import { CryptoTickerCard } from './CryptoTickerCard';
 import InfiniteTicker from './InfiniteTicker';
 
@@ -32,4 +33,4 @@ const CryptoTickerSlider: React.FC<CryptoTickerSliderProps> = ({ rates }) => {
   );
 };
 
-export default CryptoTickerSlider;
+export default memo(CryptoTickerSlider);

@@ -14,7 +14,7 @@
  * ----------------------------------------------------------------------------
  */
 
-import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback, memo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from '@/lib/motion-shim';
 import {
@@ -77,7 +77,7 @@ function fmtJalaliShort(d: Date | string): string {
   }).format(new Date(d));
 }
 
-export default function RateListsTicker({
+function RateListsTicker({
   rateLists,
   className,
   rotateInterval = 6000,
@@ -111,20 +111,37 @@ export default function RateListsTicker({
   const listCount = grouped.lists.length;
 
   /* ---------- Auto-rotate logic ---------- */
+  // Pause rotation when the tab is hidden to avoid wasted CPU/renders.
   useEffect(() => {
     if (items.length <= 1) return;
-    if (isHovered) {
+
+    const start = () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      intervalRef.current = setInterval(() => {
+        setActiveIndex((i) => (i + 1) % items.length);
+      }, rotateInterval);
+    };
+    const stop = () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
-      return;
-    }
-    intervalRef.current = setInterval(() => {
-      setActiveIndex((i) => (i + 1) % items.length);
-    }, rotateInterval);
+    };
+
+    if (!isHovered) start();
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        stop();
+      } else if (!isHovered) {
+        start();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibility);
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      stop();
     };
   }, [isHovered, items.length, rotateInterval]);
 
@@ -505,3 +522,5 @@ function RatePill({
     </div>
   );
 }
+
+export default memo(RateListsTicker);

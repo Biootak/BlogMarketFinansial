@@ -21,7 +21,7 @@ import { Marquee } from '@/components/ModernTrending/effects/Marquee';
 import { TickerShell } from '@/components/TickerShell';
 import { cn, formatNumber, toPersianNumber } from '@/lib/utils';
 import { Activity, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
-import { useEffect, useState, useTransition } from 'react';
+import { memo, useCallback, useEffect, useState, useTransition } from 'react';
 
 interface MarketTickerProps {
   initialData?: MarketTickerItem[];
@@ -52,7 +52,7 @@ function formatPrice(item: MarketTickerItem): string {
   return toPersianNumber(formatNumber(Math.round(price)));
 }
 
-export default function MarketTicker({
+function MarketTicker({
   initialData = [],
   className,
   pollInterval = 120_000,
@@ -62,29 +62,7 @@ export default function MarketTicker({
   const [isPending, startTransition] = useTransition();
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
-  useEffect(() => {
-    if (initialData.length > 0) {
-      setLastUpdate(new Date());
-    }
-  }, [initialData.length]);
-
-  useEffect(() => {
-    if (!refetchAction || pollInterval <= 0) return;
-    const id = setInterval(() => {
-      startTransition(async () => {
-        try {
-          const fresh = await refetchAction();
-          setData(fresh);
-          setLastUpdate(new Date());
-        } catch {
-          // silent
-        }
-      });
-    }, pollInterval);
-    return () => clearInterval(id);
-  }, [refetchAction, pollInterval]);
-
-  const handleRefresh = () => {
+  const refresh = useCallback(async () => {
     if (!refetchAction) return;
     startTransition(async () => {
       try {
@@ -92,10 +70,53 @@ export default function MarketTicker({
         setData(fresh);
         setLastUpdate(new Date());
       } catch {
-        // silent
+        // silent — ticker is optional
       }
     });
-  };
+  }, [refetchAction]);
+
+  useEffect(() => {
+    if (initialData.length > 0) {
+      setLastUpdate(new Date());
+    }
+  }, [initialData.length]);
+
+  // Pause polling when the tab is hidden to avoid wasted network/server load.
+  // Keeps the same visible behavior; just stops background refreshes.
+  useEffect(() => {
+    if (!refetchAction || pollInterval <= 0) return;
+
+    let id: ReturnType<typeof setInterval> | null = null;
+    const start = () => {
+      if (id) clearInterval(id);
+      id = setInterval(refresh, pollInterval);
+    };
+    const stop = () => {
+      if (id) {
+        clearInterval(id);
+        id = null;
+      }
+    };
+
+    start();
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        stop();
+      } else {
+        refresh();
+        start();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      stop();
+    };
+  }, [refetchAction, pollInterval, refresh]);
+
+  const handleRefresh = refresh;
 
   if (data.length === 0) return null;
 
@@ -200,3 +221,5 @@ export default function MarketTicker({
     </div>
   );
 }
+
+export default memo(MarketTicker);
