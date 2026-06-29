@@ -17,7 +17,7 @@
  */
 
 import type { MarketTickerItem } from '@/actions/marketTickerActions';
-import { Marquee } from '@/components/ModernTrending/effects/Marquee';
+import Ticker from '@/components/Ticker';
 import { TickerShell } from '@/components/TickerShell';
 import { cn, formatNumber, toPersianNumber } from '@/lib/utils';
 import { Activity, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
@@ -134,7 +134,7 @@ function MarketTicker({
   return (
     <div className={cn('relative anim-fade-in-down', className)}>
       <TickerShell height="md" tone="emerald" showLiveDot ariaLabel="نرخ‌های زنده" lead={liveLabel}>
-        <Marquee speed={-10} pauseOnHover pauseOnHold>
+        <Ticker speed={-10} pauseOnHover pauseOnHold>
           {data.map((item) => {
             const isUp = item.change >= 0;
             const Icon = isUp ? TrendingUp : TrendingDown;
@@ -173,7 +173,7 @@ function MarketTicker({
               </div>
             );
           })}
-        </Marquee>
+        </Ticker>
       </TickerShell>
 
       {/* Refresh + last update — خارج از shell تا positioning مستقل داشته باشه */}

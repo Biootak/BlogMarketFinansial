@@ -30,7 +30,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { cn, toPersianNumber, formatNumber } from '@/lib/utils';
-import { Marquee } from '@/components/ModernTrending/effects/Marquee';
+import Ticker from '@/components/Ticker';
 import LiveClock from '@/components/Sections/effects/LiveClock';
 import { parseRateItem, groupRateItems, type ParsedRateItem } from '@/lib/rateItem';
 import type { RateListData } from '@/types/types';
@@ -441,7 +441,7 @@ function RateListsTicker({
             <span className="sm:hidden">لیست‌ها</span>
           </span>
           <div className="flex-1 min-w-0">
-            <Marquee speed={-25} repeat={2} pauseOnHover>
+            <Ticker speed={-25} repeat={2} pauseOnHover>
               {grouped.lists.map((l) => {
                 const a = getAccentForTitle(l.title);
                 return (
@@ -463,7 +463,7 @@ function RateListsTicker({
                   </span>
                 );
               })}
-            </Marquee>
+            </Ticker>
           </div>
         </div>
       )}

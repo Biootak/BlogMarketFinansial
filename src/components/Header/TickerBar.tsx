@@ -7,7 +7,7 @@
  * و Marquee اصلاح‌شده (CSS-driven) برای loop بی‌نهایت.
  */
 
-import { Marquee } from '@/components/ModernTrending/effects/Marquee';
+import Ticker from '@/components/Ticker';
 import { TickerShell } from '@/components/TickerShell';
 import { cn } from '@/lib/utils';
 import type { HeaderTickerItem } from '@/types/types';
@@ -30,7 +30,7 @@ export function TickerBar({ items, className, speed = -30 }: TickerBarProps) {
       className={className}
       ariaLabel="نرخ‌های لحظه‌ای"
     >
-      <Marquee speed={speed} className="h-full" repeat={3} pauseOnHold>
+      <Ticker speed={speed} className="h-full" repeat={3} pauseOnHold>
         {items.map((item) => (
           <div key={item.id} className="flex shrink-0 items-center gap-1.5 px-3 py-1">
             <span className="text-[10px] font-medium uppercase tracking-[0.04em] text-neutral-500 dark:text-neutral-400">
@@ -60,7 +60,7 @@ export function TickerBar({ items, className, speed = -30 }: TickerBarProps) {
             <span aria-hidden className="ms-2 h-3 w-px bg-neutral-300/60 dark:bg-neutral-700/60" />
           </div>
         ))}
-      </Marquee>
+      </Ticker>
     </TickerShell>
   );
 }

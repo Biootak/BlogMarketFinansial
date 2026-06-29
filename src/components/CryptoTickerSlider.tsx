@@ -4,7 +4,7 @@ import type { CryptoTickerRate } from '@/types/types';
 import type React from 'react';
 import { memo } from 'react';
 import { CryptoTickerCard } from './CryptoTickerCard';
-import InfiniteTicker from './InfiniteTicker';
+import Ticker from './Ticker';
 
 interface CryptoTickerSliderProps {
   rates: CryptoTickerRate[];
@@ -20,7 +20,7 @@ interface CryptoTickerSliderProps {
 const CryptoTickerSlider: React.FC<CryptoTickerSliderProps> = ({ rates }) => {
   return (
     <div className="nc-CryptoTickerSlider relative marquee-pause">
-      <InfiniteTicker duration={50} dir="rtl">
+      <Ticker duration={50} direction="rtl">
         <div className="flex items-center gap-2 px-2 py-1">
           {rates.map((rate, idx) => (
             <div key={`${rate.symbol}-${idx}`} className="shrink-0 w-auto">
@@ -28,7 +28,7 @@ const CryptoTickerSlider: React.FC<CryptoTickerSliderProps> = ({ rates }) => {
             </div>
           ))}
         </div>
-      </InfiniteTicker>
+      </Ticker>
     </div>
   );
 };

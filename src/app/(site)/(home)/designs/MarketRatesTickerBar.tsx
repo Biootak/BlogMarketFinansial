@@ -5,7 +5,7 @@
 'use client';
 
 import type { MarketRateItem } from '@/lib/market-rates';
-import { InfiniteTicker } from '@/components/InfiniteTicker';
+import Ticker from '@/components/Ticker';
 import { TickerShell } from '@/components/TickerShell';
 import { TrendingUp, TrendingDown, Minus, Radio } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -37,7 +37,7 @@ export default function MarketRatesTickerBar({ rates, label = 'بازارها' }
         </span>
       }
     >
-      <InfiniteTicker duration={60} dir="rtl" pauseOnHover pauseOnHold>
+      <Ticker duration={60} direction="rtl" pauseOnHover pauseOnHold>
         <div className="flex items-stretch">
           {items.map((rate, idx) => {
             const hasChange = Number.isFinite(rate.changePercent);
@@ -92,7 +92,7 @@ export default function MarketRatesTickerBar({ rates, label = 'بازارها' }
             );
           })}
         </div>
-      </InfiniteTicker>
+      </Ticker>
     </TickerShell>
   );
 }

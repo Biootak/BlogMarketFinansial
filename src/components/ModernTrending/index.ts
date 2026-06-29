@@ -7,7 +7,7 @@
  * - Magnetic Hover
  * - 3D Tilt (subtle)
  * - Shimmer line (subtle)
- * - Marquee Ticker (CSS-driven)
+ * - Ticker (shared CSS marquee)
  * - LiveIndicator
  * - Morphing Underline
  *
@@ -23,7 +23,6 @@ export { default as ModernTrendingTopics } from './ModernTrendingTopics';
 export { AuroraBackground } from './effects/AuroraBackground';
 export { LiveIndicator } from './effects/LiveIndicator';
 export { Magnetic } from './effects/Magnetic';
-export { Marquee } from './effects/Marquee';
 export { Shimmer } from './effects/Shimmer';
 export { TextGradient } from './effects/TextGradient';
 export { TiltCard } from './effects/TiltCard';
