@@ -1,7 +1,15 @@
 import { PrismaClient } from '@prisma/client';
+import { buildDatabaseUrl } from './db-url';
+
+export { buildDatabaseUrl };
 
 const prismaClientSingleton = () => {
   return new PrismaClient({
+    datasources: {
+      db: {
+        url: buildDatabaseUrl(),
+      },
+    },
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
   });
 };

@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import type * as React from 'react';
 import { Eye, MessagesSquare } from 'lucide-react';

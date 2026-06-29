@@ -239,6 +239,8 @@ const nextConfig: NextConfig = {
       dynamic: 30,
       static: 180,
     },
+    staticGenerationRetryCount: 1,
+    staticGenerationMaxConcurrency: 4,
     optimizePackageImports: ['lucide-react', 'react-icons'],
     optimizeCss: false,
     // 2026-06-27: Turbopack's embedded lightningcss 1.0.0-alpha.70 panics on

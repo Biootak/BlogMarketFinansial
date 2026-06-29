@@ -62,3 +62,8 @@ next-env.d.ts
 .sentryclirc
 .vercel
 .env*
+
+# Large external theme assets / harness metadata
+/Orchis-theme/
+/WhiteSur-gtk-theme/
+/.kimchi/ferments/

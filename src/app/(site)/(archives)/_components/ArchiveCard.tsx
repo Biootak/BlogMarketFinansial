@@ -1,3 +1,5 @@
+'use client';
+
 import { Card } from '@/components/ds';
 import { SafeImage } from '@/components/SafeImage';
 import { getPostLink } from '@/lib/getPostLink';
