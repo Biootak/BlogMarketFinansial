@@ -9,7 +9,7 @@
  * Per route, the (site)/layout and dashboard/layout call `auth()` and
  * pass `session` to `<Providers session={session}>`.
  */
-import { Vazirmatn } from 'next/font/google';
+import localFont from 'next/font/local';
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import { Toaster } from '@/components/ui/toaster';
@@ -62,13 +62,13 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-const vazirmatn = Vazirmatn({
-  subsets: ['arabic'],
+const vazirmatn = localFont({
+  src: '../../public/fonts/vazirmatn/vazirmatn-arabic.woff2',
+  weight: '100 900',
   display: 'swap',
   variable: '--font-vazirmatn',
   preload: true,
-  weight: ['400', '500', '600', '700'],
-  adjustFontFallback: true,
+  adjustFontFallback: 'Arial',
 });
 
 export default function RootLayout({

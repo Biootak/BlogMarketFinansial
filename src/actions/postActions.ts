@@ -66,26 +66,7 @@ export async function createPost(data: CreatePostInput): Promise<ActionResult<Po
           },
         },
         categories: true,
-        comments: {
-          include: {
-            author: {
-              include: {
-                profile: true,
-              },
-            },
-            post: true,
-            replies: true,
-            likes: {
-              include: {
-                user: true,
-              },
-            },
-            _count: true,
-          },
-        },
         tags: true,
-        likes: true,
-        savedBy: true,
         _count: {
           select: {
             comments: true,
@@ -335,26 +316,7 @@ export async function updatePostStatus(
           },
         },
         categories: true,
-        comments: {
-          include: {
-            author: {
-              include: {
-                profile: true,
-              },
-            },
-            post: true,
-            replies: true,
-            likes: {
-              include: {
-                user: true,
-              },
-            },
-            _count: true,
-          },
-        },
         tags: true,
-        likes: true,
-        savedBy: true,
         _count: {
           select: {
             comments: true,
@@ -1207,13 +1169,13 @@ async function fetchStatsRaw(roleScope: { authorId?: string }): Promise<
     ] = await prisma.$transaction([
       prisma.post.aggregate({
         _sum: { viewCount: true },
-        where: { ...baseWhere, updatedAt: { gte: today } },
+        where: { ...baseWhere, createdAt: { gte: today } },
       }),
       prisma.post.groupBy({
-        by: ['updatedAt'],
+        by: ['createdAt'],
         _sum: { viewCount: true },
-        where: { ...baseWhere, updatedAt: { gte: weekAgo } },
-        orderBy: { updatedAt: 'asc' },
+        where: { ...baseWhere, createdAt: { gte: weekAgo } },
+        orderBy: { createdAt: 'asc' },
       }),
       prisma.comment.count({
         where: {

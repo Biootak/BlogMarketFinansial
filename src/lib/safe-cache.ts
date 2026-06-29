@@ -31,7 +31,19 @@ interface CacheEntry<T> {
   storedAt: number;
 }
 
+// 2026-06-28: bound in-memory cache to prevent unbounded growth.
+// Map preserves insertion order; oldest entries are evicted first.
+const MAX_CACHE_ENTRIES = Number(process.env.SAFE_CACHE_MAX_ENTRIES) || 1000;
 const memoryStore = new Map<string, CacheEntry<unknown>>();
+
+function evictIfNeeded(): void {
+  while (memoryStore.size > MAX_CACHE_ENTRIES) {
+    const oldestKey = memoryStore.keys().next().value;
+    if (oldestKey !== undefined) {
+      memoryStore.delete(oldestKey);
+    }
+  }
+}
 
 interface SafeCacheOptions {
   /** کلید یکتا برای این cache slot */
@@ -82,6 +94,7 @@ export function safeCache<TArgs extends unknown[], T>(
     try {
       const value = await fn(...args);
       memoryStore.set(fullKey, { value, expiresAt: now + ttl * 1000, storedAt: now });
+      evictIfNeeded();
       if (isDev && tags.length > 0) {
         // فقط برای dev observability
       }

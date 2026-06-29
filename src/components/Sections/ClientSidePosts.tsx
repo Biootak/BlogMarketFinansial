@@ -383,7 +383,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
                   'text-[11px] sm:text-xs font-medium text-neutral-600 dark:text-neutral-300',
                 )}
               >
-                <LiveClock showIcon={false} showSeconds />
+                <LiveClock showIcon={false} />
                 <span className="text-neutral-400 dark:text-neutral-500">·</span>
                 <span className="text-neutral-500 dark:text-neutral-400">تهران</span>
               </div>

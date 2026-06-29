@@ -44,7 +44,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import RateListsTicker from './RateListsTicker';
 
 interface CategoryItem {
@@ -140,7 +140,7 @@ function relTime(d: Date | string): string {
 /* ============================================================================
    Component
    ============================================================================ */
-export function LatestArticles({
+function LatestArticles({
   posts,
   categories,
   initialAds,
@@ -399,7 +399,7 @@ export function LatestArticles({
                   )}
                   title="ساعت تهران"
                 >
-                  <LiveClock showIcon={false} showSeconds timeZone="Asia/Tehran" />
+                  <LiveClock showIcon={false} timeZone="Asia/Tehran" />
                   <span className="text-neutral-400 dark:text-neutral-500">·</span>
                   <span className="text-neutral-500 dark:text-neutral-400">تهران</span>
                 </div>
@@ -416,7 +416,7 @@ export function LatestArticles({
                   }}
                   title="ساعت کابل"
                 >
-                  <LiveClock showIcon={false} showSeconds timeZone="Asia/Kabul" />
+                  <LiveClock showIcon={false} timeZone="Asia/Kabul" />
                   <span className="opacity-60" style={{ color: accent.color }}>
                     ·
                   </span>
@@ -1609,4 +1609,6 @@ function FooterActions({
   );
 }
 
-export default LatestArticles;
+const MemoizedLatestArticles = memo(LatestArticles);
+export default MemoizedLatestArticles;
+export { MemoizedLatestArticles as LatestArticles };

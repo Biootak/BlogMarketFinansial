@@ -1,4 +1,5 @@
 import DashboardGate from './DashboardGate';
+import './dashboard.css';
 
 export default function DashboardLayout({
   children,

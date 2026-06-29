@@ -111,19 +111,18 @@ export default function Design7({
   if (!initialPosts?.length) return <CardLarge1Skeleton />;
 
   const mainPost = initialPosts[activeIndex];
-  const otherPosts = initialPosts.filter((_, i) => i !== activeIndex);
 
-  // تم پست اصلی
-  const mainTheme: CategoryTheme = useMemo(
-    () => getCategoryTheme(mainPost.categories?.[0]?.slug, mainPost.categories?.[0]?.name),
-    [mainPost],
-  );
-
-  // تم برای side cards
-  const sideThemes = useMemo(
-    () => otherPosts.map((p) => getCategoryTheme(p.categories?.[0]?.slug, p.categories?.[0]?.name)),
-    [otherPosts],
-  );
+  // تم پست اصلی + تم side cards در یک useMemo با deps stable
+  // 2026-06-28: وابسته به activeIndex نه otherPosts (که هر رندر آرایه جدید بود و useMemo را خنثی می‌کرد)
+  const { mainTheme, otherPosts, sideThemes } = useMemo(() => {
+    const current = initialPosts[activeIndex];
+    const others = initialPosts.filter((_, i) => i !== activeIndex);
+    return {
+      mainTheme: getCategoryTheme(current.categories?.[0]?.slug, current.categories?.[0]?.name),
+      otherPosts: others,
+      sideThemes: others.map((p) => getCategoryTheme(p.categories?.[0]?.slug, p.categories?.[0]?.name)),
+    };
+  }, [initialPosts, activeIndex]);
 
   // پیدا کردن نرخ‌های حواله مرتبط (از RateList های فعال)
   // به صورت flat list از RateItem برای نمایش چرخشی

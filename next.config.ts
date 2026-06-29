@@ -3,17 +3,17 @@ import path from 'path';
 import { withSentryConfig } from '@sentry/nextjs';
 
 // 2026-06-14: Content Security Policy — تمیزتر، با allowlist دقیق برای
-// Sentry loader، Telegram bot API، font CDNهای Vazirmatn و سرویس‌دهنده‌های
-// embed ویدیو. در dev مجاز نمی‌کنیم چون next-themes و HMR script نیاز به
-// unsafe-eval دارند که در prod لازم نیست.
+// Sentry loader، Telegram bot API، و سرویس‌دهنده‌های embed ویدیو. در dev
+// مجاز نمی‌کنیم چون next-themes و HMR script نیاز به unsafe-eval دارند که
+// در prod لازم نیست. Vazirmatn از 2026-06-28 self-hosted است.
 const isProd = process.env.NODE_ENV === 'production';
 
 const ContentSecurityPolicy = `
   default-src 'self';
   script-src 'self' 'unsafe-inline' https://*.sentry.io ${isProd ? '' : "'unsafe-eval'"};
-  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  style-src 'self' 'unsafe-inline';
   img-src 'self' blob: data: https: http:;
-  font-src 'self' data: https://fonts.gstatic.com;
+  font-src 'self' data:
   connect-src 'self' https://*.sentry.io https://api.telegram.org https://api.exir.io wss: ws:;
   frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://www.aparat.com;
   media-src 'self' https: blob:;
@@ -246,10 +246,16 @@ const nextConfig: NextConfig = {
     // color features from transpilation lets the CSS pass through unchanged,
     // avoiding the parser/transformer panic while keeping modern browsers that
     // natively support oklch().
-    useLightningcss: true,
-    lightningCssFeatures: {
-      exclude: ['oklab-colors', 'lab-colors', 'color-function'],
-    },
+    // NOTE: useLightningcss is only valid with Turbopack (dev). Production
+    // build uses webpack (`next build --webpack`) and this flag conflicts with
+    // PostCSS plugins, so we disable it in production.
+    useLightningcss: process.env.NODE_ENV !== 'production',
+    lightningCssFeatures:
+      process.env.NODE_ENV !== 'production'
+        ? {
+            exclude: ['oklab-colors', 'lab-colors', 'color-function'],
+          }
+        : undefined,
   },
 
   // 2026-06-14: keepAlive on the global HTTP agent. Re-establishing

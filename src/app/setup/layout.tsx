@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import type * as React from 'react';
+import './setup.css';
 
 /**
  * Setup-specific metadata. This page is intentionally excluded from search

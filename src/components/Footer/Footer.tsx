@@ -207,7 +207,7 @@ const Footer = ({ footerAd }: FooterProps) => {
             <p className="text-sm text-slate-500 dark:text-slate-500">
               <span dir="rtl">تمامی حقوق محفوظ است.</span>{' '}
               <span className="text-slate-700 dark:text-slate-400 font-medium">{siteName}</span>{' '}
-              <span dir="ltr">© {new Date().getFullYear()}</span>
+              <span dir="ltr">© 2026</span>
             </p>
             <div className="flex items-center gap-6">
               <Link

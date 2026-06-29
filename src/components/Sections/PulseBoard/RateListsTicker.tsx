@@ -86,7 +86,14 @@ export default function RateListsTicker({
 }: RateListsTickerProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [jalaliDate, setJalaliDate] = useState('');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // 2026-06-28: avoid calling new Date() during SSR; populate the date only
+  // after client mount so Next.js 16's "current time" guard isn't triggered.
+  useEffect(() => {
+    setJalaliDate(toPersianNumber(fmtJalaliShort(new Date())));
+  }, []);
 
   /* ---------- Group all rate items from all active lists ---------- */
   const grouped = useMemo(() => {
@@ -204,9 +211,9 @@ export default function RateListsTicker({
               نرخ لحظه‌ای بازار
             </span>
             <span className="text-[9.5px] sm:text-[10.5px] text-neutral-500 dark:text-neutral-400 font-vazirmatn tabular-nums leading-tight mt-0.5">
-              <LiveClock showIcon={false} showSeconds timeZone="Asia/Tehran" />
+              <LiveClock showIcon={false} timeZone="Asia/Tehran" />
               <span className="mx-1 text-neutral-300 dark:text-neutral-600">·</span>
-              <span>{toPersianNumber(fmtJalaliShort(new Date()))}</span>
+              <span>{jalaliDate || '—'}</span>
             </span>
           </div>
         </div>

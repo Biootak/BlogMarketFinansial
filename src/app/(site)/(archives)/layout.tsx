@@ -1,4 +1,5 @@
 import type React from 'react';
+import '../../atelier-archive.css';
 
 export default function ArchiveLayout({
   children,

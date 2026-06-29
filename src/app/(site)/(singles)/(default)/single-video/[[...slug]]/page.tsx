@@ -1,8 +1,10 @@
 'use client';
 
 import React, { Suspense, useEffect, useState } from 'react';
-import ReactPlayer from 'react-player';
+import dynamic from 'next/dynamic';
 import SingleTitle from '@/app/(site)/(singles)/SingleTitle';
+
+const ReactPlayer = dynamic(() => import('react-player'), { ssr: false });
 
 const PageSv = ({}) => {
   const [isRendered, setIsRendered] = useState(false);

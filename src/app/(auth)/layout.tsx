@@ -10,6 +10,7 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
+import './auth.css';
 
 async function AuthGate({ children }: { children: React.ReactNode }) {
   try {

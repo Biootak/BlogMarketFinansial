@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { getSystemSettingsCached } from '@/data/getSystemSettingsCached';
 import SiteHeaderData, {
   HeaderSkeleton,
@@ -48,11 +49,17 @@ export async function generateMetadata(): Promise<Metadata> {
  * resolve in parallel. The `safeCache` wrappers inside the async components
  * still guarantee graceful fallbacks if the database is unreachable.
  */
-export default function SiteLayout({
+export default async function SiteLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // 2026-06-28: Satisfy Next.js 16's "current time" guard for any descendant
+  // that reads the wall clock (e.g. Footer copyright year). Reading headers()
+  // marks this layout boundary as dynamic-input-dependent, which allows new Date()
+  // calls further down the tree during static prerender without crashing.
+  headers();
+
   return (
     <>
       <Suspense fallback={<HeaderSkeleton />}>

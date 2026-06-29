@@ -470,8 +470,9 @@ model ActivityLog {
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
 
-  @@index([userId])
-  @@index([createdAt])
+  // 2026-06-28: composite index for user-scoped activity feeds sorted by time.
+  // Replaces separate indexes; covers userId filters + createdAt ordering.
+  @@index([userId, createdAt])
 }
 
 model Activity {

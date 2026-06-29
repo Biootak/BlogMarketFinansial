@@ -10,7 +10,7 @@
  * - prefers-reduced-motion توسط global rule در globals.css → animation حذف میشه
  */
 
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { Clock } from 'lucide-react';
 import { cn, toPersianNumber } from '@/lib/utils';
 
@@ -43,7 +43,7 @@ function getTimeParts(
   return { hour, minute, second };
 }
 
-export default function LiveClock({
+function LiveClock({
   className,
   showSeconds = false,
   showIcon = true,
@@ -114,3 +114,5 @@ export default function LiveClock({
     </div>
   );
 }
+
+export default memo(LiveClock);

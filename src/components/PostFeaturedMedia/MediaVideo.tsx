@@ -3,7 +3,9 @@
 import LoadingVideo from '@/components/LoadingVideo/LoadingVideo';
 import { HiSpeakerWave, HiSpeakerXMark } from 'react-icons/hi2';
 import React, { type FC, useEffect, useState } from 'react';
-import ReactPlayer from 'react-player';
+import dynamic from 'next/dynamic';
+
+const ReactPlayer = dynamic(() => import('react-player'), { ssr: false });
 
 export interface MediaVideoProps {
   videoUrl: string;

@@ -61,9 +61,9 @@ export const FontFamily = Extension.create<FontFamilyOptions>({
   },
 });
 
-// فونت‌های فارسی آنلاین (Google Fonts / CDN)
+// فونت‌های فارسی (Vazirmatn از 2026-06-28 self-hosted است)
 export const persianFonts = [
-  { label: 'وزیرمتن', value: 'Vazirmatn', url: 'https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap' },
+  { label: 'وزیرمتن', value: 'Vazirmatn', url: '/fonts/vazirmatn/vazirmatn.css' },
   { label: 'یکان بخ', value: 'Yekan Bakh', url: 'https://cdn.jsdelivr.net/gh/nicefont/yekan-bakh@main/css/yekan-bakh.css' },
 ];
 
