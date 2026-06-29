@@ -3,6 +3,15 @@ import { buildDatabaseUrl } from './db-url';
 
 export { buildDatabaseUrl };
 
+// 2026-06-29: Prisma connection pool tuning
+// ---------------------------------------------------------------------------
+// The default Prisma pool (connection_limit=21, pool_timeout=10s) collapses
+// during Next.js static generation because many workers open connections at
+// the same time. We now build the query URL from DATABASE_URL and append
+// configurable connection_limit / pool_timeout values via env vars:
+//   PRISMA_CONNECTION_LIMIT  (default: 30 prod / 10 dev)
+//   PRISMA_POOL_TIMEOUT      (default: 30 seconds)
+// Existing query params in DATABASE_URL are preserved.
 const prismaClientSingleton = () => {
   return new PrismaClient({
     datasources: {

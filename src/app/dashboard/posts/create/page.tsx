@@ -7,8 +7,8 @@ import SkeletonLoader from '@/components/SkeletonLoader';
 import { getCategories } from '@/actions/categoryActions';
 import { getTags } from '@/actions/getTags';
 
-export const revalidate = 3600;
-
+// Dynamic rendering is inherited from the dashboard layout (force-dynamic);
+// no per-page revalidate — this is an auth-gated workspace, not ISR content.
 export default async function CreatePostPage() {
   const [categoriesResult, tagsResult] = await Promise.all([
     getCategories({ limit: 100, page: 1 }),

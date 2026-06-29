@@ -16,9 +16,8 @@ import { getSystemSettingsData } from '@/data/getSystemSettings';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://blogmarketfinansial.ir';
 
 export async function generateMetadata(): Promise<Metadata> {
-  // `getSystemSettingsData` routes through `safeCache` (in-memory, uses
-  // performance.now()). With `cacheComponents: false` it prerenders fine in
-  // a static context, so no dynamic signal is needed (page uses ISR).
+  // `getSystemSettingsData` routes through `safeCache` (in-memory) so metadata
+  // reuses the cached settings instead of hitting the DB on every request.
   const settings = await getSystemSettingsData();
   const siteName = settings.siteName ?? 'بازارهای مالی';
   const title = 'نویسندگان';
@@ -45,8 +44,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 
-export const revalidate = 60;
-
+// Dynamically rendered on demand — the shared site header reads auth(), which
+// opts the whole (site) tree out of static generation (see (home)/page.tsx).
 export default async function AuthorsPage() {
   const data = await getAuthorsHubData(12, 6);
 

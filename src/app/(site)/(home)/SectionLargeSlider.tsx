@@ -6,12 +6,11 @@ import Empty from '@/components/Empty';
 import type { PostWithRelations, RateListData } from '@/types/types';
 import DeferredDesign7 from './deferred/DeferredDesign7';
 
-// 2026-06-27: Removed `react.cache()` wrappers around the server actions.
-// Under `cacheComponents: true` (Next 16), wrapping a 'use server' export
-// in `cache()` causes the flight loader's `registerServerReference` to
-// run twice during the 'use cache' prerender pass, throwing
-// `Cannot redefine property: $$FORM_ACTION`. Server actions already dedupe
-// per-request; `safeCache` handles cross-request caching.
+// No `react.cache()` wrappers around the server actions here: wrapping a
+// 'use server' export in `cache()` can re-run the flight loader's
+// `registerServerReference` and throw `Cannot redefine property:
+// $$FORM_ACTION`. It's also unnecessary — server actions already dedupe
+// per-request and `safeCache` handles cross-request caching.
 export default async function SectionLargeSlider() {
   const [postsResult, ratesResult, marketRates, rateLists] = await Promise.all([
     getFeaturedPosts(3),

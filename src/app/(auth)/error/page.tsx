@@ -8,9 +8,9 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-// 2026-06-27: `cacheComponents: true` — `searchParams` is a runtime API.
-// Per the migration guide, we move the runtime access into a component
-// wrapped in <Suspense> so the static shell prerenders.
+// `searchParams` is a runtime API, so this route renders dynamically. The
+// access is isolated in a <Suspense>-wrapped component so the shell paints
+// immediately and the param-dependent content streams in.
 async function ErrorContent({
   searchParams,
 }: {

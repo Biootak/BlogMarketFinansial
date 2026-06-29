@@ -57,8 +57,8 @@ export async function generateMetadata({
 }
 
 
-export const revalidate = 60;
-
+// Dynamically rendered on demand — the shared site header reads auth(), which
+// opts the whole (site) tree out of static generation (see (home)/page.tsx).
 export default async function PageAuthor({
   params,
 }: {

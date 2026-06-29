@@ -7,10 +7,9 @@ import { getSystemSettingsData } from '@/data/getSystemSettings';
 /**
  * DashboardGate — async inner component that resolves auth + settings.
  *
- * 2026-06-26: Under Next.js 16 `cacheComponents: true`, any uncached
- * async data access (like `auth()`) must happen inside a `<Suspense>`
- * boundary so the static shell can stream first. This component isolates
- * the two uncached calls (auth + settings) from the layout itself.
+ * Isolating the two uncached async calls (auth + settings) here lets the
+ * layout wrap them in a `<Suspense>` boundary, so the dashboard shell paints
+ * immediately and the auth/settings resolution streams in.
  */
 async function DashboardGateInner({
   children,

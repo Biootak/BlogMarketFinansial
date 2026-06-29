@@ -75,12 +75,10 @@ export function safeCache<TArgs extends unknown[], T>(
   const { key: baseKey, ttl, tags = [] } = options;
 
   return async (...args: TArgs): Promise<T> => {
-    // 2026-06-26: `Date.now()` is forbidden in the static prerender shell
-    // under `cacheComponents: true` and crashes the home page. We use
-    // `performance.now()` instead — it's a monotonic timer (ms since
-    // process start) that doesn't trigger Next.js's "current time" guard.
-    // For TTL comparison this is perfectly adequate since we only need
-    // relative elapsed time, not wall-clock timestamps.
+    // Use `performance.now()` (a monotonic timer, ms since process start)
+    // rather than `Date.now()`. TTL comparison only needs relative elapsed
+    // time, not wall-clock timestamps, and a monotonic clock is immune to
+    // system-clock adjustments.
     const now = performance.now();
     const fullKey = makeKey(baseKey, args);
     const cached = memoryStore.get(fullKey) as CacheEntry<T> | undefined;

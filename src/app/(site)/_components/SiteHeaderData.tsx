@@ -5,10 +5,10 @@ import { getActiveRateListsOrCryptoFallback } from '@/actions/rate-lists';
 /**
  * SiteHeaderData — async data boundary for the public site header.
  *
- * 2026-06-25: Under Next.js 16 `cacheComponents: true`, any uncached data
- * access must happen inside a <Suspense> boundary so the static shell can
- * stream first. This component isolates the rate-list fetch from the root
- * layout and hands the resolved data to the existing Header component.
+ * Isolating the rate-list fetch in its own component lets the parent layout
+ * wrap it in a <Suspense> boundary, so the header streams in with a skeleton
+ * instead of blocking the rest of the page. The resolved data is handed to
+ * the existing Header component.
  */
 export default async function SiteHeaderData() {
   const rateLists = await getActiveRateListsOrCryptoFallback();

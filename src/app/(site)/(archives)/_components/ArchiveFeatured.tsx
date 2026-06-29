@@ -1,5 +1,9 @@
 'use client';
 
+// 2026-06-29: Client Component because Jalali date formatting calls
+// `new Date()`. Next.js 16's static generation rejects `new Date()` in
+// Server Components before dynamic data access. See
+// https://nextjs.org/docs/messages/next-prerender-current-time
 import { Card } from '@/components/ds';
 import { SafeImage } from '@/components/SafeImage';
 import { getPostLink } from '@/lib/getPostLink';

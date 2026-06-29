@@ -9,8 +9,8 @@ import type { RateRowData } from './_components/ExchangeRateRow';
 import ExchangeRatesHeader from './_components/ExchangeRatesHeader';
 import ExchangeRatesShell from './_components/ExchangeRatesShell';
 
-export const revalidate = 60;
-
+// Dynamic rendering is inherited from the dashboard layout (force-dynamic);
+// no per-page revalidate — this is an auth-gated workspace, not ISR content.
 export default async function ExchangeRatesPage() {
   const [rows, lists] = await Promise.all([getExchangeRateList(), getRateLists()]);
 

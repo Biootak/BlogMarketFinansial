@@ -1,5 +1,11 @@
 'use client';
 
+// 2026-06-29: Marked as a Client Component because date formatting uses
+// `new Date()`. In Next.js 16 static generation, calling `new Date()` inside
+// a Server Component before any uncached/request data triggers the
+// `next-prerender-current-time` invariant. Moving the card to the client
+// keeps the route statically prerenderable while the date is formatted in
+// the browser / SSR simulation.
 import Link from 'next/link';
 import type * as React from 'react';
 import { Eye, MessagesSquare } from 'lucide-react';

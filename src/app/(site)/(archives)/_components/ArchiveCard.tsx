@@ -1,5 +1,9 @@
 'use client';
 
+// 2026-06-29: Client Component because of `new Date()` usage in date
+// formatting. Next.js 16 forbids `new Date()` in Server Components during
+// static generation unless preceded by uncached/request data access. See
+// https://nextjs.org/docs/messages/next-prerender-current-time
 import { Card } from '@/components/ds';
 import { SafeImage } from '@/components/SafeImage';
 import { getPostLink } from '@/lib/getPostLink';

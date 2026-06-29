@@ -14,8 +14,11 @@ import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2'
 import DeferredTrending from './deferred/DeferredTrending';
 import DeferredAdStrip from './deferred/DeferredAdStrip';
 
-export const revalidate = 60;
-
+// Dynamically rendered on demand: the shared site header (MainNav) reads
+// auth() to render sign-in/avatar state, which opts the whole (site) tree out
+// of static generation — so `revalidate` here would be a no-op. DB reads are
+// deduped via safeCache; HTML is edge-cached via the s-maxage header in
+// next.config.ts.
 export default async function Home() {
   const [posts, topAuthors, firstStripResult, secondStripResult, categoriesResult, featuredResult] =
     await Promise.all([

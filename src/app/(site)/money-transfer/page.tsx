@@ -15,8 +15,8 @@ export const metadata: Metadata = {
 };
 
 
-export const revalidate = 3600;
-
+// Dynamically rendered on demand — the shared site header reads auth(), which
+// opts the whole (site) tree out of static generation (see (home)/page.tsx).
 export default async function MoneyTransferPage() {
   const exchangeRates = await getExchangeRates();
   const rateLists = await getRateLists();

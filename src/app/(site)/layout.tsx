@@ -10,9 +10,9 @@ import SiteFooterData, {
 import SiteSettingsData from '@/app/(site)/_components/SiteSettingsData';
 
 export async function generateMetadata(): Promise<Metadata> {
-  // 2026-06-29: `getSystemSettingsCached` (unstable_cache, 60s revalidate)
-  // lets metadata be statically prerendered and revalidated alongside the
-  // page under ISR — no dynamic request API needed.
+  // Site settings come from `getSystemSettingsCached` (unstable_cache, 60s)
+  // so metadata generation reuses the cached value instead of hitting the DB
+  // on every request.
   const settings = await getSystemSettingsCached();
 
   return {
@@ -42,9 +42,11 @@ export async function generateMetadata(): Promise<Metadata> {
  *   - Site settings hydration (no visual impact)
  *
  * The `safeCache` wrappers inside the async components guarantee graceful
- * fallbacks if the database is unreachable. With `cacheComponents: false`,
- * pages are prerendered and revalidated via their own `revalidate` exports
- * (ISR) — no force-dynamic / request-API guards needed here.
+ * fallbacks if the database is unreachable. Note that `MainNav` (rendered by
+ * SiteHeaderData) reads `auth()`, so every (site) route is dynamically
+ * rendered on demand — there is no static prerender (and therefore no
+ * build-time DB connection). Performance comes from safeCache + the CDN
+ * `s-maxage` header in next.config.ts, not ISR.
  */
 export default async function SiteLayout({
   children,

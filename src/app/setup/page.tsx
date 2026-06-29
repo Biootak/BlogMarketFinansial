@@ -11,16 +11,13 @@ import Link from 'next/link';
 /**
  * Setup page (server component shell).
  *
- * 2026-06-25: Refactored to avoid the `blocking-route` error under
- * Next.js 16 `cacheComponents: true`. The page shell renders immediately
- * and streams the dynamic content (headers + DB probe) inside a <Suspense>
- * boundary.
+ * The page shell renders immediately and streams the dynamic content
+ * (headers + DB probe) inside a <Suspense> boundary.
  *
- * 2026-06-29: With `cacheComponents: true`, using `headers()` automatically
- * opts this page into dynamic rendering at request time. No need for
- * `export const dynamic = 'force-dynamic'` (which conflicts with cacheComponents).
- * The headers() call in SetupContent ensures this page never attempts static
- * generation at build time.
+ * 2026-06-29: The `headers()` call in SetupContent reads a request API, which
+ * automatically opts this page into dynamic rendering — so it never attempts
+ * static generation (and a build-time DB connection). No `export const
+ * dynamic` needed.
  *
  * Responsibilities:
  *   1. Render the skip-link and static brand nav immediately.

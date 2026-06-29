@@ -34,10 +34,13 @@ const nextConfig: NextConfig = {
   ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
   output: 'standalone',
   reactStrictMode: true,
-  // 2026-06-29: TEMPORARILY disabled cacheComponents to fix build-time DB
-  // connection issues. When enabled, cacheComponents requires all pages to
-  // opt out of static generation individually (can't use export const dynamic).
-  // TODO: Re-enable after migrating to proper ISR/dynamic rendering patterns.
+  // 2026-06-29: cacheComponents (PPR) disabled. With it on, the static shell
+  // streamed while dynamic holes (e.g. the auth-aware header) deferred — but
+  // it also forced every prerendered page to connect to the DB at build time.
+  // With it off, pages that read request data (the (site) header calls auth(),
+  // dashboard is force-dynamic, setup reads headers()) are simply rendered on
+  // demand, so `next build` needs no DB connection. Public-page performance
+  // comes from safeCache + the CDN `s-maxage` header above.
   cacheComponents: false,
   compress: true,
   poweredByHeader: false,

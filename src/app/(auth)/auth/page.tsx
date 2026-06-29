@@ -5,8 +5,8 @@ import { Suspense } from 'react';
 
 import AuthFlow from '@/components/Auth/AuthFlow.redesign';
 
-// 2026-06-27: `cacheComponents: true` — auth pages read cookies via
-// the (auth) layout, so they can't be statically prerendered.
+// Auth pages read cookies via the (auth) layout, so they render dynamically
+// (never statically prerendered).
 
 export const metadata: Metadata = {
   title: 'ورود و ثبت‌نام امن — بازار مالی',

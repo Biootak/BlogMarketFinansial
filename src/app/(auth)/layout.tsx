@@ -3,10 +3,9 @@
 // Already-authenticated users land on /auth from a stale link? We
 // bounce them to /dashboard. Everyone else gets the page-level chrome.
 //
-// 2026-06-27: under `cacheComponents: true`, `auth()` reads cookies
-// (a runtime API). Per the migration guide, we wrap the runtime data
-// access in a <Suspense> boundary so the static shell prerenders and
-// the auth check streams in at request time.
+// `auth()` reads cookies (a runtime API), so this route renders dynamically.
+// The auth check is wrapped in a <Suspense> boundary so the shell paints
+// immediately and the redirect decision streams in at request time.
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
