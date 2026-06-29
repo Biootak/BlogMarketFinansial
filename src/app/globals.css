@@ -477,39 +477,6 @@ p { line-height: var(--leading-relaxed); }
 }
 
 /* ============================================================================
-   Marquee / InfiniteTicker — state های pause روی hover و hold
-   ----------------------------------------------------------------------------
-   `data-pause-on-hover` و `data-holding` از Marquee.tsx و InfiniteTicker.tsx ست میشن.
-   این selectorها هم روی .marquee-track و هم روی .ticker-track (و children) اعمال میشن.
-
-   همچنین کلاس `marquee-pause` روی هر parent قابل استفاده‌ست:
-   هر `.marquee-track` یا `.ticker-track` درون `.marquee-pause:hover` متوقف میشه.
-   ============================================================================ */
-
-/* وقتی کاربر hover می‌کنه → track متوقف میشه.
-   ترکیب descendant selector تضمین می‌کنه حتی اگه track در چند لایه
-   div تو در تو باشه باز هم pause کار کنه. */
-[data-pause-on-hover='true']:hover .marquee-track,
-[data-pause-on-hover='true']:hover .ticker-track,
-[data-pause-on-hover='true']:hover .ticker-ltr,
-[data-pause-on-hover='true']:hover .ticker-rtl,
-.marquee-pause:hover .marquee-track,
-.marquee-pause:hover .ticker-track,
-.marquee-pause:hover .ticker-ltr,
-.marquee-pause:hover .ticker-rtl {
-  animation-play-state: paused;
-}
-
-/* وقتی کاربر کلیک کنه و نگه داره (یا تاچ) → track متوقف میشه */
-[data-holding='true'] > .marquee-track,
-[data-holding='true'] > .ticker-track,
-[data-holding='true'] .ticker-ltr,
-[data-holding='true'] .ticker-rtl,
-[data-holding='true'] .marquee-track {
-  animation-play-state: paused !important;
-}
-
-/* ============================================================================
    Motion Primitives (CSS-driven, framer-motion replacement)
    ----------------------------------------------------------------------------
    هدف: حذف framer-motion از hot path با حفظ رفتار بصری دقیق.
@@ -651,7 +618,6 @@ p { line-height: var(--leading-relaxed); }
    - .ad-mesh-aurora    → پس‌زمینه mesh gradient متحرک (Live demo)
    - .ad-spotlight-3d   → perspective + mouse-driven parallax via --mx/--my CSS vars
    - .ad-pulse-glow     → حلقه glow ضربان‌دار پشت کارت
-   - .ad-marquee-strip  → نوار متحرک اطلاعات تبلیغ
    ============================================================================ */
 
 @keyframes ad-conic-spin {
@@ -713,12 +679,6 @@ p { line-height: var(--leading-relaxed); }
 @keyframes ad-pulse-glow {
   0%, 100% { opacity: 0.5; transform: scale(1); }
   50%      { opacity: 0.85; transform: scale(1.04); }
-}
-
-/* Marquee — برای نوار تبلیغات متحرک افقی */
-@keyframes ad-marquee {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
 }
 
 @layer utilities {
@@ -851,16 +811,6 @@ p { line-height: var(--leading-relaxed); }
     z-index: -1;
     animation: ad-pulse-glow 4s ease-in-out infinite;
     pointer-events: none;
-  }
-
-  /* Marquee strip — افقی، infinite */
-  .ad-marquee-strip {
-    display: flex;
-    width: max-content;
-    animation: ad-marquee 28s linear infinite;
-  }
-  .ad-marquee-strip:hover {
-    animation-play-state: paused;
   }
 
   /* Hairline مورب برای حالت spotlight */
@@ -5527,36 +5477,6 @@ p { line-height: var(--leading-relaxed); }
   .arc-bento__cell--wide {
     grid-column: 1 / -1;
   }
-
-  /* ---- Marquee Ribbon — نوار اعداد متحرک ----------------------------------- */
-  @keyframes arc-marquee-x {
-    from { transform: translateX(0); }
-    to   { transform: translateX(50%); }
-  }
-  .arc-marquee {
-    display: flex;
-    width: max-content;
-    animation: arc-marquee-x 36s linear infinite;
-    will-change: transform;
-  }
-  .arc-marquee:hover { animation-play-state: paused; }
-  .arc-marquee__item {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.4rem 0.9rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: oklch(45% 0.01 240);
-    border-inline-end: 1px solid oklch(92% 0.005 240 / 0.6);
-  }
-  .dark .arc-marquee__item { color: oklch(72% 0.01 240); border-inline-end-color: oklch(30% 0.012 250 / 0.6); }
-  .arc-marquee__num {
-    font-variant-numeric: tabular-nums;
-    font-weight: 700;
-    color: oklch(20% 0.01 240);
-  }
-  .dark .arc-marquee__num { color: oklch(96% 0.005 240); }
 
   /* ---- Floating meter (نوار متریک متحرک) ---------------------------------- */
   .arc-meter {
