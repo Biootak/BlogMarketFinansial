@@ -9,8 +9,8 @@ export async function checkReportAccess() {
     throw new Error('لطفاً وارد سیستم شوید');
   }
 
-  const userRole = session.user.role as 'ADMIN' | 'SUPER_ADMIN';
-  if (![Role.ADMIN, Role.SUPER_ADMIN].includes(userRole)) {
+  const userRole = session.user.role as 'ADMIN' | 'OWNER';
+  if (![Role.ADMIN, Role.OWNER].includes(userRole)) {
     throw new Error('شما دسترسی لازم برای مشاهده گزارش‌ها را ندارید');
   }
 }

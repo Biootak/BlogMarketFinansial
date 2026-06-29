@@ -44,7 +44,7 @@ import {
    • Glass surface with hairline border; respects light/dark and RTL.
    -------------------------------------------------------------------------- */
 
-type UserRole = 'USER' | 'AUTHOR' | 'ADMIN' | 'SUPER_ADMIN';
+type UserRole = 'USER' | 'AUTHOR' | 'ADMIN' | 'OWNER';
 
 interface SubmenuItem {
   href: string;
@@ -68,14 +68,14 @@ interface NavSection {
 }
 
 const ROLE_LABEL: Record<UserRole, string> = {
-  SUPER_ADMIN: 'مدیر ارشد',
+  OWNER: 'مالک',
   ADMIN: 'مدیر',
   AUTHOR: 'نویسنده',
   USER: 'کاربر',
 };
 
 const ROLE_TONE: Record<UserRole, string> = {
-  SUPER_ADMIN: 'bg-gradient-to-br from-rose-500 to-pink-600',
+  OWNER: 'bg-gradient-to-br from-rose-500 to-pink-600',
   ADMIN: 'bg-gradient-to-br from-violet-500 to-purple-600',
   AUTHOR: 'bg-gradient-to-br from-amber-500 to-orange-500',
   USER: 'bg-gradient-to-br from-slate-500 to-gray-600',
@@ -187,7 +187,7 @@ function getMenu(role: UserRole): NavSection[] {
   };
 
   switch (role) {
-    case 'SUPER_ADMIN':
+    case 'OWNER':
       return [
         { id: 'main', items: [dashboard] },
         { id: 'content', label: 'محتوا', items: [posts, categories] },

@@ -58,7 +58,7 @@ interface DashboardShellProps {
     todayViews: number;
   };
   recentActivity: import('./ActivityRail').ActivityItem[];
-  userRole: 'SUPER_ADMIN' | 'ADMIN' | 'AUTHOR';
+  userRole: 'OWNER' | 'ADMIN' | 'AUTHOR';
 }
 
 function buildSlices(props: DashboardShellProps): EngagementSlice[] {

@@ -52,7 +52,7 @@ const fetchHubDataRaw = async (
       OR: [
         { role: Role.AUTHOR },
         { role: Role.ADMIN },
-        { role: Role.SUPER_ADMIN },
+        { role: Role.OWNER },
       ],
     },
     take: topLimit,
@@ -75,7 +75,7 @@ const fetchHubDataRaw = async (
         OR: [
           { role: Role.AUTHOR },
           { role: Role.ADMIN },
-          { role: Role.SUPER_ADMIN },
+          { role: Role.OWNER },
         ],
       },
     }),
@@ -106,7 +106,7 @@ const fetchHubDataRaw = async (
         OR: [
           { role: Role.AUTHOR },
           { role: Role.ADMIN },
-          { role: Role.SUPER_ADMIN },
+          { role: Role.OWNER },
         ],
         posts: { some: { status: 'PUBLISHED', categories: { some: { id: cat.id } } } },
       },

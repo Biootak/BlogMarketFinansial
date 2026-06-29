@@ -12,7 +12,7 @@ import ServiceRequestsWidget from '@/components/Dashboard/ServiceRequests/Servic
 
 export default async function Dashboard() {
   // Check user role before loading any data
-  await checkRole(['SUPER_ADMIN', 'ADMIN', 'AUTHOR']);
+  await checkRole(['OWNER', 'ADMIN', 'AUTHOR']);
 
   const session = await auth();
 
@@ -21,7 +21,7 @@ export default async function Dashboard() {
   }
 
   const userRole = (session.user.role ?? 'AUTHOR') as
-    | 'SUPER_ADMIN'
+    | 'OWNER'
     | 'ADMIN'
     | 'AUTHOR';
 
@@ -61,7 +61,7 @@ export default async function Dashboard() {
     return notFound();
   }
 
-  const isAdmin = userRole === 'ADMIN' || userRole === 'SUPER_ADMIN';
+  const isAdmin = userRole === 'ADMIN' || userRole === 'OWNER';
 
   // Activity feed: silently fall back to [] on failure (decorative).
   const recentActivity =

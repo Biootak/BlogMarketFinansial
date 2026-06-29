@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import { AuroraBackdrop } from '@/components/Setup/AuroraBackdrop';
 import { SecurityNotice } from '@/components/Setup/SecurityNotice';
 import { SetupWizard } from '@/components/Setup/SetupWizard';
@@ -7,6 +6,7 @@ import { checkExistingSuperAdmin } from '@/lib/auth';
 import { PrismaClient } from '@prisma/client';
 import { headers } from 'next/headers';
 import Link from 'next/link';
+import { Suspense } from 'react';
 
 /**
  * Setup page (server component shell).
@@ -65,6 +65,10 @@ function SetupSkeleton() {
  */
 async function SetupContent() {
   const isProduction = process.env.NODE_ENV === 'production';
+  // Dev-only preview: render the wizard even when a super-admin already
+  // exists so the UI can be redesigned/tested without resetting the DB.
+  // The server action still refuses to create a duplicate admin.
+  const previewMode = !isProduction && process.env.SETUP_PREVIEW_MODE === 'true';
 
   // Read the client IP once on the server; surfaced in the trust footer
   // for production deployments that gate access by IP allow-list.
@@ -116,10 +120,13 @@ async function SetupContent() {
         <article className="setup-page__shell" aria-describedby="setup-trust">
           <div className="setup-page__shell-glow" aria-hidden="true" />
           <div className="setup-page__shell-inner">
-            {existingAdmin ? (
+            {existingAdmin && !previewMode ? (
               <AlreadyConfigured email={existingAdmin.email ?? ''} />
             ) : (
-              <SetupWizard />
+              <>
+                {previewMode ? <PreviewBanner /> : null}
+                <SetupWizard />
+              </>
             )}
           </div>
         </article>
@@ -142,6 +149,17 @@ export default function SetupPage() {
     <Suspense fallback={<SetupSkeleton />}>
       <SetupContent />
     </Suspense>
+  );
+}
+
+function PreviewBanner() {
+  return (
+    <output className="setup-preview-banner" aria-live="polite">
+      <span className="setup-preview-banner__dot" aria-hidden="true" />
+      <span className="setup-preview-banner__text">
+        حالت پیش‌نمایش Wizard فعال است. ارسال فرم به‌دلیل وجود مدیر اصلی با خطا مواجه می‌شود.
+      </span>
+    </output>
   );
 }
 

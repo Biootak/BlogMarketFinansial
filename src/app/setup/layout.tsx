@@ -8,7 +8,7 @@ import './setup.css';
  * super-admin and is never useful to a public visitor.
  *
  * The page itself is rendered as `force-dynamic` so every request probes
- * the database for an existing SUPER_ADMIN — see `src/app/setup/page.tsx`.
+ * the database for an existing OWNER — see `src/app/setup/page.tsx`.
  */
 
 export const metadata: Metadata = {

@@ -144,8 +144,8 @@ export async function updatePost(
       };
     }
 
-    // Only SUPER_ADMIN, ADMIN, and post owner (AUTHOR) can edit posts
-    if (!['SUPER_ADMIN', 'ADMIN'].includes(session.user.role) && 
+    // Only OWNER, ADMIN, and post owner (AUTHOR) can edit posts
+    if (!['OWNER', 'ADMIN'].includes(session.user.role) && 
         !(session.user.role === 'AUTHOR' && currentPost.authorId === session.user.id)) {
       return {
         success: false,
@@ -256,7 +256,7 @@ export async function updatePostStatus(
   postId: string,
   newStatus: PostStatus,
 ): Promise<ActionResult<PostWithRelations>> {
-  const session = await checkRole(['ADMIN', 'AUTHOR', 'SUPER_ADMIN']);
+  const session = await checkRole(['ADMIN', 'AUTHOR', 'OWNER']);
 
   if (!session || !session.user) {
     return {
@@ -417,7 +417,7 @@ export async function deletePost(postId: string): Promise<ActionResult> {
       };
     }
 
-    if (!['SUPER_ADMIN', 'ADMIN'].includes(session.user.role) && 
+    if (!['OWNER', 'ADMIN'].includes(session.user.role) && 
         !(session.user.role === 'AUTHOR' && post.authorId === session.user.id)) {
       return { 
         success: false, 

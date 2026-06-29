@@ -204,7 +204,7 @@ export const adminRoutes = [
 ];
 
 /**
- * Routes that only SUPER_ADMIN can access
+ * Routes that only OWNER can access
  * @type {string[]}
  */
 export const superAdminRoutes = [
@@ -226,14 +226,14 @@ export const postOwnershipRoutes = [
 
 /**
  * Get all accessible routes for a specific role
- * @param role User role (SUPER_ADMIN | ADMIN | AUTHOR)
+ * @param role User role (OWNER | ADMIN | AUTHOR)
  * @returns string[] Array of accessible routes
  */
 export function getAccessibleRoutes(role: string): string[] {
   const routes = [...baseDashboardRoutes];
 
   switch (role) {
-    case 'SUPER_ADMIN':
+    case 'OWNER':
       return [...routes, ...superAdminRoutes, ...adminRoutes, ...authorRoutes];
     case 'ADMIN':
       return [...routes, ...adminRoutes, ...authorRoutes];

@@ -24,7 +24,7 @@ const AUTHOR_FILTER: Prisma.UserWhereInput = {
   OR: [
     { role: 'AUTHOR' },
     { role: 'ADMIN' },
-    { role: 'SUPER_ADMIN' },
+    { role: 'OWNER' },
   ],
 };
 

@@ -9,7 +9,7 @@ import DarkModeSwitch from '../SwitchDarkMode/SwitchDarkMode2';
 import type { Role } from '@prisma/client';
 
 const isAdminOrAuthor = (userRole: Role | undefined) => {
-  return userRole === 'ADMIN' || userRole === 'AUTHOR' || userRole === 'SUPER_ADMIN';
+  return userRole === 'ADMIN' || userRole === 'AUTHOR' || userRole === 'OWNER';
 };
 
 export default async function AvatarDropdown() {

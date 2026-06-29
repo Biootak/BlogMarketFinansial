@@ -7,7 +7,7 @@ import { checkDiskSpace, getSystemMetrics } from '@/lib/system';
 export async function GET() {
   try {
     const session = await auth();
-    if (!session?.user || session.user.role !== 'SUPER_ADMIN') {
+    if (!session?.user || session.user.role !== 'OWNER') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized access' },
         { status: 401 }

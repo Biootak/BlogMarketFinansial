@@ -102,7 +102,7 @@ export async function checkReportAccess() {
     select: { role: true },
   });
 
-  if (!user || !['SUPER_ADMIN', 'ADMIN'].includes(user.role)) {
+  if (!user || !['OWNER', 'ADMIN'].includes(user.role)) {
     throw new Error('شما دسترسی لازم برای مشاهده گزارش‌ها را ندارید');
   }
 }

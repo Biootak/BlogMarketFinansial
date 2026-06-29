@@ -65,7 +65,7 @@ export async function createSuperAdmin(formData: FormData) {
       };
     }
 
-    // بررسی وجود سوپر ادمین
+    // بررسی وجود مالک
     const existingAdmin = await checkExistingSuperAdmin(prisma);
 
     if (existingAdmin) {
@@ -80,14 +80,14 @@ export async function createSuperAdmin(formData: FormData) {
     // رمزنگاری پسورد با سختی بیشتر
     const hashedPassword = await bcrypt.hash(formDataObj.password, 12);
 
-    // ایجاد سوپر ادمین
+    // ایجاد مالک
     const user = await prisma.user.create({
       data: {
         email: formDataObj.email,
         password: hashedPassword,
         name: formDataObj.name,
         phoneNumber: formDataObj.phoneNumber,
-        role: Role.SUPER_ADMIN,
+        role: Role.OWNER,
         profile: {
           create: {
             jobName: formDataObj.jobName,
@@ -101,7 +101,7 @@ export async function createSuperAdmin(formData: FormData) {
       },
     });
 
-    // ثبت لاگ ایجاد سوپر ادمین
+    // ثبت لاگ ایجاد مالک
     await prisma.systemLog.create({
       data: {
         level: 'INFO',

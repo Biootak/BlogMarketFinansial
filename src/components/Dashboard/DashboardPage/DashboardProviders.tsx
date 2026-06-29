@@ -11,7 +11,7 @@ import MainContent from '@/components/Dashboard/DashboardPage/MainContent';
 import { BreadcrumbProvider } from '@/components/Dashboard/DashboardPage/BreadcrumbContext';
 
 interface DashboardProvidersProps {
-  userRole: 'USER' | 'AUTHOR' | 'ADMIN' | 'SUPER_ADMIN';
+  userRole: 'USER' | 'AUTHOR' | 'ADMIN' | 'OWNER';
   children: ReactNode;
 }
 

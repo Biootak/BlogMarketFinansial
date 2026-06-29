@@ -44,7 +44,7 @@ async function ensureAdmin() {
     return { error: NextResponse.json({ error: 'احراز هویت الزامی است' }, { status: 401 }) };
   }
   const userRole = (session.user as { role?: string }).role;
-  if (!['ADMIN', 'SUPER_ADMIN'].includes(userRole ?? '')) {
+  if (!['ADMIN', 'OWNER'].includes(userRole ?? '')) {
     return { error: NextResponse.json({ error: 'دسترسی غیرمجاز' }, { status: 403 }) };
   }
   return { session };

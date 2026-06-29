@@ -7,7 +7,7 @@ import { TGJU_KEY_TO_SYMBOL } from '@/lib/market-rates/registry';
 
 export async function GET() {
   const session = await auth();
-  if (!session?.user || (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'ADMIN')) {
+  if (!session?.user || (session.user.role !== 'OWNER' && session.user.role !== 'ADMIN')) {
     return NextResponse.json({ error: 'FORBIDDEN' }, { status: 403 });
   }
 

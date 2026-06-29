@@ -53,7 +53,7 @@ import {
 } from 'react-icons/hi2';
 import { cn } from '@/lib/utils';
 
-export type CommandActionRole = 'SUPER_ADMIN' | 'ADMIN' | 'AUTHOR';
+export type CommandActionRole = 'OWNER' | 'ADMIN' | 'AUTHOR';
 
 interface CommandPaletteProps {
   role: CommandActionRole;
@@ -203,7 +203,7 @@ const ALL_ITEMS: CommandItem[] = [
 ];
 
 const ROLE_ALLOWED: Record<CommandActionRole, string[] | 'all'> = {
-  SUPER_ADMIN: 'all',
+  OWNER: 'all',
   ADMIN: [
     'home',
     'new-post',

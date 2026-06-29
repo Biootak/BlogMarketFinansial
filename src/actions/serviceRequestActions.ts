@@ -228,7 +228,7 @@ export async function getServiceRequests(params?: {
   search?: string;
 }) {
   const session = await auth();
-  if (!session?.user || !['ADMIN', 'SUPER_ADMIN'].includes(session.user.role as string)) {
+  if (!session?.user || !['ADMIN', 'OWNER'].includes(session.user.role as string)) {
     return { success: false, message: 'دسترسی غیرمجاز' };
   }
 
@@ -280,7 +280,7 @@ export async function updateServiceRequestStatus(
   adminNotes?: string
 ) {
   const session = await auth();
-  if (!session?.user || !['ADMIN', 'SUPER_ADMIN'].includes(session.user.role as string)) {
+  if (!session?.user || !['ADMIN', 'OWNER'].includes(session.user.role as string)) {
     return { success: false, message: 'دسترسی غیرمجاز' };
   }
 
@@ -309,8 +309,8 @@ export async function updateServiceRequestStatus(
 // Admin: Delete request
 export async function deleteServiceRequest(id: string) {
   const session = await auth();
-  if (!session?.user || session.user.role !== 'SUPER_ADMIN') {
-    return { success: false, message: 'فقط سوپر ادمین می‌تواند درخواست را حذف کند.' };
+  if (!session?.user || session.user.role !== 'OWNER') {
+    return { success: false, message: 'فقط مالک می‌تواند درخواست را حذف کند.' };
   }
 
   try {
@@ -325,7 +325,7 @@ export async function deleteServiceRequest(id: string) {
 // Admin: Get stats
 export async function getServiceRequestStats() {
   const session = await auth();
-  if (!session?.user || !['ADMIN', 'SUPER_ADMIN'].includes(session.user.role as string)) {
+  if (!session?.user || !['ADMIN', 'OWNER'].includes(session.user.role as string)) {
     return { success: false, message: 'دسترسی غیرمجاز' };
   }
 

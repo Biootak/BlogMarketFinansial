@@ -50,15 +50,15 @@ export async function requireRole(allowed: Role[]): Promise<AuthResult> {
 }
 
 export async function requireAdmin(): Promise<AuthResult> {
-  return requireRole([Role.ADMIN, Role.SUPER_ADMIN]);
+  return requireRole([Role.ADMIN, Role.OWNER]);
 }
 
 export async function requireSuperAdmin(): Promise<AuthResult> {
-  return requireRole([Role.SUPER_ADMIN]);
+  return requireRole([Role.OWNER]);
 }
 
 export async function requireAuthor(): Promise<AuthResult> {
-  return requireRole([Role.AUTHOR, Role.ADMIN, Role.SUPER_ADMIN]);
+  return requireRole([Role.AUTHOR, Role.ADMIN, Role.OWNER]);
 }
 
 // Convert an AuthFailure into the project's standard ActionResult shape.

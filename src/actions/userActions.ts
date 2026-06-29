@@ -11,10 +11,10 @@ import { logActivity } from '@/lib/activity-logger';
 
 
 // 2026-06-23: role hierarchy for ownership/permission checks.
-// SUPER_ADMIN (4) > ADMIN (3) > AUTHOR (2) > USER (1).
+// OWNER (4) > ADMIN (3) > AUTHOR (2) > USER (1).
 // A user can mutate another user only if their level is STRICTLY greater.
 const ROLE_HIERARCHY: Record<Role, number> = {
-  SUPER_ADMIN: 4,
+  OWNER: 4,
   ADMIN: 3,
   AUTHOR: 2,
   USER: 1,
@@ -57,9 +57,9 @@ export async function getUsers({
     };
 
     // Add role-based filtering
-    if (currentUserRole !== 'SUPER_ADMIN') {
+    if (currentUserRole !== 'OWNER') {
       if (currentUserRole === 'ADMIN') {
-        where.role = { not: { in: ['SUPER_ADMIN', 'ADMIN'] } };
+        where.role = { not: { in: ['OWNER', 'ADMIN'] } };
       } else {
         return { success: false, message: 'شما دسترسی لازم را ندارید' };
       }

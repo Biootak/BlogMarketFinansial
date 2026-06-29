@@ -53,7 +53,7 @@ const roleLabels: Record<string, string> = {
   USER: 'کاربر عادی',
   AUTHOR: 'نویسنده',
   ADMIN: 'مدیر',
-  SUPER_ADMIN: 'سوپر ادمین',
+  OWNER: 'مالک',
 };
 
 const statusLabels: Record<string, string> = {
@@ -151,15 +151,15 @@ export default function UsersPage() {
 
   const canManageUser = (targetUser: UserWithProfile) => {
     if (!currentUserRole || !currentUserId) return false;
-    if (currentUserRole === 'SUPER_ADMIN') return true;
+    if (currentUserRole === 'OWNER') return true;
     if (currentUserRole === 'ADMIN') {
-      return targetUser.role !== 'SUPER_ADMIN' && targetUser.role !== 'ADMIN';
+      return targetUser.role !== 'OWNER' && targetUser.role !== 'ADMIN';
     }
     return false;
   };
 
   const canChangeRole = (newRole: Role) => {
-    if (currentUserRole === 'SUPER_ADMIN') return true;
+    if (currentUserRole === 'OWNER') return true;
     if (currentUserRole === 'ADMIN') {
       return ['USER', 'AUTHOR'].includes(newRole);
     }
@@ -249,7 +249,7 @@ export default function UsersPage() {
     { value: 'USER', label: 'کاربر عادی' },
     { value: 'AUTHOR', label: 'نویسنده' },
     { value: 'ADMIN', label: 'مدیر' },
-    ...(currentUserRole === 'SUPER_ADMIN' ? [{ value: 'SUPER_ADMIN', label: 'سوپر ادمین' }] : []),
+    ...(currentUserRole === 'OWNER' ? [{ value: 'OWNER', label: 'مالک' }] : []),
   ];
 
 
@@ -490,10 +490,10 @@ function UserForm({ form, onSubmit }: UserFormProps) {
                   <SelectContent>
                     <SelectItem value="USER">کاربر عادی</SelectItem>
                     <SelectItem value="AUTHOR">نویسنده</SelectItem>
-                    {currentUserRole === 'SUPER_ADMIN' && (
+                    {currentUserRole === 'OWNER' && (
                       <>
                         <SelectItem value="ADMIN">مدیر</SelectItem>
-                        <SelectItem value="SUPER_ADMIN">سوپر ادمین</SelectItem>
+                        <SelectItem value="OWNER">مالک</SelectItem>
                       </>
                     )}
                   </SelectContent>

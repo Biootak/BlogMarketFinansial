@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     }
 
     const userRole = (session.user as any).role;
-    if (!['ADMIN', 'SUPER_ADMIN'].includes(userRole)) {
+    if (!['ADMIN', 'OWNER'].includes(userRole)) {
       return NextResponse.json({ error: 'دسترسی غیرمجاز' }, { status: 403 });
     }
 

@@ -187,7 +187,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
       let initialStatus: PostStatus = 'PENDING_REVIEW';
       if (session?.user?.role === 'AUTHOR' && saveAsDraft) {
         initialStatus = 'DRAFT';
-      } else if (session?.user?.role === 'ADMIN' || session?.user?.role === 'SUPER_ADMIN') {
+      } else if (session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER') {
         initialStatus = saveAsDraft ? 'DRAFT' : 'PUBLISHED';
       }
 

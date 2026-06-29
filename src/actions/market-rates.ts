@@ -65,7 +65,7 @@ export async function createMarketRate(input: CreateInput): Promise<
   { success: true; id: string } | { success: false; error: { code: string; message: string } }
 > {
   const session = await auth();
-  if (!session?.user || (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'ADMIN')) {
+  if (!session?.user || (session.user.role !== 'OWNER' && session.user.role !== 'ADMIN')) {
     return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی ندارید' } };
   }
 
@@ -127,7 +127,7 @@ export async function updateMarketRate(
   input: UpdateInput,
 ): Promise<{ success: true } | { success: false; error: { code: string; message: string } }> {
   const session = await auth();
-  if (!session?.user || (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'ADMIN')) {
+  if (!session?.user || (session.user.role !== 'OWNER' && session.user.role !== 'ADMIN')) {
     return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی ندارید' } };
   }
 
@@ -150,7 +150,7 @@ export async function deleteMarketRate(id: string): Promise<
   { success: true } | { success: false; error: { code: string; message: string } }
 > {
   const session = await auth();
-  if (!session?.user || (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'ADMIN')) {
+  if (!session?.user || (session.user.role !== 'OWNER' && session.user.role !== 'ADMIN')) {
     return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی ندارید' } };
   }
 

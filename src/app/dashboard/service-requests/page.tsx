@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default async function ServiceRequestsPage() {
   const session = await auth();
 
-  if (!session?.user || !['ADMIN', 'SUPER_ADMIN'].includes(session.user.role as string)) {
+  if (!session?.user || !['ADMIN', 'OWNER'].includes(session.user.role as string)) {
     redirect('/dashboard');
   }
 

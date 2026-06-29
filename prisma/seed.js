@@ -9,6 +9,11 @@
  *   - Idempotent: چندبار اجرا بشه مشکلی پیش نمیاد
  *   - Comprehensive: همه 22 مدل Prisma را پوشش می‌دهد
  *   - ترتیب وابستگی‌ها (foreign keys) رعایت شده
+ *   - رمز مالک (OWNER) از env خوانده می‌شود؛ در غیر این صورت تصادفی تولید و چاپ می‌شود
+ *
+ * متغیرهای محیطی:
+ *   SEED_OWNER_EMAIL    (اختیاری) — پیش‌فرض Admin@gmail.com
+ *   SEED_OWNER_PASSWORD (اختیاری) — اگر تنظیم نشود، یک رمز تصادفی قوی چاپ می‌شود
  *
  * اجرا:
  *   node prisma/seed.js
@@ -49,6 +54,20 @@ function randIP() { return `${rand(1,255)}.${rand(0,255)}.${rand(0,255)}.${rand(
 function daysAgo(n) { return new Date(Date.now() - n * 24 * 60 * 60 * 1000); }
 function hoursAgo(n) { return new Date(Date.now() - n * 60 * 60 * 1000); }
 
+/* ─── seed credential helpers ────────────────────────────────── */
+let seededSuperAdmin = null; // { email, password, source } فقط در صورت ایجاد جدید پر می‌شود
+
+function generatePassword(length = 16) {
+  const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const lower = 'abcdefghijklmnopqrstuvwxyz';
+  const digits = '0123456789';
+  const special = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+  const all = upper + lower + digits + special;
+  const password = [pick(upper), pick(lower), pick(digits), pick(special)];
+  for (let i = password.length; i < length; i++) password.push(pick(all));
+  return password.sort(() => Math.random() - 0.5).join('');
+}
+
 /* ─── 1) SystemSettings (singleton) ──────────────────────────── */
 async function seedSystemSettings() {
   const existingCount = await p.systemSettings.findFirst();
@@ -77,20 +96,43 @@ async function seedSystemSettings() {
 
 /* ─── 2) Users (نویسنده، ادمین، کاربر عادی) ──────────────────── */
 async function seedUsers() {
-  const password = await bcrypt.hash('Password123!', 10);
+  const samplePassword = await bcrypt.hash('Password123!', 10);
+
+  // مالک (OWNER): رمز از env خوانده می‌شود؛ در غیر این صورت تصادفی تولید و چاپ می‌شود
+  const ownerEmail = process.env.SEED_OWNER_EMAIL?.trim() || 'Admin@gmail.com';
+  const ownerPasswordFromEnv = process.env.SEED_OWNER_PASSWORD;
+  const ownerPassword = ownerPasswordFromEnv || generatePassword(16);
+  const ownerPasswordHash = await bcrypt.hash(ownerPassword, 10);
+
   const usersData = [
-    { id: 'cm5qdrd3e0001m4zli12b2rd5', name: 'author',         email: 'author@gmail.com',       role: 'AUTHOR',      status: 'Active', image: 'https://i.pravatar.cc/150?img=12' },
-    { id: 'cm5qnptpb0001v8tnms9kwp6j', name: 'biotak',         email: 'bioootak@gmail.com',     role: 'ADMIN',       status: 'Active', image: 'https://i.pravatar.cc/150?img=33' },
-    { id: 'cm5kqiap00001ckmow11600x8', name: 'Admin',          email: 'Admin@gmail.com',        role: 'SUPER_ADMIN', status: 'Active', image: 'https://i.pravatar.cc/150?img=68' },
-    { id: 'cmqcm407d0002vjpsihhfla61', name: 'تیم تحریریه',  email: 'author@blogmarket.local', role: 'AUTHOR',     status: 'Active', image: 'https://i.pravatar.cc/150?img=5'  },
+    { id: 'cm5qdrd3e0001m4zli12b2rd5', name: 'author',         email: 'author@gmail.com',       role: 'AUTHOR', status: 'Active', image: 'https://i.pravatar.cc/150?img=12' },
+    { id: 'cm5qnptpb0001v8tnms9kwp6j', name: 'biotak',         email: 'bioootak@gmail.com',     role: 'ADMIN',  status: 'Active', image: 'https://i.pravatar.cc/150?img=33' },
+    { id: 'cm5kqiap00001ckmow11600x8', name: 'مالک',           email: ownerEmail,               role: 'OWNER',  status: 'Active', image: 'https://i.pravatar.cc/150?img=68' },
+    { id: 'cmqcm407d0002vjpsihhfla61', name: 'تیم تحریریه',  email: 'author@blogmarket.local', role: 'AUTHOR', status: 'Active', image: 'https://i.pravatar.cc/150?img=5'  },
   ];
 
   const created = [];
   for (const u of usersData) {
     const exists = await p.user.findUnique({ where: { id: u.id } });
-    if (exists) { created.push(exists); continue; }
+    if (exists) {
+      created.push(exists);
+      if (u.role === 'OWNER' && exists.email === ownerEmail) {
+        console.log('   ⏭️  مالک (OWNER) قبلاً وجود دارد؛ رمز عبور تغییر نکرد');
+      }
+      continue;
+    }
+    const isOwner = u.role === 'OWNER';
+    const password = isOwner ? ownerPasswordHash : samplePassword;
     const user = await p.user.create({ data: { ...u, password, emailVerified: daysAgo(rand(30, 300)) } });
     created.push(user);
+
+    if (isOwner) {
+      seededOwner = {
+        email: u.email,
+        password: ownerPassword,
+        source: ownerPasswordFromEnv ? 'env' : 'generated',
+      };
+    }
   }
 
   // کاربران عادی برای تست
@@ -849,6 +891,21 @@ async function main() {
     console.log('   ' + k.padEnd(20) + ': ' + v.toString().padStart(6));
   });
   console.log('═'.repeat(50));
+
+  /* ─── نمایش مشخصات مالک (OWNER) در صورت ایجاد جدید ─── */
+  if (seededOwner) {
+    console.log('\n' + '═'.repeat(50));
+    console.log('🔐 مشخصات مالک / OWNER (ذخیره کنید):');
+    console.log('   Email:', seededOwner.email);
+    if (seededOwner.source === 'generated') {
+      console.log('   Password:', seededOwner.password);
+      console.log('   (تولید تصادفی چون SEED_OWNER_PASSWORD تنظیم نشده بود)');
+    } else {
+      console.log('   Password: <از متغیر محیطی SEED_OWNER_PASSWORD>');
+    }
+    console.log('═'.repeat(50));
+  }
+
   console.log('\n✨ Seed کامل با موفقیت تمام شد!');
 }
 

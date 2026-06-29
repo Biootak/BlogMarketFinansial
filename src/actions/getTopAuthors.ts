@@ -21,7 +21,7 @@ const fetchTopAuthorsRaw = async (limit: number): Promise<TopAuthor[]> => {
   try {
     return await prisma.user.findMany({
       where: {
-        OR: [{ role: Role.AUTHOR }, { role: Role.ADMIN }, { role: Role.SUPER_ADMIN }],
+        OR: [{ role: Role.AUTHOR }, { role: Role.ADMIN }, { role: Role.OWNER }],
       },
       take: limit,
       orderBy: {

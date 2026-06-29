@@ -9,8 +9,8 @@ export async function checkRole(allowedRoles: string[]) {
     redirect('/signin');
   }
 
-  // SUPER_ADMIN has access to everything.
-  if (session.user.role === 'SUPER_ADMIN') {
+  // OWNER has access to everything.
+  if (session.user.role === 'OWNER') {
     return session;
   }
 
@@ -29,7 +29,7 @@ export async function checkSuperAdmin() {
     redirect('/signin');
   }
 
-  if (session.user.role !== 'SUPER_ADMIN') {
+  if (session.user.role !== 'OWNER') {
     redirect('/');
   }
 
@@ -43,7 +43,7 @@ export async function checkAdmin() {
     redirect('/signin');
   }
 
-  if (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN') {
+  if (session.user.role !== 'ADMIN' && session.user.role !== 'OWNER') {
     redirect('/');
   }
 
@@ -57,7 +57,7 @@ export async function checkAuthor() {
     redirect('/signin');
   }
 
-  if (!['AUTHOR', 'ADMIN', 'SUPER_ADMIN'].includes(session.user.role)) {
+  if (!['AUTHOR', 'ADMIN', 'OWNER'].includes(session.user.role)) {
     redirect('/');
   }
 
@@ -68,7 +68,7 @@ export async function checkExistingSuperAdmin(prisma: PrismaClient) {
   try {
     const existingAdmin = await prisma.user.findFirst({
       where: {
-        role: Role.SUPER_ADMIN
+        role: Role.OWNER
       }
     });
     return existingAdmin;

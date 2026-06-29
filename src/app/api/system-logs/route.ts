@@ -15,7 +15,7 @@ import db from '@/lib/db';
 export async function GET(req: Request) {
   try {
     const session = await auth();
-    if (!session?.user || session.user.role !== 'SUPER_ADMIN') {
+    if (!session?.user || session.user.role !== 'OWNER') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized access' },
         { status: 401 }
@@ -68,7 +68,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const session = await auth();
-    if (!session?.user || session.user.role !== 'SUPER_ADMIN') {
+    if (!session?.user || session.user.role !== 'OWNER') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized access' },
         { status: 401 }

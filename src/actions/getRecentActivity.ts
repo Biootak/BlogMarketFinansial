@@ -2,7 +2,7 @@
 
 /**
  * getRecentActivity — fetches the most recent ActivityLog rows for the
- * dashboard "activity timeline" widget. Roles: SUPER_ADMIN / ADMIN see
+ * dashboard "activity timeline" widget. Roles: OWNER / ADMIN see
  * everyone's events; AUTHOR sees only their own.
  *
  * Cached for 30 s with tag `recent-activity`. The log writer

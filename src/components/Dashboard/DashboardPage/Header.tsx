@@ -63,8 +63,8 @@ import {
 
 const getRoleBadge = (role?: string) => {
   switch (role) {
-    case 'SUPER_ADMIN':
-      return { label: 'مدیر ارشد', color: 'from-rose-500 to-pink-600', tone: 'rose' };
+    case 'OWNER':
+      return { label: 'مالک', color: 'from-rose-500 to-pink-600', tone: 'rose' };
     case 'ADMIN':
       return { label: 'مدیر', color: 'from-violet-500 to-purple-600', tone: 'violet' };
     case 'AUTHOR':
@@ -414,7 +414,7 @@ const Header: React.FC = () => {
                   <span>گزارش‌ها</span>
                 </Link>
               </DropdownMenuItem>
-              {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && (
+              {(user?.role === 'ADMIN' || user?.role === 'OWNER') && (
                 <DropdownMenuItem asChild>
                   <Link href="/dashboard/users" className="flex items-center gap-3 w-full">
                     <HiOutlineUsers className="w-4 h-4" aria-hidden />

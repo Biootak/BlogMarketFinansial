@@ -85,14 +85,14 @@ const checkApiAccess = (pathname: string, role?: string): boolean => {
   if (pathname.startsWith('/api/public')) return true;
   if (pathname.startsWith(apiAuthPrefix)) return true;
   if (!role) return false;
-  if (role === 'SUPER_ADMIN') return true;
+  if (role === 'OWNER') return true;
   if (
-    (role === 'ADMIN' || role === 'SUPER_ADMIN') &&
+    (role === 'ADMIN' || role === 'OWNER') &&
     adminApiRoutes.some((r) => pathname.startsWith(r))
   )
     return true;
   if (
-    ['AUTHOR', 'ADMIN', 'SUPER_ADMIN'].includes(role) &&
+    ['AUTHOR', 'ADMIN', 'OWNER'].includes(role) &&
     authorApiRoutes.some((r) => pathname.startsWith(r))
   )
     return true;
@@ -119,14 +119,14 @@ const isPublicApi = (pathname: string): boolean => {
 
 const checkDashboardAccess = (pathname: string, role?: string) => {
   if (matchesAny(pathname, compiledBaseDashboard)) return true;
-  if (role === 'SUPER_ADMIN' && matchesAny(pathname, compiledSuperAdmin)) return true;
+  if (role === 'OWNER' && matchesAny(pathname, compiledSuperAdmin)) return true;
   if (
-    (role === 'ADMIN' || role === 'SUPER_ADMIN') &&
+    (role === 'ADMIN' || role === 'OWNER') &&
     matchesAny(pathname, compiledAdmin)
   )
     return true;
   if (
-    ['AUTHOR', 'ADMIN', 'SUPER_ADMIN'].includes(role || '') &&
+    ['AUTHOR', 'ADMIN', 'OWNER'].includes(role || '') &&
     matchesAny(pathname, compiledAuthor)
   )
     return true;

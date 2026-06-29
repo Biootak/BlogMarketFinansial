@@ -69,7 +69,7 @@ const CardList: FC<CardListProps> = ({
     let newStatus: PostWithRelations['status'] = 'DRAFT';
     let confirmMessage: string;
     
-    if (session?.user?.role === 'ADMIN' || session?.user?.role === 'SUPER_ADMIN') {
+    if (session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER') {
       if (post.status === 'PUBLISHED') {
         newStatus = 'PENDING_REVIEW';
         confirmMessage = 'آیا از تغییر وضعیت پست به "در انتظار بررسی" اطمینان دارید؟';
@@ -110,7 +110,7 @@ const CardList: FC<CardListProps> = ({
   // نشون دادن دکمه منو حتی وقتی session در حال لود شدنه (در داشبورد کاربر حتماً لاگین کرده)
   const isSessionLoading = status === 'loading';
   const canEditPost = isSessionLoading || 
-                     session?.user?.role === 'SUPER_ADMIN' || 
+                     session?.user?.role === 'OWNER' || 
                      session?.user?.role === 'ADMIN' || 
                      (session?.user?.role === 'AUTHOR' && session?.user?.id === authorId);
 
@@ -161,7 +161,7 @@ const CardList: FC<CardListProps> = ({
                   </motion.div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="rounded-xl border-slate-200 dark:border-slate-700 shadow-xl">
-                  {(session?.user?.role === 'ADMIN' || session?.user?.role === 'SUPER_ADMIN' || post.authorId === session?.user?.id) && (
+                  {(session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER' || post.authorId === session?.user?.id) && (
                     <>
                       <DropdownMenuItem 
                         onClick={handleStatusChange}
@@ -170,7 +170,7 @@ const CardList: FC<CardListProps> = ({
                         {post.status === 'PUBLISHED' ? (
                           <>
                             <HiEyeSlash className="ml-2 w-4 h-4" />
-                            {session?.user?.role === 'ADMIN' || session?.user?.role === 'SUPER_ADMIN' 
+                            {session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER' 
                               ? 'در انتظار بررسی' 
                               : 'پیش‌نویس کردن'}
                           </>
@@ -181,7 +181,7 @@ const CardList: FC<CardListProps> = ({
                           </>
                         ) : (
                           <>
-                            {session?.user?.role === 'ADMIN' || session?.user?.role === 'SUPER_ADMIN' ? (
+                            {session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER' ? (
                               <>
                                 <HiEye className="ml-2 w-4 h-4" />
                                 انتشار
