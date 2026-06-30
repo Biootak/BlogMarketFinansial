@@ -18,7 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: `پیکربندی اولیه — ${name}`,
-    description: 'ایجاد حساب مدیر اصلی برای فعال‌سازی سامانه. فقط در اولین نصب استفاده می‌شود.',
+    description: 'ایجاد حساب مالک برای فعال‌سازی سامانه. فقط در اولین نصب استفاده می‌شود.',
     applicationName: name,
     authors: [{ name }],
     robots: {

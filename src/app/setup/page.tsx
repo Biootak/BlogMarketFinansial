@@ -1,9 +1,10 @@
+import Logo from '@/components/Logo/Logo';
 import { AuroraBackdrop } from '@/components/Setup/AuroraBackdrop';
 import { SecurityNotice } from '@/components/Setup/SecurityNotice';
 import { SetupWizard } from '@/components/Setup/SetupWizard';
 import { ArrowLeftGlyph, ShieldCheckGlyph } from '@/components/Setup/WizardIcons';
-import Logo from '@/components/Logo/Logo';
 import { checkExistingSuperAdmin } from '@/lib/auth';
+import { maskEmail } from '@/lib/setup/format';
 import { getSiteIdentity } from '@/lib/site-identity';
 import { PrismaClient } from '@prisma/client';
 import { headers } from 'next/headers';
@@ -36,7 +37,6 @@ const prisma = new PrismaClient();
  * page does not layout-shift while the DB probe / headers resolve.
  */
 function SetupSkeleton({ siteName, logoUrl }: { siteName: string; logoUrl: string }) {
-  const hasLogo = logoUrl && logoUrl.trim();
   return (
     <main className="setup-page" lang="fa-IR" dir="rtl" aria-busy="true">
       <AuroraBackdrop />
@@ -49,7 +49,7 @@ function SetupSkeleton({ siteName, logoUrl }: { siteName: string; logoUrl: strin
       </header>
 
       <section className="setup-page__stage">
-        <article className="setup-page__shell" aria-describedby="setup-trust">
+        <article className="setup-page__shell">
           <div className="setup-page__shell-glow" aria-hidden="true" />
           <div className="setup-page__shell-inner">
             <div className="setup-skeleton h-96 animate-pulse rounded-2xl bg-white/10" />
@@ -108,6 +108,10 @@ async function SetupContent({ siteName, logoUrl }: { siteName: string; logoUrl: 
           <span className="setup-page__brand-text">{siteName}</span>
         </div>
         <nav aria-label="ناوبری سراسری" className="setup-page__topnav">
+          <span className="setup-page__topnav-badge">
+            <ShieldCheckGlyph className="setup-page__topnav-badge-glyph" />
+            <span>مالک</span>
+          </span>
           <Link href="/signin" className="setup-page__topnav-link">
             <ArrowLeftGlyph className="setup-page__topnav-glyph" />
             <span>ورود</span>
@@ -116,27 +120,28 @@ async function SetupContent({ siteName, logoUrl }: { siteName: string; logoUrl: 
       </header>
 
       <section id="setup-content" className="setup-page__stage" aria-labelledby="setup-heading">
-        <article className="setup-page__shell" aria-describedby="setup-trust">
-          <div className="setup-page__shell-glow" aria-hidden="true" />
-          <div className="setup-page__shell-inner">
-            {existingAdmin && !previewMode ? (
-              <AlreadyConfigured email={existingAdmin.email ?? ''} />
-            ) : (
-              <>
-                {previewMode ? <PreviewBanner /> : null}
-                <SetupWizard />
-              </>
-            )}
-          </div>
-        </article>
+        <div className="setup-page__shell-wrap">
+          <article className="setup-page__shell" aria-describedby="setup-trust">
+            <div className="setup-page__shell-glow" aria-hidden="true" />
+            <div className="setup-page__shell-inner">
+              {existingAdmin && !previewMode ? (
+                <AlreadyConfigured email={existingAdmin.email ?? ''} />
+              ) : (
+                <>
+                  {previewMode ? <PreviewBanner /> : null}
+                  <SetupWizard />
+                </>
+              )}
+            </div>
+          </article>
 
-        <div id="setup-trust">
-          <SecurityNotice isProduction={isProduction} clientIp={clientIp} />
+          <div id="setup-trust" className="setup-page__trust">
+            <SecurityNotice isProduction={isProduction} clientIp={clientIp} />
+          </div>
         </div>
 
         <p className="setup-page__legal">
-          © {new Date().getFullYear()} {siteName} — پیکربندی با احراز هویت دو مرحله‌ای در
-          سرور.
+          © {new Date().getFullYear()} {siteName} — پیکربندی با احراز هویت دو مرحله‌ای در سرور.
         </p>
       </section>
     </main>
@@ -158,7 +163,7 @@ function PreviewBanner() {
     <output className="setup-preview-banner" aria-live="polite">
       <span className="setup-preview-banner__dot" aria-hidden="true" />
       <span className="setup-preview-banner__text">
-        حالت پیش‌نمایش Wizard فعال است. ارسال فرم به‌دلیل وجود مدیر اصلی با خطا مواجه می‌شود.
+        حالت پیش‌نمایش Wizard فعال است. ارسال فرم به‌دلیل وجود مالک با خطا مواجه می‌شود.
       </span>
     </output>
   );
@@ -174,12 +179,16 @@ function AlreadyConfigured({ email }: { email: string }) {
         سامانه از پیش پیکربندی شده است
       </h1>
       <p className="setup-already__desc">
-        یک حساب مدیر اصلی پیش‌تر ایجاد شده است و دسترسی به این صفحه برای جلوگیری از ایجاد حساب تکراری
+        یک حساب مالک پیش‌تر ایجاد شده است و دسترسی به این صفحه برای جلوگیری از ایجاد حساب تکراری
         محدود شده است. اگر مالک حساب هستید، از طریق صفحه‌ی ورود وارد شوید.
       </p>
       {email ? (
-        <p className="setup-already__email" dir="ltr">
-          {email}
+        <p
+          className="setup-already__email"
+          dir="ltr"
+          aria-label="ایمیل مالک (ناقص برای حفظ حریم خصوصی)"
+        >
+          {maskEmail(email)}
         </p>
       ) : null}
       <div className="setup-already__actions">

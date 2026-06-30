@@ -1,8 +1,8 @@
 'use server';
 
+import { checkExistingSuperAdmin } from '@/lib/auth';
 import { PrismaClient, Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import { checkExistingSuperAdmin } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { z } from 'zod';
 
@@ -11,7 +11,8 @@ const prisma = new PrismaClient();
 // اعتبارسنجی قوی‌تر با zod
 const superAdminSchema = z.object({
   email: z.string().email('ایمیل نامعتبر است'),
-  password: z.string()
+  password: z
+    .string()
     .min(12, 'رمز عبور باید حداقل 12 کاراکتر باشد')
     .regex(/[A-Z]/, 'رمز عبور باید شامل حروف بزرگ باشد')
     .regex(/[a-z]/, 'رمز عبور باید شامل حروف کوچک باشد')
@@ -32,7 +33,7 @@ export async function createSuperAdmin(formData: FormData) {
       const headersList = await headers();
       const clientIp = headersList.get('x-forwarded-for') || 'unknown';
       const allowedIps = process.env.ALLOWED_SETUP_IPS?.split(',') || [];
-      
+
       if (!allowedIps.includes(clientIp)) {
         return {
           success: false,
@@ -101,11 +102,15 @@ export async function createSuperAdmin(formData: FormData) {
       },
     });
 
-    // ثبت لاگ ایجاد مالک
+    // ثبت لاگ ایجاد مالک (بدون PII plaintext)
+    // No email, no user.id, no phone — فقط timestamp + masked شناسه‌ی داخلی.
+    // برای audit حرفه‌ای، از event id یا هَش استفاده کنید نه ایمیل خام.
+    const [, domain] = user.email.split('@');
+    const maskedRef = `${user.id.slice(0, 4)}***@${domain ?? 'unknown'}`;
     await prisma.systemLog.create({
       data: {
         level: 'INFO',
-        message: `Super admin account created: ${user.email} (ID: ${user.id}) at ${new Date().toISOString()}`,
+        message: `OWNER account created at ${new Date().toISOString()} (ref: ${maskedRef})`,
         source: 'SETUP',
       },
     });
@@ -117,20 +122,27 @@ export async function createSuperAdmin(formData: FormData) {
       existingAdmin: null,
     };
   } catch (error: unknown) {
-    console.error('Error in createSuperAdmin:', error);
-    // ثبت خطا در لاگ سیستم
-    await prisma.systemLog.create({
-      data: {
-        level: 'ERROR',
-        message: 'Failed to create super admin account',
-        source: 'SETUP',
-      },
-    });
+    // Always log the FULL error server-side for debugging. NEVER echo the
+    // raw error message to the client — it can leak Prisma column names,
+    // constraint text, or internal paths. Map to a generic, user-friendly
+    // message; let the operator correlate via the server log.
+    console.error('[setup] createSuperAdmin failed:', error);
+    // ثبت خطا در لاگ سیستم (بدون PII)
+    try {
+      await prisma.systemLog.create({
+        data: {
+          level: 'ERROR',
+          message: 'createSuperAdmin failed',
+          source: 'SETUP',
+        },
+      });
+    } catch (logError) {
+      console.error('[setup] failed to write systemLog entry:', logError);
+    }
 
-    const errorMessage = error instanceof Error ? error.message : 'خطایی در پردازش اطلاعات رخ داده است';
     return {
       success: false,
-      message: errorMessage,
+      message: 'خطایی در ایجاد حساب رخ داد. لطفاً دوباره تلاش کنید یا با پشتیبانی تماس بگیرید.',
       errors: {},
       existingAdmin: null,
     };

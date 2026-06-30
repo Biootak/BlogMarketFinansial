@@ -67,14 +67,14 @@ export const STEP_FIELDS = {
   profile: ['jobName', 'company', 'bio'] as const,
 } satisfies Record<string, ReadonlyArray<keyof SetupFormValues>>;
 
-export type StepId = 'identity' | 'credentials' | 'profile' | 'review';
+export type StepId = 'intro' | 'identity' | 'credentials' | 'profile' | 'review';
 
 /** Validate a single step's fields with the shared schema. */
 export function validateStep(
   values: Partial<SetupFormValues>,
   step: StepId,
 ): { ok: true } | { ok: false; errors: Record<string, string> } {
-  if (step === 'review') return { ok: true };
+  if (step === 'intro' || step === 'review') return { ok: true };
   const fields = STEP_FIELDS[step];
   const errors: Record<string, string> = {};
   for (const field of fields) {

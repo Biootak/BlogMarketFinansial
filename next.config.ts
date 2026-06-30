@@ -63,6 +63,40 @@ const nextConfig: NextConfig = {
   // Security headers
   async headers() {
     return [
+      // 2026-06-30: Setup page must NEVER be cached. It bootstraps the
+      // OWNER account, accepts credentials, and exposes the OWNER email
+      // on the "already configured" branch — any caching layer (browser
+      // back/forward, CDN, shared proxy) would leak that state to the
+      // next visitor on the same machine. Same goes for signin/signup.
+      {
+        source: '/setup/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, private, max-age=0',
+          },
+          { key: 'Pragma', value: 'no-cache' },
+          { key: 'Expires', value: '0' },
+        ],
+      },
+      {
+        source: '/signin/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, private, max-age=0',
+          },
+        ],
+      },
+      {
+        source: '/signup/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, private, max-age=0',
+          },
+        ],
+      },
       // Cache headers برای تصاویر آپلود شده
       {
         source: '/uploads/:path*',

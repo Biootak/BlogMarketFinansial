@@ -1,7 +1,8 @@
 'use client';
 
+import { toPersianDigits } from '@/lib/setup/format';
 import type { StepId } from '@/lib/setup/schema';
-import { STEPS } from '@/lib/setup/steps';
+import { STEPS, stepIndex } from '@/lib/setup/steps';
 import { cn } from '@/lib/utils';
 import * as React from 'react';
 import { STEP_GLYPHS } from './WizardIcons';
@@ -14,6 +15,10 @@ import { STEP_GLYPHS } from './WizardIcons';
  * - The connecting line fills from 0% to 100% as the active index advances.
  * - The current step gets a conic glow ring; completed steps show a check
  *   glyph over their numbered circle.
+ * - On small screens the row becomes horizontally scrollable so titles never
+ *   get clipped or squeezed.
+ * - A live region announces the progress percentage + remaining time so
+ *   assistive tech users hear progress as it changes.
  */
 
 export interface StepIndicatorProps {
@@ -22,66 +27,101 @@ export interface StepIndicatorProps {
   onJump?: (step: StepId) => void;
 }
 
-function indexOf(id: StepId): number {
-  return STEPS.findIndex((s) => s.id === id);
+function formatRemaining(seconds: number): string {
+  if (seconds <= 0) return '۰ ثانیه';
+  if (seconds < 60) return `${toPersianDigits(Math.round(seconds))} ثانیه`;
+  const m = Math.floor(seconds / 60);
+  const s = Math.round(seconds % 60);
+  if (s === 0) return `${toPersianDigits(m)} دقیقه`;
+  return `${toPersianDigits(m)} دقیقه و ${toPersianDigits(s)} ثانیه`;
 }
 
 export function StepIndicator({ current, furthestReached, onJump }: StepIndicatorProps) {
-  const activeIdx = indexOf(current);
-  const furthestIdx = indexOf(furthestReached);
-  // Fill percentage of the connecting line. We treat the track as spanning
-  // (n-1) gaps, so progress at step k covers (k / (n-1)) of the width.
-  const fillPct =
+  const activeIdx = stepIndex(current);
+  const furthestIdx = stepIndex(furthestReached);
+
+  // Progress as a 0..1 fraction across the ENTIRE wizard (excluding the
+  // intro from the form-fill accounting — the intro counts as 0% work).
+  const fieldSteps = STEPS.filter((s) => s.id !== 'intro');
+  const fieldIdx = Math.max(0, activeIdx - 1);
+  const progress = Math.min(1, Math.max(0, fieldIdx / fieldSteps.length));
+  const percent = Math.round(progress * 100);
+
+  // Fill width for the connecting track (between disc 0 and disc N-1).
+  const trackFillPct =
     STEPS.length <= 1 ? 0 : Math.min(100, Math.max(0, (activeIdx / (STEPS.length - 1)) * 100));
 
+  // Remaining ETA — sum the etaSeconds of the current step + all steps after.
+  const remainingSeconds = STEPS.slice(activeIdx).reduce((acc, s) => acc + s.etaSeconds, 0);
+
   return (
-    <nav aria-label="مراحل تنظیم" className="setup-stepper">
-      <ol className="setup-stepper__list">
-        {STEPS.map((step, idx) => {
-          const isActive = step.id === current;
-          const isDone = idx < activeIdx;
-          const isReachable = idx <= furthestIdx;
-          const Glyph = STEP_GLYPHS[step.glyph as keyof typeof STEP_GLYPHS];
-          return (
-            <li
-              key={step.id}
-              className={cn(
-                'setup-stepper__item',
-                isActive && 'setup-stepper__item--active',
-                isDone && 'setup-stepper__item--done',
-              )}
-            >
-              <button
-                type="button"
-                className="setup-stepper__btn"
-                onClick={() => isReachable && onJump?.(step.id)}
-                disabled={!isReachable}
-                aria-current={isActive ? 'step' : undefined}
-                aria-label={`${step.title} — مرحله ${step.index} از ${STEPS.length}`}
+    <nav aria-label="مراحل تنظیم" className="setup-stepper" aria-describedby="setup-stepper-status">
+      <div className="setup-stepper__statusbar" aria-hidden="true">
+        <div className="setup-stepper__pct">
+          <span className="setup-stepper__pct-num">{toPersianDigits(percent)}٪</span>
+          <span className="setup-stepper__pct-label">پیشرفت</span>
+        </div>
+        <div className="setup-stepper__pct-track">
+          <span className="setup-stepper__pct-fill" style={{ inlineSize: `${percent}%` }} />
+        </div>
+        <div className="setup-stepper__eta">
+          <span className="setup-stepper__eta-num">{formatRemaining(remainingSeconds)}</span>
+          <span className="setup-stepper__eta-label">زمان تقریبی باقی‌مانده</span>
+        </div>
+      </div>
+
+      <span id="setup-stepper-status" className="sr-only" aria-live="polite">
+        {`پیشرفت ${toPersianDigits(percent)} درصد؛ ${formatRemaining(remainingSeconds)} تا پایان`}
+      </span>
+
+      <div className="setup-stepper__scroll">
+        <ol className="setup-stepper__list">
+          {STEPS.map((step, idx) => {
+            const isActive = step.id === current;
+            const isDone = idx < activeIdx;
+            const isReachable = idx <= furthestIdx;
+            const Glyph = STEP_GLYPHS[step.glyph as keyof typeof STEP_GLYPHS];
+            return (
+              <li
+                key={step.id}
+                className={cn(
+                  'setup-stepper__item',
+                  isActive && 'setup-stepper__item--active',
+                  isDone && 'setup-stepper__item--done',
+                )}
               >
-                <span className="setup-stepper__disc">
-                  <span className="setup-stepper__disc-inner">
-                    {isDone ? (
-                      <STEP_GLYPHS.check className="setup-stepper__glyph" />
-                    ) : (
-                      <Glyph className="setup-stepper__glyph" />
-                    )}
+                <button
+                  type="button"
+                  className="setup-stepper__btn"
+                  onClick={() => isReachable && onJump?.(step.id)}
+                  disabled={!isReachable}
+                  aria-current={isActive ? 'step' : undefined}
+                  aria-label={`${step.title} — ${step.eyebrow}`}
+                >
+                  <span className="setup-stepper__disc">
+                    <span className="setup-stepper__disc-inner">
+                      {isDone ? (
+                        <STEP_GLYPHS.check className="setup-stepper__glyph" />
+                      ) : (
+                        <Glyph className="setup-stepper__glyph" />
+                      )}
+                    </span>
                   </span>
-                </span>
-                <span className="setup-stepper__copy">
-                  <span className="setup-stepper__title">{step.title}</span>
-                  <span className="setup-stepper__sub">{step.subtitle}</span>
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ol>
-      <div className="setup-stepper__track" aria-hidden="true">
-        <div
-          className="setup-stepper__fill"
-          style={{ insetInlineStart: '0%', inlineSize: `${fillPct}%` }}
-        />
+                  <span className="setup-stepper__copy">
+                    <span className="setup-stepper__title">{step.title}</span>
+                    <span className="setup-stepper__sub">{step.eyebrow}</span>
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+        <div className="setup-stepper__track" aria-hidden="true">
+          <div
+            className="setup-stepper__fill"
+            style={{ insetInlineStart: '0%', inlineSize: `${trackFillPct}%` }}
+          />
+        </div>
       </div>
     </nav>
   );
