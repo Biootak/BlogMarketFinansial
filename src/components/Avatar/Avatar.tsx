@@ -12,14 +12,12 @@ export interface AvatarProps {
   fontSize?: string;
 }
 
-// 2026-06-14: never use next/image for remote avatars.
-// The previous design kept a local allowlist that mirrored next.config.ts
-// remotePatterns, but every new placeholder hostname crashed the page
-// until both the config and this list were updated. That coupling was
-// the bug. Plain <img> works for every host with no configuration, no
-// server restart, and no crash. We still get the optimized path for
-// local /uploads/... by special-casing that single case, since those
-// actually live behind the same Next.js server.
+// 2026-06-30: use next/image for all avatars. Remote placeholders use
+// the `unoptimized` prop, which skips the optimization pipeline and the
+// next.config.ts remotePatterns allowlist. This avoids the previous bug
+// where a missing hostname crashed the page, while still keeping a single
+// image component API and lazy-loading behavior. Local /uploads/... still
+// go through the optimized path because they are served by this app.
 const isLocalUploads = (raw: string): boolean => raw.startsWith('/uploads/');
 
 const Avatar: FC<AvatarProps> = ({
@@ -64,8 +62,10 @@ const Avatar: FC<AvatarProps> = ({
         />
       )}
       {!useNextImage && typeof url === 'string' && url && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
+          unoptimized
+          fill
+          sizes="80px"
           src={url}
           alt={name}
           className="absolute inset-0 w-full h-full object-cover"

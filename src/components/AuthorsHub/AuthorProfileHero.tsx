@@ -1,14 +1,14 @@
+import AuthorAvatar from '@/components/AuthorsHub/primitives/AuthorAvatar';
+import { cn, toPersianNumber } from '@/lib/utils';
+import { Briefcase, Building2, FileText } from 'lucide-react';
+import Image from 'next/image';
 /**
  * @file AuthorProfileHero
  * @description Premium editorial hero for a single author profile page.
  * Server-renderable. Replaces the old /author/[id]/Author/AuthorProfile
  * component with a more refined visual hierarchy.
  */
-import * as React from 'react';
-import Image from 'next/image';
-import { Briefcase, Building2, FileText } from 'lucide-react';
-import { cn, toPersianNumber } from '@/lib/utils';
-import AuthorAvatar from '@/components/AuthorsHub/primitives/AuthorAvatar';
+import type * as React from 'react';
 
 export interface AuthorProfileHeroAuthor {
   id: string;
@@ -33,24 +33,17 @@ export interface AuthorProfileHeroProps {
 const FALLBACK_BG = '/images/placeholder-large-h.png';
 
 /**
- * 2026-06-16: Cover image rendering. We previously used plain
- * `<Image>` which throws at runtime if the source hostname is not
- * whitelisted in `next.config.ts` (e.g. seed data with picsum.photos).
- * To keep the profile page crash-proof while still respecting the
- * `next/image` optimization when the host IS allowed, we:
- *  1. only feed local /uploads/ paths to next/image
- *  2. fall back to a plain <img> for absolute URLs (same pattern as
- *     `Avatar.tsx`)
- *  3. degrade to a CSS gradient when the image is missing
+ * 2026-06-30: Cover image rendering. We use next/image for every
+ * source — local /uploads/ go through the optimization pipeline, and
+ * absolute URLs use the `unoptimized` prop to bypass the
+ * next.config.ts remotePatterns allowlist. This keeps the profile page
+ * crash-proof (the previous plain `<Image>` threw on unknown hosts)
+ * while unifying on a single image component API.
  */
 const isLocalUploads = (raw: string): boolean => raw.startsWith('/uploads/');
-const isLocalAsset = (raw: string): boolean =>
-  raw.startsWith('/') && !raw.startsWith('//');
+const isLocalAsset = (raw: string): boolean => raw.startsWith('/') && !raw.startsWith('//');
 
-const AuthorProfileHero: React.FC<AuthorProfileHeroProps> = ({
-  author,
-  className,
-}) => {
+const AuthorProfileHero: React.FC<AuthorProfileHeroProps> = ({ author, className }) => {
   const name = author.name?.trim() || 'نویسنده';
   const job = author.profile?.jobName;
   const company = author.profile?.company;
@@ -95,12 +88,14 @@ const AuthorProfileHero: React.FC<AuthorProfileHeroProps> = ({
           />
         )}
         {usePlainImg && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
+            unoptimized
             src={bgImage}
             alt={`تصویر پس‌زمینه ${name}`}
-            className="absolute inset-0 h-full w-full object-cover"
-            loading="eager"
+            fill
+            sizes="(max-width: 1024px) 100vw, 1024px"
+            priority
+            className="object-cover"
             referrerPolicy="no-referrer"
           />
         )}
@@ -108,8 +103,7 @@ const AuthorProfileHero: React.FC<AuthorProfileHeroProps> = ({
           aria-hidden
           className="absolute inset-0"
           style={{
-            background:
-              'linear-gradient(180deg, transparent 0%, rgba(20,23,32,0.55) 100%)',
+            background: 'linear-gradient(180deg, transparent 0%, rgba(20,23,32,0.55) 100%)',
           }}
         />
       </div>

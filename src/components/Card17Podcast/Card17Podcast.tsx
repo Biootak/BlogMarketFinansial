@@ -19,7 +19,7 @@
 
 //   const renderDefaultBtnListen = (state?: 'playing') => {
 //     return (
-//       <span className="w-11 h-11 flex items-center justify-center rounded-full bg-white dark:bg-neutral-800 text-primary-6000 dark:text-primary-200 shadow-lg cursor-pointer">
+//       <span className="w-11 h-11 flex items-center justify-center rounded-full bg-white dark:bg-neutral-800 text-primary-600 dark:text-primary-200 shadow-lg cursor-pointer">
 //         {state === 'playing' ? <HiPause className="w-6 h-6" /> : <HiPlay className="w-6 h-6" />}
 //       </span>
 //     );

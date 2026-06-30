@@ -1,6 +1,14 @@
-import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { type NodeViewProps, NodeViewWrapper } from '@tiptap/react';
-import { AlignLeft, AlignCenter, AlignRight, Maximize2, Trash2, ExternalLink } from 'lucide-react';
+import { AlignCenter, AlignLeft, AlignRight, ExternalLink, Maximize2, Trash2 } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
+
+// 2026-06-30: This component intentionally uses a plain <img> tag.
+// The editor image is resized interactively and its natural aspect ratio
+// is unknown at render time. next/image requires both width and height
+// (or a fixed fill container) to avoid layout shift, which would force
+// us to either crop the image to a guessed aspect ratio or measure it
+// with an extra render pass. Lazy loading and alt text are still handled
+// explicitly below.
 
 interface ImageNodeAttributes {
   src: string;
@@ -122,28 +130,34 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
   }, [src]);
 
   // کلاس‌های مشترک برای دکمه‌های تراز
-  const getAlignButtonClass = useCallback((align: string) => {
-    const isActive = textAlign === align;
-    return `p-2 rounded-lg transition-all duration-150 ${
-      isActive 
-        ? 'bg-primary-500 text-white shadow-sm' 
-        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-    }`;
-  }, [textAlign]);
+  const getAlignButtonClass = useCallback(
+    (align: string) => {
+      const isActive = textAlign === align;
+      return `p-2 rounded-lg transition-all duration-150 ${
+        isActive
+          ? 'bg-primary-500 text-white shadow-sm'
+          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+      }`;
+    },
+    [textAlign],
+  );
 
   // تعیین کلاس‌های flexbox برای تراز
   const alignmentClasses = useMemo(() => {
     switch (textAlign) {
-      case 'left': return 'justify-start';
-      case 'right': return 'justify-end';
+      case 'left':
+        return 'justify-start';
+      case 'right':
+        return 'justify-end';
       case 'center':
-      default: return 'justify-center';
+      default:
+        return 'justify-center';
     }
   }, [textAlign]);
 
   return (
-    <NodeViewWrapper 
-      ref={wrapperRef} 
+    <NodeViewWrapper
+      ref={wrapperRef}
       className={`group relative my-4 flex -mx-4 px-4 ${alignmentClasses}`}
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => !isResizing && setShowControls(false)}
@@ -151,10 +165,10 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
       onBlur={() => setShowControls(false)}
     >
       {!isEditable ? (
-        <img 
-          className="rounded-xl shadow-md" 
-          src={src} 
-          alt={alt || ''} 
+        <img
+          className="rounded-xl shadow-md"
+          src={src}
+          alt={alt || ''}
           style={{ width }}
           loading="lazy"
           onError={(e) => {
@@ -163,16 +177,18 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
           }}
         />
       ) : (
-        <div 
+        <div
           className={`relative transition-all duration-200 ${
             selected ? 'ring-2 ring-primary-500 ring-offset-2 rounded-xl' : ''
-          }`} 
+          }`}
           contentEditable={false}
         >
           {/* Toolbar - always visible when selected or hovered */}
-          <div 
+          <div
             className={`absolute -top-14 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-1.5 border border-gray-200 dark:border-gray-700 transition-all duration-200 ${
-              showControls || selected ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
+              showControls || selected
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 translate-y-2 pointer-events-none'
             }`}
           >
             {/* Alignment buttons */}
@@ -203,9 +219,9 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
             >
               <AlignRight size={16} />
             </button>
-            
+
             <div className="w-px h-6 bg-gray-200 dark:bg-gray-600 mx-1" aria-hidden="true" />
-            
+
             <button
               type="button"
               onClick={handleFullWidth}
@@ -223,9 +239,9 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
             >
               <ExternalLink size={16} />
             </button>
-            
+
             <div className="w-px h-6 bg-gray-200 dark:bg-gray-600 mx-1" aria-hidden="true" />
-            
+
             <button
               type="button"
               onClick={handleDelete}
@@ -249,17 +265,17 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
             <div className="h-16 w-1 rounded-full bg-primary-500 shadow-lg mx-auto" />
           </div>
 
-          <img 
-            className="rounded-xl shadow-lg transition-shadow hover:shadow-xl" 
-            src={src} 
-            alt={alt || ''} 
+          <img
+            className="rounded-xl shadow-lg transition-shadow hover:shadow-xl"
+            src={src}
+            alt={alt || ''}
             style={{ width }}
             loading="lazy"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.src = '/images/placeholder-large.png';
             }}
-            data-drag-handle 
+            data-drag-handle
           />
 
           {/* Right resize handle */}

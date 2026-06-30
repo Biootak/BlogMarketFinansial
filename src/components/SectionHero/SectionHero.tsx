@@ -24,7 +24,7 @@ const SectionHero: FC<SectionHeroProps> = ({
           <h2 className="text-xl !leading-tight font-semibold text-neutral-900 md:text-2xl lg:text-3xl dark:text-neutral-100">
             {heading}
           </h2>
-          <span className="block text-sm xl:text-base text-neutral-6000 dark:text-neutral-400">
+          <span className="block text-sm xl:text-base text-neutral-600 dark:text-neutral-400">
             {subHeading}
           </span>
           {!!btnText && <ButtonPrimary href="/">{btnText}</ButtonPrimary>}

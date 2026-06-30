@@ -1,10 +1,10 @@
 import React from 'react';
 
-import { HiCheck } from 'react-icons/hi2';
-import { Gem } from 'lucide-react';
 import ButtonPrimary from '@/components/Button/ButtonPrimary';
 import ButtonSecondary from '@/components/Button/ButtonSecondary';
 import Heading2 from '@/components/Heading/Heading2';
+import { Gem } from 'lucide-react';
+import { HiCheck } from 'react-icons/hi2';
 
 export interface PricingItem {
   isPopular: boolean;
@@ -57,7 +57,7 @@ const PageSubcription = ({}) => {
           </span>
         )}
         <div className="mb-8">
-          <h3 className="block text-sm uppercase tracking-widest text-neutral-6000 dark:text-neutral-300 mb-2 font-medium">
+          <h3 className="block text-sm uppercase tracking-widest text-neutral-600 dark:text-neutral-300 mb-2 font-medium">
             {pricing.name}
           </h3>
           <h2 className="text-4xl leading-none flex items-center text-neutral-700 dark:text-neutral-300">
@@ -70,7 +70,7 @@ const PageSubcription = ({}) => {
         <nav className="space-y-4 mb-8">
           {pricing.features.map((item, index) => (
             <li className="flex items-center" key={index}>
-              <span className="me-4 inline-flex flex-shrink-0 text-primary-6000">
+              <span className="me-4 inline-flex flex-shrink-0 text-primary-600">
                 <HiCheck className="w-5 h-5" aria-hidden="true" />
               </span>
               <span className="text-neutral-700 dark:text-neutral-300">{item}</span>

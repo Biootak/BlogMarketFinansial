@@ -1,12 +1,12 @@
 'use client';
 
-import { HiChevronLeft, HiChevronRight } from 'react-icons/hi2';
-import { AnimatePresence, motion, MotionConfig } from '@/lib/motion-shim';
-import Image, { type StaticImageData } from 'next/image';
-import { useState } from 'react';
-import { useSwipeable } from 'react-swipeable';
+import { AnimatePresence, MotionConfig, motion } from '@/lib/motion-shim';
 import { variants } from '@/utils/animationVariants';
+import Image, { type StaticImageData } from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
+import { HiChevronLeft, HiChevronRight } from 'react-icons/hi2';
+import { useSwipeable } from 'react-swipeable';
 
 export interface GallerySliderProps {
   className?: string;
@@ -110,7 +110,7 @@ export default function GallerySlider({
             {index > 0 && (
               <button
                 type="button"
-                className="absolute w-8 h-8 start-3 top-[calc(50%-16px)] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-6000 dark:hover:border-neutral-500 rounded-full flex items-center justify-center hover:border-neutral-300 focus:outline-none z-10"
+                className="absolute w-8 h-8 start-3 top-[calc(50%-16px)] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-600 dark:hover:border-neutral-500 rounded-full flex items-center justify-center hover:border-neutral-300 focus:outline-none z-10"
                 style={{ transform: 'translate3d(0, 0, 0)' }}
                 onClick={() => changePhotoId(index - 1)}
               >
@@ -120,7 +120,7 @@ export default function GallerySlider({
             {index + 1 < images.length && (
               <button
                 type="button"
-                className="absolute w-8 h-8 end-3 top-[calc(50%-16px)] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-6000 dark:hover:border-neutral-500 rounded-full flex items-center justify-center hover:border-neutral-300 focus:outline-none z-10"
+                className="absolute w-8 h-8 end-3 top-[calc(50%-16px)] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-600 dark:hover:border-neutral-500 rounded-full flex items-center justify-center hover:border-neutral-300 focus:outline-none z-10"
                 style={{ transform: 'translate3d(0, 0, 0)' }}
                 onClick={() => changePhotoId(index + 1)}
               >
@@ -129,7 +129,6 @@ export default function GallerySlider({
             )}
           </div>
         )}
-
 
         <div className="flex items-center justify-center absolute bottom-2 start-1/2 transform -translate-x-1/2 gap-1.5">
           {images.map((_, i) => (

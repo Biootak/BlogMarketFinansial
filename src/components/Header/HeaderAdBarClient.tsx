@@ -22,8 +22,9 @@
  * window shortened from 24h to 1h on user request.
  */
 
+import { Megaphone, Sparkles, X } from 'lucide-react';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { X, Sparkles, Megaphone } from 'lucide-react';
 
 type Theme = 'PRIMARY' | 'ACCENT' | 'NEUTRAL' | 'DARK' | 'GRADIENT';
 type Variant = 'TEXT' | 'IMAGE' | 'MIXED';
@@ -49,23 +50,18 @@ const themeClasses: Record<Theme, string> = {
     'bg-amber-50/95 dark:bg-amber-950/90 text-amber-900 dark:text-amber-100 border-amber-200/60 dark:border-amber-800/50',
   NEUTRAL:
     'bg-neutral-100/95 dark:bg-neutral-800/95 text-neutral-900 dark:text-neutral-100 border-neutral-200/60 dark:border-neutral-700/50',
-  DARK:
-    'bg-neutral-900/95 text-white border-neutral-700/60',
+  DARK: 'bg-neutral-900/95 text-white border-neutral-700/60',
   GRADIENT:
     'bg-gradient-to-l from-primary-600 via-indigo-600 to-purple-600 text-white border-transparent',
 };
 
 const ctaClasses: Record<Theme, string> = {
-  PRIMARY:
-    'bg-primary-600 hover:bg-primary-700 text-white',
-  ACCENT:
-    'bg-amber-600 hover:bg-amber-700 text-white',
+  PRIMARY: 'bg-primary-600 hover:bg-primary-700 text-white',
+  ACCENT: 'bg-amber-600 hover:bg-amber-700 text-white',
   NEUTRAL:
     'bg-neutral-900 hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-100 dark:text-neutral-900',
-  DARK:
-    'bg-white hover:bg-neutral-100 text-neutral-900',
-  GRADIENT:
-    'bg-white/15 hover:bg-white/25 text-white backdrop-blur-sm border border-white/20',
+  DARK: 'bg-white hover:bg-neutral-100 text-neutral-900',
+  GRADIENT: 'bg-white/15 hover:bg-white/25 text-white backdrop-blur-sm border border-white/20',
 };
 
 export default function HeaderAdBarClient({ ad }: { ad: Ad }) {
@@ -130,20 +126,19 @@ export default function HeaderAdBarClient({ ad }: { ad: Ad }) {
           "
         >
           {ad.variant !== 'TEXT' && ad.imageUrl ? (
-            <span className="flex-shrink-0 size-5 sm:size-6 rounded-md overflow-hidden bg-black/10">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+            <span className="relative flex-shrink-0 size-5 sm:size-6 rounded-md overflow-hidden bg-black/10">
+              <Image
+                unoptimized
+                fill
+                sizes="24px"
                 src={ad.imageUrl}
-                alt=""
-                className="h-full w-full object-contain"
+                alt={ad.text ? `تصویر تبلیغ: ${ad.text}` : 'تصویر تبلیغ'}
+                className="object-contain"
                 loading="lazy"
               />
             </span>
           ) : ad.variant !== 'TEXT' ? (
-            <Megaphone
-              className="flex-shrink-0 size-3.5 sm:size-4 opacity-70"
-              aria-hidden
-            />
+            <Megaphone className="flex-shrink-0 size-3.5 sm:size-4 opacity-70" aria-hidden />
           ) : (
             <Sparkles
               className="hidden sm:inline-block flex-shrink-0 size-3.5 opacity-70"

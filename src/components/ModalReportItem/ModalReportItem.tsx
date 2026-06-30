@@ -1,12 +1,12 @@
 'use client';
 
-import React, { type FC, useEffect, useRef, useState } from 'react';
-import NcModal from '@/components/NcModal/NcModal';
-import Textarea from '@/components/Textarea/Textarea';
+import { RadioGroup } from '@/app/headlessui';
 import ButtonPrimary from '@/components/Button/ButtonPrimary';
 import ButtonSecondary from '@/components/Button/ButtonSecondary';
-import { RadioGroup } from '@/app/headlessui';
+import NcModal from '@/components/NcModal/NcModal';
+import Textarea from '@/components/Textarea/Textarea';
 import twFocusClass from '@/utils/twFocusClass';
+import React, { type FC, useEffect, useRef, useState } from 'react';
 import ButtonThird from '../Button/ButtonThird';
 
 export interface ProblemPlan {
@@ -78,7 +78,7 @@ const ModalReportItem: FC<ModalReportItemProps> = ({
                 className={({ checked }) => {
                   return `${
                     checked
-                      ? 'bg-primary-6000 text-white dark:bg-primary-700'
+                      ? 'bg-primary-600 text-white dark:bg-primary-700'
                       : 'bg-white border-t border-neutral-50 '
                   } relative shadow-lg rounded-lg px-3 py-3 cursor-pointer flex sm:px-5 sm:py-4 focus:outline-none ${twFocusClass(true)}`;
                 }}
@@ -109,7 +109,7 @@ const ModalReportItem: FC<ModalReportItemProps> = ({
 
         <div className="mt-4">
           <h4 className="text-lg font-semibold text-neutral-700 dark:text-neutral-200">پیام</h4>
-          <span className="text-sm text-neutral-6000 dark:text-neutral-400">
+          <span className="text-sm text-neutral-600 dark:text-neutral-400">
             لطفاً هرگونه اطلاعات یا زمینه اضافی که به ما کمک می‌کند وضعیت را درک و رسیدگی کنیم، ارائه
             دهید.
           </span>

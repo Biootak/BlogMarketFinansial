@@ -1,10 +1,10 @@
 'use client';
 
-import type React from 'react';
-import { forwardRef, type ButtonHTMLAttributes } from 'react'
-import type { FC } from 'react';
 import type { Route } from '@/routers/types';
 import Link from 'next/link';
+import type React from 'react';
+import { type ButtonHTMLAttributes, forwardRef } from 'react';
+import type { FC } from 'react';
 import Loading from './Loading';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -39,10 +39,10 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       'bg-neutral-900 hover:bg-neutral-800 text-white dark:bg-neutral-100 dark:hover:bg-neutral-50 dark:text-black';
     switch (pattern) {
       case 'primary':
-        colors = 'bg-primary-700 hover:bg-primary-6000 text-primary-50';
+        colors = 'bg-primary-700 hover:bg-primary-600 text-primary-50';
         break;
       case 'secondary':
-        colors = 'bg-secondary-500 hover:bg-secondary-6000 text-secondary-50';
+        colors = 'bg-secondary-500 hover:bg-secondary-600 text-secondary-50';
         break;
       case 'white':
         colors = 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-200';

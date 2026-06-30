@@ -55,7 +55,7 @@ function daysAgo(n) { return new Date(Date.now() - n * 24 * 60 * 60 * 1000); }
 function hoursAgo(n) { return new Date(Date.now() - n * 60 * 60 * 1000); }
 
 /* ─── seed credential helpers ────────────────────────────────── */
-let seededSuperAdmin = null; // { email, password, source } فقط در صورت ایجاد جدید پر می‌شود
+let seededOwner = null; // { email, password, source } فقط در صورت ایجاد جدید پر می‌شود
 
 function generatePassword(length = 16) {
   const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -150,7 +150,7 @@ async function seedUsers() {
     const exists = await p.user.findUnique({ where: { email: u.email } });
     if (exists) { created.push(exists); continue; }
     const user = await p.user.create({
-      data: { ...u, password, status: 'Active', image: `https://i.pravatar.cc/150?img=${rand(1, 70)}`, emailVerified: daysAgo(rand(1, 200)) },
+      data: { ...u, password: samplePassword, status: 'Active', image: `https://i.pravatar.cc/150?img=${rand(1, 70)}`, emailVerified: daysAgo(rand(1, 200)) },
     });
     created.push(user);
   }
@@ -529,7 +529,81 @@ async function seedSocialLinks() {
   console.log(`   ✅ ${added} لینک اجتماعی`);
 }
 
-/* ─── 14b) ExchangeRates from SYMBOL_REGISTRY ─────────────────── */
+/* ─── 14b) HeaderAd (تبلیغ باریک بالای هدر) ─────────────────── */
+async function seedHeaderAd() {
+  const existing = await p.headerAd.findFirst();
+  if (existing) {
+    console.log('   ⏭️  HeaderAd قبلاً وجود دارد');
+    return existing;
+  }
+  const created = await p.headerAd.create({
+    data: {
+      text: 'تحلیل‌های روزانه بازار طلا و ارز — همین حالا عضو شوید',
+      subtext: 'دسترسی رایگان به گزارش‌های ویژه هفتگی',
+      ctaLabel: 'مشاهده پلن‌ها',
+      ctaHref: '/services',
+      variant: 'TEXT',
+      theme: 'PRIMARY',
+      isActive: true,
+      priority: 1,
+      startDate: daysAgo(7),
+      endDate: daysAgo(-30),
+    },
+  });
+  console.log('   ✅ HeaderAd فعال ایجاد شد');
+  return created;
+}
+
+/* ─── 14c) Advertisements (تبلیغات نمونه) ───────────────────── */
+async function seedAdvertisements() {
+  const ads = [
+    {
+      title: 'دوره جامع تحلیل تکنیکال',
+      description: 'از صفر تا حرفه‌ای با مثال‌های بازار ایران',
+      imageUrl: 'https://placehold.co/600x200/2563eb/ffffff?text=Technical+Analysis',
+      linkUrl: '/services',
+      size: 'LARGE',
+      position: 'IN_CONTENT',
+      order: 1,
+      startDate: daysAgo(5),
+      endDate: daysAgo(-30),
+    },
+    {
+      title: 'مشاوره ارزی شخصی',
+      description: 'با کارشناسان خبره بازارهای مالی گفتگو کنید',
+      imageUrl: 'https://placehold.co/300x250/059669/ffffff?text=Currency+Consulting',
+      linkUrl: '/services',
+      size: 'MEDIUM',
+      position: 'SIDEBAR',
+      order: 1,
+      startDate: daysAgo(3),
+      endDate: daysAgo(-30),
+    },
+    {
+      title: 'صرافی آنلاین امن',
+      description: 'خرید و فروش ارز با کمترین اسپرد',
+      imageUrl: 'https://placehold.co/728x90/d97706/ffffff?text=Exchange+Banner',
+      linkUrl: '/exchange-rates',
+      size: 'CUSTOM',
+      position: 'BETWEEN_POSTS',
+      order: 2,
+      startDate: daysAgo(1),
+      endDate: daysAgo(-60),
+      customDimensions: { width: 728, height: 90 },
+    },
+  ];
+
+  let added = 0;
+  for (const ad of ads) {
+    const exists = await p.advertisement.findFirst({ where: { title: ad.title } });
+    if (exists) continue;
+    await p.advertisement.create({ data: ad });
+    added++;
+  }
+  console.log(`   ✅ ${added} تبلیغ`);
+}
+
+/* ─── 14d) ExchangeRates from SYMBOL_REGISTRY ─────────────────── */
 async function seedExchangeRates() {
   const SYMBOL_REGISTRY = [
     { symbol: 'AFGHANI_USD',  displayNameFa: 'دلار هرات',     group: 'afghan',     unit: 'toman', divisor: 10, decimals: 0, priority: 2 },
@@ -652,7 +726,7 @@ async function seedServiceRequests() {
   for (let i = 0; i < 12; i++) {
     const name = pick(names);
     const phone = `09${rand(100000000, 999999999)}`;
-    const code = `TRK-${Date.now().toString().slice(-6)}-${i}`;
+    const code = `TRK-DEV-${String(i + 1).padStart(3, '0')}`;
     const exists = await p.serviceRequest.findUnique({ where: { trackingCode: code } });
     if (exists) continue;
     await p.serviceRequest.create({
@@ -841,6 +915,12 @@ async function main() {
   console.log('\n1️⃣4️⃣  SocialLinks:');
   await seedSocialLinks();
 
+  console.log('\n1️⃣4️⃣b  HeaderAd:');
+  await seedHeaderAd();
+
+  console.log('\n1️⃣4️⃣c  Advertisements:');
+  await seedAdvertisements();
+
   console.log('\n1️⃣5️⃣  RateLists:');
   await seedRateLists();
 
@@ -878,6 +958,8 @@ async function main() {
     activities: await p.activity.count(),
     newsletters: await p.newsletter.count(),
     socialLinks: await p.socialLink.count(),
+    headerAds: await p.headerAd.count(),
+    advertisements: await p.advertisement.count(),
     rateLists: await p.rateList.count(),
     serviceRequests: await p.serviceRequest.count(),
     systemLogs: await p.systemLog.count(),
