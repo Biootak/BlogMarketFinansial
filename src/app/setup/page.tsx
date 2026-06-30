@@ -2,7 +2,9 @@ import { AuroraBackdrop } from '@/components/Setup/AuroraBackdrop';
 import { SecurityNotice } from '@/components/Setup/SecurityNotice';
 import { SetupWizard } from '@/components/Setup/SetupWizard';
 import { ArrowLeftGlyph, ShieldCheckGlyph } from '@/components/Setup/WizardIcons';
+import Logo from '@/components/Logo/Logo';
 import { checkExistingSuperAdmin } from '@/lib/auth';
+import { getSiteIdentity } from '@/lib/site-identity';
 import { PrismaClient } from '@prisma/client';
 import { headers } from 'next/headers';
 import Link from 'next/link';
@@ -33,17 +35,16 @@ const prisma = new PrismaClient();
  * SetupSkeleton — visual placeholder that matches the glass shell so the
  * page does not layout-shift while the DB probe / headers resolve.
  */
-function SetupSkeleton() {
+function SetupSkeleton({ siteName, logoUrl }: { siteName: string; logoUrl: string }) {
+  const hasLogo = logoUrl && logoUrl.trim();
   return (
     <main className="setup-page" lang="fa-IR" dir="rtl" aria-busy="true">
       <AuroraBackdrop />
 
       <header className="setup-page__topbar">
         <div className="setup-page__brand">
-          <span className="setup-page__brand-mark" aria-hidden="true">
-            <ShieldCheckGlyph />
-          </span>
-          <span className="setup-page__brand-text">blogmarketfinansial.ir</span>
+          <Logo logoUrl={logoUrl} className="h-10 w-auto" />
+          <span className="setup-page__brand-text">{siteName}</span>
         </div>
       </header>
 
@@ -63,7 +64,7 @@ function SetupSkeleton() {
  * SetupContent — async data component. All dynamic request access
  * (`headers()` and the DB probe) lives here, inside <Suspense>.
  */
-async function SetupContent() {
+async function SetupContent({ siteName, logoUrl }: { siteName: string; logoUrl: string }) {
   const isProduction = process.env.NODE_ENV === 'production';
   // Dev-only preview: render the wizard even when a super-admin already
   // exists so the UI can be redesigned/tested without resetting the DB.
@@ -103,10 +104,8 @@ async function SetupContent() {
 
       <header className="setup-page__topbar">
         <div className="setup-page__brand">
-          <span className="setup-page__brand-mark" aria-hidden="true">
-            <ShieldCheckGlyph />
-          </span>
-          <span className="setup-page__brand-text">blogmarketfinansial.ir</span>
+          <Logo logoUrl={logoUrl} className="h-10 w-auto" />
+          <span className="setup-page__brand-text">{siteName}</span>
         </div>
         <nav aria-label="ناوبری سراسری" className="setup-page__topnav">
           <Link href="/signin" className="setup-page__topnav-link">
@@ -136,7 +135,7 @@ async function SetupContent() {
         </div>
 
         <p className="setup-page__legal">
-          © {new Date().getFullYear()} blogmarketfinansial.ir — پیکربندی با احراز هویت دو مرحله‌ای در
+          © {new Date().getFullYear()} {siteName} — پیکربندی با احراز هویت دو مرحله‌ای در
           سرور.
         </p>
       </section>
@@ -144,10 +143,12 @@ async function SetupContent() {
   );
 }
 
-export default function SetupPage() {
+export default async function SetupPage() {
+  const { siteName, logoUrl } = await getSiteIdentity();
+
   return (
-    <Suspense fallback={<SetupSkeleton />}>
-      <SetupContent />
+    <Suspense fallback={<SetupSkeleton siteName={siteName} logoUrl={logoUrl} />}>
+      <SetupContent siteName={siteName} logoUrl={logoUrl} />
     </Suspense>
   );
 }

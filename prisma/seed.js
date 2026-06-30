@@ -77,7 +77,7 @@ async function seedSystemSettings() {
   }
   const created = await p.systemSettings.create({
     data: {
-      siteName: 'بازار مالی - وبلاگ تحلیل بازارهای مالی',
+      siteName: 'Financial Market',
       siteDescription: 'مرجع تحلیل بازار طلا، ارز، رمزارز و بورس',
       maintenanceMode: false,
       cacheEnabled: true,

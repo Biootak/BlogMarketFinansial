@@ -13,6 +13,7 @@ import LogoSvg from './LogoSvg';
 interface LogoProps {
   img?: StaticImageData;
   imgLight?: StaticImageData;
+  logoUrl?: string;
   useImage?: boolean;
   className?: string;
   variant?: 'default' | 'modern';
@@ -21,6 +22,7 @@ interface LogoProps {
 const Logo: React.FC<LogoProps> = ({
   img = logoImg,
   imgLight = logoLightImg,
+  logoUrl,
   useImage = false,
   className = '',
   variant = 'default',
@@ -104,7 +106,13 @@ const Logo: React.FC<LogoProps> = ({
           display: 'inline-flex',
         }}
       >
-        {useImage ? (
+        {logoUrl ? (
+          <img
+            src={logoUrl}
+            alt="Logo"
+            className="h-10 w-auto object-contain sm:h-11"
+          />
+        ) : useImage ? (
           <Image
             className="block dark:hidden"
             src={img}

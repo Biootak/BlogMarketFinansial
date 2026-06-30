@@ -12,8 +12,16 @@ export { buildDatabaseUrl };
 //   PRISMA_CONNECTION_LIMIT  (default: 30 prod / 10 dev)
 //   PRISMA_POOL_TIMEOUT      (default: 30 seconds)
 // Existing query params in DATABASE_URL are preserved.
-const prismaClientSingleton = () => {
-  return new PrismaClient({
+
+// 2026-06-30: Lazy singleton via Proxy
+// ---------------------------------------------------------------------------
+// Previously the PrismaClient was created when this module was imported. If
+// DATABASE_URL was missing, the entire module graph threw before any caller
+// could fall back (e.g. site-identity.ts). Now creation is deferred until the
+// first property access, so pages/components that don't touch the DB import
+// cleanly and DB consumers get the error exactly when they try to query.
+const createPrismaClient = () =>
+  new PrismaClient({
     datasources: {
       db: {
         url: buildDatabaseUrl(),
@@ -21,18 +29,35 @@ const prismaClientSingleton = () => {
     },
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
   });
-};
+
+type PrismaClientType = ReturnType<typeof createPrismaClient>;
 
 // biome-ignore lint/suspicious/noShadowRestrictedNames: <explanation>
 declare const globalThis: {
-  prismaGlobal: ReturnType<typeof prismaClientSingleton>;
+  prismaGlobal: PrismaClientType | undefined;
 } & typeof global;
 
-const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();
+function getPrismaClient(): PrismaClientType {
+  if (!globalThis.prismaGlobal) {
+    globalThis.prismaGlobal = createPrismaClient();
+  }
+  return globalThis.prismaGlobal;
+}
+
+const prisma = new Proxy({} as PrismaClientType, {
+  get(_, prop) {
+    const client = getPrismaClient();
+    const value = (client as unknown as Record<string | symbol, unknown>)[prop];
+
+    if (typeof value === 'function') {
+      return value.bind(client);
+    }
+
+    return value;
+  },
+}) as PrismaClientType;
 
 export default prisma;
-
-if (process.env.NODE_ENV !== 'production') globalThis.prismaGlobal = prisma;
 
 // Helper function برای چک کردن اتصال دیتابیس
 export async function checkDatabaseConnection(): Promise<boolean> {
@@ -46,13 +71,9 @@ export async function checkDatabaseConnection(): Promise<boolean> {
 }
 
 // Helper برای اجرای query با retry
-export async function withRetry<T>(
-  fn: () => Promise<T>,
-  retries = 3,
-  delay = 1000
-): Promise<T> {
+export async function withRetry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> {
   let lastError: Error | undefined;
-  
+
   for (let i = 0; i < retries; i++) {
     try {
       return await fn();
@@ -63,6 +84,6 @@ export async function withRetry<T>(
       }
     }
   }
-  
+
   throw lastError;
 }

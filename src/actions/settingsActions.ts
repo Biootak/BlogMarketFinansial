@@ -2,11 +2,13 @@
 
 import prisma from '@/lib/db';
 import { revalidatePath } from 'next/cache';
+import { revalidateSiteIdentity } from '@/lib/site-identity-revalidate';
 import { requireAdmin, requireSuperAdmin, authFailureToActionResult } from '@/lib/require-auth';
 
 export interface SystemSettingsData {
   siteName?: string;
   siteDescription?: string;
+  logoUrl?: string;
   maintenanceMode?: boolean;
   cacheEnabled?: boolean;
   smtpServer?: string;
@@ -41,6 +43,7 @@ export async function getSystemSettings() {
 export async function updateGeneralSettings(data: {
   siteName: string;
   siteDescription: string;
+  logoUrl?: string;
 }) {
   try {
     const authCheck = await requireSuperAdmin();
@@ -53,6 +56,7 @@ export async function updateGeneralSettings(data: {
         data: {
           siteName: data.siteName,
           siteDescription: data.siteDescription,
+          logoUrl: data.logoUrl,
         },
       });
     } else {
@@ -60,11 +64,13 @@ export async function updateGeneralSettings(data: {
         data: {
           siteName: data.siteName,
           siteDescription: data.siteDescription,
+          logoUrl: data.logoUrl,
         },
       });
     }
 
     // Revalidate all pages that use site settings
+    await revalidateSiteIdentity();
     revalidatePath('/dashboard/settings');
     revalidatePath('/');
     

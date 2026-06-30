@@ -2,6 +2,7 @@
 
 import React, { type FC } from "react";
 import Logo from "@/components/Logo/Logo";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import MenuBar from "@/components/MenuBar/MenuBar";
 import AvatarDropdown from "./AvatarDropdown";
 
@@ -15,6 +16,7 @@ export interface MainNav2Props {
 }
 
 const MainNav2: FC<MainNav2Props> = ({ className = "" }) => {
+  const { logoUrl } = useSiteSettings();
   const renderSearchForm = () => {
     return (
       <div className="relative group">
@@ -63,7 +65,7 @@ const MainNav2: FC<MainNav2Props> = ({ className = "" }) => {
           </div>
 
           <div className="flex lg:flex-1 items-center gap-3 sm:gap-8">
-            <Logo />
+            <Logo logoUrl={logoUrl || undefined} />
 
             <div className="hidden md:block h-10 border-s border-slate-200 dark:border-slate-700"></div>
 

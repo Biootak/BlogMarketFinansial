@@ -1,0 +1,6 @@
+{
+  "maxConcurrent": 4,
+  "defaultMaxTurns": 30,
+  "graceTurns": 5,
+  "defaultJoinMode": "smart"
+}

@@ -1,12 +1,17 @@
 // app/terms/page.tsx
 import type { Metadata } from 'next';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { getSiteIdentity } from '@/lib/site-identity';
 
-export const metadata: Metadata = {
-  title: 'قوانین و مقررات | پلتفرم معاملات بازارهای مالی',
-  description:
-    'قوانین، مقررات و الزامات استفاده از پلتفرم معاملات بازارهای مالی ما را مطالعه کنید.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { siteName } = await getSiteIdentity();
+  const name = siteName || 'پلتفرم معاملات بازارهای مالی';
+
+  return {
+    title: `قوانین و مقررات | ${name}`,
+    description: `قوانین، مقررات و الزامات استفاده از ${name} را مطالعه کنید.`,
+  };
+}
 
 const termsAndConditions = [
   {

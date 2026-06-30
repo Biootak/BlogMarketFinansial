@@ -26,6 +26,7 @@ async function DashboardGateInner({
       initialSettings={{
         siteName: settings.siteName,
         siteDescription: settings.siteDescription,
+        logoUrl: settings.logoUrl,
       }}
     >
       <DashboardProviders userRole={session.user.role}>{children}</DashboardProviders>

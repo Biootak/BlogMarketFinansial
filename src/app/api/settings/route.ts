@@ -41,6 +41,11 @@ export async function POST(req: Request) {
       );
     }
 
+    // logoUrl is optional; normalize empty strings to null
+    if (body.logoUrl === '') {
+      body.logoUrl = null;
+    }
+
     try {
       let settings = await db.systemSettings.findFirst();
 

@@ -438,6 +438,7 @@ model SystemSettings {
   id              String   @id @default(cuid())
   siteName        String?
   siteDescription String?
+  logoUrl         String?
   maintenanceMode Boolean  @default(false)
   cacheEnabled    Boolean  @default(true)
   smtpServer      String?

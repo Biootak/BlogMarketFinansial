@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import Footer from '@/components/Footer/Footer';
 import { getActiveAdvertisements } from '@/actions/advertisementActions';
+import { getSiteIdentity } from '@/lib/site-identity';
 import type { Advertisement } from '@/types/types';
 
 /**

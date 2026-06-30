@@ -4,6 +4,7 @@ import prisma from '@/lib/db';
 export interface SiteSettings {
   siteName: string | null;
   siteDescription: string | null;
+  logoUrl: string | null;
   telegram: string | null;
   instagram: string | null;
   twitter: string | null;
@@ -15,6 +16,7 @@ export interface SiteSettings {
 const SETTINGS_FALLBACK: SiteSettings = {
   siteName: null,
   siteDescription: null,
+  logoUrl: null,
   telegram: null,
   instagram: null,
   twitter: null,
@@ -40,6 +42,7 @@ export const getSystemSettingsData = safeCache(
     return {
       siteName: settings.siteName,
       siteDescription: settings.siteDescription,
+      logoUrl: settings.logoUrl,
       telegram: settings.telegram,
       instagram: settings.instagram,
       twitter: settings.twitter,

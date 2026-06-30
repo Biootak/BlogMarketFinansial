@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { motion } from '@/lib/motion-shim';
 import SocialLinks from '@/components/SocialsList/SocialLinks';
 import Logo from '@/components/Logo/Logo';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { Mail, Phone, ArrowUpLeft } from 'lucide-react';
 import { heading, text, space, radius } from '@/lib/design-tokens';
 import type { Advertisement } from '@/types/types';
@@ -39,10 +40,11 @@ const widgetMenus: WidgetFooterMenu[] = [
 
 interface FooterProps {
   footerAd?: Advertisement | null;
+  siteName?: string;
 }
 
-const Footer = ({ footerAd }: FooterProps) => {
-  const siteName = 'بیوتاک';
+const Footer = ({ footerAd, siteName = 'Financila Market' }: FooterProps) => {
+  const { logoUrl } = useSiteSettings();
 
   return (
     <footer className="relative overflow-hidden">
@@ -102,7 +104,10 @@ const Footer = ({ footerAd }: FooterProps) => {
               <div className="flex items-center gap-4">
                 <div className="relative group">
                   <div className="absolute -inset-2 bg-gradient-to-r from-primary-500/20 to-indigo-500/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-all duration-500" />
-                  <Logo className="relative w-14 h-auto" />
+                  <Logo
+                    logoUrl={logoUrl || undefined}
+                    className="relative w-14 h-auto"
+                  />
                 </div>
                 <div>
                   <h2 className={heading.h2}>{siteName}</h2>

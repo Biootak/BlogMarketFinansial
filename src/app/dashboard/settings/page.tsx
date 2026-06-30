@@ -11,6 +11,8 @@ import {
   Check,
   RefreshCw,
   Loader2,
+  Upload,
+  ImageIcon,
   type LucideIcon,
 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
@@ -43,7 +45,7 @@ const tabs: TabType[] = [
 ];
 
 interface SettingsFormData {
-  general: { siteTitle: string; siteDescription: string; contactEmail: string };
+  general: { siteTitle: string; siteDescription: string; contactEmail: string; logoUrl: string };
   email: { smtpServer: string; smtpPort: string; smtpUsername: string; smtpPassword: string };
   security: { twoFactorAuth: boolean; ipRestriction: boolean; minPasswordLength: number; sessionDuration: number };
   social: { instagram: string; telegram: string; whatsapp: string; twitter: string };
@@ -145,7 +147,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [formData, setFormData] = useState<SettingsFormData>({
-    general: { siteTitle: '', siteDescription: '', contactEmail: '' },
+    general: { siteTitle: '', siteDescription: '', contactEmail: '', logoUrl: '' },
     email: { smtpServer: '', smtpPort: '', smtpUsername: '', smtpPassword: '' },
     security: { twoFactorAuth: false, ipRestriction: false, minPasswordLength: 8, sessionDuration: 30 },
     social: { instagram: '', telegram: '', whatsapp: '', twitter: '' },
@@ -162,7 +164,7 @@ export default function SettingsPage() {
           const data = result.data;
           setFormData((prev) => ({
             ...prev,
-            general: { ...prev.general, siteTitle: data.siteName || '', siteDescription: data.siteDescription || '' },
+            general: { ...prev.general, siteTitle: data.siteName || '', siteDescription: data.siteDescription || '', logoUrl: data.logoUrl || '' },
             email: { ...prev.email, smtpServer: data.smtpServer || '', smtpPort: data.smtpPort || '', smtpUsername: data.smtpUsername || '', smtpPassword: data.smtpPassword || '' },
             social: { ...prev.social, instagram: data.instagram || '', telegram: data.telegram || '', twitter: data.twitter || '', whatsapp: data.whatsapp || '' },
             advanced: { ...prev.advanced, cacheEnabled: data.cacheEnabled ?? true },
@@ -185,7 +187,7 @@ export default function SettingsPage() {
   const handleSaveGeneral = async () => {
     setLoading(true);
     try {
-      const result = await updateGeneralSettings({ siteName: formData.general.siteTitle, siteDescription: formData.general.siteDescription });
+      const result = await updateGeneralSettings({ siteName: formData.general.siteTitle, siteDescription: formData.general.siteDescription, logoUrl: formData.general.logoUrl });
       if (result.success) {
         toast({ title: 'موفق', description: 'تنظیمات عمومی با موفقیت ذخیره شد' });
       } else {
@@ -193,6 +195,36 @@ export default function SettingsPage() {
       }
     } catch {
       toast({ title: 'خطا', description: 'خطا در ذخیره تنظیمات', variant: 'destructive' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Upload site logo
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setLoading(true);
+    try {
+      const uploadData = new FormData();
+      uploadData.append('files', file);
+      uploadData.append('folder', 'general');
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadData,
+      });
+
+      const data = await response.json();
+      if (data.success && data.files?.[0]?.url) {
+        handleInputChange('general', 'logoUrl', data.files[0].url);
+        toast({ title: 'موفق', description: 'لوگو با موفقیت آپلود شد' });
+      } else {
+        toast({ title: 'خطا', description: data.error || 'خطا در آپلود لوگو', variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: 'خطا', description: 'خطا در آپلود لوگو', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -333,6 +365,40 @@ export default function SettingsPage() {
                     <InputField label="عنوان سایت" value={formData.general.siteTitle} onChange={(v) => handleInputChange('general', 'siteTitle', v)} placeholder="عنوان سایت را وارد کنید" disabled={loading} />
                     <InputField label="توضیحات سایت" value={formData.general.siteDescription} onChange={(v) => handleInputChange('general', 'siteDescription', v)} placeholder="توضیحات سایت را وارد کنید" disabled={loading} />
                     <InputField label="ایمیل تماس" type="email" value={formData.general.contactEmail} onChange={(v) => handleInputChange('general', 'contactEmail', v)} placeholder="ایمیل تماس را وارد کنید" disabled={loading} />
+                    <div className="sm:col-span-2 space-y-2">
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">لوگوی سایت</label>
+                      <div className="flex flex-col sm:flex-row items-start gap-4 p-4 rounded-xl border-2 border-dashed border-gray-200/80 bg-white/80 dark:border-gray-700 dark:bg-gray-800/80">
+                        {formData.general.logoUrl ? (
+                          <div className="relative shrink-0">
+                            <img src={formData.general.logoUrl} alt="Site logo preview" className="h-16 w-auto object-contain rounded-lg" />
+                            <button
+                              type="button"
+                              onClick={() => handleInputChange('general', 'logoUrl', '')}
+                              disabled={loading}
+                              className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center hover:bg-red-600 disabled:opacity-50"
+                              aria-label="حذف لوگو"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="h-16 w-16 shrink-0 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                            <ImageIcon className="h-8 w-8 text-gray-400" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0 space-y-3 w-full">
+                          <InputField label="" value={formData.general.logoUrl} onChange={(v) => handleInputChange('general', 'logoUrl', v)} placeholder="https://example.com/logo.png" disabled={loading} />
+                          <div className="flex items-center gap-3">
+                            <label className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white bg-gradient-to-l from-[rgb(var(--c-primary-600))] to-[rgb(var(--c-primary-500))] shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+                              <Upload className="h-4 w-4" />
+                              <span>آپلود لوگو</span>
+                              <input type="file" accept="image/*" onChange={handleLogoUpload} disabled={loading} className="hidden" />
+                            </label>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">یا URL لوگو را وارد کنید</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   <ActionButtons loading={loading} onSubmit={handleSaveGeneral} />
                 </CardSection>

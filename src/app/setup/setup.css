@@ -93,9 +93,12 @@
     inline-size: 2rem;
     block-size: 2rem;
     border-radius: 0.65rem;
-    background: linear-gradient(135deg, oklch(65% 0.16 270), oklch(52% 0.16 260));
+    background: transparent;
     color: #fff;
-    box-shadow: 0 10px 24px -10px oklch(55% 0.16 265 / 0.55);
+    box-shadow: none;
+  }
+  .setup-page__brand-svg {
+    display: flex;
   }
   .setup-page__brand-text {
     white-space: nowrap;

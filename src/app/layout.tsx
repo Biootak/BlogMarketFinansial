@@ -27,30 +27,39 @@ import STRIP_EXTENSION_ATTRS_SCRIPT from '@/lib/strip-extension-attrs';
    - Canonical URL is exposed via metadataBase.
    - Per-page overrides are merged by Next.js automatically.
    ============================================================================ */
+import { getSiteIdentity } from '@/lib/site-identity';
+
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? 'https://blogmarketfinansial.ir';
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: {
-    default: 'بازارهای مالی | پلتفرم تحلیل و آموزش بازارهای مالی',
-    template: '%s | بازارهای مالی',
-  },
-  description:
-    'پلتفرم مورد اعتماد شما در بازار مالی — تحلیل، آموزش و اخبار لحظه‌ای ارزهای دیجیتال، طلا، بورس و بازار جهانی.',
-  applicationName: 'بازارهای مالی',
-  keywords: [
-    'بازار مالی',
-    'ارز دیجیتال',
-    'بیت کوین',
-    'طلا',
-    'بورس',
-    'تحلیل تکنیکال',
-    'آموزش ترید',
-  ],
-  authors: [{ name: 'BlogMarketFinansial' }],
-  creator: 'BlogMarketFinansial',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { siteName, siteDescription } = await getSiteIdentity();
+  const title = siteName || 'بازارهای مالی';
+  const description =
+    siteDescription ||
+    'پلتفرم مورد اعتماد شما در بازار مالی — تحلیل، آموزش و اخبار لحظه‌ای ارزهای دیجیتال، طلا، بورس و بازار جهانی.';
+
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default: `${title} | پلتفرم تحلیل و آموزش بازارهای مالی`,
+      template: `%s | ${title}`,
+    },
+    description,
+    applicationName: title,
+    keywords: [
+      'بازار مالی',
+      'ارز دیجیتال',
+      'بیت کوین',
+      'طلا',
+      'بورس',
+      'تحلیل تکنیکال',
+      'آموزش ترید',
+    ],
+    authors: [{ name: siteName || 'BlogMarketFinansial' }],
+    creator: siteName || 'BlogMarketFinansial',
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: [

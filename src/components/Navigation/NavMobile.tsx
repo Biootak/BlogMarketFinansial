@@ -18,6 +18,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ButtonClose from '@/components/ButtonClose/ButtonClose';
 import Logo from '@/components/Logo/Logo';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { Disclosure } from '@/app/headlessui';
 import ClientSocialLinks from '@/components/SocialsList/ClientSocialLinks';
 import SwitchDarkMode from '@/components/SwitchDarkMode/SwitchDarkMode';
@@ -111,6 +112,7 @@ const MagnifyingGlassIcon = (
 const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
+  const { logoUrl } = useSiteSettings();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -230,7 +232,7 @@ const NavMobile: React.FC<NavMobileProps> = ({ onClickClose }) => {
         className="py-6 px-5 border-b border-[rgb(var(--c-border-subtle))] stagger-children"
       >
         <div className="flex items-center justify-between">
-          <Logo />
+          <Logo logoUrl={logoUrl || undefined} />
           <ButtonClose onClick={onClickClose} />
         </div>
 

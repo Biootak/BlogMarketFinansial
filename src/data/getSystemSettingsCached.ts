@@ -7,6 +7,7 @@ export { type SiteSettings } from './getSystemSettings';
 const SETTINGS_FALLBACK: SiteSettings = {
   siteName: null,
   siteDescription: null,
+  logoUrl: null,
   telegram: null,
   instagram: null,
   twitter: null,
@@ -36,6 +37,7 @@ export const getSystemSettingsCached = unstable_cache(
       return {
         siteName: settings.siteName,
         siteDescription: settings.siteDescription,
+        logoUrl: settings.logoUrl,
         telegram: settings.telegram,
         instagram: settings.instagram,
         twitter: settings.twitter,

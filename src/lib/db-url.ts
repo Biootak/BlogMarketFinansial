@@ -19,15 +19,17 @@ function getDefaultConnectionLimit(): string {
 export function buildDatabaseUrl(): string {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
-    throw new Error('DATABASE_URL environment variable is not set');
+    throw new Error(
+      'DATABASE_URL environment variable is not set. ' +
+        'Copy .env.example to .env and configure a valid PostgreSQL connection string.',
+    );
   }
 
   const url = new URL(databaseUrl);
 
   // Only override if the operator has not already set the value in DATABASE_URL.
   if (!url.searchParams.has('connection_limit')) {
-    const connectionLimit =
-      process.env.PRISMA_CONNECTION_LIMIT ?? getDefaultConnectionLimit();
+    const connectionLimit = process.env.PRISMA_CONNECTION_LIMIT ?? getDefaultConnectionLimit();
     url.searchParams.set('connection_limit', connectionLimit);
   }
 

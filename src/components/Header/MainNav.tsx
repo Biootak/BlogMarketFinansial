@@ -1,4 +1,4 @@
-import Logo from '@/components/Logo/Logo';
+import SiteLogo from '@/components/Logo/SiteLogo';
 import MenuBar from '@/components/MenuBar/MenuBar';
 import Navigation from '@/components/Navigation/Navigation2026';
 import AvatarDropdown from './AvatarDropdown';
@@ -63,7 +63,7 @@ export default async function MainNav({
           {/* ستون وسط — Logo */}
           <div className="flex items-center justify-center min-w-0 col-start-2 row-start-1
                           lg:col-start-1 lg:row-start-1 lg:justify-start">
-            <Logo variant="modern" />
+            <SiteLogo variant="modern" />
           </div>
 
           {/* ستون چپ (در RTL: اکشن‌ها/ورود — همه سایزها) */}

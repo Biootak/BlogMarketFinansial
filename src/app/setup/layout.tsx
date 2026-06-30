@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import type * as React from 'react';
 import './setup.css';
+import { getSiteIdentity } from '@/lib/site-identity';
 
 /**
  * Setup-specific metadata. This page is intentionally excluded from search
@@ -11,25 +12,30 @@ import './setup.css';
  * the database for an existing OWNER — see `src/app/setup/page.tsx`.
  */
 
-export const metadata: Metadata = {
-  title: 'پیکربندی اولیه — blogmarketfinansial.ir',
-  description: 'ایجاد حساب مدیر اصلی برای فعال‌سازی سامانه. فقط در اولین نصب استفاده می‌شود.',
-  applicationName: 'blogmarketfinansial.ir',
-  authors: [{ name: 'blogmarketfinansial.ir' }],
-  robots: {
-    index: false,
-    follow: false,
-    nocache: true,
-    googleBot: {
+export async function generateMetadata(): Promise<Metadata> {
+  const { siteName } = await getSiteIdentity();
+  const name = siteName || 'blogmarketfinansial.ir';
+
+  return {
+    title: `پیکربندی اولیه — ${name}`,
+    description: 'ایجاد حساب مدیر اصلی برای فعال‌سازی سامانه. فقط در اولین نصب استفاده می‌شود.',
+    applicationName: name,
+    authors: [{ name }],
+    robots: {
       index: false,
       follow: false,
-      noimageindex: true,
+      nocache: true,
+      googleBot: {
+        index: false,
+        follow: false,
+        noimageindex: true,
+      },
     },
-  },
-  formatDetection: { email: false, address: false, telephone: false },
-  // The setup page never receives a referrer from external links.
-  referrer: 'no-referrer',
-};
+    formatDetection: { email: false, address: false, telephone: false },
+    // The setup page never receives a referrer from external links.
+    referrer: 'no-referrer',
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: [

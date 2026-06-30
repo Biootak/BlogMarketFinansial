@@ -19,6 +19,7 @@ export default async function SiteSettingsData() {
       initialSettings={{
         siteName: settings.siteName,
         siteDescription: settings.siteDescription,
+        logoUrl: settings.logoUrl,
       }}
     >
       {null}

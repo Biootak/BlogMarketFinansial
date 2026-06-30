@@ -8,6 +8,7 @@ interface SiteSettingsProviderProps {
   initialSettings?: {
     siteName: string | null;
     siteDescription: string | null;
+    logoUrl: string | null;
   };
 }
 
@@ -19,6 +20,7 @@ export function SiteSettingsProvider({ children, initialSettings }: SiteSettings
       setSettings({
         siteName: initialSettings.siteName,
         siteDescription: initialSettings.siteDescription,
+        logoUrl: initialSettings.logoUrl,
       });
     }
   }, [initialSettings, setSettings]);

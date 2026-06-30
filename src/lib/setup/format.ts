@@ -17,7 +17,8 @@ export function toPersianDigits(input: string | number): string {
  * Non-digit characters are stripped; the result is trimmed.
  */
 export function formatPersianPhone(raw: string): string {
-  const trimmed = raw.replace(/[^\d+]/g, '');
+  const ascii = toAsciiDigits(raw);
+  const trimmed = ascii.replace(/[^\d+]/g, '');
   if (trimmed.startsWith('+98')) {
     const digits = trimmed.slice(3).slice(0, 10);
     if (digits.length <= 3) return `+98 ${digits}`;

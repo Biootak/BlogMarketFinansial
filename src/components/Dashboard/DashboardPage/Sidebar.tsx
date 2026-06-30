@@ -3,6 +3,7 @@
 import { logout } from '@/actions/auth-actions';
 import Avatar from '@/components/Avatar/Avatar';
 import Logo from '@/components/Logo/Logo';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useToast } from '@/components/ui/use-toast';
 import { useSidebarStore } from '@/hooks/sidebarStore';
 import { cn } from '@/lib/utils';
@@ -336,6 +337,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
   const pathname = usePathname();
   const router = useRouter();
   const { toast } = useToast();
+  const { logoUrl } = useSiteSettings();
   const { isOpen, setIsOpen, isMobile } = useSidebarStore();
   const [expandedItems, setExpandedItems] = useState<string[]>(['exchangeRates']);
   const [mounted, setMounted] = useState(false);
@@ -482,7 +484,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
 
         <header className="dash-side__top">
           <div className="dash-side__brand">
-            <Logo className="h-8 w-8 shrink-0 flex items-center justify-center" />
+            <Logo logoUrl={logoUrl || undefined} className="h-8 w-8 shrink-0 flex items-center justify-center" />
           </div>
           {isMobile && isOpen && (
             <button
