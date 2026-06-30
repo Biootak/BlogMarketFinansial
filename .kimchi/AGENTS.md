@@ -1,0 +1,28 @@
+# Automatic Rules Trigger
+
+> Project-level override loaded alongside the root `AGENTS.md` and `ARCHITECT_RULES.md`.
+
+## Trigger Word
+
+When the user starts any message with one of these triggers, the agent MUST read the project guardrails **before any other action** (including exploration, search, or response):
+
+- `قوانین`
+- `با قوانین`
+- `AGENTS`
+- `rules`
+
+## Required Files to Read
+
+Use the `read` tool to load these files in order:
+
+1. `AGENTS.md`
+2. `ARCHITECT_RULES.md`
+3. `.claude/role/SKILL.md` (mirrored content; read to confirm it is in sync)
+
+## Verification
+
+After reading, begin the response with the mandatory declaration from `AGENTS.md`:
+
+> "AGENTS.md و ARCHITECT_RULES.md را خواندم و با آن‌ها همسو هستم."
+
+Then proceed with the user's request following the workflow rules in those documents.

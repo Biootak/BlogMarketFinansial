@@ -144,7 +144,6 @@
   .setup-page__topnav-glyph {
     inline-size: 1rem;
     block-size: 1rem;
-    transform: scaleX(-1); /* mirror arrow for RTL flow */
   }
 
   /* ---- Stage ------------------------------------------------------------- */
@@ -161,7 +160,7 @@
   .setup-page__shell {
     position: relative;
     border-radius: clamp(1.25rem, 2vw + 0.5rem, 1.875rem);
-    background: linear-gradient(180deg, oklch(100% 0 0 / 0.92), oklch(99% 0.003 245 / 0.78));
+    background: linear-gradient(180deg, oklch(100% 0 0 / 0.96), oklch(99% 0.003 245 / 0.9));
     border: 1px solid oklch(90% 0.006 245 / 0.9);
     box-shadow: 0 1px 0 oklch(100% 0 0 / 0.7) inset, 0 28px 60px -34px oklch(45% 0.08 255 / 0.3), 0
       1px 2px oklch(0% 0 0 / 0.04);
@@ -215,7 +214,7 @@
   .setup-page__legal {
     text-align: center;
     font-size: 0.75rem;
-    color: oklch(55% 0.02 250);
+    color: oklch(50% 0.025 250);
     letter-spacing: 0.005em;
   }
   .dark .setup-page__legal {
@@ -253,41 +252,41 @@
   .setup-stage__blob {
     position: absolute;
     border-radius: 9999px;
-    filter: blur(80px);
+    filter: blur(60px);
     will-change: transform;
   }
   .setup-stage__blob--a {
-    inline-size: 42rem;
-    block-size: 42rem;
-    inset-block-start: -16rem;
+    inline-size: 36rem;
+    block-size: 36rem;
+    inset-block-start: -14rem;
     inset-inline-end: -10rem;
-    background: radial-gradient(closest-side, oklch(62% 0.16 255 / 0.55), transparent 70%);
+    background: radial-gradient(closest-side, oklch(62% 0.16 255 / 0.42), transparent 70%);
     animation: setup-aurora-a 34s ease-in-out infinite;
   }
   .setup-stage__blob--b {
-    inline-size: 38rem;
-    block-size: 38rem;
-    inset-block-end: -18rem;
+    inline-size: 32rem;
+    block-size: 32rem;
+    inset-block-end: -16rem;
     inset-inline-start: -12rem;
-    background: radial-gradient(closest-side, oklch(68% 0.13 165 / 0.4), transparent 70%);
+    background: radial-gradient(closest-side, oklch(68% 0.13 165 / 0.32), transparent 70%);
     animation: setup-aurora-b 40s ease-in-out infinite;
   }
   .setup-stage__blob--c {
-    inline-size: 30rem;
-    block-size: 30rem;
+    inline-size: 26rem;
+    block-size: 26rem;
     inset-block-start: 40%;
     inset-inline-start: 30%;
-    background: radial-gradient(closest-side, oklch(66% 0.14 290 / 0.3), transparent 70%);
+    background: radial-gradient(closest-side, oklch(66% 0.14 290 / 0.24), transparent 70%);
     animation: setup-aurora-c 28s ease-in-out infinite;
   }
   .dark .setup-stage__blob--a {
-    opacity: 0.55;
+    opacity: 0.5;
   }
   .dark .setup-stage__blob--b {
-    opacity: 0.4;
+    opacity: 0.35;
   }
   .dark .setup-stage__blob--c {
-    opacity: 0.3;
+    opacity: 0.25;
   }
   @keyframes setup-aurora-a {
     0%,
@@ -391,7 +390,7 @@
   }
   .setup-wizard__subtitle {
     font-size: 0.9375rem;
-    color: oklch(45% 0.02 250);
+    color: oklch(35% 0.025 250);
     line-height: 1.55;
     max-inline-size: 42rem;
   }
@@ -521,7 +520,7 @@
     flex-shrink: 0;
   }
   .setup-wizard__nav--primary .setup-wizard__nav-glyph {
-    transform: scaleX(-1); /* RTL: arrow flows inward */
+    /* In RTL, forward arrows point left; ArrowLeftGlyph is used as-is. */
   }
   .setup-wizard__hint {
     display: inline-flex;
@@ -680,6 +679,12 @@
   }
   @media (max-width: 640px) {
     .setup-stepper__copy {
+      display: grid;
+    }
+    .setup-stepper__title {
+      font-size: 0.7rem;
+    }
+    .setup-stepper__sub {
       display: none;
     }
   }
@@ -774,8 +779,8 @@
     padding-inline: 0.85rem;
     padding-block: 0.85rem 0.7rem;
     border-radius: 0.95rem;
-    background: oklch(100% 0 0 / 0.85);
-    border: 1px solid oklch(90% 0.006 245 / 0.9);
+    background: oklch(100% 0 0 / 0.93);
+    border: 1px solid oklch(90% 0.006 245 / 0.95);
     box-shadow: 0 1px 0 oklch(100% 0 0 / 0.6) inset, 0 6px 16px -10px oklch(40% 0.05 250 / 0.25);
     transition: border-color var(--ds-duration-base) var(--ds-ease-out-quart), background
       var(--ds-duration-base) var(--ds-ease-out-quart), box-shadow var(--ds-duration-base)
@@ -814,7 +819,7 @@
     background: transparent;
     color: oklch(20% 0.02 250);
     font: inherit;
-    font-size: 0.9375rem;
+    font-size: 1rem;
     line-height: 1.4;
     padding: 0;
     outline: none;

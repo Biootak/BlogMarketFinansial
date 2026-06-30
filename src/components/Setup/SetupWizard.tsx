@@ -85,12 +85,7 @@ export function SetupWizard() {
   const [serverError, setServerError] = React.useState<string | null>(null);
   const [completed, setCompleted] = React.useState(false);
 
-  const firstFieldRef = React.useRef<HTMLInputElement | null>(null);
   const regionRef = React.useRef<HTMLFormElement | null>(null);
-  // Note: firstFieldRef is no longer threaded through Field (ref-forwarding
-  // would require a wider Ref<T> declaration); we rely on regionRef +
-  // focusFirstField's querySelector fallback for accessibility.
-  void firstFieldRef;
 
   // Stable callbacks for the controlled fields
   const handleChange = React.useCallback(
