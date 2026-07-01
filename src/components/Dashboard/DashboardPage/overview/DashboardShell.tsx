@@ -1,22 +1,21 @@
 'use client';
 
 /**
- * DashboardShell — 2026 (June 26) unified bento layout.
+ * DashboardShell — 2026 (July) Meridian Canvas.
  *
- * Single-flow redesign: the separate rail column is gone. Calendar and
- * SystemHealth now participate in the main bento grid as regular cards,
- * so there are no empty voids under narrow columns. The layout is a
- * 12-column asymmetric bento where every card earns its span.
+ * Radical redesign: the layout is no longer a uniform grid of equal cards.
+ * Instead, it's a COMPOSITION where:
+ *   - The hero greeting + KPI merge into one dramatic section
+ *   - Analytics takes up 2 rows (taller than other cards)
+ *   - Cards have VARYING heights based on importance
+ *   - Geometric accents frame the composition
  *
- *   Row 1 — Hero greeting (full)
- *   Row 2 — [North Star KPI 8/12]  [Activity 4/12]
- *   Row 3 — [Likes 3/12] [Comments 3/12] [Shares 3/12] [Drafts 3/12]
- *   Row 4 — [Engagement Donut 4/12] [Analytics 8/12]
- *   Row 5 — [Calendar 4/12] [System Health 4/12] [Quick links 4/12]
- *   Row 6 — Posts Spotlight (full)
- *
- * On tablet (≥640px): the grid collapses to 6 columns with proportional
- * spans. On mobile: single column, cards stack vertically.
+ * The visual hierarchy:
+ *   1. Hero + KPI (dominant, full width)
+ *   2. Analytics (tall, prominent)
+ *   3. Engagement + Activity (medium)
+ *   4. Calendar + Health + Quick (compact)
+ *   5. Posts Spotlight (full width, masonry-like)
  */
 
 import CommandPalette from '@/components/Dashboard/DashboardPage/CommandPalette';
@@ -25,9 +24,9 @@ import { memo, useEffect, useRef, useState } from 'react';
 import ActivityRail from './ActivityRail';
 import AnalyticsCanvas from './AnalyticsCanvas';
 import EngagementDonut, { type EngagementSlice } from './EngagementDonut';
-import HeroSection from './HeroSection';
-import KpiGrid from './KpiGrid';
+import HeroKpiSection from './HeroKpiSection';
 import PostsSpotlight from './PostsSpotlight';
+import QuickActionsCard from './QuickActionsCard';
 import ScheduledRail from './ScheduledRail';
 import SystemHealth from './SystemHealth';
 import WorkspaceToolbar, { type Range } from './WorkspaceToolbar';
@@ -123,17 +122,12 @@ const DashboardShell: React.FC<DashboardShellProps> = (props) => {
       </a>
       <main
         id="dash-main"
-        className="dash-shell min-h-full py-2.5 sm:py-3 lg:py-4 px-3 sm:px-4 lg:px-5"
+        className="dash-canvas min-h-full py-2.5 sm:py-3 lg:py-4 px-3 sm:px-4 lg:px-5"
         aria-label="داشبورد"
         data-density={density}
       >
-        {/* AmbientBackground is rendered by MainContent.tsx (single source
-            of truth) — do NOT render it here, it would double-stack the
-            blobs and double the opacity. The .dash-scope canvas + aurora
-            div above us already provide the ambient depth. */}
-
-        {/* Row 0 — Toolbar strip (full width, compact) */}
-        <div className="dash-span-12">
+        {/* Toolbar */}
+        <div className="dash-canvas__toolbar">
           <WorkspaceToolbar
             range={range}
             density={density}
@@ -142,39 +136,53 @@ const DashboardShell: React.FC<DashboardShellProps> = (props) => {
           />
         </div>
 
-        {/* Row 1 — Hero greeting (full width) */}
-        <div className="dash-span-12">
-          <HeroSection />
+        {/* Hero + KPI — merged into one dramatic section */}
+        <div className="dash-canvas__hero">
+          <HeroKpiSection
+            stats={props.stats}
+            viewStats={props.viewStats}
+            range={range}
+            userRole={props.userRole}
+          />
         </div>
 
-        {/* Row 2 — North Star KPI (8/12) + Activity (4/12) */}
-        <div className="dash-span-12 dash-span-md-6 dash-span-lg-8">
-          <KpiGrid stats={props.stats} viewStats={props.viewStats} range={range} />
-        </div>
-        <div className="dash-span-12 dash-span-md-6 dash-span-lg-4">
-          <ActivityRail items={props.recentActivity} range={range} />
-        </div>
-
-        {/* Row 3 — Engagement Donut (4/12) + Analytics (8/12) */}
-        <div className="dash-span-12 dash-span-md-6 dash-span-lg-4">
-          <EngagementDonut slices={slices} range={range} caption="سهم تعامل" />
-        </div>
-        <div className="dash-span-12 dash-span-md-6 dash-span-lg-8">
+        {/* Analytics — tall, prominent, spans 2 rows */}
+        <div className="dash-canvas__analytics">
           <AnalyticsCanvas scheduledPosts={props.scheduledPosts} />
         </div>
 
-        {/* Row 4 — Calendar + Health */}
-        <div className="dash-span-12 dash-span-md-6 dash-span-lg-6">
+        {/* Engagement donut */}
+        <div className="dash-canvas__engagement">
+          <EngagementDonut slices={slices} range={range} caption="سهم تعامل" />
+        </div>
+
+        {/* Activity timeline */}
+        <div className="dash-canvas__activity">
+          <ActivityRail items={props.recentActivity} range={range} />
+        </div>
+
+        {/* Calendar */}
+        <div className="dash-canvas__calendar">
           <ScheduledRail scheduledPosts={props.scheduledPosts} />
         </div>
-        <div className="dash-span-12 dash-span-md-6 dash-span-lg-6">
+
+        {/* System health */}
+        <div className="dash-canvas__health">
           <SystemHealth />
         </div>
 
-        {/* Row 5 — Posts Spotlight (full width) */}
-        <div className="dash-span-12">
+        {/* Quick actions */}
+        <div className="dash-canvas__quick">
+          <QuickActionsCard userRole={props.userRole} />
+        </div>
+
+        {/* Posts spotlight — full width */}
+        <div className="dash-canvas__posts">
           <PostsSpotlight popularPosts={props.popularPosts} recentDrafts={props.recentDrafts} />
         </div>
+
+        {/* Geometric accent — subtle diagonal line */}
+        <div className="dash-canvas__geo" aria-hidden />
       </main>
 
       <CommandPalette role={props.userRole} />

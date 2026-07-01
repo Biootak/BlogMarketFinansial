@@ -339,10 +339,12 @@
       gap: 0.875rem;
     }
     .dash-span-md-6 { grid-column: span 6; }
-    .dash-span-lg-4 { grid-column: span 4; }
-    .dash-span-lg-6 { grid-column: span 6; }
-    .dash-span-lg-8 { grid-column: span 8; }
     .dash-span-lg-3 { grid-column: span 3; }
+    .dash-span-lg-4 { grid-column: span 4; }
+    .dash-span-lg-5 { grid-column: span 5; }
+    .dash-span-lg-6 { grid-column: span 6; }
+    .dash-span-lg-7 { grid-column: span 7; }
+    .dash-span-lg-8 { grid-column: span 8; }
   }
 
   @media (min-width: 1280px) {
@@ -369,6 +371,448 @@
      به ۲ ستون (main+sidebar) تبدیل می‌کرد و با span ها تداخل داشت.
      این قانون از لایه‌بندی قبلی [main|rail] باقی مانده بود و باعث
      می‌شد کارت‌ها به‌جای قرار گرفتن در ۱۲ ستون، در ۲ ستون شکسته شوند. */
+
+  /* =========================================================================
+     Canvas Layout — Meridian Canvas 2026 (July)
+     =========================================================================
+     Radically different layout: instead of uniform rows, cards have VARYING
+     HEIGHTS based on importance. The hero+KPI section dominates, analytics
+     is tall, and other cards orbit around them.
+
+     Grid template:
+       toolbar  toolbar  toolbar
+       hero     hero     hero
+       analytics analytics engagement
+       analytics analytics activity
+       calendar  health   quick
+       posts    posts    posts
+     ========================================================================= */
+  .dash-canvas {
+    display: grid;
+    gap: 13px;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto auto auto auto auto auto;
+    max-width: 1600px;
+    margin-inline: auto;
+  }
+
+  /* Tablet: 2 columns */
+  @media (min-width: 640px) {
+    .dash-canvas {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 13px;
+      grid-template-areas:
+        "toolbar  toolbar"
+        "hero     hero"
+        "analytics analytics"
+        "engagement activity"
+        "calendar  health"
+        "quick    quick"
+        "posts    posts";
+    }
+  }
+
+  /* Desktop: 3 columns with varying heights */
+  @media (min-width: 1024px) {
+    .dash-canvas {
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 13px;
+      grid-template-areas:
+        "toolbar   toolbar   toolbar"
+        "hero      hero      hero"
+        "analytics engagement activity"
+        "analytics calendar  health"
+        "posts     posts     posts";
+    }
+  }
+
+  /* Large desktop: add quick actions */
+  @media (min-width: 1280px) {
+    .dash-canvas {
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 13px;
+      grid-template-areas:
+        "toolbar   toolbar   toolbar   toolbar"
+        "hero      hero      hero      hero"
+        "analytics engagement activity  quick"
+        "analytics calendar  health    quick"
+        "posts     posts     posts     posts";
+    }
+  }
+
+  /* Grid area assignments */
+  .dash-canvas__toolbar { grid-area: toolbar; }
+  .dash-canvas__hero { grid-area: hero; }
+  .dash-canvas__analytics { grid-area: analytics; }
+  .dash-canvas__engagement { grid-area: engagement; }
+  .dash-canvas__activity { grid-area: activity; }
+  .dash-canvas__calendar { grid-area: calendar; }
+  .dash-canvas__health { grid-area: health; }
+  .dash-canvas__quick { grid-area: quick; }
+  .dash-canvas__posts { grid-area: posts; }
+
+  /* Geometric accent — subtle diagonal line */
+  .dash-canvas__geo {
+    position: fixed;
+    inset-block-end: 0;
+    inset-inline-end: 0;
+    width: 200px;
+    height: 200px;
+    pointer-events: none;
+    opacity: 0.04;
+    z-index: 0;
+    background: linear-gradient(
+      135deg,
+      transparent 45%,
+      oklch(50% 0.04 250) 45%,
+      oklch(50% 0.04 250) 47%,
+      transparent 47%
+    );
+  }
+  .dark .dash-canvas__geo {
+    opacity: 0.06;
+    background: linear-gradient(
+      135deg,
+      transparent 45%,
+      oklch(70% 0.04 250) 45%,
+      oklch(70% 0.04 250) 47%,
+      transparent 47%
+    );
+  }
+
+  /* =========================================================================
+     Hero + KPI Section — Meridian Canvas 2026 (July)
+     =========================================================================
+     Merged hero greeting + KPI into ONE dramatic section. The "today's views"
+     number is MASSIVE — it dominates like a hero number in a fintech app.
+
+     Layout: Left (60%) greeting + KPI + sparkline, Right (40%) mini KPIs
+     Golden ratio (φ = 1.618) drives the 60/40 split.
+     ========================================================================= */
+  .dash-hero-kpi {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: 1.25rem;
+    color: oklch(96% 0.005 245);
+    background:
+      radial-gradient(100% 80% at 90% -15%, oklch(60% 0.18 280 / 0.40), transparent 55%),
+      radial-gradient(80% 60% at 10% 120%, oklch(55% 0.14 165 / 0.25), transparent 55%),
+      radial-gradient(60% 40% at 50% 50%, oklch(50% 0.10 250 / 0.10), transparent 60%),
+      linear-gradient(145deg, oklch(18% 0.05 275), oklch(14% 0.04 265) 50%, oklch(11% 0.03 255));
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.08) inset,
+      0 4px 16px -4px oklch(0% 0 0 / 0.20),
+      0 12px 40px -12px oklch(30% 0.10 270 / 0.30);
+    padding: 21px;
+    display: grid;
+    gap: 13px;
+  }
+  @media (min-width: 640px) {
+    .dash-hero-kpi { padding: 21px 34px; }
+  }
+  @media (min-width: 1024px) {
+    .dash-hero-kpi {
+      grid-template-columns: 1.618fr 1fr;
+      gap: 21px;
+      padding: 34px;
+    }
+  }
+
+  /* Grid texture overlay */
+  .dash-hero-kpi::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image:
+      linear-gradient(oklch(85% 0.02 250 / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, oklch(85% 0.02 250 / 0.05) 1px, transparent 1px);
+    background-size: 48px 48px;
+    -webkit-mask-image: radial-gradient(120% 90% at 100% 0%, #000 0%, transparent 70%);
+            mask-image: radial-gradient(120% 90% at 100% 0%, #000 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Animated border glow */
+  .dash-hero-kpi::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      oklch(70% 0.16 280 / 0.3) 0%,
+      oklch(65% 0.14 165 / 0.2) 50%,
+      oklch(70% 0.16 280 / 0.3) 100%
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.5;
+    animation: dash-hero-glow 8s linear infinite;
+  }
+  @keyframes dash-hero-glow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dash-hero-kpi::after { animation: none; }
+  }
+
+  /* Left side — main content */
+  .dash-hero-kpi__main {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+    min-width: 0;
+  }
+
+  /* Greeting */
+  .dash-hero-kpi__greeting {
+    min-width: 0;
+  }
+  .dash-hero-kpi__headline {
+    font-size: clamp(1.25rem, 4vw, 2rem);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: oklch(98% 0.005 245);
+    margin: 0;
+  }
+  .dash-hero-kpi__sub {
+    font-size: clamp(0.75rem, 1.4vw, 0.875rem);
+    line-height: 1.6;
+    color: oklch(75% 0.008 245);
+    font-weight: 500;
+    max-width: 38rem;
+    margin-top: 4px;
+  }
+
+  /* Massive KPI number */
+  .dash-hero-kpi__kpi {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .dash-hero-kpi__kpi-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dash-hero-kpi__kpi-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: oklch(80% 0.01 245);
+    letter-spacing: 0.02em;
+  }
+  .dash-hero-kpi__kpi-value {
+    font-size: clamp(3rem, 8vw, 5rem);
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    color: oklch(98% 0.005 245);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum", "lnum";
+    background: linear-gradient(135deg, oklch(98% 0.005 245), oklch(85% 0.08 220));
+    -webkit-background-clip: text;
+            background-clip: text;
+    color: transparent;
+  }
+  .dash-hero-kpi__kpi-sub {
+    font-size: 0.75rem;
+    color: oklch(65% 0.01 245);
+    font-weight: 500;
+  }
+
+  /* Sparkline */
+  .dash-hero-kpi__sparkline {
+    margin-inline: -8px;
+  }
+
+  /* Quick actions */
+  .dash-hero-kpi__actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .dash-hero-kpi__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: oklch(98% 0.005 245);
+    background: linear-gradient(135deg, oklch(70% 0.16 270), oklch(58% 0.16 285));
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.18) inset,
+      0 8px 24px -10px oklch(55% 0.18 280 / 0.55);
+    text-decoration: none;
+    transition: transform 200ms var(--ds-ease-out-expo), box-shadow 200ms var(--ds-ease-out-expo);
+  }
+  .dash-hero-kpi__cta:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.18) inset,
+      0 12px 32px -12px oklch(55% 0.18 280 / 0.7);
+  }
+  .dash-hero-kpi__cta-ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: oklch(100% 0 0 / 0.15);
+  }
+
+  /* Right side — mini KPIs */
+  .dash-hero-kpi__minis {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  /* Mini KPI card */
+  .dash-mini-kpi {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 13px;
+    border-radius: 16px;
+    background: oklch(100% 0 0 / 0.08);
+    border: 1px solid oklch(100% 0 0 / 0.12);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: transform 200ms var(--ds-ease-out-expo), background 200ms var(--ds-ease-out-expo);
+  }
+  .dash-mini-kpi:hover {
+    transform: translateY(-2px);
+    background: oklch(100% 0 0 / 0.12);
+  }
+  .dash-mini-kpi__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .dash-mini-kpi__ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: oklch(100% 0 0 / 0.1);
+    color: oklch(90% 0.01 245);
+  }
+  .dash-mini-kpi__value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: oklch(98% 0.005 245);
+    font-variant-numeric: tabular-nums;
+  }
+  .dash-mini-kpi__title {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: oklch(70% 0.01 245);
+  }
+  .dash-mini-kpi__spark {
+    margin-inline: -4px;
+    height: 24px;
+  }
+
+  /* Live pulse indicator */
+  .dash-hero-kpi__live {
+    position: absolute;
+    inset-block-end: 13px;
+    inset-inline-end: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 13px;
+    border-radius: 999px;
+    background: oklch(100% 0 0 / 0.08);
+    border: 1px solid oklch(100% 0 0 / 0.12);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 2;
+  }
+  .dash-hero-kpi__live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: oklch(72% 0.18 150);
+    box-shadow: 0 0 0 0 oklch(72% 0.18 150 / 0.6);
+    animation: dash-hero-pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes dash-hero-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 oklch(72% 0.18 150 / 0.6); }
+    50% { box-shadow: 0 0 0 6px oklch(72% 0.18 150 / 0); }
+  }
+  .dash-hero-kpi__live-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: oklch(85% 0.01 245);
+    letter-spacing: 0.02em;
+  }
+  .dash-hero-kpi__live-time {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: oklch(90% 0.01 245);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dash-hero-kpi__live-dot { animation: none; }
+  }
+
+  /* Geometric accents */
+  .dash-hero-kpi__geo {
+    position: absolute;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .dash-hero-kpi__geo--1 {
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    width: 120px;
+    height: 120px;
+    opacity: 0.06;
+    background: linear-gradient(
+      135deg,
+      transparent 45%,
+      oklch(100% 0 0) 45%,
+      oklch(100% 0 0) 47%,
+      transparent 47%
+    );
+  }
+  .dash-hero-kpi__geo--2 {
+    inset-block-end: 0;
+    inset-inline-start: 0;
+    width: 80px;
+    height: 80px;
+    opacity: 0.04;
+    background: linear-gradient(
+      315deg,
+      transparent 45%,
+      oklch(100% 0 0) 45%,
+      oklch(100% 0 0) 47%,
+      transparent 47%
+    );
+  }
 
   /* ---- Workspace toolbar (sticky contextual bar) ------------------------- */
   .dash-toolbar {
@@ -2025,18 +2469,22 @@
     background: oklch(98% 0.005 245);
   }
 
-  /* ---- Hero (editorial) --------------------------------------------------- */
+  /* ---- Hero (editorial) — Meridian Canvas 2026 July ----------------------- */
   .dash-hero {
     position: relative;
     overflow: hidden;
     isolation: isolate;
-    border-radius: 1rem;
+    border-radius: 1.25rem;
     color: oklch(96% 0.005 245);
     background:
-      radial-gradient(120% 100% at 100% -10%, oklch(55% 0.15 270 / 0.35), transparent 60%),
-      radial-gradient(120% 100% at 0% 110%, oklch(52% 0.12 165 / 0.20), transparent 60%),
-      linear-gradient(135deg, oklch(20% 0.04 270), oklch(16% 0.035 260) 60%, oklch(13% 0.03 255));
-    box-shadow: 0 1px 3px 0 oklch(0% 0 0 / 0.08), 0 1px 2px -1px oklch(0% 0 0 / 0.06);
+      radial-gradient(100% 80% at 90% -15%, oklch(60% 0.18 280 / 0.40), transparent 55%),
+      radial-gradient(80% 60% at 10% 120%, oklch(55% 0.14 165 / 0.25), transparent 55%),
+      radial-gradient(60% 40% at 50% 50%, oklch(50% 0.10 250 / 0.10), transparent 60%),
+      linear-gradient(145deg, oklch(18% 0.05 275), oklch(14% 0.04 265) 50%, oklch(11% 0.03 255));
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.08) inset,
+      0 4px 16px -4px oklch(0% 0 0 / 0.20),
+      0 12px 40px -12px oklch(30% 0.10 270 / 0.30);
   }
   .dash-hero::before {
     content: "";
@@ -2050,6 +2498,35 @@
     -webkit-mask-image: radial-gradient(120% 90% at 100% 0%, #000 0%, transparent 70%);
             mask-image: radial-gradient(120% 90% at 100% 0%, #000 0%, transparent 70%);
     pointer-events: none;
+  }
+  /* Animated border glow — premium accent */
+  .dash-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      oklch(70% 0.16 280 / 0.3) 0%,
+      oklch(65% 0.14 165 / 0.2) 50%,
+      oklch(70% 0.16 280 / 0.3) 100%
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.5;
+    animation: dash-hero-glow 8s linear infinite;
+  }
+  @keyframes dash-hero-glow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dash-hero::after { animation: none; }
   }
   .dash-hero__inner {
     display: grid;
@@ -2139,6 +2616,90 @@
       padding: 1.25rem 1.75rem;
     }
   }
+
+  /* Live pulse indicator — Tehran clock + status dot */
+  .dash-hero__live {
+    position: absolute;
+    inset-block-end: 13px;
+    inset-inline-end: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 13px;
+    border-radius: 999px;
+    background: oklch(100% 0 0 / 0.08);
+    border: 1px solid oklch(100% 0 0 / 0.12);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 2;
+  }
+  .dash-hero__live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: oklch(72% 0.18 150);
+    box-shadow: 0 0 0 0 oklch(72% 0.18 150 / 0.6);
+    animation: dash-hero-pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes dash-hero-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 oklch(72% 0.18 150 / 0.6); }
+    50% { box-shadow: 0 0 0 6px oklch(72% 0.18 150 / 0); }
+  }
+  .dash-hero__live-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: oklch(85% 0.01 245);
+    letter-spacing: 0.02em;
+  }
+  .dash-hero__live-time {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: oklch(90% 0.01 245);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dash-hero__live-dot { animation: none; }
+  }
+
+  /* Geometric accent lines — subtle decorative geometry */
+  .dash-hero__geo {
+    position: absolute;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .dash-hero__geo--1 {
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    width: 120px;
+    height: 120px;
+    opacity: 0.06;
+    background: linear-gradient(
+      135deg,
+      transparent 45%,
+      oklch(100% 0 0) 45%,
+      oklch(100% 0 0) 47%,
+      transparent 47%
+    );
+  }
+  .dash-hero__geo--2 {
+    inset-block-end: 0;
+    inset-inline-start: 0;
+    width: 80px;
+    height: 80px;
+    opacity: 0.04;
+    background: linear-gradient(
+      315deg,
+      transparent 45%,
+      oklch(100% 0 0) 45%,
+      oklch(100% 0 0) 47%,
+      transparent 47%
+    );
+  }
   .dash-anchors {
     display: inline-flex;
     align-items: center;
@@ -2211,6 +2772,124 @@
   .dash-focus-ring:focus-visible {
     outline: 2px solid oklch(72% 0.13 210);
     outline-offset: 2px;
+  }
+
+  /* ---- Quick Actions Card ---------------------------------------------------
+     Harmonic grid of action buttons — Fibonacci spacing (8/13/21).
+     Each item is a glassmorphic pill with an icon + label stack.
+     ------------------------------------------------------------------------ */
+  .dash-quick-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 13px;
+  }
+  @media (min-width: 640px) {
+    .dash-quick-grid { gap: 13px; }
+  }
+  @media (min-width: 1024px) {
+    .dash-quick-grid { gap: 13px; }
+  }
+
+  .dash-quick-item {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 13px;
+    border-radius: 16px;
+    background: oklch(97% 0.004 245 / 0.6);
+    border: 1px solid oklch(92% 0.006 245 / 0.8);
+    text-decoration: none;
+    color: inherit;
+    transition:
+      background var(--ds-duration-fast) var(--ds-ease-out-quart),
+      border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+      transform var(--ds-duration-fast) var(--ds-ease-out-quart),
+      box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  }
+  .dash-quick-item:hover {
+    background: oklch(100% 0 0 / 0.85);
+    border-color: oklch(85% 0.008 245 / 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -12px oklch(45% 0.08 255 / 0.25);
+  }
+  .dark .dash-quick-item {
+    background: oklch(20% 0.014 250 / 0.5);
+    border-color: oklch(32% 0.014 250 / 0.6);
+  }
+  .dark .dash-quick-item:hover {
+    background: oklch(24% 0.016 250 / 0.7);
+    border-color: oklch(40% 0.016 250 / 0.8);
+    box-shadow: 0 12px 32px -16px oklch(0% 0 0 / 0.6);
+  }
+  .dash-quick-item:focus-visible {
+    outline: 2px solid oklch(72% 0.13 210);
+    outline-offset: 2px;
+  }
+
+  .dash-quick-item__ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    flex-shrink: 0;
+    transition: transform 200ms var(--ds-ease-out-expo);
+  }
+  .dash-quick-item:hover .dash-quick-item__ico {
+    transform: scale(1.08);
+  }
+
+  .dash-quick-item__body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .dash-quick-item__label {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: oklch(22% 0.02 255);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .dark .dash-quick-item__label { color: oklch(95% 0.005 245); }
+  .dash-quick-item__desc {
+    font-size: 0.6875rem;
+    color: oklch(50% 0.02 250);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .dark .dash-quick-item__desc { color: oklch(65% 0.02 245); }
+
+  /* Geometric accent — subtle diagonal line in the corner */
+  .dash-quick-geo {
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline-end: 0;
+    width: 80px;
+    height: 80px;
+    pointer-events: none;
+    opacity: 0.06;
+    background: linear-gradient(
+      135deg,
+      transparent 40%,
+      oklch(50% 0.04 250) 40%,
+      oklch(50% 0.04 250) 42%,
+      transparent 42%
+    );
+  }
+  .dark .dash-quick-geo {
+    opacity: 0.08;
+    background: linear-gradient(
+      135deg,
+      transparent 40%,
+      oklch(70% 0.04 250) 40%,
+      oklch(70% 0.04 250) 42%,
+      transparent 42%
+    );
   }
 
   /* ---- Print: hide chrome ------------------------------------------------- */

@@ -1,18 +1,20 @@
 'use client';
 
 /**
- * HeroSection — 2026 compact editorial greeting bar.
+ * HeroSection — 2026 (July) Meridian Canvas redesign.
  *
- * Redesigned (June 26): the KPI stat card has been removed. It was a
- * duplicate of the KpiGrid hero pane (same "بازدید امروز" metric + the
- * same 7-day sparkline). The hero is now a focused greeting + action
- * surface — the KpiGrid below owns all metric presentation.
+ * Harmonic asymmetric geometry — the hero is a premium dark gradient
+ * canvas with geometric accent lines, a live pulse indicator, and an
+ * integrated quick-action cluster. The layout uses golden-ratio
+ * proportions (φ = 1.618) for the greeting-to-actions split.
  *
- * Design language (Linear × Stripe × Resend):
- *   • Asymmetric layout: greeting on the start, quick-action cluster on
- *     the end (RTL flips automatically).
+ * Design language (Linear × Stripe × Resend × Attio):
+ *   • Asymmetric layout: greeting on the start (φ-weight), actions on
+ *     the end (φ²-weight). RTL flips automatically.
  *   • Word-by-word headline reveal gated by prefers-reduced-motion.
  *   • Noise grain overlay for premium texture.
+ *   • Geometric accent lines (diagonal + horizontal) for depth.
+ *   • Live pulse indicator with Tehran clock.
  *   • Magnetic primary CTA with a persisted ⌘N shortcut hint.
  *   • Compact height — the hero no longer dominates the viewport.
  *
@@ -33,6 +35,7 @@ import {
   HiOutlineChartBarSquare,
   HiOutlineDocumentText,
   HiOutlinePencilSquare,
+  HiOutlineSignal,
   HiOutlineSparkles,
 } from 'react-icons/hi2';
 
@@ -189,6 +192,20 @@ export default function HeroSection() {
         </div>
       </div>
 
+      {/* Live pulse indicator — Tehran clock + status */}
+      <div className="dash-hero__live">
+        <span className="dash-hero__live-dot" aria-hidden />
+        <span className="dash-hero__live-text">
+          <HiOutlineSignal className="w-3.5 h-3.5" />
+          <span>زنده</span>
+        </span>
+        <LiveClock />
+      </div>
+
+      {/* Geometric accent lines */}
+      <div className="dash-hero__geo dash-hero__geo--1" aria-hidden />
+      <div className="dash-hero__geo dash-hero__geo--2" aria-hidden />
+
       {/* Noise overlay — subtle premium texture */}
       <NoiseTexture opacity={0.03} />
 
@@ -242,5 +259,32 @@ function Shortcut({ icon, label, hint, onClick }: ShortcutProps) {
         </kbd>
       )}
     </button>
+  );
+}
+
+function LiveClock() {
+  const [time, setTime] = useState<string>('');
+
+  useEffect(() => {
+    const update = () => {
+      const now = new Date();
+      setTime(
+        now.toLocaleTimeString('fa-IR', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        }),
+      );
+    };
+    update();
+    const t = window.setInterval(update, 1000);
+    return () => window.clearInterval(t);
+  }, []);
+
+  return (
+    <span className="dash-hero__live-time" dir="ltr">
+      {time}
+    </span>
   );
 }
