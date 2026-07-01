@@ -1,40 +1,48 @@
 'use client';
 
 /**
- * HeroKpiSection — 2026 (July) Meridian Canvas.
+ * HeroKpiSection — 2026 (July 1) ATLAS editorial spread.
  *
- * Merges the hero greeting with the KPI section into ONE dramatic
- * composition. The "today's views" number is MASSIVE — it dominates
- * the section like a hero number in a fintech app.
+ * Renders the LEFT (φ²-width) column of the hero composition. The
+ * editorial layout is a vertical rhythm of:
  *
- * Layout:
- *   Left (60%): Greeting + today's views (huge) + sparkline
- *   Right (40%): Mini KPIs (likes, comments, shares, drafts) in a 2x2 grid
+ *   1. Eyebrow + headline (greeting + user name)
+ *   2. Subtitle (one-sentence context)
+ *   3. Massive anchor number (today's views) — the geometric centerpiece
+ *      of the entire dashboard, sized at clamp(3.4rem, 9.2vw, 6.8rem).
+ *   4. Sparkline (mini trend, 64px tall)
+ *   5. Primary CTA cluster
  *
- * The golden ratio (φ = 1.618) drives the 60/40 split.
+ * Mini-KPIs (likes / comments / shares / drafts) live in HeroRail
+ * (inside DashboardShell) so the editorial column stays editorial.
+ *
+ * Modern techniques
+ *   • @starting-style + CSS transitions for the anchor number entry
+ *     animation (no JS measurement, declarative fade-in).
+ *   • OKLCH colors via relative color syntax in the CSS layer.
+ *   • Gradient-text via background-clip for the user-name accent.
+ *   • prefers-reduced-motion: animation durations collapse to 0ms.
+ *
+ * Accessibility
+ *   • Real <h1> for the greeting so screen readers announce the page
+ *     title.
+ *   • The KPI number is wrapped in a <p> with `aria-label` so the
+ *     spoken form is "X بازدید امروز" rather than "X".
+ *   • All actions are <button> / <Link> with visible focus rings.
  */
 
 import CountUp from '@/components/Dashboard/DashboardPage/CountUp';
-import { MagneticButton, NoiseTexture } from '@/components/Dashboard/primitives';
+import { GeometricField, MagneticButton, NoiseTexture } from '@/components/Dashboard/primitives';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { motion } from '@/lib/motion-shim';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useEffect, useId, useRef, useState } from 'react';
 import {
   HiOutlineArrowDownRight,
   HiOutlineArrowUpRight,
-  HiOutlineCalendarDays,
-  HiOutlineChartBarSquare,
-  HiOutlineChatBubbleLeftEllipsis,
-  HiOutlineDocumentText,
-  HiOutlineHeart,
   HiOutlineMinus,
   HiOutlinePencilSquare,
-  HiOutlineShare,
-  HiOutlineSignal,
-  HiOutlineSparkles,
 } from 'react-icons/hi2';
 import type { Range } from './WorkspaceToolbar';
 
@@ -83,18 +91,18 @@ function timeOfDay(hour: number) {
   return 'شب بخیر';
 }
 
-function MiniSparkline({
-  data,
-  stroke,
-  gradId,
-}: {
+/* ─── Mini sparkline (inline SVG, no chart.js) ─────────────────────── */
+
+interface MiniSparklineProps {
   data: number[];
   stroke: string;
   gradId: string;
-}) {
+  width?: number;
+  height?: number;
+}
+
+function MiniSparkline({ data, stroke, gradId, width = 420, height = 64 }: MiniSparklineProps) {
   const pathRef = useRef<SVGPathElement>(null);
-  const w = 200;
-  const h = 60;
 
   useEffect(() => {
     if (!data.length) return;
@@ -124,28 +132,28 @@ function MiniSparkline({
   const min = Math.min(...data, 0);
   const max = Math.max(...data, 1);
   const span = max - min || 1;
-  const step = data.length > 1 ? w / (data.length - 1) : w;
+  const step = data.length > 1 ? width / (data.length - 1) : width;
   const pts = data.map((v, i) => {
     const x = i * step;
-    const y = h - 4 - ((v - min) / span) * (h - 8);
+    const y = height - 4 - ((v - min) / span) * (height - 8);
     return [x, y] as const;
   });
   const line = pts
     .map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`)
     .join(' ');
-  const area = `${line} L${w},${h} L0,${h} Z`;
+  const area = `${line} L${width},${height} L0,${height} Z`;
 
   return (
     <svg
-      viewBox={`0 0 ${w} ${h}`}
+      viewBox={`0 0 ${width} ${height}`}
       preserveAspectRatio="none"
-      className="w-full h-16"
+      className="dash-atlas__hero-sparkline"
       role="img"
-      aria-label="نمودار روند"
+      aria-label="نمودار روند بازدید"
     >
       <defs>
         <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={stroke} stopOpacity={0.4} />
+          <stop offset="0%" stopColor={stroke} stopOpacity={0.35} />
           <stop offset="100%" stopColor={stroke} stopOpacity={0} />
         </linearGradient>
       </defs>
@@ -170,40 +178,22 @@ function DeltaBadge({ trend, delta }: { trend: Trend; delta: number }) {
   const isUp = trend === 'up';
   const isDown = trend === 'down';
   const Icon = isUp ? HiOutlineArrowUpRight : isDown ? HiOutlineArrowDownRight : HiOutlineMinus;
+  const tone = isUp
+    ? 'dash-atlas__rail-stat-delta--up'
+    : isDown
+      ? 'dash-atlas__rail-stat-delta--down'
+      : '';
   return (
-    <span className={cn('dash-trend dash-trend--flat text-xs gap-1 tabular-nums')}>
-      <Icon className="w-4 h-4" aria-hidden />
+    <span className={cn('dash-atlas__rail-stat-delta tabular-nums gap-1', tone)}>
+      <Icon className="w-3.5 h-3.5" aria-hidden />
       <span>{`${delta > 0 ? '+' : ''}${delta.toFixed(1)}٪`}</span>
     </span>
   );
 }
 
-function LiveClock() {
-  const [time, setTime] = useState<string>('');
-  useEffect(() => {
-    const update = () => {
-      const now = new Date();
-      setTime(
-        now.toLocaleTimeString('fa-IR', {
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          hour12: false,
-        }),
-      );
-    };
-    update();
-    const t = window.setInterval(update, 1000);
-    return () => window.clearInterval(t);
-  }, []);
-  return (
-    <span className="dash-hero-kpi__live-time" dir="ltr">
-      {time}
-    </span>
-  );
-}
+/* ─── Hero main ────────────────────────────────────────────────────── */
 
-export default function HeroKpiSection({ stats, viewStats }: HeroKpiSectionProps) {
+export default function HeroKpiSection({ stats: _stats, viewStats }: HeroKpiSectionProps) {
   const user = useCurrentUser();
   const [hour, setHour] = useState<number>(12);
   const gradId = useId();
@@ -215,6 +205,7 @@ export default function HeroKpiSection({ stats, viewStats }: HeroKpiSectionProps
     return () => window.clearInterval(t);
   }, []);
 
+  // Detect prefers-reduced-motion on mount.
   const [reduceMotion, setReduceMotion] = useState(false);
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -232,176 +223,96 @@ export default function HeroKpiSection({ stats, viewStats }: HeroKpiSectionProps
     <motion.section
       id="dash-hero-kpi"
       aria-label="خلاصه وضعیت"
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="dash-hero-kpi"
+      className="relative h-full flex flex-col gap-4"
     >
-      {/* Left side — greeting + massive KPI + sparkline */}
-      <div className="dash-hero-kpi__main">
-        {/* Greeting */}
-        <div className="dash-hero-kpi__greeting">
-          <motion.h1
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
-            className="dash-hero-kpi__headline"
-          >
-            <span
-              className="opacity-80 font-semibold"
-              style={reduceMotion ? undefined : { animationDelay: '0ms' }}
-            >
-              {greeting}،&nbsp;
-            </span>
-            <span
-              className="bg-gradient-to-l from-white via-cyan-100 to-emerald-100 bg-clip-text text-transparent"
-              style={reduceMotion ? undefined : { animationDelay: '40ms' }}
-            >
-              {user?.name ?? 'کاربر'}
-            </span>
-          </motion.h1>
-          <p className="dash-hero-kpi__sub">نمای کلی وبلاگ — شاخص‌ها، فعالیت‌ها و برنامه‌ی انتشار</p>
-        </div>
+      {/* Floating geometric primitives — Fibonacci punctuation */}
+      <GeometricField density="rich" />
 
-        {/* Massive KPI number */}
-        <div className="dash-hero-kpi__kpi">
-          <div className="dash-hero-kpi__kpi-head">
-            <span className="dash-hero-kpi__kpi-label">بازدید امروز</span>
-            <DeltaBadge trend={trend} delta={delta} />
-          </div>
-          <p className="dash-hero-kpi__kpi-value">
-            <CountUp value={viewStats.todayViews} duration={800} />
-          </p>
-          <p className="dash-hero-kpi__kpi-sub">
+      <header className="dash-atlas__hero-headline relative z-10">
+        <span className="dash-atlas__hero-eyebrow">
+          <span>۰۱ · پیشخوان</span>
+        </span>
+        <h1
+          className="dash-atlas__hero-title"
+          style={
+            reduceMotion
+              ? undefined
+              : { animation: 'atlas-reveal 520ms var(--atlas-ease-out) 60ms both' }
+          }
+        >
+          <span style={{ opacity: 0.78 }}>{greeting}،&nbsp;</span>
+          <em>{user?.name ?? 'کاربر'}</em>
+        </h1>
+        <p className="dash-atlas__hero-sub">
+          یک نمای ۳۰ ثانیه‌ای از وبلاگ — شاخص‌ها، فعالیت‌های اخیر و برنامه‌ی انتشار. کلید{' '}
+          <kbd className="font-mono text-[0.7rem] mx-1 px-1.5 py-0.5 rounded-md bg-white/10 border border-white/15">
+            ⌘ K
+          </kbd>{' '}
+          برای جستجوی سریع.
+        </p>
+      </header>
+
+      {/* Anchor number — the geometric centerpiece of the dashboard */}
+      <div className="dash-atlas__hero-anchor relative z-10">
+        <p
+          className="dash-atlas__hero-number"
+          aria-label={`${viewStats.todayViews.toLocaleString('fa-IR')} بازدید امروز`}
+        >
+          <CountUp value={viewStats.todayViews} duration={900} />
+        </p>
+        <div className="dash-atlas__hero-number-meta">
+          <span className="dash-atlas__hero-number-label">بازدید امروز</span>
+          <DeltaBadge trend={trend} delta={delta} />
+          <span className="dash-atlas__hero-number-trend">
             از {viewStats.totalViews.toLocaleString('fa-IR')} بازدید کل
-          </p>
-        </div>
-
-        {/* Sparkline */}
-        <div className="dash-hero-kpi__sparkline">
-          <MiniSparkline
-            data={viewStats.data}
-            stroke="oklch(72% 0.13 220)"
-            gradId={`hero-spark-${gradId}`}
-          />
-        </div>
-
-        {/* Quick actions */}
-        <div className="dash-hero-kpi__actions">
-          <MagneticButton asChild magnetRange={6} type="button" className="dash-hero-kpi__cta">
-            <Link href="/dashboard/posts/create" aria-label="نوشتن پست جدید">
-              <span className="dash-hero-kpi__cta-ico">
-                <HiOutlinePencilSquare className="w-4 h-4" />
-              </span>
-              <span>نوشتن پست جدید</span>
-            </Link>
-          </MagneticButton>
+          </span>
         </div>
       </div>
 
-      {/* Right side — mini KPIs in a 2x2 grid */}
-      <div className="dash-hero-kpi__minis">
-        <MiniKpi
-          title="لایک‌ها"
-          value={stats.likes.total}
-          data={stats.likes.data}
-          icon={<HiOutlineHeart className="w-4 h-4" />}
-          tone="rose"
-          stroke="oklch(68% 0.18 20)"
-          delay={0.1}
-        />
-        <MiniKpi
-          title="نظرات"
-          value={stats.comments.new}
-          data={stats.comments.data}
-          icon={<HiOutlineChatBubbleLeftEllipsis className="w-4 h-4" />}
-          tone="emerald"
-          stroke="oklch(72% 0.14 165)"
-          delay={0.15}
-        />
-        <MiniKpi
-          title="اشتراک‌گذاری"
-          value={stats.shares.total}
-          data={stats.shares.data}
-          icon={<HiOutlineShare className="w-4 h-4" />}
-          tone="violet"
-          stroke="oklch(66% 0.17 300)"
-          delay={0.2}
-        />
-        <MiniKpi
-          title="پیش‌نویس‌ها"
-          value={stats.drafts.total}
-          data={stats.drafts.data}
-          icon={<HiOutlinePencilSquare className="w-4 h-4" />}
-          tone="amber"
-          stroke="oklch(80% 0.14 80)"
-          delay={0.25}
+      <div className="relative z-10">
+        <MiniSparkline
+          data={viewStats.data}
+          stroke="oklch(from var(--atlas-accent) l c h)"
+          gradId={`hero-spark-${gradId}`}
         />
       </div>
 
-      {/* Live pulse */}
-      <div className="dash-hero-kpi__live">
-        <span className="dash-hero-kpi__live-dot" aria-hidden />
-        <span className="dash-hero-kpi__live-text">
-          <HiOutlineSignal className="w-3.5 h-3.5" />
-          <span>زنده</span>
-        </span>
-        <LiveClock />
+      <div className="dash-atlas__hero-actions relative z-10 mt-auto">
+        <MagneticButton
+          asChild
+          magnetRange={5}
+          type="button"
+          className={cn(
+            'group inline-flex items-center gap-2.5 ps-2.5 pe-3.5 h-11 rounded-xl font-semibold text-sm text-white',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[oklch(18%_0.045_260)]',
+            '!hover:scale-100 active:!scale-100',
+          )}
+          style={{
+            background: 'linear-gradient(135deg, oklch(64% 0.16 280) 0%, oklch(72% 0.14 60) 100%)',
+            boxShadow:
+              '0 1px 0 oklch(100% 0 0 / 0.18) inset, 0 8px 24px -10px oklch(55% 0.18 280 / 0.45)',
+          }}
+        >
+          <Link href="/dashboard/posts/create" aria-label="نوشتن پست جدید">
+            <span className="inline-flex w-6 h-6 items-center justify-center rounded-md bg-white/15 group-hover:bg-white/25 transition-colors">
+              <HiOutlinePencilSquare className="w-3.5 h-3.5" />
+            </span>
+            <span>نوشتن پست جدید</span>
+            <span
+              aria-hidden
+              className="hidden sm:inline-flex items-center gap-0.5 ms-1 text-[10px] font-mono text-white/70"
+            >
+              <kbd className="rounded border border-white/20 bg-white/10 px-1.5 py-0.5">⌘</kbd>
+              <kbd className="rounded border border-white/20 bg-white/10 px-1.5 py-0.5">N</kbd>
+            </span>
+          </Link>
+        </MagneticButton>
       </div>
 
-      {/* Geometric accents */}
-      <div className="dash-hero-kpi__geo dash-hero-kpi__geo--1" aria-hidden />
-      <div className="dash-hero-kpi__geo dash-hero-kpi__geo--2" aria-hidden />
-
-      {/* Noise overlay */}
-      <NoiseTexture opacity={0.03} />
+      <NoiseTexture opacity={0.025} />
     </motion.section>
-  );
-}
-
-/* ─── Mini KPI card ──────────────────────────────────────────────── */
-
-interface MiniKpiProps {
-  title: string;
-  value: number;
-  data: number[];
-  icon: React.ReactNode;
-  tone: 'rose' | 'emerald' | 'violet' | 'amber';
-  stroke: string;
-  delay: number;
-}
-
-const TONE_MAP: Record<MiniKpiProps['tone'], string> = {
-  rose: 'dash-ico--rose',
-  emerald: 'dash-ico--emerald',
-  violet: 'dash-ico--violet',
-  amber: 'dash-ico--amber',
-};
-
-function MiniKpi({ title, value, data, icon, tone, stroke, delay }: MiniKpiProps) {
-  const { trend, delta } = pickTrend(data);
-  const miniGradId = useId();
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.4, delay, ease: [0.22, 1, 0.36, 1] }}
-      className="dash-mini-kpi"
-    >
-      <div className="dash-mini-kpi__head">
-        <span className={cn('dash-mini-kpi__ico', TONE_MAP[tone])} aria-hidden>
-          {icon}
-        </span>
-        <DeltaBadge trend={trend} delta={delta} />
-      </div>
-      <p className="dash-mini-kpi__value">
-        <CountUp value={value} duration={600} />
-      </p>
-      <p className="dash-mini-kpi__title">{title}</p>
-      <div className="dash-mini-kpi__spark">
-        <MiniSparkline data={data} stroke={stroke} gradId={`mini-${miniGradId}`} />
-      </div>
-    </motion.div>
   );
 }

@@ -67,3 +67,8 @@ next-env.d.ts
 /Orchis-theme/
 /WhiteSur-gtk-theme/
 /.kimchi/ferments/
+
+# Graphify MCP knowledge graph (regenerated from source; not source-controlled)
+/graphify-out/
+/.graphify-bak-images/
+/.mcp.json

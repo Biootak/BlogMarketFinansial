@@ -157,6 +157,66 @@ Postgres is provided by `docker-compose.yml` (`registry.docker.ir/library/postgr
 
 `NEXT_PUBLIC_SENTRY_DSN` + `NODE_ENV=production` is what triggers Sentry wrapping in `next.config.ts` — leaving it unset in dev avoids an extra middleware hop.
 
+## MCP — Graphify knowledge graph
+
+این پروژه یک MCP server با نام `graphify` دارد که یک knowledge graph از کد پروژه ساخته و از طریق stdio در اختیار agent های AI قرار می‌دهد (Claude Code، Cursor، VS Code، …). هدف: navigation در code base با BFS/DFS/shortest-path به‌جای grep خطی، کاهش چشمگیر توکن مصرفی.
+
+**نصب (یک‌بار، global):**
+
+```bash
+pip install "graphifyy[mcp]"   # graphify CLI + Python MCP SDK
+pip install openai             # فقط برای type-check؛ برای corpus code-only لازم نیست
+```
+
+**ساخت graph (regeneration):** graphify روی corpus پروژه بدون LLM کار می‌کند، به‌شرطی که فقط فایل code اسکن شود (md/pdf/image نیاز به LLM دارند). برای همین قبل از build، فایل‌های non-code موقتاً کنار گذاشته می‌شوند:
+
+```bash
+# موقت: کنار گذاشتن فایل‌های non-code از scan path
+mv src/images .graphify-bak-images
+mv src/lib/email/README.md src/lib/email/.README.md.bak
+rm -rf graphify-out
+
+# ساخت graph روی src/ (هیچ API key لازم نیست چون corpus code-only است)
+python3 -m graphify src --no-label --no-viz
+
+# بازگرداندن فایل‌ها
+mv .graphify-bak-images src/images
+mv src/lib/email/.README.md.bak src/lib/email/README.md
+```
+
+**خروجی:** `graphify-out/graph.json` (~4MB — 3388 nodes, 7873 edges, 183 communities برای این پروژه). این فایل gitignored است چون از روی source قابل regenerate است.
+
+**`.mcp.json` (project root):**
+
+```json
+{
+  "mcpServers": {
+    "graphify": {
+      "command": "python3",
+      "args": ["-m", "graphify.serve", "graphify-out/graph.json"],
+      "type": "stdio"
+    }
+  }
+}
+```
+
+**۱۱ tool در دسترس agent:** `query_graph`, `get_node`, `get_neighbors`, `get_community`, `god_nodes`, `graph_stats`, `shortest_path`, `list_prs`, `get_pr_impact`, `triage_prs` (+ `initialize`/`tools/list` MCP primitives).
+
+**تست دستی (smoke test) بدون agent:**
+
+```bash
+python3 -m graphify.serve graphify-out/graph.json <<'EOF'
+{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"smoke","version":"0.0.1"}}}
+{"jsonrpc":"2.0","method":"notifications/initialized"}
+{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"graph_stats","arguments":{}}}
+EOF
+```
+
+**نکات:**
+- بعد از refactor بزرگ: `python3 -m graphify src --force --no-label` برای بازسازی.
+- اگر خواستید با LLM community naming graph را غنی‌تر کنید: یکی از `GEMINI_API_KEY` / `MOONSHOT_API_KEY` / `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` را ست کنید و `--no-label` را حذف کنید.
+- پکیج npm `graphify-mcp-tools` deprecated شده — از `python -m graphify.serve` (سفارشی رسمی پروژه graphifyy) استفاده کنید.
+
 ## Gotchas that are easy to miss
 
 - **`revalidateTag` must come from `@/lib/revalidate`**, not `next/cache`. Next 16's typed signature requires a second `profile` argument; the wrapper always passes `'max'`. See `src/lib/revalidate.ts`.

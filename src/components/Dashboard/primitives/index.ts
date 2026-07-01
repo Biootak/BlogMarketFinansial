@@ -52,3 +52,10 @@ export { FormField } from './FormField';
 export type { FormFieldProps } from './FormField';
 
 export { default as CountUp } from './CountUp';
+
+export { GeometricAccent, GeometricField } from './GeometricAccent';
+export type {
+  GeometricAccentProps,
+  GeometricAccentVariant,
+  GeometricFieldProps,
+} from './GeometricAccent';
