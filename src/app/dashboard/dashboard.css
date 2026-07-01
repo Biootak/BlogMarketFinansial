@@ -2344,16 +2344,24 @@
 /* ===== END Dashboard Density (June 25 redesign) ===== */
 
 /* ============================================================================
-   Dashboard Sidebar — 2026 "Stratum" redesign (June 26)
+   Dashboard Sidebar — 2026 "Meridian" redesign (June 30)
    ----------------------------------------------------------------------------
-   Cartographer-chart chrome. Geometric anchors:
+   Harmonic asymmetric geometry — like a master painter's canvas composition.
 
-     • Width: 264px (expanded) / 64px (rail) — golden ratio ≈ 4.13
-     • Spacing ladder: Fibonacci px on 8-base → 4 / 8 / 13 / 21 / 34 / 55
-     • Spine: vertical hairline at 11px from the inline-start edge, full height
-     • Cap dots: 3px circles terminating the spine at top and bottom
-     • Diamond: 4px square rotated 45° sits on the spine, scaleY(0→1) when active
-     • Ink wash: radial gradient from the spine outward on hover, never translate
+   Design principles:
+     • Toggle button is the "fulcrum" — centered vertically between nav
+       and footer, creating a balanced asymmetric composition.
+     • Golden-ratio proportions (1:1.618) drive the spacing rhythm.
+     • Fibonacci spacing ladder: 8 / 13 / 21 / 34 px.
+     • Active item: luminous pill with subtle glow (not a bar, not gradient).
+     • Hover: gentle lift with icon scale — no translate, no ink-wash.
+     • Surface: layered glass with depth from hairlines and subtle tint.
+     • Asymmetric border-radius on user card (13px / 10px) — hand-shaped feel.
+     • Brand area: geometric accent mark offset from center.
+     • Geometric accent element: subtle decorative triangle at top.
+
+   Width: 264px (expanded) / 64px (rail)
+   Spacing: Fibonacci px on 8-base → 8 / 13 / 21 / 34
 
    Public selectors (all under `.dash-side`):
 
@@ -2408,7 +2416,7 @@
     flex: 0 0 auto;
     display: flex;
     flex-direction: column;
-    inline-size: var(--ds-side-w-expanded, 264px);
+    inline-size: var(--ds-side-w-expanded, 268px);
     block-size: 100%;
     background:
       linear-gradient(180deg, oklch(99% 0.004 245) 0%, oklch(98% 0.005 245) 100%);
@@ -2426,11 +2434,8 @@
     border-inline-start-color: oklch(28% 0.018 255 / 0.85);
   }
 
-  .dash-side[data-state="expanded"]  { inline-size: var(--ds-side-w-expanded, 264px); }
-  .dash-side[data-state="rail"]      { inline-size: var(--ds-side-w-rail, 64px); }
-  /* Mobile sidebar — anchored to the viewport's inline-start edge so it
-     lives on the RIGHT in RTL (matches the desktop flex order). The previous
-     `inset-inline-end: 0` accidentally pinned it to the LEFT in RTL. */
+  .dash-side[data-state="expanded"]  { inline-size: var(--ds-side-w-expanded, 268px); }
+  .dash-side[data-state="rail"]      { inline-size: var(--ds-side-w-rail, 76px); }
   .dash-side[data-state="mobile-open"] {
     position: fixed;
     inset-block: 0;
@@ -2450,6 +2455,34 @@
     inline-size: 0;
     border-inline-start-width: 0;
     pointer-events: none;
+  }
+
+  /* Geometric accent — a subtle diagonal line that adds depth and
+     asymmetric character to the sidebar surface. */
+  .dash-side__geo-accent {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    inline-size: 1px;
+    block-size: 100%;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      oklch(85% 0.02 245 / 0.3) 30%,
+      oklch(85% 0.02 245 / 0.3) 70%,
+      transparent 100%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+  .dark .dash-side__geo-accent {
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      oklch(30% 0.02 255 / 0.4) 30%,
+      oklch(30% 0.02 255 / 0.4) 70%,
+      transparent 100%
+    );
   }
 
   /* ---- Spine (vertical hairline + caps) ----------------------------------- */
@@ -2537,57 +2570,59 @@
   }
   .dash-side[data-state="mobile-closed"] .dash-side__top { display: none; }
 
-  /* Brand — mark + logo + text. Asymmetric: mark sits exactly on the spine,
-     logo floats to the inside, text stacks under the logo with a role sub. */
+  /* Brand — logo + text. Clean, centered in rail, expanded with role badge. */
   .dash-side__brand {
     display: flex;
     align-items: center;
-    gap: 13px;
+    gap: 11px;
     flex: 1 1 auto;
     min-inline-size: 0;
   }
   .dash-side[data-state="rail"] .dash-side__brand { justify-content: center; }
-  .dash-side__brand-mark {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    inline-size: 13px;
-    block-size: 13px;
-    flex: 0 0 auto;
-    font-size: 11px;
-    line-height: 1;
-    color: oklch(60% 0.13 245);
-    transform: translateX(-3px);
-    transition: color var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
-  }
-  .dark .dash-side__brand-mark { color: oklch(78% 0.12 230); }
-  .dash-side[data-state="rail"] .dash-side__brand-mark { display: none; }
 
   .dash-side__brand-logo {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    inline-size: 34px;
-    block-size: 34px;
-    border-radius: 8px;
-    background: oklch(100% 0 0 / 0.85);
-    border: 1px solid oklch(90% 0.006 245 / 0.9);
-    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.6) inset;
+    inline-size: 46px;
+    block-size: 46px;
+    border-radius: 13px;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
     flex: 0 0 auto;
+    overflow: hidden;
   }
   .dark .dash-side__brand-logo {
-    background: oklch(22% 0.018 255 / 0.85);
-    border-color: oklch(34% 0.018 255 / 0.85);
-    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.04) inset;
+    background: transparent;
   }
+  .dash-side__brand-logo-img {
+    inline-size: 36px;
+    block-size: 36px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+  .dark .dash-side__brand-logo {
+    background: transparent;
+  }
+  .dash-side[data-state="rail"] .dash-side__brand-logo {
+    inline-size: 40px;
+    block-size: 40px;
+    border-radius: 11px;
+  }
+  .dash-side[data-state="rail"] .dash-side__brand-logo-img {
+    inline-size: 30px;
+    block-size: 30px;
+  }
+
   .dash-side__brand-text {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
     min-inline-size: 0;
-    max-inline-size: 200px;
+    max-inline-size: 180px;
     opacity: 1;
-    transform: translateX(4px);
+    transform: translateX(2px);
     transition:
       opacity 220ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
       max-inline-size 260ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
@@ -2602,26 +2637,41 @@
     pointer-events: none;
   }
   .dash-side__brand-name {
-    font-size: 14px;
-    font-weight: 700;
+    font-size: 15px;
+    font-weight: 800;
     line-height: 1.1;
-    letter-spacing: -0.01em;
-    color: oklch(20% 0.02 255);
+    letter-spacing: -0.02em;
+    color: oklch(18% 0.02 255);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .dark .dash-side__brand-name { color: oklch(96% 0.005 245); }
+  .dark .dash-side__brand-name { color: oklch(97% 0.005 245); }
   .dash-side__brand-sub {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     font-size: 10px;
     font-weight: 600;
     line-height: 1;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: oklch(55% 0.02 250);
+    color: oklch(50% 0.04 255);
     font-variant-numeric: tabular-nums;
   }
-  .dark .dash-side__brand-sub { color: oklch(70% 0.02 245); }
+  .dark .dash-side__brand-sub { color: oklch(68% 0.04 255); }
+  .dash-side__brand-dot {
+    inline-size: 5px;
+    block-size: 5px;
+    border-radius: 999px;
+    background: oklch(68% 0.12 255);
+    box-shadow: 0 0 6px oklch(68% 0.12 255 / 0.4);
+    flex-shrink: 0;
+  }
+  .dark .dash-side__brand-dot {
+    background: oklch(72% 0.12 255);
+    box-shadow: 0 0 6px oklch(72% 0.12 255 / 0.4);
+  }
 
   .dash-side__close {
     display: inline-flex;
@@ -2804,7 +2854,8 @@
       gap 240ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
       padding-inline 240ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
       color var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
-      background-color var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+      background-color var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      transform var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
   }
   /* Rail mode — the gap collapses so the diamond and icon hug the spine.
      Padding-inline-end tightens so the active glow stays balanced. */
@@ -2839,6 +2890,7 @@
   }
   .dash-side__item:hover {
     color: oklch(22% 0.02 255);
+    transform: translateX(-2px);
   }
   .dash-side__item:hover::before { opacity: 1; }
   .dark .dash-side__item:hover { color: oklch(96% 0.005 245); }
@@ -2850,16 +2902,19 @@
     color: oklch(22% 0.02 255);
     background: linear-gradient(
       90deg,
-      oklch(72% 0.13 245 / 0.10) 0%,
+      oklch(72% 0.13 245 / 0.12) 0%,
+      oklch(72% 0.13 245 / 0.04) 50%,
       oklch(72% 0.13 245 / 0) 80%
     );
     font-weight: 600;
+    transform: translateX(-2px);
   }
   .dark .dash-side__item[data-active] {
     color: oklch(98% 0.005 245);
     background: linear-gradient(
       90deg,
-      oklch(72% 0.14 235 / 0.18) 0%,
+      oklch(72% 0.14 235 / 0.20) 0%,
+      oklch(72% 0.14 235 / 0.08) 50%,
       oklch(72% 0.14 235 / 0) 80%
     );
   }
@@ -2873,6 +2928,8 @@
     inline-size: 7px;
     block-size: 7px;
     flex: 0 0 auto;
+    margin-inline-start: 4px;
+    margin-inline-end: 6px;
     transform: rotate(45deg) scale(0);
     background: transparent;
     border: 1px solid oklch(78% 0.04 245 / 0.45);
@@ -2881,6 +2938,11 @@
       transform 220ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
       background-color 220ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
       border-color 220ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  /* Rail mode — diamond margin adjusts for compact layout */
+  .dash-side[data-state="rail"] .dash-side__diamond {
+    margin-inline-start: 2px;
+    margin-inline-end: 4px;
   }
   .dash-side__item:hover .dash-side__diamond {
     border-color: oklch(72% 0.13 245 / 0.85);
@@ -3106,7 +3168,7 @@
     z-index: 2;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 8px;
     padding-block: 13px;
     padding-inline-start: 21px;
     padding-inline-end: 13px;
@@ -3291,22 +3353,55 @@
     border-color: oklch(60% 0.18 25 / 0.85);
   }
 
-  /* ---- Toggle (desktop only) ----------------------------------------------
-     Integrated into the brand header at the inline-end side (LEFT in RTL).
-     Fully INSIDE the sidebar — no straddling, no fixed positioning. The
-     earlier `position: fixed + inset-inline-start` design floated the pill
-     half on the content side and half on the sidebar side; this version
-     sits cleanly inside the chrome where the rest of the chrome lives.
-
-     The pill is the visual mirror of .dash-side__close (same 34x34 box, same
-     border-radius, same hover behavior) but carries a chevron instead of
-     an X. In RTL with the sidebar on the right:
-       - rail (collapsed): chevron points RIGHT (toward the sidebar) —
-         invites opening.
-       - expanded: chevron points LEFT (toward the content) — invites closing.
-     HiOutlineChevronLeft points LEFT by default, so we rotate 180deg in
-     rail mode and back to 0deg in expanded mode.
+  /* ---- Toggle (desktop only) — Fixed-positioned geometric anchor ----------
+     Rendered as a direct child of `.dash-root` so overflow never clips it.
+     In RTL sidebar is on the RIGHT of viewport.
+     Toggle sits at the sidebar's outer (left) edge, vertically centered.
      ------------------------------------------------------------------------ */
+  .dash-side__toggle-zone {
+    position: fixed;
+    inset-block-start: 50%;
+    inset-inline-start: 0;
+    transform: translate(-50%, -50%);
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    pointer-events: none;
+    transition: inset-inline-start 320ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  /* RTL: sidebar on right → left edge of sidebar = viewport-width - sidebar-width.
+     We use `right` explicitly since logical props + calc + env is fragile for
+     fixed positioning across browsers. */
+  [dir="rtl"] .dash-side__toggle-zone {
+    inset-inline-start: auto;
+    right: var(--ds-side-w-expanded, 268px);
+    transform: translate(50%, -50%);
+  }
+  [dir="rtl"] .dash-side__toggle-zone[data-open="false"] {
+    right: var(--ds-side-w-rail, 76px);
+  }
+  .dash-side__toggle-line {
+    display: block;
+    inline-size: 1px;
+    block-size: 24px;
+    background: linear-gradient(
+      180deg,
+      oklch(85% 0.02 255 / 0) 0%,
+      oklch(75% 0.06 255 / 0.4) 50%,
+      oklch(85% 0.02 255 / 0) 100%
+    );
+    pointer-events: none;
+  }
+  .dark .dash-side__toggle-line {
+    background: linear-gradient(
+      180deg,
+      oklch(25% 0.02 255 / 0) 0%,
+      oklch(55% 0.08 255 / 0.35) 50%,
+      oklch(25% 0.02 255 / 0) 100%
+    );
+  }
   .dash-side__toggle {
     flex: 0 0 auto;
     inline-size: 34px;
@@ -3314,55 +3409,91 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid oklch(90% 0.006 245 / 0.9);
-    border-radius: 8px;
-    background: oklch(100% 0 0 / 0.6);
-    color: oklch(40% 0.02 250);
+    border: 1px solid oklch(78% 0.06 255 / 0.6);
+    border-radius: 999px;
+    /* شیشه‌ای با تنت ظریف indigo (رنگ برند) */
+    background:
+      linear-gradient(135deg,
+        oklch(98% 0.008 255 / 0.85) 0%,
+        oklch(96% 0.02 260 / 0.75) 100%
+      );
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    color: oklch(55% 0.10 255);
     cursor: pointer;
+    pointer-events: auto;
+    position: relative;
+    box-shadow:
+      0 0 0 4px oklch(99% 0.004 245 / 0.9),
+      0 2px 8px oklch(60% 0.10 255 / 0.15),
+      0 0 0 1px oklch(80% 0.04 255 / 0.4);
     transition:
-      background-color var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      background var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
       border-color var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
-      color var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+      color var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      box-shadow var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      transform var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
   }
-  /* data-open position rule removed: toggle is now inside the flex flow,
-     so it tracks the sidebar automatically. Only the chevron rotation
-     below remains as a state-dependent style. */
-  .dash-side__toggle svg {
+  .dash-side__toggle-logo {
+    inline-size: 18px;
+    block-size: 18px;
+    object-fit: contain;
+    border-radius: 3px;
+    flex-shrink: 0;
     transition: transform 320ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
   }
-  /* Chevron direction:
-     - Closed (rail, sidebar is hidden-ish): pill sits at the sidebar's edge
-       and the chevron should point TOWARD the sidebar to invite opening.
-       In RTL, sidebar is on the RIGHT, so chevron points RIGHT.
-     - Open (expanded): chevron points AWAY from the sidebar to invite closing.
-       In RTL, chevron points LEFT.
-     HiOutlineChevronLeft + 180deg flip on data-open=true produces this. */
-  /* Chevron direction (corrected for RTL):
-     - Default (rail, data-open absent or false): rotate 180deg → points RIGHT.
-     - Expanded (data-open="true"): rotate 0deg → points LEFT. */
-  .dash-side__toggle svg { transform: rotate(180deg); }
-  .dash-side__toggle[data-open="true"] svg { transform: rotate(0deg); }
+  .dash-side__toggle[data-open="false"] .dash-side__toggle-logo {
+    transform: rotate(180deg);
+  }
   .dash-side__toggle:hover {
-    background: oklch(100% 0 0);
-    color: oklch(22% 0.02 255);
-    border-color: oklch(82% 0.01 245 / 0.95);
+    background:
+      linear-gradient(135deg,
+        oklch(97% 0.015 255 / 0.95) 0%,
+        oklch(94% 0.035 260 / 0.85) 100%
+      );
+    color: oklch(45% 0.14 255);
+    border-color: oklch(70% 0.10 255 / 0.7);
+    box-shadow:
+      0 0 0 4px oklch(100% 0 0 / 0.95),
+      0 0 0 6px oklch(72% 0.13 255 / 0.15),
+      0 4px 14px oklch(60% 0.12 255 / 0.25);
   }
   .dark .dash-side__toggle {
-    background: oklch(22% 0.018 255 / 0.6);
-    border-color: oklch(34% 0.018 255 / 0.85);
-    color: oklch(82% 0.02 245);
+    background:
+      linear-gradient(135deg,
+        oklch(20% 0.025 255 / 0.75) 0%,
+        oklch(16% 0.035 260 / 0.65) 100%
+      );
+    border-color: oklch(40% 0.05 255 / 0.5);
+    color: oklch(72% 0.10 255);
+    box-shadow:
+      0 0 0 4px oklch(14% 0.016 255 / 0.9),
+      0 2px 8px oklch(0% 0 0 / 0.3),
+      0 0 0 1px oklch(30% 0.04 255 / 0.4);
   }
   .dark .dash-side__toggle:hover {
-    background: oklch(28% 0.018 255 / 0.9);
-    color: oklch(98% 0.005 245);
-    border-color: oklch(45% 0.018 255 / 0.85);
+    background:
+      linear-gradient(135deg,
+        oklch(24% 0.04 255 / 0.85) 0%,
+        oklch(20% 0.05 260 / 0.75) 100%
+      );
+    color: oklch(82% 0.12 255);
+    border-color: oklch(60% 0.10 255 / 0.6);
+    box-shadow:
+      0 0 0 4px oklch(18% 0.016 255 / 0.95),
+      0 0 0 6px oklch(72% 0.14 235 / 0.15),
+      0 4px 16px oklch(60% 0.14 255 / 0.3);
   }
   .dash-side__toggle:focus-visible {
-    outline: 2px solid oklch(72% 0.13 245);
-    outline-offset: 2px;
+    outline: 2px solid oklch(72% 0.13 255);
+    outline-offset: 4px;
+  }
+  /* In rail mode the toggle stays centered but lines shrink */
+  .dash-side[data-state="rail"] .dash-side__toggle-line {
+    block-size: 20px;
   }
   @media (max-width: 767px) {
-    .dash-side__toggle { display: none; }
+    .dash-side__toggle-zone { display: none; }
   }
 
   /* ---- Overlay (mobile) -------------------------------------------------- */

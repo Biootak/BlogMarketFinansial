@@ -1,28 +1,22 @@
 'use client';
 
 /* --------------------------------------------------------------------------
-   Dashboard Sidebar — 2026 "Stratum" redesign
+   Dashboard Sidebar — 2026 "Meridian" redesign
    --------------------------------------------------------------------------
-   A cartographer's chart-inspired chrome. Visual ideas:
+   Harmonic asymmetric geometry — like a master painter's canvas composition.
 
-   • Vertical "spine" hairline runs the full height of the sidebar (logical
-     inline-end, just 11px from the edge) — the same geometry a hand-drawn
-     chart uses to anchor icons and rulers.
-   • Every item hangs off the spine: icon at the spine, label floating into
-     the canvas. The active item is announced by a small diamond (4px square
-     rotated 45°) on the spine, never by a horizontal bar or a fill.
-   • Hover is an "ink wash" — a radial gradient from the spine outward,
-     not a translate or scale. The item never moves; the surface tints.
-   • Section labels carry a manuscript index ("·۰۱·" "·۰۲·") — small caps
-     with wide tracking, the kind of typography found in editorial atlases.
-   • Header and footer are intentionally asymmetric: the logo sits offset
-     from center; the avatar card has two unequal radii on the diagonal.
-   • Spacing follows a Fibonacci ladder (8 / 13 / 21 / 34 / 55) so every
-     measurement on the surface shares a common denominator.
-   • No glassmorphism inside the sidebar, no aurora blobs, no translate
-     on hover. The surface is solid; depth comes from hairlines and tint.
+   Design principles:
+   • The toggle button is the "fulcrum" — centered vertically between nav
+     and footer, creating a balanced asymmetric composition.
+   • Golden-ratio proportions (1:1.618) drive the spacing rhythm.
+   • Fibonacci spacing ladder: 8 / 13 / 21 / 34 px.
+   • Active item: luminous pill with subtle glow (not a bar, not gradient).
+   • Hover: gentle lift with icon scale — no translate, no ink-wash.
+   • Surface: layered glass with depth from hairlines and subtle tint.
+   • Asymmetric border-radius on user card (13px / 10px) — hand-shaped feel.
+   • Brand area: geometric accent mark offset from center.
 
-   Behavior preserved 1:1 (regression list lives in `.kimchi/docs/`):
+   Behavior preserved 1:1:
      • Hamburger toggle, auto-open on ≥768px, auto-close on <768px,
        overlay-click-close, route detection (incl. submenu roll-up),
        expandedItems persistence, keyboard shortcuts (1-9, S, R, P),
@@ -44,7 +38,6 @@ import {
   HiOutlineArrowRightOnRectangle,
   HiOutlineChartBarSquare,
   HiOutlineChevronDown,
-  HiOutlineChevronLeft,
   HiOutlineClipboardDocumentList,
   HiOutlineCog6Tooth,
   HiOutlineCurrencyDollar,
@@ -76,9 +69,7 @@ interface MenuItem {
 
 interface NavSection {
   id: string;
-  /** Manuscript index — rendered as "·۰۱·" "·۰۲·" prefix. */
   index: string;
-  /** Section label (Persian, uppercase-friendly). */
   label?: string;
   items: MenuItem[];
 }
@@ -240,8 +231,7 @@ function getMenu(role: UserRole): NavSection[] {
   }
 }
 
-/* Persist the submenu initial state across mounts. The role decides which
-   section opens first (matches the v1 behaviour). */
+/* Persist the submenu initial state across mounts. */
 function defaultExpanded(role: UserRole): string[] {
   if (role === 'USER') return [];
   return ['exchangeRates'];
@@ -456,8 +446,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
       ? 'expanded'
       : 'rail';
 
-  // A single, deterministic index per top-level item — feeds the manuscript
-  // numerals in the section labels and per-item indices.
+  // A single, deterministic index per top-level item
   const flatIndex = useMemo(() => {
     let n = 0;
     return menu.map((section) => ({
@@ -472,40 +461,28 @@ const Sidebar = ({ userRole }: SidebarProps) => {
   return (
     <>
       <aside className="dash-side" data-state={dataState} aria-label="منوی داشبورد">
-        {/* Vertical spine — the geometric anchor of the entire surface. */}
-        <span className="dash-side__spine" aria-hidden />
-        <span className="dash-side__spine dash-side__spine--top" aria-hidden />
-        <span className="dash-side__spine dash-side__spine--bottom" aria-hidden />
+        {/* Geometric accent — subtle decorative element */}
+        <span className="dash-side__geo-accent" aria-hidden />
 
+        {/* Brand area — top */}
         <header className="dash-side__top">
           <div className="dash-side__brand">
-            <span className="dash-side__brand-mark" aria-hidden>
-              {ROLE_GLYPH[userRole]}
-            </span>
             <div className="dash-side__brand-logo">
               <Logo
                 logoUrl={logoUrl || undefined}
-                className="h-8 w-8 shrink-0 flex items-center justify-center"
+                className="dash-side__brand-logo-img"
               />
             </div>
-            <div className="dash-side__brand-text">
-              <span className="dash-side__brand-name">داشبورد</span>
-              <span className="dash-side__brand-sub">{ROLE_LABEL[userRole]}</span>
-            </div>
+            {isOpen && (
+              <div className="dash-side__brand-text">
+                <span className="dash-side__brand-name">بازار مالی</span>
+                <span className="dash-side__brand-sub">
+                  <span className="dash-side__brand-dot" aria-hidden />
+                  {ROLE_LABEL[userRole]}
+                </span>
+              </div>
+            )}
           </div>
-          {!isMobile && (
-            <button
-              type="button"
-              className="dash-side__toggle"
-              onClick={() => setIsOpen(!isOpen)}
-              aria-label={isOpen ? 'بستن منو' : 'باز کردن منو'}
-              aria-expanded={isOpen}
-              aria-controls="dash-side-nav"
-              data-open={isOpen}
-            >
-              <HiOutlineChevronLeft className="w-4 h-4" aria-hidden />
-            </button>
-          )}
           {isMobile && isOpen && (
             <button
               type="button"
@@ -518,6 +495,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
           )}
         </header>
 
+        {/* Navigation — scrollable */}
         <nav id="dash-side-nav" className="dash-side__nav" aria-label="ناوبری اصلی">
           <div className="dash-side__nav-inner">
             {flatIndex.map((section) => (
@@ -549,6 +527,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
           </div>
         </nav>
 
+        {/* Footer — user card + logout */}
         <footer className="dash-side__foot">
           <span className="dash-side__baseline" aria-hidden />
           <div className={cn('dash-side__user', !isOpen && 'dash-side__user--rail')}>
@@ -610,8 +589,7 @@ function extractMessage(r: unknown): string | undefined {
   return undefined;
 }
 
-/* Convert a 1-based index to Persian digits ("1" → "۱", "12" → "۱۲").
-   Used for the manuscript-style numbering on each nav item. */
+/* Convert a 1-based index to Persian digits. */
 function toPersianDigits(n: number): string {
   const map: Record<string, string> = {
     '0': '۰',
