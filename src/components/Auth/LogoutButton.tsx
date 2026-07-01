@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { IoExitOutline } from 'react-icons/io5';
+import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
 import { getSession, signOut } from 'next-auth/react';
@@ -15,6 +16,7 @@ import Loading from '../Button/Loading';
 const LogoutButton = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const handleLogout = async () => {
     setIsLoading(true);
@@ -27,12 +29,22 @@ const LogoutButton = () => {
         invalidateDashboardCache(),
       ]);
 
-      await signOut({ redirect: true, callbackUrl: '/' });
+      // 2026-06-30: toast BEFORE signOut so it actually paints. The
+      // previous sequence called signOut({redirect:true}) first, which
+      // navigated before React could flush the toast render — users
+      // never saw the success message. Now we fire toast, then
+      // signOut({redirect:false}) to clear the session cookie, then
+      // router.push to navigate manually. The router push gives us
+      // full control over the destination and lets the toast's
+      // auto-close timer run before the page swap.
       toast({
         title: 'موفقیت',
         description: 'شما با موفقیت خارج شدید',
         variant: 'success',
       });
+
+      await signOut({ redirect: false });
+      router.push('/');
     } catch (error) {
       console.error('خطا در خروج:', error);
       toast({

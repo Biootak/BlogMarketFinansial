@@ -43,6 +43,11 @@ import bcrypt from 'bcryptjs';
 import { AuthError } from 'next-auth';
 import { z } from 'zod';
 
+// 2026-06-30: Next 16's `revalidateTag` requires a second `profile`
+// argument; the wrapper at @/lib/revalidate always passes 'max'.
+// Importing from `next/cache` directly would fail the type-check.
+import { revalidateTag } from '@/lib/revalidate';
+
 const BCRYPT_COST = 12;
 
 // 2026-06-24: only allow overwriting an unverified user row when the
@@ -167,7 +172,9 @@ export async function lookupEmail(formData: FormData): Promise<AuthResult> {
       };
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findFirst({
+      where: { email: { equals: email, mode: 'insensitive' } },
+    });
 
     if (!user) {
       return {
@@ -525,7 +532,9 @@ export async function recoverPassword(formData: FormData): Promise<AuthResult> {
       };
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findFirst({
+      where: { email: { equals: email, mode: 'insensitive' } },
+    });
     if (!user) {
       // 2026-06-23: do not leak account existence — pretend a code was sent.
       return {
@@ -609,18 +618,38 @@ export async function setNewPassword(formData: FormData): Promise<AuthResult> {
     }
 
     const hashedPassword = await bcrypt.hash(input.password, BCRYPT_COST);
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        password: hashedPassword,
-        // 2026-06-24: password reset proves email ownership — set
-        // emailVerified as a side effect of the OTP we already consumed
-        // (applyIntent skipped it for recover).
-        emailVerified: user.emailVerified ?? new Date(),
-      },
+    // 2026-06-30: atomic password rotation. Wrapping the user.update +
+    // OTP cleanup in a single transaction prevents the failure mode
+    // where the password changes but stale OTPs survive (letting the
+    // same 5-min window continue to work with the new password's
+    // emailVerified marker flipped). bcrypt.hash is intentionally
+    // OUTSIDE the transaction — it's CPU-bound and would hold the
+    // pool connection open for ~250ms at cost 12.
+    //
+    // Using the interactive `$transaction(async (tx) => {...})` form
+    // rather than the array form so the body can call ordinary async
+    // helpers (Prisma's array form requires every element to be a
+    // PrismaPromise, which our invalidateOtpTokens wrapper was not).
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: user.id },
+        data: {
+          password: hashedPassword,
+          // 2026-06-24: password reset proves email ownership — set
+          // emailVerified as a side effect of the OTP we already consumed
+          // (applyIntent skipped it for recover).
+          emailVerified: user.emailVerified ?? new Date(),
+        },
+      });
+      await tx.verificationToken.deleteMany({ where: { email: input.email } });
     });
 
-    await invalidateOtpTokens({ email: input.email });
+    // 2026-06-30: bust cached dashboard slices so the next render
+    // reflects the new password + verified email without waiting
+    // for the 24h JWT rolling refresh.
+    revalidateTag(`user-${user.id}`);
+    revalidateTag('dashboard-stats');
+    revalidateTag('sidebar-data');
 
     return {
       success: true,
@@ -664,7 +693,9 @@ async function applyIntent(email: string, intent: VerificationEmailIntent): Prom
   // (verify ok, set-password never called) leaves the account intact.
   if (intent === 'recover') return;
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma.user.findFirst({
+    where: { email: { equals: email, mode: 'insensitive' } },
+  });
   if (!user) return;
   if (user.emailVerified) return;
 

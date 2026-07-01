@@ -21,7 +21,17 @@ const imageUrlSchema = (message: string) =>
   );
 
 // Common schemas
-const emailSchema = z.string().email('لطفاً یک آدرس ایمیل معتبر وارد کنید');
+// 2026-06-30: normalize every email at the boundary. Trim strips
+// accidental whitespace from form pastes (mobile keyboards love to
+// add a trailing space); lowercase makes downstream Prisma lookups
+// case-insensitive when paired with `mode: 'insensitive'`.
+// Storage stays lowercase from now on, so `Admin@gmail.com` (which
+// was seeded with original case) is still findable via the
+// insensitive fallback in src/actions/auth-actions.ts.
+const emailSchema = z
+  .string()
+  .email('لطفاً یک آدرس ایمیل معتبر وارد کنید')
+  .transform((v) => v.trim().toLowerCase());
 const passwordSchema = z
   .string()
   .min(8, 'رمز عبور باید حداقل 8 کاراکتر داشته باشد')

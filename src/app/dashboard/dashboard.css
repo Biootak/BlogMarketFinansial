@@ -2342,3 +2342,1056 @@
 }
 
 /* ===== END Dashboard Density (June 25 redesign) ===== */
+
+/* ============================================================================
+   Dashboard Sidebar — 2026 "Stratum" redesign (June 26)
+   ----------------------------------------------------------------------------
+   Cartographer-chart chrome. Geometric anchors:
+
+     • Width: 264px (expanded) / 64px (rail) — golden ratio ≈ 4.13
+     • Spacing ladder: Fibonacci px on 8-base → 4 / 8 / 13 / 21 / 34 / 55
+     • Spine: vertical hairline at 11px from the inline-start edge, full height
+     • Cap dots: 3px circles terminating the spine at top and bottom
+     • Diamond: 4px square rotated 45° sits on the spine, scaleY(0→1) when active
+     • Ink wash: radial gradient from the spine outward on hover, never translate
+
+   Public selectors (all under `.dash-side`):
+
+     .dash-side[data-state]            main aside; controls width + visibility
+     .dash-side__spine                 vertical hairline (inline-start edge)
+     .dash-side__spine--top / --bottom small cap circles at the spine ends
+     .dash-side__top                   header band (logo + brand)
+     .dash-side__brand                 asymmetric brand block (mark + logo + text)
+     .dash-side__brand-mark            tiny diamond mark (role glyph)
+     .dash-side__brand-logo            logo image wrapper
+     .dash-side__brand-text            vertical stack of name + sub-role
+     .dash-side__close                 mobile-only close button
+     .dash-side__nav                   scroll container for the section list
+     .dash-side__nav-inner             inner padded wrapper
+     .dash-side__section               one group (label + list)
+     .dash-side__section-head          section label row (tick + index + rule + text)
+     .dash-side__section-tick          perpendicular tick at the spine
+     .dash-side__section-index         "·۰۱·" manuscript numeral
+     .dash-side__section-rule          hairline rule filling the gap
+     .dash-side__section-label         label text (Persian, uppercase tracking)
+     .dash-side__list                  ul of items
+     .dash-side__row                   li wrapper (carries submenu container)
+     .dash-side__item                  main item (link or button)
+     .dash-side__item--parent          parent with submenu (carries chev)
+     .dash-side__item--sub             child item (carries small tick)
+     .dash-side__item-ico              icon square
+     .dash-side__item-label            text label
+     .dash-side__item-kbd              shortcut badge
+     .dash-side__item-chev             chevron icon (rotates when expanded)
+     .dash-side__item-tick             small marker dot for sub-items
+     .dash-side__diamond               active marker on the spine
+     .dash-side__index                 per-item manuscript numeral
+     .dash-side__sub                   collapsible submenu container
+     .dash-side__sub-inner             inner wrapper (indented from spine)
+     .dash-side__foot                  footer band (avatar + logout)
+     .dash-side__baseline              horizontal hairline above footer
+     .dash-side__user                  user card (avatar + meta)
+     .dash-side__user--rail            collapsed variant
+     .dash-side__user-avatar           avatar positioner (with glyph badge)
+     .dash-side__user-img              avatar inner border-radius container
+     .dash-side__user-glyph            role glyph floating on the avatar
+     .dash-side__user-meta             name + email + role stack
+     .dash-side__user-name / email / role
+     .dash-side__logout                logout button (reuses item visuals)
+     .dash-side__toggle                portal-rendered collapse handle
+     .dash-side__overlay               mobile backdrop
+   ============================================================================ */
+@layer utilities {
+  /* ---- Shell -------------------------------------------------------------- */
+  .dash-side {
+    position: relative;
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    inline-size: var(--ds-side-w-expanded, 264px);
+    block-size: 100%;
+    background:
+      linear-gradient(180deg, oklch(99% 0.004 245) 0%, oklch(98% 0.005 245) 100%);
+    border-inline-start: 1px solid oklch(90% 0.006 245 / 0.9);
+    overflow: hidden;
+    isolation: isolate;
+    transition:
+      inline-size 320ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      transform 320ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+    contain: layout paint;
+  }
+  .dark .dash-side {
+    background:
+      linear-gradient(180deg, oklch(15% 0.016 255) 0%, oklch(12% 0.014 255) 100%);
+    border-inline-start-color: oklch(28% 0.018 255 / 0.85);
+  }
+
+  .dash-side[data-state="expanded"]  { inline-size: var(--ds-side-w-expanded, 264px); }
+  .dash-side[data-state="rail"]      { inline-size: var(--ds-side-w-rail, 64px); }
+  /* Mobile sidebar — anchored to the viewport's inline-start edge so it
+     lives on the RIGHT in RTL (matches the desktop flex order). The previous
+     `inset-inline-end: 0` accidentally pinned it to the LEFT in RTL. */
+  .dash-side[data-state="mobile-open"] {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: 0;
+    z-index: 50;
+    inline-size: min(304px, 86vw);
+    box-shadow: -28px 0 60px -28px oklch(20% 0.05 255 / 0.45);
+  }
+  .dark .dash-side[data-state="mobile-open"] {
+    box-shadow: -28px 0 60px -28px oklch(0% 0 0 / 0.7);
+  }
+  .dash-side[data-state="mobile-closed"] {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: 0;
+    z-index: 50;
+    inline-size: 0;
+    border-inline-start-width: 0;
+    pointer-events: none;
+  }
+
+  /* ---- Spine (vertical hairline + caps) ----------------------------------- */
+  .dash-side__spine {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 11px;
+    z-index: 1;
+    inline-size: 1px;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      oklch(78% 0.05 230 / 0.45) 8%,
+      oklch(78% 0.05 230 / 0.45) 92%,
+      transparent 100%
+    );
+    pointer-events: none;
+  }
+  .dark .dash-side__spine {
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      oklch(70% 0.06 220 / 0.55) 8%,
+      oklch(70% 0.06 220 / 0.55) 92%,
+      transparent 100%
+    );
+  }
+  /* Caps — small circles at the very top and bottom of the spine.
+     Skipped in rail mode where the spine is too close to chrome edges. */
+  .dash-side__spine--top,
+  .dash-side__spine--bottom {
+    position: absolute;
+    inset-inline-start: 9.5px;
+    inline-size: 4px;
+    block-size: 4px;
+    border-radius: 999px;
+    background: oklch(72% 0.08 230);
+    box-shadow: 0 0 0 2px oklch(99% 0.004 245);
+  }
+  .dark .dash-side__spine--top,
+  .dark .dash-side__spine--bottom {
+    background: oklch(78% 0.08 220);
+    box-shadow: 0 0 0 2px oklch(13% 0.016 255);
+  }
+  .dash-side__spine--top    { inset-block-start: 56px; }
+  .dash-side__spine--bottom { inset-block-end: 56px; }
+  .dash-side[data-state="rail"] .dash-side__spine--top,
+  .dash-side[data-state="rail"] .dash-side__spine--bottom,
+  .dash-side[data-state="mobile-closed"] .dash-side__spine--top,
+  .dash-side[data-state="mobile-closed"] .dash-side__spine--bottom { display: none; }
+
+  /* ---- Header (logo band) ------------------------------------------------- */
+  .dash-side__top {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 13px;
+    block-size: 64px;
+    padding-inline-start: 21px;
+    padding-inline-end: 13px;
+    background: linear-gradient(
+      180deg,
+      oklch(99.5% 0.003 245) 0%,
+      oklch(99% 0.004 245) 100%
+    );
+    border-block-end: 1px solid oklch(90% 0.006 245 / 0.9);
+  }
+  .dark .dash-side__top {
+    background: linear-gradient(
+      180deg,
+      oklch(16% 0.016 255) 0%,
+      oklch(13% 0.014 255) 100%
+    );
+    border-block-end-color: oklch(28% 0.018 255 / 0.85);
+  }
+  /* Rail mode — keep the logo on the right (inline-start, near the spine)
+     and the toggle pill on the left (inline-end, near the content). Tight
+     64px width so we drop the horizontal padding to 8px to give both
+     elements (34px logo + 28px toggle = 62px) breathing room. */
+  .dash-side[data-state="rail"] .dash-side__top {
+    justify-content: space-between;
+    padding-inline: 8px;
+  }
+  .dash-side[data-state="mobile-closed"] .dash-side__top { display: none; }
+
+  /* Brand — mark + logo + text. Asymmetric: mark sits exactly on the spine,
+     logo floats to the inside, text stacks under the logo with a role sub. */
+  .dash-side__brand {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    flex: 1 1 auto;
+    min-inline-size: 0;
+  }
+  .dash-side[data-state="rail"] .dash-side__brand { justify-content: center; }
+  .dash-side__brand-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 13px;
+    block-size: 13px;
+    flex: 0 0 auto;
+    font-size: 11px;
+    line-height: 1;
+    color: oklch(60% 0.13 245);
+    transform: translateX(-3px);
+    transition: color var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  .dark .dash-side__brand-mark { color: oklch(78% 0.12 230); }
+  .dash-side[data-state="rail"] .dash-side__brand-mark { display: none; }
+
+  .dash-side__brand-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 34px;
+    block-size: 34px;
+    border-radius: 8px;
+    background: oklch(100% 0 0 / 0.85);
+    border: 1px solid oklch(90% 0.006 245 / 0.9);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.6) inset;
+    flex: 0 0 auto;
+  }
+  .dark .dash-side__brand-logo {
+    background: oklch(22% 0.018 255 / 0.85);
+    border-color: oklch(34% 0.018 255 / 0.85);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.04) inset;
+  }
+  .dash-side__brand-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-inline-size: 0;
+    max-inline-size: 200px;
+    opacity: 1;
+    transform: translateX(4px);
+    transition:
+      opacity 220ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      max-inline-size 260ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      transform 260ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  .dash-side[data-state="rail"] .dash-side__brand-text,
+  .dash-side[data-state="mobile-closed"] .dash-side__brand-text {
+    opacity: 0;
+    max-inline-size: 0;
+    gap: 0;
+    transform: translateX(4px);
+    pointer-events: none;
+  }
+  .dash-side__brand-name {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: oklch(20% 0.02 255);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .dark .dash-side__brand-name { color: oklch(96% 0.005 245); }
+  .dash-side__brand-sub {
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: oklch(55% 0.02 250);
+    font-variant-numeric: tabular-nums;
+  }
+  .dark .dash-side__brand-sub { color: oklch(70% 0.02 245); }
+
+  .dash-side__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 34px;
+    block-size: 34px;
+    border: 1px solid oklch(90% 0.006 245 / 0.9);
+    border-radius: 8px;
+    background: oklch(100% 0 0 / 0.6);
+    color: oklch(40% 0.02 250);
+    cursor: pointer;
+    flex: 0 0 auto;
+    transition:
+      background-color var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      color var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  .dash-side__close:hover { background: oklch(100% 0 0); color: oklch(22% 0.02 255); }
+  .dark .dash-side__close {
+    background: oklch(22% 0.018 255 / 0.6);
+    border-color: oklch(34% 0.018 255 / 0.85);
+    color: oklch(82% 0.02 245);
+  }
+  .dark .dash-side__close:hover { background: oklch(28% 0.018 255 / 0.9); color: oklch(98% 0.005 245); }
+  .dash-side__close:focus-visible {
+    outline: 2px solid oklch(72% 0.13 245);
+    outline-offset: 2px;
+  }
+
+  /* ---- Nav (scroll container) -------------------------------------------- */
+  .dash-side__nav {
+    position: relative;
+    z-index: 1;
+    flex: 1 1 auto;
+    min-block-size: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-block: 13px 21px;
+    scrollbar-width: thin;
+    scrollbar-color: oklch(85% 0.01 245 / 0.7) transparent;
+  }
+  .dash-side__nav::-webkit-scrollbar { inline-size: 6px; }
+  .dash-side__nav::-webkit-scrollbar-track { background: transparent; }
+  .dash-side__nav::-webkit-scrollbar-thumb {
+    background: oklch(85% 0.01 245 / 0.7);
+    border-radius: 999px;
+  }
+  .dark .dash-side__nav::-webkit-scrollbar-thumb {
+    background: oklch(34% 0.018 255 / 0.7);
+  }
+
+  .dash-side__nav-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 21px;
+    padding-inline-start: 21px;
+    padding-inline-end: 13px;
+  }
+  .dash-side[data-state="rail"] .dash-side__nav-inner {
+    padding-inline: 0;
+    align-items: center;
+    gap: 13px;
+  }
+
+  /* ---- Section heads ------------------------------------------------------ */
+  .dash-side__section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .dash-side__section-head {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    block-size: 13px;
+    max-block-size: 13px;
+    overflow: hidden;
+    opacity: 1;
+    transform: translateX(4px);
+    transition:
+      opacity 220ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      max-block-size 260ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      transform 260ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  .dash-side[data-state="rail"] .dash-side__section-head,
+  .dash-side[data-state="mobile-closed"] .dash-side__section-head {
+    opacity: 0;
+    max-block-size: 0;
+    transform: translateX(4px);
+    pointer-events: none;
+  }
+
+  /* Perpendicular tick crossing the spine, anchors the section label. */
+  .dash-side__section-tick {
+    position: absolute;
+    inset-inline-start: -13px;
+    inset-block-start: 50%;
+    inline-size: 8px;
+    block-size: 1px;
+    background: oklch(72% 0.08 230 / 0.7);
+    transform: translateY(-0.5px);
+  }
+  .dark .dash-side__section-tick { background: oklch(75% 0.08 220 / 0.7); }
+
+  .dash-side__section-index {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    color: oklch(55% 0.02 250);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .dark .dash-side__section-index { color: oklch(72% 0.02 245); }
+
+  /* Hairline rule between the index and the label — fills the remaining
+     width and naturally disappears when the label wraps. */
+  .dash-side__section-rule {
+    flex: 1 1 auto;
+    block-size: 1px;
+    background: linear-gradient(
+      90deg,
+      oklch(85% 0.01 245 / 0.85),
+      oklch(85% 0.01 245 / 0)
+    );
+    min-inline-size: 13px;
+  }
+  .dark .dash-side__section-rule {
+    background: linear-gradient(
+      90deg,
+      oklch(34% 0.018 255 / 0.85),
+      oklch(34% 0.018 255 / 0)
+    );
+  }
+  .dash-side__section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: oklch(45% 0.02 250);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .dark .dash-side__section-label { color: oklch(82% 0.02 245); }
+
+  /* ---- Item list --------------------------------------------------------- */
+  .dash-side__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .dash-side__row {
+    list-style: none;
+  }
+
+  /* ---- Item (link or button) --------------------------------------------- */
+  .dash-side__item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    block-size: 40px;
+    padding-inline-start: 8px;
+    padding-inline-end: 10px;
+    border-radius: 10px;
+    color: oklch(40% 0.02 250);
+    background: transparent;
+    border: 0;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    isolation: isolate;
+    transition:
+      gap 240ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      padding-inline 240ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      color var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      background-color var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  /* Rail mode — the gap collapses so the diamond and icon hug the spine.
+     Padding-inline-end tightens so the active glow stays balanced. */
+  .dash-side[data-state="rail"] .dash-side__item {
+    gap: 0;
+    padding-inline-start: 8px;
+    padding-inline-end: 8px;
+  }
+  .dash-side__item::before {
+    /* Ink wash — radial gradient from the spine outward. Hidden by default,
+       fades in on hover; the active item keeps it at low opacity. */
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      120% 220% at 0% 50%,
+      oklch(72% 0.13 245 / 0.10) 0%,
+      oklch(72% 0.13 245 / 0) 60%
+    );
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+    z-index: -1;
+  }
+  .dark .dash-side__item::before {
+    background: radial-gradient(
+      120% 220% at 0% 50%,
+      oklch(72% 0.14 235 / 0.16) 0%,
+      oklch(72% 0.14 235 / 0) 60%
+    );
+  }
+  .dash-side__item:hover {
+    color: oklch(22% 0.02 255);
+  }
+  .dash-side__item:hover::before { opacity: 1; }
+  .dark .dash-side__item:hover { color: oklch(96% 0.005 245); }
+  .dash-side__item:focus-visible {
+    outline: 2px solid oklch(72% 0.13 245);
+    outline-offset: -2px;
+  }
+  .dash-side__item[data-active] {
+    color: oklch(22% 0.02 255);
+    background: linear-gradient(
+      90deg,
+      oklch(72% 0.13 245 / 0.10) 0%,
+      oklch(72% 0.13 245 / 0) 80%
+    );
+    font-weight: 600;
+  }
+  .dark .dash-side__item[data-active] {
+    color: oklch(98% 0.005 245);
+    background: linear-gradient(
+      90deg,
+      oklch(72% 0.14 235 / 0.18) 0%,
+      oklch(72% 0.14 235 / 0) 80%
+    );
+  }
+  .dash-side__item[data-active]::before { opacity: 0.6; }
+
+  /* Diamond — the active marker on the spine. Lives on every item so it can
+     animate in/out smoothly; default state is invisible (scale 0), active
+     state is fully visible (scale 1, accent color). */
+  .dash-side__diamond {
+    position: relative;
+    inline-size: 7px;
+    block-size: 7px;
+    flex: 0 0 auto;
+    transform: rotate(45deg) scale(0);
+    background: transparent;
+    border: 1px solid oklch(78% 0.04 245 / 0.45);
+    border-radius: 1px;
+    transition:
+      transform 220ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      background-color 220ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      border-color 220ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  .dash-side__item:hover .dash-side__diamond {
+    border-color: oklch(72% 0.13 245 / 0.85);
+    transform: rotate(45deg) scale(0.7);
+  }
+  .dash-side__item[data-active] .dash-side__diamond {
+    background: oklch(70% 0.15 245);
+    border-color: oklch(70% 0.15 245);
+    transform: rotate(45deg) scale(1);
+    box-shadow: 0 0 0 3px oklch(70% 0.15 245 / 0.18);
+  }
+  .dark .dash-side__item[data-active] .dash-side__diamond {
+    background: oklch(78% 0.14 235);
+    border-color: oklch(78% 0.14 235);
+    box-shadow: 0 0 0 3px oklch(78% 0.14 235 / 0.22);
+  }
+
+  /* Manuscript index next to the icon. Fades + collapses in rail mode via
+     opacity + max-inline-size — never display:none — so the width transition
+     reads as one fluid motion. */
+  .dash-side__index {
+    flex: 0 0 auto;
+    inline-size: 18px;
+    max-inline-size: 18px;
+    overflow: hidden;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: oklch(65% 0.02 250);
+    font-variant-numeric: tabular-nums;
+    text-align: start;
+    opacity: 0;
+    transform: translateX(2px);
+    transition:
+      opacity 220ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      max-inline-size 240ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      transform 240ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      color var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  .dark .dash-side__index { color: oklch(60% 0.02 245); }
+  .dash-side__item:hover .dash-side__index { color: oklch(45% 0.02 250); }
+  .dash-side[data-state="expanded"] .dash-side__index,
+  .dash-side[data-state="mobile-open"] .dash-side__index {
+    opacity: 0.75;
+    max-inline-size: 18px;
+    transform: translateX(0);
+  }
+  .dash-side[data-state="rail"] .dash-side__index,
+  .dash-side[data-state="mobile-closed"] .dash-side__index {
+    opacity: 0;
+    max-inline-size: 0;
+    transform: translateX(2px);
+    pointer-events: none;
+  }
+  .dash-side__item[data-active] .dash-side__index { color: oklch(45% 0.13 245); opacity: 1; }
+  .dark .dash-side__item[data-active] .dash-side__index { color: oklch(78% 0.12 230); }
+
+  .dash-side__item-ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 22px;
+    block-size: 22px;
+    flex: 0 0 auto;
+    color: inherit;
+    transition: transform var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  .dash-side__item:hover .dash-side__item-ico { transform: scale(1.05); }
+
+  .dash-side__item-label {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    max-inline-size: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transform: translateX(4px);
+    opacity: 1;
+    transition:
+      opacity 220ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      max-inline-size 260ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      transform 260ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  .dash-side[data-state="rail"] .dash-side__item-label,
+  .dash-side[data-state="mobile-closed"] .dash-side__item-label {
+    opacity: 0;
+    max-inline-size: 0;
+    transform: translateX(4px);
+    pointer-events: none;
+  }
+
+  .dash-side__item-kbd {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 18px;
+    max-inline-size: 36px;
+    block-size: 18px;
+    padding-inline: 5px;
+    border-radius: 5px;
+    background: oklch(96% 0.006 245 / 0.85);
+    border: 1px solid oklch(88% 0.008 245 / 0.85);
+    color: oklch(55% 0.02 250);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1;
+    opacity: 1;
+    transform: translateX(4px);
+    transition:
+      opacity 220ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      max-inline-size 260ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      transform 260ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  .dark .dash-side__item-kbd {
+    background: oklch(22% 0.014 250 / 0.7);
+    border-color: oklch(34% 0.016 250 / 0.85);
+    color: oklch(72% 0.02 245);
+  }
+  .dash-side[data-state="rail"] .dash-side__item-kbd,
+  .dash-side[data-state="mobile-closed"] .dash-side__item-kbd {
+    opacity: 0;
+    max-inline-size: 0;
+    padding-inline: 0;
+    border-color: transparent;
+    transform: translateX(4px);
+    pointer-events: none;
+  }
+
+  .dash-side__item-chev {
+    inline-size: 13px;
+    block-size: 13px;
+    flex: 0 0 auto;
+    max-inline-size: 13px;
+    color: oklch(60% 0.02 250);
+    opacity: 1;
+    transform: rotate(0deg);
+    transform-origin: center;
+    transition:
+      transform 220ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      opacity 220ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      max-inline-size 240ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  .dark .dash-side__item-chev { color: oklch(72% 0.02 245); }
+  .dash-side[data-state="rail"] .dash-side__item-chev,
+  .dash-side[data-state="mobile-closed"] .dash-side__item-chev {
+    opacity: 0;
+    max-inline-size: 0;
+    pointer-events: none;
+  }
+  /* Submenu chev rotation — stacks on top of the width/opacity transitions
+     so the icon spins AND collapses into the spine on collapse. */
+  .dash-side__item[data-expanded] .dash-side__item-chev { transform: rotate(180deg); }
+
+  /* Sub-item (child of a parent). Smaller, no icon, no diamond — carries a
+     small tick on the spine instead, indented to align with parent label. */
+  .dash-side__item--sub {
+    block-size: 34px;
+    padding-inline-start: 0;
+    padding-inline-end: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    color: oklch(50% 0.02 250);
+  }
+  .dark .dash-side__item--sub { color: oklch(72% 0.02 245); }
+  .dash-side__item--sub::before {
+    /* Smaller ink wash radius for the sub-row. */
+    background: radial-gradient(
+      120% 220% at 0% 50%,
+      oklch(72% 0.13 245 / 0.08) 0%,
+      oklch(72% 0.13 245 / 0) 60%
+    );
+  }
+  .dash-side__item--sub:hover { color: oklch(22% 0.02 255); }
+  .dash-side__item--sub:hover::before { opacity: 1; }
+  .dash-side__item--sub[data-active] {
+    color: oklch(22% 0.02 255);
+    background: linear-gradient(90deg, oklch(72% 0.13 245 / 0.10) 0%, oklch(72% 0.13 245 / 0) 80%);
+    font-weight: 600;
+  }
+  .dark .dash-side__item--sub[data-active] {
+    color: oklch(98% 0.005 245);
+    background: linear-gradient(90deg, oklch(72% 0.14 235 / 0.18) 0%, oklch(72% 0.14 235 / 0) 80%);
+  }
+  .dash-side__item-tick {
+    inline-size: 6px;
+    block-size: 1px;
+    flex: 0 0 auto;
+    background: oklch(80% 0.01 245 / 0.7);
+    margin-inline-start: 13px;
+    transition: background-color var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  .dark .dash-side__item-tick { background: oklch(40% 0.01 245 / 0.7); }
+  .dash-side__item--sub:hover .dash-side__item-tick,
+  .dash-side__item--sub[data-active] .dash-side__item-tick {
+    background: oklch(70% 0.13 245);
+    inline-size: 10px;
+  }
+  .dash-side[data-state="rail"] .dash-side__item-tick { display: none; }
+
+  /* Submenu container — accordion via grid-template-rows. */
+  .dash-side__sub {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 220ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  .dash-side__sub[data-open] { grid-template-rows: 1fr; }
+  .dash-side__sub-inner {
+    min-block-size: 0;
+    overflow: hidden;
+    padding-block-start: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .dash-side[data-state="rail"] .dash-side__sub,
+  .dash-side[data-state="rail"] .dash-side__sub-inner { display: none; }
+
+  /* ---- Footer ------------------------------------------------------------ */
+  .dash-side__foot {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-block: 13px;
+    padding-inline-start: 21px;
+    padding-inline-end: 13px;
+    background: linear-gradient(180deg, oklch(99% 0.004 245 / 0) 0%, oklch(98% 0.005 245) 100%);
+  }
+  .dark .dash-side__foot {
+    background: linear-gradient(180deg, oklch(15% 0.016 255 / 0) 0%, oklch(12% 0.014 255) 100%);
+  }
+  .dash-side[data-state="rail"] .dash-side__foot {
+    align-items: center;
+    padding-inline: 0;
+  }
+
+  .dash-side__baseline {
+    position: absolute;
+    inset-inline: 13px;
+    inset-block-start: 0;
+    block-size: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      oklch(85% 0.01 245 / 0.85) 13%,
+      oklch(85% 0.01 245 / 0.85) 87%,
+      transparent 100%
+    );
+  }
+  .dark .dash-side__baseline {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      oklch(34% 0.018 255 / 0.85) 13%,
+      oklch(34% 0.018 255 / 0.85) 87%,
+      transparent 100%
+    );
+  }
+
+  /* User card — asymmetric: top-left radius slightly larger than bottom-right
+     (Fibonacci 13 / 8) so the card feels hand-shaped, not stamped. */
+  .dash-side__user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px 8px 8px;
+    border-radius: 13px 10px 10px 10px;
+    background: oklch(100% 0 0 / 0.65);
+    border: 1px solid oklch(90% 0.006 245 / 0.85);
+    transition: background-color var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  .dark .dash-side__user {
+    background: oklch(22% 0.016 255 / 0.7);
+    border-color: oklch(34% 0.018 255 / 0.85);
+  }
+  .dash-side__user:hover { background: oklch(100% 0 0 / 0.85); }
+  .dark .dash-side__user:hover { background: oklch(28% 0.018 255 / 0.85); }
+  .dash-side__user--rail {
+    padding: 4px;
+    border-radius: 10px;
+  }
+
+  .dash-side__user-avatar {
+    position: relative;
+    inline-size: 36px;
+    block-size: 36px;
+    flex: 0 0 auto;
+  }
+  .dash-side__user-img {
+    border-radius: 10px;
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.6) inset;
+  }
+  .dark .dash-side__user-img { box-shadow: 0 1px 0 oklch(100% 0 0 / 0.05) inset; }
+
+  .dash-side__user-glyph {
+    position: absolute;
+    inset-inline-end: -3px;
+    inset-block-end: -3px;
+    inline-size: 13px;
+    block-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: oklch(100% 0 0);
+    color: oklch(60% 0.13 245);
+    font-size: 9px;
+    line-height: 1;
+    box-shadow: 0 0 0 1px oklch(90% 0.006 245 / 0.9);
+  }
+  .dark .dash-side__user-glyph {
+    background: oklch(15% 0.016 255);
+    color: oklch(78% 0.12 230);
+    box-shadow: 0 0 0 1px oklch(28% 0.018 255 / 0.85);
+  }
+
+  .dash-side__user-meta {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    max-inline-size: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    opacity: 1;
+    transform: translateX(4px);
+    transition:
+      opacity 220ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      max-inline-size 260ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      gap 220ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      transform 260ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  .dash-side__user--rail .dash-side__user-meta {
+    opacity: 0;
+    max-inline-size: 0;
+    gap: 0;
+    transform: translateX(4px);
+    pointer-events: none;
+  }
+  .dash-side__user-name {
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: oklch(20% 0.02 255);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .dark .dash-side__user-name { color: oklch(96% 0.005 245); }
+  .dash-side__user-email {
+    font-size: 10px;
+    line-height: 1.1;
+    color: oklch(55% 0.02 250);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    direction: ltr;
+    text-align: start;
+  }
+  .dark .dash-side__user-email { color: oklch(70% 0.02 245); }
+  .dash-side__user-role {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    margin-block-start: 2px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: oklch(72% 0.13 245 / 0.12);
+    color: oklch(45% 0.13 245);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1.1;
+  }
+  .dark .dash-side__user-role {
+    background: oklch(72% 0.14 235 / 0.2);
+    color: oklch(82% 0.12 230);
+  }
+
+  /* Logout — same item visuals, but with a rose ink wash on hover. */
+  .dash-side__logout {
+    margin-block-start: 4px;
+  }
+  .dash-side__logout::before {
+    background: radial-gradient(
+      120% 220% at 0% 50%,
+      oklch(60% 0.18 25 / 0.10) 0%,
+      oklch(60% 0.18 25 / 0) 60%
+    );
+  }
+  .dark .dash-side__logout::before {
+    background: radial-gradient(
+      120% 220% at 0% 50%,
+      oklch(70% 0.18 25 / 0.16) 0%,
+      oklch(70% 0.18 25 / 0) 60%
+    );
+  }
+  .dash-side__logout:hover {
+    color: oklch(50% 0.18 25);
+  }
+  .dark .dash-side__logout:hover {
+    color: oklch(72% 0.18 25);
+  }
+  .dash-side__logout:hover .dash-side__diamond {
+    border-color: oklch(60% 0.18 25 / 0.85);
+  }
+
+  /* ---- Toggle (desktop only) ----------------------------------------------
+     Integrated into the brand header at the inline-end side (LEFT in RTL).
+     Fully INSIDE the sidebar — no straddling, no fixed positioning. The
+     earlier `position: fixed + inset-inline-start` design floated the pill
+     half on the content side and half on the sidebar side; this version
+     sits cleanly inside the chrome where the rest of the chrome lives.
+
+     The pill is the visual mirror of .dash-side__close (same 34x34 box, same
+     border-radius, same hover behavior) but carries a chevron instead of
+     an X. In RTL with the sidebar on the right:
+       - rail (collapsed): chevron points RIGHT (toward the sidebar) —
+         invites opening.
+       - expanded: chevron points LEFT (toward the content) — invites closing.
+     HiOutlineChevronLeft points LEFT by default, so we rotate 180deg in
+     rail mode and back to 0deg in expanded mode.
+     ------------------------------------------------------------------------ */
+  .dash-side__toggle {
+    flex: 0 0 auto;
+    inline-size: 34px;
+    block-size: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid oklch(90% 0.006 245 / 0.9);
+    border-radius: 8px;
+    background: oklch(100% 0 0 / 0.6);
+    color: oklch(40% 0.02 250);
+    cursor: pointer;
+    transition:
+      background-color var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      border-color var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      color var(--ds-duration-fast, 120ms) var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  /* data-open position rule removed: toggle is now inside the flex flow,
+     so it tracks the sidebar automatically. Only the chevron rotation
+     below remains as a state-dependent style. */
+  .dash-side__toggle svg {
+    transition: transform 320ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  /* Chevron direction:
+     - Closed (rail, sidebar is hidden-ish): pill sits at the sidebar's edge
+       and the chevron should point TOWARD the sidebar to invite opening.
+       In RTL, sidebar is on the RIGHT, so chevron points RIGHT.
+     - Open (expanded): chevron points AWAY from the sidebar to invite closing.
+       In RTL, chevron points LEFT.
+     HiOutlineChevronLeft + 180deg flip on data-open=true produces this. */
+  /* Chevron direction (corrected for RTL):
+     - Default (rail, data-open absent or false): rotate 180deg → points RIGHT.
+     - Expanded (data-open="true"): rotate 0deg → points LEFT. */
+  .dash-side__toggle svg { transform: rotate(180deg); }
+  .dash-side__toggle[data-open="true"] svg { transform: rotate(0deg); }
+  .dash-side__toggle:hover {
+    background: oklch(100% 0 0);
+    color: oklch(22% 0.02 255);
+    border-color: oklch(82% 0.01 245 / 0.95);
+  }
+  .dark .dash-side__toggle {
+    background: oklch(22% 0.018 255 / 0.6);
+    border-color: oklch(34% 0.018 255 / 0.85);
+    color: oklch(82% 0.02 245);
+  }
+  .dark .dash-side__toggle:hover {
+    background: oklch(28% 0.018 255 / 0.9);
+    color: oklch(98% 0.005 245);
+    border-color: oklch(45% 0.018 255 / 0.85);
+  }
+  .dash-side__toggle:focus-visible {
+    outline: 2px solid oklch(72% 0.13 245);
+    outline-offset: 2px;
+  }
+  @media (max-width: 767px) {
+    .dash-side__toggle { display: none; }
+  }
+
+  /* ---- Overlay (mobile) -------------------------------------------------- */
+  .dash-side__overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    border: 0;
+    padding: 0;
+    background: oklch(15% 0.02 255 / 0.55);
+    backdrop-filter: blur(8px) saturate(140%);
+    -webkit-backdrop-filter: blur(8px) saturate(140%);
+    cursor: pointer;
+    animation: dash-side-overlay-in 220ms var(--ds-ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  @keyframes dash-side-overlay-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* ---- Reduced motion ---------------------------------------------------- */
+  @media (prefers-reduced-motion: reduce) {
+    .dash-side,
+    .dash-side *,
+    .dash-side__overlay,
+    .dash-side__toggle,
+    .dash-side__toggle svg {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+}

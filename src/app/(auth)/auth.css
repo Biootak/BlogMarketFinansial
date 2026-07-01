@@ -1,163 +1,406 @@
 /* ============================================================================
-   AUTH SURFACE — Resend-inspired (2026)
+   AUTH SURFACE — "Asymmetric Composition" (June 30, 2026)
    ----------------------------------------------------------------------------
-   Single centered card on a dark, soft mesh background. Brand logo above
-   the card. Social-first: OAuth buttons before the email form. Progressive
-   single-flow (no tabs, no sidecar, no footer chrome).
-   - Always dark, like Resend (independent of global theme).
-   - DS tokens only (oklch, fluid clamp). No garish colors, no emoji.
-   - WCAG 2.2 AA contrast on every color pair; focus-visible rings.
-   - Full RTL parity; logical properties only.
-   - prefers-reduced-motion honored.
+   Design philosophy:
+     The previous pass treated "geometric harmony" as adding hex MOTIFS to
+     a symmetric two-column layout. That was wrong. Geometric harmony in
+     layout means the ELEMENTS THEMSELVES are placed with intention —
+     like a painting where every stroke has a reason.
+
+   Three structural rules govern this surface:
+
+     1. ONE FOCAL POINT PER SCREEN.
+        The aside panel hosts a single large hex motif. Everything else in
+        the aside (heading, kicker text, metric, list) steps back into a
+        subordinate role. The form's CTA is the form's focal point. Two
+        focal points, balanced across the golden-ratio split.
+
+     2. ASYMMETRIC COMPOSITION, NOT CENTERED.
+        - Page: brand at the reading-start edge (visual right in RTL),
+          NOT centered. Footer offset, not centered. Card has breathing
+          room on both sides — never edge-to-edge.
+        - Card: 62% form / 38% aside (golden ratio). The form occupies
+          the larger, denser side; the aside is the smaller, sparser
+          counterweight with one big shape.
+        - Inside each panel: elements are placed at deliberate positions
+          (golden section, not center) with negative space framing them.
+
+     3. RTL-CORRECT GEOMETRY (bug fix from previous version).
+        In RTL, `border-inline-start` resolves to the VISUAL RIGHT edge.
+        The previous version placed the divider on the form's
+        border-inline-start, which put it on the OUTER card edge instead
+        of between the two panels. Fixed: divider now on
+        `border-inline-end` of the form (visual LEFT in RTL = between
+        panels). Same fix applied to the diagonal ::before and hex ::after.
+
+   4. THEME-AWARE (revised June 30, 2026).
+       Previously hardcoded to dark (Resend / Linear convention). Now
+       follows the site's light/dark theme via next-themes. All colors
+       are token-driven; the brand gradient stays the same in both modes.
+
+   Other notes:
+     - All class names preserved → no JSX changes needed.
+     - Light/dark via `:root` (light default) + `.dark` (next-themes).
+     - OKLCH tokens, hairline borders (no shadows), GPU-friendly motion.
+     - prefers-reduced-motion honored.
+     - WCAG 2.2 AA contrast on every color pair.
+     - Logical properties only; full RTL parity.
    ============================================================================ */
 
-@layer components {
+/* ============================================================
+   THEME TOKENS — light defaults + .dark overrides.
+   Every color used by the auth surface flows from here.
+   ============================================================ */
+:root {
+  /* ─── Canvas / page background ─── */
+  --auth-bg-from: oklch(98.5% 0.005 245);
+  --auth-bg-to: oklch(96% 0.008 245);
+  --auth-bg-glow-1: oklch(60% 0.13 250 / 0.06);
+  --auth-bg-glow-2: oklch(55% 0.1 285 / 0.04);
 
-  /* ---------- Page shell (always dark, like Resend) ---------- */
+  /* ─── Card surface + chrome ─── */
+  --auth-card-from: oklch(100% 0 0);
+  --auth-card-to: oklch(98% 0.005 245);
+  --auth-card-border: oklch(20% 0.02 245 / 0.1);
+  --auth-card-inner-glow: oklch(100% 0 0 / 0.65);
+  --auth-card-shadow: oklch(20% 0.05 245 / 0.12);
+  --auth-card-divider: oklch(20% 0.02 245 / 0.08);
+
+  /* ─── Text hierarchy ─── */
+  --auth-fg-primary: oklch(18% 0.02 245);
+  --auth-fg-secondary: oklch(32% 0.015 245);
+  --auth-fg-tertiary: oklch(45% 0.015 245);
+  --auth-fg-muted: oklch(55% 0.015 245);
+  --auth-fg-subtle: oklch(62% 0.015 245);
+  --auth-fg-faint: oklch(70% 0.012 245);
+
+  /* ─── Border hierarchy ─── */
+  --auth-border-subtle: oklch(20% 0.02 245 / 0.05);
+  --auth-border-default: oklch(20% 0.02 245 / 0.1);
+  --auth-border-hover: oklch(20% 0.02 245 / 0.18);
+
+  /* ─── Inputs ─── */
+  --auth-input-bg: oklch(96% 0.006 245);
+  --auth-input-bg-hover: oklch(94% 0.01 245);
+  --auth-input-bg-focus: oklch(100% 0 0);
+  --auth-input-border: oklch(20% 0.02 245 / 0.12);
+  --auth-input-border-hover: oklch(20% 0.02 245 / 0.2);
+  --auth-input-border-focus: oklch(60% 0.16 250);
+  --auth-input-placeholder: oklch(55% 0.015 245);
+  --auth-input-inset: oklch(100% 0 0 / 0.5);
+  --auth-input-shadow-focus: oklch(60% 0.16 250 / 0.15);
+
+  /* ─── Accents ─── */
+  --auth-divider: oklch(20% 0.02 245 / 0.1);
+  --auth-glow-soft: oklch(60% 0.16 250 / 0.15);
+  --auth-focus-ring: oklch(60% 0.16 250 / 0.3);
+  --auth-eyebrow-hex: oklch(60% 0.16 250);
+  --auth-eyebrow-hex-shadow: oklch(60% 0.16 250 / 0.4);
+
+  /* ─── Aside hex motif (subtle in light mode) ─── */
+  --auth-hex-glow-1: oklch(60% 0.16 250 / 0.05);
+  --auth-hex-glow-2: oklch(50% 0.17 265 / 0.03);
+  --auth-hex-outline: oklch(20% 0.02 245 / 0.08);
+
+  /* ─── Status: errors / success ─── */
+  --auth-error: oklch(50% 0.18 26);
+  --auth-error-bg-from: oklch(50% 0.18 26 / 0.1);
+  --auth-error-bg-to: oklch(50% 0.18 26 / 0.05);
+  --auth-error-border: oklch(50% 0.18 26 / 0.35);
+  --auth-success: oklch(45% 0.15 155);
+  --auth-success-bg-from: oklch(45% 0.15 155 / 0.1);
+  --auth-success-bg-to: oklch(45% 0.15 155 / 0.05);
+  --auth-success-border: oklch(45% 0.15 155 / 0.3);
+
+  /* ─── Strength meter segments ─── */
+  --auth-strength-1: oklch(60% 0.16 26);
+  --auth-strength-2: oklch(68% 0.15 80);
+  --auth-strength-3: oklch(60% 0.14 210);
+  --auth-strength-4: oklch(62% 0.15 160);
+
+  /* ─── Effects ─── */
+  --auth-grain-opacity: 0.025;
+  --auth-card-hairline: oklch(20% 0.02 245 / 0.04);
+}
+
+.dark {
+  --auth-bg-from: oklch(11% 0.018 255);
+  --auth-bg-to: oklch(8% 0.018 255);
+  --auth-bg-glow-1: oklch(46% 0.13 250 / 0.14);
+  --auth-bg-glow-2: oklch(40% 0.1 285 / 0.1);
+
+  --auth-card-from: oklch(17% 0.022 255);
+  --auth-card-to: oklch(13% 0.02 255);
+  --auth-card-border: oklch(100% 0 0 / 0.09);
+  --auth-card-inner-glow: oklch(100% 0 0 / 0.1);
+  --auth-card-shadow: oklch(0% 0 0 / 0.85);
+  --auth-card-divider: oklch(100% 0 0 / 0.07);
+
+  --auth-fg-primary: oklch(98% 0.005 240);
+  --auth-fg-secondary: oklch(80% 0.015 245);
+  --auth-fg-tertiary: oklch(74% 0.015 245);
+  --auth-fg-muted: oklch(62% 0.015 245);
+  --auth-fg-subtle: oklch(66% 0.015 245);
+  --auth-fg-faint: oklch(78% 0.015 245);
+
+  --auth-border-subtle: oklch(100% 0 0 / 0.06);
+  --auth-border-default: oklch(100% 0 0 / 0.11);
+  --auth-border-hover: oklch(100% 0 0 / 0.2);
+
+  --auth-input-bg: oklch(100% 0 0 / 0.045);
+  --auth-input-bg-hover: oklch(100% 0 0 / 0.06);
+  --auth-input-bg-focus: oklch(100% 0 0 / 0.075);
+  --auth-input-border: oklch(100% 0 0 / 0.11);
+  --auth-input-border-hover: oklch(100% 0 0 / 0.2);
+  --auth-input-border-focus: oklch(66% 0.13 255);
+  --auth-input-placeholder: oklch(64% 0.015 245);
+  --auth-input-inset: oklch(100% 0 0 / 0.04);
+  --auth-input-shadow-focus: oklch(60% 0.13 255 / 0.18);
+
+  --auth-divider: oklch(100% 0 0 / 0.08);
+  --auth-glow-soft: oklch(45% 0.14 255 / 0.85);
+  --auth-focus-ring: oklch(64% 0.12 230 / 0.32);
+  --auth-eyebrow-hex: oklch(72% 0.14 230);
+  --auth-eyebrow-hex-shadow: oklch(58% 0.16 255 / 0.55);
+
+  --auth-hex-glow-1: oklch(72% 0.14 230 / 0.18);
+  --auth-hex-glow-2: oklch(58% 0.16 255 / 0.1);
+  --auth-hex-outline: oklch(100% 0 0 / 0.08);
+
+  --auth-error: oklch(70% 0.14 26);
+  --auth-error-bg-from: oklch(70% 0.14 26 / 0.12);
+  --auth-error-bg-to: oklch(70% 0.14 26 / 0.07);
+  --auth-error-border: oklch(70% 0.14 26 / 0.4);
+  --auth-success: oklch(72% 0.11 155);
+  --auth-success-bg-from: oklch(72% 0.11 155 / 0.11);
+  --auth-success-bg-to: oklch(72% 0.11 155 / 0.06);
+  --auth-success-border: oklch(72% 0.11 155 / 0.32);
+
+  --auth-strength-1: oklch(70% 0.14 26);
+  --auth-strength-2: oklch(78% 0.13 80);
+  --auth-strength-3: oklch(71% 0.12 210);
+  --auth-strength-4: oklch(74% 0.13 160);
+
+  --auth-grain-opacity: 0.5;
+  --auth-card-hairline: oklch(100% 0 0 / 0.035);
+}
+
+/* ─── Brand gradient (theme-independent) ─── */
+:root {
+  --auth-brand-sky: oklch(70% 0.13 230);
+  --auth-brand-blue: oklch(60% 0.16 255);
+  --auth-brand-indigo: oklch(46% 0.16 265);
+  --auth-brand-sky-light: oklch(72% 0.14 230);
+  --auth-brand-blue-light: oklch(58% 0.16 255);
+}
+
+@layer components {
+  /* ============================================================
+     1. PAGE CANVAS — theme-aware ambient.
+     ============================================================ */
   .auth-page-root {
     min-height: 100dvh;
-    width: 100%;
+    inline-size: 100%;
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    background:
-      radial-gradient(120% 90% at 50% -10%, oklch(24% 0.05 255 / 0.78), transparent 60%),
-      radial-gradient(90% 70% at 100% 100%, oklch(24% 0.04 285 / 0.50), transparent 68%),
-      radial-gradient(90% 70% at 0% 100%, oklch(23% 0.04 220 / 0.44), transparent 68%),
-      linear-gradient(180deg, oklch(15% 0.02 255), oklch(12% 0.02 255));
-    color: oklch(96% 0.01 240);
-    padding-block: clamp(2rem, 6vh, 4rem);
-    padding-inline: clamp(1rem, 4vw, 2rem);
     isolation: isolate;
+    padding-block: clamp(2rem, 5vh, 3.5rem);
+    padding-inline: clamp(1rem, 3.5vw, 2rem);
+
+    background: radial-gradient(45% 35% at 100% 0%, var(--auth-bg-glow-1), transparent 70%),
+      radial-gradient(40% 30% at 0% 100%, var(--auth-bg-glow-2), transparent 72%),
+      linear-gradient(180deg, var(--auth-bg-from) 0%, var(--auth-bg-to) 100%);
+    color: var(--auth-fg-primary);
   }
 
-  .auth-aurora {
+  /* Hex tessellation — faint, theme-aware opacity via mask. */
+  .auth-page-root::before {
+    content: "";
     position: absolute;
     inset: 0;
     z-index: 0;
     pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='152' height='132' viewBox='0 0 152 132'><g fill='none' stroke='rgba(20,23,32,0.05)' stroke-width='1'><path d='M38 0 L76 22 L76 66 L38 88 L0 66 L0 22 Z'/><path d='M114 0 L152 22 L152 66 L114 88 L76 66 L76 22 Z'/><path d='M38 88 L76 110 L76 154 L38 176 L0 154 L0 110 Z'/><path d='M114 88 L152 110 L152 154 L114 176 L76 154 L76 110 Z'/></g></svg>");
+    background-size: 152px 132px;
+    mask-image: radial-gradient(ellipse 75% 55% at 50% 50%, black 25%, transparent 88%);
+    -webkit-mask-image: radial-gradient(ellipse 75% 55% at 50% 50%, black 25%, transparent 88%);
+    opacity: 0.7;
   }
 
-  .auth-aurora::before,
-  .auth-aurora::after {
+  /* Grain overlay — opacity scales with theme token. */
+  .auth-page-root::after {
     content: "";
     position: absolute;
-    border-radius: 999px;
-    filter: blur(96px);
-    opacity: 0.9;
-    will-change: transform;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.04 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    background-size: 240px 240px;
+    mix-blend-mode: overlay;
+    opacity: var(--auth-grain-opacity);
   }
 
-  .auth-aurora::before {
-    inline-size: 28rem;
-    block-size: 28rem;
-    inset-block-start: -8rem;
-    inset-inline-start: -7rem;
-    background: radial-gradient(circle, oklch(50% 0.12 255 / 0.32), transparent 70%);
-    animation: auth-drift-a 22s ease-in-out infinite alternate;
+  .auth-aurora {
+    display: none;
   }
 
-  .auth-aurora::after {
-    inline-size: 24rem;
-    block-size: 24rem;
-    inset-block-end: -7rem;
-    inset-inline-end: -5rem;
-    background: radial-gradient(circle, oklch(58% 0.09 285 / 0.24), transparent 70%);
-    animation: auth-drift-b 26s ease-in-out infinite alternate;
-  }
-
+  /* ============================================================
+     2. PAGE CHROME — brand + footer.
+     ============================================================ */
   .auth-page-header,
   .auth-card-shell,
   .auth-foot {
     position: relative;
-    z-index: 1;
+    z-index: 2;
   }
 
   .auth-page-header {
-    inline-size: min(100%, 72rem);
-    margin-block-end: clamp(1.25rem, 3vh, 2rem);
+    inline-size: min(100%, 76rem);
+    margin-block-end: clamp(1.25rem, 3vh, 1.75rem);
+    display: flex;
+    justify-content: flex-end;
+  }
+  [dir="rtl"] .auth-page-header {
+    justify-content: flex-start;
   }
 
   .auth-brand {
     display: inline-flex;
     align-items: center;
-    gap: 0.875rem;
+    gap: 0.85rem;
     color: inherit;
     text-decoration: none;
+    transition: opacity var(--ds-duration-base) var(--ds-ease-out-expo);
+  }
+  .auth-brand:hover {
+    opacity: 0.82;
   }
 
   .auth-brand-mark {
+    --hex-mark-size: 2.4rem;
     display: inline-grid;
     place-items: center;
-    inline-size: 2.25rem;
-    block-size: 2.25rem;
-    border-radius: 0.75rem;
-    background: linear-gradient(145deg, oklch(58% 0.13 255), oklch(46% 0.13 262));
-    box-shadow:
-      inset 0 1px 0 oklch(100% 0 0 / 0.22),
-      0 18px 38px -18px oklch(40% 0.12 255 / 0.8);
-    color: oklch(99% 0.01 240);
+    inline-size: var(--hex-mark-size);
+    block-size: var(--hex-mark-size);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background: linear-gradient(
+      135deg,
+      var(--auth-brand-sky) 0%,
+      var(--auth-brand-blue) 50%,
+      var(--auth-brand-indigo) 100%
+    );
+    box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.28), inset 0 -1px 0 oklch(0% 0 0 / 0.18), 0 14px
+      32px -20px var(--auth-glow-soft), 0 0 0 1px oklch(100% 0 0 / 0.08);
+    color: oklch(99% 0.005 240);
   }
-
-  .auth-brand-mark svg {
-    inline-size: 1.2rem;
-    block-size: 1.2rem;
+  .auth-brand-mark svg,
+  .auth-brand-mark img {
+    inline-size: 60%;
+    block-size: 60%;
+    filter: drop-shadow(0 1px 0 oklch(0% 0 0 / 0.25));
   }
 
   .auth-brand-copy {
     display: flex;
     flex-direction: column;
     gap: 0.15rem;
+    line-height: 1.1;
   }
-
   .auth-brand-name {
-    font-size: 0.95rem;
-    font-weight: 650;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
+    font-size: 0.96rem;
+    font-weight: 700;
+    letter-spacing: -0.022em;
+    color: var(--auth-fg-primary);
   }
-
   .auth-brand-tagline {
-    font-size: 0.76rem;
-    color: oklch(78% 0.02 240);
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--auth-fg-muted);
   }
 
+  .auth-foot {
+    inline-size: min(100%, 76rem);
+    margin-block-start: clamp(1rem, 2.5vh, 1.5rem);
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+    font-size: 0.75rem;
+    color: var(--auth-fg-muted);
+    justify-content: flex-start;
+  }
+  [dir="rtl"] .auth-foot {
+    justify-content: flex-end;
+  }
+  .auth-foot a {
+    color: var(--auth-eyebrow-hex);
+    text-decoration: none;
+    transition: color var(--ds-duration-fast) var(--ds-ease-out-expo);
+  }
+  .auth-foot a:hover {
+    color: var(--auth-fg-primary);
+  }
+  .auth-foot-separator {
+    opacity: 0.4;
+  }
+
+  /* ============================================================
+     3. CARD FRAME.
+     ============================================================ */
   .auth-card-shell {
-    inline-size: min(100%, 72rem);
+    inline-size: min(100%, 76rem);
   }
 
   .auth-card {
     inline-size: 100%;
+    position: relative;
     border-radius: 1.75rem;
-    border: 1px solid oklch(100% 0 0 / 0.11);
-    background:
-      radial-gradient(circle at top right, oklch(64% 0.12 250 / 0.16), transparent 26%),
-      linear-gradient(180deg, oklch(18% 0.02 255 / 0.97), oklch(14% 0.02 255 / 0.985));
-    box-shadow:
-      inset 0 1px 0 oklch(100% 0 0 / 0.12),
-      0 42px 90px -38px oklch(0% 0 0 / 0.88),
-      0 0 0 1px oklch(100% 0 0 / 0.04);
+    border: 1px solid var(--auth-card-border);
+    background: linear-gradient(158deg, var(--auth-card-from) 0%, var(--auth-card-to) 100%);
+    box-shadow: inset 0 1px 0 var(--auth-card-inner-glow), inset 0 -1px 0 oklch(0% 0 0 / 0.06), 0
+      56px 110px -56px var(--auth-card-shadow), 0 0 0 1px var(--auth-card-hairline);
+    backdrop-filter: blur(22px) saturate(1.18);
+    -webkit-backdrop-filter: blur(22px) saturate(1.18);
     overflow: hidden;
-    backdrop-filter: blur(18px) saturate(1.15);
+    isolation: isolate;
+  }
+
+  .auth-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    background: linear-gradient(180deg, var(--auth-card-inner-glow) 0%, transparent 50%);
+    mix-blend-mode: overlay;
+    z-index: 1;
   }
 
   .auth-card-inner {
-    padding: clamp(1.15rem, 2.8vw, 2rem);
+    padding: clamp(1.25rem, 2.5vw, 2rem);
+    position: relative;
+    z-index: 2;
   }
 
+  /* ============================================================
+     4. CARD GRID — RTL-CORRECT 62/38.
+     ============================================================ */
   .auth-card-grid {
     display: grid;
-    gap: 1.75rem;
-    align-items: start;
+    gap: 0;
+    align-items: stretch;
   }
 
   .auth-main-panel {
     display: flex;
     flex-direction: column;
-    gap: 1.1rem;
+    gap: 1.5rem;
+    padding-block: 0.5rem;
+    position: relative;
   }
 
   .auth-aside-panel {
@@ -166,317 +409,393 @@
 
   @media (min-width: 960px) {
     .auth-card-grid {
-      grid-template-columns: minmax(0, 1.12fr) minmax(18rem, 0.88fr);
-      gap: 1.9rem;
+      grid-template-columns: minmax(0, 61.8fr) minmax(0, 38.2fr);
+      gap: 0;
+      min-height: 38rem;
     }
 
     .auth-card-inner {
-      padding: 1.65rem;
+      padding: 2rem 2.25rem;
     }
 
     .auth-main-panel {
-      padding-inline-end: 1.1rem;
-      border-inline-end: 1px solid oklch(100% 0 0 / 0.08);
+      padding-inline-end: 2rem;
+      padding-inline-start: 1rem;
+    }
+
+    .auth-main-panel::before {
+      content: "";
+      position: absolute;
+      inset-block-start: -1.5rem;
+      inset-block-end: -1.5rem;
+      inset-inline-end: -1px;
+      inline-size: 1px;
+      background: linear-gradient(
+        180deg,
+        transparent 0%,
+        var(--auth-card-divider) 14%,
+        var(--auth-card-divider) 86%,
+        transparent 100%
+      );
+      transform: skewX(-12.5deg);
+      transform-origin: top;
+      pointer-events: none;
+    }
+
+    .auth-main-panel::after {
+      content: "";
+      position: absolute;
+      inset-inline-end: -3px;
+      inset-block-start: 50%;
+      inline-size: 6px;
+      block-size: 6px;
+      translate: 0 -50%;
+      background: linear-gradient(135deg, var(--auth-brand-sky-light), var(--auth-brand-blue-light));
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      box-shadow: 0 0 16px var(--auth-eyebrow-hex-shadow);
     }
 
     .auth-aside-panel {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
-      padding-inline-start: 0.4rem;
-      position: sticky;
-      top: 1.5rem;
+      gap: 1.5rem;
+      padding-inline-start: 2rem;
+      padding-inline-end: 1rem;
+      padding-block: 0.5rem;
     }
   }
 
-  .auth-aside-hero {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-
-  .auth-aside-kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    align-self: flex-start;
-    min-block-size: 2rem;
-    padding-inline: 0.85rem;
-    border-radius: 999px;
-    background: oklch(100% 0 0 / 0.07);
-    color: oklch(88% 0.02 240);
-    font-size: 0.76rem;
-    font-weight: 700;
-    box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.05);
-  }
-
-  .auth-aside-copy {
-    margin: 0;
-    font-size: 0.93rem;
-    line-height: 1.9;
-    color: oklch(80% 0.02 240);
-  }
-
-  .auth-aside-metric {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    padding: 1rem 1.05rem;
-    border-radius: 1.05rem;
-    border: 1px solid oklch(100% 0 0 / 0.08);
-    background: linear-gradient(180deg, oklch(100% 0 0 / 0.06), oklch(100% 0 0 / 0.03));
-    box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.04);
-  }
-
-  .auth-aside-metric-label {
-    font-size: 0.73rem;
-    color: oklch(68% 0.02 240);
-  }
-
-  .auth-aside-metric-value {
-    font-size: 1rem;
-    line-height: 1.7;
-    color: oklch(98% 0.01 240);
-    text-wrap: pretty;
-  }
-
-  .auth-aside-list {
-    display: grid;
-    gap: 0.85rem;
-    padding: 0;
-    margin: 0;
-    list-style: none;
-  }
-
-  .auth-aside-list-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.7rem;
-    padding: 0.85rem 0.95rem;
-    border-radius: 1rem;
-    border: 1px solid oklch(100% 0 0 / 0.07);
-    background: oklch(100% 0 0 / 0.04);
-    font-size: 0.84rem;
-    line-height: 1.85;
-    color: oklch(79% 0.02 240);
-  }
-
-  .auth-aside-list-item svg {
-    flex: 0 0 auto;
-    margin-block-start: 0.2rem;
-    color: oklch(78% 0.05 250);
-  }
-
+  /* ============================================================
+     5. FORM PANEL — top-down hierarchy.
+     ============================================================ */
   .auth-shell-band {
-    gap: 0.7rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
   }
 
   .auth-shell-eyebrow {
     margin: 0;
-    font-size: 0.72rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    align-self: flex-start;
+    font-size: 0.71rem;
     font-weight: 700;
-    letter-spacing: 0.1em;
-    color: oklch(80% 0.05 255);
-    text-transform: none;
+    letter-spacing: 0.13em;
+    color: var(--auth-eyebrow-hex);
+  }
+  .auth-shell-eyebrow::before {
+    content: "";
+    inline-size: 0.45rem;
+    block-size: 0.45rem;
+    background: linear-gradient(135deg, var(--auth-brand-sky-light), var(--auth-brand-blue-light));
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    box-shadow: 0 0 10px var(--auth-eyebrow-hex-shadow);
   }
 
   .auth-card-header {
-    gap: 0.55rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
 
   .auth-form-heading {
     margin: 0;
-    font-size: clamp(1.45rem, 2.2vw, 1.95rem);
-    line-height: 1.12;
-    letter-spacing: -0.032em;
+    font-size: clamp(1.55rem, 2.2vw, 2rem);
+    line-height: 1.08;
+    letter-spacing: -0.034em;
     font-weight: 750;
-    color: oklch(99% 0.01 240);
+    color: var(--auth-fg-primary);
     text-wrap: balance;
   }
 
   .auth-form-lede {
     margin: 0;
     max-inline-size: 38rem;
-    font-size: 0.95rem;
+    font-size: 0.93rem;
     line-height: 1.82;
-    color: oklch(78% 0.02 240);
+    color: var(--auth-fg-tertiary);
     text-wrap: pretty;
-  }
-
-  .auth-progress,
-  .auth-context {
-    inline-size: 100%;
-    overflow: hidden;
-    border-radius: 1rem;
-    background: oklch(100% 0 0 / 0.05);
-    border: 1px solid oklch(100% 0 0 / 0.08);
   }
 
   .auth-context {
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
-    padding: 1rem 1.05rem;
-    box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.04);
+    padding: 0.95rem 1.05rem;
+    border-radius: 0.95rem;
+    background: var(--auth-border-subtle);
+    border: 1px solid var(--auth-border-default);
+    box-shadow: inset 0 1px 0 var(--auth-input-inset);
   }
 
   .auth-context-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
+    gap: 0.5rem;
     align-self: flex-start;
-    min-block-size: 1.9rem;
+    min-block-size: 1.85rem;
     padding-inline: 0.75rem;
     border-radius: 999px;
-    background: oklch(58% 0.13 255 / 0.14);
-    color: oklch(86% 0.04 250);
-    font-size: 0.75rem;
+    background: linear-gradient(135deg, oklch(58% 0.16 250 / 0.16), oklch(46% 0.17 265 / 0.12));
+    color: var(--auth-eyebrow-hex);
+    font-size: 0.73rem;
     font-weight: 650;
+    border: 1px solid oklch(70% 0.14 230 / 0.18);
+  }
+  .auth-context-badge svg {
+    inline-size: 0.82rem;
+    block-size: 0.82rem;
   }
 
   .auth-context-copy {
     margin: 0;
-    font-size: 0.84rem;
-    line-height: 1.8;
-    color: oklch(78% 0.02 240);
+    font-size: 0.83rem;
+    line-height: 1.82;
+    color: var(--auth-fg-tertiary);
     text-wrap: pretty;
   }
 
   .auth-progress {
+    inline-size: 100%;
     block-size: 0.28rem;
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--auth-border-subtle);
   }
-
   .auth-progress__indicator {
     block-size: 100%;
     border-radius: inherit;
-    /* 2026-06-24: brand-color progress gradient matching the CTA +
-       favicon. Sky on the left, indigo on the right. */
     background: linear-gradient(
       90deg,
-      oklch(70% 0.13 230),
-      oklch(46% 0.16 265)
+      var(--auth-brand-sky),
+      var(--auth-brand-blue),
+      var(--auth-brand-indigo)
     );
-    transition: width var(--ds-duration-slow) var(--ds-ease-out-quart);
+    box-shadow: 0 0 14px var(--auth-eyebrow-hex-shadow);
+    transition: inline-size var(--ds-duration-slow) var(--ds-ease-out-expo);
   }
 
+  /* ============================================================
+     6. ASIDE PANEL — focal hex + sparse details.
+     ============================================================ */
+  .auth-aside-heading {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--auth-fg-secondary);
+  }
+  .auth-aside-heading svg {
+    color: var(--auth-eyebrow-hex);
+  }
+
+  .auth-aside-hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: 16rem;
+    padding: 2rem 1.25rem;
+    isolation: isolate;
+    text-align: center;
+  }
+
+  .auth-aside-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(ellipse 60% 50% at 32% 28%, var(--auth-hex-glow-1), transparent 60%),
+      radial-gradient(ellipse 55% 50% at 70% 72%, var(--auth-hex-glow-2), transparent 60%);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    animation: auth-hex-breathe 12s ease-in-out infinite alternate;
+  }
+  .auth-aside-hero::after {
+    content: "";
+    position: absolute;
+    inset: 8%;
+    z-index: -1;
+    pointer-events: none;
+    border: 1px solid var(--auth-hex-outline);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  }
+
+  .auth-aside-kicker {
+    display: block;
+    margin: 0;
+    font-size: 0.84rem;
+    line-height: 1.9;
+    color: var(--auth-fg-secondary);
+    text-wrap: pretty;
+    max-inline-size: 22ch;
+    position: relative;
+    z-index: 1;
+  }
+
+  .auth-aside-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.85rem 1rem;
+    border-radius: 0.85rem;
+    border: 1px solid var(--auth-border-subtle);
+    background: var(--auth-border-subtle);
+  }
+  .auth-aside-metric-label {
+    font-size: 0.69rem;
+    font-weight: 600;
+    color: var(--auth-fg-muted);
+    letter-spacing: 0.01em;
+  }
+  .auth-aside-metric-value {
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: var(--auth-fg-primary);
+    text-wrap: pretty;
+    font-weight: 600;
+  }
+
+  .auth-aside-list {
+    display: grid;
+    gap: 0.6rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+  .auth-aside-list-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    padding: 0.7rem 0.85rem;
+    border-radius: 0.8rem;
+    background: var(--auth-border-subtle);
+    font-size: 0.81rem;
+    line-height: 1.78;
+    color: var(--auth-fg-tertiary);
+  }
+  .auth-aside-list-item svg {
+    flex: 0 0 auto;
+    margin-block-start: 0.22rem;
+    color: var(--auth-eyebrow-hex);
+    inline-size: 0.9rem;
+    block-size: 0.9rem;
+  }
+
+  .auth-aside-copy {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.92;
+    color: var(--auth-fg-secondary);
+    text-wrap: pretty;
+    max-inline-size: 30ch;
+  }
+
+  /* ============================================================
+     7. FORM ELEMENTS.
+     ============================================================ */
   .auth-stage-form,
   .auth-stage-form--compact {
-    /* 2026-06-24: round to 1rem on the 8pt rhythm (was 0.95rem). */
+    display: flex;
+    flex-direction: column;
     gap: 1rem;
   }
 
   .auth-fieldset {
     display: flex;
     flex-direction: column;
-    /* 2026-06-24: round to 0.5rem on the 8pt rhythm (was 0.45rem). */
-    gap: 0.5rem;
+    gap: 0.45rem;
   }
 
   .auth-label-row {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     justify-content: space-between;
     gap: 0.75rem;
   }
 
   .auth-label {
-    font-size: 0.86rem;
+    font-size: 0.84rem;
     font-weight: 600;
-    color: oklch(84% 0.02 240);
+    color: var(--auth-fg-secondary);
+    letter-spacing: -0.005em;
   }
 
   .auth-input-wrap {
     position: relative;
-    /* 2026-06-24: leave room on the inline-start side so the action
-       button (eye toggle, clear, etc.) doesn't overlap with the
-       input's first character in RTL pages. The 3rem clearance is
-       wider than the 2.2rem button for breathing room. */
-    padding-inline-start: 0;
   }
 
   .auth-input {
     inline-size: 100%;
     min-block-size: 3.15rem;
-    border-radius: 1rem;
-    border: 1px solid oklch(100% 0 0 / 0.12);
-    background: oklch(100% 0 0 / 0.05);
-    padding-inline: 1rem;
-    color: oklch(98% 0.01 240);
+    border-radius: 0.95rem;
+    border: 1px solid var(--auth-input-border);
+    background: var(--auth-input-bg);
+    padding-inline: 1.05rem;
+    color: var(--auth-fg-primary);
     font-size: 0.94rem;
     line-height: 1.5;
-    box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.04);
-    transition:
-      border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-      box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart),
-      background-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-      transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+    box-shadow: inset 0 1px 0 var(--auth-input-inset);
+    transition: border-color var(--ds-duration-fast) var(--ds-ease-out-expo), box-shadow
+      var(--ds-duration-fast) var(--ds-ease-out-expo), background-color var(--ds-duration-fast)
+      var(--ds-ease-out-expo);
   }
-
   .auth-input::placeholder {
-    color: oklch(66% 0.02 240);
+    color: var(--auth-input-placeholder);
+    font-weight: 400;
   }
-
   .auth-input:hover {
-    border-color: oklch(100% 0 0 / 0.2);
-    background: oklch(100% 0 0 / 0.06);
+    border-color: var(--auth-input-border-hover);
+    background: var(--auth-input-bg-hover);
   }
-
   .auth-input:focus {
     outline: none;
-    border-color: oklch(66% 0.13 255);
-    background: oklch(100% 0 0 / 0.075);
-    box-shadow:
-      0 0 0 4px oklch(60% 0.13 255 / 0.18),
-      0 10px 26px -18px oklch(60% 0.13 255 / 0.45);
+    border-color: var(--auth-input-border-focus);
+    background: var(--auth-input-bg-focus);
+    box-shadow: 0 0 0 4px var(--auth-input-shadow-focus), 0 10px 26px -18px
+      var(--auth-input-shadow-focus), inset 0 1px 0 var(--auth-input-inset);
   }
-
   .auth-input--invalid {
-    border-color: oklch(70% 0.14 26);
+    border-color: var(--auth-error);
   }
-
   .auth-input--invalid:focus {
-    box-shadow: 0 0 0 4px oklch(70% 0.14 26 / 0.15);
+    box-shadow: 0 0 0 4px oklch(50% 0.18 26 / 0.15), inset 0 1px 0 var(--auth-input-inset);
   }
-
   .auth-input--with-action {
-    padding-inline-end: 3rem;
+    padding-inline-end: 3.2rem;
   }
 
+  /* 2026-06-30: RTL fix — see earlier note about LTR password fields. */
   .auth-input-action {
     position: absolute;
     inset-block-start: 50%;
-    /* 2026-06-24: was `inset-inline-end` which in RTL resolves to
-       the visual LEFT — exactly where the LTR `dir`d password input
-       puts its cursor and first character. The icon overlaid the
-       text, blinked in and out as the user typed, and disappeared
-       against the dark input surface. `inset-inline-start` resolves
-       to the visual RIGHT in RTL (the natural reading-end) so the
-       toggle now sits in the empty tail of the field. */
     inset-inline-start: 0.5rem;
     translate: 0 -50%;
     display: inline-grid;
     place-items: center;
-    inline-size: 2.2rem;
-    block-size: 2.2rem;
+    inline-size: 2.4rem;
+    block-size: 2.4rem;
     border: 0;
     border-radius: 0.7rem;
-    /* Subtle glass surface so the icon doesn't disappear against
-       the dark input bg on light-on-dark inputs. */
-    background: oklch(100% 0 0 / 0.04);
-    color: oklch(82% 0.03 240);
-    /* Stay above the input on touch devices that focus the input
-       through the action button. */
+    background: var(--auth-border-subtle);
+    color: var(--auth-fg-secondary);
     z-index: 1;
     cursor: pointer;
-    transition:
-      background-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-      color var(--ds-duration-fast) var(--ds-ease-out-quart),
-      transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+    transition: background-color var(--ds-duration-fast) var(--ds-ease-out-expo), color
+      var(--ds-duration-fast) var(--ds-ease-out-expo), scale var(--ds-duration-fast)
+      var(--ds-ease-out-expo);
   }
-
   .auth-input-action:hover {
-    background: oklch(100% 0 0 / 0.1);
-    color: oklch(98% 0.01 240);
+    background: var(--auth-border-default);
+    color: var(--auth-fg-primary);
+  }
+  .auth-input-action:active {
+    scale: 0.96;
   }
 
   .auth-input-action:focus-visible,
@@ -485,92 +804,107 @@
   .auth-link:focus-visible,
   .auth-link-row:focus-visible,
   .auth-context-link:focus-visible,
-  .auth-social-btn:focus-visible {
+  .auth-social-btn:focus-visible,
+  .auth-cta:focus-visible,
+  .auth-cta-secondary:focus-visible {
     outline: none;
-    /* 2026-06-24: brand-color focus ring. Matches the sky→blue→indigo
-       gradient baked into /favicon.svg so keyboard focus is consistent
-       with the page's visual identity. */
-    box-shadow: 0 0 0 3px oklch(64% 0.12 230 / 0.32);
+    box-shadow: 0 0 0 3px var(--auth-focus-ring);
   }
 
   .auth-helper {
     margin: 0;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     line-height: 1.7;
-    color: oklch(67% 0.02 240);
+    color: var(--auth-fg-muted);
   }
-
   .auth-error {
-    font-size: 0.79rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
     line-height: 1.6;
-    color: oklch(80% 0.11 24);
+    color: var(--auth-error);
   }
-
   .auth-error--center {
     text-align: center;
+    justify-content: center;
   }
 
+  /* Password strength. */
   .auth-strength {
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
+    gap: 0.32rem;
     margin-block-start: 0.15rem;
   }
-
   .auth-strength-track {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.25rem;
+    gap: 0.28rem;
   }
-
   .auth-strength-seg {
     block-size: 0.24rem;
     border-radius: 999px;
-    background: oklch(100% 0 0 / 0.08);
+    background: var(--auth-border-subtle);
+    transition: background-color var(--ds-duration-base) var(--ds-ease-out-expo);
   }
-
-  .auth-strength-seg--on-1 { background: oklch(70% 0.14 26); }
-  .auth-strength-seg--on-2 { background: oklch(78% 0.13 80); }
-  .auth-strength-seg--on-3 { background: oklch(71% 0.12 210); }
-  .auth-strength-seg--on-4 { background: oklch(74% 0.13 160); }
-
+  .auth-strength-seg--on-1 {
+    background: var(--auth-strength-1);
+  }
+  .auth-strength-seg--on-2 {
+    background: var(--auth-strength-2);
+  }
+  .auth-strength-seg--on-3 {
+    background: var(--auth-strength-3);
+  }
+  .auth-strength-seg--on-4 {
+    background: var(--auth-strength-4);
+  }
   .auth-strength-label {
-    font-size: 0.76rem;
-    color: oklch(70% 0.02 240);
+    font-size: 0.74rem;
+    color: var(--auth-fg-muted);
   }
 
+  /* Social buttons. */
   .auth-social-stack {
     display: grid;
-    gap: 0.7rem;
+    gap: 0.65rem;
   }
-
   .auth-social-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.65rem;
     inline-size: 100%;
-    min-block-size: 3.05rem;
-    border-radius: 1rem;
-    border: 1px solid oklch(100% 0 0 / 0.11);
-    background: oklch(100% 0 0 / 0.05);
-    color: oklch(96% 0.01 240);
-    font-size: 0.92rem;
+    min-block-size: 3.1rem;
+    border-radius: 0.95rem;
+    border: 1px solid var(--auth-border-default);
+    background: var(--auth-border-subtle);
+    color: var(--auth-fg-primary);
+    font-size: 0.91rem;
     font-weight: 650;
-    box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.04);
+    box-shadow: inset 0 1px 0 var(--auth-input-inset);
     cursor: pointer;
-    transition:
-      border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-      background-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-      transform var(--ds-duration-fast) var(--ds-ease-out-quart),
-      box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+    transition: border-color var(--ds-duration-base) var(--ds-ease-out-expo), background-color
+      var(--ds-duration-base) var(--ds-ease-out-expo), transform var(--ds-duration-base)
+      var(--ds-ease-out-expo), box-shadow var(--ds-duration-base) var(--ds-ease-out-expo);
+  }
+  .auth-social-btn:hover {
+    background: var(--auth-border-default);
+    border-color: var(--auth-border-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 14px 28px -24px var(--auth-glow-soft);
+  }
+  .auth-social-btn:active {
+    transform: translateY(0);
   }
 
-  .auth-social-btn:hover {
-    background: oklch(100% 0 0 / 0.08);
-    border-color: oklch(100% 0 0 / 0.2);
-    box-shadow: 0 14px 28px -24px oklch(60% 0.12 255 / 0.4);
-    transform: translateY(-1px);
+  /* 2026-06-30: lock every social icon to the same rendered box. */
+  .auth-social-btn > svg {
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+    flex: 0 0 auto;
+    color: currentColor;
   }
 
   .auth-social-btn:disabled,
@@ -581,85 +915,106 @@
     transform: none;
   }
 
+  /* Divider. */
   .auth-divider {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    color: oklch(60% 0.02 240);
+    gap: 0.85rem;
+    color: var(--auth-fg-muted);
   }
-
   .auth-divider::before,
   .auth-divider::after {
     content: "";
     flex: 1;
-    border-block-start: 1px solid oklch(100% 0 0 / 0.08);
+    border-block-start: 1px solid var(--auth-divider);
   }
-
   .auth-divider-label {
-    font-size: 0.73rem;
-    letter-spacing: 0.08em;
+    font-size: 0.71rem;
+    letter-spacing: 0.1em;
+    font-weight: 600;
   }
 
+  /* Primary CTA — form's focal point. */
   .auth-cta,
   .auth-cta-secondary {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.55rem;
-    min-block-size: 3.15rem;
+    min-block-size: 3.2rem;
     inline-size: 100%;
-    border-radius: 1.05rem;
+    border-radius: 1rem;
     font-size: 0.95rem;
     font-weight: 700;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.012em;
     transition:
-      transform var(--ds-duration-fast) var(--ds-ease-out-quart),
-      filter var(--ds-duration-fast) var(--ds-ease-out-quart),
-      background-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-      border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-      box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+      transform var(--ds-duration-base) var(--ds-ease-out-expo),
+      filter var(--ds-duration-base) var(--ds-ease-out-expo),
+      background-color var(--ds-duration-base) var(--ds-ease-out-expo),
+      border-color var(--ds-duration-base) var(--ds-ease-out-expo),
+      box-shadow var(--ds-duration-base) var(--ds-ease-out-expo);
   }
-
   .auth-cta {
     border: 0;
-    color: oklch(99% 0.01 240);
-    /* 2026-06-24: brand gradient pulled from /favicon.svg
-       (#0EA5E9 sky-500 → #2563EB blue-600 → #1E40AF blue-800).
-       Mirrors the logo's three-stop so the CTA looks like an
-       extension of the brand mark instead of a generic indigo. */
+    color: oklch(99% 0.005 240);
     background: linear-gradient(
       135deg,
-      oklch(70% 0.13 230) 0%,
-      oklch(60% 0.16 255) 50%,
-      oklch(46% 0.16 265) 100%
+      var(--auth-brand-sky) 0%,
+      var(--auth-brand-blue) 50%,
+      var(--auth-brand-indigo) 100%
     );
-    box-shadow:
-      0 22px 40px -24px oklch(45% 0.14 255 / 0.85),
-      inset 0 1px 0 oklch(100% 0 0 / 0.18);
+    box-shadow: 0 24px 44px -24px var(--auth-glow-soft), inset 0 1px 0 oklch(100% 0 0 / 0.22), inset
+      0 -1px 0 oklch(0% 0 0 / 0.16);
     cursor: pointer;
+    position: relative;
+    isolation: isolate;
   }
-
+  .auth-cta::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      oklch(80% 0.16 230 / 0.5),
+      oklch(70% 0.17 255 / 0.3),
+      oklch(58% 0.16 265 / 0.4)
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity var(--ds-duration-base) var(--ds-ease-out-expo);
+    z-index: -1;
+  }
   .auth-cta:hover {
     transform: translateY(-1px);
     filter: brightness(1.06) saturate(1.05);
-    box-shadow:
-      0 26px 46px -24px oklch(45% 0.14 255 / 0.95),
-      inset 0 1px 0 oklch(100% 0 0 / 0.2);
+    box-shadow: 0 30px 52px -22px var(--auth-glow-soft), inset 0 1px 0 oklch(100% 0 0 / 0.24), inset
+      0 -1px 0 oklch(0% 0 0 / 0.18);
+  }
+  .auth-cta:hover::before {
+    opacity: 1;
+  }
+  .auth-cta:active {
+    transform: translateY(0);
   }
 
   .auth-cta-secondary {
-    border: 1px solid oklch(100% 0 0 / 0.12);
-    background: oklch(100% 0 0 / 0.05);
-    color: oklch(92% 0.01 240);
-    box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.04);
+    border: 1px solid var(--auth-border-default);
+    background: var(--auth-border-subtle);
+    color: var(--auth-fg-primary);
+    box-shadow: inset 0 1px 0 var(--auth-input-inset);
     cursor: pointer;
   }
-
   .auth-cta-secondary:hover {
-    background: oklch(100% 0 0 / 0.08);
-    border-color: oklch(100% 0 0 / 0.18);
+    background: var(--auth-border-default);
+    border-color: var(--auth-border-hover);
   }
 
+  /* Links. */
   .auth-back,
   .auth-link-quiet,
   .auth-link-row,
@@ -667,28 +1022,27 @@
     border: 0;
     background: transparent;
     cursor: pointer;
-    color: oklch(79% 0.04 250);
+    color: var(--auth-eyebrow-hex);
     font: inherit;
     padding: 0;
     text-decoration: none;
+    transition: color var(--ds-duration-fast) var(--ds-ease-out-expo);
   }
-
   .auth-back {
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
     align-self: flex-start;
-    color: oklch(77% 0.02 240);
-    font-size: 0.82rem;
+    color: var(--auth-fg-secondary);
+    font-size: 0.8rem;
     font-weight: 600;
   }
-
   .auth-back:hover,
   .auth-link-quiet:hover,
   .auth-link-row:hover,
   .auth-context-link:hover,
   .auth-link:hover {
-    color: oklch(97% 0.01 240);
+    color: var(--auth-fg-primary);
   }
 
   .auth-link-row {
@@ -696,126 +1050,132 @@
     align-items: center;
     justify-content: center;
     gap: 0.45rem;
-    font-size: 0.82rem;
+    font-size: 0.81rem;
     font-weight: 600;
   }
-
   .auth-link-row--inline {
     justify-content: flex-start;
     inline-size: fit-content;
     opacity: 0.9;
   }
-
   .auth-link-quiet {
-    font-size: 0.79rem;
+    font-size: 0.78rem;
     font-weight: 600;
   }
-
   .auth-link {
-    color: oklch(79% 0.05 250);
+    color: var(--auth-eyebrow-hex);
     text-decoration: none;
     font-weight: 600;
+    transition: color var(--ds-duration-fast) var(--ds-ease-out-expo);
   }
 
+  /* ============================================================
+     8. ALERTS + NOTICES.
+     ============================================================ */
   .auth-alert,
   .auth-notice {
     display: flex;
     align-items: flex-start;
     gap: 0.7rem;
-    border-radius: 1rem;
-    padding: 0.9rem 1rem;
-    font-size: 0.84rem;
+    border-radius: 0.9rem;
+    padding: 0.85rem 1rem;
+    font-size: 0.83rem;
     line-height: 1.75;
-    box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.03);
+    box-shadow: inset 0 1px 0 var(--auth-input-inset);
   }
-
+  .auth-alert svg,
+  .auth-notice svg {
+    flex: 0 0 auto;
+    margin-block-start: 0.18rem;
+  }
   .auth-alert {
-    border: 1px solid oklch(70% 0.14 26 / 0.4);
-    background: linear-gradient(180deg, oklch(70% 0.14 26 / 0.12), oklch(70% 0.14 26 / 0.08));
-    color: oklch(92% 0.05 24);
+    border: 1px solid var(--auth-error-border);
+    background: linear-gradient(155deg, var(--auth-error-bg-from), var(--auth-error-bg-to));
+    color: var(--auth-error);
   }
-
   .auth-notice {
-    border: 1px solid oklch(100% 0 0 / 0.09);
-    background: linear-gradient(180deg, oklch(100% 0 0 / 0.07), oklch(100% 0 0 / 0.04));
-    color: oklch(89% 0.01 240);
+    border: 1px solid var(--auth-border-default);
+    background: linear-gradient(155deg, var(--auth-border-default), var(--auth-border-subtle));
+    color: var(--auth-fg-secondary);
   }
-
   .auth-notice--success {
-    border-color: oklch(72% 0.11 155 / 0.32);
-    background: linear-gradient(180deg, oklch(72% 0.11 155 / 0.11), oklch(72% 0.11 155 / 0.07));
-    color: oklch(92% 0.04 160);
+    border-color: var(--auth-success-border);
+    background: linear-gradient(155deg, var(--auth-success-bg-from), var(--auth-success-bg-to));
+    color: var(--auth-success);
   }
 
+  /* ============================================================
+     9. VERIFY STEP.
+     ============================================================ */
   .auth-verify-summary {
+    display: flex;
+    flex-direction: column;
     gap: 0.6rem;
-    padding: 1rem 1.05rem;
-    border-radius: 1.1rem;
-    border: 1px solid oklch(100% 0 0 / 0.09);
-    background: linear-gradient(180deg, oklch(100% 0 0 / 0.05), oklch(100% 0 0 / 0.03));
-    box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.04);
+    padding: 0.95rem 1.05rem;
+    border-radius: 1rem;
+    border: 1px solid var(--auth-border-default);
+    background: linear-gradient(155deg, var(--auth-border-subtle), transparent);
+    box-shadow: inset 0 1px 0 var(--auth-input-inset);
   }
-
   .auth-verify-chip {
     display: inline-flex;
     align-self: flex-start;
     align-items: center;
-    min-block-size: 1.9rem;
+    min-block-size: 1.85rem;
     padding-inline: 0.7rem;
     border-radius: 999px;
-    background: oklch(58% 0.13 255 / 0.14);
-    color: oklch(84% 0.04 250);
-    font-size: 0.76rem;
+    background: linear-gradient(135deg, oklch(58% 0.16 250 / 0.16), oklch(46% 0.17 265 / 0.12));
+    color: var(--auth-eyebrow-hex);
+    font-size: 0.74rem;
     font-weight: 650;
+    border: 1px solid oklch(70% 0.14 230 / 0.18);
   }
-
   .auth-inline-email {
     font-weight: 650;
-    color: oklch(95% 0.01 240);
+    color: var(--auth-fg-primary);
   }
 
-  .auth-otp-shell { position: relative; isolation: isolate; display: grid; gap: 0.75rem; }
-
+  /* OTP. */
+  .auth-otp-shell {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    gap: 0.75rem;
+  }
   .auth-otp-grid {
     display: grid;
     grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 0.5rem;
   }
-
   .auth-otp-cell {
     display: flex;
     align-items: center;
     justify-content: center;
     min-block-size: clamp(3.1rem, 10vw, 3.5rem);
-    border-radius: 1rem;
-    border: 1px solid oklch(100% 0 0 / 0.12);
-    background: linear-gradient(180deg, oklch(100% 0 0 / 0.06), oklch(100% 0 0 / 0.04));
-    color: oklch(98% 0.01 240);
+    border-radius: 0.9rem;
+    border: 1px solid var(--auth-input-border);
+    background: var(--auth-input-bg);
+    color: var(--auth-fg-primary);
     font-size: 1.18rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
-    box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.04);
-    transition:
-      border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-      box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart),
-      background-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-      transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+    box-shadow: inset 0 1px 0 var(--auth-input-inset);
+    transition: border-color var(--ds-duration-fast) var(--ds-ease-out-expo), box-shadow
+      var(--ds-duration-fast) var(--ds-ease-out-expo), background-color var(--ds-duration-fast)
+      var(--ds-ease-out-expo);
   }
-
   .auth-otp-shell:focus-within .auth-otp-cell {
-    border-color: oklch(62% 0.13 255);
+    border-color: var(--auth-input-border-focus);
   }
-
   .auth-otp-cell--filled {
-    background: oklch(100% 0 0 / 0.07);
+    background: var(--auth-input-bg-focus);
+    border-color: var(--auth-input-border-hover);
   }
-
   .auth-otp-cell--invalid {
-    border-color: oklch(70% 0.14 26);
-    box-shadow: 0 0 0 4px oklch(70% 0.14 26 / 0.12);
-    animation: auth-shake 0.36s var(--ds-ease-out-quart);
+    border-color: var(--auth-error);
+    box-shadow: 0 0 0 4px var(--auth-error-bg-from);
+    animation: auth-shake 0.36s var(--ds-ease-out-expo);
   }
-
   .auth-otp-input {
     position: absolute;
     inset: 0;
@@ -826,50 +1186,32 @@
     background: transparent;
     caret-color: transparent;
   }
-
   .auth-otp-input:focus {
     outline: none;
   }
-
   .auth-otp-toolbar {
     display: flex;
     justify-content: flex-start;
   }
-
   .auth-verify-actions {
     display: grid;
     gap: 0.75rem;
   }
 
-
+  /* ============================================================
+     10. FINEPRINT.
+     ============================================================ */
   .auth-fineprint {
     margin: 0;
     text-align: center;
-    font-size: 0.78rem;
-    line-height: 1.75;
-    color: oklch(66% 0.02 240);
+    font-size: 0.76rem;
+    line-height: 1.78;
+    color: var(--auth-fg-muted);
   }
 
-  .auth-foot {
-    margin-block-start: 1rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    font-size: 0.77rem;
-    color: oklch(66% 0.02 240);
-  }
-
-  .auth-foot a {
-    color: oklch(78% 0.04 250);
-    text-decoration: none;
-  }
-
-  .auth-foot-separator {
-    opacity: 0.45;
-  }
-
+  /* ============================================================
+     11. LEGACY NO-OPS.
+     ============================================================ */
   .auth-tabs-card,
   .auth-tabs,
   .auth-tab,
@@ -890,195 +1232,165 @@
     display: none !important;
   }
 
-  @media (min-width: 960px) {
-    .auth-card-grid {
-      grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.85fr);
-      gap: 1.75rem;
+  /* ============================================================
+     12. RESPONSIVE.
+     ============================================================ */
+  @media (max-width: 959px) {
+    .auth-card {
+      border-radius: 1.4rem;
     }
-
     .auth-card-inner {
-      padding: 1.5rem;
+      padding: 1.1rem;
     }
-
+    .auth-card-grid {
+      gap: 1.25rem;
+    }
     .auth-main-panel {
-      padding-inline-end: 1rem;
-      border-inline-end: 1px solid oklch(100% 0 0 / 0.07);
+      gap: 1.25rem;
+      padding-block-end: 0.5rem;
     }
-
     .auth-aside-panel {
       display: flex;
       flex-direction: column;
       gap: 1rem;
-      padding-inline-start: 0.25rem;
+      padding: 1.1rem;
+      border-radius: 1rem;
+      background: var(--auth-border-subtle);
+      border: 1px solid var(--auth-border-subtle);
     }
-  }
-
-  .auth-aside-hero {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .auth-aside-kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    align-self: flex-start;
-    min-block-size: 2rem;
-    padding-inline: 0.85rem;
-    border-radius: 999px;
-    background: oklch(100% 0 0 / 0.07);
-    color: oklch(88% 0.02 240);
-    font-size: 0.76rem;
-    font-weight: 700;
-    box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.05);
-  }
-
-  .auth-aside-copy {
-    margin: 0;
-    font-size: 0.93rem;
-    line-height: 1.9;
-    color: oklch(80% 0.02 240);
-  }
-
-  .auth-aside-metric {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    padding: 1rem 1.05rem;
-    border-radius: 1.05rem;
-    border: 1px solid oklch(100% 0 0 / 0.08);
-    background: linear-gradient(180deg, oklch(100% 0 0 / 0.06), oklch(100% 0 0 / 0.03));
-    box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.04);
-  }
-
-  .auth-aside-metric-label {
-    font-size: 0.73rem;
-    color: oklch(68% 0.02 240);
-  }
-
-  .auth-aside-metric-value {
-    font-size: 1rem;
-    line-height: 1.7;
-    color: oklch(98% 0.01 240);
-    text-wrap: pretty;
-  }
-
-  .auth-aside-list {
-    display: grid;
-    gap: 0.85rem;
-    padding: 0;
-    margin: 0;
-    list-style: none;
-  }
-
-  .auth-aside-list-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.7rem;
-    padding: 0.85rem 0.95rem;
-    border-radius: 1rem;
-    border: 1px solid oklch(100% 0 0 / 0.07);
-    background: oklch(100% 0 0 / 0.04);
-    font-size: 0.84rem;
-    line-height: 1.85;
-    color: oklch(79% 0.02 240);
-  }
-
-  .auth-aside-list-item svg {
-    flex: 0 0 auto;
-    margin-block-start: 0.2rem;
-    color: oklch(78% 0.05 250);
-  }
-
-  @media (max-width: 639px) {
-    .auth-card {
-      border-radius: 1.25rem;
-      box-shadow:
-        inset 0 1px 0 oklch(100% 0 0 / 0.1),
-        0 28px 60px -34px oklch(0% 0 0 / 0.9);
+    .auth-aside-hero {
+      min-block-size: 10rem;
+      padding: 1.5rem 1rem;
     }
-
-    .auth-card-inner {
-      padding: 1rem;
-    }
-
-    .auth-card-grid,
-    .auth-main-panel,
-    .auth-stage-form,
-    .auth-verify-actions {
-      gap: 0.9rem;
-    }
-
     .auth-form-heading {
       font-size: 1.3rem;
     }
-
     .auth-form-lede,
     .auth-context-copy,
     .auth-aside-copy {
-      font-size: 0.89rem;
+      font-size: 0.88rem;
       line-height: 1.78;
     }
-
     .auth-context,
     .auth-verify-summary,
     .auth-alert,
     .auth-notice {
       padding: 0.9rem;
     }
-
     .auth-otp-grid {
-      gap: 0.35rem;
+      gap: 0.4rem;
     }
-
     .auth-otp-cell {
-      min-block-size: 2.85rem;
+      min-block-size: 2.9rem;
       font-size: 1.02rem;
-      border-radius: 0.9rem;
+      border-radius: 0.85rem;
     }
-
     .auth-cta,
     .auth-cta-secondary,
     .auth-social-btn,
     .auth-input {
       min-block-size: 3rem;
     }
+    .auth-page-header {
+      justify-content: center;
+    }
+    .auth-foot {
+      justify-content: center;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .auth-card {
+      border-radius: 1.2rem;
+      box-shadow: inset 0 1px 0 var(--auth-card-inner-glow), 0 28px 60px -34px
+        var(--auth-card-shadow);
+    }
+    .auth-card-inner {
+      padding: 1rem;
+    }
+    .auth-card-grid,
+    .auth-main-panel,
+    .auth-stage-form,
+    .auth-verify-actions {
+      gap: 1rem;
+    }
+    .auth-form-heading {
+      font-size: 1.22rem;
+    }
+    .auth-otp-cell {
+      min-block-size: 2.8rem;
+      font-size: 1rem;
+    }
   }
 }
 
+/* ============================================================
+   13. UTILITIES.
+   ============================================================ */
 @layer utilities {
   @keyframes auth-shake {
-    0%, 100% { transform: translateX(0); }
-    20% { transform: translateX(-6px); }
-    40% { transform: translateX(6px); }
-    60% { transform: translateX(-4px); }
-    80% { transform: translateX(4px); }
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    20% {
+      transform: translateX(-6px);
+    }
+    40% {
+      transform: translateX(6px);
+    }
+    60% {
+      transform: translateX(-4px);
+    }
+    80% {
+      transform: translateX(4px);
+    }
   }
 
-  @keyframes auth-drift-a {
-    from { transform: translate(0, 0) scale(1); }
-    to { transform: translate(5rem, 3rem) scale(1.08); }
-  }
-
-  @keyframes auth-drift-b {
-    from { transform: translate(0, 0) scale(1); }
-    to { transform: translate(-4rem, -2.5rem) scale(1.06); }
+  @keyframes auth-hex-breathe {
+    from {
+      opacity: 0.85;
+      transform: scale(1);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1.025);
+    }
   }
 
   @keyframes auth-fade-in {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .auth-fade-in {
-    animation: auth-fade-in var(--ds-duration-base) var(--ds-ease-out-quart) both;
+    animation: auth-fade-in var(--ds-duration-slow) var(--ds-ease-out-expo) both;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .auth-fade-in, .auth-otp-cell--invalid, .auth-aurora::before, .auth-aurora::after { animation: none; }
-    .auth-cta, .auth-cta-secondary, .auth-social-btn, .auth-progress__indicator { transition: none; transform: none; }
+    .auth-fade-in,
+    .auth-otp-cell--invalid,
+    .auth-aside-hero::before {
+      animation: none;
+    }
+    .auth-cta,
+    .auth-cta-secondary,
+    .auth-social-btn,
+    .auth-progress__indicator,
+    .auth-input,
+    .auth-input-action,
+    .auth-aside-list-item,
+    .auth-brand {
+      transition: none;
+      transform: none;
+    }
   }
 }
 
-/* ===== END Auth Surface 2026 (Resend-style) ===== */
+/* ===== END Auth Surface 2026 — Theme-Aware Asymmetric Composition ===== */

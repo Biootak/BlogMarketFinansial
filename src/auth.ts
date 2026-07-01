@@ -61,13 +61,46 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         console.error('Error logging login activity:', error);
       }
     },
-    async linkAccount({ user }) {
-      // 2026-06-23: OAuth users get emailVerified auto-set so they
-      // can complete a passwordless login via our OTP login flow.
+    async linkAccount({ user, account, profile }) {
+      // 2026-06-30: only auto-verify if the OAuth provider confirms
+      // ownership of the email. Google returns `email_verified: true`
+      // for every Google account that has a verified address. GitHub
+      // returns it only after the user verifies their email on GitHub.
+      // Some legacy providers don't expose the claim at all — those
+      // fall through to the OTP-verified path in auth-actions.ts.
+      //
+      // Why this matters: the previous code set `emailVerified: now`
+      // unconditionally, which let an attacker register a fresh OAuth
+      // account with a victim's email (via a provider that didn't
+      // verify) and immediately complete the OTP-less login flow
+      // gated only by `emailVerified IS NOT NULL`.
+      if (!user.id) return;
+      // NextAuth's Profile type is generic (per-provider shape); the
+      // `email_verified` claim is OAuth-standard but not in the base
+      // type. Cast through unknown so the check compiles without
+      // disabling strictness.
+      const oauthProfile = profile as unknown as { email_verified?: boolean } | undefined;
+      const providerConfirmed = oauthProfile?.email_verified === true;
+      if (!providerConfirmed) return;
+
       await prisma.user.update({
         where: { id: user.id },
         data: { emailVerified: new Date() },
       });
+
+      // Audit trail for OAuth auto-verification. Failure is
+      // non-fatal — logging is best-effort.
+      try {
+        await prisma.activityLog.create({
+          data: {
+            userId: user.id,
+            action: 'تأیید خودکار از طریق OAuth',
+            details: `ایمیل توسط ${account?.provider ?? 'OAuth'} تأیید شد`,
+          },
+        });
+      } catch (error) {
+        console.error('Error logging OAuth verification:', error);
+      }
     },
     async signOut(message) {
       const token = (message as { token?: { sub?: string } | null } | undefined)?.token;

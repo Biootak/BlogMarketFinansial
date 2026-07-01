@@ -1,20 +1,27 @@
+import { DEFAULT_REDIRECT } from '@/config/routes';
+import { Loader2 } from 'lucide-react';
+import { signIn } from 'next-auth/react';
 import type React from 'react';
 import { useMemo, useState } from 'react';
-import { signIn } from 'next-auth/react';
-import { Github, Loader2 } from 'lucide-react';
-import { FcGoogle } from 'react-icons/fc';
-import { DEFAULT_REDIRECT } from '@/config/routes';
+// 2026-06-30: switched from a mix of `FcGoogle` (react-icons/fc, 1em,
+// colorful filled) + `Github` (lucide-react, 24px, monochrome outline)
+// to a single icon family — Simple Icons. Both now share the same
+// 24x24 viewBox, the same monochrome fill style, and inherit the
+// button's `currentColor`, so the two brand marks render at identical
+// visual weight. CSS in auth.css also locks the rendered size to
+// 1.25rem so any future icon swap can't reintroduce drift.
+import { SiGithub, SiGoogle } from 'react-icons/si';
 
 const PROVIDERS = [
   {
     id: 'google' as const,
     label: 'ادامه با گوگل',
-    icon: <FcGoogle aria-hidden="true" />,
+    icon: <SiGoogle aria-hidden="true" />,
   },
   {
     id: 'github' as const,
     label: 'ادامه با گیت‌هاب',
-    icon: <Github aria-hidden="true" strokeWidth={1.8} />,
+    icon: <SiGithub aria-hidden="true" />,
   },
 ];
 
@@ -35,7 +42,9 @@ const SocialProviders: React.FC = () => {
       });
 
       if (result?.error) {
-        setError(`ورود با ${provider === 'google' ? 'گوگل' : 'گیت‌هاب'} ناموفق بود. لطفاً دوباره تلاش کنید.`);
+        setError(
+          `ورود با ${provider === 'google' ? 'گوگل' : 'گیت‌هاب'} ناموفق بود. لطفاً دوباره تلاش کنید.`,
+        );
         return;
       }
 
