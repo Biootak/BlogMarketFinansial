@@ -17,17 +17,12 @@
  *     cheap motion.
  */
 
-import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { motion } from '@/lib/motion-shim';
 import Avatar from '@/components/Avatar/Avatar';
-import {
-  HiOutlineClock,
-  HiOutlineArrowLeft,
-  HiOutlineInbox,
-} from 'react-icons/hi2';
 import { DashboardEmpty } from '@/components/Dashboard/primitives';
-import { cn } from '@/lib/utils';
+import { motion } from '@/lib/motion-shim';
+import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
+import { HiOutlineArrowLeft, HiOutlineClock, HiOutlineInbox } from 'react-icons/hi2';
 
 export interface ActivityItem {
   id: string;
@@ -38,10 +33,18 @@ export interface ActivityItem {
 }
 
 type Range = 'today' | 'week' | 'all';
+type ActionTone = 'violet' | 'cyan' | 'emerald' | 'amber' | 'rose';
+type DayTone = 'today' | 'yesterday' | 'week' | 'older';
 
 interface ActivityRailProps {
   items: ActivityItem[];
   range: Range;
+}
+
+interface DayGroup {
+  label: string;
+  tone: DayTone;
+  items: ActivityItem[];
 }
 
 const RANGE_LABEL: Record<Range, string> = {
@@ -63,33 +66,13 @@ function formatRelativeFa(d: Date, now: Date) {
   return d.toLocaleDateString('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
-function actionTone(action: string): 'violet' | 'cyan' | 'emerald' | 'amber' | 'rose' {
+function actionTone(action: string): ActionTone {
   if (/(حذف|خطا)/.test(action)) return 'rose';
   if (/(ایجاد|جدید)/.test(action)) return 'emerald';
   if (/(ویرایش|بروز)/.test(action)) return 'cyan';
   if (/(تأیید|انتشار)/.test(action)) return 'amber';
   return 'violet';
 }
-
-const TONE_DOT: Record<ReturnType<typeof actionTone>, string> = {
-  // 2026-06-26: monochrome dot mapping — each tone now points to a
-  // .dash-status-dot[data-tone="..."] rule (defined in globals.css §1.8).
-  // The semantic dot color is retained for state communication, but the
-  // pill / link / icon chrome around it is neutralized separately.
-  violet: 'dash-status-dot',
-  cyan: 'dash-status-dot',
-  emerald: 'dash-status-dot',
-  amber: 'dash-status-dot',
-  rose: 'dash-status-dot',
-};
-
-const TONE_DOT_DATA: Record<ReturnType<typeof actionTone>, 'violet' | 'cyan' | 'emerald' | 'amber' | 'rose'> = {
-  violet: 'violet',
-  cyan: 'cyan',
-  emerald: 'emerald',
-  amber: 'amber',
-  rose: 'rose',
-};
 
 function isSameDay(a: Date, b: Date) {
   return (
@@ -99,14 +82,17 @@ function isSameDay(a: Date, b: Date) {
   );
 }
 
-function dayLabelFa(d: Date, now: Date): { label: string; tone: 'today' | 'yesterday' | 'week' | 'older' } {
+function dayLabelFa(d: Date, now: Date): { label: string; tone: DayTone } {
   if (isSameDay(d, now)) return { label: 'امروز', tone: 'today' };
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
   if (isSameDay(d, yesterday)) return { label: 'دیروز', tone: 'yesterday' };
   const dayDiff = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
   if (dayDiff < 7) return { label: 'این هفته', tone: 'week' };
-  return { label: d.toLocaleDateString('fa-IR', { month: 'long', year: 'numeric' }), tone: 'older' };
+  return {
+    label: d.toLocaleDateString('fa-IR', { month: 'long', year: 'numeric' }),
+    tone: 'older',
+  };
 }
 
 export default function ActivityRail({ items, range }: ActivityRailProps) {
@@ -139,14 +125,14 @@ export default function ActivityRail({ items, range }: ActivityRailProps) {
     return since ? sorted.filter((it) => new Date(it.createdAt) >= since) : sorted;
   }, [items, range, now]);
 
-  const grouped = useMemo(() => {
-    if (!now) return [] as Array<{ label: string; tone: string; items: ActivityItem[] }>;
-    const map = new Map<string, { label: string; tone: string; items: ActivityItem[] }>();
+  const grouped = useMemo<DayGroup[]>(() => {
+    if (!now) return [];
+    const map = new Map<string, DayGroup>();
     for (const it of filtered) {
       const meta = dayLabelFa(new Date(it.createdAt), now);
       const key = `${meta.tone}-${meta.label}`;
       if (!map.has(key)) map.set(key, { label: meta.label, tone: meta.tone, items: [] });
-      map.get(key)!.items.push(it);
+      map.get(key)?.items.push(it);
     }
     return Array.from(map.values());
   }, [filtered, now]);
@@ -193,26 +179,14 @@ export default function ActivityRail({ items, range }: ActivityRailProps) {
                   aria-hidden
                   className="absolute top-2 bottom-2 start-[15px] w-px bg-gradient-to-b from-slate-200 via-slate-200/60 to-transparent dark:from-slate-700 dark:via-slate-700/40"
                 />
-                {group.items.map((item, i) => {
+                {group.items.map((item) => {
                   const tone = actionTone(item.action);
                   return (
-                    <motion.li
-                      key={item.id}
-                      initial={{ opacity: 0, x: 6 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{
-                        duration: 0.4,
-                        delay: Math.min(0.03 * i, 0.25),
-                        ease: [0.22, 1, 0.36, 1],
-                      }}
-                      className="relative ps-9 pe-1 py-2"
-                    >
+                    <li key={item.id} className="relative ps-9 pe-1 py-2">
                       <span
                         aria-hidden
-                        className={cn(
-                          'dash-status-dot absolute start-[10px] top-3 w-2.5 h-2.5 ring-2 ring-white dark:ring-slate-900',
-                        )}
-                        data-tone={TONE_DOT_DATA[tone]}
+                        className="dash-status-dot absolute start-[10px] top-3 w-2.5 h-2.5 ring-2 ring-white dark:ring-slate-900"
+                        data-tone={tone}
                       />
                       <div className="dash-cardlink !py-2">
                         <Avatar
@@ -240,7 +214,7 @@ export default function ActivityRail({ items, range }: ActivityRailProps) {
                           </p>
                         </div>
                       </div>
-                    </motion.li>
+                    </li>
                   );
                 })}
               </ul>
@@ -250,10 +224,7 @@ export default function ActivityRail({ items, range }: ActivityRailProps) {
       )}
 
       <footer className="pt-2 border-t border-slate-100 dark:border-slate-800">
-        <Link
-          href="/dashboard/reports"
-          className="dash-link text-xs px-1"
-        >
+        <Link href="/dashboard/reports" className="dash-link text-xs px-1">
           <span>مشاهده همه در گزارش‌ها</span>
           <HiOutlineArrowLeft className="w-3.5 h-3.5" />
         </Link>

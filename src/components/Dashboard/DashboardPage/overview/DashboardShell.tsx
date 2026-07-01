@@ -34,8 +34,10 @@
  */
 
 import CommandPalette from '@/components/Dashboard/DashboardPage/CommandPalette';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { memo, useEffect, useRef, useState } from 'react';
+import { HiOutlineArrowUpRight, HiOutlineEye } from 'react-icons/hi2';
 import ActivityRail from './ActivityRail';
 import AnalyticsCanvas from './AnalyticsCanvas';
 import EngagementDonut, { type EngagementSlice } from './EngagementDonut';
@@ -135,7 +137,7 @@ const DashboardShell: React.FC<DashboardShellProps> = (props) => {
       <a className="dash-skip" href="#dash-main">
         پرش به محتوای اصلی
       </a>
-      <main id="dash-main" className="dash-atlas" aria-label="داشبورد" data-density={density}>
+      <div id="dash-main" className="dash-atlas" aria-label="داشبورد" data-density={density}>
         {/* ---- Toolbar ----------------------------------------------------- */}
         <div className="dash-atlas__toolbar">
           <WorkspaceToolbar
@@ -164,30 +166,41 @@ const DashboardShell: React.FC<DashboardShellProps> = (props) => {
           />
           <aside
             className="dash-atlas__hero-rail dash-atlas__reveal dash-atlas__reveal--d2"
-            aria-label="شاخص‌های مینی"
+            aria-label="پست برتر امروز"
           >
-            <HeroRail stats={props.stats} />
+            <TopPostLive popularPosts={props.popularPosts} viewStats={props.viewStats} />
           </aside>
         </section>
 
-        {/* ---- Vitruvian centerpiece + sats + rail ----------------------- */}
-        <section className="dash-atlas__vitruvian" aria-label="مرکز تحلیل">
-          <div className="dash-atlas__vitruvian-centerpiece dash-atlas__center dash-atlas__reveal dash-atlas__reveal--d2">
-            <AnalyticsCanvas scheduledPosts={props.scheduledPosts} />
+        {/* ---- Operations Band (Activity · QuickActions) -------------------
+            Pulled out of Vitruvian so the day-grouped activity feed gets
+            horizontal room to breathe, and QuickActions becomes one of the
+            first things the user sees after the greeting. Both children
+            keep their natural height. */}
+        <section className="dash-atlas__operations" aria-label="عملیات">
+          <div className="dash-atlas__operations-activity dash-atlas-pane dash-atlas__reveal dash-atlas__reveal--d2">
+            <ActivityRail items={props.recentActivity} range={range} />
           </div>
-          <div className="dash-atlas__vitruvian-sats">
-            <div className="dash-atlas-pane dash-atlas__reveal dash-atlas__reveal--d3">
-              <EngagementDonut slices={slices} range={range} caption="سهم تعامل" />
-            </div>
-            <div className="dash-atlas-pane dash-atlas__reveal dash-atlas__reveal--d3">
-              <ActivityRail items={props.recentActivity} range={range} />
-            </div>
-          </div>
-          <aside className="dash-atlas__vitruvian-rail" aria-label="اقدامات سریع">
-            <div className="dash-atlas-pane dash-atlas-pane--pillar dash-atlas__reveal dash-atlas__reveal--d3">
+          <aside
+            className="dash-atlas__operations-quick dash-atlas__reveal dash-atlas__reveal--d3"
+            aria-label="دسترسی سریع"
+          >
+            <div className="dash-atlas-pane dash-atlas-pane--pillar">
               <QuickActionsCard userRole={props.userRole} />
             </div>
           </aside>
+        </section>
+
+        {/* ---- Vitruvian centerpiece + donut -----------------------------
+            Simplified: the centerpiece chart + the engagement donut.
+            Activity & QuickActions moved to the Operations band above. */}
+        <section className="dash-atlas__vitruvian" aria-label="مرکز تحلیل">
+          <div className="dash-atlas__vitruvian-centerpiece dash-atlas__center dash-atlas__reveal dash-atlas__reveal--d3">
+            <AnalyticsCanvas scheduledPosts={props.scheduledPosts} />
+          </div>
+          <div className="dash-atlas-pane dash-atlas__reveal dash-atlas__reveal--d3">
+            <EngagementDonut slices={slices} range={range} caption="سهم تعامل" />
+          </div>
         </section>
 
         {/* ---- Harmonic triad (Calendar · Health · Punctuation) ---------- */}
@@ -212,7 +225,7 @@ const DashboardShell: React.FC<DashboardShellProps> = (props) => {
             <PostsSpotlight popularPosts={props.popularPosts} recentDrafts={props.recentDrafts} />
           </div>
         </section>
-      </main>
+      </div>
 
       <CommandPalette role={props.userRole} />
     </>
@@ -223,117 +236,133 @@ export default memo(DashboardShell);
 
 import { GeometricField } from '@/components/Dashboard/primitives';
 /* ---------------------------------------------------------------------------
- * HeroRail — vertical mini-KPI stack on the END side of the hero. Pure
- * presentation; receives the same stats payload as the hero so values stay
- * in lock-step.
+ * TopPostLive — the END-side slot of the hero (replaces the old mini-KPI
+ * stack). Shows the post that's getting the most traffic RIGHT NOW, with
+ * a live pulse indicator, view count, momentum sparkline, and a quick
+ * link to open the post.
  *
- * Inline-defined rather than its own file because:
- *   1. It's only used by DashboardShell
- *   2. Keeping it next to the layout makes the asymmetric composition
- *      self-documenting (open one file, see the whole hero column)
+ * Design language:
+ *   • Single, focused subject — not a list of metrics.
+ *   • Live feeling via pulse + clock, no fabricated "real-time" data.
+ *   • Visual hierarchy: post title > views > meta > sparkline > CTA.
+ *   • Empty state handled gracefully (DashboardEmpty from primitives).
+ *
+ * Inline-defined (not its own file) so the hero composition stays
+ * self-documenting in a single read.
  * ------------------------------------------------------------------------- */
-import { cn } from '@/lib/utils';
-
-type Trend = 'up' | 'down' | 'flat';
-
-function pickTrend(data: number[]): { trend: Trend; delta: number } {
-  if (data.length < 2) return { trend: 'flat', delta: 0 };
-  const half = Math.max(1, Math.floor(data.length / 2));
-  const recent = data.slice(-half).reduce((a, b) => a + b, 0);
-  const prev = data.slice(0, -half).reduce((a, b) => a + b, 0);
-  if (prev === 0 && recent === 0) return { trend: 'flat', delta: 0 };
-  if (prev === 0) return { trend: 'up', delta: 100 };
-  const d = ((recent - prev) / prev) * 100;
-  const t: Trend = Math.abs(d) < 1 ? 'flat' : d > 0 ? 'up' : 'down';
-  return { trend: t, delta: d };
-}
 
 function fmtNumber(n: number): string {
-  // Persian digits for readability
   return new Intl.NumberFormat('fa-IR').format(n);
 }
 
-interface HeroRailProps {
-  stats: DashboardShellProps['stats'];
+interface TopPostLiveProps {
+  popularPosts: DashboardShellProps['popularPosts'];
+  viewStats: DashboardShellProps['viewStats'];
 }
 
-function HeroRail({ stats }: HeroRailProps) {
-  const items: Array<{
-    key: string;
-    label: string;
-    value: number;
-    series: number[];
-    color: string;
-  }> = [
-    {
-      key: 'likes',
-      label: 'لایک‌ها',
-      value: stats.likes.total,
-      series: stats.likes.data,
-      color: 'var(--atlas-accent-warm)',
-    },
-    {
-      key: 'comments',
-      label: 'نظرات',
-      value: stats.comments.new,
-      series: stats.comments.data,
-      color: 'var(--atlas-accent-leaf)',
-    },
-    {
-      key: 'shares',
-      label: 'اشتراک‌ها',
-      value: stats.shares.total,
-      series: stats.shares.data,
-      color: 'var(--atlas-accent-cool)',
-    },
-    {
-      key: 'drafts',
-      label: 'پیش‌نویس',
-      value: stats.drafts.total,
-      series: stats.drafts.data,
-      color: 'var(--atlas-accent)',
-    },
-  ];
+function TopPostLive({ popularPosts, viewStats }: TopPostLiveProps) {
+  const top = popularPosts[0];
+
+  if (!top) {
+    return (
+      <div className="dash-atlas__top-post dash-atlas__top-post--empty">
+        <GeometricField density="min" />
+        <span className="dash-atlas__top-post-empty-label">هنوز پستی برای نمایش وجود ندارد</span>
+      </div>
+    );
+  }
 
   return (
-    <div className="relative h-full">
+    <article className="dash-atlas__top-post">
       <GeometricField density="med" />
-      <div className="relative z-10 flex flex-col gap-3 h-full">
-        <div className="flex items-center justify-between gap-2">
-          <span className="dash-atlas__rail-label">شاخص‌های مینی</span>
-          <LiveIndicator />
+
+      <header className="dash-atlas__top-post-head">
+        <span className="dash-atlas__top-post-eyebrow">
+          <span className="dash-atlas__top-post-eyebrow-dot" aria-hidden />
+          <span>پست برتر امروز</span>
+        </span>
+        <LiveIndicator />
+      </header>
+
+      <Link
+        href={`/blog/${top.slug}`}
+        className="dash-atlas__top-post-title-link"
+        aria-label={`باز کردن پست: ${top.title}`}
+      >
+        <h3 className="dash-atlas__top-post-title" dir="rtl">
+          {top.title}
+        </h3>
+      </Link>
+
+      <p className="dash-atlas__top-post-meta">
+        <span className="dash-atlas__top-post-meta-author">{top.author}</span>
+        <span className="dash-atlas__top-post-meta-dot" aria-hidden>
+          ·
+        </span>
+        <span className="dash-atlas__top-post-meta-date">{top.publishDate}</span>
+      </p>
+
+      <footer className="dash-atlas__top-post-foot">
+        <div className="dash-atlas__top-post-views">
+          <HiOutlineEye className="dash-atlas__top-post-views-ico" aria-hidden />
+          <span className="dash-atlas__top-post-views-num">{fmtNumber(top.views)}</span>
+          <span className="dash-atlas__top-post-views-label">بازدید</span>
         </div>
-        <div className="flex flex-col gap-0">
-          {items.map((item) => {
-            const { trend, delta } = pickTrend(item.series);
-            return (
-              <div key={item.key} className="dash-atlas__rail-stat">
-                <span className="dash-atlas__rail-stat-label">
-                  <span
-                    aria-hidden
-                    className="inline-block size-2 rounded-full"
-                    style={{ background: item.color }}
-                  />
-                  {item.label}
-                </span>
-                <span className="flex items-center gap-2">
-                  <span className="dash-atlas__rail-stat-value">{fmtNumber(item.value)}</span>
-                  <span
-                    className={cn(
-                      'dash-atlas__rail-stat-delta',
-                      trend === 'up' && 'dash-atlas__rail-stat-delta--up',
-                      trend === 'down' && 'dash-atlas__rail-stat-delta--down',
-                    )}
-                  >
-                    {trend === 'flat' ? '—' : `${delta > 0 ? '+' : ''}${delta.toFixed(0)}٪`}
-                  </span>
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
+        <TopPostSparkline data={viewStats.data} />
+      </footer>
+
+      <Link
+        href={`/blog/${top.slug}`}
+        className="dash-atlas__top-post-cta"
+        aria-label={`ادامه‌ی مطلب: ${top.title}`}
+      >
+        <span>خواندن پست</span>
+        <HiOutlineArrowUpRight aria-hidden />
+      </Link>
+    </article>
+  );
+}
+
+interface TopPostSparklineProps {
+  data: number[];
+}
+
+function TopPostSparkline({ data }: TopPostSparklineProps) {
+  if (data.length < 2) return null;
+  const width = 84;
+  const height = 28;
+  const min = Math.min(...data, 0);
+  const max = Math.max(...data, 1);
+  const span = max - min || 1;
+  const step = width / (data.length - 1);
+  const pts = data.map((v, i) => {
+    const x = i * step;
+    const y = height - 3 - ((v - min) / span) * (height - 6);
+    return [x, y] as const;
+  });
+  const line = pts
+    .map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`)
+    .join(' ');
+  const lastPt = pts[pts.length - 1] ?? [0, 0];
+  return (
+    <svg
+      viewBox={`0 0 ${width} ${height}`}
+      preserveAspectRatio="none"
+      className="dash-atlas__top-post-spark"
+      role="img"
+      aria-label="نمودار روند بازدید"
+    >
+      <path
+        d={line}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.75}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
+      <circle cx={lastPt[0]} cy={lastPt[1]} r={2.5} fill="currentColor" opacity={0.9} />
+    </svg>
   );
 }
 
