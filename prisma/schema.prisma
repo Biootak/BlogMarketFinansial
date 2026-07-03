@@ -635,9 +635,12 @@ model Task {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
-  @@index([userId])
-  @@index([status])
-  @@index([dueDate])
+  // User dashboard — filter by status, sort by recency
+  @@index([userId, status, createdAt(sort: Desc)])
+  // User tasks sorted by due date (deadline views)
+  @@index([userId, dueDate])
+  // Overdue task queries (admin/cron)
+  @@index([status, dueDate])
 }
 
 enum TaskStatus {
