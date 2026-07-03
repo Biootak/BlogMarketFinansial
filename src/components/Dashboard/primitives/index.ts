@@ -45,6 +45,9 @@ export type { DashboardEmptyProps, DashboardEmptyTone } from './DashboardEmpty';
 export { NoiseTexture } from './NoiseTexture';
 export type { NoiseTextureProps } from './NoiseTexture';
 
+export { Spotlight } from './Spotlight';
+export type { SpotlightProps, SpotlightTone } from './Spotlight';
+
 export { ConfirmDialog } from './ConfirmDialog';
 export type { ConfirmDialogProps } from './ConfirmDialog';
 

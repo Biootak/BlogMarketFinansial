@@ -187,6 +187,14 @@ const TideShell: React.FC<TideShellProps> = (props) => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       >
+        {/* Ambient aurora — a slow, GPU-friendly light field behind every
+            station. Purely decorative; CSS pauses it under reduced-motion. */}
+        <div className="tide-aurora" aria-hidden>
+          <span className="tide-aurora__blob tide-aurora__blob--a" />
+          <span className="tide-aurora__blob tide-aurora__blob--b" />
+          <span className="tide-aurora__blob tide-aurora__blob--c" />
+        </div>
+
         {/* ── 0. Live ticker ────────────────────────────────────────── */}
         <LiveTicker items={tickerItems} />
 

@@ -22,6 +22,7 @@
 
 import ScheduledRail from '@/components/Dashboard/DashboardPage/overview/ScheduledRail';
 import SystemHealth from '@/components/Dashboard/DashboardPage/overview/SystemHealth';
+import { Spotlight } from '@/components/Dashboard/primitives';
 import { motion } from '@/lib/motion-shim';
 import type { PostWithRelations } from '@/types/types';
 import { useEffect, useMemo } from 'react';
@@ -70,6 +71,7 @@ function ConstellationGrid({ scheduledPosts }: ConstellationGridProps) {
         transition={{ duration: 0.45, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
         className="tide-constellation__card tide-constellation__card--left"
       >
+        <Spotlight tone="accent" size={280} />
         <header className="tide-constellation__head">
           <span className="tide-constellation__ico" aria-hidden>
             <HiOutlineCalendarDays className="w-4 h-4" />
@@ -87,6 +89,7 @@ function ConstellationGrid({ scheduledPosts }: ConstellationGridProps) {
         transition={{ duration: 0.45, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
         className="tide-constellation__card tide-constellation__card--center"
       >
+        <Spotlight tone="emerald" size={360} />
         <header className="tide-constellation__head">
           <span className="tide-constellation__ico" aria-hidden>
             <HiOutlineHeart className="w-4 h-4" />
@@ -107,6 +110,7 @@ function ConstellationGrid({ scheduledPosts }: ConstellationGridProps) {
         className="tide-constellation__card tide-constellation__card--right"
         aria-label="نقل‌قول روز"
       >
+        <Spotlight tone="violet" size={280} />
         <header className="tide-constellation__head">
           <span className="tide-constellation__ico" aria-hidden>
             <HiOutlineSparkles className="w-4 h-4" />
@@ -114,6 +118,9 @@ function ConstellationGrid({ scheduledPosts }: ConstellationGridProps) {
           <span className="tide-constellation__head-title">سخن روز</span>
         </header>
         <blockquote className="tide-quote">
+          <span className="tide-quote__mark" aria-hidden>
+            &ldquo;
+          </span>
           <p className="tide-quote__text" dir="rtl">
             {quoteOfDay.text}
           </p>

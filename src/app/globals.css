@@ -2,17 +2,26 @@
 @import "../components/ds/styles/tokens.css";
 
 /* ============================================================================
-   Refined Theme Tokens — Linear × Vercel × Stripe
+   @theme — Tailwind v4 utility generators ONLY
    ----------------------------------------------------------------------------
-   کم‌اشباع‌تر، ملایم‌تر، با تایپوگرافی حرفه‌ای.
+   این بلاک صرفاً برای expose کردن متغیرها به Tailwind utilities است.
+   **هرگز** متغیرهای `--ds-*` را اینجا تعریف نکنید — منبع حقیقت
+   `src/components/ds/styles/tokens.css` است. (تا 2026-07-02 این بلاک شامل
+   duplicates از radius / duration / ease / color بود که کامپوننت‌های DS را
+   override می‌کرد و کل سیستم طراحی را به هم می‌ریخت.)
+
+   تنها استثنا: `--color-*` که توسط shadcn primitives استفاده می‌شود
+   (`bg-background`, `text-muted-foreground`, و ...). این‌ها نباید با DS tokens
+   قاطی شوند؛ نام‌گذاری‌شان متفاوت است (`--color-*` vs `--ds-*`).
    ============================================================================ */
 @theme {
+  /* ---- Typography (font utilities) ---------------------------------------- */
   --font-vazirmatn: var(--font-vazirmatn), system-ui, sans-serif;
   --font-family: var(--font-vazirmatn);
-  /* LIGHT (default) — matching the :root values further down so bg-background
-     and friends actually flip when next-themes toggles `.dark` on <html>.
-     قبل از 2026-06-22 مقادیر اینجا فقط dark بودند و light mode نامرئی رندر
-     می‌شد (input ها و کارت‌ها با bg-background سیاه می‌شدند). */
+
+  /* ---- shadcn semantic colors (Tailwind utilities) ------------------------- */
+  /* توضیح: bg-background / text-muted-foreground / border-input / ring-ring و
+     ... از این‌ها generate می‌شوند. .dark در پایین flip می‌کند. */
   --color-background: rgb(247, 248, 250);
   --color-foreground: rgb(20, 23, 32);
   --color-card: rgb(255, 255, 255);
@@ -70,46 +79,12 @@
   --color-border-subtle: rgb(224, 228, 235);
   --color-border-default: rgb(210, 217, 230);
   --color-border-strong: rgb(180, 190, 210);
-
-  /* ---- Chunk 1 foundation: new semantic tokens (additive, do NOT redeclare existing --ds-* vars above) ---- */
-  --ds-color-canvas: oklch(98.5% 0.004 245);
-  --ds-color-canvas-dark: oklch(15% 0.018 255);
-  --ds-color-surface: oklch(100% 0 0);
-  --ds-color-surface-dark: oklch(20% 0.018 255);
-  --ds-color-surface-2: oklch(96% 0.004 245);
-  --ds-color-surface-2-dark: oklch(24% 0.018 255);
-  --ds-color-border-subtle: oklch(92% 0.006 245);
-  --ds-color-border-subtle-dark: oklch(28% 0.02 255);
-  --ds-color-fg-muted: oklch(45% 0.01 245);
-  --ds-color-fg-muted-dark: oklch(70% 0.01 245);
-  --ds-color-fg-subtle: oklch(55% 0.01 245);
-  --ds-color-fg-subtle-dark: oklch(55% 0.012 250);
-  --ds-color-blue: oklch(70% 0.13 250);
-  --ds-color-blue-dark: oklch(70% 0.14 245);
-  --ds-color-side: oklch(99% 0.003 245);
-  --ds-color-side-dark: oklch(13% 0.018 255);
-  --ds-color-side-hover-bg: oklch(96% 0.005 245 / 0.7);
-  --ds-color-side-hover-bg-dark: oklch(20% 0.02 255 / 0.6);
-  --ds-color-side-active-bg: oklch(94% 0.04 245 / 0.7);
-  --ds-color-side-active-bg-dark: oklch(22% 0.04 250 / 0.5);
-  --ds-color-side-active-fg: oklch(20% 0.02 250);
-  --ds-color-side-active-fg-dark: oklch(95% 0.01 245);
-  --ds-side-w-expanded: 268px;
-  --ds-side-w-rail: 76px;
-  --ds-radius-sm: 6px;
-  --ds-radius-md: 8px;
-  --ds-radius-lg: 12px;
-  --ds-radius-xl: 16px;
-  --ds-radius-2xl: 20px;
-  --ds-duration-fast: 120ms;
-  --ds-duration-base: 200ms;
-  --ds-duration-slow: 320ms;
-  --ds-ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --ds-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Dark overrides — only the tokens that actually differ between modes.
-   `.dark` comes from next-themes on <html>. */
+/* ============================================================================
+   Dark overrides — فقط شادکن semantic colors (Tailwind utilities).
+   `.dark` از next-themes روی <html> فعال می‌شود.
+   ============================================================================ */
 .dark {
   --color-background: rgb(20, 23, 32);
   --color-foreground: rgb(228, 230, 238);
@@ -132,19 +107,6 @@
   --color-border-subtle: rgb(46, 52, 68);
   --color-border-default: rgb(58, 65, 84);
   --color-border-strong: rgb(82, 91, 115);
-
-  /* ---- Chunk 1 foundation: dark-mode flips for the new semantic tokens ---- */
-  --ds-color-canvas: var(--ds-color-canvas-dark);
-  --ds-color-surface: var(--ds-color-surface-dark);
-  --ds-color-surface-2: var(--ds-color-surface-2-dark);
-  --ds-color-border-subtle: var(--ds-color-border-subtle-dark);
-  --ds-color-fg-muted: var(--ds-color-fg-muted-dark);
-  --ds-color-fg-subtle: var(--ds-color-fg-subtle-dark);
-  --ds-color-blue: var(--ds-color-blue-dark);
-  --ds-color-side: var(--ds-color-side-dark);
-  --ds-color-side-hover-bg: var(--ds-color-side-hover-bg-dark);
-  --ds-color-side-active-bg: var(--ds-color-side-active-bg-dark);
-  --ds-color-side-active-fg: var(--ds-color-side-active-fg-dark);
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -257,23 +219,26 @@ p {
   --ring: 94 106 230;
   --radius: 0.625rem;
 
-  /* 2026-06-30: restored a readable type ramp while keeping it tight.
-     Base is now 14px for WCAG 2.2 AA body text; the previous 12px base
-     made headings and body too small.  Scale follows the 14/16/18/20/24/28/32
-     rhythm used by Linear / Vercel / Stripe. */
-  --fs-base: 14px;
-  --fs-sm: 12px;
-  --fs-xs: 10px;
-  --fs-lg: 16px;
-  --fs-xl: 18px;
-  --fs-2xl: 20px;
-  --fs-3xl: 24px;
-  --fs-4xl: 28px;
-  --fs-5xl: 32px;
-  --leading-tight: 1.2;
-  --leading-snug: 1.35;
-  --leading-normal: 1.5;
-  --leading-relaxed: 1.6;
+  /* 2026-07-02: bumped base from 14px → 16px to match the rhythm claim in
+     the comment (Linear / Vercel / Stripe use 16px root). قبلاً این مقدار
+     14px بود و تمام rem-های DS (radius / spacing / font-size) را ۱۲٪ کوچکتر
+     از intent رندر می‌کرد و کل طراحی را "معمولی" نشان می‌داد.
+
+     سایز scale عمداً حذف شد (dead code قبلی: --fs-sm..--fs-5xl).
+     type ramp از `--ds-text-*` در tokens.css با clamp() fluid می‌آید. */
+  --fs-base: 16px;
+
+  /* Type rhythm — alias به منبع حقیقت (`--ds-leading-*` در tokens.css).
+     قبلاً دو سیستم parallel داشتیم (1.2 / 1.35 / 1.5 / 1.6 اینجا در مقابل
+     1.12 / 1.45 / 1.65 / 1.75 در tokens.css) که بسته به اینکه کدام CSS
+     بعدتر load می‌شد، یکی برنده می‌شد. حالا فقط یک منبع. */
+  --leading-tight: var(--ds-leading-tight);
+  --leading-snug: var(--ds-leading-snug);
+  --leading-normal: var(--ds-leading-normal);
+  --leading-relaxed: var(--ds-leading-relaxed);
+
+  /* Tracking — legacy، فقط خود globals.css استفاده می‌کنه. setup.css
+     مقادیر local خودش را دارد (self-contained). */
   --tracking-tight: -0.015em;
   --tracking-snug: -0.005em;
 }
@@ -294,22 +259,8 @@ p {
   --ring: 94 106 230;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-  .animate-pulse,
-  .animate-spin,
-  .animate-bounce,
-  .animate-gradient {
-    animation: none !important;
-  }
-}
+/* prefers-reduced-motion global rule → منتقل شد به tokens.css (منبع حقیقت).
+   اینجا حذف شد تا duplicate نباشد (قبلاً دو کپی داشتیم). */
 
 @keyframes shimmer {
   0% {

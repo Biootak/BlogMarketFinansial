@@ -1,12 +1,25 @@
 /* ============================================================================
    Design System Tokens — Linear × Vercel × Stripe (low-saturation)
    ----------------------------------------------------------------------------
-   همه‌ی رنگ‌ها OKLCH. Spacing/Typography fluid با clamp().
-   این فایل پایه‌ی همه‌ی کامپوننت‌های DS است. هرگز hardcode نکنید.
+   این فایل **منبع حقیقت واحد** برای همه‌ی متغیرهای `--ds-*` در پروژه است.
+   هر کامپوننت، hero، یا token دیگری باید اینجا تعریف شود؛ کپی در globals.css
+   یا فایل‌های دیگر ممنوع است.
+
+   - رنگ‌ها OKLCH (low-saturation) — هماهنگ با Linear / Vercel / Stripe
+   - Spacing و Typography fluid با clamp() — یکپارچه در همه‌ی breakpoints
+   - Radius و Duration با ramp هندسی (logarithmic) — premium feel
+   - prefers-reduced-motion در پایین فایل global clamp می‌شود
+
+   تاریخچه (2026-07-02):
+   - قبلاً duplicates از این tokens در globals.css @theme بود که override می‌کرد.
+   - حالا فقط یک منبع داریم؛ @theme در globals.css فقط Tailwind utilities را
+     expose می‌کند (`--color-*`, `--font-*`).
    ============================================================================ */
 
 :root {
-  /* Spacing (fluid) */
+  /* ==========================================================================
+     SPACING (fluid) — clamp() برای scaling بدون breakpoint
+     ========================================================================== */
   --ds-space-1: clamp(0.25rem, 0.2rem + 0.2vw, 0.375rem);
   --ds-space-2: clamp(0.5rem, 0.4rem + 0.4vw, 0.75rem);
   --ds-space-3: clamp(0.75rem, 0.6rem + 0.6vw, 1rem);
@@ -16,7 +29,9 @@
   --ds-space-8: clamp(2rem, 1.5rem + 2vw, 3rem);
   --ds-space-10: clamp(2.5rem, 2rem + 2.5vw, 3.75rem);
 
-  /* Typography (fluid) */
+  /* ==========================================================================
+     TYPOGRAPHY (fluid) — Optical-sized با Persian numerals
+     ========================================================================== */
   --ds-text-xs: clamp(0.75rem, 0.7rem + 0.2vw, 0.8125rem);
   --ds-text-sm: clamp(0.875rem, 0.82rem + 0.25vw, 0.9375rem);
   --ds-text-base: clamp(0.9375rem, 0.9rem + 0.2vw, 1rem);
@@ -36,15 +51,48 @@
   --ds-weight-bold: 700;
   --ds-weight-extrabold: 800;
 
-  /* Radius */
-  --ds-radius-sm: 0.5rem;
-  --ds-radius-md: 0.75rem;
-  --ds-radius-lg: 1rem;
-  --ds-radius-xl: 1.25rem;
-  --ds-radius-2xl: 1.5rem;
+  /* ==========================================================================
+     RADIUS — ramp هندسی premium (8 / 12 / 16 / 20 / 24 px)
+     Linear / Vercel / Stripe از این rhythm استفاده می‌کنند.
+     قبلاً در globals.css @theme به 6/8/12/16/20 override می‌شد که
+     باعث می‌شد کامپوننت‌ها ۳۳٪ تیزتر از intent دیده شوند.
+     ========================================================================== */
+  --ds-radius-sm: 0.5rem; /* 8px  */
+  --ds-radius-md: 0.75rem; /* 12px */
+  --ds-radius-lg: 1rem; /* 16px */
+  --ds-radius-xl: 1.25rem; /* 20px */
+  --ds-radius-2xl: 1.5rem; /* 24px */
   --ds-radius-full: 9999px;
 
-  /* Light mode colors */
+  /* ==========================================================================
+     DURATION — Stripe-style timing (180 / 280 / 420 / 600 ms)
+     قبلاً در globals.css @theme به 120/200/320 تقلیل یافته بود.
+     این timing برای premium feel ضروری است؛ تغییرش کلیپ‌فیس می‌سازد.
+     ========================================================================== */
+  --ds-duration-fast: 180ms;
+  --ds-duration-base: 280ms;
+  --ds-duration-slow: 420ms;
+  --ds-duration-page: 600ms;
+
+  /* ==========================================================================
+     EASING — منحنی‌های reference
+     --------------------------------------------------------------------------
+     - quart:   easing اصلی همه‌ی transitions در DS (Stripe-style)
+     - expo:    برای hero animations (sharper curve)
+     - spring:  برای morphing icons / playful interactions
+     - in-out:  برای accordion / panel toggles
+     ========================================================================== */
+  --ds-ease-out-quart: cubic-bezier(0.22, 1, 0.36, 1);
+  --ds-ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  --ds-ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ds-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ==========================================================================
+     COLORS — Light mode (default :root)
+     OKLCH با saturation پایین؛ gentle و premium.
+     هر دو رنگ canvas و surface در tokens هستند تا DS کامپوننت‌ها بتوانند
+     از `var(--ds-surface)` استفاده کنند.
+     ========================================================================== */
   --ds-canvas: oklch(99% 0.003 240);
   --ds-canvas-subtle: oklch(97% 0.005 240);
   --ds-surface: oklch(100% 0 0 / 0.7);
@@ -74,22 +122,61 @@
   --ds-accent-violet: oklch(58% 0.13 290);
   --ds-accent-slate: oklch(60% 0.02 250);
 
-  /* Effects */
-  --ds-shadow-sm: 0 1px 2px oklch(20% 0.01 240 / 0.04);
-  --ds-shadow-md: 0 4px 12px -4px oklch(20% 0.01 240 / 0.10);
-  --ds-shadow-lg: 0 18px 50px -20px oklch(45% 0.10 250 / 0.35);
-  --ds-glow-brand: 0 0 0 1px oklch(55% 0.10 235 / 0.4),
-                   0 8px 24px -8px oklch(55% 0.10 235 / 0.35);
+  /* ==========================================================================
+     SEMANTIC COLOR TOKENS — Dashboard v2 (2026)
+     --------------------------------------------------------------------------
+     اضافه شده در 2026-07-02 برای یکدست کردن با dashboard.css.
+     این‌ها در کنار `--ds-canvas` / `--ds-surface` به عنوان semantic aliases
+     برای v2 dashboard استفاده می‌شوند. تفاوت‌شان در `--*-dark` flip pattern
+     است که به جای `.dark` selector با media-switch می‌شود.
+     ========================================================================== */
+  --ds-color-canvas: oklch(98.5% 0.004 245);
+  --ds-color-canvas-dark: oklch(15% 0.018 255);
+  --ds-color-surface: oklch(100% 0 0);
+  --ds-color-surface-dark: oklch(20% 0.018 255);
+  --ds-color-surface-2: oklch(96% 0.004 245);
+  --ds-color-surface-2-dark: oklch(24% 0.018 255);
+  --ds-color-border-subtle: oklch(92% 0.006 245);
+  --ds-color-border-subtle-dark: oklch(28% 0.02 255);
+  --ds-color-border-default: oklch(88% 0.008 245);
+  --ds-color-border-default-dark: oklch(34% 0.02 255);
+  --ds-color-border-strong: oklch(82% 0.012 245);
+  --ds-color-border-strong-dark: oklch(42% 0.022 255);
+  --ds-color-fg-muted: oklch(45% 0.01 245);
+  --ds-color-fg-muted-dark: oklch(70% 0.01 245);
+  --ds-color-fg-subtle: oklch(55% 0.01 245);
+  --ds-color-fg-subtle-dark: oklch(55% 0.012 250);
+  --ds-color-blue: oklch(70% 0.13 250);
+  --ds-color-blue-dark: oklch(70% 0.14 245);
+  --ds-color-side: oklch(99% 0.003 245);
+  --ds-color-side-dark: oklch(13% 0.018 255);
+  --ds-color-side-hover-bg: oklch(96% 0.005 245 / 0.7);
+  --ds-color-side-hover-bg-dark: oklch(20% 0.02 255 / 0.6);
+  --ds-color-side-active-bg: oklch(94% 0.04 245 / 0.7);
+  --ds-color-side-active-bg-dark: oklch(22% 0.04 250 / 0.5);
+  --ds-color-side-active-fg: oklch(20% 0.02 250);
+  --ds-color-side-active-fg-dark: oklch(95% 0.01 245);
 
-  /* Motion */
-  --ds-ease-out-quart: cubic-bezier(0.22, 1, 0.36, 1);
-  --ds-ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
-  --ds-duration-fast: 180ms;
-  --ds-duration-base: 280ms;
-  --ds-duration-slow: 420ms;
-  --ds-duration-page: 600ms;
+  /* ==========================================================================
+     DASHBOARD LAYOUT — Sidebar widths
+     ========================================================================== */
+  --ds-side-w-expanded: 268px;
+  --ds-side-w-rail: 76px;
+
+  /* ==========================================================================
+     EFFECTS — shadows و glow (low-saturation)
+     ========================================================================== */
+  --ds-shadow-sm: 0 1px 2px oklch(20% 0.01 240 / 0.04);
+  --ds-shadow-md: 0 4px 12px -4px oklch(20% 0.01 240 / 0.1);
+  --ds-shadow-lg: 0 18px 50px -20px oklch(45% 0.1 250 / 0.35);
+  --ds-glow-brand: 0 0 0 1px oklch(55% 0.1 235 / 0.4),
+    0 8px 24px -8px oklch(55% 0.1 235 / 0.35);
 }
 
+/* ==========================================================================
+   DARK MODE FLIPS — همه‌ی semantic color tokens با prefix `--ds-color-*`
+   در dark mode به variant `-dark` خودشان switch می‌کنند.
+   ========================================================================== */
 .dark {
   --ds-canvas: oklch(15% 0.01 250);
   --ds-canvas-subtle: oklch(18% 0.012 250);
@@ -109,10 +196,28 @@
   --ds-shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.4);
   --ds-shadow-md: 0 4px 12px -4px oklch(0% 0 0 / 0.5);
   --ds-shadow-lg: 0 22px 60px -22px oklch(0% 0 0 / 0.7);
-  --ds-glow-brand: 0 0 0 1px oklch(65% 0.10 235 / 0.5),
-                   0 8px 24px -8px oklch(65% 0.10 235 / 0.5);
+  --ds-glow-brand: 0 0 0 1px oklch(65% 0.1 235 / 0.5),
+    0 8px 24px -8px oklch(65% 0.1 235 / 0.5);
+
+  /* Dashboard v2 semantic colors */
+  --ds-color-canvas: var(--ds-color-canvas-dark);
+  --ds-color-surface: var(--ds-color-surface-dark);
+  --ds-color-surface-2: var(--ds-color-surface-2-dark);
+  --ds-color-border-subtle: var(--ds-color-border-subtle-dark);
+  --ds-color-border-default: var(--ds-color-border-default-dark);
+  --ds-color-border-strong: var(--ds-color-border-strong-dark);
+  --ds-color-fg-muted: var(--ds-color-fg-muted-dark);
+  --ds-color-fg-subtle: var(--ds-color-fg-subtle-dark);
+  --ds-color-blue: var(--ds-color-blue-dark);
+  --ds-color-side: var(--ds-color-side-dark);
+  --ds-color-side-hover-bg: var(--ds-color-side-hover-bg-dark);
+  --ds-color-side-active-bg: var(--ds-color-side-active-bg-dark);
+  --ds-color-side-active-fg: var(--ds-color-side-active-fg-dark);
 }
 
+/* ==========================================================================
+   REDUCED MOTION — global clamp. فقط یک‌بار در کل پروژه.
+   ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

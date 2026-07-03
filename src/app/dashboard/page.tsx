@@ -6,11 +6,11 @@ import { getRecentActivity } from '@/actions/getRecentActivity';
 import { getRecentDrafts } from '@/actions/getRecentDrafts';
 import { getViewStats } from '@/actions/getViewStats';
 import { getScheduledPosts, getStats } from '@/actions/postActions';
-// 2026-07-01: Redesigned the dashboard home with the TIDE / newsroom
-// composition (LiveTicker + TideCover + QuickStage + DataRoom +
-// ConstellationGrid + PostsRail + StatusFloor). The data layer is
-// unchanged — only the presentation is new.
-import { TideShell } from '@/components/Dashboard/DashboardPage/tide';
+// 2026-07-03: Redesigned the dashboard home as NOVA — a 2026 bento command
+// deck (single asymmetric mosaic of deep-glass tiles with spatial-depth
+// tilt + scroll-driven CSS reveal), replacing the TIDE newsroom stations.
+// The data layer is unchanged — only the presentation is new.
+import { NovaDeck } from '@/components/Dashboard/DashboardPage/nova';
 import ServiceRequestsWidget from '@/components/Dashboard/ServiceRequests/ServiceRequestsWidget';
 import { checkRole } from '@/lib/auth';
 
@@ -72,7 +72,7 @@ export default async function Dashboard() {
 
   return (
     <>
-      <TideShell
+      <NovaDeck
         stats={statsResult.data}
         scheduledPosts={scheduledPostsResult.data}
         popularPosts={popularPostsResult.data}

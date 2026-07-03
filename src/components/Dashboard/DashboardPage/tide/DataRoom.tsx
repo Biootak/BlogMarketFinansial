@@ -17,6 +17,7 @@
  * (CSS clamp) so it scrolls independently on tall viewports.
  */
 
+import { Spotlight } from '@/components/Dashboard/primitives';
 import { motion } from '@/lib/motion-shim';
 import { cn } from '@/lib/utils';
 import type { PostWithRelations } from '@/types/types';
@@ -245,6 +246,8 @@ export default function DataRoom({ scheduledPosts, recentActivity, range }: Data
   return (
     <section className="tide-dataroom" aria-label="اتاق داده">
       <div className="tide-dataroom__panel tide-dataroom__panel--chart">
+        <Spotlight tone="accent" size={420} />
+        <span className="tide-dataroom__accent" aria-hidden />
         <header className="tide-dataroom__head">
           <span className="tide-dataroom__head-ico" aria-hidden>
             <HiOutlineChartBar className="w-4 h-4" />
@@ -322,6 +325,7 @@ export default function DataRoom({ scheduledPosts, recentActivity, range }: Data
         className="tide-dataroom__panel tide-dataroom__panel--stream"
         aria-label="جریان فعالیت"
       >
+        <Spotlight tone="cyan" size={360} />
         <ActivityStream items={recentActivity} range={range} />
       </motion.aside>
     </section>

@@ -19,6 +19,7 @@
  * single column with stacked modules.
  */
 
+import { Spotlight } from '@/components/Dashboard/primitives';
 import { motion } from '@/lib/motion-shim';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -201,6 +202,7 @@ export default function QuickStage({ userRole }: QuickStageProps) {
             }}
           >
             <Link href={action.href} className={cn('tide-module', TONE_MAP[action.tone])}>
+              <Spotlight tone={action.tone} size={260} />
               <span className="tide-module__index" aria-hidden>
                 {action.index}
               </span>

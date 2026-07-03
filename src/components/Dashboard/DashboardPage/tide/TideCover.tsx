@@ -25,7 +25,7 @@
  */
 
 import CountUp from '@/components/Dashboard/DashboardPage/CountUp';
-import { MagneticButton, NoiseTexture } from '@/components/Dashboard/primitives';
+import { MagneticButton, NoiseTexture, Spotlight } from '@/components/Dashboard/primitives';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { motion } from '@/lib/motion-shim';
 import { cn } from '@/lib/utils';
@@ -166,18 +166,72 @@ function CoverSparkline({ data, stroke, gradId, width = 520, height = 88 }: Cove
 
 /* ─── Satellite KPI chip ─────────────────────────────────────────── */
 
+type ChipTone = 'rose' | 'emerald' | 'cyan' | 'amber';
+
 interface ChipProps {
   label: string;
   value: number;
-  tone: 'rose' | 'emerald' | 'cyan' | 'amber';
+  tone: ChipTone;
   idx: number;
+  data: number[];
 }
 
 function fmtNumber(n: number) {
   return new Intl.NumberFormat('fa-IR').format(n);
 }
 
-function SatelliteChip({ label, value, tone, idx }: ChipProps) {
+const CHIP_STROKE: Record<ChipTone, string> = {
+  cyan: 'oklch(70% 0.13 220)',
+  rose: 'oklch(70% 0.16 20)',
+  emerald: 'oklch(70% 0.14 155)',
+  amber: 'oklch(75% 0.16 45)',
+};
+
+/** Compact single-line sparkline for a KPI chip. */
+function ChipSpark({ data, stroke }: { data: number[]; stroke: string }) {
+  if (data.length < 2) return null;
+  const w = 88;
+  const h = 24;
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const span = max - min || 1;
+  const step = w / (data.length - 1);
+  const line = data
+    .map((v, i) => {
+      const x = i * step;
+      const y = h - 3 - ((v - min) / span) * (h - 6);
+      return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(' ');
+  return (
+    <svg
+      viewBox={`0 0 ${w} ${h}`}
+      preserveAspectRatio="none"
+      className="tide-chip__spark"
+      aria-hidden
+    >
+      <path
+        d={line}
+        fill="none"
+        stroke={stroke}
+        strokeWidth={1.75}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
+function SatelliteChip({ label, value, tone, idx, data }: ChipProps) {
+  const { trend, delta } = pickTrend(data);
+  const TrendIcon =
+    trend === 'up'
+      ? HiOutlineArrowUpRight
+      : trend === 'down'
+        ? HiOutlineArrowDownRight
+        : HiOutlineMinus;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -185,11 +239,21 @@ function SatelliteChip({ label, value, tone, idx }: ChipProps) {
       transition={{ duration: 0.45, delay: 0.12 + idx * 0.06, ease: [0.22, 1, 0.36, 1] }}
       className={cn('tide-chip', `tide-chip--${tone}`)}
     >
+      <Spotlight tone={tone} size={200} />
       <span className="tide-chip__dot" aria-hidden />
       <span className="tide-chip__label">{label}</span>
       <span className="tide-chip__value tabular-nums">
         <CountUp value={value} duration={900} />
       </span>
+      <div className="tide-chip__foot">
+        <ChipSpark data={data} stroke={CHIP_STROKE[tone]} />
+        {data.length >= 2 && (
+          <span className={cn('tide-chip__delta', `is-${trend}`)}>
+            <TrendIcon className="w-3 h-3" aria-hidden />
+            <span className="tabular-nums">{`${delta > 0 ? '+' : ''}${delta.toFixed(0)}٪`}</span>
+          </span>
+        )}
+      </div>
     </motion.div>
   );
 }
@@ -220,10 +284,16 @@ export default function TideCover({ stats, viewStats, userRole: _userRole }: Tid
 
   // 2x2 chip grid driven by stats
   const chipData: ChipProps[] = [
-    { label: 'بازدید امروز', value: stats.views.today, tone: 'cyan', idx: 0 },
-    { label: 'لایک‌ها', value: stats.likes.total, tone: 'rose', idx: 1 },
-    { label: 'نظرات', value: stats.comments.new, tone: 'emerald', idx: 2 },
-    { label: 'اشتراک‌گذاری', value: stats.shares.total, tone: 'amber', idx: 3 },
+    { label: 'بازدید امروز', value: stats.views.today, tone: 'cyan', idx: 0, data: stats.views.data },
+    { label: 'لایک‌ها', value: stats.likes.total, tone: 'rose', idx: 1, data: stats.likes.data },
+    { label: 'نظرات', value: stats.comments.new, tone: 'emerald', idx: 2, data: stats.comments.data },
+    {
+      label: 'اشتراک‌گذاری',
+      value: stats.shares.total,
+      tone: 'amber',
+      idx: 3,
+      data: stats.shares.data,
+    },
   ];
 
   return (
@@ -231,6 +301,7 @@ export default function TideCover({ stats, viewStats, userRole: _userRole }: Tid
       {/* Layered ambient wash */}
       <div className="tide-cover__wash" aria-hidden />
       <NoiseTexture opacity={0.022} />
+      <Spotlight tone="accent" size={520} className="tide-cover__spotlight" />
 
       <div className="tide-cover__inner">
         {/* ── Editorial column ────────────────────────────────────── */}
@@ -253,6 +324,7 @@ export default function TideCover({ stats, viewStats, userRole: _userRole }: Tid
 
           {/* Headline number */}
           <div className="tide-cover__anchor">
+            <span className="tide-cover__anchor-glow" aria-hidden />
             <p
               className="tide-cover__number"
               aria-label={`${viewStats.todayViews.toLocaleString('fa-IR')} بازدید امروز`}

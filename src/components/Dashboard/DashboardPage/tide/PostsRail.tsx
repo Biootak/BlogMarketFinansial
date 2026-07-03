@@ -16,6 +16,7 @@
  * drafts list drops below it.
  */
 
+import { Spotlight, type SpotlightTone } from '@/components/Dashboard/primitives';
 import { motion } from '@/lib/motion-shim';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -40,6 +41,7 @@ interface PostsRailProps {
 }
 
 const TONES = ['is-indigo', 'is-emerald', 'is-cyan', 'is-violet', 'is-amber', 'is-rose'] as const;
+const SPOT_TONES: SpotlightTone[] = ['indigo', 'emerald', 'cyan', 'violet', 'amber', 'rose'];
 
 function fmt(n: number) {
   return new Intl.NumberFormat('fa-IR').format(n);
@@ -133,8 +135,10 @@ export default function PostsRail({ popularPosts, recentDrafts }: PostsRailProps
                   }}
                   className={cn('tide-post', TONES[i % TONES.length])}
                 >
+                  <Spotlight tone={SPOT_TONES[i % SPOT_TONES.length]} size={240} />
                   <Link href={`/blog/${post.slug}`} className="tide-post__link">
                     <div className="tide-post__cover" style={{ background: pickGradient(post.id) }}>
+                      <span className="tide-post__shine" aria-hidden />
                       <svg
                         viewBox="0 0 100 100"
                         preserveAspectRatio="none"
