@@ -228,3 +228,70 @@
     scroll-behavior: auto !important;
   }
 }
+/* Command Center Tokens — 2026-07-03 */
+:root {
+  /* Colors */
+  --cc-primary: oklch(65% 0.15 265);
+  --cc-primary-hover: oklch(60% 0.18 265);
+  --cc-accent: oklch(70% 0.18 155);
+  --cc-accent-hover: oklch(65% 0.20 155);
+  --cc-warning: oklch(75% 0.15 70);
+  --cc-error: oklch(65% 0.18 25);
+  --cc-surface: oklch(98% 0.005 265);
+  --cc-canvas: oklch(97% 0.003 265);
+  --cc-text: oklch(20% 0.01 265);
+  --cc-text-muted: oklch(50% 0.01 265);
+  --cc-border: oklch(90% 0.005 265);
+  
+  /* Typography */
+  --cc-text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --cc-text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+  --cc-text-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
+  --cc-text-lg: clamp(1.125rem, 1rem + 0.6vw, 1.25rem);
+  --cc-text-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
+  --cc-text-2xl: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);
+  --cc-text-3xl: clamp(2rem, 1.5rem + 2.5vw, 3rem);
+  
+  /* Spacing */
+  --cc-space-1: clamp(0.25rem, 0.2rem + 0.25vw, 0.5rem);
+  --cc-space-2: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem);
+  --cc-space-3: clamp(0.75rem, 0.6rem + 0.75vw, 1rem);
+  --cc-space-4: clamp(1rem, 0.8rem + 1vw, 1.5rem);
+  --cc-space-6: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);
+  --cc-space-8: clamp(2rem, 1.6rem + 2vw, 3rem);
+  
+  /* Radius */
+  --cc-radius-sm: 8px;
+  --cc-radius-md: 12px;
+  --cc-radius-lg: 16px;
+  --cc-radius-xl: 24px;
+  --cc-radius-full: 9999px;
+  
+  /* Shadows */
+  --cc-shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.05);
+  --cc-shadow-md: 0 4px 12px oklch(0% 0 0 / 0.08);
+  --cc-shadow-lg: 0 8px 24px oklch(0% 0 0 / 0.12);
+  --cc-shadow-xl: 0 16px 48px oklch(0% 0 0 / 0.16);
+  
+  /* Transitions */
+  --cc-duration-fast: 150ms;
+  --cc-duration-normal: 250ms;
+  --cc-duration-slow: 400ms;
+  --cc-easing: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark {
+  --cc-surface: oklch(18% 0.01 265);
+  --cc-canvas: oklch(13% 0.01 265);
+  --cc-text: oklch(95% 0.005 265);
+  --cc-text-muted: oklch(65% 0.005 265);
+  --cc-border: oklch(25% 0.01 265);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --cc-duration-fast: 0ms;
+    --cc-duration-normal: 0ms;
+    --cc-duration-slow: 0ms;
+  }
+}
