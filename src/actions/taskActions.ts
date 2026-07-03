@@ -1,28 +1,34 @@
 'use server'
 
-import { requireUser } from '@/lib/require-auth'
-import { authFailureToActionResult } from '@/lib/require-auth'
+import { requireUser, authFailureToActionResult } from '@/lib/require-auth'
 import prisma from '@/lib/db'
 import { revalidateTag } from '@/lib/revalidate'
 import type { Task, TaskStatus, TaskPriority } from '@prisma/client'
+import type { ActionResult } from '@/types/types'
 
-type ActionResult<T = void> =
-  | { success: true; data: T; message?: string }
-  | { success: false; message: string; error: string }
-
-export async function getTasks(limit = 10): Promise<Task[]> {
+export async function getTasks(limit = 10): Promise<ActionResult<Task[]>> {
   const auth = await requireUser()
-  if (!auth.success) return []
+  if (!auth.success) return authFailureToActionResult(auth)
 
-  return prisma.task.findMany({
-    where: { userId: auth.user.id },
-    orderBy: [
-      { status: 'asc' },
-      { priority: 'desc' },
-      { dueDate: 'asc' },
-    ],
-    take: limit,
-  })
+  try {
+    const tasks = await prisma.task.findMany({
+      where: { userId: auth.user.id },
+      orderBy: [
+        { status: 'asc' },
+        { priority: 'desc' },
+        { dueDate: 'asc' },
+      ],
+      take: limit,
+    })
+    return { success: true, data: tasks, message: '' }
+  } catch (error) {
+    console.error('[taskActions] Error fetching tasks:', error)
+    return {
+      success: false,
+      message: 'خطا در دریافت تسک‌ها. لطفاً دوباره تلاش کنید.',
+      error: 'INTERNAL_ERROR',
+    }
+  }
 }
 
 export async function createTask(data: {
@@ -73,26 +79,21 @@ export async function updateTaskStatus(
   if (!auth.success) return authFailureToActionResult(auth)
 
   try {
-    const task = await prisma.task.findFirst({
-      where: { id, userId: auth.user.id },
-    })
-
-    if (!task) {
-      return {
-        success: false,
-        message: 'تسک یافت نشد.',
-        error: 'NOT_FOUND',
-      }
-    }
-
     const updated = await prisma.task.update({
-      where: { id },
+      where: { id, userId: auth.user.id },
       data: { status },
     })
 
     revalidateTag('tasks')
     return { success: true, data: updated, message: 'وضعیت تسک با موفقیت بروزرسانی شد.' }
   } catch (error) {
+    if ((error as { code?: string })?.code === 'P2025') {
+      return {
+        success: false,
+        message: 'تسک یافت نشد.',
+        error: 'NOT_FOUND',
+      }
+    }
     console.error('[taskActions] Error updating task status:', error)
     return {
       success: false,
@@ -107,23 +108,20 @@ export async function deleteTask(id: string): Promise<ActionResult<void>> {
   if (!auth.success) return authFailureToActionResult(auth)
 
   try {
-    const task = await prisma.task.findFirst({
+    await prisma.task.delete({
       where: { id, userId: auth.user.id },
     })
 
-    if (!task) {
+    revalidateTag('tasks')
+    return { success: true, data: undefined, message: 'تسک با موفقیت حذف شد.' }
+  } catch (error) {
+    if ((error as { code?: string })?.code === 'P2025') {
       return {
         success: false,
         message: 'تسک یافت نشد.',
         error: 'NOT_FOUND',
       }
     }
-
-    await prisma.task.delete({ where: { id } })
-
-    revalidateTag('tasks')
-    return { success: true, data: undefined, message: 'تسک با موفقیت حذف شد.' }
-  } catch (error) {
     console.error('[taskActions] Error deleting task:', error)
     return {
       success: false,
