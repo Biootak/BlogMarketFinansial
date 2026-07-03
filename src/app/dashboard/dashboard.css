@@ -7954,8 +7954,7 @@
   .cc-command-bar__dropdown {
     position: absolute;
     top: 100%;
-    left: 0;
-    right: 0;
+    inset-inline: 0;
     margin-top: var(--cc-space-2);
     background: var(--cc-surface);
     border: 1px solid var(--cc-border);
@@ -8047,7 +8046,7 @@
   .cc-timeline__filter:hover,
   .cc-timeline__filter--active {
     background: var(--cc-primary);
-    color: white;
+    color: oklch(99% 0 0);
     border-color: var(--cc-primary);
   }
 
@@ -8476,7 +8475,7 @@
   @keyframes cc-slide-in {
     from {
       opacity: 0;
-      transform: translateX(16px);
+      transform: translateX(calc(16px * var(--direction, 1)));
     }
     to {
       opacity: 1;
