@@ -23,6 +23,6 @@ Use the `read` tool to load these files in order:
 
 After reading, begin the response with the mandatory declaration from `AGENTS.md`:
 
-> "AGENTS.md و ARCHITECT_RULES.md را خواندم و با آن‌ها همسو هستم."
+> "AGENTS.md را خواندم. پلن نمی‌نویسم — مستقیم می‌سازم (Build → Show → Improve)."
 
 Then proceed with the user's request following the workflow rules in those documents.
