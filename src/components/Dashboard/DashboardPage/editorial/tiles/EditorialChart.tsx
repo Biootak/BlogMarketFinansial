@@ -1,15 +1,13 @@
 'use client';
 
 /**
- * ChartTile — NOVA analytics tile (traffic + publishing calendar).
+ * EditorialChart — analytics tile with tab switcher + period selector.
  *
- * Reuses the existing data-bound `TrafficChart` and `PublishingCalendar`
- * (both lazy, ssr:false) inside a deep-glass panel with a segmented tab
- * switch and a period radio group. `.nova-embed` neutralises the reused
- * components' own card chrome so they read as one NOVA surface.
+ * Reuses TrafficChart and PublishingCalendar (both lazy) without their
+ * internal card chrome. Same data wiring as the former NOVA chart tile;
+ * new shell with hairline border and calmer tabs.
  */
 
-import { Spotlight } from '@/components/Dashboard/primitives';
 import { cn } from '@/lib/utils';
 import type { PostWithRelations } from '@/types/types';
 import dynamic from 'next/dynamic';
@@ -18,12 +16,27 @@ import { HiOutlineCalendarDays, HiOutlineChartBar } from 'react-icons/hi2';
 
 const TrafficChart = dynamic(() => import('@/components/Dashboard/DashboardPage/TrafficChart'), {
   ssr: false,
-  loading: () => <div className="nova-skeleton" aria-hidden />,
+  loading: () => (
+    <div
+      className="h-72 w-full rounded-md"
+      style={{ background: 'var(--ec-bg-elevated)' }}
+      aria-hidden
+    />
+  ),
 });
 
 const PublishingCalendar = dynamic(
   () => import('@/components/Dashboard/Calendar/PublishingCalendar'),
-  { ssr: false, loading: () => <div className="nova-skeleton" aria-hidden /> },
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="h-72 w-full rounded-md"
+        style={{ background: 'var(--ec-bg-elevated)' }}
+        aria-hidden
+      />
+    ),
+  },
 );
 
 const PERIODS = [
@@ -40,70 +53,69 @@ const TABS: ReadonlyArray<{ id: TabId; label: string; icon: React.ReactNode }> =
   { id: 'calendar', label: 'تقویم انتشار', icon: <HiOutlineCalendarDays className="w-4 h-4" /> },
 ];
 
-interface ChartTileProps {
+interface EditorialChartProps {
   scheduledPosts: PostWithRelations[];
 }
 
-export default function ChartTile({ scheduledPosts }: ChartTileProps) {
+export default function EditorialChart({ scheduledPosts }: EditorialChartProps) {
   const [tab, setTab] = useState<TabId>('traffic');
   const [period, setPeriod] = useState<PeriodId>('7d');
   const tabId = useId();
 
   return (
-    <section className="nova-tile nova-tile--chart" data-tone="primary" aria-label="تحلیل بازدید و تقویم">
-      <Spotlight tone="indigo" size={440} />
-      <header className="nova-panel__head">
-        <div className="nova-panel__head-title">
-          <span className="nova-panel__head-ico" aria-hidden>
-            <HiOutlineChartBar className="w-4 h-4" />
+    <section className="ec-tile ec-chart" aria-label="تحلیل بازدید و تقویم">
+      <header className="ec-head">
+        <div className="ec-head__title">
+          <span className="ec-head__ico" aria-hidden>
+            <HiOutlineChartBar className="w-3.5 h-3.5" />
           </span>
-          <div className="min-w-0">
-            <h2 className="nova-panel__title">تحلیل بازدید و تقویم</h2>
-            <p className="nova-panel__sub">
+          <div className="ec-head__text">
+            <h2 className="ec-head__title-text">تحلیل بازدید و تقویم</h2>
+            <p className="ec-head__sub">
               روند {PERIODS.find((p) => p.id === period)?.label} اخیر + برنامهٔ انتشار
             </p>
           </div>
         </div>
+      </header>
+
+      <div className="ec-chart__tabs">
+        <div className="ec-chart__tabs-list" role="tablist" aria-label="نمای داده">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              role="tab"
+              aria-selected={tab === t.id}
+              aria-controls={`${tabId}-${t.id}`}
+              id={`${tabId}-trigger-${t.id}`}
+              onClick={() => setTab(t.id)}
+              className={cn('ec-chart__tab', tab === t.id && 'ec-chart__tab--active')}
+            >
+              {t.icon}
+              <span>{t.label}</span>
+            </button>
+          ))}
+        </div>
 
         {tab === 'traffic' && (
-          // biome-ignore lint/a11y/useSemanticElements: ARIA radiogroup on styled buttons is the correct pattern
-          <div className="nova-seg" role="radiogroup" aria-label="بازهٔ زمانی">
+          <div className="ec-chart__segs" role="radiogroup" aria-label="بازهٔ زمانی">
             {PERIODS.map((p) => (
-              // biome-ignore lint/a11y/useSemanticElements: ARIA radio inside radiogroup
               <button
                 key={p.id}
                 type="button"
                 role="radio"
                 aria-checked={p.id === period}
                 onClick={() => setPeriod(p.id)}
-                className={cn('nova-seg__btn', p.id === period && 'is-active')}
+                className={cn('ec-chart__seg', p.id === period && 'ec-chart__seg--active')}
               >
                 {p.label}
               </button>
             ))}
           </div>
         )}
-      </header>
-
-      <div className="nova-tabs" role="tablist" aria-label="نمای داده">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            role="tab"
-            aria-selected={tab === t.id}
-            aria-controls={`${tabId}-${t.id}`}
-            id={`${tabId}-trigger-${t.id}`}
-            onClick={() => setTab(t.id)}
-            className={cn('nova-tab', tab === t.id && 'is-active')}
-          >
-            {t.icon}
-            <span>{t.label}</span>
-          </button>
-        ))}
       </div>
 
-      <div className="nova-embed nova-chart__canvas">
+      <div className="ec-chart__canvas">
         {tab === 'traffic' ? (
           <div role="tabpanel" id={`${tabId}-traffic`} aria-labelledby={`${tabId}-trigger-traffic`}>
             <TrafficChart key={`traffic-${period}`} period={period} />

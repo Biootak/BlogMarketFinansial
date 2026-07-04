@@ -25,7 +25,7 @@ services:
   db:
     image: postgres:15-alpine
     ports:
-      - "5432:5432"
+      - "15432:5432"
     environment:
       - POSTGRES_USER=blog_owner
       - POSTGRES_PASSWORD=I82HcwNASRPe

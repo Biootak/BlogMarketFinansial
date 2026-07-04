@@ -50,6 +50,8 @@ import {
   HiOutlineXMark,
 } from 'react-icons/hi2';
 
+const ICON_CLASS = 'w-[19px] h-[19px]';
+
 type UserRole = 'USER' | 'AUTHOR' | 'ADMIN' | 'OWNER';
 
 interface SubmenuItem {
@@ -106,7 +108,7 @@ function getMenu(role: UserRole): NavSection[] {
   const dashboard: MenuItem = {
     id: 'dashboard',
     href: '/dashboard',
-    icon: <HiOutlineHome className="w-[18px] h-[18px]" />,
+    icon: <HiOutlineHome className={ICON_CLASS} />,
     label: 'داشبورد',
     title: 'داشبورد',
     shortcut: SHORTCUT_KEYS.dashboard,
@@ -115,7 +117,7 @@ function getMenu(role: UserRole): NavSection[] {
   const posts: MenuItem = {
     id: 'posts',
     href: '/dashboard/posts',
-    icon: <HiOutlineDocumentText className="w-[18px] h-[18px]" />,
+    icon: <HiOutlineDocumentText className={ICON_CLASS} />,
     label: 'پست‌ها',
     title: 'پست‌ها',
     shortcut: SHORTCUT_KEYS.posts,
@@ -124,7 +126,7 @@ function getMenu(role: UserRole): NavSection[] {
   const categories: MenuItem = {
     id: 'categories',
     href: '/dashboard/categories',
-    icon: <HiOutlineSquares2X2 className="w-[18px] h-[18px]" />,
+    icon: <HiOutlineSquares2X2 className={ICON_CLASS} />,
     label: 'دسته‌بندی',
     title: 'دسته‌بندی',
     shortcut: SHORTCUT_KEYS.categories,
@@ -133,7 +135,7 @@ function getMenu(role: UserRole): NavSection[] {
   const users: MenuItem = {
     id: 'users',
     href: '/dashboard/users',
-    icon: <HiOutlineUsers className="w-[18px] h-[18px]" />,
+    icon: <HiOutlineUsers className={ICON_CLASS} />,
     label: 'کاربران',
     title: 'کاربران',
     shortcut: SHORTCUT_KEYS.users,
@@ -142,7 +144,7 @@ function getMenu(role: UserRole): NavSection[] {
   const advertisements: MenuItem = {
     id: 'advertisements',
     href: '/dashboard/advertisements',
-    icon: <HiOutlineMegaphone className="w-[18px] h-[18px]" />,
+    icon: <HiOutlineMegaphone className={ICON_CLASS} />,
     label: 'تبلیغات',
     title: 'تبلیغات',
     shortcut: SHORTCUT_KEYS.advertisements,
@@ -151,7 +153,7 @@ function getMenu(role: UserRole): NavSection[] {
   const serviceRequests: MenuItem = {
     id: 'serviceRequests',
     href: '/dashboard/service-requests',
-    icon: <HiOutlineClipboardDocumentList className="w-[18px] h-[18px]" />,
+    icon: <HiOutlineClipboardDocumentList className={ICON_CLASS} />,
     label: 'درخواست‌ها',
     title: 'درخواست‌های خدمات',
     shortcut: SHORTCUT_KEYS.serviceRequests,
@@ -160,7 +162,7 @@ function getMenu(role: UserRole): NavSection[] {
   const exchangeRates: MenuItem = {
     id: 'exchangeRates',
     href: '/dashboard/exchange-rates',
-    icon: <HiOutlineCurrencyDollar className="w-[18px] h-[18px]" />,
+    icon: <HiOutlineCurrencyDollar className={ICON_CLASS} />,
     label: 'نرخ ارز',
     title: 'نرخ ارز',
     shortcut: SHORTCUT_KEYS.exchangeRates,
@@ -169,7 +171,7 @@ function getMenu(role: UserRole): NavSection[] {
   const settings: MenuItem = {
     id: 'settings',
     href: '/dashboard/settings',
-    icon: <HiOutlineCog6Tooth className="w-[18px] h-[18px]" />,
+    icon: <HiOutlineCog6Tooth className={ICON_CLASS} />,
     label: 'تنظیمات',
     title: 'تنظیمات سیستم',
     shortcut: SHORTCUT_KEYS.settings,
@@ -178,7 +180,7 @@ function getMenu(role: UserRole): NavSection[] {
   const reports: MenuItem = {
     id: 'reports',
     href: '/dashboard/reports',
-    icon: <HiOutlineChartBarSquare className="w-[18px] h-[18px]" />,
+    icon: <HiOutlineChartBarSquare className={ICON_CLASS} />,
     label: 'گزارش‌ها',
     title: 'گزارش‌ها',
     shortcut: SHORTCUT_KEYS.reports,
@@ -187,7 +189,7 @@ function getMenu(role: UserRole): NavSection[] {
   const profile: MenuItem = {
     id: 'profile',
     href: '/dashboard/edit-profile',
-    icon: <HiOutlineUserCircle className="w-[18px] h-[18px]" />,
+    icon: <HiOutlineUserCircle className={ICON_CLASS} />,
     label: 'پروفایل',
     title: 'پروفایل من',
     shortcut: SHORTCUT_KEYS.profile,
@@ -559,7 +561,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
           >
             <span className="dash-side__diamond" aria-hidden />
             <span className="dash-side__item-ico">
-              <HiOutlineArrowRightOnRectangle className="w-[18px] h-[18px]" aria-hidden />
+              <HiOutlineArrowRightOnRectangle className={ICON_CLASS} aria-hidden />
             </span>
             {isOpen && <span className="dash-side__item-label">خروج</span>}
           </button>

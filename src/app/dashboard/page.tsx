@@ -8,12 +8,15 @@ import { getRecentDrafts } from '@/actions/getRecentDrafts';
 import { getTopAuthors } from '@/actions/getTopAuthors';
 import { getViewStats } from '@/actions/getViewStats';
 import { getScheduledPosts, getStats } from '@/actions/postActions';
-// 2026-07-03: Redesigned the dashboard home as NOVA — a 2026 bento command
-// deck (single asymmetric mosaic of deep-glass tiles with spatial-depth
-// tilt + scroll-driven CSS reveal), replacing the TIDE newsroom stations.
-// 2026-07-03 v2: "Quiet Confidence" redesign — solid surfaces, typography-
-// driven hierarchy, real market data, top authors leaderboard.
-import { NovaDeck } from '@/components/Dashboard/DashboardPage/nova';
+// 2026-07-04: Replaced Editorial Command (typography-only, 5-row, single
+// emerald accent) with Atelier 2026 — Persian-modern redesign with a
+// live market ticker band, radial pulse chart, brand mark, 7-day strip,
+// 2x2 market grid, gold "lead" accents, and gradient hero. Visual
+// language still hairline-only (no glass) and emerald-first, but the
+// composition gains a clear focal point (the pulse + today number) and
+// a real-time data layer (the ticker). Editorial module kept on disk
+// for rollback.
+import { AtelierDeck } from '@/components/Dashboard/DashboardPage/atelier';
 import ServiceRequestsWidget from '@/components/Dashboard/ServiceRequests/ServiceRequestsWidget';
 import { checkRole } from '@/lib/auth';
 
@@ -79,7 +82,7 @@ export default async function Dashboard() {
 
   return (
     <>
-      <NovaDeck
+      <AtelierDeck
         stats={statsResult.data}
         scheduledPosts={scheduledPostsResult.data}
         popularPosts={popularPostsResult.data}

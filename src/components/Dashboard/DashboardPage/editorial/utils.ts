@@ -1,12 +1,8 @@
 /**
- * NOVA shared utilities — extracted from tiles to eliminate duplication.
+ * Editorial Command — shared utilities (Persian formatting + trend helpers).
  *
- * pickTrend:  splits a numeric array in half, compares the two halves,
- *             and returns the trend direction + percentage delta.
- * fmt:        Persian locale number formatting (۱٬۲۳۴٬۵۶۷).
- * timeOfDay:  Persian greeting based on the current hour.
- * formatRelativeFa: relative time in Persian ("۳ دقیقه پیش").
- * dayLabelFa: day group label ("امروز", "دیروز", "این هفته", or month/year).
+ * Reused 1:1 from the former NOVA deck — no behavior changes, only new
+ * class names in the consumers.
  */
 
 export type Trend = 'up' | 'down' | 'flat';
@@ -55,21 +51,4 @@ export function formatRelativeFa(d: Date, now: Date): string {
   const day = Math.floor(h / 24);
   if (day < 7) return `${day.toLocaleString('fa-IR')} روز پیش`;
   return d.toLocaleDateString('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' });
-}
-
-function isSameDay(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
-  );
-}
-
-/** Day group label: "امروز", "دیروز", "این هفته", or localized month/year. */
-export function dayLabelFa(d: Date, now: Date): string {
-  if (isSameDay(d, now)) return 'امروز';
-  const yesterday = new Date(now);
-  yesterday.setDate(now.getDate() - 1);
-  if (isSameDay(d, yesterday)) return 'دیروز';
-  const dayDiff = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
-  if (dayDiff < 7) return 'این هفته';
-  return d.toLocaleDateString('fa-IR', { month: 'long', year: 'numeric' });
 }

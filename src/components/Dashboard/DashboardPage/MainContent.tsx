@@ -29,11 +29,8 @@ const MainContent: React.FC<MainContentProps> = ({ children, ambient = false }) 
   // offset is needed — the flex layout handles spacing automatically.
   // On mobile the sidebar is a fixed overlay, so no margin either.
   return (
-    <main className="dash-scope dash-grid-texture flex-1 overflow-auto">
-      {/* Ambient drift backdrop — only on the home route, sits behind everything */}
+    <main className="dash-scope flex-1 overflow-auto">
       {ambient ? <AmbientBackground intensity="med" /> : null}
-      {/* Aurora drift backdrop — پشت کل محتوای داشبورد */}
-      <div className="dash-aurora" aria-hidden="true" />
       <AnimatePresence mode="wait">
         <motion.div
           key={pathname}
