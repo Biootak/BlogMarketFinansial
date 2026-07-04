@@ -10632,3 +10632,662 @@
     .at-action__chev { transition: none; }
   }
 }
+
+/* ============================================================================
+   Atelier Engagement Console — 2026-07-04
+   ----------------------------------------------------------------------------
+   Replaces the previous 4-tile KPI strip with a single panoramic card
+   focused on SOCIAL interaction (likes, comments, shares, engagement rate).
+   Today's views already dominates the hero with massive typography, so the
+   row no longer carries it. The card shares the existing `at-tile` chrome
+   so it slots cleanly into Row 2 of the .at-grid.
+
+   Visual identity:
+     - Hairline borders, emerald-first, gold accent for the "rate" card only
+     - Focal SVG heart with embedded EKG-sparkline (left half)
+     - Three satellite cards stacked on the right (comments → shares → rate)
+     - Subtle orange-gold halo behind the heart for "alive" feeling
+     - All animations honor prefers-reduced-motion
+   ============================================================================ */
+@layer utilities {
+  /* ---- Container -------------------------------------------------------- */
+  .at-engagement {
+    grid-column: span 4;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  @media (min-width: 768px) {
+    .at-engagement { grid-column: span 8; }
+  }
+  @media (min-width: 1280px) {
+    .at-engagement { grid-column: span 12; }
+  }
+
+  /* gold dotted baseline — single hairline gold thread tying back to the
+     Atelier identity without adding any heavy chrome */
+  .at-engagement__ornament {
+    position: absolute;
+    inset-inline-start: 22px;
+    inset-inline-end: 22px;
+    inset-block-end: 0;
+    height: 1px;
+    background-image:
+      linear-gradient(90deg,
+        transparent 0%,
+        color-mix(in oklch, var(--at-gold) 50%, transparent) 12%,
+        color-mix(in oklch, var(--at-gold) 50%, transparent) 88%,
+        transparent 100%);
+    opacity: 0.45;
+    pointer-events: none;
+  }
+  .dark .at-engagement__ornament {
+    background-image:
+      linear-gradient(90deg,
+        transparent 0%,
+        color-mix(in oklch, var(--at-gold) 40%, transparent) 12%,
+        color-mix(in oklch, var(--at-gold) 40%, transparent) 88%,
+        transparent 100%);
+    opacity: 0.55;
+  }
+
+  /* ---- Header (matches .at-chart__head pattern) ----------------------- */
+  .at-engagement__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 22px 12px;
+    border-bottom: 1px solid var(--at-line);
+    flex-wrap: wrap;
+  }
+  .at-engagement__live {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 11px 5px 9px;
+    border-radius: 999px;
+    background: var(--at-accent-soft);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--at-accent-fg);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .dark .at-engagement__live {
+    background: color-mix(in oklch, var(--at-accent) 14%, transparent);
+  }
+  .at-engagement__live-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--at-accent);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-accent) 22%, transparent);
+    animation: at-eng-live-pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes at-eng-live-pulse {
+    0%, 100% { box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-accent) 22%, transparent); }
+    50%      { box-shadow: 0 0 0 6px color-mix(in oklch, var(--at-accent) 0%, transparent); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .at-engagement__live-dot { animation: none; }
+  }
+
+  /* Custom eyebrow icon variant — heart-tinted */
+  .at-head__ico--heart {
+    background: var(--at-accent-soft) !important;
+    color: var(--at-accent-fg) !important;
+  }
+
+  /* ---- Body: asymmetric bento grid (v2) -------------------------------
+     Desktop ≥1280px:
+       ┌─────────────────────────────┬───────────────────┐
+       │  hero heart (7/12)          │  rate card (5/12) │
+       ├─────────────────────────────┴───────────────────┤
+       │  secondary strip: comments | shares            │
+       └─────────────────────────────────────────────────┘
+     Tablet ≥768px:
+       ┌─────────────────────────────────────────────┐
+       │  hero heart (full width)                    │
+       ├──────────────────────┬──────────────────────┤
+       │  rate (full width)   │  ─                   │
+       ├──────────────────────┴──────────────────────┤
+       │  secondary strip: comments | shares         │
+       └─────────────────────────────────────────────┘
+     Mobile <768px: vertical stack. */
+  .at-engagement__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'hero'
+      'rate'
+      'secondary';
+    gap: 0;
+    align-items: stretch;
+  }
+  @media (min-width: 768px) {
+    .at-engagement__body {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      grid-template-areas:
+        'hero  rate'
+        'hero  rate'
+        'secondary secondary';
+    }
+  }
+
+  /* ===========================================================
+     Hero card (left, 7/12 on desktop) — focal heart + meta
+     =========================================================== */
+  .at-eng-hero {
+    grid-area: hero;
+    position: relative;
+    padding: 22px 22px 26px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    border-bottom: 1px solid var(--at-line);
+    overflow: hidden;
+    background:
+      radial-gradient(85% 70% at 100% 100%, color-mix(in oklch, var(--at-accent) 8%, transparent), transparent 60%),
+      linear-gradient(180deg, var(--at-bg), color-mix(in oklch, var(--at-accent) 3%, var(--at-bg)));
+  }
+  .dark .at-eng-hero {
+    background:
+      radial-gradient(85% 70% at 100% 100%, color-mix(in oklch, var(--at-accent) 11%, transparent), transparent 60%),
+      linear-gradient(180deg, var(--at-surface), color-mix(in oklch, var(--at-accent) 5%, var(--at-surface)));
+  }
+  @media (min-width: 768px) {
+    .at-eng-hero {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+      align-items: center;
+      border-bottom: 0;
+      border-inline-end: 1px solid var(--at-line);
+      padding: 26px 28px 30px;
+      gap: 24px;
+    }
+  }
+  @media (min-width: 1280px) {
+    .at-eng-hero {
+      padding: 30px 32px 34px;
+      gap: 28px;
+    }
+  }
+
+  .at-eng-hero__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    order: 2;
+  }
+  @media (min-width: 768px) {
+    .at-eng-hero__meta { order: 1; }
+  }
+  .at-eng-hero__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--at-accent-fg);
+    letter-spacing: 0.01em;
+  }
+  .at-eng-hero__value {
+    font-size: clamp(34px, 4.6vw, 60px);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1;
+    color: var(--at-fg);
+    margin-block-start: 4px;
+    background: linear-gradient(135deg,
+      var(--at-fg) 0%,
+      color-mix(in oklch, var(--at-accent-fg) 75%, var(--at-fg)) 100%);
+    -webkit-background-clip: text;
+            background-clip: text;
+    color: transparent;
+  }
+  .at-eng-hero__sub {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-top: 2px;
+    font-size: 13px;
+    color: var(--at-fg-muted);
+    font-weight: 500;
+  }
+  .at-eng-hero__sub-suffix {
+    font-size: 11px;
+    color: var(--at-fg-subtle);
+    font-weight: 400;
+  }
+
+  /* The hero heart viz — now larger and absolutely positioned to allow
+     floating particles to drift over it. */
+  .at-eng-hero__viz {
+    position: relative;
+    width: 100%;
+    max-width: 360px;
+    justify-self: center;
+    aspect-ratio: 400 / 260;
+    order: 1;
+  }
+  @media (min-width: 768px) {
+    .at-eng-hero__viz {
+      order: 2;
+      max-width: 320px;
+      justify-self: end;
+    }
+  }
+  @media (min-width: 1280px) {
+    .at-eng-hero__viz {
+      max-width: 360px;
+    }
+  }
+
+  .at-eng-hero-heart {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  .at-eng-hero-heart__halo {
+    position: absolute;
+    inset: 8% 8%;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle, color-mix(in oklch, var(--at-accent) 18%, transparent) 0%, transparent 60%);
+    animation: at-eng-halo-spin 28s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes at-eng-halo-spin {
+    to { transform: rotate(360deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .at-eng-hero-heart__halo { animation: none; }
+  }
+
+  /* Floating particle ring — 8 dots orbiting the heart center. Each dot
+     drifts upward, fades, and resets in a slow loop. */
+  .at-eng-hero-heart__particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .at-eng-hero-heart__particle {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--at-accent);
+    box-shadow: 0 0 6px color-mix(in oklch, var(--at-accent) 60%, transparent);
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    animation: at-eng-particle 6s ease-in-out infinite;
+  }
+  .at-eng-hero-heart__particle:nth-child(3n) {
+    width: 4px;
+    height: 4px;
+    background: var(--at-gold);
+    box-shadow: 0 0 6px color-mix(in oklch, var(--at-gold) 60%, transparent);
+  }
+  .at-eng-hero-heart__particle:nth-child(5n) {
+    width: 6px;
+    height: 6px;
+    background: var(--at-accent);
+  }
+  @keyframes at-eng-particle {
+    0%   { opacity: 0;   transform: translate(-50%, -50%) scale(0.6); }
+    15%  { opacity: 0.9; transform: translate(-50%, -50%) scale(1); }
+    60%  { opacity: 0.5; transform: translate(calc(-50% + 14px), calc(-50% - 38px)) scale(0.8); }
+    100% { opacity: 0;   transform: translate(calc(-50% - 8px), calc(-50% - 70px)) scale(0.4); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .at-eng-hero-heart__particle { animation: none; opacity: 0; }
+  }
+
+  /* The heart SVG itself — beats gently to feel alive. */
+  .at-eng-hero-heart__svg {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: block;
+    z-index: 2;
+    animation: at-eng-heart-beat 2.6s ease-in-out infinite;
+  }
+  @keyframes at-eng-heart-beat {
+    0%, 60%, 100% { transform: scale(1); }
+    20% { transform: scale(1.04); }
+    40% { transform: scale(0.985); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .at-eng-hero-heart__svg { animation: none; }
+  }
+
+  /* ===========================================================
+     Rate card (right top, 5/12 on desktop) — promoted metric
+     =========================================================== */
+  .at-eng-rate-card {
+    grid-area: rate;
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'head  head'
+      'viz   body';
+    align-items: center;
+    gap: 14px;
+    padding: 22px 24px 24px;
+    border-bottom: 1px solid var(--at-line);
+    overflow: hidden;
+    background:
+      radial-gradient(60% 80% at 100% 0%, color-mix(in oklch, var(--at-gold) 12%, transparent), transparent 65%),
+      linear-gradient(180deg, var(--at-bg), color-mix(in oklch, var(--at-gold) 4%, var(--at-bg)));
+  }
+  .dark .at-eng-rate-card {
+    background:
+      radial-gradient(60% 80% at 100% 0%, color-mix(in oklch, var(--at-gold) 18%, transparent), transparent 65%),
+      linear-gradient(180deg, var(--at-surface), color-mix(in oklch, var(--at-gold) 6%, var(--at-surface)));
+  }
+  @media (min-width: 768px) {
+    .at-eng-rate-card {
+      padding: 28px 26px 30px;
+      gap: 18px;
+    }
+  }
+  @media (min-width: 1280px) {
+    .at-eng-rate-card {
+      padding: 32px 28px 34px;
+      gap: 22px;
+    }
+  }
+
+  .at-eng-rate-card__head {
+    grid-area: head;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .at-eng-rate-card__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--at-gold-fg);
+    letter-spacing: 0.01em;
+  }
+  .at-eng-rate-card__label::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--at-gold);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-gold) 22%, transparent);
+  }
+  .at-eng-rate-card__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--at-gold-fg);
+    background: color-mix(in oklch, var(--at-gold) 12%, transparent);
+    border: 1px solid color-mix(in oklch, var(--at-gold) 30%, transparent);
+  }
+
+  .at-eng-rate-card__viz {
+    grid-area: viz;
+    justify-self: center;
+    position: relative;
+  }
+  @media (min-width: 768px) {
+    .at-eng-rate-card__viz { justify-self: end; }
+  }
+
+  .at-eng-rate-card__body {
+    grid-area: body;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    align-items: flex-start;
+  }
+  .at-eng-rate-card__narrative {
+    font-size: 12px;
+    color: var(--at-fg-muted);
+    line-height: 1.55;
+    font-weight: 500;
+  }
+  .at-eng-rate-card__narrative strong {
+    color: var(--at-gold-fg);
+    font-weight: 800;
+  }
+
+  .at-eng-rate-gauge {
+    display: block;
+    width: 96px;
+    height: 96px;
+    flex-shrink: 0;
+  }
+  .at-eng-rate-gauge__text {
+    font-size: 26px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+  .at-eng-rate-gauge__unit {
+    font-size: 13px;
+    font-weight: 700;
+    fill: var(--at-gold);
+  }
+
+  /* ===========================================================
+     Secondary strip (full-width bottom) — comments + shares
+     =========================================================== */
+  .at-eng-secondary {
+    grid-area: secondary;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+    align-items: stretch;
+    background:
+      linear-gradient(180deg,
+        color-mix(in oklch, var(--at-gold) 3%, transparent),
+        transparent 80%);
+  }
+  .dark .at-eng-secondary {
+    background:
+      linear-gradient(180deg,
+        color-mix(in oklch, var(--at-gold) 6%, transparent),
+        transparent 80%);
+  }
+  .at-eng-secondary__cell {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 16px;
+    padding: 16px 22px;
+    min-width: 0;
+  }
+  .at-eng-secondary__divider {
+    background: var(--at-line);
+    align-self: stretch;
+  }
+  .at-eng-secondary__viz {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 56px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    background: var(--at-bg-elevated);
+    border: 1px solid var(--at-line);
+  }
+  .dark .at-eng-secondary__viz {
+    background: color-mix(in oklch, var(--at-fg) 6%, transparent);
+  }
+  .at-eng-secondary__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+  .at-eng-secondary__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    color: var(--at-fg-muted);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+  .at-eng-secondary__value {
+    font-size: clamp(20px, 2.2vw, 28px);
+    font-weight: 800;
+    letter-spacing: -0.022em;
+    line-height: 1.05;
+    color: var(--at-fg);
+    font-variant-numeric: tabular-nums;
+  }
+  .at-eng-secondary__sub {
+    font-size: 11px;
+    color: var(--at-fg-subtle);
+    font-weight: 500;
+  }
+
+  /* Comment bubble stack */
+  .at-eng-bubbles {
+    width: 100%;
+    max-width: 100%;
+    height: 40px;
+  }
+  .at-eng-bubble--front {
+    transform-origin: 14px 18px;
+    animation: at-eng-bubble-in 600ms var(--at-ease) both;
+  }
+  @keyframes at-eng-bubble-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .at-eng-bubble__dots circle {
+    animation: at-eng-bubble-dot 1.8s ease-in-out infinite;
+  }
+  .at-eng-bubble__dots circle:nth-child(2) { animation-delay: 200ms; }
+  .at-eng-bubble__dots circle:nth-child(3) { animation-delay: 400ms; }
+  @keyframes at-eng-bubble-dot {
+    0%, 100% { opacity: 0.4; }
+    50%      { opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .at-eng-bubble--front,
+    .at-eng-bubble__dots circle { animation: none; }
+  }
+
+  /* Share ripple */
+  .at-eng-ripple {
+    width: 100%;
+    max-width: 100%;
+    height: 40px;
+  }
+  .at-eng-ripple__pulse {
+    animation: at-eng-ripple-pulse 2s ease-in-out infinite;
+  }
+  @keyframes at-eng-ripple-pulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.18); }
+  }
+  .at-eng-ripple__ring {
+    animation: at-eng-ripple-out 3.6s ease-out infinite;
+  }
+  .at-eng-ripple__ring--2 {
+    animation-delay: 0.9s;
+  }
+  @keyframes at-eng-ripple-out {
+    0%   { transform: scale(0.7); opacity: 1; }
+    70%  { transform: scale(1.2); opacity: 0; }
+    100% { transform: scale(1.2); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .at-eng-ripple__pulse,
+    .at-eng-ripple__ring { animation: none; }
+  }
+
+  /* ===========================================================
+     Shared trend pill — used by hero, rate, and secondary
+     =========================================================== */
+  .at-eng-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    padding: 4px 8px;
+    border-radius: 999px;
+    width: fit-content;
+  }
+  .at-eng-trend.is-up {
+    background: var(--at-accent-soft);
+    color: var(--at-accent-fg);
+  }
+  .at-eng-trend.is-down {
+    background: var(--at-danger-soft);
+    color: var(--at-danger);
+  }
+  .at-eng-trend.is-flat {
+    background: color-mix(in oklch, var(--at-fg-subtle) 18%, transparent);
+    color: var(--at-fg-subtle);
+  }
+
+  /* ===========================================================
+     Responsive reflow
+     =========================================================== */
+  @media (max-width: 767px) {
+    .at-engagement__body {
+      grid-template-areas:
+        'hero'
+        'rate'
+        'secondary';
+    }
+    .at-eng-secondary {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .at-eng-secondary__divider {
+      width: auto;
+      height: 1px;
+    }
+    .at-eng-secondary__cell {
+      border-bottom: 0;
+    }
+  }
+  @media (max-width: 480px) {
+    .at-eng-secondary__cell {
+      padding: 14px 18px;
+      gap: 12px;
+    }
+    .at-eng-secondary__viz {
+      width: 52px;
+      height: 48px;
+    }
+  }
+
+  /* Universal: respect reduced motion for everything in this layer */
+  @media (prefers-reduced-motion: reduce) {
+    .at-engagement *,
+    .at-engagement *::before,
+    .at-engagement *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

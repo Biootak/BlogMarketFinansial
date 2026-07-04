@@ -80,7 +80,7 @@ const Card9: FC<Card9Props> = ({ className = 'h-full', ratio = 'tall', post, hov
               fill
               alt={title}
               className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-              src={featuredImage || '/images/placeholder.webp'}
+              src={featuredImage || '/images/placeholder-large.png'}
               sizes="(max-width: 600px) 480px, 500px"
               loading="lazy"
             />

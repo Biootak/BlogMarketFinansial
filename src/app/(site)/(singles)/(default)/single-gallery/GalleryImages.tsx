@@ -126,7 +126,7 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
           >
             <ImageWithSkeleton
               alt={`${post.title} - ${currentImageIndex + 1}`}
-              src={IMAGES_GALLERY[currentImageIndex] || '/images/placeholder.png'}
+              src={IMAGES_GALLERY[currentImageIndex] || '/images/placeholder-large.png'}
               fill
               sizes="(max-width: 1024px) 100vw, 1200px"
               priority={true}
@@ -256,7 +256,7 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
                     {/* Main Fullscreen Viewport Display */}
                     <div className="relative w-full h-[65vh] flex items-center justify-center">
                       <Image
-                        src={IMAGES_GALLERY[currentImageIndex] || '/images/placeholder.png'}
+                        src={IMAGES_GALLERY[currentImageIndex] || '/images/placeholder-large.png'}
                         alt={`${post.title} large - ${currentImageIndex + 1}`}
                         fill
                         priority={true}

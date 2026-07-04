@@ -2,8 +2,12 @@
 
 import React from 'react';
 import Badge from '@/components/Badge/Badge';
-import iconPlaying from '@/images/icon-playing.gif';
-import featuredImageDemo from '@/images/podcast.jpg';
+// 2026-07-04: was `import iconPlaying from '@/images/icon-playing.gif'` and
+// `import featuredImageDemo from '@/images/podcast.jpg'`. `src/images/` does
+// not exist in this repo (legacy from the upstream template). Static assets
+// live in `public/images/` so `next/image` can serve them. See AGENTS.assets.md.
+const iconPlaying = '/images/icon-playing.gif';
+const featuredImageDemo = '/images/podcast.jpg';
 import Image from 'next/image';
 import SingleTitle from '@/app/(site)/(singles)/SingleTitle';
 

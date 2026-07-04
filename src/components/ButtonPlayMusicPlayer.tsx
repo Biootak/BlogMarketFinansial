@@ -1,7 +1,11 @@
 'use client';
 
 import Image from 'next/image';
-import iconPlaying from '@/images/icon-playing.gif';
+// 2026-07-04: was `import iconPlaying from '@/images/icon-playing.gif'`.
+// The `src/images/` folder no longer exists in this repo (legacy from the
+// upstream template). Static assets belong in `public/` so `next/image` can
+// optimize them. See AGENTS.assets.md for the assets convention.
+const iconPlaying = '/images/icon-playing.gif';
 import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 import type { PostWithRelations } from '@/types/types';

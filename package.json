@@ -20,7 +20,10 @@
     "dev:local": "cross-env DATABASE_URL=postgresql://blog_owner:I82HcwNASRPe@localhost:15432/blog?sslmode=disable DIRECT_URL=postgresql://blog_owner:I82HcwNASRPe@localhost:15432/blog?sslmode=disable NEXTAUTH_URL=http://localhost:3000 NODE_OPTIONS=--dns-result-order=ipv4first next dev",
     "build:local": "cross-env DATABASE_URL=postgresql://blog_owner:I82HcwNASRPe@localhost:15432/blog?sslmode=disable DIRECT_URL=postgresql://blog_owner:I82HcwNASRPe@localhost:15432/blog?sslmode=disable next build --webpack",
     "db:migrate-ads": "node scripts/migrate-ad-images.js",
-    "db:migrate-ads:dry": "node scripts/migrate-ad-images.js --dry-run"
+    "db:migrate-ads:dry": "node scripts/migrate-ad-images.js --dry-run",
+    "assets:optimize": "node scripts/optimize-assets.mjs",
+    "assets:optimize:dry": "node scripts/optimize-assets.mjs --dry-run",
+    "assets:optimize:force": "node scripts/optimize-assets.mjs --force"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.4",

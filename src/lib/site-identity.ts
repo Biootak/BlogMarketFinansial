@@ -12,7 +12,15 @@ import { unstable_cache } from 'next/cache';
  */
 
 export const FALLBACK_SITE_NAME = 'Financial Market';
-export const FALLBACK_LOGO_URL = '/images/logo.png';
+/**
+ * Empty string signals "use the default inline SVG logo" to the
+ * `<Logo />` component. The inline SVG is theme-aware via
+ * `currentColor` and theme-independent in the emerald accent, so it
+ * covers both light and dark mode without any image asset. Keeping this
+ * as an empty string (instead of a PNG path) means no PNG file is ever
+ * required for the site to render its logo.
+ */
+export const FALLBACK_LOGO_URL = '';
 
 export interface SiteIdentity {
   siteName: string;
@@ -45,11 +53,7 @@ async function fetchSiteIdentityRaw(): Promise<SiteIdentity> {
   }
 }
 
-export const getSiteIdentity = unstable_cache(
-  fetchSiteIdentityRaw,
-  ['site-identity'],
-  {
-    tags: ['site-identity'],
-    revalidate: 86400, // 24 hours; explicit revalidation is the source of truth
-  },
-);
+export const getSiteIdentity = unstable_cache(fetchSiteIdentityRaw, ['site-identity'], {
+  tags: ['site-identity'],
+  revalidate: 86400, // 24 hours; explicit revalidation is the source of truth
+});

@@ -1,36 +1,33 @@
 'use client';
 
-import type React from 'react';
-import Image, { type StaticImageData } from 'next/image';
-import Link from 'next/link';
 import { motion } from '@/lib/motion-shim';
 import type { Variants } from '@/lib/motion-shim';
+import Link from 'next/link';
+import type React from 'react';
 
-import logoImg from '@/images/logo.png';
-import logoLightImg from '@/images/logo-light.png';
 import LogoSvg from './LogoSvg';
 
 interface LogoProps {
-  img?: StaticImageData;
-  imgLight?: StaticImageData;
+  /**
+   * Optional override URL for the logo. When set, renders an `<img>`
+   * with this URL (covers the admin-uploaded logo case — e.g. a real
+   * brand mark in PNG/SVG stored in `public/uploads/` or a CDN).
+   *
+   * When empty / undefined, the default inline SVG (`<LogoSvg />`) is
+   * rendered. The inline SVG uses `currentColor` so it adapts to light
+   * AND dark themes without any image assets.
+   */
   logoUrl?: string;
-  useImage?: boolean;
   className?: string;
+  /**
+   * Animation flavor:
+   *   • `modern` — subtle hover scale only (for header sticky contexts)
+   *   • `default` — entrance animation + playful hover (for hero / sidebar)
+   */
   variant?: 'default' | 'modern';
 }
 
-const Logo: React.FC<LogoProps> = ({
-  img = logoImg,
-  imgLight = logoLightImg,
-  logoUrl,
-  useImage = false,
-  className = '',
-  variant = 'default',
-}) => {
-  if (!img || !imgLight) {
-    throw new Error('Missing image URLs in Logo component');
-  }
-
+const Logo: React.FC<LogoProps> = ({ logoUrl, className = '', variant = 'default' }) => {
   // modern: نرم، لوکس، انیمیشن کم (برای header sticky)
   // default: انیمیشن قوی‌تر، چرخش و scale
   const logoVariants: Variants =
@@ -107,22 +104,17 @@ const Logo: React.FC<LogoProps> = ({
         }}
       >
         {logoUrl ? (
-          <img
-            src={logoUrl}
-            alt="Logo"
-            className="h-10 w-auto object-contain sm:h-11"
-          />
-        ) : useImage ? (
-          <Image
-            className="block dark:hidden"
-            src={img}
-            alt="Logo"
-            priority
-          />
+          // Custom uploaded logo — admin override path. Falls back to
+          // the inline SVG when the URL is empty.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={logoUrl} alt="Logo" className="h-10 w-auto object-contain sm:h-11" />
         ) : (
-          <div className="w-10 h-10 sm:w-11 sm:h-11">
-            <LogoSvg className="w-full h-full" />
-          </div>
+          // Default inline SVG. Uses `currentColor` so it follows the
+          // surrounding text color (light text on dark header, dark
+          // text on light header) without any image asset.
+          <span className="inline-flex h-10 w-10 items-center justify-center text-foreground sm:h-11 sm:w-11">
+            <LogoSvg className="h-full w-full" />
+          </span>
         )}
       </motion.div>
     </Link>

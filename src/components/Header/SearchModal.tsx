@@ -352,7 +352,7 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                                   {({ active }) => (
                                     <>
                                       <Image
-                                        src={author.image || '/default-avatar.png'}
+                                        src={author.image || '/images/default-avatar.png'}
                                         alt={author.name || 'نویسنده'}
                                         className={classNames(
                                           'h-9 w-9 flex-none rounded-xl object-cover transition-all',

@@ -1,6 +1,9 @@
 import React from 'react';
 import SectionHero from '@/components/SectionHero/SectionHero';
-import rightImg from '@/images/about-hero-right.png';
+// 2026-07-04: was `import rightImg from '@/images/about-hero-right.png'`.
+// `src/images/` does not exist (legacy). Static assets live in `public/`.
+// See AGENTS.assets.md.
+const rightImg = '/images/about-hero-right.png';
 import SectionStatistic from './SectionStatistic';
 import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
 import BgGlassmorphism from '@/components/BgGlassmorphism/BgGlassmorphism';
