@@ -3,28 +3,35 @@
 /**
  * Header — 2026 Editorial Top Bar (persistent dashboard chrome).
  *
- * Rendered by `DashboardProviders` on every dashboard page. The design is
- * a 3-zone editorial bar:
+ * Responsive 3-zone editorial bar that morphs into a full-width search row
+ * on mobile. The header carries `data-mode` to drive the visual transition
+ * between default and search states without re-mounting the subtree.
  *
- *   ┌──────────────────────────────────────────────────────────────────────┐
- *   │ [≡] [داشبورد · chip]          [⌘K search field]    [🟢time][🔔][☾][A]│
- *   └──────────────────────────────────────────────────────────────────────┘
+ *   ┌─ ≥640px (default) ────────────────────────────────────────────────────┐
+ *   │ [≡] [داشبورد · chip]    [⌘K search field]    [🟢time][🔔][☾][A]      │
+ *   └───────────────────────────────────────────────────────────────────────┘
+ *   ┌─ <640px (default) ────────────────────────────────────────────────────┐
+ *   │ [≡] [عنوان صفحه]      [🔍][🔔][☾][A]                                │
+ *   └───────────────────────────────────────────────────────────────────────┘
+ *   ┌─ <640px (search mode) ────────────────────────────────────────────────┐
+ *   │ [←]       [جستجو…]                                    [×]            │
+ *   └───────────────────────────────────────────────────────────────────────┘
  *
  * Design language (Linear × Resend × Stripe):
  *   • Glass surface with a hairline gradient border, scroll-aware shadow.
- *   • Live Tehran clock pulse — at-a-glance operational awareness.
- *   • Search field uses `field-sizing: content` so it grows with the query,
- *     falls back to a ⌘K pill when collapsed on mobile.
+ *   • Live Tehran clock pulse — at-a-glance operational awareness (≥768px).
+ *   • Search field uses `field-sizing: content` on desktop; collapses to a
+ *     magnifier icon trigger on mobile that morphs the row into search mode.
  *   • Avatar with name + role chip (visible from ≥1024px).
  *   • Notifications popover uses Radix for free focus management + ESC.
  *   • Theme switcher is the existing `SwitchDarkMode` primitive.
  *   • Mobile menu trigger mirrors the sidebar hamburger state.
- *   • Right margin tracks the sidebar width so the bar never overlaps the
- *     fixed-positioned sidebar (which sits at the visual right in RTL).
+ *   • Mobile page-context title is sourced from `BreadcrumbContext` so
+ *     sub-pages (پست‌ها، کاربران، گزارش‌ها، …) reflect where the user is.
  *
  * The component owns NO business logic — it only reads from the existing
- * `useSidebarStore`, `useCurrentUser`, and dispatches the global
- * `cmd-palette:open` event for the search field.
+ * `useSidebarStore`, `useCurrentUser`, `useBreadcrumb`, and dispatches the
+ * global `cmd-palette:open` event for the search field.
  */
 
 import { logout } from '@/actions/auth-actions';
@@ -39,12 +46,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useBreadcrumb } from '@/hooks/useBreadcrumb';
 import { useSidebarStore } from '@/hooks/sidebarStore';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { AnimatePresence, motion } from '@/lib/motion-shim';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   HiOutlineArrowRightOnRectangle,
   HiOutlineBars3,
@@ -59,6 +67,7 @@ import {
   HiOutlineSparkles,
   HiOutlineUserCircle,
   HiOutlineUsers,
+  HiOutlineXMark,
 } from 'react-icons/hi2';
 
 const getRoleBadge = (role?: string) => {
@@ -144,6 +153,7 @@ function formatTehran(d: Date) {
 const Header: React.FC = () => {
   const user = useCurrentUser();
   const { isOpen, setIsOpen, isMobile } = useSidebarStore();
+  const { items: breadcrumbItems } = useBreadcrumb();
 
   const roleBadge = getRoleBadge(user?.role);
 
@@ -161,6 +171,34 @@ const Header: React.FC = () => {
   const openCommandPalette = () => {
     window.dispatchEvent(new CustomEvent('cmd-palette:open'));
   };
+
+  // Mobile-only "morph into search" mode. Default: false. Tapping the
+  // magnifier icon in zone 3 sets it to true; tapping × (or pressing Esc)
+  // returns to the default compact row.
+  const [isSearching, setIsSearching] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+
+  // When search mode opens, auto-focus the input + lock body scroll so
+  // users stay anchored to the morph.
+  useEffect(() => {
+    if (!isSearching) return;
+    const t = window.setTimeout(() => searchInputRef.current?.focus(), 60);
+    return () => window.clearTimeout(t);
+  }, [isSearching]);
+
+  // Auto-collapse the search row if the user resizes into desktop width
+  // (≥640px) — the desktop layout already shows the search field, so the
+  // mobile morph becomes redundant.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mql = window.matchMedia('(min-width: 640px)');
+    const handle = (e: MediaQueryListEvent | MediaQueryList) => {
+      if (e.matches) setIsSearching(false);
+    };
+    handle(mql);
+    mql.addEventListener('change', handle);
+    return () => mql.removeEventListener('change', handle);
+  }, []);
 
   // Scroll-aware shell — observe a sentinel inside the header so the bar
   // picks up a subtle shadow + reduced opacity once the user scrolls.
@@ -183,10 +221,25 @@ const Header: React.FC = () => {
 
   const unreadCount = SAMPLE_NOTIFICATIONS.length;
 
-  // The sidebar is now a flex child (not fixed), so the header needs no
-  // margin offset — the flex layout handles spacing automatically.
+  // Mobile page-context title — falls back to "داشبورد" when no breadcrumb
+  // is set by the page below. Uses the last breadcrumb item (the leaf) so
+  // sub-pages (پست‌ها، کاربران، گزارش‌ها…) reflect where the user is.
+  const mobileTitle =
+    breadcrumbItems.length > 0
+      ? breadcrumbItems[breadcrumbItems.length - 1].label
+      : 'داشبورد';
+
+  const headerMode: 'default' | 'search' =
+    isMobile && isSearching ? 'search' : 'default';
+
+  // The sidebar is a flex child (not fixed), so the header needs no margin
+  // offset — the flex layout handles spacing automatically.
   return (
-    <header data-scrolled={scrolled ? 'true' : undefined} className="dash-header">
+    <header
+      data-scrolled={scrolled ? 'true' : undefined}
+      data-mode={headerMode}
+      className="dash-header"
+    >
       <div className="dash-header__inner">
         {/* ── Zone 1 — context (mobile menu + page-context eyebrow) ──────── */}
         <div className="dash-header__zone dash-header__zone--start">
@@ -203,42 +256,81 @@ const Header: React.FC = () => {
             </button>
           )}
 
-          {/* Page-context eyebrow — the canonical "where am I" anchor.
-              Decorative only (aria-hidden) so screen readers do not hear
-              the literal "داشبورد" twice (the page title itself is
-              exposed by WorkspaceToolbar / PageHeader on sub-pages). */}
+          {/* Desktop page-context eyebrow (≥640px). Decorative only
+              (aria-hidden) so screen readers do not hear the literal
+              "داشبورد" twice. Mobile shows the same info via the
+              `__mobile-title` element instead. */}
           <span className="dash-header__eyebrow" aria-hidden>
             <span className="dash-header__eyebrow-dot" />
             <span className="dash-header__eyebrow-text">داشبورد</span>
           </span>
+
+          {/* Mobile page-context title (<640px). Sourced from the
+              BreadcrumbContext so sub-pages show their own label. */}
+          <span className="dash-header__mobile-title">{mobileTitle}</span>
         </div>
 
-        {/* ── Zone 2 — search (fluid center) ──────────────────────────────── */}
+        {/* ── Zone 2 — search (fluid center, hidden on mobile by default) ── */}
         <div className="dash-header__zone dash-header__zone--search">
           <label className="dash-header__search" htmlFor="dash-header-search">
             <HiOutlineMagnifyingGlass className="w-4 h-4 opacity-60 shrink-0" aria-hidden />
             <input
               id="dash-header-search"
+              ref={searchInputRef}
               type="search"
               inputMode="search"
               placeholder="جستجو در داشبورد…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  if (query) {
+                    setQuery('');
+                  } else if (isSearching) {
+                    setIsSearching(false);
+                  }
+                  return;
+                }
                 if (e.key === 'Enter' && query.trim()) {
                   openCommandPalette();
                   setQuery('');
+                  setIsSearching(false);
                 }
               }}
               onFocus={openCommandPalette}
               className="dash-header__search-input"
               aria-label="جستجو در داشبورد"
             />
+            {/* Mobile-only close button — visible only when the search row
+                is morphed open on mobile (CSS hides it on wider screens and
+                while in the compact row). */}
+            <button
+              type="button"
+              onClick={() => {
+                setQuery('');
+                setIsSearching(false);
+              }}
+              aria-label="بستن جستجو"
+              className="dash-header__search-close"
+            >
+              <HiOutlineXMark className="w-4 h-4" aria-hidden />
+            </button>
           </label>
         </div>
 
         {/* ── Zone 3 — actions (end, RTL: left) ──────────────────────────── */}
         <div className="dash-header__zone dash-header__zone--end">
+          {/* Mobile search trigger — opens the morph (visible <640px only,
+              CSS hides it on wider screens and during search mode). */}
+          <button
+            type="button"
+            onClick={() => setIsSearching(true)}
+            aria-label="جستجو"
+            className="dash-header__iconbtn dash-header__search-trigger"
+          >
+            <HiOutlineMagnifyingGlass className="w-[18px] h-[18px]" aria-hidden />
+          </button>
+
           {/* Live Tehran clock pill */}
           <div
             className="dash-header__status"
