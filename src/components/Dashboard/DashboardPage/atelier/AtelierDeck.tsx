@@ -123,7 +123,7 @@ const AtelierDeck: React.FC<AtelierDeckProps> = (props) => {
 
           {/* Row 4: Chart (full width) — فقط تحلیل بازدید. تقویم انتشار در */}
           {/* `/dashboard/posts/calendar` زندگی می‌کند، نه اینجا. */}
-          <AtelierChart />
+          <AtelierChart viewStats={viewStats} statsData={stats.views.data} />
 
           {/* Row 5: Popular posts + Activity feed */}
           <AtelierPosts popularPosts={props.popularPosts} />

@@ -18,6 +18,7 @@ import './globals.css';
 import '@/styles/index.scss';
 
 import Providers from '@/components/providers';
+import PageViewTracker from '@/components/PageViewTracker';
 import STRIP_EXTENSION_ATTRS_SCRIPT from '@/lib/strip-extension-attrs';
 
 /* ============================================================================
@@ -105,6 +106,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <Providers>
+          <PageViewTracker />
           {children}
         </Providers>
         <Toaster />

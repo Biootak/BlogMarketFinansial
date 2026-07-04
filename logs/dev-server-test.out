@@ -1,0 +1,28 @@
+▲ Next.js 16.2.10 (Turbopack)
+- Local:         http://localhost:3050
+- Network:       http://100.64.31.99:3050
+- Environments: .env.local, .env
+✓ Ready in 689ms
+- Experiments (use with caution):
+  · lightningCssFeatures
+  · optimizePackageImports
+  · staleTimes
+  · staticGenerationRetryCount: 1
+  ✓ useLightningcss
+
+ GET /dashboard 200 in 1649ms (next.js: 468ms, application-code: 1181ms)
+ POST /api/pageview 200 in 660ms (next.js: 395ms, application-code: 265ms)
+ GET /api/auth/session 200 in 1676ms (next.js: 1608ms, application-code: 68ms)
+ GET /api/auth/session 200 in 38ms (next.js: 23ms, application-code: 16ms)
+ GET /signin 200 in 1885ms (next.js: 1655ms, application-code: 229ms)
+ GET /api/auth/session 200 in 29ms (next.js: 11ms, application-code: 18ms)
+ GET /api/auth/session 200 in 32ms (next.js: 11ms, application-code: 21ms)
+ POST /api/pageview 200 in 46ms (next.js: 7ms, application-code: 39ms)
+ GET /auth 200 in 3.2s (next.js: 2.6s, application-code: 592ms)
+ GET /api/auth/session 200 in 45ms (next.js: 21ms, application-code: 24ms)
+ GET /api/auth/session 200 in 24ms (next.js: 8ms, application-code: 17ms)
+ POST /api/pageview 200 in 32ms (next.js: 9ms, application-code: 24ms)
+ GET /api/auth/session 200 in 93ms (next.js: 38ms, application-code: 55ms)
+ GET /api/auth/session 200 in 32ms (next.js: 13ms, application-code: 19ms)
+ POST /api/pageview 200 in 28ms (next.js: 4ms, application-code: 24ms)
+[?25h

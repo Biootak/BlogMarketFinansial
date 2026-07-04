@@ -64,17 +64,24 @@ export async function POST(req: NextRequest) {
     // Sanitize page URL
     const sanitizedPage = page.replace(/[<>'"]/g, '');
 
-    // 2026-06-14: with the @@unique([page]) on PageView (added in
-    // schema.prisma) this collapses into a single upsert. Same 1
-    // trip to the DB on the happy path, but the row lookup is now
-    // an index scan instead of a full table scan, and we drop a
-    // query on the cold path. The `as any` cast covers the
-    // in-between window before `npx prisma generate` refreshes
-    // the client (the schema migration is what makes
-    // `where: { page }` accepted by the generated types).
+    // 2026-07-04: with the @@unique([page, date]) on PageView (added in
+    // schema.prisma) this collapses into a single upsert keyed on the
+    // today's bucket. The previous `@@unique([page])` forced every page
+    // into one row, so all real traffic piled onto one date and the
+    // dashboard's 30d/90d charts (which groupBy `[date]`) ended up with
+    // a single huge bucket and empty bars for every other day.
+    //
+    // Truncate `date` to the start of the UTC day so the unique key
+    // matches the bucket the dashboard widget reads from.
+    // (Asia/Tehran is UTC+3:30; the bucket boundary at UTC midnight
+    // is good enough for daily granularity — off by half a day on the
+    // edges, which is acceptable for a "views per day" chart.)
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+
     const pageView = await prisma.pageView.upsert({
-      where: { page: sanitizedPage } as any,
-      create: { page: sanitizedPage, views: 1 },
+      where: { page_date: { page: sanitizedPage, date: today } },
+      create: { page: sanitizedPage, views: 1, date: today },
       update: { views: { increment: 1 } },
     });
 

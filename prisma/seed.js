@@ -784,21 +784,41 @@ async function seedSystemLogs() {
 
 /* ─── 18) PageViews (آمار بازدید صفحات) ─────────────────────── */
 async function seedPageViews() {
+  // 2026-07-04: now that @@unique([page, date]) is the bucket key,
+  // we write one row per (page, day) for the last 90 days so the
+  // dashboard's 7d/30d/90d charts all have real data to render.
   const pages = ['/', '/blog', '/about', '/contact', '/services', '/gold', '/crypto', '/stocks'];
   let added = 0;
   for (let i = 0; i < pages.length; i++) {
-    const exists = await p.pageView.findUnique({ where: { page: pages[i] } });
-    if (exists) continue;
-    await p.pageView.create({
-      data: {
-        page: pages[i],
-        views: rand(500, 8000),
-        date: daysAgo(rand(0, 7)),
-      },
-    });
-    added++;
+    const page = pages[i];
+    // Only fill days missing for this page (idempotent across re-runs).
+    for (let d = 0; d < 90; d++) {
+      const dayDate = startOfDayUTC(daysAgo(d));
+      const exists = await p.pageView.findUnique({
+        where: { page_date: { page, date: dayDate } },
+      });
+      if (exists) continue;
+      // Older days get a bit less traffic on average — slight downward
+      // drift so the chart isn't flat.
+      const baseViews = rand(500, 8000);
+      const decay = 1 - d * 0.003; // 0d=1.0, 90d≈0.73
+      await p.pageView.create({
+        data: {
+          page,
+          views: Math.max(50, Math.round(baseViews * decay)),
+          date: dayDate,
+        },
+      });
+      added++;
+    }
   }
-  console.log(`   ✅ ${added} آمار بازدید صفحه`);
+  console.log(`   ✅ ${added} آمار بازدید صفحه (90 روز اخیر)`);
+}
+
+function startOfDayUTC(d) {
+  const x = new Date(d);
+  x.setUTCHours(0, 0, 0, 0);
+  return x;
 }
 
 /* ─── 19) CurrencyPatterns ─────────────────────────────────── */

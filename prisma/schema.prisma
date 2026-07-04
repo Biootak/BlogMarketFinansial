@@ -427,10 +427,17 @@ model PageView {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // 2026-06-14: /api/pageview used to do findFirst+update+create on every
-  // hit. The unique index lets us collapse it to a single upsert, and
-  // the date index speeds up groupBy-by-date for the dashboard widget.
-  @@unique([page])
+  // 2026-07-04: switch the uniqueness key from `[page]` to `[page, date]`
+  // so /api/pageview can upsert a single daily bucket per URL. The
+  // previous `[page]` unique forced every page into one row, which made
+  // `groupBy({by: ['date']})` in getViewStatsByPeriod return only the
+  // seed rows (8 buckets) — leaving 30d/90d charts effectively empty
+  // and breaking `todayViews` which relied on `createdAt >= today`.
+  //
+  // With `[page, date]` the upsert becomes `where: { page_date: { page, date } }`
+  // and each day gets its own row. The `@@index([date])` keeps the
+  // groupBy-by-date query an index scan.
+  @@unique([page, date])
   @@index([date])
 }
 

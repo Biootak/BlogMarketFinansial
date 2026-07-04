@@ -1,411 +1,68 @@
-[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
-
-- A server/client branch `if (typeof window !== 'undefined')`.
-- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
-- Date formatting in a user's locale which doesn't match the server.
-- External changing data without sending a snapshot of it along with the HTML.
-- Invalid HTML tag nesting.
-
-It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
-
-https://react.dev/link/hydration-mismatch
-
-  ...
-    <InnerLayoutRouter url="/dashboard" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} segmentPath={[...]} ...>
-      <SegmentViewNode type="page" pagePath="dashboard/...">
-        <SegmentTrieNode>
-        <Dashboard>
-          <AtelierDeck stats={{...}} scheduledPosts={[...]} popularPosts={[...]} recentDrafts={[...]} ...>
-            <a>
-            <main id="at-main" className="at-canvas" aria-label="داشبورد">
-              <div>
-              <div className="at-grid">
-                <AtelierHero todayViews={0} totalViews={33787} spark={[...]} publishedTotal={50}>
-                  <section className="at-tile at..." aria-label="خلاصهٔ امروز">
-                    <div>
-                    <header>
-                    <h1>
-                    <div className="at-hero__m...">
-                      <div>
-                      <div className="at-hero__m...">
-                        <AtelierPulse value={0} max={33787} label="پیشرفت باز...">
-                          <svg viewBox="0 0 200 200" className="at-pulse" role="img" aria-label="پیشرفت باز...">
-                            <defs>
-                            <g aria-hidden={true}>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line
-                                x1={30.88753123060235}
-                                y1={162.22914639137383}
-+                               x2={29.401241579647575}
--                               x2="29.40124157964756"
-                                y2={163.56740760409156}
-                                stroke="currentColor"
-                                strokeWidth={0.7}
-                                strokeLinecap="round"
-                                opacity={0.18}
-                              >
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line
-+                               x1={24.761419523129874}
--                               x1="24.761419523129888"
-                                y1={45.33597153680001}
-                                x2={23.143385534379988}
-                                y2={44.16040103221506}
-                                stroke="currentColor"
-                                strokeWidth={0.7}
-                                strokeLinecap="round"
-                                opacity={0.18}
-                              >
-                              <line>
-                              <line>
-                              <line>
-                              <line
-                                x1={53.49999999999996}
-+                               y1={19.459637448047232}
--                               y1="19.459637448047218"
-                                x2={50.49999999999996}
-+                               y2={14.2634850253406}
--                               y2="14.263485025340586"
-                                stroke="currentColor"
-                                strokeWidth={1.4}
-                                strokeLinecap="round"
-                                opacity={0.45}
-                              >
-                              ...
-                            ...
-                        ...
-                    ...
-                ...
-            ...
-          ...
-      ...
- 
-[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
-
-- A server/client branch `if (typeof window !== 'undefined')`.
-- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
-- Date formatting in a user's locale which doesn't match the server.
-- External changing data without sending a snapshot of it along with the HTML.
-- Invalid HTML tag nesting.
-
-It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
-
-https://react.dev/link/hydration-mismatch
-
-  ...
-    <InnerLayoutRouter url="/dashboard" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} segmentPath={[...]} ...>
-      <SegmentViewNode type="page" pagePath="dashboard/...">
-        <SegmentTrieNode>
-        <Dashboard>
-          <AtelierDeck stats={{...}} scheduledPosts={[...]} popularPosts={[...]} recentDrafts={[...]} ...>
-            <a>
-            <main id="at-main" className="at-canvas" aria-label="داشبورد">
-              <div>
-              <div className="at-grid">
-                <AtelierHero todayViews={0} totalViews={33787} spark={[...]} publishedTotal={50}>
-                  <section className="at-tile at..." aria-label="خلاصهٔ امروز">
-                    <div>
-                    <header>
-                    <h1>
-                    <div className="at-hero__m...">
-                      <div>
-                      <div className="at-hero__m...">
-                        <AtelierPulse value={0} max={33787} label="پیشرفت باز...">
-                          <svg viewBox="0 0 200 200" className="at-pulse" role="img" aria-label="پیشرفت باز...">
-                            <defs>
-                            <g aria-hidden={true}>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line
-                                x1={30.88753123060235}
-                                y1={162.22914639137383}
-+                               x2={29.401241579647575}
--                               x2="29.40124157964756"
-                                y2={163.56740760409156}
-                                stroke="currentColor"
-                                strokeWidth={0.7}
-                                strokeLinecap="round"
-                                opacity={0.18}
-                              >
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line
-+                               x1={24.761419523129874}
--                               x1="24.761419523129888"
-                                y1={45.33597153680001}
-                                x2={23.143385534379988}
-                                y2={44.16040103221506}
-                                stroke="currentColor"
-                                strokeWidth={0.7}
-                                strokeLinecap="round"
-                                opacity={0.18}
-                              >
-                              <line>
-                              <line>
-                              <line>
-                              <line
-                                x1={53.49999999999996}
-+                               y1={19.459637448047232}
--                               y1="19.459637448047218"
-                                x2={50.49999999999996}
-+                               y2={14.2634850253406}
--                               y2="14.263485025340586"
-                                stroke="currentColor"
-                                strokeWidth={1.4}
-                                strokeLinecap="round"
-                                opacity={0.45}
-                              >
-                              ...
-                            ...
-                        ...
-                    ...
-                ...
-            ...
-          ...
-      ...
- 
-[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
-[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
-
-- A server/client branch `if (typeof window !== 'undefined')`.
-- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
-- Date formatting in a user's locale which doesn't match the server.
-- External changing data without sending a snapshot of it along with the HTML.
-- Invalid HTML tag nesting.
-
-It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
-
-https://react.dev/link/hydration-mismatch
-
-  ...
-    <InnerLayoutRouter url="/dashboard" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} segmentPath={[...]} ...>
-      <SegmentViewNode type="page" pagePath="dashboard/...">
-        <SegmentTrieNode>
-        <Dashboard>
-          <AtelierDeck stats={{...}} scheduledPosts={[...]} popularPosts={[...]} recentDrafts={[...]} ...>
-            <a>
-            <main id="at-main" className="at-canvas" aria-label="داشبورد">
-              <div>
-              <div className="at-grid">
-                <AtelierHero todayViews={0} totalViews={33787} spark={[...]} publishedTotal={50}>
-                  <section className="at-tile at..." aria-label="خلاصهٔ امروز">
-                    <div>
-                    <header>
-                    <h1>
-                    <div className="at-hero__m...">
-                      <div>
-                      <div className="at-hero__m...">
-                        <AtelierPulse value={0} max={33787} label="پیشرفت باز...">
-                          <svg viewBox="0 0 200 200" className="at-pulse" role="img" aria-label="پیشرفت باز...">
-                            <defs>
-                            <g aria-hidden={true}>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line
-                                x1={30.88753123060235}
-                                y1={162.22914639137383}
-+                               x2={29.401241579647575}
--                               x2="29.40124157964756"
-                                y2={163.56740760409156}
-                                stroke="currentColor"
-                                strokeWidth={0.7}
-                                strokeLinecap="round"
-                                opacity={0.18}
-                              >
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line>
-                              <line
-+                               x1={24.761419523129874}
--                               x1="24.761419523129888"
-                                y1={45.33597153680001}
-                                x2={23.143385534379988}
-                                y2={44.16040103221506}
-                                stroke="currentColor"
-                                strokeWidth={0.7}
-                                strokeLinecap="round"
-                                opacity={0.18}
-                              >
-                              <line>
-                              <line>
-                              <line>
-                              <line
-                                x1={53.49999999999996}
-+                               y1={19.459637448047232}
--                               y1="19.459637448047218"
-                                x2={50.49999999999996}
-+                               y2={14.2634850253406}
--                               y2="14.263485025340586"
-                                stroke="currentColor"
-                                strokeWidth={1.4}
-                                strokeLinecap="round"
-                                opacity={0.45}
-                              >
-                              ...
-                            ...
-                        ...
-                    ...
-                ...
-            ...
-          ...
-      ...
- 
-[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
-[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
-[browser] ReferenceError: toDatetimeLocal is not defined
-    at PostForm (src/components/Dashboard/Blog/PostForm/PostForm.tsx:659:28)
-  657 |                     type="datetime-local"
-  658 |                     dir="ltr"
-> 659 |                     value={toDatetimeLocal(scheduledAt)}
-      |                            ^
-  660 |                     onChange={(e) => {
-  661 |                       const v = e.target.value;
-  662 |                       setScheduledAt(v ? new Date(v) : null); (src/app/dashboard/posts/error.tsx:15:13)
-[browser] ReferenceError: toDatetimeLocal is not defined
-    at PostForm (src/components/Dashboard/Blog/PostForm/PostForm.tsx:659:28)
-  657 |                     type="datetime-local"
-  658 |                     dir="ltr"
-> 659 |                     value={toDatetimeLocal(scheduledAt)}
-      |                            ^
-  660 |                     onChange={(e) => {
-  661 |                       const v = e.target.value;
-  662 |                       setScheduledAt(v ? new Date(v) : null); (src/app/dashboard/posts/error.tsx:15:13)
+[31m[auth][error][0m JWTSessionError: Read more at https://errors.authjs.dev#jwtsessionerror
+[31m[auth][cause][0m: Error: no matching decryption secret
+    at clockTolerance (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:11891:15)
+    at async flattenedDecrypt (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:11428:15)
+    at async compactDecrypt (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:11522:23)
+    at async jwtDecrypt (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:11556:23)
+    at async Object.decode (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:11881:25)
+    at async Module.session (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:19315:29)
+    at async AuthInternal (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:19914:24)
+    at async Auth (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:20153:34)
+    at async checkRole (E:\FinancialMarket\.next\dev\server\chunks\ssr\src_0ebpim4._.js:567:21)
+    at async DashboardGateInner (E:\FinancialMarket\.next\dev\server\chunks\ssr\src_0ebpim4._.js:889:21)
+[31m[auth][details][0m: {}
+[31m[auth][error][0m JWTSessionError: Read more at https://errors.authjs.dev#jwtsessionerror
+[31m[auth][cause][0m: Error: no matching decryption secret
+    at clockTolerance (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:11891:15)
+    at async flattenedDecrypt (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:11428:15)
+    at async compactDecrypt (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:11522:23)
+    at async jwtDecrypt (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:11556:23)
+    at async Object.decode (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:11881:25)
+    at async Module.session (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:19315:29)
+    at async AuthInternal (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:19914:24)
+    at async Auth (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:20153:34)
+    at async checkRole (E:\FinancialMarket\.next\dev\server\chunks\ssr\src_0ebpim4._.js:567:21)
+    at async Dashboard (E:\FinancialMarket\.next\dev\server\chunks\ssr\[root-of-the-server]__1b4_1qk._.js:145:5)
+[31m[auth][details][0m: {}
+[31m[auth][error][0m JWTSessionError: Read more at https://errors.authjs.dev#jwtsessionerror
+[31m[auth][cause][0m: Error: no matching decryption secret
+    at clockTolerance (E:\FinancialMarket\.next\dev\server\chunks\node_modules_@auth_core_1w5osq3._.js:1166:15)
+    at async flattenedDecrypt (E:\FinancialMarket\.next\dev\server\chunks\node_modules_jose_dist_webapi_1douu8l._.js:3336:15)
+    at async compactDecrypt (E:\FinancialMarket\.next\dev\server\chunks\node_modules_jose_dist_webapi_1douu8l._.js:3430:23)
+    at async jwtDecrypt (E:\FinancialMarket\.next\dev\server\chunks\node_modules_jose_dist_webapi_1douu8l._.js:3464:23)
+    at async Object.decode (E:\FinancialMarket\.next\dev\server\chunks\node_modules_@auth_core_1w5osq3._.js:1156:25)
+    at async Module.session (E:\FinancialMarket\.next\dev\server\chunks\node_modules_@auth_core_1w5osq3._.js:4797:29)
+    at async AuthInternal (E:\FinancialMarket\.next\dev\server\chunks\node_modules_@auth_core_1w5osq3._.js:5396:24)
+    at async Auth (E:\FinancialMarket\.next\dev\server\chunks\node_modules_@auth_core_1w5osq3._.js:5635:34)
+    at async AppRouteRouteModule.do (E:\FinancialMarket\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:5:40131)
+    at async AppRouteRouteModule.handle (E:\FinancialMarket\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:5:47411)
+    at async responseGenerator (E:\FinancialMarket\.next\dev\server\chunks\node_modules_next_1f7vpma._.js:18380:38)
+    at async AppRouteRouteModule.handleResponse (E:\FinancialMarket\node_modules\next\dist\compiled\next-server\app-route-turbo.runtime.dev.js:1:228552)
+    at async handleResponse (E:\FinancialMarket\.next\dev\server\chunks\node_modules_next_1f7vpma._.js:18443:32)
+    at async Module.handler (E:\FinancialMarket\.next\dev\server\chunks\node_modules_next_1f7vpma._.js:18497:13)
+    at async DevServer.renderToResponseWithComponentsImpl (E:\FinancialMarket\node_modules\next\dist\server\base-server.js:1462:9)
+    at async DevServer.renderPageComponent (E:\FinancialMarket\node_modules\next\dist\server\base-server.js:1514:24)
+    at async DevServer.renderToResponseImpl (E:\FinancialMarket\node_modules\next\dist\server\base-server.js:1564:32)
+    at async DevServer.pipeImpl (E:\FinancialMarket\node_modules\next\dist\server\base-server.js:1044:25)
+    at async NextNodeServer.handleCatchallRenderRequest (E:\FinancialMarket\node_modules\next\dist\server\next-server.js:338:17)
+    at async DevServer.handleRequestImpl (E:\FinancialMarket\node_modules\next\dist\server\base-server.js:935:17)
+    at async E:\FinancialMarket\node_modules\next\dist\server\dev\next-dev-server.js:394:20
+    at async Span.traceAsyncFn (E:\FinancialMarket\node_modules\next\dist\trace\trace.js:164:20)
+    at async DevServer.handleRequest (E:\FinancialMarket\node_modules\next\dist\server\dev\next-dev-server.js:390:24)
+    at async invokeRender (E:\FinancialMarket\node_modules\next\dist\server\lib\router-server.js:266:21)
+    at async handleRequest (E:\FinancialMarket\node_modules\next\dist\server\lib\router-server.js:465:24)
+    at async requestHandlerImpl (E:\FinancialMarket\node_modules\next\dist\server\lib\router-server.js:514:13)
+    at async Server.requestListener (E:\FinancialMarket\node_modules\next\dist\server\lib\start-server.js:225:13)
+[31m[auth][details][0m: {}
+[31m[auth][error][0m JWTSessionError: Read more at https://errors.authjs.dev#jwtsessionerror
+[31m[auth][cause][0m: Error: no matching decryption secret
+    at clockTolerance (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:11891:15)
+    at async flattenedDecrypt (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:11428:15)
+    at async compactDecrypt (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:11522:23)
+    at async jwtDecrypt (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:11556:23)
+    at async Object.decode (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:11881:25)
+    at async Module.session (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:19315:29)
+    at async AuthInternal (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:19914:24)
+    at async Auth (E:\FinancialMarket\.next\dev\server\chunks\ssr\node_modules_0v6tmsw._.js:20153:34)
+    at async AuthGate (E:\FinancialMarket\.next\dev\server\chunks\ssr\src_16ruana._.js:571:25)
+[31m[auth][details][0m: {}
