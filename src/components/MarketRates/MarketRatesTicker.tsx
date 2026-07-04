@@ -1,21 +1,17 @@
 'use client';
 
 /**
- * MarketRatesTicker — نوار متحرک نرخ‌های بازار (single source of truth)
+ * MarketRatesTicker — نوار متحرک نرخ‌های بازار (داشبورد)
  * ----------------------------------------------------------------------------
- * این کامپوننت مشترکِ صفحه‌ی اصلی و داشبورد است؛ هر دو جا از همین فایل
- * استفاده می‌کنند تا تجربه‌ی بصری یکسان و منبع داده‌ی واحد داشته باشیم.
+ * نوار نرخ‌های زنده‌ی بازار که در بالای داشبورد نمایش داده می‌شود. منبع
+ * داده‌ی واحد برای همه‌ی نوارهای قیمت بازار در پروژه.
  *
  * منبع داده: `MarketRateItem[]` از `@/lib/market-rates` که توسط
  * `assembleMarketRates()` در `@/actions/market-rates.getMarketRates()`
  * (TGJU + USDT + FX + manual) ساخته می‌شود.
  *
- * دو variant:
- *  - `homepage` (پیش‌فرض): TickerShell شیشه‌ای، Radio + LiveDot
- *  - `dashboard`: TickerShell خنثی، Pulse + ساعت، اندازه‌ی فشرده‌تر
- *
- * Primitives مشترک: `TickerShell` + `Ticker` (همان‌هایی که در سایر
- * نوارهای قیمت سایت استفاده می‌شوند).
+ * 2026-07-04: variant `homepage` حذف شد — نوار بازار از صفحه‌ی اصلی
+ * برداشته شد. این کامپوننت حالا فقط برای داشبورد استفاده می‌شود.
  *
  * نکته‌های دسترسی:
  *  - `aria-label="نرخ‌های بازار"` روی track اصلی
@@ -29,17 +25,12 @@ import { TickerShell } from '@/components/TickerShell';
 import type { MarketRateItem } from '@/lib/market-rates';
 import { formatChangePercent, formatWithUnit } from '@/lib/market-rates/format';
 import { cn } from '@/lib/utils';
-import { Radio } from 'lucide-react';
 import { memo, useEffect, useMemo, useState } from 'react';
-
-export type MarketRatesTickerVariant = 'homepage' | 'dashboard';
 
 export interface MarketRatesTickerProps {
   /** آرایه‌ی نرخ‌ها — همان `MarketRateItem[]` که در همه‌ی صفحات مشترک است. */
   rates: MarketRateItem[];
-  /** پیش‌فرض `homepage`. داشبورد از `dashboard` استفاده می‌کند. */
-  variant?: MarketRatesTickerVariant;
-  /** برچسب کنار live dot (مثل «بازارها»، «بازار»). */
+  /** برچسب کنار live dot (پیش‌فرض «بازار»). */
   label?: string;
   /** کلاس اضافی برای wrapper بیرونی. */
   className?: string;
@@ -47,7 +38,7 @@ export interface MarketRatesTickerProps {
   maxItems?: number;
   /** اگر true باشد، حتی وقتی آرایه خالی است یک placeholder رندر می‌شود. */
   showEmptyState?: boolean;
-  /** سرعت marquee بر حسب ثانیه (پیش‌فرض: ۶۰ برای homepage، ۵۰ برای dashboard). */
+  /** سرعت marquee بر حسب ثانیه (پیش‌فرض: ۵۰). */
   duration?: number;
 }
 
@@ -78,7 +69,6 @@ function TrendBadge({ value }: { value: number }) {
 
 function MarketRatesTickerImpl({
   rates,
-  variant = 'homepage',
   label,
   className,
   maxItems,
@@ -94,10 +84,9 @@ function MarketRatesTickerImpl({
     [rates, maxItems],
   );
 
-  // فقط داشبورد به ساعت زنده نیاز دارد
+  // ساعت زنده برای داشبورد
   const [now, setNow] = useState<string>('');
   useEffect(() => {
-    if (variant !== 'dashboard') return;
     const fmt = new Intl.DateTimeFormat('fa-IR', {
       hour: '2-digit',
       minute: '2-digit',
@@ -106,7 +95,7 @@ function MarketRatesTickerImpl({
     update();
     const t = window.setInterval(update, 60_000);
     return () => window.clearInterval(t);
-  }, [variant]);
+  }, []);
 
   // empty state فقط وقتی داده‌ای نیست و showEmptyState فعال است
   if (items.length === 0) {
@@ -128,45 +117,26 @@ function MarketRatesTickerImpl({
     );
   }
 
-  const isDashboard = variant === 'dashboard';
-  const tone = isDashboard ? 'neutral' : 'glass';
-  const shellHeight = isDashboard ? 'sm' : 'md';
-  const fadeSize = isDashboard ? 'sm' : 'md';
-  const tickerDuration = duration ?? (isDashboard ? 50 : 60);
-  const itemTextSize = isDashboard ? 'text-[11px] sm:text-[12px]' : 'text-[12px] sm:text-[13px]';
-  const valueTextSize = isDashboard ? 'text-[11px] sm:text-[12px]' : 'text-[11px] sm:text-[12px]';
-  const defaultLabel = isDashboard ? 'بازار' : 'بازارها';
+  const tickerDuration = duration ?? 50;
+  const itemTextSize = 'text-[11px] sm:text-[12px]';
+  const valueTextSize = 'text-[11px] sm:text-[12px]';
 
-  // Lead: متن + (icon | live dot)
+  // Lead: Pulse متحرک + label + ساعت
   const leadContent = (
     <span className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold tracking-wide">
-      {isDashboard ? (
-        // داشبورد: Pulse متحرک + ساعت کوچک
-        <>
-          <span className="relative inline-flex" aria-hidden>
-            <span className="absolute inset-0 inline-flex h-full w-full animate-ping rounded-full bg-emerald-500/40 opacity-60" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          </span>
-          <span className="text-emerald-700 dark:text-emerald-300">{label ?? defaultLabel}</span>
-          {now && (
-            <span
-              dir="ltr"
-              style={{ unicodeBidi: 'isolate' }}
-              className="text-[9px] sm:text-[10px] font-medium text-neutral-500 dark:text-neutral-400 tabular-nums"
-            >
-              {now}
-            </span>
-          )}
-        </>
-      ) : (
-        // صفحه اصلی: Radio + LiveDot
-        <>
-          <Radio className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-600 dark:text-emerald-400" />
-          <span className="text-emerald-700 dark:text-emerald-300">
-            <span className="hidden sm:inline">{label ?? defaultLabel}</span>
-            <span className="sm:hidden">زنده</span>
-          </span>
-        </>
+      <span className="relative inline-flex" aria-hidden>
+        <span className="absolute inset-0 inline-flex h-full w-full animate-ping rounded-full bg-emerald-500/40 opacity-60" />
+        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+      </span>
+      <span className="text-emerald-700 dark:text-emerald-300">{label ?? 'بازار'}</span>
+      {now && (
+        <span
+          dir="ltr"
+          style={{ unicodeBidi: 'isolate' }}
+          className="text-[9px] sm:text-[10px] font-medium text-neutral-500 dark:text-neutral-400 tabular-nums"
+        >
+          {now}
+        </span>
       )}
     </span>
   );
@@ -174,10 +144,10 @@ function MarketRatesTickerImpl({
   return (
     <div className={cn('relative', className)}>
       <TickerShell
-        height={shellHeight}
-        fadeSize={fadeSize}
-        tone={tone}
-        showLiveDot={!isDashboard}
+        height="sm"
+        fadeSize="sm"
+        tone="neutral"
+        showLiveDot={false}
         ariaLabel="نرخ‌های بازار"
         lead={leadContent}
       >

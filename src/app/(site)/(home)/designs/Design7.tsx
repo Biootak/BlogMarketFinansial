@@ -3,27 +3,28 @@
 /**
  * Design7 — Editorial Spotlight
  * ----------------------------------------------------------------------------
- * نسخه ارتقا یافته اسلایدر هوم با ۷ تکنیک جدید:
+ * نسخه ارتقا یافته اسلایدر هوم با ۶ تکنیک:
  *
- *   1. Ticker Bar زنده در بالا (نرخ ارز، طلا، رمزارز)
- *   2. Dynamic Theme — رنگ‌بندی بر اساس دسته‌بندی هر پست
- *   3. Top Tag Badge (مهم‌ترین تگ پست — بج گوشه اسلاید)
- *   4. Reading Progress Bar زیر اسلاید فعال
- *   5. Quick-Read Overlay با excerpt
- *   6. Keyboard Navigation (←/→/Space)
- *   7. Pause on Hover + شماره‌گذاری (۰۱/۰۵)
+ *   1. Dynamic Theme — رنگ‌بندی بر اساس دسته‌بندی هر پست
+ *   2. Top Tag Badge (مهم‌ترین تگ پست — بج گوشه اسلاید)
+ *   3. Reading Progress Bar زیر اسلاید فعال
+ *   4. Quick-Read Overlay با excerpt
+ *   5. Keyboard Navigation (←/→/Space)
+ *   6. Pause on Hover + شماره‌گذاری (۰۱/۰۵)
+ *
+ * 2026-07-04: Ticker Bar از این کامپوننت حذف شد. نوار بازار دیگر در
+ * صفحه‌ی اصلی نمایش داده نمی‌شود؛ فقط در داشبورد (`MarketRatesTicker`
+ * در `AtelierDeck`) به‌کار می‌رود.
  * ----------------------------------------------------------------------------
  */
 
 import Avatar from '@/components/Avatar/Avatar';
-import MarketRatesTicker from '@/components/MarketRates/MarketRatesTicker';
 import { SafeImage } from '@/components/SafeImage';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
 import { getPostLink } from '@/lib/getPostLink';
-import type { MarketRateItem } from '@/lib/market-rates';
 import { AnimatePresence, motion } from '@/lib/motion-shim';
 import { formatRelativeTime } from '@/lib/utils';
-import type { CryptoTickerRate, PostWithRelations, RateItem, RateListData } from '@/types/types';
+import type { PostWithRelations, RateItem, RateListData } from '@/types/types';
 import {
   Activity,
   BookOpen,
@@ -50,21 +51,13 @@ import { type CategoryTheme, getCategoryTheme } from './categoryTheme';
 
 type Props = {
   initialPosts: PostWithRelations[];
-  rates?: CryptoTickerRate[];
-  marketRates?: MarketRateItem[];
   rateLists?: RateListData[];
   className?: string;
 };
 
 const AUTO_PLAY_INTERVAL = 8000; // ۸ ثانیه (قبلاً ۶ — کندتر برای کاهش re-render)
 
-export default function Design7({
-  initialPosts,
-  rates,
-  marketRates,
-  rateLists,
-  className = '',
-}: Props) {
+export default function Design7({ initialPosts, rateLists, className = '' }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -185,15 +178,8 @@ export default function Design7({
 
   return (
     <section className={`relative ${className}`}>
-      {/* ─── Ticker Bar بالای اسلایدر — نرخ‌های بازار آزاد (TGJU + DB + FX) ───
-          منبع: assembleFreeMarketRates (اولویت: TGJU > USDT-derived > FX > DB).
-          2026-06-20: جایگزین Navasan شد که quota داشت.
-          2026-07-04: استفاده از MarketRatesTicker مشترک با داشبورد — یک کامپوننت واحد. */}
-      {marketRates && marketRates.length > 0 && (
-        <div className="mb-3 sm:mb-4">
-          <MarketRatesTicker rates={marketRates} variant="homepage" />
-        </div>
-      )}
+      {/* 2026-07-04: Ticker Bar از این کامپوننت حذف شد — نوار بازار
+          دیگر در صفحه‌ی اصلی نمایش داده نمی‌شود. */}
 
       {/* ─── Main Container ─── */}
       <div

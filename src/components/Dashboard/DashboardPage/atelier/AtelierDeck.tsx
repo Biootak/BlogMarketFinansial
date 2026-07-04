@@ -114,14 +114,9 @@ const AtelierDeck: React.FC<AtelierDeckProps> = (props) => {
       </a>
 
       <main id="at-main" className="at-canvas" aria-label="داشبورد">
-        {/* Row 0: live market ticker (full-bleed) — shared component with homepage */}
+        {/* Row 0: live market ticker (full-bleed) — single source for the project */}
         <div className="px-4 pt-4 sm:px-6 lg:px-8">
-          <MarketRatesTicker
-            rates={props.marketRates}
-            variant="dashboard"
-            label="بازار"
-            maxItems={14}
-          />
+          <MarketRatesTicker rates={props.marketRates} label="بازار" maxItems={14} />
         </div>
 
         <div className="at-grid">

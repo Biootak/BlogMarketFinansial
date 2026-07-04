@@ -1,8 +1,6 @@
 import { getFeaturedPosts } from '@/actions/getFeaturedPosts';
 import { getPosts } from '@/actions/getPosts';
 import { getTopAuthors } from '@/actions/getTopAuthors';
-import { getMarketRates } from '@/actions/market-rates';
-import MarketRatesTicker from '@/components/MarketRates/MarketRatesTicker';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense } from 'react';
@@ -22,40 +20,32 @@ import DeferredTrending from './deferred/DeferredTrending';
 // deduped via safeCache; HTML is edge-cached via the s-maxage header in
 // next.config.ts.
 export default async function Home() {
-  const [
-    posts,
-    topAuthors,
-    firstStripResult,
-    secondStripResult,
-    categoriesResult,
-    featuredResult,
-    marketRates,
-  ] = await Promise.all([
-    getPosts(6),
-    getTopAuthors(5),
-    import('@/actions/advertisementActions').then((m) =>
-      m.getActiveAdvertisements({
-        limit: 4,
-        size: 'LARGE',
-        position: 'CUSTOM',
-        orderBy: 'order',
-        orderDirection: 'asc',
-      }),
-    ),
-    import('@/actions/advertisementActions').then((m) =>
-      m.getActiveAdvertisements({
-        limit: 3,
-        size: 'MEDIUM',
-        position: 'CUSTOM',
-        orderBy: 'order',
-        orderDirection: 'asc',
-        page: 2,
-      }),
-    ),
-    import('@/actions/categoryActions').then((m) => m.getPopularCategoriesForHome(16)),
-    getFeaturedPosts(1),
-    getMarketRates(),
-  ]);
+  const [posts, topAuthors, firstStripResult, secondStripResult, categoriesResult, featuredResult] =
+    await Promise.all([
+      getPosts(6),
+      getTopAuthors(5),
+      import('@/actions/advertisementActions').then((m) =>
+        m.getActiveAdvertisements({
+          limit: 4,
+          size: 'LARGE',
+          position: 'CUSTOM',
+          orderBy: 'order',
+          orderDirection: 'asc',
+        }),
+      ),
+      import('@/actions/advertisementActions').then((m) =>
+        m.getActiveAdvertisements({
+          limit: 3,
+          size: 'MEDIUM',
+          position: 'CUSTOM',
+          orderBy: 'order',
+          orderDirection: 'asc',
+          page: 2,
+        }),
+      ),
+      import('@/actions/categoryActions').then((m) => m.getPopularCategoriesForHome(16)),
+      getFeaturedPosts(1),
+    ]);
 
   const popularCategories =
     categoriesResult.success && categoriesResult.data?.categories
@@ -70,18 +60,8 @@ export default async function Home() {
 
   return (
     <div className="nc-HomePage relative">
-      {lcpImage ? (
-        <link
-          rel="preload"
-          as="image"
-          href={lcpImage}
-          // biome-ignore lint/security/noDangerouslySetInnerHtml: not applicable
-        />
-      ) : null}
+      {lcpImage ? <link rel="preload" as="image" href={lcpImage} /> : null}
       <div className="container relative">
-        {/* Market rates ticker (TGJU + USDT + FX) — shared with dashboard. */}
-        <MarketRatesTicker rates={marketRates} variant="homepage" label="بازارها" />
-
         <Suspense fallback={<Skeleton className="h-28 rounded-2xl" />}>
           <CryptoTickerSection />
         </Suspense>

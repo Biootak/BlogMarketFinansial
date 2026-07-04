@@ -20,7 +20,7 @@ export const SkeletonBase: FC<SkeletonBaseProps> = ({ className, children }) => 
       'before:bg-gradient-to-r before:from-transparent',
       'before:via-white/20 before:to-transparent',
       'dark:before:via-white/5',
-      className
+      className,
     )}
   >
     {children}
@@ -186,7 +186,7 @@ export const StatsCardSkeleton: FC<{ className?: string }> = ({ className }) => 
       'bg-white/80 dark:bg-gray-800/50',
       'border border-gray-100/60 dark:border-gray-700/40',
       'shadow-sm',
-      className
+      className,
     )}
   >
     <div className="flex items-start justify-between">
@@ -212,7 +212,7 @@ export const ChartSkeleton: FC<{ className?: string; height?: string }> = ({
       'p-6 rounded-2xl',
       'bg-white/80 dark:bg-gray-800/50',
       'border border-gray-100/60 dark:border-gray-700/40',
-      className
+      className,
     )}
   >
     <div className="flex items-center justify-between mb-6">
@@ -249,7 +249,7 @@ export const TableSkeleton: FC<TableSkeletonProps> = ({
       'rounded-2xl overflow-hidden',
       'bg-white/80 dark:bg-gray-800/50',
       'border border-gray-100/60 dark:border-gray-700/40',
-      className
+      className,
     )}
   >
     {showHeader && (
@@ -334,7 +334,7 @@ export const PostCardSkeleton: FC<{ className?: string }> = ({ className }) => (
       'rounded-2xl overflow-hidden',
       'bg-white/80 dark:bg-gray-800/50',
       'border border-gray-100/60 dark:border-gray-700/40',
-      className
+      className,
     )}
   >
     <SkeletonBase className="h-48 w-full rounded-none" />
@@ -382,7 +382,7 @@ export const SettingsCardSkeleton: FC = () => (
     className={cn(
       'p-6 rounded-2xl space-y-6',
       'bg-white/80 dark:bg-gray-800/50',
-      'border border-gray-100/60 dark:border-gray-700/40'
+      'border border-gray-100/60 dark:border-gray-700/40',
     )}
   >
     <div className="space-y-2 pb-4 border-b border-gray-100/60 dark:border-gray-700/40">
@@ -430,7 +430,7 @@ export const CategoryItemSkeleton: FC = () => (
     className={cn(
       'p-4 rounded-xl',
       'bg-white/80 dark:bg-gray-800/50',
-      'border border-gray-100/60 dark:border-gray-700/40'
+      'border border-gray-100/60 dark:border-gray-700/40',
     )}
   >
     <div className="flex items-center gap-3">
@@ -450,7 +450,7 @@ export const ProfilePageSkeleton: FC = () => (
       className={cn(
         'p-6 rounded-2xl',
         'bg-white/80 dark:bg-gray-800/50',
-        'border border-gray-100/60 dark:border-gray-700/40'
+        'border border-gray-100/60 dark:border-gray-700/40',
       )}
     >
       <div className="flex flex-col sm:flex-row items-center gap-6">
@@ -496,7 +496,7 @@ export const RateCardSkeleton: FC = () => (
     className={cn(
       'p-5 rounded-2xl',
       'bg-white/80 dark:bg-gray-800/50',
-      'border border-gray-100/60 dark:border-gray-700/40'
+      'border border-gray-100/60 dark:border-gray-700/40',
     )}
   >
     <div className="flex items-center gap-4 mb-4">
@@ -541,7 +541,7 @@ export const AdCardSkeleton: FC = () => (
     className={cn(
       'rounded-2xl overflow-hidden',
       'bg-white/80 dark:bg-gray-800/50',
-      'border border-gray-100/60 dark:border-gray-700/40'
+      'border border-gray-100/60 dark:border-gray-700/40',
     )}
   >
     <SkeletonBase className="h-40 w-full rounded-none" />
@@ -580,7 +580,7 @@ export const ReportsSkeleton: FC = () => (
       className={cn(
         'rounded-2xl overflow-hidden',
         'bg-white/80 dark:bg-gray-800/50',
-        'border border-gray-100/60 dark:border-gray-700/40'
+        'border border-gray-100/60 dark:border-gray-700/40',
       )}
     >
       {[...Array(8)].map((_, i) => (
@@ -782,7 +782,7 @@ export const Card6Skeleton: FC<{ className?: string }> = ({ className }) => (
     className={cn(
       'rounded-3xl overflow-hidden bg-white dark:bg-neutral-900',
       'border border-neutral-200/60 dark:border-neutral-800/60',
-      className
+      className,
     )}
   >
     <SkeletonBase className="aspect-[16/10] w-full rounded-none" />
@@ -802,53 +802,55 @@ export const Card6Skeleton: FC<{ className?: string }> = ({ className }) => (
 // ============================================
 export const HomePageSkeleton: FC = () => (
   <div className="nc-HomePage relative">
+    {/* Crypto ticker — narrow row, animation-ready */}
     <div className="container relative">
-      <ExchangeRatesBarSkeleton />
+      <div className="flex gap-3 sm:gap-4 overflow-hidden px-2 sm:px-3 lg:px-4">
+        {[...Array(8)].map((_, i) => (
+          <div key={i} className="w-[180px] sm:w-[200px] lg:w-[220px] shrink-0">
+            <SkeletonBase className="h-[72px] sm:h-[84px] lg:h-[96px] rounded-xl sm:rounded-2xl" />
+          </div>
+        ))}
+      </div>
     </div>
+
+    {/* Featured slider (CardLarge1) — mirrors SectionLargeSlider */}
     <div className="container relative mt-4">
       <HomeFeaturedSliderSkeleton />
     </div>
+
+    {/* Trending categories — mirrors DeferredTrending */}
     <div className="container relative mt-8 lg:mt-12">
       <SectionCategoriesSkeleton />
     </div>
+
+    {/* Pulse board — mirrors PulseSection (latest posts + filter chips) */}
     <div className="container relative mt-10 lg:mt-14">
-      <SectionMagazine1Skeleton />
+      <PulseSectionSkeleton />
     </div>
+
+    {/* Ad strip (first) */}
     <div className="container relative mt-10 lg:mt-14">
       <AdBannerSkeleton />
     </div>
+
+    {/* Magazine7 — mirrors SectionMagazine7 */}
     <div className="container relative mt-10 lg:mt-14">
       <SectionMagazine7Skeleton />
     </div>
+
+    {/* Ad strip (second) */}
     <div className="container relative mt-10 lg:mt-14">
       <AdBannerSkeleton />
     </div>
+
+    {/* Top authors — mirrors TopAuthorsSection */}
     <div className="container relative mt-10 lg:mt-14">
       <SectionAuthorsSkeleton />
     </div>
+
+    {/* Subscribe CTA — mirrors SectionSubscribe2 */}
     <div className="container relative mt-12 lg:mt-20 mb-10 lg:mb-16">
       <NewsletterSkeleton />
-    </div>
-  </div>
-);
-
-export const ExchangeRatesBarSkeleton: FC = () => (
-  <div
-    className={cn(
-      'flex items-center gap-4 p-4 rounded-2xl overflow-hidden',
-      'bg-white/80 dark:bg-neutral-800/50',
-      'border border-neutral-100/60 dark:border-neutral-700/40'
-    )}
-  >
-    <SkeletonBase className="h-5 w-24 rounded-md flex-shrink-0" />
-    <div className="flex gap-6 overflow-hidden flex-1">
-      {[...Array(6)].map((_, i) => (
-        <div key={i} className="flex items-center gap-2 flex-shrink-0">
-          <SkeletonBase className="h-6 w-6 rounded-full" />
-          <SkeletonBase className="h-4 w-16 rounded-md" />
-          <SkeletonBase className="h-4 w-20 rounded-md" />
-        </div>
-      ))}
     </div>
   </div>
 );
@@ -875,7 +877,10 @@ export const HomeFeaturedSliderSkeleton: FC = () => (
       </div>
       <div className="lg:col-span-4 flex flex-row lg:flex-col gap-2 sm:gap-3">
         {[1, 2].map((i) => (
-          <div key={i} className="relative flex-1 h-[160px] sm:h-[180px] lg:h-auto rounded-2xl overflow-hidden">
+          <div
+            key={i}
+            className="relative flex-1 h-[160px] sm:h-[180px] lg:h-auto rounded-2xl overflow-hidden"
+          >
             <SkeletonBase className="absolute inset-0 rounded-none" />
             <div className="absolute bottom-0 start-0 end-0 p-3 sm:p-4 z-10 bg-gradient-to-t from-black/60 to-transparent">
               <SkeletonBase className="h-4 w-16 rounded-md mb-2" />
@@ -915,50 +920,25 @@ export const SectionCategoriesSkeleton: FC = () => (
   </div>
 );
 
-export const SectionMagazine1Skeleton: FC = () => (
-  <div className="space-y-6">
-    <div className="flex items-center justify-between">
-      <SkeletonBase className="h-7 w-36 rounded-lg" />
-      <SkeletonBase className="h-8 w-24 rounded-lg" />
+export const PulseSectionSkeleton: FC = () => (
+  <div className="space-y-4" role="status" aria-label="در حال بارگذاری آخرین مقالات">
+    <div className="flex gap-2 overflow-hidden">
+      {[...Array(6)].map((_, i) => (
+        <SkeletonBase key={i} className="h-9 w-24 rounded-full shrink-0" />
+      ))}
     </div>
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div
-        className={cn(
-          'rounded-2xl overflow-hidden',
-          'bg-white dark:bg-neutral-800/90',
-          'border border-neutral-200/80 dark:border-neutral-700/80'
-        )}
-      >
-        <SkeletonBase className="aspect-[16/10] w-full rounded-none" />
-        <div className="p-5 space-y-4">
-          <div className="flex gap-2">
-            <SkeletonBase className="h-6 w-16 rounded-full" />
-            <SkeletonBase className="h-6 w-20 rounded-full" />
-          </div>
-          <div className="space-y-2">
-            <SkeletonBase className="h-6 w-full rounded-md" />
-            <SkeletonBase className="h-6 w-3/4 rounded-md" />
-          </div>
-          <div className="flex items-center gap-3 pt-2">
-            <SkeletonBase className="h-10 w-10 rounded-full" />
-            <div className="space-y-1">
-              <SkeletonBase className="h-4 w-24 rounded-md" />
-              <SkeletonBase className="h-3 w-16 rounded-md" />
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="flex flex-col gap-4">
+    <div
+      className={cn(
+        'rounded-3xl overflow-hidden',
+        'bg-white dark:bg-neutral-800/90',
+        'border border-neutral-200/80 dark:border-neutral-700/80',
+      )}
+    >
+      <SkeletonBase className="h-10 w-full rounded-none" />
+      <div className="p-5 space-y-4">
         {[...Array(4)].map((_, i) => (
-          <div
-            key={i}
-            className={cn(
-              'flex gap-4 p-3 rounded-xl',
-              'bg-white dark:bg-neutral-800/90',
-              'border border-neutral-200/80 dark:border-neutral-700/80'
-            )}
-          >
-            <SkeletonBase className="h-24 w-24 sm:h-28 sm:w-28 rounded-xl flex-shrink-0" />
+          <div key={i} className="flex gap-4 p-3 rounded-xl">
+            <SkeletonBase className="h-24 w-24 sm:h-28 sm:w-28 rounded-xl shrink-0" />
             <div className="flex-1 space-y-2 py-1">
               <SkeletonBase className="h-5 w-16 rounded-full" />
               <SkeletonBase className="h-5 w-full rounded-md" />
@@ -985,7 +965,7 @@ export const SectionMagazine7Skeleton: FC = () => (
           className={cn(
             'rounded-2xl overflow-hidden',
             'bg-white dark:bg-neutral-800/90',
-            'border border-neutral-200/80 dark:border-neutral-700/80'
+            'border border-neutral-200/80 dark:border-neutral-700/80',
           )}
         >
           <SkeletonBase className="aspect-[4/3] w-full rounded-none" />
@@ -1019,7 +999,7 @@ export const SectionAuthorsSkeleton: FC = () => (
           className={cn(
             'flex flex-col items-center p-4 sm:p-6 rounded-2xl',
             'bg-white dark:bg-neutral-800/90',
-            'border border-neutral-200/80 dark:border-neutral-700/80'
+            'border border-neutral-200/80 dark:border-neutral-700/80',
           )}
         >
           <SkeletonBase className="h-20 w-20 sm:h-24 sm:w-24 rounded-full" />
@@ -1035,12 +1015,7 @@ export const SectionAuthorsSkeleton: FC = () => (
 );
 
 export const AdBannerSkeleton: FC = () => (
-  <div
-    className={cn(
-      'relative rounded-2xl overflow-hidden',
-      'bg-neutral-100 dark:bg-neutral-800'
-    )}
-  >
+  <div className={cn('relative rounded-2xl overflow-hidden', 'bg-neutral-100 dark:bg-neutral-800')}>
     <SkeletonBase className="h-[120px] sm:h-[150px] lg:h-[180px] w-full rounded-none" />
   </div>
 );
@@ -1049,7 +1024,7 @@ export const NewsletterSkeleton: FC = () => (
   <div
     className={cn(
       'relative rounded-3xl overflow-hidden p-8 sm:p-12',
-      'bg-neutral-100 dark:bg-neutral-800'
+      'bg-neutral-100 dark:bg-neutral-800',
     )}
   >
     <div className="max-w-2xl mx-auto text-center space-y-6">
@@ -1091,7 +1066,7 @@ export const ArchivePostCardSkeleton: FC<{ className?: string }> = ({ className 
       'rounded-2xl overflow-hidden',
       'bg-white dark:bg-neutral-800/90',
       'border border-neutral-200/80 dark:border-neutral-700/80',
-      className
+      className,
     )}
   >
     <SkeletonBase className="aspect-[4/3] w-full rounded-none" />
