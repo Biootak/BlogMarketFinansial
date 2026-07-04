@@ -1,14 +1,14 @@
 'use client';
 
 /**
- * AtelierWeekRhythm — current-week rhythm (2026-07-04 redesign).
+ * AtelierWeekRhythm — current-week publishing view (2026-07-04 redesign).
  *
  * سه‌لایه، تمام‌عرض، با یک عدد بزرگ به‌عنوان نقطهٔ کانونی:
  *   1) سرصفحه: عدد بزرگ «X پست» + چیپ تغییر نسبت به هفتۀ قبل +
  *      پیوند «تقویم کامل» که به صفحهٔ مستقل `/dashboard/posts/calendar`
  *      می‌رود (نه به anchor داخل داشبورد). عدد بزرگ‌ترین تایپوگرافی
  *      داشبورد پس از هیرو است — این تأکید اصلی است.
- *   2) نمودار میله‌ای: هفت ستون عمودی (شنبه→جمعه) با پُشتهٔ رنگی
+ *   2) نمودار میله‌ای: هفت ستون عمودی (شنبه→جمعه) با پشتهٔ رنگی
  *      بر اساس وضعیت (زمردین = منتشر شده، طلایی = در انتظار،
  *      خاکستری = پیش‌نویس). ستون امروز با پس‌زمینهٔ راه‌راه زمردین
  *      و پالس نرم برجسته می‌شود. کلیک روی هر ستون، agenda همان
@@ -22,11 +22,30 @@
  * را انجام می‌دهد (`createdAt` کلید اصلی) تا نمودار و spotlight
  * از یک منبع واحد بخوانند — هیچ کوئری دیگری برای «پست‌های امروز»
  * لازم نیست.
+ *
+ * 2026-07-04 (late night) — refactor pass، چند ایراد برطرف شد:
+ *   - نام: «ضرباهنگ هفته» ثقیل و کتابی بود → «هفتهٔ انتشار»
+ *     (هم متنِ دیده‌شده، هم aria-label، هم section label).
+ *   - Stale week بعد از نیمه‌شب: `today` از useMemo با deps `[]`
+ *     به useState ارتقا یافت + listener روی `visibilitychange`
+ *     و `focus` تا وقتی کاربر tab رو ترک کرده و برمی‌گرده، اگر
+ *     روز عوض شده، state به‌روز بشه.
+ *   - Stacked bars: `flexGrow: N` نسبت‌بندی غلط می‌داد (یه روز با
+ *     ۱ published و ۲ draft، یک‌سوم نوار سبز می‌شد). حالا درصد
+ *     درون‌ستونی واقعی هر وضعیت (published/total) به `flexBasis`
+ *     می‌رود. ترتیب هم معکوس شد: published حالا بالای پشته است
+ *     (مهم‌ترین چیز اول دیده می‌شود).
+ *   - Radio semantics: انتخاب روز از ۷ ستون، الگوی radiogroup
+ *     است نه toggle — `role="group"` + `aria-pressed` به
+ *     `role="radiogroup"` + `role="radio"` + `aria-checked` ارتقا یافت.
+ *   - helper: منطق نگاشت JS weekday به فارسی (`WEEKDAY_FA[idx]`)
+ *     چهار بار در فایل کپی شده بود؛ به `persianWeekdayName` و
+ *     `persianWeekdayShort` استخراج شد.
  */
 
 import { cn } from '@/lib/utils';
 import type { PostWithRelations } from '@/types/types';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   HiOutlineArrowLeft,
   HiOutlineArrowTopRightOnSquare,
@@ -34,6 +53,11 @@ import {
   HiOutlinePencilSquare,
   HiOutlineSparkles,
 } from 'react-icons/hi2';
+import {
+  dayNameFa,
+  fmt,
+  persianShortDate,
+} from '../utils';
 import Link from 'next/link';
 
 interface AtelierWeekRhythmProps {
@@ -68,23 +92,29 @@ function dayKey(d: Date): string {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 }
 
-const WEEKDAY_FA = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه'] as const;
 const WEEKDAY_SHORT_FA = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'] as const;
 
-const faDigit = new Intl.NumberFormat('fa-IR');
-
-function fmtFa(n: number): string {
-  return faDigit.format(n);
+// JS getDay() = Sunday=0..Saturday=6. Persian week starts Saturday.
+// Formula درست: `(getDay() + 1) % 7` که شنبه (6) → 0 و یکشنبه (0) → 1.
+// قبلاً اینجا باگ بود: `=== 0 ? 6 : -1` که شنبه را ۵ و یکشنبه را ۶ می‌کرد.
+function persianWeekdayShort(d: Date): string {
+  return WEEKDAY_SHORT_FA[(d.getDay() + 1) % 7];
 }
 
-function persianDateShort(d: Date): string {
-  return new Intl.DateTimeFormat('fa-IR', { day: 'numeric', month: 'long' }).format(d);
+function persianRangeShort(start: Date, end: Date): string {
+  // «۱۰ تا ۱۶ تیر» اگه یک ماه، «۲۸ تیر تا ۴ مرداد» اگه دو ماه.
+  const sameMonth =
+    start.getMonth() === end.getMonth() &&
+    start.getFullYear() === end.getFullYear();
+  return sameMonth
+    ? `${fmt(start.getDate())} تا ${fmt(end.getDate())} ${persianShortDate(end).split(' ')[1]}`
+    : `${persianShortDate(start)} تا ${persianShortDate(end)}`;
 }
 
 function deltaLabel(delta: number): { text: string; trend: 'up' | 'down' | 'flat' } {
   if (Math.abs(delta) < 0.5) return { text: 'بدون تغییر', trend: 'flat' };
   const sign = delta > 0 ? '+' : '';
-  return { text: `${sign}${fmtFa(Math.round(delta))}٪`, trend: delta > 0 ? 'up' : 'down' };
+  return { text: `${sign}${fmt(Math.round(delta))}٪`, trend: delta > 0 ? 'up' : 'down' };
 }
 
 const STATUS_LABEL: Record<StatusKey, string> = {
@@ -96,16 +126,44 @@ const STATUS_LABEL: Record<StatusKey, string> = {
 export default function AtelierWeekRhythm({
   scheduledPosts,
 }: AtelierWeekRhythmProps) {
-  const today = useMemo(() => new Date(), []);
+  // 2026-07-04 (late night): `today` قبلاً useMemo با deps=[] بود
+  // که اگه داشبورد بدون reload از نیمه‌شب رد بشه، همهٔ محاسبات رو
+  // روز قبل گیر می‌کرد. حالا state هست + وقتی tab به visible
+  // برمی‌گرده یا window فوکوس می‌گیره، اگر روز عوض شده state رو
+  // به‌روز می‌کنیم.
+  const [today, setToday] = useState<Date>(() => new Date());
+
+  useEffect(() => {
+    const checkDayRollover = () => {
+      setToday((prev) => {
+        const now = new Date();
+        if (
+          prev.getFullYear() !== now.getFullYear() ||
+          prev.getMonth() !== now.getMonth() ||
+          prev.getDate() !== now.getDate()
+        ) {
+          return now;
+        }
+        return prev;
+      });
+    };
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') checkDayRollover();
+    });
+    window.addEventListener('focus', checkDayRollover);
+    return () => {
+      document.removeEventListener('visibilitychange', checkDayRollover);
+      window.removeEventListener('focus', checkDayRollover);
+    };
+  }, []);
+
   const week = useMemo(
-    () =>
-      Array.from({ length: 7 }, (_, i) => {
-        const d = new Date(startOfWeek(today));
-        d.setDate(d.getDate() + i);
-        return d;
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    () => Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(startOfWeek(today));
+      d.setDate(d.getDate() + i);
+      return d;
+    }),
+    [today],
   );
 
   // Bucket posts by createdAt — this is the week's publishing plan,
@@ -180,25 +238,73 @@ export default function AtelierWeekRhythm({
     ? buckets.find((b) => isSameDay(b.date, openDay))
     : undefined;
 
+  // 2026-07-04: اگر هر سه وضعیت امروز خالی باشن، کارت CTA بزرگ
+  // («نوشتن پست جدید») حذف می‌شه — در غیر این صورت ۴ مسیر موازی برای
+  // نوشتن پست داریم (۳ لینک «خالی» تخصصی + ۱ کارت عمومی).
+  const allTodayEmpty =
+    groupedToday.PUBLISHED.length === 0 &&
+    groupedToday.PENDING_REVIEW.length === 0 &&
+    groupedToday.DRAFT.length === 0;
+
+// 2026-07-04: keyboard nav برای radiogroup ستون‌ها.
+// کلیدها مسیر بصری دنبال می‌کنن، نه DOM order. در RTL، DOM[0] (شنبه)
+// در سمت راست بصری است؛ پس ArrowRight = کاهش ایندکس = راست بصری.
+// ArrowLeft = افزایش ایندکس = چپ بصری. Home/End = اول/آخر در reading
+// order (شنبه/جمعه) که مستقل از جهت بصری است.
+  const chartRef = useRef<HTMLDivElement>(null);
+  const handleChartKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const buttons =
+      chartRef.current?.querySelectorAll<HTMLButtonElement>('button[role="radio"]');
+    if (!buttons || buttons.length === 0) return;
+    const currentIdx = Array.from(buttons).indexOf(
+      e.target as HTMLButtonElement,
+    );
+    if (currentIdx === -1) return;
+    let nextIdx: number | null = null;
+    switch (e.key) {
+      case 'ArrowRight':
+        nextIdx = (currentIdx - 1 + buttons.length) % buttons.length;
+        break;
+      case 'ArrowLeft':
+        nextIdx = (currentIdx + 1) % buttons.length;
+        break;
+      case 'Home':
+        nextIdx = 0;
+        break;
+      case 'End':
+        nextIdx = buttons.length - 1;
+        break;
+      default:
+        return;
+    }
+    e.preventDefault();
+    const nextBucket = buckets[nextIdx];
+    setOpenDay(nextBucket.date);
+    buttons[nextIdx].focus();
+  };
+
   return (
-    <section className="at-tile at-rhythm" aria-label="هفتهٔ جاری">
+    <section className="at-tile at-rhythm" aria-label="هفتهٔ انتشار">
       {/* ───── Header ───── */}
       <header className="at-rhythm__head">
         <div className="at-rhythm__head-aside">
           <span className="at-rhythm__head-eyebrow">
             <HiOutlineChartBar className="w-3 h-3" />
-            <span>ضرباهنگ هفته</span>
+            <span>هفتهٔ انتشار</span>
           </span>
           <p className="at-rhythm__head-day">
-            {WEEKDAY_FA[today.getDay() === 0 ? 6 : today.getDay() - 1]}{' '}
+            {dayNameFa(today)}{' '}
             <span className="at-rhythm__head-day-sep">·</span>
-            <span className="tabular-nums">{persianDateShort(today)}</span>
+            <span className="tabular-nums">{persianShortDate(today)}</span>
+          </p>
+          <p className="at-rhythm__head-range tabular-nums">
+            هفتهٔ {persianRangeShort(week[0], week[6])}
           </p>
         </div>
 
         <div className="at-rhythm__metric">
           <span className="at-rhythm__metric-num tabular-nums">
-            {fmtFa(thisWeekTotal)}
+            {fmt(thisWeekTotal)}
           </span>
           <span className="at-rhythm__metric-suffix">پست در ۷ روز</span>
           <span className={cn('at-rhythm__metric-delta', `is-${delta.trend}`)}>
@@ -223,20 +329,33 @@ export default function AtelierWeekRhythm({
       </header>
 
       {/* ───── Bar chart ───── */}
-      <div className="at-rhythm__chart" role="group" aria-label="ریتم ۷ روز اخیر">
+      {/* radiogroup: انتخاب روز از ۷ ستون، radio pattern است نه toggle. */}
+      <div
+        ref={chartRef}
+        className="at-rhythm__chart"
+        role="radiogroup"
+        aria-label="انتخاب روز از هفتهٔ جاری"
+        onKeyDown={handleChartKeyDown}
+      >
         {buckets.map((b) => {
           const isToday = isSameDay(b.date, today);
           const isOpen = openDay && isSameDay(b.date, openDay);
           const total = b.posts.length;
           const heightPct = (total / maxDayTotal) * 100;
-          // split by status for stack
+          // درصد درون‌ستونی هر وضعیت بر اساس سهمش از کل آن روز.
+          // قبلاً flexGrow: N بود که نسبت‌بندی غلط می‌داد.
           const draftN = b.posts.filter((p) => p.status === 'DRAFT').length;
           const pendingN = b.posts.filter((p) => p.status === 'PENDING_REVIEW').length;
           const publishedN = b.posts.filter((p) => p.status === 'PUBLISHED').length;
+          const publishedPct = total > 0 ? (publishedN / total) * 100 : 0;
+          const pendingPct = total > 0 ? (pendingN / total) * 100 : 0;
+          const draftPct = total > 0 ? (draftN / total) * 100 : 0;
           return (
             <button
               key={dayKey(b.date)}
               type="button"
+              role="radio"
+              aria-checked={Boolean(isOpen)}
               onClick={() => setOpenDay(b.date)}
               className={cn(
                 'at-rhythm__col',
@@ -244,11 +363,10 @@ export default function AtelierWeekRhythm({
                 isOpen && 'is-open',
                 total === 0 && 'is-empty',
               )}
-              aria-pressed={Boolean(isOpen)}
-              aria-label={`${WEEKDAY_FA[b.date.getDay() === 0 ? 6 : b.date.getDay() - 1]} ${fmtFa(b.date.getDate())}، ${fmtFa(total)} پست`}
+              aria-label={`${dayNameFa(b.date)} ${fmt(b.date.getDate())}، ${fmt(total)} پست${isToday ? '، امروز' : ''}`}
             >
               <span className="at-rhythm__col-count tabular-nums">
-                {total > 0 ? fmtFa(total) : '·'}
+                {total > 0 ? fmt(total) : '·'}
               </span>
               <span className="at-rhythm__col-track">
                 {total > 0 && (
@@ -256,25 +374,28 @@ export default function AtelierWeekRhythm({
                     className="at-rhythm__col-stack"
                     style={{ height: `${Math.max(8, heightPct)}%` }}
                   >
+                    {/* ترتیب: published بالا، pending وسط، draft پایین (CSS
+                        `.at-rhythm__col-stack` حالا column-reverse نیست).
+                        مهم‌ترین وضعیت اول دیده می‌شود. */}
                     {publishedN > 0 && (
                       <span
                         className="at-rhythm__bar at-rhythm__bar--published"
-                        style={{ flexGrow: publishedN }}
-                        title={`${fmtFa(publishedN)} منتشر شده`}
+                        style={{ flex: `0 0 ${publishedPct}%` }}
+                        title={`${fmt(publishedN)} منتشر شده`}
                       />
                     )}
                     {pendingN > 0 && (
                       <span
                         className="at-rhythm__bar at-rhythm__bar--pending"
-                        style={{ flexGrow: pendingN }}
-                        title={`${fmtFa(pendingN)} در انتظار`}
+                        style={{ flex: `0 0 ${pendingPct}%` }}
+                        title={`${fmt(pendingN)} در انتظار`}
                       />
                     )}
                     {draftN > 0 && (
                       <span
                         className="at-rhythm__bar at-rhythm__bar--draft"
-                        style={{ flexGrow: draftN }}
-                        title={`${fmtFa(draftN)} پیش‌نویس`}
+                        style={{ flex: `0 0 ${draftPct}%` }}
+                        title={`${fmt(draftN)} پیش‌نویس`}
                       />
                     )}
                   </span>
@@ -282,99 +403,125 @@ export default function AtelierWeekRhythm({
               </span>
               <span className="at-rhythm__col-meta">
                 <span className="at-rhythm__col-name">
-                  {WEEKDAY_SHORT_FA[b.date.getDay() === 0 ? 6 : b.date.getDay() - 1]}
+                  {persianWeekdayShort(b.date)}
                 </span>
                 <span className="at-rhythm__col-num tabular-nums">
-                  {fmtFa(b.date.getDate())}
+                  {fmt(b.date.getDate())}
                 </span>
               </span>
-              {isToday && <span className="at-rhythm__col-today" aria-hidden />}
+              {isToday && (
+                <span className="at-rhythm__col-today" aria-hidden>
+                  امروز
+                </span>
+              )}
             </button>
           );
         })}
       </div>
 
-      {/* ───── Today spotlight ───── */}
-      <div className="at-rhythm__spotlight">
-        <div className="at-rhythm__spotlight-head">
-          <span className="at-rhythm__spotlight-eyebrow">
-            <HiOutlineSparkles className="w-3 h-3" />
-            <span>امروز</span>
+      {/* ───── Today spotlight (whole week → «هفتهٔ خالی») ───── */}
+      {thisWeekTotal === 0 ? (
+        <div className="at-rhythm__empty" role="status">
+          <span className="at-rhythm__empty-ico" aria-hidden>
+            <HiOutlineSparkles className="w-6 h-6" />
           </span>
-          <span className="at-rhythm__spotlight-day tabular-nums">
-            {persianDateShort(today)}
-          </span>
-          <span className="at-rhythm__spotlight-count tabular-nums">
-            {fmtFa(todayPosts.length)} پست
-          </span>
-        </div>
-
-        <div className="at-rhythm__spot-grid">
-          <SpotCard
-            status="PUBLISHED"
-            posts={groupedToday.PUBLISHED}
-            hrefCreate="/dashboard/posts/create?status=PUBLISHED"
-          />
-          <SpotCard
-            status="PENDING_REVIEW"
-            posts={groupedToday.PENDING_REVIEW}
-            hrefCreate="/dashboard/posts/create"
-          />
-          <SpotCard
-            status="DRAFT"
-            posts={groupedToday.DRAFT}
-            hrefCreate="/dashboard/posts/create?status=DRAFT"
-          />
+          <div className="at-rhythm__empty-text">
+            <p className="at-rhythm__empty-title">هفتهٔ خالی</p>
+            <p className="at-rhythm__empty-sub">
+              هنوز هیچ پستی برای این هفته برنامه‌ریزی نشده. اولین پست رو
+              بنویس تا تقویم پُر بشه.
+            </p>
+          </div>
           <Link
             href="/dashboard/posts/create"
-            className="at-rhythm__spot at-rhythm__spot--cta"
+            className="at-rhythm__empty-cta"
           >
-            <span className="at-rhythm__spot-ico">
-              <HiOutlinePencilSquare className="w-5 h-5" />
-            </span>
-            <span className="at-rhythm__spot-title">نوشتن پست جدید</span>
-            <span className="at-rhythm__spot-meta">
-              امروز را پُر کن
-              <HiOutlineArrowLeft className="w-3 h-3" />
-            </span>
+            <HiOutlinePencilSquare className="w-4 h-4" />
+            <span>نوشتن اولین پست</span>
+            <HiOutlineArrowLeft className="w-3 h-3" />
           </Link>
         </div>
-      </div>
+      ) : (
+        <div className="at-rhythm__spotlight">
+          <div className="at-rhythm__spotlight-head">
+            <span className="at-rhythm__spotlight-eyebrow">
+              <HiOutlineSparkles className="w-3 h-3" />
+              <span>امروز</span>
+            </span>
+            <span className="at-rhythm__spotlight-day tabular-nums">
+              {persianShortDate(today)}
+            </span>
+            <span className="at-rhythm__spotlight-count tabular-nums">
+              {fmt(todayPosts.length)} پست
+            </span>
+          </div>
+
+          <div
+            className={cn(
+              'at-rhythm__spot-grid',
+              allTodayEmpty && 'at-rhythm__spot-grid--three',
+            )}
+          >
+            <SpotCard
+              status="PUBLISHED"
+              posts={groupedToday.PUBLISHED}
+              hrefCreate="/dashboard/posts/create?status=PUBLISHED"
+            />
+            <SpotCard
+              status="PENDING_REVIEW"
+              posts={groupedToday.PENDING_REVIEW}
+              hrefCreate="/dashboard/posts/create"
+            />
+            <SpotCard
+              status="DRAFT"
+              posts={groupedToday.DRAFT}
+              hrefCreate="/dashboard/posts/create?status=DRAFT"
+            />
+            {!allTodayEmpty && (
+              <Link
+                href="/dashboard/posts/create"
+                className="at-rhythm__spot at-rhythm__spot--cta"
+              >
+                <span className="at-rhythm__spot-ico">
+                  <HiOutlinePencilSquare className="w-5 h-5" />
+                </span>
+                <span className="at-rhythm__spot-title">نوشتن پست جدید</span>
+                <span className="at-rhythm__spot-meta">
+                  امروز را پُر کن
+                  <HiOutlineArrowLeft className="w-3 h-3" />
+                </span>
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ───── Day agenda (inline) ───── */}
       {openBucket && (
         <div
           className="at-rhythm__agenda"
-          aria-label={`پست‌های ${persianDateShort(openBucket.date)}`}
+          aria-label={`پست‌های ${persianShortDate(openBucket.date)}`}
         >
           <div className="at-rhythm__agenda-head">
             <span className="at-rhythm__agenda-day">
               <span className="at-rhythm__agenda-day-name">
-                {WEEKDAY_FA[openBucket.date.getDay() === 0 ? 6 : openBucket.date.getDay() - 1]}
+                {dayNameFa(openBucket.date)}
               </span>
               <span className="at-rhythm__agenda-day-num tabular-nums">
-                {persianDateShort(openBucket.date)}
+                {persianShortDate(openBucket.date)}
               </span>
               {isSameDay(openBucket.date, today) && (
                 <span className="at-rhythm__agenda-today">امروز</span>
               )}
             </span>
             <span className="at-rhythm__agenda-count tabular-nums">
-              {fmtFa(openBucket.posts.length)} پست
+              {fmt(openBucket.posts.length)} پست
             </span>
           </div>
 
           {openBucket.posts.length === 0 ? (
             <div className="at-rhythm__agenda-empty">
-              <p>این روز هنوز پستی ندارد. اولین پست امروز را بنویسید.</p>
-              <Link
-                href="/dashboard/posts/create"
-                className="at-rhythm__agenda-cta"
-              >
-                <HiOutlinePencilSquare className="w-3.5 h-3.5" />
-                <span>نوشتن پست</span>
-                <HiOutlineArrowLeft className="w-3 h-3" />
-              </Link>
+              <p>این روز هنوز پستی ندارد.</p>
             </div>
           ) : (
             <ul className="at-rhythm__agenda-list">
@@ -460,7 +607,7 @@ function SpotCard({ status, posts, hrefCreate }: SpotCardProps) {
         />
         <span className="at-rhythm__spot-label">{STATUS_LABEL[status]}</span>
         <span className="at-rhythm__spot-num tabular-nums">
-          {fmtFa(posts.length)}
+          {fmt(posts.length)}
         </span>
       </div>
       {primary ? (
@@ -478,7 +625,7 @@ function SpotCard({ status, posts, hrefCreate }: SpotCardProps) {
       ) : null}
       <span className="at-rhythm__spot-foot">
         {posts.length > 1
-          ? `+${fmtFa(posts.length - 1)} مورد دیگر`
+          ? `+${fmt(posts.length - 1)} مورد دیگر`
           : primary
             ? primary.author?.name ?? '—'
             : 'برای افزودن کلیک کنید'}

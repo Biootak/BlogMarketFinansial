@@ -30,6 +30,12 @@
  * `scheduledAt` ندارند، پس bucketing بر اساس `createdAt` است؛
  * `getScheduledPosts` پنجرهٔ سه‌هفته‌ای برمی‌گرداند، این صفحه
  * به همان داده متکی است.
+ *
+ * نکتهٔ تقویم: 2026-07-04 — کل گرید بر اساس تقویم شمسی رندر
+ * می‌شود (نه میلادی با اسامی فارسی). کلید bucketing پست‌ها هم
+ * شمسی است تا پست‌های یک روز شمسی دقیقاً زیر همان سلول شمسی
+ * ظاهر شوند. تبدیل میلادی↔شمسی از `jalaali-js` (الگوریتم
+ * Borkowski) می‌آید.
  */
 
 import { cn } from '@/lib/utils';
@@ -46,6 +52,12 @@ import {
   HiOutlineHome,
 } from 'react-icons/hi2';
 import Link from 'next/link';
+import {
+  isLeapJalaaliYear,
+  jalaaliMonthLength,
+  toGregorian,
+  toJalaali,
+} from 'jalaali-js';
 
 interface AtelierMonthCalendarProps {
   scheduledPosts: PostWithRelations[];
@@ -60,25 +72,27 @@ interface AtelierMonthCalendarProps {
 
 type StatusKey = 'DRAFT' | 'PENDING_REVIEW' | 'PUBLISHED';
 
+type JalaliYMD = { y: number; m: number; d: number };
+
 const FA_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
 const faDigit = new Intl.NumberFormat('fa-IR');
 function fmtFa(n: number): string {
   return faDigit.format(n);
 }
 
-const MONTHS_FA = [
-  'ژانویه',
-  'فوریه',
-  'مارس',
-  'آوریل',
-  'مه',
-  'ژوئن',
-  'ژوئیه',
-  'اوت',
-  'سپتامبر',
-  'اکتبر',
-  'نوامبر',
-  'دسامبر',
+const JALALI_MONTHS_FA = [
+  'فروردین',
+  'اردیبهشت',
+  'خرداد',
+  'تیر',
+  'مرداد',
+  'شهریور',
+  'مهر',
+  'آبان',
+  'آذر',
+  'دی',
+  'بهمن',
+  'اسفند',
 ] as const;
 
 // Persian week starts Saturday.
@@ -98,68 +112,110 @@ const STATUS_LABEL: Record<StatusKey, string> = {
   PUBLISHED: 'منتشر شده',
 };
 
-function isSameDay(a: Date, b: Date) {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
+// --- Jalali helpers ---
+// All conversion goes through `jalaali-js` (Borkowski's algorithm,
+// already a project dep). Kept thin here so the calendar logic
+// stays readable.
+
+function jalaliIsLeap(y: number): boolean {
+  return isLeapJalaaliYear(y);
 }
 
-function startOfMonth(d: Date): Date {
-  return new Date(d.getFullYear(), d.getMonth(), 1);
+function jalaliDaysInMonth(y: number, m: number): number {
+  if (m <= 6) return 31;
+  if (m <= 11) return 30;
+  return jalaaliMonthLength(y, m);
 }
 
-function addMonths(d: Date, n: number): Date {
-  const result = new Date(d);
-  result.setMonth(result.getMonth() + n);
-  return result;
+function gregorianToJalali(g: Date): JalaliYMD {
+  // toJalaali(date) → {jy, jm, jd}
+  const j = toJalaali(g);
+  return { y: j.jy, m: j.jm, d: j.jd };
 }
 
-function buildMonthGrid(monthStart: Date): Date[] {
-  // Persian week starts Saturday (JS Sat=6). Compute offset from Sat.
-  const offset = (monthStart.getDay() - 6 + 7) % 7;
-  const firstCell = new Date(monthStart);
-  firstCell.setDate(firstCell.getDate() - offset);
-  const cells: Date[] = [];
-  for (let i = 0; i < 42; i++) {
-    const d = new Date(firstCell);
-    d.setDate(firstCell.getDate() + i);
-    cells.push(d);
+function jalaliToGregorian(y: number, m: number, d: number): Date {
+  // toGregorian(jy, jm, jd) → {gy, gm, gd}
+  const g = toGregorian(y, m, d);
+  return new Date(g.gy, g.gm - 1, g.gd);
+}
+
+function jalaliDayOfWeek(y: number, m: number, d: number): number {
+  // Returns 0 for Saturday (matching WEEKDAY_HEADERS_FA[0]) and
+  // 6 for Friday. JS Date.getDay(): Sun=0, Mon=1, ..., Sat=6.
+  return (jalaliToGregorian(y, m, d).getDay() - 6 + 7) % 7;
+}
+
+function isSameJalaliDay(a: JalaliYMD, b: JalaliYMD): boolean {
+  return a.y === b.y && a.m === b.m && a.d === b.d;
+}
+
+function jalaliKey(j: JalaliYMD): string {
+  return `${j.y}-${j.m}-${j.d}`;
+}
+
+function addJalaliMonths(y: number, m: number, n: number): JalaliYMD {
+  const total = y * 12 + (m - 1) + n;
+  return { y: Math.floor(total / 12), m: (total % 12) + 1, d: 1 };
+}
+
+function buildJalaliMonthGrid(year: number, month: number): JalaliYMD[] {
+  const daysInMonth = jalaliDaysInMonth(year, month);
+  const firstWeekday = jalaliDayOfWeek(year, month, 1);
+  const prev = addJalaliMonths(year, month, -1);
+  const prevDaysInMonth = jalaliDaysInMonth(prev.y, prev.m);
+  const cells: JalaliYMD[] = [];
+
+  // Leading days from previous month
+  for (let i = firstWeekday - 1; i >= 0; i--) {
+    cells.push({ y: prev.y, m: prev.m, d: prevDaysInMonth - i });
+  }
+  // Current month
+  for (let d = 1; d <= daysInMonth; d++) {
+    cells.push({ y: year, m: month, d });
+  }
+  // Trailing days from next month (round to full weeks)
+  const next = addJalaliMonths(year, month, 1);
+  const totalCells = Math.ceil(cells.length / 7) * 7;
+  let nextDay = 1;
+  while (cells.length < totalCells) {
+    cells.push({ y: next.y, m: next.m, d: nextDay++ });
   }
   return cells;
 }
-
-const FA_WEEKDAYS = new Map(
-  WEEKDAY_HEADERS_FA.map((w) => [w.name, w.short]),
-);
 
 export default function AtelierMonthCalendar({
   scheduledPosts,
   embedded = false,
 }: AtelierMonthCalendarProps) {
-  const today = useMemo(() => new Date(), []);
-  const [cursor, setCursor] = useState<Date>(() => startOfMonth(today));
-  const [openDay, setOpenDay] = useState<Date | null>(today);
+  const todayJ = useMemo<JalaliYMD>(() => gregorianToJalali(new Date()), []);
+  const [cursor, setCursor] = useState<JalaliYMD>(() => ({
+    y: todayJ.y,
+    m: todayJ.m,
+    d: 1,
+  }));
+  const [openDay, setOpenDay] = useState<JalaliYMD | null>(todayJ);
 
-  const grid = useMemo(() => buildMonthGrid(cursor), [cursor]);
+  const grid = useMemo(
+    () => buildJalaliMonthGrid(cursor.y, cursor.m),
+    [cursor.y, cursor.m],
+  );
 
-  // Bucket posts by createdAt for the month being viewed (and a
-  // window of one month before/after, so agenda cells stay accurate
-  // when the user pages around).
+  // Bucket posts by their Jalali createdAt day so the right posts
+  // show under the right cells.
   const byDay = useMemo(() => {
     const map = new Map<string, PostWithRelations[]>();
     for (const p of scheduledPosts ?? []) {
       const ts = p.createdAt ? new Date(p.createdAt) : null;
       if (!ts) continue;
-      const k = `${ts.getFullYear()}-${ts.getMonth()}-${ts.getDate()}`;
+      const k = jalaliKey(gregorianToJalali(ts));
       const list = map.get(k) ?? [];
       list.push(p);
       map.set(k, list);
     }
     for (const list of map.values()) {
       list.sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
     }
     return map;
@@ -167,9 +223,9 @@ export default function AtelierMonthCalendar({
 
   const monthPosts = useMemo(() => {
     return grid
-      .filter((d) => d.getMonth() === cursor.getMonth())
-      .flatMap((d) => byDay.get(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`) ?? []);
-  }, [grid, byDay, cursor]);
+      .filter((d) => d.y === cursor.y && d.m === cursor.m)
+      .flatMap((d) => byDay.get(jalaliKey(d)) ?? []);
+  }, [grid, byDay, cursor.y, cursor.m]);
 
   const monthMetrics = useMemo(() => {
     const counts = { DRAFT: 0, PENDING_REVIEW: 0, PUBLISHED: 0 };
@@ -182,13 +238,11 @@ export default function AtelierMonthCalendar({
 
   const openDayPosts = useMemo(() => {
     if (!openDay) return [];
-    return byDay.get(`${openDay.getFullYear()}-${openDay.getMonth()}-${openDay.getDate()}`) ?? [];
+    return byDay.get(jalaliKey(openDay)) ?? [];
   }, [byDay, openDay]);
 
-  const monthLabel = `${MONTHS_FA[cursor.getMonth()]} ${fmtFa(cursor.getFullYear())}`;
-  const isCurrentMonth =
-    cursor.getFullYear() === today.getFullYear() &&
-    cursor.getMonth() === today.getMonth();
+  const monthLabel = `${JALALI_MONTHS_FA[cursor.m - 1]} ${fmtFa(cursor.y)}`;
+  const isCurrentMonth = cursor.y === todayJ.y && cursor.m === todayJ.m;
 
   return (
     <div className="at-cal">
@@ -219,7 +273,7 @@ export default function AtelierMonthCalendar({
         <div className="at-cal__nav">
           <button
             type="button"
-            onClick={() => setCursor((c) => addMonths(c, -1))}
+            onClick={() => setCursor((c) => addJalaliMonths(c.y, c.m, -1))}
             className="at-cal__nav-btn"
             aria-label="ماه قبل"
           >
@@ -228,8 +282,8 @@ export default function AtelierMonthCalendar({
           <button
             type="button"
             onClick={() => {
-              setCursor(startOfMonth(today));
-              setOpenDay(today);
+              setCursor({ y: todayJ.y, m: todayJ.m, d: 1 });
+              setOpenDay(todayJ);
             }}
             className="at-cal__nav-today"
             aria-label="بازگشت به امروز"
@@ -238,7 +292,7 @@ export default function AtelierMonthCalendar({
           </button>
           <button
             type="button"
-            onClick={() => setCursor((c) => addMonths(c, 1))}
+            onClick={() => setCursor((c) => addJalaliMonths(c.y, c.m, 1))}
             className="at-cal__nav-btn"
             aria-label="ماه بعد"
           >
@@ -289,14 +343,14 @@ export default function AtelierMonthCalendar({
 
         {/* Day cells */}
         {grid.map((d) => {
-          const isInMonth = d.getMonth() === cursor.getMonth();
-          const isToday = isSameDay(d, today);
-          const isOpen = openDay && isSameDay(d, openDay);
-          const dayKey = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-          const posts = byDay.get(dayKey) ?? [];
+          const isInMonth = d.y === cursor.y && d.m === cursor.m;
+          const isToday = isSameJalaliDay(d, todayJ);
+          const isOpen = openDay ? isSameJalaliDay(d, openDay) : false;
+          const key = jalaliKey(d);
+          const posts = byDay.get(key) ?? [];
           return (
             <button
-              key={dayKey}
+              key={key}
               type="button"
               onClick={() => setOpenDay(d)}
               className={cn(
@@ -308,12 +362,12 @@ export default function AtelierMonthCalendar({
                 posts.length === 0 && 'is-empty',
               )}
               role="gridcell"
-              aria-selected={Boolean(isOpen)}
-              aria-label={`${fmtFa(d.getDate())} ${MONTHS_FA[d.getMonth()]}، ${fmtFa(posts.length)} پست`}
+              aria-selected={isOpen}
+              aria-label={`${fmtFa(d.d)} ${JALALI_MONTHS_FA[d.m - 1]}، ${fmtFa(posts.length)} پست`}
             >
               <span className="at-cal__cell-head">
                 <span className="at-cal__cell-num tabular-nums">
-                  {FA_DIGITS[d.getDate()] ?? fmtFa(d.getDate())}
+                  {FA_DIGITS[d.d] ?? fmtFa(d.d)}
                 </span>
                 {isToday && <span className="at-cal__cell-today">امروز</span>}
               </span>
@@ -355,12 +409,12 @@ export default function AtelierMonthCalendar({
           <div className="at-cal__agenda-head">
             <span className="at-cal__agenda-day">
               <span className="at-cal__agenda-day-num tabular-nums">
-                {FA_DIGITS[openDay.getDate()] ?? fmtFa(openDay.getDate())}
+                {FA_DIGITS[openDay.d] ?? fmtFa(openDay.d)}
               </span>
               <span className="at-cal__agenda-day-name">
-                {MONTHS_FA[openDay.getMonth()]} {fmtFa(openDay.getFullYear())}
+                {JALALI_MONTHS_FA[openDay.m - 1]} {fmtFa(openDay.y)}
               </span>
-              {isSameDay(openDay, today) && (
+              {isSameJalaliDay(openDay, todayJ) && (
                 <span className="at-cal__agenda-today">امروز</span>
               )}
             </span>

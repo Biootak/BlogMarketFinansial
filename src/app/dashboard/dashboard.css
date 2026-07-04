@@ -10084,6 +10084,13 @@
   .at-rhythm__head-day-sep {
     color: var(--at-fg-faint);
   }
+  .at-rhythm__head-range {
+    margin: 2px 0 0;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--at-fg-subtle);
+    letter-spacing: 0.01em;
+  }
 
   .at-rhythm__metric {
     display: inline-flex;
@@ -10230,24 +10237,42 @@
   }
   .at-rhythm__col-today {
     position: absolute;
-    inset-block-start: -10px;
-    inset-inline-start: 50%;
-    transform: translateX(50%);
-    width: 56px;
-    height: 3px;
-    border-radius: 0 0 4px 4px;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 9px;
     background: var(--at-accent);
+    color: var(--at-bg);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+    border-radius: 999px;
     box-shadow:
-      0 0 0 1px color-mix(in oklch, var(--at-accent) 50%, transparent),
-      0 0 14px color-mix(in oklch, var(--at-accent) 50%, transparent);
+      0 1px 0 1px color-mix(in oklch, var(--at-accent) 60%, transparent),
+      0 4px 12px -4px color-mix(in oklch, var(--at-accent) 55%, transparent);
     animation: at-rhythm-today-pulse 2.6s ease-in-out infinite;
+    white-space: nowrap;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .at-rhythm__col-today::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.85;
   }
   @keyframes at-rhythm-today-pulse {
-    0%, 100% { opacity: 0.85; }
-    50% { opacity: 1; }
+    0%, 100% { opacity: 0.92; transform: translateX(-50%) scale(1); }
+    50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
   }
-  [dir="rtl"] .at-rhythm__col-today {
-    transform: translateX(-50%);
+  @media (prefers-reduced-motion: reduce) {
+    .at-rhythm__col-today { animation: none; }
   }
   .at-rhythm__col.is-open {
     border-color: var(--at-line-strong);
@@ -10296,7 +10321,11 @@
   .at-rhythm__col-stack {
     width: 100%;
     display: flex;
-    flex-direction: column-reverse;
+    /* 2026-07-04 (late night): ترتیب پشته معکوس شد. قبلاً
+       column-reverse بود که published (اولین child) پایین می‌نشست؛
+       حالا column است که published بالا باشد — مهم‌ترین وضعیت
+       اول دیده می‌شود. */
+    flex-direction: column;
     align-items: stretch;
     border-radius: 6px 6px 0 0;
     overflow: hidden;
@@ -10408,6 +10437,9 @@
     .at-rhythm__spot-grid {
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 12px;
+    }
+    .at-rhythm__spot-grid--three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
   .at-rhythm__spot {
@@ -10597,6 +10629,88 @@
     border-color: var(--at-line-strong);
   }
 
+  /* ── Whole-week empty state ─────────────────────────────────────────── */
+  .at-rhythm__empty {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 22px 24px;
+    border: 1px dashed var(--at-line-strong);
+    border-radius: var(--at-radius);
+    background:
+      repeating-linear-gradient(
+        135deg,
+        color-mix(in oklch, var(--at-accent) 5%, transparent) 0,
+        color-mix(in oklch, var(--at-accent) 5%, transparent) 8px,
+        transparent 8px,
+        transparent 16px
+      ),
+      var(--at-bg);
+  }
+  @media (min-width: 768px) {
+    .at-rhythm__empty { padding: 26px 28px; gap: 22px; }
+  }
+  .at-rhythm__empty-ico {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--at-radius);
+    background: var(--at-accent-soft);
+    color: var(--at-accent);
+    flex-shrink: 0;
+  }
+  .at-rhythm__empty-text {
+    flex: 1;
+    min-width: 0;
+  }
+  .at-rhythm__empty-title {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--at-fg);
+    letter-spacing: -0.005em;
+  }
+  .at-rhythm__empty-sub {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--at-fg-muted);
+    line-height: 1.6;
+  }
+  .at-rhythm__empty-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: var(--at-radius);
+    background: var(--at-accent);
+    color: var(--at-bg);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+    box-shadow:
+      0 1px 0 1px color-mix(in oklch, var(--at-accent) 60%, transparent),
+      0 4px 14px -6px color-mix(in oklch, var(--at-accent) 60%, transparent);
+    transition:
+      transform var(--at-duration) var(--at-ease),
+      filter var(--at-duration) var(--at-ease);
+  }
+  .at-rhythm__empty-cta:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.04);
+  }
+  .at-rhythm__empty-cta:focus-visible {
+    outline: 2px solid var(--at-accent);
+    outline-offset: 2px;
+  }
+  @media (max-width: 640px) {
+    .at-rhythm__empty { flex-wrap: wrap; }
+    .at-rhythm__empty-cta { width: 100%; justify-content: center; }
+  }
+
   /* ── Inline agenda (single day list) ───────────────────────────────── */
   .at-rhythm__agenda {
     border-top: 1px solid var(--at-line);
@@ -10773,22 +10887,6 @@
     color: var(--at-fg-muted);
     margin: 0;
   }
-  .at-rhythm__agenda-cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 14px;
-    border-radius: var(--at-radius);
-    background: var(--at-accent);
-    color: white;
-    font-size: 12.5px;
-    font-weight: 600;
-    transition: background var(--at-duration) var(--at-ease);
-    text-decoration: none;
-  }
-  .at-rhythm__agenda-cta:hover {
-    background: color-mix(in oklch, var(--at-accent) 80%, black);
-  }
 
   @media (prefers-reduced-motion: reduce) {
     .at-rhythm__col,
@@ -10797,7 +10895,6 @@
     .at-rhythm__spot--cta,
     .at-rhythm__agenda,
     .at-rhythm__agenda-item,
-    .at-rhythm__agenda-cta,
     .at-rhythm__col-today {
       transition: none;
       animation: none;
