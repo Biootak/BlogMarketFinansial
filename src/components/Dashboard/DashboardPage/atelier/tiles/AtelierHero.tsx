@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * AtelierHero — dramatic greeting + anchor number + radial pulse.
+ * AtelierHero — dramatic greeting + anchor number + radial pulse + quick access grid.
  *
  * Layout (desktop):
  *   ┌──────────────────────────────┬──────────────┐
@@ -10,9 +10,14 @@
  *   │ today views (oversized)     │  pulse       │
  *   │ delta chip + meta           │              │
  *   │ sparkline + CTAs            │              │
- *   └──────────────────────────────┴──────────────┘
+ *   ├──────────────────────────────┴──────────────┤
+ *   │  گرید ۴ تایی Quick Access (کارت‌های کوچک)     │
+ *   │  نقش‌محور، با hotkey hint                     │
+ *   └─────────────────────────────────────────────┘
  *
- * On mobile the pulse moves below the metrics and stretches full width.
+ * On mobile the pulse moves below the metrics and stretches full width;
+ * the quick-access grid collapses to 2 columns.
+ *
  * Persian date renders in poetic form above the greeting; Persian
  * numerals everywhere; Vazirmatn carries the typographic weight.
  *
@@ -28,11 +33,20 @@ import Link from 'next/link';
 import { useEffect, useId, useRef, useState } from 'react';
 import {
   HiOutlineArrowDownRight,
+  HiOutlineArrowTrendingUp,
   HiOutlineArrowUpRight,
   HiOutlineBolt,
+  HiOutlineChartBarSquare,
+  HiOutlineClipboardDocumentList,
+  HiOutlineCog6Tooth,
+  HiOutlineDocumentText,
   HiOutlineMinus,
   HiOutlinePencilSquare,
+  HiOutlinePhoto,
   HiOutlineSparkles,
+  HiOutlineSquares2X2,
+  HiOutlineTag,
+  HiOutlineUserGroup,
 } from 'react-icons/hi2';
 import { fmt, persianLongDate, pickTrend, timeOfDay } from '../utils';
 import AtelierPulse from './AtelierPulse';
@@ -44,7 +58,48 @@ interface AtelierHeroProps {
   spark: number[];
   /** Number of published posts (used as a "right-now" anchor). */
   publishedTotal: number;
+  /** Role-aware Quick Access items rendered as small cards inside the Hero. */
+  userRole: 'OWNER' | 'ADMIN' | 'AUTHOR';
 }
+
+/* ---------------------------------------------------------------------------
+ * Quick Access items — نقش‌محور، داخل کارت پیشخوان (Hero).
+ *
+ * کارت‌ها کوچک هستند (compact): فقط icon 32×32 + label + hotkey hint.
+ * در دسکتاپ ۴ ستون، در موبایل ۲ ستون.
+ *
+ * دلیل ادغام در پیشخوان (به‌جای کاشی جداگانه): کاربر به محض ورود
+ * می‌بیند «از کجا شروع کنم؟» بدون scroll.
+ * ------------------------------------------------------------------------- */
+
+interface HeroQuickItem {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  hotkey?: string;
+  tone: 'accent' | 'gold' | 'info' | 'violet';
+}
+
+const HERO_OWNER: HeroQuickItem[] = [
+  { href: '/dashboard/service-requests', label: 'درخواست‌ها', icon: <HiOutlineClipboardDocumentList className="w-4 h-4" />, hotkey: 'G V', tone: 'accent' },
+  { href: '/dashboard/exchange-rates', label: 'نرخ ارز', icon: <HiOutlineArrowTrendingUp className="w-4 h-4" />, hotkey: 'G E', tone: 'gold' },
+  { href: '/dashboard/users', label: 'کاربران', icon: <HiOutlineUserGroup className="w-4 h-4" />, hotkey: 'G U', tone: 'info' },
+  { href: '/dashboard/settings', label: 'تنظیمات', icon: <HiOutlineCog6Tooth className="w-4 h-4" />, hotkey: 'G S', tone: 'violet' },
+];
+
+const HERO_ADMIN: HeroQuickItem[] = [
+  { href: '/dashboard/service-requests', label: 'درخواست‌ها', icon: <HiOutlineClipboardDocumentList className="w-4 h-4" />, hotkey: 'G V', tone: 'accent' },
+  { href: '/dashboard/categories', label: 'دسته‌بندی‌ها', icon: <HiOutlineTag className="w-4 h-4" />, hotkey: 'G C', tone: 'gold' },
+  { href: '/dashboard/posts', label: 'پست‌ها', icon: <HiOutlineDocumentText className="w-4 h-4" />, hotkey: 'G L', tone: 'info' },
+  { href: '/dashboard/reports', label: 'گزارش‌ها', icon: <HiOutlineChartBarSquare className="w-4 h-4" />, hotkey: 'G R', tone: 'violet' },
+];
+
+const HERO_AUTHOR: HeroQuickItem[] = [
+  { href: '/dashboard/posts/create', label: 'نوشتن پست', icon: <HiOutlinePencilSquare className="w-4 h-4" />, hotkey: 'G P', tone: 'accent' },
+  { href: '/dashboard/posts', label: 'پست‌های من', icon: <HiOutlineDocumentText className="w-4 h-4" />, hotkey: 'G L', tone: 'gold' },
+  { href: '/dashboard/categories', label: 'دسته‌بندی‌ها', icon: <HiOutlineSquares2X2 className="w-4 h-4" />, tone: 'info' },
+  { href: '/dashboard/edit-profile', label: 'پروفایل', icon: <HiOutlinePhoto className="w-4 h-4" />, tone: 'violet' },
+];
 
 function HeroSpark({ data, gradId }: { data: number[]; gradId: string }) {
   const pathRef = useRef<SVGPathElement>(null);
@@ -156,6 +211,7 @@ export default function AtelierHero({
   totalViews,
   spark,
   publishedTotal,
+  userRole,
 }: AtelierHeroProps) {
   const user = useCurrentUser();
   const gradId = useId();
@@ -181,6 +237,9 @@ export default function AtelierHero({
       : trend === 'down'
         ? HiOutlineArrowDownRight
         : HiOutlineMinus;
+
+  const quickItems =
+    userRole === 'OWNER' ? HERO_OWNER : userRole === 'ADMIN' ? HERO_ADMIN : HERO_AUTHOR;
 
   return (
     <section className="at-tile at-hero" aria-label="خلاصهٔ امروز">
@@ -295,6 +354,37 @@ export default function AtelierHero({
           <span>همهٔ پست‌ها</span>
           <span className="at-hero__ghost-meta tabular-nums">{fmt(publishedTotal)} مورد</span>
         </Link>
+      </div>
+
+      {/* Quick Access — گرید ۴ تایی کارت‌های کوچک، داخل کارت Hero */}
+      <div className="at-hero__quick" aria-label="دسترسی سریع">
+        <div className="at-hero__quick-head">
+          <span className="at-hero__quick-title">
+            <span className="at-hero__quick-title-dot" aria-hidden />
+            دسترسی سریع
+          </span>
+          <span className="at-hero__quick-hint">G + کلید</span>
+        </div>
+        {quickItems.map((it) => (
+          <Link
+            key={it.href}
+            href={it.href}
+            className={cn('at-hero__quick-item', `is-${it.tone}`)}
+            aria-label={it.label}
+          >
+            <span className="at-hero__quick-ico" aria-hidden>
+              {it.icon}
+            </span>
+            <span className="at-hero__quick-body">
+              <span className="at-hero__quick-label">{it.label}</span>
+            </span>
+            {it.hotkey && (
+              <span className="at-hero__quick-kbd" aria-hidden>
+                {it.hotkey}
+              </span>
+            )}
+          </Link>
+        ))}
       </div>
     </section>
   );

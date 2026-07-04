@@ -3,51 +3,37 @@
 /**
  * AtelierDeck — Atelier 2026 (2026-07-04) — dashboard home redesign.
  *
- * Visual identity: Persian-modern. Hairline borders, single emerald
- * accent (with a single gold accent for "lead" elements only), zero
- * glassmorphism. A live market ticker band rides the top of the page;
- * the hero carries a radial pulse chart (today vs total) and an
- * eight-point brand mark; the engagement console (likes comments
- * shares + engagement-rate) sits in Row 2 as a single panoramic tile;
- * the chart sits full-width on its own row; posts + activity fill
- * row 4; authors + actions fill row 5.
- *
- * 2026-07-04 (evening): ردیف ۲ — چهار کاشی KPI یکنواخت (بازدید،
- * لایک، نظر، اشتراک) با یک کارت پانورامای واحد «تعامل
- * مخاطبان» جایگزین شد. بازدید امروز قبلاً در Hero با تایپوگرافی
- * غول‌پیکر نشسته و تکراری بود؛ حالا فقط متریک‌های تعامل
- * (لایک، نظر، اشتراک + نرخ تعامل مشتق) در این ردیف می‌نشینند
- * با یک قلب SVG با EKG-اسپارک‌لاین به‌عنوان نقطهٔ کانونی.
- *
- * 2026-07-04 (night): ردیف ۳.۵ — تقویم ماهانهٔ انتشار (`AtelierMonthCalendar`)
- * به‌صورت inline بین `AtelierWeekRhythm` و `AtelierChart` اضافه شد
- * تا داشبورد از پایین‌ترین مقیاس (هفتۀ جاری) تا ماه جاری، همه در
- * یک صفحه قابل مرور باشد.
- *
- * 2026-07-04 (late night): صفحهٔ جداگانهٔ `/dashboard/posts/calendar`
- * ساخته شد. سپس ردیف inline از داشبورد حذف شد چون تقویم کامل فقط
- * در صفحهٔ مستقلش زندگی می‌کند — یک مکان، یک منبع حقیقت. لینک
- * «تقویم کامل» در `AtelierWeekRhythm` کاربر را به آن صفحه می‌برد.
- * `AtelierWeekRhythm` (هفتۀ جاری) همچنان داخل داشبورد است؛ تقویم
- * ماهانه فقط در `/dashboard/posts/calendar`.
+ * 2026-07-04 (night pass 2) — ادغام کامل «دسترسی سریع» در کارت پیشخوان:
+ *   1. کاشی جداگانهٔ AtelierActions حذف شد. دلیل: کاربر به محض ورود به
+ *      پیشخوان نباید برای رسیدن به «نوشتن پست / نرخ ارز / کاربران /
+ *      تنظیمات» scroll کند؛ این‌ها باید داخل خود کارت Hero (پیشخوان)
+ *      به‌صورت کارت‌های کوچک دیده شوند.
+ *   2. Hero اکنون `userRole` می‌گیرد و یک گرید کوچک ۴ تایی از
+ *      Quick Access در پایین خودش نشان می‌دهد (compact، هم‌عرض با
+ *      sparkline و CTAs).
+ *   3. چیدمان deck به ۶ ردیف کاهش یافت (Hero+QuickAccess یکپارچه
+ *      شد، یک ردیف آزاد شد). ردیف‌های باقی‌مانده دست‌نخورده‌اند.
  *
  * Layout (desktop ≥1280px):
  *   ┌────────────────────────────────────────────────────────┐
- *   │  TICKER (live market rates, full-bleed)                │
+ *   │  ROW 0: TICKER (live market rates, full-bleed)        │
+ *   ├────────────────────────────────────────────────────────┤
+ *   │  ROW 1: HERO + QUICK ACCESS (یکپارچه، full)            │
+ *   │        • greeting + بازدید امروز + radial pulse        │
+ *   │        • sparkline + CTAs                              │
+ *   │        • گرید ۴ تایی Quick Access (کارت‌های کوچک)       │
+ *   ├────────────────────────────────────────────────────────┤
+ *   │  ROW 2: ENGAGEMENT (heart focal + 3 satellites) — full│
+ *   ├────────────────────────────────────────────────────────┤
+ *   │  ROW 3: WEEK RHYTHM — 7-day bars + spotlight + agenda │
+ *   ├────────────────────────────────────────────────────────┤
+ *   │  ROW 4: CHART (analytics + tabs + period) — full      │
  *   ├─────────────────────────────┬──────────────────────────┤
- *   │  HERO (anchor + radial pulse)                          │
+ *   │  ROW 5: EDITORIAL POSTS     │  PULSE ACTIVITY           │
+ *   │   (Featured + ranked, 8/12)│   (filter + avatar, 4/12) │
  *   ├─────────────────────────────┴──────────────────────────┤
- *   │  ENGAGEMENT (heart focal + 3 satellite cards)         │
- *   ├────────────────────────────────────────────────────────┤
- *   │  WEEK RHYTHM — 7-day bar chart + spotlight + agenda   │
- *   │   («تقویم کامل» link → /dashboard/posts/calendar)    │
- *   ├────────────────────────────────────────────────────────┤
- *   │  CHART (analytics + tabs + period)                    │
- *   ├────────────────────────────┬───────────────────────────┤
- *   │  POPULAR POSTS             │  ACTIVITY (day-grouped)   │
- *   ├────────────────────────────┴───────────────────────────┤
- *   │  AUTHORS (wider)              │  ACTIONS               │
- *   └───────────────────────────────┴────────────────────────┘
+ *   │  ROW 6: AUTHORS LEADERBOARD — full-width compact      │
+ *   └────────────────────────────────────────────────────────┘
  */
 
 import type { TopAuthor } from '@/actions/getTopAuthors';
@@ -55,7 +41,6 @@ import CommandPalette from '@/components/Dashboard/DashboardPage/CommandPalette'
 import MarketRatesTicker from '@/components/MarketRates/MarketRatesTicker';
 import type { MarketRateItem } from '@/lib/market-rates';
 import type { ActivityItem } from '../overview/ActivityRail';
-import AtelierActions from './tiles/AtelierActions';
 import AtelierActivity from './tiles/AtelierActivity';
 import AtelierAuthors from './tiles/AtelierAuthors';
 import AtelierChart from './tiles/AtelierChart';
@@ -106,12 +91,13 @@ const AtelierDeck: React.FC<AtelierDeckProps> = (props) => {
         </div>
 
         <div className="at-grid">
-          {/* Row 1: Hero (anchor + radial pulse) */}
+          {/* Row 1: Hero (anchor + radial pulse + quick access grid embedded) */}
           <AtelierHero
             todayViews={viewStats.todayViews}
             totalViews={viewStats.totalViews}
             spark={viewStats.data}
             publishedTotal={stats.publishedPosts.total}
+            userRole={props.userRole}
           />
 
           {/* Row 2: Engagement console (heart + comments + shares + rate) */}
@@ -121,17 +107,22 @@ const AtelierDeck: React.FC<AtelierDeckProps> = (props) => {
           {/* «تقویم کامل» link در سرصفحه‌اش به /dashboard/posts/calendar می‌رود. */}
           <AtelierWeekRhythm scheduledPosts={props.scheduledPosts} />
 
-          {/* Row 4: Chart (full width) — فقط تحلیل بازدید. تقویم انتشار در */}
-          {/* `/dashboard/posts/calendar` زندگی می‌کند، نه اینجا. */}
+          {/* Row 4: Chart (full width) — دیتای عمیق بعد از تصمیم‌گیری عملی. */}
           <AtelierChart viewStats={viewStats} statsData={stats.views.data} />
 
-          {/* Row 5: Popular posts + Activity feed */}
-          <AtelierPosts popularPosts={props.popularPosts} />
+          {/* Row 5: Editorial Posts (8/12) | Pulse Activity (4/12) — real-time */}
+          {/* content. Posts عریض‌تر چون Featured card جدید دارد. Activity کم‌عرض */}
+          {/* چون فقط timeline + avatar است. */}
+          <AtelierPosts
+            popularPosts={props.popularPosts}
+            recentDrafts={props.recentDrafts}
+          />
           <AtelierActivity items={props.recentActivity} />
 
-          {/* Row 6: Authors + Actions (نرخ‌های بازار در نوار بالا نمایش داده می‌شود) */}
+          {/* Row 6: Authors Leaderboard — full-width compact. metadata هست */}
+          {/* و real-time نیست؛ بعد از real-time می‌آید. عرض کامل برای */}
+          {/* sparkline + posts column + views/post column بدون overflow. */}
           <AtelierAuthors topAuthors={props.topAuthors} />
-          <AtelierActions userRole={props.userRole} />
         </div>
       </main>
 

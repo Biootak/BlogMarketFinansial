@@ -59,17 +59,21 @@ export default function AtelierPulse({ value, max, label }: AtelierPulseProps) {
     return () => window.cancelAnimationFrame(raf);
   }, [ratio, targetOffset]);
 
-  // Build tick marks
+  // Build tick marks.
+  // Note: coordinates are rounded to 4 decimals because Next.js' RSC payload
+  // serializes numbers through JSON, which can drop trailing digits of
+  // 64-bit doubles and trigger an SSR/CSR hydration mismatch on the SVG.
   const ticks = Array.from({ length: 60 }, (_, i) => {
     const angle = (i / 60) * 2 * Math.PI - Math.PI / 2;
     const inner = RADIUS + 4;
     const outer = RADIUS + (i % 5 === 0 ? 10 : 6);
     const cx = SIZE / 2;
     const cy = SIZE / 2;
-    const x1 = cx + Math.cos(angle) * inner;
-    const y1 = cy + Math.sin(angle) * inner;
-    const x2 = cx + Math.cos(angle) * outer;
-    const y2 = cy + Math.sin(angle) * outer;
+    const round = (n: number) => Math.round(n * 1e4) / 1e4;
+    const x1 = round(cx + Math.cos(angle) * inner);
+    const y1 = round(cy + Math.sin(angle) * inner);
+    const x2 = round(cx + Math.cos(angle) * outer);
+    const y2 = round(cy + Math.sin(angle) * outer);
     return { x1, y1, x2, y2, major: i % 5 === 0 };
   });
 

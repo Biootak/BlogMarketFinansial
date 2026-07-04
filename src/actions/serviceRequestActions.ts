@@ -322,6 +322,237 @@ export async function deleteServiceRequest(id: string) {
   }
 }
 
+// Admin: Get recent activity (last status changes + new requests)
+// 2026-07-04: New — feeds the right-side activity rail on the page.
+export async function getServiceRequestRecentActivity(limit = 10) {
+  const session = await auth();
+  if (!session?.user || !['ADMIN', 'OWNER'].includes(session.user.role as string)) {
+    return { success: false, message: 'دسترسی غیرمجاز' };
+  }
+
+  try {
+    // Build the activity stream from both the system log (status changes)
+    // and recent inserts. We only return status-change + new-request events
+    // — those are the only "activity" that matters on this page.
+    const [logs, recent] = await Promise.all([
+      prisma.systemLog.findMany({
+        where: {
+          source: 'ServiceRequest',
+          message: { startsWith: 'Service request' },
+        },
+        orderBy: { timestamp: 'desc' },
+        take: limit,
+      }),
+      prisma.serviceRequest.findMany({
+        where: {
+          createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        select: {
+          id: true,
+          trackingCode: true,
+          fullName: true,
+          status: true,
+          urgency: true,
+          serviceType: true,
+          createdAt: true,
+        },
+      }),
+    ]);
+
+    type Activity =
+      | {
+          kind: 'created';
+          id: string;
+          trackingCode: string;
+          fullName: string;
+          status: string;
+          urgency: string;
+          serviceType: string;
+          createdAt: string;
+        }
+      | {
+          kind: 'status_changed';
+          id: string;
+          trackingCode: string;
+          fromStatus: string | null;
+          toStatus: string;
+          updatedBy: string;
+          createdAt: string;
+        };
+
+    const items: Activity[] = [];
+
+    for (const r of recent) {
+      items.push({
+        kind: 'created',
+        id: r.id,
+        trackingCode: r.trackingCode,
+        fullName: r.fullName,
+        status: r.status,
+        urgency: r.urgency,
+        serviceType: r.serviceType,
+        createdAt: r.createdAt.toISOString(),
+      });
+    }
+    for (const log of logs) {
+      // Pattern: `Service request {trackingCode} status updated to {STATUS} by {email}`
+      const match = log.message.match(
+        /^Service request (\S+) status updated to (\S+) by (.+)$/,
+      );
+      if (!match) continue;
+      items.push({
+        kind: 'status_changed',
+        id: `log-${log.id}`,
+        trackingCode: match[1],
+        fromStatus: null,
+        toStatus: match[2],
+        updatedBy: match[3],
+        createdAt: log.timestamp.toISOString(),
+      });
+    }
+
+    items.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+
+    return { success: true, data: items.slice(0, limit) };
+  } catch {
+    return { success: false, message: 'خطایی رخ داد.' };
+  }
+}
+
+// Admin: Bulk status update
+// 2026-07-04: New — supports the multi-select action bar in the table.
+export async function bulkUpdateServiceRequestStatus(
+  ids: string[],
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED',
+) {
+  const session = await auth();
+  if (!session?.user || !['ADMIN', 'OWNER'].includes(session.user.role as string)) {
+    return { success: false, message: 'دسترسی غیرمجاز' };
+  }
+
+  if (ids.length === 0) {
+    return { success: false, message: 'هیچ موردی انتخاب نشده است.' };
+  }
+
+  try {
+    const result = await prisma.serviceRequest.updateMany({
+      where: { id: { in: ids } },
+      data: { status },
+    });
+
+    await prisma.systemLog.create({
+      data: {
+        level: 'INFO',
+        message: `Bulk update: ${result.count} requests set to ${status} by ${session.user.email}`,
+        source: 'ServiceRequest',
+      },
+    });
+
+    revalidatePath('/dashboard/service-requests');
+    return {
+      success: true,
+      message: `${result.count.toLocaleString('fa-IR')} مورد به‌روزرسانی شد.`,
+      count: result.count,
+    };
+  } catch {
+    return { success: false, message: 'خطایی در به‌روزرسانی گروهی رخ داد.' };
+  }
+}
+
+// Admin: Export to CSV
+// 2026-07-04: New — generates a CSV string from current filtered list.
+export async function exportServiceRequestsCsv(params?: {
+  status?: string;
+  search?: string;
+}) {
+  const session = await auth();
+  if (!session?.user || !['ADMIN', 'OWNER'].includes(session.user.role as string)) {
+    return { success: false, message: 'دسترسی غیرمجاز' };
+  }
+
+  const where: Record<string, unknown> = {};
+  if (params?.status && params.status !== 'ALL') {
+    where.status = params.status;
+  }
+  if (params?.search) {
+    where.OR = [
+      { trackingCode: { contains: params.search, mode: 'insensitive' } },
+      { fullName: { contains: params.search, mode: 'insensitive' } },
+      { phone: { contains: params.search, mode: 'insensitive' } },
+    ];
+  }
+
+  try {
+    const rows = await prisma.serviceRequest.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: 1000,
+    });
+
+    const header = [
+      'کد پیگیری',
+      'نام',
+      'تلفن',
+      'ایمیل',
+      'نوع خدمات',
+      'مبلغ',
+      'ارز',
+      'اولویت',
+      'روش تماس',
+      'وضعیت',
+      'تاریخ ثبت',
+    ];
+
+    const serviceLabel: Record<string, string> = {
+      INTERNATIONAL_TRANSFER: 'حواله بین‌المللی',
+      ONLINE_PAYMENT: 'پرداخت آنلاین',
+      TUITION_PAYMENT: 'پرداخت شهریه',
+      FREELANCE_INCOME: 'نقد کردن درآمد',
+      SOFTWARE_PURCHASE: 'خرید نرم‌افزار',
+      OTHER: 'سایر',
+    };
+    const statusLabel: Record<string, string> = {
+      PENDING: 'در انتظار',
+      IN_PROGRESS: 'در حال انجام',
+      COMPLETED: 'تکمیل شده',
+      CANCELLED: 'لغو شده',
+    };
+
+    const escape = (val: unknown): string => {
+      const s = val === null || val === undefined ? '' : String(val);
+      // Wrap in quotes if contains comma, quote, or newline; escape internal quotes
+      if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+      return s;
+    };
+
+    const csvRows: string[] = [header.join(',')];
+    for (const r of rows) {
+      csvRows.push(
+        [
+          escape(r.trackingCode),
+          escape(r.fullName),
+          escape(r.phone),
+          escape(r.email),
+          escape(serviceLabel[r.serviceType] ?? r.serviceType),
+          escape(r.amount),
+          escape(r.currency),
+          escape(r.urgency === 'URGENT' ? 'فوری' : 'عادی'),
+          escape(r.contactMethod === 'telegram' ? 'تلگرام' : 'واتساپ'),
+          escape(statusLabel[r.status] ?? r.status),
+          escape(r.createdAt.toISOString()),
+        ].join(','),
+      );
+    }
+
+    // BOM for Excel UTF-8 compatibility
+    return { success: true, data: '\uFEFF' + csvRows.join('\n') };
+  } catch {
+    return { success: false, message: 'خطا در ساخت فایل خروجی.' };
+  }
+}
+
 // Admin: Get stats
 export async function getServiceRequestStats() {
   const session = await auth();
@@ -333,13 +564,21 @@ export async function getServiceRequestStats() {
     // 2026-06-14: collapsed 6 separate count() calls into a single
     // groupBy({ by: ['status'], _count: true }) + 1 today count.
     // Wall-clock drops from 6 round-trips to 2.
-    const [byStatus, todayCount] = await Promise.all([
+    // 2026-07-04: added 2 more parallel counts — urgent (urgency=URGENT)
+    // and pendingUrgent (urgency=URGENT + status=PENDING) — so the
+    // dashboard's urgent KPI doesn't have to use the pending count as
+    // an approximation.
+    const [byStatus, todayCount, urgentCount, pendingUrgentCount] = await Promise.all([
       prisma.serviceRequest.groupBy({
         by: ['status'],
         _count: { _all: true },
       }),
       prisma.serviceRequest.count({
         where: { createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
+      }),
+      prisma.serviceRequest.count({ where: { urgency: 'URGENT' } }),
+      prisma.serviceRequest.count({
+        where: { urgency: 'URGENT', status: 'PENDING' },
       }),
     ]);
 
@@ -359,6 +598,8 @@ export async function getServiceRequestStats() {
         completed: counts.COMPLETED,
         cancelled: counts.CANCELLED,
         todayCount,
+        urgent: urgentCount,
+        pendingUrgent: pendingUrgentCount,
       },
     };
   } catch {

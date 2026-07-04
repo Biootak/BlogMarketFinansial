@@ -1,10 +1,38 @@
 'use client';
 
+/**
+ * ServiceRequestsWidget — 2026-07-04 redesign
+ *
+ * Compact summary tile used at the bottom of /dashboard for ADMIN/OWNER.
+ * Reuses the `at-srq-widget*` CSS classes that ship with the redesigned
+ * service-requests page so the visual language stays hairline-only,
+ * emerald-first, no glassmorphism — fully consistent with the rest of
+ * the dashboard's Atelier 2026 system.
+ *
+ * Layout:
+ *   ┌────────────────────────────────────────────────────────────┐
+ *   │ Header: ico + title + KPI subline    | "مشاهده همه" link   │
+ *   ├────────────────────────────────────────────────────────────┤
+ *   │ Mini-KPI strip: pending · today · urgent                   │
+ *   ├────────────────────────────────────────────────────────────┤
+ *   │ List of 5 latest pending requests (avatar · name · meta ·  │
+ *   │ amount · status badge)                                     │
+ *   ├────────────────────────────────────────────────────────────┤
+ *   │ Footer: "مشاهده همه درخواست‌ها"                            │
+ *   └────────────────────────────────────────────────────────────┘
+ */
+
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from '@/lib/motion-shim';
-import { HiOutlineClipboardDocumentList, HiOutlineClock, HiOutlineArrowLeft } from 'react-icons/hi2';
-import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
+import {
+  HiOutlineClipboardDocumentList,
+  HiOutlineClock,
+  HiOutlineCalendarDays,
+  HiOutlineBolt,
+  HiOutlineArrowLeft,
+} from 'react-icons/hi2';
+import CountUp from '@/components/Dashboard/primitives/CountUp';
 import { getServiceRequests, getServiceRequestStats } from '@/actions/serviceRequestActions';
 
 interface ServiceRequest {
@@ -20,6 +48,13 @@ interface ServiceRequest {
   createdAt: Date;
 }
 
+interface Stats {
+  total: number;
+  pending: number;
+  todayCount: number;
+  pendingUrgent: number;
+}
+
 const serviceTypeLabels: Record<string, string> = {
   INTERNATIONAL_TRANSFER: 'حواله',
   ONLINE_PAYMENT: 'پرداخت',
@@ -29,130 +64,273 @@ const serviceTypeLabels: Record<string, string> = {
   OTHER: 'سایر',
 };
 
-const statusColors: Record<string, string> = {
-  PENDING: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  IN_PROGRESS: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  COMPLETED: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  CANCELLED: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+const statusLabels: Record<string, string> = {
+  PENDING: 'در انتظار',
+  IN_PROGRESS: 'در حال انجام',
+  COMPLETED: 'تکمیل شده',
+  CANCELLED: 'لغو شده',
 };
+
+const statusClass: Record<string, string> = {
+  PENDING: 'is-pending',
+  IN_PROGRESS: 'is-progress',
+  COMPLETED: 'is-completed',
+  CANCELLED: 'is-cancelled',
+};
+
+/**
+ * Persian-aware initial: pick the first base-letter character from
+ * the full name so RTL names like "علی محمدی" render as "ع" not " ".
+ */
+function getInitial(name: string): string {
+  const trimmed = name.trim();
+  if (!trimmed) return '؟';
+  // Try to grab the first non-whitespace, non-punctuation code-point
+  for (const ch of trimmed) {
+    if (/\s/.test(ch)) continue;
+    return ch;
+  }
+  return trimmed[0] ?? '؟';
+}
 
 export default function ServiceRequestsWidget() {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
-  const [stats, setStats] = useState({ pending: 0, todayCount: 0 });
+  const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     async function fetchData() {
       const [requestsResult, statsResult] = await Promise.all([
         getServiceRequests({ limit: 5, status: 'PENDING' }),
         getServiceRequestStats(),
       ]);
 
+      if (cancelled) return;
+
       if (requestsResult.success && requestsResult.data) {
         setRequests(requestsResult.data as ServiceRequest[]);
       }
       if (statsResult.success && statsResult.data) {
-        setStats({ pending: statsResult.data.pending, todayCount: statsResult.data.todayCount });
+        const d = statsResult.data as Stats & {
+          total: number;
+          inProgress: number;
+          completed: number;
+          cancelled: number;
+          urgent: number;
+        };
+        setStats({
+          total: d.total,
+          pending: d.pending,
+          todayCount: d.todayCount,
+          pendingUrgent: d.pendingUrgent,
+        });
       }
       setLoading(false);
     }
     fetchData();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
+  // ----- Loading skeleton ---------------------------------------------------
   if (loading) {
     return (
-      <div className="dash-panel p-6 animate-pulse">
-        <div className="h-6 w-40 bg-slate-200 dark:bg-slate-700 rounded mb-4" />
-        <div className="space-y-3">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-16 bg-slate-100 dark:bg-slate-800 rounded-xl" />
+      <section
+        className="at-tile at-srq-widget"
+        aria-label="درخواست‌های خدمات"
+      >
+        <div className="at-srq-widget__head">
+          <div className="flex items-center gap-3">
+            <span
+              className="at-head__ico"
+              aria-hidden
+              style={{ animation: 'pulse 1.6s ease-in-out infinite' }}
+            >
+              <HiOutlineClipboardDocumentList className="w-3.5 h-3.5" />
+            </span>
+            <div>
+              <p className="at-head__title-text">درخواست‌های خدمات</p>
+              <p className="at-head__sub">در حال بارگذاری…</p>
+            </div>
+          </div>
+        </div>
+        <div className="at-srq-widget__kpis" aria-hidden>
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="at-srq-widget__kpi">
+              <span
+                className="block h-3 rounded"
+                style={{ width: '60%', background: 'var(--at-line)' }}
+              />
+              <span
+                className="block h-6 rounded mt-1"
+                style={{ width: '40%', background: 'var(--at-line)' }}
+              />
+            </div>
           ))}
         </div>
-      </div>
+        <div className="at-srq-widget__body" aria-hidden>
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="at-srq-widget__row">
+              <span
+                className="at-srq-widget__avatar"
+                style={{ background: 'var(--at-bg-elevated)' }}
+              />
+              <div className="at-srq-widget__row-main">
+                <span
+                  className="block h-3 rounded"
+                  style={{ width: '55%', background: 'var(--at-line)' }}
+                />
+                <span
+                  className="block h-2.5 rounded mt-1"
+                  style={{ width: '35%', background: 'var(--at-line)' }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
     );
   }
 
+  const pending = stats?.pending ?? 0;
+  const todayCount = stats?.todayCount ?? 0;
+  const pendingUrgent = stats?.pendingUrgent ?? 0;
+
   return (
-    <motion.div
+    <motion.section
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="dash-panel overflow-hidden"
+      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      className="at-tile at-srq-widget"
+      aria-label="درخواست‌های خدمات"
     >
-      {/* Header */}
-      <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-l from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-lg">
-              <HiOutlineClipboardDocumentList className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-900 dark:text-white">درخواست‌های خدمات</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                {stats.pending} در انتظار • {stats.todayCount} امروز
-              </p>
-            </div>
+      {/* ----- Header ----------------------------------------------------- */}
+      <div className="at-srq-widget__head">
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="at-head__ico" aria-hidden>
+            <HiOutlineClipboardDocumentList className="w-3.5 h-3.5" />
+          </span>
+          <div className="min-w-0">
+            <p className="at-head__title-text">درخواست‌های خدمات</p>
+            <p className="at-head__sub">
+              <span className="tabular-nums">
+                {pending.toLocaleString('fa-IR')}
+              </span>{' '}
+              در انتظار ·{' '}
+              <span className="tabular-nums">
+                {todayCount.toLocaleString('fa-IR')}
+              </span>{' '}
+              امروز
+            </p>
           </div>
-          <Link
-            href="/dashboard/service-requests"
-            className="flex items-center gap-1 text-sm text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 font-medium"
-          >
-            مشاهده همه
-            <HiOutlineArrowLeft className="w-4 h-4" />
-          </Link>
+        </div>
+        <Link href="/dashboard/service-requests" className="at-head__more">
+          مشاهده همه
+          <HiOutlineArrowLeft className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+
+      {/* ----- Mini KPI strip -------------------------------------------- */}
+      <div className="at-srq-widget__kpis" aria-label="خلاصه آمار">
+        <div className="at-srq-widget__kpi is-pending">
+          <span className="at-srq-widget__kpi-label">
+            <HiOutlineClock className="w-3.5 h-3.5" aria-hidden />
+            در انتظار
+          </span>
+          <span className="at-srq-widget__kpi-value">
+            <CountUp value={pending} duration={500} />
+          </span>
+        </div>
+        <div className="at-srq-widget__kpi is-today">
+          <span className="at-srq-widget__kpi-label">
+            <HiOutlineCalendarDays className="w-3.5 h-3.5" aria-hidden />
+            ثبت امروز
+          </span>
+          <span className="at-srq-widget__kpi-value">
+            <CountUp value={todayCount} duration={500} />
+          </span>
+        </div>
+        <div className="at-srq-widget__kpi is-urgent">
+          <span className="at-srq-widget__kpi-label">
+            <HiOutlineBolt className="w-3.5 h-3.5" aria-hidden />
+            فوری
+          </span>
+          <span className="at-srq-widget__kpi-value">
+            <CountUp value={pendingUrgent} duration={500} />
+          </span>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="p-4">
+      {/* ----- Body list -------------------------------------------------- */}
+      <div className="at-srq-widget__body">
         {requests.length === 0 ? (
-          <div className="text-center py-8 text-slate-500 dark:text-slate-400">
-            <HiOutlineClock className="w-12 h-12 mx-auto mb-2 opacity-50" />
-            <p>درخواست در انتظاری وجود ندارد</p>
+          <div className="at-srq-widget__empty">
+            درخواست در انتظاری وجود ندارد
           </div>
         ) : (
-          <div className="space-y-3">
-            {requests.map((request) => (
+          requests.map((request) => {
+            const statusKey = request.status as keyof typeof statusClass;
+            const statusModifier = statusClass[statusKey] ?? '';
+            const statusLabel = statusLabels[statusKey] ?? request.status;
+            return (
               <Link
                 key={request.id}
                 href="/dashboard/service-requests"
-                className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
+                className="at-srq-widget__row"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
-                    {request.contactMethod === 'telegram' ? (
-                      <FaTelegram className="w-5 h-5 text-[#0088cc]" />
-                    ) : (
-                      <FaWhatsapp className="w-5 h-5 text-[#25D366]" />
+                <span className="at-srq-widget__avatar" aria-hidden>
+                  {getInitial(request.fullName)}
+                </span>
+                <div className="at-srq-widget__row-main">
+                  <span className="at-srq-widget__row-title">
+                    <span className="truncate">{request.fullName}</span>
+                    {request.urgency === 'URGENT' && (
+                      <span className="at-srq-widget__flag">فوری</span>
                     )}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-slate-900 dark:text-white text-sm">
-                        {request.fullName}
-                      </span>
-                      {request.urgency === 'URGENT' && (
-                        <span className="px-1.5 py-0.5 text-[10px] bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 rounded font-medium">
-                          فوری
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                      <span>{serviceTypeLabels[request.serviceType]}</span>
-                      <span>•</span>
-                      <span className="font-mono">{request.amount} {request.currency}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="text-left">
-                  <span className={`px-2 py-1 rounded-lg text-xs font-medium ${statusColors[request.status]}`}>
-                    {request.trackingCode}
+                  </span>
+                  <span className="at-srq-widget__row-meta">
+                    <span>{serviceTypeLabels[request.serviceType] ?? request.serviceType}</span>
+                    <span aria-hidden>·</span>
+                    <span className="font-mono tracking-tight">
+                      {request.trackingCode}
+                    </span>
                   </span>
                 </div>
+                <span className="at-srq-widget__row-amount">
+                  <span className="tabular-nums">
+                    {Number(request.amount).toLocaleString('fa-IR')}
+                  </span>{' '}
+                  <span className="text-[10px] text-[color:var(--at-fg-subtle)] font-medium">
+                    {request.currency}
+                  </span>
+                </span>
+                <span
+                  className={`at-srq-widget__row-status ${statusModifier}`}
+                >
+                  <span
+                    className="at-srq-widget__row-status__dot"
+                    aria-hidden
+                  />
+                  {statusLabel}
+                </span>
               </Link>
-            ))}
-          </div>
+            );
+          })
         )}
       </div>
-    </motion.div>
+
+      {/* ----- Footer ----------------------------------------------------- */}
+      <div className="at-srq-widget__foot">
+        <Link
+          href="/dashboard/service-requests"
+          className="at-srq-widget__link"
+        >
+          مشاهده همه درخواست‌ها
+          <HiOutlineArrowLeft className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+    </motion.section>
   );
 }

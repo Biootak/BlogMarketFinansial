@@ -1,8 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { motion } from '@/lib/motion-shim';
-import { HiClock, HiCheckCircle, HiXCircle, HiRefresh, HiCollection, HiCalendar } from 'react-icons/hi';
+/**
+ * ServiceRequestsStats — 2026-07-04 redesign
+ *
+ * Compact KPI grid that follows the at-kpi pattern from the Atelier 2026
+ * dashboard system. Six cells, hairline borders, no glassmorphism.
+ * Pulls a refined payload from `getServiceRequestStats` that now
+ * includes the real `urgent` and `pendingUrgent` counts (not just an
+ * approximation).
+ */
+
+import { useEffect, useMemo, useState } from 'react';
+import {
+  HiLightningBolt,
+  HiCalendar,
+  HiCheckCircle,
+  HiClock,
+  HiCollection,
+  HiExclamationCircle,
+} from 'react-icons/hi';
+import CountUp from '@/components/Dashboard/primitives/CountUp';
 import { getServiceRequestStats } from '@/actions/serviceRequestActions';
 
 interface Stats {
@@ -12,140 +29,210 @@ interface Stats {
   completed: number;
   cancelled: number;
   todayCount: number;
+  urgent: number;
+  pendingUrgent: number;
 }
 
-const statCards = [
+interface CellDef {
+  key: keyof Stats;
+  label: string;
+  Icon: typeof HiCollection;
+  /** Tone used for the value color + bar fill. */
+  tone: 'emerald' | 'amber' | 'rose' | 'info' | 'violet' | 'slate';
+  /** Suffix appended after the value, e.g. "مورد" or "٪". */
+  suffix?: string;
+  /** Sub-label below the value (one short sentence). */
+  sub?: (s: Stats) => string;
+  /** Returns 0..1 to render the bottom bar. */
+  barRatio?: (s: Stats) => number;
+}
+
+const CELLS: CellDef[] = [
   {
     key: 'total',
     label: 'کل درخواست‌ها',
-    icon: HiCollection,
-    gradient: 'from-blue-500 to-blue-600',
-    bgGlow: 'bg-blue-500/20',
-    iconBg: 'bg-blue-500/10',
-    textColor: 'text-blue-600 dark:text-blue-400',
+    Icon: HiCollection,
+    tone: 'info',
+    sub: () => 'تا امروز ثبت شده',
+    barRatio: () => 1,
   },
   {
     key: 'pending',
     label: 'در انتظار',
-    icon: HiClock,
-    gradient: 'from-amber-500 to-orange-500',
-    bgGlow: 'bg-amber-500/20',
-    iconBg: 'bg-amber-500/10',
-    textColor: 'text-amber-600 dark:text-amber-400',
+    Icon: HiClock,
+    tone: 'amber',
+    sub: (s) =>
+      s.pendingUrgent > 0
+        ? `${s.pendingUrgent.toLocaleString('fa-IR')} فوری در صف`
+        : 'بدون مورد فوری',
+    barRatio: (s) => (s.total > 0 ? s.pending / s.total : 0),
   },
   {
     key: 'inProgress',
     label: 'در حال انجام',
-    icon: HiRefresh,
-    gradient: 'from-indigo-500 to-violet-500',
-    bgGlow: 'bg-indigo-500/20',
-    iconBg: 'bg-indigo-500/10',
-    textColor: 'text-indigo-600 dark:text-indigo-400',
+    Icon: HiLightningBolt,
+    tone: 'violet',
+    sub: (s) =>
+      s.total > 0
+        ? `${Math.round((s.inProgress / s.total) * 100)}٪ سهم`
+        : '—',
+    barRatio: (s) => (s.total > 0 ? s.inProgress / s.total : 0),
   },
   {
     key: 'completed',
     label: 'تکمیل شده',
-    icon: HiCheckCircle,
-    gradient: 'from-emerald-500 to-green-500',
-    bgGlow: 'bg-emerald-500/20',
-    iconBg: 'bg-emerald-500/10',
-    textColor: 'text-emerald-600 dark:text-emerald-400',
+    Icon: HiCheckCircle,
+    tone: 'emerald',
+    sub: (s) =>
+      s.total - s.cancelled > 0
+        ? `${Math.round((s.completed / (s.total - s.cancelled)) * 100)}٪ نرخ`
+        : '—',
+    barRatio: (s) =>
+      s.total - s.cancelled > 0 ? s.completed / (s.total - s.cancelled) : 0,
   },
   {
-    key: 'cancelled',
-    label: 'لغو شده',
-    icon: HiXCircle,
-    gradient: 'from-rose-500 to-red-500',
-    bgGlow: 'bg-rose-500/20',
-    iconBg: 'bg-rose-500/10',
-    textColor: 'text-rose-600 dark:text-rose-400',
+    key: 'urgent',
+    label: 'فوری',
+    Icon: HiExclamationCircle,
+    tone: 'rose',
+    sub: (s) =>
+      s.pendingUrgent > 0
+        ? `${s.pendingUrgent.toLocaleString('fa-IR')} در صف پاسخ`
+        : 'هیچ مورد فوری',
+    barRatio: (s) => (s.total > 0 ? s.urgent / s.total : 0),
   },
   {
     key: 'todayCount',
-    label: 'امروز',
-    icon: HiCalendar,
-    gradient: 'from-purple-500 to-fuchsia-500',
-    bgGlow: 'bg-purple-500/20',
-    iconBg: 'bg-purple-500/10',
-    textColor: 'text-purple-600 dark:text-purple-400',
+    label: 'ثبت امروز',
+    Icon: HiCalendar,
+    tone: 'emerald',
+    sub: (s) =>
+      s.total > 0
+        ? `${Math.round((s.todayCount / Math.max(s.total, 1)) * 100)}٪ کل`
+        : '—',
+    // no barRatio — the renderer skips the bar for todayCount (see render below)
   },
 ];
 
-export default function ServiceRequestsStats() {
+interface ServiceRequestsStatsProps {
+  refreshKey?: number;
+}
+
+export default function ServiceRequestsStats({
+  refreshKey = 0,
+}: ServiceRequestsStatsProps) {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchStats() {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
       const result = await getServiceRequestStats();
+      if (cancelled) return;
       if (result.success && result.data) {
-        setStats(result.data);
+        setStats(result.data as Stats);
       }
       setLoading(false);
-    }
-    fetchStats();
-  }, []);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshKey]);
 
-  if (loading) {
-    return (
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
-        {[...Array(6)].map((_, i) => (
-          <div
-            key={i}
-            className="h-28 bg-gradient-to-br from-neutral-100 to-neutral-50 dark:from-neutral-800 dark:to-neutral-900 rounded-2xl animate-pulse border border-neutral-200/50 dark:border-neutral-700/50"
-          />
-        ))}
-      </div>
-    );
-  }
+  const toneColor = useMemo(
+    () =>
+      ({
+        emerald: 'var(--at-accent)',
+        amber: 'var(--at-warning)',
+        rose: 'var(--at-danger)',
+        info: 'var(--at-info)',
+        violet: 'oklch(55% 0.16 285)',
+        slate: 'var(--at-fg-muted)',
+      }) as const,
+    [],
+  );
 
-  if (!stats) return null;
+  const valueClass = (cell: CellDef): string => {
+    if (cell.key === 'pending') return 'at-srq-stats__value is-pending';
+    if (cell.key === 'urgent') return 'at-srq-stats__value is-urgent';
+    return 'at-srq-stats__value';
+  };
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
-      {statCards.map((card, index) => (
-        <motion.div
-          key={card.key}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: index * 0.05 }}
-          className="group relative"
-        >
-          {/* Glow Effect */}
-          <div
-            className={`absolute inset-0 ${card.bgGlow} rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
-          />
-
-          {/* Card */}
-          <div className="dash-panel dash-panel--hover relative p-5">
-            <div className="flex items-start justify-between gap-3">
-              {/* Icon */}
-              <div className={`p-2.5 rounded-xl ${card.iconBg} transition-transform duration-300 group-hover:scale-110`}>
-                <card.icon className={`w-5 h-5 ${card.textColor}`} />
-              </div>
-
-              {/* Number */}
-              <div className="text-left">
-                <p className={`text-3xl font-black ${card.textColor} tabular-nums`}>
-                  {stats[card.key as keyof Stats].toLocaleString('fa-IR')}
-                </p>
-              </div>
-            </div>
-
-            {/* Label */}
-            <p className="mt-3 text-sm font-medium text-neutral-600 dark:text-neutral-400">
-              {card.label}
-            </p>
-
-            {/* Bottom Gradient Line */}
-            <div className="absolute bottom-0 left-4 right-4 h-0.5 rounded-full overflow-hidden">
-              <div
-                className={`h-full w-0 group-hover:w-full bg-gradient-to-l ${card.gradient} transition-all duration-500`}
+    <section className="at-tile at-srq-stats" aria-label="خلاصه آمار درخواست‌ها">
+      {loading
+        ? Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="at-srq-stats__cell"
+              style={{
+                background: 'var(--at-bg-elevated)',
+                opacity: 0.6,
+                minHeight: 84,
+              }}
+              aria-hidden
+            >
+              <span
+                className="block h-3 rounded"
+                style={{
+                  width: '50%',
+                  background: 'var(--at-line)',
+                  marginBottom: 10,
+                }}
+              />
+              <span
+                className="block h-6 rounded"
+                style={{
+                  width: '70%',
+                  background: 'var(--at-line)',
+                }}
               />
             </div>
-          </div>
-        </motion.div>
-      ))}
-    </div>
+          ))
+        : !stats
+          ? null
+          : CELLS.map((cell) => {
+              const value = stats[cell.key];
+              const ratio =
+                cell.key !== 'todayCount' && cell.barRatio
+                  ? cell.barRatio(stats)
+                  : null;
+              return (
+                <div key={cell.key} className="at-srq-stats__cell">
+                  <div className="at-srq-stats__head">
+                    <span className="at-srq-stats__label">
+                      <cell.Icon className="w-3.5 h-3.5" aria-hidden />
+                      {cell.label}
+                    </span>
+                    <span
+                      className="at-srq-stats__ico"
+                      style={{ color: toneColor[cell.tone] }}
+                      aria-hidden
+                    >
+                      <cell.Icon className="w-3 h-3" />
+                    </span>
+                  </div>
+                  <p className={valueClass(cell)}>
+                    <CountUp value={value} duration={500} />
+                  </p>
+                  {cell.sub && stats && (
+                    <p className="at-srq-stats__sub">{cell.sub(stats)}</p>
+                  )}
+                  {ratio !== null && (
+                    <div className="at-srq-stats__bar" aria-hidden>
+                      <div
+                        className="at-srq-stats__bar-fill"
+                        style={{
+                          width: `${Math.min(100, Math.max(0, ratio * 100))}%`,
+                          background: toneColor[cell.tone],
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+    </section>
   );
 }

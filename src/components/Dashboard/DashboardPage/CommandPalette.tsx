@@ -127,6 +127,7 @@ const ALL_ITEMS: CommandItem[] = [
     group: 'پیمایش',
     icon: <HiOutlineClipboardDocumentList className="w-4 h-4" />,
     href: '/dashboard/service-requests',
+    shortcut: 'G V',
     keywords: ['سفارش', 'خدمات'],
   },
   {
