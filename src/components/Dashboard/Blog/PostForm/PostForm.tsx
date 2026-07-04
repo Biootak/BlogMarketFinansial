@@ -15,8 +15,6 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import {
   Select,
@@ -25,11 +23,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { FiX, FiPlus, FiImage, FiVideo, FiMusic, FiGrid, FiFileText, FiTag, FiFolder, FiLink, FiStar } from 'react-icons/fi';
 import { RiSendPlaneFill, RiDraftLine } from 'react-icons/ri';
 import { BiLoaderAlt } from 'react-icons/bi';
-import { HiOutlineSparkles } from 'react-icons/hi2';
+import { HiOutlineSparkles, HiOutlineArrowPath } from 'react-icons/hi2';
 import { PersianDateTimePicker } from '@/components/ui/PersianDateTimePicker';
 
 import type { CreatePostInput, UpdatePostInput, TaxonomyType, PostType, PostStatus } from '@/types/types';
@@ -50,9 +47,7 @@ const Editor = dynamic(
   () => import('@/components/Editor1/editor').then((m) => m.default),
   {
     ssr: false,
-    loading: () => (
-      <div className="min-h-[500px] rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 animate-pulse" />
-    ),
+    loading: () => <div className="at-editor-skeleton" aria-hidden />,
   },
 );
 import { useSession } from 'next-auth/react';
@@ -79,13 +74,11 @@ function deriveStatus(args: {
 }
 
 // تبدیل Date → تقویم شمسی و زمان اکنون در `PersianDateTimePicker` انجام می‌شود.
-// (این helper ها قبلاً برای نمایش میلادی در `<input type="datetime-local">`
-// لازم بود؛ الان که picker خودش شمسی است، دیگر نیازی نیست.)
 
 interface PostFormProps<T extends CreatePostInput | UpdatePostInput> {
   // 2026-07-04: `ZodType<T, any, any>` تا input متفاوت با output
   // (مثلاً scheduledAt: `string|Date` در ورودی، `Date|null` در خروجی)
-  // مجاز باشد. `ZodSchema<T>` فقط یک type alias برای `ZodType<T>` است
+  // مجاز باشد. `ZodSchema<T>` فقط یه type alias برای `ZodType<T>` است
   // که input و output را یکی فرض می‌کند و با transform نمی‌سازد.
   schema: ZodType<T, any, any>;
   defaultValues: T;
@@ -103,11 +96,11 @@ interface PostFormProps<T extends CreatePostInput | UpdatePostInput> {
 }
 
 const postTypeConfig = {
-  STANDARD: { icon: FiFileText, label: 'استاندارد', color: 'from-slate-500 to-gray-600' },
-  VIDEO: { icon: FiVideo, label: 'ویدیو', color: 'from-rose-500 to-pink-600' },
-  GALLERY: { icon: FiGrid, label: 'گالری', color: 'from-violet-500 to-purple-600' },
-  AUDIO: { icon: FiMusic, label: 'صوتی', color: 'from-amber-500 to-orange-500' },
-};
+  STANDARD: { icon: FiFileText, label: 'استاندارد' },
+  VIDEO: { icon: FiVideo, label: 'ویدیو' },
+  GALLERY: { icon: FiGrid, label: 'گالری' },
+  AUDIO: { icon: FiMusic, label: 'صوتی' },
+} as const;
 
 const PostForm = <T extends CreatePostInput | UpdatePostInput>({
   defaultValues,
@@ -262,414 +255,452 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
   };
 
   const sectionTabs = [
-    { id: 'content', label: 'محتوا', icon: FiFileText },
-    { id: 'meta', label: 'تنظیمات', icon: FiTag },
-    { id: 'media', label: 'رسانه', icon: FiImage },
-  ] as const;
+    { id: 'content' as const, label: 'محتوا', icon: FiFileText },
+    { id: 'meta' as const, label: 'تنظیمات', icon: FiTag },
+    { id: 'media' as const, label: 'رسانه', icon: FiImage },
+  ];
+
+  // شمارنده‌های تب‌ها — به خواننده حس تکمیل بودن می‌دهند.
+  const titleValue = (form.watch('title') as string | undefined) ?? '';
+  const excerptValue = (form.watch('excerpt') as string | undefined) ?? '';
+  const contentNonEmpty = !!editorContent && editorContent !== '<p></p>';
+  const contentCount =
+    (titleValue.trim() ? 1 : 0) +
+    (slug.trim() ? 1 : 0) +
+    (contentNonEmpty ? 1 : 0) +
+    (excerptValue.trim() ? 1 : 0);
+  const categoryCount = (form.watch('categories') as string[] | undefined)?.length ?? 0;
+  const tagCount = (form.watch('tags') as string[] | undefined)?.length ?? 0;
+  const hasFeatured = !!featuredImage;
+  const postType = (form.watch('postType') as PostType | undefined) ?? 'STANDARD';
+  const hasMediaType = postType === 'GALLERY' || postType === 'VIDEO' || postType === 'AUDIO';
+  const mediaCount =
+    (hasFeatured ? 1 : 0) +
+    (hasMediaType ? 1 : 0);
 
   return (
     <FormProvider {...form}>
-      <div className="min-h-screen rtl">
-        {/* Subtle ambient background */}
-        <div className="fixed inset-0 -z-10 pointer-events-none">
-          <div className="absolute top-0 right-1/4 w-96 h-96 bg-violet-500/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-indigo-500/5 rounded-full blur-3xl" />
-        </div>
-
-        {/* Header */}
-        <div className="sticky top-0 z-50 backdrop-blur-xl bg-white/90 dark:bg-slate-900/90 border-b border-slate-200/50 dark:border-slate-700/50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-500/20">
-                  <HiOutlineSparkles className="w-6 h-6" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-black text-slate-900 dark:text-white">{title}</h1>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                    {isEditing ? 'ویرایش و به‌روزرسانی پست' : 'ایجاد محتوای جدید'}
-                  </p>
-                </div>
+      <>
+        {/* ─── Header (sticky) ─── */}
+        <div className="at-form-header">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="at-head__ico" aria-hidden>
+                <HiOutlineSparkles className="w-4 h-4" />
+              </span>
+              <div className="min-w-0">
+                <h1 className="text-base sm:text-lg font-bold text-[color:var(--at-fg)] truncate">
+                  {title}
+                </h1>
+                <p className="text-xs text-[color:var(--at-fg-subtle)] mt-0.5 truncate">
+                  {isEditing ? 'ویرایش و به‌روزرسانی پست' : 'ایجاد محتوای جدید'}
+                </p>
               </div>
+            </div>
 
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  disabled={isLoading}
-                  onClick={() => { setSaveAsDraft(true); form.handleSubmit(handleSubmit)(); }}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors duration-200 font-medium"
-                >
-                  <RiDraftLine className="w-4 h-4" />
-                  <span>پیش‌نویس</span>
-                </button>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                type="button"
+                disabled={isLoading}
+                onClick={() => { setSaveAsDraft(true); form.handleSubmit(handleSubmit)(); }}
+                className="at-btn at-btn--secondary"
+              >
+                <RiDraftLine className="w-4 h-4" />
+                <span className="hidden sm:inline">پیش‌نویس</span>
+              </button>
 
+              <button
+                type="button"
+                disabled={isLoading}
+                onClick={() => { setSaveAsDraft(false); form.handleSubmit(handleSubmit)(); }}
+                className="at-btn at-btn--primary"
+              >
+                {isLoading ? (
+                  <>
+                    <BiLoaderAlt className="w-4 h-4 animate-spin" />
+                    <span>در حال ارسال...</span>
+                  </>
+                ) : (
+                  <>
+                    <RiSendPlaneFill className="w-4 h-4" />
+                    <span>{isEditing ? 'به‌روزرسانی' : 'انتشار پست'}</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="at-form-tabs" role="tablist" aria-label="بخش‌های فرم">
+            {sectionTabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeSection === tab.id;
+              const count =
+                tab.id === 'content' ? contentCount :
+                tab.id === 'meta' ? (categoryCount + tagCount + (scheduledAt ? 1 : 0) + (form.watch('postType') ? 1 : 0)) :
+                mediaCount;
+              return (
                 <button
+                  key={tab.id}
                   type="button"
-                  disabled={isLoading}
-                  onClick={() => { setSaveAsDraft(false); form.handleSubmit(handleSubmit)(); }}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white font-medium shadow-lg shadow-violet-500/20 hover:shadow-violet-500/30 transition-shadow duration-200"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setActiveSection(tab.id)}
+                  className={`at-form-tab ${isActive ? 'is-active' : ''}`}
                 >
-                  {isLoading ? (
-                    <>
-                      <BiLoaderAlt className="w-4 h-4 animate-spin" />
-                      <span>در حال ارسال...</span>
-                    </>
-                  ) : (
-                    <>
-                      <RiSendPlaneFill className="w-4 h-4" />
-                      <span>{isEditing ? 'به‌روزرسانی' : 'انتشار پست'}</span>
-                    </>
+                  <Icon className="w-4 h-4" aria-hidden />
+                  <span>{tab.label}</span>
+                  {count > 0 && (
+                    <span className="at-form-tab__count">
+                      {count.toLocaleString('fa-IR')}
+                    </span>
                   )}
                 </button>
-              </div>
-            </div>
-
-            {/* Section tabs */}
-            <div className="flex items-center gap-1 mt-6">
-              {sectionTabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = activeSection === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setActiveSection(tab.id)}
-                    className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-colors duration-200 ${
-                      isActive
-                        ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300'
-                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span>{tab.label}</span>
-                  </button>
-                );
-              })}
-            </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Main content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-              
-              {/* Content Section */}
-              <div className={activeSection === 'content' ? 'space-y-6' : 'hidden'}>
+        {/* ─── Main content ─── */}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="at-form-stack at-form-stack--lg" style={{ marginTop: 20 }}>
+            {/* Content Section */}
+            <div className={activeSection === 'content' ? '' : 'hidden'}>
+              <div className="at-form-stack">
                 {/* Title */}
-                <div className="group">
-                  <div className="dash-panel overflow-hidden transition-shadow duration-200 focus-within:shadow-lg focus-within:shadow-violet-500/5 focus-within:border-violet-500/30">
-                    <div className="h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500 opacity-0 group-focus-within:opacity-100 transition-opacity duration-200" />
-                    <FormField
-                      control={form.control}
-                      name="title"
-                      render={({ field }) => (
-                        <FormItem className="p-6">
-                          <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                            <FiFileText className="w-4 h-4 text-violet-500" />
-                            عنوان پست
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              onChange={(e) => {
-                                field.onChange(e);
-                                if (!isEditing && !slug) generateSlugFromTitle(e.target.value);
-                              }}
-                              placeholder="عنوان جذاب برای پست..."
-                              className="mt-2 text-xl font-bold border-0 bg-transparent p-0 h-auto focus-visible:ring-0 placeholder:text-slate-300 dark:placeholder:text-slate-600"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
+                <section className="at-form-section">
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem className="at-form-section__body">
+                        <FormLabel className="at-field__label">
+                          <FiFileText className="w-4 h-4 at-field__ico at-field__ico--emerald" aria-hidden />
+                          <span>عنوان پست</span>
+                        </FormLabel>
+                        <FormControl>
+                          <input
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e);
+                              if (!isEditing && !slug) generateSlugFromTitle(e.target.value);
+                            }}
+                            placeholder="یک عنوان جذاب برای پست..."
+                            className="at-input at-input--ghost"
+                            dir="rtl"
+                          />
+                        </FormControl>
+                        <FormMessage className="at-field__error" />
+                      </FormItem>
+                    )}
+                  />
+                </section>
 
                 {/* Slug */}
-                <div className="dash-panel overflow-hidden">
+                <section className="at-form-section">
                   <FormField
                     control={form.control}
                     name="slug"
                     render={({ field }) => (
-                      <FormItem className="p-5">
-                        <div className="flex items-center justify-between">
-                          <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                            <FiLink className="w-4 h-4 text-violet-500" />
-                            اسلاگ (URL)
+                      <FormItem className="at-form-section__body">
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <FormLabel className="at-field__label">
+                            <FiLink className="w-4 h-4 at-field__ico at-field__ico--emerald" aria-hidden />
+                            <span>اسلاگ (URL)</span>
                           </FormLabel>
-                          <div className="flex items-center gap-2">
-                            {/* دکمه بازسازی از عنوان */}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const currentTitle = form.getValues('title');
-                                if (currentTitle) {
-                                  const newSlug = generateSlug(currentTitle);
-                                  setSlug(newSlug);
-                                  form.setValue('slug', newSlug);
-                                }
-                              }}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors"
-                            >
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                              </svg>
-                              از عنوان
-                            </button>
-                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const currentTitle = form.getValues('title');
+                              if (currentTitle) {
+                                const newSlug = generateSlug(currentTitle);
+                                setSlug(newSlug);
+                                form.setValue('slug', newSlug);
+                              }
+                            }}
+                            className="at-btn at-btn--ghost at-btn--sm"
+                            aria-label="بازسازی اسلاگ از عنوان"
+                          >
+                            <HiOutlineArrowPath className="w-3.5 h-3.5" />
+                            <span>از عنوان</span>
+                          </button>
                         </div>
-                        <FormControl dir="ltr">
-                          <div className="flex items-center gap-2 mt-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                            <span className="text-sm text-slate-400 whitespace-nowrap">biotak.ir/post/</span>
-                            <Input
-                              {...field}
+                        <FormControl>
+                          <div className="at-slug-row">
+                            <span className="at-slug-row__prefix">biotak.ir/post/</span>
+                            <input
                               value={slug}
                               onChange={(e) => {
                                 const newSlug = generateSlug(e.target.value);
                                 setSlug(newSlug);
                                 field.onChange(newSlug);
                               }}
-                              placeholder="اسلاگ را وارد کنید..."
-                              className="flex-1 border-0 bg-transparent p-0 h-auto focus-visible:ring-0 font-mono text-sm text-violet-600 dark:text-violet-400"
+                              placeholder="my-post-slug"
+                              className="at-slug-row__input"
+                              dir="ltr"
                             />
                           </div>
                         </FormControl>
-                        <FormDescription className="mt-2 text-xs">
-                          اسلاگ را می‌توانید دستی ویرایش کنید یا با دکمه "از عنوان" بازسازی کنید.
-                        </FormDescription>
-                        <FormMessage />
+                        <p className="at-field__hint">
+                          اسلاگ را می‌توانید دستی ویرایش کنید یا با دکمهٔ «از عنوان» بازسازی کنید.
+                        </p>
+                        <FormMessage className="at-field__error" />
                       </FormItem>
                     )}
                   />
-                </div>
+                </section>
 
                 {/* Editor */}
-                <div className="dash-panel overflow-hidden">
-                  <div className="h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500" />
+                <section className="at-form-section">
                   <FormField
                     control={form.control}
                     name="content"
                     render={({ field }) => (
                       <FormItem>
+                        <div className="at-form-section__head">
+                          <div className="at-form-section__title">
+                            <span className="at-form-section__ico" aria-hidden>
+                              <HiOutlineSparkles className="w-3.5 h-3.5" />
+                            </span>
+                            <div>
+                              <div className="at-form-section__title-text">محتوای پست</div>
+                              <div className="at-form-section__sub">بدنه اصلی مقاله با ویرایشگر</div>
+                            </div>
+                          </div>
+                        </div>
                         <FormControl>
-                          <Editor
-                            ref={editorRef}
-                            wrapperClassName="flex flex-col min-h-[500px]"
-                            contentClassName="flex-1 overflow-auto"
-                            toolBarClassName="z-40 inset-x-0 w-full bg-slate-50 dark:bg-slate-800/50 sticky top-0 border-b border-slate-200/50 dark:border-slate-700/50 px-4 py-2"
-                            footerClassName="bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200/50 dark:border-slate-700/50 px-4 py-2"
-                            content={parseContent(editorContent)}
-                            localStorageKey={`${localStorageKey}-editor`}
-                            editorProps={{
-                              attributes: {
-                                class: 'py-4 px-4 prose prose-lg prose-violet prose-headings:scroll-mt-[80px] dark:prose-invert max-w-none focus:outline-none min-h-[400px]',
-                              },
-                            }}
-                            onUpdate={({ editor }) => {
-                              const json = !editor.isEmpty ? JSON.stringify(editor.getJSON()) : '';
-                              setEditorContent(json);
-                              field.onChange(json);
-                              saveToLocalStorage({ ...form.getValues(), content: json });
-                            }}
-                          />
+                          <div className="at-editor-wrap" style={{ borderRadius: 0, border: 0, boxShadow: 'none' }}>
+                            <Editor
+                              ref={editorRef}
+                              wrapperClassName="flex flex-col min-h-[500px]"
+                              contentClassName="flex-1 overflow-auto"
+                              toolBarClassName="z-40 inset-x-0 w-full bg-[color:var(--at-bg-elevated)] sticky top-0 border-b border-[color:var(--at-line)] px-4 py-2"
+                              footerClassName="bg-[color:var(--at-bg-elevated)] border-t border-[color:var(--at-line)] px-4 py-2"
+                              content={parseContent(editorContent)}
+                              localStorageKey={`${localStorageKey}-editor`}
+                              editorProps={{
+                                attributes: {
+                                  class: 'py-4 px-4 prose prose-lg prose-violet prose-headings:scroll-mt-[80px] dark:prose-invert max-w-none focus:outline-none min-h-[400px]',
+                                },
+                              }}
+                              onUpdate={({ editor }) => {
+                                const json = !editor.isEmpty ? JSON.stringify(editor.getJSON()) : '';
+                                setEditorContent(json);
+                                field.onChange(json);
+                                saveToLocalStorage({ ...form.getValues(), content: json });
+                              }}
+                            />
+                          </div>
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="at-field__error" style={{ padding: '0 20px 16px' }} />
                       </FormItem>
                     )}
                   />
-                </div>
+                </section>
 
                 {/* Excerpt */}
-                <div className="dash-panel overflow-hidden">
+                <section className="at-form-section">
                   <FormField
                     control={form.control}
                     name="excerpt"
                     render={({ field }) => (
-                      <FormItem className="p-5">
-                        <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300">خلاصه پست</FormLabel>
+                      <FormItem className="at-form-section__body">
+                        <FormLabel className="at-field__label">
+                          <FiFileText className="w-4 h-4 at-field__ico at-field__ico--emerald" aria-hidden />
+                          <span>خلاصه پست</span>
+                        </FormLabel>
                         <FormControl>
-                          <Textarea
+                          <textarea
                             {...field}
-                            placeholder="خلاصه‌ای جذاب از محتوای پست..."
+                            placeholder="خلاصه‌ای کوتاه از محتوای پست..."
                             rows={3}
-                            className="mt-2 border-0 bg-slate-50 dark:bg-slate-800/50 rounded-xl resize-none focus-visible:ring-1 focus-visible:ring-violet-500"
+                            className="at-textarea"
+                            dir="rtl"
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="at-field__error" />
                       </FormItem>
                     )}
                   />
-                </div>
+                </section>
               </div>
+            </div>
 
-              {/* Meta Section */}
-              <div className={activeSection === 'meta' ? 'grid grid-cols-1 lg:grid-cols-2 gap-6' : 'hidden'}>
+            {/* Meta Section */}
+            <div className={activeSection === 'meta' ? '' : 'hidden'}>
+              <div className="at-form-grid">
                 {/* Categories */}
-                <div className="dash-panel p-6 overflow-hidden">
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
+                <section className="at-form-section">
                   <FormField
                     control={form.control}
                     name="categories"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                          <FiFolder className="w-4 h-4 text-blue-500" />
-                          دسته‌بندی‌ها
+                      <FormItem className="at-form-section__body">
+                        <FormLabel className="at-field__label">
+                          <FiFolder className="w-4 h-4 at-field__ico at-field__ico--blue" aria-hidden />
+                          <span>دسته‌بندی‌ها</span>
                         </FormLabel>
-                        <div className="flex flex-wrap gap-2 mt-3 min-h-[40px]">
+                        <div className="flex flex-wrap gap-1.5 min-h-[40px]">
                           {field.value?.map((categoryId) => {
                             const category = categories.find((c) => c.id === categoryId);
                             return category ? (
-                              <Badge key={categoryId} className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-3 py-1.5 rounded-lg flex items-center gap-2">
-                                {category.name}
+                              <span key={categoryId} className="at-pill at-pill--blue">
+                                <span>{category.name}</span>
                                 <button
                                   type="button"
                                   onClick={() => form.setValue('categories', field.value?.filter((id) => id !== categoryId) || [])}
-                                  className="hover:bg-white/20 rounded-full p-0.5"
+                                  className="at-pill__close"
+                                  aria-label={`حذف ${category.name}`}
                                 >
                                   <FiX className="w-3 h-3" />
                                 </button>
-                              </Badge>
+                              </span>
                             ) : null;
                           })}
                         </div>
                         <FormControl>
-                          <Button
+                          <button
                             type="button"
                             onClick={() => setIsCategoryDialogOpen(true)}
-                            variant="outline"
-                            className="w-full mt-3 border-dashed border-2 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                            className="at-btn at-btn--dashed w-full"
                           >
-                            <FiPlus className="w-4 h-4 ml-2" />
-                            افزودن دسته‌بندی
-                          </Button>
+                            <FiPlus className="w-4 h-4" />
+                            <span>افزودن دسته‌بندی</span>
+                          </button>
                         </FormControl>
-                        <FormMessage />
+                        <p className="at-field__hint">{categoryCount} از {totalCategories.toLocaleString('fa-IR')} دسته‌بندی</p>
+                        <FormMessage className="at-field__error" />
                       </FormItem>
                     )}
                   />
-                </div>
+                </section>
 
                 {/* Tags */}
-                <div className="dash-panel p-6 overflow-hidden">
+                <section className="at-form-section">
                   <FormField
                     control={form.control}
                     name="tags"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                          <FiTag className="w-4 h-4 text-emerald-500" />
-                          برچسب‌ها
+                      <FormItem className="at-form-section__body">
+                        <FormLabel className="at-field__label">
+                          <FiTag className="w-4 h-4 at-field__ico at-field__ico--emerald" aria-hidden />
+                          <span>برچسب‌ها</span>
                         </FormLabel>
-                        <div className="flex flex-wrap gap-2 mt-3 min-h-[40px]">
+                        <div className="flex flex-wrap gap-1.5 min-h-[40px]">
                           {field.value?.map((tag) => (
-                            <Badge key={tag} className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-3 py-1.5 rounded-lg flex items-center gap-2">
-                              {tag}
+                            <span key={tag} className="at-pill">
+                              <span>{tag}</span>
                               <button
                                 type="button"
                                 onClick={() => form.setValue('tags', field.value?.filter((t) => t !== tag) || [])}
-                                className="hover:bg-white/20 rounded-full p-0.5"
+                                className="at-pill__close"
+                                aria-label={`حذف ${tag}`}
                               >
                                 <FiX className="w-3 h-3" />
                               </button>
-                            </Badge>
+                            </span>
                           ))}
                         </div>
                         <FormControl>
-                          <Button
+                          <button
                             type="button"
                             onClick={() => setIsTagDialogOpen(true)}
-                            variant="outline"
-                            className="w-full mt-3 border-dashed border-2 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                            className="at-btn at-btn--dashed w-full"
                           >
-                            <FiPlus className="w-4 h-4 ml-2" />
-                            افزودن برچسب
-                          </Button>
+                            <FiPlus className="w-4 h-4" />
+                            <span>افزودن برچسب</span>
+                          </button>
                         </FormControl>
-                        <FormMessage />
+                        <p className="at-field__hint">{tagCount} برچسب</p>
+                        <FormMessage className="at-field__error" />
                       </FormItem>
                     )}
                   />
-                </div>
+                </section>
 
-                {/* Post Status */}
-                <div className="dash-panel p-6">
+                {/* Status */}
+                <section className="at-form-section">
                   <FormField
                     control={form.control}
                     name="status"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300">وضعیت پست</FormLabel>
+                      <FormItem className="at-form-section__body">
+                        <FormLabel className="at-field__label">
+                          <span>وضعیت پست</span>
+                        </FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={isAuthor ? 'PENDING_REVIEW' : field.value} disabled={isAuthor}>
                           <FormControl>
-                            <SelectTrigger className="mt-2 h-12 rounded-xl">
+                            <SelectTrigger className="h-11 rounded-[10px] border-[color:var(--at-line)] bg-[color:var(--at-bg)] focus:ring-2 focus:ring-[color:var(--at-accent)]/20">
                               <SelectValue placeholder="انتخاب وضعیت" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="DRAFT">
-                              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-slate-400" />پیش‌نویس</div>
+                              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-[color:var(--at-fg-faint)]" />پیش‌نویس</div>
                             </SelectItem>
                             <SelectItem value="PENDING_REVIEW">
-                              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-400" />در انتظار بررسی</div>
+                              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-[color:var(--at-warning)]" />در انتظار بررسی</div>
                             </SelectItem>
                             {!isAuthor && (
                               <>
                                 {/* 2026-07-04: گزینهٔ زمان‌بندی برای admin/owner. */}
                                 <SelectItem value="SCHEDULED">
-                                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-500" />زمان‌بندی شده</div>
+                                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-[color:var(--at-info)]" />زمان‌بندی شده</div>
                                 </SelectItem>
                                 <SelectItem value="PUBLISHED">
-                                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-400" />منتشر شده</div>
+                                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-[color:var(--at-accent)]" />منتشر شده</div>
                                 </SelectItem>
                               </>
                             )}
                           </SelectContent>
                         </Select>
-                        {isAuthor && <FormDescription className="mt-2 text-xs text-amber-600">پست‌های شما پس از تأیید مدیر منتشر می‌شوند.</FormDescription>}
-                        <FormMessage />
+                        {isAuthor && (
+                          <p className="at-field__hint" style={{ color: 'var(--at-warning)' }}>
+                            پست‌های شما پس از تأیید مدیر منتشر می‌شوند.
+                          </p>
+                        )}
+                        <FormMessage className="at-field__error" />
                       </FormItem>
                     )}
                   />
-                </div>
+                </section>
 
-                {/* 2026-07-04: برنامهٔ انتشار — تاریخ/زمان انتشار آینده.
-                    اختیاری است؛ وقتی خالی باشد پست فوری منتشر/ذخیره می‌شود. */}
-                <div className="dash-panel p-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 text-white">
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                        زمان انتشار برنامه‌ریزی‌شده
+                {/* Scheduled At */}
+                <section className="at-form-section">
+                  <div className="at-form-section__body">
+                    <div className="at-field">
+                      <FormLabel className="at-field__label">
+                        <span className="at-switch-row__ico" aria-hidden style={{ width: 28, height: 28 }}>
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </span>
+                        <span>زمان انتشار برنامه‌ریزی‌شده</span>
                       </FormLabel>
-                      <FormDescription className="text-xs">
+                      <p className="at-field__hint">
                         اختیاری. اگر تاریخ آینده انتخاب کنید، پست خودکار در آن زمان منتشر می‌شود.
-                      </FormDescription>
+                      </p>
+                      <PersianDateTimePicker
+                        value={scheduledAt}
+                        onChange={setScheduledAt}
+                        placeholder="روی کلیک کنید تا تقویم باز شود"
+                        showPresets
+                      />
                     </div>
                   </div>
-                  <PersianDateTimePicker
-                    value={scheduledAt}
-                    onChange={setScheduledAt}
-                    placeholder="روی کلیک کنید تا تقویم باز شود"
-                    showPresets
-                  />
-                </div>
+                </section>
 
                 {/* Post Type */}
-                <div className="dash-panel p-6">
+                <section className="at-form-section" style={{ gridColumn: '1 / -1' }}>
                   <FormField
                     control={form.control}
                     name="postType"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300">نوع پست</FormLabel>
-                        <div className="grid grid-cols-2 gap-3 mt-3">
+                      <FormItem className="at-form-section__body">
+                        <FormLabel className="at-field__label">
+                          <span>نوع پست</span>
+                        </FormLabel>
+                        <div className="at-ptype-grid">
                           {(Object.entries(postTypeConfig) as [PostType, typeof postTypeConfig.STANDARD][]).map(([type, config]) => {
                             const Icon = config.icon;
                             const isSelected = field.value === type;
@@ -678,108 +709,119 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                                 key={type}
                                 type="button"
                                 onClick={() => field.onChange(type)}
-                                className={`p-4 rounded-xl border-2 transition-colors duration-200 ${
-                                  isSelected ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/20' : 'border-slate-200 dark:border-slate-700 hover:border-violet-300'
-                                }`}
+                                className={`at-ptype ${isSelected ? 'is-active' : ''}`}
+                                aria-pressed={isSelected}
                               >
-                                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${config.color} flex items-center justify-center text-white mb-2 mx-auto`}>
-                                  <Icon className="w-5 h-5" />
-                                </div>
-                                <span className={`text-sm font-medium ${isSelected ? 'text-violet-700 dark:text-violet-300' : 'text-slate-600 dark:text-slate-400'}`}>
-                                  {config.label}
+                                <span className="at-ptype__ico" aria-hidden>
+                                  <Icon className="w-4 h-4" />
                                 </span>
+                                <span className="at-ptype__label">{config.label}</span>
                               </button>
                             );
                           })}
                         </div>
-                        <FormMessage />
+                        <FormMessage className="at-field__error" />
                       </FormItem>
                     )}
                   />
-                </div>
+                </section>
 
                 {/* Featured toggle */}
-                <div className="dash-panel p-6 lg:col-span-2">
+                <section className="at-form-section" style={{ gridColumn: '1 / -1' }}>
                   <FormField
                     control={form.control}
                     name="isFeatured"
                     render={({ field }) => (
-                      <FormItem className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2.5 rounded-xl bg-gradient-to-br from-rose-500 to-pink-500 text-white">
-                            <FiStar className="w-5 h-5" />
+                      <FormItem className="at-form-section__body">
+                        <div className="at-switch-row">
+                          <div className="at-switch-row__meta">
+                            <span className="at-switch-row__ico" aria-hidden>
+                              <FiStar className="w-4 h-4" />
+                            </span>
+                            <div className="at-switch-row__text">
+                              <FormLabel className="at-switch-row__title">پست ویژه</FormLabel>
+                              <p className="at-switch-row__sub">نمایش در بخش ویژهٔ سایت</p>
+                            </div>
                           </div>
-                          <div>
-                            <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300">پست ویژه</FormLabel>
-                            <FormDescription className="text-xs">نمایش در بخش ویژه سایت</FormDescription>
-                          </div>
+                          <FormControl>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
                         </div>
-                        <FormControl>
-                          <Switch checked={field.value} onCheckedChange={field.onChange} />
-                        </FormControl>
+                        <FormMessage className="at-field__error" />
                       </FormItem>
                     )}
                   />
-                </div>
+                </section>
 
                 {/* Video URL */}
                 {form.watch('postType') === 'VIDEO' && (
-                  <div className="dash-panel p-6 lg:col-span-2">
+                  <section className="at-form-section" style={{ gridColumn: '1 / -1' }}>
                     <FormField
                       control={form.control}
                       name="videoUrl"
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                            <FiVideo className="w-4 h-4 text-rose-500" />
-                            آدرس ویدیو
+                        <FormItem className="at-form-section__body">
+                          <FormLabel className="at-field__label">
+                            <FiVideo className="w-4 h-4 at-field__ico at-field__ico--rose" aria-hidden />
+                            <span>آدرس ویدیو</span>
                           </FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="https://..." dir="ltr" className="mt-2 h-12 rounded-xl" />
+                            <input
+                              {...field}
+                              placeholder="https://..."
+                              dir="ltr"
+                              className="at-input"
+                            />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="at-field__error" />
                         </FormItem>
                       )}
                     />
-                  </div>
+                  </section>
                 )}
 
                 {/* Audio URL */}
                 {form.watch('postType') === 'AUDIO' && (
-                  <div className="dash-panel p-6 lg:col-span-2">
+                  <section className="at-form-section" style={{ gridColumn: '1 / -1' }}>
                     <FormField
                       control={form.control}
                       name="audioUrl"
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                            <FiMusic className="w-4 h-4 text-amber-500" />
-                            آدرس فایل صوتی
+                        <FormItem className="at-form-section__body">
+                          <FormLabel className="at-field__label">
+                            <FiMusic className="w-4 h-4 at-field__ico at-field__ico--amber" aria-hidden />
+                            <span>آدرس فایل صوتی</span>
                           </FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="https://..." dir="ltr" className="mt-2 h-12 rounded-xl" />
+                            <input
+                              {...field}
+                              placeholder="https://..."
+                              dir="ltr"
+                              className="at-input"
+                            />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="at-field__error" />
                         </FormItem>
                       )}
                     />
-                  </div>
+                  </section>
                 )}
               </div>
+            </div>
 
-              {/* Media Section */}
-              <div className={activeSection === 'media' ? 'space-y-6' : 'hidden'}>
+            {/* Media Section */}
+            <div className={activeSection === 'media' ? '' : 'hidden'}>
+              <div className="at-form-stack">
                 {/* Featured Image */}
-                <div className="dash-panel p-6">
-                  <div className="h-1 bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500 -mt-6 -mx-6 mb-6 rounded-t-2xl" />
+                <section className="at-form-section">
                   <FormField
                     control={form.control}
                     name="featuredImage"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2 mb-4">
-                          <FiImage className="w-4 h-4 text-violet-500" />
-                          تصویر شاخص
+                      <FormItem className="at-form-section__body">
+                        <FormLabel className="at-field__label">
+                          <FiImage className="w-4 h-4 at-field__ico at-field__ico--emerald" aria-hidden />
+                          <span>تصویر شاخص</span>
                         </FormLabel>
                         <FormControl>
                           <ImageUploader
@@ -802,24 +844,23 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                             folder="posts"
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="at-field__error" />
                       </FormItem>
                     )}
                   />
-                </div>
+                </section>
 
                 {/* Gallery Images - only show when post type is GALLERY */}
                 {form.watch('postType') === 'GALLERY' && (
-                  <div className="dash-panel p-6">
-                    <div className="h-1 bg-gradient-to-r from-emerald-500 to-teal-500 -mt-6 -mx-6 mb-6 rounded-t-2xl" />
+                  <section className="at-form-section">
                     <FormField
                       control={form.control}
                       name="galleryImages"
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2 mb-4">
-                            <FiGrid className="w-4 h-4 text-emerald-500" />
-                            گالری تصاویر
+                        <FormItem className="at-form-section__body">
+                          <FormLabel className="at-field__label">
+                            <FiGrid className="w-4 h-4 at-field__ico at-field__ico--emerald" aria-hidden />
+                            <span>گالری تصاویر</span>
                           </FormLabel>
                           <FormControl>
                             <ImageUploader
@@ -835,17 +876,17 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                               folder="posts"
                             />
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="at-field__error" />
                         </FormItem>
                       )}
                     />
-                  </div>
+                  </section>
                 )}
               </div>
+            </div>
 
-            </form>
-          </Form>
-        </div>
+          </form>
+        </Form>
 
         {/* Dialogs */}
         <CategorySelectDialog
@@ -869,7 +910,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
           isLoading={isLoadingMore}
           hasMoreItems={tags.length < totalTags}
         />
-      </div>
+      </>
     </FormProvider>
   );
 };

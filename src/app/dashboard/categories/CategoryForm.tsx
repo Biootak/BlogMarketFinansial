@@ -3,11 +3,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { HiOutlinePlus } from 'react-icons/hi2';
+import { HiOutlinePlus, HiOutlineXMark } from 'react-icons/hi2';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { createCategory, updateCategory } from '@/actions/categoryActions';
 import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
@@ -16,13 +15,12 @@ import { useRouter } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { ActionResult, CreateCategoryInput, TaxonomyType, UpdateCategoryInput } from '@/types/types';
 import { z } from 'zod';
-import { PrimaryActionButton } from '@/components/Dashboard/shared/DashboardTableWrapper';
+import { HiOutlinePhoto, HiOutlineLink, HiOutlineFolder, HiOutlineTag } from 'react-icons/hi2';
 
 const categorySchema = z.object({
   name: z.string().min(1, 'نام دسته‌بندی الزامی است'),
   slug: z.string().min(1, 'اسلاگ الزامی است'),
   thumbnail: z.string().nullable(),
-  // 2026-06-21: ابعاد thumbnail برای CLS-safe رندر
   thumbnailWidth: z.number().int().positive().nullable().optional(),
   thumbnailHeight: z.number().int().positive().nullable().optional(),
   parentIds: z.array(z.string()).default([]),
@@ -65,7 +63,6 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
       form.reset({ name: '', slug: '', thumbnail: null, parentIds: [] });
     }
   }, [category, form]);
-
 
   const onSubmit = useCallback(
     async (formData: CategoryFormData) => {
@@ -114,43 +111,58 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
     }
   };
 
-  const inputClassName = 'h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80';
-
   const formContent = (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5" dir="rtl">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="at-form-stack" dir="rtl">
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نام دسته‌بندی</FormLabel>
+              <label className="at-field__label">
+                <HiOutlineFolder className="at-field__ico at-field__ico--emerald size-4" />
+                نام دسته‌بندی
+              </label>
               <FormControl>
-                <Input {...field} className={inputClassName} />
+                <Input {...field} className="at-input" placeholder="مثلاً: بازار سرمایه" />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="slug"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">اسلاگ</FormLabel>
+              <label className="at-field__label">
+                <HiOutlineLink className="at-field__ico at-field__ico--blue size-4" />
+                اسلاگ
+              </label>
               <FormControl>
-                <Input {...field} className={`${inputClassName} text-left`} dir="ltr" />
+                <Input
+                  {...field}
+                  dir="ltr"
+                  className="at-input text-left font-mono"
+                  placeholder="bazar-sarmaye"
+                />
               </FormControl>
+              <p className="at-field__hint">شناسه‌ی یکتا برای URL — بدون فاصله، حروف لاتین و اعداد</p>
               <FormMessage />
             </FormItem>
           )}
         />
+
         <Controller
           name="parentIds"
           control={form.control}
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">دسته‌بندی‌های والد</FormLabel>
+              <label className="at-field__label">
+                <HiOutlineTag className="at-field__ico at-field__ico--emerald size-4" />
+                دسته‌بندی‌های والد
+              </label>
               <Select
                 dir="rtl"
                 onValueChange={(value) => {
@@ -162,7 +174,7 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
                 value=""
               >
                 <FormControl>
-                  <SelectTrigger className={inputClassName}>
+                  <SelectTrigger className="at-input flex items-center h-auto py-2.5">
                     <SelectValue placeholder="انتخاب دسته‌بندی والد" />
                   </SelectTrigger>
                 </FormControl>
@@ -174,36 +186,43 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
                   ))}
                 </SelectContent>
               </Select>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {(field.value || []).map((parentId) => {
-                  const parent = parentCategories.find((pc) => pc.id === parentId);
-                  return parent ? (
-                    <span
-                      key={parentId}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-primary-50 px-3 py-1.5 text-sm font-medium text-primary-700 dark:bg-primary-900/30 dark:text-primary-400"
-                    >
-                      {parent.name}
-                      <button
-                        type="button"
-                        onClick={() => field.onChange((field.value || []).filter((id) => id !== parentId))}
-                        className="rounded-full p-0.5 transition-colors hover:bg-primary-200 dark:hover:bg-primary-800"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ) : null;
-                })}
-              </div>
+              {(field.value || []).length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {(field.value || []).map((parentId) => {
+                    const parent = parentCategories.find((pc) => pc.id === parentId);
+                    if (!parent) return null;
+                    return (
+                      <span key={parentId} className="at-pill">
+                        {parent.name}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            field.onChange((field.value || []).filter((id) => id !== parentId))
+                          }
+                          className="at-pill__close"
+                          aria-label={`حذف ${parent.name}`}
+                        >
+                          <HiOutlineXMark className="size-3" />
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
               <FormMessage />
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="thumbnail"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">تصویر شاخص</FormLabel>
+              <label className="at-field__label">
+                <HiOutlinePhoto className="at-field__ico at-field__ico--amber size-4" />
+                تصویر شاخص
+              </label>
               <FormControl>
                 <ImageUploader
                   onImageUpload={(urls) => form.setValue('thumbnail', urls[0] || null)}
@@ -228,49 +247,86 @@ export function CategoryForm({ isOpen, onClose, category, parentCategories }: Ca
             </FormItem>
           )}
         />
-        <div className="pt-4">
-          <Button
-            type="submit"
+
+        <div className="at-dialog-foot" style={{ marginInlineStart: '-22px', marginInlineEnd: '-22px', marginBottom: '-20px' }}>
+          <button
+            type="button"
+            onClick={() => handleDialogOpenChange(false)}
+            className="at-btn at-btn--ghost"
             disabled={isSubmitting}
-            className="w-full rounded-xl bg-gradient-to-l from-primary-500 to-primary-600 py-3 font-medium text-white shadow-lg shadow-primary-500/25 transition-all duration-300 hover:from-primary-600 hover:to-primary-700 hover:shadow-xl disabled:opacity-50"
           >
-            {isSubmitting ? 'در حال ذخیره...' : category ? 'ویرایش دسته‌بندی' : 'ایجاد دسته‌بندی'}
-          </Button>
+            انصراف
+          </button>
+          <button
+            type="submit"
+            className="at-btn at-btn--primary"
+            disabled={isSubmitting}
+          >
+            {isSubmitting
+              ? 'در حال ذخیره...'
+              : category
+                ? 'ویرایش دسته‌بندی'
+                : 'ایجاد دسته‌بندی'}
+          </button>
         </div>
       </form>
     </Form>
   );
 
+  // edit-mode: external control
   if (isOpen !== undefined && onClose) {
     return (
       <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
-        <DialogContent className="max-h-[90vh] w-full max-w-lg overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
-          <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-6 py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
-            <DialogTitle className="text-xl font-bold text-neutral-900 dark:text-neutral-50">
-              {category ? 'ویرایش دسته‌بندی' : 'ایجاد دسته‌بندی جدید'}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="max-h-[calc(90vh-120px)] overflow-y-auto p-6">{formContent}</div>
+        <DialogContent
+          className="at-dialog-content max-h-[90vh] w-full max-w-lg p-0 overflow-hidden"
+          dir="rtl"
+        >
+          <div className="at-dialog-header">
+            <div className="at-dialog-title">
+              <span className="at-dialog-title__ico">
+                <HiOutlineFolder className="size-4" />
+              </span>
+              <div>
+                <div>{category ? 'ویرایش دسته‌بندی' : 'ایجاد دسته‌بندی جدید'}</div>
+                <div className="at-dialog-sub">نام، اسلاگ و والد را تنظیم کنید</div>
+              </div>
+            </div>
+          </div>
+          <div className="at-dialog-body" style={{ padding: '20px 22px' }}>
+            {formContent}
+          </div>
         </DialogContent>
       </Dialog>
     );
   }
 
+  // create-mode: trigger button
   return (
     <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
       <DialogTrigger asChild>
-        <PrimaryActionButton>
-          <HiOutlinePlus className="h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
+        <button className="at-btn at-btn--primary">
+          <HiOutlinePlus className="size-4" />
           <span>افزودن دسته‌بندی</span>
-        </PrimaryActionButton>
+        </button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] w-full max-w-lg overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
-        <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-6 py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
-          <DialogTitle className="text-xl font-bold text-neutral-900 dark:text-neutral-50">
-            افزودن دسته‌بندی جدید
-          </DialogTitle>
-        </DialogHeader>
-        <div className="max-h-[calc(90vh-120px)] overflow-y-auto p-6">{formContent}</div>
+      <DialogContent
+        className="at-dialog-content max-h-[90vh] w-full max-w-lg p-0 overflow-hidden"
+        dir="rtl"
+      >
+        <div className="at-dialog-header">
+          <div className="at-dialog-title">
+            <span className="at-dialog-title__ico">
+              <HiOutlineFolder className="size-4" />
+            </span>
+            <div>
+              <div>افزودن دسته‌بندی جدید</div>
+              <div className="at-dialog-sub">نام، اسلاگ و والد را تنظیم کنید</div>
+            </div>
+          </div>
+        </div>
+        <div className="at-dialog-body" style={{ padding: '20px 22px' }}>
+          {formContent}
+        </div>
       </DialogContent>
     </Dialog>
   );

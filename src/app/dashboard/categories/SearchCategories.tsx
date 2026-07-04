@@ -3,7 +3,7 @@
 import { useState, useTransition, useCallback } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useDebouncedCallback } from 'use-debounce';
-import { DashboardSearchInput } from '@/components/Dashboard/shared/DashboardTableWrapper';
+import { HiMagnifyingGlass } from 'react-icons/hi2';
 
 export default function SearchCategories() {
   const router = useRouter();
@@ -37,16 +37,16 @@ export default function SearchCategories() {
   };
 
   return (
-    <div className="relative">
-      <DashboardSearchInput
-        value={searchTerm}
-        onChange={handleSearch}
+    <div className="at-filterbar__search" style={{ minWidth: '240px' }}>
+      <input
+        type="text"
         placeholder="جستجوی دسته‌بندی..."
+        value={searchTerm}
+        onChange={(e) => handleSearch(e.target.value)}
       />
+      <HiMagnifyingGlass className="at-filterbar__search__ico size-4" />
       {isPending && (
-        <span className="absolute -bottom-5 right-0 text-xs text-neutral-500">
-          در حال جستجو...
-        </span>
+        <span className="text-[10px] text-[color:var(--at-fg-subtle)] mt-1 block">در حال جستجو...</span>
       )}
     </div>
   );

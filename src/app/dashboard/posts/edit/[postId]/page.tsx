@@ -43,15 +43,17 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
         title="ویرایش پست"
         description="ویرایش محتوای پست موجود"
       />
-      <Suspense fallback={<SkeletonLoader variant="text" count={6} />}>
-        <EditPostForm
-          initialData={postResult.data}
-          initialCategories={initialCategories}
-          initialTags={initialTags}
-          totalCategories={totalCategories}
-          totalTags={totalTags}
-        />
-      </Suspense>
+      <div className="at-form" style={{ padding: 0 }}>
+        <Suspense fallback={<SkeletonLoader variant="text" count={6} />}>
+          <EditPostForm
+            initialData={postResult.data}
+            initialCategories={initialCategories}
+            initialTags={initialTags}
+            totalCategories={totalCategories}
+            totalTags={totalTags}
+          />
+        </Suspense>
+      </div>
     </div>
   );
 }

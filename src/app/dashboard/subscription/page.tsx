@@ -1,57 +1,142 @@
 import { PageHeader } from "@/components/Dashboard/primitives";
-import React from "react";
+import {
+  HiOutlineSparkles,
+  HiOutlineCreditCard,
+  HiOutlineDocumentText,
+  HiOutlineCalendarDays,
+} from "react-icons/hi2";
 
-const data = [
-  { name: "Subcription Name", content: " Premium" },
-  { name: "Package & billing details", content: " $222.00" },
-  { name: "Remaining post", content: " 18" },
-  { name: "Expire date", content: " October 20, 2021" },
-];
+const subscription = {
+  plan: "اشتراک حرفه‌ای",
+  planSub: "دسترسی کامل به همه‌ی ابزارهای تحلیل و انتشار نامحدود",
+  price: "۲٬۹۰۰٬۰۰۰ تومان / ماه",
+  postsRemaining: "۱۸",
+  postsTotal: "نامحدود در پلن فعلی",
+  renewDate: "۲۸ مهر ۱۴۰۵",
+  status: "فعال",
+  autoRenew: true,
+};
 
-const DashboardSubcription = () => {
+const DashboardSubscription = () => {
   return (
-    <div className="dash-panel overflow-hidden sm:rounded-lg">
+    <div className="at-page" dir="rtl">
       <PageHeader
         breadcrumb={[
           { label: "داشبورد", href: "/dashboard" },
           { label: "اشتراک" },
         ]}
-        title="اشتراک"
-        description="مدیریت اشتراک و پلن‌ها"
+        eyebrow="حساب کاربری"
+        title="اشتراک و پلن"
+        description="مدیریت پلن فعلی، تمدید و صورتحساب"
+        actions={
+          <button className="at-btn at-btn--primary">
+            <HiOutlineSparkles className="size-4" />
+            ارتقای پلن
+          </button>
+        }
       />
-      <div className="px-4 py-5 sm:px-6">
-        <h3 className="text-lg leading-6 font-medium text-neutral-900 dark:text-neutral-200">
-          Package Information
-        </h3>
-        <p className="mt-1 max-w-2xl text-sm text-neutral-500 dark:text-neutral-400">
-          {`You've subscribed to the following package`}
-        </p>
+
+      {/* KPI strip */}
+      <div className="at-stats">
+        <div className="at-stat">
+          <div className="at-stat__ico">
+            <HiOutlineSparkles className="size-4" />
+          </div>
+          <div className="at-stat__main">
+            <div className="at-stat__value">{subscription.plan}</div>
+            <div className="at-stat__label">پلن فعلی</div>
+          </div>
+        </div>
+        <div className="at-stat">
+          <div className="at-stat__ico at-stat__ico--blue">
+            <HiOutlineCreditCard className="size-4" />
+          </div>
+          <div className="at-stat__main">
+            <div className="at-stat__value" style={{ fontSize: '15px' }}>
+              {subscription.price}
+            </div>
+            <div className="at-stat__label">هزینه‌ی دوره</div>
+          </div>
+        </div>
+        <div className="at-stat">
+          <div className="at-stat__ico at-stat__ico--amber">
+            <HiOutlineDocumentText className="size-4" />
+          </div>
+          <div className="at-stat__main">
+            <div className="at-stat__value">
+              {subscription.postsRemaining}{" "}
+              <span className="text-[color:var(--at-fg-subtle)] text-sm font-medium">
+                از {subscription.postsTotal}
+              </span>
+            </div>
+            <div className="at-stat__label">پست‌های باقی‌مانده</div>
+          </div>
+        </div>
+        <div className="at-stat">
+          <div className="at-stat__ico at-stat__ico--blue">
+            <HiOutlineCalendarDays className="size-4" />
+          </div>
+          <div className="at-stat__main">
+            <div className="at-stat__value" style={{ fontSize: '15px' }}>
+              {subscription.renewDate}
+            </div>
+            <div className="at-stat__label">تمدید خودکار</div>
+          </div>
+        </div>
       </div>
-      <div className="border-t border-neutral-200 dark:border-neutral-900">
-        <dl>
-          {data.map((item, index) => {
-            return (
-              <div
-                key={index}
-                className={`${
-                  index % 2 === 0
-                    ? "bg-neutral-50 dark:bg-neutral-800"
-                    : "bg-white dark:bg-neutral-900"
-                } px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6`}
-              >
-                <dt className="text-sm font-medium text-neutral-500 dark:text-neutral-300">
-                  {item.name}
-                </dt>
-                <dd className="mt-1 text-sm text-neutral-900 dark:text-neutral-200 font-medium sm:mt-0 sm:col-span-2">
-                  {item.content}
-                </dd>
-              </div>
-            );
-          })}
-        </dl>
+
+      {/* Details section */}
+      <div className="at-form-section">
+        <div className="at-form-section__head">
+          <div className="at-form-section__title">
+            <span className="at-form-section__ico">
+              <HiOutlineCreditCard className="size-4" />
+            </span>
+            <div>
+              <div className="at-form-section__title-text">جزئیات پلن</div>
+              <div className="at-form-section__sub">اطلاعات کامل اشتراک فعال شما</div>
+            </div>
+          </div>
+          <span className="at-badge at-badge--published">{subscription.status}</span>
+        </div>
+
+        <div className="at-form-section__body">
+          <dl className="grid gap-0 divide-y divide-[color:var(--at-line)]">
+            <div className="flex items-center justify-between py-3.5 gap-4">
+              <dt className="text-sm text-[color:var(--at-fg-muted)]">نام پلن</dt>
+              <dd className="text-sm font-semibold text-[color:var(--at-fg)]">
+                {subscription.plan}
+              </dd>
+            </div>
+            <div className="flex items-center justify-between py-3.5 gap-4">
+              <dt className="text-sm text-[color:var(--at-fg-muted)]">شرح پلن</dt>
+              <dd className="text-sm text-[color:var(--at-fg-muted)] text-end max-w-[60%]">
+                {subscription.planSub}
+              </dd>
+            </div>
+            <div className="flex items-center justify-between py-3.5 gap-4">
+              <dt className="text-sm text-[color:var(--at-fg-muted)]">هزینه و صورتحساب</dt>
+              <dd className="text-sm font-semibold text-[color:var(--at-fg)] font-mono" dir="ltr">
+                {subscription.price}
+              </dd>
+            </div>
+            <div className="flex items-center justify-between py-3.5 gap-4">
+              <dt className="text-sm text-[color:var(--at-fg-muted)]">سهمیه پست‌ها</dt>
+              <dd className="text-sm font-semibold text-[color:var(--at-fg)]">
+                {subscription.postsRemaining} پست باقی‌مانده
+              </dd>
+            </div>
+            <div className="flex items-center justify-between py-3.5 gap-4">
+              <dt className="text-sm text-[color:var(--at-fg-muted)]">تاریخ تمدید</dt>
+              <dd className="text-sm font-semibold text-[color:var(--at-fg)]">
+                {subscription.renewDate}
+              </dd>
+            </div>
+          </dl>
+        </div>
       </div>
     </div>
   );
 };
 
-export default DashboardSubcription;
+export default DashboardSubscription;

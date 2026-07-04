@@ -2,11 +2,10 @@
 
 import { useState } from 'react';
 import { Activity, BarChart3, Terminal, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import dynamic from 'next/dynamic';
 import { ReportsSkeleton } from '@/components/Skeletons';
-import { cn } from '@/lib/utils';
 import { PageHeader } from '@/components/Dashboard/primitives';
+import { HiOutlineSquares2X2, HiOutlineChartBar, HiOutlineCommandLine } from 'react-icons/hi2';
 
 const SystemReports = dynamic(() => import('@/components/Dashboard/Reports/SystemReports'), {
   loading: () => <ReportsSkeleton />,
@@ -38,133 +37,74 @@ export default function ReportsPage() {
     {
       id: 'overview',
       label: 'نمای کلی',
-      icon: <BarChart3 className="w-4 h-4" />,
+      icon: HiOutlineSquares2X2,
       component: <SystemReports />,
-      gradient: 'from-blue-500 to-indigo-600',
     },
     {
       id: 'activity',
       label: 'گزارش فعالیت‌ها',
-      icon: <Activity className="w-4 h-4" />,
+      icon: HiOutlineChartBar,
       component: <ActivityLog />,
-      gradient: 'from-emerald-500 to-teal-600',
     },
     {
       id: 'logs',
       label: 'لاگ‌های سیستم',
-      icon: <Terminal className="w-4 h-4" />,
+      icon: HiOutlineCommandLine,
       component: <SystemLogsData />,
-      gradient: 'from-amber-500 to-orange-600',
     },
   ];
 
   const activeTabData = tabs.find((tab) => tab.id === activeTab);
 
   return (
-    <div className="min-h-screen py-6 md:py-8 lg:py-10 px-4 md:px-6" dir="rtl">
-      <div className="max-w-7xl mx-auto space-y-8">
-        <PageHeader
-          breadcrumb={[
-            { label: 'داشبورد', href: '/dashboard' },
-            { label: 'گزارش‌ها' },
-          ]}
-          title="گزارش‌ها"
-          description="گزارش‌های سیستمی و فعالیت‌ها"
-          actions={
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className={cn(
-                'relative w-11 h-11 rounded-xl border-2 border-[rgb(var(--c-primary-200))]',
-                'bg-white/80 backdrop-blur-sm shadow-lg shadow-[rgb(var(--c-primary-200))]/20',
-                'hover:bg-[rgb(var(--c-primary-50))] hover:border-[rgb(var(--c-primary-300))]',
-                'hover:shadow-xl hover:shadow-[rgb(var(--c-primary-300))]/30',
-                'transition-all duration-300 ease-out',
-                'group'
-              )}
+    <div className="at-page" dir="rtl">
+      <PageHeader
+        breadcrumb={[
+          { label: 'داشبورد', href: '/dashboard' },
+          { label: 'گزارش‌ها' },
+        ]}
+        eyebrow="تحلیل"
+        title="گزارش‌ها"
+        description="گزارش‌های سیستمی، فعالیت‌ها و لاگ‌های رویداد"
+        actions={
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="at-btn at-btn--icon"
+            aria-label="به‌روزرسانی"
+            title="به‌روزرسانی"
+          >
+            <RefreshCw className={`size-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </button>
+        }
+      />
+
+      {/* Tab bar — atelier */}
+      <nav className="at-form-tabs" role="tablist" style={{ marginBottom: '18px' }}>
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => setActiveTab(tab.id)}
+              className={`at-form-tab ${isActive ? 'is-active' : ''}`}
             >
-              <RefreshCw
-                className={cn(
-                  'w-5 h-5 text-[rgb(var(--c-primary-600))] group-hover:text-[rgb(var(--c-primary-700))]',
-                  'transition-all duration-300',
-                  isRefreshing && 'animate-spin'
-                )}
-              />
-            </Button>
-          }
-        />
+              <Icon className="size-4" />
+              {tab.label}
+            </button>
+          );
+        })}
+      </nav>
 
-        {/* Tabs Navigation */}
-        <nav className="relative">
-          <div className="flex flex-wrap gap-3">
-            {tabs.map((tab) => {
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setActiveTab(tab.id)}
-                  className={cn(
-                    'relative flex items-center gap-2.5 px-5 py-3 rounded-xl font-medium text-sm',
-                    'transition-all duration-300 ease-out',
-                    'focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--c-primary-500))] focus-visible:ring-offset-2',
-                    isActive
-                      ? [
-                          'bg-gradient-to-l',
-                          tab.gradient,
-                          'text-white shadow-lg',
-                          'hover:shadow-xl hover:scale-[1.02]',
-                        ]
-                      : [
-                          'bg-white/70 backdrop-blur-sm',
-                          'border border-[rgb(var(--c-primary-200))]',
-                          'text-[rgb(var(--c-primary-700))]',
-                          'hover:bg-white hover:border-[rgb(var(--c-primary-300))]',
-                          'hover:shadow-md hover:shadow-[rgb(var(--c-primary-200))]/30',
-                        ]
-                  )}
-                >
-                  <span
-                    className={cn(
-                      'transition-transform duration-300',
-                      isActive && 'scale-110'
-                    )}
-                  >
-                    {tab.icon}
-                  </span>
-                  <span>{tab.label}</span>
-                  {isActive && (
-                    <span className="absolute inset-0 rounded-xl bg-white/10 animate-pulse" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </nav>
-
-        {/* Content Area */}
-        <main className="relative">
-          {/* Glass Card Container */}
-          <div className="dash-panel relative overflow-hidden">
-            {/* Top Gradient Line */}
-            <div
-              className={cn(
-                'absolute top-0 inset-x-0 h-1 bg-gradient-to-l',
-                activeTabData?.gradient || 'from-blue-500 to-indigo-600'
-              )}
-            />
-
-            {/* Inner Glow Effect */}
-            <div className="absolute inset-0 bg-gradient-to-b from-white/40 to-transparent dark:from-white/[0.03] pointer-events-none" />
-
-            {/* Content */}
-            <div className="relative p-6 md:p-8 lg:p-10 min-h-[500px]">
-              {activeTabData?.component}
-            </div>
-          </div>
-        </main>
+      {/* Content card */}
+      <div className="at-form-section">
+        <div className="at-form-section__body" style={{ minHeight: '480px' }}>
+          {activeTabData?.component}
+        </div>
       </div>
     </div>
   );

@@ -4,7 +4,8 @@ import SearchCategories from './SearchCategories';
 import { CategoryList } from './CategoryList';
 import { getCategories, getAllParentCategories } from '@/actions/categoryActions';
 import { unstable_noStore as noStore } from 'next/cache';
-import { DashboardPageHeader } from '@/components/Dashboard/shared/DashboardTableWrapper';
+import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
+import { HiOutlineFolderOpen } from 'react-icons/hi2';
 
 export default async function CategoriesPage({
   searchParams,
@@ -30,13 +31,29 @@ export default async function CategoriesPage({
   const parentCategories = parentCategoriesResult.data || [];
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 lg:p-8" dir="rtl">
-      <DashboardPageHeader title="مدیریت دسته‌بندی‌ها" description="مشاهده و مدیریت دسته‌بندی‌های محتوا">
-        <SearchCategories />
-        <CategoryForm parentCategories={parentCategories} />
-      </DashboardPageHeader>
+    <div className="at-page" dir="rtl">
+      <PageHeader
+        eyebrow="ساختار"
+        title="مدیریت دسته‌بندی‌ها"
+        description="تعریف، ویرایش و سازماندهی درختی دسته‌بندی‌های محتوا"
+        actions={
+          <>
+            <SearchCategories />
+            <CategoryForm parentCategories={parentCategories} />
+          </>
+        }
+      />
 
-      <Suspense fallback={<div className="flex items-center justify-center py-12 text-neutral-500">در حال بارگذاری دسته‌بندی‌ها...</div>}>
+      <Suspense
+        fallback={
+          <div className="at-loading">
+            <span className="at-loading__dot" />
+            <span className="at-loading__dot" />
+            <span className="at-loading__dot" />
+            <span>در حال بارگذاری دسته‌بندی‌ها...</span>
+          </div>
+        }
+      >
         <CategoryList
           initialData={categories}
           search={search}

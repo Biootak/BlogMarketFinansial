@@ -2,19 +2,11 @@
 
 import { type FC, useCallback, useMemo } from 'react';
 import { motion } from '@/lib/motion-shim';
-import type { PostStatus } from '@prisma/client';
 import {
-  HiEllipsisVertical,
-  HiPencil,
-  HiTrash,
-  HiEye,
-  HiEyeSlash,
-  HiClipboard,
   HiCheck,
 } from 'react-icons/hi2';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { useToast } from '@/components/ui/use-toast';
 
 import PostCardSaveAction from '@/components/PostCardSaveAction/PostCardSaveAction';
 import type { PostWithRelations } from '@/types/types';
@@ -22,13 +14,6 @@ import PostCardLikeAndComment from '@/components/PostCardLikeAndComment/PostCard
 import PostCardMeta from '@/components/PostCardMeta/PostCardMeta';
 import PostStatusBadge from '../Blog/PostStatusBadge';
 import { cn } from '@/lib/utils';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 import BookmarkCheck from '../../BookmarkCheck';
 import FormattedDate from '@/components/FormattedDate';
@@ -44,58 +29,43 @@ export interface CardListProps {
   post: PostWithRelations;
   ratio?: string;
   hiddenAuthor?: boolean;
-  onDelete: (id: string) => void;
-  onStatusChange: (id: string, newStatus: PostWithRelations['status']) => Promise<boolean>;
+  onActivate?: (id: string) => void;
   selected?: boolean;
   onSelect?: (id: string) => void;
   isSelecting?: boolean;
+  isActive?: boolean;
 }
 
+/**
+ * کارت پست — الهام گرفته از `at-tile` atelier style (hairline، emerald-first).
+ *
+ * Design choices:
+ *   - container: `at-tile` (hairline border + ملایم shadow + radius-lg)
+ *   - aspect ratio تصویر 4:3، `overflow-hidden` (همون at-tile)
+ *   - status badge absolute بالا چپ
+ *   - footer مثل at-posts__row (hairline separator + small icons)
+ *   - active state: border emerald + ملایم glow (var(--at-accent))
+ *   - selection state: border violet (var(--at-violet)) با checkmark badge
+ *
+ * Interactive logic:
+ *   - کلیک روی فضای خالی کارت (نه لینک/دکمه) → activate
+ *   - کلیک روی عنوان = navigation به blog post
+ *   - کلیک روی bookmark/like/comment = همون کار خودشون (skip activate)
+ *   - در حالت selecting: کلیک = toggle selection
+ */
 const CardList: FC<CardListProps> = ({
   className = 'h-full',
   post,
   hiddenAuthor = false,
   ratio = 'aspect-w-4 aspect-h-3',
-  onDelete,
-  onStatusChange,
+  onActivate,
   selected = false,
   onSelect,
   isSelecting = false,
+  isActive = false,
 }) => {
   const { data: session, status } = useSession();
-  const { toast } = useToast();
   const { title, id, slug, createdAt, postType, authorId } = post;
-
-  const handleDelete = useCallback(() => {
-    onDelete(id);
-  }, [id, onDelete]);
-
-  const handleStatusChange = useCallback(async () => {
-    let newStatus: PostWithRelations['status'] = 'DRAFT';
-
-    if (session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER') {
-      if (post.status === 'PUBLISHED') {
-        newStatus = 'PENDING_REVIEW';
-      } else {
-        newStatus = 'PUBLISHED';
-      }
-    } else {
-      if (post.status === 'DRAFT') {
-        newStatus = 'PENDING_REVIEW';
-      } else {
-        newStatus = 'DRAFT';
-      }
-    }
-
-    const success = await onStatusChange(post.id, newStatus as PostStatus);
-    if (success) {
-      toast({
-        variant: 'success',
-        title: 'موفقیتآمیز',
-        description: 'وضعیت پست با موفقیت تغییر کرد.',
-      });
-    }
-  }, [post.id, post.status, onStatusChange, session?.user?.role, toast]);
 
   const postMeta = useMemo(() => <PostCardMeta meta={post} />, [post]);
 
@@ -106,202 +76,153 @@ const CardList: FC<CardListProps> = ({
     session?.user?.role === 'ADMIN' ||
     (session?.user?.role === 'AUTHOR' && session?.user?.id === authorId);
 
-  const handleCardClick = useCallback(() => {
-    if (isSelecting && onSelect) {
-      onSelect(id);
-    }
-  }, [isSelecting, onSelect, id]);
+  const handleCardClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      // فقط المان‌های interactive داخلی (نه خود container) رو skip می‌کنیم.
+      // چون خود container با role="button" هست، اگه از closest استفاده کنیم
+      // خودش رو پیدا می‌کنه و همیشه return میشه.
+      const target = e.target as HTMLElement;
+      let el: HTMLElement | null = target;
+      while (el && el !== e.currentTarget) {
+        const tag = el.tagName;
+        if (
+          tag === 'A' ||
+          tag === 'BUTTON' ||
+          tag === 'INPUT' ||
+          tag === 'LABEL' ||
+          el.getAttribute('role') === 'button' ||
+          el.getAttribute('role') === 'link'
+        ) {
+          return;
+        }
+        el = el.parentElement;
+      }
+
+      if (isSelecting) {
+        onSelect?.(id);
+      } else {
+        onActivate?.(id);
+      }
+    },
+    [isSelecting, onSelect, onActivate, id],
+  );
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={isSelecting ? undefined : { y: -6, scale: 1.01 }}
-      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-      className={cn('group relative', className)}
+      whileHover={isSelecting ? undefined : { y: -2 }}
+      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      className={cn('relative', className)}
       onClick={handleCardClick}
-      role={isSelecting ? 'button' : undefined}
-      tabIndex={isSelecting ? 0 : undefined}
-      onKeyDown={
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e: React.KeyboardEvent) => {
+        if (e.key === ' ' && !isSelecting) {
+          e.preventDefault();
+          onActivate?.(id);
+        }
+        if ((e.key === ' ' || e.key === 'Enter') && isSelecting) {
+          e.preventDefault();
+          onSelect?.(id);
+        }
+      }}
+      aria-pressed={isActive}
+      aria-label={
         isSelecting
-          ? (e: React.KeyboardEvent) => {
-              if (e.key === ' ' || e.key === 'Enter') {
-                e.preventDefault();
-                onSelect?.(id);
-              }
-            }
-          : undefined
+          ? `${selected ? 'لغو انتخاب' : 'انتخاب'} ${title}`
+          : `${isActive ? 'لغو فعال‌سازی' : 'فعال‌سازی'} ${title}`
       }
-      aria-label={isSelecting ? `${selected ? 'لغو انتخاب' : 'انتخاب'} ${title}` : undefined}
     >
-      {/* Card Container */}
+      {/* ── Container — at-tile with state variants ── */}
       <div
         className={cn(
-          'dash-panel relative flex flex-col h-full overflow-hidden transition-all duration-300',
-          isSelecting && 'cursor-pointer',
-          isSelecting && selected && 'ring-2 ring-violet-500 dark:ring-violet-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-900',
+          'at-tile relative flex flex-col h-full cursor-pointer transition-all duration-200',
+          'ease-[cubic-bezier(0.22,1,0.36,1)]',
+          // active state: emerald accent
+          isActive &&
+            !isSelecting &&
+            cn(
+              'border-[color:var(--at-accent)]',
+              'shadow-[0_0_0_1px_var(--at-accent),var(--at-shadow-hover)]',
+            ),
+          // selection state: violet
+          isSelecting && selected && 'border-[color:var(--at-violet)]',
         )}
       >
-        {/* Hover glow effect */}
-        <div
-          className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-          style={{
-            background: 'radial-gradient(circle at 50% 0%, rgba(139,92,246,0.08), transparent 70%)',
-          }}
-        />
-
-        {/* Selection checkbox overlay */}
-        {isSelecting && (
-          <div className="absolute top-3 left-3 z-30">
-            <div
-              className={cn(
-                'w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-200',
-                selected
-                  ? 'bg-violet-500 border-violet-500 text-white'
-                  : 'bg-white/90 dark:bg-slate-800/90 border-slate-300 dark:border-slate-600',
-              )}
-            >
-              {selected && <HiCheck className="w-4 h-4" />}
-            </div>
-          </div>
-        )}
-
-        {/* Image Section */}
+        {/* ── Image Section ── */}
         <div className={cn('relative flex-shrink-0 w-full overflow-hidden', ratio)}>
           <PostFeaturedMedia post={post} />
 
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          {/* subtle gradient overlay (atelier hover) */}
+          <div
+            className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"
+            aria-hidden
+          />
 
-          {/* Status Badge */}
-          <div className="absolute top-3 right-3 z-10">
+          {/* Status Badge — top-end */}
+          <div className="absolute top-3 end-3 z-10">
             <PostStatusBadge status={post.status} />
           </div>
 
-          {/* Actions Menu */}
-          {canEditPost && !isSelecting && (
-            <div className="absolute top-3 left-3 z-20">
-              <DropdownMenu dir="rtl">
-                <DropdownMenuTrigger
-                  className="focus:outline-none"
-                  aria-label="گزینههای بیشتر"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <motion.div
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="w-9 h-9 rounded-xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm flex items-center justify-center shadow-lg border border-white/20 hover:bg-white dark:hover:bg-slate-700 transition-colors duration-200"
-                  >
-                    <HiEllipsisVertical className="w-4 h-4 text-slate-700 dark:text-slate-300" />
-                  </motion.div>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="rounded-xl border-slate-200 dark:border-slate-700 shadow-xl w-48">
-                  {/* Status change */}
-                  {(session?.user?.role === 'ADMIN' ||
-                    session?.user?.role === 'OWNER' ||
-                    post.authorId === session?.user?.id) && (
-                    <>
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleStatusChange();
-                        }}
-                        className="rounded-lg cursor-pointer gap-2"
-                      >
-                        {post.status === 'PUBLISHED' ? (
-                          <>
-                            <HiEyeSlash className="w-4 h-4" />
-                            {session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER'
-                              ? 'تغییر به در انتظار بررسی'
-                              : 'پیشنویس کردن'}
-                          </>
-                        ) : post.status === 'DRAFT' ? (
-                          <>
-                            <HiClipboard className="w-4 h-4" />
-                            ارسال برای بررسی
-                          </>
-                        ) : (
-                          <>
-                            {session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER' ? (
-                              <>
-                                <HiEye className="w-4 h-4" />
-                                انتشار
-                              </>
-                            ) : (
-                              <>
-                                <HiPencil className="w-4 h-4" />
-                                برگشت به پیشنویس
-                              </>
-                            )}
-                          </>
-                        )}
-                      </DropdownMenuItem>
-
-                      {/* Edit */}
-                      <DropdownMenuItem asChild className="rounded-lg cursor-pointer gap-2">
-                        <Link
-                          href={`/dashboard/posts/edit/${post.id}`}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <HiPencil className="w-4 h-4" />
-                          ویرایش
-                        </Link>
-                      </DropdownMenuItem>
-
-                      <DropdownMenuSeparator />
-
-                      {/* Delete */}
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete();
-                        }}
-                        className="text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 rounded-lg cursor-pointer gap-2 focus:bg-rose-50 dark:focus:bg-rose-900/20"
-                      >
-                        <HiTrash className="w-4 h-4" />
-                        حذف پست
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+          {/* Selection checkbox — top-start (فقط در selection mode) */}
+          {isSelecting && (
+            <div className="absolute top-3 start-3 z-10">
+              <div
+                className={cn(
+                  'w-6 h-6 rounded-[8px] border-2 flex items-center justify-center transition-all duration-200',
+                  selected
+                    ? 'bg-[color:var(--at-violet)] border-[color:var(--at-violet)] text-white'
+                    : 'bg-white/90 dark:bg-slate-900/90 border-[color:var(--at-line-strong)]',
+                )}
+              >
+                {selected && <HiCheck className="w-4 h-4" />}
+              </div>
             </div>
           )}
         </div>
 
-        {/* Content Section */}
-        <div className="relative p-4 flex flex-col flex-grow">
+        {/* ── Content Section ── */}
+        <div className="relative flex flex-col flex-grow px-4 pt-3 pb-4">
           {/* Meta info */}
           {!hiddenAuthor ? (
             postMeta
           ) : (
-            <span className="text-xs text-slate-500 dark:text-slate-400">
+            <span className="text-xs text-[color:var(--at-fg-subtle)]">
               <FormattedDate date={createdAt} />
             </span>
           )}
 
-          {/* Title */}
-          <h3 className="mt-2.5 mb-3 text-sm font-bold text-slate-900 dark:text-white leading-relaxed group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors duration-300">
+          {/* Title — like at-posts__feature-title */}
+          <h3 className="mt-2 mb-3 text-sm font-bold text-[color:var(--at-fg)] leading-relaxed line-clamp-2" dir="rtl">
             <Link
               href={getPostLink(postType, slug)}
-              className="line-clamp-2 relative z-10 hover:underline"
+              className={cn(
+                'relative z-10 transition-colors duration-200',
+                'hover:text-[color:var(--at-accent)]',
+              )}
               title={title}
               onClick={(e) => isSelecting && e.preventDefault()}
-              tabIndex={isSelecting ? -1 : undefined}
+              tabIndex={isSelecting ? -1 : 0}
             >
               {title}
             </Link>
           </h3>
 
-          {/* Footer Actions */}
-          <div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-100 dark:border-slate-800">
+          {/* Footer Actions — like at-posts__row */}
+          <div className="flex items-center justify-between mt-auto pt-3 border-t border-[color:var(--at-line)]">
             <BookmarkCheck post={post}>
               {(isBookmarked) => (
                 <PostCardSaveAction
                   className="relative z-10"
                   postId={post.id}
                   initialBookmarked={isBookmarked}
-                  bookmarkClass="h-8 w-8 rounded-lg bg-slate-50 hover:bg-violet-50 dark:bg-slate-800 dark:hover:bg-violet-900/30 transition-colors duration-200"
+                  bookmarkClass={cn(
+                    'h-8 w-8 rounded-[8px]',
+                    'bg-[color:var(--at-bg-elevated)]',
+                    'hover:bg-[color:var(--at-accent-soft)] hover:text-[color:var(--at-accent)]',
+                    'transition-colors duration-200 text-[color:var(--at-fg-muted)]',
+                  )}
                 />
               )}
             </BookmarkCheck>

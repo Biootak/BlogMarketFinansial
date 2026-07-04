@@ -8,14 +8,6 @@ import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useToast } from '@/components/ui/use-toast';
 import LoadingMore from '@/components/LoadingMore';
 import { HiOutlineFolderOpen } from 'react-icons/hi2';
-import {
-  DashboardTableContainer,
-  DashboardTable,
-  DashboardTableHeader,
-  DashboardTableHead,
-  DashboardTableBody,
-  EmptyState,
-} from '@/components/Dashboard/shared/DashboardTableWrapper';
 
 interface CategoryListProps {
   initialData:
@@ -91,32 +83,42 @@ export function CategoryList({
 
   if (categories.length === 0) {
     return (
-      <DashboardTableContainer>
-        <EmptyState
-          title="دسته‌بندی یافت نشد"
-          description="هنوز هیچ دسته‌بندی در سیستم ثبت نشده است."
-          icon={<HiOutlineFolderOpen className="h-8 w-8 text-neutral-400" />}
-        />
-      </DashboardTableContainer>
+      <div className="at-table">
+        <div className="at-empty">
+          <div className="at-empty__ico">
+            <HiOutlineFolderOpen className="size-5" />
+          </div>
+          <div className="at-empty__title">دسته‌بندی یافت نشد</div>
+          <div className="at-empty__sub">هنوز هیچ دسته‌بندی در سیستم ثبت نشده است.</div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <DashboardTableContainer>
-      <DashboardTable>
-        <DashboardTableHeader>
-          <tr>
-            <DashboardTableHead>تصویر</DashboardTableHead>
-            <DashboardTableHead>نام</DashboardTableHead>
-            <DashboardTableHead>اسلاگ</DashboardTableHead>
-            <DashboardTableHead hidden>تعداد پست‌ها</DashboardTableHead>
-            <DashboardTableHead>عملیات</DashboardTableHead>
-          </tr>
-        </DashboardTableHeader>
-        <DashboardTableBody>{renderCategories(categories)}</DashboardTableBody>
-      </DashboardTable>
+    <div className="at-table">
+      <div className="at-table__scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>تصویر</th>
+              <th>نام</th>
+              <th>اسلاگ</th>
+              <th className="hidden sm:table-cell">تعداد پست‌ها</th>
+              <th>عملیات</th>
+            </tr>
+          </thead>
+          <tbody>{renderCategories(categories)}</tbody>
+        </table>
+      </div>
       {isLoading && <LoadingMore message="در حال دریافت دسته‌بندی‌های بیشتر..." />}
+      <div className="at-table__foot">
+        <span>
+          {categories.length} از {initialData.totalCount} دسته‌بندی
+        </span>
+        {hasNextPage && <span>اسکرول برای بارگذاری بیشتر</span>}
+      </div>
       <div ref={elementRef} style={{ height: '20px' }} />
-    </DashboardTableContainer>
+    </div>
   );
 }

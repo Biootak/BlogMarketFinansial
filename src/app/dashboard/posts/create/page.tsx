@@ -35,14 +35,16 @@ export default async function CreatePostPage() {
         title="ایجاد پست جدید"
         description="نوشتن و انتشار پست جدید"
       />
-      <Suspense fallback={<SkeletonLoader variant="text" count={6} />}>
-        <CreatePostForm
-          initialCategories={initialCategories}
-          initialTags={initialTags}
-          totalCategories={totalCategories}
-          totalTags={totalTags}
-        />
-      </Suspense>
+      <div className="at-form" style={{ padding: 0 }}>
+        <Suspense fallback={<SkeletonLoader variant="text" count={6} />}>
+          <CreatePostForm
+            initialCategories={initialCategories}
+            initialTags={initialTags}
+            totalCategories={totalCategories}
+            totalTags={totalTags}
+          />
+        </Suspense>
+      </div>
     </div>
   );
 }

@@ -9,6 +9,7 @@ import {
 import { getAllHeaderAds } from '@/actions/headerAdActions';
 import HeaderAdsClient, { type HeaderAdData } from '@/app/dashboard/header-ad/HeaderAdsClient';
 import BannerADS from '@/components/BannerADS/BannerADS';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import {
   ActionButton,
   DashboardPageHeader,
@@ -67,6 +68,9 @@ import {
   HiOutlineMegaphone,
   HiOutlinePencil,
   HiOutlinePlus,
+  HiOutlineCheckCircle,
+  HiOutlineRectangleStack,
+  HiMagnifyingGlass,
   HiOutlineTrash,
 } from 'react-icons/hi2';
 import * as z from 'zod';
@@ -285,85 +289,129 @@ export default function AdvertisementsPage() {
   };
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 lg:p-8" dir="rtl">
-      <DashboardPageHeader
+    <div className="at-page" dir="rtl">
+      <PageHeader
+        breadcrumb={[
+          { label: 'داشبورد', href: '/dashboard' },
+          { label: 'تبلیغات' },
+        ]}
+        eyebrow="محتوا"
         title={activeTab === 'header' ? 'تبلیغ بالای هدر' : 'مدیریت تبلیغات'}
         description={
           activeTab === 'header'
             ? 'نوار باریک تبلیغ که در بالای سایت نمایش داده می‌شود. فقط یک تبلیغ فعال در لحظه.'
             : 'مشاهده و مدیریت تبلیغات سایت'
         }
-      >
-        {activeTab === 'advertisements' && (
-          <>
-            <DashboardSearchInput
-              value={searchTerm}
-              onChange={setSearchTerm}
-              placeholder="جستجوی تبلیغ..."
-            />
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <PrimaryActionButton onClick={openNewAdDialog}>
-                  <HiOutlinePlus className="h-4 w-4 transition-transform duration-300 group-hover:rotate-90" />
-                  <span>افزودن تبلیغ</span>
-                </PrimaryActionButton>
-              </DialogTrigger>
-              <DialogContent
-                className="max-h-[90vh] w-full max-w-5xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95"
-                dir="rtl"
-              >
-                <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-6 py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
-                  <DialogTitle className="text-xl font-bold text-neutral-900 dark:text-neutral-50">
-                    {editingAd ? 'ویرایش تبلیغ' : 'افزودن تبلیغ جدید'}
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="max-h-[calc(90vh-120px)] overflow-y-auto p-6">
-                  <AdvertisementForm form={form} onSubmit={onSubmit} />
-                </div>
-              </DialogContent>
-            </Dialog>
-          </>
-        )}
-      </DashboardPageHeader>
+        actions={
+          activeTab === 'advertisements' ? (
+            <>
+              <div className="at-filterbar__search" style={{ minWidth: '240px' }}>
+                <input
+                  type="text"
+                  placeholder="جستجوی تبلیغ..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <HiMagnifyingGlass className="at-filterbar__search__ico size-4" />
+              </div>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <button onClick={openNewAdDialog} className="at-btn at-btn--primary">
+                    <HiOutlinePlus className="size-4" />
+                    <span>افزودن تبلیغ</span>
+                  </button>
+                </DialogTrigger>
+                <DialogContent
+                  className="at-dialog-content max-h-[90vh] w-full max-w-5xl p-0 overflow-hidden"
+                  dir="rtl"
+                >
+                  <div className="at-dialog-header">
+                    <div className="at-dialog-title">
+                      <span className="at-dialog-title__ico">
+                        <HiOutlineMegaphone className="size-4" />
+                      </span>
+                      <div>
+                        <div>{editingAd ? 'ویرایش تبلیغ' : 'افزودن تبلیغ جدید'}</div>
+                        <div className="at-dialog-sub">محتوا، جایگاه و زمان‌بندی نمایش</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="at-dialog-body" style={{ padding: '20px 22px' }}>
+                    <AdvertisementForm form={form} onSubmit={onSubmit} />
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </>
+          ) : null
+        }
+      />
 
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="mt-4">
-        <TabsList>
-          <TabsTrigger value="advertisements">تبلیغات</TabsTrigger>
-          <TabsTrigger value="header">تبلیغ هدر</TabsTrigger>
-        </TabsList>
-        <TabsContent value="advertisements">
-          {/* Summary Stats Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div className="dash-panel dash-panel--hover p-4">
-              <div className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-                کل تبلیغات
+      {/* Tabs — atelier */}
+      <nav className="at-form-tabs" role="tablist" style={{ marginBottom: '18px' }}>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'advertisements'}
+          onClick={() => handleTabChange('advertisements')}
+          className={`at-form-tab ${activeTab === 'advertisements' ? 'is-active' : ''}`}
+        >
+          تبلیغات
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'header'}
+          onClick={() => handleTabChange('header')}
+          className={`at-form-tab ${activeTab === 'header' ? 'is-active' : ''}`}
+        >
+          تبلیغ هدر
+        </button>
+      </nav>
+
+      {activeTab === 'advertisements' && (
+        <>
+          {/* KPI strip — atelier */}
+          <div className="at-stats">
+            <div className="at-stat">
+              <div className="at-stat__ico">
+                <HiOutlineMegaphone className="size-4" />
               </div>
-              <div className="text-2xl font-bold mt-1 text-neutral-900 dark:text-white tabular-nums">
-                {toPersianNumber(ads.length)}
+              <div className="at-stat__main">
+                <div className="at-stat__value">{toPersianNumber(ads.length)}</div>
+                <div className="at-stat__label">کل تبلیغات</div>
               </div>
             </div>
-            <div className="dash-panel dash-panel--hover p-4">
-              <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                تبلیغات فعال
+            <div className="at-stat">
+              <div className="at-stat__ico at-stat__ico--emerald" style={{ background: 'var(--at-accent-soft)', color: 'var(--at-accent)' }}>
+                <HiOutlineCheckCircle className="size-4" />
               </div>
-              <div className="text-2xl font-bold mt-1 text-emerald-600 dark:text-emerald-400 tabular-nums">
-                {toPersianNumber(ads.filter((a) => a.isActive).length)}
-              </div>
-            </div>
-            <div className="dash-panel dash-panel--hover p-4">
-              <div className="text-xs font-semibold text-primary-600 dark:text-primary-400">
-                جایگاه سربرگ
-              </div>
-              <div className="text-2xl font-bold mt-1 text-primary-600 dark:text-primary-400 tabular-nums">
-                {toPersianNumber(ads.filter((a) => a.position === 'HEADER').length)}
+              <div className="at-stat__main">
+                <div className="at-stat__value" style={{ color: 'var(--at-accent)' }}>
+                  {toPersianNumber(ads.filter((a) => a.isActive).length)}
+                </div>
+                <div className="at-stat__label">تبلیغات فعال</div>
               </div>
             </div>
-            <div className="dash-panel dash-panel--hover p-4">
-              <div className="text-xs font-semibold text-amber-600 dark:text-amber-400">
-                سایر جایگاه‌ها
+            <div className="at-stat">
+              <div className="at-stat__ico at-stat__ico--blue">
+                <HiOutlineRectangleStack className="size-4" />
               </div>
-              <div className="text-2xl font-bold mt-1 text-amber-600 dark:text-amber-400 tabular-nums">
-                {toPersianNumber(ads.filter((a) => a.position !== 'HEADER').length)}
+              <div className="at-stat__main">
+                <div className="at-stat__value" style={{ color: 'var(--at-info)' }}>
+                  {toPersianNumber(ads.filter((a) => a.position === 'HEADER').length)}
+                </div>
+                <div className="at-stat__label">جایگاه سربرگ</div>
+              </div>
+            </div>
+            <div className="at-stat">
+              <div className="at-stat__ico at-stat__ico--amber">
+                <HiOutlineRectangleStack className="size-4" />
+              </div>
+              <div className="at-stat__main">
+                <div className="at-stat__value" style={{ color: 'var(--at-warning)' }}>
+                  {toPersianNumber(ads.filter((a) => a.position !== 'HEADER').length)}
+                </div>
+                <div className="at-stat__label">سایر جایگاه‌ها</div>
               </div>
             </div>
           </div>
@@ -480,15 +528,16 @@ export default function AdvertisementsPage() {
               <div ref={infiniteScrollRef} style={{ height: '1px' }} />
             </DashboardTableContainer>
           )}
-        </TabsContent>
-        <TabsContent value="header">
-          {isHeaderAdsLoading ? (
-            <AdvertisementsSkeleton />
-          ) : (
-            <HeaderAdsClient initialAds={headerAds} onRefresh={fetchHeaderAds} />
-          )}
-        </TabsContent>
-      </Tabs>
+        </>
+      )}
+
+      {activeTab === 'header' && (
+        isHeaderAdsLoading ? (
+          <AdvertisementsSkeleton />
+        ) : (
+          <HeaderAdsClient initialAds={headerAds} onRefresh={fetchHeaderAds} />
+        )
+      )}
     </div>
   );
 }

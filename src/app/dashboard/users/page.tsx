@@ -2,37 +2,22 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useForm, type UseFormReturn, type SubmitHandler } from 'react-hook-form';
-import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineUsers } from 'react-icons/hi2';
+import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineUsers, HiOutlineUser, HiOutlineEnvelope, HiOutlineLockClosed, HiOutlinePhone, HiOutlineUserGroup, HiOutlineCheckCircle } from 'react-icons/hi2';
 import Image from 'next/image';
 import { getUsers, createUser, updateUser, deleteUser } from '@/actions/userActions';
 import type { Role, UserWithProfile } from '@/types/types';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/components/ui/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
 import SubmitButton from '@/components/SubmitButton';
 import LoadingMore from '@/components/LoadingMore';
 import { UsersTableSkeleton } from '@/components/Skeletons';
 import { useSession } from 'next-auth/react';
 import { PageHeader } from '@/components/Dashboard/primitives';
-import {
-  DashboardSearchInput,
-  DashboardTableContainer,
-  DashboardTable,
-  DashboardTableHeader,
-  DashboardTableHead,
-  DashboardTableBody,
-  DashboardTableRow,
-  DashboardTableCell,
-  StatusBadge,
-  ActionButton,
-  PrimaryActionButton,
-  EmptyState,
-  FilterSelect,
-} from '@/components/Dashboard/shared/DashboardTableWrapper';
+import { HiMagnifyingGlass } from 'react-icons/hi2';
 
 type FormData = {
   name: string;
@@ -63,14 +48,26 @@ const statusLabels: Record<string, string> = {
   Rejected: 'رد شده',
 };
 
-
-const getStatusVariant = (status: string) => {
+const getAtBadgeVariant = (status?: string | null) => {
   switch (status) {
-    case 'Active': return 'success';
-    case 'Pending': return 'warning';
-    case 'Banned': return 'danger';
-    case 'Rejected': return 'default';
-    default: return 'default';
+    case 'Active': return 'published' as const;
+    case 'Pending': return 'pending' as const;
+    case 'Banned': return 'danger' as const;
+    case 'Rejected': return 'draft' as const;
+    default: return 'draft' as const;
+  }
+};
+
+const getRoleBadgeStyle = (role?: string) => {
+  switch (role) {
+    case 'OWNER':
+      return 'background:var(--at-gold-soft); color:var(--at-gold-fg); border-color:color-mix(in oklch, var(--at-gold) 28%, transparent);';
+    case 'ADMIN':
+      return 'background:color-mix(in oklch, var(--at-info) 12%, var(--at-bg)); color:var(--at-info); border-color:color-mix(in oklch, var(--at-info) 28%, transparent);';
+    case 'AUTHOR':
+      return 'background:var(--at-accent-soft); color:var(--at-accent-fg); border-color:color-mix(in oklch, var(--at-accent) 25%, transparent);';
+    default:
+      return '';
   }
 };
 
@@ -179,12 +176,6 @@ export default function UsersPage() {
       status: user.status as string,
       phoneNumber: user?.phoneNumber ?? '',
       company: user.profile?.company || '',
-      // 2026-06-24: must include ALL fields declared in defaultValues,
-      // otherwise `form.reset({...})` replaces the form state and any
-      // missing field becomes `undefined` — which makes the next render
-      // of the corresponding `<Input>` transition from uncontrolled
-      // (value=undefined) to controlled (value='') and React logs:
-      // "A component is changing an uncontrolled input to be controlled".
       password: '',
     });
     setIsEditDialogOpen(true);
@@ -252,136 +243,241 @@ export default function UsersPage() {
     ...(currentUserRole === 'OWNER' ? [{ value: 'OWNER', label: 'مالک' }] : []),
   ];
 
-
   return (
-    <div className="min-h-screen p-4 sm:p-6 lg:p-8" dir="rtl">
+    <div className="at-page" dir="rtl">
       <PageHeader
         breadcrumb={[
           { label: 'داشبورد', href: '/dashboard' },
           { label: 'کاربران' },
         ]}
+        eyebrow="تیم"
         title="کاربران"
-        description="مدیریت کاربران و دسترسی‌ها"
+        description="مدیریت اعضا، نقش‌ها و دسترسی‌ها"
         actions={
-          <Button onClick={() => { setEditingUser(null); form.reset(); setIsDialogOpen(true); }}>
+          <button
+            onClick={() => { setEditingUser(null); form.reset(); setIsDialogOpen(true); }}
+            className="at-btn at-btn--primary"
+          >
+            <HiOutlinePlus className="size-4" />
             افزودن کاربر
-          </Button>
+          </button>
         }
       />
 
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        <FilterSelect value={statusFilter} onChange={setStatusFilter} options={statusOptions} />
-        <FilterSelect value={roleFilter} onChange={setRoleFilter} options={roleOptions} />
-        <DashboardSearchInput
-          value={searchTerm}
-          onChange={setSearchTerm}
-          placeholder="جستجوی کاربر..."
-        />
+      {/* KPI strip — atelier */}
+      <div className="at-stats">
+        <div className="at-stat">
+          <div className="at-stat__ico">
+            <HiOutlineUsers className="size-4" />
+          </div>
+          <div className="at-stat__main">
+            <div className="at-stat__value">{users.length}</div>
+            <div className="at-stat__label">کاربران این صفحه</div>
+          </div>
+        </div>
+        <div className="at-stat">
+          <div className="at-stat__ico at-stat__ico--amber">
+            <HiOutlineUserGroup className="size-4" />
+          </div>
+          <div className="at-stat__main">
+            <div className="at-stat__value">
+              {users.filter(u => u.status === 'Pending').length}
+            </div>
+            <div className="at-stat__label">در انتظار فعال‌سازی</div>
+          </div>
+        </div>
+        <div className="at-stat">
+          <div className="at-stat__ico at-stat__ico--blue">
+            <HiOutlineCheckCircle className="size-4" />
+          </div>
+          <div className="at-stat__main">
+            <div className="at-stat__value">
+              {users.filter(u => u.status === 'Active').length}
+            </div>
+            <div className="at-stat__label">فعال</div>
+          </div>
+        </div>
+        <div className="at-stat">
+          <div className="at-stat__ico at-stat__ico--rose">
+            <HiOutlineTrash className="size-4" />
+          </div>
+          <div className="at-stat__main">
+            <div className="at-stat__value">
+              {users.filter(u => u.status === 'Banned').length}
+            </div>
+            <div className="at-stat__label">مسدود شده</div>
+          </div>
+        </div>
       </div>
 
+      {/* Filter bar — atelier */}
+      <div className="at-filterbar">
+        <div className="at-filterbar__search">
+          <input
+            type="text"
+            placeholder="جستجوی کاربر..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <HiMagnifyingGlass className="at-filterbar__search__ico size-4" />
+        </div>
+        <select
+          className="at-select"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          {statusOptions.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+        <select
+          className="at-select"
+          value={roleFilter}
+          onChange={(e) => setRoleFilter(e.target.value)}
+        >
+          {roleOptions.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* User table */}
+      <div className="at-table">
+        {isLoading && page === 1 ? (
+          <UsersTableSkeleton rows={8} />
+        ) : users.length === 0 ? (
+          <div className="at-empty">
+            <div className="at-empty__ico">
+              <HiOutlineUsers className="size-5" />
+            </div>
+            <div className="at-empty__title">کاربری یافت نشد</div>
+            <div className="at-empty__sub">هنوز هیچ کاربری در سیستم ثبت نشده است.</div>
+          </div>
+        ) : (
+          <>
+            <div className="at-table__scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>کاربر</th>
+                    <th>نقش</th>
+                    <th className="hidden sm:table-cell">وضعیت</th>
+                    <th>عملیات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user) => (
+                    <tr key={user.id}>
+                      <td>
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="at-thumb" style={{ borderRadius: '50%', width: '40px', height: '40px' }}>
+                            <Image
+                              src={
+                                user.profile?.avatar ||
+                                user.image ||
+                                `https://avatar.vercel.sh/${encodeURIComponent(user.name || '')}?size=80`
+                              }
+                              alt={user.name || ''}
+                              fill
+                              sizes="40px"
+                              className="object-cover"
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="truncate font-semibold text-[color:var(--at-fg)] text-sm">
+                              {user.name}
+                            </p>
+                            <p className="truncate text-xs text-[color:var(--at-fg-subtle)]" dir="ltr">
+                              {user.email}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span className="at-badge" style={{ fontSize: '11px', ...Object.fromEntries(getRoleBadgeStyle(user.role ?? '').split(';').filter(Boolean).map(s => s.split(':').map(x => x.trim()))) }}>
+                          {roleLabels[user.role ?? ''] || user.role}
+                        </span>
+                      </td>
+                      <td className="hidden sm:table-cell">
+                        <span className={`at-badge at-badge--${getAtBadgeVariant(user.status ?? '')}`}>
+                          {statusLabels[user.status ?? ''] || user.status || ''}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="at-actions">
+                          <button
+                            onClick={() => handleEdit(user)}
+                            className="at-actions__btn at-actions__btn--edit"
+                            title="ویرایش"
+                          >
+                            <HiOutlinePencil className="size-3.5" />
+                            <span className="hidden sm:inline">ویرایش</span>
+                          </button>
+                          <button
+                            onClick={() => handleDelete(user.id, user.role as Role)}
+                            className="at-actions__btn at-actions__btn--danger"
+                            title="حذف"
+                          >
+                            <HiOutlineTrash className="size-3.5" />
+                            <span className="hidden sm:inline">حذف</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {isLoading && page > 1 && <LoadingMore message="در حال دریافت کاربران بیشتر..." />}
+            <div className="at-table__foot">
+              <span>{users.length} کاربر نمایش داده شده</span>
+              {hasNextPage && <span>اسکرول برای بارگذاری بیشتر</span>}
+            </div>
+            <div ref={infiniteScrollRef} style={{ height: '1px' }} />
+          </>
+        )}
+      </div>
+
+      {/* Dialogs */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
-          <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-6 py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
-            <DialogTitle className="text-xl font-bold text-neutral-900 dark:text-neutral-50">
-              افزودن کاربر جدید
-            </DialogTitle>
-          </DialogHeader>
-          <div className="max-h-[calc(90vh-120px)] overflow-y-auto p-6">
+        <DialogContent
+          className="at-dialog-content max-h-[90vh] w-full max-w-2xl p-0 overflow-hidden"
+          dir="rtl"
+        >
+          <div className="at-dialog-header">
+            <div className="at-dialog-title">
+              <span className="at-dialog-title__ico">
+                <HiOutlinePlus className="size-4" />
+              </span>
+              <div>
+                <div>افزودن کاربر جدید</div>
+                <div className="at-dialog-sub">اطلاعات حساب، نقش و دسترسی‌ها</div>
+              </div>
+            </div>
+          </div>
+          <div className="at-dialog-body" style={{ padding: '20px 22px' }}>
             <UserForm form={form} onSubmit={onSubmit} />
           </div>
         </DialogContent>
       </Dialog>
 
-      <div className="ds2-card mt-4">
-        {isLoading && page === 1 ? (
-        <UsersTableSkeleton rows={8} />
-      ) : users.length === 0 ? (
-        <DashboardTableContainer>
-          <EmptyState
-            title="کاربری یافت نشد"
-            description="هنوز هیچ کاربری در سیستم ثبت نشده است."
-            icon={<HiOutlineUsers className="h-8 w-8 text-neutral-400" />}
-          />
-        </DashboardTableContainer>
-      ) : (
-        <DashboardTableContainer>
-          <DashboardTable>
-            <DashboardTableHeader>
-              <tr>
-                <DashboardTableHead>کاربر</DashboardTableHead>
-                <DashboardTableHead>نقش</DashboardTableHead>
-                <DashboardTableHead hidden>وضعیت</DashboardTableHead>
-                <DashboardTableHead>عملیات</DashboardTableHead>
-              </tr>
-            </DashboardTableHeader>
-            <DashboardTableBody>
-              {users.map((user) => (
-                <DashboardTableRow key={user.id}>
-                  <DashboardTableCell>
-                    <div className="flex items-center gap-4">
-                      <div className="relative h-11 w-11 overflow-hidden rounded-full ring-2 ring-white shadow-md dark:ring-neutral-700">
-                        <Image
-                          src={
-                            user.profile?.avatar ||
-                            user.image ||
-                            `https://avatar.vercel.sh/${encodeURIComponent(user.name || '')}?size=80`
-                          }
-                          alt={user.name || ''}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="truncate font-semibold text-neutral-900 dark:text-neutral-100">
-                          {user.name}
-                        </p>
-                        <p className="truncate text-xs text-neutral-500 dark:text-neutral-400">
-                          {user.email}
-                        </p>
-                      </div>
-                    </div>
-                  </DashboardTableCell>
-                  <DashboardTableCell>
-                    <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                      {roleLabels[user.role ?? ''] || user.role}
-                    </span>
-                  </DashboardTableCell>
-                  <DashboardTableCell hidden>
-                    <StatusBadge
-                      status={statusLabels[user.status ?? ''] || user.status || ''}
-                      variant={getStatusVariant(user.status ?? '') as any}
-                    />
-                  </DashboardTableCell>
-                  <DashboardTableCell>
-                    <div className="flex items-center gap-2">
-                      <ActionButton variant="edit" onClick={() => handleEdit(user)}>
-                        <HiOutlinePencil className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">ویرایش</span>
-                      </ActionButton>
-                      <ActionButton variant="delete" onClick={() => handleDelete(user.id, user.role as Role)}>
-                        <HiOutlineTrash className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">حذف</span>
-                      </ActionButton>
-                    </div>
-                  </DashboardTableCell>
-                </DashboardTableRow>
-              ))}
-            </DashboardTableBody>
-          </DashboardTable>
-          {isLoading && page > 1 && <LoadingMore message="در حال دریافت کاربران بیشتر..." />}
-          <div ref={infiniteScrollRef} style={{ height: '1px' }} />
-        </DashboardTableContainer>
-      )}
-      </div>
-
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-h-[90vh] w-full max-w-2xl overflow-hidden rounded-2xl border-neutral-200/60 bg-white/95 p-0 shadow-2xl backdrop-blur-xl dark:border-neutral-700/50 dark:bg-neutral-800/95" dir="rtl">
-          <DialogHeader className="border-b border-neutral-200/60 bg-gradient-to-l from-neutral-50 to-white px-6 py-5 dark:border-neutral-700/50 dark:from-neutral-800 dark:to-neutral-800">
-            <DialogTitle className="text-xl font-bold text-neutral-900 dark:text-neutral-50">
-              ویرایش کاربر
-            </DialogTitle>
-          </DialogHeader>
-          <div className="max-h-[calc(90vh-120px)] overflow-y-auto p-6">
+        <DialogContent
+          className="at-dialog-content max-h-[90vh] w-full max-w-2xl p-0 overflow-hidden"
+          dir="rtl"
+        >
+          <div className="at-dialog-header">
+            <div className="at-dialog-title">
+              <span className="at-dialog-title__ico">
+                <HiOutlinePencil className="size-4" />
+              </span>
+              <div>
+                <div>ویرایش کاربر</div>
+                <div className="at-dialog-sub">تغییر نقش، وضعیت یا اطلاعات حساب</div>
+              </div>
+            </div>
+          </div>
+          <div className="at-dialog-body" style={{ padding: '20px 22px' }}>
             <UserForm form={form} onSubmit={onSubmit} />
           </div>
         </DialogContent>
@@ -395,22 +491,24 @@ function UserForm({ form, onSubmit }: UserFormProps) {
   const { data: session } = useSession();
   const currentUserRole = session?.user?.role;
 
+  const inputClass = "at-input";
+  const selectTriggerClass = "at-input flex items-center h-auto py-2.5";
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-        <div className="grid gap-5 sm:grid-cols-2">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="at-form-stack" dir="rtl">
+        <div className="at-form-grid">
           <FormField
             control={form.control}
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نام</FormLabel>
+                <label className="at-field__label">
+                  <HiOutlineUser className="at-field__ico at-field__ico--emerald size-4" />
+                  نام
+                </label>
                 <FormControl>
-                  <Input
-                    placeholder="نام کاربر"
-                    {...field}
-                    className="h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80"
-                  />
+                  <Input placeholder="نام کاربر" {...field} className={inputClass} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -421,14 +519,12 @@ function UserForm({ form, onSubmit }: UserFormProps) {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">ایمیل</FormLabel>
+                <label className="at-field__label">
+                  <HiOutlineEnvelope className="at-field__ico at-field__ico--blue size-4" />
+                  ایمیل
+                </label>
                 <FormControl>
-                  <Input
-                    placeholder="ایمیل کاربر"
-                    type="email"
-                    {...field}
-                    className="h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80"
-                  />
+                  <Input placeholder="ایمیل کاربر" type="email" {...field} className={inputClass} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -436,20 +532,18 @@ function UserForm({ form, onSubmit }: UserFormProps) {
           />
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="at-form-grid">
           <FormField
             control={form.control}
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">رمز عبور</FormLabel>
+                <label className="at-field__label">
+                  <HiOutlineLockClosed className="at-field__ico size-4" />
+                  رمز عبور
+                </label>
                 <FormControl>
-                  <Input
-                    placeholder="رمز عبور کاربر"
-                    type="password"
-                    {...field}
-                    className="h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80"
-                  />
+                  <Input placeholder="رمز عبور کاربر" type="password" {...field} className={inputClass} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -460,13 +554,12 @@ function UserForm({ form, onSubmit }: UserFormProps) {
             name="phoneNumber"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">شماره تلفن</FormLabel>
+                <label className="at-field__label">
+                  <HiOutlinePhone className="at-field__ico size-4" />
+                  شماره تلفن
+                </label>
                 <FormControl>
-                  <Input
-                    placeholder="شماره تلفن کاربر"
-                    {...field}
-                    className="h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80"
-                  />
+                  <Input placeholder="شماره تلفن کاربر" {...field} className={inputClass} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -474,16 +567,19 @@ function UserForm({ form, onSubmit }: UserFormProps) {
           />
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="at-form-grid">
           <FormField
             control={form.control}
             name="role"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">نقش</FormLabel>
+                <label className="at-field__label">
+                  <HiOutlineUserGroup className="at-field__ico at-field__ico--emerald size-4" />
+                  نقش
+                </label>
                 <Select dir="rtl" onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger className="h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80">
+                    <SelectTrigger className={selectTriggerClass}>
                       <SelectValue placeholder="انتخاب نقش" />
                     </SelectTrigger>
                   </FormControl>
@@ -507,10 +603,13 @@ function UserForm({ form, onSubmit }: UserFormProps) {
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-neutral-700 dark:text-neutral-300">وضعیت</FormLabel>
+                <label className="at-field__label">
+                  <HiOutlineCheckCircle className="at-field__ico at-field__ico--amber size-4" />
+                  وضعیت
+                </label>
                 <Select dir="rtl" onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger className="h-11 rounded-xl border-neutral-200/60 bg-white/80 transition-all duration-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80">
+                    <SelectTrigger className={selectTriggerClass}>
                       <SelectValue placeholder="انتخاب وضعیت" />
                     </SelectTrigger>
                   </FormControl>
@@ -527,7 +626,14 @@ function UserForm({ form, onSubmit }: UserFormProps) {
           />
         </div>
 
-        <div className="pt-4">
+        <div className="at-dialog-foot" style={{ marginInlineStart: '-22px', marginInlineEnd: '-22px', marginBottom: '-20px' }}>
+          <button
+            type="button"
+            className="at-btn at-btn--ghost"
+            onClick={() => form.reset()}
+          >
+            انصراف
+          </button>
           <SubmitButton isSubmitting={form.formState.isSubmitting} />
         </div>
       </form>

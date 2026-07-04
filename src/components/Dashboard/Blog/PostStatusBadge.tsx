@@ -1,5 +1,4 @@
-import Badge from '@/components/Badge/Badge';
-import type { TwMainColor } from '@/types/types';
+import { cn } from '@/lib/utils';
 import type { PostStatus } from '@prisma/client';
 
 export interface PostStatusBadgeProps {
@@ -7,17 +6,27 @@ export interface PostStatusBadgeProps {
   className?: string;
 }
 
-const statusConfig: Record<PostStatus, { color: TwMainColor; name: string }> = {
-  PUBLISHED: { color: 'green', name: 'منتشر شده' },
-  DRAFT: { color: 'yellow', name: 'پیش‌نویس' },
-  PENDING_REVIEW: { color: 'blue', name: 'در انتظار بررسی' },
-  SCHEDULED: { color: 'purple', name: 'زمان‌بندی شده' },
+// Atelier variant — هم‌خوان با at-badge (hairline + accent soft).
+// نگاشت وضعیت‌ها به variant‌های at-badge:
+//   - PUBLISHED     → at-badge--published (emerald)
+//   - DRAFT         → at-badge--draft (slate)
+//   - PENDING_REVIEW → at-badge--pending (amber)
+//   - SCHEDULED     → at-badge--scheduled (blue)
+const statusConfig: Record<PostStatus, { name: string; variant: 'published' | 'draft' | 'pending' | 'scheduled' }> = {
+  PUBLISHED: { name: 'منتشر شده', variant: 'published' },
+  DRAFT: { name: 'پیش‌نویس', variant: 'draft' },
+  PENDING_REVIEW: { name: 'در انتظار بررسی', variant: 'pending' },
+  SCHEDULED: { name: 'زمان‌بندی شده', variant: 'scheduled' },
 };
 
 const PostStatusBadge: React.FC<PostStatusBadgeProps> = ({ status, className }) => {
-  const { color, name } = statusConfig[status];
+  const { name, variant } = statusConfig[status];
 
-  return <Badge className={className} name={name} color={color} />;
+  return (
+    <span className={cn('at-badge', `at-badge--${variant}`, className)}>
+      {name}
+    </span>
+  );
 };
 
 export default PostStatusBadge;
