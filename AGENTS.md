@@ -40,12 +40,11 @@ Only write a brief analysis (not a long plan) for: DB / migration / auth / secur
 | Gotchas | `AGENTS.gotchas.md` | Anything weird happening |
 | MCP graphify | `AGENTS.mcp.md` | Codebase navigation, deep refactor |
 | UI design direction | `AGENTS.ui-design.md` | Visual / UX work |
-| ui-ux-pro-max skill | `AGENTS.ui-skill.md` | Design system generation only |
 | Architecture rules | `AGENTS.architecture.md` | Multi-file changes, DB, auth |
 | Anti-failure checklist | `AGENTS.anti-failure.md` | Before claiming a task done |
 
 ## Other rules
 
-- `ARCHITECT_RULES.md` — Senior Staff role + architecture guardrails.
+- `ARCHITECT_RULES.md` — Role + workflow + non-negotiable rules (lean core).
 - `.claude/role/SKILL.md` — Role section mirror (no AGENTS.md duplicate).
 - `.kimchi/AGENTS.md` — Trigger file: when user message starts with `قوانین` / `با قوانین` / `AGENTS` / `rules`, re-load rules first.
