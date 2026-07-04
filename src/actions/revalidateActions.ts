@@ -35,7 +35,6 @@ export async function revalidatePostCache(postId?: string) {
     // busts every tag below correctly.
     revalidateTag('posts');
     revalidateTag('post-slug');
-    revalidateTag('post-by-slug');
     revalidateTag('archive');
     revalidateTag('gallery-posts');
     revalidateTag('latest-posts');
@@ -74,7 +73,6 @@ export async function revalidateAllCache() {
   try {
     revalidateTag('posts');
     revalidateTag('post-slug');
-    revalidateTag('post-by-slug');
     revalidateTag('archive');
     revalidateTag('gallery-posts');
     revalidateTag('latest-posts');

@@ -92,9 +92,8 @@ export async function createPost(data: CreatePostInput): Promise<ActionResult<Po
     // Invalidate paths
     revalidatePath('/');
     revalidatePath(`/blog/${post.id}`);
-    // 2026-06-14: also bust the new unstable_cache wrappers (post-by-slug, archive, dashboard-stats).
+    // 2026-06-14: also bust the new unstable_cache wrappers (post-slug, archive, dashboard-stats).
     revalidateTag(`post-${post.id}`);
-    revalidateTag('post-by-slug');
     revalidateTag('post-slug');
     revalidateTag('archive');
     revalidateTag('dashboard-stats');
@@ -239,7 +238,6 @@ export async function updatePost(
     revalidatePath('/');
     revalidatePath(`/blog/${post.id}`);
     revalidateTag(`post-${post.id}`);
-    revalidateTag('post-by-slug');
     revalidateTag('post-slug');
     revalidateTag('archive');
     revalidateTag('dashboard-stats');
@@ -343,7 +341,6 @@ export async function updatePostStatus(
     revalidatePath('/');
     revalidatePath(`/blog/${updatedPost.id}`);
     revalidateTag(`post-${updatedPost.id}`);
-    revalidateTag('post-by-slug');
     revalidateTag('post-slug');
     revalidateTag('archive');
     revalidateTag('dashboard-stats');
@@ -442,7 +439,6 @@ export async function deletePost(postId: string): Promise<ActionResult> {
     revalidatePath('/');
     revalidatePath('/archive');
     revalidateTag(`post-${postId}`);
-    revalidateTag('post-by-slug');
     revalidateTag('post-slug');
     revalidateTag('archive');
     revalidateTag('comments');

@@ -19,6 +19,18 @@
  * (لایک، نظر، اشتراک + نرخ تعامل مشتق) در این ردیف می‌نشینند
  * با یک قلب SVG با EKG-اسپارک‌لاین به‌عنوان نقطهٔ کانونی.
  *
+ * 2026-07-04 (night): ردیف ۳.۵ — تقویم ماهانهٔ انتشار (`AtelierMonthCalendar`)
+ * به‌صورت inline بین `AtelierWeekRhythm` و `AtelierChart` اضافه شد
+ * تا داشبورد از پایین‌ترین مقیاس (هفتۀ جاری) تا ماه جاری، همه در
+ * یک صفحه قابل مرور باشد.
+ *
+ * 2026-07-04 (late night): صفحهٔ جداگانهٔ `/dashboard/posts/calendar`
+ * ساخته شد. سپس ردیف inline از داشبورد حذف شد چون تقویم کامل فقط
+ * در صفحهٔ مستقلش زندگی می‌کند — یک مکان، یک منبع حقیقت. لینک
+ * «تقویم کامل» در `AtelierWeekRhythm` کاربر را به آن صفحه می‌برد.
+ * `AtelierWeekRhythm` (هفتۀ جاری) همچنان داخل داشبورد است؛ تقویم
+ * ماهانه فقط در `/dashboard/posts/calendar`.
+ *
  * Layout (desktop ≥1280px):
  *   ┌────────────────────────────────────────────────────────┐
  *   │  TICKER (live market rates, full-bleed)                │
@@ -27,7 +39,8 @@
  *   ├─────────────────────────────┴──────────────────────────┤
  *   │  ENGAGEMENT (heart focal + 3 satellite cards)         │
  *   ├────────────────────────────────────────────────────────┤
- *   │  WEEK STRIP — 7 days (Sat→Fri) + density              │
+ *   │  WEEK RHYTHM — 7-day bar chart + spotlight + agenda   │
+ *   │   («تقویم کامل» link → /dashboard/posts/calendar)    │
  *   ├────────────────────────────────────────────────────────┤
  *   │  CHART (analytics + tabs + period)                    │
  *   ├────────────────────────────┬───────────────────────────┤
@@ -104,11 +117,13 @@ const AtelierDeck: React.FC<AtelierDeckProps> = (props) => {
           {/* Row 2: Engagement console (heart + comments + shares + rate) */}
           <AtelierEngagement stats={stats} />
 
-          {/* Row 3: Week rhythm (ضرباهنگ هفته) — 2026-07-04 redesign */}
+          {/* Row 3: Week rhythm (ضرباهنگ هفته) — 2026-07-04 redesign. */}
+          {/* «تقویم کامل» link در سرصفحه‌اش به /dashboard/posts/calendar می‌رود. */}
           <AtelierWeekRhythm scheduledPosts={props.scheduledPosts} />
 
-          {/* Row 4: Chart (full width) */}
-          <AtelierChart scheduledPosts={props.scheduledPosts} />
+          {/* Row 4: Chart (full width) — فقط تحلیل بازدید. تقویم انتشار در */}
+          {/* `/dashboard/posts/calendar` زندگی می‌کند، نه اینجا. */}
+          <AtelierChart />
 
           {/* Row 5: Popular posts + Activity feed */}
           <AtelierPosts popularPosts={props.popularPosts} />

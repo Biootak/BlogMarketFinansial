@@ -11989,19 +11989,47 @@
 
 @layer utilities {
   /* ============================================================================
-     Atelier Month Calendar — /dashboard/posts/calendar (2026-07-04)
-     صفحهٔ مستقل تقویم انتشار، هم‌خانواده با AtelierWeekRhythm.
-     همان زبان بصری (hairline + زمردین/طلایی/خاکستری) تا از داشبورد
-     به این صفحه یکپارچه حس شود.
+     Atelier Month Calendar (2026-07-04 night).
+     تقویم ماهانهٔ انتشار؛ به دو شکل لود می‌شود:
+       1. embedded:  داخل <section class="at-tile at-cal-tile"> از
+          `AtelierDeck`. در این حالت کارت‌ها صاف می‌شوند تا با tile بیرونی
+          یکپارچه شوند (override ها در پایین).
+       2. standalone: صفحهٔ `/dashboard/posts/calendar` که از
+          `.at-cal-page` به‌عنوان فضای صفحه استفاده می‌کند و کارت‌های
+          کامل را با border-radius و shadow حفظ می‌کند.
+     همان زبان بصری (hairline + زمردین/طلایی/خاکستری) در هر دو حالت.
      ============================================================================ */
-  .at-calendar-page {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 28px 22px 60px;
+
+  /* ── Standalone page wrapper ────────────────────────────────────────
+     وقتی تقویم به‌عنوان یک صفحهٔ مستقل `/dashboard/posts/calendar`
+     لود می‌شود، نیاز به padding صفحه و عرض منطقی دارد تا روی موبایل
+     به لبه‌ها نچسبد و روی دسکتاپ بیش از حد کشیده نشود. هیچ تغییری
+     در ساختار `.at-cal` نمی‌دهیم — فقط کانتینر بیرونی صفحه. */
+  .at-cal-page {
+    width: 100%;
+    max-width: 1200px;
+    margin-inline: auto;
+    padding: clamp(20px, 4vw, 36px);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
   }
-  @media (min-width: 768px) {
-    .at-calendar-page { padding: 36px 28px 80px; }
+  @media (min-width: 1280px) {
+    .at-cal-page { padding-block: 32px; padding-inline: 36px; }
   }
+
+  /* حالت خطا / دادهٔ خالی: کارت خالی وسط صفحه */
+  .at-cal__empty {
+    padding: 64px 24px;
+    text-align: center;
+    border: 1px dashed var(--at-line-strong);
+    border-radius: var(--at-radius-lg);
+    background: var(--at-bg);
+    color: var(--at-fg-muted);
+  }
+  .at-cal__empty p { margin: 0; font-size: 14px; }
+  .at-cal__empty-hint { margin-block-start: 8px !important; font-size: 12px !important; color: var(--at-fg-subtle); }
+
   .at-cal {
     display: flex;
     flex-direction: column;
@@ -12543,6 +12571,106 @@
   }
   .at-cal__agenda-cta:hover {
     background: color-mix(in oklch, var(--at-accent) 80%, black);
+  }
+
+  /* ── Inline mode (داخل <section class="at-tile at-cal-tile">) ──────── */
+  /* وقتی تقویم به‌صورت embedded داخل داشبورد لود می‌شود (AtelierDeck).
+     صفحهٔ مستقل `/dashboard/posts/calendar` نیز وجود دارد و از همین
+     کلاس‌های `.at-cal*` ولی *بدون* این override ها (یعنی همان حالت
+     کارتی پیش‌فرض با border-radius و shadow) استفاده می‌کند. بنابراین
+     تغییرات اینجا فقط بر ردیف داشبورد اثر می‌گذارد؛ صفحهٔ مستقل
+     دست‌نخورده می‌ماند. */
+  /* وقتی تقویم به‌عنوان یک ردیف از داشبورد لود می‌شود، کانتینرهای داخلی
+     (head + agenda) باید فقط نقش جداکنندهٔ افقی داشته باشند — نه
+     کارت‌های جدا. border-radius و shadow را صفر می‌کنیم تا با tile بیرونی
+     یکپارچه شود. متریک‌ها و سلول‌های روز آیتم‌های داخلی هستند و
+     border-radius خودشان را نگه می‌دارند. */
+  .at-cal-tile {
+    grid-column: span 4;
+    padding: 0;
+  }
+  @media (min-width: 768px) {
+    .at-cal-tile { grid-column: span 8; }
+  }
+  @media (min-width: 1280px) {
+    .at-cal-tile { grid-column: span 12; }
+  }
+  .at-cal-tile .at-cal {
+    gap: 0;
+  }
+  .at-cal-tile .at-cal__head {
+    border-radius: 0;
+    border: none;
+    border-bottom: 1px solid var(--at-line);
+    background: transparent;
+    box-shadow: none;
+    background-image: none;
+    padding: 20px 22px 16px;
+    /* حالت embedded: back button ندارد، فقط title + nav */
+    grid-template-columns: 1fr auto;
+    gap: 12px 16px;
+  }
+  .at-cal-tile .at-cal__title {
+    align-items: flex-start;
+    text-align: start;
+  }
+  @media (min-width: 768px) {
+    .at-cal-tile .at-cal__head {
+      padding: 22px 26px 18px;
+    }
+  }
+  .at-cal-tile .at-cal__metrics {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--at-line);
+  }
+  @media (min-width: 768px) {
+    .at-cal-tile .at-cal__metrics {
+      padding: 20px 26px;
+    }
+  }
+  .at-cal-tile .at-cal__grid {
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--at-line);
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    box-shadow: none;
+    background: transparent;
+  }
+  @media (min-width: 768px) {
+    .at-cal-tile .at-cal__grid {
+      padding: 20px 26px;
+    }
+  }
+  /* وقتی تقویم داخل tile است، سلول‌ها باید کمی فشرده‌تر شوند تا کل
+     ردیف از یک viewport (~900px) بیشتر نشود. cell ها در حالت عادی
+     min-height: 116px دارند؛ اینجا 96px. */
+  .at-cal-tile .at-cal__cell {
+    min-height: 92px;
+    padding: 8px 8px 10px;
+  }
+  @media (min-width: 768px) {
+    .at-cal-tile .at-cal__cell {
+      min-height: 104px;
+      padding: 9px 9px 11px;
+    }
+  }
+  .at-cal-tile .at-cal__agenda {
+    border-radius: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    padding: 18px 22px 20px;
+    /* انیمیشن slide-down که agenda را 4px جابجا می‌کند ممکن است
+       از overflow:hidden پدر (at-tile) بیرون بزند و قطع شود؛
+       در حالت inline بی‌صدا می‌شود. */
+    animation: none;
+  }
+  @media (min-width: 768px) {
+    .at-cal-tile .at-cal__agenda {
+      padding: 20px 26px 24px;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -3,16 +3,23 @@
 /**
  * AtelierMonthCalendar — full month publishing view (2026-07-04).
  *
- * صفحهٔ مستقل `/dashboard/posts/calendar`؛ تقویم کامل برای برنامهٔ
- * انتشار. طراحی هم‌خانواده با AtelierWeekRhythm (همان رنگ‌ها، همان
- * وزن، همان رفتار کلیک) تا از داشبورد تا این صفحه یک زبان بصری
+ * دو حالت لود دارد:
+ *   1. standalone (پیش‌فرض): صفحهٔ `/dashboard/posts/calendar`.
+ *      تقویم کامل برای برنامهٔ انتشار، با دکمهٔ «بازگشت به
+ *      داشبورد» و کارت‌های مستقل (border + shadow).
+ *   2. embedded: ردیف ۳.۵ از `AtelierDeck`. کارت‌ها صاف می‌شوند
+ *      (بدون border-radius بیرونی) چون `.at-cal-tile` در CSS
+ *      این override را اعمال می‌کند؛ دکمهٔ بازگشت پنهان می‌شود.
+ *
+ * طراحی هم‌خانواده با AtelierWeekRhythm (همان رنگ‌ها، همان وزن،
+ * همان رفتار کلیک) تا از داشبورد تا این صفحه یک زبان بصری
  * واحد حس شود.
  *
- * Layout (desktop):
+ * Layout (desktop, standalone):
  *   ┌────────────────────────────────────────────────────────────────┐
- *   │ HEADER  نام ماه فارسی + سال + prev/next + بازگشت به ریتم      │
+ *   │ HEADER  نام ماه فارسی + سال + prev/next + بازگشت به داشبورد  │
  *   ├────────────────────────────────────────────────────────────────┤
- *   │ METRIC  3 کارت: کل پست ماه / منتشر شده / در انتظار+پیش‌نویس  │
+ *   │ METRIC  ۴ کارت: کل پست ماه / منتشر شده / در انتظار / پیش‌نویس│
  *   ├────────────────────────────────────────────────────────────────┤
  *   │ GRID    ۷×۶ (شنبه → جمعه)، هر سلول شمارهٔ روز + پست‌ها       │
  *   ├────────────────────────────────────────────────────────────────┤
@@ -42,6 +49,13 @@ import Link from 'next/link';
 
 interface AtelierMonthCalendarProps {
   scheduledPosts: PostWithRelations[];
+  /**
+   * وقتی `true`، تقویم داخل داشبورد لود شده؛ دکمهٔ «بازگشت به
+   * داشبورد» و لایهٔ بیرونی صفحه حذف می‌شود تا دقیقاً به‌عنوان یک
+   * ردیف از داشبورد حس شود. وقتی `false` یا حذف‌شده (default)،
+   * رفتار صفحهٔ مستقل قبلی را دارد.
+   */
+  embedded?: boolean;
 }
 
 type StatusKey = 'DRAFT' | 'PENDING_REVIEW' | 'PUBLISHED';
@@ -122,6 +136,7 @@ const FA_WEEKDAYS = new Map(
 
 export default function AtelierMonthCalendar({
   scheduledPosts,
+  embedded = false,
 }: AtelierMonthCalendarProps) {
   const today = useMemo(() => new Date(), []);
   const [cursor, setCursor] = useState<Date>(() => startOfMonth(today));
@@ -179,14 +194,16 @@ export default function AtelierMonthCalendar({
     <div className="at-cal">
       {/* ───── Header ───── */}
       <header className="at-cal__head">
-        <Link
-          href="/dashboard"
-          className="at-cal__back"
-          aria-label="بازگشت به داشبورد"
-        >
-          <HiOutlineHome className="w-3.5 h-3.5" />
-          <span>بازگشت به داشبورد</span>
-        </Link>
+        {!embedded && (
+          <Link
+            href="/dashboard"
+            className="at-cal__back"
+            aria-label="بازگشت به داشبورد"
+          >
+            <HiOutlineHome className="w-3.5 h-3.5" />
+            <span>بازگشت به داشبورد</span>
+          </Link>
+        )}
 
         <div className="at-cal__title">
           <span className="at-cal__eyebrow">

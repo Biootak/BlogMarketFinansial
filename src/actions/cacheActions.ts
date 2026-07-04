@@ -43,7 +43,6 @@ export async function invalidateHomePageCache() {
 export async function invalidatePostCache(postId: string) {
   revalidateTag(`post-${postId}`);
   revalidateTag('post-slug');
-  revalidateTag('post-by-slug');
   revalidateTag('posts');
   revalidateTag('archive');
   revalidateTag('comments');
