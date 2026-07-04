@@ -55,11 +55,15 @@ const TGJU_KEY: Record<string, string> = {
   INR: 'price_inr',
   TRY: 'price_try',
   // Coins & gold (TGJU key برابر با canonical یا با prefix متفاوت)
-  SEKKEH: 'retail_sekee', // قیمت «محرم» (خرده‌فروشی) سکه امامی
-  BAHAR: 'retail_sekeb', // سکه بهار آزادی
-  NIM: 'retail_nim', // نیم سکه
-  ROB: 'retail_rob', // ربع سکه
-  GERAMI: 'retail_gerami', // سکه گرمی
+  // 2026-07-04: tgju.org prefix `retail_` را از کلید سکه‌ها حذف کرده
+  // (sekee, sekeb, nim, rob, gerami). مقادیر قبلی دیگر در صفحه اصلی tgju
+  // وجود ندارند؛ assembler آن‌ها را با مقدار خالی پر می‌کرد و درصد تغییر 0
+  // می‌شد. مقادیر جدید مستقیماً از data-market-nameslug خوانده می‌شوند.
+  SEKKEH: 'sekee', // سکه امامی
+  BAHAR: 'sekeb', // سکه بهار آزادی
+  NIM: 'nim', // نیم سکه
+  ROB: 'rob', // ربع سکه
+  GERAMI: 'gerami', // سکه گرمی
   GOLD18: 'geram18', // طلای ۱۸ عیار (گرم)
   ABSHODEH: 'mesghal', // مثقال طلای آبشده
   OUNCE_GOLD: 'ons', // انس طلا (جهانی)

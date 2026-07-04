@@ -19,7 +19,7 @@ interface CryptoTickerSliderProps {
  */
 const CryptoTickerSlider: React.FC<CryptoTickerSliderProps> = ({ rates }) => {
   return (
-    <div className="nc-CryptoTickerSlider relative marquee-pause">
+    <div className="nc-CryptoTickerSlider relative">
       <Ticker duration={50} direction="rtl">
         <div className="flex items-center gap-2 px-2 py-1">
           {rates.map((rate, idx) => (

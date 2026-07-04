@@ -10396,17 +10396,26 @@
     color: var(--at-fg-subtle);
   }
 
-  /* ---------- Auxiliary row (row 6) ---------- */
-  .at-market { grid-column: span 4; }
+  /* ---------- Auxiliary row (row 6) ----------
+   * 2026-07-04: کاشی بازار (`at-market`) از این ردیف حذف شد. نرخ‌ها
+   * حالا در نوار بالای داشبورد (`MarketRatesTicker`) نمایش داده می‌شوند
+   * و درصد تغییر هر نماد داخل خود نوار است؛ نیازی به کاشی جداگانه
+   * با عنوان «نبض بازار» نبود.
+   *
+   * حالا فقط Authors + Actions در این ردیف هستند:
+   *  - موبایل/تبلت (≤1280px): Authors (4) + Actions (4) → 8 ستون
+   *  - دسکتاپ (≥1280px):     Authors (8) + Actions (4) → 12 ستون
+   *    Authors عرض بیشتری می‌گیرد تا لیست نویسندگان راحت‌تر دیده شود.
+   */
   .at-authors { grid-column: span 4; }
   .at-actions { grid-column: span 4; }
   @media (min-width: 1280px) {
-    .at-market { grid-column: span 4; }
-    .at-authors { grid-column: span 5; }
-    .at-actions { grid-column: span 3; }
+    .at-authors { grid-column: span 8; }
+    .at-actions { grid-column: span 4; }
   }
 
-  /* Market (2x2 grid) */
+  /* Market (2x2 grid) — کلاس‌های باقی‌مانده از کاشی قدیمی برای ایمنی
+   * در برابر استفاده‌ی پنهان نگه داشته می‌شوند تا استایل خراب نشود. */
   .at-market__grid {
     display: grid;
     grid-template-columns: 1fr 1fr;

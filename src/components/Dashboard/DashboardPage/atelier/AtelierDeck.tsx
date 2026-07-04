@@ -8,8 +8,13 @@
  * glassmorphism. A live market ticker band rides the top of the page;
  * the hero carries a radial pulse chart (today vs total) and an
  * eight-point brand mark; KPIs sit in a clean 4-up strip; the chart
- * sits full-width on its own row; posts + activity fill row 4; market
- * + authors + actions fill row 5.
+ * sits full-width on its own row; posts + activity fill row 4;
+ * authors + actions fill row 5.
+ *
+ * 2026-07-04: کاشی `AtelierMarket` («نبض بازار») حذف شد تا یک بخش
+ * واحد برای نمایش نرخ‌های بازار در داشبورد باقی بماند. نوار
+ * `MarketRatesTicker` (ردیف ۰) تنها منبع نمایش زنده است و درصد
+ * تغییر هر نماد در خودش دارد؛ نیازی به کاشی جداگانه نیست.
  *
  * Layout (desktop ≥1280px):
  *   ┌────────────────────────────────────────────────────────┐
@@ -24,9 +29,9 @@
  *   │  CHART (analytics + tabs + period)                    │
  *   ├────────────────────────────┬───────────────────────────┤
  *   │  POPULAR POSTS             │  ACTIVITY (day-grouped)   │
- *   ├──────────────┬─────────────┴───────────────────────────┤
- *   │ MARKET       │  AUTHORS       │  ACTIONS               │
- *   └──────────────┴────────────────┴────────────────────────┘
+ *   ├────────────────────────────┴───────────────────────────┤
+ *   │  AUTHORS (wider)              │  ACTIONS               │
+ *   └───────────────────────────────┴────────────────────────┘
  */
 
 import type { TopAuthor } from '@/actions/getTopAuthors';
@@ -35,7 +40,6 @@ import MarketRatesTicker from '@/components/MarketRates/MarketRatesTicker';
 import type { MarketRateItem } from '@/lib/market-rates';
 import {
   HiOutlineChatBubbleLeftRight,
-  HiOutlineDocumentText,
   HiOutlineEye,
   HiOutlineHeart,
   HiOutlineShare,
@@ -47,7 +51,6 @@ import AtelierAuthors from './tiles/AtelierAuthors';
 import AtelierChart from './tiles/AtelierChart';
 import AtelierHero from './tiles/AtelierHero';
 import AtelierKpi from './tiles/AtelierKpi';
-import AtelierMarket from './tiles/AtelierMarket';
 import AtelierPosts from './tiles/AtelierPosts';
 import AtelierWeekStrip from './tiles/AtelierWeekStrip';
 
@@ -116,7 +119,7 @@ const AtelierDeck: React.FC<AtelierDeckProps> = (props) => {
       <main id="at-main" className="at-canvas" aria-label="داشبورد">
         {/* Row 0: live market ticker (full-bleed) — single source for the project */}
         <div className="px-4 pt-4 sm:px-6 lg:px-8">
-          <MarketRatesTicker rates={props.marketRates} label="بازار" maxItems={14} />
+          <MarketRatesTicker rates={props.marketRates} maxItems={14} />
         </div>
 
         <div className="at-grid">
@@ -143,8 +146,7 @@ const AtelierDeck: React.FC<AtelierDeckProps> = (props) => {
           <AtelierPosts popularPosts={props.popularPosts} />
           <AtelierActivity items={props.recentActivity} />
 
-          {/* Row 6: Market + Authors + Actions */}
-          <AtelierMarket rates={props.marketRates} />
+          {/* Row 6: Authors + Actions (نرخ‌های بازار در نوار بالا نمایش داده می‌شود) */}
           <AtelierAuthors topAuthors={props.topAuthors} />
           <AtelierActions userRole={props.userRole} />
         </div>

@@ -271,7 +271,7 @@ function LatestArticles({
     <section
       ref={containerRef}
       dir="rtl"
-      className="relative isolate marquee-pause"
+      className="relative isolate"
       aria-label="تازه‌های بازار"
     >
       {/* RateLists Ticker — نوار چرخشی نرخ‌های بازار (RateList از DB) */}

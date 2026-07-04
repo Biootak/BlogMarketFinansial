@@ -1,20 +1,27 @@
 'use client';
 
 /**
- * MarketRatesTicker — نوار متحرک نرخ‌های بازار (داشبورد)
+ * MarketRatesTicker — نوار متحرک نرخ‌های زنده (داشبورد)
  * ----------------------------------------------------------------------------
- * نوار نرخ‌های زنده‌ی بازار که در بالای داشبورد نمایش داده می‌شود. منبع
- * داده‌ی واحد برای همه‌ی نوارهای قیمت بازار در پروژه.
+ * نوار افقی نرخ‌های زنده‌ی بازار که در بالای داشبورد نمایش داده می‌شود.
+ * منبع داده‌ی واحد برای همه‌ی نوارهای قیمت بازار در پروژه.
  *
  * منبع داده: `MarketRateItem[]` از `@/lib/market-rates` که توسط
  * `assembleMarketRates()` در `@/actions/market-rates.getMarketRates()`
  * (TGJU + USDT + FX + manual) ساخته می‌شود.
  *
- * 2026-07-04: variant `homepage` حذف شد — نوار بازار از صفحه‌ی اصلی
- * برداشته شد. این کامپوننت حالا فقط برای داشبورد استفاده می‌شود.
+ * تاریخچه:
+ *  - 2026-07-04: variant `homepage` حذف شد — نوار از صفحه‌ی اصلی برداشته شد.
+ *  - 2026-07-04: کاشی `AtelierMarket` («نبض بازار») از داشبورد حذف شد تا
+ *    دو بخش هم‌نام باقی نماند؛ این نوار حالا تنها نمای زنده‌ی بازار در
+ *    داشبورد است.
+ *  - 2026-07-04: برچسب پیش‌فرض از «بازار» به «نرخ‌های زنده» تغییر کرد.
+ *  - 2026-07-04: TrendBadge همیشه رندر می‌شود (حتی برای change=0) — رنگ
+ *    خنثی برای مقادیر صفر/نامشخص؛ قبلاً فقط روی تغییرات غیرصفر نمایش
+ *    داده می‌شد که باعث شده بود «طلا» تنها آیتم دارای درصد به نظر برسد.
  *
  * نکته‌های دسترسی:
- *  - `aria-label="نرخ‌های بازار"` روی track اصلی
+ *  - `aria-label="نرخ‌های زنده بازار"` روی track اصلی
  *  - تغییرات رنگ با کنتراست کافی برای WCAG AA
  *  - انیمیشن marquee در `prefers-reduced-motion` متوقف می‌شود
  *  - pause-on-hover/hold از طریق TickerShell (CSS-driven)
@@ -30,7 +37,7 @@ import { memo, useEffect, useMemo, useState } from 'react';
 export interface MarketRatesTickerProps {
   /** آرایه‌ی نرخ‌ها — همان `MarketRateItem[]` که در همه‌ی صفحات مشترک است. */
   rates: MarketRateItem[];
-  /** برچسب کنار live dot (پیش‌فرض «بازار»). */
+  /** برچسب کنار live dot (پیش‌فرض «نرخ‌های زنده»). */
   label?: string;
   /** کلاس اضافی برای wrapper بیرونی. */
   className?: string;
@@ -42,6 +49,13 @@ export interface MarketRatesTickerProps {
   duration?: number;
 }
 
+/**
+ * TrendBadge — همیشه رندر می‌شود تا کاربر ببیند هر نماد چه تغییری
+ * نسبت به قبل داشته. رنگ:
+ *  - سبز: صعودی (> 0)
+ *  - قرمز: نزولی (< 0)
+ *  - خنثی: صفر یا نامشخص (NaN) — بجای حذف، یک «۰.۰۰٪» کم‌رنگ نشان داده می‌شود.
+ */
 function TrendBadge({ value }: { value: number }) {
   const hasChange = Number.isFinite(value);
   const isPositive = hasChange && value > 0;
@@ -54,6 +68,15 @@ function TrendBadge({ value }: { value: number }) {
 
   return (
     <span
+      aria-label={
+        hasChange
+          ? isPositive
+            ? `افزایش ${formatChangePercent(value)}`
+            : isNegative
+              ? `کاهش ${formatChangePercent(Math.abs(value))}`
+              : 'بدون تغییر'
+          : 'تغییر نامشخص'
+      }
       className={cn(
         'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md',
         'font-bold tabular-nums',
@@ -128,7 +151,7 @@ function MarketRatesTickerImpl({
         <span className="absolute inset-0 inline-flex h-full w-full animate-ping rounded-full bg-emerald-500/40 opacity-60" />
         <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
       </span>
-      <span className="text-emerald-700 dark:text-emerald-300">{label ?? 'بازار'}</span>
+      <span className="text-emerald-700 dark:text-emerald-300">{label ?? 'نرخ‌های زنده'}</span>
       {now && (
         <span
           dir="ltr"
@@ -148,7 +171,7 @@ function MarketRatesTickerImpl({
         fadeSize="sm"
         tone="neutral"
         showLiveDot={false}
-        ariaLabel="نرخ‌های بازار"
+        ariaLabel="نرخ‌های زنده بازار"
         lead={leadContent}
       >
         <Ticker duration={tickerDuration} direction="rtl" pauseOnHover pauseOnHold>
@@ -176,9 +199,13 @@ function MarketRatesTickerImpl({
                   >
                     {formatWithUnit(rate.value, rate.unit, rate.decimals)}
                   </span>
-                  {Number.isFinite(rate.changePercent) && rate.changePercent !== 0 && (
-                    <TrendBadge value={rate.changePercent} />
-                  )}
+                  {/*
+                    همیشه TrendBadge رندر می‌شود تا کاربر برای همه‌ی نمادها
+                    درصد تغییر را ببیند. قبلاً شرط `!== 0` باعث می‌شد فقط
+                    نمادهایی که TGJU مقدار change غیرصفر داشت (مثل طلا)
+                    badge داشته باشند — این مشکل گزارش شده بود.
+                  */}
+                  <TrendBadge value={rate.changePercent} />
                 </div>
               );
             })}

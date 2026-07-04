@@ -96,9 +96,7 @@ export default async function SectionMagazine1({ className = '' }: SectionMagazi
   }
 
   return (
-    // marquee-pause: hover روی هر نقطه‌ی wrapper باعث توقف MarketTicker داخل
-    // ClientSidePosts می‌شه
-    <div className={`nc-SectionMagazine1 marquee-pause ${className}`}>
+    <div className={`nc-SectionMagazine1 ${className}`}>
       <Suspense fallback={<Skeleton className="h-[320px]" />}>
         <ClientSidePosts
           initialPosts={categorizedPosts}
