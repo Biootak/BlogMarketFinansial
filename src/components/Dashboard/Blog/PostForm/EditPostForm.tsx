@@ -54,6 +54,8 @@ const EditPostForm: React.FC<EditPostFormProps> = ({
     categories: initialData.categories.map((cat) => cat.id),
     tags: initialData.tags.map((tag) => tag.name),
     status: initialData.status,
+    // 2026-07-04: scheduledAt از DB. Prisma آن را به صورت Date برمی‌گرداند.
+    scheduledAt: initialData.scheduledAt ? new Date(initialData.scheduledAt) : null,
   };
 
   const handleUpdatePost = async (data: UpdatePostInput) => {

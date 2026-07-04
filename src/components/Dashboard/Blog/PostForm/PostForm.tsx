@@ -30,9 +30,10 @@ import { FiX, FiPlus, FiImage, FiVideo, FiMusic, FiGrid, FiFileText, FiTag, FiFo
 import { RiSendPlaneFill, RiDraftLine } from 'react-icons/ri';
 import { BiLoaderAlt } from 'react-icons/bi';
 import { HiOutlineSparkles } from 'react-icons/hi2';
+import { toJalaali } from 'jalaali-js';
 
 import type { CreatePostInput, UpdatePostInput, TaxonomyType, PostType, PostStatus } from '@/types/types';
-import type { ZodSchema } from 'zod';
+import type { ZodType } from 'zod';
 import { generateSlug } from '@/lib/utils';
 import { CategorySelectDialog } from './CategorySelectDialog';
 import { TagSelectDialog } from './TagSelectDialog';
@@ -57,8 +58,61 @@ const Editor = dynamic(
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
+// 2026-07-04: کمک‌کننده برای تعیین وضعیت نهایی پست بر اساس نقش +
+// scheduledAt + نوع دکمه. این منبع حقیقت است؛ سرور (`createPost`/`updatePost`)
+// همین منطق را با نقش کاربر اعمال می‌کند، ولی فرم برای نمایش فوری
+// به آن نیاز دارد.
+// 2026-07-04: `SCHEDULED` به enum اضافه شد؛ تایپ اینجا نیاز به
+// به‌روزرسانی داشت چون PostStatus حالا شامل SCHEDULED هم هست.
+function deriveStatus(args: {
+  role: string | undefined;
+  saveAsDraft: boolean;
+  scheduledAt: Date | null;
+}): PostStatus {
+  const { role, saveAsDraft, scheduledAt } = args;
+  if (saveAsDraft) return 'DRAFT';
+  const isFuture = scheduledAt && scheduledAt.getTime() > Date.now();
+  if (isFuture) {
+    return role === 'AUTHOR' ? 'PENDING_REVIEW' : 'SCHEDULED';
+  }
+  return role === 'AUTHOR' ? 'PENDING_REVIEW' : 'PUBLISHED';
+}
+
+// تبدیل Date به مقدار `<input type="datetime-local">`
+// (فرمت `YYYY-MM-DDTHH:mm` بدون timezone).
+function toDatetimeLocal(d: Date | null): string {
+  if (!d) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return (
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` +
+    `T${pad(d.getHours())}:${pad(d.getMinutes())}`
+  );
+}
+
+// نمایش شمسی تاریخ+زمان برای کمک به کاربر. اختیاری است چون input
+// اصلی خودش میلادی است؛ این فقط تأیید بصری است.
+function toPersianDateTime(d: Date | null): string {
+  if (!d) return '';
+  try {
+    const j = toJalaali(d);
+    const FA_MONTHS = [
+      'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+      'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند',
+    ];
+    const faDigit = new Intl.NumberFormat('fa-IR');
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${faDigit.format(j.jd)} ${FA_MONTHS[j.jm - 1]} ${faDigit.format(j.jy)} - ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  } catch {
+    return '';
+  }
+}
+
 interface PostFormProps<T extends CreatePostInput | UpdatePostInput> {
-  schema: ZodSchema<T>;
+  // 2026-07-04: `ZodType<T, any, any>` تا input متفاوت با output
+  // (مثلاً scheduledAt: `string|Date` در ورودی، `Date|null` در خروجی)
+  // مجاز باشد. `ZodSchema<T>` فقط یک type alias برای `ZodType<T>` است
+  // که input و output را یکی فرض می‌کند و با transform نمی‌سازد.
+  schema: ZodType<T, any, any>;
   defaultValues: T;
   onSubmit: (data: T) => Promise<void>;
   title: string;
@@ -179,27 +233,46 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
 
   const [saveAsDraft, setSaveAsDraft] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  // 2026-07-04: scheduledAt به‌صورت محلی نگه داشته می‌شود تا با
+  // input کنترل نشدهٔ datetime-local سازگار باشد. موقع submit در
+  // data تزریق می‌شود.
+  const [scheduledAt, setScheduledAt] = useState<Date | null>(
+    defaultValues.scheduledAt
+      ? defaultValues.scheduledAt instanceof Date
+        ? defaultValues.scheduledAt
+        : new Date(defaultValues.scheduledAt)
+      : null,
+  );
   const router = useRouter();
 
   const handleSubmit = async (data: FieldValues) => {
     try {
       setIsLoading(true);
-      let initialStatus: PostStatus = 'PENDING_REVIEW';
-      if (session?.user?.role === 'AUTHOR' && saveAsDraft) {
-        initialStatus = 'DRAFT';
-      } else if (session?.user?.role === 'ADMIN' || session?.user?.role === 'OWNER') {
-        initialStatus = saveAsDraft ? 'DRAFT' : 'PUBLISHED';
-      }
+      // 2026-07-04: وضعیت نهایی بر اساس نقش + scheduledAt + دکمه.
+      const finalStatus: PostStatus = deriveStatus({
+        role: session?.user?.role,
+        saveAsDraft,
+        scheduledAt,
+      });
 
       const submissionData = {
         ...data, content: editorContent, slug,
         categories: Array.isArray(data.categories) ? data.categories : [],
         tags: Array.isArray(data.tags) ? data.tags : [],
-        featuredImage, status: initialStatus,
+        featuredImage, status: finalStatus,
+        // scheduledAt فقط وقتی معتبر است که saveAsDraft نباشد.
+        // اگر draft ذخیره شود، scheduledAt را null می‌فرستیم تا
+        // پیش‌نویس بدون برنامه باشد.
+        scheduledAt: saveAsDraft ? null : scheduledAt,
       } as T;
 
       await onSubmit(submissionData);
-      toast({ variant: 'success', title: 'موفقیت‌آمیز', description: saveAsDraft ? 'پست به عنوان پیش‌نویس ذخیره شد' : 'پست با موفقیت ارسال شد' });
+      const toastDesc = saveAsDraft
+        ? 'پست به عنوان پیش‌نویس ذخیره شد'
+        : scheduledAt && scheduledAt.getTime() > Date.now()
+          ? 'پست برای انتشار در تاریخ انتخاب‌شده زمان‌بندی شد'
+          : 'پست با موفقیت ارسال شد';
+      toast({ variant: 'success', title: 'موفقیت‌آمیز', description: toastDesc });
       localStorage.removeItem(localStorageKey);
       localStorage.removeItem(`${localStorageKey}-editor`);
       await new Promise(resolve => setTimeout(resolve, 300));
@@ -568,9 +641,15 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                               <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-400" />در انتظار بررسی</div>
                             </SelectItem>
                             {!isAuthor && (
-                              <SelectItem value="PUBLISHED">
-                                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-400" />منتشر شده</div>
-                              </SelectItem>
+                              <>
+                                {/* 2026-07-04: گزینهٔ زمان‌بندی برای admin/owner. */}
+                                <SelectItem value="SCHEDULED">
+                                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-500" />زمان‌بندی شده</div>
+                                </SelectItem>
+                                <SelectItem value="PUBLISHED">
+                                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-400" />منتشر شده</div>
+                                </SelectItem>
+                              </>
                             )}
                           </SelectContent>
                         </Select>
@@ -579,6 +658,52 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                       </FormItem>
                     )}
                   />
+                </div>
+
+                {/* 2026-07-04: برنامهٔ انتشار — تاریخ/زمان انتشار آینده.
+                    اختیاری است؛ وقتی خالی باشد پست فوری منتشر/ذخیره می‌شود. */}
+                <div className="dash-panel p-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 text-white">
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <FormLabel className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                        زمان انتشار برنامه‌ریزی‌شده
+                      </FormLabel>
+                      <FormDescription className="text-xs">
+                        اختیاری. اگر تاریخ آینده انتخاب کنید، پست خودکار در آن زمان منتشر می‌شود.
+                      </FormDescription>
+                    </div>
+                  </div>
+                  <Input
+                    type="datetime-local"
+                    dir="ltr"
+                    value={toDatetimeLocal(scheduledAt)}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setScheduledAt(v ? new Date(v) : null);
+                    }}
+                    className="h-12 rounded-xl"
+                  />
+                  {scheduledAt && (
+                    <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                      نمایش شمسی: <span className="font-medium text-slate-700 dark:text-slate-300">{toPersianDateTime(scheduledAt)}</span>
+                      {scheduledAt.getTime() <= Date.now() && (
+                        <span className="ms-2 text-amber-600">(تاریخ گذشته — پست فوری منتشر می‌شود)</span>
+                      )}
+                    </p>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setScheduledAt(null)}
+                    disabled={!scheduledAt}
+                    className="mt-2 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    پاک کردن برنامه
+                  </button>
                 </div>
 
                 {/* Post Type */}

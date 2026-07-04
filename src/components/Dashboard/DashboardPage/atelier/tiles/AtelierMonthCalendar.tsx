@@ -26,10 +26,12 @@
  *   │ AGENDA  جزئیات روز انتخابی، درون‌خطی                          │
  *   └────────────────────────────────────────────────────────────────┘
  *
- * نکتهٔ داده: پست‌ها در Prisma هنوز فیلد `publishedAt` /
- * `scheduledAt` ندارند، پس bucketing بر اساس `createdAt` است؛
- * `getScheduledPosts` پنجرهٔ سه‌هفته‌ای برمی‌گرداند، این صفحه
- * به همان داده متکی است.
+ * نکتهٔ داده: 2026-07-04 — پست‌ها فیلد `scheduledAt` گرفتن. تقویم
+ * پست‌ها رو بر اساس `scheduledAt ?? createdAt` bucketing می‌کنه،
+ * یعنی پست‌های برنامه‌ریزی‌شده دقیقاً زیر سلول روز انتشارشون
+ * می‌افتن (نه روز ایجاد). `getScheduledPosts` پنجرهٔ گسترده
+ * (۶ ماه قبل + ۱۲ ماه بعد) برمی‌گردونه تا آیندهٔ دور هم دیده
+ * بشه.
  *
  * نکتهٔ تقویم: 2026-07-04 — کل گرید بر اساس تقویم شمسی رندر
  * می‌شود (نه میلادی با اسامی فارسی). کلید bucketing پست‌ها هم
@@ -70,7 +72,7 @@ interface AtelierMonthCalendarProps {
   embedded?: boolean;
 }
 
-type StatusKey = 'DRAFT' | 'PENDING_REVIEW' | 'PUBLISHED';
+type StatusKey = 'DRAFT' | 'PENDING_REVIEW' | 'SCHEDULED' | 'PUBLISHED';
 
 type JalaliYMD = { y: number; m: number; d: number };
 
@@ -109,6 +111,7 @@ const WEEKDAY_HEADERS_FA = [
 const STATUS_LABEL: Record<StatusKey, string> = {
   DRAFT: 'پیش‌نویس',
   PENDING_REVIEW: 'در انتظار',
+  SCHEDULED: 'زمان‌بندی شده',
   PUBLISHED: 'منتشر شده',
 };
 
@@ -200,22 +203,29 @@ export default function AtelierMonthCalendar({
     [cursor.y, cursor.m],
   );
 
-  // Bucket posts by their Jalali createdAt day so the right posts
-  // show under the right cells.
+  // Bucket posts by their effective day: scheduledAt if set, else
+  // createdAt. So a post scheduled for 25 Tir lands under Tir 25,
+  // not the day it was written.
   const byDay = useMemo(() => {
     const map = new Map<string, PostWithRelations[]>();
     for (const p of scheduledPosts ?? []) {
-      const ts = p.createdAt ? new Date(p.createdAt) : null;
-      if (!ts) continue;
-      const k = jalaliKey(gregorianToJalali(ts));
+      const eff =
+        p.scheduledAt ? new Date(p.scheduledAt) :
+        p.createdAt ? new Date(p.createdAt) :
+        null;
+      if (!eff) continue;
+      const k = jalaliKey(gregorianToJalali(eff));
       const list = map.get(k) ?? [];
       list.push(p);
       map.set(k, list);
     }
     for (const list of map.values()) {
       list.sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        (a, b) => {
+          const at = a.scheduledAt ?? a.createdAt;
+          const bt = b.scheduledAt ?? b.createdAt;
+          return new Date(bt).getTime() - new Date(at).getTime();
+        },
       );
     }
     return map;
@@ -228,7 +238,7 @@ export default function AtelierMonthCalendar({
   }, [grid, byDay, cursor.y, cursor.m]);
 
   const monthMetrics = useMemo(() => {
-    const counts = { DRAFT: 0, PENDING_REVIEW: 0, PUBLISHED: 0 };
+    const counts = { DRAFT: 0, PENDING_REVIEW: 0, SCHEDULED: 0, PUBLISHED: 0 };
     for (const p of monthPosts) {
       const s = p.status as StatusKey;
       if (s in counts) counts[s] += 1;
@@ -314,6 +324,13 @@ export default function AtelierMonthCalendar({
           <span className="at-cal__metric-label">منتشر شده</span>
           <span className="at-cal__metric-num tabular-nums">
             {fmtFa(monthMetrics.PUBLISHED)}
+          </span>
+        </div>
+        <div className="at-cal__metric at-cal__metric--scheduled">
+          <span className="at-cal__metric-dot" aria-hidden />
+          <span className="at-cal__metric-label">زمان‌بندی شده</span>
+          <span className="at-cal__metric-num tabular-nums">
+            {fmtFa(monthMetrics.SCHEDULED)}
           </span>
         </div>
         <div className="at-cal__metric at-cal__metric--pending">

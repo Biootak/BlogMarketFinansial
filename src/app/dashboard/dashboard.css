@@ -12318,6 +12318,14 @@
     background: var(--at-fg-muted);
     box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-fg-muted) 20%, transparent);
   }
+  /* 2026-07-04: رنگ آبی برای پست‌های زمان‌بندی‌شده (نمایش آینده). */
+  .at-cal__metric--scheduled {
+    border-color: color-mix(in oklch, var(--at-info) 28%, var(--at-line));
+  }
+  .at-cal__metric--scheduled .at-cal__metric-dot {
+    background: var(--at-info);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-info) 20%, transparent);
+  }
 
   /* ── Month grid ────────────────────────────────────────────────────── */
   .at-cal__grid {
@@ -12462,6 +12470,8 @@
   .at-cal__post-status--pending_review,
   .at-cal__post-status--pending { background: var(--at-warning); }
   .at-cal__post-status--draft { background: var(--at-fg-muted); }
+  /* 2026-07-04: پست‌های زمان‌بندی‌شده با رنگ آبی. */
+  .at-cal__post-status--scheduled { background: var(--at-info); }
   .at-cal__post--published {
     background: color-mix(in oklch, var(--at-accent) 6%, var(--at-bg));
     border-color: color-mix(in oklch, var(--at-accent) 22%, var(--at-line));
@@ -12470,6 +12480,10 @@
   .at-cal__post--pending {
     background: color-mix(in oklch, var(--at-warning) 7%, var(--at-bg));
     border-color: color-mix(in oklch, var(--at-warning) 24%, var(--at-line));
+  }
+  .at-cal__post--scheduled {
+    background: color-mix(in oklch, var(--at-info) 6%, var(--at-bg));
+    border-color: color-mix(in oklch, var(--at-info) 24%, var(--at-line));
   }
   .at-cal__more {
     font-size: 10.5px;
@@ -12577,6 +12591,8 @@
   .at-cal__agenda-dot--pending_review,
   .at-cal__agenda-dot--pending { background: var(--at-warning); }
   .at-cal__agenda-dot--published { background: var(--at-accent); }
+  /* 2026-07-04: dot آبی برای پست زمان‌بندی‌شده. */
+  .at-cal__agenda-dot--scheduled { background: var(--at-info); }
   .at-cal__agenda-link {
     display: flex;
     flex-direction: column;
@@ -12622,6 +12638,12 @@
     color: var(--at-accent-fg);
     border-color: color-mix(in oklch, var(--at-accent) 32%, transparent);
     background: var(--at-accent-soft);
+  }
+  /* 2026-07-04: pill آبی برای پست زمان‌بندی‌شده. */
+  .at-cal__pill--scheduled {
+    color: var(--at-info);
+    border-color: color-mix(in oklch, var(--at-info) 32%, transparent);
+    background: color-mix(in oklch, var(--at-info) 8%, var(--at-bg));
   }
   .at-cal__agenda-author { font-weight: 500; }
   .at-cal__agenda-view {

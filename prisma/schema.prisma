@@ -26,6 +26,9 @@ enum PostType {
 enum PostStatus {
   DRAFT
   PENDING_REVIEW
+  // 2026-07-04: وضعیت جدید برای پست‌هایی که زمان انتشار آینده دارند.
+  // توسط owner/admin تنظیم می‌شود (AUTHOR → PENDING_REVIEW).
+  SCHEDULED
   PUBLISHED
 }
 
@@ -185,6 +188,10 @@ model Post {
   authorId      String
   viewCount     Int        @default(0)
   readingTime   Int        @default(0)
+  // 2026-07-04: تاریخ/زمان انتشار برنامه‌ریزی‌شده. null یعنی بدون برنامه.
+  // تقویم انتشار (`AtelierMonthCalendar`) از این فیلد برای bucketing
+  // استفاده می‌کند؛ اگر null باشد، `createdAt` جایگزین می‌شود.
+  scheduledAt   DateTime?
 
   author     User        @relation(fields: [authorId], references: [id])
   comments   Comment[]
@@ -201,6 +208,8 @@ model Post {
   @@index([authorId])
   @@index([createdAt])
   @@index([isFeatured])
+  // 2026-07-04: برای کوئری‌های تقویم انتشار (پنجرهٔ گسترده روی scheduledAt).
+  @@index([scheduledAt])
   // 2026-06-14: composite indexes for the hot read paths.
   // The archive page + home always filter by status, then sort by
   // createdAt (or likes count) — single-column indexes force the

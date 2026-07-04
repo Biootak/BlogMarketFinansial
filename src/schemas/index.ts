@@ -116,6 +116,18 @@ export const CreatePostSchema = z.object({
   featuredImageHeight: z.number().int().positive().optional(),
   galleryImages: z.array(imageUrlSchema('لطفاً آدرس تصویر معتبر وارد کنید')).optional(),
   status: z.nativeEnum(PostStatus),
+  // 2026-07-04: تاریخ/زمان انتشار برنامه‌ریزی‌شده. null/empty یعنی
+  // «بدون برنامه، فوری منتشر/ذخیره شود». فرم رشتهٔ ISO (`datetime-local`
+  // = `YYYY-MM-DDTHH:mm`) می‌فرستد؛ اینجا به Date تبدیل می‌کنیم.
+  scheduledAt: z
+    .union([z.string().datetime({ offset: true }), z.string().datetime(), z.date(), z.null()])
+    .optional()
+    .transform((v) => {
+      if (v === null || v === undefined || v === '') return null;
+      if (v instanceof Date) return Number.isNaN(v.getTime()) ? null : v;
+      const d = new Date(v);
+      return Number.isNaN(d.getTime()) ? null : d;
+    }),
   categories: CategorySchema,
   tags: TagSchema,
   slug: z

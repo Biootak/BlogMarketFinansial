@@ -50,6 +50,8 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({
     categories: [],
     tags: [],
     slug: '',
+    // 2026-07-04: پست جدید بدون برنامهٔ انتشار.
+    scheduledAt: null,
   };
   const handleCreatePost = async (data: CreatePostInput) => {
     setIsSubmitting(true);

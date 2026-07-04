@@ -5,7 +5,7 @@
 
 ## Workflow — Build → Show → Improve
 
-**No plan phase.** Search fast (for Reuse) → Edit → User tests visually → Improve.
+**phase.** Search fast (for Reuse) → Edit → User tests visually → Improve.
 
 - Before code: only quick grep/find to avoid duplicates (Reuse → Refactor → Extend).
 - After code: `npx tsc --noEmit` if new TypeScript written; skip for tiny CSS/UI tweaks.
@@ -15,7 +15,7 @@ Only write a brief analysis (not a long plan) for: DB / migration / auth / secur
 
 ## Mandatory declaration (start of every task)
 
-> "AGENTS.md را خواندم. پلن نمی‌نویسم — مستقیم می‌سازم (Build → Show → Improve)."
+> "AGENTS.md را خواندم — مستقیم می‌سازم (Build → Show → Improve)."
 
 ## Critical conventions (always-on)
 

@@ -11,6 +11,7 @@ const statusConfig: Record<PostStatus, { color: TwMainColor; name: string }> = {
   PUBLISHED: { color: 'green', name: 'منتشر شده' },
   DRAFT: { color: 'yellow', name: 'پیش‌نویس' },
   PENDING_REVIEW: { color: 'blue', name: 'در انتظار بررسی' },
+  SCHEDULED: { color: 'purple', name: 'زمان‌بندی شده' },
 };
 
 const PostStatusBadge: React.FC<PostStatusBadgeProps> = ({ status, className }) => {

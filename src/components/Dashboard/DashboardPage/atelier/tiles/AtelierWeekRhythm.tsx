@@ -166,23 +166,29 @@ export default function AtelierWeekRhythm({
     [today],
   );
 
-  // Bucket posts by createdAt — this is the week's publishing plan,
-  // independent of `updatedAt` which already proved unreliable.
+  // Bucket posts by their effective day: scheduledAt if set, else
+  // createdAt. So a post scheduled for Friday this week lands on
+  // Friday, not the day it was written. Matches MonthCalendar.
   const byDay = useMemo(() => {
     const map = new Map<string, PostWithRelations[]>();
     for (const p of scheduledPosts ?? []) {
-      const ts = p.createdAt ? new Date(p.createdAt) : null;
-      if (!ts) continue;
-      const k = dayKey(ts);
+      const eff =
+        p.scheduledAt ? new Date(p.scheduledAt) :
+        p.createdAt ? new Date(p.createdAt) :
+        null;
+      if (!eff) continue;
+      const k = dayKey(eff);
       const list = map.get(k) ?? [];
       list.push(p);
       map.set(k, list);
     }
-    // sort each day newest first
+    // sort each day newest first (using effective date)
     for (const list of map.values()) {
-      list.sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
+      list.sort((a, b) => {
+        const at = a.scheduledAt ?? a.createdAt;
+        const bt = b.scheduledAt ?? b.createdAt;
+        return new Date(bt).getTime() - new Date(at).getTime();
+      });
     }
     return map;
   }, [scheduledPosts]);

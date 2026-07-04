@@ -13,7 +13,7 @@ Senior Staff Engineer · Frontend/Backend Architect · UX Strategist · Design S
 ## STOP — اعلان شروع هر task
 
 1. "AGENTS.md را خواندم."
-2. "مستقیم روی کد کار می‌کنم (Build → Show → Improve)؛ پلن نمی‌نویسم."
+2. "مستقیم روی کد کار می‌کنم (Build → Show → Improve)؛"
 3. "قبل از نوشتن کد، فایل‌های مرتبط را جستجو می‌کنم تا تکراری نسازم."
 4. "فقط در صورت نیاز، tsc/lint اجرا می‌کنم؛ تست بصری با خود کاربر است."
 5. "هر ادعایی با مسیر فایل، شماره خط، یا خروجی دستور پشتیبانی می‌شود."
@@ -37,7 +37,7 @@ Senior Staff Engineer · Frontend/Backend Architect · UX Strategist · Design S
 
 ## Workflow — Build → Show → Improve
 
-**پلن نمی‌نویسم.** کاربر بصری تست می‌کنه و فیدبک می‌ده.
+**phases** کاربر بصری تست می‌کنه و فیدبک می‌ده.
 
 ```
 Search (سریع، فقط برای Reuse) → Edit → نمایش → Improve
@@ -47,7 +47,7 @@ Search (سریع، فقط برای Reuse) → Edit → نمایش → Improve
 - بعد از تغییر کد: اگه TypeScript جدید نوشته شد → `npx tsc --noEmit`؛ برای تک‌های CSS/UI کوچک → صرفنظر.
 - کاربر خودش بصری تست می‌کنه و می‌گه "درست کن" یا "خوبه".
 
-**فقط در این موارد** قبل از کد یه آنالیز کوتاه بنویس (نه پلن بلند):
+**فقط در این موارد** قبل از کد یه آنالیز کوتاه بنویس (نه  بلند):
 - تغییر دیتابیس / migration / auth / security / caching / routing
 - کاربر خودش بگه "بزرگه" / "معماری عوض می‌شه" / "حساسه"
 

@@ -28,7 +28,9 @@ export async function createPost(data: CreatePostInput): Promise<ActionResult<Po
   try {
     let validatedData = CreatePostSchema.parse(data);
 
-    // نویسنده نمی‌تواند مستقیماً منتشر یا featured کند
+    // نویسنده نمی‌تواند مستقیماً منتشر یا featured کند. scheduledAt را
+    // نگه می‌داریم تا ادمین بتواند زمان انتشار را ببیند؛ ولی وضعیت
+    // همچنان PENDING_REVIEW است تا تأیید ادمین لازم باشد.
     if (session.user.role === Role.AUTHOR) {
       validatedData = {
         ...validatedData,
@@ -55,6 +57,7 @@ export async function createPost(data: CreatePostInput): Promise<ActionResult<Po
         ...validatedData,
         id,
         slug,
+        scheduledAt: validatedData.scheduledAt ?? null,
         author: {
           connect: { id: session.user?.id },
         },
@@ -97,6 +100,8 @@ export async function createPost(data: CreatePostInput): Promise<ActionResult<Po
     revalidateTag('post-slug');
     revalidateTag('archive');
     revalidateTag('dashboard-stats');
+    // 2026-07-04: صفحهٔ تقویم (`/dashboard/posts/calendar`) خودش
+    // `dynamic = force-dynamic` است؛ نیازی به tag جدا نیست.
     // 2026-06-19: bust home-page data caches so a newly published/updated
     // post appears on the home grid + count immediately instead of after
     // the 60s revalidate window.
@@ -199,6 +204,9 @@ export async function updatePost(
       data: {
         ...validatedData,
         slug,
+        // 2026-07-04: scheduledAt صریح پاس داده می‌شود تا اگر فرم
+        // null فرستاد، در DB هم null شود (نه اینکه فیلد تغییر نکند).
+        scheduledAt: validatedData.scheduledAt ?? null,
         categories: {
           set: [], // ابتدا همه ارتباطات را حذف می‌کنیم
           connect: validatedData.categories?.map((categoryId) => ({ id: categoryId })) ?? [],
@@ -302,7 +310,8 @@ export async function updatePostStatus(
       const validTransitions = {
         PUBLISHED: ['DRAFT'],
         DRAFT: ['PENDING_REVIEW'],
-        PENDING_REVIEW: ['DRAFT']
+        PENDING_REVIEW: ['DRAFT'],
+        SCHEDULED: ['DRAFT'],
       };
 
       if (!validTransitions[post.status]?.includes(newStatus)) {
@@ -353,6 +362,7 @@ export async function updatePostStatus(
       DRAFT: 'پیش‌نویس',
       PENDING_REVIEW: 'در انتظار بررسی',
       PUBLISHED: 'منتشر شده',
+      SCHEDULED: 'زمان‌بندی شده',
     };
     await logActivity('تغییر وضعیت پست', `وضعیت پست "${updatedPost.title}" به "${statusLabels[newStatus]}" تغییر کرد`);
     
@@ -1278,17 +1288,22 @@ const getCachedStats = unstable_cache(
 );
 
 /**
- * getScheduledPosts — پست‌های «هفتۀ جاری» برای داشبورد.
+ * getScheduledPosts — پست‌های «پنجرهٔ تقویم انتشار» برای داشبورد.
  *
- * 2026-07-04: نسخهٔ قبلی کوئری‌ش `status: PUBLISHED AND updatedAt > now()`
- * بود که همیشه صفر برمی‌گردوند (پست‌های گذشته را نمی‌دید) و تقویم انتشار
- * و ردیف «هفتۀ جاری» را بی‌معنی می‌کرد. حالا پنجرهٔ هفتۀ جاری (شنبه
- * تا جمعه، به وقت سرور) را می‌گیریم و پست‌هایی که در این پنجره
- * `createdAt` یا `updatedAt` دارند برمی‌گردانیم — همهٔ وضعیت‌ها
- * (پیش‌نویس/در انتظار/منتشر شده) تا تقویم خالی به نظر نرسد.
+ * 2026-07-04: نسخهٔ قبلی پنجرهٔ ۳ هفته‌ای (یکی قبل + جاری + یکی بعد)
+ * می‌گرفت و فقط بر اساس createdAt/updatedAt بود. این برای تقویم
+ * انتشار کافی نبود چون پست‌هایی که برای ماه‌های آینده برنامه‌ریزی
+ * شده‌اند را نشان نمی‌داد. حالا:
  *
- * بُچ ۱۵ روزه می‌گیریم (یک هفته قبل + یک هفته بعد) تا تقویم
- * انتشار آیندهٔ نزدیک را هم نشان بدهد.
+ *   - پنجرهٔ وسیع: ۶ ماه قبل + ۱۲ ماه بعد (از امروز)
+ *   - فیلتر: `scheduledAt` در پنجره **یا** `createdAt`/`updatedAt` در
+ *     پنجره. پست‌های قدیمیِ بدون scheduledAt هم دیده می‌شوند.
+ *   - همهٔ وضعیت‌ها (DRAFT/PENDING_REVIEW/SCHEDULED/PUBLISHED) — تقویم
+ *     خالی به نظر نرسد.
+ *
+ * `AtelierMonthCalendar` بعداً با `scheduledAt ?? createdAt` bucketing
+ * می‌کند، پس پست‌های برنامه‌ریزی‌شده دقیقاً زیر سلول روز انتشارشان
+ * ظاهر می‌شوند.
  */
 export async function getScheduledPosts(): Promise<ActionResult<PostWithRelations[]>> {
   const session = await auth();
@@ -1303,16 +1318,19 @@ export async function getScheduledPosts(): Promise<ActionResult<PostWithRelation
 
   try {
     const now = new Date();
+    // شروع: ۶ ماه قبل از نیمه‌شب امروز
     const start = new Date(now);
     start.setHours(0, 0, 0, 0);
-    // Persian week starts Saturday; JS Sat=6, so offset from Sat.
-    const offset = (start.getDay() - 6 + 7) % 7;
-    start.setDate(start.getDate() - offset - 7); // یک هفته قبل‌تر
-    const end = new Date(start);
-    end.setDate(end.getDate() + 21); // سه هفته: یکی قبل + هفتۀ جاری + یکی بعد
+    start.setMonth(start.getMonth() - 6);
+    // پایان: ۱۲ ماه بعد از نیمه‌شب امروز
+    const end = new Date(now);
+    end.setHours(0, 0, 0, 0);
+    end.setMonth(end.getMonth() + 12);
+    end.setDate(end.getDate() + 1); // نیمه‌شبِ روز بعد، تا پوشش کامل
 
     const where: Prisma.PostWhereInput = {
       OR: [
+        { scheduledAt: { gte: start, lt: end } },
         { createdAt: { gte: start, lt: end } },
         { updatedAt: { gte: start, lt: end } },
       ],
@@ -1338,6 +1356,8 @@ export async function getScheduledPosts(): Promise<ActionResult<PostWithRelation
         authorId: true,
         createdAt: true,
         updatedAt: true,
+        // 2026-07-04: scheduledAt برای bucketing تقویم لازم است.
+        scheduledAt: true,
         author: {
           select: {
             id: true,
@@ -1353,20 +1373,20 @@ export async function getScheduledPosts(): Promise<ActionResult<PostWithRelation
           select: { comments: true, likes: true, savedBy: true },
         },
       },
-      orderBy: [{ createdAt: 'desc' }, { updatedAt: 'desc' }],
-      take: 200,
+      orderBy: [{ scheduledAt: 'asc' }, { createdAt: 'desc' }],
+      take: 500,
     });
 
     return {
       success: true,
-      message: 'پست‌های هفتۀ جاری با موفقیت دریافت شدند',
+      message: 'پست‌های پنجرهٔ تقویم با موفقیت دریافت شدند',
       data: posts as unknown as PostWithRelations[],
     };
   } catch (error) {
     console.error('Error in getScheduledPosts:', error);
     return {
       success: false,
-      message: 'خطا در دریافت پست‌های هفتۀ جاری',
+      message: 'خطا در دریافت پست‌های پنجرهٔ تقویم',
     };
   }
 }

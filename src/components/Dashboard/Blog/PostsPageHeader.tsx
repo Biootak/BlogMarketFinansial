@@ -9,6 +9,7 @@ import {
   HiOutlinePlus,
   HiOutlineMagnifyingGlass,
   HiOutlineDocumentText,
+  HiOutlineCalendarDays,
   HiOutlineXMark,
   HiCheck,
 } from 'react-icons/hi2';
@@ -117,22 +118,41 @@ export default function PostsPageHeader({ searchParams }: PostsPageHeaderProps) 
               </div>
             </div>
 
-            <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}>
-              <Link
-                href="/dashboard/posts/create"
-                className={cn(
-                  'inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white',
-                  'bg-gradient-to-l from-violet-600 to-indigo-600',
-                  'hover:from-violet-700 hover:to-indigo-700',
-                  'shadow-lg shadow-violet-500/25',
-                  'transition-all duration-200',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2',
-                )}
-              >
-                <HiOutlinePlus className="w-4 h-4" />
-                <span className="hidden sm:inline">پست جدید</span>
-              </Link>
-            </motion.div>
+            <div className="flex items-center gap-2">
+              {/* 2026-07-04: لینک مستقیم به تقویم انتشار از لیست پست‌ها. */}
+              <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}>
+                <Link
+                  href="/dashboard/posts/calendar"
+                  className={cn(
+                    'inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-sm font-semibold',
+                    'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20',
+                    'border border-blue-200 dark:border-blue-800',
+                    'hover:bg-blue-100 dark:hover:bg-blue-900/30',
+                    'transition-colors duration-200',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2',
+                  )}
+                >
+                  <HiOutlineCalendarDays className="w-4 h-4" />
+                  <span className="hidden sm:inline">تقویم انتشار</span>
+                </Link>
+              </motion.div>
+              <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}>
+                <Link
+                  href="/dashboard/posts/create"
+                  className={cn(
+                    'inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white',
+                    'bg-gradient-to-l from-violet-600 to-indigo-600',
+                    'hover:from-violet-700 hover:to-indigo-700',
+                    'shadow-lg shadow-violet-500/25',
+                    'transition-all duration-200',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2',
+                  )}
+                >
+                  <HiOutlinePlus className="w-4 h-4" />
+                  <span className="hidden sm:inline">پست جدید</span>
+                </Link>
+              </motion.div>
+            </div>
           </div>
 
           {/* Bottom row: search + filter */}
