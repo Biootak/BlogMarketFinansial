@@ -5,6 +5,8 @@
     ]
   },
   "enabledMcpjsonServers": [
-    "graphify"
+    "graphify",
+    "context7",
+    "context-mode"
   ]
 }

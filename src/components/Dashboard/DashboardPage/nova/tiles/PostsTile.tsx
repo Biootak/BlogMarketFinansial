@@ -12,6 +12,7 @@ import { Spotlight } from '@/components/Dashboard/primitives';
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { HiOutlineArrowLeft, HiOutlineEye, HiOutlineFire, HiOutlinePencil } from 'react-icons/hi2';
+import { fmt } from '../utils';
 
 interface PostsTileProps {
   popularPosts: Array<{
@@ -23,15 +24,6 @@ interface PostsTileProps {
     slug: string;
   }>;
   recentDrafts: Array<{ id: string; title: string; date: string; author: string }>;
-}
-
-function fmt(n: number) {
-  return new Intl.NumberFormat('fa-IR').format(n);
-}
-
-function rankGradient(i: number): string {
-  const hue = (285 - i * 26 + 360) % 360;
-  return `linear-gradient(135deg, oklch(66% 0.17 ${hue}) 0%, oklch(72% 0.14 ${(hue + 40) % 360}) 100%)`;
 }
 
 export default function PostsTile({ popularPosts, recentDrafts }: PostsTileProps) {
@@ -63,7 +55,7 @@ export default function PostsTile({ popularPosts, recentDrafts }: PostsTileProps
               {top.map((post, i) => (
                 <li key={post.id}>
                   <Link href={`/blog/${post.slug}`} className="nova-postrow">
-                    <span className="nova-postrow__rank" style={{ background: rankGradient(i) }}>
+                    <span className="nova-postrow__rank">
                       {(i + 1).toLocaleString('fa-IR')}
                     </span>
                     <span className="nova-postrow__body">

@@ -1,11 +1,11 @@
 'use client';
 
 /**
- * KpiTile — a single metric tile in the NOVA bento cluster.
+ * KpiTile — a single metric tile in the NOVA bento cluster (v2).
  *
- * Compact glass tile: tone dot, label, big CountUp value, a one-line
- * sparkline and a trend delta chip. Four of these sit in a 2×2 cluster
- * beside the hero. Each carries its own cursor Spotlight for depth.
+ * Compact tile with tone-colored left accent stripe, big CountUp value,
+ * a one-line sparkline and a trend delta chip. Spotlight removed — the
+ * accent stripe provides enough visual identity.
  */
 
 import CountUp from '@/components/Dashboard/DashboardPage/CountUp';
@@ -16,8 +16,7 @@ import {
   HiOutlineArrowUpRight,
   HiOutlineMinus,
 } from 'react-icons/hi2';
-
-export type KpiTone = 'primary' | 'cyan' | 'rose' | 'emerald' | 'violet' | 'amber';
+import { pickTrend } from '../utils';
 
 const SPOT: Record<KpiTone, SpotlightTone> = {
   primary: 'indigo',
@@ -28,13 +27,15 @@ const SPOT: Record<KpiTone, SpotlightTone> = {
   amber: 'amber',
 };
 
+export type KpiTone = 'primary' | 'cyan' | 'rose' | 'emerald' | 'violet' | 'amber';
+
 const STROKE: Record<KpiTone, string> = {
-  primary: 'oklch(62% 0.18 285)',
-  cyan: 'oklch(70% 0.13 230)',
-  rose: 'oklch(68% 0.18 20)',
-  emerald: 'oklch(68% 0.15 155)',
-  violet: 'oklch(66% 0.16 300)',
-  amber: 'oklch(75% 0.15 70)',
+  primary: 'var(--nova-primary)',
+  cyan: 'var(--nova-cyan)',
+  rose: 'var(--nova-rose)',
+  emerald: 'var(--nova-emerald)',
+  violet: 'var(--nova-violet)',
+  amber: 'var(--nova-amber)',
 };
 
 interface KpiTileProps {
@@ -44,17 +45,6 @@ interface KpiTileProps {
   tone: KpiTone;
   icon: React.ReactNode;
   area: string;
-}
-
-function pickTrend(data: number[]) {
-  if (data.length < 2) return { trend: 'flat' as const, delta: 0 };
-  const half = Math.max(1, Math.floor(data.length / 2));
-  const recent = data.slice(-half).reduce((a, b) => a + b, 0);
-  const prev = data.slice(0, -half).reduce((a, b) => a + b, 0);
-  if (prev === 0) return { trend: (recent > 0 ? 'up' : 'flat') as 'up' | 'flat', delta: recent > 0 ? 100 : 0 };
-  const d = ((recent - prev) / prev) * 100;
-  const trend = Math.abs(d) < 1 ? 'flat' : d > 0 ? 'up' : 'down';
-  return { trend: trend as 'up' | 'down' | 'flat', delta: d };
 }
 
 function MiniSpark({ data, stroke }: { data: number[]; stroke: string }) {

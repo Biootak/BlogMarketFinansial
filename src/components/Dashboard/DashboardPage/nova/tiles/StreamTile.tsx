@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { HiOutlineArrowLeft, HiOutlineBolt, HiOutlineInbox } from 'react-icons/hi2';
 import type { ActivityItem } from '../../overview/ActivityRail';
+import { formatRelativeFa, dayLabelFa } from '../utils';
 
 type Tone = 'violet' | 'cyan' | 'emerald' | 'amber' | 'rose';
 
@@ -23,35 +24,6 @@ function actionTone(action: string): Tone {
   if (/(ویرایش|بروز)/.test(action)) return 'cyan';
   if (/(تأیید|انتشار)/.test(action)) return 'amber';
   return 'violet';
-}
-
-function isSameDay(a: Date, b: Date) {
-  return (
-    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
-  );
-}
-
-function dayLabelFa(d: Date, now: Date): string {
-  if (isSameDay(d, now)) return 'امروز';
-  const yesterday = new Date(now);
-  yesterday.setDate(now.getDate() - 1);
-  if (isSameDay(d, yesterday)) return 'دیروز';
-  const dayDiff = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
-  if (dayDiff < 7) return 'این هفته';
-  return d.toLocaleDateString('fa-IR', { month: 'long', year: 'numeric' });
-}
-
-function formatRelativeFa(d: Date, now: Date) {
-  const diff = Math.max(0, now.getTime() - d.getTime());
-  const s = Math.floor(diff / 1000);
-  if (s < 45) return 'لحظاتی پیش';
-  const m = Math.floor(s / 60);
-  if (m < 60) return `${m.toLocaleString('fa-IR')} دقیقه پیش`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h.toLocaleString('fa-IR')} ساعت پیش`;
-  const day = Math.floor(h / 24);
-  if (day < 7) return `${day.toLocaleString('fa-IR')} روز پیش`;
-  return d.toLocaleDateString('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
 interface StreamTileProps {

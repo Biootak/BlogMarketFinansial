@@ -1,15 +1,18 @@
 import { auth } from '@/auth';
 import { notFound, redirect } from 'next/navigation';
 
+import { getMarketRates } from '@/actions/market-rates';
 import { getPopularPosts } from '@/actions/getPopularPosts';
 import { getRecentActivity } from '@/actions/getRecentActivity';
 import { getRecentDrafts } from '@/actions/getRecentDrafts';
+import { getTopAuthors } from '@/actions/getTopAuthors';
 import { getViewStats } from '@/actions/getViewStats';
 import { getScheduledPosts, getStats } from '@/actions/postActions';
 // 2026-07-03: Redesigned the dashboard home as NOVA — a 2026 bento command
 // deck (single asymmetric mosaic of deep-glass tiles with spatial-depth
 // tilt + scroll-driven CSS reveal), replacing the TIDE newsroom stations.
-// The data layer is unchanged — only the presentation is new.
+// 2026-07-03 v2: "Quiet Confidence" redesign — solid surfaces, typography-
+// driven hierarchy, real market data, top authors leaderboard.
 import { NovaDeck } from '@/components/Dashboard/DashboardPage/nova';
 import ServiceRequestsWidget from '@/components/Dashboard/ServiceRequests/ServiceRequestsWidget';
 import { checkRole } from '@/lib/auth';
@@ -33,6 +36,8 @@ export default async function Dashboard() {
     recentDraftsResult,
     viewStatsResult,
     recentActivityResult,
+    marketRates,
+    topAuthors,
   ] = await Promise.all([
     getStats(),
     getScheduledPosts(),
@@ -40,6 +45,8 @@ export default async function Dashboard() {
     getRecentDrafts(),
     getViewStats(),
     getRecentActivity(8),
+    getMarketRates(),
+    getTopAuthors(4),
   ]);
 
   if (
@@ -80,6 +87,8 @@ export default async function Dashboard() {
         viewStats={viewStatsResult.data}
         recentActivity={recentActivity}
         userRole={userRole}
+        marketRates={marketRates}
+        topAuthors={topAuthors}
       />
       {isAdmin && (
         <div className="px-4 sm:px-6 lg:px-8 pb-8">

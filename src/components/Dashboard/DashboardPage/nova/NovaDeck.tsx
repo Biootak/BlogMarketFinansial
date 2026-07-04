@@ -1,17 +1,21 @@
 'use client';
 
 /**
- * NovaDeck — NOVA 2026 bento command deck (dashboard home redesign).
+ * NovaDeck — NOVA 2026 bento command deck (dashboard home).
  *
- * A ground-up replacement for the TIDE vertical-station composition. Instead
- * of seven stacked panels separated by hairlines, NOVA is ONE asymmetric
- * bento mosaic (CSS Grid, grid-template-areas) of deep-glass tiles floating
- * over a mesh-depth background:
+ * v2 "Quiet Confidence" redesign (2026-07-03):
+ *   • Solid surfaces replace glassmorphism — no blur, no transparency.
+ *   • Typography-driven hierarchy — weight and size create structure.
+ *   • Mesh background removed — clean canvas, no decorative blobs.
+ *   • Spotlight/NoiseTexture/3D-tilt removed from all tiles.
+ *   • MarketPulseTile wired to real exchange rates.
+ *   • AsideTile shows top authors instead of a static quote.
  *
+ * Layout (unchanged — the bento grid is still strong):
  *   ┌───────────────┬─────┬─────┐
- *   │  HERO (3D)    │ KPI │ KPI │
- *   │               ├─────┼─────┤
- *   │               │ KPI │ KPI │
+ *   │  HERO          │ KPI │ KPI │
+ *   │                ├─────┼─────┤
+ *   │                │ KPI │ KPI │
  *   ├───────────┬───┴─────┴─────┤
  *   │  CHART     │  STREAM       │
  *   ├─────┬──────┤  (tall)       │
@@ -19,18 +23,6 @@
  *   ├─────┴───┬──┴───────────────┤
  *   │  POSTS   │  ASIDE           │
  *   └──────────┴──────────────────┘
- *
- * 2026 techniques (distinct from TIDE):
- *   • Bento grid — spatial weight per metric, one unified mosaic.
- *   • Spatial depth — frosted-glass tiles, colored soft shadows, cursor 3D
- *     tilt on the hero (useTilt), gradient-mask borders.
- *   • Scroll-driven CSS reveal — `animation-timeline: view()` drives tile
- *     entrances with zero JS (graceful time-based fallback + reduced-motion
- *     off-switch, both in dashboard.css).
- *   • Interactive tiles — cursor Spotlight + hover-reveal affordances.
- *
- * Public API is identical to TideShell so the server page swaps them 1:1
- * without touching the data layer.
  */
 
 import CommandPalette from '@/components/Dashboard/DashboardPage/CommandPalette';
@@ -42,6 +34,8 @@ import {
   HiOutlineEye,
   HiOutlineShare,
 } from 'react-icons/hi2';
+import type { MarketRateItem } from '@/lib/market-rates';
+import type { TopAuthor } from '@/actions/getTopAuthors';
 import ActionsTile from './tiles/ActionsTile';
 import AsideTile from './tiles/AsideTile';
 import ChartTile from './tiles/ChartTile';
@@ -73,6 +67,8 @@ interface NovaDeckProps {
   viewStats: { labels: string[]; data: number[]; totalViews: number; todayViews: number };
   recentActivity: import('../overview/ActivityRail').ActivityItem[];
   userRole: 'OWNER' | 'ADMIN' | 'AUTHOR';
+  marketRates: MarketRateItem[];
+  topAuthors: TopAuthor[];
 }
 
 const NovaDeck: React.FC<NovaDeckProps> = (props) => {
@@ -106,14 +102,6 @@ const NovaDeck: React.FC<NovaDeckProps> = (props) => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       >
-        {/* Mesh-depth backdrop — GPU-friendly, paused under reduced-motion. */}
-        <div className="nova-deck__bg" aria-hidden>
-          <span className="nova-deck__mesh nova-deck__mesh--a" />
-          <span className="nova-deck__mesh nova-deck__mesh--b" />
-          <span className="nova-deck__mesh nova-deck__mesh--c" />
-          <span className="nova-deck__grid" />
-        </div>
-
         <div className="nova-grid">
           <HeroTile
             todayViews={viewStats.todayViews}
@@ -128,9 +116,9 @@ const NovaDeck: React.FC<NovaDeckProps> = (props) => {
           <ChartTile scheduledPosts={props.scheduledPosts} />
           <StreamTile items={props.recentActivity} />
           <ActionsTile userRole={props.userRole} />
-          <MarketPulseTile />
+          <MarketPulseTile rates={props.marketRates} />
           <PostsTile popularPosts={props.popularPosts} recentDrafts={props.recentDrafts} />
-          <AsideTile />
+          <AsideTile topAuthors={props.topAuthors} />
         </div>
       </motion.div>
 

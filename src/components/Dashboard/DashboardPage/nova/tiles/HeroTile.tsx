@@ -1,17 +1,15 @@
 'use client';
 
 /**
- * HeroTile — NOVA bento anchor tile (2026 spatial-depth command deck).
+ * HeroTile — NOVA bento anchor tile (v2 "Quiet Confidence").
  *
- * The largest tile in the mosaic. Unlike TIDE's two-column magazine cover,
- * this is a single deep-glass panel that tilts in 3D toward the cursor
- * (`useTilt`), carries the day's anchor number (CountUp), a live sparkline,
- * and the primary "write post" CTA. The tilt gives the deck genuine spatial
- * depth without a 3D engine — a signature 2026 move.
+ * The largest tile in the mosaic. Clean solid surface with typography-
+ * driven hierarchy. No glassmorphism, no 3D tilt, no Spotlight, no
+ * NoiseTexture. Just the day's anchor number, a sparkline, and a
+ * clear CTA.
  */
 
 import CountUp from '@/components/Dashboard/DashboardPage/CountUp';
-import { MagneticButton, NoiseTexture, Spotlight } from '@/components/Dashboard/primitives';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -23,38 +21,12 @@ import {
   HiOutlineMinus,
   HiOutlinePencilSquare,
 } from 'react-icons/hi2';
-import { useTilt } from '../hooks/useTilt';
-
-type Trend = 'up' | 'down' | 'flat';
+import { pickTrend, fmt, timeOfDay } from '../utils';
 
 interface HeroTileProps {
   todayViews: number;
   totalViews: number;
   spark: number[];
-}
-
-function pickTrend(data: number[]): { trend: Trend; delta: number } {
-  if (data.length < 2) return { trend: 'flat', delta: 0 };
-  const half = Math.max(1, Math.floor(data.length / 2));
-  const recent = data.slice(-half).reduce((a, b) => a + b, 0);
-  const prev = data.slice(0, -half).reduce((a, b) => a + b, 0);
-  if (prev === 0 && recent === 0) return { trend: 'flat', delta: 0 };
-  if (prev === 0) return { trend: 'up', delta: 100 };
-  const d = ((recent - prev) / prev) * 100;
-  const t: Trend = Math.abs(d) < 1 ? 'flat' : d > 0 ? 'up' : 'down';
-  return { trend: t, delta: d };
-}
-
-function timeOfDay(hour: number) {
-  if (hour < 5) return 'بامداد بخیر';
-  if (hour < 12) return 'صبح بخیر';
-  if (hour < 17) return 'بعدازظهر بخیر';
-  if (hour < 20) return 'عصر بخیر';
-  return 'شب بخیر';
-}
-
-function fmt(n: number) {
-  return new Intl.NumberFormat('fa-IR').format(n);
 }
 
 /** Animated area sparkline that draws itself on mount. */
@@ -133,7 +105,6 @@ function HeroSpark({ data, gradId }: { data: number[]; gradId: string }) {
 export default function HeroTile({ todayViews, totalViews, spark }: HeroTileProps) {
   const user = useCurrentUser();
   const gradId = useId();
-  const tiltRef = useTilt<HTMLDivElement>({ max: 5 });
   const [hour, setHour] = useState(12);
 
   useEffect(() => {
@@ -148,17 +119,16 @@ export default function HeroTile({ todayViews, totalViews, spark }: HeroTileProp
   const TrendIcon =
     trend === 'up' ? HiOutlineArrowUpRight : trend === 'down' ? HiOutlineArrowDownRight : HiOutlineMinus;
 
+  // Dynamic Jalali year
+  const jalaliYear = new Intl.DateTimeFormat('fa-IR', { year: 'numeric' }).format(new Date());
+
   return (
     <section className="nova-tile nova-tile--hero" data-tone="primary" aria-label="خلاصهٔ امروز">
-      <div ref={tiltRef} className="nova-hero__tilt">
-        <Spotlight tone="indigo" size={560} />
-        <NoiseTexture opacity={0.02} />
-        <div className="nova-hero__wash" aria-hidden />
-
+      <div className="nova-hero__content">
         <div className="nova-hero__top">
           <span className="nova-hero__eyebrow">
             <HiOutlineBolt className="w-3.5 h-3.5" />
-            <span>پیشخوان زنده · ۱۴۰۵</span>
+            <span>پیشخوان زنده · {jalaliYear}</span>
           </span>
           <h1 className="nova-hero__greeting">
             {greeting}،<em className="nova-hero__name">{user?.name ?? 'کاربر'}</em>
@@ -184,34 +154,23 @@ export default function HeroTile({ todayViews, totalViews, spark }: HeroTileProp
         </div>
 
         <div className="nova-hero__actions">
-          <MagneticButton
-            asChild
-            magnetRange={6}
-            className={cn(
-              'group inline-flex items-center gap-2.5 ps-3 pe-4 h-11 rounded-2xl font-semibold text-sm text-white',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2',
-              '!hover:scale-100 active:!scale-100',
-            )}
-            style={{
-              background: 'linear-gradient(135deg, oklch(60% 0.2 285) 0%, oklch(68% 0.16 232) 100%)',
-              boxShadow:
-                '0 1px 0 oklch(100% 0 0 / 0.2) inset, 0 14px 34px -14px oklch(58% 0.2 285 / 0.6)',
-            }}
+          <Link
+            href="/dashboard/posts/create"
+            className="nova-hero__cta"
+            aria-label="نوشتن پست جدید"
           >
-            <Link href="/dashboard/posts/create" aria-label="نوشتن پست جدید">
-              <span className="inline-flex w-6 h-6 items-center justify-center rounded-md bg-white/15 group-hover:bg-white/25 transition-colors">
-                <HiOutlinePencilSquare className="w-3.5 h-3.5" />
-              </span>
-              <span>نوشتن پست جدید</span>
-              <span
-                aria-hidden
-                className="hidden sm:inline-flex items-center gap-0.5 ms-1 text-[10px] font-mono text-white/70"
-              >
-                <kbd className="rounded border border-white/20 bg-white/10 px-1.5 py-0.5">⌘</kbd>
-                <kbd className="rounded border border-white/20 bg-white/10 px-1.5 py-0.5">N</kbd>
-              </span>
-            </Link>
-          </MagneticButton>
+            <span className="nova-hero__cta-icon">
+              <HiOutlinePencilSquare className="w-3.5 h-3.5" />
+            </span>
+            <span>نوشتن پست جدید</span>
+            <span
+              aria-hidden
+              className="hidden sm:inline-flex items-center gap-0.5 ms-1 text-[10px] font-mono opacity-70"
+            >
+              <kbd className="rounded border border-white/20 bg-white/10 px-1.5 py-0.5">⌘</kbd>
+              <kbd className="rounded border border-white/20 bg-white/10 px-1.5 py-0.5">N</kbd>
+            </span>
+          </Link>
 
           <Link href="/dashboard/posts" className="nova-hero__ghost">
             <span>همهٔ پست‌ها</span>

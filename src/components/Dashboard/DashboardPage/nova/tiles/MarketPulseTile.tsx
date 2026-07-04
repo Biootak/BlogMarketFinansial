@@ -1,17 +1,17 @@
 'use client';
 
 /**
- * MarketPulseTile — NOVA market-rates tile.
+ * MarketPulseTile — NOVA market-rates tile (v2: real data).
  *
- * Replaces the TIDE horizontal marquee ticker with a vertical, scannable
- * bento tile: one row per instrument (dollar, euro, gold, coin) with value
- * and trend delta. Bento-native — the eye can compare rows at a glance
- * instead of chasing a moving ribbon.
+ * Displays four key market rates (dollar, euro, gold, coin) with live
+ * values from `getMarketRates()`. No more hardcoded placeholders.
  */
 
-import { Spotlight } from '@/components/Dashboard/primitives';
 import { cn } from '@/lib/utils';
+import { formatWithUnit, formatChangePercent } from '@/lib/market-rates/format';
+import type { MarketRateItem } from '@/lib/market-rates';
 import Link from 'next/link';
+import { useMemo } from 'react';
 import {
   HiOutlineArrowDownRight,
   HiOutlineArrowUpRight,
@@ -20,32 +20,36 @@ import {
   HiOutlinePresentationChartLine,
 } from 'react-icons/hi2';
 
+/** The four symbols we display in the dashboard tile. */
+const DISPLAY_SYMBOLS = ['IRAN_USD', 'IRAN_EUR', 'IRAN_GOLD_18K', 'IRAN_COIN_EMAMI'] as const;
+
 type Trend = 'up' | 'down' | 'flat';
 
-interface Rate {
-  label: string;
-  value: string;
-  delta: string;
-  trend: Trend;
+function getTrend(changePercent: number): Trend {
+  if (Math.abs(changePercent) < 0.01) return 'flat';
+  return changePercent > 0 ? 'up' : 'down';
 }
 
-const RATES: Rate[] = [
-  { label: 'دلار', value: '۶۹۲,۰۰۰', delta: '+۰.۴٪', trend: 'up' },
-  { label: 'یورو', value: '۷۴۸,۰۰۰', delta: '−۰.۲٪', trend: 'down' },
-  { label: 'طلای ۱۸', value: '۴,۲۵۰,۰۰۰', delta: '+۱.۱٪', trend: 'up' },
-  { label: 'سکهٔ امامی', value: '۴۲,۸۰۰,۰۰۰', delta: '۰.۰٪', trend: 'flat' },
-];
-
-const ICON: Record<Trend, React.ReactNode> = {
+const TREND_ICON: Record<Trend, React.ReactNode> = {
   up: <HiOutlineArrowUpRight className="w-3.5 h-3.5" />,
   down: <HiOutlineArrowDownRight className="w-3.5 h-3.5" />,
   flat: <HiOutlineMinus className="w-3.5 h-3.5" />,
 };
 
-export default function MarketPulseTile() {
+interface MarketPulseTileProps {
+  rates: MarketRateItem[];
+}
+
+export default function MarketPulseTile({ rates }: MarketPulseTileProps) {
+  const displayRates = useMemo(() => {
+    const bySymbol = new Map(rates.map((r) => [r.symbol, r]));
+    return DISPLAY_SYMBOLS.map((sym) => bySymbol.get(sym)).filter(
+      (r): r is MarketRateItem => r !== undefined,
+    );
+  }, [rates]);
+
   return (
     <section className="nova-tile nova-tile--pulse" data-tone="emerald" aria-label="نبض بازار">
-      <Spotlight tone="emerald" size={280} />
       <header className="nova-panel__head nova-panel__head--tight">
         <div className="nova-panel__head-title">
           <span className="nova-panel__head-ico" aria-hidden>
@@ -59,20 +63,27 @@ export default function MarketPulseTile() {
         </Link>
       </header>
 
-      <ul className="nova-pulse__list">
-        {RATES.map((r) => (
-          <li key={r.label} className="nova-pulse__row">
-            <span className="nova-pulse__label">{r.label}</span>
-            <span className="nova-pulse__value tabular-nums" dir="ltr">
-              {r.value}
-            </span>
-            <span className={cn('nova-pulse__delta', `is-${r.trend}`)}>
-              {ICON[r.trend]}
-              <span className="tabular-nums">{r.delta}</span>
-            </span>
-          </li>
-        ))}
-      </ul>
+      {displayRates.length === 0 ? (
+        <p className="nova-pulse__empty">داده‌ای در دسترس نیست.</p>
+      ) : (
+        <ul className="nova-pulse__list">
+          {displayRates.map((r) => {
+            const trend = getTrend(r.changePercent);
+            return (
+              <li key={r.symbol} className="nova-pulse__row">
+                <span className="nova-pulse__label">{r.displayNameFa}</span>
+                <span className="nova-pulse__value tabular-nums" dir="ltr">
+                  {formatWithUnit(r.value, r.unit, r.decimals)}
+                </span>
+                <span className={cn('nova-pulse__delta', `is-${trend}`)}>
+                  {TREND_ICON[trend]}
+                  <span className="tabular-nums">{formatChangePercent(r.changePercent)}</span>
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </section>
   );
 }

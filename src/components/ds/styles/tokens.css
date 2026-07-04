@@ -228,78 +228,112 @@
     scroll-behavior: auto !important;
   }
 }
-/* Command Center Tokens — 2026-07-03 */
+/* ==========================================================================
+   NOVA Dashboard Tokens — Unified Design System (2026-07-04)
+   --------------------------------------------------------------------------
+   این token‌ها جایگزین --cc-* و --nova-* قبلی می‌شوند.
+   همه از DS color scale و design language پیروی می‌کنن.
+   Hue 265 = brand accent برای NOVA.
+   ========================================================================== */
 :root {
-  /* Colors */
-  --cc-primary: oklch(65% 0.15 265);
-  --cc-primary-hover: oklch(60% 0.18 265);
-  --cc-accent: oklch(70% 0.18 155);
-  --cc-accent-hover: oklch(65% 0.20 155);
-  --cc-warning: oklch(75% 0.15 70);
-  --cc-error: oklch(65% 0.18 25);
-  --cc-surface: oklch(98% 0.005 265);
-  --cc-canvas: oklch(97% 0.003 265);
-  --cc-text: oklch(20% 0.01 265);
-  --cc-text-muted: oklch(50% 0.01 265);
-  --cc-border: oklch(90% 0.005 265);
-  
-  /* Typography */
-  --cc-text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
-  --cc-text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
-  --cc-text-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
-  --cc-text-lg: clamp(1.125rem, 1rem + 0.6vw, 1.25rem);
-  --cc-text-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
-  --cc-text-2xl: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);
-  --cc-text-3xl: clamp(2rem, 1.5rem + 2.5vw, 3rem);
-  
-  /* Spacing */
-  --cc-space-1: clamp(0.25rem, 0.2rem + 0.25vw, 0.5rem);
-  --cc-space-2: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem);
-  --cc-space-3: clamp(0.75rem, 0.6rem + 0.75vw, 1rem);
-  --cc-space-4: clamp(1rem, 0.8rem + 1vw, 1.5rem);
-  --cc-space-5: clamp(1.25rem, 1rem + 1.25vw, 1.75rem);
-  --cc-space-6: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);
-  --cc-space-7: clamp(1.75rem, 1.4rem + 1.75vw, 2.5rem);
-  --cc-space-8: clamp(2rem, 1.6rem + 2vw, 3rem);
-  
-  /* Radius */
-  --cc-radius-sm: 8px;
-  --cc-radius-md: 12px;
-  --cc-radius-lg: 16px;
-  --cc-radius-xl: 24px;
-  --cc-radius-full: 9999px;
-  
-  /* Shadows */
-  --cc-shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.05);
-  --cc-shadow-md: 0 4px 12px oklch(0% 0 0 / 0.08);
-  --cc-shadow-lg: 0 8px 24px oklch(0% 0 0 / 0.12);
-  --cc-shadow-xl: 0 16px 48px oklch(0% 0 0 / 0.16);
-  
-  /* Transitions */
-  --cc-duration-fast: 150ms;
-  --cc-duration-normal: 250ms;
-  --cc-duration-slow: 400ms;
-  --cc-easing: cubic-bezier(0.16, 1, 0.3, 1);
+  /* ---- NOVA Colors (light mode) ---------------------------------------- */
+  --nova-primary:   oklch(55% 0.14 265);
+  --nova-primary-hover: oklch(50% 0.14 265);
+  --nova-ink:       oklch(18% 0.006 265);
+  --nova-ink-2:     oklch(42% 0.008 265);
+  --nova-muted:     oklch(55% 0.008 265);
+  --nova-line:      oklch(90% 0.006 265);
+  --nova-surface:   oklch(100% 0 0 / 0.65);
+  --nova-surface-solid: oklch(100% 0 0);
+  --nova-surface-2: oklch(96% 0.004 265);
+  --nova-canvas:    oklch(98% 0.003 240);
+
+  /* Semantic trend colors */
+  --nova-up:        oklch(52% 0.14 162);
+  --nova-up-bg:     oklch(72% 0.14 165 / 0.14);
+  --nova-down:      oklch(55% 0.17 20);
+  --nova-down-bg:   oklch(68% 0.18 20 / 0.14);
+  --nova-flat:      oklch(55% 0.02 265);
+  --nova-flat-bg:   oklch(60% 0.02 265 / 0.12);
+
+  /* Accent tones (per-tile) */
+  --nova-cyan:      oklch(62% 0.12 220);
+  --nova-rose:      oklch(60% 0.15 25);
+  --nova-emerald:   oklch(58% 0.12 165);
+  --nova-violet:    oklch(58% 0.14 290);
+  --nova-amber:     oklch(68% 0.14 70);
+
+  /* ---- NOVA Typography ------------------------------------------------- */
+  --nova-weight-medium:   500;
+  --nova-weight-semibold: 600;
+  --nova-weight-bold:     700;
+  --nova-weight-extrabold: 800;
+  --nova-tracking-tight:  -0.015em;
+  --nova-tracking-tighter: -0.025em;
+  --nova-tracking-tightest: -0.035em;
+
+  /* ---- NOVA Spacing ---------------------------------------------------- */
+  --nova-space-1: 0.25rem;
+  --nova-space-2: 0.5rem;
+  --nova-space-3: 0.75rem;
+  --nova-space-4: 1rem;
+  --nova-space-5: 1.25rem;
+  --nova-space-6: 1.5rem;
+  --nova-space-8: 2rem;
+
+  /* ---- NOVA Radius ----------------------------------------------------- */
+  --nova-radius-sm:   0.375rem;  /* 6px  */
+  --nova-radius-md:   0.5rem;    /* 8px  */
+  --nova-radius-lg:   0.75rem;   /* 12px */
+  --nova-radius-xl:   1rem;      /* 16px */
+  --nova-radius-2xl:  1.25rem;   /* 20px */
+  --nova-radius-full: 9999px;
+
+  /* ---- NOVA Effects ---------------------------------------------------- */
+  --nova-backdrop:    blur(16px) saturate(140%);
+  --nova-shadow-sm:   0 1px 2px oklch(20% 0.01 265 / 0.04);
+  --nova-shadow-md:   0 4px 12px -4px oklch(20% 0.01 265 / 0.08);
+  --nova-shadow-lg:   0 12px 32px -8px oklch(20% 0.01 265 / 0.12);
+  --nova-glow:        0 0 0 1px oklch(55% 0.14 265 / 0.3),
+                      0 8px 24px -8px oklch(55% 0.14 265 / 0.25);
+  --nova-ease:        cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .dark {
-  --cc-primary: oklch(70% 0.15 265);
-  --cc-primary-hover: oklch(65% 0.18 265);
-  --cc-accent: oklch(75% 0.18 155);
-  --cc-accent-hover: oklch(70% 0.20 155);
-  --cc-warning: oklch(80% 0.15 70);
-  --cc-error: oklch(70% 0.18 25);
-  --cc-surface: oklch(18% 0.01 265);
-  --cc-canvas: oklch(13% 0.01 265);
-  --cc-text: oklch(95% 0.005 265);
-  --cc-text-muted: oklch(65% 0.005 265);
-  --cc-border: oklch(25% 0.01 265);
+  /* ---- NOVA Colors (dark mode) ----------------------------------------- */
+  --nova-primary:   oklch(65% 0.12 265);
+  --nova-primary-hover: oklch(60% 0.12 265);
+  --nova-ink:       oklch(93% 0.004 265);
+  --nova-ink-2:     oklch(72% 0.006 265);
+  --nova-muted:     oklch(58% 0.006 265);
+  --nova-line:      oklch(28% 0.01 265);
+  --nova-surface:   oklch(18% 0.01 265 / 0.6);
+  --nova-surface-solid: oklch(16% 0.008 265);
+  --nova-surface-2: oklch(22% 0.012 265);
+  --nova-canvas:    oklch(12% 0.008 250);
+
+  --nova-up:        oklch(75% 0.12 162);
+  --nova-up-bg:     oklch(25% 0.05 165 / 0.2);
+  --nova-down:      oklch(72% 0.14 20);
+  --nova-down-bg:   oklch(25% 0.06 20 / 0.2);
+  --nova-flat:      oklch(68% 0.01 265);
+  --nova-flat-bg:   oklch(25% 0.005 265 / 0.15);
+
+  --nova-cyan:      oklch(68% 0.10 220);
+  --nova-rose:      oklch(68% 0.12 25);
+  --nova-emerald:   oklch(65% 0.10 165);
+  --nova-violet:    oklch(65% 0.12 290);
+  --nova-amber:     oklch(72% 0.12 70);
+
+  --nova-shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.3);
+  --nova-shadow-md: 0 4px 12px -4px oklch(0% 0 0 / 0.4);
+  --nova-shadow-lg: 0 12px 32px -8px oklch(0% 0 0 / 0.5);
+  --nova-glow:      0 0 0 1px oklch(65% 0.12 265 / 0.4),
+                    0 8px 24px -8px oklch(65% 0.12 265 / 0.35);
 }
 
 @media (prefers-reduced-motion: reduce) {
   :root {
-    --cc-duration-fast: 0ms;
-    --cc-duration-normal: 0ms;
-    --cc-duration-slow: 0ms;
+    --nova-ease: linear;
   }
 }
