@@ -4,7 +4,8 @@ import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/db';
 import { hash } from 'bcryptjs';
 import type { ActionResult, UserWithProfile } from '@/types/types';
-import type { Prisma, Role } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
+import { Role } from '@prisma/client';
 import { requireUser } from '@/lib/require-auth';
 import { auth } from '@/auth';
 import { logActivity } from '@/lib/activity-logger';
@@ -59,7 +60,12 @@ export async function getUsers({
     // Add role-based filtering
     if (currentUserRole !== 'OWNER') {
       if (currentUserRole === 'ADMIN') {
-        where.role = { not: { in: ['OWNER', 'ADMIN'] } };
+        const requestedRole = where.role;
+        delete where.role;
+        where.AND = [
+          { role: { not: { in: [Role.OWNER, Role.ADMIN] } } },
+          ...(requestedRole ? [{ role: requestedRole }] : []),
+        ];
       } else {
         return { success: false, message: 'شما دسترسی لازم را ندارید' };
       }
