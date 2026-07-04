@@ -38,7 +38,7 @@ Only write a brief analysis (not a long plan) for: DB / migration / auth / secur
 | Env variables | `AGENTS.env.md` | Adding config, debugging env |
 | Style & tooling | `AGENTS.style.md` | Writing any code (extended reference) |
 | Gotchas | `AGENTS.gotchas.md` | Anything weird happening |
-| MCP graphify | `AGENTS.mcp.md` | Codebase navigation, deep refactor |
+| MCPs (graphify + runtime) | `AGENTS.mcp.md` | Codebase navigation, runtime MCP usage (cu/matrix/playwright/trash) |
 | UI design direction | `AGENTS.ui-design.md` | Visual / UX work |
 | Architecture rules | `AGENTS.architecture.md` | Multi-file changes, DB, auth |
 | Anti-failure checklist | `AGENTS.anti-failure.md` | Before claiming a task done |
