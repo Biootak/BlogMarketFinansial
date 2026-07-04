@@ -185,6 +185,30 @@ export function isSuccessResult<T>(
   return result.success && result.data !== undefined;
 }
 
+const FORBIDDEN_EVENT_ATTRS = [
+  'onabort', 'onactivate', 'onafterprint', 'onafterscriptexecute', 'onanimationcancel',
+  'onanimationend', 'onanimationiteration', 'onanimationstart', 'onauxclick', 'onbeforeactivate',
+  'onbeforecopy', 'onbeforecut', 'onbeforedeactivate', 'onbeforepaste', 'onbeforeprint',
+  'onbeforescriptexecute', 'onbeforeunload', 'onbegin', 'onblur', 'onbounce', 'oncanplay',
+  'oncanplaythrough', 'onchange', 'onclick', 'onclose', 'oncontextmenu', 'oncopy', 'oncuechange',
+  'oncut', 'ondblclick', 'ondeactivate', 'ondrag', 'ondragend', 'ondragenter', 'ondragleave',
+  'ondragover', 'ondragstart', 'ondrop', 'ondurationchange', 'onemptied', 'onend', 'onended',
+  'onerror', 'onfocus', 'onfocusin', 'onfocusout', 'onformchange', 'onformdata', 'onfullscreenchange',
+  'onfullscreenerror', 'ongesturechange', 'ongestureend', 'ongesturestart', 'ongotpointercapture',
+  'onhashchange', 'oninput', 'oninvalid', 'onkeydown', 'onkeypress', 'onkeyup', 'onload',
+  'onloadeddata', 'onloadedmetadata', 'onloadend', 'onloadstart', 'onlostpointercapture',
+  'onmessage', 'onmousedown', 'onmouseenter', 'onmouseleave', 'onmousemove', 'onmouseout',
+  'onmouseover', 'onmouseup', 'onmousewheel', 'onoffline', 'ononline', 'onpagehide', 'onpageshow',
+  'onpaste', 'onpause', 'onplay', 'onplaying', 'onpointercancel', 'onpointerdown', 'onpointerenter',
+  'onpointerleave', 'onpointermove', 'onpointerout', 'onpointerover', 'onpointerup', 'onpopstate',
+  'onprogress', 'onratechange', 'onreadystatechange', 'onrepeat', 'onreset', 'onresize',
+  'onscroll', 'onsearch', 'onseeked', 'onseeking', 'onselect', 'onselectionchange', 'onselectstart',
+  'onshow', 'onstalled', 'onstorage', 'onsubmit', 'onsuspend', 'ontimeupdate', 'ontoggle',
+  'ontouchcancel', 'ontouchend', 'ontouchmove', 'ontouchstart', 'ontransitioncancel',
+  'ontransitionend', 'ontransitionrun', 'ontransitionstart', 'onunload', 'onvolumechange',
+  'onwaiting', 'onwheel',
+];
+
 export function sanitizeHtml(html: string): string {
   const clean = DOMPurify.sanitize(html, {
     ALLOWED_TAGS: [
@@ -195,7 +219,7 @@ export function sanitizeHtml(html: string): string {
       // Lists
       'ol', 'ul', 'li',
       // Links & Media
-      'a', 'img', 'figure', 'figcaption', 'video', 'audio', 'source', 'iframe',
+      'a', 'img', 'figure', 'figcaption', 'video', 'audio', 'source',
       // Tables
       'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption', 'colgroup', 'col',
       // Code
@@ -207,18 +231,14 @@ export function sanitizeHtml(html: string): string {
     ],
     ALLOWED_ATTR: [
       'href', 'target', 'rel', 'src', 'alt', 'title', 'class', 'id',
-      'width', 'height', 'style', 'data-*',
+      'width', 'height',
       'colspan', 'rowspan', 'scope', 'headers',
       'controls', 'autoplay', 'loop', 'muted', 'poster',
-      'frameborder', 'allowfullscreen', 'allow',
       'dir', 'lang', 'start', 'type', 'value',
     ],
-    ALLOW_DATA_ATTR: true,
-    // جلوگیری از javascript: URLs
-    FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover'],
-    // اجازه iframe فقط برای منابع معتبر
-    ADD_TAGS: ['iframe'],
-    ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling'],
+    ALLOW_DATA_ATTR: false,
+    FORBID_ATTR: ['style', ...FORBIDDEN_EVENT_ATTRS],
+    ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
   });
 
   return clean;
