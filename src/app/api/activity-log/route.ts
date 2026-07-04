@@ -44,14 +44,27 @@ export async function POST(req: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return new NextResponse('Unauthorized', { status: 401 });
+      return NextResponse.json(
+        { success: false, error: { code: 'UNAUTHENTICATED', message: 'Unauthorized' } },
+        { status: 401 }
+      );
+    }
+
+    if (!['ADMIN', 'OWNER'].includes(session.user.role)) {
+      return NextResponse.json(
+        { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } },
+        { status: 403 }
+      );
     }
 
     const body = await req.json();
     const { action, details } = body;
 
-    if (!action || !details) {
-      return new NextResponse('Missing required fields', { status: 400 });
+    if (!action || typeof action !== 'string' || !details || typeof details !== 'string') {
+      return NextResponse.json(
+        { success: false, error: { code: 'BAD_REQUEST', message: 'Missing required fields' } },
+        { status: 400 }
+      );
     }
 
     const activity = await db.activityLog.create({
@@ -65,6 +78,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, data: activity });
   } catch (error) {
     console.error('[ACTIVITY_LOG_POST]', error);
-    return new NextResponse('Internal Error', { status: 500 });
+    return NextResponse.json(
+      { success: false, error: { code: 'INTERNAL_ERROR', message: 'Internal Error' } },
+      { status: 500 }
+    );
   }
 }
