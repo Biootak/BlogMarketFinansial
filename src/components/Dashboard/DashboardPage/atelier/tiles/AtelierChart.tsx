@@ -15,18 +15,14 @@ import { HiOutlineCalendarDays, HiOutlineChartBar } from 'react-icons/hi2';
 
 const TrafficChart = dynamic(() => import('@/components/Dashboard/DashboardPage/TrafficChart'), {
   ssr: false,
-  loading: () => (
-    <div className="at-chart__skeleton" aria-hidden />
-  ),
+  loading: () => <div className="at-chart__skeleton" aria-hidden />,
 });
 
 const PublishingCalendar = dynamic(
   () => import('@/components/Dashboard/Calendar/PublishingCalendar'),
   {
     ssr: false,
-    loading: () => (
-      <div className="at-chart__skeleton" aria-hidden />
-    ),
+    loading: () => <div className="at-chart__skeleton" aria-hidden />,
   },
 );
 
@@ -108,11 +104,7 @@ export default function AtelierChart({ scheduledPosts }: AtelierChartProps) {
 
       <div className="at-chart__canvas">
         {tab === 'traffic' ? (
-          <div
-            role="tabpanel"
-            id={`${tabId}-traffic`}
-            aria-labelledby={`${tabId}-trigger-traffic`}
-          >
+          <div role="tabpanel" id={`${tabId}-traffic`} aria-labelledby={`${tabId}-trigger-traffic`}>
             <TrafficChart key={`traffic-${period}`} period={period} />
           </div>
         ) : (

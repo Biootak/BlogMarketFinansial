@@ -42,13 +42,8 @@ export default function AtelierAuthors({ topAuthors }: AtelierAuthorsProps) {
           {topAuthors.map((author, i) => {
             const avatar = author.profile?.avatar ?? author.image;
             return (
-              <li
-                key={author.id}
-                className={`at-author ${i === 0 ? 'is-lead' : ''}`}
-              >
-                <span className="at-author__rank">
-                  {(i + 1).toLocaleString('fa-IR')}
-                </span>
+              <li key={author.id} className={`at-author ${i === 0 ? 'is-lead' : ''}`}>
+                <span className="at-author__rank">{(i + 1).toLocaleString('fa-IR')}</span>
                 <span className="at-author__avatar" aria-hidden>
                   {avatar ? (
                     <Image src={avatar} alt="" width={36} height={36} />

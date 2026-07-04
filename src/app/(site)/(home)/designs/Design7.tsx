@@ -15,11 +15,12 @@
  * ----------------------------------------------------------------------------
  */
 
-import type { MarketRateItem } from '@/lib/market-rates';
 import Avatar from '@/components/Avatar/Avatar';
+import MarketRatesTicker from '@/components/MarketRates/MarketRatesTicker';
 import { SafeImage } from '@/components/SafeImage';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
 import { getPostLink } from '@/lib/getPostLink';
+import type { MarketRateItem } from '@/lib/market-rates';
 import { AnimatePresence, motion } from '@/lib/motion-shim';
 import { formatRelativeTime } from '@/lib/utils';
 import type { CryptoTickerRate, PostWithRelations, RateItem, RateListData } from '@/types/types';
@@ -45,7 +46,6 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import CompactRateBridge from './CompactRateBridge';
 import MagneticSpotlightCard from './MagneticSpotlightCard';
-import MarketRatesTickerBar from './MarketRatesTickerBar';
 import { type CategoryTheme, getCategoryTheme } from './categoryTheme';
 
 type Props = {
@@ -120,7 +120,9 @@ export default function Design7({
     return {
       mainTheme: getCategoryTheme(current.categories?.[0]?.slug, current.categories?.[0]?.name),
       otherPosts: others,
-      sideThemes: others.map((p) => getCategoryTheme(p.categories?.[0]?.slug, p.categories?.[0]?.name)),
+      sideThemes: others.map((p) =>
+        getCategoryTheme(p.categories?.[0]?.slug, p.categories?.[0]?.name),
+      ),
     };
   }, [initialPosts, activeIndex]);
 
@@ -185,10 +187,11 @@ export default function Design7({
     <section className={`relative ${className}`}>
       {/* ─── Ticker Bar بالای اسلایدر — نرخ‌های بازار آزاد (TGJU + DB + FX) ───
           منبع: assembleFreeMarketRates (اولویت: TGJU > USDT-derived > FX > DB).
-          2026-06-20: جایگزین Navasan شد که quota داشت. */}
+          2026-06-20: جایگزین Navasan شد که quota داشت.
+          2026-07-04: استفاده از MarketRatesTicker مشترک با داشبورد — یک کامپوننت واحد. */}
       {marketRates && marketRates.length > 0 && (
         <div className="mb-3 sm:mb-4">
-          <MarketRatesTickerBar rates={marketRates} />
+          <MarketRatesTicker rates={marketRates} variant="homepage" />
         </div>
       )}
 

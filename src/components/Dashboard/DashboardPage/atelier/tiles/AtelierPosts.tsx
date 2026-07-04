@@ -54,9 +54,7 @@ export default function AtelierPosts({ popularPosts }: AtelierPostsProps) {
             <li key={post.id} className={i === 0 ? 'is-first' : undefined}>
               <Link href={`/blog/${post.slug}`} className="at-postrow">
                 <span className="at-postrow__rank">
-                  <span className="at-postrow__rank-num">
-                    {(i + 1).toLocaleString('fa-IR')}
-                  </span>
+                  <span className="at-postrow__rank-num">{(i + 1).toLocaleString('fa-IR')}</span>
                 </span>
                 <span className="at-postrow__body">
                   <span className="at-postrow__title" dir="rtl">
@@ -72,10 +70,7 @@ export default function AtelierPosts({ popularPosts }: AtelierPostsProps) {
                   <HiOutlineEye className="w-3 h-3" aria-hidden />
                   <span className="tabular-nums">{fmt(post.views)}</span>
                 </span>
-                <HiOutlineArrowLeft
-                  className="at-postrow__arrow w-3.5 h-3.5"
-                  aria-hidden
-                />
+                <HiOutlineArrowLeft className="at-postrow__arrow w-3.5 h-3.5" aria-hidden />
               </Link>
             </li>
           ))}

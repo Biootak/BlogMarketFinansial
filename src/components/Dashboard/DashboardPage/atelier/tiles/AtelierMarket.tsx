@@ -1,27 +1,33 @@
 'use client';
 
 /**
- * AtelierMarket — compact market-rates grid.
+ * AtelierMarket — compact market-rates grid (top 4 by priority).
  *
- * Renders 4 key symbols in a 2x2 grid: USD, EUR, gold 18K, coin
- * Emami. Each cell shows the display name, value, and a delta pill
- * (emerald / rose / slate). The first cell (#1) is highlighted with
- * a thin gold accent border to give the row a "lead" feel.
+ * نمایش ۴ نرخ کلیدی در گرید ۲×۲. منبع داده همان `MarketRateItem[]`
+ * است که در سایر بخش‌های داشبورد (نوار بالا) و صفحه‌ی اصلی استفاده
+ * می‌شود — single source of truth از طریق `getMarketRates()`.
+ *
+ * اولویت نمایش:
+ *  1. نرخ‌های ضروری (USD، EUR، طلای ۱۸ عیار، سکه‌ی امامی) در صورت موجود بودن
+ *  2. سپس بقیه‌ی نرخ‌ها به ترتیب priority (که در registry تنظیم شده)
+ *
+ * سلول اول (#1) با یک border طلایی نازک به عنوان «lead» برجسته می‌شود
+ * تا یک نقطه‌ی کانونی در ردیف ایجاد شود.
  */
 
-import { cn } from '@/lib/utils';
-import { formatWithUnit, formatChangePercent } from '@/lib/market-rates/format';
 import type { MarketRateItem } from '@/lib/market-rates';
+import { formatChangePercent, formatWithUnit } from '@/lib/market-rates/format';
+import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { HiOutlineArrowLeft, HiOutlinePresentationChartLine } from 'react-icons/hi2';
 
-const DISPLAY_SYMBOLS = ['IRAN_USD', 'IRAN_EUR', 'IRAN_GOLD_18K', 'IRAN_COIN_EMAMI'] as const;
+const PRIORITY_SYMBOLS = ['IRAN_USD', 'IRAN_EUR', 'IRAN_GOLD_18K', 'IRAN_COIN_EMAMI'] as const;
 
 type Trend = 'up' | 'down' | 'flat';
 
 function getTrend(changePercent: number): Trend {
-  if (Math.abs(changePercent) < 0.01) return 'flat';
+  if (!Number.isFinite(changePercent) || Math.abs(changePercent) < 0.01) return 'flat';
   return changePercent > 0 ? 'up' : 'down';
 }
 
@@ -30,11 +36,14 @@ interface AtelierMarketProps {
 }
 
 export default function AtelierMarket({ rates }: AtelierMarketProps) {
-  const displayRates = useMemo(() => {
+  // اول نرخ‌های ضروری، بعد بقیه به ترتیب priority (که assembler تضمین می‌کند).
+  const displayRates = useMemo<MarketRateItem[]>(() => {
     const bySymbol = new Map(rates.map((r) => [r.symbol, r]));
-    return DISPLAY_SYMBOLS.map((sym) => bySymbol.get(sym)).filter(
+    const priority = PRIORITY_SYMBOLS.map((sym) => bySymbol.get(sym)).filter(
       (r): r is MarketRateItem => r !== undefined,
     );
+    const rest = rates.filter((r) => !PRIORITY_SYMBOLS.includes(r.symbol as never));
+    return [...priority, ...rest].slice(0, 4);
   }, [rates]);
 
   return (
@@ -56,16 +65,21 @@ export default function AtelierMarket({ rates }: AtelierMarketProps) {
       </header>
 
       {displayRates.length === 0 ? (
-        <p className="at-posts__empty">داده‌ای در دسترس نیست.</p>
+        <output className="at-posts__empty" aria-live="polite">
+          <p>داده‌ای در دسترس نیست.</p>
+          <p className="at-market__empty-hint">
+            <Link href="/dashboard/exchange-rates" className="at-head__more">
+              تنظیم نرخ‌ها
+              <HiOutlineArrowLeft className="w-3 h-3" aria-hidden />
+            </Link>
+          </p>
+        </output>
       ) : (
         <div className="at-market__grid">
           {displayRates.map((r, i) => {
             const trend = getTrend(r.changePercent);
             return (
-              <div
-                key={r.symbol}
-                className={cn('at-rate', i === 0 && 'is-lead')}
-              >
+              <div key={r.symbol} className={cn('at-rate', i === 0 && 'is-lead')}>
                 <div className="at-rate__head">
                   <span className="at-rate__name">{r.displayNameFa}</span>
                   <span className={cn('at-rate__delta', `is-${trend}`)}>

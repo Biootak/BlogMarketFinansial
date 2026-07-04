@@ -11,11 +11,7 @@
 
 import CountUp from '@/components/Dashboard/primitives/CountUp';
 import { cn } from '@/lib/utils';
-import {
-  HiOutlineArrowDownRight,
-  HiOutlineArrowUpRight,
-  HiOutlineMinus,
-} from 'react-icons/hi2';
+import { HiOutlineArrowDownRight, HiOutlineArrowUpRight, HiOutlineMinus } from 'react-icons/hi2';
 import { fmtCompact, pickTrend } from '../utils';
 
 interface AtelierKpiProps {
@@ -95,15 +91,17 @@ export default function AtelierKpi({
     <section className="at-tile at-kpi" aria-label={label}>
       <header className="at-kpi__head">
         <span className="at-kpi__label">
-          {icon && <span className="at-kpi__ico" aria-hidden>{icon}</span>}
+          {icon && (
+            <span className="at-kpi__ico" aria-hidden>
+              {icon}
+            </span>
+          )}
           <span>{label}</span>
         </span>
         {data.length >= 2 && (
           <span className={cn('at-kpi__delta', `is-${trend}`)}>
             <TrendIcon className="w-3 h-3" aria-hidden />
-            <span className="tabular-nums">
-              {`${delta > 0 ? '+' : ''}${delta.toFixed(0)}٪`}
-            </span>
+            <span className="tabular-nums">{`${delta > 0 ? '+' : ''}${delta.toFixed(0)}٪`}</span>
           </span>
         )}
       </header>

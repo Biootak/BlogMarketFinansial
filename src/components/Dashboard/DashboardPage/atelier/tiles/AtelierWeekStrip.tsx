@@ -93,26 +93,14 @@ export default function AtelierWeekStrip({ scheduledPosts }: AtelierWeekStripPro
               <button
                 type="button"
                 onClick={() => setSelected(d)}
-                className={cn(
-                  'at-week__day',
-                  isToday && 'is-today',
-                  isSelected && 'is-selected',
-                )}
+                className={cn('at-week__day', isToday && 'is-today', isSelected && 'is-selected')}
                 aria-selected={isSelected}
               >
                 <span className="at-week__day-name">{dayNameFa(d)}</span>
-                <span className="at-week__day-num tabular-nums">
-                  {dayNumberFa(d)}
-                </span>
+                <span className="at-week__day-num tabular-nums">{dayNumberFa(d)}</span>
                 <span className="at-week__day-dots" aria-hidden>
                   {Array.from({ length: 3 }).map((_, i) => (
-                    <span
-                      key={i}
-                      className={cn(
-                        'at-week__day-dot',
-                        i < count && 'is-on',
-                      )}
-                    />
+                    <span key={i} className={cn('at-week__day-dot', i < count && 'is-on')} />
                   ))}
                 </span>
               </button>

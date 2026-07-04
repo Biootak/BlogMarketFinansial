@@ -109,27 +109,20 @@ export default function AtelierActivity({ items }: AtelierActivityProps) {
             <li key={`${group.tone}-${group.label}`} className="at-activity__group">
               <p className={cn('at-activity__group-label', `is-${group.tone}`)}>
                 {group.label}
-                <span className="tabular-nums">
-                  {group.items.length.toLocaleString('fa-IR')}
-                </span>
+                <span className="tabular-nums">{group.items.length.toLocaleString('fa-IR')}</span>
               </p>
               <ol className="at-activity__items">
                 {group.items.map((item) => {
                   const tone = actionTone(item.action);
                   return (
                     <li key={item.id} className="at-activity__item">
-                      <span
-                        className={cn('at-activity__dot', `is-${tone}`)}
-                        aria-hidden
-                      />
+                      <span className={cn('at-activity__dot', `is-${tone}`)} aria-hidden />
                       <span className="at-activity__body">
                         <p className="at-activity__text">
                           <strong>{item.user.name ?? 'کاربر'}</strong> {item.action}
                         </p>
                         <p className="at-activity__time">
-                          {now
-                            ? formatRelativeFa(new Date(item.createdAt), now)
-                            : '—'}
+                          {now ? formatRelativeFa(new Date(item.createdAt), now) : '—'}
                         </p>
                       </span>
                     </li>

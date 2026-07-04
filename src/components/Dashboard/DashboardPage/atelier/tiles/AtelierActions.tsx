@@ -38,9 +38,17 @@ const OWNER: Action[] = [
     icon: <HiOutlinePencilSquare className="w-4 h-4" />,
     primary: true,
   },
-  { href: '/dashboard/exchange-rates', label: 'نرخ ارز', icon: <HiOutlineArrowTrendingUp className="w-4 h-4" /> },
+  {
+    href: '/dashboard/exchange-rates',
+    label: 'نرخ ارز',
+    icon: <HiOutlineArrowTrendingUp className="w-4 h-4" />,
+  },
   { href: '/dashboard/users', label: 'کاربران', icon: <HiOutlineUserGroup className="w-4 h-4" /> },
-  { href: '/dashboard/settings', label: 'تنظیمات', icon: <HiOutlineCog6Tooth className="w-4 h-4" /> },
+  {
+    href: '/dashboard/settings',
+    label: 'تنظیمات',
+    icon: <HiOutlineCog6Tooth className="w-4 h-4" />,
+  },
 ];
 
 const ADMIN: Action[] = [
@@ -50,9 +58,17 @@ const ADMIN: Action[] = [
     icon: <HiOutlinePencilSquare className="w-4 h-4" />,
     primary: true,
   },
-  { href: '/dashboard/categories', label: 'دسته‌بندی‌ها', icon: <HiOutlineTag className="w-4 h-4" /> },
+  {
+    href: '/dashboard/categories',
+    label: 'دسته‌بندی‌ها',
+    icon: <HiOutlineTag className="w-4 h-4" />,
+  },
   { href: '/dashboard/posts', label: 'پست‌ها', icon: <HiOutlineDocumentText className="w-4 h-4" /> },
-  { href: '/dashboard/reports', label: 'گزارش‌ها', icon: <HiOutlineChartBarSquare className="w-4 h-4" /> },
+  {
+    href: '/dashboard/reports',
+    label: 'گزارش‌ها',
+    icon: <HiOutlineChartBarSquare className="w-4 h-4" />,
+  },
 ];
 
 const AUTHOR: Action[] = [
@@ -62,9 +78,21 @@ const AUTHOR: Action[] = [
     icon: <HiOutlinePencilSquare className="w-4 h-4" />,
     primary: true,
   },
-  { href: '/dashboard/posts', label: 'پست‌های من', icon: <HiOutlineDocumentText className="w-4 h-4" /> },
-  { href: '/dashboard/categories', label: 'دسته‌بندی‌ها', icon: <HiOutlineSquares2X2 className="w-4 h-4" /> },
-  { href: '/dashboard/edit-profile', label: 'پروفایل', icon: <HiOutlinePhoto className="w-4 h-4" /> },
+  {
+    href: '/dashboard/posts',
+    label: 'پست‌های من',
+    icon: <HiOutlineDocumentText className="w-4 h-4" />,
+  },
+  {
+    href: '/dashboard/categories',
+    label: 'دسته‌بندی‌ها',
+    icon: <HiOutlineSquares2X2 className="w-4 h-4" />,
+  },
+  {
+    href: '/dashboard/edit-profile',
+    label: 'پروفایل',
+    icon: <HiOutlinePhoto className="w-4 h-4" />,
+  },
 ];
 
 interface AtelierActionsProps {
@@ -83,9 +111,7 @@ export default function AtelierActions({ userRole }: AtelierActionsProps) {
           </span>
           <div className="at-head__text">
             <h2 className="at-head__title-text">دسترسی سریع</h2>
-            <p className="at-head__sub">
-              {actions.length.toLocaleString('fa-IR')} مقصد
-            </p>
+            <p className="at-head__sub">{actions.length.toLocaleString('fa-IR')} مقصد</p>
           </div>
         </div>
       </header>
@@ -93,10 +119,7 @@ export default function AtelierActions({ userRole }: AtelierActionsProps) {
       <ul className="at-actions__list">
         {actions.map((a) => (
           <li key={a.href}>
-            <Link
-              href={a.href}
-              className={`at-action ${a.primary ? 'is-primary' : ''}`}
-            >
+            <Link href={a.href} className={`at-action ${a.primary ? 'is-primary' : ''}`}>
               <span className="at-action__ico" aria-hidden>
                 {a.icon}
               </span>

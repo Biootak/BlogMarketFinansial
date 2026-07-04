@@ -29,9 +29,17 @@
  *   └──────────────┴────────────────┴────────────────────────┘
  */
 
-import CommandPalette from '@/components/Dashboard/DashboardPage/CommandPalette';
-import type { MarketRateItem } from '@/lib/market-rates';
 import type { TopAuthor } from '@/actions/getTopAuthors';
+import CommandPalette from '@/components/Dashboard/DashboardPage/CommandPalette';
+import MarketRatesTicker from '@/components/MarketRates/MarketRatesTicker';
+import type { MarketRateItem } from '@/lib/market-rates';
+import {
+  HiOutlineChatBubbleLeftRight,
+  HiOutlineDocumentText,
+  HiOutlineEye,
+  HiOutlineHeart,
+  HiOutlineShare,
+} from 'react-icons/hi2';
 import type { ActivityItem } from '../overview/ActivityRail';
 import AtelierActions from './tiles/AtelierActions';
 import AtelierActivity from './tiles/AtelierActivity';
@@ -41,15 +49,7 @@ import AtelierHero from './tiles/AtelierHero';
 import AtelierKpi from './tiles/AtelierKpi';
 import AtelierMarket from './tiles/AtelierMarket';
 import AtelierPosts from './tiles/AtelierPosts';
-import AtelierTicker from './tiles/AtelierTicker';
 import AtelierWeekStrip from './tiles/AtelierWeekStrip';
-import {
-  HiOutlineChatBubbleLeftRight,
-  HiOutlineDocumentText,
-  HiOutlineEye,
-  HiOutlineHeart,
-  HiOutlineShare,
-} from 'react-icons/hi2';
 
 interface AtelierDeckProps {
   stats: {
@@ -114,8 +114,15 @@ const AtelierDeck: React.FC<AtelierDeckProps> = (props) => {
       </a>
 
       <main id="at-main" className="at-canvas" aria-label="داشبورد">
-        {/* Row 0: live market ticker (full-bleed) */}
-        <AtelierTicker rates={props.marketRates} />
+        {/* Row 0: live market ticker (full-bleed) — shared component with homepage */}
+        <div className="px-4 pt-4 sm:px-6 lg:px-8">
+          <MarketRatesTicker
+            rates={props.marketRates}
+            variant="dashboard"
+            label="بازار"
+            maxItems={14}
+          />
+        </div>
 
         <div className="at-grid">
           {/* Row 1: Hero (anchor + radial pulse) */}
@@ -128,13 +135,7 @@ const AtelierDeck: React.FC<AtelierDeckProps> = (props) => {
 
           {/* Row 2: KPI strip */}
           {kpis.map((k) => (
-            <AtelierKpi
-              key={k.label}
-              label={k.label}
-              value={k.value}
-              data={k.data}
-              icon={k.icon}
-            />
+            <AtelierKpi key={k.label} label={k.label} value={k.value} data={k.data} icon={k.icon} />
           ))}
 
           {/* Row 3: Week strip (7 days) */}

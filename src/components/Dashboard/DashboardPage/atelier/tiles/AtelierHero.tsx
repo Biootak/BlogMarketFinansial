@@ -34,8 +34,8 @@ import {
   HiOutlinePencilSquare,
   HiOutlineSparkles,
 } from 'react-icons/hi2';
-import AtelierPulse from './AtelierPulse';
 import { fmt, persianLongDate, pickTrend, timeOfDay } from '../utils';
+import AtelierPulse from './AtelierPulse';
 
 interface AtelierHeroProps {
   todayViews: number;
@@ -136,7 +136,14 @@ function HeroSpark({ data, gradId }: { data: number[]; gradId: string }) {
       />
       {!allZero && (
         <>
-          <circle cx={lastX} cy={lastY} r={4} fill="var(--at-bg)" stroke="var(--at-accent)" strokeWidth={2} />
+          <circle
+            cx={lastX}
+            cy={lastY}
+            r={4}
+            fill="var(--at-bg)"
+            stroke="var(--at-accent)"
+            strokeWidth={2}
+          />
           <circle cx={lastX} cy={lastY} r={1.5} fill="var(--at-accent)" />
         </>
       )}
@@ -144,7 +151,12 @@ function HeroSpark({ data, gradId }: { data: number[]; gradId: string }) {
   );
 }
 
-export default function AtelierHero({ todayViews, totalViews, spark, publishedTotal }: AtelierHeroProps) {
+export default function AtelierHero({
+  todayViews,
+  totalViews,
+  spark,
+  publishedTotal,
+}: AtelierHeroProps) {
   const user = useCurrentUser();
   const gradId = useId();
   const [hour, setHour] = useState(12);
@@ -184,8 +196,24 @@ export default function AtelierHero({ todayViews, totalViews, spark, publishedTo
           </defs>
           <circle cx="100" cy="100" r="92" fill="url(#at-mark-grad)" />
           <g className="at-hero__mark-spin">
-            <circle cx="100" cy="100" r="86" fill="none" stroke="currentColor" strokeWidth="0.6" opacity="0.35" />
-            <circle cx="100" cy="100" r="74" fill="none" stroke="currentColor" strokeWidth="0.6" opacity="0.25" />
+            <circle
+              cx="100"
+              cy="100"
+              r="86"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="0.6"
+              opacity="0.35"
+            />
+            <circle
+              cx="100"
+              cy="100"
+              r="74"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="0.6"
+              opacity="0.25"
+            />
             {/* 8-point star */}
             <path
               d="M100 18 L114 86 L182 100 L114 114 L100 182 L86 114 L18 100 L86 86 Z"
@@ -237,9 +265,7 @@ export default function AtelierHero({ todayViews, totalViews, spark, publishedTo
           <div className="at-hero__meta">
             <span className={cn('at-hero__delta', `is-${trend}`)}>
               <TrendIcon className="w-3 h-3" aria-hidden />
-              <span className="tabular-nums">
-                {`${delta > 0 ? '+' : ''}${delta.toFixed(1)}٪`}
-              </span>
+              <span className="tabular-nums">{`${delta > 0 ? '+' : ''}${delta.toFixed(1)}٪`}</span>
             </span>
             <span>نسبت به نیمهٔ قبلی</span>
             <span aria-hidden>·</span>
@@ -261,19 +287,13 @@ export default function AtelierHero({ todayViews, totalViews, spark, publishedTo
       <HeroSpark data={spark} gradId={`at-hero-${gradId}`} />
 
       <div className="at-hero__actions">
-        <Link
-          href="/dashboard/posts/create"
-          className="at-hero__cta"
-          aria-label="نوشتن پست جدید"
-        >
+        <Link href="/dashboard/posts/create" className="at-hero__cta" aria-label="نوشتن پست جدید">
           <HiOutlinePencilSquare className="w-3.5 h-3.5" aria-hidden />
           <span>نوشتن پست جدید</span>
         </Link>
         <Link href="/dashboard/posts" className="at-hero__ghost">
           <span>همهٔ پست‌ها</span>
-          <span className="at-hero__ghost-meta tabular-nums">
-            {fmt(publishedTotal)} مورد
-          </span>
+          <span className="at-hero__ghost-meta tabular-nums">{fmt(publishedTotal)} مورد</span>
         </Link>
       </div>
     </section>

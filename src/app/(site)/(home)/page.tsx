@@ -1,18 +1,20 @@
-import { Suspense } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { getFeaturedPosts } from '@/actions/getFeaturedPosts';
 import { getPosts } from '@/actions/getPosts';
 import { getTopAuthors } from '@/actions/getTopAuthors';
-import { getFeaturedPosts } from '@/actions/getFeaturedPosts';
+import { getMarketRates } from '@/actions/market-rates';
+import MarketRatesTicker from '@/components/MarketRates/MarketRatesTicker';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Suspense } from 'react';
 
-import SectionLargeSlider from './SectionLargeSlider';
-import SectionMagazine7 from '@/components/Sections/SectionMagazine7';
-import CryptoTickerSection from '@/components/Sections/CryptoTickerSection';
-import { TopAuthorsSection } from '@/components/TopAuthorsSection';
-import PulseSection from '@/components/Sections/PulseBoard/PulseSection';
 import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
-import DeferredTrending from './deferred/DeferredTrending';
+import CryptoTickerSection from '@/components/Sections/CryptoTickerSection';
+import PulseSection from '@/components/Sections/PulseBoard/PulseSection';
+import SectionMagazine7 from '@/components/Sections/SectionMagazine7';
+import { TopAuthorsSection } from '@/components/TopAuthorsSection';
+import SectionLargeSlider from './SectionLargeSlider';
 import DeferredAdStrip from './deferred/DeferredAdStrip';
+import DeferredTrending from './deferred/DeferredTrending';
 
 // Dynamically rendered on demand: the shared site header (MainNav) reads
 // auth() to render sign-in/avatar state, which opts the whole (site) tree out
@@ -20,40 +22,47 @@ import DeferredAdStrip from './deferred/DeferredAdStrip';
 // deduped via safeCache; HTML is edge-cached via the s-maxage header in
 // next.config.ts.
 export default async function Home() {
-  const [posts, topAuthors, firstStripResult, secondStripResult, categoriesResult, featuredResult] =
-    await Promise.all([
-      getPosts(6),
-      getTopAuthors(5),
-      import('@/actions/advertisementActions').then((m) =>
-        m.getActiveAdvertisements({
-          limit: 4,
-          size: 'LARGE',
-          position: 'CUSTOM',
-          orderBy: 'order',
-          orderDirection: 'asc',
-        }),
-      ),
-      import('@/actions/advertisementActions').then((m) =>
-        m.getActiveAdvertisements({
-          limit: 3,
-          size: 'MEDIUM',
-          position: 'CUSTOM',
-          orderBy: 'order',
-          orderDirection: 'asc',
-          page: 2,
-        }),
-      ),
-      import('@/actions/categoryActions').then((m) => m.getPopularCategoriesForHome(16)),
-      getFeaturedPosts(1),
-    ]);
+  const [
+    posts,
+    topAuthors,
+    firstStripResult,
+    secondStripResult,
+    categoriesResult,
+    featuredResult,
+    marketRates,
+  ] = await Promise.all([
+    getPosts(6),
+    getTopAuthors(5),
+    import('@/actions/advertisementActions').then((m) =>
+      m.getActiveAdvertisements({
+        limit: 4,
+        size: 'LARGE',
+        position: 'CUSTOM',
+        orderBy: 'order',
+        orderDirection: 'asc',
+      }),
+    ),
+    import('@/actions/advertisementActions').then((m) =>
+      m.getActiveAdvertisements({
+        limit: 3,
+        size: 'MEDIUM',
+        position: 'CUSTOM',
+        orderBy: 'order',
+        orderDirection: 'asc',
+        page: 2,
+      }),
+    ),
+    import('@/actions/categoryActions').then((m) => m.getPopularCategoriesForHome(16)),
+    getFeaturedPosts(1),
+    getMarketRates(),
+  ]);
 
   const popularCategories =
     categoriesResult.success && categoriesResult.data?.categories
       ? categoriesResult.data.categories.filter((c) => c.count > 0)
       : [];
 
-  const firstStrip =
-    firstStripResult.success && firstStripResult.data ? firstStripResult.data : [];
+  const firstStrip = firstStripResult.success && firstStripResult.data ? firstStripResult.data : [];
   const secondStrip =
     secondStripResult.success && secondStripResult.data ? secondStripResult.data : [];
 
@@ -70,6 +79,9 @@ export default async function Home() {
         />
       ) : null}
       <div className="container relative">
+        {/* Market rates ticker (TGJU + USDT + FX) — shared with dashboard. */}
+        <MarketRatesTicker rates={marketRates} variant="homepage" label="بازارها" />
+
         <Suspense fallback={<Skeleton className="h-28 rounded-2xl" />}>
           <CryptoTickerSection />
         </Suspense>
