@@ -30,7 +30,7 @@ import { FiX, FiPlus, FiImage, FiVideo, FiMusic, FiGrid, FiFileText, FiTag, FiFo
 import { RiSendPlaneFill, RiDraftLine } from 'react-icons/ri';
 import { BiLoaderAlt } from 'react-icons/bi';
 import { HiOutlineSparkles } from 'react-icons/hi2';
-import { toJalaali } from 'jalaali-js';
+import { PersianDateTimePicker } from '@/components/ui/PersianDateTimePicker';
 
 import type { CreatePostInput, UpdatePostInput, TaxonomyType, PostType, PostStatus } from '@/types/types';
 import type { ZodType } from 'zod';
@@ -78,34 +78,9 @@ function deriveStatus(args: {
   return role === 'AUTHOR' ? 'PENDING_REVIEW' : 'PUBLISHED';
 }
 
-// تبدیل Date به مقدار `<input type="datetime-local">`
-// (فرمت `YYYY-MM-DDTHH:mm` بدون timezone).
-function toDatetimeLocal(d: Date | null): string {
-  if (!d) return '';
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return (
-    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` +
-    `T${pad(d.getHours())}:${pad(d.getMinutes())}`
-  );
-}
-
-// نمایش شمسی تاریخ+زمان برای کمک به کاربر. اختیاری است چون input
-// اصلی خودش میلادی است؛ این فقط تأیید بصری است.
-function toPersianDateTime(d: Date | null): string {
-  if (!d) return '';
-  try {
-    const j = toJalaali(d);
-    const FA_MONTHS = [
-      'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
-      'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند',
-    ];
-    const faDigit = new Intl.NumberFormat('fa-IR');
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return `${faDigit.format(j.jd)} ${FA_MONTHS[j.jm - 1]} ${faDigit.format(j.jy)} - ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  } catch {
-    return '';
-  }
-}
+// تبدیل Date → تقویم شمسی و زمان اکنون در `PersianDateTimePicker` انجام می‌شود.
+// (این helper ها قبلاً برای نمایش میلادی در `<input type="datetime-local">`
+// لازم بود؛ الان که picker خودش شمسی است، دیگر نیازی نیست.)
 
 interface PostFormProps<T extends CreatePostInput | UpdatePostInput> {
   // 2026-07-04: `ZodType<T, any, any>` تا input متفاوت با output
@@ -678,32 +653,12 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                       </FormDescription>
                     </div>
                   </div>
-                  <Input
-                    type="datetime-local"
-                    dir="ltr"
-                    value={toDatetimeLocal(scheduledAt)}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      setScheduledAt(v ? new Date(v) : null);
-                    }}
-                    className="h-12 rounded-xl"
+                  <PersianDateTimePicker
+                    value={scheduledAt}
+                    onChange={setScheduledAt}
+                    placeholder="روی کلیک کنید تا تقویم باز شود"
+                    showPresets
                   />
-                  {scheduledAt && (
-                    <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                      نمایش شمسی: <span className="font-medium text-slate-700 dark:text-slate-300">{toPersianDateTime(scheduledAt)}</span>
-                      {scheduledAt.getTime() <= Date.now() && (
-                        <span className="ms-2 text-amber-600">(تاریخ گذشته — پست فوری منتشر می‌شود)</span>
-                      )}
-                    </p>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setScheduledAt(null)}
-                    disabled={!scheduledAt}
-                    className="mt-2 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    پاک کردن برنامه
-                  </button>
                 </div>
 
                 {/* Post Type */}

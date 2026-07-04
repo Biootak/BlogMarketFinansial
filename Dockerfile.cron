@@ -1,0 +1,32 @@
+# ============================================================================
+# Sidecar cron image for self-hosted Docker deploy.
+# ----------------------------------------------------------------------------
+# به جای نصب system cron روی host، این image یک کانتینر کوچک cron دارد
+# که هر دقیقه endpointهای داخلی اپ را صدا می‌زند.
+#
+# استفاده در docker-compose.yml:
+#   services:
+#     cron:
+#       build:
+#         context: .
+#         dockerfile: Dockerfile.cron
+#       environment:
+#         - APP_URL=http://web:3000
+#         - CRON_SECRET=${CRON_SECRET}
+#       depends_on:
+#         - web
+# ============================================================================
+FROM registry.docker.ir/alpine:3.20
+
+RUN apk add --no-cache dcron curl tzdata
+
+# تنظیم timezone (در حالت production معمولاً Asia/Tehran نیاز است)
+ENV TZ=Asia/Tehran
+
+# کپی crontab — در build جایگزین می‌شود
+COPY deploy/crontab.docker /etc/crontabs/root
+
+# entrypoint: تنظیم tz، نصب crontab، اجرای cron در foreground
+RUN chmod 0644 /etc/crontabs/root && crontab /etc/crontabs/root
+
+CMD ["crond", "-f", "-d", "0"]

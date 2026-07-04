@@ -1,0 +1,411 @@
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <InnerLayoutRouter url="/dashboard" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} segmentPath={[...]} ...>
+      <SegmentViewNode type="page" pagePath="dashboard/...">
+        <SegmentTrieNode>
+        <Dashboard>
+          <AtelierDeck stats={{...}} scheduledPosts={[...]} popularPosts={[...]} recentDrafts={[...]} ...>
+            <a>
+            <main id="at-main" className="at-canvas" aria-label="داشبورد">
+              <div>
+              <div className="at-grid">
+                <AtelierHero todayViews={0} totalViews={33787} spark={[...]} publishedTotal={50}>
+                  <section className="at-tile at..." aria-label="خلاصهٔ امروز">
+                    <div>
+                    <header>
+                    <h1>
+                    <div className="at-hero__m...">
+                      <div>
+                      <div className="at-hero__m...">
+                        <AtelierPulse value={0} max={33787} label="پیشرفت باز...">
+                          <svg viewBox="0 0 200 200" className="at-pulse" role="img" aria-label="پیشرفت باز...">
+                            <defs>
+                            <g aria-hidden={true}>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line
+                                x1={30.88753123060235}
+                                y1={162.22914639137383}
++                               x2={29.401241579647575}
+-                               x2="29.40124157964756"
+                                y2={163.56740760409156}
+                                stroke="currentColor"
+                                strokeWidth={0.7}
+                                strokeLinecap="round"
+                                opacity={0.18}
+                              >
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line
++                               x1={24.761419523129874}
+-                               x1="24.761419523129888"
+                                y1={45.33597153680001}
+                                x2={23.143385534379988}
+                                y2={44.16040103221506}
+                                stroke="currentColor"
+                                strokeWidth={0.7}
+                                strokeLinecap="round"
+                                opacity={0.18}
+                              >
+                              <line>
+                              <line>
+                              <line>
+                              <line
+                                x1={53.49999999999996}
++                               y1={19.459637448047232}
+-                               y1="19.459637448047218"
+                                x2={50.49999999999996}
++                               y2={14.2634850253406}
+-                               y2="14.263485025340586"
+                                stroke="currentColor"
+                                strokeWidth={1.4}
+                                strokeLinecap="round"
+                                opacity={0.45}
+                              >
+                              ...
+                            ...
+                        ...
+                    ...
+                ...
+            ...
+          ...
+      ...
+ 
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <InnerLayoutRouter url="/dashboard" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} segmentPath={[...]} ...>
+      <SegmentViewNode type="page" pagePath="dashboard/...">
+        <SegmentTrieNode>
+        <Dashboard>
+          <AtelierDeck stats={{...}} scheduledPosts={[...]} popularPosts={[...]} recentDrafts={[...]} ...>
+            <a>
+            <main id="at-main" className="at-canvas" aria-label="داشبورد">
+              <div>
+              <div className="at-grid">
+                <AtelierHero todayViews={0} totalViews={33787} spark={[...]} publishedTotal={50}>
+                  <section className="at-tile at..." aria-label="خلاصهٔ امروز">
+                    <div>
+                    <header>
+                    <h1>
+                    <div className="at-hero__m...">
+                      <div>
+                      <div className="at-hero__m...">
+                        <AtelierPulse value={0} max={33787} label="پیشرفت باز...">
+                          <svg viewBox="0 0 200 200" className="at-pulse" role="img" aria-label="پیشرفت باز...">
+                            <defs>
+                            <g aria-hidden={true}>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line
+                                x1={30.88753123060235}
+                                y1={162.22914639137383}
++                               x2={29.401241579647575}
+-                               x2="29.40124157964756"
+                                y2={163.56740760409156}
+                                stroke="currentColor"
+                                strokeWidth={0.7}
+                                strokeLinecap="round"
+                                opacity={0.18}
+                              >
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line
++                               x1={24.761419523129874}
+-                               x1="24.761419523129888"
+                                y1={45.33597153680001}
+                                x2={23.143385534379988}
+                                y2={44.16040103221506}
+                                stroke="currentColor"
+                                strokeWidth={0.7}
+                                strokeLinecap="round"
+                                opacity={0.18}
+                              >
+                              <line>
+                              <line>
+                              <line>
+                              <line
+                                x1={53.49999999999996}
++                               y1={19.459637448047232}
+-                               y1="19.459637448047218"
+                                x2={50.49999999999996}
++                               y2={14.2634850253406}
+-                               y2="14.263485025340586"
+                                stroke="currentColor"
+                                strokeWidth={1.4}
+                                strokeLinecap="round"
+                                opacity={0.45}
+                              >
+                              ...
+                            ...
+                        ...
+                    ...
+                ...
+            ...
+          ...
+      ...
+ 
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <InnerLayoutRouter url="/dashboard" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} segmentPath={[...]} ...>
+      <SegmentViewNode type="page" pagePath="dashboard/...">
+        <SegmentTrieNode>
+        <Dashboard>
+          <AtelierDeck stats={{...}} scheduledPosts={[...]} popularPosts={[...]} recentDrafts={[...]} ...>
+            <a>
+            <main id="at-main" className="at-canvas" aria-label="داشبورد">
+              <div>
+              <div className="at-grid">
+                <AtelierHero todayViews={0} totalViews={33787} spark={[...]} publishedTotal={50}>
+                  <section className="at-tile at..." aria-label="خلاصهٔ امروز">
+                    <div>
+                    <header>
+                    <h1>
+                    <div className="at-hero__m...">
+                      <div>
+                      <div className="at-hero__m...">
+                        <AtelierPulse value={0} max={33787} label="پیشرفت باز...">
+                          <svg viewBox="0 0 200 200" className="at-pulse" role="img" aria-label="پیشرفت باز...">
+                            <defs>
+                            <g aria-hidden={true}>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line
+                                x1={30.88753123060235}
+                                y1={162.22914639137383}
++                               x2={29.401241579647575}
+-                               x2="29.40124157964756"
+                                y2={163.56740760409156}
+                                stroke="currentColor"
+                                strokeWidth={0.7}
+                                strokeLinecap="round"
+                                opacity={0.18}
+                              >
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line>
+                              <line
++                               x1={24.761419523129874}
+-                               x1="24.761419523129888"
+                                y1={45.33597153680001}
+                                x2={23.143385534379988}
+                                y2={44.16040103221506}
+                                stroke="currentColor"
+                                strokeWidth={0.7}
+                                strokeLinecap="round"
+                                opacity={0.18}
+                              >
+                              <line>
+                              <line>
+                              <line>
+                              <line
+                                x1={53.49999999999996}
++                               y1={19.459637448047232}
+-                               y1="19.459637448047218"
+                                x2={50.49999999999996}
++                               y2={14.2634850253406}
+-                               y2="14.263485025340586"
+                                stroke="currentColor"
+                                strokeWidth={1.4}
+                                strokeLinecap="round"
+                                opacity={0.45}
+                              >
+                              ...
+                            ...
+                        ...
+                    ...
+                ...
+            ...
+          ...
+      ...
+ 
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[browser] ReferenceError: toDatetimeLocal is not defined
+    at PostForm (src/components/Dashboard/Blog/PostForm/PostForm.tsx:659:28)
+  657 |                     type="datetime-local"
+  658 |                     dir="ltr"
+> 659 |                     value={toDatetimeLocal(scheduledAt)}
+      |                            ^
+  660 |                     onChange={(e) => {
+  661 |                       const v = e.target.value;
+  662 |                       setScheduledAt(v ? new Date(v) : null); (src/app/dashboard/posts/error.tsx:15:13)
+[browser] ReferenceError: toDatetimeLocal is not defined
+    at PostForm (src/components/Dashboard/Blog/PostForm/PostForm.tsx:659:28)
+  657 |                     type="datetime-local"
+  658 |                     dir="ltr"
+> 659 |                     value={toDatetimeLocal(scheduledAt)}
+      |                            ^
+  660 |                     onChange={(e) => {
+  661 |                       const v = e.target.value;
+  662 |                       setScheduledAt(v ? new Date(v) : null); (src/app/dashboard/posts/error.tsx:15:13)

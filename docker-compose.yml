@@ -1,37 +1,87 @@
+# ============================================================================
+# Self-hosted Docker Compose for Financial Market Blog.
+# ----------------------------------------------------------------------------
+# سه سرویس:
+#   - web:   اپ Next.js (production build با output: 'standalone')
+#   - db:    PostgreSQL 15
+#   - cron:  sidecar که هر دقیقه endpointهای cron را صدا می‌زند
+#
+# قبل از up:
+#   1) cp .env.example .env  → مقادیر واقعی را پر کن (DATABASE_URL, NEXTAUTH_URL, CRON_SECRET)
+#   2) docker compose up -d --build
+#
+# دستورات:
+#   docker compose ps               # وضعیت
+#   docker compose logs -f web      # لاگ اپ
+#   docker compose logs -f cron     # لاگ cron
+#   docker compose down             # خاموش کردن (ولی volumes حفظ می‌شوند)
+#   docker compose down -v          # پاک کردن کامل (دیتابیس و آپلودها)
+# ============================================================================
 services:
   web:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
+    image: fm-blog-web:latest
     ports:
       - "3000:3000"
     env_file:
       - .env
       - .env.local
     environment:
-      # Node Environment
+      # در production حتماً APP_URL و NEXTAUTH_URL با دامنه‌ی واقعی ست شود
       - NODE_ENV=production
-      # Next Auth
-      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
     volumes:
-      # Persist uploaded files
+      # آپلودها بیرون از image نگه داشته می‌شوند تا با redeploy پاک نشوند
       - uploads_data:/app/public/uploads
     restart: always
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   db:
-    image: postgres:15-alpine
+    image: registry.docker.ir/postgres:15-alpine
     ports:
       - "15432:5432"
     environment:
-      - POSTGRES_USER=blog_owner
-      - POSTGRES_PASSWORD=I82HcwNASRPe
-      - POSTGRES_DB=blog
+      - POSTGRES_USER=${POSTGRES_USER:-blog_owner}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      - POSTGRES_DB=${POSTGRES_DB:-blog}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-blog_owner} -d ${POSTGRES_DB:-blog}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  cron:
+    # Sidecar که هر دقیقه endpointهای cron را صدا می‌زند.
+    # اگه می‌خواهی system cron هاست استفاده کنی، این سرویس را غیرفعال کن.
+    build:
+      context: .
+      dockerfile: Dockerfile.cron
+    image: fm-blog-cron:latest
+    environment:
+      - APP_URL=http://web:3000
+      - CRON_SECRET=${CRON_SECRET:?CRON_SECRET must be set}
+      - TZ=${TZ:-Asia/Tehran}
+    depends_on:
+      web:
+        condition: service_healthy
+    restart: always
     networks:
       - app-network
 

@@ -1,0 +1,17 @@
+# ============================================================================
+# Docker-friendly crontab for sidecar cron container.
+# ----------------------------------------------------------------------------
+# متغیرهای APP_URL و CRON_SECRET از env کانتینر می‌آیند (docker-compose).
+# فراخوانی‌ها به نام سرویس وب داخل شبکه‌ی داکر اشاره می‌کنند (web:3000).
+# ============================================================================
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# ---------- پست‌های زمان‌بندی‌شده: هر ۱ دقیقه ----------
+* * * * * curl -fsS -m 30 -H "Authorization: Bearer ${CRON_SECRET}" ${APP_URL}/api/cron/publish-scheduled-posts >> /var/log/cron.log 2>&1
+
+# ---------- نرخ‌های بازار: هر ۱ دقیقه ----------
+* * * * * curl -fsS -m 30 -H "Authorization: Bearer ${CRON_SECRET}" ${APP_URL}/api/cron/refresh-market-rates >> /var/log/cron.log 2>&1
+
+# ---------- TGJU sync: هر ۱۰ دقیقه ----------
+*/10 * * * * curl -fsS -m 60 -H "Authorization: Bearer ${CRON_SECRET}" ${APP_URL}/api/cron/sync-bazaar >> /var/log/cron.log 2>&1

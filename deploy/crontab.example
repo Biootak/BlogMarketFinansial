@@ -1,0 +1,50 @@
+# ============================================================
+# Cron schedule for Financial Market Blog (self-hosted)
+# ============================================================
+# این فایل رو با `crontab -e` یا `crontab deploy/crontab.example` نصب کن.
+#
+# قبل از نصب این مقادیر را با محیط واقعی خودت جایگزین کن:
+#   - APP_URL: دامنه‌ی واقعی سایت (مثلاً https://blogmarketfinansial.ir)
+#   - CRON_SECRET: همان مقدار CRON_SECRET در .env پروژه
+#
+# نکته: در صورت اجرای لوکال، APP_URL را https://your-domain.com بگذار
+# وگرنه endpointها به localhost خود کرون اشاره می‌کنند و جواب نمی‌دهند.
+# ============================================================
+
+# محیط — CRON محیط کاربر را inherit نمی‌کند
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# ┌─ minute (0 - 59)
+# │  ┌─ hour (0 - 23)
+# │  │  ┌─ day of month (1 - 31)
+# │  │  │  ┌─ month (1 - 12)
+# │  │  │  │  ┌─ day of week (0 - 6) (Sunday=0)
+# │  │  │  │  │
+# *  *  *  *  *  command
+
+# ---------- پست‌های زمان‌بندی‌شده: هر ۱ دقیقه ----------
+# پست‌هایی که status=SCHEDULED و scheduledAt <= now() دارند را PUBLISHED می‌کند.
+# Idempotent: اجرای چندباره نتیجهٔ یکسانی دارد.
+* * * * * curl -fsS -m 30 -H "Authorization: Bearer YOUR_CRON_SECRET" https://YOUR_DOMAIN.com/api/cron/publish-scheduled-posts >> /var/log/fm-cron.log 2>&1
+
+# ---------- نرخ‌های بازار: هر ۱ دقیقه ----------
+# USDT، FX، TGJU-derived rates را در DB refresh می‌کند.
+* * * * * curl -fsS -m 30 -H "Authorization: Bearer YOUR_CRON_SECRET" https://YOUR_DOMAIN.com/api/cron/refresh-market-rates >> /var/log/fm-cron.log 2>&1
+
+# ---------- TGJU sync: هر ۱۰ دقیقه ----------
+# جدول اصلی نرخ‌ها (دلار، یورو، طلا، سکه) را از TGJU scrape می‌کند.
+*/10 * * * * curl -fsS -m 60 -H "Authorization: Bearer YOUR_CRON_SECRET" https://YOUR_DOMAIN.com/api/cron/sync-bazaar >> /var/log/fm-cron.log 2>&1
+
+# ============================================================
+# نصب:
+#   sudo crontab deploy/crontab.example   # یا
+#   crontab -e                            # و محتوای این فایل را paste کن
+#
+# بررسی:
+#   crontab -l
+#   tail -f /var/log/fm-cron.log
+#
+# حذف:
+#   crontab -r    # یا فقط این خطوط را با crontab -e پاک کن
+# ============================================================

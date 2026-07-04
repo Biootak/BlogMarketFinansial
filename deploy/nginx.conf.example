@@ -1,0 +1,130 @@
+# ============================================================
+# Nginx config example for Financial Market Blog (self-hosted)
+# ============================================================
+# قبل از فعال‌سازی:
+#   1) دامنه را در DNS به IP سرور وصل کن
+#   2) certbot --nginx -d your-domain.com -d www.your-domain.com
+#   3) این فایل را در /etc/nginx/sites-available/fm-blog بگذار و symlink کن
+#      sudo ln -s /etc/nginx/sites-available/fm-blog /etc/nginx/sites-enabled/
+#   4) sudo nginx -t && sudo systemctl reload nginx
+# ============================================================
+
+# محدودیت آپلود (تصاویر پست‌ها)
+client_max_body_size 20M;
+
+# rate limit zone (در سطح http context تعریف می‌شود — اینجا فقط نمونه)
+# limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
+
+# --- HTTP → HTTPS redirect ---
+server {
+    listen 80;
+    listen [::]:80;
+    server_name your-domain.com www.your-domain.com;
+
+    # certbot challenge
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+# --- HTTPS ---
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name your-domain.com www.your-domain.com;
+
+    # --- SSL (certbot خودکار پر می‌کند) ---
+    ssl_certificate /etc/letsencrypt/live/your-domain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+
+    # --- HSTS (بعد از اینکه مطمئن شدی همه چیز HTTPS کار می‌کند فعال کن) ---
+    # add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+
+    # --- Security headers (بعضی‌ها توسط next.config هم ست می‌شوند؛ اینجا لایه دوم) ---
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    # --- Logs ---
+    access_log /var/log/nginx/fm-blog.access.log;
+    error_log  /var/log/nginx/fm-blog.error.log;
+
+    # --- فشرده‌سازی ---
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_types
+        text/plain
+        text/css
+        text/xml
+        text/javascript
+        application/json
+        application/javascript
+        application/xml+rss
+        application/atom+xml
+        application/vnd.ms-fontobject
+        image/svg+xml
+        image/x-icon
+        font/woff2;
+
+    # --- Proxy به Next.js ---
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host  $host;
+        proxy_set_header X-Forwarded-Port  $server_port;
+
+        # SSE / long-lived responses
+        proxy_buffering off;
+        proxy_read_timeout  75s;
+        proxy_send_timeout  75s;
+
+        # WebSocket (اگه لازم شد)
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+
+    # --- Cache طولانی برای فایل‌های استاتیک _next ---
+    location /_next/static/ {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_cache_valid 200 365d;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        access_log off;
+    }
+
+    # --- آپلودها (پست‌ها، آواتار) — بدون proxy به Next تا فشار کمتر بشه ---
+    # اگه public/uploads را مستقیم از دیسک serve می‌کنی، این بلوک را فعال کن
+    # location /uploads/ {
+    #     alias /var/www/fm-blog/public/uploads/;
+    #     expires 365d;
+    #     add_header Cache-Control "public, max-age=31536000, immutable";
+    #     access_log off;
+    # }
+
+    # --- API: rate limit و access log مفصل ---
+    location /api/ {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # limit_req zone=api burst=20 nodelay;
+    }
+}
