@@ -17350,4 +17350,87 @@
     border-color: var(--at-accent);
     box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-accent) 18%, transparent);
   }
+
+  /* ============================================================================
+     Posts Dashboard — Magazine / Hero / List view modes
+     ----------------------------------------------------------------------------
+     2026-07-05: لایهٔ جدید برای PostList که سه نمای «مجله / گرید / فهرست» دارد.
+     Magazine: یک hero card تمام‌عرض با تصویر ۱۶:۹ + گرید ۲-۳ ستونه برای بقیه.
+     List: ردیف‌های چگال با thumb کوچک (inbox-style).
+     همه چیز با توکن‌های atelier موجود — بدون رنگ جدید.
+     ============================================================================ */
+
+  /* ---- Scrollbar thin برای KPI pill strip افقی ----------------------------- */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--at-line-strong) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: var(--at-line-strong);
+    border-radius: 999px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: var(--at-fg-subtle);
+  }
+
+  /* ---- Magazine: hero card halo (active state soft glow) ------------------- */
+  .at-tile.is-hero-active {
+    position: relative;
+  }
+  .at-tile.is-hero-active::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse 80% 60% at 50% 50%,
+      color-mix(in oklch, var(--at-accent) 10%, transparent),
+      transparent 70%
+    );
+    z-index: 0;
+  }
+
+  /* ---- Magazine: hero card image hover zoom (CSS-only) --------------------- */
+  .at-hero-media {
+    overflow: hidden;
+  }
+  .at-hero-media > img {
+    transition: transform 600ms var(--at-ease);
+  }
+  .at-tile:hover .at-hero-media > img {
+    transform: scale(1.03);
+  }
+
+  /* ---- Magazine: lg breakpoint refinement ---------------------------------- */
+  @media (min-width: 1024px) {
+    .at-magazine-hero {
+      min-height: 360px;
+    }
+  }
+
+  /* ---- List row: divider + hover affordance -------------------------------- */
+  .at-list-row + .at-list-row {
+    border-top: 1px solid var(--at-line);
+  }
+  .at-list-row {
+    transition:
+      background-color var(--at-duration) var(--at-ease),
+      box-shadow var(--at-duration) var(--at-ease);
+  }
+  .at-list-row:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--at-accent);
+  }
+
+  /* ---- FAB shadow refinement (no extra layer) ------------------------------ */
+  .at-fab {
+    will-change: transform;
+  }
 }

@@ -406,6 +406,175 @@ export async function updatePostStatusAndInvalidate(
   }
 }
 
+/**
+ * شمارندهٔ پست‌ها بر اساس وضعیت — برای KPI strip هدر داشبورد.
+ * 2026-07-05: جدید — یک query سبک groupBy به جای چهار count جداگانه.
+ * authorId scope مثل listAllPosts: AUTHOR فقط پست‌های خودش را می‌بیند.
+ */
+export interface PostStatusCounts {
+  all: number;
+  published: number;
+  draft: number;
+  pending: number;
+  scheduled: number;
+}
+
+export async function getPostStatusCounts(): Promise<ActionResult<PostStatusCounts>> {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return { success: false, message: 'شما باید وارد شوید.' };
+    }
+
+    const baseWhere: Prisma.PostWhereInput =
+      session.user.role === 'AUTHOR' ? { authorId: session.user.id } : {};
+
+    const grouped = await prisma.post.groupBy({
+      by: ['status'],
+      where: baseWhere,
+      _count: { _all: true },
+    });
+
+    const counts: PostStatusCounts = {
+      all: 0,
+      published: 0,
+      draft: 0,
+      pending: 0,
+      scheduled: 0,
+    };
+
+    for (const row of grouped) {
+      counts.all += row._count._all;
+      switch (row.status) {
+        case 'PUBLISHED':
+          counts.published = row._count._all;
+          break;
+        case 'DRAFT':
+          counts.draft = row._count._all;
+          break;
+        case 'PENDING_REVIEW':
+          counts.pending = row._count._all;
+          break;
+        case 'SCHEDULED':
+          counts.scheduled = row._count._all;
+          break;
+      }
+    }
+
+    return { success: true, message: 'شمارنده‌ها با موفقیت محاسبه شدند.', data: counts };
+  } catch (error) {
+    console.error('خطا در شمارش وضعیت پست‌ها:', error);
+    return {
+      success: false,
+      message: 'خطا در دریافت شمارنده‌ها.',
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+/**
+ * 2026-07-05: کپی یک پست به‌صورت پیش‌نویس — برای دکمهٔ «تکرار» در
+ * PostsFloatingToolbar. فیلدهای محتوایی + روابط (categories, tags,
+ * featuredImage, postType) کپی می‌شوند؛ شمارنده‌ها صفر می‌شوند؛
+ * وضعیت همیشه DRAFT و isFeatured خاموش می‌شود. slug یکتا ساخته
+ * می‌شود تا با منبع تداخل نداشته باشد.
+ */
+export async function duplicatePost(postId: string): Promise<ActionResult<PostWithRelations>> {
+  try {
+    const session = await checkRole(['OWNER', 'ADMIN', 'AUTHOR']);
+    if (!session?.user) {
+      return { success: false, message: 'شما باید وارد شوید.' };
+    }
+
+    const source = await prisma.post.findUnique({
+      where: { id: postId },
+      include: {
+        categories: { select: { id: true } },
+        tags: { select: { name: true } },
+      },
+    });
+
+    if (!source) {
+      return { success: false, message: 'پست مبدأ یافت نشد.' };
+    }
+
+    // AUTHOR فقط پست‌های خودش را تکرار کند
+    if (session.user.role === 'AUTHOR' && source.authorId !== session.user.id) {
+      return {
+        success: false,
+        message: 'شما فقط می‌توانید پست‌های خودتان را تکرار کنید.',
+      };
+    }
+
+    const newId = generateUniqueId();
+    const baseSlug = `${source.slug}-copy`;
+    const slug = await createUniqueSlug(baseSlug);
+
+    const post = await prisma.post.create({
+      data: {
+        id: newId,
+        title: `${source.title} (کپی)`,
+        slug,
+        content: source.content,
+        excerpt: source.excerpt,
+        featuredImage: source.featuredImage,
+        featuredImageWidth: source.featuredImageWidth,
+        featuredImageHeight: source.featuredImageHeight,
+        galleryImages: source.galleryImages ?? [],
+        postType: source.postType,
+        videoUrl: source.videoUrl,
+        audioUrl: source.audioUrl,
+        readingTime: source.readingTime,
+        status: PostStatus.DRAFT,
+        isFeatured: false,
+        viewCount: 0,
+        scheduledAt: null,
+        author: { connect: { id: session.user.id } },
+        categories: {
+          connect: source.categories.map((c) => ({ id: c.id })),
+        },
+        tags: source.tags.length
+          ? {
+              connectOrCreate: source.tags.map((t) => ({
+                where: { name: t.name },
+                create: { name: t.name, slug: generateSlug(t.name) },
+              })),
+            }
+          : undefined,
+      },
+      include: {
+        author: { include: { profile: true } },
+        categories: true,
+        tags: true,
+        _count: { select: { comments: true, likes: true, savedBy: true, tags: true } },
+      },
+    });
+
+    // Invalidate caches
+    revalidatePath('/dashboard/posts');
+    revalidateTag('posts');
+    revalidateTag(`post-${newId}`);
+    revalidateTag('post-slug');
+    revalidateTag('archive');
+    revalidateTag('dashboard-stats');
+    await invalidateHomePageCache();
+
+    await logActivity(
+      'CREATE',
+      `تکرار پست: ${source.title} → ${newId} (از ${postId})`,
+    );
+
+    return { success: true, message: 'پست با موفقیت تکرار شد.', data: post as PostWithRelations };
+  } catch (error) {
+    console.error('خطا در تکرار پست:', error);
+    return {
+      success: false,
+      message: 'خطا در تکرار پست. لطفاً دوباره تلاش کنید.',
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
 export async function deletePost(postId: string): Promise<ActionResult> {
   try {
     const session = await auth();

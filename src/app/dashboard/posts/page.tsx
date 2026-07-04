@@ -2,6 +2,7 @@ import AdminPostListView from '@/components/Dashboard/Blog/AdminPostListView';
 import PostsPageHeader from '@/components/Dashboard/Blog/PostsPageHeader';
 import type { PostStatus } from '@/types/types';
 import { checkRole } from '@/lib/auth';
+import { getPostStatusCounts } from '@/actions/postActions';
 
 export default async function DashboardPosts({
   searchParams,
@@ -11,9 +12,13 @@ export default async function DashboardPosts({
   await checkRole(['OWNER', 'ADMIN', 'AUTHOR']);
   const searchParamsData = await searchParams;
 
+  // شمارنده‌های KPI برای نوار بالای صفحه (موازی با لیست).
+  const countsResult = await getPostStatusCounts();
+  const counts = countsResult.success && countsResult.data ? countsResult.data : null;
+
   return (
     <div className="dash2-page">
-      <PostsPageHeader searchParams={searchParamsData} />
+      <PostsPageHeader searchParams={searchParamsData} counts={counts} />
       <AdminPostListView searchParams={searchParamsData} />
     </div>
   );
