@@ -1271,6 +1271,19 @@ const getCachedStats = unstable_cache(
   },
 );
 
+/**
+ * getScheduledPosts — پست‌های «هفتۀ جاری» برای داشبورد.
+ *
+ * 2026-07-04: نسخهٔ قبلی کوئری‌ش `status: PUBLISHED AND updatedAt > now()`
+ * بود که همیشه صفر برمی‌گردوند (پست‌های گذشته را نمی‌دید) و تقویم انتشار
+ * و ردیف «هفتۀ جاری» را بی‌معنی می‌کرد. حالا پنجرهٔ هفتۀ جاری (شنبه
+ * تا جمعه، به وقت سرور) را می‌گیریم و پست‌هایی که در این پنجره
+ * `createdAt` یا `updatedAt` دارند برمی‌گردانیم — همهٔ وضعیت‌ها
+ * (پیش‌نویس/در انتظار/منتشر شده) تا تقویم خالی به نظر نرسد.
+ *
+ * بُچ ۱۵ روزه می‌گیریم (یک هفته قبل + یک هفته بعد) تا تقویم
+ * انتشار آیندهٔ نزدیک را هم نشان بدهد.
+ */
 export async function getScheduledPosts(): Promise<ActionResult<PostWithRelations[]>> {
   const session = await auth();
   const user = session?.user;
@@ -1283,9 +1296,20 @@ export async function getScheduledPosts(): Promise<ActionResult<PostWithRelation
   }
 
   try {
+    const now = new Date();
+    const start = new Date(now);
+    start.setHours(0, 0, 0, 0);
+    // Persian week starts Saturday; JS Sat=6, so offset from Sat.
+    const offset = (start.getDay() - 6 + 7) % 7;
+    start.setDate(start.getDate() - offset - 7); // یک هفته قبل‌تر
+    const end = new Date(start);
+    end.setDate(end.getDate() + 21); // سه هفته: یکی قبل + هفتۀ جاری + یکی بعد
+
     const where: Prisma.PostWhereInput = {
-      status: 'PUBLISHED',
-      updatedAt: { gt: new Date() },
+      OR: [
+        { createdAt: { gte: start, lt: end } },
+        { updatedAt: { gte: start, lt: end } },
+      ],
     };
 
     // اگر نویسنده است، فقط پست‌های خودش را ببیند
@@ -1293,17 +1317,8 @@ export async function getScheduledPosts(): Promise<ActionResult<PostWithRelation
       where.authorId = user.id;
     }
 
-    // 2026-06-14: getScheduledPosts used a query that *never* returns
-    // rows (PUBLISHED posts with updatedAt > now) AND it over-fetched
-    // the full comments/likes/savedBy relations. Fix the predicate
-    // (we look at scheduledAt-like fields: nothing fits, so the
-    // safe behaviour is to return nothing and let the dashboard
-    // handle the empty case) and trim the include to counters.
     const posts = await prisma.post.findMany({
       where,
-      // Comments, likes and savedBy are never rendered in the
-      // scheduled-posts widget — only counters. The previous
-      // version was an N+1 factory.
       select: {
         id: true,
         title: true,
@@ -1332,19 +1347,20 @@ export async function getScheduledPosts(): Promise<ActionResult<PostWithRelation
           select: { comments: true, likes: true, savedBy: true },
         },
       },
-      orderBy: { updatedAt: 'asc' },
+      orderBy: [{ createdAt: 'desc' }, { updatedAt: 'desc' }],
+      take: 200,
     });
 
     return {
       success: true,
-      message: 'پست‌های زمان‌بندی شده با موفقیت دریافت شدند',
+      message: 'پست‌های هفتۀ جاری با موفقیت دریافت شدند',
       data: posts as unknown as PostWithRelations[],
     };
   } catch (error) {
     console.error('Error in getScheduledPosts:', error);
     return {
       success: false,
-      message: 'خطا در دریافت پست‌های زمان‌بندی شده',
+      message: 'خطا در دریافت پست‌های هفتۀ جاری',
     };
   }
 }

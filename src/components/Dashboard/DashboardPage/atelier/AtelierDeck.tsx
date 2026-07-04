@@ -49,7 +49,7 @@ import AtelierChart from './tiles/AtelierChart';
 import AtelierEngagement from './tiles/AtelierEngagement';
 import AtelierHero from './tiles/AtelierHero';
 import AtelierPosts from './tiles/AtelierPosts';
-import AtelierWeekStrip from './tiles/AtelierWeekStrip';
+import AtelierWeekRhythm from './tiles/AtelierWeekRhythm';
 
 interface AtelierDeckProps {
   stats: {
@@ -104,8 +104,8 @@ const AtelierDeck: React.FC<AtelierDeckProps> = (props) => {
           {/* Row 2: Engagement console (heart + comments + shares + rate) */}
           <AtelierEngagement stats={stats} />
 
-          {/* Row 3: Week strip (7 days) */}
-          <AtelierWeekStrip scheduledPosts={props.scheduledPosts} />
+          {/* Row 3: Week rhythm (ضرباهنگ هفته) — 2026-07-04 redesign */}
+          <AtelierWeekRhythm scheduledPosts={props.scheduledPosts} />
 
           {/* Row 4: Chart (full width) */}
           <AtelierChart scheduledPosts={props.scheduledPosts} />
