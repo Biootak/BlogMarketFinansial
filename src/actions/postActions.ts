@@ -26,7 +26,17 @@ export async function createPost(data: CreatePostInput): Promise<ActionResult<Po
   }
 
   try {
-    const validatedData = CreatePostSchema.parse(data);
+    let validatedData = CreatePostSchema.parse(data);
+
+    // نویسنده نمی‌تواند مستقیماً منتشر یا featured کند
+    if (session.user.role === Role.AUTHOR) {
+      validatedData = {
+        ...validatedData,
+        status: PostStatus.PENDING_REVIEW,
+        isFeatured: false,
+      };
+    }
+
     const id = generateUniqueId();
 
     // ایجاد اسلاگ یکتا
