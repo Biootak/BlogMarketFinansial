@@ -114,7 +114,9 @@ export default async function PageAuthor({
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c'),
+        }}
       />
 
       <div className="container py-6 sm:py-10 lg:py-12 space-y-8 sm:space-y-10 lg:space-y-12">
