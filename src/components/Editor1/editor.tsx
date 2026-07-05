@@ -19,8 +19,8 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { EditorContent, type EditorOptions, useEditor } from '@tiptap/react';
-import type { Content } from '@tiptap/core';
+import { EditorContent, useEditor } from '@tiptap/react';
+import type { Content, EditorOptions } from '@tiptap/core';
 import { extensions as builtInExtensions } from './extensions';
 import FixedMenu from './components/fixed-menu';
 import LinkBubbleMenu from './components/link-bubble-menu';
@@ -243,12 +243,15 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
     }, [editor, onUpdateToC]);
 
     // ── Content parsing + initial load ──
+    // 2026-07-05: در v3 نوع Content فقط string | object | JSONContent[] | null
+    // است. به جای undefined/null، رشتهٔ خالی برمی‌گردانیم تا setContent
+    // هیچ‌وقت null دریافت نکند.
     const parseContent = useCallback(
-      (raw: string | object | undefined): string | object | undefined => {
-        if (!raw) return undefined;
+      (raw: Content): Content => {
+        if (!raw) return '';
         if (typeof raw !== 'string') return raw;
         const trimmed = raw.trim();
-        if (!trimmed) return undefined;
+        if (!trimmed) return '';
         if (trimmed.startsWith('<')) return trimmed;
         if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
           try {
@@ -265,11 +268,11 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
     const initialContentLoadedRef = useRef(false);
     useEffect(() => {
       if (!editor || editor.isDestroyed || initialContentLoadedRef.current) return;
-      const parsedContent = parseContent(content);
+      const parsedContent = parseContent(content ?? '');
       if (parsedContent) {
         queueMicrotask(() => {
           if (!editor.isDestroyed) {
-            editor.commands.setContent(parsedContent as NonNullable<Content>, false);
+            editor.commands.setContent(parsedContent, { emitUpdate: false });
             initialContentLoadedRef.current = true;
           }
         });
@@ -317,10 +320,10 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
             <span className="at-editor-deck__spacer" />
             <span
               className={`at-editor-deck__save at-editor-deck__save--${saveState}`}
-              title={saveState === 'saving' ? 'در حال ذخیره...' : 'ذخیره شد'}
+              title={saveState === 'saving' ? 'در حال ویرایش...' : 'آمادهٔ نوشتن'}
             >
               <span className="at-editor-deck__save-dot" />
-              {saveState === 'saving' ? 'در حال ذخیره' : 'ذخیره خودکار'}
+              {saveState === 'saving' ? 'در حال ویرایش' : 'آماده'}
             </span>
           </div>
         </div>
@@ -413,7 +416,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
                 className={`at-editor-status__save at-editor-status__save--${saveState}`}
               >
                 <span className="at-editor-status__save-dot" />
-                {saveState === 'saving' ? 'در حال ذخیره' : 'همگام‌سازی شد'}
+                {saveState === 'saving' ? 'در حال ویرایش' : 'آماده'}
               </span>
             </div>
           </div>

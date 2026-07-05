@@ -5,8 +5,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { BubbleMenu } from '@tiptap/react';
-import type { Editor } from '@tiptap/react';
+import { BubbleMenu } from '@tiptap/react/menus';
+import type { Editor } from '@tiptap/core';
 import { Bold, Italic, Underline, Highlighter, Link, Code, Strikethrough, X, Check } from 'lucide-react';
 // 2026-07-05: dir از hook مرکزی برای consistency با shell.
 import { useDirection } from '@/hooks/useDirection';
@@ -84,10 +84,8 @@ const TextBubbleMenu: React.FC<TextBubbleMenuProps> = ({ editor }) => {
   return (
     <BubbleMenu
       editor={editor}
-      tippyOptions={{
-        duration: 150,
-        animation: 'shift-away',
-        moveTransition: 'transform 0.15s ease-out',
+      options={{
+        placement: 'top-start',
       }}
       shouldShow={({ editor: ed, state }) => {
         const { from, to } = state.selection;

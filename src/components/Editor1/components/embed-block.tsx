@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react';
+import { NodeViewWrapper } from '@tiptap/react';
+import type { NodeViewProps } from '@tiptap/core';
 import { type EmbedProvider, getEmbedUrl } from '../extensions/embed';
 import { Loader2, AlertCircle, RefreshCw, ExternalLink, Play, Film, Twitter, Link as LinkIcon, type LucideIcon } from 'lucide-react';
 

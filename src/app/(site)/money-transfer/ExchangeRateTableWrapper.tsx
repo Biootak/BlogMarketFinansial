@@ -1,86 +1,105 @@
 'use client';
 
+/**
+ * ExchangeRateTableWrapper — toggles between table & card view.
+ *
+ * Design intent:
+ * - Linear-style segmented toggle (no gradient pill, no layoutId animation).
+ * - Table is the default; card view falls back to small grids.
+ *
+ * 2026-07-05: simplified wrapper, view-toggle now uses mt-tabs utility.
+ */
+
 import { useState } from 'react';
-import { motion, AnimatePresence } from '@/lib/motion-shim';
 import type { ExchangeRateData } from '@/types/types';
 import { ExchangeRateTableView } from './ExchangeRateTableView';
-import { ExchangeRateCard } from './ExchangeRateCard';
 import { Table2, LayoutGrid } from 'lucide-react';
 
-export function ExchangeRateTableWrapper({ exchangeRates }: { exchangeRates: ExchangeRateData[] }) {
+interface Props {
+  exchangeRates: ExchangeRateData[];
+}
+
+export function ExchangeRateTableWrapper({ exchangeRates }: Props) {
   const [view, setView] = useState<'table' | 'card'>('table');
 
+  if (view === 'card') {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-center">
+          <div className="mt-tabs">
+            <button
+              type="button"
+              onClick={() => setView('table')}
+              className="mt-tab"
+            >
+              <Table2 className="w-3.5 h-3.5 inline-block ml-1" />
+              جدول
+            </button>
+            <button
+              type="button"
+              onClick={() => setView('card')}
+              aria-current="true"
+              className="mt-tab"
+            >
+              <LayoutGrid className="w-3.5 h-3.5 inline-block ml-1" />
+              کارت
+            </button>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {exchangeRates.map((rate) => (
+            <div key={rate.id} className="mt-card">
+              <div className="mt-card__header">
+                <div>
+                  <div className="mt-card__title">{rate.name}</div>
+                </div>
+                <span className="mt-card__meta">
+                  {rate.currency || rate.name.slice(0, 3).toUpperCase()}
+                </span>
+              </div>
+              <div className="mt-card__table">
+                <span className="mt-card__rate-name">خرید</span>
+                <span className="mt-card__rate-value mt-card__rate-value--buy">
+                  {rate.buyRate ?? '—'}
+                </span>
+                <span></span>
+                <span className="mt-card__rate-name">فروش</span>
+                <span className="mt-card__rate-value mt-card__rate-value--sell">
+                  {rate.sellRate ?? '—'}
+                </span>
+                <span></span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-8">
-      {/* View Toggle */}
+    <div className="space-y-6">
       <div className="flex justify-center">
-        <div className="inline-flex items-center p-1.5 bg-slate-100 dark:bg-slate-800 rounded-2xl">
+        <div className="mt-tabs">
           <button
+            type="button"
             onClick={() => setView('table')}
-            className={`relative flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
-              view === 'table'
-                ? 'text-white'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-            }`}
+            aria-current="true"
+            className="mt-tab"
           >
-            {view === 'table' && (
-              <motion.div
-                layoutId="viewToggle"
-                className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-500/25"
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              />
-            )}
-            <Table2 className="w-4 h-4 relative z-10" />
-            <span className="relative z-10">جدول</span>
+            <Table2 className="w-3.5 h-3.5 inline-block ml-1" />
+            جدول
           </button>
           <button
+            type="button"
             onClick={() => setView('card')}
-            className={`relative flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
-              view === 'card'
-                ? 'text-white'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-            }`}
+            className="mt-tab"
           >
-            {view === 'card' && (
-              <motion.div
-                layoutId="viewToggle"
-                className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-500/25"
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              />
-            )}
-            <LayoutGrid className="w-4 h-4 relative z-10" />
-            <span className="relative z-10">کارت</span>
+            <LayoutGrid className="w-3.5 h-3.5 inline-block ml-1" />
+            کارت
           </button>
         </div>
       </div>
-
-      {/* Content */}
-      <AnimatePresence mode="wait">
-        {view === 'table' ? (
-          <motion.div
-            key="table"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            <ExchangeRateTableView exchangeRates={exchangeRates} />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="card"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6"
-          >
-            {exchangeRates.map((rate, index) => (
-              <ExchangeRateCard key={rate.id} rate={rate} index={index} />
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <ExchangeRateTableView exchangeRates={exchangeRates} />
     </div>
   );
 }

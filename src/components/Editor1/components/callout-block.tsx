@@ -6,7 +6,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { NodeViewWrapper, NodeViewContent, type NodeViewProps } from '@tiptap/react';
+import { NodeViewWrapper, NodeViewContent } from '@tiptap/react';
+import type { NodeViewProps } from '@tiptap/core';
 import { type CalloutType, calloutTypeConfig } from '../extensions/callout';
 
 const CalloutBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, selected }) => {

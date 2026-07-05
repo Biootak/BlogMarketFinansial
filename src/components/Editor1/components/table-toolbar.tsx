@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { BubbleMenu } from '@tiptap/react';
-import type { Editor } from '@tiptap/react';
+import { BubbleMenu } from '@tiptap/react/menus';
+import type { Editor } from '@tiptap/core';
 import { CellSelection } from '@tiptap/pm/tables';
 import {
   Trash2,
@@ -99,7 +99,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
   return (
     <BubbleMenu
       editor={editor}
-      tippyOptions={{ duration: 100, placement: 'top', offset: [0, 10] }}
+      options={{ placement: 'top' }}
       shouldShow={({ editor, state }) => {
         const { selection } = state;
         const isCellSelection = selection instanceof CellSelection;

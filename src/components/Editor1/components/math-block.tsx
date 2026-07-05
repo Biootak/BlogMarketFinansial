@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react';
+import { NodeViewWrapper } from '@tiptap/react';
+import type { NodeViewProps } from '@tiptap/core';
 import { AlertTriangle, Sigma } from 'lucide-react';
 
 // Dynamic import for KaTeX to avoid SSR issues

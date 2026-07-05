@@ -2,12 +2,15 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getExchangeRates } from '@/actions/exchange-rates';
 import { getRateLists } from '@/actions/rate-lists';
-import InfoCards from './InfoCards';
-import ExchangeRateTable from './ExchangeRateTable';
+import { ExchangeRateTableWrapper } from './ExchangeRateTableWrapper';
 import ContactCTA from '@/components/online-payment/ContactCTA';
 import FAQ from './FAQ';
 import RateListGrid from './RateListGrid';
 import HeroSection from './HeroSection';
+import LiveTicker from './LiveTicker';
+import TrustStrip from './TrustStrip';
+import QuickConverter from './QuickConverter';
+import FeatureList from './FeatureList';
 
 export const metadata: Metadata = {
   title: 'صرافی آنلاین | انتقال ارز سریع و مطمئن',
@@ -27,13 +30,23 @@ export default async function MoneyTransferPage() {
       {/* Hero Section */}
       <HeroSection />
 
+      {/* Live ticker — thin full-width strip right under the hero */}
+      <div className="mt-3 sm:mt-4">
+        <LiveTicker rates={exchangeRates} />
+      </div>
+
       <div className="container py-6 sm:py-10 lg:py-14 space-y-10 sm:space-y-16 px-4 sm:px-6">
+        {/* Trust Strip — company-wide numeric metrics */}
+        <section aria-label="اعتمادسازی">
+          <TrustStrip />
+        </section>
+
         {/* Exchange Rates Section */}
         <section id="rates" className="relative overflow-hidden">
           {/* Decorative Elements */}
           <div className="hidden sm:block absolute -top-20 -right-20 w-72 h-72 bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
           <div className="hidden sm:block absolute -bottom-20 -left-20 w-72 h-72 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-          
+
           <div className="relative bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl rounded-3xl border border-slate-200/50 dark:border-slate-700/50 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_40px_-12px_rgba(0,0,0,0.5)] overflow-hidden">
             {/* Section Header */}
             <div className="px-6 lg:px-10 pt-8 lg:pt-10 pb-6">
@@ -50,7 +63,12 @@ export default async function MoneyTransferPage() {
                 </p>
               </div>
             </div>
-            
+
+            {/* Quick Converter — sits inside the rates card, above the table */}
+            <div className="px-6 lg:px-10 pb-6">
+              <QuickConverter rates={exchangeRates} />
+            </div>
+
             {/* Table Content */}
             <div className="px-4 lg:px-8 pb-6">
               <Suspense fallback={
@@ -61,10 +79,10 @@ export default async function MoneyTransferPage() {
                   </div>
                 </div>
               }>
-                <ExchangeRateTable exchangeRates={exchangeRates} />
+                <ExchangeRateTableWrapper exchangeRates={exchangeRates} />
               </Suspense>
             </div>
-            
+
             {/* Footer Note */}
             <div className="px-6 lg:px-10 py-4 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800">
               <p className="text-xs text-center text-slate-400 dark:text-slate-500">
@@ -121,7 +139,7 @@ export default async function MoneyTransferPage() {
               با اعتماد به ما، از بهترین خدمات انتقال ارز بهره‌مند شوید
             </p>
           </div>
-          <InfoCards />
+          <FeatureList />
         </section>
 
         {/* FAQ Section */}

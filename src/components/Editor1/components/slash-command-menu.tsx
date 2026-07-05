@@ -71,6 +71,10 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
       selectItem(selectedIndex);
     }, [selectItem, selectedIndex]);
 
+    const tabHandler = useCallback(() => {
+      selectItem(selectedIndex);
+    }, [selectItem, selectedIndex]);
+
     useEffect(() => {
       setSelectedIndex(0);
     }, [items]);
@@ -92,7 +96,8 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
           return true;
         }
 
-        if (event.key === 'Enter') {
+        if (event.key === 'Enter' || event.key === 'Tab') {
+          event.preventDefault();
           enterHandler();
           return true;
         }
@@ -141,7 +146,18 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
       (a, b) => categoryOrder.indexOf(a) - categoryOrder.indexOf(b)
     );
 
-    let globalIndex = 0;
+    // 2026-07-05: به جای increment کردن متغیر در حین render، یکبار
+    // در useMemo آرایهٔ flat با indexهای پایدار می‌سازیم.
+    const indexedItems = useMemo(() => {
+      let index = 0;
+      return sortedCategories.flatMap((category) =>
+        groupedItems[category].map((item) => ({
+          item,
+          category,
+          index: index++,
+        }))
+      );
+    }, [sortedCategories, groupedItems]);
 
     return (
       <div
@@ -165,12 +181,15 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
                 {label}
               </div>
               {categoryItems.map((item) => {
-                const currentIndex = globalIndex++;
+                const indexed = indexedItems.find(
+                  (entry) => entry.item === item && entry.category === category
+                )!;
+                const currentIndex = indexed.index;
                 const isSelected = currentIndex === selectedIndex;
                 const Icon = item.icon;
                 return (
                   <button
-                    key={item.title}
+                    key={`${category}-${item.title}`}
                     id={`slash-item-${currentIndex}`}
                     ref={isSelected ? selectedRef : null}
                     type="button"

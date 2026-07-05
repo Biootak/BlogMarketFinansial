@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
-import type { Editor } from '@tiptap/react';
+import type { Editor } from '@tiptap/core';
 import { Table, X } from 'lucide-react';
 import { Toolbar } from '../../ui/toolbar';
 import * as Dialog from '@radix-ui/react-dialog';

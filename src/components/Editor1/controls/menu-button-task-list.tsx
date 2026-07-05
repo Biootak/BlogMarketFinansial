@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import type { Editor } from '@tiptap/react';
+import type { Editor } from '@tiptap/core';
 import { CheckSquare } from 'lucide-react';
 import { Toolbar } from '../../ui/toolbar';
 

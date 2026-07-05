@@ -5,8 +5,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { FloatingMenu as TiptapFloatingMenu } from '@tiptap/react';
-import type { Editor } from '@tiptap/react';
+import { FloatingMenu as TiptapFloatingMenu } from '@tiptap/react/menus';
+import type { Editor } from '@tiptap/core';
 import {
   Plus,
   Type,
@@ -198,7 +198,7 @@ const FloatingMenuComponent: React.FC<FloatingMenuProps> = ({ editor }) => {
   return (
     <TiptapFloatingMenu
       editor={editor}
-      tippyOptions={{ duration: 150, animation: 'shift-away' }}
+      options={{ placement: 'bottom-start' }}
       shouldShow={({ state }) => {
         const { $from } = state.selection;
         const currentLineText = $from.nodeBefore?.textContent || '';

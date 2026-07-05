@@ -1,4 +1,5 @@
 import { ReactNodeViewRenderer } from '@tiptap/react';
+import type { NodeViewProps } from '@tiptap/core';
 import { mergeAttributes } from '@tiptap/core';
 import { Image as BaseImage } from '@tiptap/extension-image';
 import ResizeImage from '../components/resize-image';
@@ -7,6 +8,10 @@ export default BaseImage.extend({
   addOptions() {
     return {
       ...this.parent?.(),
+      inline: false,
+      allowBase64: false,
+      HTMLAttributes: {},
+      resize: false,
       group: 'block',
       defining: true,
       isolating: true,

@@ -1,10 +1,8 @@
 import { Extension } from '@tiptap/core';
 import Suggestion, { type SuggestionOptions } from '@tiptap/suggestion';
 import { PluginKey } from '@tiptap/pm/state';
-import type { Editor } from '@tiptap/react';
+import type { Editor } from '@tiptap/core';
 import type { LucideIcon } from 'lucide-react';
-import type { Instance as TippyInstance } from 'tippy.js';
-import { getDocumentDirection } from '@/hooks/useDirection';
 import {
   Pilcrow,
   Heading1,
@@ -226,20 +224,17 @@ export const SlashCommands = Extension.create({
       suggestion: {
         char: '/',
         pluginKey: slashCommandsPluginKey,
-        tippyOptions: {
-          // 2026-07-05: tippy.js به body portal می‌زند و از cascade
-          // <html dir> جدا می‌شود. جهت را روی box می‌گذاریم.
-          onCreate(instance: TippyInstance) {
-            instance.popper.querySelector('.tippy-box')?.setAttribute('dir', getDocumentDirection('rtl'));
-          },
-        },
+
         command: ({ editor, range, props }: { editor: Editor; range: any; props: SlashCommandItem }) => {
-          // اول اسلش و متن جستجو رو پاک کن، بعد دستور رو اجرا کن
-          editor.chain().focus().deleteRange(range).run();
-          // یک tick صبر کن تا deletion کامل بشه
-          requestAnimationFrame(() => {
-            props.command(editor);
-          });
+          // 2026-07-05: دستور را در یک chain واحد اجرا می‌کنیم تا focus و
+          // selection درست حفظ شوند. delay با requestAnimationFrame باعث
+          // پرش مکان‌نما و اجرای نادرست در تایپ سریع می‌شد.
+          editor.chain().focus().deleteRange(range).command(({ tr, dispatch }) => {
+            if (dispatch) {
+              props.command(editor);
+            }
+            return true;
+          }).run();
         },
       } as Partial<SuggestionOptions>,
     };

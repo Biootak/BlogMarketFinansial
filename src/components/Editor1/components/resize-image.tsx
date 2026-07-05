@@ -1,4 +1,5 @@
-import { type NodeViewProps, NodeViewWrapper } from '@tiptap/react';
+import { NodeViewWrapper } from '@tiptap/react';
+import type { NodeViewProps } from '@tiptap/core';
 import { AlignCenter, AlignLeft, AlignRight, ExternalLink, Maximize2, Trash2 } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { useDirection } from '@/hooks/useDirection';

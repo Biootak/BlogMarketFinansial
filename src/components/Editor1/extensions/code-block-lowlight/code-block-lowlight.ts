@@ -1,9 +1,9 @@
 import { createLowlight } from 'lowlight';
 import {
   type ExtendedRegExpMatchArray,
-  ReactNodeViewRenderer,
   textblockTypeInputRule
-} from '@tiptap/react';
+} from '@tiptap/core';
+import { ReactNodeViewRenderer } from '@tiptap/react';
 import { CodeBlockLowlight as BaseCodeBlockLowlight } from '@tiptap/extension-code-block-lowlight';
 import CodeBlock from '../../components/code-block';
 import {

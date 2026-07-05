@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useCallback } from 'react';
-import { NodeViewWrapper, NodeViewContent, type NodeViewProps } from '@tiptap/react';
+import { NodeViewWrapper, NodeViewContent } from '@tiptap/react';
+import type { NodeViewProps } from '@tiptap/core';
 import { ChevronDown, ChevronLeft } from 'lucide-react';
 
 const DetailsBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, selected }) => {

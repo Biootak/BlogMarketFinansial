@@ -1,5 +1,6 @@
 import { Node, mergeAttributes } from '@tiptap/core';
 import { ReactNodeViewRenderer } from '@tiptap/react';
+import type { NodeViewProps } from '@tiptap/core';
 import {
   Info,
   AlertTriangle,

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import type { Editor } from '@tiptap/react';
+import type { Editor } from '@tiptap/core';
 import { fontFamilies, loadFont, type FontOption } from '../extensions/font-family';
 import { Type, Check, Globe, Monitor, ChevronDown, Sparkles, Upload, X, Languages } from 'lucide-react';
 import { Button } from '@/components/ui/button';

@@ -2,9 +2,8 @@ import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import Color from '@tiptap/extension-color';
 import Highlight from '@tiptap/extension-highlight';
-import TextStyle from '@tiptap/extension-text-style';
+import { TextStyle } from '@tiptap/extension-text-style';
 import TextAlign from '@tiptap/extension-text-align';
-import Placeholder from '@tiptap/extension-placeholder';
 import CharacterCount from '@tiptap/extension-character-count';
 import Superscript from '@tiptap/extension-superscript';
 import Subscript from '@tiptap/extension-subscript';
@@ -62,10 +61,6 @@ export const extensions = [
   }),
   Link.configure({
     openOnClick: false,
-  }),
-  Placeholder.configure({
-    showOnlyWhenEditable: true,
-    placeholder: 'متن مورد نظر خود را وارد کنید',
   }),
   CodeBlockLowlight,
   CharacterCount,

@@ -1,7 +1,7 @@
 // FixedMenu.tsx
 import React, { useState } from 'react';
 import { MoreHorizontal, X } from 'lucide-react';
-import type { Editor } from '@tiptap/react';
+import type { Editor } from '@tiptap/core';
 import dynamic from 'next/dynamic';
 import { Toolbar } from '../../ui/toolbar';
 import { TooltipProvider } from '@radix-ui/react-tooltip';

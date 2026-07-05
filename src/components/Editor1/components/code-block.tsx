@@ -1,4 +1,5 @@
-import { NodeViewContent, type NodeViewProps, NodeViewWrapper } from '@tiptap/react';
+import { NodeViewContent, NodeViewWrapper } from '@tiptap/react';
+import type { NodeViewProps } from '@tiptap/core';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Icon } from '../../ui/icon';
 
@@ -28,7 +29,7 @@ const CodeBlock = ({ node: { attrs, textContent } }: NodeViewProps) => {
   return (
     <NodeViewWrapper className="relative group" dir="ltr">
       <pre className="not-prose">
-        <NodeViewContent as={'code'} className={`hljs language-${attrs.language}`} />
+        <NodeViewContent as="div" className={`hljs language-${attrs.language}`} />
       </pre>
 
       <div

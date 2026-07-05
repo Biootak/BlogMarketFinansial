@@ -11,22 +11,6 @@
 .at-prose {
   outline: none;
   min-height: 360px;
-}
-
-// Placeholder shown when the editor is empty.
-.at-prose {
-  p.is-editor-empty:first-child::before {
-    content: attr(data-placeholder);
-    // 2026-07-05: logical — `inline-start` در RTL راست و در LTR چپ
-    // می‌شود. قبلاً `float: right` فیزیکال بود که در حالت LTR آینده
-    // می‌شکست.
-    float: inline-start;
-    color: oklch(65% 0.012 245);
-    font-style: normal;
-    font-weight: 500;
-    height: 0;
-    pointer-events: none;
-  }
 
   ::selection {
     background-color: oklch(72% 0.16 270 / 0.22);
@@ -51,7 +35,6 @@
 }
 
 .dark .at-prose {
-  p.is-editor-empty:first-child::before { color: oklch(58% 0.012 245); }
   ::selection { background-color: oklch(78% 0.16 270 / 0.28); }
   .ProseMirror-cursor { border-inline-start-color: oklch(78% 0.16 270); }
   .ProseMirror-dropcursor { color: oklch(78% 0.16 270); }

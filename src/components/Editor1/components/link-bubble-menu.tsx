@@ -1,14 +1,13 @@
-import { BubbleMenu } from '@tiptap/react';
+import { BubbleMenu } from '@tiptap/react/menus';
 import { type Editor, type Range, getMarkRange, getMarkType, posToDOMRect } from '@tiptap/core';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { sticky } from 'tippy.js';
 import LinkPanelEdit from './link-panel-edit';
 import LinkPanelPreview from './link-panel-preview';
 import { useAttributes } from '../hooks/use-attributes';
-// 2026-07-05: dir از hook مرکزی می‌آید تا وقتی tippy.js محتوا را به
-// body portal می‌کند، جهت متن مستقل از cascade <html dir> درست بماند.
+// 2026-07-05: dir از hook مرکزی می‌آید تا در پورتل body جهت متن
+// مستقل از cascade <html dir> درست بماند.
 import { useDirection } from '@/hooks/useDirection';
 
 interface LinkBubbleProps {
@@ -23,7 +22,6 @@ const LinkBubble = ({ editor }: LinkBubbleProps) => {
   });
 
   const initialUrl = useRef<string>('');
-  const [isHide, setIsHide] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [pos, setPos] = useState<Range>({ from: -1, to: -1 });
 
@@ -83,16 +81,10 @@ const LinkBubble = ({ editor }: LinkBubbleProps) => {
     const { from, to } = editor.state.selection;
 
     setPos({ from, to });
-  }, [editor.state]);
+    // 2026-07-05: فقط با تغییر selection اجرا شود، نه با هر کیبورد.
+  }, [editor.state.selection, href]);
 
-  useEffect(() => {
-    if (!isHide) return;
 
-    if (!initialUrl.current) onUnsetLink();
-
-    setIsEdit(false);
-    setIsHide(false);
-  }, [isHide]);
 
   return (
     <BubbleMenu
@@ -100,18 +92,8 @@ const LinkBubble = ({ editor }: LinkBubbleProps) => {
       pluginKey={`linkMenu`}
       shouldShow={shouldShow}
       updateDelay={0}
-      tippyOptions={{
-        offset: [0, 5],
+      options={{
         placement: 'bottom-start',
-        popperOptions: {
-          modifiers: [{ name: 'flip', enabled: false }],
-        },
-        plugins: [sticky],
-        sticky: 'popper',
-        onHide() {
-          setIsHide(true);
-        },
-        getReferenceClientRect,
       }}
     >
       <div dir={dir} data-dir={dir}>
