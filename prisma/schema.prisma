@@ -154,44 +154,44 @@ model VerificationToken {
 }
 
 model Profile {
-  id      String  @id @default(cuid())
-  bio     String?
-  avatar  String?
-  bgImage String?
+  id            String  @id @default(cuid())
+  bio           String?
+  avatar        String?
+  bgImage       String?
   // 2026-06-21: ابعاد تصاویر پروفایل برای CLS-safe رندر
-  avatarWidth  Int?
-  avatarHeight Int?
-  bgImageWidth Int?
+  avatarWidth   Int?
+  avatarHeight  Int?
+  bgImageWidth  Int?
   bgImageHeight Int?
-  jobName String?
-  company String?
-  userId  String  @unique
-  user    User    @relation(fields: [userId], references: [id])
+  jobName       String?
+  company       String?
+  userId        String  @unique
+  user          User    @relation(fields: [userId], references: [id])
 }
 
 model Post {
-  id            String     @id @default(cuid())
-  title         String
-  content       String
-  excerpt       String?
-  slug          String     @unique
-  isFeatured    Boolean    @default(false)
-  status        PostStatus @default(DRAFT)
-  featuredImage String?
+  id                  String     @id @default(cuid())
+  title               String
+  content             String
+  excerpt             String?
+  slug                String     @unique
+  isFeatured          Boolean    @default(false)
+  status              PostStatus @default(DRAFT)
+  featuredImage       String?
   // 2026-06-21: ابعاد تصویر شاخص برای CLS-safe رندر + انتخاب variant responsive
   featuredImageWidth  Int?
   featuredImageHeight Int?
-  galleryImages String[]   @default([])
-  postType      PostType   @default(STANDARD)
-  videoUrl      String?
-  audioUrl      String?
-  authorId      String
-  viewCount     Int        @default(0)
-  readingTime   Int        @default(0)
+  galleryImages       String[]   @default([])
+  postType            PostType   @default(STANDARD)
+  videoUrl            String?
+  audioUrl            String?
+  authorId            String
+  viewCount           Int        @default(0)
+  readingTime         Int        @default(0)
   // 2026-07-04: تاریخ/زمان انتشار برنامه‌ریزی‌شده. null یعنی بدون برنامه.
   // تقویم انتشار (`AtelierMonthCalendar`) از این فیلد برای bucketing
   // استفاده می‌کند؛ اگر null باشد، `createdAt` جایگزین می‌شود.
-  scheduledAt   DateTime?
+  scheduledAt         DateTime?
 
   author     User        @relation(fields: [authorId], references: [id])
   comments   Comment[]
@@ -303,14 +303,14 @@ model Category {
 }
 
 model Tag {
-  id        String  @id @default(cuid())
-  name      String  @unique
-  slug      String  @unique
-  thumbnail String?
+  id              String  @id @default(cuid())
+  name            String  @unique
+  slug            String  @unique
+  thumbnail       String?
   // 2026-06-21: ابعاد thumbnail برای CLS-safe رندر
-  thumbnailWidth   Int?
-  thumbnailHeight  Int?
-  posts     Post[]
+  thumbnailWidth  Int?
+  thumbnailHeight Int?
+  posts           Post[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -372,21 +372,21 @@ model Advertisement {
 }
 
 model ExchangeRate {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  currency    String
+  id            String  @id @default(cuid())
+  name          String  @unique
+  currency      String
   // 2026-06-20: اضافه شدن فیلدهای registry — symbol, displayNameFa, group, unit,
   // divisor, decimals, priority, provider, tgjuKey, active
-  symbol      String?  @unique
+  symbol        String? @unique
   displayNameFa String?
-  group       String?
-  unit        String?
-  divisor     Int      @default(1)
-  decimals    Int      @default(0)
-  priority    Int      @default(99)
-  provider    String   @default("auto")
-  tgjuKey     String?
-  active      Boolean  @default(true)
+  group         String?
+  unit          String?
+  divisor       Int     @default(1)
+  decimals      Int     @default(0)
+  priority      Int     @default(99)
+  provider      String  @default("auto")
+  tgjuKey       String?
+  active        Boolean @default(true)
 
   rateType    RateType @default(BUY_SELL)
   buyRate     String?
@@ -516,19 +516,19 @@ model CurrencyPattern {
 }
 
 model SocialLink {
-  id        String         @id @default(cuid())
-  name      String
-  url       String
-  icon      String?
+  id         String         @id @default(cuid())
+  name       String
+  url        String
+  icon       String?
   // 2026-06-21: ابعاد آیکون برای CLS-safe رندر
   iconWidth  Int?
   iconHeight Int?
-  color     String?
-  order     Int            @default(0)
-  isActive  Boolean        @default(true)
-  type      SocialLinkType @default(SOCIAL)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  color      String?
+  order      Int            @default(0)
+  isActive   Boolean        @default(true)
+  type       SocialLinkType @default(SOCIAL)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
 
   // 2026-06-14: header/footer always render
   //   where: { type, isActive: true }, orderBy: { order: 'asc' }
@@ -671,4 +671,40 @@ enum TaskPriority {
   MEDIUM
   HIGH
   URGENT
+}
+
+// 2026-07-05: Transfer provider registry برای صفحه‌ی money-transfer.
+// قبلاً لیست hardcode شده در `lib/money-transfer/providers.ts` بود؛
+// حالا از DB خوانده می‌شود تا ادمین بتواند بدون deploy نرخ‌ها را به‌روز کند.
+enum TransferKind {
+  SARAJI // صرافی (مرجع / سنتی)
+  ONLINE // سرویس آنلاین (Wise، Remitly و …)
+  BANK // بانک
+  CRYPTO // رمزارز
+}
+
+model TransferProvider {
+  id            String       @id @default(cuid())
+  // slug یکتا — به‌عنوان providerId در API/UI استفاده می‌شود (مثل 'wise').
+  slug          String       @unique
+  name          String // نام فارسی (مثل «Wise»)
+  kind          TransferKind
+  // درصد markup روی نرخ بازار (مثلاً 0.7 یعنی ۰.۷٪ بالاتر از بازار)
+  spreadPercent Float        @default(0)
+  // کارمزد ثابت به تومان
+  flatFeeToman  Int          @default(0)
+  // سرعت تقریبی انتقال (دقیقه)
+  speedMinutes  Int          @default(0)
+  // پرچم قابلیت‌ها — مقادیر در `TransferFeature` (به‌صورت app-level enforced)
+  features      String[]     @default([])
+  active        Boolean      @default(true)
+  // ترتیب نمایش در جدول مقایسه (کوچک‌تر = بالاتر)
+  order         Int          @default(100)
+  description   String? // توضیح کوتاه (اختیاری)
+  logoUrl       String? // لوگو (اختیاری، برای آینده)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  // کوئری صفحه‌ی money-transfer همیشه active=true و sort by order است
+  @@index([active, order])
 }

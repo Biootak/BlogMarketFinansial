@@ -603,6 +603,125 @@ async function seedAdvertisements() {
   console.log(`   ✅ ${added} تبلیغ`);
 }
 
+/* ─── 14e) TransferProviders (صرافی‌های مقایسه‌ی نرخ) ─────────── */
+// 2026-07-05: این لیست قبلاً hardcode در `lib/money-transfer/providers.ts`
+// بود؛ حالا در DB ذخیره می‌شود تا بدون deploy قابل ویرایش باشد.
+// مقادیر از نسخه‌ی قبلی بدون تغییر منتقل شده‌اند.
+async function seedTransferProviders() {
+  const providers = [
+    {
+      slug: 'market-mid',
+      name: 'نرخ میانگین بازار',
+      kind: 'SARAJI',
+      spreadPercent: 0,
+      flatFeeToman: 0,
+      speedMinutes: 0,
+      features: ['live-rate', 'fee-transparent'],
+      active: true,
+      order: 1,
+      description: 'مرجع میانگین بازار آزاد (TGJU + USDT/Exir + FX) — بدون کارمزد',
+    },
+    {
+      slug: 'tgju',
+      name: 'TGJU (مرجع)',
+      kind: 'SARAJI',
+      spreadPercent: 0.2,
+      flatFeeToman: 0,
+      speedMinutes: 5,
+      features: ['live-rate', 'fee-transparent'],
+      active: true,
+      order: 2,
+      description: 'نرخ مرجع وب‌سایت TGJU',
+    },
+    {
+      slug: 'sarafi-online',
+      name: 'صرافی آنلاین آریا',
+      kind: 'SARAJI',
+      spreadPercent: 0.9,
+      flatFeeToman: 15000,
+      speedMinutes: 15,
+      features: ['live-rate', 'bank-transfer'],
+      active: true,
+      order: 3,
+      description: 'صرافی آنلاین داخلی با تسویه بانکی',
+    },
+    {
+      slug: 'bit-24',
+      name: 'بیت ۲۴',
+      kind: 'CRYPTO',
+      spreadPercent: 1.4,
+      flatFeeToman: 25000,
+      speedMinutes: 30,
+      features: ['live-rate', 'fee-transparent', 'bank-transfer'],
+      active: true,
+      order: 4,
+      description: 'پلتفرم رمزارز با تسویه ریالی',
+    },
+    {
+      slug: 'remitly-class',
+      name: 'ریمیتلی (Economy)',
+      kind: 'ONLINE',
+      spreadPercent: 2.1,
+      flatFeeToman: 45000,
+      speedMinutes: 60 * 24, // 1 روز کاری
+      features: ['fee-transparent', 'bank-transfer', 'cash-pickup'],
+      active: true,
+      order: 5,
+      description: 'سرویس حواله‌ی بین‌المللی Remitly — پلن اقتصادی',
+    },
+    {
+      slug: 'wise',
+      name: 'Wise',
+      kind: 'ONLINE',
+      spreadPercent: 0.7,
+      flatFeeToman: 35000,
+      speedMinutes: 60 * 4,
+      features: ['live-rate', 'fee-transparent', 'bank-transfer'],
+      active: true,
+      order: 6,
+      description: 'نرخ میانی بازار با شفافیت کارمزد',
+    },
+    {
+      slug: 'melli-bank',
+      name: 'بانک ملی (حواله بانکی)',
+      kind: 'BANK',
+      spreadPercent: 1.8,
+      flatFeeToman: 80000,
+      speedMinutes: 60 * 48,
+      features: ['bank-transfer'],
+      active: true,
+      order: 7,
+      description: 'حواله بانکی رسمی از طریق بانک ملی',
+    },
+  ];
+
+  let added = 0, updated = 0;
+  for (const provider of providers) {
+    const existing = await p.transferProvider.findUnique({ where: { slug: provider.slug } });
+    if (existing) {
+      await p.transferProvider.update({
+        where: { id: existing.id },
+        data: {
+          name: provider.name,
+          kind: provider.kind,
+          spreadPercent: provider.spreadPercent,
+          flatFeeToman: provider.flatFeeToman,
+          speedMinutes: provider.speedMinutes,
+          features: provider.features,
+          active: provider.active,
+          order: provider.order,
+          description: provider.description,
+        },
+      });
+      updated++;
+    } else {
+      await p.transferProvider.create({ data: provider });
+      added++;
+    }
+  }
+  console.log(`   ✅ ${added} ایجاد، ${updated} به‌روزرسانی`);
+}
+
 /* ─── 14d) ExchangeRates from SYMBOL_REGISTRY ─────────────────── */
 async function seedExchangeRates() {
   const SYMBOL_REGISTRY = [
@@ -962,6 +1081,9 @@ async function main() {
   console.log('\n2️⃣1️⃣  ExchangeRates:');
   await seedExchangeRates();
 
+  console.log('\n2️⃣2️⃣  TransferProviders:');
+  await seedTransferProviders();
+
   /* ─── گزارش نهایی ─── */
   const stats = {
     users: await p.user.count(),
@@ -986,6 +1108,7 @@ async function main() {
     pageViews: await p.pageView.count(),
     currencyPatterns: await p.currencyPattern.count(),
     accounts: await p.account.count(),
+    transferProviders: await p.transferProvider.count(),
   };
   console.log('\n' + '═'.repeat(50));
   console.log('📊 آمار نهایی دیتابیس:');

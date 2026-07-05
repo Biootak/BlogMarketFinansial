@@ -11,14 +11,18 @@
  *
  * منطق:
  *   1) `assembleFreeMarketRates` نرخ بازار را می‌گیرد (TGJU → USDT → FX).
- *   2) روی آن، quote هر provider از `TRANSFER_PROVIDERS` محاسبه می‌شود.
- *   3) کش ۶۰ ثانیه‌ای با `safeCache` + tag 'exchange-rates'.
+ *   2) `loadActiveTransferProviders` لیست provider ها را از DB می‌خواند.
+ *   3) برای هر provider quote نهایی محاسبه می‌شود.
+ *   4) کش ۶۰ ثانیه‌ای با `safeCache` + tags ['exchange-rates', 'money-transfer'].
  * ----------------------------------------------------------------------------
  */
 
 import { assembleFreeMarketRates } from '@/lib/freeMarketRates';
 import { convertSourceToToman } from '@/lib/money-transfer/calculator';
-import { TRANSFER_PROVIDERS, type TransferProvider } from '@/lib/money-transfer/providers';
+import {
+  loadActiveTransferProviders,
+  type TransferProvider,
+} from '@/lib/money-transfer/providers';
 import type { ProviderQuote, TransferApiResponse } from '@/lib/money-transfer/types';
 import { safeCache } from '@/lib/safe-cache';
 import { NextResponse } from 'next/server';
@@ -55,29 +59,30 @@ async function buildQuotes({ symbol, amount }: BuildArgs): Promise<TransferApiRe
   }
 
   const baseRate = item.priceToman;
-  const providers: ProviderQuote[] = TRANSFER_PROVIDERS.filter((p) => p.active).map(
-    (p: TransferProvider) => {
-      const conv = convertSourceToToman({
-        sourceAmount: amount,
-        rateSourceToToman: baseRate,
-        provider: p,
-      });
-      return {
-        providerId: p.id,
-        providerName: p.name,
-        providerKind: p.kind,
-        spreadPercent: p.spreadPercent,
-        flatFeeToman: p.flatFeeToman,
-        speedMinutes: p.speedMinutes,
-        features: p.features,
-        marketToman: Math.round(conv.marketToman),
-        spreadToman: Math.round(conv.spreadToman),
-        flatFeeTomanApplied: Math.round(conv.flatFeeToman),
-        finalToman: Math.round(conv.finalToman),
-        markupPercent: Number(conv.markupPercent.toFixed(2)),
-      };
-    },
-  );
+  // provider ها از DB خوانده می‌شوند (با کش داخلی loadActiveTransferProviders).
+  const providers = await loadActiveTransferProviders();
+
+  const quotes: ProviderQuote[] = providers.map((p: TransferProvider) => {
+    const conv = convertSourceToToman({
+      sourceAmount: amount,
+      rateSourceToToman: baseRate,
+      provider: p,
+    });
+    return {
+      providerId: p.id,
+      providerName: p.name,
+      providerKind: p.kindLabel, // UI-friendly label (e.g. 'صرافی')
+      spreadPercent: p.spreadPercent,
+      flatFeeToman: p.flatFeeToman,
+      speedMinutes: p.speedMinutes,
+      features: p.features,
+      marketToman: Math.round(conv.marketToman),
+      spreadToman: Math.round(conv.spreadToman),
+      flatFeeTomanApplied: Math.round(conv.flatFeeToman),
+      finalToman: Math.round(conv.finalToman),
+      markupPercent: Number(conv.markupPercent.toFixed(2)),
+    };
+  });
 
   return {
     baseTomanRate: baseRate,
@@ -86,7 +91,7 @@ async function buildQuotes({ symbol, amount }: BuildArgs): Promise<TransferApiRe
     baseChangePercent: item.change,
     sourceAmount: amount,
     updatedAt: new Date().toISOString(),
-    providers,
+    providers: quotes,
   };
 }
 

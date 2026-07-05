@@ -10,6 +10,7 @@ import { Icon } from './icon';
 import { cn } from '../Editor1/lib/utils';
 import { Button, type ButtonProps } from './button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
+import { Portal } from '@radix-ui/react-tooltip';
 import { useDirection } from '@/hooks/useDirection';
 
 type ToolbarWrapperProps = HTMLProps<HTMLDivElement>;
@@ -111,22 +112,26 @@ const ToolbarButton = forwardRef<HTMLButtonElement, ToolbarButtonProps>(
       // قبلاً اینجا فقط `<Tooltip>{component}</Tooltip>` بود که متن و
       // شورتکات را اصلاً نشان نمی‌داد. حالا Trigger و Content درست
       // وصل می‌شوند تا tooltip واقعاً render شود.
+      // با Portal، tooltip از بدنه رندر می‌شود تا overflow تولبار آن را
+      // clip نکند و بالاتر از سایر لایه‌ها دیده شود.
       return (
         <Tooltip>
           <TooltipTrigger asChild>{component}</TooltipTrigger>
-          <TooltipContent side="bottom" align="center" dir={dir} data-dir={dir}>
-            <span className="flex items-center gap-1.5">
-              <span>{tooltip}</span>
-              {tooltipShortcut && tooltipShortcut.length > 0 && (
-                <>
-                  <span className="opacity-50" aria-hidden>·</span>
-                  <kbd className="text-[10px] font-mono opacity-80 tracking-tight">
-                    {tooltipShortcut.join(' + ')}
-                  </kbd>
-                </>
-              )}
-            </span>
-          </TooltipContent>
+          <Portal>
+            <TooltipContent side="bottom" align="center" dir={dir} data-dir={dir}>
+              <span className="flex items-center gap-1.5">
+                <span>{tooltip}</span>
+                {tooltipShortcut && tooltipShortcut.length > 0 && (
+                  <>
+                    <span className="opacity-50" aria-hidden>·</span>
+                    <kbd className="text-[10px] font-mono opacity-80 tracking-tight">
+                      {tooltipShortcut.join(' + ')}
+                    </kbd>
+                  </>
+                )}
+              </span>
+            </TooltipContent>
+          </Portal>
         </Tooltip>
       );
     }
@@ -143,7 +148,8 @@ export type ToolbarSelectProps = HTMLProps<HTMLSelectElement> & {
 
 const ToolbarSelect = forwardRef<HTMLSelectElement, ToolbarSelectProps>(
   ({ children, className, tooltip, ...rest }, ref) => {
-    const selectClass = cn(
+    const dir = useDirection('rtl');
+  const selectClass = cn(
       'h-8 px-2 text-sm bg-transparent border border-gray-200 dark:border-gray-700 rounded',
       'hover:bg-primary-50 dark:hover:bg-primary-900/20',
       'focus:outline-none focus:ring-1 focus:ring-primary-500',
@@ -158,7 +164,16 @@ const ToolbarSelect = forwardRef<HTMLSelectElement, ToolbarSelectProps>(
     );
 
     if (tooltip) {
-      return <Tooltip>{component}</Tooltip>;
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>{component}</TooltipTrigger>
+          <Portal>
+            <TooltipContent side="bottom" align="center" dir={dir} data-dir={dir}>
+              {tooltip}
+            </TooltipContent>
+          </Portal>
+        </Tooltip>
+      );
     }
 
     return component;
