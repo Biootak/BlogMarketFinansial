@@ -237,7 +237,7 @@ export default function PostsPageHeader({ searchParams, counts }: PostsPageHeade
         </div>
       </div>
 
-      {/* ── Row 2: KPI pill strip (قابل کلیک = فیلتر سریع با toggle) ─── */}
+      {/* ── Row 2: Pills (right/start, compact scroll) ────────────── */}
       {counts && (
         <div className="mt-3 flex items-center gap-1.5 overflow-x-auto pb-1 -mb-1 scrollbar-thin">
           {kpiChips.map((chip) => {
@@ -293,10 +293,10 @@ export default function PostsPageHeader({ searchParams, counts }: PostsPageHeade
         </div>
       )}
 
-      {/* ── Row 3: search + view mode toggle + clear ──────────────────── */}
-      <div className="mt-3 flex items-center gap-2 flex-wrap">
+      {/* ── Row 3: Search (prominent) + View Mode + Clear ────────────── */}
+      <div className="mt-2 flex items-center gap-2 flex-wrap">
         {/* Search — جای‌گذاری منطقی (start/end) برای RTL درست */}
-        <div className="relative flex-1 min-w-[220px] max-w-md">
+        <div className="relative flex-1 min-w-[220px]">
           {/* دکمهٔ سرچ — سمت چپ بصری (= inline-end در RTL)؛ کلیک‌پذیر */}
           <button
             type="button"

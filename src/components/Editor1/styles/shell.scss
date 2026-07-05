@@ -1,0 +1,697 @@
+// Inkwell 2026 — Editor shell
+// Wrapper styles for the Tiptap editor on the dashboard.
+// Three layers: Deck (command bar) → Stage (toolbar + canvas) → Status bar
+// All visuals must respect the dashboard CSS variables (`--at-*`).
+
+.at-editor-shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  isolation: isolate;
+  border-radius: 18px;
+  background: oklch(99% 0.003 250 / 0.7);
+  border: 1px solid oklch(90% 0.01 250 / 0.85);
+  box-shadow:
+    0 1px 0 oklch(100% 0 0 / 0.7) inset,
+    0 1px 0 oklch(0% 0 0 / 0.02) inset,
+    0 24px 56px -36px oklch(45% 0.12 270 / 0.35),
+    0 4px 14px -6px oklch(45% 0.08 255 / 0.18);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  overflow: hidden;
+  contain: layout paint style;
+}
+
+.dark .at-editor-shell {
+  background: oklch(18% 0.018 260 / 0.7);
+  border-color: oklch(30% 0.02 260 / 0.85);
+  box-shadow:
+    0 1px 0 oklch(100% 0 0 / 0.04) inset,
+    0 32px 80px -36px oklch(0% 0 0 / 0.75),
+    0 6px 18px -8px oklch(0% 0 0 / 0.6);
+}
+
+// Thin gradient line at the top of the shell — the only "loud" element.
+.at-editor-shell::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  height: 1.5px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    oklch(72% 0.16 270 / 0.0) 5%,
+    oklch(72% 0.16 270 / 0.55) 25%,
+    oklch(78% 0.14 165 / 0.7) 50%,
+    oklch(74% 0.13 210 / 0.55) 75%,
+    oklch(72% 0.16 270 / 0.0) 95%,
+    transparent 100%
+  );
+  z-index: 2;
+  pointer-events: none;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Deck — sticky thin command strip above the toolbar
+// ═══════════════════════════════════════════════════════════════════
+.at-editor-deck {
+  position: relative;
+  padding-block: 10px;
+  padding-inline: 18px;
+  border-block-end: 1px solid oklch(90% 0.008 250 / 0.6);
+  background: linear-gradient(
+    180deg,
+    oklch(98% 0.005 250 / 0.85),
+    oklch(96% 0.012 250 / 0.55)
+  );
+}
+
+.dark .at-editor-deck {
+  background: linear-gradient(
+    180deg,
+    oklch(22% 0.018 260 / 0.7),
+    oklch(18% 0.016 260 / 0.5)
+  );
+  border-block-end-color: oklch(34% 0.02 260 / 0.6);
+}
+
+.at-editor-deck__inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: oklch(48% 0.02 250);
+}
+
+.dark .at-editor-deck__inner {
+  color: oklch(78% 0.018 245);
+}
+
+.at-editor-deck__rail {
+  position: absolute;
+  inset-block-start: 0;
+  inset-block-end: 0;
+  inset-inline-start: 0;
+  width: 3px;
+  background: linear-gradient(
+    180deg,
+    oklch(72% 0.16 270),
+    oklch(74% 0.13 210) 60%,
+    oklch(78% 0.14 165)
+  );
+  border-radius: 0 2px 2px 0;
+}
+
+.dark .at-editor-deck__rail {
+  background: linear-gradient(
+    180deg,
+    oklch(78% 0.16 270),
+    oklch(80% 0.13 210) 60%,
+    oklch(82% 0.14 165)
+  );
+}
+
+.at-editor-deck__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: oklch(28% 0.02 255);
+  padding-inline-start: 14px;
+}
+
+.dark .at-editor-deck__brand {
+  color: oklch(94% 0.005 245);
+}
+
+.at-editor-deck__brand-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, oklch(72% 0.16 270), oklch(74% 0.13 210));
+  box-shadow: 0 0 0 3px oklch(72% 0.16 270 / 0.15);
+  flex-shrink: 0;
+}
+
+.at-editor-deck__sep {
+  width: 1px;
+  height: 14px;
+  background: oklch(85% 0.008 250 / 0.7);
+  flex-shrink: 0;
+}
+
+.dark .at-editor-deck__sep {
+  background: oklch(34% 0.02 260 / 0.7);
+}
+
+.at-editor-deck__hint {
+  display: none;
+  align-items: center;
+  gap: 7px;
+}
+
+@media (min-width: 768px) {
+  .at-editor-deck__hint {
+    display: inline-flex;
+  }
+}
+
+.at-editor-deck__kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding-inline: 6px;
+  border-radius: 6px;
+  background: oklch(100% 0 0 / 0.85);
+  border: 1px solid oklch(82% 0.012 245 / 0.7);
+  box-shadow: 0 1px 0 oklch(0% 0 0 / 0.06);
+  color: oklch(30% 0.02 255);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.dark .at-editor-deck__kbd {
+  background: oklch(26% 0.018 260 / 0.85);
+  border-color: oklch(40% 0.02 260 / 0.7);
+  color: oklch(95% 0.005 245);
+}
+
+.at-editor-deck__spacer {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.at-editor-deck__save {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: oklch(98% 0.012 165 / 0.6);
+  border: 1px solid oklch(86% 0.02 165 / 0.6);
+  color: oklch(36% 0.12 165);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  flex-shrink: 0;
+}
+
+.dark .at-editor-deck__save {
+  background: oklch(28% 0.04 165 / 0.4);
+  border-color: oklch(40% 0.04 165 / 0.5);
+  color: oklch(84% 0.1 165);
+}
+
+.at-editor-deck__save-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 0 2px oklch(72% 0.16 165 / 0.18);
+}
+
+.at-editor-deck__save--saving .at-editor-deck__save-dot {
+  animation: at-editor-deck-save-pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes at-editor-deck-save-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .at-editor-deck__save--saving .at-editor-deck__save-dot {
+    animation: none;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Stage — holds the toolbar and the paper
+// ═══════════════════════════════════════════════════════════════════
+.at-editor-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+// Toolbar wrapper — sticks inside the stage but respects the shell's
+// rounded top corners (the inner radii are smaller than the shell's).
+.at-editor-toolbar-wrap {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 5;
+  border-block-end: 1px solid oklch(88% 0.01 250 / 0.7);
+  background: linear-gradient(
+    180deg,
+    oklch(100% 0 0 / 0.92) 0%,
+    oklch(98% 0.006 250 / 0.85) 100%
+  );
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+}
+
+.dark .at-editor-toolbar-wrap {
+  background: linear-gradient(
+    180deg,
+    oklch(22% 0.018 260 / 0.85) 0%,
+    oklch(18% 0.016 260 / 0.78) 100%
+  );
+  border-block-end-color: oklch(32% 0.02 260 / 0.7);
+}
+
+// Override the FixedMenu default look (it ships with primary-100
+// classes that are not defined in our theme). We only restyle the
+// visual surface — the inner Buttons/menus keep their behaviour.
+.at-editor-toolbar {
+  width: 100%;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: oklch(45% 0.02 250) !important;
+  padding: 8px 12px !important;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.at-editor-toolbar [class*="sticky"] { position: relative !important; }
+
+.at-editor-toolbar > div {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 4px !important;
+  padding: 0 !important;
+  min-width: max-content;
+}
+
+.at-editor-toolbar button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 9px !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  color: oklch(45% 0.02 250) !important;
+  cursor: pointer !important;
+  transition: all 160ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+  position: relative;
+}
+
+.at-editor-toolbar button:hover {
+  background: oklch(95% 0.012 250 / 0.85) !important;
+  border-color: oklch(88% 0.012 250 / 0.8) !important;
+  color: oklch(22% 0.02 255) !important;
+  transform: translateY(-1px);
+}
+
+.at-editor-toolbar button[data-state="on"],
+.at-editor-toolbar button[aria-pressed="true"],
+.at-editor-toolbar button.is-active {
+  background: linear-gradient(135deg, oklch(72% 0.16 270), oklch(68% 0.14 250)) !important;
+  color: oklch(99% 0.005 245) !important;
+  border-color: transparent !important;
+  box-shadow:
+    0 1px 0 oklch(100% 0 0 / 0.18) inset,
+    0 4px 12px -4px oklch(55% 0.16 270 / 0.45) !important;
+}
+
+.at-editor-toolbar button:focus-visible {
+  outline: 2px solid oklch(72% 0.16 270 / 0.55) !important;
+  outline-offset: 2px !important;
+}
+
+.dark .at-editor-toolbar button {
+  color: oklch(75% 0.018 245) !important;
+}
+
+.dark .at-editor-toolbar button:hover {
+  background: oklch(28% 0.014 250 / 0.65) !important;
+  border-color: oklch(38% 0.018 250 / 0.65) !important;
+  color: oklch(96% 0.005 245) !important;
+}
+
+.dark .at-editor-toolbar button[data-state="on"],
+.dark .at-editor-toolbar button[aria-pressed="true"],
+.dark .at-editor-toolbar button.is-active {
+  background: linear-gradient(135deg, oklch(78% 0.16 270), oklch(74% 0.14 250)) !important;
+  color: oklch(15% 0.05 270) !important;
+}
+
+.at-editor-toolbar svg,
+.at-editor-toolbar [class*="text-primary"],
+.at-editor-toolbar [class*="stroke-primary"] {
+  color: inherit !important;
+  stroke: currentColor !important;
+  fill: currentColor !important;
+}
+
+// Spacing of toolbar groups (the original uses `divide-x` on Group wrappers
+// but Tailwind's `divide-x` needs a parent with `divide-x` class — we add
+// hairline dividers between groups via a soft separator instead).
+.at-editor-toolbar > div > [class*="border-l"],
+.at-editor-toolbar > div > [class*="border-r"] {
+  display: none !important;
+}
+
+// We can't peek at Toolbar.Divider via class — render our own separators
+// using ::after on the Group wrappers. Since we don't know their classes,
+// use a generic border via the actual VisibleDiv component. The fallback
+// is a hairline with `display: inline-block` on the spacer.
+.at-editor-toolbar > div > * {
+  position: relative;
+}
+
+.at-editor-toolbar > div > [class*="Divider"],
+.at-editor-toolbar > div [data-orientation="vertical"],
+.at-editor-toolbar > div hr {
+  width: 1px !important;
+  height: 22px !important;
+  background: oklch(85% 0.008 250 / 0.6) !important;
+  border: 0 !important;
+  margin-inline: 6px !important;
+  padding: 0 !important;
+  flex-shrink: 0;
+}
+
+.dark .at-editor-toolbar > div > [class*="Divider"],
+.dark .at-editor-toolbar > div [data-orientation="vertical"],
+.dark .at-editor-toolbar > div hr {
+  background: oklch(34% 0.02 260 / 0.6) !important;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Canvas — the paper itself + ruler
+// ═══════════════════════════════════════════════════════════════════
+.at-editor-canvas {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 480px;
+  background:
+    radial-gradient(120% 60% at 50% 0%, oklch(98% 0.012 270 / 0.5), transparent 65%),
+    oklch(99% 0.003 250);
+}
+
+.dark .at-editor-canvas {
+  background:
+    radial-gradient(120% 60% at 50% 0%, oklch(22% 0.04 270 / 0.45), transparent 65%),
+    oklch(16% 0.012 260);
+}
+
+// 1px dotted ruler at the top — only visible on wide screens, gives
+// the canvas a "paper on a desk" feel.
+.at-editor-ruler {
+  display: none;
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  height: 24px;
+  background-image: linear-gradient(
+    to right,
+    oklch(75% 0.012 270 / 0.18) 1px,
+    transparent 1px
+  );
+  background-size: 24px 24px;
+  background-position: 100% 100%;
+  background-repeat: repeat-x;
+  pointer-events: none;
+  border-block-end: 1px solid oklch(90% 0.01 250 / 0.5);
+}
+
+@media (min-width: 1024px) {
+  .at-editor-ruler { display: block; }
+}
+
+.at-editor-paper {
+  position: relative;
+  isolation: isolate;
+  flex: 1 1 auto;
+  padding: clamp(28px, 4vw, 56px) clamp(20px, 5vw, 80px) clamp(56px, 7vw, 96px);
+  min-height: 480px;
+  font-feature-settings: "ss01", "tnum";
+  font-family:
+    "Vazirmatn", "IRANSansX", "Tahoma", ui-sans-serif, system-ui, sans-serif;
+  line-height: 1.95;
+}
+
+// Inner highlight — a soft glow that follows focus without being annoying.
+.at-editor-paper::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 80px;
+  inset-inline: clamp(8px, 2vw, 24px);
+  bottom: 80px;
+  border-radius: 18px;
+  background:
+    radial-gradient(
+      120% 70% at 50% -10%,
+      oklch(72% 0.16 270 / 0.06),
+      transparent 60%
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.at-editor-prose {
+  position: relative;
+  z-index: 1;
+  outline: none;
+  min-height: 360px;
+  color: oklch(22% 0.02 250);
+  font-size: 16px;
+  line-height: 1.95;
+}
+
+.dark .at-editor-prose {
+  color: oklch(92% 0.008 245);
+}
+
+// ── Empty state hint ──
+.at-editor-placeholder {
+  position: absolute;
+  inset-block-start: clamp(28px, 4vw, 56px);
+  inset-inline-start: clamp(20px, 5vw, 80px);
+  inset-inline-end: clamp(20px, 5vw, 80px);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 22px;
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      135deg,
+      oklch(96% 0.018 270 / 0.65),
+      oklch(96% 0.016 210 / 0.55)
+    );
+  border: 1.5px dashed oklch(78% 0.04 270 / 0.45);
+  color: oklch(42% 0.06 270);
+  font-size: 13px;
+  font-weight: 500;
+  pointer-events: none;
+  z-index: 0;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.dark .at-editor-placeholder {
+  background:
+    linear-gradient(
+      135deg,
+      oklch(28% 0.04 270 / 0.55),
+      oklch(26% 0.04 210 / 0.45)
+    );
+  border-color: oklch(50% 0.04 270 / 0.6);
+  color: oklch(86% 0.04 270);
+}
+
+.at-editor-placeholder__kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: oklch(100% 0 0 / 0.85);
+  border: 1.5px solid oklch(72% 0.08 270 / 0.45);
+  color: oklch(38% 0.12 270);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow:
+    0 4px 12px -4px oklch(45% 0.16 270 / 0.4),
+    0 1px 0 oklch(100% 0 0 / 0.8) inset;
+  flex-shrink: 0;
+}
+
+.dark .at-editor-placeholder__kbd {
+  background: oklch(22% 0.04 270 / 0.85);
+  border-color: oklch(50% 0.08 270 / 0.6);
+  color: oklch(80% 0.08 270);
+}
+
+.at-editor-placeholder__text {
+  line-height: 1.5;
+}
+
+.at-editor-paper--empty .ProseMirror {
+  opacity: 0.4;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Status bar — sticky bottom
+// ═══════════════════════════════════════════════════════════════════
+.at-editor-status {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 4;
+  padding-block: 8px;
+  padding-inline: 18px;
+  background: linear-gradient(
+    180deg,
+    oklch(96% 0.008 250 / 0.7),
+    oklch(98% 0.005 250 / 0.85)
+  );
+  border-block-start: 1px solid oklch(88% 0.008 250 / 0.7);
+  font-size: 11px;
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+}
+
+.dark .at-editor-status {
+  background: linear-gradient(
+    180deg,
+    oklch(20% 0.016 260 / 0.65),
+    oklch(18% 0.014 260 / 0.78)
+  );
+  border-block-start-color: oklch(32% 0.02 260 / 0.7);
+}
+
+.at-editor-status__inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.at-editor-status__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: oklch(45% 0.02 250);
+  font-weight: 500;
+}
+
+.dark .at-editor-status__item {
+  color: oklch(75% 0.018 245);
+}
+
+.at-editor-status__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.at-editor-status__dot--emerald {
+  background: oklch(72% 0.18 165);
+  box-shadow: 0 0 0 2px oklch(72% 0.18 165 / 0.18);
+}
+
+.at-editor-status__dot--cyan {
+  background: oklch(72% 0.16 210);
+  box-shadow: 0 0 0 2px oklch(72% 0.16 210 / 0.18);
+}
+
+.at-editor-status__dot--violet {
+  background: oklch(72% 0.16 270);
+  box-shadow: 0 0 0 2px oklch(72% 0.16 270 / 0.18);
+}
+
+.at-editor-status__num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: oklch(22% 0.02 255);
+}
+
+.dark .at-editor-status__num {
+  color: oklch(94% 0.005 245);
+}
+
+.at-editor-status__lbl {
+  font-weight: 500;
+  color: oklch(58% 0.014 245);
+}
+
+.dark .at-editor-status__lbl {
+  color: oklch(68% 0.018 245);
+}
+
+.at-editor-status__sep {
+  width: 1px;
+  height: 14px;
+  background: oklch(85% 0.008 250 / 0.6);
+  flex-shrink: 0;
+}
+
+.dark .at-editor-status__sep {
+  background: oklch(34% 0.02 260 / 0.6);
+}
+
+.at-editor-status__spacer {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.at-editor-status__save {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: oklch(98% 0.012 165 / 0.55);
+  border: 1px solid oklch(85% 0.02 165 / 0.55);
+  color: oklch(36% 0.12 165);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.dark .at-editor-status__save {
+  background: oklch(28% 0.04 165 / 0.4);
+  border-color: oklch(38% 0.04 165 / 0.5);
+  color: oklch(82% 0.1 165);
+}
+
+.at-editor-status__save-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.at-editor-status__save--saving .at-editor-status__save-dot {
+  animation: at-editor-status-save 0.7s ease-in-out infinite;
+}
+
+@keyframes at-editor-status-save {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .at-editor-status__save--saving .at-editor-status__save-dot {
+    animation: none;
+  }
+}

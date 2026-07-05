@@ -1,217 +1,386 @@
-// Base TipTap Editor Styles
-.tiptap,
-.ProseMirror {
-  &:focus {
-    outline: none;
-  }
+// Inkwell 2026 — Editor typography base
+// Headings, blockquotes, lists, code, links — styled to match the
+// dashboard visual language. Prose styles live under `.at-prose`
+// to allow the Editor shell to scope them safely.
 
-  // Placeholder styling
+// ═══════════════════════════════════════════════════════════════════
+// Core Tiptap nodes — focus, placeholder, selection, cursor
+// ═══════════════════════════════════════════════════════════════════
+.tiptap,
+.ProseMirror,
+.at-prose {
+  outline: none;
+  min-height: 360px;
+}
+
+// Placeholder shown when the editor is empty.
+.at-prose {
   p.is-editor-empty:first-child::before {
-    color: #9ca3af;
     content: attr(data-placeholder);
     float: right;
+    color: oklch(65% 0.012 245);
+    font-style: normal;
+    font-weight: 500;
     height: 0;
     pointer-events: none;
-    font-style: italic;
   }
 
-  // Selection styling
   ::selection {
-    background-color: rgba(59, 130, 246, 0.3);
+    background-color: oklch(72% 0.16 270 / 0.22);
   }
 
-  // Cursor styling
   .ProseMirror-cursor {
-    border-left: 2px solid #3b82f6;
+    border-inline-start: 2px solid oklch(72% 0.16 270);
   }
 
-  // Drop cursor
   .ProseMirror-dropcursor {
-    color: #3b82f6;
+    color: oklch(72% 0.16 270);
+    border: 0;
+    background: linear-gradient(90deg, oklch(72% 0.16 270), oklch(72% 0.16 270)) no-repeat;
+    background-size: 100% 2px;
+    background-position: 50% 100%;
+    height: 3px;
   }
 
-  // Gap cursor
-  .ProseMirror-gapcursor {
-    &::after {
-      border-top: 1px solid #3b82f6;
-    }
+  .ProseMirror-gapcursor::after {
+    border-block-start: 1px solid oklch(72% 0.16 270);
   }
+}
 
+.dark .at-prose {
+  p.is-editor-empty:first-child::before { color: oklch(58% 0.012 245); }
+  ::selection { background-color: oklch(78% 0.16 270 / 0.28); }
+  .ProseMirror-cursor { border-inline-start-color: oklch(78% 0.16 270); }
+  .ProseMirror-dropcursor { color: oklch(78% 0.16 270); }
+  .ProseMirror-gapcursor::after { border-block-start-color: oklch(78% 0.16 270); }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Prose body — headings, paragraphs, blockquote, hr, lists, code
+// ═══════════════════════════════════════════════════════════════════
+.at-prose {
   &.prose {
     max-width: 100%;
+    color: oklch(22% 0.02 250);
 
-    // Code blocks
-    pre {
-      font-size: 14px;
-      line-height: 1.7;
-      padding: 1rem 1.25rem;
-      border-radius: 0.75rem;
-      overflow-x: auto;
-      
-      code {
-        font-family: 'Source Code Pro', 'Fira Code', 'JetBrains Mono', monospace;
-        font-size: inherit;
-        background: none;
-        padding: 0;
-      }
-    }
-
-    // Blockquote
-    blockquote {
-      border-right: 4px solid #3b82f6;
-      border-left: none;
-      padding-right: 1.25rem;
-      padding-left: 0;
-      margin-right: 0;
-      font-style: italic;
-      color: #6b7280;
-      background: linear-gradient(to left, rgba(59, 130, 246, 0.05), transparent);
-      border-radius: 0 0.5rem 0.5rem 0;
-      padding-top: 0.5rem;
-      padding-bottom: 0.5rem;
-
-      p:first-of-type::before,
-      p:first-of-type::after {
-        content: unset;
-      }
-    }
-
-    // Lists
-    ul {
-      li > p {
-        margin: 0;
-      }
-    }
-
-    ol {
-      li > p {
-        margin: 0;
-      }
-    }
-
-    // Custom elements margin
-    & > *:has([data-node-view-wrapper]) {
-      margin-top: 1.5rem;
-      margin-bottom: 1.5rem;
-
-      &:last-child {
-        margin-bottom: unset;
-      }
-
-      pre,
-      img {
-        margin: unset;
-      }
-    }
-
-    // Headings
+    // Headings — bold with a thin accent rule on the inline-end side.
     h1, h2, h3, h4, h5, h6 {
-      scroll-margin-top: 80px;
-      font-weight: 700;
+      font-weight: 800;
       line-height: 1.3;
+      letter-spacing: -0.015em;
+      color: oklch(18% 0.025 270);
+      scroll-margin-top: 100px;
+      position: relative;
     }
 
     h1 {
-      font-size: 2rem;
-      margin-top: 2rem;
-      margin-bottom: 1rem;
+      font-size: 1.875rem;
+      line-height: 1.25;
+      margin-block: 2rem 0.875rem;
     }
 
     h2 {
       font-size: 1.5rem;
-      margin-top: 1.75rem;
-      margin-bottom: 0.875rem;
+      line-height: 1.3;
+      margin-block: 1.75rem 0.75rem;
+      padding-block-end: 0.45rem;
+      border-block-end: 1px solid oklch(88% 0.012 250);
     }
 
     h3 {
       font-size: 1.25rem;
-      margin-top: 1.5rem;
-      margin-bottom: 0.75rem;
+      margin-block: 1.5rem 0.625rem;
     }
 
-    // Horizontal rule
-    hr {
-      border: none;
-      border-top: 2px solid #e5e7eb;
-      margin: 2rem 0;
-      
-      &:hover {
-        border-top-color: #d1d5db;
+    h4 { font-size: 1.0625rem; margin-block: 1.25rem 0.5rem; }
+    h5 { font-size: 0.9375rem; margin-block: 1.125rem 0.5rem; }
+    h6 { font-size: 0.875rem; margin-block: 1rem 0.5rem; color: oklch(48% 0.02 250); }
+
+    // Paragraphs — comfortable line-height for mixed Persian/English.
+    p {
+      margin-block: 0.875rem;
+      line-height: 1.95;
+    }
+
+    // Strong text gets a subtle highlight background.
+    strong {
+      font-weight: 800;
+      color: oklch(18% 0.025 270);
+    }
+
+    em {
+      font-style: italic;
+      color: oklch(42% 0.04 250);
+    }
+
+    // Inline code — pill with a soft tint, harmonised with the deck.
+    code {
+      display: inline-block;
+      padding: 0.125rem 0.45rem;
+      margin: 0 0.1rem;
+      background: oklch(96% 0.014 270 / 0.85);
+      border: 1px solid oklch(86% 0.016 270 / 0.65);
+      border-radius: 6px;
+      color: oklch(38% 0.12 270);
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.875em;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    // Code blocks — dark surface, language tab hairline, no overflow bug.
+    pre {
+      background: linear-gradient(
+        180deg,
+        oklch(20% 0.025 260),
+        oklch(16% 0.022 260)
+      );
+      color: oklch(94% 0.005 245);
+      padding: 1.1rem 1.35rem;
+      border-radius: 12px;
+      border: 1px solid oklch(28% 0.02 260);
+      box-shadow: 0 4px 20px -10px oklch(0% 0 0 / 0.4);
+      font-size: 13.5px;
+      line-height: 1.7;
+      overflow-x: auto;
+      margin-block: 1.25rem;
+      direction: ltr;
+      text-align: left;
+
+      code {
+        background: transparent;
+        border: 0;
+        padding: 0;
+        color: inherit;
+        font-family: 'Source Code Pro', 'Fira Code', 'JetBrains Mono', monospace;
+        font-size: inherit;
       }
     }
-  }
-}
 
-// Dark mode
-.dark {
-  .tiptap,
-  .ProseMirror {
-    p.is-editor-empty:first-child::before {
-      color: #6b7280;
+    // Blockquote — gradient border, soft glass backplate.
+    blockquote {
+      position: relative;
+      border-inline-start: 4px solid;
+      border-image: linear-gradient(
+        180deg,
+        oklch(72% 0.16 270) 0%,
+        oklch(74% 0.13 210) 60%,
+        oklch(78% 0.14 165) 100%
+      ) 1;
+      padding-inline-start: 1.25rem;
+      padding-block: 0.65rem;
+      margin-block: 1.5rem;
+      font-style: italic;
+      font-weight: 500;
+      color: oklch(45% 0.06 270);
+      background: linear-gradient(
+        90deg,
+        oklch(96% 0.018 270 / 0.55),
+        transparent
+      );
+      border-radius: 0 8px 8px 0;
+
+      p { margin: 0; }
     }
 
-    ::selection {
-      background-color: rgba(96, 165, 250, 0.4);
-    }
+    // Lists — disc/decimal with a colored marker, comfortable indent.
+    ul {
+      padding-inline-start: 1.5rem;
+      margin-block: 1rem;
 
-    &.prose {
-      pre {
-        background-color: #161b22;
-        border: 1px solid #30363d;
-      }
+      li {
+        margin-block: 0.4rem;
+        line-height: 1.8;
 
-      blockquote {
-        border-right-color: #60a5fa;
-        color: #9ca3af;
-        background: linear-gradient(to left, rgba(96, 165, 250, 0.1), transparent);
-      }
-
-      hr {
-        border-top-color: #374151;
-        
-        &:hover {
-          border-top-color: #4b5563;
+        &::marker {
+          color: oklch(72% 0.16 270);
+          font-weight: 700;
         }
+
+        > p { margin: 0; }
+
+        ul { list-style: circle; margin-block: 0.4rem; }
+        ol { list-style: lower-alpha; margin-block: 0.4rem; }
       }
     }
+
+    ol {
+      padding-inline-start: 1.5rem;
+      margin-block: 1rem;
+
+      li {
+        margin-block: 0.4rem;
+        line-height: 1.8;
+
+        &::marker {
+          color: oklch(72% 0.16 270);
+          font-weight: 700;
+          font-variant-numeric: tabular-nums;
+        }
+
+        > p { margin: 0; }
+
+        ol { list-style: lower-alpha; margin-block: 0.4rem; }
+        ol ol { list-style: lower-roman; }
+      }
+    }
+
+    // Links — gradient underline that shifts on hover.
+    a {
+      color: oklch(48% 0.16 270);
+      font-weight: 600;
+      text-decoration: none;
+      background-image: linear-gradient(
+        90deg,
+        oklch(72% 0.16 270),
+        oklch(74% 0.13 210)
+      );
+      background-size: 100% 1.5px;
+      background-position: 0 100%;
+      background-repeat: no-repeat;
+      transition: color 160ms ease;
+    }
+
+    a:hover {
+      color: oklch(40% 0.18 280);
+    }
+
+    // Images — soft frame with subtle shadow.
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      border: 1px solid oklch(88% 0.01 250);
+      box-shadow: 0 8px 28px -16px oklch(0% 0 0 / 0.3);
+    }
+
+    // Horizontal rule — gradient hairline.
+    hr {
+      border: 0;
+      height: 1px;
+      margin-block: 2rem;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        oklch(72% 0.012 270 / 0.6) 20%,
+        oklch(78% 0.014 165 / 0.7) 50%,
+        oklch(72% 0.012 270 / 0.6) 80%,
+        transparent 100%
+      );
+    }
+
+    // Superscript / subscript.
+    sup {
+      font-size: 0.7em;
+      vertical-align: super;
+      line-height: 0;
+    }
+    sub {
+      font-size: 0.7em;
+      vertical-align: sub;
+      line-height: 0;
+    }
+
+    // Text alignment helpers.
+    [data-text-align="left"] { text-align: left; }
+    [data-text-align="center"] { text-align: center; }
+    [data-text-align="right"] { text-align: right; }
+    [data-text-align="justify"] { text-align: justify; }
   }
 }
 
-// Animations
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+// Dark-mode prose overrides — reused color tokens with darker hue blends.
+.dark .at-prose.prose {
+  color: oklch(94% 0.008 245);
+
+  h1, h2, h3, h4, h5, h6 {
+    color: oklch(96% 0.005 245);
+  }
+
+  h6 { color: oklch(78% 0.018 245); }
+
+  strong { color: oklch(98% 0.005 245); }
+
+  em { color: oklch(82% 0.02 245); }
+
+  code {
+    background: oklch(28% 0.04 270 / 0.55);
+    border-color: oklch(40% 0.04 270 / 0.7);
+    color: oklch(88% 0.1 270);
+  }
+
+  pre {
+    background: linear-gradient(
+      180deg,
+      oklch(14% 0.022 260),
+      oklch(10% 0.02 260)
+    );
+    border-color: oklch(24% 0.02 260);
+  }
+
+  blockquote {
+    color: oklch(80% 0.04 270);
+    background: linear-gradient(
+      90deg,
+      oklch(28% 0.04 270 / 0.55),
+      transparent
+    );
+  }
+
+  ul li::marker,
+  ol li::marker {
+    color: oklch(78% 0.16 270);
+  }
+
+  a {
+    color: oklch(82% 0.16 270);
+    background-image: linear-gradient(
+      90deg,
+      oklch(82% 0.16 270),
+      oklch(80% 0.13 210)
+    );
+  }
+
+  a:hover { color: oklch(88% 0.16 280); }
+
+  img {
+    border-color: oklch(34% 0.02 260);
+  }
 }
 
-// Scrollbar styling for editor
+// ═══════════════════════════════════════════════════════════════════
+// Scrollbar — slim, themed
+// ═══════════════════════════════════════════════════════════════════
+.at-prose,
 .tiptap,
 .ProseMirror {
   &::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
   }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
+  &::-webkit-scrollbar-track { background: transparent; }
   &::-webkit-scrollbar-thumb {
-    background-color: #d1d5db;
-    border-radius: 4px;
-    
-    &:hover {
-      background-color: #9ca3af;
-    }
+    background: oklch(85% 0.012 250 / 0.6);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: oklch(72% 0.012 250 / 0.75);
+    background-clip: padding-box;
   }
 }
 
-.dark .tiptap,
-.dark .ProseMirror {
-  &::-webkit-scrollbar-thumb {
-    background-color: #4b5563;
-    
-    &:hover {
-      background-color: #6b7280;
-    }
-  }
+.dark .at-prose::-webkit-scrollbar-thumb,
+.dark .tiptap::-webkit-scrollbar-thumb,
+.dark .ProseMirror::-webkit-scrollbar-thumb {
+  background: oklch(34% 0.02 260 / 0.6);
+  background-clip: padding-box;
+}
+
+.dark .at-prose::-webkit-scrollbar-thumb:hover,
+.dark .tiptap::-webkit-scrollbar-thumb:hover,
+.dark .ProseMirror::-webkit-scrollbar-thumb:hover {
+  background: oklch(46% 0.02 260 / 0.7);
+  background-clip: padding-box;
 }

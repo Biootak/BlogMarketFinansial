@@ -1,6 +1,24 @@
+// Editor — Inkwell 2026
+// Rich-text canvas for editors. Three-tier shell:
+//   • TopBar       — sticky command deck with mode + presence
+//   • Stage        — the paper itself, with ruler + slash hint
+//   • StatusBar    — sticky bottom: word count, reading time, save pulse
+//
+// All visuals live in styles/shell.scss. Tailwind is intentionally
+// avoided here so the editor can be themed + dark-moded without
+// touching the design system tokens.
+
 'use client';
 
-import React, { forwardRef, useEffect, useImperativeHandle, useCallback } from 'react';
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { EditorContent, type EditorOptions, useEditor } from '@tiptap/react';
 import { extensions as builtInExtensions } from './extensions';
 import FixedMenu from './components/fixed-menu';
@@ -28,6 +46,19 @@ export type EditorRef = {
   getEditor: () => EditorInstance | null;
 };
 
+// Reading time uses ~200 wpm for Persian mixed content. This is a
+// tasteful default — the JS side gives an instant preview without
+// waiting for a server round-trip.
+function readingTime(words: number): string {
+  if (!words) return '—';
+  const minutes = Math.max(1, Math.round(words / 200));
+  return `${minutes.toLocaleString('fa-IR')} دقیقه`;
+}
+
+function toFaDigits(n: number): string {
+  return n.toLocaleString('fa-IR');
+}
+
 export const Editor = forwardRef<EditorRef, EditorProps>(
   (
     {
@@ -54,7 +85,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
         editorProps: {
           attributes: {
             class:
-              'py-4 px-4 sm:py-6 sm:px-6 lg:py-8 lg:px-8 prose prose-sm sm:prose-base lg:prose-lg prose-primary prose-headings:scroll-mt-[80px] focus:outline-none',
+              'at-prose at-prose--editor focus:outline-none prose prose-sm sm:prose-base lg:prose-lg prose-headings:scroll-mt-[80px] max-w-none',
           },
           ...editorProps,
         },
@@ -75,87 +106,90 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
       getEditor: getEditorInstance,
     }));
 
+    // ── Word / character / selection counters ──
+    const [counts, setCounts] = useState({ words: 0, chars: 0, charsNoSpace: 0 });
+
+    useEffect(() => {
+      if (!editor) return;
+      const update = () => {
+        const cc = editor.storage.characterCount;
+        setCounts({
+          words: cc.words?.() ?? 0,
+          chars: cc.characters?.() ?? 0,
+          charsNoSpace: 0,
+        });
+      };
+      update();
+      editor.on('update', update);
+      return () => {
+        editor.off('update', update);
+      };
+    }, [editor]);
+
+    // ── Save state pulse (cloud-icon heartbeat when localStorage syncs) ──
+    const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('saved');
+    const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+      if (!editor || !localStorageKey) return;
+      const saveContent = () => {
+        setSaveState('saving');
+        localStorage.setItem(localStorageKey, JSON.stringify(editor.getJSON()));
+        if (saveTimer.current) clearTimeout(saveTimer.current);
+        saveTimer.current = setTimeout(() => setSaveState('saved'), 700);
+      };
+      editor.on('update', saveContent);
+      return () => {
+        editor.off('update', saveContent);
+        if (saveTimer.current) clearTimeout(saveTimer.current);
+      };
+    }, [editor, localStorageKey]);
+
+    // ── Editable propagation ──
     useEffect(() => {
       if (!editor || editor.isDestroyed || editor.isEditable === editable) return;
       queueMicrotask(() => editor.setEditable(editable));
     }, [editable, editor]);
 
+    // ── TOC propagation ──
     useEffect(() => {
       if (!editor || editor.isDestroyed) return;
       const items = getToCItems(editor);
       onUpdateToC?.(items);
     }, [editor, onUpdateToC]);
 
-    // فقط ذخیره در localStorage، نه بارگذاری از آن
-    // بارگذاری محتوا از prop content انجام می‌شود
-    useEffect(() => {
-      if (!editor || !localStorageKey) return;
-
-      const saveContent = () => {
-        localStorage.setItem(localStorageKey, JSON.stringify(editor.getJSON()));
-      };
-
-      editor.on('update', saveContent);
-
-      return () => {
-        editor.off('update', saveContent);
-      };
-    }, [editor, localStorageKey]);
-
-    // تشخیص نوع محتوا و parse کردن آن
-    const parseContent = useCallback((rawContent: string | object | undefined): string | object | null => {
-      if (!rawContent) return null;
-      
-      if (typeof rawContent !== 'string') {
-        return rawContent;
-      }
-
-      const trimmed = rawContent.trim();
+    // ── Content parsing + initial load ──
+    const parseContent = useCallback((raw: string | object | undefined): string | object | null => {
+      if (!raw) return null;
+      if (typeof raw !== 'string') return raw;
+      const trimmed = raw.trim();
       if (!trimmed) return null;
-
-      // اگر با < شروع شود، HTML است
-      if (trimmed.startsWith('<')) {
-        return trimmed;
-      }
-
-      // اگر با { یا [ شروع شود، JSON است
+      if (trimmed.startsWith('<')) return trimmed;
       if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
         try {
           return JSON.parse(trimmed);
-        } catch (error) {
-          console.warn('Failed to parse content as JSON:', error);
+        } catch {
           return trimmed;
         }
       }
-
       return trimmed;
     }, []);
 
-    // بارگذاری محتوای اولیه - فقط یک بار وقتی ادیتور آماده شد
-    const initialContentLoadedRef = React.useRef(false);
-    const contentRef = React.useRef(content);
-    
+    const initialContentLoadedRef = useRef(false);
+    const contentRef = useRef(content);
     useEffect(() => {
-      // به‌روزرسانی ref برای مقایسه
       contentRef.current = content;
     }, [content]);
 
     useEffect(() => {
       if (!editor || editor.isDestroyed) return;
-      
-      // اگر قبلاً محتوا بارگذاری شده و محتوای جدید همان است، کاری نکن
       if (initialContentLoadedRef.current && content === contentRef.current) return;
-      
-      // فقط یک بار محتوا را بارگذاری کن
       if (!initialContentLoadedRef.current && content) {
         initialContentLoadedRef.current = true;
         const parsedContent = parseContent(content);
         if (parsedContent) {
-          // استفاده از queueMicrotask برای جلوگیری از race condition
           queueMicrotask(() => {
-            if (!editor.isDestroyed) {
-              editor.commands.setContent(parsedContent);
-            }
+            if (!editor.isDestroyed) editor.commands.setContent(parsedContent);
           });
         }
       }
@@ -167,41 +201,128 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
       };
     }, [editor]);
 
+    // ── Slash command flag for the empty-state hint ──
+    const isEmpty = useMemo(() => {
+      if (!editor) return true;
+      try {
+        return editor.isEmpty;
+      } catch {
+        return true;
+      }
+    }, [editor, counts.words]);
+
     if (!editor) return null;
 
+    const isEditable = editor.isEditable;
+    const totalMinutes = readingTime(counts.words);
+
     return (
-      <div className={`bg-neutral-50 max-w-7xl mx-auto ${wrapperClassName}`}>
-        {editable && (
-          <div className="sticky top-0 z-10">
-            <FixedMenu
-              editor={editor}
-              className={`bg-primary-100 border-b border-primary-200 p-2 sm:p-3 lg:p-4 ${toolBarClassName}`}
-            />
-          </div>
-        )}
-        <div className="rounded-lg shadow-md overflow-hidden">
-          <LinkBubbleMenu editor={editor} />
-          <TableContextMenu editor={editor} />
-          <FloatingMenuComponent editor={editor} />
-          <TextBubbleMenu editor={editor} />
-          <TableToolbar editor={editor} />
-          <EditorContent
-            editor={editor}
-            className={`bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 min-h-[200px] sm:min-h-[300px] lg:min-h-[400px] ${contentClassName}`}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-          />
-          {editable && displayWordsCount && (
-            <div
-              className={`sticky bottom-0 text-xs sm:text-sm lg:text-base font-bold border-t border-primary-200 
-                          bg-primary-50 text-primary-800 px-3 py-2 sm:px-4 sm:py-3 lg:px-5 lg:py-4 text-right ${footerClassName}`}
+      <div className={`at-editor-shell ${wrapperClassName}`}>
+        {/* ═══ Top command deck ═══════════════════════════════════════════════ */}
+        <div className="at-editor-deck" aria-hidden={!isEditable}>
+          <div className="at-editor-deck__inner">
+            <span className="at-editor-deck__rail" />
+            <span className="at-editor-deck__brand">
+              <span className="at-editor-deck__brand-dot" />
+              ویراستار
+            </span>
+            <span className="at-editor-deck__sep" aria-hidden />
+            <span className="at-editor-deck__hint">
+              برای درج بلوک، در ابتدای خط تایپ کنید
+              <kbd className="at-editor-deck__kbd">/</kbd>
+            </span>
+            <span className="at-editor-deck__spacer" />
+            <span
+              className={`at-editor-deck__save at-editor-deck__save--${saveState}`}
+              title={saveState === 'saving' ? 'در حال ذخیره...' : 'ذخیره شد'}
             >
-              {editor.storage.characterCount.words()} کلمه
+              <span className="at-editor-deck__save-dot" />
+              {saveState === 'saving' ? 'در حال ذخیره' : 'ذخیره خودکار'}
+            </span>
+          </div>
+        </div>
+
+        {/* ═══ Stage ════════════════════════════════════════════════════════ */}
+        <div className="at-editor-stage">
+          {/* Sticky toolbar container — the actual controls live in FixedMenu */}
+          {isEditable && (
+            <div className="at-editor-toolbar-wrap">
+              <FixedMenu
+                editor={editor}
+                className={`at-editor-toolbar ${toolBarClassName}`}
+              />
             </div>
           )}
+
+          {/* The canvas itself — paper feel + ruler */}
+          <div className="at-editor-canvas">
+            <div className="at-editor-ruler" aria-hidden />
+            <div className={`at-editor-paper ${isEmpty ? 'at-editor-paper--empty' : ''}`}>
+              <LinkBubbleMenu editor={editor} />
+              <TableContextMenu editor={editor} />
+              <FloatingMenuComponent editor={editor} />
+              <TextBubbleMenu editor={editor} />
+              <TableToolbar editor={editor} />
+
+              <EditorContent
+                editor={editor}
+                className={`at-editor-prose ${contentClassName}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+              />
+
+              {/* Floating empty-state hint */}
+              {isEmpty && (
+                <div className="at-editor-placeholder" aria-hidden>
+                  <span className="at-editor-placeholder__kbd">/</span>
+                  <span className="at-editor-placeholder__text">
+                    برای افزودن بلوک، دستور تایپ کنید — یا شروع به نوشتن کنید
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
+
+        {/* ═══ Status bar ═══════════════════════════════════════════════════ */}
+        {editable && displayWordsCount && (
+          <div className={`at-editor-status ${footerClassName}`}>
+            <div className="at-editor-status__inner">
+              <span className="at-editor-status__item">
+                <span className="at-editor-status__dot at-editor-status__dot--emerald" />
+                <span className="at-editor-status__num">{toFaDigits(counts.words)}</span>
+                <span className="at-editor-status__lbl">کلمه</span>
+              </span>
+
+              <span className="at-editor-status__sep" aria-hidden />
+
+              <span className="at-editor-status__item">
+                <span className="at-editor-status__dot at-editor-status__dot--cyan" />
+                <span className="at-editor-status__num">{toFaDigits(counts.chars)}</span>
+                <span className="at-editor-status__lbl">نویسه</span>
+              </span>
+
+              <span className="at-editor-status__sep" aria-hidden />
+
+              <span className="at-editor-status__item">
+                <span className="at-editor-status__dot at-editor-status__dot--violet" />
+                <span className="at-editor-status__num">{totalMinutes.replace(/[0-9۰-۹]+/g, (m) => m)}</span>
+                <span className="at-editor-status__lbl">زمان مطالعه</span>
+              </span>
+
+              <span className="at-editor-status__spacer" />
+
+              <span
+                className={`at-editor-status__save at-editor-status__save--${saveState}`}
+              >
+                <span className="at-editor-status__save-dot" />
+                {saveState === 'saving' ? 'در حال ذخیره' : 'همگام‌سازی شد'}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     );
   },
