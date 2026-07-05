@@ -183,9 +183,9 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
           }`}
           contentEditable={false}
         >
-          {/* Toolbar - always visible when selected or hovered */}
+          {/* Toolbar - always visible when selected or hovered (RTL-safe with start-1/2) */}
           <div
-            className={`absolute -top-14 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-1.5 border border-gray-200 dark:border-gray-700 transition-all duration-200 ${
+            className={`absolute -top-14 start-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-1.5 border border-gray-200 dark:border-gray-700 transition-all duration-200 ${
               showControls || selected
                 ? 'opacity-100 translate-y-0'
                 : 'opacity-0 translate-y-2 pointer-events-none'
@@ -252,14 +252,14 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
             </button>
           </div>
 
-          {/* Left resize handle */}
+          {/* Inline-start resize handle (left in LTR, right in RTL) */}
           <div
             onMouseDown={handleMouseDown('left')}
-            className={`absolute z-40 h-full cursor-col-resize top-0 flex w-8 select-none flex-col justify-center -left-4 transition-opacity ${
+            className={`absolute z-40 h-full cursor-col-resize top-0 flex w-8 select-none flex-col justify-center -start-4 transition-opacity ${
               showControls || selected ? 'opacity-100' : 'opacity-0'
             }`}
             role="slider"
-            aria-label="تغییر اندازه از چپ"
+            aria-label="تغییر اندازه از ابتدا"
             tabIndex={0}
           >
             <div className="h-16 w-1 rounded-full bg-primary-500 shadow-lg mx-auto" />
@@ -278,29 +278,29 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
             data-drag-handle
           />
 
-          {/* Right resize handle */}
+          {/* Inline-end resize handle (right in LTR, left in RTL) */}
           <div
             onMouseDown={handleMouseDown('right')}
-            className={`absolute z-40 h-full cursor-col-resize top-0 flex w-8 select-none flex-col justify-center items-center -right-4 transition-opacity ${
+            className={`absolute z-40 h-full cursor-col-resize top-0 flex w-8 select-none flex-col justify-center items-center -end-4 transition-opacity ${
               showControls || selected ? 'opacity-100' : 'opacity-0'
             }`}
             role="slider"
-            aria-label="تغییر اندازه از راست"
+            aria-label="تغییر اندازه از انتها"
             tabIndex={0}
           >
             <div className="h-16 w-1 rounded-full bg-primary-500 shadow-lg" />
           </div>
 
-          {/* Size indicator */}
+          {/* Size indicator (centered, RTL-safe via start-1/2) */}
           {isResizing && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-black/80 text-white text-xs rounded-lg font-mono backdrop-blur-sm shadow-lg">
+            <div className="absolute bottom-4 start-1/2 -translate-x-1/2 px-3 py-1.5 bg-black/80 text-white text-xs rounded-lg font-mono backdrop-blur-sm shadow-lg">
               {Math.round(width)}px
             </div>
           )}
 
-          {/* Alt text badge */}
+          {/* Alt text badge — anchored to inline-end corner */}
           {alt && (
-            <div className="absolute bottom-2 right-2 px-2 py-1 bg-black/60 text-white text-[10px] rounded-md backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity max-w-[150px] truncate">
+            <div className="absolute bottom-2 end-2 px-2 py-1 bg-black/60 text-white text-[10px] rounded-md backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity max-w-[150px] truncate">
               {alt}
             </div>
           )}

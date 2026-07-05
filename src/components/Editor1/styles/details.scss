@@ -1,18 +1,25 @@
-// Details/Accordion Block Styles
+// Details/Accordion Block Styles — Inkwell 2026
+// RTL-safe via logical properties. Theme via OKLCH tokens.
 
 .ProseMirror,
 .editor-content {
   // Native details element (for renderer)
   details {
     margin: 1rem 0;
-    border: 1px solid #e5e7eb;
+    border: 1px solid oklch(88% 0.012 250);
     border-radius: 0.75rem;
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    background: oklch(100% 0 0 / 0.65);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.7) inset,
+      0 1px 3px oklch(45% 0.06 270 / 0.06);
     transition: box-shadow 0.2s ease, border-color 0.2s ease;
 
     &:hover {
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      border-color: oklch(82% 0.018 270);
+      box-shadow:
+        0 1px 0 oklch(100% 0 0 / 0.7) inset,
+        0 2px 6px oklch(45% 0.06 270 / 0.1);
     }
 
     summary {
@@ -20,49 +27,56 @@
       align-items: center;
       gap: 0.75rem;
       padding: 1rem 1.25rem;
-      background-color: #f9fafb;
+      background: linear-gradient(
+        180deg,
+        oklch(98% 0.008 270 / 0.7),
+        oklch(96% 0.012 270 / 0.5)
+      );
       cursor: pointer;
-      font-weight: 600;
-      color: #111827;
+      font-weight: 700;
+      color: oklch(22% 0.04 270);
       transition: background-color 0.2s ease;
       list-style: none;
       user-select: none;
 
-      &::-webkit-details-marker {
-        display: none;
-      }
+      &::-webkit-details-marker { display: none; }
 
+      // Disclosure arrow — rotated via the open attribute (RTL safe)
       &::before {
         content: '';
         width: 0;
         height: 0;
-        border-left: 6px solid #6b7280;
-        border-top: 5px solid transparent;
-        border-bottom: 5px solid transparent;
+        border-block-start: 5px solid transparent;
+        border-block-end: 5px solid transparent;
+        border-inline-start: 6px solid oklch(58% 0.02 250);
         transition: transform 0.2s ease;
         flex-shrink: 0;
       }
 
       &:hover {
-        background-color: #f3f4f6;
+        background: linear-gradient(
+          180deg,
+          oklch(96% 0.014 270 / 0.85),
+          oklch(94% 0.014 270 / 0.65)
+        );
       }
 
-      &:focus {
-        outline: none;
-        background-color: #eff6ff;
-      }
-
+      &:focus { outline: none; }
       &:focus-visible {
-        outline: 2px solid #3b82f6;
+        outline: 2px solid oklch(72% 0.16 270 / 0.55);
         outline-offset: -2px;
       }
     }
 
     &[open] {
       summary {
-        background-color: #eff6ff;
-        border-bottom: 1px solid #e5e7eb;
-        
+        background: linear-gradient(
+          180deg,
+          oklch(95% 0.018 270 / 0.85),
+          oklch(93% 0.018 270 / 0.6)
+        );
+        border-block-end: 1px solid oklch(88% 0.012 250);
+
         &::before {
           transform: rotate(90deg);
         }
@@ -78,63 +92,36 @@
   // NodeView wrapper styles
   [data-type="details"] {
     .details-node-content {
-      // Summary styling
       summary {
         display: block;
         padding: 0;
         margin: 0;
-        font-weight: 600;
-        
-        p {
-          margin: 0;
-          display: inline;
-        }
+        font-weight: 700;
 
-        &:focus {
-          outline: none;
-        }
+        p { margin: 0; display: inline; }
+
+        &:focus { outline: none; }
       }
-      
-      // Content styling
+
       [data-details-content] {
-        p:first-child {
-          margin-top: 0;
-        }
-
-        p:last-child {
-          margin-bottom: 0;
-        }
+        p:first-child { margin-top: 0; }
+        p:last-child  { margin-bottom: 0; }
       }
     }
-    
-    .details-summary-wrapper {
-      min-height: 1.5em;
-    }
-    
-    .details-content-wrapper {
-      min-height: 2em;
-    }
 
-    // Open state animation
+    .details-summary-wrapper { min-height: 1.5em; }
+    .details-content-wrapper  { min-height: 2em; }
+
     &[data-open="true"] {
-      .details-node-content {
-        animation: fadeIn 0.2s ease-out;
-      }
+      .details-node-content { animation: fadeIn 0.2s ease-out; }
     }
   }
 
-  .details-summary {
-    display: inline;
-  }
+  .details-summary { display: inline; }
 
   .details-content {
-    p:first-child {
-      margin-top: 0;
-    }
-
-    p:last-child {
-      margin-bottom: 0;
-    }
+    p:first-child { margin-top: 0; }
+    p:last-child  { margin-bottom: 0; }
   }
 }
 
@@ -142,58 +129,61 @@
 .dark .ProseMirror,
 .dark .editor-content {
   details {
-    border-color: #374151;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    border-color: oklch(34% 0.02 260);
+    background: oklch(20% 0.014 260 / 0.55);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.04) inset,
+      0 1px 3px oklch(0% 0 0 / 0.3);
 
     &:hover {
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      border-color: oklch(40% 0.04 270 / 0.55);
+      box-shadow:
+        0 1px 0 oklch(100% 0 0 / 0.04) inset,
+        0 2px 6px oklch(0% 0 0 / 0.45);
     }
 
     summary {
-      background-color: #1f2937;
-      color: #f3f4f6;
+      background: linear-gradient(
+        180deg,
+        oklch(26% 0.018 270 / 0.55),
+        oklch(22% 0.016 270 / 0.4)
+      );
+      color: oklch(94% 0.005 245);
 
       &::before {
-        border-left-color: #9ca3af;
+        border-inline-start-color: oklch(78% 0.02 245);
       }
 
       &:hover {
-        background-color: #374151;
-      }
-
-      &:focus {
-        background-color: rgba(59, 130, 246, 0.1);
+        background: linear-gradient(
+          180deg,
+          oklch(30% 0.022 270 / 0.6),
+          oklch(26% 0.02 270 / 0.45)
+        );
       }
     }
 
     &[open] summary {
-      background-color: rgba(59, 130, 246, 0.15);
-      border-bottom-color: #374151;
+      background: linear-gradient(
+        180deg,
+        oklch(28% 0.04 270 / 0.5),
+        oklch(24% 0.04 270 / 0.35)
+      );
+      border-block-end-color: oklch(34% 0.02 260);
     }
 
     [data-details-content] {
-      border-color: #374151;
+      border-color: oklch(34% 0.02 260);
     }
   }
 }
 
-// Animations
 @keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }

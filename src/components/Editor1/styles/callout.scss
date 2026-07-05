@@ -1,32 +1,25 @@
-/* Callout Styles */
+/* Callout Styles — Inkwell 2026
+   Theme via OKLCH tokens that match the editor's accent system.
+   Each type uses a unique hue but keeps the same density.
+*/
 .ProseMirror,
 .editor-content {
   [data-callout] {
     margin: 1.25rem 0;
     padding: 1rem 1.25rem;
     border-radius: 0.75rem;
-    border-right-width: 4px;
-    border-right-style: solid;
+    border-inline-start: 4px solid;
     position: relative;
     transition: box-shadow 0.2s ease, transform 0.2s ease;
-    
+
     &:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 12px oklch(0% 0 0 / 0.08);
     }
-    
+
     .callout-content {
-      > *:first-child {
-        margin-top: 0;
-      }
-      
-      > *:last-child {
-        margin-bottom: 0;
-      }
-
-      p {
-        line-height: 1.7;
-      }
-
+      > *:first-child { margin-top: 0; }
+      > *:last-child  { margin-bottom: 0; }
+      p { line-height: 1.7; }
       a {
         text-decoration: underline;
         text-underline-offset: 2px;
@@ -34,45 +27,56 @@
     }
   }
 
-  /* Callout types with improved colors */
+  // Info — blue/violet
   [data-callout-type="info"],
   .callout-info {
-    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-    border-color: #3b82f6;
-    
-    .callout-content {
-      color: #1e40af;
-    }
+    background: linear-gradient(
+      135deg,
+      oklch(96% 0.025 245 / 0.85),
+      oklch(94% 0.02 245 / 0.6)
+    );
+    border-inline-start-color: oklch(60% 0.18 245);
+
+    .callout-content { color: oklch(32% 0.1 245); }
   }
 
+  // Warning — amber
   [data-callout-type="warning"],
   .callout-warning {
-    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-    border-color: #f59e0b;
-    
-    .callout-content {
-      color: #92400e;
-    }
+    background: linear-gradient(
+      135deg,
+      oklch(96% 0.04 75 / 0.85),
+      oklch(94% 0.03 75 / 0.6)
+    );
+    border-inline-start-color: oklch(72% 0.18 75);
+
+    .callout-content { color: oklch(38% 0.1 65); }
   }
 
+  // Error — rose
   [data-callout-type="error"],
   .callout-error {
-    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-    border-color: #ef4444;
-    
-    .callout-content {
-      color: #991b1b;
-    }
+    background: linear-gradient(
+      135deg,
+      oklch(95% 0.04 25 / 0.85),
+      oklch(93% 0.03 25 / 0.6)
+    );
+    border-inline-start-color: oklch(64% 0.2 25);
+
+    .callout-content { color: oklch(40% 0.14 25); }
   }
 
+  // Success — emerald (matches our --at-accent)
   [data-callout-type="success"],
   .callout-success {
-    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-    border-color: #22c55e;
-    
-    .callout-content {
-      color: #166534;
-    }
+    background: linear-gradient(
+      135deg,
+      oklch(96% 0.04 165 / 0.85),
+      oklch(94% 0.03 165 / 0.6)
+    );
+    border-inline-start-color: oklch(64% 0.18 165);
+
+    .callout-content { color: oklch(34% 0.12 165); }
   }
 }
 
@@ -81,47 +85,303 @@
 .dark .editor-content {
   [data-callout] {
     &:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 4px 12px oklch(0% 0 0 / 0.3);
     }
   }
 
   [data-callout-type="info"],
   .callout-info {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
-    border-color: #60a5fa;
-    
-    .callout-content {
-      color: #93c5fd;
-    }
+    background: linear-gradient(
+      135deg,
+      oklch(28% 0.06 245 / 0.45),
+      oklch(24% 0.05 245 / 0.3)
+    );
+    border-inline-start-color: oklch(76% 0.16 245);
+
+    .callout-content { color: oklch(86% 0.08 245); }
   }
 
   [data-callout-type="warning"],
   .callout-warning {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.1) 100%);
-    border-color: #fbbf24;
-    
-    .callout-content {
-      color: #fcd34d;
-    }
+    background: linear-gradient(
+      135deg,
+      oklch(28% 0.06 75 / 0.45),
+      oklch(24% 0.05 75 / 0.3)
+    );
+    border-inline-start-color: oklch(82% 0.16 75);
+
+    .callout-content { color: oklch(90% 0.1 80); }
   }
 
   [data-callout-type="error"],
   .callout-error {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.1) 100%);
-    border-color: #f87171;
-    
-    .callout-content {
-      color: #fca5a5;
-    }
+    background: linear-gradient(
+      135deg,
+      oklch(28% 0.06 25 / 0.45),
+      oklch(24% 0.05 25 / 0.3)
+    );
+    border-inline-start-color: oklch(76% 0.18 25);
+
+    .callout-content { color: oklch(86% 0.12 25); }
   }
 
   [data-callout-type="success"],
   .callout-success {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.1) 100%);
-    border-color: #4ade80;
-    
-    .callout-content {
-      color: #86efac;
-    }
+    background: linear-gradient(
+      135deg,
+      oklch(28% 0.06 165 / 0.45),
+      oklch(24% 0.05 165 / 0.3)
+    );
+    border-inline-start-color: oklch(78% 0.16 165);
+
+    .callout-content { color: oklch(88% 0.1 165); }
   }
+}
+// -------------------------------------------------------------------
+// Callout Block (NodeView) � Inkwell 2026
+// Sits over the prose callout styling above. Visual surface for the
+// picker button + type-selector popover. Avoid Tailwind bleed.
+// -------------------------------------------------------------------
+
+.at-callout {
+  position: relative;
+
+  &.is-selected {
+    box-shadow:
+      0 0 0 2px oklch(72% 0.16 270 / 0.55),
+      0 12px 28px -16px oklch(45% 0.12 270 / 0.3);
+  }
+}
+
+.at-callout__row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.at-callout__picker {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.at-callout__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid oklch(88% 0.012 250);
+  background: oklch(100% 0 0 / 0.7);
+  color: oklch(38% 0.06 270);
+  font-size: 1.5rem;
+  line-height: 1;
+  transition:
+    transform 160ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+
+  &:hover {
+    transform: translateY(-1px) scale(1.04);
+    box-shadow: 0 6px 14px -6px oklch(45% 0.12 270 / 0.25);
+    background: oklch(100% 0 0 / 0.95);
+  }
+
+  &:active { transform: scale(0.96); }
+
+  &.is-open {
+    background: oklch(95% 0.018 270 / 0.95);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.6) inset,
+      0 2px 6px oklch(45% 0.08 270 / 0.18) inset;
+  }
+
+  &:disabled {
+    cursor: default;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+.at-callout__btn-ico {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.dark .at-callout__btn {
+  background: oklch(22% 0.018 260 / 0.7);
+  border-color: oklch(36% 0.02 260);
+  color: oklch(82% 0.05 270);
+
+  &:hover {
+    background: oklch(28% 0.022 270 / 0.85);
+    color: oklch(90% 0.05 270);
+  }
+
+  &.is-open {
+    background: oklch(26% 0.04 270 / 0.85);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.04) inset,
+      0 2px 6px oklch(0% 0 0 / 0.3) inset;
+  }
+}
+
+.at-callout__popover {
+  position: absolute;
+  inset-block-start: calc(100% + 8px);
+  inset-inline-start: 0;
+  z-index: 50;
+  min-width: 220px;
+  padding: 0.5rem;
+  border-radius: 0.875rem;
+  border: 1px solid oklch(88% 0.012 250);
+  background: oklch(100% 0 0 / 0.98);
+  box-shadow:
+    0 1px 0 oklch(100% 0 0 / 0.7) inset,
+    0 28px 56px -22px oklch(45% 0.1 270 / 0.4),
+    0 4px 12px -4px oklch(45% 0.08 255 / 0.25);
+  backdrop-filter: blur(20px) saturate(170%);
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
+  animation: at-callout-popover-in 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dark .at-callout__popover {
+  background: oklch(22% 0.018 260 / 0.96);
+  border-color: oklch(36% 0.02 260);
+  box-shadow:
+    0 1px 0 oklch(100% 0 0 / 0.04) inset,
+    0 32px 64px -24px oklch(0% 0 0 / 0.7);
+}
+
+@keyframes at-callout-popover-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.at-callout__popover-head {
+  margin: 0.25rem 0.5rem 0.5rem;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: oklch(58% 0.012 245);
+}
+
+.dark .at-callout__popover-head { color: oklch(72% 0.018 245); }
+
+.at-callout__popover-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.at-callout__option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border: 0;
+  border-radius: 0.625rem;
+  background: transparent;
+  color: oklch(28% 0.02 255);
+  font-family: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+  position: relative;
+
+  &:hover {
+    background: linear-gradient(
+      90deg,
+      oklch(96% 0.018 270 / 0.95),
+      oklch(96% 0.018 210 / 0.6)
+    );
+    color: oklch(28% 0.14 270);
+  }
+
+  &.is-active {
+    background: linear-gradient(
+      90deg,
+      oklch(94% 0.022 270 / 0.95),
+      oklch(94% 0.018 210 / 0.7)
+    );
+    color: oklch(28% 0.14 270);
+    box-shadow: inset 2px 0 0 oklch(72% 0.16 270);
+    padding-inline-start: calc(0.6rem - 2px);
+  }
+}
+
+.dark .at-callout__option {
+  color: oklch(88% 0.005 245);
+
+  &:hover,
+  &.is-active {
+    background: linear-gradient(
+      90deg,
+      oklch(28% 0.04 270 / 0.6),
+      oklch(26% 0.04 210 / 0.5)
+    );
+    color: oklch(92% 0.04 270);
+  }
+}
+
+.at-callout__option-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  background: oklch(94% 0.012 250);
+  color: oklch(42% 0.06 270);
+  flex-shrink: 0;
+}
+
+.at-callout__option.is-active .at-callout__option-ico,
+.at-callout__option:hover .at-callout__option-ico {
+  background: linear-gradient(135deg, oklch(72% 0.16 270), oklch(68% 0.14 250));
+  color: oklch(99% 0.005 245);
+}
+
+.at-callout__option-ico svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.dark .at-callout__option-ico {
+  background: oklch(28% 0.014 250 / 0.7);
+  color: oklch(82% 0.05 270);
+}
+
+.at-callout__option-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.at-callout__option-label {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.at-callout__option-desc {
+  margin-block-start: 2px;
+  font-size: 10px;
+  color: oklch(55% 0.012 245);
+}
+
+.dark .at-callout__option-desc { color: oklch(65% 0.018 245); }
+
+.at-callout__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .at-callout__popover { animation: none; }
+  .at-callout__btn { transition: none; }
 }

@@ -32,7 +32,7 @@ const CodeBlock = ({ node: { attrs, textContent } }: NodeViewProps) => {
       </pre>
 
       <div
-        className="absolute top-2 right-4 h-8 flex items-center transition-all"
+        className="absolute top-2 end-4 h-8 flex items-center transition-all"
         contentEditable={false}
       >
         <div className="min-w-fit px-2 h-8 text-xs font-sans text-slate-300 flex items-center justify-center cursor-pointer">

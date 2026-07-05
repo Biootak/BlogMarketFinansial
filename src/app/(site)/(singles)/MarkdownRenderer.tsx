@@ -18,7 +18,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       rehypePlugins={[rehypeRaw, rehypeSanitize, rehypeHighlight]}
-      className="prose lg:prose-lg dark:prose-invert max-w-none"
+      className="at-prose at-prose--renderer max-w-none"
     >
       {memoizedContent}
     </ReactMarkdown>

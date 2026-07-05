@@ -1,4 +1,5 @@
-// Drag Handle Styles
+// Drag Handle Styles — Inkwell 2026
+// Theme via OKLCH tokens so it matches the violet/cyan accent system.
 
 .ProseMirror {
   position: relative;
@@ -9,8 +10,11 @@
 }
 
 .drag-handle {
+  background-color: transparent;
+
   &:hover {
-    background-color: #f3f4f6;
+    background-color: oklch(72% 0.16 270 / 0.1);
+    color: oklch(48% 0.12 270);
   }
 
   &:active {
@@ -20,12 +24,17 @@
 
 .drop-indicator {
   pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    oklch(72% 0.16 270),
+    oklch(74% 0.13 210)
+  );
+  border-radius: 2px;
 }
 
-.dark {
-  .drag-handle {
-    &:hover {
-      background-color: #374151;
-    }
+.dark .drag-handle {
+  &:hover {
+    background-color: oklch(72% 0.16 270 / 0.18);
+    color: oklch(84% 0.1 270);
   }
 }

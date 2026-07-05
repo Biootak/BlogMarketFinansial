@@ -181,25 +181,25 @@ const EmbedBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, s
         
         {/* Height indicator during resize */}
         {isResizing && (
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-black/80 text-white text-xs rounded-lg font-mono backdrop-blur-sm">
+          <div className="absolute bottom-8 start-1/2 -translate-x-1/2 px-3 py-1.5 bg-black/80 text-white text-xs rounded-lg font-mono backdrop-blur-sm">
             {Math.round(currentHeight)}px
           </div>
         )}
       </div>
       
-      {/* Provider badge */}
-      <div className={`absolute top-3 left-3 px-3 py-1.5 ${providerConfig.color} text-white text-xs rounded-lg font-medium backdrop-blur-sm shadow-lg flex items-center gap-1.5`}>
+      {/* Provider badge — anchored to inline-start */}
+      <div className={`absolute top-3 start-3 px-3 py-1.5 ${providerConfig.color} text-white text-xs rounded-lg font-medium backdrop-blur-sm shadow-lg flex items-center gap-1.5`}>
         <providerConfig.icon className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
         <span>{providerConfig.label}</span>
       </div>
 
-      {/* Open in new tab button */}
+      {/* Open in new tab button — anchored to inline-end */}
       {src && (
         <a
           href={src}
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute top-3 right-3 p-2 bg-black/60 hover:bg-black/80 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all backdrop-blur-sm"
+          className="absolute top-3 end-3 p-2 bg-black/60 hover:bg-black/80 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all backdrop-blur-sm"
           aria-label="باز کردن در تب جدید"
         >
           <ExternalLink size={14} />

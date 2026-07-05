@@ -1,3 +1,8 @@
+// callout-block.tsx — Inkwell 2026
+// Visual surface lives in styles/callout.scss. This component owns
+// behaviour (type picker) and the small switcher button — no Tailwind
+// bleed from the rest of the dashboard.
+
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
@@ -7,7 +12,7 @@ import { type CalloutType, calloutTypeConfig } from '../extensions/callout';
 const CalloutBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, selected }) => {
   const [showTypePicker, setShowTypePicker] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
-  
+
   const type = (node.attrs.type as CalloutType) || 'info';
   const config = useMemo(() => calloutTypeConfig[type], [type]);
   const IconComponent = config.icon;
@@ -61,44 +66,36 @@ const CalloutBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor,
 
   return (
     <NodeViewWrapper
-      className={`my-5 p-4 rounded-xl border-r-4 transition-all duration-200 ${config.bgColor} ${config.borderColor} ${
-        selected ? 'ring-2 ring-primary-500 ring-offset-2 shadow-lg' : 'shadow-sm hover:shadow-md'
-      }`}
+      className={`at-callout ${selected ? 'is-selected' : ''}`}
       data-type="callout"
       data-callout-type={type}
       role="note"
       aria-label={`بلاک ${typeLabels[type]}`}
     >
-      <div className="flex gap-4">
-        <div className="relative flex-shrink-0" ref={pickerRef}>
+      <div className="at-callout__row">
+        <div className="at-callout__picker" ref={pickerRef}>
           <button
             type="button"
             onClick={() => editor.isEditable && setShowTypePicker(!showTypePicker)}
-            className={`w-10 h-10 flex items-center justify-center text-2xl rounded-xl transition-all duration-200 ${
-              editor.isEditable 
-                ? 'cursor-pointer hover:scale-110 hover:shadow-md active:scale-95' 
-                : 'cursor-default'
-            } ${showTypePicker ? 'bg-white/50 dark:bg-black/20 shadow-inner' : ''}`}
+            className={`at-callout__btn ${showTypePicker ? 'is-open' : ''}`}
             contentEditable={false}
             aria-label={`نوع: ${typeLabels[type]}. برای تغییر کلیک کنید`}
             aria-expanded={showTypePicker}
             aria-haspopup="listbox"
             disabled={!editor.isEditable}
           >
-            <IconComponent className="h-6 w-6" strokeWidth={2} aria-hidden />
+            <IconComponent className="at-callout__btn-ico" strokeWidth={2} aria-hidden />
           </button>
-          
+
           {showTypePicker && editor.isEditable && (
             <div
-              className="absolute top-full right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-3 z-50 min-w-[200px] animate-in fade-in slide-in-from-top-2 duration-150"
+              className="at-callout__popover"
               contentEditable={false}
               role="listbox"
               aria-label="انتخاب نوع بلاک"
             >
-              <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 px-1">
-                نوع بلاک
-              </p>
-              <div className="space-y-1">
+              <p className="at-callout__popover-head">نوع بلاک</p>
+              <div className="at-callout__popover-list">
                 {(Object.keys(calloutTypeConfig) as CalloutType[]).map((calloutType) => {
                   const isSelected = type === calloutType;
                   const PickerIcon = calloutTypeConfig[calloutType].icon;
@@ -109,27 +106,15 @@ const CalloutBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor,
                       onClick={() => handleTypeChange(calloutType)}
                       role="option"
                       aria-selected={isSelected}
-                      className={`w-full flex items-center gap-3 p-2 rounded-lg transition-all duration-150 ${
-                        isSelected
-                          ? 'bg-primary-100 dark:bg-primary-900/30 border-r-2 border-primary-500'
-                          : 'hover:bg-gray-100 dark:hover:bg-gray-700 border-r-2 border-transparent'
-                      }`}
+                      className={`at-callout__option ${isSelected ? 'is-active' : ''}`}
                     >
-                      <span className={`w-8 h-8 flex items-center justify-center rounded-lg ${
-                        isSelected ? 'bg-primary-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200'
-                      }`}>
-                        <PickerIcon className="h-5 w-5" strokeWidth={2} aria-hidden />
+                      <span className="at-callout__option-ico">
+                        <PickerIcon strokeWidth={2} aria-hidden />
                       </span>
-                      <div className="flex-1 text-right">
-                        <div className={`text-sm font-medium ${
-                          isSelected ? 'text-primary-700 dark:text-primary-300' : 'text-gray-900 dark:text-gray-100'
-                        }`}>
-                          {typeLabels[calloutType]}
-                        </div>
-                        <div className="text-[10px] text-gray-500 dark:text-gray-400">
-                          {typeDescriptions[calloutType]}
-                        </div>
-                      </div>
+                      <span className="at-callout__option-text">
+                        <span className="at-callout__option-label">{typeLabels[calloutType]}</span>
+                        <span className="at-callout__option-desc">{typeDescriptions[calloutType]}</span>
+                      </span>
                     </button>
                   );
                 })}
@@ -137,9 +122,9 @@ const CalloutBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor,
             </div>
           )}
         </div>
-        
-        <div className={`flex-1 min-w-0 ${config.textColor}`}>
-          <NodeViewContent className="callout-content prose prose-sm max-w-none" />
+
+        <div className="at-callout__body">
+          <NodeViewContent className="callout-content" />
         </div>
       </div>
     </NodeViewWrapper>

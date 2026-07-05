@@ -1,5 +1,6 @@
 // FixedMenu.tsx
-import React from 'react';
+import React, { useState } from 'react';
+import { MoreHorizontal, X } from 'lucide-react';
 import type { Editor } from '@tiptap/react';
 import dynamic from 'next/dynamic';
 import { Toolbar } from '../../ui/toolbar';
@@ -34,12 +35,19 @@ export type FixedMenuProps = {
 };
 
 const FixedMenu = ({ editor, className }: FixedMenuProps) => {
+  // D13 — Mobile-aware: when narrow, secondary controls collapse into a
+  // "More" panel that's revealed via a button. The button itself is hidden
+  // on wider viewports (≥sm) by CSS, so the desktop experience is unchanged.
+  const [moreOpen, setMoreOpen] = useState(false);
+
   return (
     <TooltipProvider disableHoverableContent delayDuration={500} skipDelayDuration={0}>
       <Toolbar.Wrapper
         className={`${className} sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-md transition-all duration-300 ease-in-out overflow-x-auto text-primary-600`}
+        data-more-open={moreOpen || undefined}
       >
         <div className="flex flex-wrap items-center justify-start gap-1 p-2">
+          {/* History — always visible */}
           <Toolbar.Group className="flex-shrink-0 [&_svg]:text-primary-600 [&_svg]:stroke-primary-600">
             <MenuButtonUndo editor={editor} />
             <MenuButtonRedo editor={editor} />
@@ -47,37 +55,23 @@ const FixedMenu = ({ editor, className }: FixedMenuProps) => {
 
           <Toolbar.Divider className="hidden sm:block" />
 
+          {/* Block / heading — always visible */}
           <Toolbar.Group className="flex-shrink-0 [&_svg]:text-primary-600 [&_svg]:stroke-primary-600">
             <MenuSelectHeading editor={editor} />
-            <MenuSelectFontFamily editor={editor} />
-            <MenuSelectFontSize editor={editor} />
           </Toolbar.Group>
 
           <Toolbar.Divider className="hidden sm:block" />
 
+          {/* Inline marks — always visible */}
           <Toolbar.Group className="flex-shrink-0 [&_svg]:text-primary-600 [&_svg]:stroke-primary-600">
             <MenuButtonBold editor={editor} />
             <MenuButtonItalic editor={editor} />
             <MenuButtonUnderline editor={editor} />
-            <MenuButtonSuperscript editor={editor} />
-            <MenuButtonSubscript editor={editor} />
           </Toolbar.Group>
 
           <Toolbar.Divider className="hidden sm:block" />
 
-          <Toolbar.Group className="flex-shrink-0 [&_svg]:text-primary-600 [&_svg]:stroke-primary-600">
-            <MenuButtonColor editor={editor} />
-            <MenuButtonHighlight editor={editor} />
-          </Toolbar.Group>
-
-          <Toolbar.Divider className="hidden sm:block" />
-
-          <Toolbar.Group className="flex-shrink-0 [&_svg]:text-primary-600 [&_svg]:stroke-primary-600">
-            <MenuSelectTextAlign editor={editor} />
-          </Toolbar.Group>
-
-          <Toolbar.Divider className="hidden sm:block" />
-
+          {/* Lists — always visible */}
           <Toolbar.Group className="flex-shrink-0 [&_svg]:text-primary-600 [&_svg]:stroke-primary-600">
             <MenuButtonOrderedList editor={editor} />
             <MenuButtonBulletedList editor={editor} />
@@ -86,12 +80,46 @@ const FixedMenu = ({ editor, className }: FixedMenuProps) => {
 
           <Toolbar.Divider className="hidden sm:block" />
 
+          {/* Insert — always visible */}
           <Toolbar.Group className="flex-shrink-0 [&_svg]:text-primary-600 [&_svg]:stroke-primary-600">
             <MenuButtonLink editor={editor} />
+            <MenuButtonImage editor={editor} />
+          </Toolbar.Group>
+
+          {/*
+            Overflow: only hidden when the "More" popover is closed at narrow widths.
+            At ≥sm, this group is always visible (CSS override below).
+          */}
+          <Toolbar.Group
+            className={`at-toolbar-overflow flex-shrink-0 [&_svg]:text-primary-600 [&_svg]:stroke-primary-600 ${
+              moreOpen ? 'is-open' : ''
+            }`}
+            data-overflow="true"
+          >
+            <MenuSelectFontFamily editor={editor} />
+            <MenuSelectFontSize editor={editor} />
+            <MenuButtonSuperscript editor={editor} />
+            <MenuButtonSubscript editor={editor} />
+            <MenuButtonColor editor={editor} />
+            <MenuButtonHighlight editor={editor} />
+            <MenuSelectTextAlign editor={editor} />
             <MenuButtonBlockquote editor={editor} />
             <MenuButtonCodeblock editor={editor} />
-            <MenuButtonImage editor={editor} />
             <MenuButtonTable editor={editor} />
+          </Toolbar.Group>
+
+          {/* More toggle — visible only when the overflow group is collapsed (mobile) */}
+          <Toolbar.Group className="at-toolbar-more ml-auto">
+            <button
+              type="button"
+              onClick={() => setMoreOpen((v) => !v)}
+              aria-expanded={moreOpen}
+              aria-controls="at-toolbar-overflow"
+              aria-label={moreOpen ? 'بستن ابزارهای بیشتر' : 'ابزارهای بیشتر'}
+              className="at-bubble__btn"
+            >
+              {moreOpen ? <X size={16} /> : <MoreHorizontal size={16} />}
+            </button>
           </Toolbar.Group>
         </div>
       </Toolbar.Wrapper>

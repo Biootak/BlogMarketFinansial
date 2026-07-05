@@ -50,8 +50,13 @@ const Editor = dynamic(
     loading: () => <div className="at-editor-skeleton" aria-hidden />,
   },
 );
+const TocSidebar = dynamic(
+  () => import('@/components/Editor1/components/toc-sidebar').then((m) => m.default),
+  { ssr: false },
+);
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import type { TocItem } from '@/components/Editor1/lib/table-of-contents';
 
 // 2026-07-04: کمک‌کننده برای تعیین وضعیت نهایی پست بر اساس نقش +
 // scheduledAt + نوع دکمه. این منبع حقیقت است؛ سرور (`createPost`/`updatePost`)
@@ -204,6 +209,8 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
   // 2026-07-04: scheduledAt به‌صورت محلی نگه داشته می‌شود تا با
   // input کنترل نشدهٔ datetime-local سازگار باشد. موقع submit در
   // data تزریق می‌شود.
+  const [tocItems, setTocItems] = useState<TocItem[]>([]);
+
   const [scheduledAt, setScheduledAt] = useState<Date | null>(
     defaultValues.scheduledAt
       ? defaultValues.scheduledAt instanceof Date
@@ -470,26 +477,25 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                         </div>
                         <FormControl>
                           <div className="at-editor-wrap" style={{ borderRadius: 0, border: 0, boxShadow: 'none' }}>
-                            <Editor
-                              ref={editorRef}
-                              wrapperClassName="flex flex-col min-h-[500px]"
-                              contentClassName="flex-1 overflow-auto"
-                              toolBarClassName="z-40 inset-x-0 w-full bg-[color:var(--at-bg-elevated)] sticky top-0 border-b border-[color:var(--at-line)] px-4 py-2"
-                              footerClassName="bg-[color:var(--at-bg-elevated)] border-t border-[color:var(--at-line)] px-4 py-2"
-                              content={parseContent(editorContent)}
-                              localStorageKey={`${localStorageKey}-editor`}
-                              editorProps={{
-                                attributes: {
-                                  class: 'py-4 px-4 prose prose-lg prose-violet prose-headings:scroll-mt-[80px] dark:prose-invert max-w-none focus:outline-none min-h-[400px]',
-                                },
-                              }}
-                              onUpdate={({ editor }) => {
-                                const json = !editor.isEmpty ? JSON.stringify(editor.getJSON()) : '';
-                                setEditorContent(json);
-                                field.onChange(json);
-                                saveToLocalStorage({ ...form.getValues(), content: json });
-                              }}
-                            />
+                            <div className="at-editor-layout">
+                              <div className="at-editor-layout__main">
+                                <Editor
+                                  ref={editorRef}
+                                  content={parseContent(editorContent)}
+                                  localStorageKey={`${localStorageKey}-editor`}
+                                  onUpdate={({ editor }) => {
+                                    const json = !editor.isEmpty ? JSON.stringify(editor.getJSON()) : '';
+                                    setEditorContent(json);
+                                    field.onChange(json);
+                                    saveToLocalStorage({ ...form.getValues(), content: json });
+                                  }}
+                                  onUpdateToC={setTocItems}
+                                />
+                              </div>
+                              <div className="at-editor-layout__rail">
+                                <TocSidebar items={tocItems} />
+                              </div>
+                            </div>
                           </div>
                         </FormControl>
                         <FormMessage className="at-field__error" style={{ padding: '0 20px 16px' }} />

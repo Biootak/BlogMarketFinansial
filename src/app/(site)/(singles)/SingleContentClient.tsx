@@ -149,16 +149,16 @@ const SingleContentClient = ({
                         const part2 = paragraphs.slice(3).join('</p>');
                         return (
                           <div className="space-y-6">
-                            <div 
-                              className="editor-content prose lg:prose-lg dark:prose-invert prose-headings:text-neutral-900 dark:prose-headings:text-white prose-p:text-neutral-700 dark:prose-p:text-neutral-300 prose-a:text-primary-600 dark:prose-a:text-primary-400 prose-strong:text-neutral-900 dark:prose-strong:text-white"
+                            <div
+                              className="editor-content at-prose at-prose--renderer"
                               // biome-ignore lint/security/noDangerouslySetInnerHtml: Content is sanitized with DOMPurify
                               dangerouslySetInnerHTML={{ __html: sanitizeHtml(part1) }}
                             />
                             <div className="my-6">
                               <BannerAds ad={inContentAd} variant="rich" />
                             </div>
-                            <div 
-                              className="editor-content prose lg:prose-lg dark:prose-invert prose-headings:text-neutral-900 dark:prose-headings:text-white prose-p:text-neutral-700 dark:prose-p:text-neutral-300 prose-a:text-primary-600 dark:prose-a:text-primary-400 prose-strong:text-neutral-900 dark:prose-strong:text-white"
+                            <div
+                              className="editor-content at-prose at-prose--renderer"
                               // biome-ignore lint/security/noDangerouslySetInnerHtml: Content is sanitized with DOMPurify
                               dangerouslySetInnerHTML={{ __html: sanitizeHtml(part2) }}
                             />
@@ -167,14 +167,14 @@ const SingleContentClient = ({
                       }
                     }
                     return (
-                      <div 
-                        className="editor-content prose lg:prose-lg dark:prose-invert prose-headings:text-neutral-900 dark:prose-headings:text-white prose-p:text-neutral-700 dark:prose-p:text-neutral-300 prose-a:text-primary-600 dark:prose-a:text-primary-400 prose-strong:text-neutral-900 dark:prose-strong:text-white"
+                      <div
+                        className="editor-content at-prose at-prose--renderer"
                         // biome-ignore lint/security/noDangerouslySetInnerHtml: Content is sanitized with DOMPurify
                         dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
                       />
                     );
                   }
-                  
+
                   if (inContentAd) {
                     const paragraphs = content.split(/\n\s*\n/);
                     if (paragraphs.length > 3) {
@@ -182,13 +182,13 @@ const SingleContentClient = ({
                       const part2 = paragraphs.slice(3).join('\n\n');
                       return (
                         <div className="space-y-6">
-                          <div className="prose lg:prose-lg dark:prose-invert prose-headings:text-neutral-900 dark:prose-headings:text-white prose-p:text-neutral-700 dark:prose-p:text-neutral-300">
+                          <div className="at-prose at-prose--renderer">
                             <MarkdownRenderer content={part1} />
                           </div>
                           <div className="my-6">
                             <BannerAds ad={inContentAd} variant="rich" />
                           </div>
-                          <div className="prose lg:prose-lg dark:prose-invert prose-headings:text-neutral-900 dark:prose-headings:text-white prose-p:text-neutral-700 dark:prose-p:text-neutral-300">
+                          <div className="at-prose at-prose--renderer">
                             <MarkdownRenderer content={part2} />
                           </div>
                         </div>
@@ -197,7 +197,7 @@ const SingleContentClient = ({
                   }
 
                   return (
-                    <div className="prose lg:prose-lg dark:prose-invert prose-headings:text-neutral-900 dark:prose-headings:text-white prose-p:text-neutral-700 dark:prose-p:text-neutral-300">
+                    <div className="at-prose at-prose--renderer">
                       <MarkdownRenderer content={content} />
                     </div>
                   );

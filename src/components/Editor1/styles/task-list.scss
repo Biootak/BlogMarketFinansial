@@ -1,4 +1,6 @@
-/* Task List Styles */
+/* Task List Styles — Inkwell 2026
+   RTL-safe via logical properties. Theme via OKLCH tokens.
+*/
 .ProseMirror,
 .editor-content {
   ul[data-type="taskList"] {
@@ -16,7 +18,7 @@
       transition: background-color 0.15s ease;
 
       &:hover {
-        background-color: rgba(59, 130, 246, 0.05);
+        background-color: oklch(72% 0.16 270 / 0.06);
       }
 
       > label {
@@ -31,35 +33,35 @@
           width: 1.25rem;
           height: 1.25rem;
           cursor: pointer;
-          border: 2px solid #d1d5db;
+          border: 2px solid oklch(82% 0.014 250);
           border-radius: 0.375rem;
-          background-color: white;
+          background-color: oklch(100% 0 0 / 0.95);
           transition: all 0.15s ease;
           position: relative;
 
           &:hover {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: oklch(72% 0.16 270);
+            box-shadow: 0 0 0 3px oklch(72% 0.16 270 / 0.12);
           }
 
           &:focus {
             outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            border-color: oklch(72% 0.16 270);
+            box-shadow: 0 0 0 3px oklch(72% 0.16 270 / 0.2);
           }
 
           &:checked {
-            background-color: #3b82f6;
-            border-color: #3b82f6;
+            background: linear-gradient(135deg, oklch(72% 0.16 270), oklch(68% 0.14 250));
+            border-color: transparent;
 
             &::after {
               content: '';
               position: absolute;
-              top: 2px;
-              left: 6px;
+              inset-block-start: 2px;
+              inset-inline-start: 6px;
               width: 5px;
               height: 9px;
-              border: solid white;
+              border: solid oklch(99% 0.005 245);
               border-width: 0 2px 2px 0;
               transform: rotate(45deg);
             }
@@ -71,80 +73,68 @@
         flex: 1 1 auto;
         line-height: 1.6;
 
-        p {
-          margin: 0;
-        }
+        p { margin: 0; }
       }
 
       &[data-checked="true"] {
         > div {
           text-decoration: line-through;
-          color: #9ca3af;
+          color: oklch(58% 0.012 245);
           opacity: 0.8;
         }
 
         &:hover {
-          background-color: rgba(156, 163, 175, 0.05);
+          background-color: oklch(85% 0.005 245 / 0.05);
         }
       }
     }
 
-    /* Nested task lists */
+    /* Nested task lists — RTL safe */
     ul[data-type="taskList"] {
-      margin-right: 1.75rem;
-      margin-top: 0.25rem;
-      margin-bottom: 0.25rem;
-      padding-right: 0.75rem;
-      border-right: 2px solid #e5e7eb;
+      margin-inline-start: 1.75rem;
+      margin-block: 0.25rem;
+      padding-inline-start: 0.75rem;
+      border-inline-start: 2px solid oklch(88% 0.012 250);
     }
   }
 }
 
-/* Dark mode support */
+/* Dark mode */
 .dark .ProseMirror,
 .dark .editor-content {
   ul[data-type="taskList"] {
     li {
       &:hover {
-        background-color: rgba(59, 130, 246, 0.1);
+        background-color: oklch(72% 0.16 270 / 0.1);
       }
 
-      > label {
-        input[type="checkbox"] {
-          border-color: #4b5563;
-          background-color: #1f2937;
+      > label input[type="checkbox"] {
+        border-color: oklch(40% 0.018 260);
+        background-color: oklch(20% 0.014 260 / 0.85);
 
-          &:hover {
-            border-color: #60a5fa;
-            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
-          }
+        &:hover {
+          border-color: oklch(78% 0.16 270);
+          box-shadow: 0 0 0 3px oklch(78% 0.16 270 / 0.15);
+        }
 
-          &:focus {
-            border-color: #60a5fa;
-            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25);
-          }
+        &:focus {
+          border-color: oklch(78% 0.16 270);
+          box-shadow: 0 0 0 3px oklch(78% 0.16 270 / 0.25);
+        }
 
-          &:checked {
-            background-color: #3b82f6;
-            border-color: #3b82f6;
-          }
+        &:checked {
+          background: linear-gradient(135deg, oklch(78% 0.16 270), oklch(74% 0.14 250));
         }
       }
 
       &[data-checked="true"] {
-        > div {
-          color: #6b7280;
-        }
-
-        &:hover {
-          background-color: rgba(107, 114, 128, 0.1);
-        }
+        > div { color: oklch(60% 0.012 245); }
+        &:hover { background-color: oklch(35% 0.014 260 / 0.4); }
       }
     }
 
-    /* Nested task lists dark mode */
     ul[data-type="taskList"] {
-      border-right-color: #374151;
+      border-inline-start-color: oklch(34% 0.02 260);
     }
   }
 }

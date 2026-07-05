@@ -36,9 +36,10 @@ export const DragHandle = Extension.create<DragHandleOptions>({
           <circle cx="11" cy="12" r="1.5"/>
         </svg>
       `;
+      // Logical inset so RTL flips automatically (RTL: sits to the inline-end side).
       handle.style.cssText = `
         position: absolute;
-        left: -28px;
+        inset-inline-start: -28px;
         width: 20px;
         height: 20px;
         display: flex;

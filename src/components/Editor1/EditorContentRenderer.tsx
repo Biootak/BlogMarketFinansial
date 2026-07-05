@@ -147,7 +147,11 @@ const EditorContentRenderer: React.FC<EditorContentRendererProps> = ({
 
   const parsedContent = useMemo(() => parseContent(content), [content, parseContent]);
 
-  // Use TipTap editor in read-only mode
+  // Use TipTap editor in read-only mode.
+  // کلاس‌های قبلی `prose prose-primary dark:prose-invert` در theme ما
+  // تعریف نشده بود (Tailwind v4 prose plugin نصب نیست)؛ الان از همان
+  // shell `at-prose at-prose--renderer` استفاده می‌کنیم تا با editor
+  // و shell هماهنگ باشد.
   const editor = useEditor(
     {
       extensions: renderExtensions,
@@ -157,8 +161,8 @@ const EditorContentRenderer: React.FC<EditorContentRendererProps> = ({
       editorProps: {
         attributes: {
           class: prose
-            ? 'py-4 px-4 prose prose-sm sm:prose-base lg:prose-lg prose-primary dark:prose-invert max-w-none focus:outline-none'
-            : 'py-4 px-4 focus:outline-none',
+            ? 'at-prose at-prose--renderer max-w-none focus:outline-none py-4 px-1'
+            : 'py-4 px-1 focus:outline-none',
         },
       },
     },

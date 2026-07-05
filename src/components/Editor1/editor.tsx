@@ -29,6 +29,7 @@ import TextBubbleMenu from './components/text-bubble-menu';
 import TableToolbar from './components/table-toolbar';
 import type { EditorInstance } from '.';
 import { getToCItems, type TocItem } from './lib/table-of-contents';
+import { cn } from '@/lib/utils';
 
 import './styles/index.scss';
 
@@ -46,12 +47,12 @@ export type EditorRef = {
   getEditor: () => EditorInstance | null;
 };
 
-// Reading time uses ~200 wpm for Persian mixed content. This is a
-// tasteful default — the JS side gives an instant preview without
-// waiting for a server round-trip.
+// Reading time: Persian mixed content reads slower than pure English.
+// 150 wpm mirrors an adult reading Persian financial content at a
+// comfortable pace. The server-side field can override this later.
 function readingTime(words: number): string {
   if (!words) return '—';
-  const minutes = Math.max(1, Math.round(words / 200));
+  const minutes = Math.max(1, Math.round(words / 150));
   return `${minutes.toLocaleString('fa-IR')} دقیقه`;
 }
 
@@ -77,18 +78,32 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
     },
     ref,
   ) => {
+    // Consumers (PostForm) sometimes pass `editorProps.attributes.class`
+    // to override prose sizes — we still want our `at-prose` shell
+    // classes to take effect, so we merge instead of letting the spread
+    // overwrite them entirely.
+    const baseProseClass =
+      'at-prose at-prose--editor focus:outline-none prose prose-sm sm:prose-base lg:prose-lg prose-headings:scroll-mt-[80px] max-w-none';
+    const consumerProseClass =
+      typeof (editorProps as { attributes?: { class?: string } })?.attributes?.class === 'string'
+        ? ((editorProps as { attributes?: { class?: string } }).attributes?.class as string)
+        : '';
+    const mergedClass = cn(baseProseClass, consumerProseClass);
+
+    const mergedEditorProps: EditorOptions['editorProps'] = {
+      ...editorProps,
+      attributes: {
+        ...(editorProps as { attributes?: Record<string, string> })?.attributes,
+        class: mergedClass,
+      },
+    };
+
     const editor = useEditor(
       {
         extensions: [...builtInExtensions, ...extensions],
         immediatelyRender: false,
         content,
-        editorProps: {
-          attributes: {
-            class:
-              'at-prose at-prose--editor focus:outline-none prose prose-sm sm:prose-base lg:prose-lg prose-headings:scroll-mt-[80px] max-w-none',
-          },
-          ...editorProps,
-        },
+        editorProps: mergedEditorProps,
         ...rest,
       },
       [],
@@ -108,6 +123,10 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
 
     // ── Word / character / selection counters ──
     const [counts, setCounts] = useState({ words: 0, chars: 0, charsNoSpace: 0 });
+    const [selectionCount, setSelectionCount] = useState<{
+      words: number;
+      chars: number;
+    } | null>(null);
 
     useEffect(() => {
       if (!editor) return;
@@ -119,10 +138,58 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
           charsNoSpace: 0,
         });
       };
+      const updateSelection = () => {
+        const { from, to } = editor.state.selection;
+        if (from === to) {
+          setSelectionCount(null);
+          return;
+        }
+        const slice = editor.state.doc.textBetween(from, to, ' ');
+        const trimmed = slice.trim();
+        if (!trimmed) {
+          setSelectionCount(null);
+          return;
+        }
+        const words = trimmed.split(/\s+/).filter(Boolean).length;
+        // Count chars without spaces using a locale-aware regex.
+        const chars = trimmed.replace(/\s+/g, '').length;
+        setSelectionCount({ words, chars });
+      };
+      // Mark the deepest block ancestor of the current selection with
+      // `data-active="true"` so CSS can highlight it. This is the "where
+      // am I" cue — survive across renders and resets.
+      const markActiveBlock = () => {
+        const dom = editor.view.dom as HTMLElement;
+        dom.querySelectorAll('[data-active="true"]').forEach((el) => {
+          el.removeAttribute('data-active');
+        });
+        const { from } = editor.state.selection;
+        try {
+          const $pos = editor.state.doc.resolve(from);
+          const depth = $pos.depth;
+          // Find the closest block-level NodeDOM that contains the cursor.
+          const domAt = editor.view.nodeDOM($pos.before(depth)) as HTMLElement | null;
+          const block = domAt?.closest(
+            'p, h1, h2, h3, h4, h5, h6, blockquote, pre, ul, ol, li, [data-callout], [data-embed], table',
+          ) as HTMLElement | null;
+          if (block && dom.contains(block)) {
+            block.setAttribute('data-active', 'true');
+          }
+        } catch {
+          /* selection may be transient; ignore */
+        }
+      };
       update();
+      updateSelection();
+      markActiveBlock();
       editor.on('update', update);
+      editor.on('selectionUpdate', () => {
+        updateSelection();
+        markActiveBlock();
+      });
       return () => {
         editor.off('update', update);
+        editor.off('selectionUpdate', updateSelection);
       };
     }, [editor]);
 
@@ -311,6 +378,23 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
                 <span className="at-editor-status__num">{totalMinutes.replace(/[0-9۰-۹]+/g, (m) => m)}</span>
                 <span className="at-editor-status__lbl">زمان مطالعه</span>
               </span>
+
+              {selectionCount && (
+                <>
+                  <span className="at-editor-status__sep" aria-hidden />
+                  <span
+                    className="at-editor-status__item at-editor-status__item--selection"
+                    aria-live="polite"
+                  >
+                    <span className="at-editor-status__dot at-editor-status__dot--amber" />
+                    <span className="at-editor-status__num">{toFaDigits(selectionCount.words)}</span>
+                    <span className="at-editor-status__lbl">کلمه انتخاب</span>
+                    <span className="at-editor-status__num-sep" aria-hidden>·</span>
+                    <span className="at-editor-status__num">{toFaDigits(selectionCount.chars)}</span>
+                    <span className="at-editor-status__lbl">نویسه</span>
+                  </span>
+                </>
+              )}
 
               <span className="at-editor-status__spacer" />
 

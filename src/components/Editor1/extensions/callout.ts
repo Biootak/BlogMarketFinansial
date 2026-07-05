@@ -28,37 +28,28 @@ declare module '@tiptap/core' {
   }
 }
 
+// کلاس‌های Tailwind قبلاً اینجا بود ولی باعث bleed بین callout-block و
+// استایل سراسری داشبورد می‌شد. الان رنگ‌ها از طریق `[data-callout-type]`
+// در styles/callout.scss به‌صورت تم-محور اعمال می‌شوند.
 export const calloutTypeConfig: Record<
   CalloutType,
-  { icon: LucideIcon; iconName: string; bgColor: string; borderColor: string; textColor: string }
+  { icon: LucideIcon; iconName: string }
 > = {
   info: {
     icon: Info,
     iconName: 'Info',
-    bgColor: 'bg-blue-50 dark:bg-blue-900/20',
-    borderColor: 'border-blue-200 dark:border-blue-800',
-    textColor: 'text-blue-800 dark:text-blue-200',
   },
   warning: {
     icon: AlertTriangle,
     iconName: 'AlertTriangle',
-    bgColor: 'bg-yellow-50 dark:bg-yellow-900/20',
-    borderColor: 'border-yellow-200 dark:border-yellow-800',
-    textColor: 'text-yellow-800 dark:text-yellow-200',
   },
   success: {
     icon: CheckCircle2,
     iconName: 'CheckCircle2',
-    bgColor: 'bg-green-50 dark:bg-green-900/20',
-    borderColor: 'border-green-200 dark:border-green-800',
-    textColor: 'text-green-800 dark:text-green-200',
   },
   error: {
     icon: XCircle,
     iconName: 'XCircle',
-    bgColor: 'bg-red-50 dark:bg-red-900/20',
-    borderColor: 'border-red-200 dark:border-red-800',
-    textColor: 'text-red-800 dark:text-red-200',
   },
 };
 
