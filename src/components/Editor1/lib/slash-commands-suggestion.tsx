@@ -1,4 +1,6 @@
+import type { Editor } from '@tiptap/core';
 import { ReactRenderer } from '@tiptap/react';
+import { exitSuggestion } from '@tiptap/suggestion';
 import {
   computePosition,
   flip,
@@ -7,8 +9,13 @@ import {
   autoUpdate,
   type ReferenceElement,
 } from '@floating-ui/dom';
+import { getDocumentDirection } from '@/hooks/useDirection';
 import SlashCommandMenu, { type SlashCommandMenuRef } from '../components/slash-command-menu';
-import { defaultSlashCommands, type SlashCommandItem } from '../extensions/slash-commands';
+import {
+  defaultSlashCommands,
+  slashCommandsPluginKey,
+  type SlashCommandItem,
+} from '../extensions/slash-commands';
 
 export const slashCommandsSuggestion = {
   items: ({ query }: { query: string }): SlashCommandItem[] => {
@@ -27,6 +34,25 @@ export const slashCommandsSuggestion = {
     let component: ReactRenderer<SlashCommandMenuRef> | null = null;
     let popup: HTMLElement | null = null;
     let cleanup: (() => void) | null = null;
+    let editor: Editor | null = null;
+
+    const closeMenu = () => {
+      if (editor) {
+        exitSuggestion(editor.view, slashCommandsPluginKey);
+      }
+    };
+
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (!popup || popup.contains(target)) return;
+
+      // کلیک داخل خود ویرایشگر را به پلاگین واگذار می‌کنیم؛ فقط کلیک بیرون
+      // از popup و بیرون از editor باعث بسته شدن می‌شود.
+      const editorElement = editor?.view.dom;
+      if (editorElement?.contains(target)) return;
+
+      closeMenu();
+    };
 
     const updatePosition = (referenceClientRect: DOMRect) => {
       if (!popup) return;
@@ -52,6 +78,8 @@ export const slashCommandsSuggestion = {
 
     return {
       onStart: (props: any) => {
+        editor = props.editor;
+
         component = new ReactRenderer(SlashCommandMenu, {
           props,
           editor: props.editor,
@@ -65,17 +93,19 @@ export const slashCommandsSuggestion = {
         popup.className = 'at-slash-popup';
         popup.style.position = 'fixed';
         popup.style.zIndex = '9999';
-        popup.setAttribute('role', 'listbox');
-        popup.setAttribute('dir', 'rtl');
+        popup.setAttribute('dir', getDocumentDirection('rtl'));
+        popup.setAttribute('data-slash-popup', '');
         if (component.element) {
           popup.appendChild(component.element);
         }
         document.body.appendChild(popup);
+        document.addEventListener('pointerdown', onPointerDown);
 
         updatePosition(props.clientRect());
       },
 
       onUpdate(props: any) {
+        editor = props.editor;
         component?.updateProps(props);
 
         if (!props.clientRect || !popup) {
@@ -87,23 +117,18 @@ export const slashCommandsSuggestion = {
       },
 
       onKeyDown(props: any) {
-        if (props.event.key === 'Escape') {
-          if (popup) {
-            popup.style.display = 'none';
-          }
-          return true;
-        }
-
         return component?.ref?.onKeyDown(props) ?? false;
       },
 
       onExit() {
+        document.removeEventListener('pointerdown', onPointerDown);
         cleanup?.();
         popup?.remove();
         component?.destroy();
         popup = null;
         component = null;
         cleanup = null;
+        editor = null;
       },
     };
   },

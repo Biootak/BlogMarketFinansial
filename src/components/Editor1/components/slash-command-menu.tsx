@@ -9,7 +9,7 @@ import React, {
   useRef,
   useMemo,
 } from 'react';
-import { Search, Lightbulb } from 'lucide-react';
+import { Search } from 'lucide-react';
 import type { SlashCommandItem } from '../extensions/slash-commands';
 // 2026-07-05: dir صریح برای portal tippy که slash commands را render می‌کند.
 import { useDirection } from '@/hooks/useDirection';
@@ -110,21 +110,6 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
       },
     }));
 
-    if (items.length === 0) {
-      return (
-        <div
-          className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 text-gray-500 dark:text-gray-400 text-sm text-center"
-          role="status"
-          aria-live="polite"
-          dir={dir}
-          data-dir={dir}
-        >
-          <Search className="mx-auto mb-2 h-7 w-7 opacity-60" strokeWidth={1.5} aria-hidden />
-          نتیجه‌ای یافت نشد
-        </div>
-      );
-    }
-
     // Group items by category for rendering
     const groupedItems = items.reduce((acc, item) => {
       if (!acc[item.category]) {
@@ -159,10 +144,25 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
       );
     }, [sortedCategories, groupedItems]);
 
+    if (items.length === 0) {
+      return (
+        <div
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 text-gray-500 dark:text-gray-400 text-sm text-center w-full max-w-[calc(100vw-2rem)] sm:max-w-[20rem]"
+          role="status"
+          aria-live="polite"
+          dir={dir}
+          data-dir={dir}
+        >
+          <Search className="mx-auto mb-2 h-7 w-7 opacity-60" strokeWidth={1.5} aria-hidden />
+          نتیجه‌ای یافت نشد
+        </div>
+      );
+    }
+
     return (
       <div
         ref={listRef}
-        className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 py-2 min-w-[260px] max-h-[360px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
+        className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 py-2 w-full min-w-[260px] max-w-[calc(100vw-2rem)] sm:max-w-[20rem] max-h-[60vh] sm:max-h-[360px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
         role="listbox"
         aria-label="منوی دستورات"
         aria-activedescendant={`slash-item-${selectedIndex}`}

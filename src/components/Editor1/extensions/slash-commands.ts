@@ -226,15 +226,12 @@ export const SlashCommands = Extension.create({
         pluginKey: slashCommandsPluginKey,
 
         command: ({ editor, range, props }: { editor: Editor; range: any; props: SlashCommandItem }) => {
-          // 2026-07-05: دستور را در یک chain واحد اجرا می‌کنیم تا focus و
-          // selection درست حفظ شوند. delay با requestAnimationFrame باعث
-          // پرش مکان‌نما و اجرای نادرست در تایپ سریع می‌شد.
-          editor.chain().focus().deleteRange(range).command(({ tr, dispatch }) => {
-            if (dispatch) {
-              props.command(editor);
-            }
-            return true;
-          }).run();
+          // 2026-07-05: ابتدا اسلش و query را حذف می‌کنیم، سپس دستور انتخاب‌شده
+          // را روی ویرایشگر تمیز اجرا می‌کنیم. اگر هر دو را در یک chain یا برعکس
+          // اجرا کنیم، دستور داخلی روی متنی که هنوز اسلش دارد کار می‌کند و
+          // کاراکتر / باقی می‌ماند.
+          editor.chain().focus().deleteRange(range).run();
+          props.command(editor);
         },
       } as Partial<SuggestionOptions>,
     };
