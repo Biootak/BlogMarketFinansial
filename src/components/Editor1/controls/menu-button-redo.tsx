@@ -12,7 +12,8 @@ const MenuButtonRedo = ({ editor }: MenuButtonRedoProps) => {
 
   return (
     <Toolbar.Button
-      tooltip="Redo"
+      // 2026-07-05: ترجمه به فارسی برای consistency.
+      tooltip="از نو"
       tooltipShortcut={['Mod', 'Y']}
       disabled={!editor.can().redo()}
       onClick={onRedo}

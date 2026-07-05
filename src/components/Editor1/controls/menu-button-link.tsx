@@ -17,7 +17,11 @@ export const MenuButtonLink = ({ editor }: MenuButtonLinkProps) => {
   }, [editor]);
 
   return (
-    <Toolbar.Button tooltip="Link" onClick={onLink}>
+    <Toolbar.Button
+      // 2026-07-05: ترجمه.
+      tooltip="پیوند"
+      onClick={onLink}
+    >
       <Icon name="link-2" />
     </Toolbar.Button>
   );

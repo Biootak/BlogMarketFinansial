@@ -1,8 +1,15 @@
+// ui/toolbar.tsx — Inkwell 2026
+//
+// نکتهٔ RTL: متن TooltipContent و کلیدهای میانبر به‌صورت logical
+// (auto-flow) رندر می‌شوند، نه physical. در RTL، خود Radix slide-in
+// animation بر اساس `data-side` به‌درستی flip می‌کند؛ نیازی به
+// override نیست. فقط مطمئن شوید متن خود tooltip فارسی است.
+
 import { type ButtonHTMLAttributes, type HTMLProps, forwardRef } from 'react';
 import { Icon } from './icon';
 import { cn } from '../Editor1/lib/utils';
 import { Button, type ButtonProps } from './button';
-import { Tooltip } from './tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
 
 type ToolbarWrapperProps = HTMLProps<HTMLDivElement>;
 
@@ -99,7 +106,27 @@ const ToolbarButton = forwardRef<HTMLButtonElement, ToolbarButtonProps>(
     );
 
     if (tooltip) {
-      return <Tooltip>{component}</Tooltip>;
+      // قبلاً اینجا فقط `<Tooltip>{component}</Tooltip>` بود که متن و
+      // شورتکات را اصلاً نشان نمی‌داد. حالا Trigger و Content درست
+      // وصل می‌شوند تا tooltip واقعاً render شود.
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>{component}</TooltipTrigger>
+          <TooltipContent side="bottom" align="center">
+            <span className="flex items-center gap-1.5">
+              <span>{tooltip}</span>
+              {tooltipShortcut && tooltipShortcut.length > 0 && (
+                <>
+                  <span className="opacity-50" aria-hidden>·</span>
+                  <kbd className="text-[10px] font-mono opacity-80 tracking-tight">
+                    {tooltipShortcut.join(' + ')}
+                  </kbd>
+                </>
+              )}
+            </span>
+          </TooltipContent>
+        </Tooltip>
+      );
     }
 
     return component;

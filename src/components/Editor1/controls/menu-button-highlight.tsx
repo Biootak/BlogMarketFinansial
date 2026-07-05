@@ -31,7 +31,7 @@ const MenuButtonHighlight = ({ editor }: MenuButtonHighlightProps) => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Toolbar.Button tooltip={'Highlight'} active={Boolean(highlightColor)}>
+        <Toolbar.Button tooltip={'هایلایت'} active={Boolean(highlightColor)}>
           <Icon
             name="highlighter"
             style={{ color: highlightColor }}

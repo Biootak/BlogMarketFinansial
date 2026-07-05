@@ -13,7 +13,13 @@ const MenuButtonBulletedList = ({ editor }: MenuButtonBulletListProps) => {
   const onBulletList = useCallback(() => editor.chain().focus().toggleBulletList().run(), [editor]);
 
   return (
-    <Toolbar.Button active={isBulletList} onClick={onBulletList}>
+    <Toolbar.Button
+      // 2026-07-05: tooltip اضافه شد (قبلاً اصلاً نداشت).
+      tooltip="لیست نشانه‌دار"
+      tooltipShortcut={['Mod', 'Shift', '8']}
+      active={isBulletList}
+      onClick={onBulletList}
+    >
       <Icon name="list" />
     </Toolbar.Button>
   );

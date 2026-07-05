@@ -1,4 +1,8 @@
-/* Renderer Styles - Override prose styles for consistent rendering */
+/* Renderer Styles - Override prose styles for consistent rendering
+   2026-07-05: تمام text-align ها در این فایل قبلاً physical بود
+   (text-align: right). به `start` منطقی تبدیل شدند تا در صورت
+   فعال شدن یک زیرمجموعهٔ LTR (مثلاً ادیتور چندزبانه) درست بماند.
+*/
 
 .editor-content {
   /* Base styles */
@@ -36,7 +40,7 @@
       display: table-cell !important;
       border: 1px solid #e5e7eb !important;
       padding: 0.75rem 1rem !important;
-      text-align: right !important;
+      text-align: start !important;
       vertical-align: top !important;
     }
 
@@ -49,7 +53,7 @@
   /* Lists */
   ul:not([data-type]) {
     list-style-type: disc !important;
-    padding-right: 1.5rem !important;
+    padding-inline-start: 1.5rem !important;
     margin: 0.75rem 0 !important;
 
     li {
@@ -73,7 +77,7 @@
 
   ol:not([data-type]) {
     list-style-type: decimal !important;
-    padding-right: 1.5rem !important;
+    padding-inline-start: 1.5rem !important;
     margin: 0.75rem 0 !important;
 
     li {
@@ -124,11 +128,8 @@
 
   /* Blockquote */
   blockquote {
-    border-right: 4px solid #3b82f6 !important;
-    border-left: none !important;
-    padding-right: 1rem !important;
-    padding-left: 0 !important;
-    margin-right: 0 !important;
+    border-inline-start: 4px solid #3b82f6 !important;
+    padding-inline-start: 1rem !important;
     font-style: italic !important;
     color: #6b7280 !important;
     background: transparent !important;
@@ -236,7 +237,7 @@
   [data-callout] {
     padding: 1rem !important;
     border-radius: 0.5rem !important;
-    border-right: 4px solid !important;
+    border-inline-start: 4px solid !important;
     margin: 1rem 0 !important;
     display: flex !important;
     gap: 0.75rem !important;
@@ -304,7 +305,7 @@
   }
 
   blockquote {
-    border-right-color: #60a5fa !important;
+    border-inline-start-color: #60a5fa !important;
     color: #9ca3af !important;
   }
 

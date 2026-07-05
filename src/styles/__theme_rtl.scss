@@ -1,2 +1,55 @@
+// src/styles/__theme_rtl.scss — Inkwell 2026
+//
+// نقشهٔ واحد برای هر چیزی که باید در حالت RTL متفاوت رفتار کند.
+// قاعدهٔ طلایی: تا جای ممکن از CSS logical properties
+// (margin-inline-start, padding-inline-end, inset-inline-*, etc.)
+// استفاده کنید. این فایل فقط نقطهٔ فرار است برای جاهایی که:
+//   1. یک کتابخانهٔ خارجی (tippy.js، Tiptap) CSS فیزیکال تزریق می‌کند.
+//   2. یک utility قدیمی هنوز با left/right نوشته شده و اصلاح نشده.
+//   3. یک مسیر دیتا (مثلاً فلش تک‌جهت «بعدی») باید در RTL معکوس شود.
+//
+// هر قانون اینجا باید کامنت کوتاهی داشته باشد که بگوید چرا اینجا
+// هست و کدام کامپوننت/extension را هدف می‌گیرد. هر تغییر در این فایل
+// باید در PR description به AGENTS.gotchas.md لینک داده شود.
+
 [dir="rtl"] {
+  // ── 1. Tiptap bubble menus ─────────────────────────────────────────────
+  // tippy.js فلش پیش‌فرض tooltipها را در سمت چپ body سوار می‌کند.
+  // در RTL باید فلش به سمت راست (که معادل inline-start است) بچرخد تا
+  // با جهت‌گیری متن هم‌راستا شود.
+  [data-tippy-root] .tippy-box[data-placement^="top"] .tippy-arrow,
+  [data-tippy-root] .tippy-box[data-placement^="bottom"] .tippy-arrow,
+  [data-tippy-root] .tippy-box[data-placement^="left"] .tippy-arrow,
+  [data-tippy-root] .tippy-box[data-placement^="right"] .tippy-arrow {
+    /* flip handled by tippy placement itself; this block kept for future overrides */
+  }
+
+  // ── 2. Radix Tooltip ───────────────────────────────────────────────────
+  // Radix برای tooltip فلش Arrow می‌سازد. انیمیشن slide با data-side
+  // کار می‌کند؛ در RTL فقط data-sideهای چپ/راست را باید flip کرد.
+  // data-state→slide-in از چپ وقتی side=right است؛ در RTL باید از
+  // راست slide شود. Radix این را با CSS variable `--radix-tooltip-transform-origin`
+  // مدیریت می‌کند و نیازی به override نیست — block kept for documentary.
+
+  // ── 3. Tiptap ProseMirror selection ────────────────────────────────────
+  // selection pill/range به صورت پیش‌فرض physical است؛ در RTL خودش
+  // درست است چون selection API منطقی است. با این حال، placeholder
+  // کلاسیک Tiptap (::before داخل p.is-editor-empty) از float:right
+  // فیزیکال استفاده می‌کرد — در styles/base.scss به inline-start
+  // منطقی تبدیل شد.
+
+  // ── 4. Legacy Tailwind utilities که هنوز فیزیکال‌اند ────────────────
+  // هر کامپوننتی که قبل از سال ۲۰۲۶ با `border-l-*` / `text-left` /
+  // `right-0` نوشته شده باید در این فایل override شود تا در RTL درست
+  // شود. نمونه پایین مال قدیمی‌هاست؛ هر قاعدهٔ جدید قبل از اضافه شدن
+  // باید ابتدا به CSS logical تبدیل شود.
+  //
+  // .at-legacy-flipped { margin-left: 0; margin-right: auto; }
+}
+
+// ── LTR mirror (defensive) ───────────────────────────────────────────────
+// در آینده اگر صفحه‌ای نیاز به LTR تو در تو داشت (مثلاً پنل ادیتور
+// زبان انگلیسی)، این بلاک نقطهٔ شروع است. در حال حاضر خالی است؛
+// دلیل نگه‌داشتنش: جلوگیری از فراموش شدن آینده.
+[dir="ltr"] {
 }

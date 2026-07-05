@@ -6,7 +6,7 @@ Load when writing or editing any code.
 
 - **TypeScript strict**; `noExplicitAny` and `dangerouslySetInnerHTML` are **errors** in Biome, `useHookAtTopLevel` is an error. Biome is the formatter/linter of record but invoked ad-hoc; CI uses `npm run lint` (ESLint).
 - **Tailwind v4** (`@tailwindcss/postcss`), **Radix UI** primitives, **Tiptap** for the editor, **date-fns** + **date-fns-jalali** for Persian dates.
-- **RTL is global** (`html dir="rtl" lang="fa-IR"`). Use logical properties — **never** hardcode `left/right`.
+- **RTL is global** (`html dir="rtl" lang="fa-IR"`). Use logical properties — **never** hardcode `left/right`. Use `useDirection('rtl')` from `@/hooks/useDirection` in Editor1 shell/portal components. Full playbook in `AGENTS.gotchas.md` ("RTL — Best practices").
 - **Vazirmatn** font via `next/font/google` with subset `arabic`, weights `[400, 500, 600, 700]`.
 - **English** in code, commands, paths, file names. **Persian** only in user-facing copy.
 

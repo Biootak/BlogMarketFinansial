@@ -14,8 +14,11 @@ const MenuButtonItalic = ({ editor }: MenuButtonItalicProps) => {
 
   return (
     <Toolbar.Button
-      tooltip="Bulleted List"
-      tooltipShortcut={['Mod', 'Shift', '8']}
+      // 2026-07-05: قبلاً به‌غلط tooltip="Bulleted List" با شورتکات
+      // Mod+Shift+8 بود (copy-paste از bulleted-list). متن و کلید
+      // میانبر حالا درست است: ایتالیک با Mod+I.
+      tooltip="ایتالیک"
+      tooltipShortcut={['Mod', 'I']}
       active={isItalicActive}
       onClick={onItalic}
     >

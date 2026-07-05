@@ -19,12 +19,15 @@ import {
 } from 'lucide-react';
 import { COLOR_PALETTE, DEFAULT_COLORS, hexToRgba } from '../constants/color';
 import { cn } from '@/lib/utils';
+// 2026-07-05: dir صریح برای portal tippy.
+import { useDirection } from '@/hooks/useDirection';
 
 interface TableToolbarProps {
   editor: Editor;
 }
 
 const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
+  const dir = useDirection('rtl');
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [activeTab, setActiveTab] = useState<'palette' | 'transparent'>('palette');
   const [opacity, setOpacity] = useState(1);
@@ -106,6 +109,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
       }}
       className="flex items-center gap-1 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-1.5 z-[100]"
     >
+      <div dir={dir} data-dir={dir} className="flex items-center gap-1">
       {/* Row controls */}
       <div className="flex items-center gap-0.5 px-1 border-s border-gray-200 dark:border-gray-700">
         <button
@@ -332,6 +336,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
         >
           <Trash2 size={16} />
         </button>
+      </div>
       </div>
     </BubbleMenu>
   );

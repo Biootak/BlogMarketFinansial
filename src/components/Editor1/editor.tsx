@@ -30,6 +30,10 @@ import TableToolbar from './components/table-toolbar';
 import type { EditorInstance } from '.';
 import { getToCItems, type TocItem } from './lib/table-of-contents';
 import { cn } from '@/lib/utils';
+// 2026-07-05: منبع حقیقت جهت متن در کلاینت. به جای hardcode `dir="rtl"`
+// از این hook می‌خوانیم تا اگر روزی پنلی LTR شد (مثلاً ادیتور چندزبانه)
+// یا کاربر دکمهٔ تغییر زبان زد، shell درست رفتار کند.
+import { useDirection } from '@/hooks/useDirection';
 
 import './styles/index.scss';
 
@@ -78,6 +82,12 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
     },
     ref,
   ) => {
+    // 2026-07-05: dir متن را از hook مرکزی می‌گیریم تا ProseMirror
+    // مستقل از cascade `<html dir>` جهت درست داشته باشد. مخصوصاً در
+    // bubble menuهای tippy که body mount می‌شوند و از cascade قطع
+    // می‌شوند. به‌علاوه data-dir روي shell برای CSS debugging handy است.
+    const dir = useDirection('rtl');
+
     // Consumers (PostForm) sometimes pass `editorProps.attributes.class`
     // to override prose sizes — we still want our `at-prose` shell
     // classes to take effect, so we merge instead of letting the spread
@@ -95,6 +105,8 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
       attributes: {
         ...(editorProps as { attributes?: Record<string, string> })?.attributes,
         class: mergedClass,
+        dir,
+        'data-dir': dir,
       },
     };
 
@@ -284,7 +296,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
     const totalMinutes = readingTime(counts.words);
 
     return (
-      <div className={`at-editor-shell ${wrapperClassName}`}>
+      <div className={`at-editor-shell ${wrapperClassName}`} dir={dir} data-dir={dir}>
         {/* ═══ Top command deck ═══════════════════════════════════════════════ */}
         <div className="at-editor-deck" aria-hidden={!isEditable}>
           <div className="at-editor-deck__inner">

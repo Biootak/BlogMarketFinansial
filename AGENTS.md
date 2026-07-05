@@ -19,7 +19,7 @@ Only write a brief analysis (not a long plan) for: DB / migration / auth / secur
 
 ## Critical conventions (always-on)
 
-- **RTL** global (`html dir="rtl" lang="fa-IR"`). Use logical properties — never hardcode `left/right`.
+- **RTL** global (`html dir="rtl" lang="fa-IR"`). Use logical properties — never hardcode `left/right`. Use `useDirection('rtl')` from `@/hooks/useDirection` in every Editor1 shell/portal component. See `AGENTS.gotchas.md` for the full RTL playbook.
 - **TypeScript strict**; no `any`, `ts-ignore`, TODO, placeholder.
 - **API response shape**: `{ success: true, data }` or `{ success: false, error: { code, message } }`.
 - **Cache tags** (`unstable_cache`): `posts`, `archive`, `featured-posts`, `latest-posts`, `popular-posts`, `post-{id}`, `post-slug`, `post-by-slug`, `comments`, `categories`, `tags`, `sidebar-data`, `dashboard-stats`, `ticker`, `exchange-rates`, `header-ad`, `advertisements`, `rate-lists`, `dashboard-{section}`.

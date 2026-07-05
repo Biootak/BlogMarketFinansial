@@ -17,7 +17,10 @@
 .at-prose {
   p.is-editor-empty:first-child::before {
     content: attr(data-placeholder);
-    float: right;
+    // 2026-07-05: logical — `inline-start` در RTL راست و در LTR چپ
+    // می‌شود. قبلاً `float: right` فیزیکال بود که در حالت LTR آینده
+    // می‌شکست.
+    float: inline-start;
     color: oklch(65% 0.012 245);
     font-style: normal;
     font-weight: 500;
@@ -173,12 +176,18 @@
       font-style: italic;
       font-weight: 500;
       color: oklch(45% 0.06 270);
+      // 2026-07-05: gradient حاشیه‌ای منطقی. blockquote در RTL
+      // باید خط‌اش در سمت راست (inline-start) باشد. این قبلاً
+      // با physical left نوشته شده بود.
       background: linear-gradient(
-        90deg,
+        to inline-end,
         oklch(96% 0.018 270 / 0.55),
         transparent
       );
-      border-radius: 0 8px 8px 0;
+      border-start-start-radius: 0;
+      border-start-end-radius: 8px;
+      border-end-start-radius: 0;
+      border-end-end-radius: 8px;
 
       p { margin: 0; }
     }

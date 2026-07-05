@@ -1,6 +1,12 @@
 /* Table Styles — Inkwell 2026
    RTL-safe via logical properties. Theme via OKLCH tokens that mirror
    the editor's violet/cyan/emerald system. No raw Tailwind colors.
+
+   جدول‌ها در حالت RTL باید `direction: rtl` بگیرند تا ترتیبِ ستون‌ها
+   (و به تبع آن عملکرد `addColumnBefore`/`addColumnAfter`) با چشم
+   فارسی‌خوان هم‌راستا شود. قبلاً جدول direction نمی‌گرفت و ستون
+   "قبلی" در DOM به‌معنای «چپ» بود که برای کاربر ایرانی معکوس به نظر
+   می‌رسید.
 */
 .ProseMirror,
 .editor-content {

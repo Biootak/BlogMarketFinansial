@@ -13,22 +13,24 @@ const options = [
   {
     value: 'left',
     label: <Icon name="align-left" />,
-    tooltip: 'Align Left',
+    // 2026-07-05: تراز چپ در متن LTR. در حالت RTL معنایش می‌شود
+    // «به سمت راست» که اکثر متن‌های فارسی همان‌جای طبیعی‌شان هستند.
+    tooltip: 'چپ‌چین',
   },
   {
     value: 'center',
     label: <Icon name="align-center" />,
-    tooltip: 'Align Center',
+    tooltip: 'وسط‌چین',
   },
   {
     value: 'right',
     label: <Icon name="align-right" />,
-    tooltip: 'Align Right',
+    tooltip: 'راست‌چین',
   },
   {
     value: 'justify',
     label: <Icon name="align-justify" />,
-    tooltip: 'Align Justify',
+    tooltip: 'تراز از دو طرف',
   },
 ] as const;
 
@@ -58,7 +60,7 @@ const MenuSelectTextAlign = ({ editor }: MenuSelectTextAlign) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Toolbar.Button isDropdown={true} className="px-2" tooltip={'Text Align'}>
+        <Toolbar.Button isDropdown={true} className="px-2" tooltip={'تراز متن'}>
           {current.label}
         </Toolbar.Button>
       </DropdownMenuTrigger>

@@ -14,7 +14,7 @@ const MenuButtonUnderline = ({ editor }: MenuButtonUnderlineProps) => {
 
   return (
     <Toolbar.Button
-      tooltip="Underline"
+      tooltip="زیرخط"
       tooltipShortcut={['Mod', 'U']}
       active={isUnderlineActive}
       onClick={onUnderline}

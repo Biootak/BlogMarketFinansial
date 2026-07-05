@@ -8,12 +8,15 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { BubbleMenu } from '@tiptap/react';
 import type { Editor } from '@tiptap/react';
 import { Bold, Italic, Underline, Highlighter, Link, Code, Strikethrough, X, Check } from 'lucide-react';
+// 2026-07-05: dir از hook مرکزی برای consistency با shell.
+import { useDirection } from '@/hooks/useDirection';
 
 interface TextBubbleMenuProps {
   editor: Editor;
 }
 
 const TextBubbleMenu: React.FC<TextBubbleMenuProps> = ({ editor }) => {
+  const dir = useDirection('rtl');
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
   const linkInputRef = useRef<HTMLInputElement>(null);
@@ -98,7 +101,7 @@ const TextBubbleMenu: React.FC<TextBubbleMenuProps> = ({ editor }) => {
         );
       }}
     >
-      <div className="at-bubble" role="toolbar" aria-label="ابزار فرمت‌بندی متن">
+      <div className="at-bubble" role="toolbar" aria-label="ابزار فرمت‌بندی متن" dir={dir} data-dir={dir}>
         {showLinkInput ? (
           <>
             <input

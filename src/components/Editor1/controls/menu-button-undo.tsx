@@ -12,7 +12,8 @@ const MenuButtonUndo = ({ editor }: MenuButtonUndoProps) => {
 
   return (
     <Toolbar.Button
-      tooltip="Undo"
+      // 2026-07-05: ترجمه به فارسی برای consistency با سایر دکمه‌ها.
+      tooltip="واگرد"
       tooltipShortcut={['Mod', 'Z']}
       disabled={!editor.can().undo()}
       onClick={onUndo}

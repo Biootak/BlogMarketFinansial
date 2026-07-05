@@ -11,6 +11,8 @@ import React, {
 } from 'react';
 import { Search, Lightbulb } from 'lucide-react';
 import type { SlashCommandItem } from '../extensions/slash-commands';
+// 2026-07-05: dir صریح برای portal tippy که slash commands را render می‌کند.
+import { useDirection } from '@/hooks/useDirection';
 
 export interface SlashCommandMenuRef {
   onKeyDown: (props: { event: KeyboardEvent }) => boolean;
@@ -23,6 +25,7 @@ interface SlashCommandMenuProps {
 
 const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
   ({ items, command }, ref) => {
+    const dir = useDirection('rtl');
     const [selectedIndex, setSelectedIndex] = useState(0);
     const listRef = useRef<HTMLDivElement>(null);
     const selectedRef = useRef<HTMLButtonElement>(null);
@@ -139,12 +142,14 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
     let globalIndex = 0;
 
     return (
-      <div 
+      <div
         ref={listRef}
         className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 py-2 min-w-[260px] max-h-[360px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
         role="listbox"
         aria-label="منوی دستورات"
         aria-activedescendant={`slash-item-${selectedIndex}`}
+        dir={dir}
+        data-dir={dir}
       >
         {sortedCategories.map((category) => {
           const categoryItems = groupedItems[category];

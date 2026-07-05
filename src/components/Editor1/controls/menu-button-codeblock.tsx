@@ -15,7 +15,9 @@ const MenuButtonCodeBlock = ({ editor }: MenuButtonCodeBlockProps) => {
 
   return (
     <Toolbar.Button
-      tooltip="Code"
+      // 2026-07-05: «Code» به «بلوک کد» ترجمه شد تا با شورتکات Mod+E
+      // که بلوک کد است (نه inline code) تناسب داشته باشد.
+      tooltip="بلوک کد"
       tooltipShortcut={['Mod', 'E']}
       active={isCodeBlockActive}
       onClick={onCodeBlock}

@@ -15,47 +15,50 @@ type MenuSelectHeading = {
   editor: Editor;
 };
 
+// 2026-07-05: همهٔ labelها به فارسی ترجمه شدند تا در داشبورد ادیتور
+// (که کاربر ایرانی دارد) یکدست باشد. اعداد به ارقام فارسی تبدیل
+// شدند تا با سایر جاهای UI هم‌خوانی داشته باشند.
 const options = [
   {
     value: 'paragraph',
-    label: 'Paragraph',
-    icon: <Icon name="text" className="mr-2 size-4" />,
+    label: 'پاراگراف',
+    icon: <Icon name="text" className="ms-2 size-4" />,
     className: 'text-base',
   },
   {
     value: 1,
-    label: 'Heading 1',
-    icon: <Icon name="heading-1" className="mr-2 size-4" />,
+    label: 'سرتیتر ۱',
+    icon: <Icon name="heading-1" className="ms-2 size-4" />,
     className: 'font-bold text-xl',
   },
   {
     value: 2,
-    label: 'Heading 2',
-    icon: <Icon name="heading-2" className="mr-2 size-4" />,
+    label: 'سرتیتر ۲',
+    icon: <Icon name="heading-2" className="ms-2 size-4" />,
     className: 'font-bold text-2xl',
   },
   {
     value: 3,
-    label: 'Heading 3',
-    icon: <Icon name="heading-3" className="mr-2 size-4" />,
+    label: 'سرتیتر ۳',
+    icon: <Icon name="heading-3" className="ms-2 size-4" />,
     className: 'font-bold text-xl',
   },
   {
     value: 4,
-    label: 'Heading 4',
-    icon: <Icon name="heading-4" className="mr-2 size-4" />,
+    label: 'سرتیتر ۴',
+    icon: <Icon name="heading-4" className="ms-2 size-4" />,
     className: 'font-bold text-lg',
   },
   {
     value: 5,
-    label: 'Heading 5',
-    icon: <Icon name="heading-5" className="mr-2 size-4" />,
+    label: 'سرتیتر ۵',
+    icon: <Icon name="heading-5" className="ms-2 size-4" />,
     className: 'font-bold text-base',
   },
   {
     value: 6,
-    label: 'Heading 6',
-    icon: <Icon name="heading-6" className="mr-2 size-4" />,
+    label: 'سرتیتر ۶',
+    icon: <Icon name="heading-6" className="ms-2 size-4" />,
     className: 'font-bold text-sm',
   },
 ] as const;

@@ -20,7 +20,9 @@ const MenuButtonBold = ({ editor }: MenuButtonBoldProps) => {
 
   return (
     <Toolbar.Button
-      tooltip="Bold"
+      // 2026-07-05: متن راهنما فارسی شد تا در تجربهٔ ویرایش فارسی
+      // برای نویسنده/مدیر ایرانی یکدست باشد.
+      tooltip="بولد"
       tooltipShortcut={['Mod', 'B']}
       active={isBoldActive}
       onClick={onBold}

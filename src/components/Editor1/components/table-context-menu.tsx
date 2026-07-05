@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { COLOR_PALETTE, hexToRgba } from '../constants/color';
 import { cn } from '@/lib/utils';
+// 2026-07-05: dir صریح برای منویی که با fixed positioning روی body سوار می‌شود.
+import { useDirection } from '@/hooks/useDirection';
 
 interface TableContextMenuProps {
   editor: Editor;
@@ -27,6 +29,7 @@ interface MenuPosition {
 }
 
 const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
+  const dir = useDirection('rtl');
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState<MenuPosition>({ x: 0, y: 0 });
   const [showColorPicker, setShowColorPicker] = useState(false);
@@ -189,6 +192,8 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
       style={{ left: position.x, top: position.y }}
       role="menu"
       aria-label="منوی جدول"
+      dir={dir}
+      data-dir={dir}
     >
       {menuSections.map((section, sectionIndex) => (
         <div key={section.title} role="group" aria-labelledby={`section-${section.title}`}>

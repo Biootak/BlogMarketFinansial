@@ -16,7 +16,13 @@ const MenuButtonOrderedList = ({ editor }: MenuButtonOrderedListProps) => {
   );
 
   return (
-    <Toolbar.Button active={isOrderedList} onClick={onOrderedList}>
+    <Toolbar.Button
+      // 2026-07-05: tooltip اضافه شد (قبلاً اصلاً نداشت).
+      tooltip="لیست شماره‌دار"
+      tooltipShortcut={['Mod', 'Shift', '7']}
+      active={isOrderedList}
+      onClick={onOrderedList}
+    >
       <Icon name="list-ordered" />
     </Toolbar.Button>
   );

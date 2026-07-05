@@ -24,7 +24,7 @@ const MenuButtonColor = ({ editor }: MenuButtonColorProps) => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Toolbar.Button tooltip={'Text Color'} active={Boolean(textColor)}>
+        <Toolbar.Button tooltip={'رنگ متن'} active={Boolean(textColor)}>
           <Icon
             name="palette"
             style={{ color: textColor }}

@@ -23,6 +23,8 @@ import {
   AlertCircle,
   FileText,
 } from 'lucide-react';
+// 2026-07-05: dir صریح برای portal tippy.
+import { useDirection } from '@/hooks/useDirection';
 
 interface FloatingMenuProps {
   editor: Editor;
@@ -37,6 +39,7 @@ interface MenuItem {
 }
 
 const FloatingMenuComponent: React.FC<FloatingMenuProps> = ({ editor }) => {
+  const dir = useDirection('rtl');
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -202,7 +205,7 @@ const FloatingMenuComponent: React.FC<FloatingMenuProps> = ({ editor }) => {
         return currentLineText === '' && $from.parent.content.size === 0;
       }}
     >
-      <div className="at-floating-shell" ref={menuRef} onKeyDown={handleKeyDown}>
+      <div className="at-floating-shell" ref={menuRef} onKeyDown={handleKeyDown} dir={dir} data-dir={dir}>
         <button
           ref={buttonRef}
           type="button"

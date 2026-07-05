@@ -14,7 +14,8 @@ const MenuButtonBlockquote = ({ editor }: MenuButtonQuoteProps) => {
 
   return (
     <Toolbar.Button
-      tooltip="Blockquote"
+      // 2026-07-05: ترجمه.
+      tooltip="نقل‌قول"
       tooltipShortcut={['Mod', 'Shift', 'B']}
       active={isBlockquoteActive}
       onClick={onBlockquote}

@@ -7,12 +7,16 @@ import { sticky } from 'tippy.js';
 import LinkPanelEdit from './link-panel-edit';
 import LinkPanelPreview from './link-panel-preview';
 import { useAttributes } from '../hooks/use-attributes';
+// 2026-07-05: dir از hook مرکزی می‌آید تا وقتی tippy.js محتوا را به
+// body portal می‌کند، جهت متن مستقل از cascade <html dir> درست بماند.
+import { useDirection } from '@/hooks/useDirection';
 
 interface LinkBubbleProps {
   editor: Editor;
 }
 
 const LinkBubble = ({ editor }: LinkBubbleProps) => {
+  const dir = useDirection('rtl');
   const { href }: { href: string } = useAttributes(editor, 'link', {
     href: '',
     target: '',
@@ -110,11 +114,13 @@ const LinkBubble = ({ editor }: LinkBubbleProps) => {
         getReferenceClientRect,
       }}
     >
-      {isEdit ? (
-        <LinkPanelEdit initial={href} isOpen={isEdit} onSetLink={onSetLink} />
-      ) : (
-        <LinkPanelPreview url={href} onEdit={handleEdit} onRemove={() => onUnsetLink()} />
-      )}
+      <div dir={dir} data-dir={dir}>
+        {isEdit ? (
+          <LinkPanelEdit initial={href} isOpen={isEdit} onSetLink={onSetLink} />
+        ) : (
+          <LinkPanelPreview url={href} onEdit={handleEdit} onRemove={() => onUnsetLink()} />
+        )}
+      </div>
     </BubbleMenu>
   );
 };

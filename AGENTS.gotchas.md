@@ -60,3 +60,81 @@ Visit `/setup` once after migrations to create initial `SUPER_ADMIN`. In product
 ## Debug middleware
 
 Set `DEBUG_MODE=true`; logs to `console.log` for `/dashboard/*` requests.
+
+## RTL — Best practices for the Persian editor (since 2026-07-05)
+
+The site is Persian-first (`html dir="rtl" lang="fa-IR"`). All Editor1 UI must be RTL-correct out of the box. The rules below are non-negotiable.
+
+### Source of truth: `useDirection` hook
+
+- **Use `useDirection('rtl')`** in every Editor1 shell component that renders into a `tippy.js` portal or an isolated subtree (`src/hooks/useDirection.ts`).
+- It returns the live `<html dir>` via `MutationObserver`. SSR-safe (returns the default during render).
+- **Never hardcode `dir="rtl"`** on Editor1 components — defeats the future lang switcher.
+- For non-hook contexts (extensions, tippy plugins), use the synchronous sibling: `getDocumentDirection('rtl')`.
+
+### CSS logical properties — mandatory
+
+Use **logical** properties everywhere; never `left/right` or `margin-left/right`:
+
+| Physical (forbidden)         | Logical (use this)                       |
+| ---------------------------- | ---------------------------------------- |
+| `margin-left` / `margin-right` | `margin-inline-start` / `margin-inline-end` |
+| `padding-left` / `padding-right` | `padding-inline-start` / `padding-inline-end` |
+| `left` / `right`               | `inset-inline-start` / `inset-inline-end` |
+| `text-align: left/right`     | `text-align: start/end`                  |
+| `float: left/right`          | `float: inline-start/inline-end`         |
+| `border-left`                | `border-inline-start`                   |
+| `border-top-left-radius`     | `border-start-start-radius`             |
+
+Tailwind utilities follow the same rule: use `ms-*`, `me-*`, `ps-*`, `pe-*`, `start-*`, `end-*`, `text-start`, `text-end`. Forbidden: `ml-*`, `mr-*`, `pl-*`, `pr-*`, `left-*`, `right-*`, `text-left`, `text-right`.
+
+**Exception**: code blocks. `pre` and `.katex-display` are intentionally `direction: ltr` with `text-align: left` so Persian-English-mixed code reads naturally.
+
+### Escape hatch: `src/styles/__theme_rtl.scss`
+
+The file `[dir="rtl"]` block is the only place where RTL-specific CSS belongs. Use it only when:
+
+1. A third-party library injects physical CSS (tippy.js arrow position, Radix slide-in).
+2. A legacy utility still uses `left/right` and can't be rewritten yet.
+3. A data path (single-direction arrow "next") must flip in RTL.
+
+Every rule in that file must have a comment saying **why** it exists and **which component/extension** it targets. PRs that add to it must link the change in this file.
+
+### Bubble menus and tippy portals
+
+`BubbleMenu` and `FloatingMenu` from `@tiptap/react` portal to `body` via tippy.js. Cascade `<html dir>` does not reach them. Always:
+
+```tsx
+const dir = useDirection('rtl');
+return (
+  <BubbleMenu editor={editor} tippyOptions={…}>
+    <div dir={dir} data-dir={dir}>{…}</div>
+  </BubbleMenu>
+);
+```
+
+Same for `FloatingMenu`, `SlashCommandMenu`, `LinkBubbleMenu`, `TextBubbleMenu`, `TableToolbar`, `TableContextMenu`.
+
+### Tiptap table column direction (RTL-specific semantics)
+
+In Tiptap, `addColumnBefore()` always adds a column at the **DOM start**, which is the **visual right** in RTL (and visual left in LTR). Our table labels are written from the user's perspective in RTL:
+
+- "افزودن ستون راست" (visual right) → `addColumnBefore()`
+- "افزودن ستون چپ" (visual left) → `addColumnAfter()`
+
+This is RTL-only. If the editor ever ships in LTR, the labels and the actions must be swapped together.
+
+### Common copy-paste bugs that break RTL
+
+- Wrong tooltip text (e.g., the italic button copy-pasted with `tooltip="Bulleted List"` and `tooltipShortcut={['Mod', 'Shift', '8']}` — both wrong; the real tooltip is "ایتالیک" with `['Mod', 'I']`).
+- Tooltip declared but never rendered: `<Tooltip>{component}</Tooltip>` without `TooltipTrigger asChild` and `TooltipContent`. The fix is in `src/components/ui/toolbar.tsx`.
+- Hardcoded `left/right` Tailwind classes that survive Tailwind purge.
+- `text-align: right` inside an RTL element that already inherits `start` — overkill and breaks LTR fallback.
+
+### How to audit a new component for RTL
+
+1. Search the file for `left-`, `right-`, `ml-`, `mr-`, `pl-`, `pr-`, `text-left`, `text-right`, `border-l-`, `border-r-`. Any hit must be converted to logical equivalents.
+2. Search for `dir="rtl"`. Should only appear in tests or true RTL-locked subtrees (code blocks). Everything else uses `useDirection`.
+3. If the component renders into a tippy portal or Radix portal, verify `dir` is set on the root of the portaled content.
+4. Run `npx tsc --noEmit` after changes.
+5. Visually verify: place cursor in editor, select text (bubble menu must appear correctly positioned), insert table, right-click a cell (table context menu must appear).
