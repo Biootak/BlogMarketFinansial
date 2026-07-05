@@ -5,12 +5,14 @@ import type { Editor } from '@tiptap/react';
 import { Table, X } from 'lucide-react';
 import { Toolbar } from '../../ui/toolbar';
 import * as Dialog from '@radix-ui/react-dialog';
+import { useDirection } from '@/hooks/useDirection';
 
 interface MenuButtonTableProps {
   editor: Editor;
 }
 
 const MenuButtonTable: React.FC<MenuButtonTableProps> = ({ editor }) => {
+  const dir = useDirection('rtl');
   const [isOpen, setIsOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState({ rows: 3, cols: 3 });
   const [hoverSize, setHoverSize] = useState<{ rows: number; cols: number } | null>(null);
@@ -88,8 +90,10 @@ const MenuButtonTable: React.FC<MenuButtonTableProps> = ({ editor }) => {
 
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/50 z-[100]" />
-        <Dialog.Content 
+        <Dialog.Content
           className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-[90vw] max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6"
+          dir={dir}
+          data-dir={dir}
           onPointerDownOutside={(e) => e.preventDefault()}
         >
           {/* Header */}
@@ -109,7 +113,7 @@ const MenuButtonTable: React.FC<MenuButtonTableProps> = ({ editor }) => {
 
           {/* Quick Insert Buttons */}
           <div className="mb-6">
-            <p className="text-sm text-gray-500 dark:text-gray-400 text-right mb-3">
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-start mb-3">
               انتخاب سریع
             </p>
             <div className="flex gap-2 justify-end flex-wrap">
@@ -133,7 +137,7 @@ const MenuButtonTable: React.FC<MenuButtonTableProps> = ({ editor }) => {
 
           {/* Grid Selector */}
           <div className="mb-6">
-            <p className="text-sm text-gray-500 dark:text-gray-400 text-right mb-3">
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-start mb-3">
               یا روی خانه‌ها کلیک کنید
             </p>
             <div 

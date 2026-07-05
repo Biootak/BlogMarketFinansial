@@ -63,6 +63,7 @@
 // ═══════════════════════════════════════════════════════════════════
 .at-prose {
   &.prose {
+    --at-bq-fade: oklch(96% 0.018 270 / 0.55);
     max-width: 100%;
     color: oklch(22% 0.02 250);
 
@@ -176,12 +177,12 @@
       font-style: italic;
       font-weight: 500;
       color: oklch(45% 0.06 270);
-      // 2026-07-05: gradient حاشیه‌ای منطقی. blockquote در RTL
-      // باید خط‌اش در سمت راست (inline-start) باشد. این قبلاً
-      // با physical left نوشته شده بود.
+      // 2026-07-05: gradient حاشیه‌ای. چون linear-gradient direction
+      // منطقی ندارد، از to right استفاده کردیم و برای RTL در انتهای
+      // فایل override گذاشتیم.
       background: linear-gradient(
-        to inline-end,
-        oklch(96% 0.018 270 / 0.55),
+        to right,
+        var(--at-bq-fade),
         transparent
       );
       border-start-start-radius: 0;
@@ -291,15 +292,18 @@
     }
 
     // Text alignment helpers.
-    [data-text-align="left"] { text-align: left; }
+    // 2026-07-05: تراز متن با مقادیر منطقی؛ left = start، right = end.
+    // این باعث می‌شود در RTL و LTR هر دو جهت درست کار کنند.
+    [data-text-align="left"] { text-align: start; }
     [data-text-align="center"] { text-align: center; }
-    [data-text-align="right"] { text-align: right; }
+    [data-text-align="right"] { text-align: end; }
     [data-text-align="justify"] { text-align: justify; }
   }
 }
 
 // Dark-mode prose overrides — reused color tokens with darker hue blends.
 .dark .at-prose.prose {
+  --at-bq-fade: oklch(28% 0.04 270 / 0.55);
   color: oklch(94% 0.008 245);
 
   h1, h2, h3, h4, h5, h6 {
@@ -330,8 +334,8 @@
   blockquote {
     color: oklch(80% 0.04 270);
     background: linear-gradient(
-      90deg,
-      oklch(28% 0.04 270 / 0.55),
+      to right,
+      var(--at-bq-fade),
       transparent
     );
   }
@@ -355,6 +359,16 @@
   img {
     border-color: oklch(34% 0.02 260);
   }
+}
+
+// 2026-07-05: RTL override for blockquote fade gradient — linear-gradient
+// does not support logical directions, so we mirror the fade in RTL.
+[dir="rtl"] .at-prose.prose blockquote {
+  background: linear-gradient(
+    to left,
+    var(--at-bq-fade),
+    transparent
+  );
 }
 
 // ═══════════════════════════════════════════════════════════════════

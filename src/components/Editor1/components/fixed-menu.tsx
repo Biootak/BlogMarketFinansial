@@ -5,6 +5,7 @@ import type { Editor } from '@tiptap/react';
 import dynamic from 'next/dynamic';
 import { Toolbar } from '../../ui/toolbar';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
+import { useDirection } from '@/hooks/useDirection';
 
 // Dynamic imports for client-side components
 const MenuButtonUndo = dynamic(() => import('../controls/menu-button-undo'));
@@ -39,12 +40,15 @@ const FixedMenu = ({ editor, className }: FixedMenuProps) => {
   // "More" panel that's revealed via a button. The button itself is hidden
   // on wider viewports (≥sm) by CSS, so the desktop experience is unchanged.
   const [moreOpen, setMoreOpen] = useState(false);
+  const dir = useDirection('rtl');
 
   return (
     <TooltipProvider disableHoverableContent delayDuration={500} skipDelayDuration={0}>
       <Toolbar.Wrapper
         className={`${className} sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-md transition-all duration-300 ease-in-out overflow-x-auto text-primary-600`}
         data-more-open={moreOpen || undefined}
+        dir={dir}
+        data-dir={dir}
       >
         <div className="flex flex-wrap items-center justify-start gap-1 p-2">
           {/* History — always visible */}

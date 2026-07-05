@@ -13,9 +13,9 @@ const options = [
   {
     value: 'left',
     label: <Icon name="align-left" />,
-    // 2026-07-05: تراز چپ در متن LTR. در حالت RTL معنایش می‌شود
-    // «به سمت راست» که اکثر متن‌های فارسی همان‌جای طبیعی‌شان هستند.
-    tooltip: 'چپ‌چین',
+    // 2026-07-05: متن فارسی RTL است؛ align-left در CSS به `start`
+    // ترجمه می‌شود که در RTL سمت راست (راست‌چین) است.
+    tooltip: 'راست‌چین',
   },
   {
     value: 'center',
@@ -25,7 +25,9 @@ const options = [
   {
     value: 'right',
     label: <Icon name="align-right" />,
-    tooltip: 'راست‌چین',
+    // 2026-07-05: align-right در CSS به `end` ترجمه می‌شود که در
+    // RTL سمت چپ (چپ‌چین) است.
+    tooltip: 'چپ‌چین',
   },
   {
     value: 'justify',

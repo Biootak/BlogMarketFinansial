@@ -24,7 +24,6 @@ import { extensions as builtInExtensions } from './extensions';
 import FixedMenu from './components/fixed-menu';
 import LinkBubbleMenu from './components/link-bubble-menu';
 import TableContextMenu from './components/table-context-menu';
-import FloatingMenuComponent from './components/floating-menu';
 import TextBubbleMenu from './components/text-bubble-menu';
 import TableToolbar from './components/table-toolbar';
 import type { EditorInstance } from '.';
@@ -339,7 +338,6 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
             <div className={`at-editor-paper ${isEmpty ? 'at-editor-paper--empty' : ''}`}>
               <LinkBubbleMenu editor={editor} />
               <TableContextMenu editor={editor} />
-              <FloatingMenuComponent editor={editor} />
               <TextBubbleMenu editor={editor} />
               <TableToolbar editor={editor} />
 

@@ -131,7 +131,11 @@
     oklch(74% 0.13 210) 60%,
     oklch(78% 0.14 165)
   );
-  border-radius: 0 2px 2px 0;
+  // 2026-07-05: radius منطقی — گوشه‌های نزدیک به محتوا گرد می‌شوند.
+  border-start-start-radius: 0;
+  border-start-end-radius: 2px;
+  border-end-start-radius: 0;
+  border-end-end-radius: 2px;
 }
 
 .dark .at-editor-deck__rail {
@@ -309,7 +313,6 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  flex-direction: row;
   align-items: stretch;
 }
 
@@ -367,7 +370,7 @@
 .at-editor-toolbar-wrap::before {
   inset-inline-start: 0;
   background: linear-gradient(
-    to inline-end,
+    to right,
     oklch(100% 0 0 / 0.85),
     transparent
   );
@@ -376,7 +379,7 @@
 .at-editor-toolbar-wrap::after {
   inset-inline-end: 0;
   background: linear-gradient(
-    to inline-start,
+    to left,
     oklch(100% 0 0 / 0.85),
     transparent
   );
@@ -386,11 +389,11 @@
 .at-editor-toolbar-wrap.has-overflow-end::after { opacity: 1; }
 
 .dark .at-editor-toolbar-wrap::before {
-  background: linear-gradient(to inline-end, oklch(22% 0.018 260 / 0.85), transparent);
+  background: linear-gradient(to right, oklch(22% 0.018 260 / 0.85), transparent);
 }
 
 .dark .at-editor-toolbar-wrap::after {
-  background: linear-gradient(to inline-start, oklch(22% 0.018 260 / 0.85), transparent);
+  background: linear-gradient(to left, oklch(22% 0.018 260 / 0.85), transparent);
 }
 
 // Override the FixedMenu default look (it ships with primary-100
@@ -1397,6 +1400,7 @@
 // TOC sidebar — section navigator (Item B)
 // ═══════════════════════════════════════════════════════════════════
 .at-editor-toc {
+  --at-toc-active-offset: -2px;
   display: none;
   flex-direction: column;
   gap: 4px;
@@ -1490,7 +1494,9 @@
     );
     color: oklch(28% 0.14 270);
     font-weight: 700;
-    box-shadow: inset 2px 0 0 oklch(72% 0.16 270);
+    // 2026-07-05: offset علامت فعال با CSS variable جهت‌دار می‌شود
+    // تا در RTL سمت راست (inline-start) و در LTR سمت چپ باشد.
+    box-shadow: inset var(--at-toc-active-offset) 0 0 oklch(72% 0.16 270);
     padding-inline-start: calc(8px - 2px);
   }
 }
@@ -1510,7 +1516,7 @@
       oklch(24% 0.04 270 / 0.3)
     );
     color: oklch(92% 0.04 270);
-    box-shadow: inset 2px 0 0 oklch(78% 0.16 270);
+    box-shadow: inset var(--at-toc-active-offset) 0 0 oklch(78% 0.16 270);
   }
 }
 
@@ -1528,6 +1534,9 @@
 }
 
 .dark .at-editor-toc__empty { color: oklch(68% 0.018 245); }
+
+// 2026-07-05: در RTL علامت فعال TOC باید در سمت راست (inline-start) باشد.
+[dir="rtl"] .at-editor-toc { --at-toc-active-offset: 2px; }
 
 @media (max-width: 1023px) {
   .at-editor-toc { display: none !important; }

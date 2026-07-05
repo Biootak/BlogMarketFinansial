@@ -51,15 +51,20 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
         
         let x = event.clientX;
         let y = event.clientY;
-        
+
         if (x + menuWidth > viewportWidth) {
           x = viewportWidth - menuWidth - 10;
         }
-        
+        if (x < 10) {
+          x = 10;
+        }
         if (y + menuHeight > viewportHeight) {
           y = viewportHeight - menuHeight - 10;
         }
-        
+        if (y < 10) {
+          y = 10;
+        }
+
         setPosition({ x, y });
         setIsOpen(true);
         setShowColorPicker(false);
@@ -220,7 +225,7 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
                 }
               }}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2 text-sm text-right transition-colors",
+                "w-full flex items-center gap-3 px-3 py-2 text-sm text-start transition-colors",
                 item.disabled
                   ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
                   : item.danger
@@ -322,7 +327,7 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
             setIsOpen(false);
           }
         }}
-        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-right text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-start text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
       >
         <Trash2 size={16} aria-hidden="true" />
         <span>حذف کل جدول</span>

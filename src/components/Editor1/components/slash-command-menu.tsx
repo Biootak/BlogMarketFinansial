@@ -111,6 +111,8 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
           className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 text-gray-500 dark:text-gray-400 text-sm text-center"
           role="status"
           aria-live="polite"
+          dir={dir}
+          data-dir={dir}
         >
           <Search className="mx-auto mb-2 h-7 w-7 opacity-60" strokeWidth={1.5} aria-hidden />
           نتیجه‌ای یافت نشد
@@ -174,7 +176,7 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
                     role="option"
                     aria-selected={isSelected}
                     onClick={() => selectItem(currentIndex)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-right transition-all duration-150 ${
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-start transition-all duration-150 ${
                       isSelected
                         ? 'bg-primary-100 dark:bg-primary-900/30 border-s-2 border-primary-500'
                         : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 border-s-2 border-transparent'

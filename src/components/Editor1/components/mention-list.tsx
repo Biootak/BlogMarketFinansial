@@ -10,6 +10,7 @@ import React, {
   useRef,
 } from 'react';
 import type { MentionUser } from '../extensions/mention';
+import { useDirection } from '@/hooks/useDirection';
 
 export interface MentionListRef {
   onKeyDown: (props: { event: KeyboardEvent }) => boolean;
@@ -21,6 +22,7 @@ interface MentionListProps {
 }
 
 const MentionList = forwardRef<MentionListRef, MentionListProps>(({ items, command }, ref) => {
+  const dir = useDirection('rtl');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
   const selectedRef = useRef<HTMLButtonElement>(null);
@@ -83,6 +85,8 @@ const MentionList = forwardRef<MentionListRef, MentionListProps>(({ items, comma
         className="bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-3 text-gray-500 dark:text-gray-400 text-sm"
         role="status"
         aria-live="polite"
+        dir={dir}
+        data-dir={dir}
       >
         کاربری یافت نشد
       </div>
@@ -96,6 +100,8 @@ const MentionList = forwardRef<MentionListRef, MentionListProps>(({ items, comma
       role="listbox"
       aria-label="لیست کاربران"
       aria-activedescendant={items[selectedIndex]?.id}
+      dir={dir}
+      data-dir={dir}
     >
       {items.map((item, index) => (
         <button
@@ -106,7 +112,7 @@ const MentionList = forwardRef<MentionListRef, MentionListProps>(({ items, comma
           role="option"
           aria-selected={index === selectedIndex}
           onClick={() => selectItem(index)}
-          className={`w-full flex items-center gap-3 px-3 py-2 text-right transition-colors ${
+          className={`w-full flex items-center gap-3 px-3 py-2 text-start transition-colors ${
             index === selectedIndex
               ? 'bg-primary-100 dark:bg-primary-900/30'
               : 'hover:bg-gray-100 dark:hover:bg-gray-700'

@@ -5,6 +5,7 @@ import { debounce } from 'lodash';
 import { COLOR_PALETTE, DEFAULT_COLORS, hexToRgba, rgbaToHexAlpha, isRgba } from '../constants/color';
 import { Icon } from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
+import { useDirection } from '@/hooks/useDirection';
 
 type ColorPickerProps = {
   color?: string;
@@ -14,6 +15,7 @@ type ColorPickerProps = {
 };
 
 export const ColorPicker = memo(({ color, onChange, onClear, showOpacity = true }: ColorPickerProps) => {
+  const dir = useDirection('rtl');
   // استخراج hex و alpha از رنگ فعلی
   const { initialHex, initialAlpha } = useMemo(() => {
     if (!color) return { initialHex: '#000000', initialAlpha: 1 };
@@ -88,7 +90,7 @@ export const ColorPicker = memo(({ color, onChange, onClear, showOpacity = true 
   }, [color]);
 
   return (
-    <div className="flex flex-col gap-3 p-1 min-w-[280px]">
+    <div className="flex flex-col gap-3 p-1 min-w-[280px]" dir={dir} data-dir={dir}>
       {/* تب‌ها */}
       <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
         <button

@@ -5,6 +5,7 @@
 
 .ProseMirror,
 .editor-content {
+  --at-bq-fade: oklch(96% 0.014 270 / 0.5);
   // Empty paragraphs need height so the cursor lands at the right place.
   p {
     min-height: 1.5em;
@@ -19,10 +20,10 @@
   // Text color is owned by inline color marks; never collide.
   [style*="color"] { color: inherit; }
 
-  // Text-alignment helpers.
-  [data-text-align="left"]   { text-align: left; }
+  // 2026-07-05: تراز متن با مقادیر منطقی؛ left = start، right = end.
+  [data-text-align="left"]   { text-align: start; }
   [data-text-align="center"] { text-align: center; }
-  [data-text-align="right"]  { text-align: right; }
+  [data-text-align="right"]  { text-align: end; }
   [data-text-align="justify"]{ text-align: justify; }
 }
 
@@ -115,8 +116,9 @@
   margin-block: 1.25rem;
   font-style: italic;
   color: oklch(45% 0.06 270);
-  // 2026-07-05: `to inline-end` منطقی — در RTL متن fade به سمت چپ.
-  background: linear-gradient(to inline-end, oklch(96% 0.014 270 / 0.5), transparent);
+  // 2026-07-05: چون linear-gradient direction منطقی ندارد، از to right
+  // استفاده شده و برای RTL در انتهای فایل override گذاشته شده.
+  background: linear-gradient(to right, var(--at-bq-fade), transparent);
   border-start-start-radius: 0;
   border-start-end-radius: 8px;
   border-end-start-radius: 0;
@@ -175,6 +177,7 @@
 
 // ── Dark mode (renderer) ───────────────────────────────────────
 .dark .editor-content {
+  --at-bq-fade: oklch(28% 0.04 270 / 0.5);
   mark {
     background: linear-gradient(
       180deg,
@@ -204,12 +207,18 @@
 
   blockquote {
     border-inline-start-color: oklch(78% 0.16 270);
-    background: linear-gradient(90deg, oklch(28% 0.04 270 / 0.5), transparent);
+    background: linear-gradient(to right, var(--at-bq-fade), transparent);
     color: oklch(80% 0.04 270);
   }
 
   ul li::marker,
   ol li::marker { color: oklch(78% 0.16 270); }
+}
+
+// 2026-07-05: RTL override for blockquote fade gradient — linear-gradient
+// does not support logical directions, so we mirror the fade in RTL.
+[dir="rtl"] .editor-content blockquote {
+  background: linear-gradient(to left, var(--at-bq-fade), transparent);
 }
 
 // ── Opacity slider (image control) ─────────────────────────────
