@@ -61,8 +61,7 @@ export const DragHandle = Extension.create<DragHandleOptions>({
       indicator.className = 'drop-indicator';
       indicator.style.cssText = `
         position: absolute;
-        left: 0;
-        right: 0;
+        inset-inline: 0;
         height: 3px;
         background: #3b82f6;
         border-radius: 2px;

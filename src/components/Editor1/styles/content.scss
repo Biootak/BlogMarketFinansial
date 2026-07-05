@@ -222,6 +222,14 @@
 }
 
 // ── Opacity slider (image control) ─────────────────────────────
+.at-opacity-track {
+  --at-opacity-angle: 90deg;
+}
+
+[dir="rtl"] .at-opacity-track {
+  --at-opacity-angle: 270deg;
+}
+
 .opacity-slider {
   -webkit-appearance: none;
   appearance: none;

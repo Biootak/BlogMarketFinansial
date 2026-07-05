@@ -20,6 +20,7 @@ import React, {
   useState,
 } from 'react';
 import { EditorContent, type EditorOptions, useEditor } from '@tiptap/react';
+import type { Content } from '@tiptap/core';
 import { extensions as builtInExtensions } from './extensions';
 import FixedMenu from './components/fixed-menu';
 import LinkBubbleMenu from './components/link-bubble-menu';
@@ -43,7 +44,6 @@ export interface EditorProps extends Partial<EditorOptions> {
   footerClassName?: string;
   displayWordsCount?: boolean;
   onUpdateToC?: (items: TocItem[]) => void;
-  localStorageKey: string;
 }
 
 export type EditorRef = {
@@ -63,6 +63,11 @@ function toFaDigits(n: number): string {
   return n.toLocaleString('fa-IR');
 }
 
+function countCharsNoSpace(text: string): number {
+  // Remove all whitespace (spaces, tabs, newlines, zero-width chars).
+  return text.replace(/\s+/g, '').length;
+}
+
 export const Editor = forwardRef<EditorRef, EditorProps>(
   (
     {
@@ -76,7 +81,6 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
       content,
       displayWordsCount = true,
       onUpdateToC,
-      localStorageKey,
       ...rest
     },
     ref,
@@ -143,10 +147,13 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
       if (!editor) return;
       const update = () => {
         const cc = editor.storage.characterCount;
+        const chars = cc.characters?.() ?? 0;
+        const words = cc.words?.() ?? 0;
+        const fullText = editor.state.doc.textBetween(0, editor.state.doc.content.size, ' ');
         setCounts({
-          words: cc.words?.() ?? 0,
-          chars: cc.characters?.() ?? 0,
-          charsNoSpace: 0,
+          words,
+          chars,
+          charsNoSpace: countCharsNoSpace(fullText),
         });
       };
       const updateSelection = () => {
@@ -162,8 +169,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
           return;
         }
         const words = trimmed.split(/\s+/).filter(Boolean).length;
-        // Count chars without spaces using a locale-aware regex.
-        const chars = trimmed.replace(/\s+/g, '').length;
+        const chars = countCharsNoSpace(trimmed);
         setSelectionCount({ words, chars });
       };
       // Mark the deepest block ancestor of the current selection with
@@ -190,38 +196,38 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
           /* selection may be transient; ignore */
         }
       };
+      const handleSelectionUpdate = () => {
+        updateSelection();
+        markActiveBlock();
+      };
       update();
       updateSelection();
       markActiveBlock();
       editor.on('update', update);
-      editor.on('selectionUpdate', () => {
-        updateSelection();
-        markActiveBlock();
-      });
+      editor.on('selectionUpdate', handleSelectionUpdate);
       return () => {
         editor.off('update', update);
-        editor.off('selectionUpdate', updateSelection);
+        editor.off('selectionUpdate', handleSelectionUpdate);
       };
     }, [editor]);
 
-    // ── Save state pulse (cloud-icon heartbeat when localStorage syncs) ──
-    const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('saved');
+    // ── Save state pulse (visual feedback that editor state has changed) ──
+    const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
     const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
-      if (!editor || !localStorageKey) return;
-      const saveContent = () => {
+      if (!editor) return;
+      const pulse = () => {
         setSaveState('saving');
-        localStorage.setItem(localStorageKey, JSON.stringify(editor.getJSON()));
         if (saveTimer.current) clearTimeout(saveTimer.current);
         saveTimer.current = setTimeout(() => setSaveState('saved'), 700);
       };
-      editor.on('update', saveContent);
+      editor.on('update', pulse);
       return () => {
-        editor.off('update', saveContent);
+        editor.off('update', pulse);
         if (saveTimer.current) clearTimeout(saveTimer.current);
       };
-    }, [editor, localStorageKey]);
+    }, [editor]);
 
     // ── Editable propagation ──
     useEffect(() => {
@@ -237,39 +243,38 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
     }, [editor, onUpdateToC]);
 
     // ── Content parsing + initial load ──
-    const parseContent = useCallback((raw: string | object | undefined): string | object | null => {
-      if (!raw) return null;
-      if (typeof raw !== 'string') return raw;
-      const trimmed = raw.trim();
-      if (!trimmed) return null;
-      if (trimmed.startsWith('<')) return trimmed;
-      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
-        try {
-          return JSON.parse(trimmed);
-        } catch {
-          return trimmed;
+    const parseContent = useCallback(
+      (raw: string | object | undefined): string | object | undefined => {
+        if (!raw) return undefined;
+        if (typeof raw !== 'string') return raw;
+        const trimmed = raw.trim();
+        if (!trimmed) return undefined;
+        if (trimmed.startsWith('<')) return trimmed;
+        if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+          try {
+            return JSON.parse(trimmed);
+          } catch {
+            return trimmed;
+          }
         }
-      }
-      return trimmed;
-    }, []);
+        return trimmed;
+      },
+      [],
+    );
 
     const initialContentLoadedRef = useRef(false);
-    const contentRef = useRef(content);
     useEffect(() => {
-      contentRef.current = content;
-    }, [content]);
-
-    useEffect(() => {
-      if (!editor || editor.isDestroyed) return;
-      if (initialContentLoadedRef.current && content === contentRef.current) return;
-      if (!initialContentLoadedRef.current && content) {
+      if (!editor || editor.isDestroyed || initialContentLoadedRef.current) return;
+      const parsedContent = parseContent(content);
+      if (parsedContent) {
+        queueMicrotask(() => {
+          if (!editor.isDestroyed) {
+            editor.commands.setContent(parsedContent as NonNullable<Content>, false);
+            initialContentLoadedRef.current = true;
+          }
+        });
+      } else {
         initialContentLoadedRef.current = true;
-        const parsedContent = parseContent(content);
-        if (parsedContent) {
-          queueMicrotask(() => {
-            if (!editor.isDestroyed) editor.commands.setContent(parsedContent);
-          });
-        }
       }
     }, [editor, content, parseContent]);
 
@@ -344,10 +349,6 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
               <EditorContent
                 editor={editor}
                 className={`at-editor-prose ${contentClassName}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
               />
 
               {/* Floating empty-state hint */}
@@ -385,7 +386,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
 
               <span className="at-editor-status__item">
                 <span className="at-editor-status__dot at-editor-status__dot--violet" />
-                <span className="at-editor-status__num">{totalMinutes.replace(/[0-9۰-۹]+/g, (m) => m)}</span>
+                <span className="at-editor-status__num">{totalMinutes}</span>
                 <span className="at-editor-status__lbl">زمان مطالعه</span>
               </span>
 

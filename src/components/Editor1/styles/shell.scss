@@ -1178,6 +1178,28 @@
   color: oklch(94% 0.005 245) !important;
 }
 
+// Loading skeleton for dynamically-imported toolbar controls.
+.at-bubble__btn--skeleton {
+  background: oklch(90% 0.01 250 / 0.7);
+  cursor: default;
+  pointer-events: none;
+  animation: at-skeleton-pulse 1.6s ease-in-out infinite;
+}
+
+.dark .at-bubble__btn--skeleton {
+  background: oklch(30% 0.01 250 / 0.7);
+}
+
+@keyframes at-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // Floating menu — empty-line slash block inserter
 // ═══════════════════════════════════════════════════════════════════

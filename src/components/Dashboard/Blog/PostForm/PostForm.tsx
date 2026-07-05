@@ -149,33 +149,52 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
     defaultValues,
   });
 
+  // 2026-07-05: بارگذاری پیش‌نویس ذخیره‌شده. محتوا و متاداده در یک کلید
+  // نگه داشته می‌شوند تا منبع حقیقت واحد داشته باشیم.
   useEffect(() => {
-    if (!isEditing) {
-      const savedData = localStorage.getItem(localStorageKey);
-      if (savedData) {
-        try {
-          const parsedData = JSON.parse(savedData);
-          form.reset(parsedData);
-          setEditorContent(parsedData.content || '');
-          setSlug(parsedData.slug || '');
-        } catch (e) {
-          console.error('Error parsing saved data:', e);
-        }
-      }
+    if (isEditing) return;
+    const savedData = localStorage.getItem(localStorageKey);
+    if (!savedData) return;
+    try {
+      const parsedData = JSON.parse(savedData);
+      form.reset(parsedData);
+      setEditorContent(parsedData.content || '');
+      setSlug(parsedData.slug || '');
+    } catch (e) {
+      console.error('Error parsing saved draft:', e);
     }
   }, [localStorageKey, form, isEditing]);
 
-  const saveToLocalStorage = useCallback(
-    (data: FieldValues) => { localStorage.setItem(localStorageKey, JSON.stringify(data)); },
-    [localStorageKey],
-  );
+  // 2026-07-05: ذخیرهٔ پیش‌نویس با debounce. محتوای سنگین ادیتور را
+  // روی هر کلید نمی‌نویسیم؛ ۶۰۰ms پس از آخرین تغییر سریال‌سازی می‌شود.
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveDraft = useCallback(() => {
+    if (isEditing) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      const values = form.getValues();
+      const draft = { ...values, content: editorContent, slug };
+      try {
+        localStorage.setItem(localStorageKey, JSON.stringify(draft));
+      } catch (e) {
+        console.error('Error saving draft:', e);
+      }
+    }, 600);
+  }, [isEditing, form, editorContent, slug, localStorageKey]);
 
   useEffect(() => {
-    const subscription = form.watch((value) => {
-      saveToLocalStorage({ ...value, content: editorContent, slug });
+    return () => {
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isEditing) return;
+    const subscription = form.watch(() => {
+      saveDraft();
     });
     return () => subscription.unsubscribe();
-  }, [form, saveToLocalStorage, editorContent, slug]);
+  }, [form, saveDraft, isEditing]);
 
   useEffect(() => {
     if (isEditing && defaultValues.content) {
@@ -482,12 +501,11 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                                 <Editor
                                   ref={editorRef}
                                   content={parseContent(editorContent)}
-                                  localStorageKey={`${localStorageKey}-editor`}
                                   onUpdate={({ editor }) => {
                                     const json = !editor.isEmpty ? JSON.stringify(editor.getJSON()) : '';
                                     setEditorContent(json);
                                     field.onChange(json);
-                                    saveToLocalStorage({ ...form.getValues(), content: json });
+                                    saveDraft();
                                   }}
                                   onUpdateToC={setTocItems}
                                 />

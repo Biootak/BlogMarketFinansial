@@ -199,10 +199,10 @@ export const ColorPicker = memo(({ color, onChange, onClear, showOpacity = true 
                 backgroundPosition: '0 0, 0 4px, 4px -4px, -4px 0px'
               }}
             />
-            <div 
-              className="absolute inset-0 rounded-lg"
+            <div
+              className="at-opacity-track absolute inset-0 rounded-lg"
               style={{
-                background: `linear-gradient(to right, transparent, ${hexColor})`
+                background: `linear-gradient(var(--at-opacity-angle, 90deg), transparent, ${hexColor})`,
               }}
             />
             <input

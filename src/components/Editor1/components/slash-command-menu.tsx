@@ -129,7 +129,7 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
       return acc;
     }, {} as Record<string, SlashCommandItem[]>);
 
-    const categoryLabels: Record<string, string> = {
+    const categoryLabels: Record<SlashCommandItem['category'], string> = {
       basic: 'پایه',
       list: 'لیست‌ها',
       media: 'رسانه',
@@ -155,13 +155,14 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
       >
         {sortedCategories.map((category) => {
           const categoryItems = groupedItems[category];
+          const label = categoryLabels[category as SlashCommandItem['category']] ?? category;
           return (
             <div key={category} role="group" aria-labelledby={`category-${category}`}>
-              <div 
+              <div
                 id={`category-${category}`}
                 className="px-3 py-2 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider sticky top-0 bg-white dark:bg-gray-800 z-10"
               >
-                {categoryLabels[category] || category}
+                {label}
               </div>
               {categoryItems.map((item) => {
                 const currentIndex = globalIndex++;

@@ -4,6 +4,7 @@ import Suggestion, { type SuggestionOptions } from '@tiptap/suggestion';
 import { PluginKey } from '@tiptap/pm/state';
 import tippy, { type Instance as TippyInstance } from 'tippy.js';
 import MentionList, { type MentionListRef } from '../components/mention-list';
+import { getDocumentDirection } from '@/hooks/useDirection';
 
 // کلید یکتا برای پلاگین mention
 export const mentionPluginKey = new PluginKey('mention');
@@ -198,6 +199,11 @@ export const mentionSuggestion: Partial<SuggestionOptions> = {
           interactive: true,
           trigger: 'manual',
           placement: 'bottom-start',
+          // 2026-07-05: tippy به body portal می‌زند و dir را از <html>
+          // نمی‌گیرد. جهت را روی box می‌گذاریم.
+          onCreate(instance) {
+            instance.popper.querySelector('.tippy-box')?.setAttribute('dir', getDocumentDirection('rtl'));
+          },
         });
       },
 

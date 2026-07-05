@@ -16,6 +16,8 @@
     overflow: hidden;
     table-layout: fixed;
     width: 100%;
+    // 2026-07-05: جهت جدول را از ادیتور به ارث می‌برد تا
+    // addColumnBefore/addColumnAfter در RTL درست کار کنند.
     border-radius: 0.5rem;
     box-shadow:
       0 1px 0 oklch(100% 0 0 / 0.6) inset,
@@ -99,6 +101,14 @@
   }
 
   &.resize-cursor { cursor: col-resize; }
+}
+
+// 2026-07-05: در RTL جدول باید صریحاً direction: rtl داشته باشد
+// تا ستون‌ها از راست به چپ چیده شوند و عملیات ردیف/ستون با labelهای
+// فارسی هم‌راستا شوند.
+[dir="rtl"] .ProseMirror table,
+[dir="rtl"] .editor-content table {
+  direction: rtl;
 }
 
 /* Dark mode */

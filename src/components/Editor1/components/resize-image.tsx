@@ -1,6 +1,7 @@
 import { type NodeViewProps, NodeViewWrapper } from '@tiptap/react';
 import { AlignCenter, AlignLeft, AlignRight, ExternalLink, Maximize2, Trash2 } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
+import { useDirection } from '@/hooks/useDirection';
 
 // 2026-06-30: This component intentionally uses a plain <img> tag.
 // The editor image is resized interactively and its natural aspect ratio
@@ -36,6 +37,7 @@ function sizeClamp(length: number, min: number, max: number) {
 
 const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImageProps) => {
   const { src, textAlign, width: widthProps, alt } = node.attrs;
+  const dir = useDirection('rtl');
 
   const isEditable = editor.isEditable;
 
@@ -51,7 +53,10 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
   const handleResize = useCallback(
     ({ delta, direction, finished, initialSize }: any) => {
       const wrapperWidth = wrapperRef.current!.offsetWidth;
-      const deltaFactor = (textAlign === 'center' ? 2 : 1) * (direction === 'left' ? -1 : 1);
+      // 2026-07-05: در RTL ضریب جهت معکوس می‌شود چون handle شروع/پایان
+      // خطی سمت مخالف می‌افتد.
+      const dirFactor = dir === 'rtl' ? -1 : 1;
+      const deltaFactor = (textAlign === 'center' ? 2 : 1) * (direction === 'left' ? -1 : 1) * dirFactor;
 
       const newWidth = sizeClamp(initialSize + delta * deltaFactor, 100, wrapperWidth);
 
@@ -61,14 +66,15 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
         setWidth(newWidth);
       }
     },
-    [textAlign, setWidth, updateAttributes],
+    [textAlign, dir, setWidth, updateAttributes],
   );
 
   const handleKeyDown =
     (direction: 'left' | 'right'): React.KeyboardEventHandler =>
     (e) => {
       const step = e.shiftKey ? 50 : 10;
-      const deltaFactor = (textAlign === 'center' ? 2 : 1) * (direction === 'left' ? -1 : 1);
+      const dirFactor = dir === 'rtl' ? -1 : 1;
+      const deltaFactor = (textAlign === 'center' ? 2 : 1) * (direction === 'left' ? -1 : 1) * dirFactor;
       const currentWidth = typeof width === 'number' ? width : Number(width) || 0;
       const wrapperWidth = wrapperRef.current?.offsetWidth ?? currentWidth;
       const newWidth = sizeClamp(currentWidth + step * deltaFactor, 100, wrapperWidth);

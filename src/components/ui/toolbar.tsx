@@ -10,6 +10,7 @@ import { Icon } from './icon';
 import { cn } from '../Editor1/lib/utils';
 import { Button, type ButtonProps } from './button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
+import { useDirection } from '@/hooks/useDirection';
 
 type ToolbarWrapperProps = HTMLProps<HTMLDivElement>;
 
@@ -88,6 +89,7 @@ const ToolbarButton = forwardRef<HTMLButtonElement, ToolbarButtonProps>(
     },
     ref,
   ) => {
+    const dir = useDirection('rtl');
     const buttonClass = cn(
       'min-w-8 w-auto h-8 bg-transparent rounded aria-expanded:bg-primary-500/10 aria-expanded:text-primary-600 focus-visible:ring-0',
       className,
@@ -112,7 +114,7 @@ const ToolbarButton = forwardRef<HTMLButtonElement, ToolbarButtonProps>(
       return (
         <Tooltip>
           <TooltipTrigger asChild>{component}</TooltipTrigger>
-          <TooltipContent side="bottom" align="center">
+          <TooltipContent side="bottom" align="center" dir={dir} data-dir={dir}>
             <span className="flex items-center gap-1.5">
               <span>{tooltip}</span>
               {tooltipShortcut && tooltipShortcut.length > 0 && (
