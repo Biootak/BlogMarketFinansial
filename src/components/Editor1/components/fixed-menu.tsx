@@ -1,6 +1,6 @@
 // FixedMenu.tsx
 import React, { useState } from 'react';
-import { MoreHorizontal, X } from 'lucide-react';
+import { List, MoreHorizontal, X } from 'lucide-react';
 import type { Editor } from '@tiptap/core';
 import dynamic from 'next/dynamic';
 import { Toolbar } from '../../ui/toolbar';
@@ -39,9 +39,12 @@ const MenuButtonSubscript = dynamic(() => import('../controls/menu-button-subscr
 export type FixedMenuProps = {
   editor: Editor;
   className?: string;
+  tocOpen?: boolean;
+  onToggleToc?: () => void;
+  hasToc?: boolean;
 };
 
-const FixedMenu = ({ editor, className }: FixedMenuProps) => {
+const FixedMenu = ({ editor, className, tocOpen, onToggleToc, hasToc }: FixedMenuProps) => {
   // D13 — Mobile-aware: when narrow, secondary controls collapse into a
   // "More" panel that's revealed via a button. The button itself is hidden
   // on wider viewports (≥sm) by CSS, so the desktop experience is unchanged.
@@ -116,6 +119,17 @@ const FixedMenu = ({ editor, className }: FixedMenuProps) => {
             <MenuButtonBlockquote editor={editor} />
             <MenuButtonCodeblock editor={editor} />
             <MenuButtonTable editor={editor} />
+            <Toolbar.Divider className="hidden sm:block" />
+            <Toolbar.Button
+              type="button"
+              onClick={onToggleToc}
+              active={tocOpen}
+              tooltip="فهرست مطالب"
+              aria-pressed={tocOpen}
+              disabled={!hasToc}
+            >
+              <List size={16} />
+            </Toolbar.Button>
           </Toolbar.Group>
 
           {/* More toggle — visible only when the overflow group is collapsed (mobile) */}

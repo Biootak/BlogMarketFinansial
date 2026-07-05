@@ -510,9 +510,6 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                                   onUpdateToC={setTocItems}
                                 />
                               </div>
-                              <div className="at-editor-layout__rail">
-                                <TocSidebar items={tocItems} />
-                              </div>
                             </div>
                           </div>
                         </FormControl>

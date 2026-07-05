@@ -30,7 +30,23 @@ export interface MarketRateItem {
   divisor: number;
   decimals: number;
   priority: number;
+  /**
+   * مقدار اصلی (برای نرخ‌های تک‌قیمتی مثل دلار بازار آزاد).
+   * برای نرخ‌های دوطرفه (صرافی ملی) برابر buyValue است.
+   */
   value: number;
+  /**
+   * نرخ خرید (صرافی از مردم می‌خرد). فقط برای آیتم‌های صرافی ملی پر می‌شود.
+   * بر حسب واحد اصلی داده (معمولاً ریال خام — بعد با divisor تقسیم می‌شود).
+   */
+  buyValue?: number;
+  /**
+   * نرخ فروش (صرافی به مردم می‌فروشد). فقط برای آیتم‌های صرافی ملی پر می‌شود.
+   * بر حسب واحد اصلی داده (معمولاً ریال خام — بعد با divisor تقسیم می‌شود).
+   */
+  sellValue?: number;
+  /** اختلاف فروش - خرید (صرافی ملی: sell - buy). فقط وقتی هر دو موجود. */
+  spread?: number;
   changePercent: number;
   provider: MarketRateProvider;
   updatedAt: Date;

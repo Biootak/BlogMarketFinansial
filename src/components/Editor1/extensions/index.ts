@@ -33,6 +33,9 @@ export const extensions = [
     heading: false,
     // غیرفعال کردن paragraph پیش‌فرض برای استفاده از نسخه سفارشی
     paragraph: false,
+    // link و underline به صورت جداگانه و با تنظیمات اختصاصی اضافه می‌شوند.
+    link: false,
+    underline: false,
     horizontalRule: {
       HTMLAttributes: {
         class: 'my-4 border-t-2 border-gray-300 dark:border-gray-600',

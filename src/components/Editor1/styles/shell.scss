@@ -2115,3 +2115,54 @@
     inset-block-start: auto;
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// Floating TOC panel — rendered inside the editor canvas
+// ═══════════════════════════════════════════════════════════════════
+.at-editor-toc-panel {
+  position: absolute;
+  inset-block-start: 16px;
+  inset-inline-end: 16px;
+  width: 240px;
+  max-height: calc(100% - 32px);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.at-editor-toc-panel > * {
+  pointer-events: auto;
+}
+
+.at-editor-toc-panel .at-toc {
+  position: relative;
+  inset-block-start: auto;
+  width: 100%;
+  max-height: 100%;
+  background: linear-gradient(
+    180deg,
+    oklch(99% 0.005 250 / 0.95),
+    oklch(97% 0.008 250 / 0.9)
+  );
+  border-color: oklch(90% 0.008 250 / 0.85);
+  box-shadow:
+    0 1px 0 oklch(100% 0 0 / 0.7) inset,
+    0 18px 50px -18px oklch(45% 0.12 270 / 0.35);
+}
+
+.dark .at-editor-toc-panel .at-toc {
+  background: linear-gradient(
+    180deg,
+    oklch(20% 0.012 255 / 0.95),
+    oklch(18% 0.012 255 / 0.9)
+  );
+  border-color: oklch(34% 0.018 255 / 0.7);
+  box-shadow:
+    0 1px 0 oklch(100% 0 0 / 0.04) inset,
+    0 18px 50px -18px oklch(0% 0 0 / 0.6);
+}
+
+@media (max-width: 1024px) {
+  .at-editor-toc-panel {
+    display: none;
+  }
+}

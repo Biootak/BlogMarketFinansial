@@ -120,6 +120,14 @@ const RATE_WINDOW = 60 * 1000;
 
 function checkRateLimit(userId: string): boolean {
   const now = Date.now();
+
+  // Clean up expired entries occasionally to prevent unbounded growth.
+  if (uploadCounts.size > 1000) {
+    for (const [id, limit] of uploadCounts) {
+      if (now > limit.resetTime) uploadCounts.delete(id);
+    }
+  }
+
   const userLimit = uploadCounts.get(userId);
 
   if (!userLimit || now > userLimit.resetTime) {
@@ -136,12 +144,18 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'احراز هویت الزامی است' }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: { code: 'UNAUTHORIZED', message: 'احراز هویت الزامی است' } },
+        { status: 401 }
+      );
     }
 
     if (!checkRateLimit(session.user.id)) {
       return NextResponse.json(
-        { error: 'تعداد درخواست‌های شما بیش از حد مجاز است' },
+        {
+          success: false,
+          error: { code: 'RATE_LIMIT_EXCEEDED', message: 'تعداد درخواست‌های شما بیش از حد مجاز است' },
+        },
         { status: 429 }
       );
     }
@@ -151,36 +165,66 @@ export async function POST(request: NextRequest) {
     const folder = (formData.get('folder') as string) || 'general';
 
     if (!ALLOWED_FOLDERS.includes(folder)) {
-      return NextResponse.json({ error: 'فولدر نامعتبر است' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: { code: 'INVALID_FOLDER', message: 'فولدر نامعتبر است' } },
+        { status: 400 }
+      );
     }
 
     if (!files || files.length === 0) {
-      return NextResponse.json({ error: 'فایلی انتخاب نشده' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: { code: 'NO_FILES', message: 'فایلی انتخاب نشده' } },
+        { status: 400 }
+      );
     }
 
     if (files.length > 10) {
-      return NextResponse.json({ error: 'حداکثر 10 فایل مجاز است' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: { code: 'TOO_MANY_FILES', message: 'حداکثر 10 فایل مجاز است' } },
+        { status: 400 }
+      );
     }
 
     const results = [];
 
     for (const file of files) {
       if (!ALLOWED_TYPES.includes(file.type)) {
-        return NextResponse.json({ error: `نوع فایل ${file.type} مجاز نیست` }, { status: 400 });
+        return NextResponse.json(
+          {
+            success: false,
+            error: { code: 'INVALID_FILE_TYPE', message: `نوع فایل ${file.type} مجاز نیست` },
+          },
+          { status: 400 }
+        );
       }
 
       if (file.size > MAX_FILE_SIZE) {
-        return NextResponse.json({ error: 'حجم فایل بیشتر از 10MB است' }, { status: 400 });
+        return NextResponse.json(
+          {
+            success: false,
+            error: { code: 'FILE_TOO_LARGE', message: 'حجم فایل بیشتر از 10MB است' },
+          },
+          { status: 400 }
+        );
       }
 
       const buffer = Buffer.from(await file.arrayBuffer());
 
       if (!validateFileSignature(buffer, file.type)) {
-        return NextResponse.json({ error: 'محتوای فایل نامعتبر است' }, { status: 400 });
+        return NextResponse.json(
+          { success: false, error: { code: 'INVALID_FILE_CONTENT', message: 'محتوای فایل نامعتبر است' } },
+          { status: 400 }
+        );
       }
 
       if (file.type === 'image/svg+xml' && !sanitizeSvg(buffer)) {
-        return NextResponse.json({ error: 'فایل SVG حاوی کد مخرب است' }, { status: 400 });
+        return NextResponse.json(
+          {
+            success: false,
+            error: { code: 'MALICIOUS_SVG', message: 'فایل SVG حاوی کد مخرب است' },
+          },
+          { status: 400 }
+        );
       }
 
       const optimizedBuffer = await optimizeImage(buffer, file.type);
@@ -223,12 +267,14 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      files: results,
-      message: 'فایل‌ها با موفقیت آپلود شدند',
+      data: { files: results, message: 'فایل‌ها با موفقیت آپلود شدند' },
     });
   } catch (error) {
     console.error('خطا در آپلود:', error);
-    return NextResponse.json({ error: 'خطا در آپلود فایل' }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: { code: 'UPLOAD_FAILED', message: 'خطا در آپلود فایل' } },
+      { status: 500 }
+    );
   }
 }
 

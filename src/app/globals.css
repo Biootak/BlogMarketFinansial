@@ -7986,6 +7986,79 @@ p {
   }
 
   /* ==========================================================================
+     HERO container padding — replaces inline values; consistent across breakpoints
+     ========================================================================== */
+  .mt-hero__container {
+    padding: clamp(1rem, 0.8rem + 1vw, 1.5rem) clamp(1rem, 0.5rem + 2vw, 1.5rem);
+  }
+
+  /* ----- live indicator pills (extended) ----- */
+  .mt-hero__live-text {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.4rem;
+  }
+  .mt-hero__live-count {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: oklch(98% 0.005 240);
+  }
+
+  /* ----- quick category chips ----- */
+  .mt-hero__categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-block-start: 0.25rem;
+  }
+  .mt-hero__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-block-size: 44px;
+    padding-inline: 1rem;
+    padding-block: 0.65rem;
+    border-radius: 9999px;
+    background: oklch(100% 0 0 / 0.05);
+    border: 1px solid oklch(100% 0 0 / 0.12);
+    color: oklch(85% 0.02 240);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition:
+      background 200ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 200ms cubic-bezier(0.22, 1, 0.36, 1),
+      color 200ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .mt-hero__chip:hover:not(:disabled) {
+    background: oklch(100% 0 0 / 0.1);
+    border-color: oklch(100% 0 0 / 0.2);
+    color: oklch(98% 0.005 240);
+  }
+  .mt-hero__chip:focus-visible {
+    outline: 2px solid oklch(82% 0.13 165);
+    outline-offset: 2px;
+  }
+  .mt-hero__chip:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .mt-hero__chip--active {
+    background: oklch(60% 0.15 165 / 0.18);
+    border-color: oklch(60% 0.15 165 / 0.55);
+    color: oklch(90% 0.13 165);
+  }
+  .mt-hero__chip--active:hover {
+    background: oklch(60% 0.15 165 / 0.24);
+    border-color: oklch(60% 0.15 165 / 0.7);
+    color: oklch(95% 0.13 165);
+  }
+
+  /* ==========================================================================
      2) LIVE TICKER — Linear-inspired horizontal scroll
      ========================================================================== */
   .mt-ticker {
@@ -8342,6 +8415,74 @@ p {
     color: oklch(80% 0.15 165);
   }
 
+  /* ----- amount presets — quick-select common transfer sizes -----
+     Smaller chips than the hero category chips (we're inside an input field).
+     Always ≥ 36px tall to stay tappable, but the visual weight is light so
+     they don't compete with the main amount value. */
+  .mt-calc__presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin-block-start: 0.5rem;
+  }
+  .mt-calc__preset {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: 36px;
+    padding-inline: 0.625rem;
+    padding-block: 0.5rem;
+    border-radius: 9999px;
+    background: oklch(99% 0.003 240 / 0.7);
+    border: 1px solid oklch(90% 0.006 240 / 0.85);
+    color: oklch(40% 0.02 250);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition:
+      background 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      color 180ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .mt-calc__preset:hover {
+    background: oklch(60% 0.15 165 / 0.12);
+    border-color: oklch(60% 0.15 165 / 0.4);
+    color: oklch(35% 0.15 165);
+  }
+  .mt-calc__preset:focus-visible {
+    outline: 2px solid oklch(60% 0.15 165);
+    outline-offset: 2px;
+  }
+  .mt-calc__preset--active {
+    background: oklch(60% 0.15 165 / 0.18);
+    border-color: oklch(60% 0.15 165 / 0.6);
+    color: oklch(38% 0.15 165);
+  }
+  .mt-calc__preset--active:hover {
+    background: oklch(60% 0.15 165 / 0.24);
+    border-color: oklch(60% 0.15 165 / 0.8);
+    color: oklch(35% 0.15 165);
+  }
+  .dark .mt-calc__preset {
+    background: oklch(22% 0.01 250 / 0.6);
+    border-color: oklch(35% 0.012 250 / 0.7);
+    color: oklch(75% 0.01 240);
+  }
+  .dark .mt-calc__preset:hover {
+    background: oklch(60% 0.15 165 / 0.2);
+    border-color: oklch(60% 0.15 165 / 0.5);
+    color: oklch(90% 0.13 165);
+  }
+  .dark .mt-calc__preset--active {
+    background: oklch(60% 0.15 165 / 0.28);
+    border-color: oklch(60% 0.15 165 / 0.7);
+    color: oklch(90% 0.13 165);
+  }
+
   /* Currency picker — visible code chip + native select on top (invisible).
      This avoids the "AI-generated flat dropdown" feel while keeping native
      a11y (keyboard, screen reader, mobile OS picker). */
@@ -8354,7 +8495,8 @@ p {
   .mt-calc__picker-flag {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
+    gap: 0.4rem;
     min-inline-size: 2.75rem;
     block-size: 2.25rem;
     padding-inline: 0.625rem;
@@ -8371,6 +8513,28 @@ p {
   .dark .mt-calc__picker-flag {
     background: oklch(75% 0.15 165);
     color: oklch(15% 0.015 250);
+  }
+  /* Code label inside the picker chip. Inherits weight/letter-spacing/colour
+     from .mt-calc__picker-flag so the typography stays unified. */
+  .mt-calc__picker-flag-code {
+    line-height: 1;
+  }
+  /* Dropdown caret — uses currentColor so it stays legible against the flag's
+     bg without redefining palette values per theme. Slightly subdued by
+     opacity so it reads as "hint", not "new content". */
+  .mt-calc__picker-caret {
+    inline-size: 0.75rem;
+    block-size: 0.75rem;
+    opacity: 0.85;
+    flex-shrink: 0;
+    transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .mt-calc__picker:hover .mt-calc__picker-caret {
+    opacity: 1;
+    transform: translateY(1px);
+  }
+  .mt-calc__picker:focus-within .mt-calc__picker-caret {
+    opacity: 1;
   }
   .mt-calc__picker-select {
     position: absolute;
@@ -8466,6 +8630,66 @@ p {
     background: oklch(50% 0.02 240 / 0.25);
   }
 
+  /* ----- best-deal hint ----- pill that surfaces "who's cheapest right now".
+     Lives BELOW the dual rate line so the calculator's decision flow is:
+       pick pair → see rates → see who's best → submit. The hint must be
+       scannable in <1s, never louder than the converted value above it. */
+  .mt-calc__hint {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-block-start: 0.875rem;
+    padding: 0.625rem 0.875rem;
+    border-radius: 0.75rem;
+    background: oklch(60% 0.15 165 / 0.08);
+    border: 1px solid oklch(60% 0.15 165 / 0.25);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: oklch(35% 0.02 250);
+  }
+  .dark .mt-calc__hint {
+    background: oklch(60% 0.15 165 / 0.14);
+    border-color: oklch(60% 0.15 165 / 0.35);
+    color: oklch(85% 0.01 240);
+  }
+  .mt-calc__hint-dot {
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    border-radius: 9999px;
+    background: oklch(70% 0.18 150);
+    box-shadow:
+      0 0 0 3px oklch(70% 0.18 150 / 0.18),
+      0 0 8px oklch(70% 0.18 150 / 0.45);
+    flex-shrink: 0;
+  }
+  .mt-calc__hint-label {
+    font-weight: 700;
+    color: oklch(38% 0.15 165);
+    font-size: 0.75rem;
+    letter-spacing: 0.01em;
+  }
+  .dark .mt-calc__hint-label {
+    color: oklch(82% 0.13 165);
+  }
+  .mt-calc__hint-text {
+    color: oklch(40% 0.02 250);
+    flex: 1;
+    min-inline-size: 0;
+    /* Allow long provider names + spread text to wrap inside the pill. */
+    word-break: break-word;
+  }
+  .mt-calc__hint-text strong {
+    font-weight: 700;
+    color: oklch(15% 0.015 250);
+  }
+  .dark .mt-calc__hint-text {
+    color: oklch(80% 0.01 240);
+  }
+  .dark .mt-calc__hint-text strong {
+    color: oklch(95% 0.005 240);
+  }
+
   /* Final submit CTA inside the card. */
   .mt-calc__cta {
     display: inline-flex;
@@ -8502,17 +8726,71 @@ p {
     background: oklch(92% 0.01 240);
   }
 
-  /* Empty-state (no rates yet) — skeleton-ish, not flashy. */
+  /* Empty-state (no rates yet) — shimmer skeleton preserves the slot while
+     preserving the calculator's visual rhythm (header pill + body bars). */
   .mt-calc--empty {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 1.125rem;
     min-block-size: 18rem;
   }
+  .mt-calc__skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    inline-size: 100%;
+  }
+  .mt-calc__skeleton-bar {
+    display: block;
+    block-size: 0.875rem;
+    inline-size: 80%;
+    border-radius: 9999px;
+    background: linear-gradient(
+      90deg,
+      oklch(92% 0.005 240 / 0.55) 0%,
+      oklch(96% 0.005 240 / 0.9) 50%,
+      oklch(92% 0.005 240 / 0.55) 100%
+    );
+    background-size: 200% 100%;
+    animation: mt-skel-shimmer 1.6s ease-in-out infinite;
+  }
+  .mt-calc__skeleton-bar--lg {
+    inline-size: 100%;
+    block-size: 1.5rem;
+  }
+  .mt-calc__skeleton-bar--md {
+    inline-size: 65%;
+  }
+  .mt-calc__skeleton-bar--sm {
+    inline-size: 40%;
+  }
+  .dark .mt-calc__skeleton-bar {
+    background: linear-gradient(
+      90deg,
+      oklch(28% 0.012 250 / 0.55) 0%,
+      oklch(38% 0.012 250 / 0.85) 50%,
+      oklch(28% 0.012 250 / 0.55) 100%
+    );
+    background-size: 200% 100%;
+  }
+  @keyframes mt-skel-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mt-calc__skeleton-bar {
+      animation: none;
+    }
+  }
+
   .mt-calc__loading {
     font-size: 0.8125rem;
+    line-height: 1.4;
     color: oklch(50% 0.02 240);
     margin: 0;
+    text-align: center;
   }
   .dark .mt-calc__loading {
     color: oklch(70% 0.01 240);

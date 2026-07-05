@@ -27,6 +27,8 @@ import LinkBubbleMenu from './components/link-bubble-menu';
 import TableContextMenu from './components/table-context-menu';
 import TextBubbleMenu from './components/text-bubble-menu';
 import TableToolbar from './components/table-toolbar';
+import TocSidebar from './components/toc-sidebar';
+import ImageUploadDialog from './components/image-upload-dialog';
 import type { EditorInstance } from '.';
 import { getToCItems, type TocItem } from './lib/table-of-contents';
 import { cn } from '@/lib/utils';
@@ -138,6 +140,9 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
 
     // ── Word / character / selection counters ──
     const [counts, setCounts] = useState({ words: 0, chars: 0, charsNoSpace: 0 });
+    const [tocItems, setTocItems] = useState<TocItem[]>([]);
+    const [tocOpen, setTocOpen] = useState(true);
+    const [imageUploadOpen, setImageUploadOpen] = useState(false);
     const [selectionCount, setSelectionCount] = useState<{
       words: number;
       chars: number;
@@ -238,9 +243,26 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
     // ── TOC propagation ──
     useEffect(() => {
       if (!editor || editor.isDestroyed) return;
-      const items = getToCItems(editor);
-      onUpdateToC?.(items);
+      const update = () => {
+        const items = getToCItems(editor);
+        setTocItems(items);
+        onUpdateToC?.(items);
+      };
+      update();
+      editor.on('update', update);
+      return () => {
+        editor.off('update', update);
+      };
     }, [editor, onUpdateToC]);
+
+    // ── Slash command image upload bridge ──
+    useEffect(() => {
+      if (!editor || editor.isDestroyed) return;
+      editor.storage.slashCommands = {
+        ...(editor.storage.slashCommands ?? {}),
+        openImageUpload: () => setImageUploadOpen(true),
+      };
+    }, [editor]);
 
     // ── Content parsing + initial load ──
     // 2026-07-05: در v3 نوع Content فقط string | object | JSONContent[] | null
@@ -336,6 +358,9 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
               <FixedMenu
                 editor={editor}
                 className={`at-editor-toolbar ${toolBarClassName}`}
+                tocOpen={tocOpen}
+                onToggleToc={() => setTocOpen((v) => !v)}
+                hasToc={tocItems.length > 0}
               />
             </div>
           )}
@@ -343,6 +368,11 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
           {/* The canvas itself — paper feel + ruler */}
           <div className="at-editor-canvas">
             <div className="at-editor-ruler" aria-hidden />
+            {tocOpen && tocItems.length > 0 && (
+              <div className="at-editor-toc-panel">
+                <TocSidebar items={tocItems} />
+              </div>
+            )}
             <div className={`at-editor-paper ${isEmpty ? 'at-editor-paper--empty' : ''}`}>
               <LinkBubbleMenu editor={editor} />
               <TableContextMenu editor={editor} />

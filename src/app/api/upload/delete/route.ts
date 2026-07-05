@@ -6,19 +6,28 @@ export async function DELETE(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user) {
-      return NextResponse.json({ error: 'احراز هویت الزامی است' }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: { code: 'UNAUTHORIZED', message: 'احراز هویت الزامی است' } },
+        { status: 401 }
+      );
     }
 
     const { imageUrl } = await request.json();
 
     if (!imageUrl) {
-      return NextResponse.json({ error: 'آدرس تصویر الزامی است' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: { code: 'MISSING_IMAGE_URL', message: 'آدرس تصویر الزامی است' } },
+        { status: 400 }
+      );
     }
 
     // فقط فایل‌های لوکال رو حذف کن
     if (!imageUrl.startsWith('/uploads/')) {
       return NextResponse.json(
-        { error: 'فقط فایل‌های آپلود شده قابل حذف هستند' },
+        {
+          success: false,
+          error: { code: 'INVALID_IMAGE_URL', message: 'فقط فایل‌های آپلود شده قابل حذف هستند' },
+        },
         { status: 400 }
       );
     }
@@ -26,7 +35,10 @@ export async function DELETE(request: NextRequest) {
     // استخراج folder و filename از URL
     const parts = imageUrl.replace('/uploads/', '').split('/');
     if (parts.length < 2) {
-      return NextResponse.json({ error: 'مسیر نامعتبر' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: { code: 'INVALID_PATH', message: 'مسیر نامعتبر' } },
+        { status: 400 }
+      );
     }
 
     const folder = parts[0];
@@ -35,16 +47,22 @@ export async function DELETE(request: NextRequest) {
     const deleted = await deleteFile(folder, filename);
 
     if (!deleted) {
-      return NextResponse.json({ error: 'فایل یافت نشد' }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: { code: 'FILE_NOT_FOUND', message: 'فایل یافت نشد' } },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({
       success: true,
-      message: 'فایل با موفقیت حذف شد',
+      data: { message: 'فایل با موفقیت حذف شد' },
     });
   } catch (error) {
     console.error('خطا در حذف فایل:', error);
-    return NextResponse.json({ error: 'خطا در حذف فایل' }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: { code: 'DELETE_FAILED', message: 'خطا در حذف فایل' } },
+      { status: 500 }
+    );
   }
 }
 

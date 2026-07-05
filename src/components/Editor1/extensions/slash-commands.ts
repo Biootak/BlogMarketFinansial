@@ -36,6 +36,8 @@ export interface SlashCommandItem {
   command: (editor: Editor) => void;
   keywords: string[];
   category: 'basic' | 'media' | 'advanced' | 'list';
+  /** اگر true باشد، به جای اجرای مستقیم دستور، دیالوگ آپلود تصویر باز می‌شود. */
+  uploadImage?: boolean;
 }
 
 export const defaultSlashCommands: SlashCommandItem[] = [
@@ -108,15 +110,15 @@ export const defaultSlashCommands: SlashCommandItem[] = [
   // Media
   {
     title: 'تصویر',
-    description: 'درج تصویر',
+    description: 'آپلود و درج تصویر',
     icon: ImageIcon,
     keywords: ['image', 'picture', 'تصویر', 'عکس'],
     category: 'media',
+    uploadImage: true,
     command: (editor) => {
-      const url = window.prompt('آدرس تصویر را وارد کنید:');
-      if (url) {
-        editor.chain().focus().setImage({ src: url }).run();
-      }
+      // 2026-07-05: آپلود تصویر از طریق دیالوگ داخلی انجام می‌شود؛
+      // دیالوگ در shell پایدار ادیتور رندر شده و از طریق storage فراخوانده می‌شود.
+      editor.storage.slashCommands.openImageUpload?.();
     },
   },
   {
@@ -216,7 +218,22 @@ export const defaultSlashCommands: SlashCommandItem[] = [
   },
 ];
 
-export const SlashCommands = Extension.create({
+export interface SlashCommandsStorage {
+  slashCommands: {
+    openImageUpload?: () => void;
+  };
+}
+
+declare module '@tiptap/core' {
+  interface Storage {
+    slashCommands: SlashCommandsStorage['slashCommands'];
+  }
+}
+
+export const SlashCommands = Extension.create<
+  { suggestion: Partial<SuggestionOptions> },
+  SlashCommandsStorage
+>({
   name: 'slashCommands',
 
   addOptions() {
@@ -234,6 +251,12 @@ export const SlashCommands = Extension.create({
           props.command(editor);
         },
       } as Partial<SuggestionOptions>,
+    };
+  },
+
+  addStorage() {
+    return {
+      slashCommands: {},
     };
   },
 

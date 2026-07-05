@@ -10,23 +10,75 @@ import LiveTicker from './LiveTicker';
 import TrustStrip from './TrustStrip';
 import FeatureList from './FeatureList';
 import RateComparisonSection from './RateComparisonSection';
+import { loadActiveTransferProviders } from '@/lib/money-transfer/providers';
+import {
+  buildHeroPairs,
+  computeSpreadStats,
+  formatFaNumber,
+  type HeroPair,
+} from '@/lib/money-transfer/hero';
 
 export const metadata: Metadata = {
   title: 'صرافی آنلاین | انتقال ارز سریع و مطمئن',
   description: 'بهترین نرخ‌های حواله ارزی برای انتقال سریع و امن پول در سراسر جهان',
 };
 
+interface HeroInitial {
+  pairs: HeroPair[];
+  spreadStats: ReturnType<typeof computeSpreadStats>;
+  providers: { count: number; bestName: string; bestSpread: number };
+}
+
+// Async server-side pre-computation of the stats the hero depends on. Doing
+// this here (and not inside the client component) keeps the client bundle
+// smaller and avoids redundant work on every render.
+async function buildHeroInitial(): Promise<HeroInitial> {
+  const [rates, providers] = await Promise.all([
+    getExchangeRates(),
+    loadActiveTransferProviders(),
+  ]);
+  const pairs = buildHeroPairs(rates);
+  const spreadStats = computeSpreadStats(pairs);
+
+  // «بهترین» provider بر مبنای کمترین spread.
+  // اگه لیست خالی یا همگی spread=0، از اوّلی استفاده می‌کنیم.
+  const activeProviders = [...providers].filter((p) => p.active);
+  const sorted = [...activeProviders].sort(
+    (a, b) => a.spreadPercent - b.spreadPercent,
+  );
+  const best = sorted[0];
+  return {
+    pairs,
+    spreadStats,
+    providers: {
+      count: activeProviders.length,
+      bestName: best?.name ?? formatFaNumber(0),
+      bestSpread: best?.spreadPercent ?? 0,
+    },
+  };
+}
+
 // Dynamically rendered on demand — the shared site header reads auth(), which
 // opts the whole (site) tree out of static generation (see (home)/page.tsx).
 export default async function MoneyTransferPage() {
-  const exchangeRates = await getExchangeRates();
-  const rateLists = await getRateLists();
+  const [exchangeRates, rateLists, hero] = await Promise.all([
+    getExchangeRates(),
+    getRateLists(),
+    buildHeroInitial(),
+  ]);
   const activeRateLists = rateLists.filter((list) => list.isActive);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 overflow-x-hidden">
       {/* Hero + Live Converter (one cohesive unit) */}
-      <HeroConverter rates={exchangeRates} />
+      <HeroConverter
+        rates={exchangeRates}
+        pairs={hero.pairs}
+        spreadStats={hero.spreadStats}
+        providerCount={hero.providers.count}
+        bestProvider={hero.providers.bestName}
+        bestSpread={hero.providers.bestSpread}
+      />
 
       {/* Live ticker — thin full-width strip right under the hero */}
       <div className="mt-3 sm:mt-4">

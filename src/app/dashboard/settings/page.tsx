@@ -220,11 +220,15 @@ export default function SettingsPage() {
       uploadData.append('folder', 'general');
       const response = await fetch('/api/upload', { method: 'POST', body: uploadData });
       const data = await response.json();
-      if (data.success && data.files?.[0]?.url) {
-        handleInputChange('general', 'logoUrl', data.files[0].url);
+      if (data.success && data.data?.files?.[0]?.url) {
+        handleInputChange('general', 'logoUrl', data.data.files[0].url);
         toast({ title: 'موفق', description: 'لوگو با موفقیت آپلود شد' });
       } else {
-        toast({ title: 'خطا', description: data.error || 'خطا در آپلود لوگو', variant: 'destructive' });
+        toast({
+          title: 'خطا',
+          description: data.error?.message || 'خطا در آپلود لوگو',
+          variant: 'destructive',
+        });
       }
     } catch {
       toast({ title: 'خطا', description: 'خطا در آپلود لوگو', variant: 'destructive' });

@@ -722,35 +722,41 @@ async function seedTransferProviders() {
   console.log(`   ✅ ${added} ایجاد، ${updated} به‌روزرسانی`);
 }
 
-/* ─── 14d) ExchangeRates from SYMBOL_REGISTRY ─────────────────── */
+/* ─── 14d) ExchangeRates from SYMBOL_REGISTRY ───────────────────
+ * نرخ‌های پیش‌فرض بر مبنای بازار آزاد ایران — مرداد ۱۴۰۵ (ژوئیه ۲۰۲۶).
+ * مقدار خام = (تومان × divisor). در محاسبات کلاینت مقدار /divisor می‌شود.
+ * 2026-07-05: اضافه شدن default buy/sell تا مبدل هیرو بدون cron/scraper کار کند.
+ */
 async function seedExchangeRates() {
   const SYMBOL_REGISTRY = [
-    { symbol: 'AFGHANI_USD',  displayNameFa: 'دلار هرات',     group: 'afghan',     unit: 'toman', divisor: 10, decimals: 0, priority: 2 },
-    { symbol: 'AFGHANI_AFN',  displayNameFa: 'افغانی',        group: 'afghan',     unit: 'toman', divisor: 10, decimals: 0, priority: 3 },
-    { symbol: 'IRAN_USD',     displayNameFa: 'دلار تهران',    tgjuKey: 'price_dollar_rl', group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 1 },
-    { symbol: 'IRAN_EUR',     displayNameFa: 'یورو',          tgjuKey: 'price_eur',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 7 },
-    { symbol: 'IRAN_GBP',     displayNameFa: 'پوند انگلیس',   tgjuKey: 'price_gbp',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 9 },
-    { symbol: 'IRAN_AED',     displayNameFa: 'درهم امارات',   tgjuKey: 'price_aed',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 8 },
-    { symbol: 'IRAN_TRY',     displayNameFa: 'لیر ترکیه',     tgjuKey: 'price_try',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 11 },
-    { symbol: 'IRAN_CHF',     displayNameFa: 'فرانک سوئیس',   tgjuKey: 'price_chf',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 17 },
-    { symbol: 'IRAN_CAD',     displayNameFa: 'دلار کانادا',   tgjuKey: 'price_cad',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 18 },
-    { symbol: 'IRAN_AUD',     displayNameFa: 'دلار استرالیا', tgjuKey: 'price_aud',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 19 },
-    { symbol: 'IRAN_CNY',     displayNameFa: 'یوان چین',      tgjuKey: 'price_cny',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 12 },
-    { symbol: 'IRAN_JPY',     displayNameFa: 'ین ژاپن',       tgjuKey: 'price_jpy',       group: 'minor',      unit: 'toman', divisor: 10, decimals: 0, priority: 20 },
-    { symbol: 'IRAN_RUB',     displayNameFa: 'روبل روسیه',    tgjuKey: 'price_rub',       group: 'minor',      unit: 'toman', divisor: 10, decimals: 0, priority: 21 },
-    { symbol: 'IRAN_INR',     displayNameFa: 'روپیه هند',     tgjuKey: 'price_inr',       group: 'minor',      unit: 'toman', divisor: 10, decimals: 0, priority: 22 },
-    { symbol: 'IRAN_COIN_EMAMI',   displayNameFa: 'سکه امامی',         tgjuKey: 'retail_sekee',   group: 'iran-coin',  unit: 'toman', divisor: 10, decimals: 0, priority: 4 },
-    { symbol: 'IRAN_COIN_BAHAR',   displayNameFa: 'سکه بهار آزادی',   tgjuKey: 'retail_sekeb',   group: 'iran-coin',  unit: 'toman', divisor: 10, decimals: 0, priority: 10 },
-    { symbol: 'IRAN_COIN_NIM',     displayNameFa: 'نیم سکه',           tgjuKey: 'retail_nim',     group: 'iran-coin',  unit: 'toman', divisor: 10, decimals: 0, priority: 13 },
-    { symbol: 'IRAN_COIN_ROB',     displayNameFa: 'ربع سکه',           tgjuKey: 'retail_rob',     group: 'iran-coin',  unit: 'toman', divisor: 10, decimals: 0, priority: 14 },
-    { symbol: 'IRAN_COIN_GERAMI',  displayNameFa: 'سکه گرمی',          tgjuKey: 'retail_gerami',  group: 'iran-coin',  unit: 'toman', divisor: 10, decimals: 0, priority: 15 },
-    { symbol: 'IRAN_GOLD_18K',     displayNameFa: 'طلای ۱۸ عیار',      tgjuKey: 'geram18',        group: 'iran-gold',  unit: 'toman', divisor: 10, decimals: 0, priority: 5 },
-    { symbol: 'IRAN_GOLD_MESGHAL', displayNameFa: 'مثقال طلا',         tgjuKey: 'mesghal',        group: 'iran-gold',  unit: 'toman', divisor: 10, decimals: 0, priority: 16 },
-    { symbol: 'GLOBAL_OUNCE_GOLD', displayNameFa: 'انس طلا',           tgjuKey: 'ons',            group: 'global',     unit: 'usd',   divisor: 1,  decimals: 2, priority: 6 },
+    { symbol: 'AFGHANI_USD',        displayNameFa: 'دلار هرات',       group: 'afghan',     unit: 'toman', divisor: 10, decimals: 0, priority: 2,  buy: 68200, sell: 68700 },
+    { symbol: 'AFGHANI_AFN',        displayNameFa: 'افغانی',          group: 'afghan',     unit: 'toman', divisor: 10, decimals: 0, priority: 3,  buy: 9650,  sell: 9800 },
+    { symbol: 'IRAN_USD',           displayNameFa: 'دلار تهران',      tgjuKey: 'price_dollar_rl', group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 1,  buy: 68300, sell: 68700 },
+    { symbol: 'IRAN_EUR',           displayNameFa: 'یورو',            tgjuKey: 'price_eur',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 7,  buy: 73900, sell: 74300 },
+    { symbol: 'IRAN_GBP',           displayNameFa: 'پوند انگلیس',     tgjuKey: 'price_gbp',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 9,  buy: 86800, sell: 87300 },
+    { symbol: 'IRAN_AED',           displayNameFa: 'درهم امارات',     tgjuKey: 'price_aed',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 8,  buy: 18580, sell: 18680 },
+    { symbol: 'IRAN_TRY',           displayNameFa: 'لیر ترکیه',       tgjuKey: 'price_try',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 11, buy: 2080,  sell: 2110 },
+    { symbol: 'IRAN_CHF',           displayNameFa: 'فرانک سوئیس',     tgjuKey: 'price_chf',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 17, buy: 76100, sell: 76600 },
+    { symbol: 'IRAN_CAD',           displayNameFa: 'دلار کانادا',     tgjuKey: 'price_cad',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 18, buy: 49850, sell: 50250 },
+    { symbol: 'IRAN_AUD',           displayNameFa: 'دلار استرالیا',   tgjuKey: 'price_aud',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 19, buy: 44500, sell: 44900 },
+    { symbol: 'IRAN_CNY',           displayNameFa: 'یوان چین',        tgjuKey: 'price_cny',       group: 'iran-forex', unit: 'toman', divisor: 10, decimals: 0, priority: 12, buy: 9420,  sell: 9490 },
+    { symbol: 'IRAN_JPY',           displayNameFa: 'ین ژاپن',         tgjuKey: 'price_jpy',       group: 'minor',      unit: 'toman', divisor: 10, decimals: 0, priority: 20, buy: 45200, sell: 45500 },
+    { symbol: 'IRAN_RUB',           displayNameFa: 'روبل روسیه',      tgjuKey: 'price_rub',       group: 'minor',      unit: 'toman', divisor: 10, decimals: 0, priority: 21, buy: 7600,  sell: 7680 },
+    { symbol: 'IRAN_INR',           displayNameFa: 'روپیه هند',       tgjuKey: 'price_inr',       group: 'minor',      unit: 'toman', divisor: 10, decimals: 0, priority: 22, buy: 815,   sell: 825 },
+    { symbol: 'IRAN_COIN_EMAMI',    displayNameFa: 'سکه امامی',       tgjuKey: 'retail_sekee',   group: 'iran-coin',  unit: 'toman', divisor: 10, decimals: 0, priority: 4,  buy: 43100000, sell: 43600000 },
+    { symbol: 'IRAN_COIN_BAHAR',    displayNameFa: 'سکه بهار آزادی', tgjuKey: 'retail_sekeb',   group: 'iran-coin',  unit: 'toman', divisor: 10, decimals: 0, priority: 10, buy: 38100000, sell: 38600000 },
+    { symbol: 'IRAN_COIN_NIM',      displayNameFa: 'نیم سکه',         tgjuKey: 'retail_nim',     group: 'iran-coin',  unit: 'toman', divisor: 10, decimals: 0, priority: 13, buy: 22300000, sell: 22600000 },
+    { symbol: 'IRAN_COIN_ROB',      displayNameFa: 'ربع سکه',         tgjuKey: 'retail_rob',     group: 'iran-coin',  unit: 'toman', divisor: 10, decimals: 0, priority: 14, buy: 12650000, sell: 12850000 },
+    { symbol: 'IRAN_COIN_GERAMI',   displayNameFa: 'سکه گرمی',        tgjuKey: 'retail_gerami',  group: 'iran-coin',  unit: 'toman', divisor: 10, decimals: 0, priority: 15, buy: 6700000,  sell: 6850000 },
+    { symbol: 'IRAN_GOLD_18K',      displayNameFa: 'طلای ۱۸ عیار',    tgjuKey: 'geram18',        group: 'iran-gold',  unit: 'toman', divisor: 10, decimals: 0, priority: 5,  buy: 4220000,  sell: 4265000 },
+    { symbol: 'IRAN_GOLD_MESGHAL',  displayNameFa: 'مثقال طلا',       tgjuKey: 'mesghal',        group: 'iran-gold',  unit: 'toman', divisor: 10, decimals: 0, priority: 16, buy: 18350000, sell: 18550000 },
+    { symbol: 'GLOBAL_OUNCE_GOLD',  displayNameFa: 'انس طلا',         tgjuKey: 'ons',            group: 'global',     unit: 'usd',   divisor: 1,  decimals: 2, priority: 6,  buy: 2342.5, sell: 2347.0 },
   ];
 
   let added = 0, updated = 0;
   for (const entry of SYMBOL_REGISTRY) {
+    const buyRate = (entry.buy * entry.divisor).toFixed(entry.decimals);
+    const sellRate = (entry.sell * entry.divisor).toFixed(entry.decimals);
     const existing = await p.exchangeRate.findUnique({ where: { symbol: entry.symbol } });
     if (existing) {
       await p.exchangeRate.update({
@@ -765,6 +771,9 @@ async function seedExchangeRates() {
           provider: 'auto',
           tgjuKey: entry.tgjuKey || null,
           active: true,
+          buyRate,
+          sellRate,
+          rateType: 'BUY_SELL',
         },
       });
       updated++;
@@ -784,12 +793,14 @@ async function seedExchangeRates() {
           tgjuKey: entry.tgjuKey || null,
           active: true,
           rateType: 'BUY_SELL',
+          buyRate,
+          sellRate,
         },
       });
       added++;
     }
   }
-  console.log(`   ✅ ${added} ایجاد، ${updated} به‌روزرسانی`);
+  console.log(`   ✅ ${added} ایجاد، ${updated} به‌روزرسانی (با نرخ پیش‌فرض بازار)`);
 }
 
 /* ─── 15) RateLists (نرخ ارز و طلا) ─────────────────────────── */

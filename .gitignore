@@ -73,3 +73,9 @@ next-env.d.ts
 /graphify-out/
 /.graphify-bak-images/
 /.mcp.json
+
+# TGJU scraper debug HTML dumps (regenerated on demand via TGJU_DEBUG_DUMP=1)
+/.tgju-debug/
+
+# Public dev/visual reports (regenerated on demand via scripts/build-tgju-visual.mjs)
+/public/dev-tools/

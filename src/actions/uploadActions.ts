@@ -1,20 +1,11 @@
 'use server';
 
-import { writeFile, mkdir, unlink } from 'fs/promises';
-import { existsSync } from 'fs';
-import path from 'path';
 import { auth } from '@/auth';
 import sharp from 'sharp';
+import { uploadFile, deleteFile } from '@/lib/storage';
 
-const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads');
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
-
-async function ensureDir(dir: string) {
-  if (!existsSync(dir)) {
-    await mkdir(dir, { recursive: true });
-  }
-}
 
 async function optimizeImage(buffer: Buffer, mimeType: string): Promise<Buffer> {
   if (mimeType === 'image/svg+xml') {
@@ -39,13 +30,17 @@ async function optimizeImage(buffer: Buffer, mimeType: string): Promise<Buffer> 
 function generateFilename(originalName: string, mimeType: string): string {
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(2, 8);
-  const baseName = originalName.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9-_]/g, '');
-  
-  const ext = mimeType === 'image/gif' || mimeType === 'image/svg+xml' 
-    ? originalName.split('.').pop() 
-    : 'webp';
-  
-  return `${timestamp}-${random}-${baseName.slice(0, 20)}.${ext}`;
+  const baseName = originalName
+    .replace(/\.[^/.]+$/, '')
+    .replace(/[^a-zA-Z0-9-_]/g, '')
+    .slice(0, 20);
+
+  const ext =
+    mimeType === 'image/gif' || mimeType === 'image/svg+xml'
+      ? originalName.split('.').pop()?.toLowerCase() || 'bin'
+      : 'webp';
+
+  return `${timestamp}-${random}-${baseName || 'image'}.${ext}`;
 }
 
 export type UploadFolder = 'posts' | 'avatars' | 'categories' | 'tags' | 'ads' | 'general';
@@ -81,21 +76,19 @@ export async function uploadImage(
       return { success: false, error: 'حجم فایل بیشتر از 10 مگابایت است' };
     }
 
-    const uploadDir = path.join(UPLOAD_DIR, folder);
-    await ensureDir(uploadDir);
-
     const buffer = Buffer.from(await file.arrayBuffer());
     const optimizedBuffer = await optimizeImage(buffer, file.type);
     const filename = generateFilename(file.name, file.type);
-    const filepath = path.join(uploadDir, filename);
+    const contentType =
+      file.type === 'image/gif' || file.type === 'image/svg+xml' ? file.type : 'image/webp';
 
-    await writeFile(filepath, optimizedBuffer);
+    const result = await uploadFile(optimizedBuffer, filename, folder, contentType);
 
     return {
       success: true,
-      url: `/uploads/${folder}/${filename}`,
-      filename,
-      size: optimizedBuffer.length,
+      url: result.url,
+      filename: result.filename,
+      size: result.size,
     };
   } catch (error) {
     console.error('خطا در آپلود فایل:', error);
@@ -110,18 +103,23 @@ export async function deleteImage(imageUrl: string): Promise<{ success: boolean;
       return { success: false, error: 'احراز هویت الزامی است' };
     }
 
-    // فقط فایل‌های لوکال رو حذف کن
     if (!imageUrl.startsWith('/uploads/')) {
       return { success: false, error: 'فقط فایل‌های لوکال قابل حذف هستند' };
     }
 
-    const filepath = path.join(process.cwd(), 'public', imageUrl);
-    
-    if (!existsSync(filepath)) {
+    const parts = imageUrl.replace('/uploads/', '').split('/');
+    if (parts.length < 2) {
+      return { success: false, error: 'مسیر نامعتبر' };
+    }
+
+    const folder = parts[0];
+    const filename = parts.slice(1).join('/');
+    const deleted = await deleteFile(folder, filename);
+
+    if (!deleted) {
       return { success: false, error: 'فایل یافت نشد' };
     }
 
-    await unlink(filepath);
     return { success: true };
   } catch (error) {
     console.error('خطا در حذف فایل:', error);

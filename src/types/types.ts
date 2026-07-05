@@ -383,16 +383,46 @@ export interface CryptoTickerResult {
 // for data money-transfer
 export type RateType = 'BUY_SELL' | 'SINGLE_BULK';
 
+/** گروه‌بندی semantic نرخ‌ها — برای فیلتر کردن forex/afghan/gold/coin.
+ *  مقادیر در seed به‌صورت lowercase ذخیره می‌شوند. */
+export type ExchangeRateGroup = 'iran-forex' | 'afghan' | 'gold' | 'coin' | 'global' | (string & {});
+
 export interface ExchangeRateData {
   id: string;
   name: string;
+  /** کد ارز (مثلاً "USD") — در forex معمولاً برابر symbol است ولی در
+   *  gold/coin متفاوت است. */
   currency: string;
+  /** registry symbol — مثلاً "IRAN_USD" / "AFGHANI_AFN" / "GOLD_18K".
+   *  2026-06-20 اضافه شد. به‌عنوان unique key ثانویه عمل می‌کند. */
+  symbol?: string | null;
+  /** نام فارسی برای نمایش در UI (مثلاً «دلار تهران»).
+   *  متمایز از `name` (که technical slug انگلیسی است). */
+  displayNameFa?: string | null;
+  /** semantic group — نوع دارایی را برای فیلتر UI مشخص می‌کند. */
+  group?: ExchangeRateGroup | null;
+  /** واحد — مثلاً "currency" یا "gram". فقط برای نمایش. */
+  unit?: string | null;
+  /** ضریب تقسیم برای نرخ‌هایی که در DB با مقیاس بزرگ‌تر ثبت می‌شوند
+   *  (مثلاً قیمت طلا به ریال که باید ÷10 شود تا تومان شود). */
+  divisor?: number | null;
+  /** تعداد ارقام اعشار برای نمایش. */
+  decimals?: number | null;
+  /** اولویت نمایش (کمتر = بالاتر). */
+  priority?: number | null;
+  /** منبع داده — "auto" برای TGJU/USDT و غیره. */
+  provider?: string;
+  /** کلید TGJU برای provider="auto". */
+  tgjuKey?: string | null;
+  /** آیا این رکورد فعال است و در UI نمایش داده شود؟ */
+  active?: boolean;
   rateType: RateType;
   buyRate: string | null;
   sellRate: string | null;
   singleRate: string | null;
   bulkRate: string | null;
   imageUrl: string | null;
+  manualNote?: string | null;
   updatedAt: Date;
   createdAt: Date;
   description: string | null;

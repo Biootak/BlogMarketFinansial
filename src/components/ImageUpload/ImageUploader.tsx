@@ -43,15 +43,19 @@ async function uploadToLocal(file: File, folder: UploadFolder): Promise<Uploaded
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'خطا در آپلود');
+    throw new Error(error.error?.message || error.message || 'خطا در آپلود');
   }
 
   const data = await response.json();
+  const uploadedFile = data.data?.files?.[0];
+  if (!uploadedFile) {
+    throw new Error('پاسخ سرور نامعتبر است');
+  }
   return {
-    url: data.files[0].url,
-    width: data.files[0].width ?? null,
-    height: data.files[0].height ?? null,
-    variants: data.files[0].variants ?? {},
+    url: uploadedFile.url,
+    width: uploadedFile.width ?? null,
+    height: uploadedFile.height ?? null,
+    variants: uploadedFile.variants ?? {},
   };
 }
 

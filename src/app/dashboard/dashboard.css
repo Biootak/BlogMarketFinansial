@@ -13768,10 +13768,11 @@
     box-shadow: var(--at-shadow-sm);
   }
 
-  /* B — Layout that hosts the editor + sticky TOC rail side by side. */
+  /* B — Layout that hosts the editor in a single column; TOC now lives
+     as a floating panel inside the editor shell. */
   .at-editor-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 240px;
+    grid-template-columns: minmax(0, 1fr);
     gap: 16px;
     align-items: start;
   }
@@ -13784,21 +13785,9 @@
     border-radius: var(--at-radius-lg);
     overflow: hidden;
   }
-  .at-editor-layout__rail {
-    position: sticky;
-    top: 96px;
-    align-self: start;
-    min-width: 0;
-  }
   @media (max-width: 1024px) {
     .at-editor-layout {
       grid-template-columns: minmax(0, 1fr);
-    }
-    .at-editor-layout__rail {
-      position: static;
-      order: 2;
-      max-height: 320px;
-      overflow-y: auto;
     }
   }
 

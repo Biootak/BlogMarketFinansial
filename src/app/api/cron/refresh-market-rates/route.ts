@@ -5,6 +5,7 @@ import prisma from '@/lib/db';
 import { fetchTgjuLatest } from '@/lib/market-rates/tgju';
 import { getUsdtRate } from '@/lib/market-rates/usdt';
 import { getGlobalFxRates } from '@/lib/market-rates/fx';
+import { writeMarketRatesSnapshot } from '@/lib/market-rates/snapshot';
 
 const TAGS = {
   ticker: 'market-rates:ticker',
@@ -96,9 +97,32 @@ export async function POST(req: Request) {
   revalidateTag(TAGS.ticker);
   revalidateTag(TAGS.list);
 
+  // snapshot JSON برای سایت اصلی (best-effort — اگه fail شود cron شکست نمی‌خورد).
+  let snapshot: { count: number; path: string } | null = null;
+  let snapshotError: string | null = null;
+  try {
+    const snap = await writeMarketRatesSnapshot();
+    snapshot = { count: snap.count, path: snap.path };
+  } catch (e) {
+    snapshotError = e instanceof Error ? e.message : 'snapshot failed';
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[cron/refresh-market-rates] snapshot failed:', snapshotError);
+    }
+  }
+
   return NextResponse.json({
     success: true,
-    data: { updated, skipped, errors, total: autoRows.length, tgjuOk: tgjuResult.ok, usdtOk: !!usdt, fxOk: !!fx },
+    data: {
+      updated,
+      skipped,
+      errors,
+      total: autoRows.length,
+      tgjuOk: tgjuResult.ok,
+      usdtOk: !!usdt,
+      fxOk: !!fx,
+      snapshot,
+      snapshotError,
+    },
   });
 }
 
