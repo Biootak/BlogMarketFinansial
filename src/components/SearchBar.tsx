@@ -31,11 +31,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
         placeholder={placeholder}
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="w-full py-2 pl-10 pr-4 text-sm text-neutral-900 bg-white border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition duration-150 ease-in-out dark:bg-neutral-800 dark:text-white dark:border-neutral-600 dark:focus:ring-primary-400 text-right"
+        className="w-full py-2 ps-10 pe-4 text-sm text-neutral-900 bg-white border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition duration-150 ease-in-out dark:bg-neutral-800 dark:text-white dark:border-neutral-600 dark:focus:ring-primary-400"
         aria-label={placeholder}
         dir="rtl"
       />
-      <HiMagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 w-5 h-5 dark:text-neutral-500" />
+      <HiMagnifyingGlass className="absolute start-3 top-1/2 transform -translate-y-1/2 text-neutral-400 w-5 h-5 dark:text-neutral-500" />
     </div>
   );
 };

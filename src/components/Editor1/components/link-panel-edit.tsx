@@ -109,7 +109,7 @@ const LinkPanelEdit = ({ initial, isOpen, onSetLink }: LinkPanelEditProps) => {
               disabled={!isValidUrl}
               className="h-8 px-4 text-xs bg-primary-500 hover:bg-primary-600 text-white disabled:opacity-50"
             >
-              <Check size={14} className="ml-1" />
+              <Check size={14} className="ms-1" />
               ذخیره
             </Button>
           </div>

@@ -198,7 +198,7 @@ const EditorContentRenderer: React.FC<EditorContentRendererProps> = ({
   if (!parsedContent) {
     return (
       <div className={`flex items-center justify-center py-8 text-gray-400 ${className}`}>
-        <FileText className="w-8 h-8 ml-2" strokeWidth={1.5} aria-hidden />
+        <FileText className="w-8 h-8 ms-2" strokeWidth={1.5} aria-hidden />
         محتوایی برای نمایش وجود ندارد
       </div>
     );
@@ -208,7 +208,7 @@ const EditorContentRenderer: React.FC<EditorContentRendererProps> = ({
     return (
       <div className={`flex items-center justify-center py-8 ${className}`}>
         <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
-        <span className="mr-3 text-gray-500">در حال بارگذاری...</span>
+        <span className="me-3 text-gray-500">در حال بارگذاری...</span>
       </div>
     );
   }

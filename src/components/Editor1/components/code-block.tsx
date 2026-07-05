@@ -42,7 +42,7 @@ const CodeBlock = ({ node: { attrs, textContent } }: NodeViewProps) => {
           <DropdownMenuTrigger asChild>
             <button className='min-w-fit px-2 h-8 text-sm font-sans rounded text-black/80 bg-transparent hover:bg-[#e2e4e6] transition-all flex items-center justify-center outline-none'>
               {attrs['language']}
-              <Icon name='ChevronDown' className='size-3.5 ml-0.5' />
+              <Icon name='ChevronDown' className='size-3.5 ms-0.5' />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent

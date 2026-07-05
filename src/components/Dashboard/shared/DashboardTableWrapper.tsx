@@ -49,7 +49,7 @@ export function DashboardSearchInput({
         onChange={(e) => onChange(e.target.value)}
         className={cn(
           'h-10 sm:h-11 w-full min-w-[200px] sm:w-64',
-          'rounded-xl border-neutral-200/60 bg-white/80 pl-10 pr-4 text-sm',
+          'rounded-xl border-neutral-200/60 bg-white/80 ps-10 pe-4 text-sm',
           'shadow-sm backdrop-blur-sm transition-all duration-200',
           'placeholder:text-neutral-400',
           'hover:border-neutral-300',
@@ -59,7 +59,7 @@ export function DashboardSearchInput({
           'dark:focus:border-primary-500 dark:focus:ring-primary-900/30',
         )}
       />
-      <HiMagnifyingGlass className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
+      <HiMagnifyingGlass className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
     </div>
   );
 }

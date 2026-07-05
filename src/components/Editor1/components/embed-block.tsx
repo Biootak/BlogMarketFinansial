@@ -48,6 +48,24 @@ const EmbedBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, s
     setHasError(false);
   }, []);
 
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      const step = e.shiftKey ? 50 : 10;
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const next = Math.min(800, currentHeight + step);
+        setCurrentHeight(next);
+        updateAttributes({ height: next });
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const next = Math.max(200, currentHeight - step);
+        setCurrentHeight(next);
+        updateAttributes({ height: next });
+      }
+    },
+    [currentHeight, updateAttributes],
+  );
+
   useEffect(() => {
     if (!isResizing) return;
 
@@ -168,12 +186,15 @@ const EmbedBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, s
         {editor.isEditable && !hasError && (
           <div
             onMouseDown={handleMouseDown}
-            className="absolute bottom-0 left-0 right-0 h-6 cursor-ns-resize bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+            onKeyDown={handleKeyDown}
+            className="absolute bottom-0 inset-x-0 h-6 cursor-ns-resize bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             role="slider"
             aria-label="تغییر اندازه"
             aria-valuemin={200}
             aria-valuemax={800}
             aria-valuenow={currentHeight}
+            aria-orientation="vertical"
+            tabIndex={0}
           >
             <div className="w-20 h-1.5 bg-white/80 rounded-full shadow-sm" />
           </div>

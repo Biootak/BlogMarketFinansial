@@ -107,10 +107,10 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
       className="flex items-center gap-1 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-1.5 z-[100]"
     >
       {/* Row controls */}
-      <div className="flex items-center gap-0.5 px-1 border-l border-gray-200 dark:border-gray-700">
-        <button 
-          type="button" 
-          onClick={() => editor.chain().focus().addRowBefore().run()} 
+      <div className="flex items-center gap-0.5 px-1 border-s border-gray-200 dark:border-gray-700">
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().addRowBefore().run()}
           className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
           aria-label="افزودن ردیف بالا"
         >
@@ -135,7 +135,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
       </div>
 
       {/* Column controls */}
-      <div className="flex items-center gap-0.5 px-1 border-l border-gray-200 dark:border-gray-700">
+      <div className="flex items-center gap-0.5 px-1 border-s border-gray-200 dark:border-gray-700">
         <button 
           type="button" 
           onClick={() => editor.chain().focus().addColumnBefore().run()} 
@@ -163,7 +163,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
       </div>
 
       {/* Merge/Split controls */}
-      <div className="flex items-center gap-0.5 px-1 border-l border-gray-200 dark:border-gray-700">
+      <div className="flex items-center gap-0.5 px-1 border-s border-gray-200 dark:border-gray-700">
         <button 
           type="button" 
           onClick={() => editor.chain().focus().mergeCells().run()} 
@@ -197,7 +197,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
       </div>
 
       {/* Color picker */}
-      <div className="relative flex items-center gap-0.5 px-1 border-l border-gray-200 dark:border-gray-700" ref={colorPickerRef}>
+      <div className="relative flex items-center gap-0.5 px-1 border-s border-gray-200 dark:border-gray-700" ref={colorPickerRef}>
         <button 
           type="button" 
           onClick={() => setShowColorPicker(!showColorPicker)} 
@@ -209,7 +209,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
         </button>
         
         {showColorPicker && (
-          <div className="absolute top-full right-0 mt-2 p-3 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-[300] min-w-[260px]">
+          <div className="absolute top-full end-0 mt-2 p-3 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-[300] min-w-[260px]">
             {/* Header */}
             <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
               <span className="text-sm font-medium text-gray-700 dark:text-gray-200">رنگ سلول</span>

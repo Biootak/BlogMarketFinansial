@@ -3333,10 +3333,19 @@
     background: transparent;
   }
   .dash-side__brand-logo-img {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     inline-size: 36px;
     block-size: 36px;
-    object-fit: contain;
     flex-shrink: 0;
+    overflow: hidden;
+  }
+  .dash-side__brand-logo-img img,
+  .dash-side__brand-logo-img svg {
+    max-inline-size: 100%;
+    max-block-size: 100%;
+    object-fit: contain;
   }
   .dark .dash-side__brand-logo {
     background: transparent;

@@ -64,6 +64,20 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
     [textAlign, setWidth, updateAttributes],
   );
 
+  const handleKeyDown =
+    (direction: 'left' | 'right'): React.KeyboardEventHandler =>
+    (e) => {
+      const step = e.shiftKey ? 50 : 10;
+      const deltaFactor = (textAlign === 'center' ? 2 : 1) * (direction === 'left' ? -1 : 1);
+      const currentWidth = typeof width === 'number' ? width : Number(width) || 0;
+      const wrapperWidth = wrapperRef.current?.offsetWidth ?? currentWidth;
+      const newWidth = sizeClamp(currentWidth + step * deltaFactor, 100, wrapperWidth);
+      if (newWidth !== currentWidth) {
+        e.preventDefault();
+        updateAttributes({ width: newWidth });
+      }
+    };
+
   const handleMouseDown =
     (direction: 'left' | 'right'): React.MouseEventHandler =>
     (e) => {
@@ -255,11 +269,16 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
           {/* Inline-start resize handle (left in LTR, right in RTL) */}
           <div
             onMouseDown={handleMouseDown('left')}
-            className={`absolute z-40 h-full cursor-col-resize top-0 flex w-8 select-none flex-col justify-center -start-4 transition-opacity ${
+            onKeyDown={handleKeyDown('left')}
+            className={`absolute z-40 h-full cursor-col-resize top-0 flex w-8 select-none flex-col justify-center -start-4 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:rounded ${
               showControls || selected ? 'opacity-100' : 'opacity-0'
             }`}
             role="slider"
             aria-label="تغییر اندازه از ابتدا"
+            aria-valuemin={100}
+            aria-valuemax={Math.max(100, wrapperRef.current?.offsetWidth ?? 0)}
+            aria-valuenow={typeof width === 'number' ? width : Number(width) || 0}
+            aria-orientation="vertical"
             tabIndex={0}
           >
             <div className="h-16 w-1 rounded-full bg-primary-500 shadow-lg mx-auto" />
@@ -281,11 +300,16 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
           {/* Inline-end resize handle (right in LTR, left in RTL) */}
           <div
             onMouseDown={handleMouseDown('right')}
-            className={`absolute z-40 h-full cursor-col-resize top-0 flex w-8 select-none flex-col justify-center items-center -end-4 transition-opacity ${
+            onKeyDown={handleKeyDown('right')}
+            className={`absolute z-40 h-full cursor-col-resize top-0 flex w-8 select-none flex-col justify-center items-center -end-4 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:rounded ${
               showControls || selected ? 'opacity-100' : 'opacity-0'
             }`}
             role="slider"
             aria-label="تغییر اندازه از انتها"
+            aria-valuemin={100}
+            aria-valuemax={Math.max(100, wrapperRef.current?.offsetWidth ?? 0)}
+            aria-valuenow={typeof width === 'number' ? width : Number(width) || 0}
+            aria-orientation="vertical"
             tabIndex={0}
           >
             <div className="h-16 w-1 rounded-full bg-primary-500 shadow-lg" />

@@ -195,7 +195,7 @@ const tabs: Tab[] = [
                     </div>
                     <span className="block text-xs text-gray-400 mt-1 truncate" style={{ fontFamily: font.value || 'inherit' }}>نمونه ABC</span>
                   </button>
-                  {isUploaded && <button type="button" onClick={(e) => { e.stopPropagation(); removeFont(font.value); }} className="absolute top-1 left-1 w-4 h-4 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"><X size={8} /></button>}
+                  {isUploaded && <button type="button" onClick={(e) => { e.stopPropagation(); removeFont(font.value); }} className="absolute top-1 start-1 w-4 h-4 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"><X size={8} /></button>}
                 </div>
               );
             }) : <div className="col-span-2 py-10 text-center"><Type size={24} className="mx-auto mb-2 text-gray-300" /><p className="text-sm text-gray-500">فونتی یافت نشد</p></div>}

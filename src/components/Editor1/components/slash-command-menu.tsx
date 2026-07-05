@@ -171,8 +171,8 @@ const SlashCommandMenu = forwardRef<SlashCommandMenuRef, SlashCommandMenuProps>(
                     onClick={() => selectItem(currentIndex)}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 text-right transition-all duration-150 ${
                       isSelected
-                        ? 'bg-primary-100 dark:bg-primary-900/30 border-r-2 border-primary-500'
-                        : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 border-r-2 border-transparent'
+                        ? 'bg-primary-100 dark:bg-primary-900/30 border-s-2 border-primary-500'
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 border-s-2 border-transparent'
                     }`}
                   >
                     <span

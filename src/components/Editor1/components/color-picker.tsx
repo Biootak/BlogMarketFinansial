@@ -236,7 +236,7 @@ export const ColorPicker = memo(({ color, onChange, onClear, showOpacity = true 
         <button
           type="button"
           onClick={onClear}
-          className="mr-auto p-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
+          className="ms-auto p-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
           title="پاک کردن رنگ"
         >
           <Icon name="Undo" strokeWidth={2} className="w-4 h-4 text-gray-600 dark:text-gray-300" />

@@ -109,7 +109,7 @@ const FixedMenu = ({ editor, className }: FixedMenuProps) => {
           </Toolbar.Group>
 
           {/* More toggle — visible only when the overflow group is collapsed (mobile) */}
-          <Toolbar.Group className="at-toolbar-more ml-auto">
+          <Toolbar.Group className="at-toolbar-more ms-auto">
             <button
               type="button"
               onClick={() => setMoreOpen((v) => !v)}
