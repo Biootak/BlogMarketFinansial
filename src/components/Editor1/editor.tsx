@@ -28,7 +28,11 @@ import TableContextMenu from './components/table-context-menu';
 import TextBubbleMenu from './components/text-bubble-menu';
 import TableToolbar from './components/table-toolbar';
 import TocSidebar from './components/toc-sidebar';
-import ImageUploadDialog from './components/image-upload-dialog';
+import ImageUploadDialog, {
+  type ImageUploadDialogRef,
+} from './components/image-upload-dialog';
+import { Icon } from '@/components/ui/icon';
+import { toast } from '@/components/ui/use-toast';
 import type { EditorInstance } from '.';
 import { getToCItems, type TocItem } from './lib/table-of-contents';
 import { cn } from '@/lib/utils';
@@ -46,6 +50,25 @@ export interface EditorProps extends Partial<EditorOptions> {
   footerClassName?: string;
   displayWordsCount?: boolean;
   onUpdateToC?: (items: TocItem[]) => void;
+  /**
+   * اختیاری — اگر داده شود، editor محتوا را به صورت debounce‌شده در
+   * `localStorage[autoSaveKey]` ذخیره می‌کند (پیش‌فرض ۳ ثانیه بعد از
+   * آخرین تغییر) و در mount بعدی آن را بازیابی می‌کند.
+   *
+   * چرا localStorage به‌جای `/api/drafts`:
+   *   - فعلاً endpoint نداریم (پروژه draftها را با post status="DRAFT"
+   *     ذخیره می‌کند ولی endpoint اختصاصی برای autosave نه).
+   *   - حتی با endpoint، localStorage یک fallback فوری برای قطع اینترنت
+   *     یا بستن تب است.
+   *   - وقتی endpoint اضافه شد، می‌توان auto-save را به آن سوییچ کرد
+   *     بدون تغییر در call site.
+   *
+   * اگر `content` prop هم داده شده باشد، بازیابی انجام نمی‌شود
+   * (post واقعی بر local draft优先 دارد).
+   */
+  autoSaveKey?: string | null;
+  /** اختیاری — callback وقتی محتوای draft از localStorage بازیابی شد. */
+  onAutoSaveRestore?: (savedAt: number) => void;
 }
 
 export type EditorRef = {
@@ -83,6 +106,8 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
       content,
       displayWordsCount = true,
       onUpdateToC,
+      autoSaveKey = null,
+      onAutoSaveRestore,
       ...rest
     },
     ref,
@@ -105,6 +130,114 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
         : '';
     const mergedClass = cn(baseProseClass, consumerProseClass);
 
+    // 2026-07-06: refs that bridge paste/drop → upload → dialog.
+    // The upload helper needs the dialog ref, the dialog ref is created
+    // here. We declare it before mergedEditorProps so the helper closure
+    // can capture it.
+    const imageDialogRef = useRef<ImageUploadDialogRef | null>(null);
+
+    // 2026-07-06: light XHR upload for paste/drop. We don't reuse
+    // `uploadOneFile` from the ImageUploader module because that one is
+    // private to the component and tied to its React state — for
+    // paste/drop we want fire-and-forget semantics + toasts.
+    // Returns the first uploaded file's URL + dimensions, or null on
+    // failure (toast already shown to the user).
+    const uploadFileSilently = useCallback(
+      (file: File): Promise<{ url: string; width: number | null; height: number | null } | null> => {
+        return new Promise((resolve) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', '/api/upload', true);
+          const formData = new FormData();
+          formData.append('files', file);
+          formData.append('folder', 'posts');
+          xhr.addEventListener('load', () => {
+            try {
+              const body = JSON.parse(xhr.responseText) as {
+                success?: boolean;
+                data?: { files?: { url: string; width: number | null; height: number | null }[] };
+                error?: { message?: string };
+              };
+              if (xhr.status >= 200 && xhr.status < 300 && body.success) {
+                const first = body.data?.files?.[0];
+                if (first) {
+                  resolve({ url: first.url, width: first.width, height: first.height });
+                  return;
+                }
+              }
+              toast({
+                title: 'خطا در آپلود تصویر',
+                description: body.error?.message ?? 'خطای نامشخص',
+                variant: 'destructive',
+              });
+              resolve(null);
+            } catch {
+              toast({ title: 'خطا در آپلود تصویر', description: 'پاسخ نامعتبر سرور', variant: 'destructive' });
+              resolve(null);
+            }
+          });
+          xhr.addEventListener('error', () => {
+            toast({ title: 'خطای شبکه', description: 'آپلود تصویر ناموفق بود', variant: 'destructive' });
+            resolve(null);
+          });
+          xhr.send(formData);
+        });
+      },
+      [],
+    );
+
+    // 2026-07-06: extract image files from a clipboard / drop event.
+    // Returns null if no image is present (so the caller knows to fall
+    // through to the default editor behavior).
+    const extractImageFiles = useCallback(
+      (dt: DataTransfer | null | undefined): File[] => {
+        if (!dt) return [];
+        const files: File[] = [];
+        // `files` is the modern API and works for both paste and drop.
+        // `items` is fallback for older browsers / drag-data uris.
+        if (dt.files && dt.files.length > 0) {
+          for (let i = 0; i < dt.files.length; i++) {
+            const f = dt.files.item(i);
+            if (f && f.type.startsWith('image/')) files.push(f);
+          }
+        }
+        if (files.length === 0 && dt.items) {
+          for (let i = 0; i < dt.items.length; i++) {
+            const item = dt.items[i];
+            if (item && item.kind === 'file' && item.type.startsWith('image/')) {
+              const f = item.getAsFile();
+              if (f) files.push(f);
+            }
+          }
+        }
+        return files;
+      },
+      [],
+    );
+
+    const handlePastedImage = useCallback(
+      async (files: File[]) => {
+        if (files.length === 0) return false;
+        const file = files[0];
+        if (!file) return false;
+        // Only handle the first image — multi-image paste into a single
+        // editor insertion is a niche case, and the dialog UX is built
+        // around one-at-a-time. Extra files are ignored.
+        toast({
+          title: 'در حال آپلود...',
+          description: file.name,
+        });
+        const result = await uploadFileSilently(file);
+        if (!result) return true; // we handled (with error), don't fall through
+        imageDialogRef.current?.setPending(result.url, {
+          width: result.width,
+          height: result.height,
+        });
+        imageDialogRef.current?.open();
+        return true;
+      },
+      [uploadFileSilently],
+    );
+
     const mergedEditorProps: EditorOptions['editorProps'] = {
       ...editorProps,
       attributes: {
@@ -112,6 +245,35 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
         class: mergedClass,
         dir,
         'data-dir': dir,
+      },
+      // 2026-07-06: handle image paste. ProseMirror invokes this BEFORE
+      // the default paste handler; returning `true` tells it we handled
+      // the event and it should not also try to insert the image data
+      // (which would yield a base64-embedded <img> — we want the
+      // uploaded URL instead).
+      handlePaste: (view, event) => {
+        const files = extractImageFiles(event.clipboardData);
+        if (files.length === 0) return false;
+        // Fire-and-forget; the editor stays editable while upload runs.
+        void handlePastedImage(files);
+        return true;
+      },
+      // 2026-07-06: handle image drop. Returning `true` suppresses the
+      // default drop behavior so we don't end up with both the dropped
+      // base64 image AND our uploaded URL.
+      handleDrop: (view, event) => {
+        const e = event as unknown as DragEvent;
+        const files = extractImageFiles(e.dataTransfer);
+        if (files.length === 0) return false;
+        // Only intercept drops that contain *only* images. If the user
+        // is dragging text from elsewhere, let ProseMirror handle it.
+        const hasNonImage =
+          e.dataTransfer?.types.includes('text/plain') ||
+          e.dataTransfer?.types.includes('text/html');
+        if (hasNonImage) return false;
+        event.preventDefault();
+        void handlePastedImage(files);
+        return true;
       },
     };
 
@@ -234,6 +396,88 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
       };
     }, [editor]);
 
+    // 2026-07-06: Auto-save to localStorage.
+    //
+    // Why localStorage:
+    //   - پروژه endpoint اختصاصی برای autosave ندارد (draftها با status
+    //     ذخیره می‌شوند ولی autosave در حین ویرایش نداریم).
+    //   - localStorage به‌عنوان یک safety net فوری کار می‌کند: قطع
+    //     اینترنت، بستن تب، یا کرش مرورگر → محتوا از دست نمی‌رود.
+    //   - وقتی backend draft API اضافه شد، می‌توان همین useEffect را به
+    //     fetch('/api/drafts') تغییر داد بدون لمس call site.
+    //
+    // Flow:
+    //   - mount: اگر `content` prop خالی باشد و localStorage چیزی داشته
+    //     باشد، آن را لود می‌کنیم (post واقعی بر local draft اولویت دارد).
+    //   - update: debounce 3s؛ محتوا + timestamp در localStorage ذخیره
+    //     می‌شود.
+    //   - unmount: timer لغو می‌شود تا نشتی نداشته باشیم.
+    const AUTO_SAVE_DEBOUNCE_MS = 3000;
+    const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+      if (!editor || !autoSaveKey) return;
+
+      // Restore: فقط وقتی هیچ `content` اولیه‌ای از prop نیامده باشد.
+      // وقتی پست واقعی داریم، post سرور بر local draft ارجح است.
+      if (!content) {
+        try {
+          const raw = window.localStorage.getItem(autoSaveKey);
+          if (raw) {
+            const parsed = JSON.parse(raw) as {
+              html?: string;
+              savedAt?: number;
+            };
+            if (parsed.html && typeof parsed.html === 'string') {
+              // queueMicrotask: خارج از render فعلی اجرا شود تا با
+              // initial content load که خودش در useEffect جداگانه‌ای
+              // setContent می‌کند تداخل نکند.
+              queueMicrotask(() => {
+                if (!editor.isDestroyed) {
+                  editor.commands.setContent(parsed.html as string, {
+                    emitUpdate: false,
+                  });
+                  onAutoSaveRestore?.(parsed.savedAt ?? Date.now());
+                }
+              });
+            }
+          }
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.warn('Auto-save restore failed:', e);
+        }
+      }
+
+      const handleUpdate = () => {
+        if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+        autoSaveTimer.current = setTimeout(() => {
+          try {
+            window.localStorage.setItem(
+              autoSaveKey,
+              JSON.stringify({
+                html: editor.getHTML(),
+                savedAt: Date.now(),
+              }),
+            );
+          } catch (e) {
+            // QuotaExceeded یا localStorage در دسترس نبودن — silent fail
+            // بهتر از کرش کردن ویرایشگر است.
+            // eslint-disable-next-line no-console
+            console.warn('Auto-save failed:', e);
+          }
+        }, AUTO_SAVE_DEBOUNCE_MS);
+      };
+
+      editor.on('update', handleUpdate);
+      return () => {
+        editor.off('update', handleUpdate);
+        if (autoSaveTimer.current) {
+          clearTimeout(autoSaveTimer.current);
+          autoSaveTimer.current = null;
+        }
+      };
+    }, [editor, autoSaveKey, content, onAutoSaveRestore]);
+
     // ── Editable propagation ──
     useEffect(() => {
       if (!editor || editor.isDestroyed || editor.isEditable === editable) return;
@@ -331,11 +575,14 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
           <div className="at-editor-deck__inner">
             <span className="at-editor-deck__rail" />
             <span className="at-editor-deck__brand">
-              <span className="at-editor-deck__brand-dot" />
+              <span className="at-editor-deck__brand-mark" aria-hidden>
+                <Icon name="sparkles" size={12} strokeWidth={2} />
+              </span>
               ویراستار
             </span>
             <span className="at-editor-deck__sep" aria-hidden />
             <span className="at-editor-deck__hint">
+              <Icon name="list" size={11} strokeWidth={2} className="at-editor-deck__hint-ico" />
               برای درج بلوک، در ابتدای خط تایپ کنید
               <kbd className="at-editor-deck__kbd">/</kbd>
             </span>
@@ -343,8 +590,26 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
             <span
               className={`at-editor-deck__save at-editor-deck__save--${saveState}`}
               title={saveState === 'saving' ? 'در حال ویرایش...' : 'آمادهٔ نوشتن'}
+              role="status"
+              aria-live="polite"
             >
-              <span className="at-editor-deck__save-dot" />
+              {saveState === 'saving' ? (
+                <Icon
+                  name="loader-2"
+                  size={12}
+                  strokeWidth={2}
+                  className="at-editor-deck__save-ico"
+                  aria-hidden
+                />
+              ) : (
+                <Icon
+                  name="check-check"
+                  size={12}
+                  strokeWidth={2}
+                  className="at-editor-deck__save-ico"
+                  aria-hidden
+                />
+              )}
               {saveState === 'saving' ? 'در حال ویرایش' : 'آماده'}
             </span>
           </div>
@@ -397,28 +662,56 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
           </div>
         </div>
 
+        {/* ═══ Image upload dialog ═════════════════════════════════════════
+            Mounted at the shell root so it's reachable from anywhere — the
+            slash command `تصویر` opens it via `editor.storage.slashCommands.
+            openImageUpload()` (wired in the effect above). Placing it here
+            (rather than inside the stage) keeps it above editor overlays
+            and out of the toolbar's stacking context. */}
+        <ImageUploadDialog
+          ref={imageDialogRef}
+          editor={editor}
+          open={imageUploadOpen}
+          onOpenChange={setImageUploadOpen}
+        />
+
         {/* ═══ Status bar ═══════════════════════════════════════════════════ */}
         {editable && displayWordsCount && (
           <div className={`at-editor-status ${footerClassName}`}>
             <div className="at-editor-status__inner">
-              <span className="at-editor-status__item">
-                <span className="at-editor-status__dot at-editor-status__dot--emerald" />
+              <span className="at-editor-status__item" title="تعداد کلمات">
+                <Icon
+                  name="file-text"
+                  size={11}
+                  strokeWidth={2}
+                  className="at-editor-status__ico at-editor-status__ico--emerald"
+                />
                 <span className="at-editor-status__num">{toFaDigits(counts.words)}</span>
                 <span className="at-editor-status__lbl">کلمه</span>
               </span>
 
               <span className="at-editor-status__sep" aria-hidden />
 
-              <span className="at-editor-status__item">
-                <span className="at-editor-status__dot at-editor-status__dot--cyan" />
+              <span className="at-editor-status__item" title="تعداد نویسه‌ها">
+                <Icon
+                  name="text"
+                  size={11}
+                  strokeWidth={2}
+                  className="at-editor-status__ico at-editor-status__ico--cyan"
+                />
                 <span className="at-editor-status__num">{toFaDigits(counts.chars)}</span>
                 <span className="at-editor-status__lbl">نویسه</span>
               </span>
 
               <span className="at-editor-status__sep" aria-hidden />
 
-              <span className="at-editor-status__item">
-                <span className="at-editor-status__dot at-editor-status__dot--violet" />
+              <span className="at-editor-status__item" title="زمان تقریبی مطالعه">
+                <Icon
+                  name="clock"
+                  size={11}
+                  strokeWidth={2}
+                  className="at-editor-status__ico at-editor-status__ico--violet"
+                />
                 <span className="at-editor-status__num">{totalMinutes}</span>
                 <span className="at-editor-status__lbl">زمان مطالعه</span>
               </span>
@@ -429,8 +722,14 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
                   <span
                     className="at-editor-status__item at-editor-status__item--selection"
                     aria-live="polite"
+                    title="آمار انتخاب فعلی"
                   >
-                    <span className="at-editor-status__dot at-editor-status__dot--amber" />
+                    <Icon
+                      name="highlighter"
+                      size={11}
+                      strokeWidth={2}
+                      className="at-editor-status__ico at-editor-status__ico--amber"
+                    />
                     <span className="at-editor-status__num">{toFaDigits(selectionCount.words)}</span>
                     <span className="at-editor-status__lbl">کلمه انتخاب</span>
                     <span className="at-editor-status__num-sep" aria-hidden>·</span>
@@ -444,8 +743,26 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
 
               <span
                 className={`at-editor-status__save at-editor-status__save--${saveState}`}
+                role="status"
+                aria-live="polite"
               >
-                <span className="at-editor-status__save-dot" />
+                {saveState === 'saving' ? (
+                  <Icon
+                    name="loader-2"
+                    size={11}
+                    strokeWidth={2.25}
+                    className="at-editor-status__save-ico"
+                    aria-hidden
+                  />
+                ) : (
+                  <Icon
+                    name="check-check"
+                    size={11}
+                    strokeWidth={2}
+                    className="at-editor-status__save-ico"
+                    aria-hidden
+                  />
+                )}
                 {saveState === 'saving' ? 'در حال ویرایش' : 'آماده'}
               </span>
             </div>

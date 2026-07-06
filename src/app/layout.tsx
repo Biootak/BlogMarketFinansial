@@ -90,6 +90,7 @@ export default function RootLayout({
     <html
       lang="fa-IR"
       dir="rtl"
+      data-scroll-behavior="smooth"
       className={`${vazirmatn.variable} rtl`}
       suppressHydrationWarning
     >

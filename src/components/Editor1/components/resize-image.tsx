@@ -194,6 +194,14 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
           loading="lazy"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
+            // 2026-07-06: guard against infinite fallback loop. If the
+            // fallback URL itself 404s (CDN outage, moved asset) the
+            // browser would otherwise keep firing onError and the
+            // console would fill with identical messages every render.
+            // `data-fallback` marks "we already tried the placeholder"
+            // so the second onError no-ops instead of resetting src.
+            if (target.dataset.fallback === '1') return;
+            target.dataset.fallback = '1';
             target.src = '/images/placeholder-large.png';
           }}
         />
@@ -299,6 +307,10 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
             loading="lazy"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
+              // 2026-07-06: see the read-only branch above for why
+              // `data-fallback` is set before assigning the placeholder.
+              if (target.dataset.fallback === '1') return;
+              target.dataset.fallback = '1';
               target.src = '/images/placeholder-large.png';
             }}
             data-drag-handle

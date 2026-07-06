@@ -1,9 +1,13 @@
-// FixedMenu.tsx
+// FixedMenu.tsx — Inkwell 2026
+// 2026-07-06: مهاجرت از inline lucide-react به Icon wrapper.
+//   - همهٔ آیکون‌ها از یک نقطه می‌آیند → premium stroke (1.25) یکدست.
+//   - دیگر size/stroke ناهماهنگ بین کنترل‌ها نیست.
+
 import React, { useState } from 'react';
-import { List, MoreHorizontal, X } from 'lucide-react';
 import type { Editor } from '@tiptap/core';
 import dynamic from 'next/dynamic';
 import { Toolbar } from '../../ui/toolbar';
+import { Icon } from '../../ui/icon';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { useDirection } from '@/hooks/useDirection';
 
@@ -128,7 +132,7 @@ const FixedMenu = ({ editor, className, tocOpen, onToggleToc, hasToc }: FixedMen
               aria-pressed={tocOpen}
               disabled={!hasToc}
             >
-              <List size={16} />
+              <Icon name="list-toc" size={16} />
             </Toolbar.Button>
           </Toolbar.Group>
 
@@ -142,7 +146,11 @@ const FixedMenu = ({ editor, className, tocOpen, onToggleToc, hasToc }: FixedMen
               aria-label={moreOpen ? 'بستن ابزارهای بیشتر' : 'ابزارهای بیشتر'}
               className="at-bubble__btn"
             >
-              {moreOpen ? <X size={16} /> : <MoreHorizontal size={16} />}
+              {moreOpen ? (
+                <Icon name="x" size={16} />
+              ) : (
+                <Icon name="more-horizontal" size={16} />
+              )}
             </button>
           </Toolbar.Group>
         </div>

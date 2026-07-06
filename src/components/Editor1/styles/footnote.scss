@@ -1,0 +1,93 @@
+// Footnote — Inkwell 2026
+// ----------------------------------------------------------------------------
+// استایل پاورقی‌ها در editor و renderer.
+//
+// در editor:
+//   - شماره‌ی پاورقی به‌صورت superscript با رنگ متمایز
+//   - container پاورقی با border بالا و margin
+//
+// در renderer (خواندن مقاله):
+//   - لیست پاورقی‌ها در پایین مقاله با line-height راحت
+// ----------------------------------------------------------------------------
+
+.at-footnote-ref {
+  // شماره‌ی پاورقی در متن — superscript کوچک با رنگ primary
+  color: oklch(55% 0.18 270);
+  font-weight: 600;
+  font-size: 0.75em;
+  line-height: 0;
+  vertical-align: super;
+  cursor: pointer;
+  text-decoration: none;
+  padding-inline: 0.1em;
+
+  &:hover {
+    color: oklch(45% 0.22 270);
+    text-decoration: underline;
+  }
+}
+
+.dark .at-footnote-ref {
+  color: oklch(72% 0.14 270);
+  &:hover {
+    color: oklch(82% 0.16 270);
+  }
+}
+
+.at-footnote {
+  // بلاک پاراگراف پاورقی در editor — برای تایپ متن پاورقی
+  margin-block-start: 0.5rem;
+  margin-block-end: 0.5rem;
+  padding-inline-start: 1.5rem;
+  position: relative;
+
+  &::before {
+    // شماره‌ی پاورقی در ابتدای خط
+    content: attr(data-footnote-number) ". ";
+    position: absolute;
+    inset-inline-start: 0;
+    color: oklch(55% 0.18 270);
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+}
+
+// در renderer (نمایش نهایی مقاله): footnotes در یک container با border
+.at-footnotes-list {
+  margin-block-start: 2rem;
+  padding-block-start: 1rem;
+  border-block-start: 1px solid oklch(85% 0.01 250);
+  font-size: 0.9rem;
+
+  .at-footnote-item {
+    display: flex;
+    gap: 0.5rem;
+    padding-block: 0.35rem;
+    line-height: 1.7;
+
+    &__number {
+      color: oklch(55% 0.18 270);
+      font-weight: 600;
+      min-width: 1.5rem;
+    }
+
+    &__text {
+      flex: 1;
+      color: oklch(35% 0.02 250);
+    }
+  }
+}
+
+.dark .at-footnotes-list {
+  border-block-start-color: oklch(30% 0.02 260);
+  .at-footnote-item__text {
+    color: oklch(75% 0.02 260);
+  }
+}
+
+@media print {
+  // در چاپ، پاورقی‌ها در پایین هر صفحه
+  .at-footnote-ref {
+    color: inherit;
+  }
+}

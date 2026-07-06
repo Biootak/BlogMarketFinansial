@@ -1,10 +1,11 @@
+// menu-button-table.tsx — Inkwell 2026
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
 import type { Editor } from '@tiptap/core';
-import { Table, X } from 'lucide-react';
-import { Toolbar } from '../../ui/toolbar';
 import * as Dialog from '@radix-ui/react-dialog';
+import { Toolbar } from '../../ui/toolbar';
+import { Icon } from '../../ui/icon';
 import { useDirection } from '@/hooks/useDirection';
 
 interface MenuButtonTableProps {
@@ -36,43 +37,41 @@ const MenuButtonTable: React.FC<MenuButtonTableProps> = ({ editor }) => {
     setHoverSize(null);
   }, []);
 
-  const handleCellClick = useCallback((row: number, col: number) => {
-    const newSize = { rows: row + 1, cols: col + 1 };
-    setSelectedSize(newSize);
-    // Insert immediately on click
-    editor
-      .chain()
-      .focus()
-      .insertTable({ 
-        rows: newSize.rows, 
-        cols: newSize.cols, 
-        withHeaderRow: true 
-      })
-      .run();
-    setIsOpen(false);
-  }, [editor]);
+  const handleCellClick = useCallback(
+    (row: number, col: number) => {
+      const newSize = { rows: row + 1, cols: col + 1 };
+      setSelectedSize(newSize);
+      // Insert immediately on click
+      editor
+        .chain()
+        .focus()
+        .insertTable({ rows: newSize.rows, cols: newSize.cols, withHeaderRow: true })
+        .run();
+      setIsOpen(false);
+    },
+    [editor],
+  );
 
   const insertTable = useCallback(() => {
     editor
       .chain()
       .focus()
-      .insertTable({ 
-        rows: selectedSize.rows, 
-        cols: selectedSize.cols, 
-        withHeaderRow: true 
+      .insertTable({
+        rows: selectedSize.rows,
+        cols: selectedSize.cols,
+        withHeaderRow: true,
       })
       .run();
     setIsOpen(false);
   }, [editor, selectedSize]);
 
-  const handleQuickInsert = useCallback((rows: number, cols: number) => {
-    editor
-      .chain()
-      .focus()
-      .insertTable({ rows, cols, withHeaderRow: true })
-      .run();
-    setIsOpen(false);
-  }, [editor]);
+  const handleQuickInsert = useCallback(
+    (rows: number, cols: number) => {
+      editor.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run();
+      setIsOpen(false);
+    },
+    [editor],
+  );
 
   // Display size: hover takes priority, then selected
   const displaySize = hoverSize || selectedSize;
@@ -82,9 +81,10 @@ const MenuButtonTable: React.FC<MenuButtonTableProps> = ({ editor }) => {
       <Dialog.Trigger asChild>
         <Toolbar.Button
           tooltip="جدول"
+          tooltipShortcut={['Mod', 'Shift', 'T']}
           active={editor.isActive('table')}
         >
-          <Table size={18} />
+          <Icon name="table" size={16} />
         </Toolbar.Button>
       </Dialog.Trigger>
 
@@ -102,8 +102,9 @@ const MenuButtonTable: React.FC<MenuButtonTableProps> = ({ editor }) => {
               <button
                 type="button"
                 className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                aria-label="بستن"
               >
-                <X size={20} className="text-gray-500" />
+                <Icon name="x" size={18} className="text-gray-500" />
               </button>
             </Dialog.Close>
             <Dialog.Title className="text-lg font-bold text-gray-900 dark:text-white">
@@ -140,7 +141,7 @@ const MenuButtonTable: React.FC<MenuButtonTableProps> = ({ editor }) => {
             <p className="text-sm text-gray-500 dark:text-gray-400 text-start mb-3">
               یا روی خانه‌ها کلیک کنید
             </p>
-            <div 
+            <div
               className="flex justify-center"
               onMouseLeave={handleCellLeave}
             >
@@ -148,15 +149,16 @@ const MenuButtonTable: React.FC<MenuButtonTableProps> = ({ editor }) => {
                 {Array.from({ length: maxRows }).map((_, rowIndex) => (
                   <div key={rowIndex} className="flex gap-1">
                     {Array.from({ length: maxCols }).map((_, colIndex) => {
-                      const isInDisplayRange = 
+                      const isInDisplayRange =
                         rowIndex < displaySize.rows && colIndex < displaySize.cols;
-                      
+
                       return (
                         <button
                           key={colIndex}
                           type="button"
                           onMouseEnter={() => handleCellHover(rowIndex, colIndex)}
                           onClick={() => handleCellClick(rowIndex, colIndex)}
+                          aria-label={`${rowIndex + 1} × ${colIndex + 1}`}
                           className={`w-6 h-6 rounded border-2 transition-all duration-100 ${
                             isInDisplayRange
                               ? 'bg-primary-500 border-primary-600'

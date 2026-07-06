@@ -1,13 +1,18 @@
 // text-bubble-menu.tsx — Inkwell 2026
 // Floating toolbar that appears when the user selects text.
 // Visual surface defined in styles/shell.scss (.at-bubble).
+//
+// 2026-07-06: مهاجرت از inline lucide-react به Icon wrapper. مزایا:
+//   - Premium stroke width (1.25) خودکار از Icon می‌آید
+//   - consistency با toolbar (menu-button-*.tsx)
+//   - اگر روزی iconها SVG سفارشی شوند، فقط iconMap تغییر می‌کند
 
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { BubbleMenu } from '@tiptap/react/menus';
 import type { Editor } from '@tiptap/core';
-import { Bold, Italic, Underline, Highlighter, Link, Code, Strikethrough, X, Check } from 'lucide-react';
+import { Icon } from '../../ui/icon';
 // 2026-07-05: dir از hook مرکزی برای consistency با shell.
 import { useDirection } from '@/hooks/useDirection';
 
@@ -118,7 +123,7 @@ const TextBubbleMenu: React.FC<TextBubbleMenuProps> = ({ editor }) => {
               aria-label="تایید لینک"
               className="at-bubble__btn at-bubble__btn--success"
             >
-              <Check size={14} />
+              <Icon name="check" size={14} />
             </button>
             <span className="at-bubble__sep" aria-hidden />
             <button
@@ -127,7 +132,7 @@ const TextBubbleMenu: React.FC<TextBubbleMenuProps> = ({ editor }) => {
               aria-label="لغو"
               className="at-bubble__btn at-bubble__btn--neutral"
             >
-              <X size={14} />
+              <Icon name="x" size={14} />
             </button>
           </>
         ) : (
@@ -139,7 +144,7 @@ const TextBubbleMenu: React.FC<TextBubbleMenuProps> = ({ editor }) => {
               aria-pressed={activeStates.bold}
               className="at-bubble__btn"
             >
-              <Bold size={14} />
+              <Icon name="bold" size={14} />
             </button>
 
             <button
@@ -149,7 +154,7 @@ const TextBubbleMenu: React.FC<TextBubbleMenuProps> = ({ editor }) => {
               aria-pressed={activeStates.italic}
               className="at-bubble__btn"
             >
-              <Italic size={14} />
+              <Icon name="italic" size={14} />
             </button>
 
             <button
@@ -159,7 +164,7 @@ const TextBubbleMenu: React.FC<TextBubbleMenuProps> = ({ editor }) => {
               aria-pressed={activeStates.underline}
               className="at-bubble__btn"
             >
-              <Underline size={14} />
+              <Icon name="underline" size={14} />
             </button>
 
             <button
@@ -169,7 +174,7 @@ const TextBubbleMenu: React.FC<TextBubbleMenuProps> = ({ editor }) => {
               aria-pressed={activeStates.strike}
               className="at-bubble__btn"
             >
-              <Strikethrough size={14} />
+              <Icon name="strikethrough" size={14} />
             </button>
 
             <span className="at-bubble__sep" aria-hidden />
@@ -181,7 +186,7 @@ const TextBubbleMenu: React.FC<TextBubbleMenuProps> = ({ editor }) => {
               aria-pressed={activeStates.highlight}
               className="at-bubble__btn"
             >
-              <Highlighter size={14} />
+              <Icon name="highlighter" size={14} />
             </button>
 
             <button
@@ -191,7 +196,7 @@ const TextBubbleMenu: React.FC<TextBubbleMenuProps> = ({ editor }) => {
               aria-pressed={activeStates.code}
               className="at-bubble__btn"
             >
-              <Code size={14} />
+              <Icon name="code" size={14} />
             </button>
 
             <span className="at-bubble__sep" aria-hidden />
@@ -203,7 +208,7 @@ const TextBubbleMenu: React.FC<TextBubbleMenuProps> = ({ editor }) => {
               aria-pressed={activeStates.link}
               className="at-bubble__btn"
             >
-              <Link size={14} />
+              <Icon name="link" size={14} />
             </button>
           </>
         )}

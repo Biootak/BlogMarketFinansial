@@ -1,0 +1,26 @@
+// TextDirection — Inkwell 2026
+// ----------------------------------------------------------------------------
+// استایل direction (RTL/LTR) برای پاراگراف‌ها.
+//
+// به‌جای استایل روی تگ، روی data-dir کار می‌کنیم تا با HTML dir attribute
+// سازگار باشد.
+// ----------------------------------------------------------------------------
+
+// استایل‌های اضافی برای direction ltr (direction attribute خودش
+// text-align و writing-mode را تنظیم می‌کند؛ فقط فونت monospace لازم داریم
+// برای اعداد انگلیسی).
+
+[dir='ltr'] {
+  // برای متن انگلیسی، فونت monospace کمک می‌کند تا اعداد و نمادها
+  // هم‌تراز باشند. اما برای متن مخلوط، فونت پیش‌فرض بهتر است.
+  // پس فقط برای code-like استایل فونت monospace:
+  &.at-ltr-mono {
+    font-family: ui-monospace, 'SF Mono', 'Cascadia Mono', 'JetBrains Mono', monospace;
+    font-feature-settings: 'tnum' 1; // tabular numerals
+  }
+}
+
+// direction attribute RTL (پیش‌فرض فارسی) — نیازی به استایل اضافی نیست.
+[dir='rtl'] {
+  // ...
+}

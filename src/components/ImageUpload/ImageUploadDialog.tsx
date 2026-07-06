@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { ImageUploader, type UploadedFile } from '@/components/ImageUpload/ImageUploader';
-import type { UploadFolder } from '@/actions/uploadActions';
+import { ImageUploader, type UploadedFile, type UploadFolder } from '@/components/ImageUpload/ImageUploader';
 
 interface ImageUploadDialogProps {
   isOpen: boolean;

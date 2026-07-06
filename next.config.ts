@@ -271,6 +271,19 @@ const nextConfig: NextConfig = {
   //     on OKLCH/color-mix tokens is resolved. Kept OFF as a
   //     precaution for any `next build --webpack` fallback.
   experimental: {
+    // 2026-07-06: route handlers handle our image uploads (max 10MB).
+    // Server Actions cap at 1MB by default; we don't use them for upload
+    // today, but the setting future-proofs any action-based upload path
+    // someone wires up later. 12MB = 2MB headroom over MAX_FILE_SIZE.
+    // (In Next 16 `serverActions` lives under `experimental`, not at top
+    // level — that's why this nested placement exists.)
+    serverActions: {
+      bodySizeLimit: '12mb',
+    },
+    // 2026-07-06: Next 15.5+ added an internal proxy that silently
+    // truncates binary bodies over 1MB unless this is set explicitly.
+    // Keep in sync with `experimental.serverActions.bodySizeLimit` above.
+    proxyClientMaxBodySize: '12mb',
     staleTimes: {
       dynamic: 30,
       static: 180,

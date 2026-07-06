@@ -1,0 +1,23 @@
+// Indent — Inkwell 2026
+// ----------------------------------------------------------------------------
+// کلاس‌های indent-1 تا indent-6 برای paragraph و heading.
+// از logical property استفاده می‌کنیم تا RTL درست کار کند.
+// ----------------------------------------------------------------------------
+
+// متغیر CSS برای مقدار پایه‌ی indent (rem مقیاس‌پذیر است).
+$indent-base: 1.5rem;
+
+@for $i from 1 through 6 {
+  .indent-#{$i} {
+    padding-inline-start: #{$i * $indent-base};
+  }
+}
+
+// در صفحات باریک (موبایل)، indent کم‌تر شود تا متن به بیرون نریزد.
+@media (max-width: 640px) {
+  @for $i from 1 through 6 {
+    .indent-#{$i} {
+      padding-inline-start: #{$i * 0.75rem};
+    }
+  }
+}

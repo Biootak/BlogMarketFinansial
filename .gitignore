@@ -74,6 +74,19 @@ next-env.d.ts
 /.graphify-bak-images/
 /.mcp.json
 
+# 2026-07-06: codegraph MCP cache (SQLite DB + daemon state). Regenerated
+# from source on demand; tracked nowhere else. The 16MB `codegraph.db`
+# alone is enough reason to keep this out of git — it bloats `git status`
+# and inflates every shallow clone.
+/.codegraph/
+
+# 2026-07-06: Playwright artifacts. The HTML report and per-test JSON
+# outputs are regenerated on every `playwright test` run, so they're
+# noise in the working tree.
+/playwright-report/
+/test-results/
+/.playwright/
+
 # TGJU scraper debug HTML dumps (regenerated on demand via TGJU_DEBUG_DUMP=1)
 /.tgju-debug/
 

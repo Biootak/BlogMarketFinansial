@@ -161,13 +161,25 @@
   color: oklch(94% 0.005 245);
 }
 
-.at-editor-deck__brand-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
+// 2026-07-06: brand-mark — مربع 18px با گرادیانت + آیکون Sparkles.
+// قبلاً فقط یک نقطه (6px) بود؛ حس stamp/brand می‌دهد.
+.at-editor-deck__brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
   background: linear-gradient(135deg, oklch(72% 0.16 270), oklch(74% 0.13 210));
-  box-shadow: 0 0 0 3px oklch(72% 0.16 270 / 0.15);
+  color: oklch(99% 0.005 245);
+  box-shadow:
+    0 1px 0 oklch(100% 0 0 / 0.25) inset,
+    0 0 0 2px oklch(72% 0.16 270 / 0.12);
   flex-shrink: 0;
+}
+
+.dark .at-editor-deck__brand-mark {
+  background: linear-gradient(135deg, oklch(78% 0.16 270), oklch(80% 0.13 210));
 }
 
 .at-editor-deck__sep {
@@ -275,6 +287,7 @@
   font-weight: 600;
   letter-spacing: 0.01em;
   flex-shrink: 0;
+  user-select: none;
 }
 
 .dark .at-editor-deck__save {
@@ -283,27 +296,32 @@
   color: oklch(84% 0.1 165);
 }
 
-.at-editor-deck__save-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 999px;
-  background: currentColor;
-  box-shadow: 0 0 0 2px oklch(72% 0.16 165 / 0.18);
+// 2026-07-06: save-ico — آیکون spinner loader یا check-check.
+// چرخش فقط وقتی saving است.
+.at-editor-deck__save-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.at-editor-deck__save--saving .at-editor-deck__save-dot {
-  animation: at-editor-deck-save-pulse 0.8s ease-in-out infinite;
+.at-editor-deck__save--saving .at-editor-deck__save-ico {
+  animation: at-editor-deck-save-spin 0.9s linear infinite;
 }
 
-@keyframes at-editor-deck-save-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.7); }
+@keyframes at-editor-deck-save-spin {
+  to { transform: rotate(360deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .at-editor-deck__save--saving .at-editor-deck__save-dot {
-    animation: none;
+  .at-editor-deck__save--saving .at-editor-deck__save-ico {
+    animation-duration: 1.6s;
   }
+}
+
+// hint-ico — آیکون کوچک کنار متن راهنما که حس لیست/command بدهد.
+.at-editor-deck__hint-ico {
+  opacity: 0.7;
+  flex-shrink: 0;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -865,33 +883,43 @@
   color: oklch(75% 0.018 245);
 }
 
-.at-editor-status__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
+// 2026-07-06: آیکون متریک‌ها (به جای نقطه‌های رنگی ساده).
+// هر آیتم یک آیکون معنایی دارد + رنگ oklch هماهنگ با همان hue قبلی.
+.at-editor-status__ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  padding: 1px;
   flex-shrink: 0;
 }
 
-.at-editor-status__dot--emerald {
-  background: oklch(72% 0.18 165);
-  box-shadow: 0 0 0 2px oklch(72% 0.18 165 / 0.18);
+.at-editor-status__ico--emerald {
+  background: oklch(72% 0.18 165 / 0.14);
+  color: oklch(48% 0.16 165);
 }
 
-.at-editor-status__dot--cyan {
-  background: oklch(72% 0.16 210);
-  box-shadow: 0 0 0 2px oklch(72% 0.16 210 / 0.18);
+.at-editor-status__ico--cyan {
+  background: oklch(72% 0.16 210 / 0.14);
+  color: oklch(48% 0.14 210);
 }
 
-.at-editor-status__dot--violet {
-  background: oklch(72% 0.16 270);
-  box-shadow: 0 0 0 2px oklch(72% 0.16 270 / 0.18);
+.at-editor-status__ico--violet {
+  background: oklch(72% 0.16 270 / 0.14);
+  color: oklch(48% 0.14 270);
 }
 
-// A14 — Selection rect amber accent
-.at-editor-status__dot--amber {
-  background: oklch(76% 0.16 60);
-  box-shadow: 0 0 0 2px oklch(76% 0.16 60 / 0.18);
+.at-editor-status__ico--amber {
+  background: oklch(76% 0.16 60 / 0.14);
+  color: oklch(52% 0.16 60);
 }
+
+.dark .at-editor-status__ico--emerald { color: oklch(82% 0.14 165); }
+.dark .at-editor-status__ico--cyan { color: oklch(82% 0.12 210); }
+.dark .at-editor-status__ico--violet { color: oklch(82% 0.14 270); }
+.dark .at-editor-status__ico--amber { color: oklch(86% 0.14 60); }
 
 .at-editor-status__num-sep {
   color: oklch(70% 0.01 250 / 0.5);
@@ -968,6 +996,7 @@
   color: oklch(36% 0.12 165);
   font-weight: 600;
   flex-shrink: 0;
+  user-select: none;
 }
 
 .dark .at-editor-status__save {
@@ -976,25 +1005,25 @@
   color: oklch(82% 0.1 165);
 }
 
-.at-editor-status__save-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 999px;
-  background: currentColor;
+// 2026-07-06: save-ico — آیکون spinner loader یا check-check.
+.at-editor-status__save-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.at-editor-status__save--saving .at-editor-status__save-dot {
-  animation: at-editor-status-save 0.7s ease-in-out infinite;
+.at-editor-status__save--saving .at-editor-status__save-ico {
+  animation: at-editor-status-spin 0.9s linear infinite;
 }
 
-@keyframes at-editor-status-save {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+@keyframes at-editor-status-spin {
+  to { transform: rotate(360deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .at-editor-status__save--saving .at-editor-status__save-dot {
-    animation: none; }
+  .at-editor-status__save--saving .at-editor-status__save-ico {
+    animation-duration: 1.6s;
+  }
 }
 
 
