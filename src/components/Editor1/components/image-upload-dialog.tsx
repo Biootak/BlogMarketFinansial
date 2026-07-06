@@ -173,15 +173,17 @@ const ImageUploadDialog = forwardRef<ImageUploadDialogRef, ImageUploadDialogProp
         alt?: string;
         title?: string;
         width?: string;
+        height?: number | null;
       } = { src: pending.url };
       const trimmedAlt = alt.trim();
       if (trimmedAlt) attrs.alt = trimmedAlt;
       const trimmedTitle = title.trim();
       if (trimmedTitle) attrs.title = trimmedTitle;
-      // `width` on the image node is a CSS length string (e.g. "100%").
-      // Default to 100% so the image fills its column on first render
-      // and the user can resize afterwards with the ResizeImage view.
+      // پیش‌فرض عرض: 100% ستون (واکنش‌گرا). کاربر با ResizeImage بعداً
+      // می‌تواند آن را به px تغییر دهد. ارتفاع intrinsic اگر از upload
+      // برگشته، نگه می‌داریم تا renderer بتواند aspect ratio را حفظ کند.
       attrs.width = '100%';
+      if (pending.height && pending.height > 0) attrs.height = pending.height;
       editor.chain().focus().setImage(attrs as never).run();
       setOpen(false);
     }, [pending, alt, title, editor, setOpen]);

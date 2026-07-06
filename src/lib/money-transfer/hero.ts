@@ -88,17 +88,22 @@ export function toEnglishDigits(raw: string): string {
  * تبدیل رکوردهای خام DB به HeroPair برای calculator.
  * فیلتر خودکار:
  *   - فقط نرخ‌های فعال
- *   - فقط BUY_SELL (ردیف single-rate ساپورت نمی‌شود)
+ *   - BUY_SELL (صرافی ملی) یا SINGLE_BULK با singleRate معتبر
  *   - فقط forex و افغانی (coin/gold/global در calculator معنا ندارند)
  *   - فقط نرخ‌هایی با مقادیر عددی معتبر
+ *
+ * نکته (2026-07-06): snapshot JSON فقط `value` (mid rate) دارد، نه buyValue/sellValue.
+ *   اگه این تابع فقط BUY_SELL قبول کند، pairs در dev خالی می‌ماند. بنابراین
+ *   SINGLE_BULK با singleRate به‌عنوان fallback هم پذیرفته می‌شود، با
+ *   `buy = sell = mid` (spread=0). این در UI به‌صورت spread صفر نمایش داده
+ *   می‌شود — نه جعلی، فقط informational که دو طرف یکی‌اند.
+ *
  * نتیجه‌ی sort: بر اساس کد (الفبایی، الفبای لاتین برای پایداری)
  */
 export function buildHeroPairs(rates: ExchangeRateData[]): HeroPair[] {
   const pairs: HeroPair[] = [];
   for (const r of rates) {
     if (!r.active) continue;
-    if (r.rateType !== 'BUY_SELL') continue;
-    if (!r.buyRate || !r.sellRate) continue;
 
     const group = (r.group ?? '').toLowerCase();
     let category: HeroCategory | null = null;
@@ -107,8 +112,21 @@ export function buildHeroPairs(rates: ExchangeRateData[]): HeroPair[] {
     else continue; // coin, gold, global — out of scope
 
     const divisor = r.divisor && r.divisor > 0 ? r.divisor : 1;
-    const buy = parseLocaleNumber(r.buyRate) / divisor;
-    const sell = parseLocaleNumber(r.sellRate) / divisor;
+    let buy = NaN;
+    let sell = NaN;
+
+    if (r.rateType === 'BUY_SELL' && r.buyRate && r.sellRate) {
+      buy = parseLocaleNumber(r.buyRate) / divisor;
+      sell = parseLocaleNumber(r.sellRate) / divisor;
+    } else if (r.rateType === 'SINGLE_BULK' && r.singleRate) {
+      // Fallback برای snapshot: فقط mid rate موجود است → دو طرف یکی.
+      const mid = parseLocaleNumber(r.singleRate) / divisor;
+      buy = mid;
+      sell = mid;
+    } else {
+      continue;
+    }
+
     if (!Number.isFinite(buy) || !Number.isFinite(sell)) continue;
     if (buy <= 0 || sell <= 0) continue;
 

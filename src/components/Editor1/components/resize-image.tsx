@@ -1,7 +1,21 @@
 import { NodeViewWrapper } from '@tiptap/react';
 import type { NodeViewProps } from '@tiptap/core';
-import { AlignCenter, AlignLeft, AlignRight, ExternalLink, Maximize2, Trash2 } from 'lucide-react';
-import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
+import {
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
+  ExternalLink,
+  Maximize2,
+  Minimize2,
+  Trash2,
+} from 'lucide-react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useDirection } from '@/hooks/useDirection';
 
 // 2026-06-30: This component intentionally uses a plain <img> tag.
@@ -26,119 +40,179 @@ type ResizeImageProps = NodeViewProps & {
   };
 };
 
-function sizeClamp(length: number, min: number, max: number) {
-  if (min !== undefined) {
-    length = Math.max(length, min);
+// 2026-07-06: عرض تصویر در storage سه شکل دارد:
+//   - '100%'  → عرض کامل ستون (پیش‌فرض، واکنش‌گرا)
+//   - '500px' → عرض ثابت پیکسلی (پس از درگ)
+//   - 500     → عدد خالص (legacy)
+//
+// در حین نمایش و درگ با عدد (px) کار می‌کنیم تا مقایسه‌ها ساده بماند.
+// helper های زیر تبدیل بین فرمت ذخیره‌سازی و عدد نمایش را انجام می‌دهند.
+
+const MIN_WIDTH = 80;
+const PERCENT_FULL_THRESHOLD = 0.99; // 99% به بالا = 100% ذخیره شود
+
+type DisplayWidth = number;
+
+function widthToDisplay(value: ImageNodeAttributes['width']): DisplayWidth {
+  if (value == null) return 0;
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+  const trimmed = String(value).trim();
+  // '100%' یا '50%' → نمایش عددی نداریم (0 = «از wrapper پیروی کن»)
+  const m = /^(\d+(?:\.\d+)?)(px|%)?$/.exec(trimmed);
+  if (!m) return 0;
+  return m[2] === '%' ? 0 : parseFloat(m[1]!);
+}
+
+function widthToStored(value: DisplayWidth, parentWidth: number): string {
+  // اگر تقریباً برابر عرض ظرف شد، به جای px، 100% ذخیره کن
+  // تا با کوچک‌شدن viewport همچنان واکنش‌گرا بماند.
+  if (parentWidth > 0 && value / parentWidth >= PERCENT_FULL_THRESHOLD) {
+    return '100%';
   }
-  if (max !== undefined) {
-    length = Math.min(length, max);
-  }
+  return `${Math.max(MIN_WIDTH, Math.round(value))}px`;
+}
+
+function sizeClamp(length: number, min: number, max: number): number {
+  if (Number.isFinite(min)) length = Math.max(length, min);
+  if (Number.isFinite(max)) length = Math.min(length, max);
   return length;
 }
 
-const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImageProps) => {
-  const { src, textAlign, width: widthProps, alt } = node.attrs;
+const ResizeImage = ({
+  editor,
+  node,
+  updateAttributes,
+  selected,
+}: ResizeImageProps) => {
+  const { src, textAlign, width: widthProps, alt, title } = node.attrs;
   const dir = useDirection('rtl');
 
   const isEditable = editor.isEditable;
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
+  // ── Resize state ──
   const [isResizing, setIsResizing] = useState(false);
   const [initialPosition, setInitialPosition] = useState(0);
-  const [initialSize, setInitialSize] = React.useState(0);
-  const [direction, setDirection] = useState<'left' | 'right'>('left');
-  const [width, setWidth] = useState<any>(0);
+  const [initialSize, setInitialSize] = useState(0);
+  // عرض فعلی برای نمایش زنده در حین درگ
+  const [displayWidth, setDisplayWidth] = useState<DisplayWidth>(() =>
+    widthToDisplay(widthProps),
+  );
   const [showControls, setShowControls] = useState(false);
 
-  const handleResize = useCallback(
-    ({ delta, direction, finished, initialSize }: any) => {
-      const wrapperWidth = wrapperRef.current!.offsetWidth;
-      // 2026-07-05: در RTL ضریب جهت معکوس می‌شود چون handle شروع/پایان
-      // خطی سمت مخالف می‌افتد.
-      const dirFactor = dir === 'rtl' ? -1 : 1;
-      const deltaFactor = (textAlign === 'center' ? 2 : 1) * (direction === 'left' ? -1 : 1) * dirFactor;
+  // هر وقت widthProps از بیرون تغییر کند (undo، load پست)، همگام شو.
+  useEffect(() => {
+    setDisplayWidth(widthToDisplay(widthProps));
+  }, [widthProps]);
 
-      const newWidth = sizeClamp(initialSize + delta * deltaFactor, 100, wrapperWidth);
-
-      if (finished) {
-        updateAttributes({ width: newWidth });
-      } else {
-        setWidth(newWidth);
-      }
+  // 2026-07-06: منطق resize ساده شد.
+  //   قبلاً direction و dirFactor در فرمول بود که در RTL/center خراب
+  //   می‌شد. حالا:
+  //     - center alignment: drag هر handle به اندازهٔ 2×delta عرض را
+  //       تغییر می‌دهد (لبهٔ مخالف هم به همان اندازه جابجا می‌شود).
+  //     - start/end alignment: drag هر handle به اندازهٔ delta عرض
+  //       را تغییر می‌دهد (لبهٔ مخالف ثابت می‌ماند).
+  //   handle ها در دو طرف فیزیکی تصویر قرار دارند، پس نیازی به
+  //   تشخیص «کدام handle» نیست — هر دو یکسان رفتار می‌کنند.
+  const computeNewWidth = useCallback(
+    (delta: number, baseWidth: number): number => {
+      const wrapperWidth = wrapperRef.current?.offsetWidth ?? 0;
+      const centerFactor = textAlign === 'center' ? 2 : 1;
+      const maxWidth = wrapperWidth > 0 ? wrapperWidth : Infinity;
+      return sizeClamp(
+        baseWidth + delta * centerFactor,
+        MIN_WIDTH,
+        maxWidth,
+      );
     },
-    [textAlign, dir, setWidth, updateAttributes],
+    [textAlign],
   );
 
-  const handleKeyDown =
-    (direction: 'left' | 'right'): React.KeyboardEventHandler =>
-    (e) => {
-      const step = e.shiftKey ? 50 : 10;
-      const dirFactor = dir === 'rtl' ? -1 : 1;
-      const deltaFactor = (textAlign === 'center' ? 2 : 1) * (direction === 'left' ? -1 : 1) * dirFactor;
-      const currentWidth = typeof width === 'number' ? width : Number(width) || 0;
-      const wrapperWidth = wrapperRef.current?.offsetWidth ?? currentWidth;
-      const newWidth = sizeClamp(currentWidth + step * deltaFactor, 100, wrapperWidth);
-      if (newWidth !== currentWidth) {
-        e.preventDefault();
-        updateAttributes({ width: newWidth });
+  const handleResize = useCallback(
+    (delta: number, finished: boolean) => {
+      const newWidth = computeNewWidth(delta, initialSize);
+      if (finished) {
+        const wrapperWidth = wrapperRef.current?.offsetWidth ?? 0;
+        const stored = wrapperWidth > 0
+          ? widthToStored(newWidth, wrapperWidth)
+          : `${Math.round(newWidth)}px`;
+        updateAttributes({ width: stored });
       }
-    };
-
-  const handleMouseDown =
-    (direction: 'left' | 'right'): React.MouseEventHandler =>
-    (e) => {
-      setInitialPosition(e.clientX);
-      const element = (e.target as HTMLElement).parentElement!;
-      setInitialSize(element.offsetWidth);
-      setDirection(direction);
-      setIsResizing(true);
-    };
-
-  useEffect(() => {
-    setWidth(widthProps);
-  }, [widthProps]);
+      setDisplayWidth(newWidth);
+    },
+    [computeNewWidth, initialSize, updateAttributes],
+  );
 
   useEffect(() => {
     if (!isResizing) return;
 
-    const sendResizeEvent = (event: MouseEvent, finished: boolean) => {
-      const { clientX } = event;
-      const currentPosition = clientX;
-      const delta = currentPosition - initialPosition;
-
-      handleResize({
-        delta,
-        direction,
-        finished,
-        initialSize,
-      });
+    const onMove = (event: MouseEvent) => {
+      handleResize(event.clientX - initialPosition, false);
     };
-
-    const handleMouseMove = (event: MouseEvent) => sendResizeEvent(event, false);
-    const handleMouseUp = (event: MouseEvent) => {
+    const onUp = (event: MouseEvent) => {
       setIsResizing(false);
-      sendResizeEvent(event, true);
+      handleResize(event.clientX - initialPosition, true);
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
     };
-  }, [isResizing, direction, initialPosition, initialSize, handleResize]);
+  }, [isResizing, initialPosition, handleResize]);
+
+  // start drag — عرض فعلی را از <img> واقعی می‌خوانیم تا اگر widthProps
+  // درصدی/legacy بود، باز هم delta درست محاسبه شود.
+  const startResize =
+    (): React.MouseEventHandler =>
+    (e) => {
+      e.preventDefault();
+      const handleEl = e.currentTarget as HTMLElement;
+      const imageEl = handleEl.parentElement?.querySelector(
+        'img',
+      ) as HTMLImageElement | null;
+      const currentWidth =
+        imageEl?.getBoundingClientRect().width ||
+        wrapperRef.current?.offsetWidth ||
+        0;
+      setInitialPosition(e.clientX);
+      setInitialSize(currentWidth);
+      setIsResizing(true);
+    };
+
+  // keyboard: ArrowRight = بزرگ‌تر، ArrowLeft = کوچک‌تر.
+  // رفتار مستقل از dir است چون handle ها دو طرف فیزیکی تصویرند.
+  const handleKeyDown: React.KeyboardEventHandler = (e) => {
+    const step = e.shiftKey ? 50 : 10;
+    const dirSign = e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowRight' ? 1 : 0;
+    if (dirSign === 0) return;
+    const wrapperWidth = wrapperRef.current?.offsetWidth ?? 0;
+    const baseWidth = displayWidth || wrapperWidth;
+    if (baseWidth <= 0) return;
+    const newWidth = computeNewWidth(step * dirSign, baseWidth);
+    if (newWidth === baseWidth) return;
+    e.preventDefault();
+    const stored = wrapperWidth > 0
+      ? widthToStored(newWidth, wrapperWidth)
+      : `${Math.round(newWidth)}px`;
+    updateAttributes({ width: stored });
+  };
 
   const handleAlignChange = (align: 'left' | 'center' | 'right') => {
     updateAttributes({ textAlign: align });
   };
 
-  const handleFullWidth = () => {
-    if (wrapperRef.current) {
-      updateAttributes({ width: wrapperRef.current.offsetWidth });
-    }
-  };
+  const handleFullWidth = useCallback(() => {
+    updateAttributes({ width: '100%' });
+  }, [updateAttributes]);
+
+  const handleHalfWidth = useCallback(() => {
+    const wrapperWidth = wrapperRef.current?.offsetWidth ?? 0;
+    if (wrapperWidth <= 0) return;
+    updateAttributes({ width: `${Math.round(wrapperWidth / 2)}px` });
+  }, [updateAttributes]);
 
   const handleDelete = useCallback(() => {
     editor.chain().focus().deleteSelection().run();
@@ -150,7 +224,6 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
     }
   }, [src]);
 
-  // کلاس‌های مشترک برای دکمه‌های تراز
   const getAlignButtonClass = useCallback(
     (align: string) => {
       const isActive = textAlign === align;
@@ -163,7 +236,6 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
     [textAlign],
   );
 
-  // تعیین کلاس‌های flexbox برای تراز
   const alignmentClasses = useMemo(() => {
     switch (textAlign) {
       case 'left':
@@ -175,6 +247,29 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
         return 'justify-center';
     }
   }, [textAlign]);
+
+  // استایل width: اگر displayWidth صفر است (100% یا legacy)، مقدار خام
+  // widthProps را پاس می‌دهیم تا CSS آن را هندل کند.
+  const imageStyle: React.CSSProperties = {
+    width:
+      displayWidth > 0
+        ? `${Math.round(displayWidth)}px`
+        : ((widthProps as string | number | undefined) ?? '100%'),
+  };
+
+  const handleError = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    const target = e.currentTarget;
+    if (target.dataset.fallback === '1') return;
+    target.dataset.fallback = '1';
+    target.src = '/images/placeholder-large.png';
+  }, []);
+
+  const wrapperWidth = wrapperRef.current?.offsetWidth ?? 0;
+  const indicatorPx = displayWidth > 0 ? Math.round(displayWidth) : null;
+  const indicatorPct =
+    displayWidth > 0 && wrapperWidth > 0
+      ? Math.round((displayWidth / wrapperWidth) * 100)
+      : null;
 
   return (
     <NodeViewWrapper
@@ -190,20 +285,10 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
           className="rounded-xl shadow-md"
           src={src}
           alt={alt || ''}
-          style={{ width }}
+          title={title || undefined}
+          style={imageStyle}
           loading="lazy"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            // 2026-07-06: guard against infinite fallback loop. If the
-            // fallback URL itself 404s (CDN outage, moved asset) the
-            // browser would otherwise keep firing onError and the
-            // console would fill with identical messages every render.
-            // `data-fallback` marks "we already tried the placeholder"
-            // so the second onError no-ops instead of resetting src.
-            if (target.dataset.fallback === '1') return;
-            target.dataset.fallback = '1';
-            target.src = '/images/placeholder-large.png';
-          }}
+          onError={handleError}
         />
       ) : (
         <div
@@ -212,15 +297,16 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
           }`}
           contentEditable={false}
         >
-          {/* Toolbar - always visible when selected or hovered (RTL-safe with start-1/2) */}
+          {/* Toolbar — همیشه با hover یا selected نمایان */}
           <div
             className={`absolute -top-14 start-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-1.5 border border-gray-200 dark:border-gray-700 transition-all duration-200 ${
               showControls || selected
                 ? 'opacity-100 translate-y-0'
                 : 'opacity-0 translate-y-2 pointer-events-none'
             }`}
+            role="toolbar"
+            aria-label="ابزارهای تصویر"
           >
-            {/* Alignment buttons */}
             <button
               type="button"
               onClick={() => handleAlignChange('left')}
@@ -249,12 +335,23 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
               <AlignRight size={16} />
             </button>
 
-            <div className="w-px h-6 bg-gray-200 dark:bg-gray-600 mx-1" aria-hidden="true" />
+            <div className="w-px h-6 bg-gray-200 dark:bg-gray-600 mx-1" aria-hidden />
+
+            <button
+              type="button"
+              onClick={handleHalfWidth}
+              aria-label="نصف عرض"
+              title="نصف عرض"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
+            >
+              <Minimize2 size={16} />
+            </button>
 
             <button
               type="button"
               onClick={handleFullWidth}
               aria-label="تمام عرض"
+              title="تمام عرض"
               className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
             >
               <Maximize2 size={16} />
@@ -269,7 +366,7 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
               <ExternalLink size={16} />
             </button>
 
-            <div className="w-px h-6 bg-gray-200 dark:bg-gray-600 mx-1" aria-hidden="true" />
+            <div className="w-px h-6 bg-gray-200 dark:bg-gray-600 mx-1" aria-hidden />
 
             <button
               type="button"
@@ -281,20 +378,20 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
             </button>
           </div>
 
-          {/* Inline-start resize handle (left in LTR, right in RTL) */}
+          {/* Resize handle — سمت inline-start (فیزیکی: چپ در LTR، راست در RTL) */}
           <div
-            onMouseDown={handleMouseDown('left')}
-            onKeyDown={handleKeyDown('left')}
+            onMouseDown={startResize()}
+            onKeyDown={handleKeyDown}
+            tabIndex={0}
+            role="slider"
+            aria-label="تغییر اندازه از ابتدا"
+            aria-valuemin={MIN_WIDTH}
+            aria-valuemax={wrapperWidth || undefined}
+            aria-valuenow={displayWidth || undefined}
+            aria-orientation="vertical"
             className={`absolute z-40 h-full cursor-col-resize top-0 flex w-8 select-none flex-col justify-center -start-4 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:rounded ${
               showControls || selected ? 'opacity-100' : 'opacity-0'
             }`}
-            role="slider"
-            aria-label="تغییر اندازه از ابتدا"
-            aria-valuemin={100}
-            aria-valuemax={Math.max(100, wrapperRef.current?.offsetWidth ?? 0)}
-            aria-valuenow={typeof width === 'number' ? width : Number(width) || 0}
-            aria-orientation="vertical"
-            tabIndex={0}
           >
             <div className="h-16 w-1 rounded-full bg-primary-500 shadow-lg mx-auto" />
           </div>
@@ -303,47 +400,42 @@ const ResizeImage = ({ editor, node, updateAttributes, selected }: ResizeImagePr
             className="rounded-xl shadow-lg transition-shadow hover:shadow-xl"
             src={src}
             alt={alt || ''}
-            style={{ width }}
+            title={title || undefined}
+            style={imageStyle}
             loading="lazy"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              // 2026-07-06: see the read-only branch above for why
-              // `data-fallback` is set before assigning the placeholder.
-              if (target.dataset.fallback === '1') return;
-              target.dataset.fallback = '1';
-              target.src = '/images/placeholder-large.png';
-            }}
+            onError={handleError}
             data-drag-handle
           />
 
-          {/* Inline-end resize handle (right in LTR, left in RTL) */}
+          {/* Resize handle — سمت inline-end */}
           <div
-            onMouseDown={handleMouseDown('right')}
-            onKeyDown={handleKeyDown('right')}
+            onMouseDown={startResize()}
+            onKeyDown={handleKeyDown}
+            tabIndex={0}
+            role="slider"
+            aria-label="تغییر اندازه از انتها"
+            aria-valuemin={MIN_WIDTH}
+            aria-valuemax={wrapperWidth || undefined}
+            aria-valuenow={displayWidth || undefined}
+            aria-orientation="vertical"
             className={`absolute z-40 h-full cursor-col-resize top-0 flex w-8 select-none flex-col justify-center items-center -end-4 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:rounded ${
               showControls || selected ? 'opacity-100' : 'opacity-0'
             }`}
-            role="slider"
-            aria-label="تغییر اندازه از انتها"
-            aria-valuemin={100}
-            aria-valuemax={Math.max(100, wrapperRef.current?.offsetWidth ?? 0)}
-            aria-valuenow={typeof width === 'number' ? width : Number(width) || 0}
-            aria-orientation="vertical"
-            tabIndex={0}
           >
             <div className="h-16 w-1 rounded-full bg-primary-500 shadow-lg" />
           </div>
 
-          {/* Size indicator (centered, RTL-safe via start-1/2) */}
-          {isResizing && (
-            <div className="absolute bottom-4 start-1/2 -translate-x-1/2 px-3 py-1.5 bg-black/80 text-white text-xs rounded-lg font-mono backdrop-blur-sm shadow-lg">
-              {Math.round(width)}px
+          {/* size indicator — px و درصد، وسط پایین */}
+          {isResizing && (indicatorPx !== null || indicatorPct !== null) && (
+            <div className="absolute bottom-4 start-1/2 -translate-x-1/2 px-3 py-1.5 bg-black/80 text-white text-xs rounded-lg font-mono backdrop-blur-sm shadow-lg whitespace-nowrap">
+              {indicatorPx !== null ? `${indicatorPx}px` : '—'}
+              {indicatorPct !== null ? ` · ${indicatorPct}%` : ''}
             </div>
           )}
 
-          {/* Alt text badge — anchored to inline-end corner */}
+          {/* alt badge — گوشهٔ inline-end */}
           {alt && (
-            <div className="absolute bottom-2 end-2 px-2 py-1 bg-black/60 text-white text-[10px] rounded-md backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity max-w-[150px] truncate">
+            <div className="absolute bottom-2 end-2 px-2 py-1 bg-black/60 text-white text-[10px] rounded-md backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity max-w-[180px] truncate">
               {alt}
             </div>
           )}

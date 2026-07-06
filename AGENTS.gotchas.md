@@ -41,6 +41,15 @@ If Upstash is unset or fails, requests still succeed via in-memory path.
 - `next build` with Turbopack still panics (embedded `lightningcss` alpha.70 in next@16.2.9). So `build` runs with `--webpack` until Turbopack bundles stable lightningcss.
 - To test Turbopack build: `npx next build` (no flag) — will crash on `globals.css`.
 
+## npm scripts — never use `$(...)` shell substitution (since 2026-07-06)
+
+- `cross-env` does **not** expand `$(...)` (it intentionally avoids shelling out). When npm runs a script on Linux/macOS it uses `sh -c`, so `$(node ...)` works — but on **Windows cmd.exe** the whole expression is passed literally to `cross-env`, which then tries to spawn `scripts\next-dist-dir.cjs)` as a command and fails with `ENOENT`.
+- Symptom: `Error: spawn scripts\\next-dist-dir.cjs) ENOENT` with the trailing `)` in `path`.
+- Rule: **npm scripts must be platform-neutral**. Don't write `$(...)` or backticks in `package.json`. If you need a computed env var, either:
+  1. Compute it inside `next.config.ts` from `process.env` (preferred — it's TS, no shell), or
+  2. Have the user export it in their shell first (`export NEXT_DIST_DIR=$(node scripts/x.cjs) && npm run dev`).
+- Historical context: `scripts/next-dist-dir.cjs` existed to route `.next/` off WSL2 9p mounts (`/tmp/next-dev-$USER`) where `next dev` failed with EACCES. The workaround is **WSL-only**; on native Windows + NTFS the default `.next/` in the project root works fine, so the npm scripts no longer call the helper. WSL users can still invoke it manually.
+
 ## Dashboard 2026 v2 CSS
 
 Large (~660 lines), lives at the tail of `globals.css`. If `dash-bento2`, `dash-pane--hero/--compact/--tall`, `dash-toolbar`, `dash-hero*`, `dash-minical`, etc. render unstyled, search file for `Dashboard 2026 (June 22)` — that's the only marker. The block must be wrapped in its own `@layer utilities`.

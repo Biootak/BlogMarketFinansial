@@ -31,6 +31,7 @@ import TocSidebar from './components/toc-sidebar';
 import ImageUploadDialog, {
   type ImageUploadDialogRef,
 } from './components/image-upload-dialog';
+import YoutubeDialog from './components/youtube-dialog';
 import { Icon } from '@/components/ui/icon';
 import { toast } from '@/components/ui/use-toast';
 import type { EditorInstance } from '.';
@@ -49,6 +50,13 @@ export interface EditorProps extends Partial<EditorOptions> {
   contentClassName?: string;
   footerClassName?: string;
   displayWordsCount?: boolean;
+  /**
+   * اختیاری — اگر داده شود، وقتی تعداد کلمات از این مقدار بیشتر شود
+   * عدد کلمات در status bar قرمز و pulsing می‌شود. صفر یا undefined
+   * یعنی بدون محدودیت (پیش‌فرض). معمولاً پست‌های وبلاگی مالی بین ۸۰۰ تا
+   * ۲۵۰۰ کلمه هستند؛ پیشنهاد می‌شود ۵۰۰۰ به‌عنوان soft و ۸۰۰۰ به‌عنوان hard.
+   */
+  wordLimit?: number;
   onUpdateToC?: (items: TocItem[]) => void;
   /**
    * اختیاری — اگر داده شود، editor محتوا را به صورت debounce‌شده در
@@ -93,6 +101,25 @@ function countCharsNoSpace(text: string): number {
   return text.replace(/\s+/g, '').length;
 }
 
+// 2026-07-06: زمان نسبی فارسی برای banner بازیابی خودکار.
+// مثال: «۳ دقیقه پیش»، «۲ ساعت پیش»، «دیروز».
+function timeSinceLabel(savedAt: number): string {
+  const diffMs = Date.now() - savedAt;
+  if (!Number.isFinite(diffMs) || diffMs < 0) return 'لحظاتی پیش';
+  const sec = Math.floor(diffMs / 1000);
+  if (sec < 60) return 'لحظاتی پیش';
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${toFaDigits(min)} دقیقه پیش`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${toFaDigits(hr)} ساعت پیش`;
+  const day = Math.floor(hr / 24);
+  if (day === 1) return 'دیروز';
+  if (day < 7) return `${toFaDigits(day)} روز پیش`;
+  const week = Math.floor(day / 7);
+  if (week < 5) return `${toFaDigits(week)} هفته پیش`;
+  return new Date(savedAt).toLocaleDateString('fa-IR');
+}
+
 export const Editor = forwardRef<EditorRef, EditorProps>(
   (
     {
@@ -105,6 +132,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
       editorProps = {},
       content,
       displayWordsCount = true,
+      wordLimit,
       onUpdateToC,
       autoSaveKey = null,
       onAutoSaveRestore,
@@ -305,6 +333,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
     const [tocItems, setTocItems] = useState<TocItem[]>([]);
     const [tocOpen, setTocOpen] = useState(true);
     const [imageUploadOpen, setImageUploadOpen] = useState(false);
+    const [youtubeOpen, setYoutubeOpen] = useState(false);
     const [selectionCount, setSelectionCount] = useState<{
       words: number;
       chars: number;
@@ -414,7 +443,9 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
                   editor.commands.setContent(parsed.html as string, {
                     emitUpdate: false,
                   });
-                  onAutoSaveRestore?.(parsed.savedAt ?? Date.now());
+                  const savedAt = parsed.savedAt ?? Date.now();
+                  setRestoredAt(savedAt);
+                  onAutoSaveRestore?.(savedAt);
                 }
               });
             }
@@ -476,12 +507,33 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
       };
     }, [editor, onUpdateToC]);
 
-    // ── Slash command image upload bridge ──
+    // ── Auto-recover banner state ──
+    // وقتی auto-save از localStorage بازیابی می‌شود، یک نوار زرد بالای
+    // ادیتور نمایش می‌دهیم که کاربر بتواند پیش‌نویس را نگه دارد یا دور بیندازد.
+    const [restoredAt, setRestoredAt] = useState<number | null>(null);
+
+    const dismissRecovery = useCallback(() => {
+      setRestoredAt(null);
+    }, []);
+
+    const discardRecovery = useCallback(() => {
+      if (!editor || editor.isDestroyed) return;
+      try {
+        if (autoSaveKey) window.localStorage.removeItem(autoSaveKey);
+      } catch {
+        // localStorage در دسترس نبودن — نادیده بگیر
+      }
+      editor.commands.setContent('', { emitUpdate: false });
+      setRestoredAt(null);
+    }, [editor, autoSaveKey]);
+
+    // ── Slash command bridges (image upload + youtube dialog) ──
     useEffect(() => {
       if (!editor || editor.isDestroyed) return;
       editor.storage.slashCommands = {
         ...(editor.storage.slashCommands ?? {}),
         openImageUpload: () => setImageUploadOpen(true),
+        openYoutubeDialog: () => setYoutubeOpen(true),
       };
     }, [editor]);
 
@@ -508,21 +560,27 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
       [],
     );
 
-    const initialContentLoadedRef = useRef(false);
+    const lastLoadedContentRef = useRef<string | null>(null);
     useEffect(() => {
-      if (!editor || editor.isDestroyed || initialContentLoadedRef.current) return;
+      if (!editor || editor.isDestroyed) return;
       const parsedContent = parseContent(content ?? '');
-      if (parsedContent) {
-        queueMicrotask(() => {
-          if (!editor.isDestroyed) {
-            editor.commands.setContent(parsedContent, { emitUpdate: false });
-            initialContentLoadedRef.current = true;
-          }
-        });
-      } else {
-        initialContentLoadedRef.current = true;
-      }
+      if (!parsedContent) return; // محتوای خالی: صبر کن تا parent لود کند
+      const serialized =
+        typeof parsedContent === 'string'
+          ? parsedContent
+          : JSON.stringify(parsedContent);
+      // اگر همین محتوا قبلاً لود شده (مثلاً حلقهٔ onUpdate)، تکرار نکن.
+      if (serialized === lastLoadedContentRef.current) return;
+      lastLoadedContentRef.current = serialized;
+      queueMicrotask(() => {
+        if (!editor.isDestroyed) {
+          editor.commands.setContent(parsedContent, { emitUpdate: false });
+        }
+      });
     }, [editor, content, parseContent]);
+
+    // 2026-07-06: این bridge اضافی دیگر لازم نیست؛ setRestoredAt در خود
+    // useEffect auto-save (پایین‌تر) به‌صورت مستقیم فراخوانی می‌شود.
 
     useEffect(() => {
       return () => {
@@ -592,6 +650,47 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
           </div>
         </div>
 
+        {/* ═══ Auto-recover banner ═════════════════════════════════════════
+            وقتی autosave پیش‌نویسی را از localStorage بازیابی می‌کند، این
+            نوار زرد با دکمه‌های «ادامه» / «حذف پیش‌نویس» نمایش داده می‌شود
+            تا کاربر کنترل داشته باشد که پیش‌نویس را نگه دارد یا دور بیندازد.
+            CSS کلاس‌ها در shell.scss از قبل آماده است. */}
+        {restoredAt !== null && (
+          <div
+            className="at-editor-recover"
+            role="status"
+            aria-live="polite"
+          >
+            <span className="at-editor-recover__ico" aria-hidden>
+              <Icon name="clock" size={14} strokeWidth={2} />
+            </span>
+            <div className="at-editor-recover__text">
+              <div className="at-editor-recover__title">پیش‌نویس بازیابی شد</div>
+              <div className="at-editor-recover__sub">
+                آخرین ذخیرهٔ خودکار: {timeSinceLabel(restoredAt)}
+              </div>
+            </div>
+            <button
+              type="button"
+              className="at-editor-recover__btn at-editor-recover__btn--ghost"
+              onClick={discardRecovery}
+              aria-label="دور انداختن پیش‌نویس بازیابی‌شده"
+            >
+              <Icon name="trash-2" size={12} strokeWidth={2} />
+              <span>حذف پیش‌نویس</span>
+            </button>
+            <button
+              type="button"
+              className="at-editor-recover__btn"
+              onClick={dismissRecovery}
+              aria-label="ادامه با همین پیش‌نویس"
+            >
+              <Icon name="check" size={12} strokeWidth={2.5} />
+              <span>ادامه</span>
+            </button>
+          </div>
+        )}
+
         {/* ═══ Stage ════════════════════════════════════════════════════════ */}
         <div className="at-editor-stage">
           {/* Sticky toolbar container — the actual controls live in FixedMenu */}
@@ -646,6 +745,12 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
           onOpenChange={setImageUploadOpen}
         />
 
+        <YoutubeDialog
+          editor={editor}
+          open={youtubeOpen}
+          onOpenChange={setYoutubeOpen}
+        />
+
         {/* ═══ Status bar ═══════════════════════════════════════════════════ */}
         {editable && displayWordsCount && (
           <div className={`at-editor-status ${footerClassName}`}>
@@ -657,8 +762,30 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
                   strokeWidth={2}
                   className="at-editor-status__ico at-editor-status__ico--emerald"
                 />
-                <span className="at-editor-status__num">{toFaDigits(counts.words)}</span>
+                <span
+                  className={
+                    typeof wordLimit === 'number' && wordLimit > 0 && counts.words > wordLimit
+                      ? 'at-editor-status__num at-editor-status__num--over'
+                      : 'at-editor-status__num'
+                  }
+                  title={
+                    typeof wordLimit === 'number' && wordLimit > 0
+                      ? `سقف پیشنهادی: ${toFaDigits(wordLimit)} کلمه`
+                      : undefined
+                  }
+                >
+                  {toFaDigits(counts.words)}
+                </span>
                 <span className="at-editor-status__lbl">کلمه</span>
+                {typeof wordLimit === 'number' && wordLimit > 0 && counts.words > wordLimit && (
+                  <span
+                    className="at-editor-status__lbl"
+                    style={{ color: 'oklch(58% 0.2 25)', marginInlineStart: 6 }}
+                    aria-label="بیش از سقف پیشنهادی"
+                  >
+                    ! از {toFaDigits(wordLimit)} بیشتر است
+                  </span>
+                )}
               </span>
 
               <span className="at-editor-status__sep" aria-hidden />

@@ -202,7 +202,7 @@ interface FileFailure {
 }
 type FileOutcome = FileSuccess | FileFailure;
 
-async function processOneFile(file: File): Promise<FileOutcome> {
+async function processOneFile(file: File, folder: AllowedFolder): Promise<FileOutcome> {
   if (!ALLOWED_TYPES.includes(file.type as AllowedMime)) {
     return {
       ok: false,
@@ -245,7 +245,6 @@ async function processOneFile(file: File): Promise<FileOutcome> {
   try {
     const optimized = await processImage(buffer, mime);
     const filename = generateFilename(file.name, mime);
-    const folder = 'general'; // overridden by caller below
 
     const stored = await uploadFile(optimized.buffer, filename, folder, optimized.mime, {
       width: optimized.width,
@@ -332,15 +331,12 @@ export async function POST(request: NextRequest) {
     //   2. surface partial failures — one bad file doesn't poison the others
     // Per-file outcomes are split into successes and failures; the response
     // is a 200 with per-file status unless *every* file failed.
-    const outcomes = await Promise.all(files.map((f) => processOneFile(f)));
+    const outcomes = await Promise.all(
+      files.map((f) => processOneFile(f, folder as AllowedFolder)),
+    );
 
     const successes = outcomes.filter((o): o is FileSuccess => o.ok);
     const failures = outcomes.filter((o): o is FileFailure => !o.ok);
-
-    // Re-stamp the folder now that we know it. (processOneFile used the
-    // placeholder 'general' for filename construction; we don't need to
-    // re-upload, just patch the returned path so the client gets the right URL.)
-    // (We passed folder at upload time below — no patching needed here.)
 
     // If everything failed, return a 400 so the client can show a single error.
     if (successes.length === 0) {
@@ -359,15 +355,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Patch folder into returned paths — uploadFile was called with
-    // 'general' as a placeholder because folder isn't known inside
-    // processOneFile's closure. We re-key it here so paths match the
-    // requested folder.
-    const data = successes.map((s) => ({
-      ...s.data,
-      url: s.data.url.replace('/uploads/general/', `/uploads/${folder}/`),
-      localPath: s.data.localPath.replace('/uploads/general/', `/uploads/${folder}/`),
-    }));
+    // folder از ابتدا به processOneFile پاس داده شده، پس URL ها صحیح‌اند
+    // (هم S3 path هم local path با فولدر درست ساخته شده‌اند).
+    const data = successes.map((s) => s.data);
 
     return NextResponse.json({
       success: true,

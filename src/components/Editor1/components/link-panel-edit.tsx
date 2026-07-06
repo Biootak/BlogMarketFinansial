@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Icon } from '../../ui/icon';
 import { Button } from '@/components/ui/button';
-import { Link, X, Check } from 'lucide-react';
 
 interface LinkPanelEditProps {
   initial: string;
@@ -73,7 +72,7 @@ const LinkPanelEdit = ({ initial, isOpen, onSetLink }: LinkPanelEditProps) => {
           <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
             isValidUrl ? 'bg-green-100 dark:bg-green-900/30' : 'bg-gray-100 dark:bg-gray-700'
           }`}>
-            <Link size={16} className={isValidUrl ? 'text-green-600' : 'text-gray-500'} />
+            <Icon name="link" size={16} className={isValidUrl ? 'text-green-600' : 'text-gray-500'} />
           </div>
           <input
             ref={inputRef}
@@ -90,7 +89,7 @@ const LinkPanelEdit = ({ initial, isOpen, onSetLink }: LinkPanelEditProps) => {
         
         <div className="flex items-center justify-between">
           <p className="text-[10px] text-gray-400 dark:text-gray-500 inline-flex items-center gap-1">
-            {isValidUrl && <Check className="h-3 w-3 text-green-600" strokeWidth={2.5} aria-hidden />}
+            {isValidUrl && <Icon name="check" size={12} className="text-green-600" aria-hidden />}
             {isValidUrl ? 'لینک معتبر' : 'آدرس لینک را وارد کنید'}
           </p>
           <div className="flex gap-2">
@@ -109,7 +108,7 @@ const LinkPanelEdit = ({ initial, isOpen, onSetLink }: LinkPanelEditProps) => {
               disabled={!isValidUrl}
               className="h-8 px-4 text-xs bg-primary-500 hover:bg-primary-600 text-white disabled:opacity-50"
             >
-              <Check size={14} className="ms-1" />
+              <Icon name="check" size={14} className="ms-1" />
               ذخیره
             </Button>
           </div>

@@ -133,10 +133,9 @@ export const defaultSlashCommands: SlashCommandItem[] = [
     keywords: ['youtube', 'video', 'ویدیو', 'یوتیوب'],
     category: 'media',
     command: (editor) => {
-      const url = window.prompt('آدرس ویدیو یوتیوب را وارد کنید:');
-      if (url) {
-        editor.chain().focus().setEmbed({ src: url }).run();
-      }
+      // 2026-07-06: به جای window.prompt() از دیالوگ اختصاصی استفاده می‌کنیم
+      // که از طریق storage به editor shell وصل شده است.
+      editor.storage.slashCommands.openYoutubeDialog?.();
     },
   },
   // Advanced
@@ -274,6 +273,7 @@ export const defaultSlashCommands: SlashCommandItem[] = [
 export interface SlashCommandsStorage {
   slashCommands: {
     openImageUpload?: () => void;
+    openYoutubeDialog?: () => void;
   };
 }
 

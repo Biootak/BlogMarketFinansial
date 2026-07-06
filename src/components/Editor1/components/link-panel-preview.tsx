@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback } from 'react';
-import { ExternalLink, Pencil, Unlink, Copy, Check } from 'lucide-react';
+import { Icon } from '../../ui/icon';
 
 interface LinkPanelPreviewProps {
   url: string;
@@ -42,7 +42,7 @@ const LinkPanelPreview = ({ url, onEdit, onRemove }: LinkPanelPreviewProps) => {
           className="flex items-center gap-2 text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors group"
           dir="ltr"
         >
-          <ExternalLink size={14} className="flex-shrink-0 opacity-60 group-hover:opacity-100" />
+          <Icon name="link-2" size={14} className="flex-shrink-0 opacity-60 group-hover:opacity-100" />
           <span className="truncate">{displayUrl}</span>
         </a>
       </div>
@@ -56,9 +56,9 @@ const LinkPanelPreview = ({ url, onEdit, onRemove }: LinkPanelPreviewProps) => {
           aria-label={copied ? 'کپی شد' : 'کپی لینک'}
         >
           {copied ? (
-            <Check size={16} className="text-green-500" />
+            <Icon name="check" size={16} className="text-green-500" />
           ) : (
-            <Copy size={16} />
+            <Icon name="copy" size={16} />
           )}
         </button>
         
@@ -70,7 +70,7 @@ const LinkPanelPreview = ({ url, onEdit, onRemove }: LinkPanelPreviewProps) => {
           className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
           aria-label="ویرایش لینک"
         >
-          <Pencil size={16} />
+          <Icon name="settings-2" size={16} />
         </button>
         
         <button
@@ -79,7 +79,7 @@ const LinkPanelPreview = ({ url, onEdit, onRemove }: LinkPanelPreviewProps) => {
           className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 transition-colors"
           aria-label="حذف لینک"
         >
-          <Unlink size={16} />
+          <Icon name="link-2-off" size={16} />
         </button>
       </div>
     </div>

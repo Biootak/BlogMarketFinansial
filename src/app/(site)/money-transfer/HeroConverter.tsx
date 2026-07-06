@@ -61,6 +61,16 @@ interface HeroConverterProps {
   bestProvider: string;
   /** spread آن provider (٪) */
   bestSpread: number;
+  /**
+   * anchor برای freshness در hero (سرور محاسبه می‌شود).
+   * - snapshot.generatedAt اگه snapshot موجود باشه (fresh واقعی بازار)
+   * - در غیر این صورت max(db.updatedAt)
+   * - null اگه هیچ داده‌ای نیست
+   *
+   * قبلاً freshness از pairs[].updatedAt حساب می‌شد که اگه DB خالی/قدیمی
+   * باشه، عدد «۳ ساعت پیش» یا «نامشخص» نشون می‌داد.
+   */
+  freshnessAnchor: Date | null;
 }
 
 type CategoryId = 'forex' | 'afghan' | 'gold' | 'crypto';
@@ -92,6 +102,7 @@ export default function HeroConverter({
   providerCount,
   bestProvider,
   bestSpread,
+  freshnessAnchor,
 }: HeroConverterProps) {
   const dir = useDirection('rtl');
 
@@ -187,14 +198,15 @@ export default function HeroConverter({
   const hasRates = filteredPairs.length >= 2;
   const activeCategory = CATEGORIES.find((c) => c.id === category) ?? CATEGORIES[0];
 
-  // freshness از آخرین به‌روزرسانی
+  // freshness از anchor سرور (snapshot.generatedAt یا max db.updatedAt).
+  // چرا anchor: قبلاً از pairs[].updatedAt می‌گرفتیم که اگه DB خالی/قدیمی
+  // باشه، freshness غلط می‌شد. server این مقدار را درست محاسبه می‌کنه و
+  // تازه‌ترین منبع (snapshot) را ترجیح می‌دهد.
   const freshness = useMemo(() => {
-    if (pairs.length === 0) return 'نامشخص';
-    const latest = pairs
-      .map((p) => new Date(p.updatedAt).getTime())
-      .reduce((a, b) => Math.max(a, b), 0);
-    if (!latest) return 'نامشخص';
-    const ms = Math.max(0, Date.now() - latest);
+    if (!freshnessAnchor) return 'نامشخص';
+    const anchor = new Date(freshnessAnchor).getTime();
+    if (!Number.isFinite(anchor) || anchor <= 0) return 'نامشخص';
+    const ms = Math.max(0, Date.now() - anchor);
     const mins = Math.floor(ms / 60_000);
     if (mins < 1) return 'همین الآن';
     if (mins < 60) {
@@ -209,7 +221,7 @@ export default function HeroConverter({
     const days = Math.floor(hours / 24);
     const n = new Intl.NumberFormat('fa-IR').format(days);
     return `${n} روز پیش`;
-  }, [pairs]);
+  }, [freshnessAnchor]);
 
   // stats تمیز: اگه count=0، متن neutral نشان بده
   const safeProviderCount = providerCount > 0 ? providerCount : 0;

@@ -57,6 +57,7 @@ import {
   Link2,
   Link2Off,
   List,
+  Play,
   ListChecks,
   ListOrdered,
   ListTodo,
@@ -251,6 +252,9 @@ const iconMap = {
   'trash-2': Trash2,
   merge: Combine,
   split: Split,
+
+  // ─── Media
+  play: Play,
 
   // ─── Arrows (برای table-toolbar و floating menu)
   'arrow-up': ChevronUp,

@@ -2,21 +2,11 @@
 
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import type { Editor } from '@tiptap/core';
-import {
-  Minus,
-  Trash2,
-  ArrowUp,
-  ArrowDown,
-  ArrowLeft,
-  ArrowRight,
-  Merge,
-  Split,
-  Palette,
-  ChevronLeft,
-} from 'lucide-react';
-import { COLOR_PALETTE, hexToRgba } from '../constants/color';
+import { Icon } from '../../ui/icon';
+import { ConfirmDialog } from '@/components/Dashboard/primitives/ConfirmDialog';
+import { CellColorPicker } from './cell-color-picker';
 import { cn } from '@/lib/utils';
-// 2026-07-05: dir صریح برای منویی که با fixed positioning روی body سوار می‌شود.
+// 2026-07-06: dir صریح برای منویی که با fixed positioning روی body سوار می‌شود.
 import { useDirection } from '@/hooks/useDirection';
 
 interface TableContextMenuProps {
@@ -33,7 +23,7 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState<MenuPosition>({ x: 0, y: 0 });
   const [showColorPicker, setShowColorPicker] = useState(false);
-  const [opacity, setOpacity] = useState(1);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const handleContextMenu = useCallback(
@@ -102,23 +92,30 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
     };
   }, [handleContextMenu, handleClick, handleKeyDown]);
 
-  const setCellColor = (color: string | null) => {
-    if (color && opacity < 1) {
-      const match = color.match(/^#([0-9A-F]{6})$/i);
-      if (match) {
-        color = hexToRgba(color, opacity);
-      }
-    }
-    editor.chain().focus().setCellAttribute('backgroundColor', color).run();
+  const setCellColor = useCallback(
+    (color: string | null) => {
+      editor.chain().focus().setCellAttribute('backgroundColor', color).run();
+      setIsOpen(false);
+    },
+    [editor],
+  );
+
+  const handleDeleteTable = useCallback(() => {
+    setShowDeleteConfirm(true);
+  }, []);
+
+  const confirmDeleteTable = useCallback(() => {
+    editor.chain().focus().deleteTable().run();
+    setShowDeleteConfirm(false);
     setIsOpen(false);
-  };
+  }, [editor]);
 
   if (!isOpen) return null;
 
   interface MenuItem {
     label: string;
     icon: React.ReactNode;
-    action: () => boolean;
+    action: () => boolean | void;
     danger?: boolean;
     disabled?: boolean;
   }
@@ -134,17 +131,17 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
       items: [
         {
           label: 'افزودن ردیف بالا',
-          icon: <ArrowUp size={16} />,
+          icon: <Icon name="arrow-up" size={16} rtlAware />,
           action: () => editor.chain().focus().addRowBefore().run(),
         },
         {
           label: 'افزودن ردیف پایین',
-          icon: <ArrowDown size={16} />,
+          icon: <Icon name="arrow-down" size={16} rtlAware />,
           action: () => editor.chain().focus().addRowAfter().run(),
         },
         {
           label: 'حذف ردیف',
-          icon: <Minus size={16} />,
+          icon: <Icon name="minus" size={16} />,
           action: () => editor.chain().focus().deleteRow().run(),
           danger: true,
         },
@@ -154,18 +151,22 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
       title: 'ستون',
       items: [
         {
-          label: 'افزودن ستون راست',
-          icon: <ArrowRight size={16} />,
+          // 2026-07-06: در RTL «افزودن ستون سمت راست» یعنی همان addColumnBefore
+          // که در RTL ستون سمت راست بصری را اضافه می‌کند. اما کاربر RTL
+          // «راست» را سمت راست بصری می‌بیند. برچسب‌ها را منطقی (logical)
+          // می‌کنیم: «قبلی/بعدی» به‌جای «راست/چپ».
+          label: 'افزودن ستون قبلی',
+          icon: <Icon name="arrow-right" size={16} rtlAware />,
           action: () => editor.chain().focus().addColumnBefore().run(),
         },
         {
-          label: 'افزودن ستون چپ',
-          icon: <ArrowLeft size={16} />,
+          label: 'افزودن ستون بعدی',
+          icon: <Icon name="arrow-left" size={16} rtlAware />,
           action: () => editor.chain().focus().addColumnAfter().run(),
         },
         {
           label: 'حذف ستون',
-          icon: <Minus size={16} />,
+          icon: <Icon name="columns" size={16} />,
           action: () => editor.chain().focus().deleteColumn().run(),
           danger: true,
         },
@@ -176,13 +177,13 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
       items: [
         {
           label: 'ادغام سلول‌ها',
-          icon: <Merge size={16} />,
+          icon: <Icon name="merge" size={16} />,
           action: () => editor.chain().focus().mergeCells().run(),
           disabled: !editor.can().mergeCells(),
         },
         {
           label: 'تفکیک سلول',
-          icon: <Split size={16} />,
+          icon: <Icon name="split" size={16} />,
           action: () => editor.chain().focus().splitCell().run(),
           disabled: !editor.can().splitCell(),
         },
@@ -191,148 +192,112 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
   ];
 
   return (
-    <div
-      ref={menuRef}
-      className="fixed z-[350] bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 py-2 min-w-[220px] animate-in fade-in zoom-in-95 duration-150"
-      style={{ left: position.x, top: position.y }}
-      role="menu"
-      aria-label="منوی جدول"
-      dir={dir}
-      data-dir={dir}
-    >
-      {menuSections.map((section, sectionIndex) => (
-        <div key={section.title} role="group" aria-labelledby={`section-${section.title}`}>
-          {sectionIndex > 0 && (
-            <div className="h-px bg-gray-200 dark:bg-gray-700 my-2" role="separator" />
-          )}
-          <div 
-            id={`section-${section.title}`}
-            className="px-3 py-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase"
-          >
-            {section.title}
-          </div>
-          {section.items.map((item) => (
-            <button
-              key={item.label}
-              type="button"
-              role="menuitem"
-              disabled={item.disabled}
-              aria-disabled={item.disabled}
-              onClick={() => {
-                if (!item.disabled) {
-                  item.action();
-                  setIsOpen(false);
-                }
-              }}
-              className={cn(
-                "w-full flex items-center gap-3 px-3 py-2 text-sm text-start transition-colors",
-                item.disabled
-                  ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
-                  : item.danger
-                  ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'
-                  : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
-              )}
+    <>
+      <div
+        ref={menuRef}
+        className="fixed z-[350] bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 py-2 min-w-[220px] animate-in fade-in zoom-in-95 duration-150"
+        style={{ left: position.x, top: position.y }}
+        role="menu"
+        aria-label="منوی جدول"
+        dir={dir}
+        data-dir={dir}
+      >
+        {menuSections.map((section, sectionIndex) => (
+          <div key={section.title} role="group" aria-labelledby={`section-${section.title}`}>
+            {sectionIndex > 0 && (
+              <div className="h-px bg-gray-200 dark:bg-gray-700 my-2" role="separator" />
+            )}
+            <div 
+              id={`section-${section.title}`}
+              className="px-3 py-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase"
             >
-              <span className={item.disabled ? 'opacity-50' : ''} aria-hidden="true">{item.icon}</span>
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </div>
-      ))}
+              {section.title}
+            </div>
+            {section.items.map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                role="menuitem"
+                disabled={item.disabled}
+                aria-disabled={item.disabled}
+                onClick={() => {
+                  if (!item.disabled) {
+                    item.action();
+                    setIsOpen(false);
+                  }
+                }}
+                className={cn(
+                  "w-full flex items-center gap-3 px-3 py-2 text-sm text-start transition-colors",
+                  item.disabled
+                    ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                    : item.danger
+                    ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'
+                    : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+                )}
+              >
+                <span className={item.disabled ? 'opacity-50' : ''} aria-hidden="true">{item.icon}</span>
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </div>
+        ))}
 
-      {/* Cell color section */}
-      <div className="h-px bg-gray-200 dark:bg-gray-700 my-2" role="separator" />
-      <div className="px-3 py-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase">
-        رنگ سلول
-      </div>
-      
-      <div className="px-2 py-1">
+        {/* Cell color section */}
+        <div className="h-px bg-gray-200 dark:bg-gray-700 my-2" role="separator" />
+        <div className="px-3 py-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase">
+          رنگ سلول
+        </div>
+        
+        <div className="px-2 py-1">
+          <button
+            type="button"
+            onClick={() => setShowColorPicker(!showColorPicker)}
+            aria-expanded={showColorPicker}
+            className="w-full flex items-center justify-between px-2 py-1.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            <span className="flex items-center gap-2">
+              <Icon name="palette" size={14} aria-hidden="true" />
+              انتخاب رنگ
+            </span>
+            <Icon 
+              name="chevron-down"
+              size={14} 
+              className={cn("transition-transform", showColorPicker && "rotate-180")} 
+              aria-hidden="true"
+            />
+          </button>
+          
+          {showColorPicker && (
+            <div className="mt-2">
+              <CellColorPicker onSelect={setCellColor} onClose={() => setShowColorPicker(false)} />
+            </div>
+          )}
+        </div>
+
+        {/* Delete table button */}
+        <div className="h-px bg-gray-200 dark:bg-gray-700 my-2" role="separator" />
         <button
           type="button"
-          onClick={() => setShowColorPicker(!showColorPicker)}
-          aria-expanded={showColorPicker}
-          className="w-full flex items-center justify-between px-2 py-1.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          role="menuitem"
+          onClick={handleDeleteTable}
+          className="w-full flex items-center gap-3 px-3 py-2 text-sm text-start text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
         >
-          <span className="flex items-center gap-2">
-            <Palette size={14} aria-hidden="true" />
-            انتخاب رنگ
-          </span>
-          <ChevronLeft 
-            size={14} 
-            className={cn("transition-transform", showColorPicker && "rotate-90")} 
-            aria-hidden="true"
-          />
+          <Icon name="trash-2" size={16} aria-hidden="true" />
+          <span>حذف کل جدول</span>
         </button>
-        
-        {showColorPicker && (
-          <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg space-y-2">
-            {/* Color palette - first 4 categories */}
-            {Object.entries(COLOR_PALETTE).slice(0, 4).map(([category, colors]) => (
-              <div key={category} className="flex gap-1">
-                {colors.map((c) => (
-                  <button
-                    key={c.value}
-                    type="button"
-                    onClick={() => setCellColor(opacity < 1 ? hexToRgba(c.value, opacity) : c.value)}
-                    title={c.name}
-                    aria-label={c.name}
-                    className={cn(
-                      'w-6 h-6 rounded-md transition-all hover:scale-110 border',
-                      c.isBrightColor ? 'border-gray-200 dark:border-gray-600' : 'border-transparent'
-                    )}
-                    style={{ backgroundColor: opacity < 1 ? hexToRgba(c.value, opacity) : c.value }}
-                  />
-                ))}
-              </div>
-            ))}
-            
-            {/* Opacity slider */}
-            <div className="pt-2 border-t border-gray-200 dark:border-gray-600">
-              <div className="flex items-center justify-between text-xs mb-1">
-                <span className="text-gray-500 dark:text-gray-400">شفافیت</span>
-                <span className="font-mono text-gray-700 dark:text-gray-300">{Math.round(opacity * 100)}%</span>
-              </div>
-              <input
-                type="range"
-                min="0.1"
-                max="1"
-                step="0.1"
-                value={opacity}
-                onChange={(e) => setOpacity(parseFloat(e.target.value))}
-                className="w-full h-1.5 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
-                aria-label="تنظیم شفافیت"
-              />
-            </div>
-            
-            {/* Clear color */}
-            <button
-              type="button"
-              onClick={() => setCellColor(null)}
-              className="w-full py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
-            >
-              حذف رنگ
-            </button>
-          </div>
-        )}
       </div>
 
-      {/* Delete table button */}
-      <div className="h-px bg-gray-200 dark:bg-gray-700 my-2" role="separator" />
-      <button
-        type="button"
-        role="menuitem"
-        onClick={() => {
-          if (window.confirm('آیا از حذف جدول مطمئن هستید؟')) {
-            editor.chain().focus().deleteTable().run();
-            setIsOpen(false);
-          }
-        }}
-        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-start text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-      >
-        <Trash2 size={16} aria-hidden="true" />
-        <span>حذف کل جدول</span>
-      </button>
-    </div>
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        title="حذف جدول"
+        description="آیا از حذف کامل جدول مطمئن هستید؟ این عمل قابل بازگشت نیست."
+        confirmLabel="حذف جدول"
+        cancelLabel="انصراف"
+        onConfirm={confirmDeleteTable}
+        variant="danger"
+      />
+    </>
   );
 };
 

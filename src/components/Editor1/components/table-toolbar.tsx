@@ -11,8 +11,10 @@ import { BubbleMenu } from '@tiptap/react/menus';
 import type { Editor } from '@tiptap/core';
 import { CellSelection } from '@tiptap/pm/tables';
 import { Icon } from '../../ui/icon';
+import { ConfirmDialog } from '@/components/Dashboard/primitives/ConfirmDialog';
+import { CellColorPicker } from './cell-color-picker';
 import { useDirection } from '@/hooks/useDirection';
-import { COLOR_PALETTE, DEFAULT_COLORS, hexToRgba } from '../constants/color';
+import { hexToRgba } from '../constants/color';
 import { cn } from '@/lib/utils';
 
 interface TableToolbarProps {
@@ -22,9 +24,7 @@ interface TableToolbarProps {
 const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
   const dir = useDirection('rtl');
   const [showColorPicker, setShowColorPicker] = useState(false);
-  const [activeTab, setActiveTab] = useState<'palette' | 'transparent'>('palette');
-  const [opacity, setOpacity] = useState(1);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const colorPickerRef = useRef<HTMLDivElement>(null);
 
   const canMerge = useMemo(() => editor.can().mergeCells(), [editor.state.selection]);
@@ -45,14 +45,6 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
 
   const setCellBackgroundColor = useCallback(
     (color: string | null) => {
-      let finalColor = color;
-      if (finalColor && opacity < 1) {
-        const match = finalColor.match(/^#([0-9A-F]{6})$/i);
-        if (match) {
-          finalColor = hexToRgba(finalColor, opacity);
-        }
-      }
-
       const { state } = editor.view;
       const { selection, tr } = state;
 
@@ -60,7 +52,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
         selection.forEachCell((node, pos) => {
           tr.setNodeMarkup(pos, undefined, {
             ...node.attrs,
-            backgroundColor: finalColor,
+            backgroundColor: color,
           });
         });
         editor.view.dispatch(tr);
@@ -72,7 +64,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
         if (cell && (cell.type.name === 'tableCell' || cell.type.name === 'tableHeader')) {
           const singleTr = state.tr.setNodeMarkup(cellPos, undefined, {
             ...cell.attrs,
-            backgroundColor: finalColor,
+            backgroundColor: color,
           });
           editor.view.dispatch(singleTr);
         }
@@ -80,15 +72,14 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
 
       setShowColorPicker(false);
     },
-    [editor, opacity],
+    [editor],
   );
 
   const handleColorSelect = useCallback(
-    (color: string) => {
-      setSelectedColor(color);
-      setCellBackgroundColor(opacity < 1 ? hexToRgba(color, opacity) : color);
+    (color: string | null) => {
+      setCellBackgroundColor(color);
     },
-    [opacity, setCellBackgroundColor],
+    [setCellBackgroundColor],
   );
 
   return (
@@ -139,7 +130,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
             type="button"
             onClick={() => editor.chain().focus().addColumnBefore().run()}
             className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none"
-            aria-label="افزودن ستون راست"
+            aria-label="افزودن ستون قبلی"
           >
             <Icon name="arrow-right" size={16} rtlAware />
           </button>
@@ -147,7 +138,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
             type="button"
             onClick={() => editor.chain().focus().addColumnAfter().run()}
             className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none"
-            aria-label="افزودن ستون چپ"
+            aria-label="افزودن ستون بعدی"
           >
             <Icon name="arrow-left" size={16} rtlAware />
           </button>
@@ -209,127 +200,16 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
             aria-haspopup="dialog"
           >
             <Icon name="palette" size={16} />
-          </button>
-
-          {showColorPicker && (
-            <div
-              role="dialog"
-              aria-label="انتخاب رنگ سلول"
-              className="absolute top-full end-0 mt-2 p-3 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-[300] min-w-[260px]"
-            >
-              <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                  رنگ سلول
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setShowColorPicker(false)}
-                  className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none"
-                  aria-label="بستن پنل رنگ"
-                >
-                  <Icon name="x" size={14} strokeWidth={1.5} />
-                </button>
-              </div>
-
-              <div className="flex gap-1 mb-3 p-1 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('palette')}
-                  aria-pressed={activeTab === 'palette'}
-                  className={cn(
-                    'flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none',
-                    activeTab === 'palette'
-                      ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white'
-                      : 'text-gray-600 dark:text-gray-400',
-                  )}
-                >
-                  پالت رنگ
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('transparent')}
-                  aria-pressed={activeTab === 'transparent'}
-                  className={cn(
-                    'flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none',
-                    activeTab === 'transparent'
-                      ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white'
-                      : 'text-gray-600 dark:text-gray-400',
-                  )}
-                >
-                  شفاف
-                </button>
-              </div>
-
-              {activeTab === 'palette' ? (
-                <div className="space-y-1.5">
-                  {Object.entries(COLOR_PALETTE)
-                    .slice(0, 5)
-                    .map(([category, colors]) => (
-                      <div key={category} className="flex gap-1">
-                        {colors.map((c) => (
-                          <button
-                            key={c.value}
-                            type="button"
-                            onClick={() => handleColorSelect(c.value)}
-                            title={c.name}
-                            aria-label={c.name}
-                            className={cn(
-                              'w-6 h-6 rounded-md transition-all hover:scale-110 border focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none',
-                              selectedColor === c.value
-                                ? 'ring-2 ring-primary-500 ring-offset-1'
-                                : '',
-                              c.isBrightColor
-                                ? 'border-gray-200 dark:border-gray-600'
-                                : 'border-transparent',
-                            )}
-                            style={{ backgroundColor: c.value }}
-                          />
-                        ))}
-                      </div>
-                    ))}
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">شفافیت</span>
-                    <span className="font-mono text-gray-900 dark:text-white">
-                      {Math.round(opacity * 100)}%
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.05"
-                    value={opacity}
-                    onChange={(e) => setOpacity(Number.parseFloat(e.target.value))}
-                    aria-label="درصد شفافیت"
-                    className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer accent-primary-500"
-                  />
-                  <div className="grid grid-cols-5 gap-1.5">
-                    {DEFAULT_COLORS.map((c) => (
-                      <button
-                        key={c.value}
-                        type="button"
-                        onClick={() => handleColorSelect(c.value)}
-                        title={c.name}
-                        aria-label={c.name}
-                        className="w-full h-8 rounded-md transition-all hover:scale-105 border border-gray-200 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none"
-                        style={{ backgroundColor: hexToRgba(c.value, opacity) }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <button
-                type="button"
-                onClick={() => setCellBackgroundColor(null)}
-                className="w-full mt-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:outline-none"
+          </button>                  {showColorPicker && (
+              <div
+                className="absolute top-full end-0 mt-2 z-[300]"
+                ref={colorPickerRef}
               >
-                حذف رنگ
-              </button>
-            </div>
+                <CellColorPicker
+                  onSelect={handleColorSelect}
+                  onClose={() => setShowColorPicker(false)}
+                />
+              </div>
           )}
         </div>
 
@@ -337,11 +217,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
         <div className="flex items-center gap-0.5 px-1">
           <button
             type="button"
-            onClick={() => {
-              if (window.confirm('آیا از حذف جدول مطمئن هستید؟')) {
-                editor.chain().focus().deleteTable().run();
-              }
-            }}
+            onClick={() => setShowDeleteConfirm(true)}
             className="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 transition-colors focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none"
             aria-label="حذف جدول"
           >
@@ -349,6 +225,20 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
           </button>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        title="حذف جدول"
+        description="آیا از حذف کامل جدول مطمئن هستید؟ این عمل قابل بازگشت نیست."
+        confirmLabel="حذف جدول"
+        cancelLabel="انصراف"
+        onConfirm={() => {
+          editor.chain().focus().deleteTable().run();
+          setShowDeleteConfirm(false);
+        }}
+        variant="danger"
+      />
     </BubbleMenu>
   );
 };
