@@ -15,10 +15,12 @@ const MenuButtonCodeBlock = ({ editor }: MenuButtonCodeBlockProps) => {
 
   return (
     <Toolbar.Button
-      // 2026-07-05: «Code» به «بلوک کد» ترجمه شد تا با شورتکات Mod+E
-      // که بلوک کد است (نه inline code) تناسب داشته باشد.
+      // 2026-07-06: شورتکات Mod+Shift+C (C = Code) — چون Mod+E در
+      // keyboard-shortcuts برای `toggleCode` (inline code) رزرو شده است.
+      // بلوک کد نیاز به شورتکات متفاوت دارد. ProseMirror خودش
+      // Mod+Alt+C را هم برای codeBlock به صورت پیش‌فرض دارد.
       tooltip="بلوک کد"
-      tooltipShortcut={['Mod', 'E']}
+      tooltipShortcut={['Mod', 'Shift', 'C']}
       active={isCodeBlockActive}
       onClick={onCodeBlock}
     >

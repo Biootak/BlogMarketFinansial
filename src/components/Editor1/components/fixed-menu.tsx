@@ -26,6 +26,7 @@ const MenuSelectFontFamily = dynamic(() => import('../controls/menu-select-font-
 const MenuButtonBold = dynamic(() => import('../controls/menu-button-bold'), { loading: MenuButtonSkeleton });
 const MenuButtonItalic = dynamic(() => import('../controls/menu-button-italic'), { loading: MenuButtonSkeleton });
 const MenuButtonUnderline = dynamic(() => import('../controls/menu-button-underline'), { loading: MenuButtonSkeleton });
+const MenuButtonStrike = dynamic(() => import('../controls/menu-button-strike'), { loading: MenuButtonSkeleton });
 const MenuButtonColor = dynamic(() => import('../controls/menu-button-color'), { loading: MenuButtonSkeleton });
 const MenuButtonHighlight = dynamic(() => import('../controls/menu-button-highlight'), { loading: MenuButtonSkeleton });
 const MenuSelectTextAlign = dynamic(() => import('../controls/menu-select-text-align'), { loading: MenuButtonSkeleton });
@@ -34,6 +35,7 @@ const MenuButtonBulletedList = dynamic(() => import('../controls/menu-button-bul
 const MenuButtonLink = dynamic(() => import('../controls/menu-button-link'), { loading: MenuButtonSkeleton });
 const MenuButtonBlockquote = dynamic(() => import('../controls/menu-button-blockquote'), { loading: MenuButtonSkeleton });
 const MenuButtonCodeblock = dynamic(() => import('../controls/menu-button-codeblock'), { loading: MenuButtonSkeleton });
+const MenuButtonHorizontalRule = dynamic(() => import('../controls/menu-button-horizontal-rule'), { loading: MenuButtonSkeleton });
 const MenuButtonImage = dynamic(() => import('../controls/menu-button-image'), { loading: MenuButtonSkeleton });
 const MenuButtonTable = dynamic(() => import('../controls/menu-button-table'), { loading: MenuButtonSkeleton });
 const MenuButtonTaskList = dynamic(() => import('../controls/menu-button-task-list'), { loading: MenuButtonSkeleton });
@@ -84,6 +86,7 @@ const FixedMenu = ({ editor, className, tocOpen, onToggleToc, hasToc }: FixedMen
             <MenuButtonBold editor={editor} />
             <MenuButtonItalic editor={editor} />
             <MenuButtonUnderline editor={editor} />
+            <MenuButtonStrike editor={editor} />
           </Toolbar.Group>
 
           <Toolbar.Divider className="hidden sm:block" />
@@ -122,6 +125,7 @@ const FixedMenu = ({ editor, className, tocOpen, onToggleToc, hasToc }: FixedMen
             <MenuSelectTextAlign editor={editor} />
             <MenuButtonBlockquote editor={editor} />
             <MenuButtonCodeblock editor={editor} />
+            <MenuButtonHorizontalRule editor={editor} />
             <MenuButtonTable editor={editor} />
             <Toolbar.Divider className="hidden sm:block" />
             <Toolbar.Button

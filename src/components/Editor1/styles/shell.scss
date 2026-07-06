@@ -446,8 +446,8 @@
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 32px !important;
-  height: 32px !important;
+  width: 36px !important;
+  height: 36px !important;
   border-radius: 9px !important;
   border: 1px solid transparent !important;
   background: transparent !important;
@@ -455,15 +455,34 @@
   cursor: pointer !important;
   transition: all 160ms cubic-bezier(0.22, 1, 0.36, 1) !important;
   position: relative;
+  /* 2026-07-06: premium icon rendering — crisp edges, subtle darken */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+// 2026-07-06: SVG icons inside toolbar buttons — bumped from 16→20px.
+// Lucide sets width/height as SVG attributes (<svg width="16">), so
+// CSS width/height might not override consistently. We use transform
+// scale + a min-size guarantee. `preserve-3d` prevents blur at
+// non-integer scales.
+.at-editor-toolbar button svg.lucide {
+  min-width: 20px !important;
+  min-height: 20px !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+// 2026-07-06: premium hover — brand-tinted glow + subtle lift
 .at-editor-toolbar button:hover {
-  background: oklch(95% 0.012 250 / 0.85) !important;
-  border-color: oklch(88% 0.012 250 / 0.8) !important;
-  color: oklch(22% 0.02 255) !important;
+  background: color-mix(in oklch, oklch(72% 0.16 270) 10%, transparent) !important;
+  border-color: color-mix(in oklch, oklch(72% 0.16 270) 25%, oklch(88% 0.012 250 / 0.8)) !important;
+  color: oklch(28% 0.14 270) !important;
   transform: translateY(-1px);
+  box-shadow:
+    0 2px 8px -4px oklch(55% 0.16 270 / 0.25) !important;
 }
 
+// 2026-07-06: active state — dense brand gradient + depth shadow
 .at-editor-toolbar button[data-state="on"],
 .at-editor-toolbar button[aria-pressed="true"],
 .at-editor-toolbar button.is-active {
@@ -471,8 +490,36 @@
   color: oklch(99% 0.005 245) !important;
   border-color: transparent !important;
   box-shadow:
-    0 1px 0 oklch(100% 0 0 / 0.18) inset,
-    0 4px 12px -4px oklch(55% 0.16 270 / 0.45) !important;
+    0 1px 0 oklch(100% 0 0 / 0.24) inset,
+    0 1px 0 oklch(0% 0 0 / 0.04) inset,
+    0 4px 14px -4px oklch(55% 0.16 270 / 0.5) !important;
+}
+
+// 2026-07-06: active pulse ring — ظریف‌تر از قبل
+.at-editor-toolbar button[data-state="on"]::after,
+.at-editor-toolbar button[aria-pressed="true"]::after,
+.at-editor-toolbar button.is-active::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 11px;
+  background: oklch(72% 0.16 270 / 0.18);
+  z-index: -1;
+  animation: at-toolbar-active-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes at-toolbar-active-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(1.04); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .at-editor-toolbar button[data-state="on"]::after,
+  .at-editor-toolbar button[aria-pressed="true"]::after,
+  .at-editor-toolbar button.is-active::after {
+    animation: none;
+    opacity: 0.35;
+  }
 }
 
 .at-editor-toolbar button:focus-visible {
@@ -485,9 +532,11 @@
 }
 
 .dark .at-editor-toolbar button:hover {
-  background: oklch(28% 0.014 250 / 0.65) !important;
-  border-color: oklch(38% 0.018 250 / 0.65) !important;
+  background: color-mix(in oklch, oklch(72% 0.14 270) 16%, oklch(22% 0.018 260 / 0.8)) !important;
+  border-color: color-mix(in oklch, oklch(72% 0.14 270) 30%, oklch(36% 0.02 260 / 0.7)) !important;
   color: oklch(96% 0.005 245) !important;
+  box-shadow:
+    0 2px 8px -4px oklch(0% 0 0 / 0.5) !important;
 }
 
 .dark .at-editor-toolbar button[data-state="on"],
@@ -495,6 +544,46 @@
 .dark .at-editor-toolbar button.is-active {
   background: linear-gradient(135deg, oklch(78% 0.16 270), oklch(74% 0.14 250)) !important;
   color: oklch(15% 0.05 270) !important;
+  box-shadow:
+    0 1px 0 oklch(100% 0 0 / 0.12) inset,
+    0 4px 14px -4px oklch(55% 0.16 270 / 0.4) !important;
+}
+
+.dark .at-editor-toolbar button[data-state="on"]::after,
+.dark .at-editor-toolbar button[aria-pressed="true"]::after,
+.dark .at-editor-toolbar button.is-active::after {
+  background: oklch(78% 0.16 270 / 0.2);
+}
+
+// 2026-07-06: select/dropdown controls (heading, font size, font family)
+// هم‌اهنگ با دکمه‌های معمولی
+.at-editor-toolbar select,
+.at-editor-toolbar [role="combobox"],
+.at-editor-toolbar button[aria-haspopup="listbox"],
+.at-editor-toolbar button[aria-haspopup="dialog"] {
+  height: 36px !important;
+  border-radius: 9px !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  color: oklch(45% 0.02 250) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  transition: all 160ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+  cursor: pointer !important;
+
+  &:hover {
+    background: color-mix(in oklch, oklch(72% 0.16 270) 8%, transparent) !important;
+    border-color: color-mix(in oklch, oklch(72% 0.16 270) 20%, oklch(88% 0.012 250 / 0.6)) !important;
+    color: oklch(28% 0.14 270) !important;
+  }
+}
+
+.dark .at-editor-toolbar select:hover,
+.dark .at-editor-toolbar [role="combobox"]:hover,
+.dark .at-editor-toolbar button[aria-haspopup="listbox"]:hover,
+.dark .at-editor-toolbar button[aria-haspopup="dialog"]:hover {
+  background: color-mix(in oklch, oklch(72% 0.14 270) 14%, oklch(22% 0.018 260 / 0.6)) !important;
+  border-color: color-mix(in oklch, oklch(72% 0.14 270) 25%, oklch(36% 0.02 260 / 0.6)) !important;
 }
 
 .at-editor-toolbar svg,
@@ -585,11 +674,11 @@
   }
 }
 
-// Touch targets — bump icon-buttons to ≥40px on coarse pointers.
+// Touch targets — bump icon-buttons to ≥48px on coarse pointers.
 @media (pointer: coarse) {
   .at-editor-toolbar button {
-    min-block-size: 40px;
-    min-inline-size: 40px;
+    min-block-size: 48px;
+    min-inline-size: 48px;
   }
 }
 
@@ -710,66 +799,20 @@
   }
 }
 
-// ── Empty state hint ──
-.at-editor-placeholder {
-  position: absolute;
-  inset-block-start: clamp(28px, 4vw, 56px);
-  inset-inline-start: clamp(20px, 5vw, 80px);
-  inset-inline-end: clamp(20px, 5vw, 80px);
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 18px 22px;
-  border-radius: 14px;
-  background:
-    linear-gradient(
-      135deg,
-      oklch(96% 0.018 270 / 0.65),
-      oklch(96% 0.016 210 / 0.55)
-    );
-  border: 1.5px dashed oklch(78% 0.04 270 / 0.45);
-  color: oklch(42% 0.06 270);
-  font-size: 13px;
-  font-weight: 500;
-  pointer-events: none;
-  z-index: 0;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-.dark .at-editor-placeholder {
-  background:
-    linear-gradient(
-      135deg,
-      oklch(28% 0.04 270 / 0.55),
-      oklch(26% 0.04 210 / 0.45)
-    );
-  border-color: oklch(50% 0.04 270 / 0.6);
-  color: oklch(86% 0.04 270);
-}
-
-.at-editor-placeholder__kbd {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: oklch(100% 0 0 / 0.85);
-  border: 1.5px solid oklch(72% 0.08 270 / 0.45);
-  color: oklch(38% 0.12 270);
-  font-family: ui-monospace, "SF Mono", Menlo, monospace;
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1;
-  box-shadow:
-    0 4px 12px -4px oklch(45% 0.16 270 / 0.4),
-    0 1px 0 oklch(100% 0 0 / 0.8) inset;
-  flex-shrink: 0;
-}
+// 2026-07-06: .at-editor-placeholder block حذف شد — دوگانگی ایجاد
+// می‌کرد (Placeholder رسمی Tiptap + بنر شناور). Deck hint بالایی
+// (at-editor-deck__hint) و SlashCommands راهنما را کافی ارائه می‌دهند.
+// CSS مربوط به آن (بکگراند، kbd، border) هم حذف شد.
 
 // A8 — Active block outline ("where am I" cue)
-.at-editor-prose .ProseMirror [data-active="true"] {
+// 2026-07-06: از `@tiptap/extension-focus` استفاده می‌کنیم که کلاس
+// `.has-focus` را روی deep-most block حاوی cursor قرار می‌دهد.
+// قبلاً با `data-active="true"` دستی در editor.tsx کار می‌کردیم.
+// Focus extension از ProseMirror Decoration استفاده می‌کند که:
+//   1. بدون mutation observer (lightweight)
+//   2. خودکار با selectionUpdate به‌روز می‌شود
+//   3. در undo/redo history تأثیر ندارد
+.at-editor-prose .ProseMirror .has-focus {
   position: relative;
   transition: background-color 160ms var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
 
@@ -808,22 +851,8 @@
   }
 }
 
-.dark .at-editor-prose .ProseMirror [data-active="true"]::before {
+.dark .at-editor-prose .ProseMirror .has-focus::before {
   background: color-mix(in oklch, oklch(72% 0.16 270) 12%, transparent);
-}
-
-.dark .at-editor-placeholder__kbd {
-  background: oklch(22% 0.04 270 / 0.85);
-  border-color: oklch(50% 0.08 270 / 0.6);
-  color: oklch(80% 0.08 270);
-}
-
-.at-editor-placeholder__text {
-  line-height: 1.5;
-}
-
-.at-editor-paper--empty .ProseMirror {
-  opacity: 0.4;
 }
 
 // ═══════════════════════════════════════════════════════════════════

@@ -3,6 +3,18 @@
 > هدف: حرفه‌ای‌سازی آیکون‌های هدر ادیتور + یکدست‌سازی Icon system.
 > Build → Show → Improve. بعد از این، کاربر visual test می‌کنه و می‌گه fix/good.
 
+> ## 🟢 BUILD STATE (برای resume — اگه fresh اومدی اول اینو ببین)
+>
+> | چیز | وضعیت |
+> |------|--------|
+> | `.next/` | ✅ **FRESH** — اخیر: `npm run build`، Compiled successfully in 34.9s، exit 0 |
+> | `tsc --noEmit` | ✅ exit 0 |
+> | Last build log | `.harness/.last-build.log` (Tee شده موقع build) |
+> | Journal | آخرین entry: `EDIT .harness/CONVENTIONS.md` (callout برای fresh sessions) |
+> | CONVENTIONS | `.harness/CONVENTIONS.md` بالاش callout داره: **hook ها offline ان** — manual journal کن |
+>
+> **اگه token تموم شد و session مرد:** `.next/` همین الان valid و dev server فوری بالا میاد. rebuild لازم نیست.
+
 ## وضعیت (تا این لحظه)
 - ✅ Icon registry ریفکتور شد — kebab-case canonical، canonical mapping
 - ✅ کنترل‌های تولبار به `<Icon>` wrapper مهاجرت کردن (size=16, stroke=1.25)
@@ -12,8 +24,21 @@
 - ✅ brand-mark در shell.scss با `Sparkles`
 - ✅ save-status با `Loader` / `Save`
 - ✅ status-bar پایین هم آیکون‌دار شد
-- ⏳ `tsc --noEmit` باید پاس بشه — اگه نشد، تایپ‌های Icon رو چک کن
-- ⏳ بیلد و visual test توسط کاربر
+- ✅ **v2 mapping changes اعمال شد** — همه‌ی ۷ تغییر prototype:
+  - حذف `buildInlineMarkIcon` inline function (bold/italic/underline)
+  - `font-size → Type`, `font-family → CaseSensitive`
+  - `arrow-up/down/left/right → ChevronUp/Down/Left/Right`
+  - `indent → CornerDownRight`, `outdent → CornerDownLeft`
+  - `merge → Combine`
+  - `palette → Pipette`
+  - `loader-2 → LoaderCircle`
+  - ۹ lucide import جدید (Bold, Italic, Type, CaseSensitive, ChevronUp/Left/Right, CornerDownLeft/Right, Combine, Pipette, LoaderCircle)
+  - ۹ lucide import حذف (ArrowUp/Down/Left/Right, IndentIncrease/Decrease, Loader2, Merge, Palette)
+- ✅ `npx tsc --noEmit` — exit 0 (هیچ خطای تایپ)
+- ✅ `npm run build` — Compiled successfully in 34.9s, exit 0
+- ⏳ **visual test توسط کاربر** (آخرین مرحله)
+
+**Status: `IN_PROGRESS — AWAITING VISUAL CONFIRM`** — همه‌ی mapping v2 اعمال شد. سایز فقط 16 (size variants نیازی نبود). منتظر تأیید visual تو روی dev server.
 
 ## فایل‌های لمس‌شده (۱۳ عدد)
 ```
@@ -48,15 +73,16 @@ src/components/ui/icon.tsx                                     (مپ canonical،
 - save-status = `Loader` موقع save، `Save` موقع idle.
 
 ## چک‌لیست بعد از تحویل (وقتی ادامه می‌دی)
-- [ ] `npx tsc --noEmit` پاس کنه
-- [ ] `npm run build` پاس کنه (اگه build طول کشید و توکن داری، در آخر همین تسک اجرا کن)
-- [ ] visual test: کاربر هدر/تولبار/بubble-menu رو تو browser نگاه کنه
-- [ ] اگه کاربر گفت "fix" → برگرد به همین plan و ادامه بده
-- [ ] اگه کاربر گفت "good" → status رو اینجا به "DONE" آپدیت کن + commit
+- [x] `npx tsc --noEmit` پاس کنه — exit 0
+- [x] `npm run build` پاس کنه — Compiled successfully
+- [ ] visual test: کاربر `npm run dev` بزنه و هدر/تولبار/بubble-menu رو تو browser نگاه کنه
+- [ ] اگه کاربر گفت "fix" → برگرد به نکات ظریف + Icon registry، fix کن، دوباره tsc/build/test
+- [ ] اگه کاربر گفت "good" → status رو اینجا به `DONE` ببر + commit
 
 ## فعلاً چی در جریانه
-- هیچ تسک دیگه‌ای شروع نشده. فقط visual feedback کاربر مونده.
-- هیچ build دستی نزدم تو این دور — فقط ادیت‌ها. Build نهایی در پایان گرفته می‌شه.
+- tsc + build سبز. کاربر visual test می‌کنه (هدر/تولبار/بubble-menu در dev server).
+- هیچ تسک دیگه‌ای شروع نشده.
+- Build log در `.harness/.last-build.log` ذخیره شد برای reference.
 
 ## چطوری ادامه بدی وقتی fresh اومدی
 ۱. این فایل رو بخون.

@@ -3,7 +3,8 @@ import { ReactNodeViewRenderer } from '@tiptap/react';
 import type { NodeViewProps } from '@tiptap/core';
 import EmbedBlock from '../components/embed-block';
 
-export type EmbedProvider = 'youtube' | 'twitter' | 'vimeo' | 'generic';
+// 2026-07-06: 'youtube' حذف شد — توسط @tiptap/extension-youtube رسمی.
+export type EmbedProvider = 'twitter' | 'vimeo' | 'generic';
 
 export interface EmbedOptions {
   HTMLAttributes: Record<string, any>;
@@ -17,9 +18,12 @@ declare module '@tiptap/core' {
   }
 }
 
-// URL detection patterns
+// 2026-07-06: URL detection patterns.
+// YouTube از اینجا حذف شده چون `@tiptap/extension-youtube`
+// رسمی آن را بهتر هندل می‌کند (با کنترل‌های پلیر واقعی،
+// nocookie mode، و paste detection). Embeds فقط برای
+// Twitter/X و Vimeo باقی می‌ماند.
 const urlPatterns = {
-  youtube: /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
   twitter: /(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/,
   vimeo: /vimeo\.com\/(\d+)/,
 };
@@ -36,8 +40,6 @@ export const detectProvider = (url: string): { provider: EmbedProvider; id: stri
 
 export const getEmbedUrl = (provider: EmbedProvider, id: string): string => {
   switch (provider) {
-    case 'youtube':
-      return `https://www.youtube.com/embed/${id}`;
     case 'vimeo':
       return `https://player.vimeo.com/video/${id}`;
     case 'twitter':
@@ -126,8 +128,10 @@ export const Embed = Node.create<EmbedOptions>({
 
   addPasteRules() {
     return [
+      // 2026-07-06: فقط Twitter/X و Vimeo.
+      // YouTube توسط `@tiptap/extension-youtube` رسمی هندل می‌شود.
       {
-        find: /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)[a-zA-Z0-9_-]+)/g,
+        find: /(https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/\d+)/g,
         handler: ({ state, range, match }) => {
           const url = match[0];
           const detected = detectProvider(url);
@@ -142,7 +146,7 @@ export const Embed = Node.create<EmbedOptions>({
         },
       },
       {
-        find: /(https?:\/\/(?:twitter\.com|x\.com)\/\w+\/status\/\d+)/g,
+        find: /(https?:\/\/vimeo\.com\/\d+)/g,
         handler: ({ state, range, match }) => {
           const url = match[0];
           const detected = detectProvider(url);

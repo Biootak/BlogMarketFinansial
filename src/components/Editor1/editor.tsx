@@ -339,37 +339,14 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
         const chars = countCharsNoSpace(trimmed);
         setSelectionCount({ words, chars });
       };
-      // Mark the deepest block ancestor of the current selection with
-      // `data-active="true"` so CSS can highlight it. This is the "where
-      // am I" cue — survive across renders and resets.
-      const markActiveBlock = () => {
-        const dom = editor.view.dom as HTMLElement;
-        dom.querySelectorAll('[data-active="true"]').forEach((el) => {
-          el.removeAttribute('data-active');
-        });
-        const { from } = editor.state.selection;
-        try {
-          const $pos = editor.state.doc.resolve(from);
-          const depth = $pos.depth;
-          // Find the closest block-level NodeDOM that contains the cursor.
-          const domAt = editor.view.nodeDOM($pos.before(depth)) as HTMLElement | null;
-          const block = domAt?.closest(
-            'p, h1, h2, h3, h4, h5, h6, blockquote, pre, ul, ol, li, [data-callout], [data-embed], table',
-          ) as HTMLElement | null;
-          if (block && dom.contains(block)) {
-            block.setAttribute('data-active', 'true');
-          }
-        } catch {
-          /* selection may be transient; ignore */
-        }
-      };
+      // 2026-07-06: active block highlighting توسط `@tiptap/
+      // extension-focus` هندل می‌شود. کلاس `.has-focus` روی deepest
+      // block حاوی cursor اعمال می‌شود — بدون DOM mutation دستی.
       const handleSelectionUpdate = () => {
         updateSelection();
-        markActiveBlock();
       };
       update();
       updateSelection();
-      markActiveBlock();
       editor.on('update', update);
       editor.on('selectionUpdate', handleSelectionUpdate);
       return () => {
@@ -649,15 +626,9 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
                 className={`at-editor-prose ${contentClassName}`}
               />
 
-              {/* Floating empty-state hint */}
-              {isEmpty && (
-                <div className="at-editor-placeholder" aria-hidden>
-                  <span className="at-editor-placeholder__kbd">/</span>
-                  <span className="at-editor-placeholder__text">
-                    برای افزودن بلوک، دستور تایپ کنید — یا شروع به نوشتن کنید
-                  </span>
-                </div>
-              )}
+              {/* Floating empty-state hint — حذف شد (جایگزین با
+                  Placeholder رسمی Tiptap + Deck hint بالایی).
+                  دوگانگی باعث قاطی شدن متن و تداخل visual می‌شد. */}
             </div>
           </div>
         </div>

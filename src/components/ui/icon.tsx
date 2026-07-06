@@ -17,22 +17,26 @@ import {
   AlignJustify,
   AlignLeft,
   AlignRight,
-  ArrowDown,
-  ArrowLeft,
-  ArrowRight,
-  ArrowUp,
   BarChart3,
   Bell,
   BetweenHorizontalStart,
+  Bold,
   Bookmark,
   Calendar,
+  CaseSensitive,
   Check,
   CheckCheck,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
   Clock,
   Code,
+  Combine,
   Columns,
   Copy,
+  CornerDownLeft,
+  CornerDownRight,
   Ellipsis as MoreHorizontalIcon,
   FileText,
   Footprints,
@@ -47,8 +51,7 @@ import {
   Heart,
   Highlighter,
   Image,
-  IndentDecrease,
-  IndentIncrease,
+  Italic,
   Languages,
   Link,
   Link2,
@@ -57,17 +60,17 @@ import {
   ListChecks,
   ListOrdered,
   ListTodo,
-  Loader2,
+  LoaderCircle,
   type LucideIcon,
   Mail,
   Maximize2,
   Menu,
-  Merge,
   MessageCircle,
   MessageSquare,
+  Minus,
   Minimize2,
   Monitor,
-  Palette,
+  Pipette,
   Quote,
   Split,
   Redo2,
@@ -86,6 +89,7 @@ import {
   Text,
   Trash2,
   TrendingUp,
+  Type,
   Underline,
   Undo2,
   Upload,
@@ -100,61 +104,24 @@ import { cn } from '@/lib/utils';
 // ---------------------------------------------------------------------------
 //
 // کلیدها kebab-case هستند؛ نام‌های alias با فرم اصلی یکی می‌شوند.
-// در آیندت اگر icon SVG سفارشی لازم شد، فقط همین‌جا اضافه می‌شود.
+// اگر icon سفارشی لازم شد، فقط همین‌جا اضافه می‌شود.
 //
-// چرا بعضی path را inline نوشتیم (bold/italic/underline):
-//   Lucide برای این سه، path خاصی دارد ولی با stroke=1.25 کمی «بر»
-//   دیده می‌شود (به‌خصوص italic که یک خط مورب ضخیم می‌سازد). ما
-//   path را بازسازی کردیم تا با stroke نازک 1.25 سازگار باشد —
-//   نتیجه حس editorial مجله می‌دهد، نه iOS.
-
-type IconStyleKey = 'bold' | 'italic' | 'underline';
-
-function buildInlineMarkIcon(kind: IconStyleKey): LucideIcon {
-  function InlineMarkIconImpl(props: {
-    className?: string;
-    size?: number;
-    strokeWidth?: number;
-    style?: CSSProperties;
-  }) {
-    return (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width={props.size ?? 16}
-        height={props.size ?? 16}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={props.strokeWidth ?? 1.25}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={props.className}
-        style={props.style}
-        aria-hidden
-      >
-        {kind === 'bold' && (
-          <>
-            <path d="M7 5h6a3 3 0 0 1 0 6H7z" />
-            <path d="M7 11h7a3.5 3.5 0 0 1 0 7H7z" />
-          </>
-        )}
-        {kind === 'italic' && <path d="M19 5h-7M12 19H5M15 5l-6 14" />}
-        {kind === 'underline' && (
-          <>
-            <path d="M7 4v8a5 5 0 0 0 10 0V4" />
-            <path d="M5 21h14" />
-          </>
-        )}
-      </svg>
-    );
-  }
-  InlineMarkIconImpl.displayName = `InlineMarkIcon(${kind})`;
-  return InlineMarkIconImpl as unknown as LucideIcon;
-}
+// چرا mapping‌های v2 تغییر کردن:
+//   - font-size/Type و font-family/CaseSensitive: قبلاً هردو Text بودن
+//     و از هم تشخیص نبودن. الان Type حس سایز و CaseSensitive حس فونت می‌ده.
+//   - arrow-* → Chevron-* در toolbar جدول: Chevron ظریف‌تره و hierarchy
+//     در 16px بهتر می‌خونه.
+//   - indent/outdent → CornerDownRight/Left: IndentIncrease در RTL معنای
+//     معکوس می‌داد. CornerDown خنثی‌تر و direction-agnosticه.
+//   - merge → Combine: حس flow diagram قبلی با table-merge سازگار نبود.
+//   - palette → Pipette: Palette حس paint می‌داد؛ برای text color پیپت
+//     حرفه‌ای‌تره.
+//   - loader-2 → LoaderCircle: Loader2 چرخش ناپایدار داشت، LoaderCircle
+//     نرم‌تره.
 
 const iconMap = {
   // ─── System / app-wide
-  'loader-2': Loader2,
+  'loader-2': LoaderCircle,
   settings: Settings,
   'settings-2': Settings2,
   mail: Mail,
@@ -210,13 +177,17 @@ const iconMap = {
   MoreHorizontal: MoreHorizontalIcon,
   'chevron-down': ChevronDown,
 
-  // ─── Inline marks (path سفارشی برای stroke=1.25)
-  bold: buildInlineMarkIcon('bold'),
-  italic: buildInlineMarkIcon('italic'),
-  underline: buildInlineMarkIcon('underline'),
+  // ─── Inline marks (lucide رسمی؛ stroke=1.25 با path پیش‌فرض هماهنگه)
+  bold: Bold,
+  italic: Italic,
+  underline: Underline,
   strikethrough: Strikethrough,
   code: Code,
   quote: Quote,
+
+  // ─── Horizontal rule / separator
+  'horizontal-rule': Minus,
+  minus: Minus,
 
   // ─── Blocks & headings
   text: Text,
@@ -237,8 +208,8 @@ const iconMap = {
   'list-checks': ListChecks,
   'list-todo': ListTodo,
   'task-list': ListTodo,
-  indent: IndentIncrease,
-  outdent: IndentDecrease,
+  indent: CornerDownRight,
+  outdent: CornerDownLeft,
 
   // ─── Alignment
   'align-left': AlignLeft,
@@ -259,15 +230,15 @@ const iconMap = {
   image: Image,
 
   // ─── Color / highlight
-  palette: Palette,
+  palette: Pipette,
   highlighter: Highlighter,
 
   // ─── Misc editor
   'page-break': BetweenHorizontalStart,
   footnote: Footprints,
   type: Text,
-  'font-family': Text,
-  'font-size': Text,
+  'font-family': CaseSensitive,
+  'font-size': Type,
   upload: Upload,
 
   // ─── Inline math
@@ -278,14 +249,14 @@ const iconMap = {
   table: Table,
   trash: Trash2,
   'trash-2': Trash2,
-  merge: Merge,
+  merge: Combine,
   split: Split,
 
   // ─── Arrows (برای table-toolbar و floating menu)
-  'arrow-up': ArrowUp,
-  'arrow-down': ArrowDown,
-  'arrow-left': ArrowLeft,
-  'arrow-right': ArrowRight,
+  'arrow-up': ChevronUp,
+  'arrow-down': ChevronDown,
+  'arrow-left': ChevronLeft,
+  'arrow-right': ChevronRight,
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof iconMap;

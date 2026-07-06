@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa-IR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Editor1 — Icon System Redesign v2</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #f7f5f0;
+      --bg-card: #ffffff;
+      --line: #e9e3d6;
+      --line-soft: #efe9dc;
+      --ink: #14171e;
+      --ink-muted: #3a4256;
+      --ink-soft: #7c7a72;
+      --accent: #2f6f5e;
+      --accent-soft: #2f6f5e15;
+      --warning: #c97b3f;
+      --danger: #b06367;
+      --shadow: 0 2px 8px rgba(20,23,30,.04);
+      --shadow-lg: 0 4px 16px -2px rgba(20,23,30,.06);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{background:var(--bg);color:var(--ink);font-family:'Outfit',system-ui,sans-serif;font-size:15px;line-height:1.6}
+    body{padding:48px 24px 96px}
+    .wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:64px}
+
+    .hero{display:flex;flex-direction:column;gap:16px;padding-bottom:32px;border-bottom:1px solid var(--line)}
+    .kicker{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);font-weight:600}
+    h1{font-family:'DM Serif Display',serif;font-weight:400;font-size:48px;line-height:1.1;letter-spacing:-.01em}
+    h2{font-family:'DM Serif Display',serif;font-weight:400;font-size:28px;line-height:1.2;letter-spacing:-.005em;margin-bottom:24px}
+    h3{font-size:15px;font-weight:600;color:var(--ink);letter-spacing:.02em;margin-bottom:12px}
+    .lede{font-size:18px;color:var(--ink-muted);max-width:720px}
+
+    section{display:flex;flex-direction:column;gap:20px}
+
+    .grid{display:grid;gap:16px}
+    .grid-3{grid-template-columns:repeat(3,1fr)}
+    .grid-4{grid-template-columns:repeat(4,1fr)}
+    .grid-6{grid-template-columns:repeat(6,1fr)}
+
+    .card{background:var(--bg-card);border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:var(--shadow)}
+    .card-flat{background:var(--bg-card);border:1px solid var(--line);border-radius:14px;padding:20px}
+
+    .swatch-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+    .swatch{display:flex;flex-direction:column;align-items:center;gap:8px}
+    .swatch-box{width:80px;height:80px;border:1px solid var(--line);border-radius:10px;display:grid;place-items:center;background:var(--bg)}
+    .swatch-cap{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-soft)}
+
+    .state-row{display:flex;gap:24px;align-items:center;padding:16px;background:var(--bg-card);border:1px solid var(--line);border-radius:12px;margin-top:8px}
+    .state-cell{display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px 18px;border-radius:10px;min-width:120px}
+    .state-cell .ico-wrap{width:40px;height:40px;display:grid;place-items:center}
+    .state-cell span{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-soft)}
+    .state-default{background:transparent}
+    .state-hover{background:var(--accent-soft);color:var(--accent)}
+    .state-active{background:var(--accent);color:#fff}
+    .state-disabled{opacity:.4}
+
+    table{width:100%;border-collapse:collapse;background:var(--bg-card);border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow)}
+    thead th{background:var(--line-soft);font-weight:600;text-align:right;padding:14px 18px;font-size:13px;color:var(--ink-muted);letter-spacing:.04em;text-transform:uppercase}
+    tbody td{padding:14px 18px;border-top:1px solid var(--line-soft);vertical-align:middle}
+    tbody tr:first-child td{border-top:none}
+    .icon-cell{display:flex;align-items:center;gap:12px}
+    .icon-cell img{width:18px;height:18px;color:var(--ink)}
+    .icon-cell-name{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--ink)}
+    .reason-cell{color:var(--ink-muted);font-size:14px}
+
+    .mock{background:var(--bg-card);border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:var(--shadow)}
+    .mock-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px;background:var(--bg);border-radius:12px;border:1px solid var(--line-soft)}
+    .mock-btn{width:36px;height:36px;display:grid;place-items:center;border-radius:8px;cursor:pointer;color:var(--ink);transition:all .15s ease}
+    .mock-btn:hover{background:var(--accent-soft);color:var(--accent)}
+    .mock-btn img{width:16px;height:16px}
+    .mock-divider{width:1px;height:20px;background:var(--line);margin:0 4px}
+    .mock-label{display:flex;align-items:center;gap:8px;padding:0 10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.08em}
+
+    .compare{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+    .compare-col{display:flex;flex-direction:column;gap:12px}
+    .compare-tag{display:inline-flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.08em}
+
+    .brand-mock{display:flex;align-items:center;gap:14px;padding:16px 20px;background:var(--bg-card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+    .brand-logo{width:40px;height:40px;display:grid;place-items:center;background:var(--accent);color:#fff;border-radius:10px}
+    .brand-logo img{width:22px;height:22px;stroke-width:1.75}
+    .brand-meta{display:flex;flex-direction:column;gap:2px}
+    .brand-meta b{font-weight:600;font-size:15px}
+    .brand-meta span{font-size:13px;color:var(--ink-soft);font-family:'JetBrains Mono',monospace}
+
+    .status-mock{display:flex;align-items:center;gap:14px;padding:16px 20px;background:var(--bg-card);border:1px solid var(--line);border-radius:14px;font-size:13px;color:var(--ink-muted)}
+    .status-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+    .approve{background:var(--accent);color:#fff;border-radius:18px;padding:32px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow-lg)}
+    .approve h2{color:#fff;margin-bottom:4px}
+    .approve p{opacity:.92}
+    .approve code{font-family:'JetBrains Mono',monospace;font-size:14px;background:rgba(255,255,255,.16);padding:3px 8px;border-radius:6px}
+
+    .diagnose{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+    .diagnose-item{padding:16px;background:var(--bg-card);border:1px solid var(--line);border-radius:12px;display:flex;gap:12px}
+    .diagnose-item b{color:var(--accent);font-weight:600}
+
+    @media (max-width:768px){
+      h1{font-size:34px}
+      .grid-3,.grid-4,.grid-6{grid-template-columns:repeat(2,1fr)}
+      .compare{grid-template-columns:1fr}
+      .diagnose{grid-template-columns:1fr}
+    }
+    @media (max-width:480px){
+      body{padding:24px 16px 48px}
+      .grid-3,.grid-4,.grid-6{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <p class="kicker">Design Review · Editor1 · v2</p>
+    <h1>بازنویسی سیستم آیکون</h1>
+    <p class="lede">گزارش فعلی: آیکون‌ها «اصلاً درست نیستن». این یه prototype کامله از سیستم جدید — تو می‌تونی قبل از اعمال در کد، diff رو اینجا ببینی.</p>
+  </header>
+
+  <!-- DIAGNOSIS -->
+  <section>
+    <h2>۱. تشخیص</h2>
+    <p>بدون screenshot، چهار حالت محتمل برای خرابی فعلی — هر کدوم یه راه‌حل:</p>
+    <div class="diagnose">
+      <div class="diagnose-item"><b>الف</b><span>آیکون‌ها blank یا اصلاً رندر نمی‌شن — احتمالاً inline SVG سفارشی (bold/italic/underline) با stroke=1.25 بِر شده یا کرش می‌کنه.</span></div>
+      <div class="diagnose-item"><b>ب</b><span>build artifacts stale، browser cache قدیمی لود می‌کنه — hard refresh یا <code>rm -rf .next</code>.</span></div>
+      <div class="diagnose-item"><b>ج</b><span>mapping اشتباه — registry کلید kebab-case درست resolve نمی‌کنه، یا alias PascalCase هنوز call-siteهای قدیمی رو ساپورت می‌کنه ولی icon های فعلی alias قدیمی می‌گیرن.</span></div>
+      <div class="diagnose-item"><b>د</b><span>سایز/رنگ state در status-bar و bubble-menu — hierarchy بصری نامشخص، چشم نمی‌دونه اول کجا بره.</span></div>
+    </div>
+    <p style="color:var(--ink-muted);margin-top:8px">طرح v2 هر چهار حالت رو هم‌زمان fix می‌کنه — حتی اگه فقط یکیش دلیل خرابی باشه.</p>
+  </section>
+
+  <!-- TOKENS -->
+  <section>
+    <h2>۲. Design Tokens</h2>
+    <p>چهار محور. از hardcode 16/1.25 می‌ریم به system لایه‌ای.</p>
+
+    <div class="grid grid-3">
+      <div class="card">
+        <h3>Size — چهار سایز استاندارد</h3>
+        <div class="swatch-row">
+          <div class="swatch">
+            <div class="swatch-box"><img src="https://unpkg.com/lucide-static@0.469.0/icons/text.svg" width="14" height="14"></div>
+            <span class="swatch-cap">14 · micro</span>
+          </div>
+          <div class="swatch">
+            <div class="swatch-box"><img src="https://unpkg.com/lucide-static@0.469.0/icons/text.svg" width="16" height="16"></div>
+            <span class="swatch-cap">16 · default</span>
+          </div>
+          <div class="swatch">
+            <div class="swatch-box"><img src="https://unpkg.com/lucide-static@0.469.0/icons/text.svg" width="20" height="20"></div>
+            <span class="swatch-cap">20 · primary</span>
+          </div>
+          <div class="swatch">
+            <div class="swatch-box"><img src="https://unpkg.com/lucide-static@0.469.0/icons/sparkles.svg" width="24" height="24" style="stroke-width:1.75;width:24px;height:24px;color:var(--accent)"></div>
+            <span class="swatch-cap">24 · brand</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Stroke — سه وزن</h3>
+        <div class="swatch-row">
+          <div class="swatch">
+            <div class="swatch-box"><img src="https://unpkg.com/lucide-static@0.469.0/icons/text.svg" width="22" height="22" style="stroke-width:1;width:22px;height:22px"></div>
+            <span class="swatch-cap">1.0 · subtle</span>
+          </div>
+          <div class="swatch">
+            <div class="swatch-box"><img src="https://unpkg.com/lucide-static@0.469.0/icons/text.svg" width="22" height="22" style="stroke-width:1.25;width:22px;height:22px"></div>
+            <span class="swatch-cap">1.25 · default</span>
+          </div>
+          <div class="swatch">
+            <div class="swatch-box"><img src="https://unpkg.com/lucide-static@0.469.0/icons/text.svg" width="22" height="22" style="stroke-width:1.5;width:22px;height:22px"></div>
+            <span class="swatch-cap">1.5 · primary</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>States — چهار حالت</h3>
+        <div class="state-row" style="flex-direction:row;padding:12px;gap:8px">
+          <div class="state-cell state-default">
+            <div class="ico-wrap"><img src="https://unpkg.com/lucide-static@0.469.0/icons/bold.svg" width="20" height="20"></div>
+            <span>default</span>
+          </div>
+          <div class="state-cell state-hover">
+            <div class="ico-wrap"><img src="https://unpkg.com/lucide-static@0.469.0/icons/bold.svg" width="20" height="20"></div>
+            <span>hover</span>
+          </div>
+          <div class="state-cell state-active">
+            <div class="ico-wrap"><img src="https://unpkg.com/lucide-static@0.469.0/icons/bold.svg" width="20" height="20" style="filter:brightness(0) invert(1)"></div>
+            <span>active</span>
+          </div>
+          <div class="state-cell state-disabled">
+            <div class="ico-wrap"><img src="https://unpkg.com/lucide-static@0.469.0/icons/bold.svg" width="20" height="20"></div>
+            <span>disabled</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAPPING CHANGES -->
+  <section>
+    <h2>۳. Mapping changes</h2>
+    <p>اینها جاهایی هستن که registry فعلی ضعیفه. اگه مورد جدیدی به ذهنت رسید، بگو اضافه کنم.</p>
+
+    <table>
+      <thead>
+        <tr><th>کلید</th><th>فعلی</th><th>پیشنهاد</th><th>دلیل</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="icon-cell-name">font-size</span></td>
+          <td><div class="icon-cell"><img src="https://unpkg.com/lucide-static@0.469.0/icons/text.svg"> Text</div></td>
+          <td><div class="icon-cell"><img src="https://unpkg.com/lucide-static@0.469.0/icons/case-sensitive.svg"> Type</div></td>
+          <td class="reason-cell">font-family و font-size هردو Text بودن — تشخیص‌ناپذیر. CaseSensitive حس تایپ‌فیس می‌ده.</td>
+        </tr>
+        <tr>
+          <td><span class="icon-cell-name">font-family</span></td>
+          <td><div class="icon-cell"><img src="https://unpkg.com/lucide-static@0.469.0/icons/text.svg"> Text</div></td>
+          <td><div class="icon-cell"><img src="https://unpkg.com/lucide-static@0.469.0/icons/a-large-small.svg"> CaseSensitive</div></td>
+          <td class="reason-cell">font-size رفت Type — font-family می‌ره A↕a.</td>
+        </tr>
+        <tr>
+          <td><span class="icon-cell-name">arrow-up / down</span></td>
+          <td><div class="icon-cell"><img src="https://unpkg.com/lucide-static@0.469.0/icons/arrow-up.svg"> ArrowUp</div></td>
+          <td><div class="icon-cell"><img src="https://unpkg.com/lucide-static@0.469.0/icons/chevron-up.svg"> ChevronUp</div></td>
+          <td class="reason-cell">toolbar جدول: arrow حس aggressive داره، Chevron ظریف‌تره و hierarchy در toolbar 16px بهتر می‌خونه.</td>
+        </tr>
+        <tr>
+          <td><span class="icon-cell-name">indent / outdent</span></td>
+          <td><div class="icon-cell"><img src="https://unpkg.com/lucide-static@0.469.0/icons/indent-increase.svg"> IndentIncrease</div></td>
+          <td><div class="icon-cell"><img src="https://unpkg.com/lucide-static@0.469.0/icons/corner-down-right.svg"> CornerDownRight</div></td>
+          <td class="reason-cell">IndentIncrease در RTL معنای معکوس می‌ده. CornerDownRight خنثی‌تره.</td>
+        </tr>
+        <tr>
+          <td><span class="icon-cell-name">merge / split</span></td>
+          <td><div class="icon-cell"><img src="https://unpkg.com/lucide-static@0.469.0/icons/merge.svg"> Merge</div></td>
+          <td><div class="icon-cell"><img src="https://unpkg.com/lucide-static@0.469.0/icons/combine.svg"> Combine</div></td>
+          <td class="reason-cell">Merge حس flow diagram می‌ده. Combine در cell-merge spreadsheet آشناتره.</td>
+        </tr>
+        <tr>
+          <td><span class="icon-cell-name">palette</span></td>
+          <td><div class="icon-cell"><img src="https://unpkg.com/lucide-static@0.469.0/icons/palette.svg"> Palette</div></td>
+          <td><div class="icon-cell"><img src="https://unpkg.com/lucide-static@0.469.0/icons/pipette.svg"> Pipette</div></td>
+          <td class="reason-cell">Palette حس paint می‌ده. برای text/highlight color، Pipette حرفه‌ای‌تره.</td>
+        </tr>
+        <tr>
+          <td><span class="icon-cell-name">bulleted-list</span></td>
+          <td><div class="icon-cell"><img src="https://unpkg.com/lucide-static@0.469.0/icons/list.svg"> List</div></td>
+          <td><div class="icon-cell"><img src="https://unpkg.com/lucide-static@0.469.0/icons/list.svg"> List</div></td>
+          <td class="reason-cell">فعلاً نگه‌داریم. Lucide رسمی برای list-bullet شکل بهتری نداره.</td>
+        </tr>
+        <tr>
+          <td><span class="icon-cell-name">loader-2</span></td>
+          <td><div class="icon-cell"><img src="https://unpkg.com/lucide-static@0.469.0/icons/loader.svg"> Loader</div></td>
+          <td><div class="icon-cell"><img src="https://unpkg.com/lucide-static@0.469.0/icons/loader-circle.svg"> LoaderCircle</div></td>
+          <td class="reason-cell">Loader چرخش ناپایدار داره. LoaderCircle نرم‌تره (rotation transform: rotate).</td>
+        </tr>
+        <tr style="background:var(--line-soft)">
+          <td colspan="4"><b style="color:var(--warning)">CRITICAL:</b> حذف inline SVG customize برای <code>bold / italic / underline</code>. اگه customize SVG bug داشته، register در icon.tsx فعلی علت اصلی خرابی‌ست.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- FULL MOCK — BEFORE / AFTER -->
+  <section>
+    <h2>۴. Full toolbar — قبل / بعد</h2>
+    <p>اگه scroll کنی، مقایسه می‌بینی: ردیف اول فعلی، ردیف دوم همون با اصلاحات.</p>
+
+    <div class="compare">
+      <div class="compare-col">
+        <span class="compare-tag">● قبل — فعلی</span>
+        <div class="mock">
+          <div class="mock-bar">
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/text.svg"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/text.svg"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/text.svg"></div>
+            <div class="mock-divider"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/text.svg"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/text.svg"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/text.svg"></div>
+            <div class="mock-divider"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/align-left.svg"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/align-center.svg"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/align-right.svg"></div>
+            <div class="mock-divider"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/indent-increase.svg"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/indent-decrease.svg"></div>
+            <div class="mock-divider"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/list.svg"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/list-ordered.svg"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/list-todo.svg"></div>
+            <div class="mock-divider"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/arrow-up.svg"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/arrow-down.svg"></div>
+          </div>
+          <p style="margin-top:14px;font-size:13px;color:var(--ink-soft);font-family:'JetBrains Mono',monospace">↑ <b>مشکل:</b> font-family و font-size هردو Text، arrow در toolbar حس aggressive، indent در RTL معنای معکوس می‌ده.</p>
+        </div>
+      </div>
+
+      <div class="compare-col">
+        <span class="compare-tag" style="color:var(--accent)">● بعد — پیشنهاد</span>
+        <div class="mock">
+          <div class="mock-bar">
+            <div class="mock-btn state-active"><img src="https://unpkg.com/lucide-static@0.469.0/icons/bold.svg" style="filter:brightness(0) invert(1)"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/italic.svg"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/underline.svg"></div>
+            <div class="mock-divider"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/case-sensitive.svg"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/a-large-small.svg"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/palette.svg"></div>
+            <div class="mock-divider"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/align-left.svg"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/align-center.svg"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/align-right.svg"></div>
+            <div class="mock-divider"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/corner-down-right.svg"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/corner-down-left.svg"></div>
+            <div class="mock-divider"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/list.svg"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/list-ordered.svg"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/list-todo.svg"></div>
+            <div class="mock-divider"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/chevron-up.svg"></div>
+            <div class="mock-btn"><img src="https://unpkg.com/lucide-static@0.469.0/icons/chevron-down.svg"></div>
+          </div>
+          <p style="margin-top:14px;font-size:13px;color:var(--accent);font-family:'JetBrains Mono',monospace">↑ <b>بهتر:</b> bold در حالت active (filled)، font-family/font-size متمایز (Type vs A↕a)، palette، corner-down برای indent، chevron ظریف‌تر.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HEADER BRAND MOCK -->
+  <section>
+    <h2>۵. Header Brand Mock</h2>
+    <p>brand-mark اصلی — Sparkles با accent box، یک‌دست با logo سایت.</p>
+    <div class="brand-mock">
+      <div class="brand-logo"><img src="https://unpkg.com/lucide-static@0.469.0/icons/sparkles.svg" style="filter:brightness(0) invert(1);stroke-width:1.5"></div>
+      <div class="brand-meta">
+        <b>بلاگ مارکت فایننشیال</b>
+        <span>Editor1 · Weblog Editor</span>
+      </div>
+      <div style="margin-right:auto;display:flex;align-items:center;gap:10px">
+        <img src="https://unpkg.com/lucide-static@0.469.0/icons/loader-circle.svg" width="14" height="14" style="color:var(--accent)">
+        <span style="font-size:13px;color:var(--ink-muted)">در حال ذخیره…</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATUS BAR MOCK -->
+  <section>
+    <h2>۶. Status Bar</h2>
+    <p>پایین ادیتور — سایز 14px، stroke 1.0. کاربر status برنامه رو در یک نگاه می‌فهمه.</p>
+    <div class="status-mock">
+      <div class="status-dot"></div>
+      <span><b style="color:var(--ink)">ذخیره شد</b> · ۲ ثانیه پیش</span>
+      <span style="margin-right:auto"></span>
+      <img src="https://unpkg.com/lucide-static@0.469.0/icons/type.svg" width="14" height="14">
+      <span>۸۴۲ کلمه</span>
+      <span>·</span>
+      <img src="https://unpkg.com/lucide-static@0.469.0/icons/clock.svg" width="14" height="14">
+      <span>۳ دقیقه مطالعه</span>
+      <span>·</span>
+      <img src="https://unpkg.com/lucide-static@0.469.0/icons/hash.svg" width="14" height="14">
+      <span>v2.0.0</span>
+    </div>
+  </section>
+
+  <!-- APPROVAL -->
+  <section>
+    <div class="approve">
+      <h2>۷. تأیید برای اعمال</h2>
+      <p>سه تصمیم — هر کدوم رو بگو، کد رو update می‌کنم:</p>
+      <p><b>۱.</b> حذف inline SVG customize برای <code>bold / italic / underline</code> (بیشترین تأثیر در خرابی فعلی)</p>
+      <p><b>۲.</b> اعمال mapping changes: <code>font-size → Type</code>، <code>font-family → CaseSensitive</code>، <code>arrow-up/down → Chevron</code>، <code>indent → CornerDownRight</code>، <code>merge → Combine</code>، <code>palette → Pipette</code></p>
+      <p><b>۳.</b> اضافه‌کردن size variants (<code>sm:14 / md:16 / lg:20</code>) — یا نگه size فعلی فقط 16؟</p>
+      <p style="opacity:.88;font-size:13px;margin-top:8px">بگو: <code>YES 1+2+3</code> · <code>YES 1+2</code> (فقط mapping) · <code>YES 1</code> (فقط حذف customize) · یا بگو کدوم رو می‌خوای تغییر بدی.</p>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

@@ -17,7 +17,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Icon } from '../../ui/icon';
+import { Icon, type IconName } from '../../ui/icon';
 import { fontFamilies, loadFont, type FontOption } from '../extensions/font-family';
 import { cn } from '@/lib/utils';
 

@@ -12,6 +12,21 @@ import Gapcursor from '@tiptap/extension-gapcursor';
 import Typography from '@tiptap/extension-typography';
 import UniqueID from '@tiptap/extension-unique-id';
 import { FileHandler } from '@tiptap/extension-file-handler';
+// 2026-07-06: Focus — هایلایت خودکار block جاری با کلاس `.has-focus`.
+// جایگزین `markActiveBlock` دستی در editor.tsx که با DOM querySelector
+// کار می‌کرد. Focus از ProseMirror plugin داخلی استفاده می‌کند و
+// performance بهتری دارد:
+//   - بدون DOM mutation observer (lightweight)
+//   - فقط به deep-most node کلاس می‌دهد (mode: 'deepest')
+//   - هم در render و هم در selectionUpdate به‌روز می‌شود
+import Focus from '@tiptap/extension-focus';
+// 2026-07-06: Youtube — Embed رسمی YouTube با پشتیبانی از:
+//   - nocookie mode (حریم خصوصی)
+//   - controls / autoplay / loop
+//   - paste自動 تشخیص URL
+// هم‌زمان با custom Embed کار می‌کند (Embed دیگر YouTube را
+// پردازش نمی‌کند — فقط Twitter/X + Vimeo).
+import Youtube from '@tiptap/extension-youtube';
 
 import Link from './link';
 import Image from './image-resize';
@@ -99,26 +114,63 @@ export const extensions = [
   FontFamily,
   DragHandle,
   KeyboardShortcuts,
-  // 2026-07-06: Tier A extensions از داک رسمی Tiptap v3.
+  // 2026-07-06: Focus — هایلایت self-contained block جاری.
   //
-  // Placeholder: متن راهنمای context-aware برای node‌های خالی. heading‌ها
-  //   متن کوتاه‌تر می‌گیرن تا حس ویرایش سند جدی بمونه.
+  // mode: 'deepest' = فقط deepest node در selection کلاس می‌گیرد، نه
+  // همه ancestorها. این یعنی وقتی cursor داخل یک پاراگراف در لیست است،
+  // فقط آن پاراگراف هایلایت می‌شود، نه کل لیست. حس «تمرکز» بهتری
+  // به نویسنده می‌دهد.
   //
-  // Gapcursor: جلوگیری از گیر کردن cursor بین دو block (مثل بین تصویر و
-  //   پاراگراف). به‌صورت پیش‌فرض در StarterKit هم هست، اما explicit
-  //   اضافه می‌کنیم تا اگه روزی StarterKit تغییر کنه، gapcursor حفظ بشه.
+  // className سفارشی `has-focus` را به‌جای پیش‌فرض `has-focus` نگه
+  // می‌داریم چون با کلاس‌های CSS موجود (data-active) هماهنگ است.
   //
-  // Typography: smart quotes، ellipsis، em/en-dash. برای متن فارسی +
-  //   انگلیسی ضروریه — الان اگه بنویسی "hello" یا "hello—world" باید
-  //   خودش اصلاح کنه.
+  // نکته: قبلاً این ویژگی با `markActiveBlock` دستی در editor.tsx
+  // پیاده‌سازی می‌شد (querySelectorAll + setAttribute). Focus از یک
+  // ProseMirror Decoration استفاده می‌کند که:
+  //   1. از DOM mutation مستقل است (پایدارتر)
+  //   2. در undo/redo history تأثیری ندارد
+  //   3. با هر selectionUpdate خودکار به‌روز می‌شود
+  Focus.configure({
+    className: 'has-focus',
+    mode: 'deepest',
+  }),
+  // 2026-07-06: Youtube Extension رسمی — با paste detection.
+  //
+  // nocookie=true: از domain youtube-nocookie.com استفاده می‌کند
+  //   که کوکی tracking نمی‌گذارد.
+  //
+  // width: 100% + aspect-ratio CSS در embed.scss به‌جای fixed size.
+  //   قبلاً Embed extension یوتیوب را خودش هندل می‌کرد؛ حالا این
+  //   extension رسمی این کار را بهتر انجام می‌دهد (کنترل پلیر واقعی،
+  //   responsiveness, autoplay config).
+  //
+  // هماهنگی با Embed:
+  //   - Embed extension دیگر YouTube را در urlPatterns و pasteRules
+  //     ندارد (در extensions/embed.ts اصلاح شده).
+  //   - Embed فقط Twitter/X و Vimeo را هندل می‌کند.
+  Youtube.configure({
+    inline: false,
+    width: 640,
+    height: 390,
+    nocookie: true,
+    controls: true,
+    modestBranding: true,
+  }),
+  // 2026-07-06: Placeholder — متن راهنمای context-aware.
+  //
+  // استراتژی: فقط block جاری placeholder نشون بده (showOnlyCurrent: true).
+  // placeholder پاراگراف رو خالی گذاشتیم چون بنر بالایی (Deck hint)
+  // و SlashCommands خودشون راهنما رو نشون میدن — تکرار اضافی است.
+  // placeholder فقط برای heading و codeBlock مفیده چون حس "چه
+  // بنویسم" رو زودتر رفع میکنه.
   Placeholder.configure({
     placeholder: ({ node }) => {
       if (node.type.name === 'heading') return 'عنوان...';
       if (node.type.name === 'codeBlock') return 'کد...';
-      return 'برای افزودن بلوک، / بزنید یا شروع به نوشتن کنید...';
+      return '';
     },
     showOnlyWhenEditable: true,
-    showOnlyCurrent: false,
+    showOnlyCurrent: true,
   }),
   Gapcursor,
   // 2026-07-06: PageBreak سفارشی — برای چاپ/PDF export.
@@ -137,8 +189,12 @@ export const extensions = [
   // برای پاراگراف‌های مخلوط فارسی/انگلیسی (نمادهای مالی، اعداد).
   TextDirection,
   Typography.configure({
-    // کوتیشن‌های فارسی محاوره‌ای به‌صورت پیش‌فرض در Tiptap نیست؛
-    // اگه روزی نیاز شد می‌شه به "«»" یا "「」" تغییر داد.
+    // 2026-07-06: کوتیشن‌های استاندارد فارسی/انگلیسی.
+    // در متن فارسی معمولاً از «» استفاده می‌شود اما Tiptap Typography
+    // این را پشتیبانی نمی‌کند. در عوض smart quotes استاندارد را تنظیم
+    // می‌کنیم که برای نقل‌قول انگلیسی درون متن فارسی هم کافی است.
+    // اگه روزی نیاز به «» در Persian Typography شد، باید extension
+    // سفارشی بنویسیم.
     openDoubleQuote: '“',
     closeDoubleQuote: '”',
     openSingleQuote: '‘',
