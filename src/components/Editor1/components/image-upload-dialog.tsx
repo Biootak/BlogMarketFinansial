@@ -4,6 +4,7 @@ import React, {
   forwardRef,
   useCallback,
   useEffect,
+  useId,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -34,6 +35,18 @@ export interface ImageUploadDialogRef {
     url: string,
     dims?: { width?: number | null; height?: number | null },
   ) => void;
+  /**
+   * 2026-07-06: target an existing image node for in-place edit. When
+   * set, the dialog's Insert button UPDATES the attrs of that node via
+   * `tr.setNodeMarkup` instead of inserting a new image with
+   * `setImage`. This is what makes the paste/drop flow drop-safe:
+   * the image is already in the document (with a placeholder URL) while
+   * the upload runs, and the dialog now updates that same node rather
+   * than inserting a duplicate.
+   *
+   * Pass `null` (or omit) to return to plain "insert new image" mode.
+   */
+  setEditTarget: (nodePos: number | null) => void;
 }
 
 interface ImageUploadDialogProps {
@@ -94,6 +107,10 @@ const ImageUploadDialog = forwardRef<ImageUploadDialogRef, ImageUploadDialogProp
     const [pending, setPending] = useState<PendingUpload | null>(null);
     const [alt, setAlt] = useState('');
     const [title, setTitle] = useState('');
+    // 2026-07-06: when non-null, Insert will tr.setNodeMarkup on this
+    // position instead of inserting a new image. See ImageUploadDialogRef
+    // docstring.
+    const [editingNodePos, setEditingNodePos] = useState<number | null>(null);
 
     useImperativeHandle(
       ref,
@@ -106,6 +123,9 @@ const ImageUploadDialog = forwardRef<ImageUploadDialogRef, ImageUploadDialogProp
             width: typeof dims?.width === 'number' ? dims.width : null,
             height: typeof dims?.height === 'number' ? dims.height : null,
           });
+        },
+        setEditTarget: (nodePos) => {
+          setEditingNodePos(nodePos);
         },
       }),
       [setOpen],
@@ -125,7 +145,8 @@ const ImageUploadDialog = forwardRef<ImageUploadDialogRef, ImageUploadDialogProp
 
     // Reset transient state every time the dialog closes, otherwise the
     // next open shows a stale alt/title and a phantom "uploaded" preview.
-    // Also reset the insert-guard so the next session can insert.
+    // Also reset the insert-guard + edit-target so the next session
+    // behaves as a fresh insert (not a stale edit).
     useEffect(() => {
       if (isOpen) {
         insertedRef.current = false;
@@ -134,6 +155,7 @@ const ImageUploadDialog = forwardRef<ImageUploadDialogRef, ImageUploadDialogProp
       setPending(null);
       setAlt('');
       setTitle('');
+      setEditingNodePos(null);
     }, [isOpen]);
 
     const handleImageUpload = useCallback((urls: string[]) => {
@@ -168,25 +190,41 @@ const ImageUploadDialog = forwardRef<ImageUploadDialogRef, ImageUploadDialogProp
       if (insertedRef.current) return;
       if (!pending) return;
       insertedRef.current = true;
-      const attrs: {
-        src: string;
-        alt?: string;
-        title?: string;
-        width?: string;
-        height?: number | null;
-      } = { src: pending.url };
       const trimmedAlt = alt.trim();
-      if (trimmedAlt) attrs.alt = trimmedAlt;
       const trimmedTitle = title.trim();
-      if (trimmedTitle) attrs.title = trimmedTitle;
       // پیش‌فرض عرض: 100% ستون (واکنش‌گرا). کاربر با ResizeImage بعداً
       // می‌تواند آن را به px تغییر دهد. ارتفاع intrinsic اگر از upload
       // برگشته، نگه می‌داریم تا renderer بتواند aspect ratio را حفظ کند.
-      attrs.width = '100%';
-      if (pending.height && pending.height > 0) attrs.height = pending.height;
-      editor.chain().focus().setImage(attrs as never).run();
+      const newAttrs: Record<string, unknown> = {
+        src: pending.url,
+        uploadState: 'complete',
+        width: '100%',
+      };
+      if (pending.height && pending.height > 0) newAttrs.height = pending.height;
+      if (trimmedAlt) newAttrs.alt = trimmedAlt;
+      if (trimmedTitle) newAttrs.title = trimmedTitle;
+
+      if (editingNodePos !== null) {
+        // Edit-mode: update the existing image node in place. We use a
+        // direct `tr.setNodeMarkup` so we don't disturb the user's
+        // selection / cursor. We don't `focus()` first because the
+        // dialog is already focused and the user will return to the
+        // editor when the dialog closes.
+        const tr = editor.state.tr;
+        const node = editor.state.doc.nodeAt(editingNodePos);
+        if (node) {
+          tr.setNodeMarkup(editingNodePos, undefined, {
+            ...node.attrs,
+            ...newAttrs,
+          });
+          editor.view.dispatch(tr);
+        }
+      } else {
+        // Standard insert-mode: focus editor, insert fresh image node.
+        editor.chain().focus().setImage(newAttrs as never).run();
+      }
       setOpen(false);
-    }, [pending, alt, title, editor, setOpen]);
+    }, [pending, alt, title, editor, setOpen, editingNodePos]);
 
     const altMissing = requireAlt && alt.trim().length === 0;
     const canInsert = !!pending && !altMissing;
@@ -197,8 +235,8 @@ const ImageUploadDialog = forwardRef<ImageUploadDialogRef, ImageUploadDialogProp
       setPending(null);
     }, []);
 
-    const altId = useMemo(() => `img-alt-${Math.random().toString(36).slice(2, 8)}`, []);
-    const titleId = useMemo(() => `img-title-${Math.random().toString(36).slice(2, 8)}`, []);
+    const altId = useId();
+    const titleId = useId();
 
     return (
       <Dialog open={isOpen} onOpenChange={setOpen}>

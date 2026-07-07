@@ -90,6 +90,22 @@ export default BaseImage.extend({
           return t ? { title: t } : {};
         },
       },
+      // 2026-07-06: uploadState — وضعیت آپلود paste/drop.
+      //   'pending' — در حال آپلود (URL فعلی blob: است)
+      //   'failed'  — آپلود شکست خورد؛ تصویر هنوز در سند است ولی URL محلی می‌باشد
+      //   'complete' — URL میزبانی‌شده ست شده و آپلود تمام شده
+      // CSS از `[data-upload-state="failed"]` برای overlay هشدار استفاده می‌کند.
+      uploadState: {
+        default: null,
+        parseHTML: (element) => {
+          const v = element.getAttribute('data-upload-state');
+          return v === 'pending' || v === 'failed' || v === 'complete' ? v : null;
+        },
+        renderHTML: (attributes) => {
+          const v = attributes.uploadState;
+          return v ? { 'data-upload-state': v } : {};
+        },
+      },
       // تراز — فقط از data-text-align می‌خوانیم.
       // style توسط DOMPurify حذف می‌شود، پس fallback به style بی‌اثر است.
       textAlign: {

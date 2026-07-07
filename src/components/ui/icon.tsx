@@ -58,6 +58,7 @@ import {
   Link2Off,
   List,
   Play,
+  Plus,
   ListChecks,
   ListOrdered,
   ListTodo,
@@ -156,6 +157,9 @@ const iconMap = {
   rows: Rows,
   'maximize-2': Maximize2,
   'minimize-2': Minimize2,
+
+  // ─── Actions & UI
+  plus: Plus,
 
   // ─── Uppercase aliases برای backward compatibility
   // فایل‌های قدیمی‌تر (SingleMetaAction2، NcBookmark، code-block،

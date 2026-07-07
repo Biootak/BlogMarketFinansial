@@ -2224,3 +2224,68 @@
     display: none;
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────
+// 2026-07-06: image upload-state visual cues.
+// When `handlePastedImage` inserts an image with a blob URL while the
+// upload runs, or fails to swap to the hosted URL, the node carries
+// `data-upload-state` so this CSS can hint at the situation without
+// coupling the NodeView component to upload internals.
+//
+// We use a simple inline badge in the upper corner (logical property
+// `inset-inline-start` so it mirrors in RTL) and a dashed outline for
+// the failure state to make the image look "uncommitted".
+// ─────────────────────────────────────────────────────────────────────
+img[data-upload-state] {
+  transition: outline-color 200ms ease;
+}
+img[data-upload-state="pending"] {
+  // Subtle pulse so the writer knows the upload is in flight.
+  outline: 2px solid color-mix(in oklab, var(--at-accent, #38bdf8) 60%, transparent);
+  outline-offset: 2px;
+  animation: at-upload-pulse 1.4s ease-in-out infinite;
+}
+img[data-upload-state="failed"] {
+  // Dashed red outline + "failed" badge in the inline-start corner.
+  outline: 2px dashed oklch(58% 0.2 25);
+  outline-offset: 3px;
+  position: relative;
+}
+img[data-upload-state="failed"]::after {
+  content: "آپلود ناموفق";
+  position: absolute;
+  inset-inline-start: 8px;
+  top: 8px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: oklch(58% 0.2 25);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  // `pointer-events: none` so the underlying NodeView still owns clicks
+  // (the existing toolbar in ResizeImage has remove / align buttons).
+  pointer-events: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+img[data-upload-state="complete"] {
+  // No visual cue — looks identical to a regular inserted image. We
+  // only need the attribute for tracking / future telemetry.
+}
+
+@keyframes at-upload-pulse {
+  0%, 100% {
+    outline-color: color-mix(in oklab, var(--at-accent, #38bdf8) 60%, transparent);
+  }
+  50% {
+    outline-color: color-mix(in oklab, var(--at-accent, #38bdf8) 30%, transparent);
+  }
+}
+
+// Reduce motion: respect the OS-level preference and skip the pulse.
+@media (prefers-reduced-motion: reduce) {
+  img[data-upload-state="pending"] {
+    animation: none;
+  }
+}

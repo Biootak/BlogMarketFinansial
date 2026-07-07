@@ -27,6 +27,38 @@ import { FontSize } from './extensions/font-size';
 import { FontFamily } from './extensions/font-family';
 import { detailsExtensions } from './extensions/details';
 import { Math } from './extensions/math';
+import { Footnote, FootnoteRef } from './extensions/footnote';
+import { Node, mergeAttributes } from '@tiptap/core';
+
+// Read-only Mention renderer — no suggestion popup, just renders <span data-mention> nodes.
+// The editor's Mention extension (with suggestion) lives in builtInExtensions; this
+// lightweight version only handles rendering so mentions in stored content display correctly.
+const MentionReadOnly = Node.create({
+  name: 'mention',
+  group: 'inline',
+  inline: true,
+  atom: true,
+  addAttributes() {
+    return {
+      id: { default: null },
+      label: { default: null },
+    };
+  },
+  parseHTML() {
+    return [{ tag: 'span[data-mention]' }];
+  },
+  renderHTML({ node, HTMLAttributes }) {
+    return [
+      'span',
+      mergeAttributes(HTMLAttributes, {
+        'data-mention': '',
+        class: 'mention',
+        'data-label': node.attrs.label as string,
+      }),
+      `@${node.attrs.label}`,
+    ];
+  },
+});
 
 import './styles/index.scss';
 
@@ -98,6 +130,9 @@ const renderExtensions = [
   FontFamily,
   ...detailsExtensions,
   Math,
+  Footnote,
+  FootnoteRef,
+  MentionReadOnly,
 ];
 
 interface EditorContentRendererProps {
@@ -180,18 +215,17 @@ const EditorContentRenderer: React.FC<EditorContentRendererProps> = ({
     
     if (!initialLoadRef.current && parsedContent) {
       initialLoadRef.current = true;
-      queueMicrotask(() => {
-        if (!editor.isDestroyed) {
-          editor.commands.setContent(parsedContent);
-        }
-      });
+      // Set content synchronously — no flash.
+      editor.commands.setContent(parsedContent);
     }
   }, [editor, content, parsedContent]);
 
   // Cleanup
   useEffect(() => {
     return () => {
-      editor?.destroy();
+      if (editor && !editor.isDestroyed) {
+        editor.destroy();
+      }
     };
   }, [editor]);
 

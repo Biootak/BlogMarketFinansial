@@ -60,7 +60,7 @@ const FixedMenu = ({ editor, className, tocOpen, onToggleToc, hasToc }: FixedMen
   return (
     <TooltipProvider disableHoverableContent delayDuration={500} skipDelayDuration={0}>
       <Toolbar.Wrapper
-        className={`${className} sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-md transition-all duration-300 ease-in-out overflow-x-auto text-primary-600`}
+        className={`${className} at-editor-toolbar-wrap overflow-x-auto text-primary-600`}
         data-more-open={moreOpen || undefined}
         dir={dir}
         data-dir={dir}

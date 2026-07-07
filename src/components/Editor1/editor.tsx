@@ -72,7 +72,7 @@ export interface EditorProps extends Partial<EditorOptions> {
    *     بدون تغییر در call site.
    *
    * اگر `content` prop هم داده شده باشد، بازیابی انجام نمی‌شود
-   * (post واقعی بر local draft优先 دارد).
+    * (محتوای اصلی پست بر local draft ارجحیت دارد).
    */
   autoSaveKey?: string | null;
   /** اختیاری — callback وقتی محتوای draft از localStorage بازیابی شد. */
@@ -164,6 +164,13 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
     // can capture it.
     const imageDialogRef = useRef<ImageUploadDialogRef | null>(null);
 
+    // 2026-07-06: `useEditor` is called *after* `handlePastedImage` in
+    // source order, so the callback can't list `editor` in its deps
+    // (TypeScript flags the TDZ even though runtime resolves it). We
+    // mirror the editor into a ref via a small effect after `useEditor`
+    // resolves, and the callback reads `editorRef.current` lazily.
+    const editorRef = useRef<EditorInstance | null>(null);
+
     // 2026-07-06: light XHR upload for paste/drop. We don't reuse
     // `uploadOneFile` from the ImageUploader module because that one is
     // private to the component and tied to its React state — for
@@ -242,24 +249,124 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
       [],
     );
 
+    // 2026-07-06: handle pasted / dropped image.
+    //
+    // Flow:
+    //   1. Insert an image node IMMEDIATELY with a `blob:` URL so the user
+    //      sees their image at the cursor even if the upload later fails.
+    //   2. Background-upload the file via /api/upload.
+    //   3. On success — find the inserted node by its blob URL, swap
+    //      `src` to the hosted URL via `tr.setNodeMarkup`, free the blob
+    //      handle, and open the dialog in *edit* mode (it updates the
+    //      just-swapped node's alt/title instead of inserting again).
+    //   4. On failure — keep the blob image visible (better than silent
+    //      loss), mark it with `data-upload-state="failed"` so CSS can
+    //      render a retry/delete affordance, and toast the user.
+    //
+    // Only the first image is handled — multi-image paste into a single
+    // insertion is a niche case the dialog UX isn't built for. Extra
+    // files are ignored.
     const handlePastedImage = useCallback(
       async (files: File[]) => {
         if (files.length === 0) return false;
         const file = files[0];
         if (!file) return false;
-        // Only handle the first image — multi-image paste into a single
-        // editor insertion is a niche case, and the dialog UX is built
-        // around one-at-a-time. Extra files are ignored.
+        // Read the editor via the ref (synced after `useEditor`) to
+        // avoid placing `editor` in source order before its declaration.
+        const editor = editorRef.current;
+        if (!editor || editor.isDestroyed) return true;
+
+        const blobUrl = URL.createObjectURL(file);
+
+        // 1. Insert placeholder image with the blob URL.
+        editor
+          .chain()
+          .focus()
+          .setImage({
+            src: blobUrl,
+            alt: file.name,
+            uploadState: 'pending',
+          } as never)
+          .run();
+
         toast({
           title: 'در حال آپلود...',
           description: file.name,
         });
+
+        // 2. Background upload.
         const result = await uploadFileSilently(file);
-        if (!result) return true; // we handled (with error), don't fall through
+
+        // Re-read the editor — it may have unmounted during the await.
+        const liveEditor = editorRef.current;
+        if (!liveEditor || liveEditor.isDestroyed) {
+          URL.revokeObjectURL(blobUrl);
+          return true;
+        }
+
+        if (!result) {
+          // 4. Failure — mark the inserted node as failed and toast.
+          const tr = liveEditor.state.tr;
+          let updated = false;
+          liveEditor.state.doc.descendants((node, pos) => {
+            if (node.type.name === 'image' && node.attrs.src === blobUrl) {
+              tr.setNodeMarkup(pos, undefined, {
+                ...node.attrs,
+                uploadState: 'failed',
+              });
+              updated = true;
+              return false;
+            }
+            return true;
+          });
+          if (updated) liveEditor.view.dispatch(tr);
+
+          toast({
+            title: 'آپلود ناموفق',
+            description: `${file.name} ذخیره نشد. تصویر هنوز در ویرایشگر هست؛ برای تلاش دوباره، آن را حذف کرده و دوباره درگ کنید.`,
+            variant: 'destructive',
+          });
+          return true;
+        }
+
+        // 3. Success — swap blob → hosted URL on the same node.
+        let swappedPos = -1;
+        {
+          const tr = liveEditor.state.tr;
+          let updated = false;
+          liveEditor.state.doc.descendants((node, pos) => {
+            if (node.type.name === 'image' && node.attrs.src === blobUrl) {
+              tr.setNodeMarkup(pos, undefined, {
+                ...node.attrs,
+                src: result.url,
+                uploadState: 'complete',
+                ...(typeof result.width === 'number' && result.width > 0
+                  ? { width: result.width }
+                  : {}),
+                ...(typeof result.height === 'number' && result.height > 0
+                  ? { height: result.height }
+                  : {}),
+              });
+              updated = true;
+              swappedPos = pos;
+              return false;
+            }
+            return true;
+          });
+          if (updated) liveEditor.view.dispatch(tr);
+        }
+
+        URL.revokeObjectURL(blobUrl);
+
+        // Open the dialog in edit mode so the user can fill alt/title
+        // WITHOUT triggering a second `setImage`. The dialog's Insert
+        // becomes `tr.setNodeMarkup` on `swappedPos` when an edit
+        // target is set.
         imageDialogRef.current?.setPending(result.url, {
           width: result.width,
           height: result.height,
         });
+        imageDialogRef.current?.setEditTarget(swappedPos >= 0 ? swappedPos : null);
         imageDialogRef.current?.open();
         return true;
       },
@@ -289,16 +396,21 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
       // 2026-07-06: handle image drop. Returning `true` suppresses the
       // default drop behavior so we don't end up with both the dropped
       // base64 image AND our uploaded URL.
+      //
+      // 2026-07-06 FIX: previous guard rejected any drop whose
+      // `dataTransfer.types` included `text/plain` OR `text/html`.
+      // That's wrong because external sources (Google Images, many
+      // desktop apps, OS file managers) include `text/plain` carrying
+      // the image URL alongside `Files`. Rejecting those silently
+      // turned "drop an image" into "nothing happens" for the user.
+      // The only payload that conflicts with our blob-first upload is
+      // rich `text/html` (e.g. dragging a styled snippet). text/plain
+      // is harmless because we paste the file ourselves.
       handleDrop: (view, event) => {
         const e = event as unknown as DragEvent;
         const files = extractImageFiles(e.dataTransfer);
         if (files.length === 0) return false;
-        // Only intercept drops that contain *only* images. If the user
-        // is dragging text from elsewhere, let ProseMirror handle it.
-        const hasNonImage =
-          e.dataTransfer?.types.includes('text/plain') ||
-          e.dataTransfer?.types.includes('text/html');
-        if (hasNonImage) return false;
+        if (e.dataTransfer?.types.includes('text/html')) return false;
         event.preventDefault();
         void handlePastedImage(files);
         return true;
@@ -315,6 +427,22 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
       },
       [],
     );
+
+    // Mirror the editor instance into the ref so callbacks declared
+    // *before* `useEditor` in source order can read the current editor
+    // lazily via `editorRef.current`. Tiptap v3 owns the destroy /
+    // recreate cycle, so we just sync on each render.
+    useEffect(() => {
+      editorRef.current = editor;
+      if (!editor) return;
+      return () => {
+        // Only null out the ref if it still points to *this* editor.
+        // On re-init with a new instance, the new effect run will
+        // overwrite the ref first; this guard prevents a stale cleanup
+        // from clobbering a fresh instance.
+        if (editorRef.current === editor) editorRef.current = null;
+      };
+    }, [editor]);
 
     const getEditorInstance = useCallback(() => {
       if (!editor) {
@@ -582,11 +710,13 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
     // 2026-07-06: این bridge اضافی دیگر لازم نیست؛ setRestoredAt در خود
     // useEffect auto-save (پایین‌تر) به‌صورت مستقیم فراخوانی می‌شود.
 
-    useEffect(() => {
-      return () => {
-        editor?.destroy();
-      };
-    }, [editor]);
+    // NOTE: do NOT add a manual `useEffect(() => () => editor?.destroy(),
+    // [editor])` here. Tiptap v3's `useEditor` already owns the editor
+    // lifecycle through `EditorInstanceManager.scheduleDestroy` — it
+    // schedules destruction on a 1-tick timeout and cancels it if the
+    // component re-mounts. Calling `destroy()` manually in a useEffect
+    // cleanup races with that and breaks navigation between routes
+    // (see https://github.com/ueberdosis/tiptap/discussions/2906).
 
     // ── Slash command flag for the empty-state hint ──
     const isEmpty = useMemo(() => {
@@ -710,8 +840,8 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
           <div className="at-editor-canvas">
             <div className="at-editor-ruler" aria-hidden />
             {tocOpen && tocItems.length > 0 && (
-              <div className="at-editor-toc-panel">
-                <TocSidebar items={tocItems} />
+              <div className="at-editor-toc-panel is-visible">
+                <TocSidebar items={tocItems} collapsible />
               </div>
             )}
             <div className={`at-editor-paper ${isEmpty ? 'at-editor-paper--empty' : ''}`}>

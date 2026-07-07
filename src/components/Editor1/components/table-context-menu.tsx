@@ -131,12 +131,12 @@ const TableContextMenu: React.FC<TableContextMenuProps> = ({ editor }) => {
       items: [
         {
           label: 'افزودن ردیف بالا',
-          icon: <Icon name="arrow-up" size={16} rtlAware />,
+          icon: <Icon name="arrow-up" size={16} />,
           action: () => editor.chain().focus().addRowBefore().run(),
         },
         {
           label: 'افزودن ردیف پایین',
-          icon: <Icon name="arrow-down" size={16} rtlAware />,
+          icon: <Icon name="arrow-down" size={16} />,
           action: () => editor.chain().focus().addRowAfter().run(),
         },
         {

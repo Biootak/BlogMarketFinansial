@@ -76,7 +76,7 @@ const LinkPanelEdit = ({ initial, isOpen, onSetLink }: LinkPanelEditProps) => {
           </div>
           <input
             ref={inputRef}
-            type="text"
+            type="url"
             className="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
             placeholder="example.com یا /page"
             value={url}

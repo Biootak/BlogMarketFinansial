@@ -22,8 +22,19 @@ export interface TocSidebarProps {
   onCollapsedChange?: (collapsed: boolean) => void;
 }
 
+/**
+ * Converts a heading ID (which may contain spaces, Persian characters,
+ * or special symbols) into a valid HTML fragment identifier.
+ * Matches the slug generation used by Tiptap's Heading extension.
+ */
 function slugifyToFragment(id: string): string {
-  return id;
+  return id
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')           // spaces → hyphens
+    .replace(/[^\p{L}\p{N}\-_۰-۹۰-۹]/gu, '') // strip non-alphanumeric (keeps Persian chars)
+    .replace(/--+/g, '-')          // collapse multiple hyphens
+    .replace(/^-|-$/g, '');        // trim leading/trailing hyphens
 }
 
 export const TocSidebar: React.FC<TocSidebarProps> = ({
@@ -189,10 +200,10 @@ export const TocSidebar: React.FC<TocSidebarProps> = ({
                         'at-toc__link',
                         activeId === item.id ? 'is-active' : '',
                       )}
-                      aria-current={activeId === item.id ? 'location' : undefined}
+                      aria-current={activeId === item.id ? 'true' : undefined}
                     >
                       <span className="at-toc__rail" aria-hidden />
-                      <span className="at-toc__text">{item.text || 'بدون متن'}</span>
+                      <span className="at-toc__text min-w-0 truncate">{item.text || 'بدون متن'}</span>
                     </a>
                   </li>
                 ))}

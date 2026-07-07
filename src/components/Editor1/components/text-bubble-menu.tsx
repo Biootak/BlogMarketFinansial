@@ -170,7 +170,7 @@ const TextBubbleMenu: React.FC<TextBubbleMenuProps> = ({ editor }) => {
             <button
               type="button"
               onClick={() => editor.chain().focus().toggleStrike().run()}
-              aria-label="خط‌خورده (Ctrl+Shift+S)"
+              aria-label="خط‌خورده (Ctrl+Shift+X)"
               aria-pressed={activeStates.strike}
               className="at-bubble__btn"
             >

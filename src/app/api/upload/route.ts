@@ -117,7 +117,6 @@ function isSafeSvg(buffer: Buffer): boolean {
 // One instance is built per file and reused for metadata + resize + encode.
 // This keeps the libvips decoded pixel buffer alive only for the lifetime
 // of this single file's processing — no variant fan-out, no re-decoding.
-
 interface OptimizeResult {
   buffer: Buffer;
   width: number | null;
@@ -143,15 +142,59 @@ async function processImage(input: Buffer, mime: AllowedMime): Promise<OptimizeR
     };
   }
 
-  // Single sharp pipeline: probe → conditional resize → WebP encode.
-  const pipeline = sharp(input);
-  const meta = await pipeline.metadata();
+  // ── Smart pass-through for already-optimal uploads ───────────────────────
+  // Reading metadata is ~10ms vs 500ms+ for decode+encode. We peek first
+  // to avoid expensive reprocessing of images that don't need it.
+  const meta = await sharp(input).metadata();
   const sourceWidth = typeof meta.width === 'number' ? meta.width : 0;
+  const sourceHeight = typeof meta.height === 'number' ? meta.height : null;
+  const needsResize = sourceWidth > MAX_CANONICAL_WIDTH;
 
-  const out =
-    sourceWidth > MAX_CANONICAL_WIDTH
-      ? pipeline.resize(MAX_CANONICAL_WIDTH, undefined, { withoutEnlargement: true })
-      : pipeline;
+  // Fast path: WebP that is already within canonical size limits AND under
+  // a reasonable file-size threshold (300 KB). Re-encoding would be pure
+  // waste — decode → lossy recompress at q85 → slightly worse quality +
+  // same visual result. We pass it through as-is.
+  // 300 KB is generous: a 1920×1080 photo-quality WebP is ~150–200 KB.
+  // Anything larger is either already bloated (rare) or a screenshot
+  // that benefits from re-encoding.
+  const SIZE_THRESHOLD_BYTES = 300 * 1024;
+  if (
+    mime === 'image/webp' &&
+    !needsResize &&
+    input.byteLength <= SIZE_THRESHOLD_BYTES
+  ) {
+    return {
+      buffer: input,
+      width: sourceWidth,
+      height: sourceHeight,
+      mime: 'image/webp',
+    };
+  }
+
+  // Fast path 2: PNG/JPEG that already fits within canonical limits.
+  // We convert to WebP for consistency (smaller files, better browser
+  // support), but skip the resize step since the image is already
+  // acceptable in size. Only the format conversion happens.
+  const shouldConvertToWebp =
+    mime === 'image/png' || mime === 'image/jpeg' || mime === 'image/webp';
+
+  if (shouldConvertToWebp && !needsResize) {
+    // Convert format only — no resize needed.
+    const buffer = await sharp(input).webp({ quality: WEBP_QUALITY }).toBuffer();
+    const finalMeta = await sharp(buffer).metadata();
+    return {
+      buffer,
+      width: typeof finalMeta.width === 'number' ? finalMeta.width : null,
+      height: typeof finalMeta.height === 'number' ? finalMeta.height : null,
+      mime: 'image/webp',
+    };
+  }
+
+  // Full pipeline: resize (if needed) + WebP encode.
+  const pipeline = sharp(input);
+  const out = needsResize
+    ? pipeline.resize(MAX_CANONICAL_WIDTH, undefined, { withoutEnlargement: true })
+    : pipeline;
 
   const buffer = await out.webp({ quality: WEBP_QUALITY }).toBuffer();
 

@@ -25,7 +25,15 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
   const dir = useDirection('rtl');
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const colorPickerRef = useRef<HTMLDivElement>(null);
+
+  // 2026-07-06: single ref on the outer wrapper that contains BOTH the
+  // trigger button AND the popover. Previous version assigned the same
+  // ref to both — once the popover opened, the ref pointed to the inner
+  // div and clicks on the trigger button fell outside `.contains()`,
+  // making the close-on-outside-click logic depend on stale closure
+  // ordering. With the ref on the wrapper, every click inside the
+  // wrapper (button or picker) is "inside"; everything else is "outside".
+  const colorPickerWrapperRef = useRef<HTMLDivElement>(null);
 
   const canMerge = useMemo(() => editor.can().mergeCells(), [editor.state.selection]);
   const canSplit = useMemo(() => editor.can().splitCell(), [editor.state.selection]);
@@ -34,7 +42,10 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
     if (!showColorPicker) return;
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (colorPickerRef.current && !colorPickerRef.current.contains(event.target as Node)) {
+      if (
+        colorPickerWrapperRef.current
+        && !colorPickerWrapperRef.current.contains(event.target as Node)
+      ) {
         setShowColorPicker(false);
       }
     };
@@ -189,7 +200,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
         {/* Color picker */}
         <div
           className="relative flex items-center gap-0.5 px-1 border-s border-gray-200 dark:border-gray-700"
-          ref={colorPickerRef}
+          ref={colorPickerWrapperRef}
         >
           <button
             type="button"
@@ -203,7 +214,6 @@ const TableToolbar: React.FC<TableToolbarProps> = ({ editor }) => {
           </button>                  {showColorPicker && (
               <div
                 className="absolute top-full end-0 mt-2 z-[300]"
-                ref={colorPickerRef}
               >
                 <CellColorPicker
                   onSelect={handleColorSelect}

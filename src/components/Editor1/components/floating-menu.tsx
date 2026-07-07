@@ -7,24 +7,9 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { FloatingMenu as TiptapFloatingMenu } from '@tiptap/react/menus';
 import type { Editor } from '@tiptap/core';
-import {
-  Plus,
-  Type,
-  Heading1,
-  Heading2,
-  Heading3,
-  List,
-  ListOrdered,
-  CheckSquare,
-  Quote,
-  Code,
-  Table,
-  Minus,
-  AlertCircle,
-  FileText,
-} from 'lucide-react';
 // 2026-07-05: dir صریح برای portal tippy.
 import { useDirection } from '@/hooks/useDirection';
+import { Icon } from '../../ui/icon';
 
 interface FloatingMenuProps {
   editor: Editor;
@@ -48,91 +33,91 @@ const FloatingMenuComponent: React.FC<FloatingMenuProps> = ({ editor }) => {
   const menuItems: MenuItem[] = useMemo(
     () => [
       {
-        icon: <Type size={14} />,
+        icon: <Icon name="type" size={14} />,
         label: 'متن',
         description: 'پاراگراف معمولی',
         action: () => editor.chain().focus().setParagraph().run(),
         category: 'text',
       },
       {
-        icon: <Heading1 size={14} />,
+        icon: <Icon name="heading-1" size={14} />,
         label: 'عنوان ۱',
         description: 'عنوان بزرگ',
         action: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
         category: 'text',
       },
       {
-        icon: <Heading2 size={14} />,
+        icon: <Icon name="heading-2" size={14} />,
         label: 'عنوان ۲',
         description: 'عنوان متوسط',
         action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
         category: 'text',
       },
       {
-        icon: <Heading3 size={14} />,
+        icon: <Icon name="heading-3" size={14} />,
         label: 'عنوان ۳',
         description: 'عنوان کوچک',
         action: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
         category: 'text',
       },
       {
-        icon: <List size={14} />,
+        icon: <Icon name="list" size={14} />,
         label: 'لیست نقطه‌ای',
         description: 'لیست با نقطه',
         action: () => editor.chain().focus().toggleBulletList().run(),
         category: 'list',
       },
       {
-        icon: <ListOrdered size={14} />,
+        icon: <Icon name="list-ordered" size={14} />,
         label: 'لیست شماره‌ای',
         description: 'لیست با شماره',
         action: () => editor.chain().focus().toggleOrderedList().run(),
         category: 'list',
       },
       {
-        icon: <CheckSquare size={14} />,
+        icon: <Icon name="task-list" size={14} />,
         label: 'لیست وظایف',
         description: 'لیست با چک‌باکس',
         action: () => editor.chain().focus().toggleTaskList().run(),
         category: 'list',
       },
       {
-        icon: <Quote size={14} />,
+        icon: <Icon name="quote" size={14} />,
         label: 'نقل قول',
         description: 'بلاک نقل قول',
         action: () => editor.chain().focus().toggleBlockquote().run(),
         category: 'advanced',
       },
       {
-        icon: <Code size={14} />,
+        icon: <Icon name="code" size={14} />,
         label: 'کد',
         description: 'بلاک کد',
         action: () => editor.chain().focus().toggleCodeBlock().run(),
         category: 'advanced',
       },
       {
-        icon: <Table size={14} />,
+        icon: <Icon name="table" size={14} />,
         label: 'جدول',
         description: 'درج جدول ۳×۳',
         action: () => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
         category: 'advanced',
       },
       {
-        icon: <AlertCircle size={14} />,
+        icon: <Icon name="alert-circle" size={14} />,
         label: 'نکته',
         description: 'بلاک اطلاعات',
         action: () => editor.chain().focus().setCallout({ type: 'info' }).run(),
         category: 'advanced',
       },
       {
-        icon: <FileText size={14} />,
+        icon: <Icon name="file-text" size={14} />,
         label: 'آکاردئون',
         description: 'بلاک قابل باز/بسته',
         action: () => editor.chain().focus().setDetails().run(),
         category: 'advanced',
       },
       {
-        icon: <Minus size={14} />,
+        icon: <Icon name="horizontal-rule" size={14} />,
         label: 'خط جداکننده',
         description: 'خط افقی',
         action: () => editor.chain().focus().setHorizontalRule().run(),
@@ -215,7 +200,7 @@ const FloatingMenuComponent: React.FC<FloatingMenuProps> = ({ editor }) => {
           aria-haspopup="menu"
           className="at-floating-trigger"
         >
-          <Plus size={16} />
+          <Icon name="plus" size={16} />
         </button>
 
         {isOpen && (
