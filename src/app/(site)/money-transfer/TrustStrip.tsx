@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+
 /**
  * TrustStrip — single horizontal row of numeric trust stats.
  *
@@ -26,6 +28,56 @@ interface Props {
   satisfactionPct?: number;
 }
 
+/** Count-up on scroll-into-view — respects prefers-reduced-motion */
+function CountUpNumber({ target, duration = 1600 }: { target: number; duration?: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [display, setDisplay] = useState(0);
+  const [started, setStarted] = useState(false);
+
+  // Check reduced motion preference
+  const prefersReducedMotion = typeof window !== 'undefined'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    : false;
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setDisplay(target);
+      return;
+    }
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setStarted(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [prefersReducedMotion, target]);
+
+  useEffect(() => {
+    if (!started || prefersReducedMotion) return;
+    const startTime = performance.now();
+    let raf: number;
+    const step = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - (1 - progress) * (1 - progress);
+      setDisplay(Math.round(target * eased));
+      if (progress < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [started, target, duration, prefersReducedMotion]);
+
+  const formatted = new Intl.NumberFormat('fa-IR').format(display);
+  return <span ref={ref}>{formatted}</span>;
+}
+
 export default function TrustStrip(props: Props) {
   const {
     totalVolume = '۲۴۰M+',
@@ -36,12 +88,9 @@ export default function TrustStrip(props: Props) {
     satisfactionPct = 98,
   } = props;
 
-  const toFa = (n: number) =>
-    new Intl.NumberFormat('fa-IR').format(n);
-
   return (
     <div className="mt-trust" role="list">
-      <div className="mt-trust__cell" role="listitem">
+      <div className="mt-trust__cell mt-fade-up mt-fade-up-d1" role="listitem">
         <span className="mt-trust__num">
           <span>{totalVolume}</span>
           <span className="mt-trust__num-suffix">$</span>
@@ -49,25 +98,25 @@ export default function TrustStrip(props: Props) {
         <span className="mt-trust__label">حجم تراکنش سالانه</span>
       </div>
 
-      <div className="mt-trust__cell" role="listitem">
+      <div className="mt-trust__cell mt-fade-up mt-fade-up-d2" role="listitem">
         <span className="mt-trust__num">
-          <span>{toFa(currencies)}</span>
+          <CountUpNumber target={currencies} />
           <span className="mt-trust__num-suffix">+</span>
         </span>
         <span className="mt-trust__label">ارز قابل پشتیبانی</span>
       </div>
 
-      <div className="mt-trust__cell" role="listitem">
+      <div className="mt-trust__cell mt-fade-up mt-fade-up-d3" role="listitem">
         <span className="mt-trust__num">
-          <span>{toFa(countries)}</span>
+          <CountUpNumber target={countries} />
           <span className="mt-trust__num-suffix">+</span>
         </span>
         <span className="mt-trust__label">کشور مقصد</span>
       </div>
 
-      <div className="mt-trust__cell" role="listitem">
+      <div className="mt-trust__cell mt-fade-up mt-fade-up-d4" role="listitem">
         <span className="mt-trust__num">
-          <span>{toFa(yearsActive)}</span>
+          <CountUpNumber target={yearsActive} />
           <span className="mt-trust__num-suffix">سال</span>
         </span>
         <span className="mt-trust__label">سابقه فعالیت مستمر</span>

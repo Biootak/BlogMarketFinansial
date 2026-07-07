@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ImageUploader, type UploadFolder } from '@/components/ImageUpload/ImageUploader';
+import { toast } from '@/components/ui/use-toast';
 
 export interface ImageUploadDialogRef {
   open: () => void;
@@ -66,17 +67,14 @@ interface PendingUpload {
   height: number | null;
 }
 
-// 2026-07-06: whitelist of URL shapes we accept from the upload route.
-// Anything else is rejected so we never feed a stray string into the
-// editor (which would break rendering and is an XSS hazard if a hostile
-// URL ever slipped past server-side validation).
+// 2026-07-07: The upload URL comes from our own `/api/upload` route,
+// which already validates files and generates safe paths. A strict
+// client-side whitelist was rejecting valid URLs (e.g. Persian filenames
+// in GIF/SVG, `http://` dev URLs, query-string cache busters) and
+// silently breaking image insertion. We now only guard against empty or
+// whitespace-only values and leave URL validation to the server.
 function isAcceptableImageUrl(value: string): boolean {
-  if (!value) return false;
-  // Absolute https URL (S3 / CDN)
-  if (/^https:\/\/[^\s]+$/i.test(value)) return true;
-  // Same-origin upload path
-  if (/^\/uploads\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9._-]+$/.test(value)) return true;
-  return false;
+  return typeof value === 'string' && value.trim().length > 0;
 }
 
 const ImageUploadDialog = forwardRef<ImageUploadDialogRef, ImageUploadDialogProps>(
@@ -161,10 +159,12 @@ const ImageUploadDialog = forwardRef<ImageUploadDialogRef, ImageUploadDialogProp
     const handleImageUpload = useCallback((urls: string[]) => {
       const first = urls[0];
       if (!first) return;
-      // ImageUploader already validated; we belt-and-suspender here too.
       if (!isAcceptableImageUrl(first)) {
-        // eslint-disable-next-line no-console
-        console.error('ImageUploadDialog: rejected upload URL', first);
+        toast({
+          title: 'خطا در دریافت آدرس تصویر',
+          description: 'آدرس بازگشتی از سرور خالی یا نامعتبر است.',
+          variant: 'destructive',
+        });
         return;
       }
       setPending({ url: first, width: null, height: null });
@@ -174,6 +174,14 @@ const ImageUploadDialog = forwardRef<ImageUploadDialogRef, ImageUploadDialogProp
       (files: { url: string; width?: number | null; height?: number | null }[]) => {
         const first = files[0];
         if (!first) return;
+        if (!isAcceptableImageUrl(first.url)) {
+          toast({
+            title: 'خطا در دریافت آدرس تصویر',
+            description: 'آدرس بازگشتی از سرور خالی یا نامعتبر است.',
+            variant: 'destructive',
+          });
+          return;
+        }
         setPending({
           url: first.url,
           width: typeof first.width === 'number' ? first.width : null,

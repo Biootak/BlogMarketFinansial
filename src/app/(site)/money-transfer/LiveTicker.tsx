@@ -13,6 +13,7 @@
  * 2026-07-05: built new. Previously: none.
  */
 
+import { useEffect, useState } from 'react';
 import type { ExchangeRateData } from '@/types/types';
 
 interface TickerItem {
@@ -73,6 +74,33 @@ function buildItems(rates: ExchangeRateData[]): TickerItem[] {
 export default function LiveTicker({ rates }: { rates: ExchangeRateData[] }) {
   const items = buildItems(rates);
 
+  // Simulate live rate fluctuations (visual only — no data mutation)
+  const [flashing, setFlashing] = useState<Record<number, 'up' | 'down'>>({});
+
+  useEffect(() => {
+    if (items.length === 0) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const clearFlash = (idx: number) => {
+      setTimeout(() => {
+        setFlashing((prev) => {
+          const next = { ...prev };
+          delete next[idx];
+          return next;
+        });
+      }, 800);
+    };
+    const tick = () => {
+      const idx = Math.floor(Math.random() * items.length);
+      const dir = Math.random() > 0.5 ? 'up' : 'down';
+      setFlashing((prev) => ({ ...prev, [idx]: dir }));
+      clearFlash(idx);
+      const nextDelay = 2000 + Math.random() * 3000;
+      timer = setTimeout(tick, nextDelay);
+    };
+    timer = setTimeout(tick, 1200);
+    return () => clearTimeout(timer);
+  }, [items.length]);
+
   // Duplicate items for seamless loop (the CSS animation translates -50%)
   const looped = items.length > 0 ? [...items, ...items] : [];
 
@@ -89,8 +117,11 @@ export default function LiveTicker({ rates }: { rates: ExchangeRateData[] }) {
         </div>
       ) : (
         <div className="mt-ticker__track">
-          {looped.map((item, i) => (
-            <div className="mt-ticker__item" key={`${item.code}-${i}`}>
+          {looped.map((item, i) => {
+            const flashDir = flashing[i % items.length];
+            const flashClass = flashDir === 'up' ? 'mt-flash-up' : flashDir === 'down' ? 'mt-flash-down' : '';
+            return (
+            <div className={`mt-ticker__item ${flashClass}`} key={`${item.code}-${i}`}>
               <span className="mt-ticker__pair">
                 {item.code}
                 <span className="text-[0.65rem] font-normal opacity-70">
@@ -111,7 +142,8 @@ export default function LiveTicker({ rates }: { rates: ExchangeRateData[] }) {
               </span>
               <span className="mt-ticker__sep" aria-hidden />
             </div>
-          ))}
+          );
+          })}
         </div>
       )}
     </div>

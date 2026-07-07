@@ -254,7 +254,7 @@ export default function HeroConverter({
              ============================================================= */}
           <div className="mt-hero__copy">
             {/* Live indicator + provider count */}
-            <div className="mt-hero__live" aria-label="نرخ‌های real-time">
+            <div className="mt-hero__live mt-fade-up mt-fade-up-d1" aria-label="نرخ‌های real-time">
               <span className="mt-hero__live-dot" aria-hidden />
               <span className="mt-hero__live-text">
                 <span className="mt-hero__live-count">{providersLabel}</span>
@@ -263,13 +263,13 @@ export default function HeroConverter({
             </div>
 
             {/* H1 — proof point واقعی به جای کلیشه */}
-            <h1 id="hero-converter-title" className="mt-hero__title">
+            <h1 id="hero-converter-title" className="mt-hero__title mt-fade-up mt-fade-up-d2">
               نرخ لحظه‌ای، از{' '}
               <span className="mt-hero__title-accent">{bestProvider}</span>
             </h1>
 
             {/* Lead — عدد dynamic با fallback امن */}
-            <p className="mt-hero__lead">
+            <p className="mt-hero__lead mt-fade-up mt-fade-up-d3">
               از {bestSpread > 0 ? `${fmtSpreadPct(bestSpread)}٪` : 'کمترین'} اسپرد
               تا تسویه در {hasRates ? 'کمتر از چند دقیقه' : 'سریع‌ترین زمان ممکن'}، در
               {' '}
@@ -308,18 +308,18 @@ export default function HeroConverter({
 
             {/* Stats strip — چهار شاخص data-driven */}
             <dl className="mt-hero__stats" aria-label="شاخص‌های کلیدی">
-              <div className="mt-hero__stat">
+              <div className="mt-hero__stat mt-fade-up mt-fade-up-d1">
                 <dt className="mt-hero__stat-label">صرافی فعال</dt>
                 <dd className="mt-hero__stat-num">{providersLabel}</dd>
               </div>
-              <div className="mt-hero__stat">
+              <div className="mt-hero__stat mt-fade-up mt-fade-up-d2">
                 <dt className="mt-hero__stat-label">میانگین اسپرد</dt>
                 <dd className="mt-hero__stat-num">
                   {fmtSpreadPct(avgSpread)}
                   <span className="mt-hero__stat-num-suffix">٪</span>
                 </dd>
               </div>
-              <div className="mt-hero__stat">
+              <div className="mt-hero__stat mt-fade-up mt-fade-up-d3">
                 <dt className="mt-hero__stat-label">جفت ارزی</dt>
                 <dd className="mt-hero__stat-num">
                   {pairs.length > 0
@@ -327,7 +327,7 @@ export default function HeroConverter({
                     : '—'}
                 </dd>
               </div>
-              <div className="mt-hero__stat">
+              <div className="mt-hero__stat mt-fade-up mt-fade-up-d4">
                 <dt className="mt-hero__stat-label">به‌روزرسانی</dt>
                 <dd className="mt-hero__stat-num mt-hero__stat-num--text">
                   <span className="mt-hero__stat-num-dot" aria-hidden />
@@ -359,7 +359,7 @@ export default function HeroConverter({
             {hasRates ? (
               <form
                 onSubmit={handleSubmit}
-                className="mt-calc"
+                className="mt-calc mt-fade-scale"
                 aria-label="مبدل ارز"
               >
                 <div className="mt-calc__head">

@@ -10,6 +10,7 @@ import LiveTicker from './LiveTicker';
 import TrustStrip from './TrustStrip';
 import FeatureList from './FeatureList';
 import RateComparisonSection from './RateComparisonSection';
+import ScrollReveal from './ScrollReveal';
 import { loadActiveTransferProviders } from '@/lib/money-transfer/providers';
 import {
   buildHeroPairs,
@@ -205,39 +206,53 @@ export default async function MoneyTransferPage() {
       <div className="container py-6 sm:py-10 lg:py-14 space-y-10 sm:space-y-16 px-4 sm:px-6">
         {/* Provider Comparison — real-time quotes from TGJU/USDT/FX × Wise/Remitly/etc.
             Single most important decision-support section after the converter. */}
-        <section aria-labelledby="mt-compare-title">
-          <RateComparisonSection />
-        </section>
+        <ScrollReveal>
+          <section aria-labelledby="mt-compare-title">
+            <RateComparisonSection />
+          </section>
+        </ScrollReveal>
 
         {/* Trust Strip — company-wide numeric metrics */}
-        <section aria-label="اعتمادسازی">
-          <TrustStrip />
-        </section>
+        <ScrollReveal>
+          <section aria-label="اعتمادسازی">
+            <TrustStrip />
+          </section>
+        </ScrollReveal>
 
         {/* Exchange Rates Section */}
-        <section id="rates" className="mt-section">
-          <ExchangeRateTableView exchangeRates={market.rates} />
-        </section>
+        <ScrollReveal>
+          <section id="rates" className="mt-section">
+            <ExchangeRateTableView exchangeRates={market.rates} />
+          </section>
+        </ScrollReveal>
 
         {/* Rate Lists Section */}
-        <section className="mt-section">
-          <RateListGrid rateLists={activeRateLists} initialCount={10} />
-        </section>
+        <ScrollReveal>
+          <section className="mt-section">
+            <RateListGrid rateLists={activeRateLists} initialCount={10} />
+          </section>
+        </ScrollReveal>
 
         {/* Contact CTA Section */}
-        <section id="contact">
-          <ContactCTA defaultServiceType="INTERNATIONAL_TRANSFER" />
-        </section>
+        <ScrollReveal>
+          <section id="contact">
+            <ContactCTA defaultServiceType="INTERNATIONAL_TRANSFER" />
+          </section>
+        </ScrollReveal>
 
         {/* Services Section */}
-        <section id="services" className="mt-section">
-          <FeatureList />
-        </section>
+        <ScrollReveal>
+          <section id="services" className="mt-section">
+            <FeatureList />
+          </section>
+        </ScrollReveal>
 
         {/* FAQ Section */}
-        <section id="faq" className="mt-section">
-          <FAQ />
-        </section>
+        <ScrollReveal>
+          <section id="faq" className="mt-section">
+            <FAQ />
+          </section>
+        </ScrollReveal>
       </div>
     </div>
   );

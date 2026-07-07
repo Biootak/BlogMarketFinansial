@@ -485,7 +485,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                       aria-label={`در حال آپلود ${entry.file.name}`}
                     >
                       <RiUploadCloud2Line className="animate-pulse" size={18} />
-                      <span>{entry.progress}%</span>
+                      <span>
+                        {entry.progress >= 100 ? 'در حال پردازش...' : `${entry.progress}%`}
+                      </span>
                     </div>
                   )}
 

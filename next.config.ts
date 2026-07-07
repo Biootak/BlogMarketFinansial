@@ -321,7 +321,21 @@ const nextConfig: NextConfig = {
     keepAlive: true,
   },
 
-  transpilePackages: ['@aws-sdk/client-s3', '@aws-sdk/s3-request-presigner', 'framer-motion'],
+  // 2026-07-07: `next-auth` beta.25 imports `next/server` without the `.js`
+  // extension. When Turbopack externalizes the package, Node's ESM loader
+  // cannot resolve the bare specifier and throws ERR_MODULE_NOT_FOUND.
+  // Bundling it via `transpilePackages` lets Turbopack resolve the import
+  // through Next.js's package exports instead.
+  // NOTE: keep `@auth/prisma-adapter` external — it has no `next/*` imports
+  // and externalizing avoids duplicate @auth/core instances.
+  serverExternalPackages: ['@auth/prisma-adapter'],
+
+  transpilePackages: [
+    'next-auth',
+    '@aws-sdk/client-s3',
+    '@aws-sdk/s3-request-presigner',
+    'framer-motion',
+  ],
 
   // 2026-06-25: cssnano-simple crashes on `@property` at-rules and OKLCH
   // color tokens in globals.css. This webpack config block is only used

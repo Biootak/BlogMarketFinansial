@@ -246,6 +246,12 @@ interface FileFailure {
 type FileOutcome = FileSuccess | FileFailure;
 
 async function processOneFile(file: File, folder: AllowedFolder): Promise<FileOutcome> {
+  const startMs = performance.now();
+  const logStep = (label: string) => {
+    // eslint-disable-next-line no-console
+    console.log(`[upload] ${label}: ${(performance.now() - startMs).toFixed(1)}ms`);
+  };
+
   if (!ALLOWED_TYPES.includes(file.type as AllowedMime)) {
     return {
       ok: false,
@@ -266,6 +272,7 @@ async function processOneFile(file: File, folder: AllowedFolder): Promise<FileOu
 
   const mime = file.type as AllowedMime;
   const buffer = Buffer.from(await file.arrayBuffer());
+  logStep('received');
 
   if (!validateFileSignature(buffer, mime)) {
     return {
@@ -287,12 +294,14 @@ async function processOneFile(file: File, folder: AllowedFolder): Promise<FileOu
 
   try {
     const optimized = await processImage(buffer, mime);
+    logStep('processed');
     const filename = generateFilename(file.name, mime);
 
     const stored = await uploadFile(optimized.buffer, filename, folder, optimized.mime, {
       width: optimized.width,
       height: optimized.height,
     });
+    logStep('stored');
 
     return {
       ok: true,

@@ -34,6 +34,12 @@ const s3Client = new S3Client({
   maxAttempts: 1,
   requestHandler: {
     requestTimeout: 2000,
+    // 2026-07-07: hard ceiling on establishing the TCP/TLS connection.
+    // Without this, an unreachable S3 endpoint (wrong URL, DNS blackout,
+    // network down) can hang the upload request for minutes while the OS
+    // connection timeout runs. The requestTimeout above only covers the
+    // period *after* the connection is established.
+    connectionTimeout: 3000,
   },
 });
 
