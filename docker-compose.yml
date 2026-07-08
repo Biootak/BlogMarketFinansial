@@ -10,6 +10,13 @@
 #   1) cp .env.example .env  → مقادیر واقعی را پر کن (DATABASE_URL, NEXTAUTH_URL, CRON_SECRET)
 #   2) docker compose up -d --build
 #
+# رانتایم سبک (۲۰۲۶): به‌جای Docker Desktop از Podman استفاده می‌شود.
+# Podman دیمِن سنگین ندارد و از همین فایل compose پشتیبانی می‌کند.
+# نصب:  winget install -e --id RedHat.Podman
+# بعد از هر بوت (یک‌بار):  podman machine start
+# سوکت Podman روی npipe:////./pipe/docker_engine باز می‌شود و چون DOCKER_HOST
+# ست شده، خودِ دستورات docker compose زیر مستقیماً به Podman وصل می‌شوند.
+#
 # دستورات:
 #   docker compose ps               # وضعیت
 #   docker compose logs -f web      # لاگ اپ
@@ -32,6 +39,9 @@ services:
       # در production حتماً APP_URL و NEXTAUTH_URL با دامنه‌ی واقعی ست شود
       - NODE_ENV=production
       - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+      # در کانتینر، دیتابیس با hostname «db» در دسترس است (نه localhost)
+      - DATABASE_URL=postgresql://blog_owner:${POSTGRES_PASSWORD}@db:5432/blog?sslmode=disable
+      - DIRECT_URL=postgresql://blog_owner:${POSTGRES_PASSWORD}@db:5432/blog?sslmode=disable
     volumes:
       # آپلودها بیرون از image نگه داشته می‌شوند تا با redeploy پاک نشوند
       - uploads_data:/app/public/uploads

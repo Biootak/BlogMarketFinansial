@@ -24,13 +24,13 @@ RUN for i in 1 2 3; do \
     if [ -f yarn.lock ]; then \
       yarn --frozen-lockfile || continue; \
     elif [ -f package-lock.json ]; then \
-      npm ci || continue; \
+      npm install --no-audit --no-fund || continue; \
     elif [ -f pnpm-lock.yaml ]; then \
       yarn global add pnpm && pnpm i --frozen-lockfile || continue; \
     else \
       echo "Lockfile not found." && exit 1; \
     fi && break; \
-    done
+    done || (echo "Dependency install failed after retries" && exit 1)
 
 # Generate Prisma Client with retries and specific engine download
 RUN mkdir -p node_modules/.prisma/client && \
@@ -42,6 +42,11 @@ RUN mkdir -p node_modules/.prisma/client && \
 # Rebuild the source code only when needed
 FROM registry.docker.ir/node:20-alpine AS builder
 WORKDIR /app
+# Build-time DB connection: passed via --build-arg so prerendering can
+# reach the (already running) database. At runtime the compose env_file
+# overrides this with the in-cluster `db` hostname.
+ARG DATABASE_URL
+ENV DATABASE_URL=$DATABASE_URL
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 

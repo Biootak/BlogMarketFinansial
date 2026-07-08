@@ -1015,6 +1015,45 @@ async function seedAccounts(users) {
   console.log(`   ✅ ${added} اکانت OAuth`);
 }
 
+/* ─── 20b) Tasks (وظایف کاربران) ────────────────────────────── */
+async function seedTasks(users) {
+  const existingCount = await p.task.count();
+  if (existingCount >= 10) { console.log('   ⏭️  Tasks قبلاً ایجاد شده (' + existingCount + ' عدد)'); return; }
+  const titles = [
+    'بازبینی مقاله بیت‌کوین',
+    'به‌روزرسانی نرخ‌های طلا',
+    'پاسخ به تیکت پشتیبانی',
+    'آماده‌سازی خبرنامه هفتگی',
+    'بررسی کامنت‌های تایید نشده',
+    'بهینه‌سازی تصاویر بنر',
+    'نوشتن یادداشت تحلیل بورس',
+    'همگام‌سازی داده‌های بازار',
+    'چک کردن وضعیت سرور',
+    'تدوین محتوای شبکه‌های اجتماعی',
+  ];
+  const statuses = ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'];
+  const priorities = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
+  let added = 0;
+  for (let i = 0; i < titles.length; i++) {
+    const owner = users[i % users.length];
+    const exists = await p.task.findFirst({ where: { title: titles[i], userId: owner.id } });
+    if (exists) continue;
+    await p.task.create({
+      data: {
+        title: titles[i],
+        description: 'وظیفه نمونه برای تست داشبورد کاربران',
+        status: pick(statuses),
+        priority: pick(priorities),
+        dueDate: daysAgo(-rand(1, 20)),
+        userId: owner.id,
+        createdAt: daysAgo(rand(1, 30)),
+      },
+    });
+    added++;
+  }
+  console.log(`   ✅ ${added} وظیفه`);
+}
+
 /* ─── 50 Posts Data (shared) ────────────────────────────────── */
 const POSTS_DATA = require('./posts-data.js');
 
@@ -1089,6 +1128,9 @@ async function main() {
   console.log('\n2️⃣0️⃣  Accounts:');
   await seedAccounts(users);
 
+  console.log('\n2️⃣0️⃣b  Tasks:');
+  await seedTasks(users);
+
   console.log('\n2️⃣1️⃣  ExchangeRates:');
   await seedExchangeRates();
 
@@ -1119,6 +1161,7 @@ async function main() {
     pageViews: await p.pageView.count(),
     currencyPatterns: await p.currencyPattern.count(),
     accounts: await p.account.count(),
+    tasks: await p.task.count(),
     transferProviders: await p.transferProvider.count(),
   };
   console.log('\n' + '═'.repeat(50));
