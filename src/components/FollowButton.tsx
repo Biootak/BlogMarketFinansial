@@ -13,7 +13,7 @@ const FollowButton: FC<FollowButtonProps> = ({
   className,
   sizeClass,
   fontSize,
-  isFollowing = Math.random() > 0.5,
+  isFollowing = false,
 }) => {
   const [following, setFollowing] = React.useState(isFollowing);
 

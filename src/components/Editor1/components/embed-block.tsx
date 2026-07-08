@@ -6,8 +6,14 @@ import type { NodeViewProps } from '@tiptap/core';
 import { type EmbedProvider, getEmbedUrl } from '../extensions/embed';
 import { Loader2, AlertCircle, RefreshCw, ExternalLink, Play, Film, Twitter, Link as LinkIcon, type LucideIcon } from 'lucide-react';
 
+// 2026-07-08 (C6): only render links to http(s) destinations. A stored
+// `javascript:`/`data:` `src` would execute on click otherwise.
+const isSafeEmbedSrc = (value: string | undefined): value is string =>
+  typeof value === 'string' && /^https?:\/\//i.test(value);
+
 const EmbedBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, selected }) => {
   const { src, provider, embedId, width, height } = node.attrs;
+  const safeSrc = isSafeEmbedSrc(src) ? src : '#';
   const [isResizing, setIsResizing] = useState(false);
   const [currentHeight, setCurrentHeight] = useState(height);
   const [isLoading, setIsLoading] = useState(true);
@@ -147,7 +153,7 @@ const EmbedBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, s
               </div>
             )}
             <blockquote className="twitter-tweet" data-theme="light">
-              <a href={src}>Loading tweet...</a>
+              <a href={safeSrc}>Loading tweet...</a>
             </blockquote>
           </div>
         );
@@ -158,7 +164,7 @@ const EmbedBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, s
               <ExternalLink className="w-6 h-6 text-gray-500" />
             </div>
             <a 
-              href={src} 
+              href={safeSrc} 
               target="_blank" 
               rel="noopener noreferrer" 
               className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium hover:underline inline-flex items-center gap-2"
@@ -218,7 +224,7 @@ const EmbedBlock: React.FC<NodeViewProps> = ({ node, updateAttributes, editor, s
       {/* Open in new tab button — anchored to inline-end */}
       {src && (
         <a
-          href={src}
+          href={safeSrc}
           target="_blank"
           rel="noopener noreferrer"
           className="absolute top-3 end-3 p-2 bg-black/60 hover:bg-black/80 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all backdrop-blur-sm"

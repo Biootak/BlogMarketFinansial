@@ -1,6 +1,7 @@
 'use server';
 
 import prisma from "@/lib/db";
+import { requireAdmin } from "@/lib/require-auth";
 
 export type PatternType = 'currency' | 'format' | 'prefix' | 'suffix' | 'separator' | 'multiplier';
 
@@ -81,6 +82,11 @@ export async function loadPatternsFromDB(retryCount = 0) {
 // ذخیره الگوی جدید در دیتابیس با تلاش مجدد
 export async function savePatternToDB(type: PatternType, pattern: string, value?: number, retryCount = 0) {
   try {
+    // 2026-07-08 (H8): these are DB writes exposed as server actions — gate
+    // them behind ADMIN. Without this, any caller could overwrite patterns.
+    const auth = await requireAdmin();
+    if (!auth.success) return false;
+
     await prisma.currencyPattern.upsert({
       where: {
         type_pattern: {
@@ -118,6 +124,10 @@ export async function savePatternsGroupToDB(patterns: {
   multipliers?: Map<string, number>;
 }, retryCount = 0) {
   try {
+    // 2026-07-08 (H8): gate the bulk write behind ADMIN.
+    const auth = await requireAdmin();
+    if (!auth.success) return false;
+
     let successCount = 0;
     let failureCount = 0;
 

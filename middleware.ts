@@ -216,17 +216,17 @@ export const config = {
   // archive, single, author, etc. request — even though the home
   // and archive pages don't need auth at all.
   //
-  // New matcher: only paths that start with /dashboard, /api, or
-  // /signin|/signup etc. (auth routes) get the middleware. Public
-  // marketing pages skip the JWT decode entirely.
+  // 2026-07-08 (C1 fix): every /api/* route self-enforces auth + role via
+  // its own `auth()` check (verified across all route handlers), so the
+  // middleware no longer runs on /api at all. This avoids the previous
+  // default-deny allowlist which (a) was fully bypassed by the bogus
+  // `/[[...slug]]` public entry and (b) would over-block ADMIN/AUTHOR on
+  // self-gated routes once that entry was removed. The middleware now
+  // only guards the dashboard (role-based) and the auth routes.
   //
-  // Excludes: /api/pageview (hot path, has its own rate limit),
-  // /api/public/* (no auth needed), /api/auth/* (NextAuth),
-  // /api/uploads/* (file serving), /uploads/* (file rewrite),
-  // /_next/* and files with extensions.
+  // The matcher deliberately does NOT include /api — see note above.
   matcher: [
     '/dashboard/:path*',
-    '/api/((?!pageview|public|auth|uploads).*)',
     '/signin',
     '/signup',
     '/verify-request',

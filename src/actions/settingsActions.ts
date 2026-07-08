@@ -22,14 +22,55 @@ export interface SystemSettingsData {
 }
 
 // Get system settings
+// 2026-07-08 (C2): gate with requireSuperAdmin and NEVER return the SMTP
+// password (secret). Callers that need to know whether a password is set
+// can check `hasSmtpPassword` instead of the raw value.
 export async function getSystemSettings() {
   try {
-    let settings = await prisma.systemSettings.findFirst();
+    const authCheck = await requireSuperAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
+
+    const settings = await prisma.systemSettings.findFirst({
+      select: {
+        id: true,
+        siteName: true,
+        siteDescription: true,
+        logoUrl: true,
+        maintenanceMode: true,
+        cacheEnabled: true,
+        smtpServer: true,
+        smtpPort: true,
+        smtpUsername: true,
+        telegram: true,
+        instagram: true,
+        whatsapp: true,
+        twitter: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
 
     if (!settings) {
-      settings = await prisma.systemSettings.create({
-        data: {},
-      });
+      return {
+        success: true,
+        data: {
+          id: '',
+          siteName: '',
+          siteDescription: '',
+          logoUrl: null,
+          maintenanceMode: false,
+          cacheEnabled: true,
+          smtpServer: '',
+          smtpPort: '',
+          smtpUsername: '',
+          telegram: '',
+          instagram: '',
+          whatsapp: '',
+          twitter: '',
+          createdAt: null,
+          updatedAt: null,
+        },
+      };
     }
 
     return { success: true, data: settings };
@@ -93,6 +134,12 @@ export async function updateEmailSettings(data: {
     if (!authCheck.success) return authFailureToActionResult(authCheck);
     let settings = await prisma.systemSettings.findFirst();
 
+    // Only write smtpPassword when a new, non-empty value is supplied.
+    // getSystemSettings no longer returns the stored secret, so the form
+    // cannot prefill it — an empty field must mean "keep the existing
+    // password" rather than overwriting it with an empty string.
+    const smtpPassword = data.smtpPassword ? data.smtpPassword : undefined;
+
     if (settings) {
       settings = await prisma.systemSettings.update({
         where: { id: settings.id },
@@ -100,7 +147,7 @@ export async function updateEmailSettings(data: {
           smtpServer: data.smtpServer,
           smtpPort: data.smtpPort,
           smtpUsername: data.smtpUsername,
-          smtpPassword: data.smtpPassword,
+          ...(smtpPassword ? { smtpPassword } : {}),
         },
       });
     } else {
@@ -109,7 +156,7 @@ export async function updateEmailSettings(data: {
           smtpServer: data.smtpServer,
           smtpPort: data.smtpPort,
           smtpUsername: data.smtpUsername,
-          smtpPassword: data.smtpPassword,
+          ...(smtpPassword ? { smtpPassword } : {}),
         },
       });
     }

@@ -1,4 +1,4 @@
-import { Link as BaseLink } from '@tiptap/extension-link';
+import { Link as BaseLink, type LinkOptions } from '@tiptap/extension-link';
 import { markInputRule } from '@tiptap/core';
 
 const extractHrefFromMatch = (match: any) => {
@@ -20,6 +20,22 @@ export const extractHrefFromMarkdownLink = (match: any) => {
 export const Link = BaseLink.extend({
   inclusive: false,
 
+  // 2026-07-08 (C5): reject dangerous URI schemes. TipTap's schema keeps
+  // `href` verbatim, so a pasted/inserted `javascript:` link would survive
+  // into stored content and execute on click. Constrain to safe schemes.
+  addOptions() {
+    return {
+      ...this.parent?.(),
+      protocols: [
+        { scheme: 'http' },
+        { scheme: 'https' },
+        { scheme: 'mailto' },
+        { scheme: 'tel' },
+      ],
+      validate: (href: string) => /^(https?:|mailto:|tel:)/i.test(href),
+    } as LinkOptions;
+  },
+
   addInputRules() {
     const urlSyntaxRegExp =
       //@ts-ignore
@@ -29,10 +45,10 @@ export const Link = BaseLink.extend({
       markInputRule({
         find: urlSyntaxRegExp,
         type: this.type,
-        getAttributes: extractHrefFromMatch
-      })
+        getAttributes: extractHrefFromMatch,
+      }),
     ];
-  }
+  },
 });
 
 export default Link;

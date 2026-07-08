@@ -1,12 +1,11 @@
 'use server';
 
 import { checkExistingSuperAdmin } from '@/lib/auth';
-import { PrismaClient, Role } from '@prisma/client';
+import prisma from '@/lib/db';
+import { Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { headers } from 'next/headers';
 import { z } from 'zod';
-
-const prisma = new PrismaClient();
 
 // اعتبارسنجی قوی‌تر با zod
 const superAdminSchema = z.object({

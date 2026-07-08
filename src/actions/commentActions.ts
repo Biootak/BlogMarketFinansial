@@ -41,7 +41,6 @@ export async function addComment(
           select: {
             id: true,
             name: true,
-            email: true,
             role: true,
             profile: true,
             image: true,
@@ -191,7 +190,6 @@ export async function editComment(
           select: {
             id: true,
             name: true,
-            email: true,
             role: true,
             profile: true,
             image: true,

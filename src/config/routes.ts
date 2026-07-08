@@ -122,7 +122,6 @@ export const publicRoutes = [
   '/_next/image',
   '/assets',
   '/assets/[...path]',
-  '/[[...slug]]',
   '/_not-found',
 ];
 

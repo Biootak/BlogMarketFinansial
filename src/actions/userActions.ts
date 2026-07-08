@@ -88,11 +88,14 @@ export async function getUsers({
       prisma.user.count({ where }),
     ]);
 
+    // Never serialize the password hash to the client.
+    const safeUsers = users.map(({ password: _password, ...rest }) => rest);
+
     return {
       success: true,
       message: 'کاربران با موفقیت بازیابی شدند.',
       data: {
-        users,
+        users: safeUsers,
         totalCount,
       },
     };
@@ -152,10 +155,13 @@ export async function createUser(data: CreateUserData): Promise<ActionResult<Use
     // ثبت فعالیت
     await logActivity('ایجاد کاربر', `کاربر "${newUser.name || newUser.email}" با نقش "${data.role}" ایجاد شد`);
 
+    // Never serialize the password hash to the client.
+    const { password: _password, ...newUserSafe } = newUser;
+
     return {
       success: true,
       message: 'کاربر با موفقیت ایجاد شد.',
-      data: newUser,
+      data: newUserSafe,
     };
   } catch (error) {
     console.error('خطا در ایجاد کاربر:', error);
@@ -220,10 +226,13 @@ export async function updateUser(
     // ثبت فعالیت
     await logActivity('ویرایش کاربر', `کاربر "${updatedUser.name || updatedUser.email}" ویرایش شد`);
 
+    // Never serialize the password hash to the client.
+    const { password: _password, ...updatedUserSafe } = updatedUser;
+
     return {
       success: true,
       message: 'کاربر با موفقیت به‌روزرسانی شد.',
-      data: updatedUser,
+      data: updatedUserSafe,
     };
   } catch (error) {
     console.error('خطا در به‌روزرسانی کاربر:', error);

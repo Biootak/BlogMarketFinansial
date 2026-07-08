@@ -120,7 +120,7 @@ export type CommentWithCustomRelations = Prisma.CommentGetPayload<{
       select: {
         id: true;
         name: true;
-        email: true;
+        email: false;
         role: true;
         image: true;
         profile: true;

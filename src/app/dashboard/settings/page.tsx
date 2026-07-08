@@ -176,7 +176,7 @@ export default function SettingsPage() {
           setFormData((prev) => ({
             ...prev,
             general: { ...prev.general, siteTitle: data.siteName || '', siteDescription: data.siteDescription || '', logoUrl: data.logoUrl || '' },
-            email: { ...prev.email, smtpServer: data.smtpServer || '', smtpPort: data.smtpPort || '', smtpUsername: data.smtpUsername || '', smtpPassword: data.smtpPassword || '' },
+            email: { ...prev.email, smtpServer: data.smtpServer || '', smtpPort: data.smtpPort || '', smtpUsername: data.smtpUsername || '' },
             social: { ...prev.social, instagram: data.instagram || '', telegram: data.telegram || '', twitter: data.twitter || '', whatsapp: data.whatsapp || '' },
             advanced: { ...prev.advanced, cacheEnabled: data.cacheEnabled ?? true },
           }));
