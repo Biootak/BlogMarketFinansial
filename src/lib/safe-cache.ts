@@ -36,6 +36,13 @@ interface CacheEntry<T> {
 const MAX_CACHE_ENTRIES = Number(process.env.SAFE_CACHE_MAX_ENTRIES) || 1000;
 const memoryStore = new Map<string, CacheEntry<unknown>>();
 
+// 2026-07-08: map tag -> set of safeCache base keys, so a cache
+// invalidation (safeRevalidateTag) can purge the in-memory slots that
+// listen on a given tag. Previously safeCache tags were inert — revalidateTag
+// only busted unstable_cache, leaving safeCache entries stale up to their TTL
+// (e.g. sidebar stayed stale 1h after a publish). See H5.
+const tagRegistry = new Map<string, Set<string>>();
+
 function evictIfNeeded(): void {
   while (memoryStore.size > MAX_CACHE_ENTRIES) {
     const oldestKey = memoryStore.keys().next().value;
@@ -73,6 +80,13 @@ export function safeCache<TArgs extends unknown[], T>(
   options: SafeCacheOptions,
 ): (...args: TArgs) => Promise<T> {
   const { key: baseKey, ttl, tags = [] } = options;
+
+  // 2026-07-08: register this slot under each of its tags so
+  // safeRevalidateTag(tag) can purge it on demand.
+  for (const tag of tags) {
+    if (!tagRegistry.has(tag)) tagRegistry.set(tag, new Set());
+    tagRegistry.get(tag)!.add(baseKey);
+  }
 
   return async (...args: TArgs): Promise<T> => {
     // Use `performance.now()` (a monotonic timer, ms since process start)
@@ -125,6 +139,24 @@ export function safeCache<TArgs extends unknown[], T>(
  */
 export function safeRevalidate(key: string): void {
   memoryStore.delete(key);
+}
+
+/**
+ * 2026-07-08: purge every in-memory safeCache slot listening on `tag`.
+ * Tags are registered by safeCache() above. Used by cacheActions so that
+ * Next's revalidateTag (unstable_cache) and the in-memory safeCache stay
+ * in sync after mutations (H5).
+ */
+export function safeRevalidateTag(tag: string): void {
+  const keys = tagRegistry.get(tag);
+  if (!keys) return;
+  for (const baseKey of [...keys]) {
+    for (const fullKey of [...memoryStore.keys()]) {
+      if (fullKey === baseKey || fullKey.startsWith(`${baseKey}${ARG_SEPARATOR}`)) {
+        memoryStore.delete(fullKey);
+      }
+    }
+  }
 }
 
 /**

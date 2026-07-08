@@ -166,7 +166,7 @@ model Profile {
   jobName       String?
   company       String?
   userId        String  @unique
-  user          User    @relation(fields: [userId], references: [id])
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Post {
@@ -193,7 +193,7 @@ model Post {
   // استفاده می‌کند؛ اگر null باشد، `createdAt` جایگزین می‌شود.
   scheduledAt         DateTime?
 
-  author     User        @relation(fields: [authorId], references: [id])
+  author     User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
   comments   Comment[]
   categories Category[]
   tags       Tag[]
@@ -227,7 +227,7 @@ model Post {
 model View {
   id        String  @id @default(cuid())
   postId    String
-  post      Post    @relation(fields: [postId], references: [id])
+  post      Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
   ip        String?
   userAgent String?
 
@@ -246,8 +246,8 @@ model Comment {
   parentId String?
   approved Boolean @default(false)
 
-  post    Post      @relation(fields: [postId], references: [id])
-  author  User      @relation(fields: [authorId], references: [id])
+  post    Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author  User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
   parent  Comment?  @relation("CommentToComment", fields: [parentId], references: [id])
   replies Comment[] @relation("CommentToComment")
   likes   Like[]
@@ -271,9 +271,9 @@ model Like {
   postId    String?
   commentId String?
 
-  user    User     @relation(fields: [userId], references: [id])
-  post    Post?    @relation(fields: [postId], references: [id])
-  comment Comment? @relation(fields: [commentId], references: [id])
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post    Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
@@ -321,8 +321,8 @@ model SavedPost {
   userId String
   postId String
 
-  user User @relation(fields: [userId], references: [id])
-  post Post @relation(fields: [postId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
@@ -336,14 +336,10 @@ model Notification {
   id        Int      @id @default(autoincrement())
   message   String
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 
-  // 2026-06-14: notification dropdowns always do
-  // `findMany({ where: { userId }, orderBy: { createdAt: 'desc' }, take })`.
-  // Without this index the planner had to seq-scan the whole table
-  // and sort. The composite covers both the filter and the order.
-  @@index([userId, createdAt(sort: Desc)])
+  @@index([createdAt])
 }
 
 model Advertisement {
@@ -486,7 +482,7 @@ model ActivityLog {
   action    String
   details   String
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // 2026-06-28: composite index for user-scoped activity feeds sorted by time.
   // Replaces separate indexes; covers userId filters + createdAt ordering.
@@ -496,7 +492,7 @@ model ActivityLog {
 model Activity {
   id        String   @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   action    String
   details   String
   createdAt DateTime @default(now())
@@ -647,7 +643,7 @@ model Task {
   priority    TaskPriority @default(MEDIUM)
   dueDate     DateTime?
   userId      String
-  user        User         @relation(fields: [userId], references: [id])
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 

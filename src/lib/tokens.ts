@@ -230,3 +230,62 @@ export async function consumePasswordResetToken(args: {
   }
   return { ok: false, reason: 'not-found' };
 }
+
+// 2026-07-08: P0 fix for the `after_otp` auth bypass. After a successful OTP
+// verify, verifyOtp mints a single-use, short-lived login token (intent='login')
+// and hands it to the credentials signIn call. authorize() then consumes it, so
+// a public caller cannot reach the session gate with kind=after_otp + a verified
+// email alone — they would need this server-issued token, which is only created
+// after a real OTP is consumed.
+export const LOGIN_TOKEN_EXPIRES_MS = 2 * 60 * 1000;
+
+export async function generateLoginToken(email: string): Promise<{
+  token: string;
+  expiresAt: Date;
+}> {
+  const normalizedEmail = email.trim().toLowerCase();
+  await prisma.verificationToken.deleteMany({
+    where: { email: normalizedEmail, intent: 'login' },
+  });
+  const token = generateResetSecret();
+  const expiresAt = new Date(Date.now() + LOGIN_TOKEN_EXPIRES_MS);
+  await prisma.verificationToken.create({
+    data: {
+      email: normalizedEmail,
+      token,
+      intent: 'login',
+      expires: expiresAt,
+      attempts: 0,
+    },
+  });
+  return { token, expiresAt };
+}
+
+export type ConsumeLoginResult = { ok: true } | { ok: false; reason: 'not-found' | 'expired' };
+
+export async function consumeLoginToken(args: {
+  email: string;
+  token: string;
+}): Promise<ConsumeLoginResult> {
+  const normalizedEmail = args.email.trim().toLowerCase();
+  const deleted = await prisma.verificationToken.deleteMany({
+    where: {
+      email: normalizedEmail,
+      intent: 'login',
+      token: args.token,
+      expires: { gt: new Date() },
+    },
+  });
+  if (deleted.count > 0) return { ok: true };
+  const exists = await prisma.verificationToken.findFirst({
+    where: { email: normalizedEmail, intent: 'login' },
+    select: { expires: true },
+  });
+  if (exists && exists.expires.getTime() <= Date.now()) {
+    await prisma.verificationToken.deleteMany({
+      where: { email: normalizedEmail, intent: 'login' },
+    });
+    return { ok: false, reason: 'expired' };
+  }
+  return { ok: false, reason: 'not-found' };
+}

@@ -16,9 +16,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'دسترسی غیرمجاز' }, { status: 403 });
     }
 
-    const { from, to } = await req.json();
-    
-    const result = await getSystemReports(new Date(from), new Date(to));
+    const body = await req.json();
+    const { from, to } = body as { from?: unknown; to?: unknown };
+    // 2026-07-08: validate dates — `new Date('garbage')` produced Invalid Date
+    // and an uncaught 500 (cheap DoS). Also sanitize the filename to block
+    // header/CRLF injection (H10).
+    const fromDate = typeof from === 'string' ? new Date(from) : null;
+    const toDate = typeof to === 'string' ? new Date(to) : null;
+    if (
+      !fromDate ||
+      !toDate ||
+      Number.isNaN(fromDate.getTime()) ||
+      Number.isNaN(toDate.getTime())
+    ) {
+      return NextResponse.json({ error: 'تاریخ نامعتبر است' }, { status: 400 });
+    }
+
+    const result = await getSystemReports(fromDate, toDate);
     
     if (!result.success) {
       return NextResponse.json({ error: result.message }, { status: 400 });
@@ -75,7 +89,7 @@ export async function POST(req: Request) {
     return new NextResponse(buffer, {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'Content-Disposition': `attachment; filename=system-report-${from}-to-${to}.xlsx`,
+        'Content-Disposition': `attachment; filename="system-report-${encodeURIComponent(String(from))}-to-${encodeURIComponent(String(to))}.xlsx"`,
       },
     });
   } catch (error) {

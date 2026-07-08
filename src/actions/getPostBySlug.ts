@@ -4,6 +4,11 @@ import { cache } from 'react';
 import prisma from '@/lib/db';
 import type { ActionResult, PostWithRelations } from '@/types/types';
 
+// 2026-07-08: public read must only return published posts so drafts,
+// scheduled and pending posts are never exposed by slug (defense-in-depth;
+// the primary public loader in postActions already filters PUBLISHED).
+const PUBLIC_POST_STATUS = 'PUBLISHED' as const;
+
 export const getPostBySlug = cache(
   async (slug: string): Promise<ActionResult<PostWithRelations>> => {
     if (!slug) {
@@ -20,7 +25,7 @@ export const getPostBySlug = cache(
       // _count + a small author projection. Saves an unbounded
       // recursive walk and 2 N+1s per post load.
       const post = await prisma.post.findUnique({
-        where: { slug },
+        where: { slug, status: PUBLIC_POST_STATUS },
         select: {
           id: true,
           title: true,

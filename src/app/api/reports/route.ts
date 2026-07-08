@@ -13,6 +13,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 2026-07-08: system reports expose aggregate user/post data — restrict
+    // to ADMIN/OWNER (H9). The download route already enforces this.
+    const role = (session.user as { role?: string }).role;
+    if (role !== 'ADMIN' && role !== 'OWNER') {
+      return NextResponse.json(
+        { success: false, message: 'دسترسی غیرمجاز' },
+        { status: 403 }
+      );
+    }
+
     // دریافت و تبدیل تاریخ‌ها
     const body = await req.json();
     const fromDate = body.from ? new Date(body.from) : undefined;

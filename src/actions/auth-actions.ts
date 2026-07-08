@@ -27,6 +27,7 @@ import {
   type VerificationEmailIntent,
   consumeOtpToken,
   consumePasswordResetToken,
+  generateLoginToken,
   generateOtpToken,
   generatePasswordResetToken,
   invalidateOtpTokens,
@@ -443,9 +444,14 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
     // need to request a new code, but that's an acceptable cost vs.
     // a half-authenticated session.
     try {
+      // 2026-07-08: mint a single-use login token proving a real OTP was just
+      // consumed, and hand it to the credentials signIn. authorize() consumes it,
+      // closing the after_otp account-takeover bypass (C2).
+      const loginToken = await generateLoginToken(input.email);
       await signIn('credentials', {
         email: input.email,
         kind: 'after_otp',
+        loginToken: loginToken.token,
         intent: input.intent,
         redirect: false,
       });

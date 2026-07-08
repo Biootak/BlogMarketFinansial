@@ -169,6 +169,14 @@ export async function updatePost(
 
     const validatedData = UpdatePostSchema.parse(data);
 
+    // 2026-07-08: mirror createPost — authors must not self-publish or
+    // feature posts. Keep the post's current status; never let an author
+    // move it to PUBLISHED or set isFeatured (H8).
+    if (session.user.role === 'AUTHOR') {
+      delete (validatedData as Record<string, unknown>).status;
+      delete (validatedData as Record<string, unknown>).isFeatured;
+    }
+
     let slug = validatedData.slug;
     if (!slug && validatedData.title) {
       slug = generateSlug(validatedData.title);

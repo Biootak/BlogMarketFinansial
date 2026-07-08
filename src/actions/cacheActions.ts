@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { revalidateTag } from '@/lib/revalidate';
+import { safeRevalidateTag } from '@/lib/safe-cache';
 
 export async function invalidateUserCache(userId: string) {
   revalidateTag(`user-${userId}`);
@@ -38,6 +39,13 @@ export async function invalidateHomePageCache() {
   revalidateTag('popular-posts');
   revalidateTag('gallery-posts');
   revalidateTag('top-authors');
+  // 2026-07-08: also purge the in-memory safeCache slots (H5).
+  safeRevalidateTag('posts');
+  safeRevalidateTag('featured-posts');
+  safeRevalidateTag('latest-posts');
+  safeRevalidateTag('popular-posts');
+  safeRevalidateTag('gallery-posts');
+  safeRevalidateTag('top-authors');
 }
 
 export async function invalidatePostCache(postId: string) {
@@ -56,6 +64,15 @@ export async function invalidateSidebarCache() {
   revalidateTag('sidebar-categories');
   revalidateTag('sidebar-authors');
   revalidateTag('sidebar-ads');
+  // 2026-07-08: also purge the in-memory safeCache slots (H5).
+  safeRevalidateTag('sidebar-data');
+  safeRevalidateTag('sidebar-posts');
+  safeRevalidateTag('sidebar-tags');
+  safeRevalidateTag('sidebar-categories');
+  safeRevalidateTag('sidebar-authors');
+  safeRevalidateTag('sidebar-ads');
+  safeRevalidateTag('top-authors');
+  safeRevalidateTag('rate-lists');
 }
 
 export async function invalidateDashboardCache() {

@@ -123,6 +123,30 @@ async function writeLocal(
 }
 
 /**
+ * 2026-07-08: resolve a local upload target safely. Mirror the sanitization
+ * used by `writeLocal` for reads/deletes so a crafted `folder`/`filename`
+ * (e.g. `../../etc/passwd`) cannot escape LOCAL_UPLOAD_DIR. Previously only
+ * the write path sanitized these inputs, leaving getFile/getFileStream/
+ * deleteFile open to path traversal (H1).
+ */
+function resolveUploadTarget(
+  folder: string,
+  filename: string,
+): { localPath: string; key: string } {
+  const safeFolder = folder.replace(/[^a-zA-Z0-9_-]/g, '');
+  const safeFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '');
+  if (!safeFolder || !safeFilename) {
+    throw new Error('Invalid folder or filename');
+  }
+  const root = path.resolve(LOCAL_UPLOAD_DIR);
+  const localPath = path.resolve(root, safeFolder, safeFilename);
+  if (localPath !== root && !localPath.startsWith(root + path.sep)) {
+    throw new Error('Path traversal detected');
+  }
+  return { localPath, key: `${safeFolder}/${safeFilename}` };
+}
+
+/**
  * آپلود فایل — local + S3 به‌صورت موازی (نه ترتیبی).
  * 2026-07-05: S3 اختیاری است؛ اگر credentials نباشد، فقط local می‌نویسد.
  * 2026-07-06: parallel writes — local writeFile و S3 PutObject هم‌زمان
@@ -218,8 +242,7 @@ export async function uploadFile(
  *     the bytes (e.g. sharp pipeline in upload route).
  */
 export async function getFileStream(folder: string, filename: string): Promise<NodeJS.ReadableStream> {
-  const key = `${folder}/${filename}`;
-  const localFilePath = path.join(LOCAL_UPLOAD_DIR, folder, filename);
+  const { localPath: localFilePath, key } = resolveUploadTarget(folder, filename);
 
   // Try S3 first when configured.
   if (isS3Configured()) {
@@ -246,8 +269,7 @@ export async function getFileStream(folder: string, filename: string): Promise<N
 }
 
 export async function getFile(folder: string, filename: string): Promise<Buffer | null> {
-  const key = `${folder}/${filename}`;
-  const localFilePath = path.join(LOCAL_UPLOAD_DIR, folder, filename);
+  const { localPath: localFilePath, key } = resolveUploadTarget(folder, filename);
 
   // Try S3 first when configured.
   if (isS3Configured()) {
@@ -286,8 +308,7 @@ export async function getFile(folder: string, filename: string): Promise<Buffer 
  * storageها حذف شده و دیگر در دسترس نیست.
  */
 export async function deleteFile(folder: string, filename: string): Promise<boolean> {
-  const key = `${folder}/${filename}`;
-  const localFilePath = path.join(LOCAL_UPLOAD_DIR, folder, filename);
+  const { localPath: localFilePath, key } = resolveUploadTarget(folder, filename);
 
   const s3Promise = (async (): Promise<boolean> => {
     if (!isS3Configured()) return false;

@@ -8,6 +8,8 @@ import bcrypt from 'bcryptjs';
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { z } from 'zod';
+import { consumeLoginToken } from '@/lib/tokens';
+import { checkRateLimit } from '@/lib/rate-limiter';
 
 // 2026-06-24: P1-3. Credentials provider accepts two *internal* fields
 // (`kind` and `intent`) that are not in the public schema. Auth.js v5
@@ -22,6 +24,8 @@ const InternalCredentialsSchema = z.object({
   password: z.string().optional().default(''),
   kind: InternalCredentialsKindSchema.optional(),
   intent: InternalCredentialsIntentSchema.optional(),
+  // 2026-07-08: single-use token minted by verifyOtp after a real OTP is consumed.
+  loginToken: z.string().optional(),
 });
 
 // 2026-06-23: One Credentials provider handles two flows:
@@ -171,9 +175,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         const internal = InternalCredentialsSchema.safeParse(credentials);
         if (!internal.success) return null;
+
+        // 2026-07-08: brute-force protection on the public credentials endpoint.
+        const req = request as Request | undefined;
+        const ip =
+          req?.headers?.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+          req?.headers?.get('x-real-ip') ??
+          'unknown';
+        const rl = await checkRateLimit(ip, 'auth');
+        if (!rl.success) return null;
 
         const { email } = internal.data;
         const kind = internal.data.kind ?? 'password';
@@ -189,9 +202,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         // OAuth-only / after-otp path: we already verified the user out of
         // band in auth-actions.ts (OTP consumed, emailVerified set).
-        // Trust that, just gate on emailVerified.
+        // 2026-07-08: P0 fix — the session must be proven by a single-use
+        // login token minted by verifyOtp, NOT merely by the persistent
+        // emailVerified flag. Otherwise anyone could hit the public credentials
+        // endpoint with kind=after_otp + a verified email to take over the
+        // account without any OTP.
         if (kind === 'after_otp') {
           if (!user.emailVerified) return null;
+          const loginToken = internal.data.loginToken;
+          if (!loginToken) return null;
+          const consumed = await consumeLoginToken({ email, token: loginToken });
+          if (!consumed.ok) return null;
           return user;
         }
 

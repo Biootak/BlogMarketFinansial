@@ -29,7 +29,13 @@ export async function POST(req: Request) {
   const authHeader = req.headers.get('authorization');
   const url = new URL(req.url);
   const secret = authHeader?.replace(/^Bearer\s+/i, '') || url.searchParams.get('secret');
-  if (secret !== process.env.CRON_SECRET) {
+  const expected = process.env.CRON_SECRET;
+  // 2026-07-08: if CRON_SECRET is unset, the previous `secret !== undefined`
+  // comparison passed for an unauthenticated caller. Fail closed instead.
+  if (!expected) {
+    return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 503 });
+  }
+  if (secret !== expected) {
     return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 });
   }
 

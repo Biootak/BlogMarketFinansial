@@ -34,16 +34,39 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
-    if (!body.siteName || !body.siteUrl) {
+    // 2026-07-08: whitelist fields. Previously the entire request body was
+    // passed straight to Prisma, allowing mass assignment of any column
+    // (H11). Only known SystemSettings scalar fields are accepted.
+    const ALLOWED_SETTINGS_FIELDS = [
+      'siteName',
+      'siteDescription',
+      'logoUrl',
+      'maintenanceMode',
+      'cacheEnabled',
+      'smtpServer',
+      'smtpPort',
+      'smtpUsername',
+      'smtpPassword',
+      'telegram',
+      'instagram',
+      'whatsapp',
+      'twitter',
+    ] as const;
+    const data: Record<string, unknown> = {};
+    for (const field of ALLOWED_SETTINGS_FIELDS) {
+      if (field in body) data[field] = body[field];
+    }
+
+    // logoUrl is optional; normalize empty strings to null
+    if (data.logoUrl === '') {
+      data.logoUrl = null;
+    }
+
+    if (!data.siteName) {
       return NextResponse.json(
         { success: false, message: 'لطفاً فیلدهای اجباری را پر کنید' },
         { status: 400 },
       );
-    }
-
-    // logoUrl is optional; normalize empty strings to null
-    if (body.logoUrl === '') {
-      body.logoUrl = null;
     }
 
     try {
@@ -52,11 +75,11 @@ export async function POST(req: Request) {
       if (settings) {
         settings = await db.systemSettings.update({
           where: { id: settings.id },
-          data: body,
+          data,
         });
       } else {
         settings = await db.systemSettings.create({
-          data: body,
+          data,
         });
       }
 

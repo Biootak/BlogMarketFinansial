@@ -5,10 +5,11 @@ import { deleteFile } from '@/lib/storage';
 export async function DELETE(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user) {
+    const role = (session?.user as { role?: string } | undefined)?.role;
+    if (!session?.user || (role !== 'ADMIN' && role !== 'OWNER')) {
       return NextResponse.json(
-        { success: false, error: { code: 'UNAUTHORIZED', message: 'احراز هویت الزامی است' } },
-        { status: 401 }
+        { success: false, error: { code: 'FORBIDDEN', message: 'فقط ادمین می‌تواند فایل حذف کند' } },
+        { status: 403 }
       );
     }
 
@@ -34,7 +35,7 @@ export async function DELETE(request: NextRequest) {
 
     // استخراج folder و filename از URL
     const parts = imageUrl.replace('/uploads/', '').split('/');
-    if (parts.length < 2) {
+    if (parts.length < 2 || parts.some((p: string) => p === '..' || p.includes('~'))) {
       return NextResponse.json(
         { success: false, error: { code: 'INVALID_PATH', message: 'مسیر نامعتبر' } },
         { status: 400 }
@@ -42,6 +43,13 @@ export async function DELETE(request: NextRequest) {
     }
 
     const folder = parts[0];
+    const ALLOWED_FOLDERS = ['posts', 'avatars', 'categories', 'tags', 'ads', 'general'];
+    if (!ALLOWED_FOLDERS.includes(folder)) {
+      return NextResponse.json(
+        { success: false, error: { code: 'INVALID_FOLDER', message: 'فولدر نامعتبر' } },
+        { status: 400 }
+      );
+    }
     const filename = parts.slice(1).join('/');
 
     const deleted = await deleteFile(folder, filename);
