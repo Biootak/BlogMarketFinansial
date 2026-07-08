@@ -70,6 +70,8 @@
     "@radix-ui/react-toggle": "^1.1.1",
     "@radix-ui/react-tooltip": "^1.1.6",
     "@sentry/nextjs": "^10.28.0",
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.110.1",
     "@tiptap/extension-bubble-menu": "^3.27.1",
     "@tiptap/extension-character-count": "^3.27.1",
     "@tiptap/extension-code-block-lowlight": "^3.27.1",
@@ -170,7 +172,7 @@
     "baseline-browser-mapping": "^2.10.40",
     "cross-env": "^7.0.3",
     "postcss": "^8.4.49",
-    "prisma": "^6.2.0",
+    "prisma": "^6.19.3",
     "sass": "^1.83.1",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.2"
