@@ -6,7 +6,9 @@
  * ----------------------------------------------------------------------------
  */
 
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
+import { auth } from '@/auth';
+import { Role } from '@prisma/client';
 import {
   fetchAllTgjuPages,
   ALL_TGJU_PAGE_IDS,
@@ -15,10 +17,6 @@ import {
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
-
-function isDev(): boolean {
-  return process.env.NODE_ENV !== 'production';
-}
 
 interface PageSnapshot {
   page: TgjuPageId;
@@ -61,9 +59,17 @@ const DISPLAY_FA_HINT: Record<string, string> = {
   currency_price_aed: 'درهم بازار آزاد',
 };
 
-export async function GET(): Promise<NextResponse> {
-  if (!isDev()) {
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  // L1b fix: dev-only endpoint must still require an OWNER session, otherwise
+  // (if NODE_ENV is ever flipped to development) it would scrape and return
+  // internal market data to anyone without a login.
+  if (process.env.NODE_ENV === 'production') {
     return NextResponse.json({ error: 'dev-only' }, { status: 404 });
+  }
+  const session = await auth();
+  const role = session?.user?.role as Role | undefined;
+  if (role !== Role.OWNER) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   const t0 = Date.now();

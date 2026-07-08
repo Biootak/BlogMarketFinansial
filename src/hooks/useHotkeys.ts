@@ -57,8 +57,16 @@ export function useHotkeys(map: HotkeyMap): void {
 
       const combo = parts.join('+');
 
-      // Try exact match first
-      const exact = mapRef.current[combo];
+      // Try exact match first, with fallbacks for both case and separator
+      // styles: bindings may use 'Mod+K' (plus, uppercased key) or 'g d'
+      // (space, lowercased key). Sequence combos are NOT uppercased so
+      // lowercase two-key bindings like 'g d' actually match.
+      const map = mapRef.current;
+      const exact =
+        map[combo] ||
+        map[combo.toLowerCase()] ||
+        map[parts.join(' ')] ||
+        map[parts.join(' ').toLowerCase()];
       if (exact) {
         e.preventDefault();
         exact(e);

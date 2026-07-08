@@ -11,10 +11,7 @@ export async function getAuthorById(id: string): Promise<ActionResult<UserWithPr
       select: {
         id: true,
         name: true,
-        email: true,
-        emailVerified: true,
         image: true,
-        phoneNumber: true,
         profile: {
           select: {
             bio: true,
@@ -22,7 +19,6 @@ export async function getAuthorById(id: string): Promise<ActionResult<UserWithPr
             bgImage: true,
             jobName: true,
             company: true,
-           
           },
         },
         _count: {
@@ -43,14 +39,13 @@ export async function getAuthorById(id: string): Promise<ActionResult<UserWithPr
     return {
       success: true,
       message: 'اطلاعات نویسنده با موفقیت دریافت شد.',
-      data: author,
+      data: author as UserWithProfile,
     };
   } catch (error) {
     console.error('خطا در دریافت اطلاعات نویسنده:', error);
     return {
       success: false,
       message: 'خطا در دریافت اطلاعات نویسنده. لطفاً دوباره تلاش کنید.',
-      error: error instanceof Error ? error.message : String(error),
     };
   }
 }

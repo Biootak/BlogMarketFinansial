@@ -204,6 +204,14 @@ export const getExirCryptoRates = cache(async (): Promise<CryptoTickerResult> =>
 
     const tickers = await fetchExirTickers();
 
+    // M18 fix: guard the response shape before indexing. If Exir wraps the
+    // envelope (e.g. { data: {...} }) or returns a non-object, indexing
+    // `tickers['usdt-irt']` would throw a raw TypeError. Validate first so
+    // we fall back gracefully via the catch block below.
+    if (!tickers || typeof tickers !== 'object' || Array.isArray(tickers)) {
+      throw new Error('Invalid Exir API response shape');
+    }
+
     logger.info(`Received ${Object.keys(tickers).length} pairs from Exir`);
 
     const rates = processExirRates(tickers);

@@ -39,10 +39,7 @@ const fetchAuthorProfile = async (
       select: {
         id: true,
         name: true,
-        email: true,
-        emailVerified: true,
         image: true,
-        phoneNumber: true,
         role: true,
         status: true,
         profile: {

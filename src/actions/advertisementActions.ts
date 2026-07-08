@@ -19,6 +19,11 @@ async function fetchActiveAdsInternal(
   orderDirection: 'asc' | 'desc',
 ): Promise<ActionResult<Advertisement[]>> {
   try {
+    // M13 fix: allowlist the sort field to avoid injecting an arbitrary
+    // Prisma orderBy key (defense even though the type already constrains it).
+    const safeOrderBy: 'order' | 'createdAt' | 'startDate' =
+      orderBy === 'createdAt' || orderBy === 'startDate' || orderBy === 'order' ? orderBy : 'order';
+    const safeDirection: 'asc' | 'desc' = orderDirection === 'desc' ? 'desc' : 'asc';
     const skip = (page - 1) * limit;
     const ads = await prisma.advertisement.findMany({
       where: {
@@ -32,7 +37,7 @@ async function fetchActiveAdsInternal(
           { description: { contains: search, mode: 'insensitive' } },
         ],
       },
-      orderBy: { [orderBy]: orderDirection },
+      orderBy: { [safeOrderBy]: safeDirection },
       take: limit,
       skip: skip,
     });

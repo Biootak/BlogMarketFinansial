@@ -73,6 +73,8 @@ export async function getSystemSettings() {
       };
     }
 
+    // C1 fix: never return the SMTP password (secret) to the client.
+    delete (settings as { smtpPassword?: string }).smtpPassword;
     return { success: true, data: settings };
   } catch (error) {
     console.error('Error fetching settings:', error);
@@ -115,6 +117,8 @@ export async function updateGeneralSettings(data: {
     revalidatePath('/dashboard/settings');
     revalidatePath('/');
     
+    // C1 fix: never return the SMTP password (secret) to the client.
+    delete (settings as { smtpPassword?: string }).smtpPassword;
     return { success: true, data: settings };
   } catch (error) {
     console.error('Error updating general settings:', error);
@@ -162,6 +166,8 @@ export async function updateEmailSettings(data: {
     }
 
     revalidatePath('/dashboard/settings');
+    // C1 fix: never return the SMTP password (secret) to the client.
+    delete (settings as { smtpPassword?: string }).smtpPassword;
     return { success: true, data: settings };
   } catch (error) {
     console.error('Error updating email settings:', error);
@@ -206,6 +212,8 @@ export async function updateSocialSettings(data: {
     revalidatePath('/dashboard/settings');
     revalidatePath('/');
     
+    // C1 fix: never return the SMTP password (secret) to the client.
+    delete (settings as { smtpPassword?: string }).smtpPassword;
     return { success: true, data: settings };
   } catch (error) {
     console.error('Error updating social settings:', error);
@@ -236,6 +244,8 @@ export async function updateCacheSettings(data: { cacheEnabled: boolean }) {
     }
 
     revalidatePath('/dashboard/settings');
+    // C1 fix: never return the SMTP password (secret) to the client.
+    delete (settings as { smtpPassword?: string }).smtpPassword;
     return { success: true, data: settings };
   } catch (error) {
     console.error('Error updating cache settings:', error);
@@ -266,6 +276,8 @@ export async function updateMaintenanceMode(data: { maintenanceMode: boolean }) 
     }
 
     revalidatePath('/dashboard/settings');
+    // C1 fix: never return the SMTP password (secret) to the client.
+    delete (settings as { smtpPassword?: string }).smtpPassword;
     return { success: true, data: settings };
   } catch (error) {
     console.error('Error updating maintenance mode:', error);

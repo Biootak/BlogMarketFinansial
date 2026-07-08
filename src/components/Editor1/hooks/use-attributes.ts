@@ -18,16 +18,17 @@ export function useAttributes<T, R>(
   const [value, setValue] = useState<R>(mapFn(defaultValue));
   const prevValueCache = useRef<R>(value);
 
+  // M16: بخوانیم defaultValue / mapFn را از طریق ref تا effect روی هر
+  // رندر دوباره subscribe نشود (این مقادیر اغلب هویت جدیدی می‌گیرند).
+  const defaultValueRef = useRef(defaultValue);
+  defaultValueRef.current = defaultValue;
+  const mapFnRef = useRef(mapFn);
+  mapFnRef.current = mapFn;
+
   useEffect(() => {
     const listener = () => {
-      const attrs = { ...defaultValue, ...editor.getAttributes(attribute) };
-      // Object.keys(attrs).forEach((key) => {
-      //   if (attrs[key] === null || attrs[key] === undefined) {
-      //     // @ts-ignore
-      //     attrs[key] = defaultValue[key];
-      //   }
-      // });
-      const nextAttrs = mapFn(attrs);
+      const attrs = { ...defaultValueRef.current, ...editor.getAttributes(attribute) };
+      const nextAttrs = mapFnRef.current(attrs);
       if (isEqual(prevValueCache.current, nextAttrs)) {
         return;
       }
@@ -40,7 +41,7 @@ export function useAttributes<T, R>(
     return () => {
       editor.off('transaction', listener);
     };
-  }, [editor, defaultValue, attribute, mapFn]);
+  }, [editor, attribute]);
 
   return value;
 }

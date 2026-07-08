@@ -88,7 +88,7 @@ const getCachedHeaderTickerData = unstable_cache(
   ['header-ticker-data', 'v2-renamed-2026-06-20'],
   {
     revalidate: 60, // 1 minute
-    tags: ['ticker', 'exchange-rates'],
+    tags: ['market-rates:ticker', 'market-rates:exchange-rates'],
   },
 );
 

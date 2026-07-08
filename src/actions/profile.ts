@@ -23,9 +23,15 @@ export async function updateProfile(formData: FormData): Promise<ActionResult<vo
       Object.fromEntries(formData),
     ) as UpdateProfileInput;
 
-    const updateData: Partial<UpdateProfileInput & { password?: string }> = {};
+    const updateData: Partial<UpdateProfileInput & { password?: string; emailVerified?: Date | null }> = {};
     if (validatedFields.name) updateData.name = validatedFields.name;
-    if (validatedFields.email) updateData.email = validatedFields.email;
+    if (validatedFields.email) {
+      // M15 fix: changing email must require re-verification. Reset the
+      // verification flag so the new address cannot be used for auth flows
+      // until confirmed. (A full re-verify email should be triggered here.)
+      updateData.email = validatedFields.email;
+      updateData.emailVerified = null;
+    }
 
     // Profile update data - همیشه فیلدها رو آپدیت کن حتی اگه خالی باشن
     const profileUpdateData: any = {};

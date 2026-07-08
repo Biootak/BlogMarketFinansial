@@ -104,6 +104,7 @@ const NotifyDropdown = memo(({ className = 'hidden sm:block' }: Props) => {
               `}
             >
               {/* Notification badge */}
+              {solutions.length > 0 && (
               <span
                 className="
                   absolute -top-0.5 -left-0.5 w-4 h-4
@@ -115,8 +116,9 @@ const NotifyDropdown = memo(({ className = 'hidden sm:block' }: Props) => {
                   ring-2 ring-white dark:ring-neutral-900
                 "
               >
-                ۳
+                {solutions.length}
               </span>
+              )}
               <NotificationIcon />
             </Popover.Button>
 

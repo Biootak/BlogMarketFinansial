@@ -38,10 +38,10 @@ export default function NotFound() {
               </Button>
             </Link>
 
-            <Link href="/search">
+            <Link href="/archive">
               <Button variant="outline" className="w-full sm:w-auto gap-2">
                 <Search className="w-4 h-4" />
-                جستجو
+                آرشیو
               </Button>
             </Link>
           </div>
@@ -51,11 +51,11 @@ export default function NotFound() {
         <div className="mt-8 text-sm text-neutral-500 dark:text-neutral-400">
           <p className="mb-2">شاید این لینک‌ها کمکتان کند:</p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/blog" className="hover:text-primary-500 transition-colors">
-              وبلاگ
+            <Link href="/archive" className="hover:text-primary-500 transition-colors">
+              آرشیو
             </Link>
-            <Link href="/categories" className="hover:text-primary-500 transition-colors">
-              دسته‌بندی‌ها
+            <Link href="/authors" className="hover:text-primary-500 transition-colors">
+              نویسندگان
             </Link>
             <Link href="/contact" className="hover:text-primary-500 transition-colors">
               تماس با ما

@@ -1,37 +1,13 @@
 import { type NextRequest } from 'next/server';
 import prisma from '@/lib/db';
 import { checkRateLimit } from '@/lib/rate-limiter';
-
-/**
- * Public health probe used by the dashboard's SystemHealth rail.
- *
- * No auth required — the dashboard layout already gates the page, so an
- * anonymous probe from the browser is safe. The route is rate-limited via
- * the `api` bucket (100/min) so a tight loop can't hammer the DB.
- *
- * Response shape:
- *   {
- *     ok: boolean,
- *     db: 'ok' | 'fail',
- *     dbLatencyMs: number,
- *     bazaar: 'ok' | 'stale' | 'unknown' | 'fail',
- *     bazaarAt: string | null,        // ISO of last ExchangeRate update
- *     bazaarAgeMs: number | null,
- *     build: { env, sha, version },
- *     serverTime: string              // ISO
- *   }
- */
-
+import { getTrustedClientIp } from '@/lib/client-ip';
 
 const STALE_THRESHOLD_MS = 30 * 60 * 1000; // 30 min — cron fires every 10 min.
 
+// M1 fix: use the spoof-resistant client IP resolver.
 function getClientIp(request: NextRequest): string {
-  const xff = request.headers.get('x-forwarded-for');
-  if (xff) {
-    const first = xff.split(',')[0]?.trim();
-    if (first) return first;
-  }
-  return request.headers.get('x-real-ip') || 'unknown';
+  return getTrustedClientIp(request);
 }
 
 export async function GET(request: NextRequest) {

@@ -29,6 +29,7 @@ import prisma from '@/lib/db';
 import { revalidateTag } from '@/lib/revalidate';
 import { type TgjuResponse, fetchTgjuLatest } from '@/lib/tgju';
 import { type NextRequest, NextResponse } from 'next/server';
+import { verifyCronSecret } from '@/lib/cron-auth';
 
 // Vercel Cron حداکثر execution time برای Hobby ۶۰ ثانیه است.
 // scraper ما ۱۲ ثانیه timeout دارد + DB write ~ ۱-۲ ثانیه. حاشیه‌ی کافی.
@@ -146,23 +147,9 @@ async function upsertRate(opts: {
  *   GET /api/cron/sync-bazaar (Vercel Cron با هدر Authorization)
  */
 export async function GET(request: NextRequest) {
-  // 1) Auth: چک secret از header یا query
-  const expected = process.env.CRON_SECRET;
-  if (!expected) {
-    return NextResponse.json({ error: 'CRON_SECRET not configured on server' }, { status: 503 });
-  }
-
-  const authHeader = request.headers.get('authorization');
-  const querySecret = request.nextUrl.searchParams.get('secret');
-  const headerSecret = request.headers.get('x-cron-secret');
-
-  // Vercel Cron: Bearer ${CRON_SECRET}
-  // Custom: x-cron-secret: ${CRON_SECRET} OR ?secret=${CRON_SECRET}
-  const provided = authHeader?.replace(/^Bearer\s+/i, '') || headerSecret || querySecret;
-
-  if (provided !== expected) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  // 1) Auth: only Authorization: Bearer CRON_SECRET (constant-time).
+  const authError = verifyCronSecret(request);
+  if (authError) return authError;
 
   // 2) Scrape TGJU
   const t0 = Date.now();
@@ -235,8 +222,8 @@ export async function GET(request: NextRequest) {
 
   // 4) Invalidate caches
   try {
-    revalidateTag('ticker');
-    revalidateTag('exchange-rates');
+    revalidateTag('market-rates:ticker');
+    revalidateTag('market-rates:exchange-rates');
     revalidateTag('dashboard-exchange-rates');
   } catch (err) {
     console.warn('[sync-bazaar] revalidateTag failed:', err);

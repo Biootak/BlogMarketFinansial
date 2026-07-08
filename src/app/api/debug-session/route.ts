@@ -23,12 +23,14 @@ export async function GET() {
       },
     });
   } catch (error) {
+    // M6 fix: do not leak raw error messages (DB/stack hints) to the client.
+    console.error('[debug-session] error:', error);
     return NextResponse.json(
       {
         success: false,
         error: {
           code: 'INTERNAL_ERROR',
-          message: error instanceof Error ? error.message : 'Unknown error',
+          message: 'خطای داخلی سرور',
         },
       },
       { status: 500 }

@@ -46,8 +46,8 @@ export async function createExchangeRate(
     });
 
     revalidatePath('/dashboard/admin/exchange-rates');
-    revalidateTag('ticker');
-    revalidateTag('exchange-rates');
+    revalidateTag('market-rates:ticker');
+    revalidateTag('market-rates:exchange-rates');
     revalidateTag('dashboard-exchange-rates');
 
     return {
@@ -90,8 +90,8 @@ export async function updateExchangeRate(
     });
 
     revalidatePath('/dashboard/admin/exchange-rates');
-    revalidateTag('ticker');
-    revalidateTag('exchange-rates');
+    revalidateTag('market-rates:ticker');
+    revalidateTag('market-rates:exchange-rates');
     revalidateTag('dashboard-exchange-rates');
 
     return {
@@ -116,8 +116,8 @@ export async function deleteExchangeRate(id: string): Promise<ActionResult> {
     if (!authCheck.success) return authFailureToActionResult(authCheck);
     await prisma.exchangeRate.delete({ where: { id } });
     revalidatePath('/dashboard/admin/exchange-rates');
-    revalidateTag('ticker');
-    revalidateTag('exchange-rates');
+    revalidateTag('market-rates:ticker');
+    revalidateTag('market-rates:exchange-rates');
     revalidateTag('dashboard-exchange-rates');
     return {
       success: true,

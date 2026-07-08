@@ -11,6 +11,7 @@ import type { MarketRateItem } from '@/lib/market-rates';
 const TAGS = {
   ticker: 'market-rates:ticker',
   list: 'market-rates:list',
+  exchangeRates: 'market-rates:exchange-rates',
 };
 
 /** کش ۶۰ ثانیه‌ای برای assemble. */
@@ -98,6 +99,7 @@ export async function createMarketRate(input: CreateInput): Promise<
     });
     revalidateTag(TAGS.list);
     revalidateTag(TAGS.ticker);
+    revalidateTag(TAGS.exchangeRates);
     return { success: true, id: created.id };
   } catch (e: unknown) {
     const err = e as { code?: string; message?: string };
@@ -138,6 +140,7 @@ export async function updateMarketRate(
     });
     revalidateTag(TAGS.list);
     revalidateTag(TAGS.ticker);
+    revalidateTag(TAGS.exchangeRates);
     return { success: true };
   } catch (e: unknown) {
     const err = e as { message?: string };
@@ -158,6 +161,7 @@ export async function deleteMarketRate(id: string): Promise<
     await prisma.exchangeRate.delete({ where: { id } });
     revalidateTag(TAGS.list);
     revalidateTag(TAGS.ticker);
+    revalidateTag(TAGS.exchangeRates);
     return { success: true };
   } catch (e: unknown) {
     const err = e as { message?: string };

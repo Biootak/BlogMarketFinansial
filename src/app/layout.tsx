@@ -59,7 +59,9 @@ export async function generateMetadata(): Promise<Metadata> {
     ],
     authors: [{ name: siteName || 'BlogMarketFinansial' }],
     creator: siteName || 'BlogMarketFinansial',
-  };
+    robots: { index: true, follow: true },
+    sitemap: '/sitemap.xml',
+  } as Metadata;
 }
 
 export const viewport: Viewport = {

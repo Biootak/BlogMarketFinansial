@@ -11,7 +11,11 @@ import { uploadFile } from '@/lib/storage';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_FILES_PER_REQUEST = 10;
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'] as const;
+// C5 fix: SVG removed from the allowlist. A regex blocklist sanitizer for
+// SVG is trivially bypassable (e.g. <style>/<foreignObject>/<use>), and the
+// file is then served with Content-Type image/svg+xml + nosniff, so it can
+// execute as a document and steal the session. Only serve raster formats.
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as const;
 const ALLOWED_FOLDERS = ['posts', 'avatars', 'categories', 'tags', 'ads', 'general'] as const;
 const UPLOAD_RATE_LIMIT = 20; // uploads per window per user
 const UPLOAD_RATE_WINDOW_MS = 60 * 1000; // 1 minute
@@ -91,13 +95,6 @@ function checkRateLimit(userId: string): boolean {
 // ---------- validation helpers --------------------------------------------
 
 function validateFileSignature(buffer: Buffer, mimeType: AllowedMime): boolean {
-  if (mimeType === 'image/svg+xml') {
-    // SVG detection is content-based; we accept anything whose first 500
-    // chars contain <svg and no <script tag. Full sanitization happens next.
-    const head = buffer.toString('utf8', 0, 500).toLowerCase();
-    return head.includes('<svg') && !head.includes('<script');
-  }
-
   const sigs = FILE_SIGNATURES[mimeType];
   if (!sigs) return false;
   return sigs.some((sig) => {
@@ -125,12 +122,6 @@ interface OptimizeResult {
 }
 
 async function processImage(input: Buffer, mime: AllowedMime): Promise<OptimizeResult> {
-  if (mime === 'image/svg+xml') {
-    // SVG is vector — we never re-encode. Dimensions are unknown at this
-    // stage; the caller can parse the XML if it needs exact px.
-    return { buffer: input, width: null, height: null, mime };
-  }
-
   if (mime === 'image/gif') {
     // Animated GIFs must be preserved as-is (re-encoding drops frames).
     const meta = await sharp(input, { animated: true }).metadata();
@@ -224,9 +215,9 @@ function generateFilename(originalName: string, mime: AllowedMime): string {
     .replace(/[^a-zA-Z0-9-_]/g, '')
     .slice(0, 20) || 'image';
 
-  const ext = mime === 'image/gif' || mime === 'image/svg+xml'
-    ? originalName.split('.').pop()?.toLowerCase() || 'bin'
-    : 'webp';
+   const ext = mime === 'image/gif'
+     ? originalName.split('.').pop()?.toLowerCase() || 'bin'
+     : 'webp';
 
   return `${timestamp}-${random}-${baseName}.${ext}`;
 }
@@ -279,15 +270,6 @@ async function processOneFile(file: File, folder: AllowedFolder): Promise<FileOu
       ok: false,
       code: 'INVALID_FILE_CONTENT',
       message: 'محتوای فایل با پسوند آن همخوانی ندارد',
-      filename: file.name,
-    };
-  }
-
-  if (mime === 'image/svg+xml' && !isSafeSvg(buffer)) {
-    return {
-      ok: false,
-      code: 'MALICIOUS_SVG',
-      message: 'فایل SVG حاوی کد مخرب است',
       filename: file.name,
     };
   }
@@ -357,6 +339,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: { code: 'INVALID_FOLDER', message: 'فولدر نامعتبر است' } },
         { status: 400 },
+      );
+    }
+
+    // L4 fix: the `ads` folder holds admin-designated marketing assets.
+    // Restrict writes there to ADMIN/OWNER; every other role may only use
+    // their own-purpose folders (avatars/posts/etc.).
+    const role = (session.user as { role?: string }).role;
+    if (folder === 'ads' && role !== 'ADMIN' && role !== 'OWNER') {
+      return NextResponse.json(
+        { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } },
+        { status: 403 },
       );
     }
 

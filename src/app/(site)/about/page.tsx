@@ -1,9 +1,17 @@
 import React from 'react';
 import SectionHero from '@/components/SectionHero/SectionHero';
+import type { Metadata } from 'next';
 // 2026-07-04: was `import rightImg from '@/images/about-hero-right.png'`.
 // `src/images/` does not exist (legacy). Static assets live in `public/`.
 // See AGENTS.assets.md.
 const rightImg = '/images/about-hero-right.png';
+
+export const metadata: Metadata = {
+  title: 'درباره ما',
+  description:
+    'بی‌طرف و مستقل هستیم و هر روز برنامه‌ها و محتوای متمایز و در سطح جهانی ایجاد می‌کنیم که میلیون‌ها نفر را در سراسر جهان آگاه، آموزش و سرگرم می‌کند.',
+};
+
 import SectionStatistic from './SectionStatistic';
 import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
 import BgGlassmorphism from '@/components/BgGlassmorphism/BgGlassmorphism';

@@ -27,6 +27,7 @@ import prisma from '@/lib/db';
 import { revalidateTag } from '@/lib/revalidate';
 import { revalidatePath } from 'next/cache';
 import { NextResponse } from 'next/server';
+import { verifyCronSecret } from '@/lib/cron-auth';
 
 // Vercel Cron: Hobby max=10s, Pro max=60s. کوئری ما یک SELECT + چند UPDATE
 // است؛ حتی با ۱۰۰ پست زیر ۵ ثانیه.
@@ -44,20 +45,8 @@ interface PublishResult {
  * POST هم برای سرویس‌های cron خارجی یا تست دستی.
  */
 async function handle(request: Request) {
-  const expected = process.env.CRON_SECRET;
-  if (!expected) {
-    return NextResponse.json({ error: 'CRON_SECRET not configured on server' }, { status: 503 });
-  }
-
-  const authHeader = request.headers.get('authorization');
-  const headerSecret = request.headers.get('x-cron-secret');
-  const url = new URL(request.url);
-  const querySecret = url.searchParams.get('secret');
-  const provided = authHeader?.replace(/^Bearer\s+/i, '') || headerSecret || querySecret;
-
-  if (provided !== expected) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const authError = verifyCronSecret(request);
+  if (authError) return authError;
 
   const t0 = Date.now();
   const now = new Date();

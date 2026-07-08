@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        message: error instanceof Error ? error.message : 'خطا در دریافت گزارش‌ها'
+        message: 'خطا در دریافت گزارش‌ها'
       },
       { status: 500 }
     );

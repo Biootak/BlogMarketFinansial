@@ -14,6 +14,11 @@ export async function GET() {
     }
 
     const settings = await db.systemSettings.findFirst();
+    // L5 fix: never return the SMTP password (secret) in the API response.
+    if (settings) {
+      const { smtpPassword: _omit, ...safeSettings } = settings as Record<string, unknown>;
+      return NextResponse.json({ success: true, data: safeSettings });
+    }
     return NextResponse.json({ success: true, data: settings });
   } catch (error) {
     console.error('Settings API [GET] - Error:', error);
@@ -86,7 +91,11 @@ export async function POST(req: Request) {
       return NextResponse.json({
         success: true,
         message: 'تنظیمات با موفقیت ذخیره شد',
-        data: settings,
+        // L5 fix: strip the SMTP password from the response payload.
+        data: (() => {
+          const { smtpPassword: _omit, ...safe } = settings as Record<string, unknown>;
+          return safe;
+        })(),
       });
     } catch (dbError) {
       console.error('Settings API [POST] - Database error:', dbError);

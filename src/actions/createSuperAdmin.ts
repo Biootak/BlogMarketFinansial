@@ -1,6 +1,5 @@
 'use server';
 
-import { checkExistingSuperAdmin } from '@/lib/auth';
 import prisma from '@/lib/db';
 import { Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
@@ -65,41 +64,50 @@ export async function createSuperAdmin(formData: FormData) {
       };
     }
 
-    // بررسی وجود مالک
-    const existingAdmin = await checkExistingSuperAdmin(prisma);
+    // H2 fix: TOCTOU race. The previous code did a check-then-act
+    // (findFirst OWNER, then create) which is non-atomic — two concurrent
+    // setup requests could both pass the check and create two OWNERs.
+    // Run the existence-check and the create inside a single Serializable
+    // transaction so the read+write are atomic. (A definitive guard is a
+    // unique partial index on `role` for OWNER, applied at the DB level.)
+    const txResult = await prisma.$transaction(
+      async (tx) => {
+        const existingAdmin = await tx.user.findFirst({ where: { role: Role.OWNER } });
+        if (existingAdmin) return { existing: true as const, user: null };
 
-    if (existingAdmin) {
+        const hashedPassword = await bcrypt.hash(formDataObj.password, 12);
+        const created = await tx.user.create({
+          data: {
+            email: formDataObj.email,
+            password: hashedPassword,
+            name: formDataObj.name,
+            phoneNumber: formDataObj.phoneNumber,
+            role: Role.OWNER,
+            profile: {
+              create: {
+                jobName: formDataObj.jobName,
+                company: formDataObj.company,
+                bio: formDataObj.bio,
+              },
+            },
+          },
+          include: { profile: true },
+        });
+        return { existing: false as const, user: created };
+      },
+      { isolationLevel: 'Serializable' },
+    );
+
+    if (txResult.existing && txResult.user === null) {
       return {
         success: false,
         message: 'تنظیمات اولیه قبلاً انجام شده است. لطفاً وارد سیستم شوید',
         errors: {},
-        existingAdmin,
+        existingAdmin: txResult.user,
       };
     }
 
-    // رمزنگاری پسورد با سختی بیشتر
-    const hashedPassword = await bcrypt.hash(formDataObj.password, 12);
-
-    // ایجاد مالک
-    const user = await prisma.user.create({
-      data: {
-        email: formDataObj.email,
-        password: hashedPassword,
-        name: formDataObj.name,
-        phoneNumber: formDataObj.phoneNumber,
-        role: Role.OWNER,
-        profile: {
-          create: {
-            jobName: formDataObj.jobName,
-            company: formDataObj.company,
-            bio: formDataObj.bio,
-          },
-        },
-      },
-      include: {
-        profile: true,
-      },
-    });
+    const user = txResult.user!;
 
     // ثبت لاگ ایجاد مالک (بدون PII plaintext)
     // No email, no user.id, no phone — فقط timestamp + masked شناسه‌ی داخلی.

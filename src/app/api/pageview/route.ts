@@ -1,6 +1,7 @@
 import prisma from '@/lib/db';
 import { type NextRequest, NextResponse } from 'next/server';
 import { LRUCache } from 'lru-cache';
+import { getTrustedClientIp } from '@/lib/client-ip';
 
 
 // Rate limiter in-memory با LRU bounded cache (حداکثر 10,000 IP)
@@ -14,13 +15,9 @@ const viewCounts = new LRUCache<string, { count: number; resetTime: number }>({
 const RATE_LIMIT = 100;
 const RATE_WINDOW = 60 * 1000;
 
+// M1 fix: use the spoof-resistant client IP resolver.
 function getClientIP(request: NextRequest): string {
-  const xff = request.headers.get('x-forwarded-for');
-  if (xff) {
-    const first = xff.split(',')[0]?.trim();
-    if (first) return first;
-  }
-  return request.headers.get('x-real-ip') || 'unknown';
+  return getTrustedClientIp(request);
 }
 
 function checkRateLimit(ip: string): boolean {

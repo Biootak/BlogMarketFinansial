@@ -1,6 +1,7 @@
 import { getViewStats } from '@/actions/getViewStats';
 import { type PeriodId, getViewStatsByPeriod } from '@/actions/getViewStatsByPeriod';
 import { auth } from '@/auth';
+import { Role } from '@prisma/client';
 import { type NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -11,7 +12,7 @@ import { type NextRequest, NextResponse } from 'next/server';
  * original getViewStats path for backward compatibility with any other
  * callers.
  *
- * Auth: session required (same as before).
+ * Auth: ADMIN/OWNER required (M7 fix) — site-wide traffic is sensitive.
  */
 const VALID_PERIODS = new Set<PeriodId>(['7d', '30d', '90d']);
 
@@ -20,6 +21,10 @@ export async function GET(request: NextRequest) {
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: 'احراز هویت الزامی است' }, { status: 401 });
+    }
+    const role = session.user.role as Role | undefined;
+    if (role !== Role.ADMIN && role !== Role.OWNER) {
+      return NextResponse.json({ error: 'دسترسی غیرمجاز' }, { status: 403 });
     }
 
     const periodParam = request.nextUrl.searchParams.get('period');

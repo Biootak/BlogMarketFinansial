@@ -549,12 +549,20 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
     const AUTO_SAVE_DEBOUNCE_MS = 3000;
     const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+    // M16: بخوانیم content / onAutoSaveRestore را از طریق ref تا effect
+    // auto-save روی هر رندر دوباره subscribe نشود (این دو مقدار اغلب
+    // هویت جدیدی هر رندر می‌گیرند).
+    const contentRef = useRef(content);
+    contentRef.current = content;
+    const onAutoSaveRestoreRef = useRef(onAutoSaveRestore);
+    onAutoSaveRestoreRef.current = onAutoSaveRestore;
+
     useEffect(() => {
       if (!editor || !autoSaveKey) return;
 
       // Restore: فقط وقتی هیچ `content` اولیه‌ای از prop نیامده باشد.
       // وقتی پست واقعی داریم، post سرور بر local draft ارجح است.
-      if (!content) {
+      if (!contentRef.current) {
         try {
           const raw = window.localStorage.getItem(autoSaveKey);
           if (raw) {
@@ -573,7 +581,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
                   });
                   const savedAt = parsed.savedAt ?? Date.now();
                   setRestoredAt(savedAt);
-                  onAutoSaveRestore?.(savedAt);
+                  onAutoSaveRestoreRef.current?.(savedAt);
                 }
               });
             }
@@ -612,7 +620,7 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
           autoSaveTimer.current = null;
         }
       };
-    }, [editor, autoSaveKey, content, onAutoSaveRestore]);
+    }, [editor, autoSaveKey]);
 
     // ── Editable propagation ──
     useEffect(() => {
@@ -621,19 +629,22 @@ export const Editor = forwardRef<EditorRef, EditorProps>(
     }, [editable, editor]);
 
     // ── TOC propagation ──
+    const onUpdateToCRef = useRef(onUpdateToC);
+    onUpdateToCRef.current = onUpdateToC;
+
     useEffect(() => {
       if (!editor || editor.isDestroyed) return;
       const update = () => {
         const items = getToCItems(editor);
         setTocItems(items);
-        onUpdateToC?.(items);
+        onUpdateToCRef.current?.(items);
       };
       update();
       editor.on('update', update);
       return () => {
         editor.off('update', update);
       };
-    }, [editor, onUpdateToC]);
+    }, [editor]);
 
     // ── Auto-recover banner state ──
     // وقتی auto-save از localStorage بازیابی می‌شود، یک نوار زرد بالای

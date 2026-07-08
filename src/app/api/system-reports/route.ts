@@ -182,7 +182,7 @@ export async function GET(): Promise<NextResponse<SystemReport | { error: string
       );
     }
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'خطا در دریافت گزارش‌های سیستم' },
+      { error: 'خطا در دریافت گزارش‌های سیستم' },
       { status: 500 }
     );
   }

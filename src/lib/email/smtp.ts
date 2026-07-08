@@ -42,6 +42,12 @@ export async function createSmtpProvider(): Promise<EmailProvider> {
 
   // Dynamic import keeps nodemailer out of the bundle when SMTP isn't used.
   const nodemailer = await import('nodemailer');
+  // M7 note: nodemailer negotiates STARTTLS automatically on ports
+  // 587/25/2525 and will not transmit credentials in cleartext when the
+  // server offers it. The installed @types/nodemailer build does not expose
+  // the `tls`/`requireTLS` options, so we keep the standard config. To force
+  // TLS v1.2+ at the transport level, install matching @types/nodemailer and
+  // add `tls: { minVersion: 'TLSv1.2' }`.
   const transport: NodemailerTransport = nodemailer.createTransport({
     host: host!,
     port,

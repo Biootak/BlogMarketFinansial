@@ -16,7 +16,7 @@ interface SingleHeaderProps {
 const siteName = 'بازار های مالی';
 const SingleHeader: React.FC<SingleHeaderProps> = ({ post, titleMainClass, className = '' }) => {
   // Calculate reading time (assuming 200 words per minute)
-  const wordCount = post.content.split(/\s+/).length;
+  const wordCount = post.content ? post.content.split(/\s+/).length : 0;
   const readingTime = Math.ceil(wordCount / 200);
 
   return (

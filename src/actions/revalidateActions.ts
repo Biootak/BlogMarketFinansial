@@ -1,8 +1,20 @@
 'use server';
 
 import { revalidateTag } from '@/lib/revalidate';
+import { requireSuperAdmin, authFailureToActionResult } from '@/lib/require-auth';
+
+// C4 fix: every revalidation action is a cache-busting, DB/upstream-pressure
+// operation. Gate them behind SUPER_ADMIN so an anonymous caller cannot
+// trigger a cache stampede / DoS.
+function assertAuth() {
+  return requireSuperAdmin().then((r) =>
+    r.success ? null : authFailureToActionResult(r),
+  );
+}
 
 export async function revalidateCategoryCache(categoryId: string) {
+  const authError = await assertAuth();
+  if (authError) return authError;
   try {
     if (categoryId === 'list') {
       revalidateTag('categories');
@@ -24,6 +36,8 @@ export async function revalidateCategoryCache(categoryId: string) {
 }
 
 export async function revalidatePostCache(postId?: string) {
+  const authError = await assertAuth();
+  if (authError) return authError;
   try {
     if (postId) {
       revalidateTag(`post-${postId}`);
@@ -50,6 +64,8 @@ export async function revalidatePostCache(postId?: string) {
 }
 
 export async function revalidateSettingsCache() {
+  const authError = await assertAuth();
+  if (authError) return authError;
   try {
     revalidateTag('system-settings');
     return { success: true };
@@ -60,6 +76,8 @@ export async function revalidateSettingsCache() {
 }
 
 export async function revalidateAdvertisementsCache() {
+  const authError = await assertAuth();
+  if (authError) return authError;
   try {
     revalidateTag('advertisements');
     return { success: true };
@@ -70,6 +88,8 @@ export async function revalidateAdvertisementsCache() {
 }
 
 export async function revalidateAllCache() {
+  const authError = await assertAuth();
+  if (authError) return authError;
   try {
     revalidateTag('posts');
     revalidateTag('post-slug');
@@ -90,8 +110,8 @@ export async function revalidateAllCache() {
     revalidateTag('sidebar-ads');
     revalidateTag('system-settings');
     revalidateTag('advertisements');
-    revalidateTag('ticker');
-    revalidateTag('exchange-rates');
+    revalidateTag('market-rates:ticker');
+    revalidateTag('market-rates:exchange-rates');
     revalidateTag('dashboard-stats');
     return { success: true };
   } catch (error) {

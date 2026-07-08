@@ -16,7 +16,7 @@ import type { PostWithRelations, CategoryWithPostCount, UserWithProfile } from '
 import { searchAll } from '@/actions/search';
 import { getPostLink } from '@/lib/getPostLink';
 
-function classNames(...classes: any) {
+function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
 

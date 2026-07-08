@@ -1,98 +1,165 @@
-'use client';
+import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
+import { getPostBySlug } from '@/actions/getPostBySlug';
+import { getRelatedPosts } from '@/actions/getRelatedPosts';
+import { getMoreFromAuthor } from '@/actions/getMoreFromAuthor';
+import SingleHeader from '@/app/(site)/(singles)/SingleHeader';
+import SingleContent from '@/app/(site)/(singles)/SingleContent';
+import SingleRelatedPosts from '@/app/(site)/(singles)/SingleRelatedPosts';
+import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia';
+import { getSidebarData } from '@/actions/sidebarActions';
+import type { PostWithRelations, ActionResult } from '@/types/types';
+import Sidebar from '../../../Sidebar';
+import { getActiveAdvertisements } from '@/actions/advertisementActions';
 
-import React from 'react';
-import Badge from '@/components/Badge/Badge';
-// 2026-07-04: was `import iconPlaying from '@/images/icon-playing.gif'` and
-// `import featuredImageDemo from '@/images/podcast.jpg'`. `src/images/` does
-// not exist in this repo (legacy from the upstream template). Static assets
-// live in `public/images/` so `next/image` can serve them. See AGENTS.assets.md.
-const iconPlaying = '/images/icon-playing.gif';
-const featuredImageDemo = '/images/podcast.jpg';
-import Image from 'next/image';
-import SingleTitle from '@/app/(site)/(singles)/SingleTitle';
+export interface PageProps {
+  params: Promise<{ slug: string[] }>;
+}
 
-const PageSingleAudio = ({}) => {
-  const renderIcon = (playing: boolean) => {
-    if (playing) {
-      return <Image className="w-7" src={iconPlaying} alt="" />;
-    }
+const APP_URL =
+  process.env.NEXT_PUBLIC_APP_URL || 'https://blogmarketfinansial.ir';
 
-    return (
-      <svg className="w-11 h-11 rtl:rotate-180" fill="currentColor" viewBox="0 0 24 24">
-        <path
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.5"
-          d="M18.25 12L5.75 5.75V18.25L18.25 12Z"
-        ></path>
-      </svg>
-    );
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const postSlug = slug?.join('/') || '';
+  const result = await getPostBySlug(postSlug);
+
+  if (!result.success || !result.data) {
+    return {
+      title: 'پست یافت نشد',
+    };
+  }
+
+  const post = result.data;
+  const postUrl = `${APP_URL}/single/${postSlug}`;
+  const imageUrl = post.featuredImage || `${APP_URL}/images/default-og.jpg`;
+
+  // استخراج توضیحات از محتوا (حذف HTML tags)
+  const description = post.excerpt
+    || (post.content ? post.content.replace(/<[^>]*>/g, '').slice(0, 160) + '...' : 'بازار های مالی - مرجع تحلیل بازارهای مالی');
+
+  return {
+    title: post.title,
+    description,
+    openGraph: {
+      title: post.title,
+      description,
+      url: postUrl,
+      siteName: 'بازار های مالی',
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
+      locale: 'fa_IR',
+      type: 'article',
+      publishedTime: post.createdAt?.toISOString(),
+      modifiedTime: post.updatedAt?.toISOString(),
+      authors: post.author?.name ? [post.author.name] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description,
+      images: [imageUrl],
+    },
   };
+}
 
-  const renderButtonPlay = (playing: boolean) => {
-    return (
-      <div
-        className={
-          'aspect-w-1 aspect-h-1 rounded-full overflow-hidden z-10 shadow-2xl group cursor-pointer'
-        }
-      >
-        <Image
-          className={`w-full h-full object-cover transition-transform z-0 nc-animation-spin rounded-full ${
-            playing ? 'playing' : ''
-          }`}
-          src={featuredImageDemo}
-          alt="audio"
-        />
+export default async function PageSingleAudio({ params }: PageProps) {
+  const { slug } = await params;
+  const postSlug = slug?.join('/') || '';
+  const result = await getPostBySlug(postSlug);
 
-        <div className="bg-neutral-900 bg-blend-multiply bg-opacity-75 rounded-full" />
-        <div className="flex items-center justify-center">
-          <div className="text-white bg-black bg-blend-multiply bg-opacity-50 w-20 h-20 border-2 border-neutral-300 rounded-full flex items-center justify-center ">
-            {renderIcon(playing)}
-          </div>
-        </div>
-      </div>
-    );
-  };
+  if (!result.success || !result.data) {
+    notFound();
+  }
+
+  const post = result.data;
+
+  const relatedPostsPromise: Promise<ActionResult<PostWithRelations[]>> = getRelatedPosts(
+    post.id,
+    post.categories.map((cat) => cat.id),
+  );
+  const moreFromAuthorPromise: Promise<ActionResult<PostWithRelations[]>> = getMoreFromAuthor(
+    post.authorId,
+    post.id,
+  );
+  const sidebarData = await getSidebarData();
+  const sidebarAdsResult = await getActiveAdvertisements({
+    limit: 3,
+    size: 'MEDIUM',
+    position: 'SIDEBAR',
+    orderBy: 'createdAt',
+    orderDirection: 'desc',
+  });
+  const inContentAdsResult = await getActiveAdvertisements({
+    limit: 1,
+    position: 'IN_CONTENT',
+    orderBy: 'createdAt',
+    orderDirection: 'desc',
+  });
+  const inContentAd = inContentAdsResult.success && inContentAdsResult.data?.[0] ? inContentAdsResult.data[0] : null;
 
   return (
-    <>
-      <div className={'relative pt-8 lg:pt-16 @container/sa'}>
-        {/* Overlay */}
-        <div className="bg-primary-50 dark:bg-neutral-800 absolute top-0 inset-x-0 h-60 w-full" />
+    <div className="nc-PageSingle relative min-h-screen">
+      {/* Subtle Background Pattern */}
+      <div className="absolute inset-0 bg-gradient-to-b from-neutral-50 via-white to-neutral-50/50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950/50 pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,119,198,0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,119,198,0.15),transparent)] pointer-events-none" />
 
-        {/* SINGLE_AUDIO HEADER */}
-        <header className="relative container">
-          <div className="bg-white dark:bg-neutral-900 shadow-2xl px-5 py-7 md:p-11 rounded-2xl md:rounded-[40px] flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-10 @md/sa:gap-11">
-            <div className="w-1/2 sm:w-1/3 @md/sa:w-1/4 flex-shrink-0">
-              {/* <ButtonPlayMusicPlayer
-								renderChildren={renderButtonPlay}
-								post={DEMO_POSTS_AUDIO[1]}
-							/> */}
+      <div className="relative container pt-6 pb-12 lg:pt-8 lg:pb-16 @container/single-layout">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+          {/* Main Content Area */}
+          <article className="w-full @lg/single-layout:basis-[68%] @xl/single-layout:basis-[70%] grow-0 shrink">
+            {/* Hero Media */}
+            <div className="relative aspect-[16/9] md:aspect-[16/9] @lg/single-layout:aspect-[21/9] rounded-2xl @lg/single-layout:rounded-3xl overflow-hidden mb-8 group">
+              <PostFeaturedMedia post={post} className="w-full h-full" imageRatio="video" />
             </div>
-            <div className="flex flex-col space-y-5 w-full sm:w-auto">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div>
-                  <Badge name="S1 EP. 128" />
-                </div>
-                <span className="text-neutral-500 dark:text-neutral-400">
-                  Adventures in DevOps
-                  <span className="mx-2">·</span>
-                  Jul 22
-                </span>
+
+            {/* Header Section */}
+            <div className="relative -mt-16 sm:-mt-20 @lg/single-layout:-mt-24 @xl/single-layout:-mt-32 z-20 mx-3 sm:mx-4 @lg/single-layout:mx-6 @xl/single-layout:mx-8">
+              <SingleHeader post={post} />
+            </div>
+
+            {/* Content */}
+            <div className="mt-8 lg:mt-10">
+              <SingleContent post={post} inContentAd={inContentAd} />
+            </div>
+          </article>
+
+          {/* Sidebar */}
+          <aside className="w-full @lg/single-layout:basis-[32%] @xl/single-layout:basis-[30%] grow-0 shrink">
+            <div className="sticky top-24 space-y-8">
+              {/* Sidebar Card Wrapper */}
+              <div className="relative">
+                {/* Decorative Glow */}
+                <div className="absolute -inset-1 bg-gradient-to-br from-primary-500/20 via-violet-500/10 to-rose-500/20 rounded-3xl blur-xl opacity-0 hover:opacity-100 transition-opacity duration-500" />
+
+                <Sidebar
+                  ads={sidebarAdsResult.success && sidebarAdsResult.data ? sidebarAdsResult.data : []}
+                  className="relative space-y-6 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl rounded-2xl p-5 border border-neutral-200/50 dark:border-neutral-800/50 shadow-[0_8px_40px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.2)]"
+                  widgetPosts={sidebarData.recentPosts}
+                  tags={sidebarData.popularTags}
+                  categories={sidebarData.popularCategories}
+                  authors={sidebarData.popularAuthors}
+                />
               </div>
-              <SingleTitle title={'Programming Languages'} />
-              <span className="hidden lg:block text-lg text-neutral-500 dark:text-neutral-400">
-                We’re an online magazine dedicated to covering the best in international product
-                design. We started as a little blog back in 2002 covering student work and over time
-              </span>
-              {/* <SingleMetaAction2 /> */}
             </div>
-          </div>
-        </header>
-      </div>
-    </>
-  );
-};
+          </aside>
+        </div>
 
-export default PageSingleAudio;
+        {/* Related Posts Section */}
+        <div className="mt-16 lg:mt-24">
+          <SingleRelatedPosts
+            post={post}
+            relatedPostsPromise={relatedPostsPromise}
+            moreFromAuthorPromise={moreFromAuthorPromise}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useCallback, useEffect, useRef } from 'react';
+import React, { useMemo, useCallback, useEffect } from 'react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import { FileText } from 'lucide-react';
 import StarterKit from '@tiptap/starter-kit';
@@ -146,9 +146,6 @@ const EditorContentRenderer: React.FC<EditorContentRendererProps> = ({
   className = '',
   prose = true,
 }) => {
-  const contentRef = useRef(content);
-  const initialLoadRef = useRef(false);
-
   // Parse content - پشتیبانی از JSON و HTML
   const parseContent = useCallback((rawContent: string | object | undefined): string | object | null => {
     if (!rawContent) return null;
@@ -204,30 +201,23 @@ const EditorContentRenderer: React.FC<EditorContentRendererProps> = ({
     [],
   );
 
-  // Update content when it changes
+  // Update content whenever `parsedContent` changes (post navigation /
+  // live preview). Avoid infinite loops by only calling setContent when
+  // the incoming content differs from the editor's current content.
   useEffect(() => {
     if (!editor || editor.isDestroyed) return;
-    
-    // جلوگیری از بارگذاری مجدد همان محتوا
-    if (content === contentRef.current && initialLoadRef.current) return;
-    
-    contentRef.current = content;
-    
-    if (!initialLoadRef.current && parsedContent) {
-      initialLoadRef.current = true;
-      // Set content synchronously — no flash.
-      editor.commands.setContent(parsedContent);
-    }
-  }, [editor, content, parsedContent]);
+    if (!parsedContent) return;
 
-  // Cleanup
-  useEffect(() => {
-    return () => {
-      if (editor && !editor.isDestroyed) {
-        editor.destroy();
-      }
-    };
-  }, [editor]);
+    const currentHtml = editor.getHTML();
+    const incoming =
+      typeof parsedContent === 'string'
+        ? parsedContent
+        : JSON.stringify(parsedContent);
+
+    if (currentHtml === incoming) return;
+
+    editor.commands.setContent(parsedContent);
+  }, [editor, parsedContent]);
 
   if (!parsedContent) {
     return (

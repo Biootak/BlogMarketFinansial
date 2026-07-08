@@ -10,6 +10,7 @@ import PostCardCommentBtn from '@/components/PostCardCommentBtn/PostCardCommentB
 import { HiArrowUp, HiHashtag, HiChatBubbleLeftRight } from 'react-icons/hi2';
 import type { PostWithRelations, Advertisement } from '@/types/types';
 import MarkdownRenderer from './MarkdownRenderer';
+import { sanitizeHtml } from '@/lib/utils';
 import EditorContentRenderer from '@/components/Editor1/EditorContentRenderer';
 import BannerAds from '@/components/BannerADS/BannerADS';
 import '@/components/Editor1/styles/renderer.scss';
@@ -141,7 +142,6 @@ const SingleContentClient = ({
                   }
                   
                   if (content.trim().startsWith('<')) {
-                    const { sanitizeHtml } = require('@/lib/utils');
                     if (inContentAd) {
                       const paragraphs = content.split('</p>');
                       if (paragraphs.length > 3) {

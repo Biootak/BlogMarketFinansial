@@ -7,6 +7,18 @@ import prisma from '@/lib/db';
 import type { SocialLinkType } from '@prisma/client';
 import { requireAdmin, authFailureToActionResult } from '@/lib/require-auth';
 
+// M14 fix: validate social URLs before persisting. Stored links are later
+// rendered as `href`, so an arbitrary scheme (javascript:, data:, etc.) is a
+// stored open-redirect / XSS vector. Only http(s) origins are allowed.
+function isValidHttpUrl(value: string): boolean {
+  try {
+    const u = new URL(value);
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 export interface SocialLinkData {
   id?: string;
   name: string;
@@ -77,6 +89,9 @@ export async function createSocialLink(data: SocialLinkData) {
   try {
     const authCheck = await requireAdmin();
     if (!authCheck.success) return authFailureToActionResult(authCheck);
+    if (!isValidHttpUrl(data.url)) {
+      return { success: false, error: 'آدرس لینک معتبر نیست (فقط http/https مجاز است)' };
+    }
     const type = data.type || 'SOCIAL';
     // 2026-06-14: instead of doing aggregate + create (which had a
     // race window and 2 round-trips), use the database's own
@@ -124,6 +139,9 @@ export async function updateSocialLink(id: string, data: Partial<SocialLinkData>
   try {
     const authCheck = await requireAdmin();
     if (!authCheck.success) return authFailureToActionResult(authCheck);
+    if (data.url !== undefined && !isValidHttpUrl(data.url)) {
+      return { success: false, error: 'آدرس لینک معتبر نیست (فقط http/https مجاز است)' };
+    }
     const link = await prisma.socialLink.update({
       where: { id },
       data: {

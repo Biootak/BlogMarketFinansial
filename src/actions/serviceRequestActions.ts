@@ -23,13 +23,21 @@ function generateTrackingCode(): string {
   return `BT-${timestamp}-${random}`;
 }
 
-// Rate limiting map
+// Rate limiting map — bounded to avoid a memory leak under long-lived servers.
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_MAX_ENTRIES = 5000;
 
 function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
   const now = Date.now();
   const windowMs = 15 * 60 * 1000;
   const maxRequests = 5;
+
+  // Periodic GC so the map cannot grow unbounded.
+  if (rateLimitMap.size > RATE_LIMIT_MAX_ENTRIES) {
+    for (const [k, v] of rateLimitMap) {
+      if (now > v.resetTime) rateLimitMap.delete(k);
+    }
+  }
 
   const record = rateLimitMap.get(ip);
 
@@ -69,7 +77,9 @@ async function sendTelegramNotification(message: string): Promise<boolean> {
       body: JSON.stringify({
         chat_id: chatId,
         text: message,
-        parse_mode: 'Markdown',
+        // M8 fix: send as plain text. With parse_mode Markdown, user-supplied
+        // fields (name, description, email) could inject formatting/links
+        // (e.g. `[x](http://evil)`). Plain text keeps the notification safe.
       }),
     });
 
@@ -114,7 +124,9 @@ export interface ServiceRequestResult {
 export async function createServiceRequest(input: ServiceRequestInput): Promise<ServiceRequestResult> {
   try {
     const headersList = await headers();
-    const ip = headersList.get('x-forwarded-for')?.split(',')[0] || headersList.get('x-real-ip') || 'unknown';
+    // M5 fix: prefer x-real-ip (set by the trusted proxy, not client-forged)
+    // over the leftmost x-forwarded-for hop which is trivially spoofable.
+    const ip = headersList.get('x-real-ip')?.trim() || headersList.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     const userAgent = headersList.get('user-agent') || 'unknown';
 
     // Rate limiting

@@ -163,8 +163,14 @@ export async function uploadFile(
   contentType: string,
   dims?: { width?: number | null; height?: number | null }
 ): Promise<UploadResult> {
-  const key = `${folder}/${filename}`;
-  const localPath = `/uploads/${folder}/${filename}`;
+  // M5/M9 fix: sanitize folder + filename the same way `resolveUploadTarget`
+  // does, so the S3 `Key` always matches the locally resolved path (no
+  // mismatch that would make S3 objects unreadable/undeletable). Folder is
+  // already constrained by ALLOWED_FOLDERS upstream, but sanitize defensively.
+  const safeFolder = folder.replace(/[^a-zA-Z0-9_-]/g, '');
+  const safeFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '');
+  const key = `${safeFolder}/${safeFilename}`;
+  const localPath = `/uploads/${safeFolder}/${safeFilename}`;
 
   // هم local هم S3 را هم‌زمان شروع کن.
   // localPathString در صورت موفقیت local پر می‌شود.

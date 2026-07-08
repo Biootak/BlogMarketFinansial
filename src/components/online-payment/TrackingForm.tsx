@@ -12,6 +12,13 @@ const statusConfig = {
   CANCELLED: { label: 'لغو شده', color: 'red', icon: HiXCircle },
 };
 
+const colorClasses: Record<string, string> = {
+  yellow: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400',
+  blue: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400',
+  green: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
+  red: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400',
+};
+
 const serviceTypeLabels: Record<string, string> = {
   INTERNATIONAL_TRANSFER: 'حواله بین‌المللی',
   ONLINE_PAYMENT: 'پرداخت آنلاین',
@@ -95,7 +102,7 @@ const TrackingForm: FC = () => {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-neutral-500">وضعیت</span>
                 {status && (
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-${status.color}-100 dark:bg-${status.color}-900/30 text-${status.color}-700 dark:text-${status.color}-400`}>
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${colorClasses[status.color]}`}>
                     <status.icon className="w-4 h-4" />
                     {status.label}
                   </span>

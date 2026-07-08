@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { revalidateTag } from '@/lib/revalidate';
 import prisma from '@/lib/db';
+import { verifyCronSecret } from '@/lib/cron-auth';
 import { fetchTgjuLatest } from '@/lib/market-rates/tgju';
 import { getUsdtRate } from '@/lib/market-rates/usdt';
 import { getGlobalFxRates } from '@/lib/market-rates/fx';
@@ -22,22 +23,12 @@ function getUsdtPremiumPercent(): number {
 
 /**
  * POST /api/cron/refresh-market-rates
- * Auth: Bearer CRON_SECRET یا ?secret=
+ * Auth: Bearer CRON_SECRET (constant-time, header only)
  * هر ۶۰s فراخوانی می‌شود.
  */
 export async function POST(req: Request) {
-  const authHeader = req.headers.get('authorization');
-  const url = new URL(req.url);
-  const secret = authHeader?.replace(/^Bearer\s+/i, '') || url.searchParams.get('secret');
-  const expected = process.env.CRON_SECRET;
-  // 2026-07-08: if CRON_SECRET is unset, the previous `secret !== undefined`
-  // comparison passed for an unauthenticated caller. Fail closed instead.
-  if (!expected) {
-    return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 503 });
-  }
-  if (secret !== expected) {
-    return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 });
-  }
+  const authError = verifyCronSecret(req);
+  if (authError) return authError;
 
   const [tgjuResult, usdt, fx, autoRows] = await Promise.all([
     fetchTgjuLatest(),

@@ -106,6 +106,13 @@ export default function HeroConverter({
 }: HeroConverterProps) {
   const dir = useDirection('rtl');
 
+  // M11: freshness از Date.now() محاسبه می‌شد که در هیدریشن (زمان سرور ≠ زمان
+  // کلاینت) باعث mismatch می‌شد. فقط بعد از mount محاسبه می‌کنیم.
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // ===========================================================================
   // CATEGORY STATE — کنترل chip فعال و فیلتر جفت‌ها
   // ===========================================================================
@@ -203,6 +210,7 @@ export default function HeroConverter({
   // باشه، freshness غلط می‌شد. server این مقدار را درست محاسبه می‌کنه و
   // تازه‌ترین منبع (snapshot) را ترجیح می‌دهد.
   const freshness = useMemo(() => {
+    if (!isMounted) return '';
     if (!freshnessAnchor) return 'نامشخص';
     const anchor = new Date(freshnessAnchor).getTime();
     if (!Number.isFinite(anchor) || anchor <= 0) return 'نامشخص';
@@ -221,7 +229,7 @@ export default function HeroConverter({
     const days = Math.floor(hours / 24);
     const n = new Intl.NumberFormat('fa-IR').format(days);
     return `${n} روز پیش`;
-  }, [freshnessAnchor]);
+  }, [freshnessAnchor, isMounted]);
 
   // stats تمیز: اگه count=0، متن neutral نشان بده
   const safeProviderCount = providerCount > 0 ? providerCount : 0;
