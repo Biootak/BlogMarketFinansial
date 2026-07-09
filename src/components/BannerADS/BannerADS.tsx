@@ -342,9 +342,14 @@ export default function BannerAds({
   if (variant === 'showcase') {
     const parallax = showcaseParallax;
     const created = new Date(createdAt);
-    const dateStr = `${toPersianNumber(created.getFullYear())}/${toPersianNumber(
-      String(created.getMonth() + 1).padStart(2, '0'),
-    )}/${toPersianNumber(String(created.getDate()).padStart(2, '0'))}`;
+    // Pin to Asia/Tehran so server (UTC) and client render identical
+    // day/month strings — avoids a React hydration mismatch near midnight.
+    const dateStr = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      timeZone: 'Asia/Tehran',
+    }).format(created);
 
     return (
       <div

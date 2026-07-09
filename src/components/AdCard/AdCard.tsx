@@ -92,9 +92,12 @@ function getRatioForAd(ad: Advertisement, variant: AdCardVariant): string {
 
 function formatJalaliShort(d: Date | string): string {
   const date = new Date(d);
+  // Pin to Asia/Tehran so server (UTC) and client render identical strings
+  // — avoids a React hydration mismatch in the showcase card.
   return new Intl.DateTimeFormat('fa-IR', {
     month: 'long',
     day: 'numeric',
+    timeZone: 'Asia/Tehran',
   }).format(date);
 }
 

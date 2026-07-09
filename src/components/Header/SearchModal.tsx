@@ -39,14 +39,17 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
     if (open) {
       const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
       document.body.style.overflow = 'hidden';
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
+      // In RTL the vertical scrollbar sits on the inline-end (left) side.
+      // Use the logical property so we compensate the correct edge and
+      // avoid a layout shift / gap on modal open.
+      document.body.style.paddingInlineEnd = `${scrollbarWidth}px`;
     } else {
       document.body.style.overflow = '';
-      document.body.style.paddingRight = '';
+      document.body.style.paddingInlineEnd = '';
     }
     return () => {
       document.body.style.overflow = '';
-      document.body.style.paddingRight = '';
+      document.body.style.paddingInlineEnd = '';
     };
   }, [open]);
 
