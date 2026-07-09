@@ -270,11 +270,22 @@ if (ROLE_HIERARCHY[currentUserRole] <= ROLE_HIERARCHY[targetUser.role]) {
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: { role: newRole },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phoneNumber: true,
+        role: true,
+        status: true,
+        profile: true,
+      },
     });
 
     // ثبت فعالیت
     await logActivity('تغییر نقش کاربر', `نقش کاربر "${targetUser.name || targetUser.email}" به "${newRole}" تغییر کرد`);
 
+    // Never serialize the password hash to the client (unlike updateUser,
+    // this mutation returned the full row incl. `password` before).
     return {
       success: true,
       message: 'نقش کاربر با موفقیت به‌روزرسانی شد',

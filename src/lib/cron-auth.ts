@@ -30,14 +30,18 @@ export function verifyCronSecret(request: Request): NextResponse | null {
 
   const a = Buffer.from(provided);
   const b = Buffer.from(expected);
-  // Pad to equal length so timingSafeEqual never throws on a length mismatch.
-  const len = Math.max(a.length, b.length);
-  const pa = Buffer.alloc(len, 0).fill(a);
-  const pb = Buffer.alloc(len, 0).fill(b);
+  // Reject on length mismatch first, then compare the raw buffers.
+  // (Previously we padded with Buffer.alloc(len,0).fill(a), but .fill()
+  // *repeats* `a`'s bytes to fill `len`, so any short repeating prefix of
+  // CRON_SECRET matched — collapsing the secret's entropy. Comparing the
+  // raw, equal-length buffers is the correct constant-time check.)
+  if (a.length !== b.length) {
+    return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 });
+  }
 
   let equal = false;
   try {
-    equal = timingSafeEqual(pa, pb);
+    equal = timingSafeEqual(a, b);
   } catch {
     equal = false;
   }
