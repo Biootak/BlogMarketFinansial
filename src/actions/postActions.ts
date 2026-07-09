@@ -676,6 +676,11 @@ export async function deletePostAndInvalidate(
 
 export async function getPostById(postId: string): Promise<ActionResult<PostWithRelations>> {
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return { success: false, message: 'شما باید وارد شوید.' };
+    }
+    const currentUser = session.user;
     // 2026-06-14: this is called from the edit page, which only needs
     // the post body, author, categories, tags and counters — not the
     // entire comments tree, all likers or all savers. Trimmed select
@@ -719,6 +724,14 @@ export async function getPostById(postId: string): Promise<ActionResult<PostWith
 
     if (!post) {
       return { success: false, message: 'پست یافت نشد.', error: 'پست یافت نشد.' };
+    }
+
+    // A user may only load a post they own, unless they are ADMIN/OWNER.
+    // This blocks any logged-in user from reading other authors' DRAFT /
+    // PENDING_REVIEW / SCHEDULED posts by id.
+    const isPrivileged = currentUser.role === 'ADMIN' || currentUser.role === 'OWNER';
+    if (!isPrivileged && post.authorId !== currentUser.id) {
+      return { success: false, message: 'شما مجوز دسترسی به این پست را ندارید.' };
     }
 
     return { success: true, message: 'پست با موفقیت بازیابی شد.', data: post as unknown as PostWithRelations };

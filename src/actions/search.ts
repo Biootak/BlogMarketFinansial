@@ -80,7 +80,6 @@ const getCachedAuthors = unstable_cache(
       select: {
         id: true,
         name: true,
-        email: true,
         image: true,
         profile: { select: { avatar: true } },
       },
