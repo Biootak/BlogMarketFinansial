@@ -20,12 +20,18 @@ import AtelierMasthead from '../../_components/AtelierMasthead';
 import AtelierToolbar from '../../_components/AtelierToolbar';
 import { buildArchiveCrumbs } from '../../_components/buildArchiveCrumbs';
 
+const ARCHIVE_BASE_URL =
+  process.env.NEXT_PUBLIC_APP_URL || 'https://blogmarketfinansial.ir';
+
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug?: string[] }>;
+  searchParams: Promise<{ page?: string; filter?: string; q?: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  const sp = await searchParams;
   const [type, category, subcategory] = slug || [];
   let title = 'روایت‌های بازار | روایت، تحلیل و کشف روندهای تازه';
   let description =
@@ -44,7 +50,21 @@ export async function generateMetadata({
     description = `همه‌ی مطالب نشان‌دار شده با «${category}»، یکجا و مرتب.`;
   }
 
-  return { title, description };
+  // Paginated / filtered / searched archive URLs are thin duplicates of the
+  // canonical listing — instruct crawlers not to index them and point the
+  // canonical tag at the clean base URL to avoid duplicate-content penalties.
+  const isFilteredView =
+    (sp.page && sp.page !== '1') || (sp.filter && sp.filter !== 'همه مقالات') || !!sp.q;
+  const canonicalPath = `/archive${slug?.length ? `/${slug.join('/')}` : ''}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `${ARCHIVE_BASE_URL}${canonicalPath}` },
+    robots: isFilteredView
+      ? { index: false, follow: true }
+      : { index: true, follow: true },
+  };
 }
 
 const FILTERS = [

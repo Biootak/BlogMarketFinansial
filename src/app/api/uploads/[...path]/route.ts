@@ -10,7 +10,9 @@ const MIME_TYPES: Record<string, string> = {
   '.jpeg': 'image/jpeg',
   '.png': 'image/png',
   '.gif': 'image/gif',
-  '.svg': 'image/svg+xml',
+  // SVG is intentionally NOT served: it can execute as a document and steal
+  // the session, and uploads no longer accept SVG. Any legacy .svg request
+  // falls through to the "نوع فایل مجاز نیست" 400 below.
 };
 
 // 2026-06-14: weak ETag so the browser/CDN can do conditional

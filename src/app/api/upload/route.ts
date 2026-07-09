@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import sharp from 'sharp';
 import { uploadFile } from '@/lib/storage';
+import { checkRateLimit as checkSharedRateLimit } from '@/lib/rate-limiter';
 
 // ---------- constants ------------------------------------------------------
 
@@ -17,8 +18,6 @@ const MAX_FILES_PER_REQUEST = 10;
 // execute as a document and steal the session. Only serve raster formats.
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as const;
 const ALLOWED_FOLDERS = ['posts', 'avatars', 'categories', 'tags', 'ads', 'general'] as const;
-const UPLOAD_RATE_LIMIT = 20; // uploads per window per user
-const UPLOAD_RATE_WINDOW_MS = 60 * 1000; // 1 minute
 
 // soft max-width for the canonical rendition. We do NOT generate multiple
 // variants — the upload route returns one WebP (or the original mime for
@@ -66,31 +65,10 @@ interface ProcessedFile {
   mime: string;
 }
 
-// ---------- in-memory rate limiter ----------------------------------------
-// (A Redis-backed limiter exists for routes that scale horizontally; this
-// endpoint is a single process per pod so an in-memory map is fine and
-// avoids the Redis round-trip on every upload.)
-const uploadCounts = new Map<string, { count: number; resetTime: number }>();
-
-function checkRateLimit(userId: string): boolean {
-  const now = Date.now();
-
-  // Periodic GC so the map doesn't grow unbounded under a long-lived server.
-  if (uploadCounts.size > 1000) {
-    for (const [id, limit] of uploadCounts) {
-      if (now > limit.resetTime) uploadCounts.delete(id);
-    }
-  }
-
-  const current = uploadCounts.get(userId);
-  if (!current || now > current.resetTime) {
-    uploadCounts.set(userId, { count: 1, resetTime: now + UPLOAD_RATE_WINDOW_MS });
-    return true;
-  }
-  if (current.count >= UPLOAD_RATE_LIMIT) return false;
-  current.count += 1;
-  return true;
-}
+// ---------- rate limiter --------------------------------------------------
+// Use the shared Redis-backed limiter so the cap is enforced across all
+// instances (the previous in-memory Map was trivially bypassed by hitting
+// different pods in a horizontally-scaled deployment).
 
 // ---------- validation helpers --------------------------------------------
 
@@ -321,7 +299,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!checkRateLimit(session.user.id)) {
+    if (!(await checkSharedRateLimit(session.user.id, 'upload')).success) {
       return NextResponse.json(
         {
           success: false,
@@ -349,6 +327,16 @@ export async function POST(request: NextRequest) {
     if (folder === 'ads' && role !== 'ADMIN' && role !== 'OWNER') {
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } },
+        { status: 403 },
+      );
+    }
+
+    // Storage-abuse hardening: a plain USER may only manage their own avatar.
+    // Post/category/tag/general/ads writes require at least AUTHOR. Without
+    // this, any authenticated reader could fill S3 with arbitrary files.
+    if (folder !== 'avatars' && role !== 'AUTHOR' && role !== 'ADMIN' && role !== 'OWNER') {
+      return NextResponse.json(
+        { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی برای آپلود در این بخش وجود ندارد' } },
         { status: 403 },
       );
     }

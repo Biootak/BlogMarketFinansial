@@ -6,8 +6,17 @@ const path = require('path');
 const { PrismaClient } = require('@prisma/client');
 const p = new PrismaClient();
 
+// Never wipe the database in production.
+if (process.env.NODE_ENV === 'production') {
+  console.error('❌ refusing to reset/seed in production (NODE_ENV=production)');
+  process.exit(1);
+}
+
 const AUTHOR_ID = 'cm5qdrd3e0001m4zli12b2rd5';
-const DATA_FILE = path.join(__dirname, 'posts.ndjson');
+
+// Source data lives in prisma/posts-data.js (array of post objects), not an
+// ndjson file. Require it directly so `db:reset` works out of the box.
+const POSTS = require(path.join(__dirname, '..', 'prisma', 'posts-data.js'));
 
 function tipDoc(blocks) {
   return JSON.stringify({
@@ -38,7 +47,7 @@ async function main() {
   console.log(`   - ${del.count} پست حذف شد`);
 
   console.log('\n🌱 خواندن فایل داده...');
-  const lines = fs.readFileSync(DATA_FILE, 'utf8').split('\n').filter((l) => l.trim());
+  const lines = POSTS.map((post) => JSON.stringify(post));
   console.log(`   - ${lines.length} پست در فایل یافت شد`);
 
   console.log('\n🌱 شروع درج...');

@@ -6,7 +6,7 @@ import { ArrowLeftGlyph, ShieldCheckGlyph } from '@/components/Setup/WizardIcons
 import { checkExistingSuperAdmin } from '@/lib/auth';
 import { maskEmail } from '@/lib/setup/format';
 import { getSiteIdentity } from '@/lib/site-identity';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/db';
 import { headers } from 'next/headers';
 import Link from 'next/link';
 import { Suspense } from 'react';
@@ -26,11 +26,6 @@ import { Suspense } from 'react';
  *   1. Render the skip-link and static brand nav immediately.
  *   2. Stream <SetupContent> which probes the DB and reads request headers.
  */
-
-// We instantiate a private Prisma client here (not the shared singleton)
-// because this page may run before the singleton bootstrap in early
-// request cycles. Mirrors the same pattern in `actions/createSuperAdmin.ts`.
-const prisma = new PrismaClient();
 
 /**
  * SetupSkeleton — visual placeholder that matches the glass shell so the

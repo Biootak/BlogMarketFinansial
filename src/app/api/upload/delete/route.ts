@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { deleteFile } from '@/lib/storage';
+import { assertSameOrigin } from '@/lib/csrf';
 
 export async function DELETE(request: NextRequest) {
+  // M1 fix parity with /api/revalidate: reject cross-origin state-changing
+  // requests so a logged-in admin can't be CSRF'd into deleting files.
+  if (!assertSameOrigin(request)) {
+    return NextResponse.json(
+      { success: false, error: { code: 'CSRF', message: 'درخواست نامعتبر' } },
+      { status: 403 },
+    );
+  }
+
   try {
     const session = await auth();
     const role = (session?.user as { role?: string } | undefined)?.role;

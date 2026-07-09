@@ -88,7 +88,14 @@ export async function checkRateLimit(
         reset: result.reset,
       };
     } catch (error) {
-      // اگه Upstash fail شد (timeout, network)، fail-open و از in-memory استفاده کن
+      // For security-critical limiters (auth) we must fail CLOSED: when Upstash
+      // is unreachable we deny the request rather than silently letting an
+      // attacker bypass brute-force protection. Non-critical limiters fall back
+      // to the per-process in-memory store so availability is preserved.
+      if (type === 'auth') {
+        console.error(`[rate-limiter] Upstash failed for ${type}, failing closed:`, error);
+        return { success: false, remaining: 0, reset: Date.now() + (LIMITS[type]?.windowMs ?? 15 * 60 * 1000) };
+      }
       console.warn(`[rate-limiter] Upstash failed for ${type}, falling back to in-memory:`, error);
     }
   }

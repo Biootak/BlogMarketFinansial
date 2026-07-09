@@ -73,17 +73,15 @@ const NcModal: FC<NcModalProps> = ({
               &#8203;
             </span>
             <Transition.Child
-              as="div"
+              as={Dialog.Panel}
               enter="ease-out duration-300"
               enterFrom="opacity-0 scale-95"
               enterTo="opacity-100 scale-100"
               leave="ease-in duration-200"
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
+              className={`inline-block w-full my-5 overflow-hidden text-start align-middle transition-all transform bg-white border border-black border-opacity-5 shadow-xl rounded-2xl sm:my-8 dark:bg-neutral-800 dark:border-neutral-700 text-neutral-900 dark:text-neutral-300 ${contentExtraClass}`}
             >
-              <div
-                className={`inline-block w-full my-5 overflow-hidden text-start align-middle transition-all transform bg-white border border-black border-opacity-5 shadow-xl rounded-2xl sm:my-8 dark:bg-neutral-800 dark:border-neutral-700 text-neutral-900 dark:text-neutral-300 ${contentExtraClass}`}
-              >
                 <div className="py-4 px-6 text-center relative border-b border-neutral-100 dark:border-neutral-700 md:py-5">
                   <ButtonClose
                     onClick={closeModal}
@@ -99,7 +97,6 @@ const NcModal: FC<NcModalProps> = ({
                   )}
                 </div>
                 <div className={contentPaddingClass}>{renderContent()}</div>
-              </div>
             </Transition.Child>
           </div>
         </Dialog>

@@ -34,11 +34,14 @@ services:
       - "3000:3000"
     env_file:
       - .env
-      - .env.local
     environment:
       # در production حتماً APP_URL و NEXTAUTH_URL با دامنه‌ی واقعی ست شود
       - NODE_ENV=production
       - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+      # Next.js 16's image SSRF guard mis-classifies unsplash IPv6 addresses
+      # as private; forcing IPv4-first DNS resolution sidesteps the false
+      # positive in self-hosted (non-Vercel) deployments.
+      - NODE_OPTIONS=--dns-result-order=ipv4first
       # در کانتینر، دیتابیس با hostname «db» در دسترس است (نه localhost)
       - DATABASE_URL=postgresql://blog_owner:${POSTGRES_PASSWORD}@db:5432/blog?sslmode=disable
       - DIRECT_URL=postgresql://blog_owner:${POSTGRES_PASSWORD}@db:5432/blog?sslmode=disable
@@ -51,12 +54,16 @@ services:
         condition: service_healthy
     networks:
       - app-network
+    # Apply pending migrations before starting so a fresh DB/volume boots
+    # with the required tables instead of 500-ing on every query.
+    command: sh -c "npx prisma migrate deploy && node node_modules/next/dist/bin/next start"
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      # node:slim has no wget/curl, so probe with a tiny node one-liner.
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 30s
+      start_period: 60s
 
   db:
     image: registry.docker.ir/postgres:15-alpine

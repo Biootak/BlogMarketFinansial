@@ -10,7 +10,7 @@ import type {
 } from './types';
 import { SYMBOL_REGISTRY_MAP } from './registry';
 import { fetchAllTgjuPages } from './tgju';
-import { CANONICAL_KEY_TO_SOURCES, CANONICAL_KEY_TO_SOURCE, type SymbolSource } from './tgjuKeys';
+import { CANONICAL_KEY_TO_SOURCES, type SymbolSource } from './tgjuKeys';
 import { getUsdtRate } from './usdt';
 import { getGlobalFxRates } from './fx';
 
@@ -99,6 +99,9 @@ function assembleFromRow(
   let rawValue: number | null = null;
   let changePercent = 0;
   let sourcePage: string | null = null;
+  // Two-sided rates (e.g. SANA / national bank) carry a buy and a sell value.
+  let buyValue: number | null = null;
+  let sellValue: number | null = null;
 
   // Priority 1: manual
   if (provider === 'manual' && row.singleRate) {
@@ -106,46 +109,49 @@ function assembleFromRow(
     if (Number.isFinite(v) && v > 0) rawValue = v * divisor;
   }
 
-  // Priority 2: TGJU — اول از tgjuKeys.ts (canonicalKey → pageId+tgjuKey)
-  // اگه برای این symbol یک SymbolSource داشته باشیم، مستقیم از page مورد نظر scrape می‌کنیم.
-  // اگه نه، از tgjuKey خام registry استفاده می‌کنیم (homepage default).
+  // Priority 2: TGJU — از tgjuKeys.ts (canonicalKey → pageId+tgjuKey).
+  // یک symbol ممکن است چندین SymbolSource داشته باشد (مثل SANA/صرافی ملی:
+  // خرید و فروش جداگانه). پس حتماً از CANONICAL_KEY_TO_SOURCES (آرایه‌ای)
+  // استفاده می‌کنیم تا هر دو سمت پر شود — نه CANONICAL_KEY_TO_SOURCE که فقط
+  // اولی را برمی‌گرداند و سمت دوم را حذف می‌کرد.
   if (rawValue === null) {
-    // 2a. از tgjuKeys — اگه SymbolSource ثبت شده باشه (مثلاً TRANSFER_USD, BANK_USD, …)
-    const sourceMatch = findSourceForSymbol(symbol);
-    if (sourceMatch) {
-      const { source, canonicalKey } = sourceMatch;
-      // canonicalKey مثل 'transfer_usd' (در page transfer → 'transfer_transfer_usd' بعد از prefix)
-      // اما در tgjuMap ما key canonical را با همان فرمتی که parser تولید کرده ذخیره کردیم.
-      // برای یافتن key صحیح، دو candidate را امتحان می‌کنیم:
-      //   1. canonicalKey (برای homepage keys که prefix ندارن)
-      //   2. `${pagePrefix}${tgjuKey}` (برای صفحات دیگر که prefix دارن)
+    const sources = findSourcesForSymbol(symbol);
+    for (const source of sources) {
       const pagePrefix = getPagePrefix(source.pageId);
       const strippedKey = stripKnownPrefix(source.tgjuKey);
       const candidates: string[] = [
-        strippedKey,                              // 'price_dollar_rl'
-        source.tgjuKey,                           // 'transfer_usd'
-        pagePrefix + source.tgjuKey,              // 'transfer_transfer_usd'
-        pagePrefix + strippedKey,                 // 'transfer_price_dollar_rl' (rare)
+        strippedKey,
+        source.tgjuKey,
+        pagePrefix + source.tgjuKey,
+        pagePrefix + strippedKey,
       ];
       for (const key of candidates) {
         const t = tgjuMap.get(key);
-        if (t) {
-          rawValue = t.value;
-          changePercent = t.change;
+        if (!t) continue;
+        if (source.side === 'buy') {
+          buyValue = t.value;
+          if (changePercent === 0) changePercent = t.change;
           sourcePage = t.pageId;
-          break;
-        }
-      }
-      // اگه باز هم پیدا نشد، log silent
-      if (rawValue === null && canonicalKey) {
-        // آخرین تلاش: canonicalKey از symbol source
-        const t = tgjuMap.get(canonicalKey);
-        if (t) {
+        } else if (source.side === 'sell') {
+          sellValue = t.value;
+          if (changePercent === 0) changePercent = t.change;
+          sourcePage = t.pageId;
+        } else {
           rawValue = t.value;
           changePercent = t.change;
           sourcePage = t.pageId;
         }
+        break;
       }
+    }
+
+    // نرخ دوطرفه: مقدار نمایشی = میانگین خرید و فروش
+    if (buyValue !== null && sellValue !== null) {
+      rawValue = (buyValue + sellValue) / 2;
+    } else if (buyValue !== null) {
+      rawValue = buyValue;
+    } else if (sellValue !== null) {
+      rawValue = sellValue;
     }
   }
 
@@ -188,6 +194,9 @@ function assembleFromRow(
     decimals,
     priority,
     value,
+    buyValue: buyValue ?? undefined,
+    sellValue: sellValue ?? undefined,
+    spread: buyValue !== null && sellValue !== null ? sellValue - buyValue : undefined,
     changePercent,
     provider,
     updatedAt: row.updatedAt,
@@ -208,21 +217,16 @@ function assembleFromRow(
  *   2. symbol === source.canonicalKey → match
  *   3. اگه symbol مثل 'BANK_USD' باشه و source.canonicalKey هم 'BANK_USD' باشه → match
  */
-function findSourceForSymbol(symbol: string): { source: SymbolSource; canonicalKey: string } | null {
-  // مستقیم — اکثر مواقع همین کافیه
-  for (const [canonicalKey, source] of CANONICAL_KEY_TO_SOURCE) {
-    if (source.symbol === symbol || source.canonicalKey === symbol) {
-      return { source, canonicalKey };
+function findSourcesForSymbol(symbol: string): SymbolSource[] {
+  const out: SymbolSource[] = [];
+  for (const [canonicalKey, sources] of CANONICAL_KEY_TO_SOURCES) {
+    // هم symbol مستقیم و هم canonicalKey یکسان را چک می‌کنیم تا هر دو سمت
+    // (buy/sell) برای نرخ‌های دوطرفه پیدا شود.
+    if (sources.some((s) => s.symbol === symbol || s.canonicalKey === symbol)) {
+      out.push(...sources);
     }
   }
-  // تلاش دوم: prefix match — مثلاً symbol='BANK_USD' ممکنه با canonicalKey='BANK_USD' (که در source هست) match کنه
-  // اما symbol === source.symbol هم باید چک بشه
-  for (const [canonicalKey, source] of CANONICAL_KEY_TO_SOURCE) {
-    if (source.canonicalKey === symbol) {
-      return { source, canonicalKey };
-    }
-  }
-  return null;
+  return out;
 }
 
 const PAGE_PREFIX: Record<string, string> = {

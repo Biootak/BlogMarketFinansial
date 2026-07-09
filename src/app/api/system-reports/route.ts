@@ -1,7 +1,20 @@
 import { checkReportAccess } from '@/actions/reportActions';
+import { auth } from '@/auth';
 import db from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
+
+async function ensureReportAccess(): Promise<NextResponse | null> {
+  const session = await auth();
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  if (!session?.user || (role !== 'ADMIN' && role !== 'OWNER')) {
+    return NextResponse.json(
+      { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } },
+      { status: 401 },
+    );
+  }
+  return null;
+}
 
 
 interface MonthlyStats {
@@ -41,7 +54,10 @@ interface SystemReport {
   };
 }
 
-export async function GET(): Promise<NextResponse<SystemReport | { error: string }>> {
+export async function GET(): Promise<NextResponse> {
+  const guard = await ensureReportAccess();
+  if (guard) return guard;
+
   try {
     await checkReportAccess();
 

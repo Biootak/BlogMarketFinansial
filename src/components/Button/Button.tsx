@@ -28,7 +28,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       disabled = false,
       href,
       children,
-      type,
+      type = 'button',
       loading,
       onClick = () => {},
       ...rest

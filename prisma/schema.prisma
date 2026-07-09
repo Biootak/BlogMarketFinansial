@@ -6,7 +6,7 @@ datasource db {
 
 generator client {
   provider      = "prisma-client-js"
-  binaryTargets = ["native", "windows", "debian-openssl-3.0.x", "rhel-openssl-3.0.x"]
+  binaryTargets = ["native", "windows", "debian-openssl-3.0.x", "rhel-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
 }
 
 enum Role {
@@ -111,6 +111,7 @@ model Account {
   updatedAt DateTime @updatedAt
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Session {
@@ -120,8 +121,7 @@ model Session {
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  @@index([userId])
 }
 
 // 2026-06-23: unified OTP model.
@@ -236,6 +236,8 @@ model View {
 
   @@index([postId])
   @@index([createdAt])
+  // Per-user notification feed (dashboard) is filtered by userId + recency.
+  @@index([userId, createdAt(sort: Desc)])
 }
 
 model Comment {
@@ -248,7 +250,7 @@ model Comment {
 
   post    Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
   author  User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  parent  Comment?  @relation("CommentToComment", fields: [parentId], references: [id])
+  parent  Comment?  @relation("CommentToComment", fields: [parentId], references: [id], onDelete: Cascade)
   replies Comment[] @relation("CommentToComment")
   likes   Like[]
 
@@ -277,7 +279,11 @@ model Like {
 
   createdAt DateTime @default(now())
 
-  @@unique([userId, postId, commentId])
+  // Partial uniques: a user may like a post OR a comment, but not the same
+  // one twice. Postgres treats NULLs as distinct in a single composite
+  // unique, so we split into two uniques keyed by the non-null target.
+  @@unique([userId, postId])
+  @@unique([userId, commentId])
   // 2026-06-14: per-post like counts are sorted on the archive (محبوب‌ترین)
   // and home sections. Without these, Postgres falls back to a seq scan
   // + groupBy, which is O(n) on every archive page load.
@@ -442,7 +448,7 @@ model Newsletter {
   email     String   @unique
   isActive  Boolean  @default(true)
   userId    String?  @unique
-  user      User?    @relation(fields: [userId], references: [id])
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

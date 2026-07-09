@@ -12,7 +12,17 @@ const ContentSecurityPolicy = `
   default-src 'self';
   script-src 'self' 'unsafe-inline' https://*.sentry.io ${isProd ? '' : "'unsafe-eval'"};
   style-src 'self' 'unsafe-inline';
-  img-src 'self' blob: data: https: http:;
+  img-src 'self' blob: data:
+    https://images.pexels.com
+    https://images.unsplash.com
+    https://*.storage.c2.liara.space
+    https://avatar.vercel.sh
+    https://lh3.googleusercontent.com
+    https://avatars.githubusercontent.com
+    https://cdn.jsdelivr.net
+    https://i.pravatar.cc
+    https://picsum.photos
+    https://placehold.co;
   font-src 'self' data:
   connect-src 'self' https://*.sentry.io https://api.telegram.org https://api.exir.io wss: ws:;
   frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://www.aparat.com;
@@ -48,7 +58,7 @@ const nextConfig: NextConfig = {
   // the CDN usually does this; when running standalone (e.g. `next start`)
   // we want Next to do it too so the size that the client parses is
   // smaller on cold cache.
-  productionBrowserSourceMaps: true,
+  productionBrowserSourceMaps: false,
 
   // Rewrites برای serve کردن فایل‌های آپلود شده در production
   async rewrites() {
@@ -193,8 +203,9 @@ const nextConfig: NextConfig = {
     // network restrictions), skip the Image Optimization fetch so the
     // server does not log ECONNRESET errors on every remote image.
     unoptimized: process.env.NODE_ENV === 'development',
-    // افزایش timeout برای لود تصاویر
-    minimumCacheTTL: 60,
+    // افزایش timeout برای لود تصاویر — images are effectively immutable,
+    // so cache the optimizer result for a full day instead of 60s.
+    minimumCacheTTL: 86400,
     // فرمت‌های مجاز
     formats: ['image/avif', 'image/webp'],
     // محدودیت سایز دستگاه‌ها
@@ -247,6 +258,13 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'picsum.photos',
+      },
+      // 2026-07-09: placehold.co is used by seed advertisements
+      // (seed.js seedAdvertisements). Without it, the home/ads section
+      // crashes at runtime with "hostname not configured".
+      {
+        protocol: 'https',
+        hostname: 'placehold.co',
       },
     ],
   },

@@ -180,10 +180,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!internal.success) return null;
 
         // 2026-07-08: brute-force protection on the public credentials endpoint.
+        // The leftmost X-Forwarded-For entry is fully client-controlled, so we
+        // take the *rightmost* entry (appended by our own trusted proxy) and
+        // only fall back to X-Real-IP when no XFF is present.
         const req = request as Request | undefined;
+        const xff = req?.headers?.get('x-forwarded-for');
         const ip =
-          req?.headers?.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-          req?.headers?.get('x-real-ip') ??
+          (xff
+            ? xff
+                .split(',')
+                .map((p) => p.trim())
+                .filter(Boolean)
+                .pop()
+            : undefined) ??
+          req?.headers?.get('x-real-ip')?.trim() ??
           'unknown';
         const rl = await checkRateLimit(ip, 'auth');
         if (!rl.success) return null;

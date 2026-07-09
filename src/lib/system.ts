@@ -70,6 +70,12 @@ export async function getSystemMetrics(): Promise<SystemMetrics> {
 
 export async function checkDiskSpace(drive: string): Promise<DiskSpace | null> {
   try {
+    // Guard against command injection: only a single ASCII letter is allowed.
+    if (!/^[a-zA-Z]$/.test(drive)) {
+      console.error('[system] Invalid drive letter rejected:', drive);
+      return null;
+    }
+
     // For Windows
     if (process.platform === 'win32') {
       const { stdout } = await execAsync(`wmic logicaldisk where "DeviceID='${drive}:'" get size,freespace /format:value`);

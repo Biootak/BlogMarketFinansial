@@ -70,5 +70,5 @@ export function fromPersianDate(jY: number, jM: number, jD: number): Date {
       (gd % 30.44),
   );
 
-  return new Date(gy + 1900, Math.floor(gm / 31), gm % 31);
+  return new Date(gY, Math.floor(gm / 31), gm % 31);
 }

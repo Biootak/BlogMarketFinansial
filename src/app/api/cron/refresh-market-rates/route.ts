@@ -27,6 +27,16 @@ function getUsdtPremiumPercent(): number {
  * هر ۶۰s فراخوانی می‌شود.
  */
 export async function POST(req: Request) {
+  return handleRefresh(req);
+}
+
+// Vercel Cron (and most schedulers) issue GET requests, so we support both
+// verbs behind the same CRON_SECRET-protected handler.
+export async function GET(req: Request) {
+  return handleRefresh(req);
+}
+
+async function handleRefresh(req: Request) {
   const authError = verifyCronSecret(req);
   if (authError) return authError;
 
@@ -121,8 +131,4 @@ export async function POST(req: Request) {
       snapshotError,
     },
   });
-}
-
-export async function GET() {
-  return NextResponse.json({ error: 'METHOD_NOT_ALLOWED' }, { status: 405 });
 }

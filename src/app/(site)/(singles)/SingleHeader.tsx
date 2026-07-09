@@ -45,7 +45,7 @@ const SingleHeader: React.FC<SingleHeaderProps> = ({ post, titleMainClass, class
               <span key={cat.id} className="flex items-center gap-2">
                 <HiChevronLeft className="w-3 h-3 text-neutral-300 dark:text-neutral-600" />
                 <Link 
-                  href={`/category/${cat.id}`}
+                  href={`/archive/category/${cat.slug}`}
                   className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
                 >
                   {cat.name}
