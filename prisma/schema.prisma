@@ -236,8 +236,6 @@ model View {
 
   @@index([postId])
   @@index([createdAt])
-  // Per-user notification feed (dashboard) is filtered by userId + recency.
-  @@index([userId, createdAt(sort: Desc)])
 }
 
 model Comment {
