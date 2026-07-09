@@ -25,6 +25,13 @@ export async function invalidatePublicCache() {
   revalidateTag('categories');
   revalidateTag('tags');
   revalidateTag('comments');
+  revalidateTag('system-settings');
+  revalidateTag('transfer-providers');
+  revalidateTag('money-transfer');
+  revalidateTag('rate-lists');
+  safeRevalidateTag('system-settings');
+  safeRevalidateTag('transfer-providers');
+  safeRevalidateTag('money-transfer');
   await invalidateSidebarCache();
 }
 
@@ -58,6 +65,18 @@ export async function invalidatePostCache(postId: string) {
 }
 
 export async function invalidateSidebarCache() {
+  // 2026-07-09: purge the actual safeCache tags produced by
+  // `sidebarActions` (`recent-posts`, `popular-tags`, `popular-categories`,
+  // `popular-authors`). The previous `sidebar-*` keys never matched any
+  // producer, so the sidebar stayed stale up to its 3600s TTL after publish.
+  revalidateTag('recent-posts');
+  revalidateTag('popular-tags');
+  revalidateTag('popular-categories');
+  revalidateTag('popular-authors');
+  safeRevalidateTag('recent-posts');
+  safeRevalidateTag('popular-tags');
+  safeRevalidateTag('popular-categories');
+  safeRevalidateTag('popular-authors');
   revalidateTag('sidebar-data');
   revalidateTag('sidebar-posts');
   revalidateTag('sidebar-tags');

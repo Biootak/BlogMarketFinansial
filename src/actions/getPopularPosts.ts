@@ -38,12 +38,16 @@ export async function getPopularPosts(): Promise<
     // 2026-06-14: 2-minute cache. The view count delta is small
     // enough that a 2-minute staleness is invisible in the UI, but
     // the dashboard widget no longer hits the DB on every render.
+    // `unstable_cache` keys ONLY on `keyParts`, NOT on the closure's function
+    // args — the previous static key leaked one user's scoped list to another
+    // for 120s. Scope the cache by userId/role here.
+    const scopeKey = user.role === 'AUTHOR' ? (user.id ?? 'no-id') : `role:${user.role ?? 'unknown'}`;
     const fetcher = unstable_cache(
-      async (roleScope: { authorId?: string }) => {
+      async () => {
         return prisma.post.findMany({
           where: {
             status: 'PUBLISHED',
-            ...(roleScope.authorId ? { authorId: roleScope.authorId } : {}),
+            ...(user.role === 'AUTHOR' ? { authorId: user.id } : {}),
           },
           orderBy: { viewCount: 'desc' },
           take: 5,
@@ -57,14 +61,14 @@ export async function getPopularPosts(): Promise<
           },
         });
       },
-      ['popular-posts', 'v1-2026-06-14'],
+      ['popular-posts', 'v1-2026-06-14', scopeKey],
       {
         revalidate: 120,
         tags: ['popular-posts', 'posts'],
       },
     );
 
-    const popularPosts = await fetcher({ authorId: user.role === 'AUTHOR' ? user.id : undefined });
+    const popularPosts = await fetcher();
 
     const formattedPosts = popularPosts.map((post) => ({
       id: post.id,

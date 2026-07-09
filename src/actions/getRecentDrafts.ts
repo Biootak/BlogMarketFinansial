@@ -37,10 +37,17 @@ export async function getRecentDrafts(): Promise<
     // `[name, ...args]`, so passing the user id here scopes the
     // cache correctly while still sharing the 30s TTL globally
     // for the same user.
+    // `unstable_cache` keys ONLY on `keyParts` (string args), NOT on the
+    // closure's function args — so the previous static key leaked one user's
+    // drafts to another for 30s. Scopes the cache by userId/role here.
+    const scopeKey = user.role === 'AUTHOR' ? (user.id ?? 'no-id') : `role:${user.role ?? 'unknown'}`;
     const fetcher = unstable_cache(
-      async (roleScope: { authorId?: string }) => {
+      async () => {
         return prisma.post.findMany({
-          where: { status: 'DRAFT', ...(roleScope.authorId ? { authorId: roleScope.authorId } : {}) },
+          where: {
+            status: 'DRAFT',
+            ...(user.role === 'AUTHOR' ? { authorId: user.id } : {}),
+          },
           orderBy: { updatedAt: 'desc' },
           take: 5,
           select: {
@@ -51,14 +58,14 @@ export async function getRecentDrafts(): Promise<
           },
         });
       },
-      ['recent-drafts', 'v1-2026-06-14'],
+      ['recent-drafts', 'v1-2026-06-14', scopeKey],
       {
         revalidate: 30,
         tags: ['recent-drafts', 'posts'],
       },
     );
 
-    const recentDrafts = await fetcher({ authorId: user.role === 'AUTHOR' ? user.id : undefined });
+    const recentDrafts = await fetcher();
 
     const formattedDrafts = recentDrafts.map((draft) => ({
       id: draft.id,
