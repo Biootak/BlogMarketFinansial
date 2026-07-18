@@ -13,6 +13,7 @@ import {
   serviceRequestConfirmationEmail,
   serviceRequestStatusEmail,
 } from '@/lib/email/templates';
+import { isPhoneValid, normalizeToE164 } from '@/lib/phone-validation';
 
 // ─── Service type labels ──────────────────────────────────────────────────── //
 const serviceTypeLabels: Record<string, string> = {
@@ -71,8 +72,15 @@ async function trySendEmail(fn: () => Promise<void>): Promise<void> {
 // ─── Validation schema ───────────────────────────────────────────────────── //
 const ServiceRequestInputSchema = z.object({
   fullName: z.string().min(3).max(100).transform(sanitizeInput),
-  phone: z.string().min(10).max(15).regex(/^[0-9+]+$/),
+  // 2026-07-10: libphonenumber-js — normalize to E.164 for storage
+  phone: z
+    .string()
+    .min(1)
+    .refine((val) => isPhoneValid(val), { message: 'شماره تماس معتبر نیست' })
+    .transform((val) => normalizeToE164(val)),
   email: z.string().email().optional().or(z.literal('')).transform((val) => val || null),
+  // 2026-07-10: client-generated UUIDv4 for idempotency (prevents duplicate on retry)
+  idempotencyKey: z.string().uuid().optional().nullable(),
   serviceType: z.enum([
     'INTERNATIONAL_TRANSFER',
     'ONLINE_PAYMENT',
@@ -139,6 +147,18 @@ export async function createServiceRequest(input: ServiceRequestInput): Promise<
     }
 
     const data = validationResult.data;
+
+    // 2026-07-10: Idempotency — if the client provides a key and we already have it, return the existing record
+    if (data.idempotencyKey) {
+      const existing = await prisma.serviceRequest.findUnique({
+        where: { idempotencyKey: data.idempotencyKey },
+        select: { trackingCode: true },
+      });
+      if (existing) {
+        return { success: true, trackingCode: existing.trackingCode, message: 'درخواست قبلاً ثبت شده است.' };
+      }
+    }
+
     const trackingCode = generateTrackingCode();
 
     // 2026-07-07: collect userId if a session exists (optional — guest orders allowed)
@@ -179,6 +199,7 @@ export async function createServiceRequest(input: ServiceRequestInput): Promise<
         userAgent: userAgent.substring(0, 500),
         userId,
         metadata: Object.keys(metadataClean).length > 0 ? metadataClean : undefined,
+        ...(data.idempotencyKey ? { idempotencyKey: data.idempotencyKey } : {}),
       },
     });
 

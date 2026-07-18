@@ -53,7 +53,7 @@ import {
 
 const ICON_CLASS = 'w-[19px] h-[19px]';
 
-type UserRole = 'USER' | 'AUTHOR' | 'ADMIN' | 'OWNER';
+type UserRole = 'USER' | 'AUTHOR' | 'SUPPORT' | 'ADMIN' | 'OWNER';
 
 interface SubmenuItem {
   href: string;
@@ -80,6 +80,7 @@ interface NavSection {
 const ROLE_LABEL: Record<UserRole, string> = {
   OWNER: 'مالک',
   ADMIN: 'مدیر',
+  SUPPORT: 'پشتیبانی',
   AUTHOR: 'نویسنده',
   USER: 'کاربر',
 };
@@ -87,6 +88,7 @@ const ROLE_LABEL: Record<UserRole, string> = {
 const ROLE_GLYPH: Record<UserRole, string> = {
   OWNER: '◆',
   ADMIN: '◇',
+  SUPPORT: '△',
   AUTHOR: '○',
   USER: '·',
 };
@@ -231,6 +233,17 @@ function getMenu(role: UserRole): NavSection[] {
         },
         { id: 'admin', index: '۰۴', label: 'مدیریت', items: [users] },
         { id: 'account', index: '۰۵', label: 'حساب', items: [myRequests, profile] },
+      ];
+    case 'SUPPORT':
+      return [
+        { id: 'main', index: '۰۱', label: 'مرکز', items: [dashboard] },
+        {
+          id: 'operations',
+          index: '۰۲',
+          label: 'عملیات',
+          items: [serviceRequests],
+        },
+        { id: 'account', index: '۰۳', label: 'حساب', items: [myRequests, profile] },
       ];
     case 'AUTHOR':
       return [

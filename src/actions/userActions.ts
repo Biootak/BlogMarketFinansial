@@ -17,6 +17,7 @@ import { logActivity } from '@/lib/activity-logger';
 const ROLE_HIERARCHY: Record<Role, number> = {
   OWNER: 4,
   ADMIN: 3,
+  SUPPORT: 2,
   AUTHOR: 2,
   USER: 1,
 };
@@ -100,7 +101,7 @@ export async function getUsers({
       },
     };
   } catch (error) {
-    console.error('خطا در بازیابی کاربران:', error);
+    void error;
     return {
       success: false,
       message: 'خطا در بازیابی کاربران. لطفاً دوباره تلاش کنید.',
@@ -164,7 +165,7 @@ export async function createUser(data: CreateUserData): Promise<ActionResult<Use
       data: newUserSafe,
     };
   } catch (error) {
-    console.error('خطا در ایجاد کاربر:', error);
+    void error;
     return {
       success: false,
       message: 'خطا در ایجاد کاربر. لطفاً دوباره تلاش کنید.',
@@ -235,7 +236,7 @@ export async function updateUser(
       data: updatedUserSafe,
     };
   } catch (error) {
-    console.error('خطا در به‌روزرسانی کاربر:', error);
+    void error;
     return {
       success: false,
       message: 'خطا در به‌روزرسانی کاربر. لطفاً دوباره تلاش کنید.',
@@ -292,7 +293,7 @@ if (ROLE_HIERARCHY[currentUserRole] <= ROLE_HIERARCHY[targetUser.role]) {
       data: updatedUser,
     };
   } catch (error) {
-    console.error('Error updating user role:', error);
+    void error;
     return { success: false, message: 'خطا در به‌روزرسانی نقش کاربر' };
   }
 }
@@ -331,7 +332,7 @@ export async function deleteUser(id: string): Promise<ActionResult> {
       message: 'کاربر با موفقیت حذف شد.',
     };
   } catch (error) {
-    console.error('خطا در حذف کاربر:', error);
+    void error;
     return {
       success: false,
       message: 'خطا در حذف کاربر. لطفاً دوباره تلاش کنید.',

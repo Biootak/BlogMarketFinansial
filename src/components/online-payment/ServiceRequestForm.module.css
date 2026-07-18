@@ -1085,3 +1085,173 @@
   background: oklch(71% 0.18 155);
   box-shadow: 0 3px 12px -3px oklch(71% 0.18 155 / 0.38);
 }
+
+/* ─── OTP Step 4 (Progressive Capture) ──────────────────────────────────── */
+.otpPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-block: 12px 4px;
+  gap: 0;
+}
+
+.otpIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: oklch(96% 0.03 218);
+  color: var(--ds-brand-600);
+  margin-block-end: 16px;
+  border: 1px solid oklch(90% 0.06 218);
+}
+
+.otpTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  margin: 0 0 8px 0;
+}
+
+.otpDesc {
+  font-size: 0.82rem;
+  color: var(--ds-text-secondary);
+  line-height: 1.6;
+  margin: 0 0 20px 0;
+  max-width: 320px;
+}
+
+.otpHint {
+  font-size: 0.78rem;
+  color: var(--ds-text-muted);
+  margin: 0 0 12px 0;
+}
+
+.otpInputWrap {
+  margin-block-end: 20px;
+}
+
+.otpInput {
+  font-family: 'Menlo', 'Consolas', 'Courier New', monospace;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-align: center;
+  width: 200px;
+  padding: 14px 12px;
+  border: 2px solid var(--ds-border-default);
+  border-radius: 12px;
+  background: var(--ds-surface);
+  color: var(--ds-text-primary);
+  outline: none;
+  transition: border-color 160ms, box-shadow 160ms;
+  /* tabular numbers — no jitter when digits change */
+  font-variant-numeric: tabular-nums;
+}
+.otpInput:focus {
+  border-color: var(--ds-brand-500);
+  box-shadow: 0 0 0 3px oklch(52% 0.14 162 / 0.12);
+}
+
+.otpActions {
+  width: 100%;
+  margin-block-end: 16px;
+}
+.otpActions .btnSubmit {
+  width: 100%;
+}
+
+.otpFooter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-block-start: 4px;
+}
+
+.otpTimer {
+  font-size: 0.78rem;
+  color: var(--ds-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.btnResend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ds-brand-600);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 2px;
+  font-family: inherit;
+  min-block-size: 32px;
+  transition: opacity 150ms;
+}
+.btnResend:hover { opacity: 0.75; }
+.btnResend:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btnSkip {
+  font-size: 0.75rem;
+  color: var(--ds-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 2px;
+  font-family: inherit;
+  min-block-size: 32px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 150ms;
+}
+.btnSkip:hover { color: var(--ds-text-secondary); }
+
+/* ─── Success — PC badge + Dashboard link ────────────────────────────────── */
+.pcBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: oklch(96% 0.04 140);
+  border: 1px solid oklch(88% 0.08 140);
+  color: oklch(35% 0.12 140);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  margin-block-end: 16px;
+  text-align: start;
+  max-width: 320px;
+}
+.pcBadge svg { flex-shrink: 0; }
+
+.btnDashboard {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 22px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ds-brand-700, var(--ds-brand-600));
+  background: oklch(96% 0.04 218);
+  border: 1.5px solid oklch(88% 0.08 218);
+  text-decoration: none;
+  min-block-size: 44px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 150ms, border-color 150ms, transform 150ms cubic-bezier(0.34,1.56,0.64,1);
+}
+.btnDashboard:hover {
+  background: oklch(93% 0.06 218);
+  border-color: oklch(80% 0.1 218);
+  transform: translateY(-1px);
+}
+.btnDashboard:active { transform: scale(0.97); }
+.btnDashboard:focus-visible { outline: 2px solid var(--ds-brand-500); outline-offset: 2px; }

@@ -12,6 +12,7 @@ generator client {
 enum Role {
   USER
   AUTHOR
+  SUPPORT
   ADMIN
   OWNER
 }
@@ -591,6 +592,14 @@ model ServiceRequest {
   estimatedCompletionAt DateTime?
   externalTxId          String?
 
+  // 2026-07-10: Progressive Capture — email/phone verified via OTP after submission
+  phoneVerified         Boolean  @default(false)
+  emailVerified         Boolean  @default(false)
+
+  // 2026-07-10: idempotency key — client-generated UUID prevents duplicate submissions
+  // on network retries. Format: UUIDv4 string.
+  idempotencyKey        String?  @unique
+
   statusLogs    ServiceRequestStatusLog[]
 
   createdAt DateTime @default(now())
@@ -601,6 +610,7 @@ model ServiceRequest {
   @@index([status])
   @@index([createdAt])
   @@index([userId])
+  @@index([idempotencyKey])
   // 2026-06-14: composite for the duplicate-check window
   @@index([phone, amount, currency, createdAt])
   // 2026-06-14: dashboard's status-grouped counts + recent-list

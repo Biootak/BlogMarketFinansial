@@ -1,6 +1,7 @@
 import { generateSlug, validateSlug } from '@/lib/utils';
 import { PostStatus, PostType } from '@prisma/client';
 import { z } from 'zod';
+import { isPhoneValid } from '@/lib/phone-validation';
 
 // Utility functions
 const createStringSchema = (min: number, max: number, minMessage: string, maxMessage: string) =>
@@ -209,11 +210,14 @@ export const ServiceRequestSchema = z.object({
     .string()
     .min(3, 'نام و نام خانوادگی باید حداقل ۳ کاراکتر باشد')
     .max(100, 'نام و نام خانوادگی نباید بیشتر از ۱۰۰ کاراکتر باشد'),
+  // 2026-07-10: libphonenumber-js validation — accepts any national/international format
+  // Default country: AF (Afghanistan). Users may prefix with +CountryCode for any country.
   phone: z
     .string()
-    .min(10, 'شماره تماس باید حداقل ۱۰ رقم باشد')
-    .max(15, 'شماره تماس نامعتبر است')
-    .regex(/^[0-9+]+$/, 'شماره تماس فقط می‌تواند شامل اعداد باشد'),
+    .min(1, 'شماره تماس الزامی است')
+    .refine((val) => isPhoneValid(val), {
+      message: 'شماره تماس معتبر نیست (مثال: ۰۷۰۱۲۳۴۵۶۷ یا +93701234567)',
+    }),
   email: z.string().email('لطفاً یک ایمیل معتبر وارد کنید').optional().or(z.literal('')),
   serviceType: z.enum([
     'INTERNATIONAL_TRANSFER',

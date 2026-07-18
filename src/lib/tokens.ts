@@ -11,7 +11,9 @@
 import { randomBytes, randomInt } from 'node:crypto';
 import prisma from '@/lib/db';
 
-export type VerificationEmailIntent = 'register' | 'login' | 'reverify' | 'recover';
+// 2026-07-10: 'service-verify' — OTP issued after ServiceRequest is created,
+// to verify the requester's email and enable Progressive Capture (auto-create account).
+export type VerificationEmailIntent = 'register' | 'login' | 'reverify' | 'recover' | 'service-verify';
 
 export const OTP_EXPIRES_MS = 10 * 60 * 1000;
 export const OTP_RESEND_COOLDOWN_MS = 60 * 1000;
@@ -78,7 +80,7 @@ export async function generateOtpToken(args: {
 }
 
 export type ConsumeOtpResult =
-  | { ok: true; intent: VerificationEmailIntent }
+  | { ok: true; intent: VerificationEmailIntent; isNewIntent?: boolean }
   | {
       ok: false;
       reason: 'not-found' | 'expired' | 'too-many-attempts' | 'wrong-code';

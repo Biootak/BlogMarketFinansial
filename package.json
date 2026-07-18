@@ -119,6 +119,7 @@
     "fast-check": "^4.3.0",
     "html-react-parser": "^5.2.1",
     "katex": "^0.16.25",
+    "libphonenumber-js": "^1.13.9",
     "lodash": "^4.17.21",
     "lru-cache": "^11.0.2",
     "lucide-react": "^0.469.0",

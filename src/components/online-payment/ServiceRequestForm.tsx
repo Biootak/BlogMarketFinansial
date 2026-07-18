@@ -28,9 +28,6 @@ import {
   Wallet,
   ShoppingBag,
   Sparkles,
-  User,
-  Phone,
-  Mail,
   ArrowRight,
   ArrowLeft,
   Clock,
@@ -40,12 +37,16 @@ import {
   Copy,
   Check,
   AlertCircle,
-  MessageCircle,
+  Mail,
+  KeyRound,
+  RotateCcw,
   ChevronDown,
+  UserPlus,
 } from 'lucide-react';
 import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
 import { ServiceRequestSchema, type ServiceRequestFormData } from '@/schemas';
 import { createServiceRequest, type ServiceRequestInput } from '@/actions/serviceRequestActions';
+import { issueServiceOtp, verifyServiceOtpAndLink } from '@/actions/progressive-capture';
 import s from './ServiceRequestForm.module.css';
 
 // ─── Constants ────────────────────────────────────────────────────────────── //
@@ -133,8 +134,8 @@ const COUNTRIES = [
   { value: 'other',         label: 'سایر کشورها'    },
 ];
 
-const STEP_LABELS = ['مبلغ و خدمات', 'اطلاعات شما', 'تأیید و ارسال'];
-const TOTAL_STEPS = 3;
+const STEP_LABELS = ['مبلغ و خدمات', 'اطلاعات شما', 'تأیید و ارسال', 'تأیید ایمیل'];
+const TOTAL_STEPS = 4;
 
 // ─── Props ────────────────────────────────────────────────────────────────── //
 
@@ -151,17 +152,32 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
   telegramLink,
   whatsappLink,
 }) => {
-  const [step, setStep]           = useState(1);
-  const [dir, setDir]             = useState<'fwd' | 'back'>('fwd');
-  const [submitting, setSubmitting] = useState(false);
-  const [result, setResult]       = useState<{
+  const [step, setStep]             = useState(1);
+  const [dir, setDir]               = useState<'fwd' | 'back'>('fwd');
+  const [submitting, setSubmitting]  = useState(false);
+  const [result, setResult]         = useState<{
     status: 'idle' | 'success' | 'error';
     message?: string;
     trackingCode?: string;
   }>({ status: 'idle' });
-  const [copied, setCopied]       = useState(false);
+  const [copied, setCopied]         = useState(false);
   const [submitShake, setSubmitShake] = useState(false);
-  const textareaRef               = useRef<HTMLTextAreaElement>(null);
+  const textareaRef                  = useRef<HTMLTextAreaElement>(null);
+
+  // ── OTP / Progressive Capture state ────────────────────────────────────── //
+  const [trackingCodeForOtp, setTrackingCodeForOtp] = useState('');
+  const [otpCode, setOtpCode]           = useState('');
+  const [otpSending, setOtpSending]     = useState(false);
+  const [otpVerifying, setOtpVerifying] = useState(false);
+  const [otpError, setOtpError]         = useState('');
+  const [otpSent, setOtpSent]           = useState(false);
+  const [otpResendTimer, setOtpResendTimer] = useState(0);
+  const [otpResult, setOtpResult]       = useState<{
+    accountCreated?: boolean;
+    loginHint?: string;
+  } | null>(null);
+  // idempotency key — generated once per form session, prevents double-submit on retry
+  const idempotencyKeyRef = useRef<string>(crypto.randomUUID());
 
   const {
     register,
@@ -242,6 +258,27 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
     el.style.height = Math.min(el.scrollHeight, 200) + 'px';
   };
 
+  // ── OTP resend countdown ────────────────────────────────────────────────── //
+  useEffect(() => {
+    if (otpResendTimer <= 0) return;
+    const t = setTimeout(() => setOtpResendTimer((p) => p - 1), 1000);
+    return () => clearTimeout(t);
+  }, [otpResendTimer]);
+
+  const sendOtp = useCallback(async (email: string, trackingCode: string) => {
+    setOtpSending(true);
+    setOtpError('');
+    const res = await issueServiceOtp({ email, trackingCode });
+    setOtpSending(false);
+    if (res.success) {
+      setOtpSent(true);
+      setOtpResendTimer(60);
+    } else {
+      setOtpError(res.message);
+      if (res.retryAfterMs) setOtpResendTimer(Math.ceil(res.retryAfterMs / 1000));
+    }
+  }, []);
+
   const goNext = async () => {
     const fields: (keyof ServiceRequestFormData)[] =
       step === 1 ? ['amount', 'currency', 'serviceType'] :
@@ -252,21 +289,37 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
 
   const goBack = () => { setDir('back'); setStep((p) => p - 1); };
 
+  // Step 3 → submit form, get tracking code, then move to OTP step
   const onSubmit = async (data: ServiceRequestFormData) => {
-    if (step !== TOTAL_STEPS) return;
+    if (step !== 3) return;
     setSubmitting(true);
     setResult({ status: 'idle' });
     try {
-      const res = await createServiceRequest(data as ServiceRequestInput);
+      const payload: ServiceRequestInput = {
+        ...(data as ServiceRequestInput),
+        idempotencyKey: idempotencyKeyRef.current,
+      };
+      const res = await createServiceRequest(payload);
       if (!res.success) {
         setResult({ status: 'error', message: res.message });
         setSubmitShake(true);
         setTimeout(() => setSubmitShake(false), 400);
         return;
       }
-      setResult({ status: 'success', message: res.message, trackingCode: res.trackingCode });
-      reset();
-      setStep(1);
+      // Go to OTP step if email was provided
+      const email = data.email?.trim();
+      if (email && res.trackingCode) {
+        setTrackingCodeForOtp(res.trackingCode);
+        idempotencyKeyRef.current = crypto.randomUUID(); // reset for safety
+        setDir('fwd');
+        setStep(4);
+        await sendOtp(email, res.trackingCode);
+      } else {
+        // No email → show success directly
+        setResult({ status: 'success', message: res.message, trackingCode: res.trackingCode });
+        reset();
+        setStep(1);
+      }
     } catch {
       setResult({ status: 'error', message: 'خطایی در ثبت درخواست رخ داد.' });
       setSubmitShake(true);
@@ -276,7 +329,46 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
     }
   };
 
-  const resetForm = () => { setResult({ status: 'idle' }); setStep(1); reset(); };
+  const verifyOtp = async () => {
+    const email = watch('email')?.trim();
+    if (!email || !trackingCodeForOtp || !otpCode.trim()) return;
+    setOtpVerifying(true);
+    setOtpError('');
+    const res = await verifyServiceOtpAndLink({
+      email,
+      code: otpCode.trim(),
+      trackingCode: trackingCodeForOtp,
+    });
+    setOtpVerifying(false);
+    if (res.success) {
+      setOtpResult({ accountCreated: res.accountCreated, loginHint: res.loginHint });
+      setResult({ status: 'success', message: res.message, trackingCode: trackingCodeForOtp });
+      reset();
+      setStep(1);
+    } else {
+      setOtpError(res.message);
+    }
+  };
+
+  const skipOtp = () => {
+    // User skips verification — show success with tracking code anyway
+    setResult({ status: 'success', message: 'درخواست ثبت شد.', trackingCode: trackingCodeForOtp });
+    reset();
+    setStep(1);
+  };
+
+  const resetForm = () => {
+    setResult({ status: 'idle' });
+    setOtpResult(null);
+    setOtpCode('');
+    setOtpSent(false);
+    setOtpError('');
+    setOtpResendTimer(0);
+    setTrackingCodeForOtp('');
+    idempotencyKeyRef.current = crypto.randomUUID();
+    setStep(1);
+    reset();
+  };
 
   // ─── Success ─────────────────────────────────────────────────────────── //
   if (result.status === 'success' && result.trackingCode) {
@@ -284,6 +376,15 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
       <div className={s.successWrap}>
         <div className={s.successIcon} aria-hidden="true"><CheckCircle2 size={28} /></div>
         <h3 className={s.successTitle}>درخواست شما ثبت شد!</h3>
+
+        {/* Progressive Capture badge */}
+        {otpResult?.accountCreated && (
+          <div className={s.pcBadge}>
+            <UserPlus size={14} />
+            <span>حساب کاربری برای شما ساخته شد. می‌توانید از طریق «فراموشی رمز» رمز تنظیم کنید.</span>
+          </div>
+        )}
+
         <p className={s.successSub}>کد پیگیری:</p>
         <div className={s.trackingCodeBox}>
           <span className={s.trackingCode} dir="ltr">{result.trackingCode}</span>
@@ -295,6 +396,12 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
         <p className={s.successNote}>این کد را برای پیگیری درخواست نگه دارید</p>
         <div className={s.successActions}>
           <button type="button" onClick={resetForm} className={s.btnReset}>ثبت درخواست جدید</button>
+          <a
+            href={result.trackingCode ? `/track/${result.trackingCode}` : '/dashboard/my-requests'}
+            className={s.btnDashboard}
+          >
+            مشاهده وضعیت
+          </a>
         </div>
         {(telegramLink || whatsappLink) && (
           <div className={s.supportLinks}>
@@ -646,10 +753,83 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
             </div>
           </div>
         )}
+
+        {/* ── STEP 4: OTP email verification ────────────────────────────── */}
+        {step === 4 && (
+          <div className={s.otpPanel}>
+            <div className={s.otpIcon} aria-hidden="true">
+              <Mail size={28} />
+            </div>
+            <h3 className={s.otpTitle}>تأیید ایمیل</h3>
+            <p className={s.otpDesc}>
+              کد ۶ رقمی به{' '}
+              <strong dir="ltr">{watch('email')}</strong>{' '}
+              ارسال شد. لطفاً کد را وارد کنید.
+            </p>
+            {otpSending && (
+              <p className={s.otpHint}>در حال ارسال کد...</p>
+            )}
+            {otpError && (
+              <div className={s.errorAlert} role="alert">
+                <AlertCircle size={14} />
+                <span>{otpError}</span>
+              </div>
+            )}
+            <div className={s.otpInputWrap}>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="\d{6}"
+                maxLength={6}
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                className={s.otpInput}
+                placeholder="_ _ _ _ _ _"
+                dir="ltr"
+                aria-label="کد تأیید ۶ رقمی"
+                autoComplete="one-time-code"
+              />
+            </div>
+            <div className={s.otpActions}>
+              <button
+                type="button"
+                onClick={verifyOtp}
+                disabled={otpVerifying || otpCode.length !== 6}
+                className={s.btnSubmit}
+              >
+                {otpVerifying ? (
+                  <><span className={s.spinner} aria-hidden="true" /><span>در حال تأیید...</span></>
+                ) : (
+                  <><KeyRound size={15} /><span>تأیید کد</span></>
+                )}
+              </button>
+            </div>
+            <div className={s.otpFooter}>
+              {otpResendTimer > 0 ? (
+                <span className={s.otpTimer}>
+                  ارسال مجدد در {otpResendTimer} ثانیه
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => sendOtp(watch('email') ?? '', trackingCodeForOtp)}
+                  disabled={otpSending}
+                  className={s.btnResend}
+                >
+                  <RotateCcw size={13} />
+                  <span>ارسال مجدد کد</span>
+                </button>
+              )}
+              <button type="button" onClick={skipOtp} className={s.btnSkip}>
+                رد کردن تأیید
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Error */}
-      {result.status === 'error' && (
+      {result.status === 'error' && step !== 4 && (
         <div className={s.errorAlert} role="alert">
           <AlertCircle size={14} />
           <span>{result.message}</span>
@@ -657,14 +837,15 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
       )}
 
       {/* Trust bar — Stripe: always above submit on step 3 */}
-      {step === TOTAL_STEPS && (
+      {step === 3 && (
         <div className={s.trustBar}>
           <ShieldCheck size={13} className={s.trustBarIcon} />
           <span>🔒 اطلاعات شما محرمانه است · پاسخ در کمتر از ۳۰ دقیقه · ۹۸٪ رضایت مشتری</span>
         </div>
       )}
 
-      {/* Navigation */}
+      {/* Navigation — hidden on step 4 (OTP has its own buttons) */}
+      {step !== 4 && (
       <div className={s.navRow}>
         {step > 1 ? (
           <button type="button" onClick={goBack} className={s.btnBack}>
@@ -673,7 +854,7 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
           </button>
         ) : <div />}
 
-        {step < TOTAL_STEPS ? (
+        {step < 3 ? (
           <button type="button" onClick={goNext} className={s.btnNext}>
             <span>بعدی</span>
             <ArrowLeft size={15} />
@@ -693,6 +874,7 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
           </button>
         )}
       </div>
+      )}
     </div>
   );
 };

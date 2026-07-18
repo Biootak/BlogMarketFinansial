@@ -11,7 +11,8 @@ export type OtpEmailIntent =
   | 'register'
   | 'login'
   | 'reverify'
-  | 'recover';
+  | 'recover'
+  | 'service-verify';
 
 export interface OtpEmailArgs {
   to: string;
@@ -43,6 +44,11 @@ const COPY: Record<
     subject: 'بازنشانی رمز عبور / Reset password',
     heading: 'بازنشانی رمز عبور',
     body: 'برای تنظیم رمز عبور جدید، این کد ۶ رقمی را در صفحهٔ باز شده وارد کنید.',
+  },
+  'service-verify': {
+    subject: 'کد تأیید درخواست خدمات / Service request code',
+    heading: 'تأیید درخواست',
+    body: 'برای تأیید ایمیل و ثبت نهایی درخواست خدمات خود، این کد ۶ رقمی را وارد کنید.',
   },
 };
 
@@ -291,5 +297,159 @@ export function serviceRequestStatusEmail(
     html,
     text,
     tags: [{ name: 'category', value: 'service-request:status-change' }],
+  };
+}
+
+// ─── Service Request OTP (Progressive Capture) ────────────────────────────── //
+
+export interface ServiceVerifyOtpArgs {
+  to: string;
+  code: string;
+  trackingCode: string;
+  expiresAt: Date;
+}
+
+export function serviceVerifyOtpEmail(args: ServiceVerifyOtpArgs): EmailMessage {
+  const expiresLabel = '۱۰ دقیقهٔ دیگر';
+  const text = [
+    'کد تأیید ایمیل درخواست شما',
+    '',
+    `کد پیگیری: ${args.trackingCode}`,
+    '',
+    'کد ۶ رقمی تأیید:',
+    args.code,
+    '',
+    `این کد تا ${expiresLabel} معتبر است و فقط یک‌بار قابل استفاده است.`,
+    'اگر این درخواست را شما نداده‌اید، این ایمیل را نادیده بگیرید.',
+    '',
+    '— تیم بازار مالی',
+  ].join('\n');
+
+  const html = `<!doctype html>
+<html lang="fa" dir="rtl">
+  <body style="margin:0;padding:0;background:#f6f6f9;font-family:Tahoma,Arial,sans-serif;color:#1f2937">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px">
+      <tr><td align="center">
+        <table role="presentation" width="480" cellpadding="0" cellspacing="0"
+               style="background:#ffffff;border-radius:12px;padding:32px;border:1px solid #e5e7eb">
+          <tr><td>
+            <h1 style="margin:0 0 8px 0;font-size:20px;color:#111827">تأیید ایمیل درخواست</h1>
+            <p style="margin:0 0 6px 0;font-size:13px;color:#6b7280">کد پیگیری:</p>
+            <p style="margin:0 0 24px 0;font-family:Menlo,Consolas,'Courier New',monospace;font-size:16px;font-weight:700;letter-spacing:3px;color:#0369a1">${args.trackingCode}</p>
+            <p style="margin:0 0 16px 0;line-height:1.7;color:#374151">
+              برای تأیید ایمیل و ثبت نهایی درخواست، کد زیر را وارد کنید:
+            </p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                   style="background:#f3f4f6;border:1px dashed #d1d5db;border-radius:8px;margin:0 0 24px 0">
+              <tr><td align="center" style="padding:20px 16px">
+                <span style="font-family:Menlo,Consolas,'Courier New',monospace;font-size:32px;font-weight:700;letter-spacing:8px;color:#111827">${args.code}</span>
+              </td></tr>
+            </table>
+            <p style="margin:0;font-size:12px;color:#6b7280;line-height:1.6">
+              این کد تا ${expiresLabel} معتبر است و فقط یک‌بار قابل استفاده است.
+            </p>
+            <p style="margin:8px 0 0 0;font-size:12px;color:#9ca3af;line-height:1.6">
+              If you didn't submit this request, you can safely ignore this email.
+            </p>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+</html>`;
+
+  return {
+    to: args.to,
+    subject: `کد تأیید درخواست ${args.trackingCode}`,
+    html,
+    text,
+    tags: [{ name: 'category', value: 'service-request:otp' }],
+  };
+}
+
+// ─── Welcome + Set-Password email (Progressive Capture) ──────────────────── //
+// Sent immediately after a new account is auto-created via OTP verification.
+// Contains a single-use password-reset token (64-char hex, 24 h TTL) so the
+// user can set a permanent password without going through "Forgot Password".
+
+export interface WelcomeSetPasswordArgs {
+  to: string;
+  name: string;
+  trackingCode: string;
+  resetToken: string;     // 64-char hex from generatePasswordResetToken
+  appUrl: string;
+}
+
+export function welcomeSetPasswordEmail(args: WelcomeSetPasswordArgs): EmailMessage {
+  // URL the user clicks to land on /auth?mode=set-password&email=…&token=…
+  const setPasswordUrl = new URL('/auth', args.appUrl);
+  setPasswordUrl.searchParams.set('mode', 'set-password');
+  setPasswordUrl.searchParams.set('email', args.to);
+  setPasswordUrl.searchParams.set('token', args.resetToken);
+  const link = setPasswordUrl.toString();
+
+  const text = [
+    `${args.name} عزیز،`,
+    '',
+    'حساب کاربری شما در بازار مالی ساخته شد.',
+    '',
+    `کد پیگیری درخواست: ${args.trackingCode}`,
+    '',
+    'برای ورود به پنل کاربری، ابتدا رمز عبور خود را تنظیم کنید:',
+    link,
+    '',
+    'این لینک ۲۴ ساعت معتبر است و فقط یک‌بار قابل استفاده است.',
+    'اگر این حساب را شما نساختید، این ایمیل را نادیده بگیرید.',
+    '',
+    '— تیم بازار مالی',
+  ].join('\n');
+
+  const html = `<!doctype html>
+<html lang="fa" dir="rtl">
+  <body style="margin:0;padding:0;background:#f6f6f9;font-family:Tahoma,Arial,sans-serif;color:#1f2937">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px">
+      <tr><td align="center">
+        <table role="presentation" width="480" cellpadding="0" cellspacing="0"
+               style="background:#ffffff;border-radius:12px;padding:32px;border:1px solid #e5e7eb">
+          <tr><td>
+            <h1 style="margin:0 0 6px 0;font-size:20px;color:#111827">خوش آمدید به بازار مالی 👋</h1>
+            <p style="margin:0 0 20px 0;font-size:13px;color:#6b7280">حساب کاربری شما آماده است</p>
+            <p style="margin:0 0 16px 0;line-height:1.7;color:#374151">
+              ${args.name} عزیز، درخواست خدمات شما (<strong dir="ltr" style="font-family:Menlo,Consolas,monospace;letter-spacing:2px;color:#0369a1">${args.trackingCode}</strong>) با موفقیت ثبت شد و یک حساب کاربری برای شما ساخته شد.
+            </p>
+            <p style="margin:0 0 24px 0;line-height:1.7;color:#374151">
+              برای ورود به پنل کاربری و مشاهده وضعیت درخواست‌هایتان، ابتدا یک رمز عبور برای خود تنظیم کنید:
+            </p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px 0">
+              <tr><td align="center">
+                <a href="${link}"
+                   style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;border-radius:8px;padding:14px 32px;font-size:15px;font-weight:700;letter-spacing:0.02em">
+                  تنظیم رمز عبور
+                </a>
+              </td></tr>
+            </table>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                   style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin:0 0 20px 0">
+              <tr><td style="padding:12px 16px">
+                <p style="margin:0 0 4px 0;font-size:11px;color:#6b7280">لینک تنظیم رمز (۲۴ ساعت معتبر)</p>
+                <p style="margin:0;font-size:11px;color:#94a3b8;word-break:break-all;direction:ltr;text-align:left">${link}</p>
+              </td></tr>
+            </table>
+            <p style="margin:0;font-size:12px;color:#9ca3af;line-height:1.6">
+              اگر این حساب را شما نساختید، این ایمیل را نادیده بگیرید — هیچ اقدامی نیاز نیست.
+            </p>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+</html>`;
+
+  return {
+    to: args.to,
+    subject: `حساب کاربری شما آماده است — رمز عبور بسازید`,
+    html,
+    text,
+    tags: [{ name: 'category', value: 'account:welcome-set-password' }],
   };
 }

@@ -83,6 +83,7 @@ export const INTENT_LABEL: Record<FlowIntent, string> = {
   login: 'ورود امن',
   reverify: 'تأیید مجدد ایمیل',
   recover: 'بازیابی رمز عبور',
+  'service-verify': 'تأیید درخواست خدمات',
 };
 
 export const SECURITY_POINTS = [
