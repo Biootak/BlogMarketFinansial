@@ -125,12 +125,12 @@
   --ds-border-default: oklch(90% 0.005 240 / 0.8);
   --ds-border-strong: oklch(82% 0.01 240 / 0.9);
 
-  /* Brand */
-  --ds-brand-50: oklch(95% 0.04 240);
-  --ds-brand-100: oklch(92% 0.05 240);
-  --ds-brand-500: oklch(55% 0.10 235);
-  --ds-brand-600: oklch(48% 0.11 235);
-  --ds-brand-700: oklch(40% 0.12 235);
+  /* Brand — emerald (hue 165) هماهنگ با داشبورد و nova-emerald */
+  --ds-brand-50: oklch(96% 0.03 165);
+  --ds-brand-100: oklch(92% 0.05 165);
+  --ds-brand-500: oklch(58% 0.12 165);
+  --ds-brand-600: oklch(52% 0.14 162);
+  --ds-brand-700: oklch(42% 0.14 162);
 
   /* Accents (low-saturation) */
   --ds-accent-amber: oklch(72% 0.13 70);

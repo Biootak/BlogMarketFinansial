@@ -12,14 +12,6 @@
   .atl-page {
     --atl-gap: var(--ds-space-5);
     --atl-rule: var(--ds-border-default);
-    /* Harmonize the whole archive surface with the site's real brand (indigo
-       --primary-*), so chips, focus rings, card accents and the command panel
-       match the rest of the site instead of the DS default blue. */
-    --ds-brand-50: var(--color-primary-50);
-    --ds-brand-100: var(--color-primary-100);
-    --ds-brand-500: var(--color-primary-500);
-    --ds-brand-600: var(--color-primary-600);
-    --ds-brand-700: var(--color-primary-700);
     position: relative;
     color: var(--ds-text-primary);
   }

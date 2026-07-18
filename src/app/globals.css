@@ -1715,7 +1715,7 @@ p {
     font-size: 0.7rem;
     font-weight: 600;
     line-height: 1;
-    color: oklch(40% 0.1 235);
+    color: oklch(40% 0.10 162);
     background: color-mix(in oklch, oklch(65% 0.1 200), oklch(95% 0.005 240) 80%);
     border: 1px solid color-mix(in oklch, oklch(65% 0.1 200), oklch(95% 0.005 240) 60%);
   }
@@ -2595,14 +2595,14 @@ p {
   }
   .arc-tag-cloud__more {
     font-size: 0.75rem;
-    color: oklch(50% 0.08 235);
+    color: oklch(50% 0.12 165);
     padding: 0.2rem 0.6rem;
     border-radius: 9999px;
-    border: 1px dashed oklch(82% 0.06 235 / 0.4);
+    border: 1px dashed oklch(82% 0.06 165 / 0.4);
     transition: background 220ms cubic-bezier(0.22, 1, 0.36, 1);
   }
   .arc-tag-cloud__more:hover {
-    background: oklch(96% 0.03 235 / 0.4);
+    background: oklch(96% 0.03 165 / 0.4);
   }
   .dark .arc-tag-cloud__more {
     color: oklch(78% 0.1 215);
@@ -3953,7 +3953,7 @@ p {
     color: oklch(95% 0.005 240);
   }
   .arc-card-v3:hover .arc-card-v3__title {
-    color: color-mix(in oklch, oklch(20% 0.01 240), oklch(55% 0.1 235) 38%);
+    color: color-mix(in oklch, oklch(20% 0.01 240), oklch(58% 0.12 165) 38%);
   }
   .dark .arc-card-v3:hover .arc-card-v3__title {
     color: color-mix(in oklch, oklch(95% 0.005 240), oklch(78% 0.1 215) 32%);
@@ -4492,11 +4492,11 @@ p {
     padding: 1px;
     background: conic-gradient(
       from 180deg,
-      oklch(55% 0.1 235 / 0) 0%,
-      oklch(55% 0.1 235 / 0.55) 22%,
+      oklch(58% 0.12 165 / 0) 0%,
+      oklch(58% 0.12 165 / 0.55) 22%,
       oklch(72% 0.13 70 / 0.5) 50%,
-      oklch(55% 0.1 235 / 0.55) 78%,
-      oklch(55% 0.1 235 / 0) 100%
+      oklch(58% 0.12 165 / 0.55) 78%,
+      oklch(58% 0.12 165 / 0) 100%
     );
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
@@ -5376,9 +5376,9 @@ p {
     border-radius: 9999px;
     font-size: 0.6875rem;
     font-weight: 600;
-    color: oklch(40% 0.06 235);
-    background: oklch(96% 0.03 235 / 0.6);
-    border: 1px solid oklch(82% 0.06 235 / 0.4);
+    color: oklch(40% 0.10 162);
+    background: oklch(96% 0.03 165 / 0.6);
+    border: 1px solid oklch(82% 0.06 165 / 0.4);
     box-shadow: 0 1px 0 oklch(100% 0 0 / 0.5) inset;
   }
   .dark .arc-breadcrumb-badge {
@@ -5404,7 +5404,7 @@ p {
     isolation: isolate;
     overflow: hidden;
     border-radius: var(--ds-radius-2xl);
-    background: radial-gradient(120% 140% at 100% 0%, oklch(55% 0.1 235 / 0.12), transparent 55%),
+    background: radial-gradient(120% 140% at 100% 0%, oklch(58% 0.12 165 / 0.12), transparent 55%),
       radial-gradient(120% 140% at 0% 100%, oklch(72% 0.13 70 / 0.1), transparent 55%),
       linear-gradient(180deg, var(--ds-canvas), var(--ds-canvas-subtle));
     border: 1px solid var(--ds-border-subtle);
@@ -5505,11 +5505,11 @@ p {
     z-index: -1;
     background: conic-gradient(
       from 0deg,
-      oklch(55% 0.1 235 / 0.5),
+      oklch(58% 0.12 165 / 0.5),
       oklch(72% 0.13 70 / 0.4),
-      oklch(55% 0.1 235 / 0),
+      oklch(58% 0.12 165 / 0),
       oklch(72% 0.13 70 / 0.4),
-      oklch(55% 0.1 235 / 0.5)
+      oklch(58% 0.12 165 / 0.5)
     );
     filter: blur(14px);
     opacity: 0.8;
@@ -6148,7 +6148,7 @@ p {
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    background: radial-gradient(60% 80% at 12% 18%, oklch(60% 0.12 235 / 0.18), transparent 65%),
+    background: radial-gradient(60% 80% at 12% 18%, oklch(58% 0.12 165 / 0.18), transparent 65%),
       radial-gradient(60% 80% at 88% 78%, oklch(72% 0.13 70 / 0.16), transparent 65%),
       radial-gradient(80% 60% at 50% 100%, oklch(65% 0.1 165 / 0.1), transparent 70%),
       linear-gradient(180deg, oklch(99% 0.004 240), oklch(97% 0.005 240));
@@ -6156,7 +6156,7 @@ p {
     animation: arc-aurora-canvas 28s ease-in-out infinite;
   }
   .dark .arc-aurora-canvas {
-    background: radial-gradient(60% 80% at 12% 18%, oklch(60% 0.12 235 / 0.25), transparent 65%),
+    background: radial-gradient(60% 80% at 12% 18%, oklch(58% 0.12 165 / 0.25), transparent 65%),
       radial-gradient(60% 80% at 88% 78%, oklch(72% 0.13 70 / 0.2), transparent 65%),
       radial-gradient(80% 60% at 50% 100%, oklch(65% 0.1 165 / 0.14), transparent 70%),
       linear-gradient(180deg, oklch(18% 0.012 250), oklch(14% 0.012 250));
@@ -6389,8 +6389,8 @@ p {
     box-shadow: 0 0 0 0 oklch(70% 0.18 20 / 0.55);
   }
   .arc-meter__dot--blue {
-    background: oklch(65% 0.15 235);
-    box-shadow: 0 0 0 0 oklch(65% 0.15 235 / 0.55);
+    background: oklch(58% 0.12 165);
+    box-shadow: 0 0 0 0 oklch(58% 0.12 165 / 0.55);
   }
   @keyframes arc-pulse-dot {
     0%,
@@ -6445,7 +6445,7 @@ p {
     -webkit-text-fill-color: transparent;
   }
   .arc-counter--brand {
-    background: linear-gradient(135deg, oklch(60% 0.12 235) 0%, oklch(50% 0.14 245) 100%);
+    background: linear-gradient(135deg, oklch(58% 0.12 165) 0%, oklch(62% 0.12 220) 100%);
     background-clip: text;
     -webkit-background-clip: text;
     color: transparent;
@@ -6911,7 +6911,7 @@ p {
     font-size: 0.6875rem;
     font-weight: 600;
     text-transform: none;
-    color: oklch(50% 0.06 235);
+    color: oklch(50% 0.12 165);
     letter-spacing: 0.01em;
   }
   .dark .arc-card-v4__eyebrow {
@@ -6934,7 +6934,7 @@ p {
     color: oklch(95% 0.005 240);
   }
   .arc-card-v4:hover .arc-card-v4__title {
-    color: color-mix(in oklch, oklch(20% 0.01 240), oklch(55% 0.1 235) 40%);
+    color: color-mix(in oklch, oklch(20% 0.01 240), oklch(58% 0.12 165) 40%);
   }
   .dark .arc-card-v4:hover .arc-card-v4__title {
     color: color-mix(in oklch, oklch(95% 0.005 240), oklch(78% 0.1 215) 35%);
@@ -6971,7 +6971,7 @@ p {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    color: oklch(55% 0.1 235);
+    color: oklch(58% 0.12 165);
     font-size: 0.75rem;
     font-weight: 600;
     transition: gap 220ms cubic-bezier(0.22, 1, 0.36, 1);

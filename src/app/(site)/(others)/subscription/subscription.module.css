@@ -177,7 +177,7 @@
   background: linear-gradient(
     135deg,
     var(--ds-accent-emerald),
-    var(--ds-color-blue, var(--ds-brand-500)) 55%,
+    var(--nova-cyan) 55%,
     transparent
   );
   -webkit-mask:

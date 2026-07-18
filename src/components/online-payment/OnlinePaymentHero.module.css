@@ -102,8 +102,7 @@
   padding: 6px 16px;
   border-radius: var(--ds-radius-full);
   border: 1px solid var(--ds-border-default);
-  /* glass */
-  background: oklch(100% 0 0 / 0.5);
+  background: var(--ds-surface);
   backdrop-filter: blur(12px) saturate(1.8);
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
@@ -140,7 +139,7 @@
 .heroAccent {
   position: relative;
   display: inline-block;
-  color: var(--ds-brand-600);
+  color: var(--nova-emerald);
 }
 
 /* animated underline stroke */
@@ -154,8 +153,8 @@
   border-radius: 2px;
   background: linear-gradient(
     to left,
-    var(--ds-brand-500),
-    var(--ds-accent-violet)
+    var(--nova-emerald),
+    var(--nova-cyan)
   );
   transform: scaleX(0);
   transform-origin: 100% 50%;
@@ -190,7 +189,7 @@
   padding: 5px 12px;
   border-radius: var(--ds-radius-full);
   border: 1px solid var(--ds-border-subtle);
-  background: oklch(100% 0 0 / 0.55);
+  background: var(--ds-surface);
   backdrop-filter: blur(8px);
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-medium);
@@ -199,8 +198,8 @@
 }
 
 .pill:hover {
-  border-color: var(--ds-brand-500);
-  background: oklch(100% 0 0 / 0.75);
+  border-color: var(--nova-emerald);
+  background: var(--ds-surface-elevated);
 }
 
 /* CTA group */
@@ -217,16 +216,16 @@
   gap: 8px;
   padding: 13px 28px;
   border-radius: var(--ds-radius-lg);
-  background: var(--ds-brand-600);
-  color: oklch(98% 0.005 240);
+  background: var(--nova-emerald);
+  color: var(--ds-text-inverse);
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
   border: none;
   cursor: pointer;
   min-height: 48px;
   box-shadow:
-    0 0 0 1px oklch(55% 0.1 235 / 0.35),
-    0 8px 32px -8px oklch(48% 0.11 235 / 0.5),
+    0 0 0 1px oklch(58% 0.12 165 / 0.35),
+    0 8px 32px -8px oklch(58% 0.12 165 / 0.45),
     inset 0 1px 0 oklch(100% 0 0 / 0.12);
   transition:
     background var(--ds-duration-fast) var(--ds-ease-out-quart),
@@ -235,11 +234,11 @@
 }
 
 .ctaMain:hover {
-  background: var(--ds-brand-700);
+  background: oklch(52% 0.14 162);
   transform: translateY(-2px);
   box-shadow:
-    0 0 0 1px oklch(55% 0.1 235 / 0.45),
-    0 16px 48px -12px oklch(48% 0.11 235 / 0.55),
+    0 0 0 1px oklch(58% 0.12 165 / 0.45),
+    0 16px 48px -12px oklch(58% 0.12 165 / 0.5),
     inset 0 1px 0 oklch(100% 0 0 / 0.15);
 }
 
@@ -252,7 +251,7 @@
   padding: 13px 24px;
   border-radius: var(--ds-radius-lg);
   border: 1px solid var(--ds-border-default);
-  background: oklch(100% 0 0 / 0.5);
+  background: var(--ds-surface);
   backdrop-filter: blur(10px);
   color: var(--ds-text-primary);
   font-size: var(--ds-text-sm);
@@ -265,8 +264,8 @@
 }
 
 .ctaGhost:hover {
-  border-color: var(--ds-brand-500);
-  background: oklch(100% 0 0 / 0.7);
+  border-color: var(--nova-emerald);
+  background: var(--ds-surface-elevated);
   transform: translateY(-1px);
 }
 
@@ -283,29 +282,20 @@
 .glassCard {
   position: absolute;
   border-radius: var(--ds-radius-2xl);
-  border: 1px solid oklch(100% 0 0 / 0.2);
-  background: oklch(100% 0 0 / 0.65);
+  border: 1px solid var(--ds-border-subtle);
+  background: var(--ds-surface-elevated);
   backdrop-filter: blur(24px) saturate(1.8) brightness(1.02);
   box-shadow:
-    0 0 0 0.5px oklch(100% 0 0 / 0.3),
+    0 0 0 0.5px var(--ds-border-subtle),
     0 24px 64px -16px oklch(45% 0.08 240 / 0.28),
-    inset 0 1px 0 oklch(100% 0 0 / 0.6),
-    inset 0 -1px 0 oklch(100% 0 0 / 0.1);
+    inset 0 1px 0 var(--ds-surface-elevated),
+    inset 0 -1px 0 var(--ds-border-subtle);
   overflow: hidden;
   cursor: default;
   /* 3D prepare */
   transform-style: preserve-3d;
   transition: transform 80ms var(--ds-ease-out-quart);
   will-change: transform;
-}
-
-.dark .glassCard {
-  background: oklch(22% 0.015 250 / 0.75);
-  border-color: oklch(100% 0 0 / 0.08);
-  box-shadow:
-    0 0 0 0.5px oklch(100% 0 0 / 0.08),
-    0 24px 64px -16px oklch(0% 0 0 / 0.6),
-    inset 0 1px 0 oklch(100% 0 0 / 0.08);
 }
 
 /* Glass inner shine overlay */
@@ -427,8 +417,8 @@
 }
 
 .methodChip:hover {
-  border-color: var(--ds-brand-500);
-  color: var(--ds-brand-600);
+  border-color: var(--nova-emerald);
+  color: var(--nova-emerald);
 }
 
 /* Rate row */
@@ -531,7 +521,7 @@
 .trustStrip {
   padding-block: clamp(28px, 4vw, 44px);
   border-block: 1px solid var(--ds-border-subtle);
-  background: oklch(100% 0 0 / 0.4);
+  background: var(--ds-surface);
   backdrop-filter: blur(8px);
 }
 
@@ -595,11 +585,11 @@
   display: inline-block;
   padding: 4px 14px;
   border-radius: var(--ds-radius-full);
-  border: 1px solid var(--ds-brand-100);
-  background: var(--ds-brand-50);
+  border: 1px solid oklch(58% 0.12 165 / 0.25);
+  background: oklch(58% 0.12 165 / 0.08);
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
-  color: var(--ds-brand-700);
+  color: var(--nova-emerald);
   margin-bottom: var(--ds-space-3);
   letter-spacing: 0.03em;
 }
@@ -637,7 +627,7 @@
   padding: clamp(22px, 2.8vw, 32px);
   border-radius: var(--ds-radius-xl);
   border: 1px solid var(--ds-border-subtle);
-  background: oklch(100% 0 0 / 0.6);
+  background: var(--ds-surface);
   backdrop-filter: blur(12px) saturate(1.5);
   overflow: hidden;
   cursor: default;
@@ -658,15 +648,8 @@
 
 .serviceCard:hover {
   border-color: var(--ds-border-default);
-  background: oklch(100% 0 0 / 0.8);
-  box-shadow:
-    0 0 0 0.5px oklch(100% 0 0 / 0.5),
-    0 16px 48px -12px oklch(45% 0.08 240 / 0.18);
-}
-
-.dark .serviceCard {
-  background: oklch(22% 0.015 250 / 0.6);
-  border-color: oklch(28% 0.012 250 / 0.5);
+  background: var(--ds-surface-elevated);
+  box-shadow: var(--ds-shadow-md);
 }
 
 /* inner shine */
@@ -692,7 +675,7 @@
   height: 2px;
   width: 0;
   border-radius: 1px;
-  background: var(--ds-brand-500);
+  background: var(--nova-emerald);
   transition: width 0.4s var(--ds-ease-out-expo);
 }
 
@@ -705,12 +688,12 @@
   height: 46px;
   border-radius: var(--ds-radius-lg);
   /* border + bg + color from explicit per-accent classes below.
-     Fallback: brand tones (avoids broken oklch relative-color in older browsers). */
-  border: 1px solid var(--ds-brand-100);
-  background: var(--ds-brand-50);
+     Fallback: nova-primary tones */
+  border: 1px solid oklch(58% 0.12 165 / 0.25);
+  background: oklch(58% 0.12 165 / 0.08);
   display: grid;
   place-items: center;
-  color: var(--ds-brand-600);
+  color: var(--nova-emerald);
   margin-bottom: var(--ds-space-4);
   transition: transform var(--ds-duration-fast) var(--ds-ease-spring);
 }
@@ -724,11 +707,11 @@
    Using explicit tokens instead of oklch(from …) for cross-browser compat.
    ──────────────────────────────────────────────────────────── */
 .accentBrand .serviceIconWrap {
-  border-color: var(--ds-brand-100);
-  background: var(--ds-brand-50);
-  color: var(--ds-brand-600);
+  border-color: oklch(58% 0.12 165 / 0.25);
+  background: oklch(58% 0.12 165 / 0.08);
+  color: var(--nova-emerald);
 }
-.accentBrand.serviceCard::after { background: var(--ds-brand-500); }
+.accentBrand.serviceCard::after { background: var(--nova-emerald); }
 
 .accentViolet .serviceIconWrap {
   border-color: oklch(58% 0.13 290 / 0.25);
@@ -810,7 +793,7 @@
   background: linear-gradient(
     to left,
     var(--ds-border-subtle),
-    var(--ds-brand-500),
+    var(--nova-emerald),
     var(--ds-border-subtle)
   );
   pointer-events: none;
@@ -838,16 +821,16 @@
   width: 48px;
   height: 48px;
   border-radius: 9999px;
-  border: 1.5px solid var(--ds-brand-500);
-  background: oklch(100% 0 0 / 0.7);
+  border: 1.5px solid var(--nova-emerald);
+  background: var(--ds-surface);
   backdrop-filter: blur(8px);
   display: grid;
   place-items: center;
   font-size: var(--ds-text-base);
   font-weight: var(--ds-weight-extrabold);
-  color: var(--ds-brand-600);
+  color: var(--nova-emerald);
   flex-shrink: 0;
-  box-shadow: 0 0 0 4px oklch(55% 0.10 235 / 0.1);
+  box-shadow: 0 0 0 4px oklch(58% 0.12 165 / 0.1);
 }
 
 .stepTitle {
@@ -863,27 +846,9 @@
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   DARK MODE
+   DARK MODE — --nova-primary در dark mode خودش به oklch(65% 0.12 265) flip
+   می‌شود (از tokens.css). بقیه توکن‌ها auto-flip هستند.
    ────────────────────────────────────────────────────────────────────────── */
-.dark .liveBadge {
-  background: oklch(22% 0.015 250 / 0.65);
-  border-color: oklch(30% 0.015 250 / 0.7);
-}
-
-.dark .glassCard {
-  background: oklch(20% 0.015 250 / 0.75);
-  border-color: oklch(35% 0.015 250 / 0.5);
-}
-
-.dark .trustStrip {
-  background: oklch(18% 0.012 250 / 0.5);
-}
-
-.dark .sectionEyebrow {
-  background: oklch(25% 0.04 235 / 0.5);
-  border-color: oklch(35% 0.06 235 / 0.5);
-  color: oklch(70% 0.08 235);
-}
 
 /* ──────────────────────────────────────────────────────────────────────────
    RESPONSIVE

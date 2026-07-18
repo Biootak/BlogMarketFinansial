@@ -202,13 +202,13 @@
   padding: 13px 28px;
   border-radius: var(--ds-radius-lg);
   background: var(--ds-brand-600);
-  color: oklch(98% 0.005 240);
+  color: var(--ds-text-inverse);
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
   min-height: 48px;
   box-shadow:
-    0 0 0 1px oklch(55% 0.1 235 / 0.35),
-    0 8px 32px -8px oklch(48% 0.11 235 / 0.5),
+    0 0 0 1px oklch(58% 0.12 165 / 0.35),
+    0 8px 32px -8px oklch(52% 0.14 162 / 0.45),
     inset 0 1px 0 oklch(100% 0 0 / 0.12);
   transition:
     background var(--ds-duration-fast) var(--ds-ease-out-quart),
@@ -220,8 +220,8 @@
   background: var(--ds-brand-700);
   transform: translateY(-2px);
   box-shadow:
-    0 0 0 1px oklch(55% 0.1 235 / 0.45),
-    0 16px 48px -12px oklch(48% 0.11 235 / 0.55),
+    0 0 0 1px oklch(58% 0.12 165 / 0.45),
+    0 16px 48px -12px oklch(52% 0.14 162 / 0.5),
     inset 0 1px 0 oklch(100% 0 0 / 0.15);
 }
 
@@ -338,7 +338,7 @@
   background: linear-gradient(
     135deg,
     var(--ds-accent-emerald),
-    var(--ds-color-blue, var(--ds-brand-500)) 55%,
+    var(--nova-cyan) 55%,
     transparent
   );
   -webkit-mask:
