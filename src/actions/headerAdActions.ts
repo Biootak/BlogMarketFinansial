@@ -14,10 +14,10 @@
  *  - فعال‌سازی یک تبلیغ، بقیه را غیرفعال می‌کند
  */
 
-import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { revalidateTag } from '@/lib/revalidate';
+import { safeCache } from '@/lib/safe-cache';
 import { z } from 'zod';
 import { checkAdmin } from '@/lib/auth';
 
@@ -105,11 +105,13 @@ async function fetchAllHeaderAdsInternal() {
 }
 
 // ---- Cached public reads ----
+// safeCache (in-memory) works in both dev and prod; unstable_cache is bypassed
+// in Next.js dev mode which caused a fresh DB round-trip on every request.
 
-const getCachedActiveHeaderAd = unstable_cache(
-  async () => fetchActiveHeaderAdInternal(),
-  ['active-header-ad'],
-  { revalidate: 60, tags: ['header-ad'] },
+const getCachedActiveHeaderAd = safeCache(
+  fetchActiveHeaderAdInternal,
+  null,
+  { key: 'active-header-ad', ttl: 60, tags: ['header-ad'] },
 );
 
 /**
@@ -117,13 +119,8 @@ const getCachedActiveHeaderAd = unstable_cache(
  * توسط Header.tsx صدا زده می‌شود.
  */
 export async function getActiveHeaderAd(): Promise<ActionResult<unknown | null>> {
-  try {
-    const ad = await getCachedActiveHeaderAd();
-    return { success: true, message: 'تبلیغ فعال یافت شد.', data: ad };
-  } catch (error) {
-    console.error('خطا در دریافت تبلیغ فعال:', error);
-    return { success: false, message: 'خطا در دریافت تبلیغ فعال.', error: String(error) };
-  }
+  const ad = await getCachedActiveHeaderAd();
+  return { success: true, message: 'تبلیغ فعال یافت شد.', data: ad };
 }
 
 /**
@@ -133,9 +130,8 @@ export async function getAllHeaderAds(): Promise<ActionResult<unknown[]>> {
   try {
     const ads = await fetchAllHeaderAdsInternal();
     return { success: true, message: 'لیست تبلیغات دریافت شد.', data: ads };
-  } catch (error) {
-    console.error('خطا در دریافت لیست تبلیغات:', error);
-    return { success: false, message: 'خطا در دریافت لیست تبلیغات.', error: String(error) };
+  } catch (err) {
+    return { success: false, message: 'خطا در دریافت لیست تبلیغات.', error: String(err) };
   }
 }
 
@@ -144,9 +140,8 @@ export async function getHeaderAdById(id: string): Promise<ActionResult<unknown>
     const ad = await prisma.headerAd.findUnique({ where: { id } });
     if (!ad) return { success: false, message: 'تبلیغ یافت نشد.' };
     return { success: true, message: 'تبلیغ دریافت شد.', data: ad };
-  } catch (error) {
-    console.error('خطا در دریافت تبلیغ:', error);
-    return { success: false, message: 'خطا در دریافت تبلیغ.', error: String(error) };
+  } catch (err) {
+    return { success: false, message: 'خطا در دریافت تبلیغ.', error: String(err) };
   }
 }
 
@@ -185,12 +180,11 @@ export async function createHeaderAd(input: HeaderAdInput): Promise<ActionResult
     revalidateTag('header-ad');
     revalidatePath('/');
     return { success: true, message: 'تبلیغ هدر با موفقیت ایجاد شد.', data: ad };
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { success: false, message: error.issues[0]?.message ?? 'ورودی نامعتبر است.' };
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      return { success: false, message: err.issues[0]?.message ?? 'ورودی نامعتبر است.' };
     }
-    console.error('خطا در ایجاد تبلیغ هدر:', error);
-    return { success: false, message: 'خطا در ایجاد تبلیغ.', error: String(error) };
+    return { success: false, message: 'خطا در ایجاد تبلیغ.', error: String(err) };
   }
 }
 
@@ -233,12 +227,11 @@ export async function updateHeaderAd(
     revalidateTag('header-ad');
     revalidatePath('/');
     return { success: true, message: 'تبلیغ هدر به‌روزرسانی شد.', data: ad };
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { success: false, message: error.issues[0]?.message ?? 'ورودی نامعتبر است.' };
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      return { success: false, message: err.issues[0]?.message ?? 'ورودی نامعتبر است.' };
     }
-    console.error('خطا در به‌روزرسانی تبلیغ هدر:', error);
-    return { success: false, message: 'خطا در به‌روزرسانی تبلیغ.', error: String(error) };
+    return { success: false, message: 'خطا در به‌روزرسانی تبلیغ.', error: String(err) };
   }
 }
 
@@ -252,9 +245,8 @@ export async function deleteHeaderAd(id: string): Promise<ActionResult> {
     revalidateTag('header-ad');
     revalidatePath('/');
     return { success: true, message: 'تبلیغ هدر حذف شد.' };
-  } catch (error) {
-    console.error('خطا در حذف تبلیغ هدر:', error);
-    return { success: false, message: 'خطا در حذف تبلیغ.', error: String(error) };
+  } catch (err) {
+    return { success: false, message: 'خطا در حذف تبلیغ.', error: String(err) };
   }
 }
 
@@ -288,8 +280,7 @@ export async function toggleHeaderAd(id: string): Promise<ActionResult<unknown>>
       message: nextActive ? 'تبلیغ فعال شد.' : 'تبلیغ غیرفعال شد.',
       data: ad,
     };
-  } catch (error) {
-    console.error('خطا در تغییر وضعیت تبلیغ:', error);
-    return { success: false, message: 'خطا در تغییر وضعیت.', error: String(error) };
+  } catch (err) {
+    return { success: false, message: 'خطا در تغییر وضعیت.', error: String(err) };
   }
 }

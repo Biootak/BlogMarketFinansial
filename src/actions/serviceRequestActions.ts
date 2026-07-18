@@ -5,6 +5,7 @@ import { headers } from 'next/headers';
 import { z } from 'zod';
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
+import { unstable_cache } from 'next/cache';
 
 // Service type labels
 const serviceTypeLabels: Record<string, string> = {
@@ -67,7 +68,6 @@ async function sendTelegramNotification(message: string): Promise<boolean> {
     const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID || settings?.telegram;
 
     if (!botToken || !chatId) {
-      console.warn('Telegram notification skipped: missing bot token or chat ID');
       return false;
     }
 
@@ -84,8 +84,7 @@ async function sendTelegramNotification(message: string): Promise<boolean> {
     });
 
     return response.ok;
-  } catch (error) {
-    console.error('Failed to send Telegram notification:', error);
+  } catch {
     return false;
   }
 }
@@ -199,8 +198,7 @@ ${data.description ? `توضیحات: ${data.description}` : ''}
     });
 
     return { success: true, trackingCode, message: 'درخواست شما با موفقیت ثبت شد.' };
-  } catch (error) {
-    console.error('Error creating service request:', error);
+  } catch {
     return { success: false, message: 'خطایی در ثبت درخواست رخ داد.', error: 'SERVER_ERROR' };
   }
 }
@@ -620,25 +618,28 @@ export async function getServiceRequestStats() {
 }
 
 
-// Get support links for contact form
-export async function getSupportContactLinks() {
-  try {
+// Get support links for contact form (cached — changes at most a few times a month)
+const _getCachedSupportLinks = unstable_cache(
+  async () => {
     const links = await prisma.socialLink.findMany({
       where: { isActive: true, type: 'SUPPORT' },
     });
+    const telegram =
+      links.find((l) => ['telegram', 'تلگرام'].includes(l.name.toLowerCase()))
+        ?.url ?? null;
+    const whatsapp =
+      links.find((l) => ['whatsapp', 'واتساپ'].includes(l.name.toLowerCase()))
+        ?.url ?? null;
+    return { telegram, whatsapp };
+  },
+  ['support-contact-links', 'v1'],
+  { revalidate: 600, tags: ['sidebar-data'] },
+);
 
-    const telegram = links.find((l) =>
-      ['telegram', 'تلگرام'].includes(l.name.toLowerCase())
-    )?.url || null;
-
-    const whatsapp = links.find((l) =>
-      ['whatsapp', 'واتساپ'].includes(l.name.toLowerCase())
-    )?.url || null;
-
-    return {
-      success: true,
-      data: { telegram, whatsapp },
-    };
+export async function getSupportContactLinks() {
+  try {
+    const data = await _getCachedSupportLinks();
+    return { success: true, data };
   } catch {
     return { success: false, data: { telegram: null, whatsapp: null } };
   }

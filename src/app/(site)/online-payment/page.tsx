@@ -1,7 +1,12 @@
 import type { Metadata } from 'next';
-import { Suspense } from 'react';
-import ContactCTA from '@/components/online-payment/ContactCTA';
 import OnlinePaymentLanding from '@/components/online-payment/OnlinePaymentHero';
+import ContactCTAClient from '@/components/online-payment/ContactCTAClient';
+import { getSupportContactLinks } from '@/actions/serviceRequestActions';
+
+// ISR: rebuild at most once per hour. No per-request dynamic data on this page.
+// In production Next.js serves the pre-rendered HTML; the DB is only hit at
+// build time and then every `revalidate` seconds via background revalidation.
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: 'پرداخت آنلاین | خدمات پرداخت بین‌المللی',
@@ -25,14 +30,21 @@ export const metadata: Metadata = {
   },
 };
 
-export default function OnlinePaymentPage() {
+// Fetch contact links at render time (cached by unstable_cache; 10 min TTL).
+// By awaiting here (not in a child Suspense boundary) Next.js can include
+// the result in the pre-rendered HTML and avoid a DB round-trip on every hit.
+export default async function OnlinePaymentPage() {
+  const contactLinks = await getSupportContactLinks();
+
   return (
     <main>
       <OnlinePaymentLanding />
       <div id="contact">
-        <Suspense fallback={<div className="h-64" />}>
-          <ContactCTA defaultServiceType="ONLINE_PAYMENT" />
-        </Suspense>
+        <ContactCTAClient
+          defaultServiceType="ONLINE_PAYMENT"
+          telegramLink={contactLinks.data?.telegram ?? null}
+          whatsappLink={contactLinks.data?.whatsapp ?? null}
+        />
       </div>
     </main>
   );

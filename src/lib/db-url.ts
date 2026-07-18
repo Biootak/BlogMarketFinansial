@@ -13,7 +13,13 @@
  * runtime/query connection URL passed to PrismaClient.
  */
 function getDefaultConnectionLimit(): string {
-  return process.env.NODE_ENV === 'production' ? '30' : '10';
+  // Supabase session-mode pooler (port 5432) limits concurrent sessions to 15
+  // on the free/small tier. In dev a single Next.js process with connection_limit=10
+  // easily saturates that, causing EMAXCONNSESSION. Keep dev to 3 to leave headroom
+  // for the Prisma shadow DB, migrations, and any other tools hitting the same pooler.
+  // Production keeps 10 (not 30) for the same reason — Prisma's pool multiplies by
+  // worker count under load.
+  return process.env.NODE_ENV === 'production' ? '10' : '3';
 }
 
 export function buildDatabaseUrl(): string {
