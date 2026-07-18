@@ -49,11 +49,13 @@ import s from './OnlinePaymentHero.module.css';
    TYPES & DATA
    ───────────────────────────────────────────────────────────────────────── */
 
+type AccentKey = 'accentBrand' | 'accentViolet' | 'accentEmerald' | 'accentAmber' | 'accentRose' | 'accentSlate';
+
 interface Service {
   icon: LucideIcon;
   title: string;
   desc: string;
-  accent: string; /* CSS custom property value */
+  accentKey: AccentKey;
 }
 
 const SERVICES: Service[] = [
@@ -61,37 +63,37 @@ const SERVICES: Service[] = [
     icon: Globe,
     title: 'حواله‌های بین‌المللی',
     desc: 'انتقال سریع و امن پول برای افراد و شرکت‌ها به سراسر جهان',
-    accent: 'var(--ds-brand-500)',
+    accentKey: 'accentBrand',
   },
   {
     icon: CreditCard,
     title: 'پرداخت‌های آنلاین',
     desc: 'خرید آسان از سایت‌های معتبر جهانی با کارت‌های اعتباری بین‌المللی',
-    accent: 'var(--ds-accent-violet)',
+    accentKey: 'accentViolet',
   },
   {
     icon: GraduationCap,
     title: 'شهریه دانشگاه',
     desc: 'پرداخت شهریه و هزینه‌های تحصیلی دانشگاه‌های خارج از کشور',
-    accent: 'var(--ds-accent-emerald)',
+    accentKey: 'accentEmerald',
   },
   {
     icon: Wallet,
     title: 'نقد کردن درآمد',
     desc: 'دریافت درآمد فریلنسری از پلتفرم‌های بین‌المللی مثل Upwork و Fiverr',
-    accent: 'var(--ds-accent-amber)',
+    accentKey: 'accentAmber',
   },
   {
     icon: ShoppingBag,
     title: 'خرید نرم‌افزار',
     desc: 'اشتراک و لایسنس سرویس‌های خارجی — Adobe، Microsoft، AWS و...',
-    accent: 'var(--ds-accent-rose)',
+    accentKey: 'accentRose',
   },
   {
     icon: Sparkles,
     title: 'خدمات ویژه',
     desc: 'راه‌حل‌های سفارشی برای نیازهای پرداخت خاص کسب‌وکار شما',
-    accent: 'var(--ds-accent-slate)',
+    accentKey: 'accentSlate',
   },
 ];
 
@@ -215,11 +217,12 @@ function ServiceCard({
   return (
     <li
       ref={ref}
-      className={`${s.serviceCard} ${visible ? s.revealed : ''}`}
-      style={{
-        transitionDelay: `${index * 70}ms`,
-        '--serviceAccent': service.accent,
-      } as React.CSSProperties}
+      className={[
+        s.serviceCard,
+        s[service.accentKey],
+        visible ? s.revealed : '',
+      ].join(' ')}
+      style={{ transitionDelay: `${index * 70}ms` }}
     >
       <div className={s.serviceIconWrap}>
         <Icon size={22} strokeWidth={1.5} />

@@ -692,7 +692,7 @@
   height: 2px;
   width: 0;
   border-radius: 1px;
-  background: var(--serviceAccent, var(--ds-brand-500));
+  background: var(--ds-brand-500);
   transition: width 0.4s var(--ds-ease-out-expo);
 }
 
@@ -704,11 +704,13 @@
   width: 46px;
   height: 46px;
   border-radius: var(--ds-radius-lg);
-  border: 1px solid var(--serviceAccent, var(--ds-border-subtle));
-  background: oklch(from var(--serviceAccent, var(--ds-brand-500)) l c h / 0.08);
+  /* border + bg + color from explicit per-accent classes below.
+     Fallback: brand tones (avoids broken oklch relative-color in older browsers). */
+  border: 1px solid var(--ds-brand-100);
+  background: var(--ds-brand-50);
   display: grid;
   place-items: center;
-  color: var(--serviceAccent, var(--ds-brand-600));
+  color: var(--ds-brand-600);
   margin-bottom: var(--ds-space-4);
   transition: transform var(--ds-duration-fast) var(--ds-ease-spring);
 }
@@ -716,6 +718,52 @@
 .serviceCard:hover .serviceIconWrap {
   transform: scale(1.1) rotate(-4deg);
 }
+
+/* ── Per-accent icon wrap variants ──────────────────────────
+   Each service maps to one of these via accentKey prop.
+   Using explicit tokens instead of oklch(from …) for cross-browser compat.
+   ──────────────────────────────────────────────────────────── */
+.accentBrand .serviceIconWrap {
+  border-color: var(--ds-brand-100);
+  background: var(--ds-brand-50);
+  color: var(--ds-brand-600);
+}
+.accentBrand.serviceCard::after { background: var(--ds-brand-500); }
+
+.accentViolet .serviceIconWrap {
+  border-color: oklch(58% 0.13 290 / 0.25);
+  background: oklch(58% 0.13 290 / 0.08);
+  color: var(--ds-accent-violet);
+}
+.accentViolet.serviceCard::after { background: var(--ds-accent-violet); }
+
+.accentEmerald .serviceIconWrap {
+  border-color: oklch(60% 0.10 165 / 0.25);
+  background: oklch(60% 0.10 165 / 0.08);
+  color: var(--ds-accent-emerald);
+}
+.accentEmerald.serviceCard::after { background: var(--ds-accent-emerald); }
+
+.accentAmber .serviceIconWrap {
+  border-color: oklch(72% 0.13 70 / 0.25);
+  background: oklch(72% 0.13 70 / 0.08);
+  color: var(--ds-accent-amber);
+}
+.accentAmber.serviceCard::after { background: var(--ds-accent-amber); }
+
+.accentRose .serviceIconWrap {
+  border-color: oklch(60% 0.13 20 / 0.25);
+  background: oklch(60% 0.13 20 / 0.08);
+  color: var(--ds-accent-rose);
+}
+.accentRose.serviceCard::after { background: var(--ds-accent-rose); }
+
+.accentSlate .serviceIconWrap {
+  border-color: oklch(60% 0.02 250 / 0.25);
+  background: oklch(60% 0.02 250 / 0.08);
+  color: var(--ds-accent-slate);
+}
+.accentSlate.serviceCard::after { background: var(--ds-accent-slate); }
 
 .serviceTitle {
   font-size: var(--ds-text-base);
