@@ -28,6 +28,7 @@ type ServiceType =
   | 'TUITION_PAYMENT'
   | 'FREELANCE_INCOME'
   | 'SOFTWARE_PURCHASE'
+  | 'GIFT_CARD'
   | 'OTHER';
 
 interface ContactCTAClientProps {

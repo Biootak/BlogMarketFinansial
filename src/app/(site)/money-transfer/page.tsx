@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getExchangeRates } from '@/actions/exchange-rates';
 import { getRateLists } from '@/actions/rate-lists';
 import { ExchangeRateTableView } from './ExchangeRateTableView';
-import ContactCTA from '@/components/online-payment/ContactCTA';
+import TransferRequestCTA from '@/components/money-transfer/TransferRequestCTA';
 import FAQ from './FAQ';
 import RateListGrid from './RateListGrid';
 import HeroConverter from './HeroConverter';
@@ -235,10 +235,10 @@ export default async function MoneyTransferPage() {
           </section>
         </ScrollReveal>
 
-        {/* Contact CTA Section */}
+        {/* Transfer Request Form — dedicated hawala form (replaces generic ContactCTA) */}
         <ScrollReveal>
           <section id="contact">
-            <ContactCTA defaultServiceType="INTERNATIONAL_TRANSFER" />
+            <TransferRequestCTA />
           </section>
         </ScrollReveal>
 

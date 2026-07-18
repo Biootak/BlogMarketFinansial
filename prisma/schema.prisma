@@ -556,6 +556,8 @@ enum ServiceType {
   TUITION_PAYMENT
   FREELANCE_INCOME
   SOFTWARE_PURCHASE
+  // 2026-07-10: gift card purchasing service
+  GIFT_CARD
   OTHER
 }
 

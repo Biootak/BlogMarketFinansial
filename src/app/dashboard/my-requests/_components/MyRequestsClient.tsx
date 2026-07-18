@@ -67,6 +67,7 @@ const SERVICE_LABELS: Record<string, string> = {
   TUITION_PAYMENT:        'پرداخت شهریه',
   FREELANCE_INCOME:       'نقد کردن درآمد',
   SOFTWARE_PURCHASE:      'خرید نرم‌افزار',
+  GIFT_CARD:              'گیفت کارت',
   OTHER:                  'سایر خدمات',
 };
 

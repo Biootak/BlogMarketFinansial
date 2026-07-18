@@ -22,7 +22,7 @@ import { type FC, useState, useCallback, useMemo, useEffect, useRef, useId } fro
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  Globe,
+  Gift,
   CreditCard,
   GraduationCap,
   Wallet,
@@ -67,12 +67,12 @@ interface CurrencyOption {
 }
 
 const SERVICE_TYPES: ServiceOption[] = [
-  { value: 'INTERNATIONAL_TRANSFER', label: 'حواله بین‌المللی', icon: Globe,        color: 'oklch(55% 0.17 218)' },
-  { value: 'ONLINE_PAYMENT',         label: 'پرداخت آنلاین',   icon: CreditCard,   color: 'oklch(55% 0.17 290)' },
-  { value: 'TUITION_PAYMENT',        label: 'پرداخت شهریه',   icon: GraduationCap,color: 'oklch(55% 0.17 155)' },
-  { value: 'FREELANCE_INCOME',       label: 'نقد کردن درآمد', icon: Wallet,       color: 'oklch(60% 0.15 70)'  },
-  { value: 'SOFTWARE_PURCHASE',      label: 'خرید نرم‌افزار', icon: ShoppingBag,  color: 'oklch(58% 0.18 15)'  },
-  { value: 'OTHER',                  label: 'سایر خدمات',     icon: Sparkles,     color: 'var(--ds-brand-600)' },
+  { value: 'ONLINE_PAYMENT',    label: 'پرداخت آنلاین',    icon: CreditCard,   color: 'oklch(55% 0.17 290)' },
+  { value: 'GIFT_CARD',         label: 'گیفت کارت',        icon: Gift,         color: 'oklch(58% 0.18 340)' },
+  { value: 'TUITION_PAYMENT',   label: 'پرداخت شهریه',    icon: GraduationCap,color: 'oklch(55% 0.17 155)' },
+  { value: 'FREELANCE_INCOME',  label: 'نقد کردن درآمد',  icon: Wallet,       color: 'oklch(60% 0.15 70)'  },
+  { value: 'SOFTWARE_PURCHASE', label: 'خرید نرم‌افزار',  icon: ShoppingBag,  color: 'oklch(58% 0.18 15)'  },
+  { value: 'OTHER',             label: 'سایر خدمات',      icon: Sparkles,     color: 'var(--ds-brand-600)' },
 ];
 
 const CURRENCIES: CurrencyOption[] = [
@@ -210,6 +210,8 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
       platformUsername:  '',
       softwareName:      '',
       subscriptionType:  '',
+      giftCardBrand:     '',
+      giftCardRegion:    '',
     },
   });
 
@@ -641,6 +643,41 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
                       <option value="yearly">سالانه</option>
                       <option value="lifetime">مادام‌العمر</option>
                       <option value="one-time">یکبار خرید</option>
+                    </select>
+                  </div>
+                </Field>
+              </div>
+            </ConditionalSection>
+
+            <ConditionalSection open={serviceType === 'GIFT_CARD'}>
+              <Divider label="اطلاعات گیفت کارت (اختیاری)" />
+              <div className={s.fieldRow}>
+                <Field id="giftCardBrand" label="برند گیفت کارت">
+                  <div className={s.selectWrap}>
+                    <select id="giftCardBrand" {...register('giftCardBrand')} className={s.select}>
+                      <option value="">انتخاب کنید</option>
+                      <option value="amazon">Amazon</option>
+                      <option value="google_play">Google Play</option>
+                      <option value="apple">Apple / iTunes</option>
+                      <option value="steam">Steam</option>
+                      <option value="netflix">Netflix</option>
+                      <option value="spotify">Spotify</option>
+                      <option value="xbox">Xbox / Microsoft</option>
+                      <option value="playstation">PlayStation</option>
+                      <option value="visa">Visa Prepaid</option>
+                      <option value="other">سایر</option>
+                    </select>
+                  </div>
+                </Field>
+                <Field id="giftCardRegion" label="ریجن / منطقه">
+                  <div className={s.selectWrap}>
+                    <select id="giftCardRegion" {...register('giftCardRegion')} className={s.select}>
+                      <option value="">انتخاب کنید</option>
+                      <option value="us">آمریکا (US)</option>
+                      <option value="eu">اروپا (EU)</option>
+                      <option value="uk">انگلستان (UK)</option>
+                      <option value="global">جهانی (Global)</option>
+                      <option value="other">سایر</option>
                     </select>
                   </div>
                 </Field>

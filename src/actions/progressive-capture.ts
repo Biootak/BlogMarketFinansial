@@ -270,14 +270,23 @@ export async function verifyServiceOtpAndLink(args: {
       }
     }
 
-    // Update ServiceRequest: mark emailVerified + link userId
-    await prisma.serviceRequest.update({
-      where: { id: request.id },
-      data: {
-        emailVerified: true,
-        userId,
-      },
-    });
+    // Update this ServiceRequest: mark emailVerified + link userId.
+    // Also back-fill any prior guest requests from the same email that
+    // were never linked (e.g. submitted before the user had an account).
+    await prisma.$transaction([
+      prisma.serviceRequest.update({
+        where: { id: request.id },
+        data: { emailVerified: true, userId },
+      }),
+      prisma.serviceRequest.updateMany({
+        where: {
+          email: { equals: email, mode: 'insensitive' },
+          userId: null,
+          id: { not: request.id },
+        },
+        data: { userId },
+      }),
+    ]);
 
     return {
       success: true,

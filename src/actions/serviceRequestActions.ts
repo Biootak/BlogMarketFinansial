@@ -22,6 +22,7 @@ const serviceTypeLabels: Record<string, string> = {
   TUITION_PAYMENT: 'پرداخت شهریه',
   FREELANCE_INCOME: 'نقد کردن درآمد',
   SOFTWARE_PURCHASE: 'خرید نرم‌افزار',
+  GIFT_CARD: 'خرید گیفت کارت',
   OTHER: 'سایر خدمات',
 };
 
@@ -87,6 +88,7 @@ const ServiceRequestInputSchema = z.object({
     'TUITION_PAYMENT',
     'FREELANCE_INCOME',
     'SOFTWARE_PURCHASE',
+    'GIFT_CARD',
     'OTHER',
   ]),
   amount: z.string().min(1).max(50).transform(sanitizeInput),
@@ -102,6 +104,9 @@ const ServiceRequestInputSchema = z.object({
   platformUsername: z.string().optional().transform((val) => val || null),
   softwareName: z.string().optional().transform((val) => val || null),
   subscriptionType: z.string().optional().transform((val) => val || null),
+  // Gift Card fields
+  giftCardBrand: z.string().optional().transform((val) => val || null),
+  giftCardRegion: z.string().optional().transform((val) => val || null),
   description: z.string().max(500).optional().transform((val) => (val ? sanitizeInput(val) : null)),
   urgency: z.enum(['NORMAL', 'URGENT']).default('NORMAL'),
   contactMethod: z.enum(['telegram', 'whatsapp']),
@@ -148,7 +153,7 @@ export async function createServiceRequest(input: ServiceRequestInput): Promise<
 
     const data = validationResult.data;
 
-    // 2026-07-10: Idempotency — if the client provides a key and we already have it, return the existing record
+    // Idempotency — if the client provides a key and we already have it, return the existing record
     if (data.idempotencyKey) {
       const existing = await prisma.serviceRequest.findUnique({
         where: { idempotencyKey: data.idempotencyKey },
@@ -156,6 +161,31 @@ export async function createServiceRequest(input: ServiceRequestInput): Promise<
       });
       if (existing) {
         return { success: true, trackingCode: existing.trackingCode, message: 'درخواست قبلاً ثبت شده است.' };
+      }
+    }
+
+    // Server-side duplicate guard — catches cases where the client didn't
+    // send an idempotency key (page reload, back-button resubmit, etc.).
+    // A request with the same phone + amount + currency within 5 minutes
+    // is considered a duplicate and the existing tracking code is returned.
+    {
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+      const recentDuplicate = await prisma.serviceRequest.findFirst({
+        where: {
+          phone: data.phone,
+          amount: data.amount,
+          currency: data.currency,
+          createdAt: { gte: fiveMinutesAgo },
+        },
+        select: { trackingCode: true },
+        orderBy: { createdAt: 'desc' },
+      });
+      if (recentDuplicate) {
+        return {
+          success: true,
+          trackingCode: recentDuplicate.trackingCode,
+          message: 'درخواست مشابهی در چند دقیقه اخیر ثبت شده است.',
+        };
       }
     }
 
@@ -177,6 +207,8 @@ export async function createServiceRequest(input: ServiceRequestInput): Promise<
       platformUsername: data.platformUsername ?? null,
       softwareName: data.softwareName ?? null,
       subscriptionType: data.subscriptionType ?? null,
+      giftCardBrand: data.giftCardBrand ?? null,
+      giftCardRegion: data.giftCardRegion ?? null,
     };
     // Drop null entries to keep JSON lean
     const metadataClean = Object.fromEntries(
@@ -313,7 +345,7 @@ export async function getServiceRequests(params?: {
   search?: string;
 }) {
   const session = await auth();
-  if (!session?.user || !['ADMIN', 'OWNER'].includes(session.user.role as string)) {
+  if (!session?.user || !['ADMIN', 'OWNER', 'SUPPORT'].includes(session.user.role as string)) {
     return { success: false, message: 'دسترسی غیرمجاز' };
   }
 
@@ -362,7 +394,7 @@ export async function updateServiceRequestStatus(
   adminNotes?: string,
 ) {
   const session = await auth();
-  if (!session?.user || !['ADMIN', 'OWNER'].includes(session.user.role as string)) {
+  if (!session?.user || !['ADMIN', 'OWNER', 'SUPPORT'].includes(session.user.role as string)) {
     return { success: false, message: 'دسترسی غیرمجاز' };
   }
 
@@ -444,7 +476,7 @@ export async function deleteServiceRequest(id: string) {
 // ─── Admin: Get recent activity ──────────────────────────────────────────── //
 export async function getServiceRequestRecentActivity(limit = 10) {
   const session = await auth();
-  if (!session?.user || !['ADMIN', 'OWNER'].includes(session.user.role as string)) {
+  if (!session?.user || !['ADMIN', 'OWNER', 'SUPPORT'].includes(session.user.role as string)) {
     return { success: false, message: 'دسترسی غیرمجاز' };
   }
 
@@ -539,7 +571,7 @@ export async function bulkUpdateServiceRequestStatus(
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED',
 ) {
   const session = await auth();
-  if (!session?.user || !['ADMIN', 'OWNER'].includes(session.user.role as string)) {
+  if (!session?.user || !['ADMIN', 'OWNER', 'SUPPORT'].includes(session.user.role as string)) {
     return { success: false, message: 'دسترسی غیرمجاز' };
   }
 
@@ -595,7 +627,7 @@ export async function exportServiceRequestsCsv(params?: {
   search?: string;
 }) {
   const session = await auth();
-  if (!session?.user || !['ADMIN', 'OWNER'].includes(session.user.role as string)) {
+  if (!session?.user || !['ADMIN', 'OWNER', 'SUPPORT'].includes(session.user.role as string)) {
     return { success: false, message: 'دسترسی غیرمجاز' };
   }
 
@@ -638,6 +670,7 @@ export async function exportServiceRequestsCsv(params?: {
       TUITION_PAYMENT: 'پرداخت شهریه',
       FREELANCE_INCOME: 'نقد کردن درآمد',
       SOFTWARE_PURCHASE: 'خرید نرم‌افزار',
+      GIFT_CARD: 'گیفت کارت',
       OTHER: 'سایر',
     };
     const statusLabel: Record<string, string> = {
@@ -681,7 +714,7 @@ export async function exportServiceRequestsCsv(params?: {
 // ─── Admin: Get stats ─────────────────────────────────────────────────────── //
 export async function getServiceRequestStats() {
   const session = await auth();
-  if (!session?.user || !['ADMIN', 'OWNER'].includes(session.user.role as string)) {
+  if (!session?.user || !['ADMIN', 'OWNER', 'SUPPORT'].includes(session.user.role as string)) {
     return { success: false, message: 'دسترسی غیرمجاز' };
   }
 

@@ -189,10 +189,14 @@ export function serviceRequestConfirmationEmail(
               <tr><td align="center" style="padding-bottom:20px">
                 <a href="${trackingUrl}"
                    style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;border-radius:8px;padding:12px 28px;font-size:14px;font-weight:600">
-                  پیگیری درخواست
+                  مشاهده وضعیت سفارش ←
                 </a>
               </td></tr>
             </table>
+            <p style="margin:0 0 16px 0;font-size:11px;color:#9ca3af;text-align:center">
+              یا کد زیر را در صفحه پیگیری وارد کنید:
+              <span style="display:block;font-family:Menlo,Consolas,monospace;font-size:13px;color:#374151;letter-spacing:2px;margin-top:4px" dir="ltr">${args.trackingCode}</span>
+            </p>
             <p style="margin:0;font-size:12px;color:#9ca3af;line-height:1.6">
               تیم ما در کمتر از ۳۰ دقیقه با شما تماس خواهد گرفت.
             </p>

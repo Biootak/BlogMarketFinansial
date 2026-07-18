@@ -8,6 +8,7 @@ interface ContactCTAProps {
     | 'TUITION_PAYMENT'
     | 'FREELANCE_INCOME'
     | 'SOFTWARE_PURCHASE'
+    | 'GIFT_CARD'
     | 'OTHER';
 }
 

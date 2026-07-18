@@ -225,6 +225,7 @@ export const ServiceRequestSchema = z.object({
     'TUITION_PAYMENT',
     'FREELANCE_INCOME',
     'SOFTWARE_PURCHASE',
+    'GIFT_CARD',
     'OTHER',
   ]),
   amount: z.string().min(1, 'لطفاً مبلغ را وارد کنید').max(50, 'مبلغ نامعتبر است'),
@@ -246,6 +247,9 @@ export const ServiceRequestSchema = z.object({
   // Software Purchase fields
   softwareName: z.string().optional(),
   subscriptionType: z.string().optional(),
+  // Gift Card fields
+  giftCardBrand: z.string().optional(),
+  giftCardRegion: z.string().optional(),
 });
 
 export type ServiceRequestFormData = z.infer<typeof ServiceRequestSchema>;
