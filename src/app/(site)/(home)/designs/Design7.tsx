@@ -297,7 +297,7 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
                       )}
                     </motion.div>
 
-                    {/* Top-right: index counter + pause toggle */}
+                    {/* Inline-end: index counter + pause toggle */}
                     <motion.div
                       className="absolute top-4 sm:top-6 end-4 sm:end-6 z-20 flex items-center gap-2"
                       initial={{ y: -20, opacity: 0 }}

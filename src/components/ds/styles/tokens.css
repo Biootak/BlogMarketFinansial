@@ -13,7 +13,7 @@
    تاریخچه (2026-07-02):
    - قبلاً duplicates از این tokens در globals.css @theme بود که override می‌کرد.
    - حالا فقط یک منبع داریم؛ @theme در globals.css فقط Tailwind utilities را
-     expose می‌کند (`--color-*`, `--font-*`).
+     expose می‌کند (color/font CSS vars).
    ============================================================================ */
 
 :root {
