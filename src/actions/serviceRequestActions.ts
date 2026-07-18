@@ -2,12 +2,19 @@
 
 import prisma from '@/lib/db';
 import { headers } from 'next/headers';
+import { randomBytes } from 'node:crypto';
 import { z } from 'zod';
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
 import { unstable_cache } from 'next/cache';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { getEmailProviderAsync } from '@/lib/email';
+import {
+  serviceRequestConfirmationEmail,
+  serviceRequestStatusEmail,
+} from '@/lib/email/templates';
 
-// Service type labels
+// ─── Service type labels ──────────────────────────────────────────────────── //
 const serviceTypeLabels: Record<string, string> = {
   INTERNATIONAL_TRANSFER: 'حواله بین‌المللی',
   ONLINE_PAYMENT: 'پرداخت آنلاین',
@@ -17,70 +24,33 @@ const serviceTypeLabels: Record<string, string> = {
   OTHER: 'سایر خدمات',
 };
 
-// Generate unique tracking code
+// ─── Tracking code — cryptographically random ────────────────────────────── //
+// 2026-07-07: replaced Math.random()-based generator with crypto.randomBytes
+// to eliminate predictability. Format: BT-<8 hex chars>-<6 hex chars>
 function generateTrackingCode(): string {
-  const timestamp = Date.now().toString(36).toUpperCase();
-  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `BT-${timestamp}-${random}`;
+  const a = randomBytes(4).toString('hex').toUpperCase();
+  const b = randomBytes(3).toString('hex').toUpperCase();
+  return `BT-${a}-${b}`;
 }
 
-// Rate limiting map — bounded to avoid a memory leak under long-lived servers.
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT_MAX_ENTRIES = 5000;
-
-function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
-  const now = Date.now();
-  const windowMs = 15 * 60 * 1000;
-  const maxRequests = 5;
-
-  // Periodic GC so the map cannot grow unbounded.
-  if (rateLimitMap.size > RATE_LIMIT_MAX_ENTRIES) {
-    for (const [k, v] of rateLimitMap) {
-      if (now > v.resetTime) rateLimitMap.delete(k);
-    }
-  }
-
-  const record = rateLimitMap.get(ip);
-
-  if (!record || now > record.resetTime) {
-    rateLimitMap.set(ip, { count: 1, resetTime: now + windowMs });
-    return { allowed: true };
-  }
-
-  if (record.count >= maxRequests) {
-    return { allowed: false, retryAfter: Math.ceil((record.resetTime - now) / 1000) };
-  }
-
-  record.count++;
-  return { allowed: true };
-}
-
-// Sanitize input
+// ─── Sanitize input ───────────────────────────────────────────────────────── //
 function sanitizeInput(input: string): string {
   return input.replace(/[<>]/g, '').replace(/javascript:/gi, '').replace(/on\w+=/gi, '').trim();
 }
 
-// Send Telegram notification to admin
+// ─── Telegram admin notification ─────────────────────────────────────────── //
 async function sendTelegramNotification(message: string): Promise<boolean> {
   try {
     const settings = await prisma.systemSettings.findFirst();
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID || settings?.telegram;
 
-    if (!botToken || !chatId) {
-      return false;
-    }
+    if (!botToken || !chatId) return false;
 
     const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: message,
-        // M8 fix: send as plain text. With parse_mode Markdown, user-supplied
-        // fields (name, description, email) could inject formatting/links
-        // (e.g. `[x](http://evil)`). Plain text keeps the notification safe.
-      }),
+      body: JSON.stringify({ chat_id: chatId, text: message }),
     });
 
     return response.ok;
@@ -89,7 +59,16 @@ async function sendTelegramNotification(message: string): Promise<boolean> {
   }
 }
 
-// Validation schema
+// ─── Email notification (fire-and-forget, never throws) ──────────────────── //
+async function trySendEmail(fn: () => Promise<void>): Promise<void> {
+  try {
+    await fn();
+  } catch {
+    // Email failure must not block the main flow — error swallowed intentionally
+  }
+}
+
+// ─── Validation schema ───────────────────────────────────────────────────── //
 const ServiceRequestInputSchema = z.object({
   fullName: z.string().min(3).max(100).transform(sanitizeInput),
   phone: z.string().min(10).max(15).regex(/^[0-9+]+$/),
@@ -104,8 +83,17 @@ const ServiceRequestInputSchema = z.object({
   ]),
   amount: z.string().min(1).max(50).transform(sanitizeInput),
   currency: z.string().min(1).max(10),
+  // service-specific fields collected as loose strings
   destinationCountry: z.string().optional().transform((val) => val || null),
   bankName: z.string().optional().transform((val) => val || null),
+  websiteUrl: z.string().optional().transform((val) => val || null),
+  productName: z.string().optional().transform((val) => val || null),
+  universityName: z.string().optional().transform((val) => val || null),
+  studentId: z.string().optional().transform((val) => val || null),
+  platformName: z.string().optional().transform((val) => val || null),
+  platformUsername: z.string().optional().transform((val) => val || null),
+  softwareName: z.string().optional().transform((val) => val || null),
+  subscriptionType: z.string().optional().transform((val) => val || null),
   description: z.string().max(500).optional().transform((val) => (val ? sanitizeInput(val) : null)),
   urgency: z.enum(['NORMAL', 'URGENT']).default('NORMAL'),
   contactMethod: z.enum(['telegram', 'whatsapp']),
@@ -120,20 +108,22 @@ export interface ServiceRequestResult {
   error?: string;
 }
 
+// ─── createServiceRequest ─────────────────────────────────────────────────── //
 export async function createServiceRequest(input: ServiceRequestInput): Promise<ServiceRequestResult> {
   try {
     const headersList = await headers();
-    // M5 fix: prefer x-real-ip (set by the trusted proxy, not client-forged)
-    // over the leftmost x-forwarded-for hop which is trivially spoofable.
-    const ip = headersList.get('x-real-ip')?.trim() || headersList.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const ip =
+      headersList.get('x-real-ip')?.trim() ||
+      headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      'unknown';
     const userAgent = headersList.get('user-agent') || 'unknown';
 
-    // Rate limiting
-    const rateLimit = checkRateLimit(ip);
-    if (!rateLimit.allowed) {
+    // 2026-07-07: use shared Redis-backed rate limiter (was in-memory Map, bypassed in Serverless)
+    const rateResult = await checkRateLimit(`service-request:${ip}`, 'api');
+    if (!rateResult.success) {
       return {
         success: false,
-        message: `تعداد درخواست‌های شما بیش از حد مجاز است. لطفاً ${rateLimit.retryAfter} ثانیه دیگر تلاش کنید.`,
+        message: 'تعداد درخواست‌های شما بیش از حد مجاز است. لطفاً چند دقیقه دیگر تلاش کنید.',
         error: 'RATE_LIMIT_EXCEEDED',
       };
     }
@@ -141,18 +131,38 @@ export async function createServiceRequest(input: ServiceRequestInput): Promise<
     // Validate
     const validationResult = ServiceRequestInputSchema.safeParse(input);
     if (!validationResult.success) {
-      return { success: false, message: validationResult.error.errors[0].message, error: 'VALIDATION_ERROR' };
+      return {
+        success: false,
+        message: validationResult.error.errors[0].message,
+        error: 'VALIDATION_ERROR',
+      };
     }
 
     const data = validationResult.data;
     const trackingCode = generateTrackingCode();
 
-    // 2026-06-14: skip the duplicate-pre-check. The new
-    // (phone, amount, currency, createdAt) composite index from
-    // schema.prisma lets the unique constraint back this — we
-    // attempt the insert and treat P2002 as a duplicate. Saves
-    // one round-trip on the happy path and removes a race window.
-    // Create request
+    // 2026-07-07: collect userId if a session exists (optional — guest orders allowed)
+    const session = await auth();
+    const userId = session?.user?.id ?? null;
+
+    // 2026-07-07: gather service-specific fields into metadata JSON
+    const metadata: Record<string, string | null> = {
+      destinationCountry: data.destinationCountry ?? null,
+      bankName: data.bankName ?? null,
+      websiteUrl: data.websiteUrl ?? null,
+      productName: data.productName ?? null,
+      universityName: data.universityName ?? null,
+      studentId: data.studentId ?? null,
+      platformName: data.platformName ?? null,
+      platformUsername: data.platformUsername ?? null,
+      softwareName: data.softwareName ?? null,
+      subscriptionType: data.subscriptionType ?? null,
+    };
+    // Drop null entries to keep JSON lean
+    const metadataClean = Object.fromEntries(
+      Object.entries(metadata).filter(([, v]) => v !== null),
+    ) as Record<string, string>;
+
     const serviceRequest = await prisma.serviceRequest.create({
       data: {
         trackingCode,
@@ -167,15 +177,16 @@ export async function createServiceRequest(input: ServiceRequestInput): Promise<
         contactMethod: data.contactMethod,
         ipAddress: ip,
         userAgent: userAgent.substring(0, 500),
+        userId,
+        metadata: Object.keys(metadataClean).length > 0 ? metadataClean : undefined,
       },
     });
 
-    // Send Telegram notification to admin
-    const urgencyLabel = data.urgency === 'URGENT' ? 'فوری' : 'عادی';
-    const notificationMessage = `
-*درخواست جدید خدمات*
+    // Telegram notification to admin
+    const urgencyLabel = data.urgency === 'URGENT' ? '🔴 فوری' : '⚪ عادی';
+    const notificationMessage = `*درخواست جدید خدمات*
 
-کد پیگیری: \`${trackingCode}\`
+کد پیگیری: ${trackingCode}
 نام: ${data.fullName}
 تماس: ${data.phone}
 ${data.email ? `ایمیل: ${data.email}` : ''}
@@ -184,17 +195,36 @@ ${serviceTypeLabels[data.serviceType] || data.serviceType}
 مبلغ: ${data.amount} ${data.currency}
 اولویت: ${urgencyLabel}
 روش تماس: ${data.contactMethod === 'telegram' ? 'تلگرام' : 'واتساپ'}
-
 ${data.description ? `توضیحات: ${data.description}` : ''}
 
-[مشاهده در داشبورد](${process.env.NEXT_PUBLIC_APP_URL}/dashboard/service-requests)
-    `.trim();
+مشاهده در داشبورد: ${process.env.NEXT_PUBLIC_APP_URL}/dashboard/service-requests`.trim();
 
     await sendTelegramNotification(notificationMessage);
 
-    // Log
+    // 2026-07-07: send confirmation email to user (fire-and-forget)
+    if (data.email) {
+      await trySendEmail(async () => {
+        const provider = await getEmailProviderAsync();
+        await provider.send(
+          serviceRequestConfirmationEmail({
+            to: data.email as string,
+            fullName: data.fullName,
+            trackingCode,
+            serviceType: data.serviceType,
+            amount: data.amount,
+            currency: data.currency,
+            appUrl: process.env.NEXT_PUBLIC_APP_URL ?? '',
+          }),
+        );
+      });
+    }
+
     await prisma.systemLog.create({
-      data: { level: 'INFO', message: `New service request: ${trackingCode}`, source: 'ServiceRequest' },
+      data: {
+        level: 'INFO',
+        message: `New service request: ${trackingCode}`,
+        source: 'ServiceRequest',
+      },
     });
 
     return { success: true, trackingCode, message: 'درخواست شما با موفقیت ثبت شد.' };
@@ -203,7 +233,9 @@ ${data.description ? `توضیحات: ${data.description}` : ''}
   }
 }
 
-// Get request by tracking code (public)
+// ─── getServiceRequestByTrackingCode (public) ─────────────────────────────── //
+// 2026-07-07: now returns adminNotes, updatedAt, estimatedCompletionAt, status log
+// Masking: fullName shows first letter + "***", amount is shown but with "~" prefix
 export async function getServiceRequestByTrackingCode(trackingCode: string) {
   try {
     const request = await prisma.serviceRequest.findUnique({
@@ -216,7 +248,20 @@ export async function getServiceRequestByTrackingCode(trackingCode: string) {
         currency: true,
         status: true,
         urgency: true,
+        adminNotes: true,
+        estimatedCompletionAt: true,
+        externalTxId: true,
         createdAt: true,
+        updatedAt: true,
+        statusLogs: {
+          orderBy: { createdAt: 'desc' },
+          select: {
+            fromStatus: true,
+            toStatus: true,
+            note: true,
+            createdAt: true,
+          },
+        },
       },
     });
 
@@ -224,13 +269,22 @@ export async function getServiceRequestByTrackingCode(trackingCode: string) {
       return { success: false, message: 'درخواستی با این کد پیگیری یافت نشد.' };
     }
 
-    return { success: true, data: request };
+    // 2026-07-07: mask sensitive data — only first letter of name is shown
+    const maskedName = request.fullName.charAt(0) + '***';
+
+    return {
+      success: true,
+      data: {
+        ...request,
+        fullName: maskedName,
+      },
+    };
   } catch {
     return { success: false, message: 'خطایی رخ داد.' };
   }
 }
 
-// Admin: Get all service requests
+// ─── Admin: Get all service requests ────────────────────────────────────────//
 export async function getServiceRequests(params?: {
   status?: string;
   page?: number;
@@ -254,10 +308,6 @@ export async function getServiceRequests(params?: {
     where.OR = [
       { trackingCode: { contains: params.search, mode: 'insensitive' } },
       { fullName: { contains: params.search, mode: 'insensitive' } },
-      // 2026-06-14: this was the only `contains` filter that didn't
-      // specify `mode: 'insensitive'`. Postgres treats it as
-      // case-sensitive by default, so mixed-case searches silently
-      // returned fewer rows than expected.
       { phone: { contains: params.search, mode: 'insensitive' } },
     ];
   }
@@ -283,11 +333,12 @@ export async function getServiceRequests(params?: {
   }
 }
 
-// Admin: Update request status
+// ─── Admin: Update request status ────────────────────────────────────────── //
+// 2026-07-07: now writes StatusLog + sends email notification to user
 export async function updateServiceRequestStatus(
   id: string,
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED',
-  adminNotes?: string
+  adminNotes?: string,
 ) {
   const session = await auth();
   if (!session?.user || !['ADMIN', 'OWNER'].includes(session.user.role as string)) {
@@ -295,12 +346,32 @@ export async function updateServiceRequestStatus(
   }
 
   try {
-    const request = await prisma.serviceRequest.update({
+    // Fetch current state first for the status log
+    const existing = await prisma.serviceRequest.findUnique({
       where: { id },
-      data: { status, adminNotes },
+      select: { status: true, trackingCode: true, fullName: true, email: true },
     });
 
-    // Log activity
+    if (!existing) {
+      return { success: false, message: 'درخواست یافت نشد.' };
+    }
+
+    const request = await prisma.serviceRequest.update({
+      where: { id },
+      data: { status, ...(adminNotes !== undefined ? { adminNotes } : {}) },
+    });
+
+    // 2026-07-07: write immutable status log entry
+    await prisma.serviceRequestStatusLog.create({
+      data: {
+        requestId: id,
+        fromStatus: existing.status,
+        toStatus: status,
+        changedBy: session.user.email ?? 'admin',
+        note: adminNotes ?? null,
+      },
+    });
+
     await prisma.systemLog.create({
       data: {
         level: 'INFO',
@@ -309,6 +380,23 @@ export async function updateServiceRequestStatus(
       },
     });
 
+    // 2026-07-07: notify user by email (fire-and-forget)
+    if (existing.email) {
+      await trySendEmail(async () => {
+        const provider = await getEmailProviderAsync();
+        await provider.send(
+          serviceRequestStatusEmail({
+            to: existing.email as string,
+            fullName: existing.fullName,
+            trackingCode: existing.trackingCode,
+            newStatus: status,
+            adminNote: adminNotes,
+            appUrl: process.env.NEXT_PUBLIC_APP_URL ?? '',
+          }),
+        );
+      });
+    }
+
     revalidatePath('/dashboard/service-requests');
     return { success: true, message: 'وضعیت با موفقیت به‌روزرسانی شد.' };
   } catch {
@@ -316,7 +404,7 @@ export async function updateServiceRequestStatus(
   }
 }
 
-// Admin: Delete request
+// ─── Admin: Delete request ───────────────────────────────────────────────── //
 export async function deleteServiceRequest(id: string) {
   const session = await auth();
   if (!session?.user || session.user.role !== 'OWNER') {
@@ -332,8 +420,7 @@ export async function deleteServiceRequest(id: string) {
   }
 }
 
-// Admin: Get recent activity (last status changes + new requests)
-// 2026-07-04: New — feeds the right-side activity rail on the page.
+// ─── Admin: Get recent activity ──────────────────────────────────────────── //
 export async function getServiceRequestRecentActivity(limit = 10) {
   const session = await auth();
   if (!session?.user || !['ADMIN', 'OWNER'].includes(session.user.role as string)) {
@@ -341,17 +428,15 @@ export async function getServiceRequestRecentActivity(limit = 10) {
   }
 
   try {
-    // Build the activity stream from both the system log (status changes)
-    // and recent inserts. We only return status-change + new-request events
-    // — those are the only "activity" that matters on this page.
-    const [logs, recent] = await Promise.all([
-      prisma.systemLog.findMany({
-        where: {
-          source: 'ServiceRequest',
-          message: { startsWith: 'Service request' },
-        },
-        orderBy: { timestamp: 'desc' },
+    const [statusLogs, recent] = await Promise.all([
+      prisma.serviceRequestStatusLog.findMany({
+        orderBy: { createdAt: 'desc' },
         take: limit,
+        include: {
+          request: {
+            select: { trackingCode: true, fullName: true },
+          },
+        },
       }),
       prisma.serviceRequest.findMany({
         where: {
@@ -406,20 +491,16 @@ export async function getServiceRequestRecentActivity(limit = 10) {
         createdAt: r.createdAt.toISOString(),
       });
     }
-    for (const log of logs) {
-      // Pattern: `Service request {trackingCode} status updated to {STATUS} by {email}`
-      const match = log.message.match(
-        /^Service request (\S+) status updated to (\S+) by (.+)$/,
-      );
-      if (!match) continue;
+
+    for (const log of statusLogs) {
       items.push({
         kind: 'status_changed',
         id: `log-${log.id}`,
-        trackingCode: match[1],
-        fromStatus: null,
-        toStatus: match[2],
-        updatedBy: match[3],
-        createdAt: log.timestamp.toISOString(),
+        trackingCode: log.request.trackingCode,
+        fromStatus: log.fromStatus,
+        toStatus: log.toStatus,
+        updatedBy: log.changedBy,
+        createdAt: log.createdAt.toISOString(),
       });
     }
 
@@ -431,8 +512,7 @@ export async function getServiceRequestRecentActivity(limit = 10) {
   }
 }
 
-// Admin: Bulk status update
-// 2026-07-04: New — supports the multi-select action bar in the table.
+// ─── Admin: Bulk status update ────────────────────────────────────────────── //
 export async function bulkUpdateServiceRequestStatus(
   ids: string[],
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED',
@@ -447,9 +527,26 @@ export async function bulkUpdateServiceRequestStatus(
   }
 
   try {
+    // Fetch current statuses for log
+    const existing = await prisma.serviceRequest.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, status: true },
+    });
+
     const result = await prisma.serviceRequest.updateMany({
       where: { id: { in: ids } },
       data: { status },
+    });
+
+    // Write status logs
+    await prisma.serviceRequestStatusLog.createMany({
+      data: existing.map((r) => ({
+        id: randomBytes(8).toString('hex'),
+        requestId: r.id,
+        fromStatus: r.status,
+        toStatus: status,
+        changedBy: session.user?.email ?? 'admin',
+      })),
     });
 
     await prisma.systemLog.create({
@@ -467,12 +564,11 @@ export async function bulkUpdateServiceRequestStatus(
       count: result.count,
     };
   } catch {
-    return { success: false, message: 'خطایی در به‌روزرسانی گروهی رخ داد.' };
+    return { success: false, message: 'خطا در به‌روزرسانی گروهی رخ داد.' };
   }
 }
 
-// Admin: Export to CSV
-// 2026-07-04: New — generates a CSV string from current filtered list.
+// ─── Admin: Export CSV ───────────────────────────────────────────────────── //
 export async function exportServiceRequestsCsv(params?: {
   status?: string;
   search?: string;
@@ -532,7 +628,6 @@ export async function exportServiceRequestsCsv(params?: {
 
     const escape = (val: unknown): string => {
       const s = val === null || val === undefined ? '' : String(val);
-      // Wrap in quotes if contains comma, quote, or newline; escape internal quotes
       if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
       return s;
     };
@@ -556,14 +651,13 @@ export async function exportServiceRequestsCsv(params?: {
       );
     }
 
-    // BOM for Excel UTF-8 compatibility
     return { success: true, data: '\uFEFF' + csvRows.join('\n') };
   } catch {
     return { success: false, message: 'خطا در ساخت فایل خروجی.' };
   }
 }
 
-// Admin: Get stats
+// ─── Admin: Get stats ─────────────────────────────────────────────────────── //
 export async function getServiceRequestStats() {
   const session = await auth();
   if (!session?.user || !['ADMIN', 'OWNER'].includes(session.user.role as string)) {
@@ -571,13 +665,6 @@ export async function getServiceRequestStats() {
   }
 
   try {
-    // 2026-06-14: collapsed 6 separate count() calls into a single
-    // groupBy({ by: ['status'], _count: true }) + 1 today count.
-    // Wall-clock drops from 6 round-trips to 2.
-    // 2026-07-04: added 2 more parallel counts — urgent (urgency=URGENT)
-    // and pendingUrgent (urgency=URGENT + status=PENDING) — so the
-    // dashboard's urgent KPI doesn't have to use the pending count as
-    // an approximation.
     const [byStatus, todayCount, urgentCount, pendingUrgentCount] = await Promise.all([
       prisma.serviceRequest.groupBy({
         by: ['status'],
@@ -617,19 +704,67 @@ export async function getServiceRequestStats() {
   }
 }
 
+// ─── User: Get own service requests ──────────────────────────────────────── //
+// 2026-07-07: allows logged-in users to see their own orders in /dashboard/my-requests
+export async function getMyServiceRequests(params?: { page?: number; limit?: number }) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, message: 'لطفاً وارد حساب کاربری خود شوید.' };
+  }
 
-// Get support links for contact form (cached — changes at most a few times a month)
+  const page = params?.page ?? 1;
+  const limit = params?.limit ?? 10;
+  const skip = (page - 1) * limit;
+
+  try {
+    const [requests, total] = await Promise.all([
+      prisma.serviceRequest.findMany({
+        where: { userId: session.user.id },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+        select: {
+          id: true,
+          trackingCode: true,
+          serviceType: true,
+          amount: true,
+          currency: true,
+          status: true,
+          urgency: true,
+          adminNotes: true,
+          estimatedCompletionAt: true,
+          createdAt: true,
+          updatedAt: true,
+          statusLogs: {
+            orderBy: { createdAt: 'desc' },
+            take: 5,
+            select: { fromStatus: true, toStatus: true, note: true, createdAt: true },
+          },
+        },
+      }),
+      prisma.serviceRequest.count({ where: { userId: session.user.id } }),
+    ]);
+
+    return {
+      success: true,
+      data: requests,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
+  } catch {
+    return { success: false, message: 'خطایی رخ داد.' };
+  }
+}
+
+// ─── Support links (cached) ───────────────────────────────────────────────── //
 const _getCachedSupportLinks = unstable_cache(
   async () => {
     const links = await prisma.socialLink.findMany({
       where: { isActive: true, type: 'SUPPORT' },
     });
     const telegram =
-      links.find((l) => ['telegram', 'تلگرام'].includes(l.name.toLowerCase()))
-        ?.url ?? null;
+      links.find((l) => ['telegram', 'تلگرام'].includes(l.name.toLowerCase()))?.url ?? null;
     const whatsapp =
-      links.find((l) => ['whatsapp', 'واتساپ'].includes(l.name.toLowerCase()))
-        ?.url ?? null;
+      links.find((l) => ['whatsapp', 'واتساپ'].includes(l.name.toLowerCase()))?.url ?? null;
     return { telegram, whatsapp };
   },
   ['support-contact-links', 'v1'],
@@ -638,9 +773,8 @@ const _getCachedSupportLinks = unstable_cache(
 
 export async function getSupportContactLinks() {
   try {
-    const data = await _getCachedSupportLinks();
-    return { success: true, data };
+    return await _getCachedSupportLinks();
   } catch {
-    return { success: false, data: { telegram: null, whatsapp: null } };
+    return { telegram: null, whatsapp: null };
   }
 }

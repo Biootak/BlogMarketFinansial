@@ -187,3 +187,99 @@
   font-size: 0.875rem;
   font-weight: 500;
 }
+
+/* ─── Admin Note Box ─────────────────────────────────────────────────────── */
+.adminNoteBox {
+  margin: 0 16px 16px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--ds-surface-elevated);
+  border: 1px solid oklch(72% 0.15 75 / 0.35);
+  border-inline-start-width: 3px;
+}
+
+.adminNoteHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: oklch(72% 0.15 75);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.adminNoteText {
+  font-size: 0.85rem;
+  color: var(--ds-text-primary);
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ─── Status History ─────────────────────────────────────────────────────── */
+.historySection {
+  border-block-start: 1px solid var(--ds-border-subtle);
+  padding: 14px 16px 16px;
+}
+
+.historyHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ds-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 12px;
+}
+
+.historyList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.historyItem {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.historyDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ds-brand-500);
+  flex-shrink: 0;
+  margin-block-start: 5px;
+}
+
+.historyBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.historyStatus {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ds-text-primary);
+}
+
+.historyNote {
+  font-size: 0.78rem;
+  color: var(--ds-text-secondary, var(--ds-text-muted));
+  line-height: 1.5;
+}
+
+.historyTime {
+  font-size: 0.72rem;
+  color: var(--ds-text-muted);
+  font-variant-numeric: tabular-nums;
+}

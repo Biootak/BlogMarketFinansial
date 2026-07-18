@@ -17,7 +17,8 @@ async function DashboardGateInner({
   children: React.ReactNode;
 }) {
   // checkRole calls auth() — uncached, request-specific
-  const session = await checkRole(['OWNER', 'ADMIN', 'AUTHOR']);
+  // 2026-07-07: USER role added so they can access /dashboard/my-requests
+  const session = await checkRole(['OWNER', 'ADMIN', 'AUTHOR', 'USER']);
   // safeCache-backed, but still resolves async — keep inside Suspense
   const settings = await getSystemSettingsData();
 

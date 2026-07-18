@@ -1,0 +1,340 @@
+/* ============================================================
+   MyRequestsClient.module.css
+   RTL-safe · tokens only · dashboard design system
+   ============================================================ */
+
+/* ─── Page Layout ─────────────────────────────────────────── */
+.page {
+  max-inline-size: 760px;
+  margin-inline: auto;
+  padding-block: var(--at-space-4, 24px);
+}
+
+/* ─── Header ─────────────────────────────────────────────── */
+.head {
+  margin-block-end: 24px;
+}
+
+.title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--at-fg, var(--ds-text-primary));
+  margin: 0 0 4px 0;
+}
+
+.subtitle {
+  font-size: 0.83rem;
+  color: var(--at-fg-muted, var(--ds-text-muted));
+  margin: 0;
+}
+
+/* ─── List ────────────────────────────────────────────────── */
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ─── Row ─────────────────────────────────────────────────── */
+.row {
+  border: 1px solid var(--at-border, var(--ds-border-default));
+  border-radius: 10px;
+  background: var(--at-surface, var(--ds-surface));
+  overflow: hidden;
+  transition: box-shadow 150ms;
+}
+.row:hover {
+  box-shadow: 0 2px 12px -4px oklch(0% 0 0 / 0.08);
+}
+
+/* ─── Summary (accordion trigger) ─────────────────────────── */
+.summary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: start;
+  min-block-size: 52px;
+}
+.summary:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: -2px;
+  border-radius: 10px;
+}
+
+.statusIcon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.summaryBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tracking {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--at-fg, var(--ds-text-primary));
+  letter-spacing: 0.04em;
+}
+
+.service {
+  font-size: 0.75rem;
+  color: var(--at-fg-muted, var(--ds-text-muted));
+}
+
+.summaryEnd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.amount {
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--at-fg, var(--ds-text-primary));
+}
+
+/* Status badge */
+.badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+.badge[data-status="pending"]     { background: oklch(98% 0.05 75);  color: oklch(52% 0.14 75);  border: 1px solid oklch(90% 0.08 75); }
+.badge[data-status="in_progress"] { background: oklch(97% 0.04 240); color: oklch(48% 0.14 240); border: 1px solid oklch(88% 0.07 240); }
+.badge[data-status="completed"]   { background: oklch(97% 0.05 155); color: oklch(44% 0.14 155); border: 1px solid oklch(88% 0.07 155); }
+.badge[data-status="cancelled"]   { background: oklch(98% 0.04 15);  color: oklch(48% 0.14 15);  border: 1px solid oklch(90% 0.06 15); }
+
+.urgentTag {
+  display: flex;
+  align-items: center;
+  color: oklch(60% 0.2 30);
+}
+
+.toggleIcon {
+  display: flex;
+  align-items: center;
+  color: var(--at-fg-subtle, var(--ds-text-muted));
+}
+
+/* ─── Detail panel ─────────────────────────────────────────── */
+.detail {
+  padding: 0 16px 16px;
+  border-block-start: 1px solid var(--at-border, var(--ds-border-subtle));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: detailFadeIn 0.18s ease both;
+}
+@keyframes detailFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Dates row */
+.dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  padding-block-start: 12px;
+}
+.dateItem {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: var(--at-fg-muted, var(--ds-text-muted));
+}
+.dateEta {
+  color: oklch(44% 0.14 155);
+}
+
+/* Admin note */
+.adminNote {
+  padding: 10px 12px;
+  border-radius: 7px;
+  background: var(--at-surface-alt, var(--ds-surface-elevated));
+  border: 1px solid oklch(72% 0.15 75 / 0.3);
+  border-inline-start-width: 3px;
+}
+.adminNoteHeader {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: oklch(58% 0.15 75);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-block-end: 5px;
+}
+.adminNoteText {
+  font-size: 0.82rem;
+  line-height: 1.6;
+  margin: 0;
+  color: var(--at-fg, var(--ds-text-primary));
+}
+
+/* History */
+.historyHeader {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--at-fg-muted, var(--ds-text-muted));
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-block-end: 8px;
+}
+.historyList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.historyItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.historyDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ds-brand-500, oklch(55% 0.16 235));
+  flex-shrink: 0;
+  margin-block-start: 5px;
+}
+.historyStatus {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--at-fg, var(--ds-text-primary));
+}
+.historyNote {
+  display: block;
+  font-size: 0.73rem;
+  color: var(--at-fg-muted, var(--ds-text-muted));
+  line-height: 1.5;
+  margin-block-start: 2px;
+}
+.historyTime {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--at-fg-subtle, var(--ds-text-muted));
+  font-variant-numeric: tabular-nums;
+  margin-block-start: 2px;
+}
+
+/* ─── Skeleton ────────────────────────────────────────────── */
+.skeleton {
+  height: 52px;
+  border-radius: 10px;
+  background: var(--at-surface-alt, var(--ds-surface-elevated));
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1; }
+}
+
+/* ─── Empty state ─────────────────────────────────────────── */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 52px 16px;
+  text-align: center;
+}
+.emptyIcon {
+  color: var(--at-fg-subtle, var(--ds-text-muted));
+  opacity: 0.4;
+}
+.emptyTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--at-fg, var(--ds-text-primary));
+  margin: 0;
+}
+.emptySub {
+  font-size: 0.83rem;
+  color: var(--at-fg-muted, var(--ds-text-muted));
+  margin: 0;
+}
+.cta {
+  display: inline-block;
+  margin-block-start: 4px;
+  padding: 10px 24px;
+  background: var(--ds-brand-600);
+  color: var(--ds-text-inverse, white);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 160ms;
+  min-block-size: 44px;
+}
+.cta:hover { background: var(--ds-brand-700, var(--ds-brand-600)); }
+
+/* ─── Error ───────────────────────────────────────────────── */
+.errorBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--ds-surface-elevated);
+  border: 1px solid oklch(58% 0.18 15 / 0.3);
+  border-inline-start-width: 3px;
+  color: oklch(50% 0.18 15);
+  font-size: 0.875rem;
+}
+
+/* ─── Pagination ──────────────────────────────────────────── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-block-start: 16px;
+}
+.pageBtn {
+  padding: 6px 14px;
+  border: 1px solid var(--at-border, var(--ds-border-default));
+  border-radius: 6px;
+  background: var(--at-surface);
+  color: var(--at-fg, var(--ds-text-primary));
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 140ms;
+  min-block-size: 34px;
+}
+.pageBtn:hover:not(:disabled) { background: var(--at-surface-alt, var(--ds-surface-elevated)); }
+.pageBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+.pageInfo {
+  font-size: 0.8rem;
+  color: var(--at-fg-muted);
+  font-variant-numeric: tabular-nums;
+}

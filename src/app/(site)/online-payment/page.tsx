@@ -44,8 +44,8 @@ export default async function OnlinePaymentPage() {
       <div id="contact">
         <ContactCTAClient
           defaultServiceType="ONLINE_PAYMENT"
-          telegramLink={contactLinks.data?.telegram ?? null}
-          whatsappLink={contactLinks.data?.whatsapp ?? null}
+          telegramLink={contactLinks.telegram ?? null}
+          whatsappLink={contactLinks.whatsapp ?? null}
         />
       </div>
     </main>

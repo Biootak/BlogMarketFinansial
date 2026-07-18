@@ -43,6 +43,7 @@ import {
   HiOutlineCurrencyDollar,
   HiOutlineDocumentText,
   HiOutlineHome,
+  HiOutlineInboxArrowDown,
   HiOutlineMegaphone,
   HiOutlineSquares2X2,
   HiOutlineUserCircle,
@@ -195,6 +196,15 @@ function getMenu(role: UserRole): NavSection[] {
     shortcut: SHORTCUT_KEYS.profile,
   };
 
+  // 2026-07-07: «درخواست‌های من» برای همه نقش‌ها (USER و بالاتر)
+  const myRequests: MenuItem = {
+    id: 'myRequests',
+    href: '/dashboard/my-requests',
+    icon: <HiOutlineInboxArrowDown className={ICON_CLASS} />,
+    label: 'درخواست‌های من',
+    title: 'درخواست‌های من',
+  };
+
   switch (role) {
     case 'OWNER':
       return [
@@ -207,7 +217,7 @@ function getMenu(role: UserRole): NavSection[] {
           items: [exchangeRates, advertisements, serviceRequests],
         },
         { id: 'admin', index: '۰۴', label: 'مدیریت', items: [users, reports, settings] },
-        { id: 'account', index: '۰۵', label: 'حساب', items: [profile] },
+        { id: 'account', index: '۰۵', label: 'حساب', items: [myRequests, profile] },
       ];
     case 'ADMIN':
       return [
@@ -220,16 +230,20 @@ function getMenu(role: UserRole): NavSection[] {
           items: [exchangeRates, advertisements, serviceRequests],
         },
         { id: 'admin', index: '۰۴', label: 'مدیریت', items: [users] },
-        { id: 'account', index: '۰۵', label: 'حساب', items: [profile] },
+        { id: 'account', index: '۰۵', label: 'حساب', items: [myRequests, profile] },
       ];
     case 'AUTHOR':
       return [
         { id: 'main', index: '۰۱', label: 'مرکز', items: [dashboard] },
         { id: 'content', index: '۰۲', label: 'محتوا', items: [posts, categories] },
-        { id: 'account', index: '۰۵', label: 'حساب', items: [profile] },
+        { id: 'account', index: '۰۵', label: 'حساب', items: [myRequests, profile] },
       ];
     default:
-      return [];
+      // USER role — minimal panel
+      return [
+        { id: 'main', index: '۰۱', label: 'مرکز', items: [dashboard] },
+        { id: 'account', index: '۰۲', label: 'حساب', items: [myRequests, profile] },
+      ];
   }
 }
 

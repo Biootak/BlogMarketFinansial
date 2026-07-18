@@ -17,8 +17,8 @@ export default async function ContactCTA({ defaultServiceType = 'ONLINE_PAYMENT'
   return (
     <ContactCTAClient
       defaultServiceType={defaultServiceType}
-      telegramLink={contactLinks.data?.telegram || null}
-      whatsappLink={contactLinks.data?.whatsapp || null}
+      telegramLink={contactLinks.telegram ?? null}
+      whatsappLink={contactLinks.whatsapp ?? null}
     />
   );
 }

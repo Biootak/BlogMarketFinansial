@@ -67,18 +67,19 @@ model User {
   imageWidth    Int?
   imageHeight   Int?
 
-  accounts      Account[]
-  sessions      Session[]
-  posts         Post[]
-  comments      Comment[]
-  likes         Like[]
-  savedPosts    SavedPost[]
-  profile       Profile?
-  notifications Notification[]
-  newsletter    Newsletter[]
-  activities    ActivityLog[]
-  activity      Activity[]
-  tasks         Task[]
+  accounts         Account[]
+  sessions         Session[]
+  posts            Post[]
+  comments         Comment[]
+  likes            Like[]
+  savedPosts       SavedPost[]
+  profile          Profile?
+  notifications    Notification[]
+  newsletter       Newsletter[]
+  activities       ActivityLog[]
+  activity         Activity[]
+  tasks            Task[]
+  serviceRequests  ServiceRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -579,6 +580,19 @@ model ServiceRequest {
   ipAddress     String?
   userAgent     String?
 
+  // 2026-07-07: link to registered user (optional — guest orders still allowed)
+  userId        String?
+  user          User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // 2026-07-07: service-specific metadata (JSON bag — universityName, bankName, etc.)
+  metadata      Json?
+
+  // 2026-07-07: admin-settable ETA and external transaction reference
+  estimatedCompletionAt DateTime?
+  externalTxId          String?
+
+  statusLogs    ServiceRequestStatusLog[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -586,13 +600,26 @@ model ServiceRequest {
   @@index([phone])
   @@index([status])
   @@index([createdAt])
+  @@index([userId])
   // 2026-06-14: composite for the duplicate-check window
-  // (createServiceRequest was doing a findFirst on these four fields
-  // and we want it index-only).
   @@index([phone, amount, currency, createdAt])
   // 2026-06-14: dashboard's status-grouped counts + recent-list
-  // combination — covers `where: { status }, orderBy: { createdAt }`.
   @@index([status, createdAt(sort: Desc)])
+}
+
+// 2026-07-07: immutable audit trail of every status transition.
+model ServiceRequestStatusLog {
+  id         String   @id @default(cuid())
+  requestId  String
+  request    ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  fromStatus String?
+  toStatus   String
+  changedBy  String   // admin email or "system"
+  note       String?
+
+  createdAt  DateTime @default(now())
+
+  @@index([requestId, createdAt(sort: Desc)])
 }
 
 enum HeaderAdVariant {

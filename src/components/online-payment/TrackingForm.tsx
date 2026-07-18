@@ -1,17 +1,28 @@
 'use client';
 
 import { type FC, useState } from 'react';
-import { Search, Clock, CheckCircle2, XCircle, RefreshCw, AlertCircle } from 'lucide-react';
+import {
+  Search,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  RefreshCw,
+  AlertCircle,
+  CalendarClock,
+  Hash,
+  MessageSquare,
+  History,
+} from 'lucide-react';
 import { getServiceRequestByTrackingCode } from '@/actions/serviceRequestActions';
 import s from './TrackingForm.module.css';
 
 // ─── Status Config ─────────────────────────────────────────────────────────── //
 
 const STATUS_CONFIG = {
-  PENDING:     { label: 'در انتظار بررسی', icon: Clock,       cls: s.statusPending  },
-  IN_PROGRESS: { label: 'در حال انجام',    icon: RefreshCw,   cls: s.statusProgress },
-  COMPLETED:   { label: 'تکمیل شده',       icon: CheckCircle2, cls: s.statusDone    },
-  CANCELLED:   { label: 'لغو شده',         icon: XCircle,     cls: s.statusCancelled },
+  PENDING:     { label: 'در انتظار بررسی', icon: Clock,        cls: s.statusPending  },
+  IN_PROGRESS: { label: 'در حال انجام',    icon: RefreshCw,    cls: s.statusProgress },
+  COMPLETED:   { label: 'تکمیل شده',       icon: CheckCircle2, cls: s.statusDone     },
+  CANCELLED:   { label: 'لغو شده',         icon: XCircle,      cls: s.statusCancelled },
 };
 
 const SERVICE_LABELS: Record<string, string> = {
@@ -23,9 +34,23 @@ const SERVICE_LABELS: Record<string, string> = {
   OTHER:                  'سایر خدمات',
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  PENDING:     'در انتظار بررسی',
+  IN_PROGRESS: 'در حال انجام',
+  COMPLETED:   'تکمیل شده',
+  CANCELLED:   'لغو شده',
+};
+
 // ─── Types ─────────────────────────────────────────────────────────────────── //
 
 type StatusKey = keyof typeof STATUS_CONFIG;
+
+interface StatusLogEntry {
+  fromStatus: string | null;
+  toStatus: string;
+  note: string | null;
+  createdAt: Date | string;
+}
 
 interface TrackingData {
   trackingCode: string;
@@ -35,13 +60,18 @@ interface TrackingData {
   currency: string;
   status: StatusKey;
   urgency: string;
-  createdAt: Date;
+  adminNotes: string | null;
+  estimatedCompletionAt: Date | string | null;
+  externalTxId: string | null;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  statusLogs: StatusLogEntry[];
 }
 
 // ─── Component ─────────────────────────────────────────────────────────────── //
 
 const TrackingForm: FC = () => {
-  const [code, setCode] = useState('');
+  const [code, setCode]     = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{
     success: boolean;
@@ -66,7 +96,7 @@ const TrackingForm: FC = () => {
     }
   };
 
-  const status = result?.data?.status ? STATUS_CONFIG[result.data.status] : null;
+  const status     = result?.data?.status ? STATUS_CONFIG[result.data.status] : null;
   const StatusIcon = status?.icon;
 
   return (
@@ -77,7 +107,7 @@ const TrackingForm: FC = () => {
           type="text"
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
-          placeholder="کد پیگیری — مثال: BT-XXXXX-XXXX"
+          placeholder="کد پیگیری — مثال: BT-XXXXXXXX-XXXXXX"
           className={s.searchInput}
           dir="ltr"
           autoComplete="off"
@@ -111,7 +141,7 @@ const TrackingForm: FC = () => {
                 </div>
               )}
 
-              {/* Info Rows */}
+              {/* Core info rows */}
               <dl className={s.infoList}>
                 <div className={s.infoRow}>
                   <dt className={s.infoLabel}>کد پیگیری</dt>
@@ -139,7 +169,88 @@ const TrackingForm: FC = () => {
                     {new Date(result.data.createdAt).toLocaleDateString('fa-IR')}
                   </dd>
                 </div>
+                <div className={s.infoRow}>
+                  <dt className={s.infoLabel}>آخرین بروزرسانی</dt>
+                  <dd className={s.infoValue}>
+                    {new Date(result.data.updatedAt).toLocaleDateString('fa-IR', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </dd>
+                </div>
+
+                {/* Estimated completion */}
+                {result.data.estimatedCompletionAt && (
+                  <div className={s.infoRow}>
+                    <dt className={s.infoLabel}>
+                      <CalendarClock size={12} style={{ display: 'inline', marginLeft: 4 }} />
+                      زمان تخمینی تکمیل
+                    </dt>
+                    <dd className={s.infoValue}>
+                      {new Date(result.data.estimatedCompletionAt).toLocaleDateString('fa-IR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}
+                    </dd>
+                  </div>
+                )}
+
+                {/* External transaction ID */}
+                {result.data.externalTxId && (
+                  <div className={s.infoRow}>
+                    <dt className={s.infoLabel}>
+                      <Hash size={12} style={{ display: 'inline', marginLeft: 4 }} />
+                      شناسه تراکنش
+                    </dt>
+                    <dd className={s.infoValue} dir="ltr">{result.data.externalTxId}</dd>
+                  </div>
+                )}
               </dl>
+
+              {/* Admin note — shown if present */}
+              {result.data.adminNotes && (
+                <div className={s.adminNoteBox}>
+                  <div className={s.adminNoteHeader}>
+                    <MessageSquare size={13} />
+                    <span>یادداشت تیم</span>
+                  </div>
+                  <p className={s.adminNoteText}>{result.data.adminNotes}</p>
+                </div>
+              )}
+
+              {/* Status history */}
+              {result.data.statusLogs.length > 0 && (
+                <div className={s.historySection}>
+                  <div className={s.historyHeader}>
+                    <History size={13} />
+                    <span>تاریخچه وضعیت</span>
+                  </div>
+                  <ol className={s.historyList}>
+                    {result.data.statusLogs.map((log, i) => (
+                      <li key={i} className={s.historyItem}>
+                        <span className={s.historyDot} />
+                        <div className={s.historyBody}>
+                          <span className={s.historyStatus}>
+                            {log.fromStatus ? `${STATUS_LABELS[log.fromStatus] ?? log.fromStatus} → ` : ''}
+                            {STATUS_LABELS[log.toStatus] ?? log.toStatus}
+                          </span>
+                          {log.note && <span className={s.historyNote}>{log.note}</span>}
+                          <time className={s.historyTime}>
+                            {new Date(log.createdAt).toLocaleDateString('fa-IR', {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </time>
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
             </div>
           ) : (
             <div className={s.errorBox} role="alert">
