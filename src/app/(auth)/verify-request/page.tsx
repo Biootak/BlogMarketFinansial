@@ -1,10 +1,10 @@
-import { Suspense } from 'react';
+﻿import { Suspense } from 'react';
 import Link from 'next/link';
 
 import VerifyRequestClient from '@/components/Auth/VerifyRequestClient';
 
 export const metadata = {
-  title: 'تأیید ایمیل — بازار مالی',
+  title: 'تأیید ایمیل — Financial Market',
   robots: { index: false, follow: false },
 };
 
@@ -13,7 +13,7 @@ export default function VerifyRequestPage() {
     <main className="auth-page-root" dir="rtl">
       <div className="auth-aurora" aria-hidden="true" />
 
-      <Link href="/" className="auth-brand" aria-label="بازار مالی — صفحه اصلی">
+      <Link href="/" className="auth-brand" aria-label="Financial Market — صفحه اصلی">
         <span className="auth-brand-mark" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <rect x="4" y="11" width="4" height="9" rx="1.2" fill="currentColor" opacity="0.55" />
@@ -21,7 +21,7 @@ export default function VerifyRequestPage() {
             <rect x="16" y="4" width="4" height="16" rx="1.2" fill="currentColor" />
           </svg>
         </span>
-        <span className="auth-brand-name">بازار مالی</span>
+        <span className="auth-brand-name">Financial Market</span>
       </Link>
 
       <div className="auth-card-shell">

@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from 'next';
+﻿import type { Metadata, Viewport } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Suspense } from 'react';
@@ -9,12 +9,12 @@ import AuthFlow from '@/components/Auth/AuthFlow.redesign';
 // (never statically prerendered).
 
 export const metadata: Metadata = {
-  title: 'ورود و ثبت‌نام امن — بازار مالی',
-  description: 'ورود، ثبت‌نام و بازیابی رمز عبور در یک مسیر یکپارچه و امن برای کاربران بازار مالی.',
+  title: 'ورود و ثبت‌نام امن — Financial Market',
+  description: 'ورود، ثبت‌نام و بازیابی رمز عبور در یک مسیر یکپارچه و امن برای کاربران Financial Market.',
   robots: { index: false, follow: false },
   openGraph: {
-    title: 'ورود و ثبت‌نام امن — بازار مالی',
-    description: 'دسترسی ایمن به داشبورد، تحلیل‌ها و امکانات اختصاصی بازار مالی.',
+    title: 'ورود و ثبت‌نام امن — Financial Market',
+    description: 'دسترسی ایمن به داشبورد، تحلیل‌ها و امکانات اختصاصی Financial Market.',
     type: 'website',
   },
 };
@@ -36,7 +36,7 @@ export default async function AuthPage() {
       <div className="auth-aurora" aria-hidden="true" />
 
       <header className="auth-page-header">
-        <Link href="/" className="auth-brand" aria-label="بازار مالی — صفحه اصلی">
+        <Link href="/" className="auth-brand" aria-label="Financial Market — صفحه اصلی">
           <span className="auth-brand-mark" aria-hidden="true">
             <Image
               src="/favicon.svg"
@@ -48,7 +48,7 @@ export default async function AuthPage() {
             />
           </span>
           <span className="auth-brand-copy">
-            <span className="auth-brand-name">بازار مالی</span>
+            <span className="auth-brand-name">Financial Market</span>
             <span className="auth-brand-tagline">احراز هویت یکپارچه و امن</span>
           </span>
         </Link>

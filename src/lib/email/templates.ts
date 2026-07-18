@@ -1,4 +1,4 @@
-// 2026-06-23: single OTP email template.
+﻿// 2026-06-23: single OTP email template.
 //
 // One function, four intents. The body copy is Persian + a short English
 // line for support tickets; HTML uses inline CSS (Gmail strips <style>),
@@ -65,7 +65,7 @@ export function otpEmail(args: OtpEmailArgs): EmailMessage {
     '',
     `این کد تا ${args.expiresLabel} معتبر است. اگر شما این درخواست را نداده‌اید، این ایمیل را نادیده بگیرید.`,
     '',
-    '— تیم بلاگ بازار مالی',
+    '— تیم بلاگ Financial Market',
   ].join('\n');
 
   const html = `<!doctype html>
@@ -152,7 +152,7 @@ export function serviceRequestConfirmationEmail(
     '',
     'تیم ما در کمتر از ۳۰ دقیقه با شما تماس خواهد گرفت.',
     '',
-    '— تیم بازار مالی',
+    '— تیم Financial Market',
   ].join('\n');
 
   const html = `<!doctype html>
@@ -244,7 +244,7 @@ export function serviceRequestStatusEmail(
     '',
     `برای مشاهده جزئیات: ${trackingUrl}`,
     '',
-    '— تیم بازار مالی',
+    '— تیم Financial Market',
   ].join('\n');
 
   const html = `<!doctype html>
@@ -322,7 +322,7 @@ export function serviceVerifyOtpEmail(args: ServiceVerifyOtpArgs): EmailMessage 
     `این کد تا ${expiresLabel} معتبر است و فقط یک‌بار قابل استفاده است.`,
     'اگر این درخواست را شما نداده‌اید، این ایمیل را نادیده بگیرید.',
     '',
-    '— تیم بازار مالی',
+    '— تیم Financial Market',
   ].join('\n');
 
   const html = `<!doctype html>
@@ -391,7 +391,7 @@ export function welcomeSetPasswordEmail(args: WelcomeSetPasswordArgs): EmailMess
   const text = [
     `${args.name} عزیز،`,
     '',
-    'حساب کاربری شما در بازار مالی ساخته شد.',
+    'حساب کاربری شما در Financial Market ساخته شد.',
     '',
     `کد پیگیری درخواست: ${args.trackingCode}`,
     '',
@@ -401,7 +401,7 @@ export function welcomeSetPasswordEmail(args: WelcomeSetPasswordArgs): EmailMess
     'این لینک ۲۴ ساعت معتبر است و فقط یک‌بار قابل استفاده است.',
     'اگر این حساب را شما نساختید، این ایمیل را نادیده بگیرید.',
     '',
-    '— تیم بازار مالی',
+    '— تیم Financial Market',
   ].join('\n');
 
   const html = `<!doctype html>
@@ -412,7 +412,7 @@ export function welcomeSetPasswordEmail(args: WelcomeSetPasswordArgs): EmailMess
         <table role="presentation" width="480" cellpadding="0" cellspacing="0"
                style="background:#ffffff;border-radius:12px;padding:32px;border:1px solid #e5e7eb">
           <tr><td>
-            <h1 style="margin:0 0 6px 0;font-size:20px;color:#111827">خوش آمدید به بازار مالی 👋</h1>
+            <h1 style="margin:0 0 6px 0;font-size:20px;color:#111827">خوش آمدید به Financial Market 👋</h1>
             <p style="margin:0 0 20px 0;font-size:13px;color:#6b7280">حساب کاربری شما آماده است</p>
             <p style="margin:0 0 16px 0;line-height:1.7;color:#374151">
               ${args.name} عزیز، درخواست خدمات شما (<strong dir="ltr" style="font-family:Menlo,Consolas,monospace;letter-spacing:2px;color:#0369a1">${args.trackingCode}</strong>) با موفقیت ثبت شد و یک حساب کاربری برای شما ساخته شد.

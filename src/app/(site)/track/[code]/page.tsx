@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+﻿import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getServiceRequestByTrackingCode } from '@/actions/serviceRequestActions';
 import TrackingPageClient from './_components/TrackingPageClient';
@@ -32,7 +32,7 @@ export async function generateMetadata({
 
   if (!res.success || !res.data) {
     return {
-      title: 'کد پیگیری یافت نشد | بازار مالی',
+      title: 'کد پیگیری یافت نشد | Financial Market',
       description: 'کد پیگیری وارد شده معتبر نیست.',
     };
   }

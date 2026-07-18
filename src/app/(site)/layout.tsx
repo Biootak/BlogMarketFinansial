@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+﻿import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getSystemSettingsCached } from '@/data/getSystemSettingsCached';
 import SiteHeaderData, {
@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: settings.siteName || 'Market Financial',
-    description: settings.siteDescription || 'پلتفرم مورد اعتماد شما در بازار مالی',
+    description: settings.siteDescription || 'پلتفرم مورد اعتماد شما در Financial Market',
     icons: {
       icon: [
         {

@@ -1,8 +1,8 @@
-/* ============================================================================
+﻿/* ============================================================================
    Dashboard 2026 — Fintech Aurora / OLED  (دامنه: .dash-scope)
    ----------------------------------------------------------------------------
    زبان طراحی: navy عمیق + aurora drift + اکسنت emerald برای روند مثبت
-   (زبان بازار مالی). همه‌چیز CSS-only و GPU-friendly؛ reduced-motion توسط
+   (زبان Financial Market). همه‌چیز CSS-only و GPU-friendly؛ reduced-motion توسط
    rule سراسری بالای فایل clamp می‌شود. منطق داده دست‌نخورده است — این لایه
    فقط ظاهر را ارتقا می‌دهد و با توکن‌های ds/author/arc هماهنگ است.
 
@@ -4271,7 +4271,7 @@
    ----------------------------------------------------------------------------
    زبان طراحی TIDE از ATLAS کاملاً متمایز است:
    - Stations (ایستگاه) به‌جای یک پارچه‌ی editorial — هر بخش پنل جدا دارد.
-   - رنگ: emerald/cyan/amber روی پایه‌ی cool slate (زبان بازار مالی).
+   - رنگ: emerald/cyan/amber روی پایه‌ی cool slate (زبان Financial Market).
    - ۶۰/۴۰ برای hero و data room، ۱:۲:۱ برای constellation، ۲×۲ برای stage.
    - حرکت: fade-in + ۶px rise، بدون bounce؛ ticker marquee infinite.
    - همه‌چیز RTL-safe با inset-inline / margin-inline؛ کلاس‌ها با prefix tide-.

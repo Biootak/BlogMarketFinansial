@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+﻿import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { getPublishedPostCount } from '@/actions/getLatestPosts';
 import { getAuthorsHubData } from '@/actions/getAuthorsHubData';
@@ -6,7 +6,7 @@ import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2'
 import AboutPageClient from './AboutPageClient';
 
 export const metadata: Metadata = {
-  title: 'درباره ما | بازار مالی',
+  title: 'درباره ما | Financial Market',
   description:
     'ما بی‌طرف و مستقل هستیم و هر روز محتوای متمایز در سطح جهانی ایجاد می‌کنیم که میلیون‌ها نفر را آگاه، آموزش و سرگرم می‌کند.',
 };

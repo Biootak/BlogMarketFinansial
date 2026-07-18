@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 /**
  * HeroSection — Home landing hero (2026)
@@ -113,7 +113,7 @@ export default function HeroSection() {
 
         {/* Headline */}
         <h1 className={s.headline}>
-          <span className={s.headlineMain}>بازار مالی</span>
+          <span className={s.headlineMain}>Financial Market</span>
           <br />
           <span className={s.headlineAccent}>در کنار شما</span>
         </h1>

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 /* --------------------------------------------------------------------------
    Dashboard Sidebar — 2026 "Meridian" redesign
@@ -504,7 +504,7 @@ const Sidebar = ({ userRole }: SidebarProps) => {
             </div>
             {isOpen && (
               <div className="dash-side__brand-text">
-                <span className="dash-side__brand-name">بازار مالی</span>
+                <span className="dash-side__brand-name">Financial Market</span>
                 <span className="dash-side__brand-sub">
                   <span className="dash-side__brand-dot" aria-hidden />
                   {ROLE_LABEL[userRole]}

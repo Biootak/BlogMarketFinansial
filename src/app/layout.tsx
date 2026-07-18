@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file Root layout (server component)
  *
  * Auth is opt-in per route — we do NOT await `auth()` here because every
@@ -38,7 +38,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = siteName || 'بازارهای مالی';
   const description =
     siteDescription ||
-    'پلتفرم مورد اعتماد شما در بازار مالی — تحلیل، آموزش و اخبار لحظه‌ای ارزهای دیجیتال، طلا، بورس و بازار جهانی.';
+    'پلتفرم مورد اعتماد شما در Financial Market — تحلیل، آموزش و اخبار لحظه‌ای ارزهای دیجیتال، طلا، بورس و بازار جهانی.';
 
   return {
     metadataBase: new URL(SITE_URL),
@@ -49,7 +49,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     applicationName: title,
     keywords: [
-      'بازار مالی',
+      'Financial Market',
       'ارز دیجیتال',
       'بیت کوین',
       'طلا',
