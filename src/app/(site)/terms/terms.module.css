@@ -1,0 +1,202 @@
+/*
+ * terms.module.css — Terms & Conditions page (2026)
+ * Premium editorial typography + glass morphism
+ * Tokens only; logical properties; no hardcoded hex.
+ */
+
+/* ─── Page header ─────────────────────────────────────────────────── */
+.header {
+  text-align: center;
+  max-width: 40rem;
+  margin-inline: auto;
+  margin-bottom: var(--ds-space-10);
+  animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 14px;
+  border-radius: var(--ds-radius-full);
+  border: 1px solid var(--ds-border-default);
+  background: oklch(100% 0 0 / 0.5);
+  backdrop-filter: blur(8px);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-secondary);
+  margin-bottom: var(--ds-space-4);
+}
+
+.title {
+  font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+  font-weight: var(--ds-weight-extrabold);
+  line-height: var(--ds-leading-tight);
+  letter-spacing: -0.03em;
+  color: var(--ds-text-primary);
+  margin-bottom: var(--ds-space-3);
+}
+
+.sub {
+  font-size: var(--ds-text-sm);
+  line-height: var(--ds-leading-relaxed);
+  color: var(--ds-text-muted);
+}
+
+/* ─── Table of contents (sticky sidebar) ────────────────────────── */
+.layout {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: var(--ds-space-8);
+  align-items: start;
+}
+
+@media (max-width: 800px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .toc {
+    display: none;
+  }
+}
+
+.toc {
+  position: sticky;
+  top: 90px;
+  border-radius: var(--ds-radius-xl);
+  border: 1px solid var(--ds-border-subtle);
+  background: var(--ds-surface);
+  backdrop-filter: blur(12px);
+  padding: var(--ds-space-4);
+  animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) 60ms both;
+}
+
+.tocTitle {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: var(--ds-space-3);
+}
+
+.tocList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tocItem {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-text-secondary);
+  padding: 5px 8px;
+  border-radius: var(--ds-radius-sm);
+  cursor: pointer;
+  transition:
+    background var(--ds-duration-fast) var(--ds-ease-out-quart),
+    color var(--ds-duration-fast);
+  text-align: start;
+}
+
+.tocItem:hover {
+  background: var(--ds-surface-recessed);
+  color: var(--ds-brand-600);
+}
+
+/* ─── Content area ───────────────────────────────────────────────── */
+.content {
+  animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) 80ms both;
+}
+
+/* ─── Section card ───────────────────────────────────────────────── */
+.section {
+  border-radius: var(--ds-radius-xl);
+  border: 1px solid var(--ds-border-subtle);
+  background: var(--ds-surface);
+  backdrop-filter: blur(12px);
+  padding: var(--ds-space-6);
+  margin-bottom: var(--ds-space-4);
+  transition:
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart);
+  scroll-margin-top: 100px;
+}
+
+.section:hover {
+  border-color: var(--ds-border-default);
+  box-shadow: var(--ds-shadow-md);
+}
+
+/* ─── Section header ─────────────────────────────────────────────── */
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  margin-bottom: var(--ds-space-4);
+}
+
+.sectionNum {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--ds-brand-50);
+  border: 1px solid var(--ds-brand-100);
+  display: grid;
+  place-items: center;
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-bold);
+  color: var(--ds-brand-600);
+  font-variant-numeric: tabular-nums;
+}
+
+.sectionTitle {
+  font-size: var(--ds-text-lg);
+  font-weight: var(--ds-weight-bold);
+  color: var(--ds-text-primary);
+  line-height: var(--ds-leading-snug);
+}
+
+/* ─── Section body text ──────────────────────────────────────────── */
+.sectionBody {
+  font-size: var(--ds-text-sm);
+  line-height: var(--ds-leading-relaxed);
+  color: var(--ds-text-secondary);
+  white-space: pre-line;
+}
+
+/* Numbered list items (sections with inline lists) */
+.sectionBody ol,
+.sectionBody ul {
+  padding-inline-start: var(--ds-space-5);
+  margin-block: var(--ds-space-3);
+}
+
+.sectionBody li {
+  margin-bottom: var(--ds-space-2);
+}
+
+/* ─── Last updated badge ─────────────────────────────────────────── */
+.updateBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-surface-recessed);
+  border: 1px solid var(--ds-border-subtle);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  margin-bottom: var(--ds-space-8);
+}
+
+/* ─── Animations ─────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

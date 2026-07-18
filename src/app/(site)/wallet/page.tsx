@@ -1,96 +1,155 @@
-import { Icon } from '@/components/ui/icon';
-import type { IconName } from '@/components/ui/icon';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import {
+  Wallet,
+  ArrowUpDown,
+  Shield,
+  Zap,
+  Globe,
+  BarChart2,
+  ArrowLeft,
+  Lock,
+} from 'lucide-react';
+import { getSiteIdentity } from '@/lib/site-identity';
+import WalletHero from './WalletHero';
 import s from './wallet.module.css';
 
-type Tx = {
-  id: string;
-  name: string;
-  meta: string;
-  amount: string;
-  tone: 'up' | 'down' | 'neutral';
-  icon: IconName;
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { siteName } = await getSiteIdentity();
+  return {
+    title: `کیف پول دیجیتال | ${siteName}`,
+    description: 'مدیریت هوشمند دارایی‌های دیجیتال، انتقال امن و سریع پول با کیف پول دیجیتال فین‌تک.',
+  };
+}
 
-const txs: Tx[] = [
-  { id: '1', name: 'ارسال به احمد', meta: '۲ ساعت پیش', amount: '−۵۰٬۰۰۰', tone: 'down', icon: 'arrow-up' },
-  { id: '2', name: 'دریافت از مریم', meta: 'دیروز', amount: '۲۰۰٬۰۰۰+', tone: 'up', icon: 'arrow-down' },
-  { id: '3', name: 'قبض برق', meta: '۳ روز پیش', amount: '−۱٬۲۵۰', tone: 'down', icon: 'file-text' },
-  { id: '4', name: 'واریز از بانک', meta: 'هفته پیش', amount: '۵۰۰٬۰۰۰+', tone: 'up', icon: 'plus' },
-];
+const features = [
+  {
+    icon: ArrowUpDown,
+    title: 'انتقال فوری',
+    desc: 'ارسال و دریافت پول در کمتر از چند ثانیه به هر نقطه‌ای از افغانستان و ایران.',
+  },
+  {
+    icon: Shield,
+    title: 'امنیت بالا',
+    desc: 'رمزنگاری درجه سازمانی، احراز هویت دو مرحله‌ای و نظارت ۲۴/۷.',
+  },
+  {
+    icon: Zap,
+    title: 'نرخ لحظه‌ای',
+    desc: 'نرخ‌های ارز به‌روز هر ۵ دقیقه — بهترین نرخ را همیشه داشته باشید.',
+  },
+  {
+    icon: Globe,
+    title: 'پشتیبانی چند ارزی',
+    desc: 'افغانی، ریال، دلار، تتر — همه در یک کیف پول.',
+  },
+  {
+    icon: BarChart2,
+    title: 'گزارش‌دهی هوشمند',
+    desc: 'تحلیل تراکنش‌ها، صادرات گزارش و آمار کامل مالی.',
+  },
+  {
+    icon: Lock,
+    title: 'حریم خصوصی',
+    desc: 'اطلاعات شما رمزنگاری‌شده و نزد ما محفوظ است. هرگز به اشخاص ثالث فروخته نمی‌شود.',
+  },
+] as const;
 
-const tint: Record<Tx['tone'], string> = {
-  up: s.tintUp,
-  down: s.tintDown,
-  neutral: s.tintNeutral,
-};
-
-export default function WalletHome() {
+export default function WalletPage() {
   return (
-    <div className={`container ${s.shell} stagger-children`}>
-      {/* Header */}
-      <header className={s.top}>
-        <div>
-          <div className={s.greet}>سلام، احمد</div>
-          <div className={s.greetSub}>
-            <span className={s.breath} />
-            حساب فعال است
+    <div className={s.root}>
+      {/* ── Hero ──────────────────────────────────────────────────── */}
+      <section className={s.hero} aria-label="کیف پول دیجیتال">
+        {/* Client component for 3D glass cards */}
+        <WalletHero />
+
+        {/* Content column */}
+        <div className={s.content}>
+          {/* Badge */}
+          <div className={s.badge}>
+            <span className={s.badgeDot} aria-hidden />
+            کیف پول دیجیتال ۱۴۰۴
+          </div>
+
+          {/* Headline */}
+          <h1 className={s.headline}>
+            پول خود را{' '}
+            <span className={s.headlineAccent}>هوشمند</span>
+            {' '}مدیریت کنید
+          </h1>
+
+          {/* Sub */}
+          <p className={s.sub}>
+            انتقال امن، نرخ لحظه‌ای و مدیریت چند‌ارزی — همه در یک پلتفرم ساده
+          </p>
+
+          {/* Pills */}
+          <ul className={s.pills} aria-label="ویژگی‌های کلیدی">
+            {[
+              { icon: Globe,  text: 'چند ارزی' },
+              { icon: Zap,    text: 'انتقال فوری' },
+              { icon: Shield, text: 'کاملاً امن' },
+            ].map(({ icon: Icon, text }) => (
+              <li key={text} className={s.pill}>
+                <Icon size={13} strokeWidth={1.75} aria-hidden />
+                {text}
+              </li>
+            ))}
+          </ul>
+
+          {/* CTAs */}
+          <div className={s.ctas}>
+            <Link href="/money-transfer" className={s.ctaPrimary}>
+              <Wallet size={16} strokeWidth={1.75} aria-hidden />
+              شروع کنید
+            </Link>
+            <Link href="/online-payment" className={s.ctaSecondary}>
+              <BarChart2 size={16} strokeWidth={1.5} aria-hidden />
+              پرداخت آنلاین
+              <ArrowLeft size={15} strokeWidth={1.5} style={{ transform: 'scaleX(-1)' }} aria-hidden />
+            </Link>
           </div>
         </div>
-        <button className={s.iconBtn} type="button" aria-label="اعلان‌ها">
-          <Icon name="bell" size={18} />
-        </button>
-      </header>
-
-      {/* Balance hero */}
-      <section className={s.balance}>
-        <div className={s.balanceLabel}>موجودی کل</div>
-        <div className={s.balanceRow}>
-          <span className={s.balanceNum}>۱۲٬۵۰۰</span>
-          <span className={s.afn}>؁ افغانی</span>
-        </div>
-        <svg
-          className={s.spark}
-          viewBox="0 0 240 38"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <path d="M0 30 L30 26 L60 28 L90 18 L120 22 L150 12 L180 16 L210 8 L240 11" />
-        </svg>
       </section>
 
-      {/* Quick actions */}
-      <div className={s.actions}>
-        <button className={s.action} type="button">
-          <Icon name="arrow-up" size={18} />
-          انتقال
-        </button>
-        <button className={s.action} type="button">
-          <Icon name="arrow-down" size={18} />
-          دریافت
-        </button>
-        <button className={s.action} type="button">
-          <Icon name="file-text" size={18} />
-          قبض
-        </button>
-      </div>
-
-      {/* Recent */}
-      <h2 className={s.sectionTitle}>آخرین تراکنش‌ها</h2>
-      <div className={s.list}>
-        {txs.map((t) => (
-          <div className={s.row} key={t.id}>
-            <span className={`${s.tIcon} ${tint[t.tone]}`}>
-              <Icon name={t.icon} size={16} />
-            </span>
-            <div>
-              <div className={s.tName}>{t.name}</div>
-              <div className={s.tMeta}>{t.meta}</div>
-            </div>
-            <span className={`${s.amount} ${t.tone === 'up' ? s.up : t.tone === 'down' ? s.down : ''}`}>
-              {t.amount}
-            </span>
+      {/* ── Features ──────────────────────────────────────────────── */}
+      <section className={s.features} aria-label="ویژگی‌ها">
+        <div className={s.featuresInner}>
+          <div className={s.sectionEyebrow}>
+            <Wallet size={13} strokeWidth={1.75} aria-hidden />
+            چرا کیف پول ما؟
           </div>
-        ))}
+          <h2 className={s.sectionTitle}>همه چیز در یک پلتفرم</h2>
+
+          <div className={s.featureGrid}>
+            {features.map(({ icon: Icon, title, desc }) => (
+              <div key={title} className={s.featureCard}>
+                <div className={s.featureIcon} aria-hidden>
+                  <Icon size={20} strokeWidth={1.75} />
+                </div>
+                <h3 className={s.featureTitle}>{title}</h3>
+                <p className={s.featureDesc}>{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA Banner ────────────────────────────────────────────── */}
+      <div className={s.ctaBanner} role="complementary" aria-label="شروع کنید">
+        <h2 className={s.bannerTitle}>آماده‌اید شروع کنید؟</h2>
+        <p className={s.bannerSub}>
+          همین حالا ثبت‌نام کنید و اولین تراکنش خود را در کمتر از ۵ دقیقه انجام دهید.
+        </p>
+        <div className={s.bannerCtas}>
+          <Link href="/money-transfer" className={s.ctaPrimary}>
+            <Wallet size={16} strokeWidth={1.75} aria-hidden />
+            مشاهده نرخ‌ها
+          </Link>
+          <Link href="/#contact" className={s.ctaSecondary}>
+            تماس با پشتیبانی
+          </Link>
+        </div>
       </div>
     </div>
   );

@@ -1,110 +1,133 @@
-import React from 'react';
+import type { Metadata } from 'next';
+import { Gem, Check } from 'lucide-react';
+import { getSiteIdentity } from '@/lib/site-identity';
+import s from './subscription.module.css';
 
-import ButtonPrimary from '@/components/Button/ButtonPrimary';
-import ButtonSecondary from '@/components/Button/ButtonSecondary';
-import Heading2 from '@/components/Heading/Heading2';
-import { Gem } from 'lucide-react';
-import { HiCheck } from 'react-icons/hi2';
+export async function generateMetadata(): Promise<Metadata> {
+  const { siteName } = await getSiteIdentity();
+  return {
+    title: `طرح‌های اشتراک | ${siteName}`,
+    description: 'قیمت‌گذاری ساده و شفاف برای هر نوع کسب و کار — از استارتر تا پلاس.',
+  };
+}
 
-export interface PricingItem {
-  isPopular: boolean;
+interface PricingItem {
   name: string;
   pricing: string;
-  desc: string;
   per: string;
+  desc: string;
   features: string[];
+  isPopular: boolean;
 }
 
 const pricings: PricingItem[] = [
   {
     isPopular: false,
     name: 'استارتر',
-    pricing: '۵ دلار',
-    per: 'ماهانه',
-    features: ['گزارش‌دهی خودکار', 'پردازش سریع‌تر', 'سفارشی‌سازی'],
-    desc: ` این طرح برای شروع کار شما مناسب است.`,
+    pricing: '۵',
+    per: '/ ماه',
+    desc: 'برای شروع کار و آشنایی با خدمات ما مناسب است.',
+    features: ['گزارش‌دهی خودکار', 'پردازش سریع‌تر', 'سفارشی‌سازی پایه', 'پشتیبانی ایمیلی'],
   },
   {
     isPopular: true,
     name: 'پایه',
-    pricing: '۱۵ دلار',
-    per: 'ماهانه',
-    features: ['همه امکانات طرح استارتر', '۱۰۰ ساخت', 'گزارش‌های پیشرفت', 'پشتیبانی ویژه'],
-    desc: ` این طرح محبوب‌ترین طرح ما است و برای اکثر کسب‌وکارها مناسب است.`,
+    pricing: '۱۵',
+    per: '/ ماه',
+    desc: 'محبوب‌ترین طرح ما — برای اکثر کسب‌وکارها ایده‌آل است.',
+    features: [
+      'همه امکانات استارتر',
+      '۱۰۰ تراکنش در ماه',
+      'گزارش‌های پیشرفته',
+      'پشتیبانی اولویت‌دار',
+      'API دسترسی',
+    ],
   },
   {
     isPopular: false,
     name: 'پلاس',
-    pricing: '۲۵ دلار',
-    per: 'ماهانه',
-    features: ['همه امکانات طرح پایه', 'ساخت نامحدود', 'تجزیه و تحلیل پیشرفته', 'ارزیابی شرکت'],
-    desc: ` این طرح برای کسب‌وکارهای بزرگ و با نیازهای پیشرفته مناسب است.`,
+    pricing: '۲۵',
+    per: '/ ماه',
+    desc: 'برای کسب‌وکارهای بزرگ با نیازهای پیشرفته.',
+    features: [
+      'همه امکانات پایه',
+      'تراکنش نامحدود',
+      'تجزیه و تحلیل پیشرفته',
+      'ارزیابی اختصاصی شرکت',
+      'مدیر حساب اختصاصی',
+      'SLA 99.9٪',
+    ],
   },
 ];
 
-const PageSubcription = ({}) => {
-  const renderPricingItem = (pricing: PricingItem, index: number) => {
-    return (
-      <div
-        key={index}
-        className={`h-full relative px-6 py-8 rounded-3xl border-2 flex flex-col overflow-hidden rtl ${
-          pricing.isPopular ? 'border-primary-500' : 'border-neutral-100 dark:border-neutral-700'
-        }`}
-      >
-        {pricing.isPopular && (
-          <span className="bg-primary-500 text-white px-3 py-1 tracking-widest text-xs absolute start-3 top-3 rounded-full z-10">
-            محبوب
-          </span>
-        )}
-        <div className="mb-8">
-          <h3 className="block text-sm uppercase tracking-widest text-neutral-600 dark:text-neutral-300 mb-2 font-medium">
-            {pricing.name}
-          </h3>
-          <h2 className="text-4xl leading-none flex items-center text-neutral-700 dark:text-neutral-300">
-            <span>{pricing.pricing}</span>
-            <span className="text-lg ms-1 font-normal text-neutral-500 dark:text-neutral-300">
-              {pricing.per}
-            </span>
-          </h2>
-        </div>
-        <nav className="space-y-4 mb-8">
-          {pricing.features.map((item, index) => (
-            <li className="flex items-center" key={index}>
-              <span className="me-4 inline-flex flex-shrink-0 text-primary-600">
-                <HiCheck className="w-5 h-5" aria-hidden="true" />
-              </span>
-              <span className="text-neutral-700 dark:text-neutral-300">{item}</span>
-            </li>
-          ))}
-        </nav>
-        <div className="flex flex-col mt-auto">
-          {pricing.isPopular ? (
-            <ButtonPrimary>ثبت نام</ButtonPrimary>
-          ) : (
-            <ButtonSecondary>
-              <span className="font-medium">ثبت نام</span>
-            </ButtonSecondary>
-          )}
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-3">{pricing.desc}</p>
-        </div>
-      </div>
-    );
-  };
-
+export default function SubscriptionPage() {
   return (
-    <div className="rtl">
-      <header className="text-center max-w-2xl mx-auto - mb-12 sm:mb-12 lg:mb-16">
-        <Heading2 icon={Gem}>طرح‌های اشتراک</Heading2>
-        <span className="block text-sm mt-2 text-neutral-700 sm:text-base dark:text-neutral-200">
-          قیمت‌گذاری مناسب برای هر نوع کسب و کار
-        </span>
+    <div>
+      {/* ── Header ─────────────────────────────────────────────── */}
+      <header className={s.header}>
+        <div className={s.eyebrow}>
+          <Gem size={13} strokeWidth={1.75} aria-hidden />
+          طرح‌های اشتراک
+        </div>
+        <h1 className={s.title}>
+          قیمت‌گذاری{' '}
+          <span className={s.titleAccent}>ساده و شفاف</span>
+        </h1>
+        <p className={s.sub}>
+          برای هر نوع کسب و کار — بدون هزینه پنهان
+        </p>
       </header>
 
-      <section className="text-neutral-600 text-sm md:text-base overflow-hidden">
-        <div className="grid lg:grid-cols-3 gap-5 xl:gap-8">{pricings.map(renderPricingItem)}</div>
+      {/* ── Pricing grid ───────────────────────────────────────── */}
+      <section aria-label="طرح‌های اشتراک">
+        <div className={s.grid}>
+          {pricings.map((plan) => (
+            <article
+              key={plan.name}
+              className={`${s.card} ${plan.isPopular ? s.cardPopular : ''}`}
+              aria-label={`طرح ${plan.name}`}
+            >
+              {plan.isPopular && (
+                <div className={s.popularBadge} aria-label="محبوب‌ترین طرح">
+                  <Gem size={11} strokeWidth={1.75} aria-hidden />
+                  محبوب
+                </div>
+              )}
+
+              {/* Plan header */}
+              <div className={s.planName}>{plan.name}</div>
+              <div className={s.price}>
+                <span className={s.priceNum}>${plan.pricing}</span>
+                <span className={s.pricePer}>{plan.per}</span>
+              </div>
+              <p className={s.desc}>{plan.desc}</p>
+
+              <div className={s.divider} />
+
+              {/* Features */}
+              <ul className={s.features} role="list">
+                {plan.features.map((feat) => (
+                  <li key={feat} className={s.feature}>
+                    <span className={s.featureCheck} aria-hidden>
+                      <Check size={11} strokeWidth={2.5} />
+                    </span>
+                    {feat}
+                  </li>
+                ))}
+              </ul>
+
+              {/* CTA */}
+              <button
+                type="button"
+                className={`${s.btn} ${plan.isPopular ? s.btnPrimary : s.btnGhost}`}
+                aria-label={`ثبت نام در طرح ${plan.name}`}
+              >
+                ثبت نام
+              </button>
+            </article>
+          ))}
+        </div>
       </section>
     </div>
   );
-};
-
-export default PageSubcription;
+}

@@ -1,0 +1,350 @@
+/*
+ * contact.module.css — Contact page (2026)
+ * design language: همان glass morphism صفحه حواله
+ * Tokens only; logical properties; no hardcoded hex.
+ */
+
+/* ─── Page header ─────────────────────────────────────────────────── */
+.header {
+  text-align: center;
+  max-width: 38rem;
+  margin-inline: auto;
+  margin-bottom: var(--ds-space-10);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 14px;
+  border-radius: var(--ds-radius-full);
+  border: 1px solid var(--ds-border-default);
+  background: oklch(100% 0 0 / 0.5);
+  backdrop-filter: blur(8px);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-secondary);
+  letter-spacing: 0.01em;
+  margin-bottom: var(--ds-space-4);
+}
+
+.eyebrowDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: var(--ds-accent-emerald);
+  flex-shrink: 0;
+  animation: dotPulse 2s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 0.6; transform: scale(0.85); }
+  50%       { opacity: 1;   transform: scale(1);    }
+}
+
+.title {
+  font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+  font-weight: var(--ds-weight-extrabold);
+  line-height: var(--ds-leading-tight);
+  letter-spacing: -0.03em;
+  color: var(--ds-text-primary);
+  margin-bottom: var(--ds-space-3);
+}
+
+.titleAccent {
+  color: var(--ds-brand-600);
+}
+
+.sub {
+  font-size: var(--ds-text-base);
+  line-height: var(--ds-leading-relaxed);
+  color: var(--ds-text-secondary);
+}
+
+/* ─── Grid ────────────────────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: var(--ds-space-8);
+  align-items: start;
+}
+
+@media (max-width: 760px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── Info column ─────────────────────────────────────────────────── */
+.infoCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+.infoCard {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+  border-radius: var(--ds-radius-xl);
+  border: 1px solid var(--ds-border-subtle);
+  background: var(--ds-surface);
+  backdrop-filter: blur(12px);
+  transition:
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform var(--ds-duration-fast) var(--ds-ease-spring),
+    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart);
+}
+
+.infoCard:hover {
+  border-color: var(--ds-border-default);
+  transform: translateY(-2px);
+  box-shadow: var(--ds-shadow-md);
+}
+
+.infoIconWrap {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--ds-radius-md);
+  border: 1px solid var(--ds-border-subtle);
+  background: var(--ds-surface-elevated);
+  display: grid;
+  place-items: center;
+  color: var(--ds-brand-600);
+}
+
+.infoTitle {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 3px;
+}
+
+.infoValue {
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-text-primary);
+  direction: ltr;
+  text-align: end;
+}
+
+/* Social links section */
+.socialSection {
+  padding: var(--ds-space-4);
+  border-radius: var(--ds-radius-xl);
+  border: 1px solid var(--ds-border-subtle);
+  background: var(--ds-surface);
+  backdrop-filter: blur(12px);
+}
+
+.socialTitle {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--ds-space-3);
+}
+
+/* ─── Form column ─────────────────────────────────────────────────── */
+.formCol {
+  position: relative;
+}
+
+.formCard {
+  position: relative;
+  border-radius: var(--ds-radius-2xl);
+  border: 1px solid oklch(100% 0 0 / 0.22);
+  background: oklch(100% 0 0 / 0.65);
+  backdrop-filter: blur(24px) saturate(1.8) brightness(1.02);
+  box-shadow:
+    0 0 0 0.5px oklch(100% 0 0 / 0.3),
+    0 24px 64px -16px oklch(45% 0.08 240 / 0.2),
+    inset 0 1px 0 oklch(100% 0 0 / 0.6),
+    inset 0 -1px 0 oklch(100% 0 0 / 0.1);
+  padding: clamp(1.25rem, 3vw, 2rem);
+  overflow: hidden;
+}
+
+/* Signature gradient ring */
+.formCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    var(--ds-accent-emerald),
+    var(--ds-color-blue, var(--ds-brand-500)) 55%,
+    transparent
+  );
+  -webkit-mask:
+    linear-gradient(var(--ds-text-inverse) 0 0) content-box,
+    linear-gradient(var(--ds-text-inverse) 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dark .formCard {
+  background: oklch(22% 0.015 250 / 0.8);
+  border-color: oklch(100% 0 0 / 0.08);
+}
+
+.formTitle {
+  font-size: var(--ds-text-lg);
+  font-weight: var(--ds-weight-bold);
+  color: var(--ds-text-primary);
+  margin-bottom: var(--ds-space-5);
+}
+
+/* ─── Form fields ─────────────────────────────────────────────────── */
+.fieldset {
+  display: grid;
+  gap: var(--ds-space-4);
+  position: relative;
+  z-index: 1;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-secondary);
+  letter-spacing: 0.01em;
+}
+
+.input {
+  width: 100%;
+  height: 46px;
+  padding-inline: var(--ds-space-4);
+  border-radius: var(--ds-radius-md);
+  border: 1px solid var(--ds-border-default);
+  background: var(--ds-surface-elevated);
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-primary);
+  outline: none;
+  transition:
+    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
+    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart),
+    background var(--ds-duration-fast);
+}
+
+.input::placeholder {
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+}
+
+.input:focus {
+  border-color: var(--ds-brand-500);
+  background: oklch(100% 0 0 / 0.95);
+  box-shadow: var(--ds-glow-brand);
+}
+
+/* Override height for textarea (input sets height: 46px) */
+.textarea {
+  height: auto;
+  padding-block: var(--ds-space-3);
+  resize: none;
+  line-height: var(--ds-leading-normal);
+}
+
+/* ─── Submit button ──────────────────────────────────────────────── */
+.submitBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 50px;
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-brand-600);
+  color: var(--ds-text-inverse);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  border: none;
+  cursor: pointer;
+  box-shadow:
+    0 0 0 1px oklch(55% 0.1 235 / 0.35),
+    0 8px 32px -8px oklch(48% 0.11 235 / 0.45),
+    inset 0 1px 0 oklch(100% 0 0 / 0.12);
+  transition:
+    background var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform var(--ds-duration-fast) var(--ds-ease-spring),
+    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart);
+}
+
+.submitBtn:hover {
+  background: var(--ds-brand-700);
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 0 1px oklch(55% 0.1 235 / 0.45),
+    0 14px 40px -10px oklch(48% 0.11 235 / 0.5),
+    inset 0 1px 0 oklch(100% 0 0 / 0.15);
+}
+
+.submitBtn:active {
+  transform: scale(0.97);
+}
+
+.submitBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ─── Success / Error feedback ───────────────────────────────────── */
+.successBanner {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+  border-radius: var(--ds-radius-lg);
+  border: 1px solid oklch(60% 0.10 165 / 0.3);
+  background: oklch(60% 0.10 165 / 0.08);
+  color: var(--ds-accent-emerald);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  margin-top: var(--ds-space-4);
+}
+
+.errorBanner {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+  border-radius: var(--ds-radius-lg);
+  border: 1px solid oklch(60% 0.13 20 / 0.3);
+  background: oklch(60% 0.13 20 / 0.08);
+  color: var(--ds-accent-rose);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  margin-top: var(--ds-space-4);
+}
+
+/* ─── Entrance animations ────────────────────────────────────────── */
+.header,
+.infoCol,
+.formCol {
+  animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.infoCol { animation-delay: 60ms; }
+.formCol { animation-delay: 120ms; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
