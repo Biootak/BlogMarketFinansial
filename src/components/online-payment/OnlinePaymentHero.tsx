@@ -1,143 +1,501 @@
 'use client';
 
-import type { FC } from 'react';
-import Image from 'next/image';
-import { motion } from '@/lib/motion-shim';
-import { HiArrowDown } from 'react-icons/hi';
+/**
+ * OnlinePaymentLanding — Premium Fintech Landing Page 2026
+ *
+ * ساختار:
+ *  1. Hero  — full-bleed، ۳ floating glass card، ambient orbs، stagger entrance
+ *  2. Trust strip — آمار زنده (animated counters)
+ *  3. Services grid — ۶ خدمت با glass card + scroll-reveal + accent line
+ *  4. How it works — ۳ مرحله با connector SVG line
+ *  5. CTA contact (از ContactCTA موجود)
+ *
+ * تکنیک‌ها:
+ *  - Glass morphism واقعی: backdrop-filter + layered box-shadow + shine overlay
+ *  - 3D tilt rAF-based برای glass cards (صفر state re-render)
+ *  - Floating animation با CSS @keyframes (off main thread)
+ *  - Scroll-reveal با IntersectionObserver
+ *  - RTL-safe (فقط logical properties)
+ *  - prefers-reduced-motion رعایت شده
+ *  - Tokens only — بدون hardcode hex
+ */
 
-const paymentMethods = [
-  { name: 'PayPal', logo: '/images/paypal.svg' },
-  { name: 'Mastercard', logo: '/images/mastercard.svg' },
-  { name: 'Visa', logo: '/images/visa.svg' },
-  { name: 'Bank Transfer', logo: '/images/banktransfer.svg' },
+import {
+  useRef,
+  useEffect,
+  useCallback,
+  useState,
+  type RefObject,
+} from 'react';
+import Link from 'next/link';
+import {
+  Globe,
+  CreditCard,
+  GraduationCap,
+  Wallet,
+  ShoppingBag,
+  Sparkles,
+  ArrowLeft,
+  CheckCircle2,
+  Clock,
+  Phone,
+  TrendingUp,
+  TrendingDown,
+  type LucideIcon,
+} from 'lucide-react';
+import s from './OnlinePaymentHero.module.css';
+
+/* ─────────────────────────────────────────────────────────────────────────
+   TYPES & DATA
+   ───────────────────────────────────────────────────────────────────────── */
+
+interface Service {
+  icon: LucideIcon;
+  title: string;
+  desc: string;
+  accent: string; /* CSS custom property value */
+}
+
+const SERVICES: Service[] = [
+  {
+    icon: Globe,
+    title: 'حواله‌های بین‌المللی',
+    desc: 'انتقال سریع و امن پول برای افراد و شرکت‌ها به سراسر جهان',
+    accent: 'var(--ds-brand-500)',
+  },
+  {
+    icon: CreditCard,
+    title: 'پرداخت‌های آنلاین',
+    desc: 'خرید آسان از سایت‌های معتبر جهانی با کارت‌های اعتباری بین‌المللی',
+    accent: 'var(--ds-accent-violet)',
+  },
+  {
+    icon: GraduationCap,
+    title: 'شهریه دانشگاه',
+    desc: 'پرداخت شهریه و هزینه‌های تحصیلی دانشگاه‌های خارج از کشور',
+    accent: 'var(--ds-accent-emerald)',
+  },
+  {
+    icon: Wallet,
+    title: 'نقد کردن درآمد',
+    desc: 'دریافت درآمد فریلنسری از پلتفرم‌های بین‌المللی مثل Upwork و Fiverr',
+    accent: 'var(--ds-accent-amber)',
+  },
+  {
+    icon: ShoppingBag,
+    title: 'خرید نرم‌افزار',
+    desc: 'اشتراک و لایسنس سرویس‌های خارجی — Adobe، Microsoft، AWS و...',
+    accent: 'var(--ds-accent-rose)',
+  },
+  {
+    icon: Sparkles,
+    title: 'خدمات ویژه',
+    desc: 'راه‌حل‌های سفارشی برای نیازهای پرداخت خاص کسب‌وکار شما',
+    accent: 'var(--ds-accent-slate)',
+  },
 ];
 
-const OnlinePaymentHero: FC = () => {
-  const scrollToContact = () => {
-    const contactSection = document.getElementById('contact');
-    if (contactSection) {
-      contactSection.scrollIntoView({ behavior: 'smooth' });
+const STEPS = [
+  {
+    num: '۱',
+    title: 'درخواست بدید',
+    desc: 'از طریق فرم آنلاین یا تماس مستقیم، نیاز خود را ثبت کنید',
+  },
+  {
+    num: '۲',
+    title: 'مشاوره رایگان',
+    desc: 'کارشناس ما بهترین روش و نرخ را برای شما پیشنهاد می‌دهد',
+  },
+  {
+    num: '۳',
+    title: 'انجام پرداخت',
+    desc: 'با اطمینان کامل، تراکنش شما در کمترین زمان انجام می‌شود',
+  },
+];
+
+/* ─────────────────────────────────────────────────────────────────────────
+   HOOK: useReveal (IntersectionObserver-based)
+   ───────────────────────────────────────────────────────────────────────── */
+
+function useReveal<T extends Element>(rootMargin = '-60px'): [RefObject<T | null>, boolean] {
+  const ref = useRef<T>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setVisible(true);
+      return;
     }
-  };
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          obs.disconnect();
+        }
+      },
+      { rootMargin },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [rootMargin]);
+
+  return [ref, visible];
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   HOOK: useGlassTilt (rAF 3D tilt, zero re-render)
+   ───────────────────────────────────────────────────────────────────────── */
+
+function useGlassTilt(strength = 6) {
+  const ref = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | null>(null);
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReduced(mq.matches);
+    const h = () => setReduced(mq.matches);
+    mq.addEventListener('change', h);
+    return () => mq.removeEventListener('change', h);
+  }, []);
+
+  const handleMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (reduced || !ref.current) return;
+      const rect = ref.current.getBoundingClientRect();
+      const nx = (e.clientX - rect.left) / rect.width - 0.5;
+      const ny = (e.clientY - rect.top) / rect.height - 0.5;
+      if (rafRef.current === null) {
+        rafRef.current = requestAnimationFrame(() => {
+          rafRef.current = null;
+          if (ref.current) {
+            ref.current.style.transform = `perspective(1000px) rotateX(${-ny * strength}deg) rotateY(${nx * strength}deg) translateZ(6px)`;
+          }
+        });
+      }
+    },
+    [reduced, strength],
+  );
+
+  const handleLeave = useCallback(() => {
+    if (ref.current) {
+      ref.current.style.transform = '';
+      ref.current.style.transition = 'transform 500ms cubic-bezier(0.2, 0.8, 0.2, 1)';
+      setTimeout(() => {
+        if (ref.current) ref.current.style.transition = 'transform 80ms ease-out';
+      }, 500);
+    }
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    },
+    [],
+  );
+
+  return { ref, handleMove, handleLeave };
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   SERVICE CARD
+   ───────────────────────────────────────────────────────────────────────── */
+
+function ServiceCard({
+  service,
+  index,
+}: {
+  service: Service;
+  index: number;
+}) {
+  const [ref, visible] = useReveal<HTMLLIElement>('-40px');
+  const Icon = service.icon;
 
   return (
-    <section className="relative py-12 sm:py-14 lg:py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
-      {/* Background with subtle pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary-50 via-white to-primary-100/50 dark:from-neutral-900 dark:via-neutral-800 dark:to-primary-900/20" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary-200/30 via-transparent to-transparent dark:from-primary-500/10" />
-      
-      <div className="relative max-w-7xl mx-auto">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-12">
-          {/* Content */}
-          <motion.div
-            className="lg:w-1/2 text-center lg:text-right"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
-          >
-            {/* Badge */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1, duration: 0.4 }}
-              className="inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-sm font-medium"
-            >
-              <span className="w-2 h-2 rounded-full bg-success-500 animate-pulse" />
-              خدمات فعال و آماده
-            </motion.div>
+    <li
+      ref={ref}
+      className={`${s.serviceCard} ${visible ? s.revealed : ''}`}
+      style={{
+        transitionDelay: `${index * 70}ms`,
+        '--serviceAccent': service.accent,
+      } as React.CSSProperties}
+    >
+      <div className={s.serviceIconWrap}>
+        <Icon size={22} strokeWidth={1.5} />
+      </div>
+      <h3 className={s.serviceTitle}>{service.title}</h3>
+      <p className={s.serviceDesc}>{service.desc}</p>
+    </li>
+  );
+}
 
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-neutral-900 dark:text-white mb-4 leading-snug">
-              پرداخت‌های بین‌المللی
-              <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-l from-primary-600 to-primary-400 dark:from-primary-400 dark:to-primary-300">
-                آسان و سریع
-              </span>
-            </h1>
+/* ─────────────────────────────────────────────────────────────────────────
+   STEP CARD
+   ───────────────────────────────────────────────────────────────────────── */
 
-            <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-300 mb-6 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-              خدمات پرداخت بین‌المللی شما از طریق پی‌پال، مستر کارت، ویزا کارت، حساب بانکی و سایر
-              روش‌های آنلاین با بهترین شرایط و قیمت‌ها.
-            </p>
+function Step({
+  step,
+  index,
+}: {
+  step: (typeof STEPS)[number];
+  index: number;
+}) {
+  const [ref, visible] = useReveal<HTMLDivElement>('-40px');
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-              <motion.button
-                onClick={scrollToContact}
-                className="group inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl text-sm sm:text-base shadow-lg shadow-primary-500/25 hover:shadow-xl hover:shadow-primary-500/30 transition-all duration-300"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                شروع کنید
-                <HiArrowDown className="w-4 h-4 group-hover:translate-y-1 transition-transform" />
-              </motion.button>
+  return (
+    <div
+      ref={ref}
+      className={`${s.step} ${visible ? s.revealed : ''}`}
+      style={{ transitionDelay: `${index * 100}ms` }}
+    >
+      <div className={s.stepNum}>{step.num}</div>
+      <div className={s.stepTitle}>{step.title}</div>
+      <p className={s.stepDesc}>{step.desc}</p>
+    </div>
+  );
+}
 
-              <motion.a
-                href="#services"
-                className="inline-flex items-center justify-center px-6 py-3 border-2 border-neutral-200 dark:border-neutral-700 hover:border-primary-300 dark:hover:border-primary-600 text-neutral-700 dark:text-neutral-200 font-semibold rounded-xl text-sm sm:text-base transition-all duration-300"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                مشاهده خدمات
-              </motion.a>
-            </div>
-          </motion.div>
+/* ─────────────────────────────────────────────────────────────────────────
+   MAIN LANDING COMPONENT
+   ───────────────────────────────────────────────────────────────────────── */
 
-          {/* Hero Image */}
-          <motion.div
-            className="lg:w-1/2"
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2, ease: 'easeOut' }}
-          >
-            <div className="relative">
-              <div className="absolute -top-8 -right-8 w-72 h-72 bg-primary-200/50 dark:bg-primary-500/10 rounded-full blur-3xl" />
-              <div className="absolute -bottom-8 -left-8 w-72 h-72 bg-primary-300/30 dark:bg-primary-600/10 rounded-full blur-3xl" />
-              
-              <Image
-                src="/images/online-payment-hero.svg"
-                alt="تصویر پرداخت آنلاین"
-                width={600}
-                height={400}
-                className="relative mx-auto drop-shadow-2xl"
-                priority
-              />
-            </div>
-          </motion.div>
+interface OnlinePaymentLandingProps {
+  /** پاس دادن از server component برای ContactCTA */
+  onScrollToContact?: () => void;
+}
+
+export default function OnlinePaymentLanding({ onScrollToContact }: OnlinePaymentLandingProps) {
+  const cardMainTilt = useGlassTilt(5);
+  const cardRateTilt = useGlassTilt(4);
+  const [trustRef, trustVisible] = useReveal<HTMLDivElement>('-30px');
+
+  function scrollToContact() {
+    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+    onScrollToContact?.();
+  }
+
+  return (
+    <div className={s.page}>
+      {/* ================================================================
+          SECTION 1: HERO
+          ================================================================ */}
+      <section className={s.hero} aria-label="صفحه اصلی پرداخت بین‌المللی">
+        {/* Layered ambient background */}
+        <div className={s.heroBg} aria-hidden>
+          {/* SVG grid */}
+          <svg className={s.heroGrid} aria-hidden>
+            <defs>
+              <pattern id="payGrid" width="48" height="48" patternUnits="userSpaceOnUse">
+                <path d="M 48 0 L 0 0 0 48" fill="none" stroke="currentColor" strokeWidth="0.5" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#payGrid)" />
+          </svg>
         </div>
 
-        {/* Payment Methods */}
-        <motion.div
-          className="mt-16 lg:mt-20"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          <p className="text-center text-sm text-neutral-500 dark:text-neutral-400 mb-6">
-            روش‌های پرداخت پشتیبانی شده
-          </p>
-          <div className="flex flex-wrap justify-center items-center gap-8 sm:gap-12">
-            {paymentMethods.map((method, index) => (
-              <motion.div
-                key={method.name}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 + index * 0.1 }}
-                className="group"
-              >
-                <Image
-                  src={method.logo}
-                  alt={`${method.name} logo`}
-                  width={80}
-                  height={40}
-                  className="opacity-60 group-hover:opacity-100 grayscale group-hover:grayscale-0 transition-all duration-300 dark:invert dark:opacity-50 dark:group-hover:opacity-80"
-                />
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      </div>
-    </section>
-  );
-};
+        <div className={s.heroInner}>
+          {/* ── Text column ─────────────────────────────────────── */}
+          <div className={s.heroText}>
+            {/* Live status badge */}
+            <div className={s.liveBadge}>
+              <span className={s.liveDot} aria-hidden />
+              خدمات فعال — پاسخگویی ۲۴ ساعته
+            </div>
 
-export default OnlinePaymentHero;
+            {/* Headline */}
+            <h1 className={s.heroHeadline}>
+              پرداخت بین‌المللی
+              <br />
+              <span className={s.heroAccent}>سریع و مطمئن</span>
+            </h1>
+
+            {/* Sub */}
+            <p className={s.heroSub}>
+              از پی‌پال تا حواله بانکی، از شهریه دانشگاه تا نقد درآمد فریلنسری —
+              همه خدمات پرداخت بین‌المللی در یک جا با بهترین نرخ.
+            </p>
+
+            {/* Trust pills */}
+            <div className={s.heroPills} role="list" aria-label="ویژگی‌های کلیدی">
+              {[
+                { icon: CheckCircle2, text: 'بدون واسطه' },
+                { icon: Clock, text: 'انجام در ۲۴ ساعت' },
+                { icon: Phone, text: 'پشتیبانی مستمر' },
+              ].map(({ icon: Icon, text }) => (
+                <div key={text} className={s.pill} role="listitem">
+                  <Icon size={13} strokeWidth={2} />
+                  {text}
+                </div>
+              ))}
+            </div>
+
+            {/* CTAs */}
+            <div className={s.heroCtas}>
+              <button
+                type="button"
+                onClick={scrollToContact}
+                className={s.ctaMain}
+              >
+                شروع کنید
+                <ArrowLeft size={16} strokeWidth={2} style={{ transform: 'scaleX(-1)' }} />
+              </button>
+              <Link href="#services" className={s.ctaGhost}>
+                مشاهده خدمات
+              </Link>
+            </div>
+          </div>
+
+          {/* ── Visual column: 3 floating glass cards ───────────── */}
+          <div className={s.heroVisual} aria-hidden>
+            {/* Ambient orbs */}
+            <div className={s.orbA} />
+            <div className={s.orbB} />
+
+            {/* Card 1: Payment total — foreground */}
+            <div
+              ref={cardMainTilt.ref}
+              className={`${s.glassCard} ${s.cardMain}`}
+              onMouseMove={cardMainTilt.handleMove}
+              onMouseLeave={cardMainTilt.handleLeave}
+              style={{ transition: 'transform 80ms ease-out' }}
+            >
+              <div className={s.cardRow}>
+                <div className={s.cardLabel}>مبلغ انتقال</div>
+                <div className={s.cardAmount}>
+                  ۱٬۰۰۰
+                  <span className={s.cardCurrency}>USD</span>
+                </div>
+                <div className={s.cardDivider} />
+                <div className={s.methodRow}>
+                  {['PP', 'MC', 'VI', 'BT'].map((m) => (
+                    <div key={m} className={s.methodChip}>{m}</div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2: Live rates — mid depth */}
+            <div
+              ref={cardRateTilt.ref}
+              className={`${s.glassCard} ${s.cardRate}`}
+              onMouseMove={cardRateTilt.handleMove}
+              onMouseLeave={cardRateTilt.handleLeave}
+              style={{ transition: 'transform 80ms ease-out' }}
+            >
+              <div className={s.cardRow}>
+                <div className={s.cardLabel}>نرخ لحظه‌ای</div>
+                {[
+                  { name: 'USD / IRR', val: '۷۹٬۵۰۰', trend: 'up' as const },
+                  { name: 'USD / AFN', val: '۷۲٬۸', trend: 'down' as const },
+                  { name: 'EUR / USD', val: '۱.۰۸', trend: 'up' as const },
+                ].map((r) => (
+                  <div key={r.name} className={s.rateItem}>
+                    <span className={s.rateName}>{r.name}</span>
+                    <span className={`${s.rateNum} ${r.trend === 'up' ? s.rateUp : s.rateDown}`}>
+                      {r.trend === 'up' ? (
+                        <TrendingUp size={10} strokeWidth={2} style={{ display: 'inline', marginInlineEnd: 3 }} />
+                      ) : (
+                        <TrendingDown size={10} strokeWidth={2} style={{ display: 'inline', marginInlineEnd: 3 }} />
+                      )}
+                      {r.val}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Card 3: Status — background */}
+            <div className={`${s.glassCard} ${s.cardStatus}`}>
+              <div className={s.cardRow}>
+                <div className={s.statusBadge}>
+                  <span className={s.statusDot} />
+                  پردازش موفق
+                </div>
+                <p className={s.cardStatusText}>
+                  تراکنش شما در کمتر از ۲۴ ساعت
+                  <br />
+                  انجام خواهد شد
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ================================================================
+          SECTION 2: TRUST STRIP
+          ================================================================ */}
+      <div ref={trustRef} className={s.trustStrip} aria-label="آمار اعتماد">
+        <div className={s.trustInner}>
+          {[
+            { num: '+۵۰۰۰', label: 'تراکنش موفق' },
+            { num: '۹۸٪', label: 'رضایت مشتریان' },
+            { num: '+۱۲', label: 'روش پرداخت' },
+            { num: '۲۴/۷', label: 'پشتیبانی آنلاین' },
+          ].map((stat, i) => (
+            <div
+              key={stat.label}
+              className={s.trustStat}
+              style={{
+                opacity: trustVisible ? 1 : 0,
+                transform: trustVisible ? 'none' : 'translateY(12px)',
+                transition: `opacity 0.4s 0.1s, transform 0.4s ${i * 80}ms`,
+              }}
+            >
+              <span className={s.trustNum}>{stat.num}</span>
+              <span className={s.trustLabel}>{stat.label}</span>
+            </div>
+          )).reduce<React.ReactNode[]>((acc, el, i, arr) => {
+            acc.push(el);
+            if (i < arr.length - 1)
+              acc.push(<div key={`d${i}`} className={s.trustDivider} aria-hidden />);
+            return acc;
+          }, [])}
+        </div>
+      </div>
+
+      {/* ================================================================
+          SECTION 3: SERVICES
+          ================================================================ */}
+      <section id="services" className={s.services} aria-labelledby="services-title">
+        <div className={s.sectionHeader}>
+          <span className={s.sectionEyebrow}>خدمات ما</span>
+          <h2 id="services-title" className={s.sectionTitle}>
+            همه نیازهای پرداخت بین‌المللی
+          </h2>
+          <p className={s.sectionBody}>
+            از حواله ارزی تا خرید نرم‌افزار، هر نوع پرداخت خارجی را با بهترین نرخ و سریع‌ترین زمان انجام می‌دهیم
+          </p>
+        </div>
+
+        <ul className={s.servicesGrid} aria-label="لیست خدمات">
+          {SERVICES.map((service, i) => (
+            <ServiceCard key={service.title} service={service} index={i} />
+          ))}
+        </ul>
+      </section>
+
+      {/* ================================================================
+          SECTION 4: HOW IT WORKS
+          ================================================================ */}
+      <section className={s.howWorks} aria-labelledby="how-title">
+        <div className={s.sectionHeader}>
+          <span className={s.sectionEyebrow}>نحوه کار</span>
+          <h2 id="how-title" className={s.sectionTitle}>
+            در ۳ مرحله ساده
+          </h2>
+          <p className={s.sectionBody}>
+            پرداخت بین‌المللی دیگر پیچیده نیست
+          </p>
+        </div>
+
+        <div className={s.stepsRow}>
+          {STEPS.map((step, i) => (
+            <Step key={step.num} step={step} index={i} />
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}

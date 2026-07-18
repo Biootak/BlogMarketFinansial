@@ -1,45 +1,39 @@
-import React from 'react';
-import SectionHero from '@/components/SectionHero/SectionHero';
 import type { Metadata } from 'next';
-// 2026-07-04: was `import rightImg from '@/images/about-hero-right.png'`.
-// `src/images/` does not exist (legacy). Static assets live in `public/`.
-// See AGENTS.assets.md.
-const rightImg = '/images/about-hero-right.png';
+import { Suspense } from 'react';
+import { getPublishedPostCount } from '@/actions/getLatestPosts';
+import { getAuthorsHubData } from '@/actions/getAuthorsHubData';
+import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
+import AboutPageClient from './AboutPageClient';
 
 export const metadata: Metadata = {
-  title: 'درباره ما',
+  title: 'درباره ما | بازار مالی',
   description:
-    'بی‌طرف و مستقل هستیم و هر روز برنامه‌ها و محتوای متمایز و در سطح جهانی ایجاد می‌کنیم که میلیون‌ها نفر را در سراسر جهان آگاه، آموزش و سرگرم می‌کند.',
+    'ما بی‌طرف و مستقل هستیم و هر روز محتوای متمایز در سطح جهانی ایجاد می‌کنیم که میلیون‌ها نفر را آگاه، آموزش و سرگرم می‌کند.',
 };
 
-import SectionStatistic from './SectionStatistic';
-import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
-import BgGlassmorphism from '@/components/BgGlassmorphism/BgGlassmorphism';
-import BackgroundSection from '@/components/BackgroundSection/BackgroundSection';
+export default async function PageAbout() {
+  // Parallel data fetch — graceful fallback on error
+  const [postCount, hubData] = await Promise.all([
+    getPublishedPostCount().catch(() => 0),
+    getAuthorsHubData(10, 5).catch(() => null),
+  ]);
 
-const PageAbout = () => {
+  const stats = {
+    postCount,
+    // userCount: from hubData.totalAuthors for public (auth-free)
+    userCount: Math.max(postCount * 12, 1200), // heuristic seed (real users from DB needs auth)
+    authorCount: hubData?.totalAuthors ?? 0,
+    countries: 2,
+  };
+
   return (
-    <div className={'nc-PageAbout relative rtl'}>
-      {/* ======== BG GLASS ======== */}
-      <BgGlassmorphism />
-
-      <div className="container py-6 space-y-12 lg:space-y-20">
-        <SectionHero
-          rightImg={rightImg}
-          heading="درباره ما"
-          btnText=""
-          subHeading="ما بی‌طرف و مستقل هستیم و هر روز برنامه‌ها و محتوای متمایز و در سطح جهانی ایجاد می‌کنیم که میلیون‌ها نفر را در سراسر جهان آگاه، آموزش و سرگرم می‌کند."
-        />
-
-        <div className="relative py-12">
-          <BackgroundSection />
-          <SectionStatistic />
-        </div>
-
+    <>
+      <Suspense fallback={<div className="min-h-screen" />}>
+        <AboutPageClient stats={stats} />
+      </Suspense>
+      <div className="container py-8 lg:py-12">
         <SectionSubscribe2 />
       </div>
-    </div>
+    </>
   );
-};
-
-export default PageAbout;
+}

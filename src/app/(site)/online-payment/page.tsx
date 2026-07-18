@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import ContactCTA from '@/components/online-payment/ContactCTA';
-import OnlinePaymentHero from '@/components/online-payment/OnlinePaymentHero';
-import ServicesList from '@/components/online-payment/ServicesList';
+import OnlinePaymentLanding from '@/components/online-payment/OnlinePaymentHero';
 
 export const metadata: Metadata = {
-  title: 'پرداخت آنلاین | خدمات پرداخت بین‌المللی بیوتاک',
+  title: 'پرداخت آنلاین | خدمات پرداخت بین‌المللی',
   description:
-    'خدمات پرداخت بین‌المللی با بهترین شرایط و قیمت از طریق پی‌پال، مستر کارت، ویزا کارت و سایر روش‌های آنلاین. حواله ارزی، پرداخت شهریه، خرید نرم‌افزار و نقد کردن درآمد فریلنسری.',
+    'خدمات پرداخت بین‌المللی با بهترین شرایط از طریق پی‌پال، مستر کارت، ویزا کارت و سایر روش‌های آنلاین. حواله ارزی، پرداخت شهریه، خرید نرم‌افزار و نقد کردن درآمد فریلنسری.',
   keywords: [
     'پرداخت آنلاین',
     'پی پال',
@@ -15,21 +15,25 @@ export const metadata: Metadata = {
     'حواله ارزی',
     'پرداخت بین المللی',
     'خرید از سایت خارجی',
+    'شهریه دانشگاه',
   ],
   openGraph: {
-    title: 'پرداخت آنلاین | خدمات پرداخت بین‌المللی بیوتاک',
+    title: 'پرداخت آنلاین | خدمات پرداخت بین‌المللی',
     description:
-      'خدمات پرداخت بین‌المللی با بهترین شرایط و قیمت از طریق پی‌پال، مستر کارت، ویزا کارت',
+      'خدمات پرداخت بین‌المللی با بهترین شرایط از طریق پی‌پال، مستر کارت، ویزا کارت',
     type: 'website',
   },
 };
 
 export default function OnlinePaymentPage() {
   return (
-    <main className="min-h-screen bg-white dark:bg-neutral-900">
-      <OnlinePaymentHero />
-      <ServicesList />
-      <ContactCTA defaultServiceType="ONLINE_PAYMENT" />
+    <main>
+      <OnlinePaymentLanding />
+      <div id="contact">
+        <Suspense fallback={<div className="h-64" />}>
+          <ContactCTA defaultServiceType="ONLINE_PAYMENT" />
+        </Suspense>
+      </div>
     </main>
   );
 }

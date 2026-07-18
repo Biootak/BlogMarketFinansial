@@ -14,6 +14,7 @@ import { TopAuthorsSection } from '@/components/TopAuthorsSection';
 import SectionLargeSlider from './SectionLargeSlider';
 import DeferredAdStrip from './deferred/DeferredAdStrip';
 import DeferredTrending from './deferred/DeferredTrending';
+import HeroSection from './HeroSection';
 
 // Dynamically rendered on demand: the shared site header (MainNav) reads
 // auth() to render sign-in/avatar state, which opts the whole (site) tree out
@@ -62,13 +63,19 @@ export default async function Home() {
   return (
     <div className="nc-HomePage relative">
       {lcpImage ? <link rel="preload" as="image" href={lcpImage} /> : null}
+
+      {/* ── 3D Hero Section ─────────────────────────────── */}
+      <div className="container relative">
+        <HeroSection />
+      </div>
+
+      {/* ── Market Tickers ──────────────────────────────── */}
       <div className="container relative">
         <Suspense fallback={<Skeleton className="h-28 rounded-2xl" />}>
           <CryptoTickerSection />
         </Suspense>
 
-        {/* نوار زنده‌ی نرخ‌های بازار — زیر نوار کریپتو، با سرعت متفاوت
-            (duration={75} در MarketRatesTickerSection در مقابل {50} کریپتو). */}
+        {/* نوار زنده‌ی نرخ‌های بازار — زیر نوار کریپتو، با سرعت متفاوت */}
         <MarketRatesTickerSection />
 
         <Suspense fallback={<CardLarge1Skeleton />}>

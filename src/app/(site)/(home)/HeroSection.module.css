@@ -1,0 +1,560 @@
+/* ============================================================================
+   HeroSection.module.css — Home landing hero (2026)
+   دقیقاً همان design language صفحه حواله:
+   glass morphism واقعی | layered ambient bg | floating 3D cards | tokens only
+   ============================================================================ */
+
+/* ──────────────────────────────────────────────────────────────────────────
+   ROOT
+   ────────────────────────────────────────────────────────────────────────── */
+.root {
+  position: relative;
+  min-height: clamp(620px, 88vh, 940px);
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  align-items: center;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   AMBIENT BACKGROUND — همان layered radial gradient صفحه حواله
+   ────────────────────────────────────────────────────────────────────────── */
+.bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 55% at 105% -5%,  oklch(55% 0.10 235 / 0.17) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 40% at -8%  110%, oklch(72% 0.13 70  / 0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 35% 45% at 55%  115%, oklch(58% 0.13 290 / 0.07) 0%, transparent 60%),
+    var(--ds-canvas);
+}
+
+/* SVG grid — همان grid صفحه حواله */
+.grid {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  color: var(--ds-border-subtle);
+  opacity: 0.45;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   CONTENT COLUMN (text side)
+   ────────────────────────────────────────────────────────────────────────── */
+.content {
+  position: relative;
+  z-index: 2;
+  padding-inline: clamp(20px, 5vw, 60px);
+  padding-block: clamp(60px, 10vw, 120px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* Staggered entrance — همان pattern صفحه حواله */
+.content > * {
+  animation: staggerUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.content > *:nth-child(1) { animation-delay:   0ms; }
+.content > *:nth-child(2) { animation-delay:  80ms; }
+.content > *:nth-child(3) { animation-delay: 160ms; }
+.content > *:nth-child(4) { animation-delay: 220ms; }
+.content > *:nth-child(5) { animation-delay: 280ms; }
+
+@keyframes staggerUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Live badge — همان liveBadge صفحه حواله ───────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: var(--ds-radius-full);
+  border: 1px solid var(--ds-border-default);
+  background: oklch(100% 0 0 / 0.5);
+  backdrop-filter: blur(12px) saturate(1.8);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-secondary);
+  letter-spacing: 0.01em;
+  margin-bottom: var(--ds-space-4);
+}
+
+.dark .badge {
+  background: oklch(22% 0.015 250 / 0.65);
+  border-color: oklch(30% 0.015 250 / 0.7);
+}
+
+.badgeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--ds-accent-emerald);
+  box-shadow: 0 0 0 2px oklch(60% 0.10 165 / 0.25);
+  animation: livePulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes livePulse {
+  0%, 100% { transform: scale(0.9); opacity: 0.7; }
+  50%       { transform: scale(1.1); opacity: 1; }
+}
+
+/* ── Headline ───────────────────────────────────────────────── */
+.headline {
+  font-size: clamp(2rem, 4.5vw, 3.5rem);
+  font-weight: var(--ds-weight-extrabold);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+  color: var(--ds-text-primary);
+  margin-bottom: var(--ds-space-4);
+}
+
+.headlineMain {
+  color: var(--ds-text-primary);
+}
+
+/* همان heroAccent با animated underline صفحه حواله */
+.headlineAccent {
+  position: relative;
+  display: inline-block;
+  color: var(--ds-brand-600);
+}
+
+.headlineAccent::after {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  bottom: -3px;
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to left,
+    var(--ds-brand-500),
+    var(--ds-accent-violet)
+  );
+  transform: scaleX(0);
+  transform-origin: 100% 50%;
+  animation: drawLine 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.5s forwards;
+}
+
+@keyframes drawLine {
+  to { transform: scaleX(1); }
+}
+
+/* ── Sub ───────────────────────────────────────────────────── */
+.sub {
+  font-size: var(--ds-text-base);
+  line-height: var(--ds-leading-relaxed);
+  color: var(--ds-text-secondary);
+  max-width: 480px;
+  margin-bottom: var(--ds-space-5);
+}
+
+/* ── Pills — همان heroPills صفحه حواله ─────────────────────── */
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  margin-bottom: var(--ds-space-6);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--ds-radius-full);
+  border: 1px solid var(--ds-border-subtle);
+  background: oklch(100% 0 0 / 0.55);
+  backdrop-filter: blur(8px);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-text-secondary);
+  transition: border-color var(--ds-duration-fast), background var(--ds-duration-fast);
+}
+
+.pill:hover {
+  border-color: var(--ds-brand-500);
+  background: oklch(100% 0 0 / 0.75);
+}
+
+/* ── CTAs — همان ctaMain/ctaGhost صفحه حواله ───────────────── */
+.ctas {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  flex-wrap: wrap;
+}
+
+.ctaPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 28px;
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-brand-600);
+  color: oklch(98% 0.005 240);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  min-height: 48px;
+  box-shadow:
+    0 0 0 1px oklch(55% 0.1 235 / 0.35),
+    0 8px 32px -8px oklch(48% 0.11 235 / 0.5),
+    inset 0 1px 0 oklch(100% 0 0 / 0.12);
+  transition:
+    background var(--ds-duration-fast) var(--ds-ease-out-quart),
+    transform var(--ds-duration-fast) var(--ds-ease-spring),
+    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart);
+}
+
+.ctaPrimary:hover {
+  background: var(--ds-brand-700);
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 0 1px oklch(55% 0.1 235 / 0.45),
+    0 16px 48px -12px oklch(48% 0.11 235 / 0.55),
+    inset 0 1px 0 oklch(100% 0 0 / 0.15);
+}
+
+.ctaPrimary:active { transform: scale(0.97); }
+
+.ctaSecondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 24px;
+  border-radius: var(--ds-radius-lg);
+  border: 1px solid var(--ds-border-default);
+  background: oklch(100% 0 0 / 0.5);
+  backdrop-filter: blur(10px);
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  min-height: 48px;
+  transition:
+    border-color var(--ds-duration-fast),
+    background var(--ds-duration-fast),
+    transform var(--ds-duration-fast) var(--ds-ease-spring);
+}
+
+.ctaSecondary:hover {
+  border-color: var(--ds-brand-500);
+  background: oklch(100% 0 0 / 0.7);
+  transform: translateY(-1px);
+}
+
+.ctaSecondary:active { transform: scale(0.97); }
+
+.arrowIcon {
+  transform: scaleX(-1); /* RTL mirror */
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   VISUAL COLUMN — floating glass card stack
+   دقیقاً همان glassCard stack صفحه حواله
+   ────────────────────────────────────────────────────────────────────────── */
+.visual {
+  position: relative;
+  z-index: 2;
+  height: clamp(360px, 44vw, 520px);
+  padding-inline-end: clamp(20px, 5vw, 60px);
+  animation: staggerUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+
+/* Ambient orbs in visual column */
+.orbA {
+  position: absolute;
+  inset-inline-end: 0;
+  top: -8%;
+  width: clamp(200px, 28vw, 340px);
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    oklch(55% 0.10 235 / 0.2) 0%,
+    transparent 65%
+  );
+  pointer-events: none;
+  z-index: 0;
+  animation: orbDrift 8s ease-in-out infinite;
+}
+
+.orbB {
+  position: absolute;
+  inset-inline-start: 5%;
+  bottom: 0;
+  width: clamp(140px, 18vw, 220px);
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    oklch(72% 0.13 70 / 0.15) 0%,
+    transparent 65%
+  );
+  pointer-events: none;
+  z-index: 0;
+  animation: orbDrift 10s ease-in-out 2s infinite reverse;
+}
+
+@keyframes orbDrift {
+  0%, 100% { transform: scale(1) translateY(0); }
+  50%       { transform: scale(1.07) translateY(-10px); }
+}
+
+/* ── Glass card — همان glassCard صفحه حواله ────────────────── */
+.glassCard {
+  position: absolute;
+  border-radius: var(--ds-radius-2xl);
+  border: 1px solid oklch(100% 0 0 / 0.22);
+  background: oklch(100% 0 0 / 0.65);
+  backdrop-filter: blur(24px) saturate(1.8) brightness(1.02);
+  box-shadow:
+    0 0 0 0.5px oklch(100% 0 0 / 0.3),
+    0 24px 64px -16px oklch(45% 0.08 240 / 0.28),
+    inset 0 1px 0 oklch(100% 0 0 / 0.6),
+    inset 0 -1px 0 oklch(100% 0 0 / 0.1);
+  overflow: hidden;
+  cursor: default;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* Signature gradient ring از HeroConverter.module.css */
+.glassCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    var(--ds-accent-emerald),
+    var(--ds-color-blue, var(--ds-brand-500)) 55%,
+    transparent
+  );
+  -webkit-mask:
+    linear-gradient(var(--ds-text-inverse) 0 0) content-box,
+    linear-gradient(var(--ds-text-inverse) 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* inner shine */
+.glassCard::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    oklch(100% 0 0 / 0.14) 0%,
+    transparent 45%,
+    oklch(100% 0 0 / 0.04) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dark .glassCard {
+  background: oklch(22% 0.015 250 / 0.75);
+  border-color: oklch(100% 0 0 / 0.08);
+  box-shadow:
+    0 0 0 0.5px oklch(100% 0 0 / 0.08),
+    0 24px 64px -16px oklch(0% 0 0 / 0.6),
+    inset 0 1px 0 oklch(100% 0 0 / 0.08);
+}
+
+/* ── Card positions + float animations ─────────────────────── */
+.cardMain {
+  inset-inline-end: 0;
+  top: 2%;
+  width: clamp(220px, 27vw, 300px);
+  padding: clamp(18px, 2.2vw, 26px);
+  z-index: 3;
+  animation: floatA 6s ease-in-out infinite;
+}
+
+@keyframes floatA {
+  0%, 100% { transform: translateY(0px)   rotate(-1.5deg); }
+  50%       { transform: translateY(-10px) rotate(-1.5deg); }
+}
+
+.cardSecond {
+  inset-inline-start: 0;
+  top: clamp(90px, 12vw, 140px);
+  width: clamp(180px, 22vw, 240px);
+  padding: clamp(14px, 1.8vw, 20px);
+  z-index: 2;
+  animation: floatB 7s ease-in-out 1s infinite;
+}
+
+@keyframes floatB {
+  0%, 100% { transform: translateY(0px)  rotate(2deg); }
+  50%       { transform: translateY(-8px) rotate(2deg); }
+}
+
+.cardThird {
+  inset-inline-end: clamp(30px, 5vw, 55px);
+  bottom: 2%;
+  width: clamp(160px, 20vw, 220px);
+  padding: clamp(12px, 1.5vw, 18px);
+  z-index: 1;
+  animation: floatC 8s ease-in-out 0.5s infinite;
+}
+
+@keyframes floatC {
+  0%, 100% { transform: translateY(0px)  rotate(1deg); }
+  50%       { transform: translateY(-6px) rotate(1deg); }
+}
+
+/* ── Card internals — همان cardRow/cardLabel/cardAmount ──────── */
+.cardInner {
+  position: relative;
+  z-index: 2;
+}
+
+.cardLabel {
+  font-size: 10px;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: var(--ds-space-2);
+}
+
+.cardAmount {
+  font-size: clamp(20px, 3vw, 28px);
+  font-weight: var(--ds-weight-extrabold);
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-text-primary);
+  line-height: 1;
+  margin-bottom: var(--ds-space-2);
+}
+
+.cardUnit {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-text-muted);
+  margin-inline-start: 4px;
+}
+
+.cardDivider {
+  height: 1px;
+  background: var(--ds-border-subtle);
+  margin-block: var(--ds-space-2);
+}
+
+/* Rate rows */
+.rateRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: 4px;
+}
+
+.rateName {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-text-secondary);
+}
+
+.rateVal {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-text-primary);
+}
+
+.trendUp   { color: var(--ds-accent-emerald); }
+.trendDown { color: var(--ds-accent-rose); }
+
+/* Status badge — همان statusBadge صفحه حواله */
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--ds-radius-full);
+  background: oklch(60% 0.10 165 / 0.12);
+  border: 1px solid oklch(60% 0.10 165 / 0.25);
+  font-size: 11px;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-accent-emerald);
+  margin-bottom: 8px;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--ds-accent-emerald);
+  animation: livePulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.cardNote {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  line-height: var(--ds-leading-normal);
+}
+
+/* ── Bottom fade ─────────────────────────────────────────────── */
+.bottomFade {
+  position: absolute;
+  bottom: 0;
+  inset-inline: 0;
+  height: 80px;
+  background: linear-gradient(to bottom, transparent, var(--ds-canvas));
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   RESPONSIVE
+   ────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .root {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .content {
+    align-items: center;
+    text-align: center;
+    padding-block: clamp(48px, 8vw, 80px);
+  }
+
+  .sub {
+    margin-inline: auto;
+  }
+
+  .visual {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .ctas {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .ctaPrimary,
+  .ctaSecondary {
+    justify-content: center;
+  }
+}
