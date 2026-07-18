@@ -81,12 +81,18 @@ const SERVICE_META: Record<
   string,
   { label: string; Icon: typeof HiGlobe }
 > = {
-  INTERNATIONAL_TRANSFER: { label: 'حواله بین‌المللی', Icon: HiGlobe },
-  ONLINE_PAYMENT: { label: 'پرداخت آنلاین', Icon: HiCreditCard },
-  TUITION_PAYMENT: { label: 'پرداخت شهریه', Icon: HiAcademicCap },
-  FREELANCE_INCOME: { label: 'نقد کردن درآمد', Icon: HiCash },
-  SOFTWARE_PURCHASE: { label: 'خرید نرم‌افزار', Icon: HiShoppingCart },
-  OTHER: { label: 'سایر', Icon: HiClipboardList },
+  INTERNATIONAL_TRANSFER: { label: 'حواله بین‌المللی',      Icon: HiGlobe },
+  ONLINE_PAYMENT:         { label: 'پرداخت آنلاین',         Icon: HiCreditCard },
+  TUITION_PAYMENT:        { label: 'پرداخت شهریه',          Icon: HiAcademicCap },
+  FREELANCE_INCOME:       { label: 'نقد کردن درآمد',         Icon: HiCash },
+  SOFTWARE_PURCHASE:      { label: 'خرید نرم‌افزار',         Icon: HiShoppingCart },
+  GIFT_CARD:              { label: 'گیفت کارت',             Icon: HiTemplate },
+  CURRENCY_BUY:           { label: 'خرید ارز',              Icon: HiCash },
+  CURRENCY_SELL:          { label: 'فروش ارز',              Icon: HiCash },
+  CRYPTO_BUY:             { label: 'خرید ارز دیجیتال',      Icon: HiDesktopComputer },
+  CRYPTO_SELL:            { label: 'فروش ارز دیجیتال',      Icon: HiDesktopComputer },
+  PAYPAL_TRANSFER:        { label: 'پی‌پال / اسکریل',        Icon: HiCreditCard },
+  OTHER:                  { label: 'سایر',                   Icon: HiClipboardList },
 };
 
 interface ServiceRequestsTableProps {

@@ -10,10 +10,7 @@
   padding-block: var(--at-space-4, 24px);
 }
 
-/* ─── Header ─────────────────────────────────────────────── */
-.head {
-  margin-block-end: 24px;
-}
+/* ─── Header — overridden at end of file with flex layout ── */
 
 .title {
   font-size: 1.2rem;
@@ -337,4 +334,266 @@
   font-size: 0.8rem;
   color: var(--at-fg-muted);
   font-variant-numeric: tabular-nums;
+}
+
+/* ─── Header (updated: flex with CTA) ─────────────────────── */
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-block-end: 16px;
+  flex-wrap: wrap;
+}
+
+.newBtn {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 14px;
+  border-radius: var(--ds-radius-md, 8px);
+  background: var(--ds-brand-600);
+  color: var(--ds-text-inverse, white);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  min-block-size: 36px;
+  transition: background 140ms, transform 140ms;
+}
+.newBtn:hover { background: var(--ds-brand-700, var(--ds-brand-600)); transform: translateY(-1px); }
+
+/* ─── Cancel zone ─────────────────────────────────────────── */
+.cancelZone {
+  margin-block-start: 12px;
+  padding-block-start: 12px;
+  border-block-start: 1px solid var(--at-border, var(--ds-border-subtle));
+}
+
+.cancelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cancelTimer {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.74rem;
+  color: var(--ds-text-muted);
+}
+
+.btnCancel {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 7px;
+  border: 1.5px solid oklch(88% 0.08 15);
+  background: oklch(97% 0.02 15);
+  color: oklch(45% 0.15 15);
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  min-block-size: 34px;
+  transition: background 130ms, border-color 130ms;
+}
+.btnCancel:hover:not(:disabled) { background: oklch(94% 0.04 15); border-color: oklch(78% 0.12 15); }
+.btnCancel:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.cancelErr {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.74rem;
+  color: oklch(45% 0.15 15);
+  margin-block-end: 8px;
+}
+
+.cancelExpired {
+  font-size: 0.74rem;
+  color: var(--ds-text-muted);
+  margin: 0;
+}
+
+.cancelSuccess {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  color: oklch(42% 0.14 145);
+  padding: 8px 10px;
+  background: oklch(96% 0.04 145);
+  border-radius: 7px;
+  margin-block-start: 10px;
+}
+
+.spinnerSm {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-block-start-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.55s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Track link ──────────────────────────────────────────── */
+.trackLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: var(--ds-brand-600);
+  text-decoration: none;
+  margin-block-start: 12px;
+  transition: opacity 130ms;
+}
+.trackLink:hover { opacity: 0.75; }
+
+/* ─── Claim Guest Panel ───────────────────────────────────── */
+.claimPanel {
+  border: 1px solid var(--at-border, var(--ds-border-subtle));
+  border-radius: 10px;
+  background: var(--at-surface, var(--ds-surface));
+  margin-block-end: 14px;
+  overflow: hidden;
+}
+
+.claimToggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ds-text-secondary);
+  font-family: inherit;
+  text-align: start;
+}
+.claimToggle:hover { background: var(--at-surface-2, var(--ds-surface-elevated)); }
+.claimToggle svg:first-child { color: var(--ds-brand-600); flex-shrink: 0; }
+.claimToggle span { flex: 1; }
+.claimChevronOpen { transform: rotate(180deg); }
+
+.claimBody {
+  padding: 12px 14px 14px;
+  border-block-start: 1px solid var(--at-border, var(--ds-border-subtle));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.claimDesc {
+  font-size: 0.78rem;
+  color: var(--ds-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.claimRow {
+  display: flex;
+  gap: 8px;
+}
+
+.claimInput {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1.5px solid var(--ds-border-default);
+  border-radius: 8px;
+  background: var(--ds-surface);
+  color: var(--ds-text-primary);
+  font-size: 0.82rem;
+  font-family: 'Menlo', 'Consolas', monospace;
+  outline: none;
+  min-block-size: 38px;
+  letter-spacing: 0.05em;
+}
+.claimInput:focus { border-color: var(--ds-brand-500); box-shadow: 0 0 0 2px color-mix(in oklch, var(--ds-brand-600) 14%, transparent); }
+
+.claimBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--ds-brand-600);
+  color: white;
+  border: none;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  min-block-size: 38px;
+  flex-shrink: 0;
+  transition: background 130ms;
+}
+.claimBtn:hover:not(:disabled) { background: var(--ds-brand-700, var(--ds-brand-600)); }
+.claimBtn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* OTP row inside claim panel */
+.otpRow { display: flex; gap: 8px; }
+
+.otpInput {
+  flex: 1;
+  font-family: 'Menlo', 'Consolas', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  text-align: center;
+  padding: 8px 10px;
+  border: 1.5px solid var(--ds-border-default);
+  border-radius: 8px;
+  background: var(--ds-surface);
+  color: var(--ds-text-primary);
+  outline: none;
+  min-block-size: 38px;
+}
+.otpInput:focus { border-color: var(--ds-brand-500); box-shadow: 0 0 0 2px color-mix(in oklch, var(--ds-brand-600) 14%, transparent); }
+
+.otpFooter { display: flex; align-items: center; gap: 12px; }
+
+.otpTimer { font-size: 0.72rem; color: var(--ds-text-muted); }
+
+.otpResend {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ds-brand-600);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+.otpResend:hover { opacity: 0.7; }
+.otpResend:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.claimErr {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: oklch(45% 0.15 15);
+  margin: 0;
+}
+
+.claimOk {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: oklch(42% 0.14 145);
+  margin: 0;
 }

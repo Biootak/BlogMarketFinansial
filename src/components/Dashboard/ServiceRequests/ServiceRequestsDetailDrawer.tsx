@@ -58,11 +58,17 @@ type StatusKey = keyof typeof STATUS_META;
 
 const SERVICE_LABEL: Record<string, string> = {
   INTERNATIONAL_TRANSFER: 'حواله بین‌المللی',
-  ONLINE_PAYMENT: 'پرداخت آنلاین',
-  TUITION_PAYMENT: 'پرداخت شهریه',
-  FREELANCE_INCOME: 'نقد کردن درآمد',
-  SOFTWARE_PURCHASE: 'خرید نرم‌افزار',
-  OTHER: 'سایر',
+  ONLINE_PAYMENT:         'پرداخت آنلاین',
+  TUITION_PAYMENT:        'پرداخت شهریه',
+  FREELANCE_INCOME:       'نقد کردن درآمد',
+  SOFTWARE_PURCHASE:      'خرید نرم‌افزار',
+  GIFT_CARD:              'گیفت کارت',
+  CURRENCY_BUY:           'خرید ارز',
+  CURRENCY_SELL:          'فروش ارز',
+  CRYPTO_BUY:             'خرید ارز دیجیتال',
+  CRYPTO_SELL:            'فروش ارز دیجیتال',
+  PAYPAL_TRANSFER:        'پی‌پال / اسکریل',
+  OTHER:                  'سایر',
 };
 
 interface ServiceRequestsDetailDrawerProps {

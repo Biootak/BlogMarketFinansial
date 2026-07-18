@@ -8,16 +8,16 @@ import TransferRequestForm from './TransferRequestForm';
 import s from './TransferRequestCTA.module.css';
 
 const TRUST_STATS = [
-  { value: '۲,۵۰۰+', label: 'تراکنش ماهانه',   detail: 'حواله ارزی موفق' },
+  { value: '۲,۵۰۰+', label: 'تراکنش ماهانه',   detail: 'موفق در خدمات ارزی' },
   { value: '۹۸٪',    label: 'رضایت مشتریان',  detail: 'بر اساس نظرسنجی' },
   { value: '۳۰ دقیقه', label: 'زمان پاسخ',     detail: 'حداکثر در ساعات کاری' },
   { value: '۱۲,۰۰۰+', label: 'مشتری فعال',     detail: 'از سرتاسر جهان' },
 ];
 
 const FEATURES = [
-  { title: 'نرخ لحظه‌ای',      body: 'نرخ‌های ما هر ۱۵ دقیقه بروز می‌شوند.' },
-  { title: 'بدون هزینه پنهان', body: 'تمام کارمزدها پیش از پرداخت اعلام می‌شود.' },
-  { title: 'پشتیبانی ۷/۲۴',  body: 'تیم ما از طریق تلگرام و واتساپ همیشه در دسترس است.' },
+  { title: 'نرخ لحظه‌ای',       body: 'نرخ‌های ما هر ۱۵ دقیقه بروز می‌شوند.' },
+  { title: 'بدون هزینه پنهان',  body: 'تمام کارمزدها پیش از پرداخت اعلام می‌شود.' },
+  { title: 'پشتیبانی ۷/۲۴',    body: 'تیم ما از طریق تلگرام و واتساپ همیشه در دسترس است.' },
 ];
 
 export default async function TransferRequestCTA() {
@@ -38,18 +38,18 @@ export default async function TransferRequestCTA() {
           {/* Eyebrow */}
           <p className={s.eyebrow}>
             <span className={s.eyebrowDot} aria-hidden="true" />
-            ثبت آنلاین حواله
+            ثبت آنلاین درخواست
           </p>
 
           <h2 className={s.title} id="transfer-cta-title">
-            حواله خود را
+            خدمات ارزی خود را
             <span className={s.titleAccent}> آنلاین </span>
             ثبت کنید
           </h2>
 
           <p className={s.subtitle}>
-            بدون مراجعه حضوری — کارشناسان ما در کمتر از ۳۰ دقیقه با شما تماس می‌گیرند
-            و بهترین نرخ را تضمین می‌کنند.
+            حواله، خرید و فروش ارز، ارز دیجیتال، پی‌پال و بیشتر — بدون مراجعه حضوری.
+            کارشناسان ما در کمتر از ۳۰ دقیقه با شما تماس می‌گیرند.
           </p>
 
           {/* Stats grid */}
@@ -84,7 +84,7 @@ export default async function TransferRequestCTA() {
             <div className={s.formCardInner}>
               <div className={s.formHeader}>
                 <h3 className={s.formTitle}>ثبت درخواست</h3>
-                <p className={s.formSub}>فرم زیر را پر کنید — فقط ۲ دقیقه طول می‌کشد</p>
+                <p className={s.formSub}>سرویس مورد نظر را انتخاب کنید — فقط ۲ دقیقه طول می‌کشد</p>
               </div>
 
               <TransferRequestForm

@@ -1,7 +1,7 @@
 'use client';
 
 import s from './MyRequestsClient.module.css';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import {
   Clock,
   CheckCircle2,
@@ -15,8 +15,18 @@ import {
   History,
   MessageSquare,
   CalendarClock,
+  Ban,
+  Link2,
+  KeyRound,
+  RotateCcw,
+  ArrowRight,
 } from 'lucide-react';
-import { getMyServiceRequests } from '@/actions/serviceRequestActions';
+import {
+  getMyServiceRequests,
+  cancelMyServiceRequest,
+  claimGuestRequest,
+} from '@/actions/serviceRequestActions';
+import { issueServiceOtp, verifyServiceOtpAndLink } from '@/actions/progressive-capture';
 
 // ─── Types ─────────────────────────────────────────────────────────────────── //
 
@@ -68,46 +78,88 @@ const SERVICE_LABELS: Record<string, string> = {
   FREELANCE_INCOME:       'نقد کردن درآمد',
   SOFTWARE_PURCHASE:      'خرید نرم‌افزار',
   GIFT_CARD:              'گیفت کارت',
+  CURRENCY_BUY:           'خرید ارز',
+  CURRENCY_SELL:          'فروش ارز',
+  CRYPTO_BUY:             'خرید ارز دیجیتال',
+  CRYPTO_SELL:            'فروش ارز دیجیتال',
+  PAYPAL_TRANSFER:        'پی‌پال / اسکریل',
   OTHER:                  'سایر خدمات',
 };
 
-// ─── Row Component ────────────────────────────────────────────────────────── //
+// ─── RequestRow ──────────────────────────────────────────────────────────── //
 
-function RequestRow({ req }: { req: MyRequest }) {
-  const [expanded, setExpanded] = useState(false);
-  const meta = STATUS_META[req.status] ?? STATUS_META.PENDING;
+function RequestRow({
+  req,
+  onCancelled,
+}: {
+  req: MyRequest;
+  onCancelled: (trackingCode: string) => void;
+}) {
+  const [expanded, setExpanded]     = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelErr, setCancelErr]   = useState('');
+  const [cancelDone, setCancelDone] = useState(false);
+  const [localStatus, setLocalStatus] = useState(req.status);
+
+  const meta       = STATUS_META[localStatus] ?? STATUS_META.PENDING;
   const StatusIcon = meta.icon;
+
+  // کانترِ مهلت لغو — تعداد دقیقه مانده
+  const [cancelMinsLeft, setCancelMinsLeft] = useState<number | null>(null);
+  useEffect(() => {
+    if (localStatus !== 'PENDING') { setCancelMinsLeft(null); return; }
+    const created = new Date(req.createdAt).getTime();
+    const deadline = created + 30 * 60 * 1000;
+    const update = () => {
+      const left = Math.max(0, Math.ceil((deadline - Date.now()) / 60000));
+      setCancelMinsLeft(left);
+    };
+    update();
+    const t = setInterval(update, 30000);
+    return () => clearInterval(t);
+  }, [localStatus, req.createdAt]);
+
+  const canCancel = localStatus === 'PENDING' && (cancelMinsLeft ?? 0) > 0;
+
+  const handleCancel = async () => {
+    if (!canCancel) return;
+    setCancelling(true);
+    setCancelErr('');
+    const res = await cancelMyServiceRequest(req.trackingCode);
+    setCancelling(false);
+    if (res.success) {
+      setLocalStatus('CANCELLED');
+      setCancelDone(true);
+      onCancelled(req.trackingCode);
+    } else {
+      setCancelErr(res.message);
+    }
+  };
 
   return (
     <li className={s.row}>
-      {/* Summary line — always visible */}
+      {/* Summary */}
       <button
         type="button"
         className={s.summary}
         onClick={() => setExpanded((p) => !p)}
         aria-expanded={expanded}
+        aria-controls={`detail-${req.id}`}
       >
         <span className={s.statusIcon} style={{ color: meta.color }}>
           <StatusIcon size={16} />
         </span>
         <div className={s.summaryBody}>
           <span className={s.tracking} dir="ltr">{req.trackingCode}</span>
-          <span className={s.service}>
-            {SERVICE_LABELS[req.serviceType] ?? req.serviceType}
-          </span>
+          <span className={s.service}>{SERVICE_LABELS[req.serviceType] ?? req.serviceType}</span>
         </div>
         <div className={s.summaryEnd}>
           <span className={s.amount} dir="ltr">{req.amount} {req.currency}</span>
-          <span
-            className={s.badge}
-            data-status={req.status.toLowerCase()}
-          >
+          <span className={s.badge} data-status={localStatus.toLowerCase()}>
             {meta.label}
           </span>
           {req.urgency === 'URGENT' && (
-            <span className={s.urgentTag} title="فوری">
-              <Zap size={11} />
-            </span>
+            <span className={s.urgentTag} title="فوری"><Zap size={11} /></span>
           )}
           <span className={s.toggleIcon} aria-hidden>
             {expanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
@@ -115,9 +167,9 @@ function RequestRow({ req }: { req: MyRequest }) {
         </div>
       </button>
 
-      {/* Detail panel — expandable */}
+      {/* Detail */}
       {expanded && (
-        <div className={s.detail}>
+        <div id={`detail-${req.id}`} className={s.detail}>
           {/* Dates */}
           <div className={s.dates}>
             <span className={s.dateItem}>
@@ -135,7 +187,7 @@ function RequestRow({ req }: { req: MyRequest }) {
             {req.estimatedCompletionAt && (
               <span className={`${s.dateItem} ${s.dateEta}`}>
                 <CalendarClock size={12} />
-                زمان تخمینی تکمیل: {new Date(req.estimatedCompletionAt).toLocaleDateString('fa-IR', {
+                زمان تخمینی: {new Date(req.estimatedCompletionAt).toLocaleDateString('fa-IR', {
                   year: 'numeric', month: 'long', day: 'numeric',
                 })}
               </span>
@@ -169,9 +221,7 @@ function RequestRow({ req }: { req: MyRequest }) {
                         {log.fromStatus ? `${STATUS_LABELS[log.fromStatus] ?? log.fromStatus} ← ` : ''}
                         {STATUS_LABELS[log.toStatus] ?? log.toStatus}
                       </span>
-                      {log.note && (
-                        <span className={s.historyNote}>{log.note}</span>
-                      )}
+                      {log.note && <span className={s.historyNote}>{log.note}</span>}
                       <time className={s.historyTime}>
                         {new Date(log.createdAt).toLocaleDateString('fa-IR', {
                           month: 'short', day: 'numeric',
@@ -183,9 +233,242 @@ function RequestRow({ req }: { req: MyRequest }) {
               </ol>
             </div>
           )}
+
+          {/* Cancel zone */}
+          {!cancelDone && localStatus === 'PENDING' && (
+            <div className={s.cancelZone}>
+              {cancelErr && (
+                <p className={s.cancelErr} role="alert">
+                  <AlertCircle size={12} /> {cancelErr}
+                </p>
+              )}
+              {canCancel ? (
+                <div className={s.cancelRow}>
+                  <span className={s.cancelTimer}>
+                    <Clock size={11} />
+                    مهلت لغو: {cancelMinsLeft?.toLocaleString('fa-IR')} دقیقه
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleCancel}
+                    disabled={cancelling}
+                    className={s.btnCancel}
+                  >
+                    {cancelling
+                      ? <><span className={s.spinnerSm} aria-hidden="true" /> در حال لغو…</>
+                      : <><Ban size={12} /> لغو سفارش</>
+                    }
+                  </button>
+                </div>
+              ) : localStatus === 'PENDING' ? (
+                <p className={s.cancelExpired}>
+                  مهلت لغو خودکار پایان یافته. برای لغو با پشتیبانی تماس بگیرید.
+                </p>
+              ) : null}
+            </div>
+          )}
+
+          {cancelDone && (
+            <p className={s.cancelSuccess} role="status">
+              <CheckCircle2 size={13} /> سفارش لغو شد.
+            </p>
+          )}
+
+          {/* Track link */}
+          <a
+            href={`/track/${req.trackingCode}`}
+            className={s.trackLink}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <ArrowRight size={12} />
+            مشاهده صفحه پیگیری
+          </a>
         </div>
       )}
     </li>
+  );
+}
+
+// ─── ClaimGuestPanel ─────────────────────────────────────────────────────── //
+
+function ClaimGuestPanel({ onClaimed }: { onClaimed: () => void }) {
+  const [open, setOpen]           = useState(false);
+  const [code, setCode]           = useState('');
+  const [loading, setLoading]     = useState(false);
+  const [msg, setMsg]             = useState('');
+  const [isErr, setIsErr]         = useState(false);
+  // OTP phase
+  const [needsOtp, setNeedsOtp]   = useState(false);
+  const [otpEmail, setOtpEmail]   = useState('');
+  const [otpCode, setOtpCode]     = useState('');
+  const [otpSending, setOtpSending] = useState(false);
+  const [otpVerifying, setOtpVerifying] = useState(false);
+  const [otpTimer, setOtpTimer]   = useState(0);
+  const [trackingForOtp, setTrackingForOtp] = useState('');
+
+  useEffect(() => {
+    if (otpTimer <= 0) return;
+    const t = setTimeout(() => setOtpTimer((p) => p - 1), 1000);
+    return () => clearTimeout(t);
+  }, [otpTimer]);
+
+  const sendOtp = async () => {
+    setOtpSending(true);
+    const res = await issueServiceOtp({ email: otpEmail, trackingCode: trackingForOtp });
+    setOtpSending(false);
+    if (res.success) { setOtpTimer(60); setMsg(''); }
+    else { setMsg(res.message); setIsErr(true); }
+  };
+
+  const handleClaim = async () => {
+    if (!code.trim()) return;
+    setLoading(true);
+    setMsg('');
+    setIsErr(false);
+    const res = await claimGuestRequest(code.trim());
+    setLoading(false);
+    if (!res.success) {
+      setMsg(res.message); setIsErr(true); return;
+    }
+    if (res.requiresOtp && res.email) {
+      setNeedsOtp(true);
+      setOtpEmail(res.email);
+      setTrackingForOtp(code.trim().toUpperCase());
+      setMsg(res.message); setIsErr(false);
+      // auto-send OTP
+      const otpRes = await issueServiceOtp({ email: res.email, trackingCode: code.trim().toUpperCase() });
+      if (otpRes.success) setOtpTimer(60);
+      return;
+    }
+    // directly claimed
+    setMsg(res.message); setIsErr(false);
+    setTimeout(() => { setOpen(false); onClaimed(); }, 1200);
+  };
+
+  const handleVerifyOtp = async () => {
+    if (otpCode.length !== 6) return;
+    setOtpVerifying(true);
+    setMsg('');
+    const res = await verifyServiceOtpAndLink({ email: otpEmail, code: otpCode, trackingCode: trackingForOtp });
+    setOtpVerifying(false);
+    if (res.success) {
+      setMsg('سفارش با موفقیت به حساب شما اضافه شد!');
+      setIsErr(false);
+      setTimeout(() => { setOpen(false); onClaimed(); }, 1200);
+    } else {
+      setMsg(res.message); setIsErr(true);
+    }
+  };
+
+  const reset = () => {
+    setCode(''); setMsg(''); setIsErr(false);
+    setNeedsOtp(false); setOtpCode(''); setOtpTimer(0);
+  };
+
+  return (
+    <div className={s.claimPanel}>
+      <button
+        type="button"
+        className={s.claimToggle}
+        onClick={() => { setOpen((p) => !p); reset(); }}
+        aria-expanded={open}
+      >
+        <Link2 size={13} />
+        <span>اضافه کردن سفارش مهمان</span>
+        <ChevronDown size={13} className={open ? s.claimChevronOpen : ''} />
+      </button>
+
+      {open && (
+        <div className={s.claimBody}>
+          {!needsOtp ? (
+            <>
+              <p className={s.claimDesc}>
+                اگر سفارشی به عنوان مهمان داده‌اید، کد پیگیری را وارد کنید تا به حسابتان وصل شود.
+              </p>
+              <div className={s.claimRow}>
+                <input
+                  type="text"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.toUpperCase())}
+                  placeholder="BT-XXXXXXXX-XXXXXX"
+                  className={s.claimInput}
+                  dir="ltr"
+                  maxLength={20}
+                  aria-label="کد پیگیری سفارش مهمان"
+                />
+                <button
+                  type="button"
+                  onClick={handleClaim}
+                  disabled={loading || !code.trim()}
+                  className={s.claimBtn}
+                >
+                  {loading
+                    ? <span className={s.spinnerSm} aria-hidden="true" />
+                    : 'اضافه کن'
+                  }
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className={s.claimDesc}>
+                کد ۶ رقمی ارسال‌شده به <strong dir="ltr">{otpEmail}</strong> را وارد کنید:
+              </p>
+              <div className={s.otpRow}>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                  className={s.otpInput}
+                  placeholder="_ _ _ _ _ _"
+                  dir="ltr"
+                  aria-label="کد تأیید"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={handleVerifyOtp}
+                  disabled={otpVerifying || otpCode.length !== 6}
+                  className={s.claimBtn}
+                >
+                  {otpVerifying
+                    ? <span className={s.spinnerSm} aria-hidden="true" />
+                    : <><KeyRound size={12} /> تأیید</>
+                  }
+                </button>
+              </div>
+              <div className={s.otpFooter}>
+                {otpTimer > 0
+                  ? <span className={s.otpTimer} aria-live="polite">
+                      ارسال مجدد در {otpTimer.toLocaleString('fa-IR')} ثانیه
+                    </span>
+                  : (
+                    <button
+                      type="button"
+                      onClick={sendOtp}
+                      disabled={otpSending}
+                      className={s.otpResend}
+                    >
+                      <RotateCcw size={11} /> ارسال مجدد
+                    </button>
+                  )
+                }
+              </div>
+            </>
+          )}
+
+          {msg && (
+            <p className={isErr ? s.claimErr : s.claimOk} role={isErr ? 'alert' : 'status'}>
+              {isErr ? <AlertCircle size={12} /> : <CheckCircle2 size={12} />}
+              {msg}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -197,6 +480,8 @@ export default function MyRequestsClient() {
   const [error, setError]           = useState<string | null>(null);
   const [page, setPage]             = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const pageRef = useRef(page);
+  pageRef.current = page;
 
   const fetchRequests = useCallback(async (p: number) => {
     setLoading(true);
@@ -211,17 +496,26 @@ export default function MyRequestsClient() {
     setLoading(false);
   }, []);
 
-  useEffect(() => {
-    fetchRequests(page);
-  }, [fetchRequests, page]);
+  useEffect(() => { fetchRequests(page); }, [fetchRequests, page]);
+
+  const handleCancelled = useCallback(() => {
+    // Re-fetch to get updated status log
+    fetchRequests(pageRef.current);
+  }, [fetchRequests]);
 
   return (
     <section className={s.page}>
       {/* Header */}
       <header className={s.head}>
-        <h1 className={s.title}>درخواست‌های من</h1>
-        <p className={s.subtitle}>وضعیت و تاریخچه تمام سفارش‌های شما</p>
+        <div>
+          <h1 className={s.title}>درخواست‌های من</h1>
+          <p className={s.subtitle}>وضعیت و تاریخچه تمام سفارش‌های شما</p>
+        </div>
+        <a href="/online-payment" className={s.newBtn}>+ درخواست جدید</a>
       </header>
+
+      {/* Claim guest panel */}
+      <ClaimGuestPanel onClaimed={() => fetchRequests(1)} />
 
       {/* Loading skeleton */}
       {loading && (
@@ -257,7 +551,7 @@ export default function MyRequestsClient() {
         <>
           <ul className={s.list}>
             {requests.map((req) => (
-              <RequestRow key={req.id} req={req} />
+              <RequestRow key={req.id} req={req} onCancelled={handleCancelled} />
             ))}
           </ul>
 

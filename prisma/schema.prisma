@@ -558,6 +558,12 @@ enum ServiceType {
   SOFTWARE_PURCHASE
   // 2026-07-10: gift card purchasing service
   GIFT_CARD
+  // 2026-07-14: currency exchange services
+  CURRENCY_BUY      // خرید ارز فیزیکی
+  CURRENCY_SELL     // فروش ارز فیزیکی
+  CRYPTO_BUY        // خرید ارز دیجیتال
+  CRYPTO_SELL       // فروش ارز دیجیتال
+  PAYPAL_TRANSFER   // پی‌پال / اسکریل / پیمنت سرویس‌ها
   OTHER
 }
 

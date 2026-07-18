@@ -12,6 +12,7 @@ import { getEmailProviderAsync } from '@/lib/email';
 import {
   serviceRequestConfirmationEmail,
   serviceRequestStatusEmail,
+  serviceRequestReceiptEmail,
 } from '@/lib/email/templates';
 import { isPhoneValid, normalizeToE164 } from '@/lib/phone-validation';
 
@@ -23,6 +24,11 @@ const serviceTypeLabels: Record<string, string> = {
   FREELANCE_INCOME: 'نقد کردن درآمد',
   SOFTWARE_PURCHASE: 'خرید نرم‌افزار',
   GIFT_CARD: 'خرید گیفت کارت',
+  CURRENCY_BUY: 'خرید ارز',
+  CURRENCY_SELL: 'فروش ارز',
+  CRYPTO_BUY: 'خرید ارز دیجیتال',
+  CRYPTO_SELL: 'فروش ارز دیجیتال',
+  PAYPAL_TRANSFER: 'انتقال پی‌پال / اسکریل',
   OTHER: 'سایر خدمات',
 };
 
@@ -89,6 +95,11 @@ const ServiceRequestInputSchema = z.object({
     'FREELANCE_INCOME',
     'SOFTWARE_PURCHASE',
     'GIFT_CARD',
+    'CURRENCY_BUY',
+    'CURRENCY_SELL',
+    'CRYPTO_BUY',
+    'CRYPTO_SELL',
+    'PAYPAL_TRANSFER',
     'OTHER',
   ]),
   amount: z.string().min(1).max(50).transform(sanitizeInput),
@@ -399,10 +410,20 @@ export async function updateServiceRequestStatus(
   }
 
   try {
-    // Fetch current state first for the status log
+    // Fetch current state — include all notification fields
     const existing = await prisma.serviceRequest.findUnique({
       where: { id },
-      select: { status: true, trackingCode: true, fullName: true, email: true },
+      select: {
+        status: true,
+        trackingCode: true,
+        fullName: true,
+        email: true,
+        phone: true,
+        serviceType: true,
+        amount: true,
+        currency: true,
+        externalTxId: true,
+      },
     });
 
     if (!existing) {
@@ -414,7 +435,7 @@ export async function updateServiceRequestStatus(
       data: { status, ...(adminNotes !== undefined ? { adminNotes } : {}) },
     });
 
-    // 2026-07-07: write immutable status log entry
+    // Write immutable status log entry
     await prisma.serviceRequestStatusLog.create({
       data: {
         requestId: id,
@@ -433,21 +454,76 @@ export async function updateServiceRequestStatus(
       },
     });
 
-    // 2026-07-07: notify user by email (fire-and-forget)
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
+    const trackingUrl = `${appUrl}/track/${existing.trackingCode}`;
+
+    // ── Push notification: Telegram message to user (fire-and-forget) ──
+    // تلگرام مستقیم به شماره کاربر نمی‌شود — از همان bot ادمین استفاده می‌کنیم
+    // ولی پیام status change را با اطلاعات کاربر برای ادمین ارسال می‌کنیم
+    // تا بتواند سریع با کاربر تماس بگیرد.
+    const statusEmoji: Record<string, string> = {
+      PENDING:     '⏳',
+      IN_PROGRESS: '🔄',
+      COMPLETED:   '✅',
+      CANCELLED:   '❌',
+    };
+    const statusFa: Record<string, string> = {
+      PENDING:     'در انتظار بررسی',
+      IN_PROGRESS: 'در حال انجام',
+      COMPLETED:   'تکمیل شده',
+      CANCELLED:   'لغو شده',
+    };
+
+    const pushMsg = `${statusEmoji[status] ?? '📋'} *تغییر وضعیت درخواست*
+
+کد: \`${existing.trackingCode}\`
+مشتری: ${existing.fullName}
+تماس: ${existing.phone}
+وضعیت جدید: *${statusFa[status] ?? status}*
+${adminNotes ? `یادداشت: ${adminNotes}` : ''}
+${existing.externalTxId ? `شناسه تراکنش: ${existing.externalTxId}` : ''}
+
+🔗 ${trackingUrl}`.trim();
+
+    // fire-and-forget notification
+    void sendTelegramNotification(pushMsg);
+
+    // ── Email notification: status change ──
     if (existing.email) {
-      await trySendEmail(async () => {
-        const provider = await getEmailProviderAsync();
-        await provider.send(
-          serviceRequestStatusEmail({
-            to: existing.email as string,
-            fullName: existing.fullName,
-            trackingCode: existing.trackingCode,
-            newStatus: status,
-            adminNote: adminNotes,
-            appUrl: process.env.NEXT_PUBLIC_APP_URL ?? '',
-          }),
-        );
-      });
+      // اگر COMPLETED → رسید دیجیتال بفرست، در غیر این صورت status update ساده
+      if (status === 'COMPLETED') {
+        await trySendEmail(async () => {
+          const provider = await getEmailProviderAsync();
+          await provider.send(
+            serviceRequestReceiptEmail({
+              to: existing.email as string,
+              fullName: existing.fullName,
+              trackingCode: existing.trackingCode,
+              serviceType: existing.serviceType,
+              amount: existing.amount,
+              currency: existing.currency,
+              externalTxId: existing.externalTxId,
+              adminNote: adminNotes ?? null,
+              completedAt: new Date(),
+              appUrl,
+            }),
+          );
+        });
+      } else {
+        await trySendEmail(async () => {
+          const provider = await getEmailProviderAsync();
+          await provider.send(
+            serviceRequestStatusEmail({
+              to: existing.email as string,
+              fullName: existing.fullName,
+              trackingCode: existing.trackingCode,
+              newStatus: status,
+              adminNote: adminNotes,
+              appUrl,
+            }),
+          );
+        });
+      }
     }
 
     revalidatePath('/dashboard/service-requests');
@@ -808,6 +884,145 @@ export async function getMyServiceRequests(params?: { page?: number; limit?: num
     return { success: false, message: 'خطایی رخ داد.' };
   }
 }
+
+// ─── User: Cancel own PENDING request ────────────────────────────────────── //
+// فقط سفارش‌های PENDING در بازه ۳۰ دقیقه اول قابل لغو هستند.
+export async function cancelMyServiceRequest(trackingCode: string): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, message: 'لطفاً وارد حساب کاربری خود شوید.' };
+  }
+
+  try {
+    const req = await prisma.serviceRequest.findUnique({
+      where: { trackingCode },
+      select: { id: true, status: true, userId: true, createdAt: true, trackingCode: true },
+    });
+
+    if (!req) {
+      return { success: false, message: 'سفارشی با این کد یافت نشد.' };
+    }
+
+    if (req.userId !== session.user.id) {
+      return { success: false, message: 'این سفارش به حساب شما تعلق ندارد.' };
+    }
+
+    if (req.status !== 'PENDING') {
+      return { success: false, message: 'فقط سفارش‌های «در انتظار بررسی» قابل لغو هستند.' };
+    }
+
+    // پنجره لغو: ۳۰ دقیقه از زمان ثبت
+    const thirtyMinutes = 30 * 60 * 1000;
+    const elapsed = Date.now() - new Date(req.createdAt).getTime();
+    if (elapsed > thirtyMinutes) {
+      return {
+        success: false,
+        message: 'مهلت لغو خودکار (۳۰ دقیقه) پایان یافته. برای لغو با پشتیبانی تماس بگیرید.',
+      };
+    }
+
+    await prisma.$transaction([
+      prisma.serviceRequest.update({
+        where: { id: req.id },
+        data: { status: 'CANCELLED' },
+      }),
+      prisma.serviceRequestStatusLog.create({
+        data: {
+          requestId: req.id,
+          fromStatus: 'PENDING',
+          toStatus: 'CANCELLED',
+          changedBy: session.user.email ?? session.user.id,
+          note: 'لغو توسط کاربر',
+        },
+      }),
+    ]);
+
+    revalidatePath('/dashboard/my-requests');
+    return { success: true, message: 'سفارش با موفقیت لغو شد.' };
+  } catch {
+    return { success: false, message: 'خطایی در لغو سفارش رخ داد.' };
+  }
+}
+
+// ─── User: Claim a guest request by tracking code ────────────────────────── //
+// کاربر وارد‌شده می‌تواند سفارش مهمان خود را با کد پیگیری + OTP تأیید به حسابش وصل کند.
+// مرحله ۱: درخواست ادغام (بررسی ownership با ایمیل)
+// مرحله ۲: OTP ارسال‌شده در progressive-capture.ts تأیید می‌شود (همان issueServiceOtp)
+export async function claimGuestRequest(trackingCode: string): Promise<{
+  success: boolean;
+  message: string;
+  requiresOtp?: boolean;
+  email?: string;
+}> {
+  const session = await auth();
+  if (!session?.user?.id || !session.user.email) {
+    return { success: false, message: 'لطفاً وارد حساب کاربری خود شوید.' };
+  }
+
+  try {
+    const req = await prisma.serviceRequest.findUnique({
+      where: { trackingCode: trackingCode.trim().toUpperCase() },
+      select: { id: true, userId: true, email: true, emailVerified: true },
+    });
+
+    if (!req) {
+      return { success: false, message: 'سفارشی با این کد یافت نشد.' };
+    }
+
+    if (req.userId) {
+      if (req.userId === session.user.id) {
+        return { success: false, message: 'این سفارش قبلاً به حساب شما وصل شده است.' };
+      }
+      return { success: false, message: 'این سفارش به حساب دیگری تعلق دارد.' };
+    }
+
+    // بررسی: ایمیل سفارش باید با ایمیل کاربر match کند
+    const reqEmail = req.email?.trim().toLowerCase();
+    const userEmail = session.user.email.trim().toLowerCase();
+
+    if (!reqEmail) {
+      // سفارش ایمیل ندارد — مستقیم لینک می‌کنیم (کاربر login کرده = اعتبارسنجی کافی)
+      await prisma.serviceRequest.update({
+        where: { id: req.id },
+        data: { userId: session.user.id },
+      });
+      revalidatePath('/dashboard/my-requests');
+      return { success: true, message: 'سفارش با موفقیت به حساب شما اضافه شد.' };
+    }
+
+    if (reqEmail !== userEmail) {
+      return {
+        success: false,
+        message: 'ایمیل این سفارش با ایمیل حساب شما مطابقت ندارد.',
+      };
+    }
+
+    // ایمیل match می‌کند — اگر قبلاً verify شده بود، مستقیم لینک کن
+    if (req.emailVerified) {
+      await prisma.serviceRequest.update({
+        where: { id: req.id },
+        data: { userId: session.user.id },
+      });
+      revalidatePath('/dashboard/my-requests');
+      return { success: true, message: 'سفارش با موفقیت به حساب شما اضافه شد.' };
+    }
+
+    // هنوز verify نشده — OTP نیاز داریم
+    return {
+      success: true,
+      requiresOtp: true,
+      email: reqEmail,
+      message: 'برای تأیید مالکیت، یک کد به ایمیل شما ارسال می‌شود.',
+    };
+  } catch {
+    return { success: false, message: 'خطایی رخ داد. دوباره تلاش کنید.' };
+  }
+}
+
+
 
 // ─── Support links (cached) ───────────────────────────────────────────────── //
 const _getCachedSupportLinks = unstable_cache(

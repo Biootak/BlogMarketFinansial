@@ -57,11 +57,17 @@ interface Stats {
 
 const serviceTypeLabels: Record<string, string> = {
   INTERNATIONAL_TRANSFER: 'حواله',
-  ONLINE_PAYMENT: 'پرداخت',
-  TUITION_PAYMENT: 'شهریه',
-  FREELANCE_INCOME: 'فریلنس',
-  SOFTWARE_PURCHASE: 'نرم‌افزار',
-  OTHER: 'سایر',
+  ONLINE_PAYMENT:         'پرداخت آنلاین',
+  TUITION_PAYMENT:        'شهریه',
+  FREELANCE_INCOME:       'فریلنس',
+  SOFTWARE_PURCHASE:      'نرم‌افزار',
+  GIFT_CARD:              'گیفت کارت',
+  CURRENCY_BUY:           'خرید ارز',
+  CURRENCY_SELL:          'فروش ارز',
+  CRYPTO_BUY:             'کریپتو خرید',
+  CRYPTO_SELL:            'کریپتو فروش',
+  PAYPAL_TRANSFER:        'پی‌پال',
+  OTHER:                  'سایر',
 };
 
 const statusLabels: Record<string, string> = {

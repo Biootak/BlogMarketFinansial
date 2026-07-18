@@ -129,6 +129,12 @@ const SERVICE_LABELS: Record<string, string> = {
   TUITION_PAYMENT: 'پرداخت شهریه',
   FREELANCE_INCOME: 'نقد کردن درآمد فریلنسری',
   SOFTWARE_PURCHASE: 'خرید نرم‌افزار / اشتراک',
+  GIFT_CARD: 'خرید گیفت کارت',
+  CURRENCY_BUY: 'خرید ارز',
+  CURRENCY_SELL: 'فروش ارز',
+  CRYPTO_BUY: 'خرید ارز دیجیتال',
+  CRYPTO_SELL: 'فروش ارز دیجیتال',
+  PAYPAL_TRANSFER: 'انتقال پی‌پال / اسکریل',
   OTHER: 'سایر خدمات',
 };
 
@@ -455,5 +461,122 @@ export function welcomeSetPasswordEmail(args: WelcomeSetPasswordArgs): EmailMess
     html,
     text,
     tags: [{ name: 'category', value: 'account:welcome-set-password' }],
+  };
+}
+
+// ─── Service Request Digital Receipt (COMPLETED) ─────────────────────────── //
+
+export interface ServiceRequestReceiptArgs {
+  to: string;
+  fullName: string;
+  trackingCode: string;
+  serviceType: string;
+  amount: string;
+  currency: string;
+  externalTxId?: string | null;
+  adminNote?: string | null;
+  completedAt: Date;
+  appUrl: string;
+}
+
+export function serviceRequestReceiptEmail(args: ServiceRequestReceiptArgs): EmailMessage {
+  const serviceLabel = SERVICE_LABELS[args.serviceType] ?? args.serviceType;
+  const trackingUrl  = `${args.appUrl}/track/${args.trackingCode}`;
+  const dateLabel    = new Intl.DateTimeFormat('fa-IR', {
+    year: 'numeric', month: 'long', day: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  }).format(args.completedAt);
+
+  const text = [
+    `${args.fullName} عزیز،`,
+    '',
+    `درخواست شما (${args.trackingCode}) با موفقیت تکمیل شد.`,
+    '',
+    `نوع خدمت: ${serviceLabel}`,
+    `مبلغ: ${args.amount} ${args.currency}`,
+    `تاریخ تکمیل: ${dateLabel}`,
+    ...(args.externalTxId ? [`شناسه تراکنش: ${args.externalTxId}`] : []),
+    ...(args.adminNote ? [`یادداشت: ${args.adminNote}`] : []),
+    '',
+    `مشاهده جزئیات: ${trackingUrl}`,
+    '',
+    '— تیم Financial Market',
+  ].join('\n');
+
+  const html = `<!doctype html>
+<html lang="fa" dir="rtl">
+  <body style="margin:0;padding:0;background:#f6f6f9;font-family:Tahoma,Arial,sans-serif;color:#1f2937">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px">
+      <tr><td align="center">
+        <table role="presentation" width="480" cellpadding="0" cellspacing="0"
+               style="background:#ffffff;border-radius:12px;padding:32px;border:1px solid #e5e7eb">
+          <tr><td>
+            <div style="text-align:center;margin-bottom:20px">
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;background:#f0fdf4;border-radius:50%;font-size:24px">✓</span>
+            </div>
+            <h1 style="margin:0 0 6px 0;font-size:20px;color:#111827;text-align:center">درخواست تکمیل شد</h1>
+            <p style="margin:0 0 24px 0;font-size:13px;color:#6b7280;text-align:center">رسید دیجیتال درخواست شما</p>
+
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                   style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;margin:0 0 20px 0">
+              <tr><td style="padding:16px 20px">
+                <p style="margin:0 0 4px 0;font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em">کد پیگیری</p>
+                <p style="margin:0;font-family:Menlo,Consolas,'Courier New',monospace;font-size:20px;font-weight:700;letter-spacing:4px;color:#15803d">${args.trackingCode}</p>
+              </td></tr>
+            </table>
+
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                   style="border:1px solid #e5e7eb;border-radius:8px;margin:0 0 20px 0">
+              <tr>
+                <td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;font-size:13px;color:#6b7280">نوع خدمت</td>
+                <td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;font-size:13px;font-weight:600;color:#111827;text-align:left" dir="ltr">${serviceLabel}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;font-size:13px;color:#6b7280">مبلغ</td>
+                <td style="padding:10px 16px;border-bottom:1px solid #f0f0f0;font-size:13px;font-weight:700;color:#111827;text-align:left" dir="ltr">${args.amount} ${args.currency}</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 16px;${args.externalTxId ? 'border-bottom:1px solid #f0f0f0;' : ''}font-size:13px;color:#6b7280">تاریخ تکمیل</td>
+                <td style="padding:10px 16px;${args.externalTxId ? 'border-bottom:1px solid #f0f0f0;' : ''}font-size:13px;color:#111827;text-align:left" dir="ltr">${dateLabel}</td>
+              </tr>
+              ${args.externalTxId ? `<tr>
+                <td style="padding:10px 16px;font-size:13px;color:#6b7280">شناسه تراکنش</td>
+                <td style="padding:10px 16px;font-size:12px;font-family:Menlo,Consolas,monospace;color:#0369a1;text-align:left" dir="ltr">${args.externalTxId}</td>
+              </tr>` : ''}
+            </table>
+
+            ${args.adminNote ? `
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                   style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;margin:0 0 20px 0">
+              <tr><td style="padding:12px 16px">
+                <p style="margin:0 0 4px 0;font-size:11px;color:#92400e">یادداشت تیم</p>
+                <p style="margin:0;font-size:13px;color:#78350f;line-height:1.6">${args.adminNote}</p>
+              </td></tr>
+            </table>` : ''}
+
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px 0">
+              <tr><td align="center">
+                <a href="${trackingUrl}"
+                   style="display:inline-block;background:#16a34a;color:#ffffff;text-decoration:none;border-radius:8px;padding:12px 28px;font-size:14px;font-weight:600">
+                  مشاهده جزئیات سفارش
+                </a>
+              </td></tr>
+            </table>
+            <p style="margin:0;font-size:12px;color:#9ca3af;text-align:center;line-height:1.6">
+              ممنون از اعتماد شما به Financial Market
+            </p>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+</html>`;
+
+  return {
+    to: args.to,
+    subject: `رسید تکمیل درخواست ${args.trackingCode}`,
+    html,
+    text,
+    tags: [{ name: 'category', value: 'service-request:receipt' }],
   };
 }
