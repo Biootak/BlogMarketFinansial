@@ -198,7 +198,7 @@ export function parseLocalizedNumber(raw: string): number {
   // حذف جداکننده‌ی هزارگان (کاما یا نقطه)
   s = s.replace(/,/g, '');
   const n = Number.parseFloat(s);
-  return Number.isFinite(n) ? n : NaN;
+  return Number.isFinite(n) ? n : Number.NaN;
 }
 
 /**
@@ -316,13 +316,15 @@ function canonicalizeKey(page: TgjuPageId, rawKey: string): string {
 function parseTableRows(page: TgjuPageId, html: string): TgjuResponse {
   const out: TgjuResponse = {};
   const rowRe = /<tr\b[^>]*data-market-nameslug="([^"]+)"[\s\S]*?<\/tr>/g;
-  let m: RegExpExecArray | null;
-  while ((m = rowRe.exec(html)) !== null) {
+  let m = rowRe.exec(html);
+  while (m !== null) {
     const rawKey = m[1];
     const finalKey = canonicalizeKey(page, rawKey);
-    if (out[finalKey]) continue; // اولین occurrence (برخی کلیدها تکرار شدن)
-    const parsed = parseRow(m[0]);
-    if (parsed) out[finalKey] = parsed;
+    if (!out[finalKey]) {
+      const parsed = parseRow(m[0]);
+      if (parsed) out[finalKey] = parsed;
+    }
+    m = rowRe.exec(html);
   }
   return out;
 }
@@ -347,8 +349,6 @@ async function debugDump(page: TgjuPageId, html: string): Promise<void> {
     const safeId = page.replace(/[^a-z0-9_-]/gi, '_');
     const file = path.join(dir, `tgju-${safeId}-${Date.now()}.html`);
     await writeFile(file, html, 'utf8');
-    // eslint-disable-next-line no-console
-    console.info(`[tgju] debug dump saved: ${file}`);
   } catch {
     // ignore — debug never breaks the request
   }

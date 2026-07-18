@@ -21,6 +21,7 @@ export const SYMBOL_REGISTRY: SymbolRegistryEntry[] = [
   {
     symbol: 'AFGHANI_USD',
     displayNameFa: 'دلار هرات',
+    tgjuKey: 'price_dollar_rl',
     group: 'afghan',
     unit: 'toman',
     divisor: 10,
@@ -255,7 +256,9 @@ export const SYMBOL_REGISTRY_MAP: ReadonlyMap<string, SymbolRegistryEntry> = new
 
 /** lookup: TGJU key → symbol */
 export const TGJU_KEY_TO_SYMBOL: ReadonlyMap<string, string> = new Map(
-  SYMBOL_REGISTRY.filter((e) => e.tgjuKey).map((e) => [e.tgjuKey!, e.symbol]),
+  SYMBOL_REGISTRY.filter((e): e is typeof e & { tgjuKey: string } => Boolean(e.tgjuKey)).map(
+    (e) => [e.tgjuKey, e.symbol],
+  ),
 );
 
 /** لیست symbol ها برای seed */

@@ -10,14 +10,14 @@
  * خروجی: TransferApiResponse (در `lib/money-transfer/types.ts`)
  *
  * منطق:
- *   1) `assembleFreeMarketRates` نرخ بازار را می‌گیرد (TGJU → USDT → FX).
+ *   1) `assembleMarketRates` نرخ بازار را می‌گیرد (TGJU → USDT → FX).
  *   2) `loadActiveTransferProviders` لیست provider ها را از DB می‌خواند.
  *   3) برای هر provider quote نهایی محاسبه می‌شود.
  *   4) کش ۶۰ ثانیه‌ای با `safeCache` + tags ['exchange-rates', 'money-transfer'].
  * ----------------------------------------------------------------------------
  */
 
-import { assembleFreeMarketRates } from '@/lib/freeMarketRates';
+import { assembleMarketRates } from '@/lib/market-rates';
 import { convertSourceToToman } from '@/lib/money-transfer/calculator';
 import {
   loadActiveTransferProviders,
@@ -51,15 +51,19 @@ function toSymbol(raw: string | null): string {
 }
 
 async function buildQuotes({ symbol, amount }: BuildArgs): Promise<TransferApiResponse> {
-  const market = await assembleFreeMarketRates();
-  const item = market.items.find((i) => i.symbol === symbol);
+  const rates = await assembleMarketRates();
+  // symbol query can be a canonical like 'IRAN_USD' or short like 'USD'
+  const item =
+    rates.find((r) => r.symbol === symbol) ??
+    rates.find((r) => r.symbol === `IRAN_${symbol}`) ??
+    rates.find((r) => r.symbol.endsWith(`_${symbol}`));
 
   if (!item) {
     throw new Error(`نرخ برای ${symbol} یافت نشد`);
   }
 
-  const baseRate = item.priceToman;
-  // provider ها از DB خوانده می‌شوند (با کش داخلی loadActiveTransferProviders).
+  // value در MarketRateItem برای unit='toman' برابر قیمت به تومان است.
+  const baseRate = item.value;
   const providers = await loadActiveTransferProviders();
 
   const quotes: ProviderQuote[] = providers.map((p: TransferProvider) => {
@@ -71,7 +75,7 @@ async function buildQuotes({ symbol, amount }: BuildArgs): Promise<TransferApiRe
     return {
       providerId: p.id,
       providerName: p.name,
-      providerKind: p.kindLabel, // UI-friendly label (e.g. 'صرافی')
+      providerKind: p.kindLabel,
       spreadPercent: p.spreadPercent,
       flatFeeToman: p.flatFeeToman,
       speedMinutes: p.speedMinutes,
@@ -87,8 +91,8 @@ async function buildQuotes({ symbol, amount }: BuildArgs): Promise<TransferApiRe
   return {
     baseTomanRate: baseRate,
     baseSymbol: item.symbol,
-    baseDisplayName: item.name,
-    baseChangePercent: item.change,
+    baseDisplayName: item.displayNameFa,
+    baseChangePercent: item.changePercent,
     sourceAmount: amount,
     updatedAt: new Date().toISOString(),
     providers: quotes,

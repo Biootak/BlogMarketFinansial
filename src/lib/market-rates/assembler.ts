@@ -2,17 +2,12 @@
 // تنها جایی که نرخ‌های بازار خوانده/محاسبه می‌شود (single source of truth).
 
 import prisma from '@/lib/db';
-import type {
-  MarketRateItem,
-  MarketRateGroup,
-  MarketRateUnit,
-  MarketRateProvider,
-} from './types';
+import { getGlobalFxRates } from './fx';
 import { SYMBOL_REGISTRY_MAP } from './registry';
 import { fetchAllTgjuPages } from './tgju';
 import { CANONICAL_KEY_TO_SOURCES, type SymbolSource } from './tgjuKeys';
+import type { MarketRateGroup, MarketRateItem, MarketRateProvider, MarketRateUnit } from './types';
 import { getUsdtRate } from './usdt';
-import { getGlobalFxRates } from './fx';
 
 function getUsdtPremiumPercent(): number {
   const raw = process.env.USDT_PREMIUM_PERCENT;
@@ -98,7 +93,6 @@ function assembleFromRow(
 
   let rawValue: number | null = null;
   let changePercent = 0;
-  let sourcePage: string | null = null;
   // Two-sided rates (e.g. SANA / national bank) carry a buy and a sell value.
   let buyValue: number | null = null;
   let sellValue: number | null = null;
@@ -131,15 +125,12 @@ function assembleFromRow(
         if (source.side === 'buy') {
           buyValue = t.value;
           if (changePercent === 0) changePercent = t.change;
-          sourcePage = t.pageId;
         } else if (source.side === 'sell') {
           sellValue = t.value;
           if (changePercent === 0) changePercent = t.change;
-          sourcePage = t.pageId;
         } else {
           rawValue = t.value;
           changePercent = t.change;
-          sourcePage = t.pageId;
         }
         break;
       }
@@ -156,11 +147,12 @@ function assembleFromRow(
   }
 
   // 2b. از registry tgjuKey مستقیم (homepage default)
-  if (rawValue === null && tgjuKey && tgjuMap.has(tgjuKey)) {
-    const t = tgjuMap.get(tgjuKey)!;
-    rawValue = t.value;
-    changePercent = t.change;
-    sourcePage = t.pageId;
+  if (rawValue === null && tgjuKey) {
+    const t = tgjuMap.get(tgjuKey);
+    if (t) {
+      rawValue = t.value;
+      changePercent = t.change;
+    }
   }
 
   // Priority 3: USDT-derived برای IRAN_USD
@@ -219,7 +211,7 @@ function assembleFromRow(
  */
 function findSourcesForSymbol(symbol: string): SymbolSource[] {
   const out: SymbolSource[] = [];
-  for (const [canonicalKey, sources] of CANONICAL_KEY_TO_SOURCES) {
+  for (const [_canonicalKey, sources] of CANONICAL_KEY_TO_SOURCES) {
     // هم symbol مستقیم و هم canonicalKey یکسان را چک می‌کنیم تا هر دو سمت
     // (buy/sell) برای نرخ‌های دوطرفه پیدا شود.
     if (sources.some((s) => s.symbol === symbol || s.canonicalKey === symbol)) {
@@ -247,7 +239,17 @@ function getPagePrefix(pageId: string): string {
 
 /** حذف prefix های شناخته‌شده از ابتدای tgjuKey. */
 function stripKnownPrefix(key: string): string {
-  const prefixes = ['transfer_', 'currency_', 'minor_', 'bank_', 'coin_', 'bubble_', 'sana_', 'global_', 'local_'];
+  const prefixes = [
+    'transfer_',
+    'currency_',
+    'minor_',
+    'bank_',
+    'coin_',
+    'bubble_',
+    'sana_',
+    'global_',
+    'local_',
+  ];
   for (const p of prefixes) {
     if (key.startsWith(p)) return key.slice(p.length);
   }

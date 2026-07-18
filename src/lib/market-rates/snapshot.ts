@@ -1,7 +1,7 @@
 // src/lib/market-rates/snapshot.ts
 // نوشتن snapshot بازار به یک فایل JSON برای استفاده‌ی استاتیک (CDN-friendly).
 
-import { writeFile, mkdir } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { assembleMarketRates } from './assembler';
 

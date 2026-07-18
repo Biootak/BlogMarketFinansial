@@ -26,11 +26,7 @@ const UNIT_LABELS: Record<MarketRateUnit, string> = {
  *   source: '۴٬۱۶۰٫۲۶ دلار'
  *   visual: 'دلار ۴٬۱۶۰٫۲۶'
  */
-export function formatWithUnit(
-  value: number,
-  unit: MarketRateUnit,
-  decimals: number,
-): string {
+export function formatWithUnit(value: number, unit: MarketRateUnit, decimals: number): string {
   if (!Number.isFinite(value) || value <= 0) return '—';
 
   const formatted = new Intl.NumberFormat('fa-IR', {

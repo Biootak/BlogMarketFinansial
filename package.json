@@ -10,6 +10,7 @@
     "verify": "node scripts/verify.mjs",
     "postinstall": "prisma generate",
     "db:seed": "node prisma/seed.js",
+    "db:seed:rates": "npx tsx prisma/seed-market-rates.ts",
     "db:reset": "node scripts/reset-and-seed-50-posts.js",
     "db:fresh": "prisma migrate reset --force && npm run db:seed",
     "db:stats": "node scripts/db-stats.js",

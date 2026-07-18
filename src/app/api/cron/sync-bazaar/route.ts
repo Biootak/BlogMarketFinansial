@@ -25,11 +25,11 @@
  * ----------------------------------------------------------------------------
  */
 
+import { verifyCronSecret } from '@/lib/cron-auth';
 import prisma from '@/lib/db';
 import { revalidateTag } from '@/lib/revalidate';
 import { type TgjuResponse, fetchTgjuLatest } from '@/lib/tgju';
 import { type NextRequest, NextResponse } from 'next/server';
-import { verifyCronSecret } from '@/lib/cron-auth';
 
 // Vercel Cron حداکثر execution time برای Hobby ۶۰ ثانیه است.
 // scraper ما ۱۲ ثانیه timeout دارد + DB write ~ ۱-۲ ثانیه. حاشیه‌ی کافی.
@@ -63,22 +63,14 @@ const TGJU_TO_DB: Array<{
   // طلا (تومان)
   { tgjuKey: 'geram18', currency: 'GOLD18', name: 'طلای ۱۸ عیار (گرم)', rateType: 'SINGLE_BULK' },
   { tgjuKey: 'mesghal', currency: 'MESGHAL', name: 'مثقال طلا', rateType: 'SINGLE_BULK' },
-  // سکه (تومان)
-  { tgjuKey: 'retail_sekee', currency: 'SEKKEH', name: 'سکه امامی', rateType: 'SINGLE_BULK' },
-  {
-    tgjuKey: 'retail_sekeb',
-    currency: 'SEKKEH_BAHAR',
-    name: 'سکه بهار آزادی',
-    rateType: 'SINGLE_BULK',
-  },
-  { tgjuKey: 'retail_nim', currency: 'NIM_SEKKEH', name: 'نیم سکه', rateType: 'SINGLE_BULK' },
-  { tgjuKey: 'retail_rob', currency: 'ROB_SEKKEH', name: 'ربع سکه', rateType: 'SINGLE_BULK' },
-  {
-    tgjuKey: 'retail_gerami',
-    currency: 'GERAMI_SEKKEH',
-    name: 'سکه گرمی',
-    rateType: 'SINGLE_BULK',
-  },
+  // سکه (تومان) — 2026-07-04: TGJU prefix 'retail_' را حذف کرده؛ الان مستقیماً 'sekee' است
+  { tgjuKey: 'sekee', currency: 'SEKKEH', name: 'سکه امامی', rateType: 'SINGLE_BULK' },
+  { tgjuKey: 'sekeb', currency: 'SEKKEH_BAHAR', name: 'سکه بهار آزادی', rateType: 'SINGLE_BULK' },
+  { tgjuKey: 'nim', currency: 'NIM_SEKKEH', name: 'نیم سکه', rateType: 'SINGLE_BULK' },
+  { tgjuKey: 'rob', currency: 'ROB_SEKKEH', name: 'ربع سکه', rateType: 'SINGLE_BULK' },
+  { tgjuKey: 'gerami', currency: 'GERAMI_SEKKEH', name: 'سکه گرمی', rateType: 'SINGLE_BULK' },
+  // انس جهانی (USD/oz)
+  { tgjuKey: 'ons', currency: 'GOLD_OZ', name: 'انس طلا', rateType: 'SINGLE_BULK' },
 ];
 
 /**
@@ -135,8 +127,7 @@ async function upsertRate(opts: {
       },
     });
     return { ok: true, action: 'created' };
-  } catch (err) {
-    console.error(`[sync-bazaar] upsert failed for ${opts.name}:`, err);
+  } catch {
     return { ok: false, action: 'updated' };
   }
 }
@@ -156,7 +147,6 @@ export async function GET(request: NextRequest) {
   const scrape = await fetchTgjuLatest();
 
   if (!scrape.ok || !scrape.data) {
-    console.warn('[sync-bazaar] scrape failed:', scrape.error);
     return NextResponse.json(
       {
         ok: false,
@@ -223,10 +213,11 @@ export async function GET(request: NextRequest) {
   // 4) Invalidate caches
   try {
     revalidateTag('market-rates:ticker');
+    revalidateTag('market-rates:list');
     revalidateTag('market-rates:exchange-rates');
     revalidateTag('dashboard-exchange-rates');
-  } catch (err) {
-    console.warn('[sync-bazaar] revalidateTag failed:', err);
+  } catch {
+    // revalidateTag failure is non-fatal; next request will hit fresh data
   }
 
   const created = results.filter((r) => r.action === 'created').length;

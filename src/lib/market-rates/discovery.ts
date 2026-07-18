@@ -1,8 +1,8 @@
 // src/lib/market-rates/discovery.ts
 // لیست همه‌ی symbol های موجود در TGJU homepage.
 
-import { fetchTgjuLatest } from './tgju';
 import { unstable_cache } from 'next/cache';
+import { fetchTgjuLatest } from './tgju';
 
 export interface TgjuSymbol {
   tgjuKey: string;

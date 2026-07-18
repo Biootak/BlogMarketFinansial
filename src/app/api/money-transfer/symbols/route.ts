@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------------
  */
 
-import { assembleFreeMarketRates } from '@/lib/freeMarketRates';
+import { assembleMarketRates } from '@/lib/market-rates';
 import { safeCache } from '@/lib/safe-cache';
 import { NextResponse } from 'next/server';
 
@@ -22,15 +22,18 @@ const FALLBACK: { items: SymbolItem[]; updatedAt: string } = {
   updatedAt: new Date(0).toISOString(),
 };
 
+// گروه‌هایی که نباید در انتخاب ارز مبدأ حواله نمایش داده شوند
+const EXCLUDED_GROUPS = new Set(['global']);
+
 async function buildSymbols(): Promise<{ items: SymbolItem[]; updatedAt: string }> {
-  const market = await assembleFreeMarketRates();
-  const items = market.items
-    .filter((i) => i.symbol !== 'OUNCE_GOLD' && i.symbol !== 'ABSHODEH' && i.symbol !== 'GOLD18')
-    .map((i) => ({
-      symbol: i.symbol,
-      displayNameFa: i.name,
-      marketRateToman: i.priceToman,
-      changePercent: i.change,
+  const rates = await assembleMarketRates();
+  const items: SymbolItem[] = rates
+    .filter((r) => !EXCLUDED_GROUPS.has(r.group) && r.unit === 'toman')
+    .map((r) => ({
+      symbol: r.symbol,
+      displayNameFa: r.displayNameFa,
+      marketRateToman: r.value,
+      changePercent: r.changePercent,
     }));
   return { items, updatedAt: new Date().toISOString() };
 }
