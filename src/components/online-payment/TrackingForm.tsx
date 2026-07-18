@@ -1,142 +1,153 @@
 'use client';
 
 import { type FC, useState } from 'react';
-import { motion } from '@/lib/motion-shim';
-import { HiSearch, HiCheckCircle, HiClock, HiXCircle, HiRefresh } from 'react-icons/hi';
+import { Search, Clock, CheckCircle2, XCircle, RefreshCw, AlertCircle } from 'lucide-react';
 import { getServiceRequestByTrackingCode } from '@/actions/serviceRequestActions';
+import s from './TrackingForm.module.css';
 
-const statusConfig = {
-  PENDING: { label: 'در انتظار بررسی', color: 'yellow', icon: HiClock },
-  IN_PROGRESS: { label: 'در حال انجام', color: 'blue', icon: HiRefresh },
-  COMPLETED: { label: 'تکمیل شده', color: 'green', icon: HiCheckCircle },
-  CANCELLED: { label: 'لغو شده', color: 'red', icon: HiXCircle },
+// ─── Status Config ─────────────────────────────────────────────────────────── //
+
+const STATUS_CONFIG = {
+  PENDING:     { label: 'در انتظار بررسی', icon: Clock,       cls: s.statusPending  },
+  IN_PROGRESS: { label: 'در حال انجام',    icon: RefreshCw,   cls: s.statusProgress },
+  COMPLETED:   { label: 'تکمیل شده',       icon: CheckCircle2, cls: s.statusDone    },
+  CANCELLED:   { label: 'لغو شده',         icon: XCircle,     cls: s.statusCancelled },
 };
 
-const colorClasses: Record<string, string> = {
-  yellow: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400',
-  blue: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400',
-  green: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
-  red: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400',
-};
-
-const serviceTypeLabels: Record<string, string> = {
+const SERVICE_LABELS: Record<string, string> = {
   INTERNATIONAL_TRANSFER: 'حواله بین‌المللی',
-  ONLINE_PAYMENT: 'پرداخت آنلاین',
-  TUITION_PAYMENT: 'پرداخت شهریه',
-  FREELANCE_INCOME: 'نقد کردن درآمد فریلنسری',
-  SOFTWARE_PURCHASE: 'خرید نرم‌افزار/اشتراک',
-  OTHER: 'سایر خدمات',
+  ONLINE_PAYMENT:         'پرداخت آنلاین',
+  TUITION_PAYMENT:        'پرداخت شهریه',
+  FREELANCE_INCOME:       'نقد کردن درآمد فریلنسری',
+  SOFTWARE_PURCHASE:      'خرید نرم‌افزار/اشتراک',
+  OTHER:                  'سایر خدمات',
 };
+
+// ─── Types ─────────────────────────────────────────────────────────────────── //
+
+type StatusKey = keyof typeof STATUS_CONFIG;
+
+interface TrackingData {
+  trackingCode: string;
+  fullName: string;
+  serviceType: string;
+  amount: string;
+  currency: string;
+  status: StatusKey;
+  urgency: string;
+  createdAt: Date;
+}
+
+// ─── Component ─────────────────────────────────────────────────────────────── //
 
 const TrackingForm: FC = () => {
-  const [trackingCode, setTrackingCode] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [code, setCode] = useState('');
+  const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{
     success: boolean;
     message?: string;
-    data?: {
-      trackingCode: string;
-      fullName: string;
-      serviceType: string;
-      amount: string;
-      currency: string;
-      status: keyof typeof statusConfig;
-      urgency: string;
-      createdAt: Date;
-    };
+    data?: TrackingData;
   } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!trackingCode.trim()) return;
+    if (!code.trim()) return;
 
-    setIsLoading(true);
+    setLoading(true);
     setResult(null);
 
     try {
-      const response = await getServiceRequestByTrackingCode(trackingCode.trim().toUpperCase());
-      setResult(response as typeof result);
+      const res = await getServiceRequestByTrackingCode(code.trim().toUpperCase());
+      setResult(res as typeof result);
     } catch {
       setResult({ success: false, message: 'خطایی رخ داد. لطفاً دوباره تلاش کنید.' });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const status = result?.data?.status ? statusConfig[result.data.status] : null;
+  const status = result?.data?.status ? STATUS_CONFIG[result.data.status] : null;
+  const StatusIcon = status?.icon;
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <form onSubmit={handleSubmit} className="flex gap-2">
+    <div className={s.wrap}>
+      {/* Search Input */}
+      <form onSubmit={handleSubmit} className={s.searchRow}>
         <input
           type="text"
-          value={trackingCode}
-          onChange={(e) => setTrackingCode(e.target.value.toUpperCase())}
-          placeholder="کد پیگیری (مثال: BT-XXXXX-XXXX)"
-          className="flex-1 px-4 py-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono text-sm"
+          value={code}
+          onChange={(e) => setCode(e.target.value.toUpperCase())}
+          placeholder="کد پیگیری — مثال: BT-XXXXX-XXXX"
+          className={s.searchInput}
           dir="ltr"
+          autoComplete="off"
+          spellCheck={false}
+          aria-label="کد پیگیری درخواست"
         />
-        <motion.button
+        <button
           type="submit"
-          disabled={isLoading || !trackingCode.trim()}
-          className="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+          disabled={loading || !code.trim()}
+          className={s.searchBtn}
+          aria-label="جستجو"
         >
-          {isLoading ? (
-            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          {loading ? (
+            <span className={s.spinner} aria-hidden="true" />
           ) : (
-            <HiSearch className="w-5 h-5" />
+            <Search size={17} />
           )}
-        </motion.button>
+        </button>
       </form>
 
+      {/* Result */}
       {result && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-4"
-        >
+        <div className={s.resultWrap} role="region" aria-live="polite" aria-label="نتیجه جستجو">
           {result.success && result.data ? (
-            <div className="p-4 bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-neutral-500">وضعیت</span>
-                {status && (
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${colorClasses[status.color]}`}>
-                    <status.icon className="w-4 h-4" />
-                    {status.label}
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-neutral-500">نام</span>
-                <span className="font-medium text-neutral-900 dark:text-white">{result.data.fullName}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-neutral-500">نوع خدمات</span>
-                <span className="text-neutral-700 dark:text-neutral-300">
-                  {serviceTypeLabels[result.data.serviceType] || result.data.serviceType}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-neutral-500">مبلغ</span>
-                <span className="font-mono text-neutral-900 dark:text-white">
-                  {result.data.amount} {result.data.currency}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-neutral-500">تاریخ ثبت</span>
-                <span className="text-neutral-700 dark:text-neutral-300 text-sm">
-                  {new Date(result.data.createdAt).toLocaleDateString('fa-IR')}
-                </span>
-              </div>
+            <div className={s.resultCard}>
+              {/* Status Badge */}
+              {status && StatusIcon && (
+                <div className={`${s.statusBadge} ${status.cls}`}>
+                  <StatusIcon size={14} />
+                  <span>{status.label}</span>
+                </div>
+              )}
+
+              {/* Info Rows */}
+              <dl className={s.infoList}>
+                <div className={s.infoRow}>
+                  <dt className={s.infoLabel}>کد پیگیری</dt>
+                  <dd className={s.infoValue} dir="ltr">{result.data.trackingCode}</dd>
+                </div>
+                <div className={s.infoRow}>
+                  <dt className={s.infoLabel}>نام</dt>
+                  <dd className={s.infoValue}>{result.data.fullName}</dd>
+                </div>
+                <div className={s.infoRow}>
+                  <dt className={s.infoLabel}>نوع خدمات</dt>
+                  <dd className={s.infoValue}>
+                    {SERVICE_LABELS[result.data.serviceType] ?? result.data.serviceType}
+                  </dd>
+                </div>
+                <div className={s.infoRow}>
+                  <dt className={s.infoLabel}>مبلغ</dt>
+                  <dd className={s.infoValue} dir="ltr">
+                    {result.data.amount} {result.data.currency}
+                  </dd>
+                </div>
+                <div className={s.infoRow}>
+                  <dt className={s.infoLabel}>تاریخ ثبت</dt>
+                  <dd className={s.infoValue}>
+                    {new Date(result.data.createdAt).toLocaleDateString('fa-IR')}
+                  </dd>
+                </div>
+              </dl>
             </div>
           ) : (
-            <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-xl text-center">
-              {result.message}
+            <div className={s.errorBox} role="alert">
+              <AlertCircle size={15} />
+              <span>{result.message}</span>
             </div>
           )}
-        </motion.div>
+        </div>
       )}
     </div>
   );

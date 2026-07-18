@@ -1,34 +1,42 @@
 'use client';
 
 import { type FC, useState } from 'react';
-import { motion } from '@/lib/motion-shim';
-import { HiClock, HiShieldCheck, HiSupport, HiSearch, HiPencilAlt, HiTrendingUp, HiUsers, HiCheckCircle } from 'react-icons/hi';
+import { TrendingUp, Users, CheckCircle2, Clock, ShieldCheck, Zap, Search, PenLine } from 'lucide-react';
 import ServiceRequestForm from './ServiceRequestForm';
 import TrackingForm from './TrackingForm';
+import s from './ContactCTA.module.css';
 
-const features = [
-  { icon: HiClock, title: 'پاسخگویی سریع', description: 'حداکثر ۳۰ دقیقه', color: 'text-emerald-500' },
-  { icon: HiShieldCheck, title: 'تراکنش امن', description: 'با ضمانت بازگشت وجه', color: 'text-blue-500' },
-  { icon: HiSupport, title: 'پشتیبانی ۲۴/۷', description: 'همه روزه در خدمت شما', color: 'text-purple-500' },
+/* ─── Data ───────────────────────────────────────────────────────────────── */
+
+const STATS = [
+  { icon: TrendingUp, value: '۲,۵۰۰+', label: 'تراکنش موفق ماهانه' },
+  { icon: Users,      value: '۱۲,۰۰۰+', label: 'مشتری راضی' },
+  { icon: CheckCircle2, value: '۹۸٪',  label: 'نرخ رضایت مشتریان' },
 ];
 
-const stats = [
-  { icon: HiTrendingUp, value: '۲,۵۰۰+', label: 'تراکنش موفق ماهانه' },
-  { icon: HiUsers, value: '۱۲,۰۰۰+', label: 'مشتری راضی' },
-  { icon: HiCheckCircle, value: '۹۸٪', label: 'نرخ رضایت' },
+const FEATURES = [
+  { icon: Clock,       label: 'پاسخگویی سریع',  desc: 'حداکثر ۳۰ دقیقه' },
+  { icon: ShieldCheck, label: 'تراکنش امن',      desc: 'با ضمانت بازگشت وجه' },
+  { icon: Zap,         label: 'پشتیبانی ۲۴/۷',  desc: 'همه روزه در خدمت شما' },
 ];
+
+/* ─── Types ───────────────────────────────────────────────────────────────── */
+
+type ServiceType =
+  | 'INTERNATIONAL_TRANSFER'
+  | 'ONLINE_PAYMENT'
+  | 'TUITION_PAYMENT'
+  | 'FREELANCE_INCOME'
+  | 'SOFTWARE_PURCHASE'
+  | 'OTHER';
 
 interface ContactCTAClientProps {
-  defaultServiceType?:
-    | 'INTERNATIONAL_TRANSFER'
-    | 'ONLINE_PAYMENT'
-    | 'TUITION_PAYMENT'
-    | 'FREELANCE_INCOME'
-    | 'SOFTWARE_PURCHASE'
-    | 'OTHER';
+  defaultServiceType?: ServiceType;
   telegramLink: string | null;
   whatsappLink: string | null;
 }
+
+/* ─── Component ───────────────────────────────────────────────────────────── */
 
 const ContactCTAClient: FC<ContactCTAClientProps> = ({
   defaultServiceType = 'ONLINE_PAYMENT',
@@ -38,160 +46,129 @@ const ContactCTAClient: FC<ContactCTAClientProps> = ({
   const [activeTab, setActiveTab] = useState<'request' | 'tracking'>('request');
 
   return (
-    <section id="contact" className="relative py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Value Proposition Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-12"
-        >
-          <span className="inline-flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 rounded-full border border-primary-100 dark:border-primary-900/50">
-            <HiTrendingUp className="w-4 h-4" />
+    <section id="contact" className={s.section}>
+      {/* Ambient light blobs */}
+      <div className={s.orbA} aria-hidden="true" />
+      <div className={s.orbB} aria-hidden="true" />
+
+      <div className={s.inner}>
+        {/* ── Header ─────────────────────────────────────────────────────── */}
+        <header className={s.header}>
+          <span className={s.eyebrow}>
+            <TrendingUp size={13} />
             بیش از ۲,۵۰۰ تراکنش موفق در ماه
           </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-neutral-900 dark:text-white mb-4 leading-tight">
-            درخواست خود را <span className="text-primary-600 dark:text-primary-400">آنلاین</span> ثبت کنید
+          <h2 className={s.headerTitle}>
+            درخواست خود را <span className={s.accent}>آنلاین</span> ثبت کنید
           </h2>
-          <p className="text-neutral-600 dark:text-neutral-400 text-lg max-w-2xl mx-auto leading-relaxed">
+          <p className={s.headerSub}>
             فرم زیر را پر کنید تا کارشناسان ما در کمتر از ۳۰ دقیقه با شما تماس بگیرند
           </p>
-        </motion.div>
+        </header>
 
-        {/* Social Proof Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12"
-        >
-          {stats.map((stat, index) => (
-            <div
-              key={stat.label}
-              className="flex items-center gap-4 p-4 bg-white dark:bg-neutral-800/50 rounded-xl border border-neutral-200/50 dark:border-neutral-700/50"
-            >
-              <div className="p-3 bg-primary-50 dark:bg-primary-900/30 rounded-xl">
-                <stat.icon className="w-6 h-6 text-primary-500" />
+        {/* ── Social Proof Stats ────────────────────────────────────────── */}
+        <div className={s.statsRow} role="list" aria-label="آمار خدمات">
+          {STATS.map(({ icon: Icon, value, label }) => (
+            <div key={label} className={s.statCard} role="listitem">
+              <div className={s.statIcon} aria-hidden="true">
+                <Icon size={18} />
               </div>
               <div>
-                <div className="text-2xl font-bold text-neutral-900 dark:text-white">{stat.value}</div>
-                <div className="text-sm text-neutral-500 dark:text-neutral-400">{stat.label}</div>
+                <div className={s.statValue}>{value}</div>
+                <div className={s.statLabel}>{label}</div>
               </div>
             </div>
           ))}
-        </motion.div>
+        </div>
 
-        {/* Main Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-800 dark:to-neutral-900 p-5 sm:p-8 lg:p-10 shadow-xl border border-neutral-200/50 dark:border-neutral-700/50"
-        >
-          <div className="absolute top-0 left-0 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
-
-          <div className="relative">
-            {/* Tab Switcher */}
-            <div className="flex justify-center mb-8">
-              <div className="inline-flex p-1.5 bg-neutral-200/50 dark:bg-neutral-700/50 rounded-2xl">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('request')}
-                  className={`flex items-center gap-2 px-8 py-4 rounded-xl font-semibold transition-all duration-300 ${
-                    activeTab === 'request'
-                      ? 'bg-white dark:bg-neutral-800 text-primary-600 dark:text-primary-400 shadow-lg shadow-primary-500/10'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                  }`}
-                >
-                  <HiPencilAlt className="w-5 h-5" />
-                  ثبت درخواست
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('tracking')}
-                  className={`flex items-center gap-2 px-8 py-4 rounded-xl font-semibold transition-all duration-300 ${
-                    activeTab === 'tracking'
-                      ? 'bg-white dark:bg-neutral-800 text-primary-600 dark:text-primary-400 shadow-lg shadow-primary-500/10'
-                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                  }`}
-                >
-                  <HiSearch className="w-5 h-5" />
-                  پیگیری درخواست
-                </button>
-              </div>
+        {/* ── Main Card ────────────────────────────────────────────────── */}
+        <div className={s.card}>
+          {/* Tab Switcher */}
+          <div className={s.tabsWrap}>
+            <div className={s.tabs} role="tablist" aria-label="انتخاب بخش">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === 'request'}
+                aria-controls="panel-request"
+                onClick={() => setActiveTab('request')}
+                className={`${s.tabBtn} ${activeTab === 'request' ? s.tabBtnActive : ''}`}
+              >
+                <PenLine size={15} />
+                ثبت درخواست
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === 'tracking'}
+                aria-controls="panel-tracking"
+                onClick={() => setActiveTab('tracking')}
+                className={`${s.tabBtn} ${activeTab === 'tracking' ? s.tabBtnActive : ''}`}
+              >
+                <Search size={15} />
+                پیگیری درخواست
+              </button>
             </div>
-
-            {activeTab === 'request' ? (
-              <>
-                {/* Features Section */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-                  {features.map((feature, index) => (
-                    <motion.div
-                      key={feature.title}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.3 + index * 0.1 }}
-                      className="flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-neutral-800/50 border border-neutral-200/50 dark:border-neutral-700/50 hover:shadow-md transition-shadow duration-300"
-                    >
-                      <div className={`p-3 rounded-xl bg-neutral-100 dark:bg-neutral-700/50 ${feature.color}`}>
-                        <feature.icon className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <span className="text-sm font-semibold text-neutral-900 dark:text-white block">{feature.title}</span>
-                        <span className="text-xs text-neutral-500 dark:text-neutral-400">{feature.description}</span>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-
-                <ServiceRequestForm
-                  defaultServiceType={defaultServiceType}
-                  telegramLink={telegramLink}
-                  whatsappLink={whatsappLink}
-                />
-              </>
-            ) : (
-              <>
-                <div className="text-center mb-10">
-                  <motion.span
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="inline-block px-4 py-1.5 mb-4 text-sm font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 rounded-full"
-                  >
-                    پیگیری سفارش
-                  </motion.span>
-                  <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-neutral-900 dark:text-white mb-3 leading-snug">
-                    پیگیری درخواست
-                  </h2>
-                  <p className="text-neutral-600 dark:text-neutral-400 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
-                    کد پیگیری خود را وارد کنید تا وضعیت درخواست را مشاهده کنید
-                  </p>
-                </div>
-                <TrackingForm />
-              </>
-            )}
           </div>
-        </motion.div>
 
-        {/* Urgency Banner */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="mt-8 text-center"
-        >
-          <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl shadow-lg shadow-primary-500/25">
-            <HiClock className="w-5 h-5" />
-            <span className="font-medium">پاسخگویی در کمتر از ۳۰ دقیقه</span>
+          {/* Features Bar — only visible on Request tab */}
+          {activeTab === 'request' && (
+            <div className={s.featuresBar} aria-hidden="true">
+              {FEATURES.map(({ icon: Icon, label, desc }) => (
+                <div key={label} className={s.featureItem}>
+                  <div className={s.featureIconWrap}>
+                    <Icon size={16} />
+                  </div>
+                  <span className={s.featureLabel}>{label}</span>
+                  <span className={s.featureDesc}>{desc}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Panel: Request */}
+          <div
+            id="panel-request"
+            role="tabpanel"
+            aria-labelledby="tab-request"
+            hidden={activeTab !== 'request'}
+          >
+            <div className={s.cardBody}>
+              <ServiceRequestForm
+                defaultServiceType={defaultServiceType}
+                telegramLink={telegramLink}
+                whatsappLink={whatsappLink}
+              />
+            </div>
           </div>
-        </motion.div>
+
+          {/* Panel: Tracking */}
+          <div
+            id="panel-tracking"
+            role="tabpanel"
+            aria-labelledby="tab-tracking"
+            hidden={activeTab !== 'tracking'}
+          >
+            <div className={s.cardBody}>
+              <div className={s.trackingHeader}>
+                <div className={s.trackingBadge}>پیگیری سفارش</div>
+                <h3 className={s.trackingTitle}>پیگیری درخواست</h3>
+                <p className={s.trackingDesc}>
+                  کد پیگیری خود را وارد کنید تا وضعیت درخواست را مشاهده کنید
+                </p>
+              </div>
+              <TrackingForm />
+            </div>
+          </div>
+        </div>
+
+        {/* ── Urgency Banner ───────────────────────────────────────────── */}
+        <div className={s.urgencyBanner}>
+          <div className={s.urgencyPill}>
+            <Clock size={16} />
+            <span>پاسخگویی در کمتر از ۳۰ دقیقه</span>
+          </div>
+        </div>
       </div>
     </section>
   );
