@@ -1,11 +1,16 @@
 // src/app/api/cron/refresh-market-rates/route.ts
+//
+// هر ۶۰s فراخوانی می‌شود.
+// منطق: از assembleMarketRates() (single source of truth) نرخ می‌گیرد،
+// در DB ذخیره می‌کند، snapshot JSON می‌نویسد، و cache را bust می‌کند.
+//
+// Auth: Bearer CRON_SECRET (constant-time, header only).
+
 import { NextResponse } from 'next/server';
 import { revalidateTag } from '@/lib/revalidate';
 import prisma from '@/lib/db';
 import { verifyCronSecret } from '@/lib/cron-auth';
-import { fetchTgjuLatest } from '@/lib/market-rates/tgju';
-import { getUsdtRate } from '@/lib/market-rates/usdt';
-import { getGlobalFxRates } from '@/lib/market-rates/fx';
+import { assembleMarketRates } from '@/lib/market-rates';
 import { writeMarketRatesSnapshot } from '@/lib/market-rates/snapshot';
 
 const TAGS = {
@@ -13,18 +18,9 @@ const TAGS = {
   list: 'market-rates:list',
 };
 
-function getUsdtPremiumPercent(): number {
-  const raw = process.env.USDT_PREMIUM_PERCENT;
-  if (!raw) return 0;
-  const n = Number(raw);
-  if (!Number.isFinite(n) || n < 0 || n > 50) return 0;
-  return n;
-}
-
 /**
  * POST /api/cron/refresh-market-rates
  * Auth: Bearer CRON_SECRET (constant-time, header only)
- * هر ۶۰s فراخوانی می‌شود.
  */
 export async function POST(req: Request) {
   return handleRefresh(req);
@@ -40,64 +36,45 @@ async function handleRefresh(req: Request) {
   const authError = verifyCronSecret(req);
   if (authError) return authError;
 
-  const [tgjuResult, usdt, fx, autoRows] = await Promise.all([
-    fetchTgjuLatest(),
-    getUsdtRate(),
-    getGlobalFxRates(),
-    prisma.exchangeRate.findMany({
-      where: { active: true, provider: 'auto' },
-    }),
-  ]);
+  // assembleMarketRates = single source of truth: TGJU (all pages) → USDT → FX → manual DB.
+  // این تنها جایی است که نرخ‌ها باید محاسبه شوند — نه اینکه منطق را تکرار کنیم.
+  const items = await assembleMarketRates();
 
-  if (!tgjuResult.ok && !usdt && !fx) {
+  if (items.length === 0) {
     return NextResponse.json(
-      { error: 'ALL_SOURCES_FAILED', detail: 'TGJU + USDT + FX failed; DB unchanged' },
+      { error: 'ALL_SOURCES_FAILED', detail: 'assembleMarketRates returned empty array' },
       { status: 502 },
     );
   }
 
-  const tgjuMap = tgjuResult.ok && tgjuResult.data
-    ? new Map(Object.entries(tgjuResult.data).map(([k, v]) => [k, { value: v.value, change: v.change }]))
-    : new Map();
-
-  let updated = 0, skipped = 0;
+  // ذخیره نرخ‌های محاسبه‌شده در DB (fqr آیتم‌هایی که provider='auto').
+  // فقط singleRate و changePercent را به‌روز می‌کنیم تا override های ادمین حفظ شوند.
+  let updated = 0;
+  let skipped = 0;
   const errors: { symbol: string; reason: string }[] = [];
 
-  for (const row of autoRows) {
-    let rawValue: number | null = null;
-    let changePercent = 0;
-
-    if (row.tgjuKey && tgjuMap.has(row.tgjuKey)) {
-      const t = tgjuMap.get(row.tgjuKey)!;
-      rawValue = t.value;
-      changePercent = t.change;
-    } else if (row.symbol === 'IRAN_USD' && usdt) {
-      const premium = getUsdtPremiumPercent();
-      rawValue = usdt.toman * (1 + premium / 100) * 10;
-      changePercent = usdt.change;
-    } else if (usdt && fx && row.symbol?.startsWith('IRAN_')) {
-      const fxCode = row.symbol.replace('IRAN_', '').slice(0, 3);
-      const perUsd = fx[fxCode];
-      if (perUsd && perUsd > 0) {
-        rawValue = (usdt.toman / perUsd) * 10;
-      }
-    }
-
-    if (rawValue === null || !Number.isFinite(rawValue) || rawValue <= 0) {
+  for (const item of items) {
+    if (item.provider !== 'auto') continue;
+    // value در MarketRateItem = rawValue / divisor (به‌واحد unit). برای ذخیره ریال خام:
+    // singleRate = value * divisor (چون assembler rawValue/divisor = value → rawValue = value*divisor)
+    const rawValue = item.value * item.divisor;
+    if (!Number.isFinite(rawValue) || rawValue <= 0) {
       skipped++;
-      errors.push({ symbol: row.symbol ?? row.currency, reason: 'no data from any source' });
       continue;
     }
-
     try {
-      await prisma.exchangeRate.update({
-        where: { id: row.id },
+      const affected = await prisma.exchangeRate.updateMany({
+        where: { symbol: item.symbol, provider: 'auto', active: true },
         data: { singleRate: rawValue.toString() },
       });
-      updated++;
+      if (affected.count > 0) {
+        updated++;
+      } else {
+        skipped++;
+      }
     } catch (e: unknown) {
       const err = e as { message?: string };
-      errors.push({ symbol: row.symbol ?? row.currency, reason: err.message ?? 'unknown' });
+      errors.push({ symbol: item.symbol, reason: err.message ?? 'unknown' });
     }
   }
 
@@ -105,29 +82,23 @@ async function handleRefresh(req: Request) {
   revalidateTag(TAGS.list);
 
   // snapshot JSON برای سایت اصلی (best-effort — اگه fail شود cron شکست نمی‌خورد).
-  let snapshot: { count: number; path: string } | null = null;
+  let snapshotCount: number | null = null;
   let snapshotError: string | null = null;
   try {
     const snap = await writeMarketRatesSnapshot();
-    snapshot = { count: snap.count, path: snap.path };
+    snapshotCount = snap.count;
   } catch (e) {
     snapshotError = e instanceof Error ? e.message : 'snapshot failed';
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn('[cron/refresh-market-rates] snapshot failed:', snapshotError);
-    }
   }
 
   return NextResponse.json({
     success: true,
     data: {
+      assembled: items.length,
       updated,
       skipped,
       errors,
-      total: autoRows.length,
-      tgjuOk: tgjuResult.ok,
-      usdtOk: !!usdt,
-      fxOk: !!fx,
-      snapshot,
+      snapshotCount,
       snapshotError,
     },
   });

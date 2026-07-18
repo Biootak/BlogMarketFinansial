@@ -146,12 +146,26 @@ function assembleFromRow(
     }
   }
 
-  // 2b. از registry tgjuKey مستقیم (homepage default)
+  // 2b. از registry/DB tgjuKey — مستقیم با همه prefix های صفحات امتحان می‌کنیم.
+  // این fallback برای symbolهایی است که در CANONICAL_KEY_TO_SOURCES نیستند
+  // ولی DB/registry برایشان tgjuKey تعریف کرده (مثل ارزهای جدید).
+  // همچنین برای 'currency_price_afn' → در tgjuMap به همان شکل است.
   if (rawValue === null && tgjuKey) {
-    const t = tgjuMap.get(tgjuKey);
-    if (t) {
-      rawValue = t.value;
-      changePercent = t.change;
+    // اول کلید خام را امتحان کن
+    let found = tgjuMap.get(tgjuKey);
+    if (!found) {
+      // سپس با prefix هر صفحه امتحان کن (برای کلیدهای مثل 'sekee', 'ons', 'geram18')
+      const pagePrefixes = ['coin_', 'global_', 'sana_', 'transfer_', 'currency_', 'bank_', 'minor_', 'local_'];
+      for (const prefix of pagePrefixes) {
+        if (!tgjuKey.startsWith(prefix)) {
+          found = tgjuMap.get(prefix + tgjuKey);
+          if (found) break;
+        }
+      }
+    }
+    if (found) {
+      rawValue = found.value;
+      changePercent = found.change;
     }
   }
 
@@ -162,12 +176,14 @@ function assembleFromRow(
     changePercent = usdt.change;
   }
 
-  // Priority 4: FX-derived
+  // Priority 4: FX-derived (از USDT × نرخ فارکس جهانی)
+  // changePercent = usdt.change — بهترین تقریب موجود برای این ارزها
   if (rawValue === null && usdt && fx && symbol.startsWith('IRAN_')) {
     const fxCode = symbol.replace('IRAN_', '').slice(0, 3);
     const perUsd = fx[fxCode];
     if (perUsd && perUsd > 0) {
       rawValue = (usdt.toman / perUsd) * 10;
+      changePercent = usdt.change;
     }
   }
 

@@ -1,56 +1,79 @@
 'use client';
 
 /**
- * ExchangeRateTableView — Linear-style precise rate display.
+ * ExchangeRateTableView — نمایش نرخ‌های بازار با گروه‌بندی.
  *
  * Design intent:
- * - Grid layout (not native <table>) — cleaner responsive behavior in RTL.
- * - Monospace tabular-nums for all numbers (Linear precision).
- * - Sticky header row, subtle hover state, status dot per row.
- * - Spread% computed from buy/sell — deterministic, no fake deltas.
- * - Compact on mobile, full grid on desktop.
+ * - ورودی: MarketRateItem[] (مستقیم از assembleMarketRates — بدون تبدیل به ExchangeRateData)
+ * - گروه‌بندی: Afghan → Iran-Forex → Gold/Coin → Minor
+ * - هر ردیف: نام فارسی + نرخ با واحد + درصد تغییر واقعی از TGJU
+ * - برای نرخ‌های دوطرفه (BUY_SELL) خرید/فروش هم نمایش داده می‌شود
+ * - tabular-nums روی همه اعداد (Linear precision)
  *
- * 2026-07-05: rewritten from old blue-gradient table.
+ * 2026-07: rewritten from ExchangeRateData to MarketRateItem — removes the
+ * /IRT hardcode and exposes changePercent from TGJU.
  */
 
+import type { MarketRateGroup, MarketRateItem } from '@/lib/market-rates';
+import { formatChangePercent, formatWithUnit } from '@/lib/market-rates/format';
+import { TrendingDown, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
-import type { ExchangeRateData } from '@/types/types';
-import { TrendingUp, TrendingDown, ArrowUpRight } from 'lucide-react';
 
 interface Props {
-  exchangeRates: ExchangeRateData[];
+  rates: MarketRateItem[];
 }
 
-function formatRate(v: string | number | null | undefined): string {
-  if (v === null || v === undefined) return '—';
-  return String(v);
+// ترتیب و برچسب گروه‌ها (اولویت‌دار برای سایت افغانستان)
+const GROUP_ORDER: MarketRateGroup[] = [
+  'afghan',
+  'iran-forex',
+  'iran-gold',
+  'iran-coin',
+  'global',
+  'minor',
+];
+const GROUP_LABELS: Record<string, string> = {
+  afghan: 'ارزهای افغانستان',
+  'iran-forex': 'ارز آزاد ایران',
+  'iran-gold': 'طلای ایران',
+  'iran-coin': 'سکه',
+  global: 'بازار جهانی',
+  minor: 'ارز جزئی',
+};
+
+interface TabId {
+  id: MarketRateGroup | 'all';
+  label: string;
+  count: number;
 }
 
-function computeSpread(
-  buy: string | null,
-  sell: string | null,
-): { pct: string; isUp: boolean } {
-  const b = parseFloat(String(buy ?? '').replace(/[^\d.-]/g, ''));
-  const s = parseFloat(String(sell ?? '').replace(/[^\d.-]/g, ''));
-  if (!isFinite(b) || !isFinite(s) || b === 0) return { pct: '—', isUp: true };
-  const spread = ((s - b) / b) * 100;
-  return {
-    pct: `${spread >= 0 ? '+' : ''}${spread.toFixed(2)}%`,
-    isUp: spread >= 0,
-  };
-}
+export function ExchangeRateTableView({ rates }: Props) {
+  // فقط آیتم‌های معتبر
+  const valid = rates.filter((r) => Number.isFinite(r.value) && r.value > 0);
 
-export function ExchangeRateTableView({ exchangeRates }: Props) {
-  const [tab, setTab] = useState<'buySell' | 'singleBulk'>('buySell');
+  // محاسبه تب‌ها بر اساس گروه‌های موجود
+  const groupCounts = new Map<MarketRateGroup, number>();
+  for (const r of valid) {
+    groupCounts.set(r.group, (groupCounts.get(r.group) ?? 0) + 1);
+  }
 
-  const buySell = exchangeRates.filter((r) => r.rateType === 'BUY_SELL');
-  const singleBulk = exchangeRates.filter((r) => r.rateType !== 'BUY_SELL');
-  const rates = tab === 'buySell' ? buySell : singleBulk;
-  const title = tab === 'buySell' ? 'نرخ خرید و فروش' : 'نرخ پرچون و عمده';
-  const firstColLabel = tab === 'buySell' ? 'خرید' : 'پرچون';
-  const secondColLabel = tab === 'buySell' ? 'فروش' : 'عمده';
+  const tabs: TabId[] = [
+    { id: 'all', label: 'همه', count: valid.length },
+    ...GROUP_ORDER.filter((g) => (groupCounts.get(g) ?? 0) > 0).map((g) => ({
+      id: g as MarketRateGroup | 'all',
+      label: GROUP_LABELS[g] ?? g,
+      count: groupCounts.get(g) ?? 0,
+    })),
+  ];
 
-  if (rates.length === 0) {
+  const [activeTab, setActiveTab] = useState<MarketRateGroup | 'all'>('all');
+
+  const displayed =
+    activeTab === 'all'
+      ? [...valid].sort((a, b) => a.priority - b.priority)
+      : valid.filter((r) => r.group === activeTab).sort((a, b) => a.priority - b.priority);
+
+  if (valid.length === 0) {
     return (
       <div className="py-10 text-center text-sm text-slate-500 dark:text-slate-400">
         نرخی برای نمایش موجود نیست.
@@ -60,42 +83,36 @@ export function ExchangeRateTableView({ exchangeRates }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Tabs (Linear-style segmented) */}
-      {(buySell.length > 0 && singleBulk.length > 0) && (
-        <div className="flex justify-center">
-          <div className="mt-tabs">
-            <button
-              type="button"
-              onClick={() => setTab('buySell')}
-              aria-current={tab === 'buySell'}
-              className="mt-tab"
-            >
-              خرید و فروش
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab('singleBulk')}
-              aria-current={tab === 'singleBulk'}
-              className="mt-tab"
-            >
-              پرچون و عمده
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Title strip */}
+      {/* Header */}
       <div className="flex items-center justify-between gap-3 px-1">
-        <h3 className="text-base font-bold text-slate-900 dark:text-white">
-          {title}
-        </h3>
+        <h3 className="text-base font-bold text-slate-900 dark:text-white">نرخ بازار</h3>
         <span className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
-          {rates.length} مورد
+          {displayed.length} مورد
         </span>
       </div>
 
-      {/* Table container */}
-      <div className="mt-table">
+      {/* Tabs — گروه‌بندی */}
+      {tabs.length > 2 && (
+        <div className="flex flex-wrap gap-2">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              aria-current={activeTab === tab.id ? 'true' : undefined}
+              className={['mt-tab', activeTab === tab.id ? 'mt-tab--active' : '']
+                .filter(Boolean)
+                .join(' ')}
+            >
+              {tab.label}
+              <span className="ms-1 opacity-60 tabular-nums text-[10px]">({tab.count})</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Table — از کلاس‌های CSS به‌جای role attributes استفاده می‌کند */}
+      <div className="mt-table" aria-label="جدول نرخ ارز">
         {/* Header row */}
         <div className="mt-table__header">
           <div className="mt-table__header-row">
@@ -103,82 +120,78 @@ export function ExchangeRateTableView({ exchangeRates }: Props) {
               <span>ارز</span>
             </div>
             <div className="mt-table__head mt-table__head--num">
-              <span className="mt-table__pair-label">{firstColLabel}</span>
-              <span>{firstColLabel}</span>
+              <span>نرخ</span>
             </div>
             <div className="mt-table__head mt-table__head--num">
-              <span className="mt-table__pair-label">{secondColLabel}</span>
-              <span>{secondColLabel}</span>
+              <span>تغییر</span>
             </div>
             <div className="mt-table__head mt-table__head--num hidden md:inline-flex">
-              <span>توضیحات</span>
+              <span>نوع</span>
             </div>
           </div>
         </div>
 
-        {/* Body rows */}
-        <div role="rowgroup">
-          {rates.map((rate) => {
-            const buy = tab === 'buySell' ? rate.buyRate : rate.singleRate;
-            const sell = tab === 'buySell' ? rate.sellRate : rate.bulkRate;
-            const { pct, isUp } = computeSpread(
-              tab === 'buySell' ? rate.buyRate : rate.singleRate,
-              tab === 'buySell' ? rate.sellRate : rate.bulkRate,
-            );
-            const code = rate.currency || rate.name.slice(0, 3).toUpperCase();
-            const statusClass = isUp ? '' : 'mt-table__status--amber';
+        {/* Body */}
+        <div>
+          {displayed.map((rate) => {
+            const isUp = rate.changePercent >= 0;
+            const changeFmt = formatChangePercent(rate.changePercent);
+            const hasTwoSided = rate.buyValue != null && rate.sellValue != null;
 
             return (
-              <div key={rate.id} className="mt-table__row" role="row">
-                {/* Currency */}
-                <div className="mt-table__currency" role="cell">
+              <div key={rate.symbol} className="mt-table__row">
+                {/* Currency name */}
+                <div className="mt-table__currency">
                   <span
-                    className="mt-table__status"
+                    className={`mt-table__status${isUp ? '' : ' mt-table__status--amber'}`}
                     aria-hidden
-                    title={isUp ? 'فعال' : 'نوسان'}
+                    title={isUp ? 'صعودی' : 'نزولی'}
                   />
-                  <span className="mt-table__symbol">{code.slice(0, 3)}</span>
                   <div className="mt-table__name">
-                    <span className="mt-table__name-title">{rate.name}</span>
-                    <span className="mt-table__name-code">{code}</span>
+                    <span className="mt-table__name-title">{rate.displayNameFa}</span>
+                    <span className="mt-table__name-code">
+                      {rate.symbol.replace(/^(?:IRAN|AFGHANI|GLOBAL)_/, '')}
+                    </span>
                   </div>
                 </div>
 
-                {/* Buy/Single */}
-                <div className="mt-table__price" role="cell">
-                  <span className="mt-table__price-val">
-                    {formatRate(buy)}
+                {/* Rate — با واحد درست */}
+                <div className="mt-table__price">
+                  <span className="mt-table__price-val" dir="ltr">
+                    {formatWithUnit(rate.value, rate.unit, rate.decimals)}
                   </span>
+                  {/* برای دوطرفه: خرید و فروش زیر نرخ اصلی */}
+                  {hasTwoSided && rate.buyValue != null && rate.sellValue != null && (
+                    <span className="text-[10px] opacity-60 tabular-nums" dir="ltr">
+                      خ: {formatWithUnit(rate.buyValue / rate.divisor, rate.unit, rate.decimals)}
+                      {' · '}
+                      ف: {formatWithUnit(rate.sellValue / rate.divisor, rate.unit, rate.decimals)}
+                    </span>
+                  )}
+                </div>
+
+                {/* Change percent — واقعی از TGJU */}
+                <div className="mt-table__price">
                   <span
-                    className={
-                      isUp
-                        ? 'mt-table__price-delta mt-table__price-delta--up'
-                        : 'mt-table__price-delta mt-table__price-delta--down'
-                    }
+                    className={[
+                      'mt-table__price-delta',
+                      isUp ? 'mt-table__price-delta--up' : 'mt-table__price-delta--down',
+                    ].join(' ')}
+                    dir="ltr"
+                    aria-label={`تغییر ${changeFmt}`}
                   >
                     {isUp ? (
-                      <TrendingUp className="w-3 h-3" />
+                      <TrendingUp className="w-3 h-3 shrink-0" aria-hidden />
                     ) : (
-                      <TrendingDown className="w-3 h-3" />
+                      <TrendingDown className="w-3 h-3 shrink-0" aria-hidden />
                     )}
-                    {pct}
+                    {changeFmt}
                   </span>
                 </div>
 
-                {/* Sell/Bulk */}
-                <div className="mt-table__price" role="cell">
-                  <span className="mt-table__price-val">
-                    {formatRate(sell)}
-                  </span>
-                  <span className="mt-table__price-delta opacity-60">
-                    <ArrowUpRight className="w-3 h-3" />
-                    <span>IRT</span>
-                  </span>
-                </div>
-
-                {/* Description (desktop only) */}
-                <div className="mt-table__desc" role="cell">
-                  {rate.description || '—'}
+                {/* Group label (desktop) */}
+                <div className="mt-table__desc hidden md:flex">
+                  {GROUP_LABELS[rate.group] ?? rate.group}
                 </div>
               </div>
             );

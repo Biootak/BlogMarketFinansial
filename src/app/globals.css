@@ -8160,7 +8160,7 @@ p {
   .mt-ticker::before {
     inset-inline-start: 0;
     background: linear-gradient(
-      to end,
+      to right,
       oklch(99% 0.003 240 / 0.95),
       transparent
     );
@@ -8168,16 +8168,16 @@ p {
   .mt-ticker::after {
     inset-inline-end: 0;
     background: linear-gradient(
-      to start,
+      to left,
       oklch(99% 0.003 240 / 0.95),
       transparent
     );
   }
   .dark .mt-ticker::before {
-    background: linear-gradient(to end, oklch(15% 0.012 250 / 0.95), transparent);
+    background: linear-gradient(to right, oklch(15% 0.012 250 / 0.95), transparent);
   }
   .dark .mt-ticker::after {
-    background: linear-gradient(to start, oklch(15% 0.012 250 / 0.95), transparent);
+    background: linear-gradient(to left, oklch(15% 0.012 250 / 0.95), transparent);
   }
 
   /* "LIVE" badge prefix */
@@ -8195,6 +8195,9 @@ p {
     font-weight: 700;
     letter-spacing: 0.06em;
     line-height: 1;
+    /* بالاتر از track که در حرکت است */
+    position: relative;
+    z-index: 3;
   }
   .dark .mt-ticker__label {
     background: oklch(70% 0.18 150 / 0.18);
@@ -8206,6 +8209,13 @@ p {
     border-radius: 9999px;
     background: oklch(65% 0.18 150);
     box-shadow: 0 0 6px oklch(65% 0.18 150 / 0.5);
+  }
+
+  /* Wrapper — flex:1 + overflow:hidden تا track از label رد نشود */
+  .mt-ticker__scroll-area {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
   }
 
   /* Scrolling track — duplicated for seamless loop */

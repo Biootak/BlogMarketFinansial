@@ -377,7 +377,9 @@ export async function fetchTgjuPage(page: TgjuPageId): Promise<FetchTgjuResult> 
         'Accept-Language': 'fa-IR,fa;q=0.9,en;q=0.8',
       },
       signal: controller.signal,
-      next: { revalidate: 300 },
+      // هر بار fetch تازه — Next.js Data Cache این را مستقیماً cache نکند.
+      // کش 60 ثانیه‌ای توسط unstable_cache در getMarketRates مدیریت می‌شود.
+      cache: 'no-store',
       redirect: 'follow',
     });
 

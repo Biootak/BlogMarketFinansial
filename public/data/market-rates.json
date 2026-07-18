@@ -9,49 +9,10 @@
       "divisor": 10,
       "decimals": 0,
       "priority": 1,
-      "value": 175600,
-      "changePercent": 0.12,
+      "value": 193850,
+      "changePercent": 0.81,
       "provider": "auto",
-      "updatedAt": "2026-07-05T13:01:09.642Z"
-    },
-    {
-      "symbol": "IRAN_COIN_EMAMI",
-      "displayNameFa": "سکه امامی",
-      "group": "iran-coin",
-      "unit": "toman",
-      "divisor": 10,
-      "decimals": 0,
-      "priority": 4,
-      "value": 178185000,
-      "changePercent": 0.68,
-      "provider": "auto",
-      "updatedAt": "2026-07-05T13:01:09.729Z"
-    },
-    {
-      "symbol": "IRAN_GOLD_18K",
-      "displayNameFa": "طلای ۱۸ عیار",
-      "group": "iran-gold",
-      "unit": "toman",
-      "divisor": 10,
-      "decimals": 0,
-      "priority": 5,
-      "value": 17735800,
-      "changePercent": 1.56,
-      "provider": "auto",
-      "updatedAt": "2026-07-05T13:01:09.749Z"
-    },
-    {
-      "symbol": "GLOBAL_OUNCE_GOLD",
-      "displayNameFa": "انس طلا",
-      "group": "global",
-      "unit": "usd",
-      "divisor": 1,
-      "decimals": 2,
-      "priority": 6,
-      "value": 4175.7,
-      "changePercent": 0,
-      "provider": "auto",
-      "updatedAt": "2026-07-05T13:01:09.760Z"
+      "updatedAt": "2026-07-18T16:07:48.459Z"
     },
     {
       "symbol": "IRAN_EUR",
@@ -61,10 +22,10 @@
       "divisor": 10,
       "decimals": 0,
       "priority": 7,
-      "value": 200850,
-      "changePercent": 0.04,
+      "value": 221796.33867276888,
+      "changePercent": 0,
       "provider": "auto",
-      "updatedAt": "2026-07-05T13:01:09.653Z"
+      "updatedAt": "2026-07-18T16:07:48.950Z"
     },
     {
       "symbol": "IRAN_AED",
@@ -74,10 +35,10 @@
       "divisor": 10,
       "decimals": 0,
       "priority": 8,
-      "value": 48822,
-      "changePercent": 0.11,
+      "value": 52820.16348773842,
+      "changePercent": 0,
       "provider": "auto",
-      "updatedAt": "2026-07-05T13:01:09.668Z"
+      "updatedAt": "2026-07-18T16:07:49.931Z"
     },
     {
       "symbol": "IRAN_GBP",
@@ -87,23 +48,10 @@
       "divisor": 10,
       "decimals": 0,
       "priority": 9,
-      "value": 234480,
-      "changePercent": 0.01,
+      "value": 260551.0752688172,
+      "changePercent": 0,
       "provider": "auto",
-      "updatedAt": "2026-07-05T13:01:09.662Z"
-    },
-    {
-      "symbol": "IRAN_COIN_BAHAR",
-      "displayNameFa": "سکه بهار آزادی",
-      "group": "iran-coin",
-      "unit": "toman",
-      "divisor": 10,
-      "decimals": 0,
-      "priority": 10,
-      "value": 174510000,
-      "changePercent": 1.46,
-      "provider": "auto",
-      "updatedAt": "2026-07-05T13:01:09.732Z"
+      "updatedAt": "2026-07-18T16:07:49.378Z"
     },
     {
       "symbol": "IRAN_TRY",
@@ -113,10 +61,10 @@
       "divisor": 10,
       "decimals": 0,
       "priority": 11,
-      "value": 3740,
-      "changePercent": 0.27,
+      "value": 4109.603561585754,
+      "changePercent": 0,
       "provider": "auto",
-      "updatedAt": "2026-07-05T13:01:09.679Z"
+      "updatedAt": "2026-07-18T16:07:50.506Z"
     },
     {
       "symbol": "IRAN_CNY",
@@ -126,62 +74,10 @@
       "divisor": 10,
       "decimals": 0,
       "priority": 12,
-      "value": 25900,
-      "changePercent": 0.23,
+      "value": 28591.445427728613,
+      "changePercent": 0,
       "provider": "auto",
-      "updatedAt": "2026-07-05T13:01:09.699Z"
-    },
-    {
-      "symbol": "IRAN_COIN_NIM",
-      "displayNameFa": "نیم سکه",
-      "group": "iran-coin",
-      "unit": "toman",
-      "divisor": 10,
-      "decimals": 0,
-      "priority": 13,
-      "value": 93000000,
-      "changePercent": 1.4,
-      "provider": "auto",
-      "updatedAt": "2026-07-05T13:01:09.736Z"
-    },
-    {
-      "symbol": "IRAN_COIN_ROB",
-      "displayNameFa": "ربع سکه",
-      "group": "iran-coin",
-      "unit": "toman",
-      "divisor": 10,
-      "decimals": 0,
-      "priority": 14,
-      "value": 53500000,
-      "changePercent": 1.21,
-      "provider": "auto",
-      "updatedAt": "2026-07-05T13:01:09.742Z"
-    },
-    {
-      "symbol": "IRAN_COIN_GERAMI",
-      "displayNameFa": "سکه گرمی",
-      "group": "iran-coin",
-      "unit": "toman",
-      "divisor": 10,
-      "decimals": 0,
-      "priority": 15,
-      "value": 27500000,
-      "changePercent": 3.77,
-      "provider": "auto",
-      "updatedAt": "2026-07-05T13:01:09.746Z"
-    },
-    {
-      "symbol": "IRAN_GOLD_MESGHAL",
-      "displayNameFa": "مثقال طلا",
-      "group": "iran-gold",
-      "unit": "toman",
-      "divisor": 10,
-      "decimals": 0,
-      "priority": 16,
-      "value": 76825000,
-      "changePercent": 1.57,
-      "provider": "auto",
-      "updatedAt": "2026-07-05T13:01:09.754Z"
+      "updatedAt": "2026-07-18T16:07:52.462Z"
     },
     {
       "symbol": "IRAN_CHF",
@@ -191,10 +87,10 @@
       "divisor": 10,
       "decimals": 0,
       "priority": 17,
-      "value": 218430,
-      "changePercent": 0.02,
+      "value": 240210.6567534077,
+      "changePercent": 0,
       "provider": "auto",
-      "updatedAt": "2026-07-05T13:01:09.684Z"
+      "updatedAt": "2026-07-18T16:07:51.038Z"
     },
     {
       "symbol": "IRAN_CAD",
@@ -204,10 +100,10 @@
       "divisor": 10,
       "decimals": 0,
       "priority": 18,
-      "value": 123680,
-      "changePercent": 0.1,
+      "value": 138464.2857142857,
+      "changePercent": 0,
       "provider": "auto",
-      "updatedAt": "2026-07-05T13:01:09.690Z"
+      "updatedAt": "2026-07-18T16:07:51.530Z"
     },
     {
       "symbol": "IRAN_AUD",
@@ -217,10 +113,10 @@
       "divisor": 10,
       "decimals": 0,
       "priority": 19,
-      "value": 121830,
-      "changePercent": 0.16,
+      "value": 135559.44055944055,
+      "changePercent": 0,
       "provider": "auto",
-      "updatedAt": "2026-07-05T13:01:09.695Z"
+      "updatedAt": "2026-07-18T16:07:51.943Z"
     },
     {
       "symbol": "IRAN_JPY",
@@ -230,10 +126,10 @@
       "divisor": 10,
       "decimals": 0,
       "priority": 20,
-      "value": 108860,
-      "changePercent": 0.03,
+      "value": 1193.6576354679803,
+      "changePercent": 0,
       "provider": "auto",
-      "updatedAt": "2026-07-05T13:01:09.704Z"
+      "updatedAt": "2026-07-18T16:07:52.922Z"
     },
     {
       "symbol": "IRAN_RUB",
@@ -243,10 +139,10 @@
       "divisor": 10,
       "decimals": 0,
       "priority": 21,
-      "value": 2271,
-      "changePercent": 0.98,
+      "value": 2487.8080082135525,
+      "changePercent": 0,
       "provider": "auto",
-      "updatedAt": "2026-07-05T13:01:09.710Z"
+      "updatedAt": "2026-07-18T16:07:53.460Z"
     },
     {
       "symbol": "IRAN_INR",
@@ -256,15 +152,15 @@
       "divisor": 10,
       "decimals": 0,
       "priority": 22,
-      "value": 1843,
-      "changePercent": 0.22,
+      "value": 2010.6835390519657,
+      "changePercent": 0,
       "provider": "auto",
-      "updatedAt": "2026-07-05T13:01:09.715Z"
+      "updatedAt": "2026-07-18T16:07:53.897Z"
     }
   ],
   "meta": {
-    "count": 20,
-    "generatedAt": "2026-07-05T15:54:09.785Z",
+    "count": 12,
+    "generatedAt": "2026-07-18T16:58:01.709Z",
     "source": "tgju+usdt+fx+manual"
   }
 }

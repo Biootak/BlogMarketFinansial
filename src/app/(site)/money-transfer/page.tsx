@@ -1,28 +1,25 @@
-import type { Metadata } from 'next';
-import { getExchangeRates } from '@/actions/exchange-rates';
+import { getMarketRates } from '@/actions/market-rates';
 import { getRateLists } from '@/actions/rate-lists';
-import { ExchangeRateTableView } from './ExchangeRateTableView';
 import TransferRequestCTA from '@/components/money-transfer/TransferRequestCTA';
-import FAQ from './FAQ';
-import RateListGrid from './RateListGrid';
-import HeroConverter from './HeroConverter';
-import LiveTicker from './LiveTicker';
-import TrustStrip from './TrustStrip';
-import FeatureList from './FeatureList';
-import RateComparisonSection from './RateComparisonSection';
-import ScrollReveal from './ScrollReveal';
-import { loadActiveTransferProviders } from '@/lib/money-transfer/providers';
+import type { MarketRateItem } from '@/lib/market-rates';
 import {
+  type HeroPair,
   buildHeroPairs,
   computeSpreadStats,
   formatFaNumber,
-  type HeroPair,
 } from '@/lib/money-transfer/hero';
-import {
-  readMarketRatesSnapshot,
-  type SnapshotItem,
-} from '@/lib/market-rates/snapshot-reader';
+import { loadActiveTransferProviders } from '@/lib/money-transfer/providers';
 import type { ExchangeRateData } from '@/types/types';
+import type { Metadata } from 'next';
+import { ExchangeRateTableView } from './ExchangeRateTableView';
+import FAQ from './FAQ';
+import FeatureList from './FeatureList';
+import HeroConverter from './HeroConverter';
+import LiveTicker from './LiveTicker';
+import RateComparisonSection from './RateComparisonSection';
+import RateListGrid from './RateListGrid';
+import ScrollReveal from './ScrollReveal';
+import TrustStrip from './TrustStrip';
 
 export const metadata: Metadata = {
   title: 'صرافی آنلاین | انتقال ارز سریع و مطمئن',
@@ -36,123 +33,64 @@ interface HeroInitial {
 }
 
 /**
- * تبدیل یک آیتم snapshot به ExchangeRateData برای استفاده در buildHeroPairs و
- * نمایش در جدول. DB override‌ها (id, imageUrl, description, manualNote) در
- * مرحله‌ی merge اعمال می‌شوند.
+ * تبدیل یک MarketRateItem به ExchangeRateData — فقط برای HeroConverter که
+ * هنوز به ExchangeRateData نیاز دارد.
+ * LiveTicker و ExchangeRateTableView مستقیماً MarketRateItem[] می‌گیرند.
  */
-function snapshotToRate(s: SnapshotItem): ExchangeRateData {
-  const isBuySell =
-    s.buyValue != null && s.sellValue != null && s.buyValue > 0 && s.sellValue > 0;
-  const updated = s.updatedAt ? new Date(s.updatedAt) : new Date();
+function rateItemToExchangeRate(r: MarketRateItem): ExchangeRateData {
+  const now = new Date();
   return {
-    id: `snapshot-${s.symbol}`,
-    name: s.displayNameFa,
-    currency: s.symbol.replace(/^(?:IRAN|AFGHANI|GLOBAL)_/, ''),
-    symbol: s.symbol,
-    displayNameFa: s.displayNameFa,
-    group: s.group,
-    unit: s.unit,
-    divisor: s.divisor,
-    decimals: s.decimals,
-    priority: s.priority,
-    provider: s.provider,
+    id: `live-${r.symbol}`,
+    name: r.displayNameFa,
+    currency: r.symbol.replace(/^(?:IRAN|AFGHANI|GLOBAL)_/, ''),
+    symbol: r.symbol,
+    displayNameFa: r.displayNameFa,
+    group: r.group,
+    unit: r.unit,
+    divisor: r.divisor,
+    decimals: r.decimals,
+    priority: r.priority,
+    provider: r.provider,
     active: true,
-    rateType: isBuySell ? 'BUY_SELL' : 'SINGLE_BULK',
-    buyRate: s.buyValue != null ? String(s.buyValue) : null,
-    sellRate: s.sellValue != null ? String(s.sellValue) : null,
-    singleRate: s.value != null ? String(s.value) : null,
+    rateType: r.buyValue != null && r.sellValue != null ? 'BUY_SELL' : 'SINGLE_BULK',
+    buyRate: r.buyValue != null ? String(r.buyValue) : null,
+    sellRate: r.sellValue != null ? String(r.sellValue) : null,
+    singleRate: String(r.value),
     bulkRate: null,
     imageUrl: null,
     manualNote: null,
     description: null,
-    updatedAt: updated,
-    createdAt: updated,
+    updatedAt: r.updatedAt instanceof Date ? r.updatedAt : new Date(r.updatedAt ?? now),
+    createdAt: now,
   };
 }
 
 /**
- * استراتژی dual-source (2026-07-06):
- *   - اگه snapshot ≥ 3 آیتم داشته باشه، primary می‌شه (سریع‌تر، آفلاین‌پسند).
- *     DB فقط برای override فیلدهای ادمینی مثل imageUrl/description/manualNote
- *     و برای رکوردهایی که در snapshot نیستن (admin-only).
- *   - در غیر این صورت (snapshot خالی/ناکافی/خراب) → رفتار قدیمی DB.
- *
- *   freshnessAnchor:
- *     - snapshot.generatedAt اگه موجود باشه
- *     - در غیر این صورت max(db.updatedAt)
- *     - null اگه هیچ داده‌ای نیست
+ * منبع اصلی نرخ‌ها: assembleMarketRates() با کش ۶۰ ثانیه‌ای.
+ * خروجی: MarketRateItem[] (raw) + ExchangeRateData[] (برای HeroConverter)
  */
 async function loadMarketRates(): Promise<{
+  items: MarketRateItem[];
   rates: ExchangeRateData[];
   freshnessAnchor: Date | null;
 }> {
-  const [dbRates, snapshot] = await Promise.all([
-    getExchangeRates(),
-    readMarketRatesSnapshot(),
-  ]);
-
-  if (!snapshot || snapshot.items.length < 3) {
-    // fallback قدیمی: فقط DB
-    const maxDb =
-      dbRates.length > 0
-        ? dbRates.reduce<Date>(
-            (acc, r) =>
-              new Date(r.updatedAt).getTime() > acc.getTime() ? new Date(r.updatedAt) : acc,
-            new Date(dbRates[0].updatedAt),
-          )
-        : null;
-    return { rates: dbRates, freshnessAnchor: maxDb };
+  const items = await getMarketRates();
+  if (items.length === 0) {
+    return { items: [], rates: [], freshnessAnchor: null };
   }
-
-  // merge: snapshot primary, DB برای custom fields
-  const dbBySymbol = new Map<string, ExchangeRateData>();
-  for (const r of dbRates) {
-    if (r.symbol) dbBySymbol.set(r.symbol, r);
-  }
-
-  const snapshotTime = snapshot.generatedAt?.getTime() ?? 0;
-  const merged: ExchangeRateData[] = snapshot.items.map((s) => {
-    const db = dbBySymbol.get(s.symbol);
-    const base = snapshotToRate(s);
-    if (!db) return base;
-    // updatedAt: تازه‌ترینِ db و snapshot
-    const dbTime = new Date(db.updatedAt).getTime();
-    const freshest = new Date(Math.max(dbTime, snapshotTime));
-    return {
-      ...base,
-      // DB برای id و فیلدهای ادمینی override می‌کنه
-      id: db.id,
-      imageUrl: db.imageUrl ?? base.imageUrl,
-      manualNote: db.manualNote ?? base.manualNote,
-      description: db.description ?? base.description,
-      // اگه DB صریح خالی نبود، نرخ‌های DB نگه داشته می‌شن (ادمینی)
-      // ولی اگه DB خالی بود، از snapshot پُر می‌شه
-      buyRate: db.buyRate ?? base.buyRate,
-      sellRate: db.sellRate ?? base.sellRate,
-      singleRate: db.singleRate ?? base.singleRate,
-      bulkRate: db.bulkRate ?? base.bulkRate,
-      active: db.active ?? base.active,
-      updatedAt: freshest,
-    };
-  });
-
-  // رکوردهای admin-only (در DB هست ولی در snapshot نیست)
-  const snapshotSymbols = new Set(snapshot.items.map((s) => s.symbol));
-  for (const r of dbRates) {
-    if (r.symbol && !snapshotSymbols.has(r.symbol)) {
-      merged.push(r);
-    }
-  }
-
-  return { rates: merged, freshnessAnchor: snapshot.generatedAt };
+  const rates = items.map(rateItemToExchangeRate);
+  // freshnessAnchor = تازه‌ترین updatedAt در آیتم‌ها
+  const anchor = items.reduce<Date | null>((acc, r) => {
+    const t = r.updatedAt instanceof Date ? r.updatedAt : new Date(r.updatedAt ?? 0);
+    return !acc || t.getTime() > acc.getTime() ? t : acc;
+  }, null);
+  return { items, rates, freshnessAnchor: anchor };
 }
 
 // Async server-side pre-computation of the stats the hero depends on. Doing
 // this here (and not inside the client component) keeps the client bundle
 // smaller and avoids redundant work on every render.
-async function buildHeroInitial(
-  rates: ExchangeRateData[],
-): Promise<HeroInitial> {
+async function buildHeroInitial(rates: ExchangeRateData[]): Promise<HeroInitial> {
   const [providers] = await Promise.all([loadActiveTransferProviders()]);
   const pairs = buildHeroPairs(rates);
   const spreadStats = computeSpreadStats(pairs);
@@ -160,9 +98,7 @@ async function buildHeroInitial(
   // «بهترین» provider بر مبنای کمترین spread.
   // اگه لیست خالی یا همگی spread=0، از اوّلی استفاده می‌کنیم.
   const activeProviders = [...providers].filter((p) => p.active);
-  const sorted = [...activeProviders].sort(
-    (a, b) => a.spreadPercent - b.spreadPercent,
-  );
+  const sorted = [...activeProviders].sort((a, b) => a.spreadPercent - b.spreadPercent);
   const best = sorted[0];
   return {
     pairs,
@@ -178,10 +114,7 @@ async function buildHeroInitial(
 // Dynamically rendered on demand — the shared site header reads auth(), which
 // opts the whole (site) tree out of static generation (see (home)/page.tsx).
 export default async function MoneyTransferPage() {
-  const [market, rateLists] = await Promise.all([
-    loadMarketRates(),
-    getRateLists(),
-  ]);
+  const [market, rateLists] = await Promise.all([loadMarketRates(), getRateLists()]);
   const hero = await buildHeroInitial(market.rates);
   const activeRateLists = rateLists.filter((list) => list.isActive);
 
@@ -197,10 +130,11 @@ export default async function MoneyTransferPage() {
         freshnessAnchor={market.freshnessAnchor}
       />
 
-      {/* Live ticker — thin full-width strip right under the hero */}
+      {/* Live ticker — thin full-width strip right under the hero.
+          مستقیماً از MarketRateItem[] (نه ExchangeRateData) تا واحد + changePercent درست باشد. */}
       <div className="mt-3 sm:mt-4">
         <LiveTicker
-          rates={market.rates}
+          rates={market.items}
           freshnessAnchorISO={market.freshnessAnchor?.toISOString() ?? null}
         />
       </div>
@@ -221,10 +155,10 @@ export default async function MoneyTransferPage() {
           </section>
         </ScrollReveal>
 
-        {/* Exchange Rates Section */}
+        {/* Exchange Rates Section — مستقیماً از MarketRateItem[] */}
         <ScrollReveal>
           <section id="rates" className="mt-section">
-            <ExchangeRateTableView exchangeRates={market.rates} />
+            <ExchangeRateTableView rates={market.items} />
           </section>
         </ScrollReveal>
 
