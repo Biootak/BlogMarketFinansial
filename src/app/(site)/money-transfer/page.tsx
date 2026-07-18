@@ -189,7 +189,6 @@ export default async function MoneyTransferPage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 overflow-x-hidden">
       {/* Hero + Live Converter (one cohesive unit) */}
       <HeroConverter
-        rates={market.rates}
         pairs={hero.pairs}
         spreadStats={hero.spreadStats}
         providerCount={hero.providers.count}
@@ -200,7 +199,10 @@ export default async function MoneyTransferPage() {
 
       {/* Live ticker — thin full-width strip right under the hero */}
       <div className="mt-3 sm:mt-4">
-        <LiveTicker rates={market.rates} />
+        <LiveTicker
+          rates={market.rates}
+          freshnessAnchorISO={market.freshnessAnchor?.toISOString() ?? null}
+        />
       </div>
 
       <div className="container py-6 sm:py-10 lg:py-14 space-y-10 sm:space-y-16 px-4 sm:px-6">

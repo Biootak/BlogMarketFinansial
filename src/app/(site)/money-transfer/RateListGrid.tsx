@@ -176,11 +176,6 @@ export default function RateListGrid({ rateLists, initialCount = 9 }: Props) {
             type="button"
             onClick={() => setDisplayCount((prev) => prev + 6)}
             className="mt-cta"
-            style={{
-              background: 'oklch(96% 0.005 240)',
-              color: 'oklch(20% 0.015 250)',
-              border: '1px solid oklch(90% 0.006 240)',
-            }}
           >
             <span>نمایش لیست‌های بیشتر</span>
             <span className="text-xs font-bold opacity-70">

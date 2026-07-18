@@ -1,0 +1,163 @@
+/* HeroConverter — redesign layer (2026-07)
+ * Co-located module per Directive 3.5 (Redesign mode) + Craft Bar §3.6.
+ * Tokens only (no hex/rgb). Logical properties. Mobile-first.
+ * The legacy `mt-calc` glass shell (globals.css) is kept; this layer ADDS the
+ * billion-dollar craft: signature gradient ring (depth/identity), spring press
+ * micro-interactions, hover lift, and a breathing live-dot.
+ */
+
+/* Signature gradient ring — drawn via mask so it never touches layout.
+ * This is the "wow": a thin self-illuminating accent that reads as trust/fintech
+ * without heavy glow or excessive glass (per AGENTS.ui-design.md). */
+.card {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(
+    135deg,
+    var(--ds-accent-emerald),
+    var(--ds-color-blue) 55%,
+    transparent
+  );
+  -webkit-mask:
+    linear-gradient(var(--ds-text-inverse) 0 0) content-box,
+    linear-gradient(var(--ds-text-inverse) 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.7;
+  pointer-events: none;
+}
+.card:hover {
+  transform: translateY(-2px);
+}
+
+/* Rate-lock badge — honest freshness from the real rate-source timestamp */
+.lock {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--ds-radius-full);
+  background: color-mix(in oklch, var(--ds-accent-emerald) 14%, transparent);
+  color: var(--ds-accent-emerald);
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+.lockIcon {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+.lockDot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--ds-accent-emerald);
+  box-shadow: 0 0 0 0.25rem
+    color-mix(in oklch, var(--ds-accent-emerald) 30%, transparent);
+}
+
+/* Prominent received-amount result (the single most important number) */
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-4) var(--ds-space-5);
+  border-radius: var(--ds-radius-xl);
+  background: color-mix(in oklch, var(--ds-accent-emerald) 9%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ds-accent-emerald) 26%, transparent);
+  text-align: start;
+}
+.resultLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-secondary);
+  font-weight: 500;
+}
+.resultValue {
+  font-size: var(--ds-text-3xl);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--ds-text-primary);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+.resultUnit {
+  font-size: var(--ds-text-base);
+  color: var(--ds-text-muted);
+  font-weight: 600;
+  margin-inline-start: var(--ds-space-2);
+}
+.resultFoot {
+  margin-top: var(--ds-space-1);
+}
+
+/* Transparency row — explicit fee/spread, no hidden cost */
+.fee {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-2) var(--ds-space-1);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-secondary);
+}
+.feeLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+}
+.feeVal {
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.feeBar {
+  position: relative;
+  flex: 1;
+  height: 0.3rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-surface-recessed);
+  overflow: hidden;
+  min-inline-size: 3rem;
+}
+.feeBarFill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    var(--ds-accent-emerald),
+    var(--ds-accent-amber)
+  );
+  opacity: 0.85;
+}
+
+/* Spring press micro-interaction on the submit CTA (§3.6) */
+.submit {
+  transition: transform 140ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.submit:active {
+  transform: scale(0.975);
+}
+
+@media (min-width: 640px) {
+  .card:hover {
+    transform: translateY(-3px);
+  }
+}

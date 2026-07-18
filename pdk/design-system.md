@@ -96,11 +96,41 @@ Primitive (خام)  →  Semantic (معنایی)  →  Component (مولفه)
 - **Success:** چک‌مارک + خلاصه تراکنش.
 - **Offline/Cached:** وضعیت صریح.
 
-## ۸.۱۰ میکروانیمیشن و حرکت
-- حرکت همیشه به جلو، کوتاه (<۳۰۰ms)، ease-out.
-- `prefers-reduced-motion`: همه انیمیشن غیرفعال.
-- ابزار: Motion.dev / CSS transitions؛ GSAP برای اسکرول (اختیاری).
-- هیچ pop-in/flash (اصل استمرار).
+## ۸.۱۰ میکروانیمیشن و حرکت (۲۰۲۶ — Functional, not decorative)
+- **هدف:** تأیید عمل، حفظ استمرار (continuity)، هدایت توجه، بیان وضعیت. «موشن برای حس، متن برای معنی».
+- **ویژگی‌های قابل انیمیت:** فقط `opacity` + `transform` (+ `filter` با احتیاط). هرگز `width/height/top/left/margin/padding` (layout thrash).
+- **Spring physics:** به‌جای cubic-bezier مکانیکی، از mass/stiffness/damping استفاده کن (CSS `linear()`، Motion، React Spring). دکمه/مودال/لیست «زنده» حس می‌شوند.
+- **مدت (توکن‌محور):** میکرو ۱۲۰ms · مولفه ۲۰۰–۳۰۰ms · صفحه ۳۰۰–۵۰۰ms. >۵۰۰ms باید توجیه داشته باشد.
+- **Easing به‌مثابه فعل:** ease-out برای ورود، ease-in برای خروج، ease-in-out بین دو حالت، linear فقط برای لودر نامعلوم.
+- **Scroll-linked:** `scroll-timeline` / `view-timeline` نیتیو CSS + View Transitions API برای shared-element (بدون JS orchestration).
+- **Interruptible:** state حرکت را هدایت می‌کند؛ لغو میان‌حالت از فریم جاری برمی‌گردد.
+- **prefers-reduced-motion:** در ریشه (CSS global) + guard سطح JS برای حرکت سنگین.
+- **بدون pop-in/flash** (اصل استمرار)؛ هیچ Lottie runtime (بدهی ساختاری ۶۰–۱۲۰KB JS).
+
+## ۸.۱۰ب توکن‌های حرکت (Motion Tokens — لایه DS)
+```
+--motion-duration-fast:   120ms   /* hover, focus, tap */
+--motion-duration-base:   220ms   /* modal, drawer, dropdown */
+--motion-duration-slow:   380ms   /* page/view-transition */
+--motion-ease-out:        cubic-bezier(0.16,1,0.3,1)
+--motion-ease-in:         cubic-bezier(0.4,0,1,1)
+--motion-ease-standard:   cubic-bezier(0.4,0,0.2,1)
+--motion-spring-tap:      linear(...) /* spring mass/stiffness/damping */
+--motion-breath:          0.5Hz  /* ambient stroke oscillation */
+```
+
+## ۸.۱۶ افکت‌های سبک‌اما‌خاص ۲۰۲۶ (کتابخانه — با سرعت، با هویت)
+هر افکت GPU-friendly (فقط opacity/transform) و دارای نسخه reduced-motion است:
+1. **Spring tap:** فشردگی ۱۲۰ms scale-down-and-back روی دکمه (حس هاپتیک بدون هاپتیک واقعی).
+2. **Kinetic SVG icons:** مورف نیتیو SMIL/CSS (هامبورگر→X با node-normalized paths)؛ <۱۵ نود، `will-change:transform; contain:paint`.
+3. **System-breath:** نوسان ۰.۵Hz opacity/stroke-width روی استروک‌های محیطی = «رابط زنده اما ساکت» (دوست‌دار OLED).
+4. **View-Transition drill-down:** کارت→جزئیات عنصر/موقعیت مشترک دارد (استمرار، بدون pop).
+5. **Scroll-reveal:** `view-timeline` fade+translateY هنگام ورود سکشن؛ پشتِ reduced-motion.
+6. **Hairline glow:** حاشیه ۱px + box-shadow ظریف روی focus (نه glow سنگین).
+7. **Ambient SVG light:** استروک نازک خودروشن به‌جای بلوب گلس سنگین.
+8. **State-ready SVG:** حلقه پیشرفت با `role="progressbar"` + `aria-valuenow` (دسترس‌پذیر).
+
+> **ممنوع در ۲۰۲۶:** Lottie runtime · مونوکالچر استرایپ (دارک+Inter+بنتو بدون منطق) · موشن صرفاً cubic-bezier · پارالاکس تمام‌صفحه تزیینی · ویدئوی autoplay پس‌زمینه · ۳ کارت گرد یکسان هیرو.
 
 ## ۸.۱۱ الگوهای چیدمان (Layout Patterns)
 - **مشتری (Mobile-first):** تب‌بار پایین، کارت موجودی بزرگ، FAB انتقال، تاریخچه اسکرولی.
@@ -130,3 +160,10 @@ Primitive (خام)  →  Semantic (معنایی)  →  Component (مولفه)
 - WeAndTheColor — Fintech Color Trust Hierarchy 2026.
 - Eleken — Modern Fintech Design Guide 2026.
 - MadeGoodDesigns — UI Trends 2026.
+- **آدامارانت — Functional UI Animation 2026 (checklist: spring, tokens, reduced-motion).**
+- **Envato Elements — Calm Interfaces 2026 (پایان نمایش‌های بصری، شفافیت AI).**
+- **Internal Orbit — Calm & Clear Interfaces 2026 (motion explains not performs).**
+- **Creative Alive — Micro-Interactions 2026 (spring, scroll-timeline, haptic-style, view-transitions).**
+- **Lucky Graphics — Kinetic Web / SVG 2026 (native SMIL 2.0, Bioluminescent Minimalism, no Lottie).**
+- **The Masterly — Fintech Design 2026 (Stripe monoculture warning, trust via data not decoration).**
+- **WSA / Skins Factory / Mara — Fintech UX 2026 (proof-first IA, friction-right, EAA, 44px targets, state clarity).**

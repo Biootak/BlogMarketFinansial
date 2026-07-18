@@ -24,9 +24,17 @@
 - WeAndTheColor — Fintech Color Trust Hierarchy 2026.
 - square.al — Psychology of Color in Fintech (۲۰۲۶-۰۶).
 - mantlr / atomize / Figma — Design Tokens Workflow 2026.
-- TheMasterly — Fintech Dashboard Design Patterns (Ramp/Mercury/Stripe/Brex).
+- TheMasterly — Fintech Dashboard Design Patterns (Ramp/Mercury/Stripe/Brex) + Stripe-monoculture warning (۲۰۲۶-۰۶).
 - usedatabrain — Fintech Data Visualization 2026 (Tufte/Few/WCAG).
 - dezodev — Accessible Fintech Dashboard (WCAG 2.2 AA).
+- **adamarant — Functional UI Animation in 2026 (checklist: durations, easing-as-verb, opacity/transform only, reduced-motion, motion tokens).**
+- **Envato Elements — UX/UI Trends 2026 (calm interfaces, transparent AI, end of visual theatrics).**
+- **Internal Orbit — Calm & Clear Interfaces 2026 (motion that explains not performs, adaptive transparency).**
+- **Creative Alive — Micro-Interactions 2026 (spring physics, scroll-timeline, haptic-style, View Transitions, content-reactive motion).**
+- **Lucky Graphics — Kinetic Web / SVG Trends 2026 (native SMIL 2.0, Bioluminescent Minimalism, no Lottie, node-normalized morphing).**
+- **Ripplix — UI Animation Guide 2026 (12 principles, spatial UI, CSS vs Motion vs Lottie).**
+- **Tubik Studio — 7 UI Trends 2026 (AI collaboration, soft spatial UI, ethical personalization).**
+- **WSA / Skins Factory / Mara — Fintech UX 2026 (proof-first IA, friction-right, EAA, 44px targets, state clarity, KYC drop-off, trust-contextual).**
 
 ## بنچمارک رقبا
 - Apple Wallet, Revolut, Wise, Nubank, Mercury, Monzo, Stripe, Linear, Notion (تحلیل عمومی).

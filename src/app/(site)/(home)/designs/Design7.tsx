@@ -215,7 +215,7 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
                   initial={{ y: -10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.35, type: 'spring', stiffness: 200 }}
-                  className="absolute top-14 sm:top-16 start-4 sm:start-6 z-20"
+                  className="absolute top-10 sm:top-12 start-4 sm:start-6 z-20"
                 >
                   <CompactRateBridge
                     rates={transferRateItems}
@@ -230,7 +230,7 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
                   key={mainPost.id}
                   tiltStrength={0.4}
                   enableHolographic
-                  className="relative group h-[min(60dvh,280px)] sm:h-[360px] @lg/main-hero:h-[420px] @3xl/main-hero:h-[460px] overflow-hidden rounded-2xl"
+                  className="relative group h-[min(38dvh,180px)] sm:h-[220px] @lg/main-hero:h-[260px] @3xl/main-hero:h-[300px] overflow-hidden rounded-2xl"
                   innerClassName="relative h-full"
                 >
                   <motion.div
@@ -326,7 +326,7 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
                     </motion.div>
 
                     {/* Content */}
-                    <div className="absolute bottom-0 start-0 end-0 p-4 sm:p-6 lg:p-8 z-10">
+                    <div className="absolute bottom-0 start-0 end-0 p-3 sm:p-5 lg:p-6 z-10">
                       {/* Category */}
                       {mainPost.categories?.[0] && (
                         <motion.span
@@ -510,7 +510,7 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2 + i * 0.1 }}
-                    className="flex-1 h-[140px] sm:h-[170px] @md/main-hero:flex-1 @lg/main-hero:h-auto"
+                    className="flex-1 h-[100px] sm:h-[120px] @md/main-hero:flex-1 @lg/main-hero:h-auto"
                     onClick={() => setActiveIndex(initialPosts.findIndex((p) => p.id === post.id))}
                   >
                     <MagneticSpotlightCard

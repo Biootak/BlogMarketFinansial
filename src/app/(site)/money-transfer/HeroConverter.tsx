@@ -34,9 +34,10 @@ import {
   Wallet,
   Coins,
   Bitcoin,
+  Lock,
 } from 'lucide-react';
 import { useDirection } from '@/hooks/useDirection';
-import type { ExchangeRateData } from '@/types/types';
+import styles from './HeroConverter.module.css';
 import {
   buildHeroPairs,
   convertViaIRT,
@@ -44,13 +45,10 @@ import {
   formatFaNumber,
   inverseRate,
   parseLocaleNumber,
-  toEnglishDigits,
   type HeroPair,
 } from '@/lib/money-transfer/hero';
 
 interface HeroConverterProps {
-  /** همه‌ی نرخ‌های خام (برای LiveTicker child لازم است) */
-  rates: ExchangeRateData[];
   /** جفت‌های آماده برای calculator (server-side computed) */
   pairs: HeroPair[];
   /** شاخص‌های spread روی pairs فعلی */
@@ -96,7 +94,6 @@ const AMOUNT_PRESETS: readonly number[] = [100, 500, 1_000, 5_000, 10_000];
 const DEFAULT_AMOUNT_STR = '1000';
 
 export default function HeroConverter({
-  rates,
   pairs,
   spreadStats,
   providerCount,
@@ -170,6 +167,15 @@ export default function HeroConverter({
   }, [numericAmount, fromPair, toPair]);
 
   const inverse = inverseRate(rate);
+
+  // Market spread of the destination pair (real, from data) — surfaced as the
+  // explicit "implicit fee" so the user never sees a hidden cost.
+  const marketSpreadPct = useMemo(() => {
+    if (!toPair || !Number.isFinite(toPair.buy) || toPair.buy <= 0) {
+      return Number.NaN;
+    }
+    return ((toPair.sell - toPair.buy) / toPair.buy) * 100;
+  }, [toPair]);
 
   // ===========================================================================
   // INTERACTIONS
@@ -255,7 +261,7 @@ export default function HeroConverter({
       <div className="mt-hero__grid" aria-hidden />
       <div className="mt-hero__spotlight" aria-hidden />
 
-      <div className="container-wide relative z-10 mt-hero__container">
+      <div className="container relative z-10 mt-hero__container">
         <div className="mt-hero__inner">
           {/* =============================================================
               LEFT/RIGHT SPLIT — in RTL: copy starts visually on the right
@@ -367,7 +373,7 @@ export default function HeroConverter({
             {hasRates ? (
               <form
                 onSubmit={handleSubmit}
-                className="mt-calc mt-fade-scale"
+                className={`mt-calc ${styles.card} mt-fade-scale`}
                 aria-label="مبدل ارز"
               >
                 <div className="mt-calc__head">
@@ -377,6 +383,14 @@ export default function HeroConverter({
                   <span className="mt-calc__head-title">مبدل زنده</span>
                   <span className="mt-calc__head-meta">
                     {activeCategory.label}
+                  </span>
+                  <span
+                    className={styles.lock}
+                    title="نرخ بر اساس آخرین بروزرسانی بازار قفل شده است"
+                  >
+                    <span className={`${styles.lockDot} anim-ping-soft`} aria-hidden />
+                    <Lock className={styles.lockIcon} aria-hidden />
+                    <span>نرخ قفل · {freshness}</span>
                   </span>
                 </div>
 
@@ -437,29 +451,27 @@ export default function HeroConverter({
                   <ArrowLeftRight className="size-4" />
                 </button>
 
-                {/* TO */}
-                <label className="mt-calc__field">
-                  <span className="mt-calc__field-label">دریافت می‌کنم</span>
-                  <div className="mt-calc__field-row">
-                    <input
-                      type="text"
-                      readOnly
-                      tabIndex={-1}
-                      value={
-                        Number.isFinite(converted)
-                          ? new Intl.NumberFormat('fa-IR', {
-                              minimumFractionDigits:
-                                toPair && toPair.code !== 'IRT' && toPair.code !== 'IRR'
-                                  ? 2
-                                  : 0,
-                              maximumFractionDigits: 4,
-                            }).format(converted)
-                          : '—'
-                      }
-                      className="mt-calc__amount mt-calc__amount--readonly"
-                      aria-label="مبلغ مقصد"
-                      dir="ltr"
-                    />
+                {/* TO — prominent received-amount result (the key number) */}
+                <div className={styles.result} aria-live="polite">
+                  <span className={styles.resultLabel}>
+                    <ArrowDown className="size-3.5" aria-hidden />
+                    دریافت می‌کنم
+                  </span>
+                  <span className={styles.resultValue}>
+                    {Number.isFinite(converted) ? (
+                      new Intl.NumberFormat('fa-IR', {
+                        minimumFractionDigits:
+                          toPair && toPair.code !== 'IRT' && toPair.code !== 'IRR'
+                            ? 2
+                            : 0,
+                        maximumFractionDigits: 4,
+                      }).format(converted)
+                    ) : (
+                      '—'
+                    )}
+                    <span className={styles.resultUnit}>{toPair?.code ?? '—'}</span>
+                  </span>
+                  <div className={styles.resultFoot}>
                     <CurrencyPicker
                       value={toId}
                       pairs={filteredPairs}
@@ -467,7 +479,7 @@ export default function HeroConverter({
                       ariaLabel="ارز مقصد"
                     />
                   </div>
-                </label>
+                </div>
 
                 {/* Dual-direction rate display */}
                 <div className="mt-calc__rates">
@@ -502,6 +514,29 @@ export default function HeroConverter({
                   </span>
                 </div>
 
+                {/* Transparency — explicit market spread (no hidden cost) */}
+                <div className={styles.fee}>
+                  <span className={styles.feeLabel}>کارمزد ضمنی (اسپرد بازار)</span>
+                  <span className={styles.feeBar} aria-hidden>
+                    <span
+                      className={styles.feeBarFill}
+                      style={{
+                        inlineSize: `${Math.min(
+                          100,
+                          Number.isFinite(marketSpreadPct)
+                            ? marketSpreadPct * 8
+                            : 0,
+                        )}%`,
+                      }}
+                    />
+                  </span>
+                  <span className={styles.feeVal}>
+                    {Number.isFinite(marketSpreadPct)
+                      ? `${fmtSpreadPct(marketSpreadPct)}٪`
+                      : '—'}
+                  </span>
+                </div>
+
                 {/* Best-deal hint */}
                 <div className="mt-calc__hint" role="note">
                   <span className="mt-calc__hint-dot" aria-hidden />
@@ -518,7 +553,7 @@ export default function HeroConverter({
                 </div>
 
                 {/* CTA */}
-                <button type="submit" className="mt-calc__cta">
+                <button type="submit" className={`mt-calc__cta ${styles.submit}`}>
                   <Send className="size-4" />
                   <span>تبدیل و ثبت درخواست</span>
                 </button>
@@ -527,17 +562,10 @@ export default function HeroConverter({
               <CalculatorSkeleton />
             )}
 
-            {/* hidden helper: pass `rates` so it can be referenced by SSR rates parent.
-                (Pure side-channel; not visible.) */}
-            <span hidden aria-hidden suppressHydrationWarning>
-              {toEnglishDigits(amountRaw)}
-              {'|'}
-              {String(rates.length)}
-            </span>
+          </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
   );
 }
 

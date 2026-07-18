@@ -1,0 +1,226 @@
+/* Wallet home — delicate, compact, calm (2026)
+   Reuses --ds-* tokens. No heavy shadows, hairline borders, small radius. */
+
+.shell {
+  margin-inline: auto;
+  padding-block: clamp(20px, 3vw, 36px) 56px;
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: clamp(20px, 3vw, 28px);
+}
+.greet {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ds-text-primary);
+}
+.greetSub {
+  font-size: 12px;
+  color: var(--ds-text-muted);
+  margin-top: 2px;
+}
+.iconBtn {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  border: 1px solid var(--ds-border-subtle);
+  color: var(--ds-text-secondary);
+  background: var(--ds-surface);
+  transition: transform 120ms var(--ds-ease-out-quart),
+    background 160ms, border-color 160ms, color 160ms;
+  cursor: pointer;
+}
+.iconBtn:hover {
+  background: var(--ds-surface-recessed);
+  border-color: var(--ds-border-default);
+  color: var(--ds-text-primary);
+}
+.iconBtn:active {
+  transform: scale(0.94);
+}
+
+/* ── Balance card ───────────────────────────────────────── */
+.balance {
+  position: relative;
+  padding: clamp(18px, 2.4vw, 24px);
+  border-radius: 14px;
+  border: 1px solid var(--ds-border-subtle);
+  background: var(--ds-surface);
+  overflow: hidden;
+}
+.balanceLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ds-text-muted);
+  letter-spacing: 0.01em;
+}
+.balanceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin-top: 6px;
+}
+.balanceNum {
+  font-size: clamp(27px, 5vw, 34px);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-text-primary);
+  line-height: 1.05;
+}
+.afn {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ds-text-muted);
+}
+.spark {
+  margin-top: 14px;
+  display: block;
+  width: 100%;
+  height: 38px;
+  color: var(--ds-brand-500);
+}
+.spark path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* ── Quick actions ──────────────────────────────────────── */
+.actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 14px;
+}
+.action {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 13px 8px;
+  border-radius: 12px;
+  border: 1px solid var(--ds-border-subtle);
+  background: var(--ds-surface);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ds-text-secondary);
+  cursor: pointer;
+  transition: transform 120ms var(--ds-ease-out-quart),
+    background 160ms, border-color 160ms, color 160ms;
+}
+.action:hover {
+  background: var(--ds-surface-recessed);
+  border-color: var(--ds-border-default);
+  color: var(--ds-text-primary);
+}
+.action:active {
+  transform: scale(0.96);
+}
+.action svg {
+  color: var(--ds-brand-500);
+}
+
+/* ── Recent list ────────────────────────────────────────── */
+.sectionTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ds-text-secondary);
+  margin: 28px 4px 4px;
+  letter-spacing: 0.01em;
+}
+.list {
+  border-radius: 14px;
+  border: 1px solid var(--ds-border-subtle);
+  background: var(--ds-surface);
+  padding: 4px 14px;
+  margin-top: 8px;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ds-border-subtle);
+}
+.row:last-child {
+  border-bottom: 0;
+}
+.tIcon {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+}
+.tName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ds-text-primary);
+}
+.tMeta {
+  font-size: 11px;
+  color: var(--ds-text-muted);
+  margin-top: 1px;
+}
+.amount {
+  margin-inline-start: auto;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.up {
+  color: var(--ds-accent-emerald);
+}
+.down {
+  color: var(--ds-accent-rose);
+}
+.tintUp {
+  background: var(--ds-accent-emerald);
+  color: var(--ds-text-inverse);
+  opacity: 0.92;
+}
+.tintDown {
+  background: var(--ds-accent-rose);
+  color: var(--ds-text-inverse);
+  opacity: 0.92;
+}
+.tintNeutral {
+  background: var(--ds-surface-recessed);
+  color: var(--ds-text-secondary);
+}
+
+/* ── Live breath (system-alive, quiet) ─────────────────── */
+.breath {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: var(--ds-accent-emerald);
+  margin-inline-end: 6px;
+  animation: breath 2s ease-in-out infinite;
+}
+@keyframes breath {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+

@@ -1,0 +1,1093 @@
+- generic [active] [ref=f1e1]:
+  - banner [ref=f1e2]:
+    - region "تبلیغ" [ref=f1e3]:
+      - generic [ref=f1e5]:
+        - img [ref=f1e6]
+        - generic [ref=f1e8]:
+          - generic [ref=f1e9]: تحلیل‌های روزانه بازار طلا و ارز — همین حالا عضو شوید
+          - generic [ref=f1e10]: — دسترسی رایگان به گزارش‌های ویژه هفتگی
+        - link "مشاهده پلن‌ها" [ref=f1e11] [cursor=pointer]:
+          - /url: /services
+        - button "بستن تبلیغ" [ref=f1e12]:
+          - img [ref=f1e13]
+    - navigation "ناوبری اصلی سایت" [ref=f1e19]:
+      - generic [ref=f1e21]:
+        - link "صفحه اصلی" [ref=f1e23] [cursor=pointer]:
+          - /url: /
+          - img "لوگوی financial market" [ref=f1e26]
+        - generic [ref=f1e32]:
+          - button "جستجو" [ref=f1e34]:
+            - img [ref=f1e35]
+          - generic [ref=f1e37]:
+            - link "ورود" [ref=f1e38] [cursor=pointer]:
+              - /url: /signin
+              - img [ref=f1e41]
+              - generic [ref=f1e43]: ورود
+            - link "ثبت‌نام" [ref=f1e44] [cursor=pointer]:
+              - /url: /signup
+              - generic [ref=f1e48]: ثبت‌نام
+        - navigation "ناوبری اصلی" [ref=f1e50]:
+          - list [ref=f1e51]:
+            - listitem [ref=f1e52]:
+              - link "صفحه اصلی" [ref=f1e53] [cursor=pointer]:
+                - /url: /
+                - generic [ref=f1e54]: صفحه اصلی
+            - listitem [ref=f1e56]:
+              - button "ارزهای دیجیتال" [ref=f1e57]:
+                - generic [ref=f1e58]: ارزهای دیجیتال
+                - img [ref=f1e59]
+            - listitem [ref=f1e61]:
+              - button "طلا (اونس)" [ref=f1e62]:
+                - generic [ref=f1e63]: طلا (اونس)
+                - img [ref=f1e64]
+            - listitem [ref=f1e66]:
+              - button "بازار جهانی" [ref=f1e67]:
+                - generic [ref=f1e68]: بازار جهانی
+                - img [ref=f1e69]
+            - listitem [ref=f1e71]:
+              - link "بورس و سهام" [ref=f1e72] [cursor=pointer]:
+                - /url: /archive/category/stock
+                - generic [ref=f1e73]: بورس و سهام
+            - listitem [ref=f1e74]:
+              - link "حواله" [ref=f1e75] [cursor=pointer]:
+                - /url: /money-transfer
+                - generic [ref=f1e76]: حواله
+            - listitem [ref=f1e77]:
+              - link "پرداخت آنلاین" [ref=f1e78] [cursor=pointer]:
+                - /url: /online-payment
+                - generic [ref=f1e79]: پرداخت آنلاین
+            - listitem [ref=f1e80]:
+              - link "اخبار فوری جدید" [ref=f1e81] [cursor=pointer]:
+                - /url: /archive/category/news-urgent
+                - generic [ref=f1e82]: اخبار فوری
+                - generic "جدید" [ref=f1e83]
+            - listitem [ref=f1e84]:
+              - link "قوانین" [ref=f1e85] [cursor=pointer]:
+                - /url: /terms
+                - generic [ref=f1e86]: قوانین
+  - main [ref=f1e87]:
+    - generic [ref=f1e88]:
+      - generic [ref=f1e89]:
+        - generic [ref=f1e93]:
+          - generic [ref=f1e95]:
+            - link "BTC icon BTC $62,793.98 ۱۱٬۵۲۰٬۶۰۰٬۰۰۰ تومان +0.76%" [ref=f1e97] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/bitcoin/
+              - generic [ref=f1e98]:
+                - img "BTC icon" [ref=f1e100]
+                - generic [ref=f1e101]: BTC
+                - generic [ref=f1e102]: $62,793.98
+                - generic [ref=f1e103]: ۱۱٬۵۲۰٬۶۰۰٬۰۰۰ تومان
+                - generic [ref=f1e104]:
+                  - img [ref=f1e105]
+                  - text: +0.76%
+            - link "ETH icon ETH $1,742.21 ۳۱۵٬۲۸۰٬۰۰۰ تومان -0.35%" [ref=f1e109] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/ethereum/
+              - generic [ref=f1e110]:
+                - img "ETH icon" [ref=f1e112]
+                - generic [ref=f1e113]: ETH
+                - generic [ref=f1e114]: $1,742.21
+                - generic [ref=f1e115]: ۳۱۵٬۲۸۰٬۰۰۰ تومان
+                - generic [ref=f1e116]:
+                  - img [ref=f1e117]
+                  - text: "-0.35%"
+            - link "USDT icon USDT $1.00 ۱۸۰٬۶۷۳ تومان +1.04%" [ref=f1e121] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/tether/
+              - generic [ref=f1e122]:
+                - img "USDT icon" [ref=f1e124]
+                - generic [ref=f1e125]: USDT
+                - generic [ref=f1e126]: $1.00
+                - generic [ref=f1e127]: ۱۸۰٬۶۷۳ تومان
+                - generic [ref=f1e128]:
+                  - img [ref=f1e129]
+                  - text: +1.04%
+            - link "XRP icon XRP $1.09 ۱۹۷٬۹۱۸ تومان +0.75%" [ref=f1e133] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/xrp/
+              - generic [ref=f1e134]:
+                - img "XRP icon" [ref=f1e136]
+                - generic [ref=f1e137]: XRP
+                - generic [ref=f1e138]: $1.09
+                - generic [ref=f1e139]: ۱۹۷٬۹۱۸ تومان
+                - generic [ref=f1e140]:
+                  - img [ref=f1e141]
+                  - text: +0.75%
+            - link "LTC icon LTC $43.82 ۷٬۸۸۹٬۰۰۰ تومان +0.09%" [ref=f1e145] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/litecoin/
+              - generic [ref=f1e146]:
+                - img "LTC icon" [ref=f1e148]
+                - generic [ref=f1e149]: LTC
+                - generic [ref=f1e150]: $43.82
+                - generic [ref=f1e151]: ۷٬۸۸۹٬۰۰۰ تومان
+                - generic [ref=f1e152]:
+                  - img [ref=f1e153]
+                  - text: +0.09%
+            - link "BCH $237.30 ۴۲٬۹۹۱٬۰۰۰ تومان +1.24%" [ref=f1e157] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/bitcoin-cash/
+              - generic [ref=f1e158]:
+                - generic [ref=f1e161]: BCH
+                - generic [ref=f1e162]: $237.30
+                - generic [ref=f1e163]: ۴۲٬۹۹۱٬۰۰۰ تومان
+                - generic [ref=f1e164]:
+                  - img [ref=f1e165]
+                  - text: +1.24%
+            - link "XLM $0.1808 ۳۲٬۷۴۱ تومان -1.22%" [ref=f1e169] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/stellar/
+              - generic [ref=f1e170]:
+                - generic [ref=f1e173]: XLM
+                - generic [ref=f1e174]: $0.1808
+                - generic [ref=f1e175]: ۳۲٬۷۴۱ تومان
+                - generic [ref=f1e176]:
+                  - img [ref=f1e177]
+                  - text: "-1.22%"
+            - link "TRX $0.3309 ۶۰٬۰۴۶ تومان +0.88%" [ref=f1e181] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/tron/
+              - generic [ref=f1e182]:
+                - generic [ref=f1e185]: TRX
+                - generic [ref=f1e186]: $0.3309
+                - generic [ref=f1e187]: ۶۰٬۰۴۶ تومان
+                - generic [ref=f1e188]:
+                  - img [ref=f1e189]
+                  - text: +0.88%
+            - link "LINK $7.73 ۱٬۳۹۰٬۸۰۰ تومان +1.19%" [ref=f1e193] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/chainlink/
+              - generic [ref=f1e194]:
+                - generic [ref=f1e197]: LINK
+                - generic [ref=f1e198]: $7.73
+                - generic [ref=f1e199]: ۱٬۳۹۰٬۸۰۰ تومان
+                - generic [ref=f1e200]:
+                  - img [ref=f1e201]
+                  - text: +1.19%
+            - link "UNI $3.31 ۶۰۸٬۰۰۰ تومان +0.61%" [ref=f1e205] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/uniswap/
+              - generic [ref=f1e206]:
+                - generic [ref=f1e209]: UNI
+                - generic [ref=f1e210]: $3.31
+                - generic [ref=f1e211]: ۶۰۸٬۰۰۰ تومان
+                - generic [ref=f1e212]:
+                  - img [ref=f1e213]
+                  - text: +0.61%
+            - link "DOT $0.835 ۱۵۰٬۳۰۰ تومان +0.36%" [ref=f1e217] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/polkadot-new/
+              - generic [ref=f1e218]:
+                - generic [ref=f1e221]: DOT
+                - generic [ref=f1e222]: $0.835
+                - generic [ref=f1e223]: ۱۵۰٬۳۰۰ تومان
+                - generic [ref=f1e224]:
+                  - img [ref=f1e225]
+                  - text: +0.36%
+            - link "ADA $0.1691 ۳۰٬۷۰۱ تومان +1.14%" [ref=f1e229] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/cardano/
+              - generic [ref=f1e230]:
+                - generic [ref=f1e233]: ADA
+                - generic [ref=f1e234]: $0.1691
+                - generic [ref=f1e235]: ۳۰٬۷۰۱ تومان
+                - generic [ref=f1e236]:
+                  - img [ref=f1e237]
+                  - text: +1.14%
+            - link "DOGE $0.0724 ۱۳٬۱۵۲ تومان +0.28%" [ref=f1e241] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/doge/
+              - generic [ref=f1e242]:
+                - generic [ref=f1e245]: DOGE
+                - generic [ref=f1e246]: $0.0724
+                - generic [ref=f1e247]: ۱۳٬۱۵۲ تومان
+                - generic [ref=f1e248]:
+                  - img [ref=f1e249]
+                  - text: +0.28%
+            - link "SHIB $— 0.7737 تومان +2.90%" [ref=f1e253] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/shib/
+              - generic [ref=f1e254]:
+                - generic [ref=f1e257]: SHIB
+                - generic [ref=f1e258]: $—
+                - generic [ref=f1e259]: 0.7737 تومان
+                - generic [ref=f1e260]:
+                  - img [ref=f1e261]
+                  - text: +2.90%
+            - link "MATIC $0.0766 ۱۳٬۸۴۳ تومان +0.27%" [ref=f1e265] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/polygon/
+              - generic [ref=f1e266]:
+                - generic [ref=f1e269]: MATIC
+                - generic [ref=f1e270]: $0.0766
+                - generic [ref=f1e271]: ۱۳٬۸۴۳ تومان
+                - generic [ref=f1e272]:
+                  - img [ref=f1e273]
+                  - text: +0.27%
+            - link "SOL $77.74 ۱۴٬۱۱۱٬۷۰۰ تومان +0.23%" [ref=f1e277] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/sol/
+              - generic [ref=f1e278]:
+                - generic [ref=f1e281]: SOL
+                - generic [ref=f1e282]: $77.74
+                - generic [ref=f1e283]: ۱۴٬۱۱۱٬۷۰۰ تومان
+                - generic [ref=f1e284]:
+                  - img [ref=f1e285]
+                  - text: +0.23%
+            - link "AVAX $6.70 ۱٬۲۱۶٬۵۰۰ تومان +4.18%" [ref=f1e289] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/avalanche/
+              - generic [ref=f1e290]:
+                - generic [ref=f1e293]: AVAX
+                - generic [ref=f1e294]: $6.70
+                - generic [ref=f1e295]: ۱٬۲۱۶٬۵۰۰ تومان
+                - generic [ref=f1e296]:
+                  - img [ref=f1e297]
+                  - text: +4.18%
+            - link "ATOM $1.57 ۲۸۲٬۷۵۳ تومان +0.19%" [ref=f1e301] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/cosmos/
+              - generic [ref=f1e302]:
+                - generic [ref=f1e305]: ATOM
+                - generic [ref=f1e306]: $1.57
+                - generic [ref=f1e307]: ۲۸۲٬۷۵۳ تومان
+                - generic [ref=f1e308]:
+                  - img [ref=f1e309]
+                  - text: +0.19%
+            - link "SAND $0.0495 ۸٬۹۴۳ تومان +3.77%" [ref=f1e313] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/the-sandbox/
+              - generic [ref=f1e314]:
+                - generic [ref=f1e317]: SAND
+                - generic [ref=f1e318]: $0.0495
+                - generic [ref=f1e319]: ۸٬۹۴۳ تومان
+                - generic [ref=f1e320]:
+                  - img [ref=f1e321]
+                  - text: +3.77%
+            - link "MANA $0.0734 ۱۳٬۲۶۱ تومان +5.61%" [ref=f1e325] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/decentraland/
+              - generic [ref=f1e326]:
+                - generic [ref=f1e329]: MANA
+                - generic [ref=f1e330]: $0.0734
+                - generic [ref=f1e331]: ۱۳٬۲۶۱ تومان
+                - generic [ref=f1e332]:
+                  - img [ref=f1e333]
+                  - text: +5.61%
+          - generic [ref=f1e337]:
+            - link [ref=f1e339] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/bitcoin/
+              - generic [ref=f1e340]:
+                - generic [ref=f1e343]: BTC
+                - generic [ref=f1e344]: $62,793.98
+                - generic [ref=f1e345]: ۱۱٬۵۲۰٬۶۰۰٬۰۰۰ تومان
+                - generic [ref=f1e346]:
+                  - img [ref=f1e347]
+                  - text: +0.76%
+            - link [ref=f1e351] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/ethereum/
+              - generic [ref=f1e352]:
+                - generic [ref=f1e355]: ETH
+                - generic [ref=f1e356]: $1,742.21
+                - generic [ref=f1e357]: ۳۱۵٬۲۸۰٬۰۰۰ تومان
+                - generic [ref=f1e358]:
+                  - img [ref=f1e359]
+                  - text: "-0.35%"
+            - link [ref=f1e363] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/tether/
+              - generic [ref=f1e364]:
+                - generic [ref=f1e367]: USDT
+                - generic [ref=f1e368]: $1.00
+                - generic [ref=f1e369]: ۱۸۰٬۶۷۳ تومان
+                - generic [ref=f1e370]:
+                  - img [ref=f1e371]
+                  - text: +1.04%
+            - link [ref=f1e375] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/xrp/
+              - generic [ref=f1e376]:
+                - generic [ref=f1e379]: XRP
+                - generic [ref=f1e380]: $1.09
+                - generic [ref=f1e381]: ۱۹۷٬۹۱۸ تومان
+                - generic [ref=f1e382]:
+                  - img [ref=f1e383]
+                  - text: +0.75%
+            - link [ref=f1e387] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/litecoin/
+              - generic [ref=f1e388]:
+                - generic [ref=f1e391]: LTC
+                - generic [ref=f1e392]: $43.82
+                - generic [ref=f1e393]: ۷٬۸۸۹٬۰۰۰ تومان
+                - generic [ref=f1e394]:
+                  - img [ref=f1e395]
+                  - text: +0.09%
+            - link [ref=f1e399] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/bitcoin-cash/
+              - generic [ref=f1e400]:
+                - generic [ref=f1e403]: BCH
+                - generic [ref=f1e404]: $237.30
+                - generic [ref=f1e405]: ۴۲٬۹۹۱٬۰۰۰ تومان
+                - generic [ref=f1e406]:
+                  - img [ref=f1e407]
+                  - text: +1.24%
+            - link [ref=f1e411] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/stellar/
+              - generic [ref=f1e412]:
+                - generic [ref=f1e415]: XLM
+                - generic [ref=f1e416]: $0.1808
+                - generic [ref=f1e417]: ۳۲٬۷۴۱ تومان
+                - generic [ref=f1e418]:
+                  - img [ref=f1e419]
+                  - text: "-1.22%"
+            - link [ref=f1e423] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/tron/
+              - generic [ref=f1e424]:
+                - generic [ref=f1e427]: TRX
+                - generic [ref=f1e428]: $0.3309
+                - generic [ref=f1e429]: ۶۰٬۰۴۶ تومان
+                - generic [ref=f1e430]:
+                  - img [ref=f1e431]
+                  - text: +0.88%
+            - link [ref=f1e435] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/chainlink/
+              - generic [ref=f1e436]:
+                - generic [ref=f1e439]: LINK
+                - generic [ref=f1e440]: $7.73
+                - generic [ref=f1e441]: ۱٬۳۹۰٬۸۰۰ تومان
+                - generic [ref=f1e442]:
+                  - img [ref=f1e443]
+                  - text: +1.19%
+            - link [ref=f1e447] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/uniswap/
+              - generic [ref=f1e448]:
+                - generic [ref=f1e451]: UNI
+                - generic [ref=f1e452]: $3.31
+                - generic [ref=f1e453]: ۶۰۸٬۰۰۰ تومان
+                - generic [ref=f1e454]:
+                  - img [ref=f1e455]
+                  - text: +0.61%
+            - link [ref=f1e459] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/polkadot-new/
+              - generic [ref=f1e460]:
+                - generic [ref=f1e463]: DOT
+                - generic [ref=f1e464]: $0.835
+                - generic [ref=f1e465]: ۱۵۰٬۳۰۰ تومان
+                - generic [ref=f1e466]:
+                  - img [ref=f1e467]
+                  - text: +0.36%
+            - link [ref=f1e471] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/cardano/
+              - generic [ref=f1e472]:
+                - generic [ref=f1e475]: ADA
+                - generic [ref=f1e476]: $0.1691
+                - generic [ref=f1e477]: ۳۰٬۷۰۱ تومان
+                - generic [ref=f1e478]:
+                  - img [ref=f1e479]
+                  - text: +1.14%
+            - link [ref=f1e483] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/doge/
+              - generic [ref=f1e484]:
+                - generic [ref=f1e487]: DOGE
+                - generic [ref=f1e488]: $0.0724
+                - generic [ref=f1e489]: ۱۳٬۱۵۲ تومان
+                - generic [ref=f1e490]:
+                  - img [ref=f1e491]
+                  - text: +0.28%
+            - link [ref=f1e495] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/shib/
+              - generic [ref=f1e496]:
+                - generic [ref=f1e499]: SHIB
+                - generic [ref=f1e500]: $—
+                - generic [ref=f1e501]: 0.7737 تومان
+                - generic [ref=f1e502]:
+                  - img [ref=f1e503]
+                  - text: +2.90%
+            - link [ref=f1e507] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/polygon/
+              - generic [ref=f1e508]:
+                - generic [ref=f1e511]: MATIC
+                - generic [ref=f1e512]: $0.0766
+                - generic [ref=f1e513]: ۱۳٬۸۴۳ تومان
+                - generic [ref=f1e514]:
+                  - img [ref=f1e515]
+                  - text: +0.27%
+            - link [ref=f1e519] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/sol/
+              - generic [ref=f1e520]:
+                - generic [ref=f1e523]: SOL
+                - generic [ref=f1e524]: $77.74
+                - generic [ref=f1e525]: ۱۴٬۱۱۱٬۷۰۰ تومان
+                - generic [ref=f1e526]:
+                  - img [ref=f1e527]
+                  - text: +0.23%
+            - link [ref=f1e531] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/avalanche/
+              - generic [ref=f1e532]:
+                - generic [ref=f1e535]: AVAX
+                - generic [ref=f1e536]: $6.70
+                - generic [ref=f1e537]: ۱٬۲۱۶٬۵۰۰ تومان
+                - generic [ref=f1e538]:
+                  - img [ref=f1e539]
+                  - text: +4.18%
+            - link [ref=f1e543] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/cosmos/
+              - generic [ref=f1e544]:
+                - generic [ref=f1e547]: ATOM
+                - generic [ref=f1e548]: $1.57
+                - generic [ref=f1e549]: ۲۸۲٬۷۵۳ تومان
+                - generic [ref=f1e550]:
+                  - img [ref=f1e551]
+                  - text: +0.19%
+            - link [ref=f1e555] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/the-sandbox/
+              - generic [ref=f1e556]:
+                - generic [ref=f1e559]: SAND
+                - generic [ref=f1e560]: $0.0495
+                - generic [ref=f1e561]: ۸٬۹۴۳ تومان
+                - generic [ref=f1e562]:
+                  - img [ref=f1e563]
+                  - text: +3.77%
+            - link [ref=f1e567] [cursor=pointer]:
+              - /url: https://coinmarketcap.com/currencies/decentraland/
+              - generic [ref=f1e568]:
+                - generic [ref=f1e571]: MANA
+                - generic [ref=f1e572]: $0.0734
+                - generic [ref=f1e573]: ۱۳٬۲۶۱ تومان
+                - generic [ref=f1e574]:
+                  - img [ref=f1e575]
+                  - text: +5.61%
+        - region "نرخ‌های زنده بازار" [ref=f1e580]:
+          - generic [ref=f1e582]:
+            - generic [ref=f1e586]: نرخ‌های زنده
+            - generic [ref=f1e587]: ۱۵:۵۱
+          - generic [ref=f1e591]:
+            - generic [ref=f1e593]:
+              - generic [ref=f1e594]:
+                - generic [ref=f1e595]: دلار تهران
+                - generic [ref=f1e596]: ۱۸۱٬۲۳۹ تومان
+                - generic "افزایش +۱.۴۹%" [ref=f1e597]:
+                  - generic [ref=f1e598]: +۱.۴۹%
+              - generic [ref=f1e599]:
+                - generic [ref=f1e600]: یورو
+                - generic [ref=f1e601]: ۲۰۶٬۸۹۴ تومان
+                - generic "بدون تغییر" [ref=f1e602]:
+                  - generic [ref=f1e603]: ۰.۰۰%
+              - generic [ref=f1e604]:
+                - generic [ref=f1e605]: درهم امارات
+                - generic [ref=f1e606]: ۴۹٬۳۸۴ تومان
+                - generic "بدون تغییر" [ref=f1e607]:
+                  - generic [ref=f1e608]: ۰.۰۰%
+              - generic [ref=f1e609]:
+                - generic [ref=f1e610]: پوند انگلیس
+                - generic [ref=f1e611]: ۲۴۲٬۲۹۸ تومان
+                - generic "بدون تغییر" [ref=f1e612]:
+                  - generic [ref=f1e613]: ۰.۰۰%
+              - generic [ref=f1e614]:
+                - generic [ref=f1e615]: لیر ترکیه
+                - generic [ref=f1e616]: ۳٬۸۶۵ تومان
+                - generic "بدون تغییر" [ref=f1e617]:
+                  - generic [ref=f1e618]: ۰.۰۰%
+              - generic [ref=f1e619]:
+                - generic [ref=f1e620]: یوان چین
+                - generic [ref=f1e621]: ۲۶٬۶۱۴ تومان
+                - generic "بدون تغییر" [ref=f1e622]:
+                  - generic [ref=f1e623]: ۰.۰۰%
+              - generic [ref=f1e624]:
+                - generic [ref=f1e625]: فرانک سوئیس
+                - generic [ref=f1e626]: ۲۲۴٬۰۲۸ تومان
+                - generic "بدون تغییر" [ref=f1e627]:
+                  - generic [ref=f1e628]: ۰.۰۰%
+              - generic [ref=f1e629]:
+                - generic [ref=f1e630]: دلار کانادا
+                - generic [ref=f1e631]: ۱۲۷٬۶۳۳ تومان
+                - generic "بدون تغییر" [ref=f1e632]:
+                  - generic [ref=f1e633]: ۰.۰۰%
+              - generic [ref=f1e634]:
+                - generic [ref=f1e635]: دلار استرالیا
+                - generic [ref=f1e636]: ۱۲۵٬۸۶۰ تومان
+                - generic "بدون تغییر" [ref=f1e637]:
+                  - generic [ref=f1e638]: ۰.۰۰%
+              - generic [ref=f1e639]:
+                - generic [ref=f1e640]: ین ژاپن
+                - generic [ref=f1e641]: ۱٬۱۱۵ تومان
+                - generic "بدون تغییر" [ref=f1e642]:
+                  - generic [ref=f1e643]: ۰.۰۰%
+              - generic [ref=f1e644]:
+                - generic [ref=f1e645]: روبل روسیه
+                - generic [ref=f1e646]: ۲٬۳۶۸ تومان
+                - generic "بدون تغییر" [ref=f1e647]:
+                  - generic [ref=f1e648]: ۰.۰۰%
+              - generic [ref=f1e649]:
+                - generic [ref=f1e650]: روپیه هند
+                - generic [ref=f1e651]: ۱٬۸۹۶ تومان
+                - generic "بدون تغییر" [ref=f1e652]:
+                  - generic [ref=f1e653]: ۰.۰۰%
+            - generic [ref=f1e655]:
+              - generic [ref=f1e656]:
+                - generic [ref=f1e657]: دلار تهران
+                - generic [ref=f1e658]: ۱۸۱٬۲۳۹ تومان
+                - generic [ref=f1e660]: +۱.۴۹%
+              - generic [ref=f1e661]:
+                - generic [ref=f1e662]: یورو
+                - generic [ref=f1e663]: ۲۰۶٬۸۹۴ تومان
+                - generic [ref=f1e665]: ۰.۰۰%
+              - generic [ref=f1e666]:
+                - generic [ref=f1e667]: درهم امارات
+                - generic [ref=f1e668]: ۴۹٬۳۸۴ تومان
+                - generic [ref=f1e670]: ۰.۰۰%
+              - generic [ref=f1e671]:
+                - generic [ref=f1e672]: پوند انگلیس
+                - generic [ref=f1e673]: ۲۴۲٬۲۹۸ تومان
+                - generic [ref=f1e675]: ۰.۰۰%
+              - generic [ref=f1e676]:
+                - generic [ref=f1e677]: لیر ترکیه
+                - generic [ref=f1e678]: ۳٬۸۶۵ تومان
+                - generic [ref=f1e680]: ۰.۰۰%
+              - generic [ref=f1e681]:
+                - generic [ref=f1e682]: یوان چین
+                - generic [ref=f1e683]: ۲۶٬۶۱۴ تومان
+                - generic [ref=f1e685]: ۰.۰۰%
+              - generic [ref=f1e686]:
+                - generic [ref=f1e687]: فرانک سوئیس
+                - generic [ref=f1e688]: ۲۲۴٬۰۲۸ تومان
+                - generic [ref=f1e690]: ۰.۰۰%
+              - generic [ref=f1e691]:
+                - generic [ref=f1e692]: دلار کانادا
+                - generic [ref=f1e693]: ۱۲۷٬۶۳۳ تومان
+                - generic [ref=f1e695]: ۰.۰۰%
+              - generic [ref=f1e696]:
+                - generic [ref=f1e697]: دلار استرالیا
+                - generic [ref=f1e698]: ۱۲۵٬۸۶۰ تومان
+                - generic [ref=f1e700]: ۰.۰۰%
+              - generic [ref=f1e701]:
+                - generic [ref=f1e702]: ین ژاپن
+                - generic [ref=f1e703]: ۱٬۱۱۵ تومان
+                - generic [ref=f1e705]: ۰.۰۰%
+              - generic [ref=f1e706]:
+                - generic [ref=f1e707]: روبل روسیه
+                - generic [ref=f1e708]: ۲٬۳۶۸ تومان
+                - generic [ref=f1e710]: ۰.۰۰%
+              - generic [ref=f1e711]:
+                - generic [ref=f1e712]: روپیه هند
+                - generic [ref=f1e713]: ۱٬۸۹۶ تومان
+                - generic [ref=f1e715]: ۰.۰۰%
+        - generic [ref=f1e717]:
+          - generic [ref=f1e718]:
+            - generic [ref=f1e720]:
+              - generic [ref=f1e724]:
+                - link [ref=f1e725] [cursor=pointer]:
+                  - /url: /single/10-drs-srmaih-gzari-kh-arzo-dashtm-zodtr-mi-danstm
+                - generic [ref=f1e729]:
+                  - generic [ref=f1e730]:
+                    - img [ref=f1e734]
+                    - text: ویژه
+                  - generic [ref=f1e736]:
+                    - img [ref=f1e737]
+                    - text: سرمایه‌گذاری
+                - generic [ref=f1e740]:
+                  - button "توقف پخش خودکار" [ref=f1e741]:
+                    - img [ref=f1e742]
+                  - generic [ref=f1e745]: ۰1/۰3
+                - generic [ref=f1e746]:
+                  - heading "۱۰ درس سرمایه‌گذاری که آرزو داشتم زودتر می‌دانستم" [level=2] [ref=f1e747]:
+                    - link "۱۰ درس سرمایه‌گذاری که آرزو داشتم زودتر می‌دانستم" [ref=f1e748] [cursor=pointer]:
+                      - /url: /single/10-drs-srmaih-gzari-kh-arzo-dashtm-zodtr-mi-danstm
+                  - paragraph [ref=f1e749]: از تنوع‌بخشی تا صبر، ۱۰ اصل طلایی سرمایه‌گذاری که حاصل سال‌ها تجربه فعالان بازار سرمایه است.
+                  - generic [ref=f1e750]:
+                    - generic [ref=f1e751]:
+                      - img "author" [ref=f1e753]
+                      - generic [ref=f1e754]:
+                        - generic [ref=f1e755]: author
+                        - generic [ref=f1e756]:
+                          - img [ref=f1e757]
+                          - text: ۱۴۰۵/۳/۲۰
+                    - generic [ref=f1e761]:
+                      - img [ref=f1e762]
+                      - generic [ref=f1e765]: ۲٬۹۳۳
+                    - generic [ref=f1e766]:
+                      - img [ref=f1e767]
+                      - generic [ref=f1e769]: 1 دقیقه
+                - generic [ref=f1e770]:
+                  - generic [ref=f1e771]:
+                    - generic [ref=f1e772]:
+                      - img [ref=f1e773]
+                      - text: پیش
+                    - generic [ref=f1e775]: ۴ هفته پیش
+                  - generic [ref=f1e776]:
+                    - generic [ref=f1e777]:
+                      - img [ref=f1e778]
+                      - text: اسلاید
+                    - generic [ref=f1e780]: ۰1 از ۰3
+                  - generic [ref=f1e781]:
+                    - generic [ref=f1e782]:
+                      - img [ref=f1e783]
+                      - text: برچسب
+                    - generic [ref=f1e786]: سرمایه‌گذاری • درس • تجربه • ثروت
+              - generic [ref=f1e789]:
+                - article [ref=f1e790]:
+                  - generic [ref=f1e792] [cursor=pointer]:
+                    - img "مدیریت ریسک در سرمایه‌گذاری؛ قانون ۲٪ به زبان ساده" [ref=f1e794]
+                    - paragraph [ref=f1e798]: چرا حرفه‌ای‌ها هرگز بیش از ۲٪ سرمایه را روی یک معامله ریسک نمی‌کنند؟
+                    - generic [ref=f1e800]:
+                      - img [ref=f1e801]
+                      - generic [ref=f1e804]: مدیریت ریسک
+                    - generic [ref=f1e805]:
+                      - heading "مدیریت ریسک در سرمایه‌گذاری؛ قانون ۲٪ به زبان ساده" [level=3] [ref=f1e806]
+                      - generic [ref=f1e807]:
+                        - img "author" [ref=f1e809]
+                        - generic [ref=f1e810]: author
+                        - generic [ref=f1e812]:
+                          - img [ref=f1e813]
+                          - text: 3.0K
+                - article [ref=f1e817]:
+                  - generic [ref=f1e819] [cursor=pointer]:
+                    - img "بیت‌کوین در ۲۰۲۶؛ چرا این چرخه متفاوت است" [ref=f1e821]
+                    - paragraph [ref=f1e825]: برای اولین بار در تاریخ بازار کریپتو، سه نیروی هم‌زمان — ETFهای اسپات، کاهش هاوینگ و پذیرش نهادی — مسیر بیت‌کوین را شکل می‌دهند.
+                    - generic [ref=f1e826]:
+                      - generic [ref=f1e827]:
+                        - img [ref=f1e828]
+                        - generic [ref=f1e831]: بیت‌کوین
+                      - generic [ref=f1e832]: بیت کوین
+                    - generic [ref=f1e833]:
+                      - heading "بیت‌کوین در ۲۰۲۶؛ چرا این چرخه متفاوت است" [level=3] [ref=f1e834]
+                      - generic [ref=f1e835]:
+                        - img "author" [ref=f1e837]
+                        - generic [ref=f1e838]: author
+                        - generic [ref=f1e840]:
+                          - img [ref=f1e841]
+                          - text: 2.8K
+            - generic:
+              - button "اسلاید بعدی" [ref=f1e845]:
+                - img [ref=f1e846]
+              - button "اسلاید قبلی" [ref=f1e848]:
+                - img [ref=f1e849]
+          - generic [ref=f1e851]:
+            - generic [ref=f1e852]:
+              - button "رفتن به اسلاید 1" [ref=f1e853]
+              - button "رفتن به اسلاید 2" [ref=f1e855]
+              - button "رفتن به اسلاید 3" [ref=f1e856]
+            - generic [ref=f1e857]:
+              - generic [ref=f1e858]: ←
+              - generic [ref=f1e859]: →
+              - generic [ref=f1e860]: برای جابه‌جایی
+      - region "موضوعات داغ" [ref=f1e862]:
+        - generic [ref=f1e866]:
+          - generic [ref=f1e867]:
+            - link "بیت کوین · ۷ مقاله" [ref=f1e868] [cursor=pointer]:
+              - /url: /archive/category/bit-koin
+              - generic [ref=f1e870]: بیت کوین
+              - generic [ref=f1e871]: ·
+              - generic [ref=f1e872]: ۷ مقاله
+            - link "NFT · ۵ مقاله" [ref=f1e873] [cursor=pointer]:
+              - /url: /archive/category/nft
+              - generic [ref=f1e875]: NFT
+              - generic [ref=f1e876]: ·
+              - generic [ref=f1e877]: ۵ مقاله
+            - link "کیف پول · ۳ مقاله" [ref=f1e878] [cursor=pointer]:
+              - /url: /archive/category/kif-pol
+              - generic [ref=f1e880]: کیف پول
+              - generic [ref=f1e881]: ·
+              - generic [ref=f1e882]: ۳ مقاله
+            - link "ارز · ۱ مقاله" [ref=f1e883] [cursor=pointer]:
+              - /url: /archive/category/arz
+              - generic [ref=f1e885]: ارز
+              - generic [ref=f1e886]: ·
+              - generic [ref=f1e887]: ۱ مقاله
+          - generic [ref=f1e888]:
+            - link [ref=f1e889] [cursor=pointer]:
+              - /url: /archive/category/bit-koin
+              - generic [ref=f1e891]: بیت کوین
+              - generic [ref=f1e892]: ·
+              - generic [ref=f1e893]: ۷ مقاله
+            - link [ref=f1e894] [cursor=pointer]:
+              - /url: /archive/category/nft
+              - generic [ref=f1e896]: NFT
+              - generic [ref=f1e897]: ·
+              - generic [ref=f1e898]: ۵ مقاله
+            - link [ref=f1e899] [cursor=pointer]:
+              - /url: /archive/category/kif-pol
+              - generic [ref=f1e901]: کیف پول
+              - generic [ref=f1e902]: ·
+              - generic [ref=f1e903]: ۳ مقاله
+            - link [ref=f1e904] [cursor=pointer]:
+              - /url: /archive/category/arz
+              - generic [ref=f1e906]: ارز
+              - generic [ref=f1e907]: ·
+              - generic [ref=f1e908]: ۱ مقاله
+          - generic [ref=f1e909]:
+            - link [ref=f1e910] [cursor=pointer]:
+              - /url: /archive/category/bit-koin
+              - generic [ref=f1e912]: بیت کوین
+              - generic [ref=f1e913]: ·
+              - generic [ref=f1e914]: ۷ مقاله
+            - link [ref=f1e915] [cursor=pointer]:
+              - /url: /archive/category/nft
+              - generic [ref=f1e917]: NFT
+              - generic [ref=f1e918]: ·
+              - generic [ref=f1e919]: ۵ مقاله
+            - link [ref=f1e920] [cursor=pointer]:
+              - /url: /archive/category/kif-pol
+              - generic [ref=f1e922]: کیف پول
+              - generic [ref=f1e923]: ·
+              - generic [ref=f1e924]: ۳ مقاله
+            - link [ref=f1e925] [cursor=pointer]:
+              - /url: /archive/category/arz
+              - generic [ref=f1e927]: ارز
+              - generic [ref=f1e928]: ·
+              - generic [ref=f1e929]: ۱ مقاله
+        - generic [ref=f1e930]:
+          - generic [ref=f1e931]:
+            - img [ref=f1e935]
+            - generic [ref=f1e937]:
+              - heading "موضوعات داغ" [level=2] [ref=f1e938]:
+                - generic [ref=f1e939]: موضوعات داغ
+              - paragraph [ref=f1e940]: پرطرفدارترین دسته‌بندی‌هایی که الان در بازار می‌درخشند
+          - link "همه رو ببینید" [ref=f1e942] [cursor=pointer]:
+            - /url: /archive
+            - generic [ref=f1e943]: همه رو ببینید
+            - img [ref=f1e944]
+        - generic [ref=f1e947]:
+          - link "بیت کوین - 7 مقاله" [ref=f1e950] [cursor=pointer]:
+            - /url: /archive/category/bit-koin
+            - generic [ref=f1e953]:
+              - generic [ref=f1e955]: "01"
+              - generic [ref=f1e956]: پربازدیدترین
+            - generic [ref=f1e958]:
+              - heading "بیت کوین" [level=3] [ref=f1e959]
+              - paragraph [ref=f1e960]:
+                - generic [ref=f1e961]: ۷
+                - generic [ref=f1e962]: مقاله اینجا منتشر شده
+            - generic [ref=f1e963]:
+              - generic [ref=f1e964]: کلیک کنید ببینید چی هست
+              - img [ref=f1e966]
+          - link "NFT - 5 مقاله" [ref=f1e970] [cursor=pointer]:
+            - /url: /archive/category/nft
+            - generic [ref=f1e971]:
+              - img [ref=f1e973]
+              - generic [ref=f1e975]: "#2"
+            - generic [ref=f1e976]:
+              - heading "NFT" [level=3] [ref=f1e977]
+              - paragraph [ref=f1e978]:
+                - generic [ref=f1e979]: ۵
+                - generic [ref=f1e980]: مطلب
+            - img [ref=f1e982]
+          - link "کیف پول - 3 مقاله" [ref=f1e986] [cursor=pointer]:
+            - /url: /archive/category/kif-pol
+            - generic [ref=f1e987]:
+              - img [ref=f1e989]
+              - generic [ref=f1e991]: "#3"
+            - generic [ref=f1e992]:
+              - heading "کیف پول" [level=3] [ref=f1e993]
+              - paragraph [ref=f1e994]:
+                - generic [ref=f1e995]: ۳
+                - generic [ref=f1e996]: مطلب
+            - img [ref=f1e998]
+          - link "ارز - 1 مقاله" [ref=f1e1002] [cursor=pointer]:
+            - /url: /archive/category/arz
+            - img [ref=f1e1005]
+            - generic [ref=f1e1007]:
+              - heading "ارز" [level=3] [ref=f1e1008]
+              - paragraph [ref=f1e1009]:
+                - generic [ref=f1e1010]: ۱
+                - generic [ref=f1e1011]: مطلب
+            - img [ref=f1e1013]
+      - generic [ref=f1e1020]:
+        - generic [ref=f1e1021]:
+          - generic [ref=f1e1022]:
+            - img [ref=f1e1026]
+            - generic [ref=f1e1031]:
+              - heading "روایت‌های تصویری" [level=2] [ref=f1e1032]
+              - paragraph [ref=f1e1033]: بیش از ۴ روایت تصویری
+          - link "مشاهده همه" [ref=f1e1034] [cursor=pointer]:
+            - /url: /archive
+            - generic [ref=f1e1035]: مشاهده همه
+            - img [ref=f1e1036]
+        - generic [ref=f1e1038]:
+          - generic [ref=f1e1039]:
+            - generic [ref=f1e1042]:
+              - generic [ref=f1e1044]:
+                - img "Gallery image" [ref=f1e1047]
+                - generic [ref=f1e1048]:
+                  - img "Gallery image" [ref=f1e1051]
+                  - img "Gallery image" [ref=f1e1054]
+                - img "Gallery image" [ref=f1e1057]
+              - generic [ref=f1e1058]:
+                - link "NFT" [ref=f1e1060] [cursor=pointer]:
+                  - /url: /archive/category/nft
+                - button "ذخیره در لیست خواندن" [ref=f1e1063]:
+                  - img [ref=f1e1065]
+              - generic [ref=f1e1067]:
+                - 'heading "گالری: زیباترین NFTهای شبکه اتریوم" [level=2] [ref=f1e1068]':
+                  - 'link "گالری: زیباترین NFTهای شبکه اتریوم" [ref=f1e1069] [cursor=pointer]':
+                    - /url: /single-gallery/galri-zibatrin-nfthai-shbkh-atriom
+                - link "author author ۸ اردیبهشت ۱۴۰۵ ساعت ۲۰:۰۰" [ref=f1e1070] [cursor=pointer]:
+                  - /url: /author/cm5qdrd3e0001m4zli12b2rd5
+                  - img "author" [ref=f1e1072]
+                  - generic [ref=f1e1073]:
+                    - heading "author" [level=2] [ref=f1e1074]
+                    - generic [ref=f1e1076]: ۸ اردیبهشت ۱۴۰۵ ساعت ۲۰:۰۰
+            - generic [ref=f1e1079]:
+              - generic [ref=f1e1081]:
+                - generic [ref=f1e1082]:
+                  - img "Gallery image" [ref=f1e1085]
+                  - img "Gallery image" [ref=f1e1088]
+                - generic [ref=f1e1089]:
+                  - img "Gallery image" [ref=f1e1092]
+                  - img "Gallery image" [ref=f1e1095]
+              - button "ذخیره در لیست خواندن" [ref=f1e1099]:
+                - img [ref=f1e1101]
+              - generic [ref=f1e1103]:
+                - 'heading "گالری: بهترین اپلیکیشن‌های صرافی در سال ۲۰۲۶" [level=2] [ref=f1e1104]':
+                  - 'link "گالری: بهترین اپلیکیشن‌های صرافی در سال ۲۰۲۶" [ref=f1e1105] [cursor=pointer]':
+                    - /url: /single-gallery/galri-bhtrin-aplikishn-hai-srafi-dr-sal-2026
+                - link "author author ۷ اردیبهشت ۱۴۰۵ ساعت ۲۰:۰۰" [ref=f1e1106] [cursor=pointer]:
+                  - /url: /author/cm5qdrd3e0001m4zli12b2rd5
+                  - img "author" [ref=f1e1108]
+                  - generic [ref=f1e1109]:
+                    - heading "author" [level=2] [ref=f1e1110]
+                    - generic [ref=f1e1112]: ۷ اردیبهشت ۱۴۰۵ ساعت ۲۰:۰۰
+          - generic [ref=f1e1113]:
+            - generic [ref=f1e1116]:
+              - link [ref=f1e1117] [cursor=pointer]:
+                - /url: /single-gallery/bazar-nft-dr-2026-az-gmanh-zni-bh-karbrd-oaghai
+              - generic [ref=f1e1121]:
+                - link "listing card gallery" [ref=f1e1123] [cursor=pointer]:
+                  - /url: /single-gallery/bazar-nft-dr-2026-az-gmanh-zni-bh-karbrd-oaghai
+                  - img "listing card gallery" [ref=f1e1125]
+                - button [ref=f1e1126]:
+                  - img [ref=f1e1127]
+                - generic [ref=f1e1129]:
+                  - button "رفتن به تصویر 1" [ref=f1e1130]
+                  - button "رفتن به تصویر 2" [ref=f1e1132]
+                  - button "رفتن به تصویر 3" [ref=f1e1134]
+              - generic [ref=f1e1136]:
+                - link "NFT" [ref=f1e1138] [cursor=pointer]:
+                  - /url: /archive/category/nft
+                - button "ذخیره در لیست خواندن" [ref=f1e1141]:
+                  - img [ref=f1e1143]
+              - generic [ref=f1e1147]:
+                - img "author" [ref=f1e1149]
+                - generic [ref=f1e1150]:
+                  - heading "بازار NFT در ۲۰۲۶؛ از گمانه‌زنی به کاربرد واقعی" [level=2] [ref=f1e1151]:
+                    - link "بازار NFT در ۲۰۲۶؛ از گمانه‌زنی به کاربرد واقعی" [ref=f1e1152] [cursor=pointer]:
+                      - /url: /author/cm5qdrd3e0001m4zli12b2rd5
+                  - link "author · ۶ اردیبهشت ۱۴۰۵ ساعت ۱۹:۵۹" [ref=f1e1153] [cursor=pointer]:
+                    - /url: /author/cm5qdrd3e0001m4zli12b2rd5
+                    - generic [ref=f1e1154]: author
+                    - generic [ref=f1e1155]: ·
+                    - generic [ref=f1e1156]: ۶ اردیبهشت ۱۴۰۵ ساعت ۱۹:۵۹
+            - generic [ref=f1e1159]:
+              - link [ref=f1e1160] [cursor=pointer]:
+                - /url: /single-gallery/galri-bit-koin-dr-hnr-o-frhng
+              - generic [ref=f1e1164]:
+                - link "listing card gallery" [ref=f1e1166] [cursor=pointer]:
+                  - /url: /single-gallery/galri-bit-koin-dr-hnr-o-frhng
+                  - img "listing card gallery" [ref=f1e1168]
+                - generic [ref=f1e1169]:
+                  - button "رفتن به تصویر 1" [ref=f1e1170]
+                  - button "رفتن به تصویر 2" [ref=f1e1172]
+                  - button "رفتن به تصویر 3" [ref=f1e1174]
+                  - button "رفتن به تصویر 4" [ref=f1e1176]
+              - generic [ref=f1e1178]:
+                - generic [ref=f1e1179]:
+                  - link "بیت کوین" [ref=f1e1180] [cursor=pointer]:
+                    - /url: /archive/category/bit-koin
+                  - link "NFT" [ref=f1e1181] [cursor=pointer]:
+                    - /url: /archive/category/nft
+                - button "ذخیره در لیست خواندن" [ref=f1e1184]:
+                  - img [ref=f1e1186]
+              - generic [ref=f1e1190]:
+                - img "author" [ref=f1e1192]
+                - generic [ref=f1e1193]:
+                  - 'heading "گالری: بیت‌کوین در هنر و فرهنگ" [level=2] [ref=f1e1194]':
+                    - 'link "گالری: بیت‌کوین در هنر و فرهنگ" [ref=f1e1195] [cursor=pointer]':
+                      - /url: /author/cm5qdrd3e0001m4zli12b2rd5
+                  - link "author · ۳ اردیبهشت ۱۴۰۵ ساعت ۲۰:۰۰" [ref=f1e1196] [cursor=pointer]:
+                    - /url: /author/cm5qdrd3e0001m4zli12b2rd5
+                    - generic [ref=f1e1197]: author
+                    - generic [ref=f1e1198]: ·
+                    - generic [ref=f1e1199]: ۳ اردیبهشت ۱۴۰۵ ساعت ۲۰:۰۰
+      - region "صدای برتر" [ref=f1e1201]:
+        - generic [ref=f1e1202]:
+          - generic [ref=f1e1203]:
+            - img [ref=f1e1205]
+            - generic [ref=f1e1207]:
+              - heading "صدای برتر" [level=2] [ref=f1e1208]
+              - paragraph [ref=f1e1209]: ۴ تحلیلگر فعال که صدایشان در روایت‌های این ماه می‌درخشد
+          - link "مشاهده همه" [ref=f1e1211] [cursor=pointer]:
+            - /url: /authors
+            - generic [ref=f1e1212]: مشاهده همه
+            - img [ref=f1e1213]
+        - link "مشاهده پروفایل author" [ref=f1e1216] [cursor=pointer]:
+          - /url: /author/cm5qdrd3e0001m4zli12b2rd5
+          - generic "رتبه ۱" [ref=f1e1217]:
+            - img [ref=f1e1218]
+          - generic [ref=f1e1220]:
+            - img "author" [ref=f1e1224]
+            - generic [ref=f1e1225]:
+              - heading "author" [level=3] [ref=f1e1226]
+              - paragraph [ref=f1e1227]: معامله‌گر
+              - paragraph [ref=f1e1228]: تحلیلگر ارشد بازارهای مالی با ۱۰ سال تجربه در بازار طلا و ارز
+          - generic [ref=f1e1229]:
+            - generic [ref=f1e1230]:
+              - img [ref=f1e1231]
+              - generic [ref=f1e1234]: ۵۰
+              - generic [ref=f1e1235]: مقاله
+            - generic [ref=f1e1236]:
+              - text: مشاهده پروفایل
+              - img [ref=f1e1237]
+        - generic [ref=f1e1240]:
+          - link "مشاهده پروفایل biotak" [ref=f1e1241] [cursor=pointer]:
+            - /url: /author/cm5qnptpb0001v8tnms9kwp6j
+            - generic "رتبه ۲" [ref=f1e1242]: ۲
+            - generic [ref=f1e1243]:
+              - img "biotak" [ref=f1e1247]
+              - generic [ref=f1e1248]:
+                - heading "biotak" [level=3] [ref=f1e1249]
+                - paragraph [ref=f1e1250]: معامله‌گر
+            - generic [ref=f1e1251]:
+              - generic [ref=f1e1252]:
+                - img [ref=f1e1253]
+                - generic [ref=f1e1256]: ۰
+                - generic [ref=f1e1257]: مقاله
+              - generic [ref=f1e1258]:
+                - text: مشاهده پروفایل
+                - img [ref=f1e1259]
+          - link "مشاهده پروفایل تیم تحریریه" [ref=f1e1262] [cursor=pointer]:
+            - /url: /author/cmqcm407d0002vjpsihhfla61
+            - generic "رتبه ۳" [ref=f1e1263]: ۳
+            - generic [ref=f1e1264]:
+              - img "تیم تحریریه" [ref=f1e1268]
+              - generic [ref=f1e1269]:
+                - heading "تیم تحریریه" [level=3] [ref=f1e1270]
+                - paragraph [ref=f1e1271]: روزنامه‌نگار
+            - generic [ref=f1e1272]:
+              - generic [ref=f1e1273]:
+                - img [ref=f1e1274]
+                - generic [ref=f1e1277]: ۰
+                - generic [ref=f1e1278]: مقاله
+              - generic [ref=f1e1279]:
+                - text: مشاهده پروفایل
+                - img [ref=f1e1280]
+          - link "مشاهده پروفایل مالک" [ref=f1e1283] [cursor=pointer]:
+            - /url: /author/cm5kqiap00001ckmow11600x8
+            - generic [ref=f1e1284]:
+              - img "مالک" [ref=f1e1288]
+              - generic [ref=f1e1289]:
+                - heading "مالک" [level=3] [ref=f1e1290]
+                - paragraph [ref=f1e1291]: مشاور سرمایه‌گذاری
+            - generic [ref=f1e1292]:
+              - generic [ref=f1e1293]:
+                - img [ref=f1e1294]
+                - generic [ref=f1e1297]: ۰
+                - generic [ref=f1e1298]: مقاله
+              - generic [ref=f1e1299]:
+                - text: مشاهده پروفایل
+                - img [ref=f1e1300]
+      - generic [ref=f1e1310]:
+        - generic [ref=f1e1311]:
+          - img [ref=f1e1312]
+          - generic [ref=f1e1315]: خبرنامه هفتگی
+          - img [ref=f1e1316]
+        - heading "به خبرنامه ما بپیوندید" [level=2] [ref=f1e1318]
+        - paragraph [ref=f1e1319]: آخرین اخبار بازارهای مالی و تحلیل‌های تخصصی، مستقیماً در ایمیل شما.
+        - generic [ref=f1e1322]:
+          - generic [ref=f1e1323]:
+            - generic:
+              - img
+            - textbox "ایمیل خود را وارد کنید" [ref=f1e1324]
+          - button "عضویت" [ref=f1e1325]:
+            - generic [ref=f1e1326]:
+              - generic [ref=f1e1327]: عضویت
+              - img [ref=f1e1328]
+        - generic [ref=f1e1330]:
+          - generic [ref=f1e1331]:
+            - img [ref=f1e1333]
+            - generic [ref=f1e1338]: ۱۰,۲۴۷
+            - generic [ref=f1e1339]: عضو فعال
+          - generic [ref=f1e1340]:
+            - img [ref=f1e1342]
+            - generic [ref=f1e1345]: هفتگی
+            - generic [ref=f1e1346]: ارسال منظم
+          - generic [ref=f1e1347]:
+            - img [ref=f1e1349]
+            - generic [ref=f1e1352]: ۱۰۰٪
+            - generic [ref=f1e1353]: بدون اسپم
+        - paragraph [ref=f1e1354]: هر زمان که بخواهید می‌توانید اشتراک را لغو کنید
+  - contentinfo [ref=f1e1355]:
+    - generic [ref=f1e1361]:
+      - generic [ref=f1e1362]:
+        - generic [ref=f1e1365]: همیشه در دسترس
+        - heading "ما را در شبکه‌های اجتماعی دنبال کنید" [level=3] [ref=f1e1366]
+        - navigation [ref=f1e1367]:
+          - link "دنبال کردن در Telegram" [ref=f1e1368] [cursor=pointer]:
+            - /url: https://t.me/blogmarket
+            - generic [ref=f1e1371]: T
+          - link "دنبال کردن در Instagram" [ref=f1e1372] [cursor=pointer]:
+            - /url: https://instagram.com/blogmarket
+            - generic [ref=f1e1375]: I
+          - link "دنبال کردن در Twitter" [ref=f1e1376] [cursor=pointer]:
+            - /url: https://twitter.com/blogmarket
+            - generic [ref=f1e1379]: T
+          - link "دنبال کردن در YouTube" [ref=f1e1380] [cursor=pointer]:
+            - /url: https://youtube.com/@blogmarket
+            - generic [ref=f1e1383]: "Y"
+          - link "دنبال کردن در LinkedIn" [ref=f1e1384] [cursor=pointer]:
+            - /url: https://linkedin.com/company/blogmarket
+            - generic [ref=f1e1387]: L
+      - generic [ref=f1e1388]:
+        - generic [ref=f1e1390]:
+          - generic [ref=f1e1391]:
+            - link "صفحه اصلی" [ref=f1e1394] [cursor=pointer]:
+              - /url: /
+              - img "لوگوی financial market" [ref=f1e1397]
+            - generic [ref=f1e1402]:
+              - heading "Financila Market" [level=2] [ref=f1e1403]
+              - paragraph [ref=f1e1404]: بازارهای مالی
+          - paragraph [ref=f1e1405]: ارائه بهترین خدمات ارز دیجیتال و بازارهای مالی با امنیت و سرعت بالا. ما با استفاده از فناوری‌های پیشرفته، بهترین تجربه معاملاتی را برای شما فراهم می‌کنیم.
+        - generic [ref=f1e1406]:
+          - heading "لینک‌های مفید" [level=3] [ref=f1e1407]
+          - list [ref=f1e1408]:
+            - listitem [ref=f1e1409]:
+              - link "ارز های دیجیتال" [ref=f1e1410] [cursor=pointer]:
+                - /url: /archive/category/crypto
+                - img [ref=f1e1411]
+                - generic [ref=f1e1414]: ارز های دیجیتال
+            - listitem [ref=f1e1415]:
+              - link "قوانین و مقررات" [ref=f1e1416] [cursor=pointer]:
+                - /url: /terms
+                - img [ref=f1e1417]
+                - generic [ref=f1e1420]: قوانین و مقررات
+            - listitem [ref=f1e1421]:
+              - link "حواله ارزها" [ref=f1e1422] [cursor=pointer]:
+                - /url: /money-transfer
+                - img [ref=f1e1423]
+                - generic [ref=f1e1426]: حواله ارزها
+            - listitem [ref=f1e1427]:
+              - link "پرداخت آنلاین" [ref=f1e1428] [cursor=pointer]:
+                - /url: /online-payment
+                - img [ref=f1e1429]
+                - generic [ref=f1e1432]: پرداخت آنلاین
+        - generic [ref=f1e1433]:
+          - heading "شرکت" [level=3] [ref=f1e1434]
+          - list [ref=f1e1435]:
+            - listitem [ref=f1e1436]:
+              - link "آرشیو اخبار" [ref=f1e1437] [cursor=pointer]:
+                - /url: /archive
+                - img [ref=f1e1438]
+                - generic [ref=f1e1441]: آرشیو اخبار
+            - listitem [ref=f1e1442]:
+              - link "درباره ما" [ref=f1e1443] [cursor=pointer]:
+                - /url: /about
+                - img [ref=f1e1444]
+                - generic [ref=f1e1447]: درباره ما
+            - listitem [ref=f1e1448]:
+              - link "تماس با ما" [ref=f1e1449] [cursor=pointer]:
+                - /url: /contact
+                - img [ref=f1e1450]
+                - generic [ref=f1e1453]: تماس با ما
+        - generic [ref=f1e1454]:
+          - heading "مسیر ارتباطی" [level=3] [ref=f1e1455]
+          - list [ref=f1e1456]:
+            - listitem [ref=f1e1457]:
+              - link "۰۹۳۸۰۹۲۶۰۶" [ref=f1e1458] [cursor=pointer]:
+                - /url: tel:09380929606
+                - img [ref=f1e1460]
+                - generic [ref=f1e1462]: ۰۹۳۸۰۹۲۶۰۶
+            - listitem [ref=f1e1463]:
+              - link "support@financialmarket.com" [ref=f1e1464] [cursor=pointer]:
+                - /url: mailto:support@financialmarket.com
+                - img [ref=f1e1466]
+                - generic [ref=f1e1469]: support@financialmarket.com
+      - generic [ref=f1e1472]:
+        - paragraph [ref=f1e1473]: تمامی حقوق محفوظ است. Financila Market © 2026
+        - generic [ref=f1e1474]:
+          - link "قوانین و مقررات" [ref=f1e1475] [cursor=pointer]:
+            - /url: /terms
+          - link "حریم خصوصی" [ref=f1e1476] [cursor=pointer]:
+            - /url: /privacy
+  - region "Notifications (F8)":
+    - list
+  - button "Open Next.js Dev Tools" [ref=f1e1482] [cursor=pointer]:
+    - img [ref=f1e1483]
+  - alert [ref=f1e1486]
