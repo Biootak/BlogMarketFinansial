@@ -2,7 +2,12 @@
 // تنها جایی که نرخ‌های بازار خوانده/محاسبه می‌شود (single source of truth).
 
 import prisma from '@/lib/db';
-import { crossRateToToman, fetchBonbastRates } from './bonbast';
+import {
+  type BonbastBuySellRates,
+  crossRateToToman,
+  fetchBonbastBuySell,
+  fetchBonbastRates,
+} from './bonbast';
 import { getGlobalFxRates } from './fx';
 import { SYMBOL_REGISTRY_MAP } from './registry';
 import { fetchSarafiRates } from './sarafi';
@@ -34,9 +39,11 @@ interface TgjuRate {
  * برای هر ExchangeRate فعال (active=true):
  *   1. provider='manual' → از singleRate
  *   2. provider='auto' + SymbolSource mapping → از TGJU (multi-page)
- *   3. provider='auto' + symbol='IRAN_USD' + USDT موجود → از USDT × premium
- *   4. provider='auto' + USDT/FX موجود → از FX-derived
- *   5. هیچ‌کدام → null (در ticker نمایش داده نمی‌شود)
+ *   3. provider='auto' + bonbastBuySell → buy/sell واقعی صرافی
+ *   4. provider='auto' + symbol='IRAN_USD' + USDT موجود → از USDT × premium
+ *   5. provider='auto' + USDT/FX موجود → از FX-derived
+ *   6. provider='auto' + bonbast mid → mid-rate fallback
+ *   7. هیچ‌کدام → null (در ticker نمایش داده نمی‌شود)
  *
  * خروجی: آرایه‌ی مرتب‌شده بر اساس priority.
  */
@@ -46,11 +53,12 @@ export async function assembleMarketRates(): Promise<MarketRateItem[]> {
     orderBy: { priority: 'asc' },
   });
 
-  const [allPages, usdt, fx, bonbast, sarafi] = await Promise.all([
+  const [allPages, usdt, fx, bonbast, bonbastBS, sarafi] = await Promise.all([
     fetchAllTgjuPages(),
     getUsdtRate(),
     getGlobalFxRates(),
     fetchBonbastRates(),
+    fetchBonbastBuySell(),
     fetchSarafiRates(),
   ]);
 
@@ -72,7 +80,7 @@ export async function assembleMarketRates(): Promise<MarketRateItem[]> {
   for (const row of dbRows) {
     const symbol = row.symbol ?? row.currency;
     const registry = SYMBOL_REGISTRY_MAP.get(symbol);
-    const item = assembleFromRow(row, tgjuMap, usdt, fx, bonbast, sarafi, registry);
+    const item = assembleFromRow(row, tgjuMap, usdt, fx, bonbast, bonbastBS, sarafi, registry);
     if (item) out.push(item);
   }
   return out;
@@ -84,6 +92,7 @@ function assembleFromRow(
   usdt: Awaited<ReturnType<typeof getUsdtRate>>,
   fx: Awaited<ReturnType<typeof getGlobalFxRates>>,
   bonbast: Awaited<ReturnType<typeof fetchBonbastRates>>,
+  bonbastBS: BonbastBuySellRates | null,
   sarafi: Awaited<ReturnType<typeof fetchSarafiRates>>,
   registry?: RegistryEntry,
 ): MarketRateItem | null {
@@ -197,7 +206,30 @@ function assembleFromRow(
     }
   }
 
-  // Priority 3b: bonbast.com — برای BONBAST_* و HERAT_* symbols
+  // Priority 3b: bonbast.com buy/sell — برای BONBAST_* و HERAT_* symbols که DB برایشان ثبت است.
+  // این priority از /converter (mid-only) جداست — از صفحه اصلی bonbast.com
+  // نرخ خرید/فروش واقعی بازار تهران را می‌گیریم.
+  if (rawValue === null && bonbastBS) {
+    let fxCode: string | null = null;
+    if (symbol.startsWith('BONBAST_')) {
+      fxCode = symbol.replace('BONBAST_', '');
+    } else if (symbol.startsWith('HERAT_')) {
+      fxCode = symbol.replace('HERAT_', '');
+    }
+    if (fxCode) {
+      const bsEntry = bonbastBS.rates[fxCode.toUpperCase()];
+      if (bsEntry) {
+        // raw values از bonbast به تومان هستند — divisor=10 نداریم
+        // ولی unit='toman' است → rawValue باید ریال باشد (×10) برای consistency
+        buyValue = bsEntry.buy * divisor;
+        sellValue = bsEntry.sell * divisor;
+        rawValue = ((bsEntry.buy + bsEntry.sell) / 2) * divisor;
+        changePercent = 0;
+      }
+    }
+  }
+
+  // Priority 3c: bonbast.com mid fallback — برای BONBAST_*/HERAT_* که buy/sell نداشتند
   if (rawValue === null && bonbast) {
     let fxCode: string | null = null;
     if (symbol.startsWith('BONBAST_')) {
@@ -236,7 +268,16 @@ function assembleFromRow(
   // (مثلاً BANK_AFN که TGJU داده‌ای ندارد)
   if (rawValue === null && bonbast) {
     // حذف prefix‌های شناخته‌شده برای پیدا کردن کد ارز
-    const prefixes = ['BANK_', 'TRANSFER_', 'IRAN_', 'AFGHANI_', 'GLOBAL_', 'CURRENCY_', 'MINOR_', 'SARA_'];
+    const prefixes = [
+      'BANK_',
+      'TRANSFER_',
+      'IRAN_',
+      'AFGHANI_',
+      'GLOBAL_',
+      'CURRENCY_',
+      'MINOR_',
+      'SARA_',
+    ];
     let fxCode: string | null = null;
     for (const p of prefixes) {
       if (symbol.startsWith(p)) {

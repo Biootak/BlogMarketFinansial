@@ -13,6 +13,49 @@
 
 Only write a brief analysis (not a long plan) for: DB / migration / auth / security / caching / routing, or when user says "big" / "architecture changes".
 
+### ⛔ Analysis ≠ Done (Anti-Pattern — learned 2026-07)
+تحلیل بدون پیاده‌سازی = **شکست**. اگر در پاسخ «کارهایی که باید انجام شود» لیست کردی، آن کارها را همان لحظه بنویس — نه در چت بعدی. «کشف کردم که X لازم است» + اعلام تمام = نقض مستقیم Build→Show→Improve.
+
+### 🔍 Pre-code Research Gate (اجباری — قبل از نوشتن هر کد غیر-trivial)
+پیش از نوشتن کد برای هر تسک غیر-trivial (هر چیزی که بیشتر از یک fix یک‌خطی است)، این سؤال‌ها را با websearch یا داک رسمی بررسی کن و **صریحاً به کاربر بگو**:
+
+1. **آیا راهکار بهتری در داک رسمی 2026 وجود دارد؟**
+   - Next.js docs، Prisma docs، MDN، TypeScript handbook — همه آپدیت می‌شوند. آنچه ۶ ماه پیش best practice بود ممکن است الان deprecated باشد.
+   - نمونه: `unstable_cache` → `use cache` در Next.js 15+؛ scraping با regex → `node-html-parser`؛ fetch با no retry → `p-retry` pattern.
+2. **آیا روش من با best practice جاری تضاد دارد؟**
+   - اگر تضاد وجود دارد، **قبل از کد به کاربر بگو** + جایگزین پیشنهاد بده. هرگز ساکت پیش نرو.
+3. **آیا یک کتابخانه موجود این کار را بهتر انجام می‌دهد؟**
+   - قبل از نوشتن helper جدید، بررسی کن آیا چیزی در `node_modules` یا استاندارد Web API آن را cover می‌کند.
+
+فرمت گزارش pre-code (در همان پیام، قبل از کد):
+```
+🔍 Research:
+- [چه چیزی بررسی شد]: [نتیجه / منبع]
+- Best practice 2026: [رویکرد انتخاب‌شده و دلیل]
+- ⚠️ هشدار [اگر راهکار بهتری وجود دارد که نمی‌توان الان اعمال کرد]
+```
+
+### 📋 Post-task Report (اجباری — بعد از هر تسک)
+پس از هر تسک که بیشتر از یک فایل تغییر داده، قبل از اعلام «تمام» این گزارش را بنویس:
+
+```
+## گزارش تسک
+
+### ✅ انجام شد
+- [فایل]: [چه تغییری — یک خط]
+
+### ⚠️ ناقص / بعداً باید انجام شود
+- [مورد]: [دلیل که الان نشد]
+
+### 💡 پیشنهادات بهبود (اختیاری — فقط موارد واقعی)
+- [پیشنهاد]: [چرا مفید است]
+
+### 🐛 خطرات احتمالی
+- [خطر]: [چطور پیشگیری شود]
+```
+
+اگر همه چیز کامل است و پیشنهادی نیست، همان را صریح بگو. گزارش را inflate نکن.
+
 ## Mandatory declaration (start of every task)
 
 > "AGENTS.md و PDK.md را خواندم — مستقیم می‌سازم (Build → Show → Improve)."
@@ -57,6 +100,8 @@ Trivial/mechanical tasks (one-line class fix) may skip the search but still foll
 - **Never expand global CSS:** do not add rules to `globals.css`, `dashboard.css`, `setup.css`, `auth.css`, `atelier-archive.css`, or `money-transfer/styles.css`. Fix via the co-located CSS Module, or (for truly shared utilities) the global `anim-*` set.
 - **Keep it modular:** if an edit would push a file past ~400 lines or mix a new concern, split it instead.
 - **No stubs / no regressions:** no `console.log` debug, no `any`, no half-built branches.
+- **Dependency audit (learned 2026-07):** هر بار که یک فایل `lib/` تغییر می‌کند، همه فایل‌هایی که از آن ایمپورت می‌کنند را grep کن و اطمینان حاصل کن که interface جدید با آن‌ها سازگار است. تغییر signature تابع بدون بررسی callers = رگرسیون تضمین‌شده.
+- **Parallel data sources — synchronization rule (learned 2026-07):** اگر پروژه چند منبع داده دارد که یک هدف مشترک دارند (مثل `refresh-market-rates` و `sync-bazaar` هر دو نرخ می‌نویسند)، هنگام تغییر یکی، وضعیت دیگری را بررسی کن. اگر تکراری/متناقض باشند، به کاربر بگو و یکی را deprecated کن.
 
 ### 2. Directive: Creating code (components, pages, features)
 Follow the **Component Decision Protocol** every time, in order:
@@ -133,6 +178,17 @@ When the task is explicitly a redesign / restyle / "test the redesign":
 - [ ] Reference files (DESIGN.md / COMPONENTS.md) compared; deviations listed.
 - [ ] Temporary/duplicated styles removed.
 
+## Data Pipeline conventions (market-rates specific — always-on)
+
+این قوانین برای پایپ‌لاین `src/lib/market-rates/*` اجباری است:
+
+- **Single source of truth:** `assembleMarketRates()` در `assembler.ts` تنها جایی است که نرخ محاسبه می‌شود. هیچ cron دیگری نباید مستقیم TGJU scrape کند و به DB بنویسد بدون عبور از assembler.
+- **Priority chain (2026-07):** `manual` → `TGJU multi-page` → `sarafi.af (buy/sell AFN)` → `bonbast buy/sell (HTML)` → `bonbast mid (/converter)` → `USDT/Exir` → `FX API`. هر منبع جدید باید در این زنجیره با priority صریح جای بگیرد.
+- **bonbast.com دو endpoint دارد:** `POST /converter` فقط mid-rate (EUR cross-rate) می‌دهد؛ `GET /` جدول HTML با buy/sell تومان جداگانه دارد. برای نرخ خرید/فروش واقعی همیشه از `fetchBonbastBuySell()` استفاده کن.
+- **Symbol naming:** prefix صریح اجباری است — `IRAN_*`، `AFGHANI_*`، `SARA_*`، `BONBAST_*`، `HERAT_*`، `GLOBAL_*`. هر symbol جدید باید هم در `registry.ts` و هم در `seed-market-rates.ts` اضافه شود.
+- **Snapshot JSON:** `public/data/market-rates.json` توسط cron `refresh-market-rates` هر ۶۰ ثانیه نوشته می‌شود. `sync-bazaar` deprecated است — در vercel.json فقط `refresh-market-rates` فعال باشد.
+- **comments in cron files:** هرگذاری که auth mechanism در comment ذکر می‌شود (`x-cron-secret`، `?secret=`) باید با آنچه `cron-auth.ts` واقعاً می‌پذیرد (فقط `Authorization: Bearer`) مطابق باشد.
+
 ## Topic files — load ONLY when relevant
 
 **Don't load all.** Read 1–2 at most, based on the task:
@@ -154,6 +210,49 @@ When the task is explicitly a redesign / restyle / "test the redesign":
 ### Always-loaded (بلا استثنا)
 
 - **PDK** (`PDK.md` + ماژول‌های `pdk/`): در *هر چت* و بدون استثنا خوانده می‌شود — مستقل از موضوع تسک. این ریپو از بلاگ مالی فارسی به **فین‌تک افغانستان** گسترش یافته و PDK نمایه واحد توسعه است. نقض قوانین PDK (مخصوصاً `pdk/constitution.md`) مجاز نیست. ماژول‌های تخصصی `pdk/` طبق نیاز تسک بار می‌شوند، اما خودِ `PDK.md` (entry point) همیشه. |
+
+## 🔄 Rule Failure Loop — خودتصحیحی دستورالعمل (اجباری)
+
+این مکانیزم ضمانت می‌کند که اشتباهات **تکرار نشوند** — نه فقط یک بار fix شوند.
+
+### چه موقع فعال می‌شود؟
+هر بار که یکی از این اتفاق‌ها بیفتد:
+- یک قانون AGENTS.md در عمل کار نکرد (مثل «تمام گفتم ولی کد ننوشتم»)
+- کاربر گفت «چرا این کار نکردی؟» یا «این اشتباه است»
+- biome / tsc خطا داد که قابل پیش‌بینی بود
+- یک الگوی تکراری اشتباه کشف شد (دومین بار همان نوع bug)
+
+### پروتکل اجباری — ۳ مرحله:
+
+**مرحله ۱ — Root Cause (علت ریشه‌ای):**
+صادقانه بگو کدام قانون fail شد و چرا. نه عذرخواهی کلی — تشخیص دقیق:
+> «قانون X در بخش Y از AGENTS.md داشتم، ولی در عمل Z اتفاق افتاد چون [علت دقیق].»
+
+**مرحله ۲ — Immediate Fix (اصلاح همان لحظه):**
+اگر تسک ناقص است، همان لحظه تمام کن. اگر bug در کد است، همان لحظه fix کن.
+کاربر نباید در سشن بعدی دوباره همان مشکل را گزارش دهد.
+
+**مرحله ۳ — AGENTS.md Patch (اصلاح دستورالعمل — اجباری):**
+قانون fail‌شده را در AGENTS.md یا AGENTS.anti-failure.md اصلاح کن:
+- اگر قانون **مبهم** بود → دقیق‌تر بنویس
+- اگر قانون **وجود نداشت** → اضافه کن
+- اگر قانون **وجود داشت ولی فراموش شد** → آن را به بخش بالاتر (SELF-ENFORCING LOOP) منتقل کن یا boldتر کن
+
+فرمت ثبت در AGENTS.md (در انتهای بخش مرتبط، یا در anti-failure):
+```
+### [توضیح کوتاه] — learned [تاریخ]
+[شرح اشتباه] + [قانون اصلاح‌شده]
+```
+
+### مثال واقعی از این سشن:
+- **fail شد:** «تحلیل کردم و HTML artifact ساختم، ولی کد ننوشتم و تمام اعلام کردم»
+- **علت:** قانون «Analysis ≠ Done» وجود نداشت
+- **اصلاح:** قانون به AGENTS.md اضافه شد + شماره ۲۵ به anti-failure اضافه شد
+
+### ⚠️ تذکر مهم:
+این loop **جایگزین عذرخواهی** است — نه مکمل آن. عذرخواهی بدون اصلاح دستورالعمل = همان اشتباه در سشن بعدی.
+
+---
 
 ## Other rules
 

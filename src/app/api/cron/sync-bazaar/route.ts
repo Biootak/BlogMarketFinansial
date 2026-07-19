@@ -1,27 +1,19 @@
 /**
  * /api/cron/sync-bazaar
  * ----------------------------------------------------------------------------
- * Cron endpoint که TGJU را scrape می‌کند و نرخ‌ها را در Prisma `ExchangeRate`
- * upsert می‌کند.
+ * ⚠️ DEPRECATED — این cron فقط homepage TGJU را scrape می‌کند و با
+ * SYMBOL_REGISTRY کامل هماهنگ نیست (ارزهای جدید مثل PKR/SAR/BHD را ندارد).
  *
- * چرا این لازم است؟
- *  - قبلاً Navasan استفاده می‌شد ولی quota رایگانش تمام شده.
- *  - الان TGJU.org را scrape می‌کنیم (رایگان، بدون کلید).
- *  - cron هر ۱۰ دقیقه یک‌بار صدا زده می‌شود (Vercel Cron یا سرویس خارجی).
- *  - اگه TGJU شکست بخورد، silent fail می‌کنه و DB دست نخورده می‌مونه؛
- *    آخرین مقدار موفق همچنان به کاربر نشون داده می‌شه.
+ * نسخه‌ی جدید: /api/cron/refresh-market-rates
+ *   — همه ۹ صفحه TGJU + bonbast + sarafi.af + USDT/FX را می‌خواند
+ *   — snapshot JSON می‌نویسد
+ *   — با کل SYMBOL_REGISTRY هماهنگ است
  *
- * Auth: `CRON_SECRET` env variable — هدر `x-cron-secret` یا query `?secret=`
- * باید با آن برابر باشد.
+ * این فایل برای backward-compat با deployment های قدیمی نگه داشته شده.
+ * در vercel.json باید فقط refresh-market-rates فعال باشد.
  *
- * کلاینت‌های مجاز:
- *  - Vercel Cron (هدر `Authorization: Bearer ${CRON_SECRET}`)
- *  - سرویس cron خارجی (هدر `x-cron-secret`)
- *  - تست دستی: `curl "http://localhost:3000/api/cron/sync-bazaar?secret=$CRON_SECRET"`
- *
- * نکته‌ی امنیتی: در production، حتماً CRON_SECRET تنظیم شود. اگر تنظیم
- * نشده باشد، endpoint غیرفعال است (۴۰۳) تا endpoint باز برای cron های
- * عمومی نباشد.
+ * Auth: فقط `Authorization: Bearer CRON_SECRET` پذیرفته می‌شود.
+ * (query string و x-cron-secret پشتیبانی نمی‌شوند — راه ناامن هستند.)
  * ----------------------------------------------------------------------------
  */
 
