@@ -27,13 +27,14 @@ Only write a brief analysis (not a long plan) for: DB / migration / auth / secur
 3. **آیا یک کتابخانه موجود این کار را بهتر انجام می‌دهد؟**
    - قبل از نوشتن helper جدید، بررسی کن آیا چیزی در `node_modules` یا استاندارد Web API آن را cover می‌کند.
 
-فرمت گزارش pre-code (در همان پیام، قبل از کد):
+فرمت گزارش pre-code (در همان پیام، قبل از کد) — **تاریخ اجباری است (learned 2026-07)**:
 ```
-🔍 Research:
-- [چه چیزی بررسی شد]: [نتیجه / منبع]
+🔍 Research (تاریخ: [روز/ماه/سال امروز]):
+- [چه چیزی بررسی شد]: [نتیجه] — منبع: [URL یا "داک رسمی X §Y"]
 - Best practice 2026: [رویکرد انتخاب‌شده و دلیل]
 - ⚠️ هشدار [اگر راهکار بهتری وجود دارد که نمی‌توان الان اعمال کرد]
 ```
+اگر websearch نیاز نبود (تسک trivial) → صریح بنویس: `🔍 Research: N/A — [دلیل]`
 
 ### 📋 Post-task Report (اجباری — بعد از هر تسک)
 پس از هر تسک که بیشتر از یک فایل تغییر داده، قبل از اعلام «تمام» این گزارش را بنویس:
@@ -70,6 +71,8 @@ Only write a brief analysis (not a long plan) for: DB / migration / auth / secur
 4. **اگر verify قرمز شد، تا سبز شدن درستش کن.** هرگز با چک قرمز «تمام» نگو.
 5. **CRAFT GATE (اجباری — سقف، نه کف):** خروجی باید استاندارد «بیلیون‌دلاری» را در `DESIGN.md §Craft & Composition` + `AGENTS.ui-design.md` رد کند. این سایت محصول فین‌تک در کلاس Stripe/Wise/Linear/Vercel است — «درسته ولی معمولی/کسل‌کننده/بی‌هویت» یک **شکست** است، نه یک خروجیِ ایمن. عبور از دروازه فقط با tsc نیست؛ با سطح کرفت است. قبل از اعلام پایان، چک‌لیست کرفت (Directives §3.6) را یک‌به‌یک رد کن و در پیامت ثابت کن که عبور کرده‌ای.
 6. **Definition of Done** (پایین) را یک‌به‌یک چک کن پیش از اعلام پایان.
+7. **🔁 Task Completion Loop** — قبل از اعلام «تمام»، چک‌لیست `§Task Completion Loop` را اجرا کن. اگر هر آیتم ناقص بود، **همان لحظه fix کن و ادامه بده — متوقف نشو.** فقط وقتی همه ۹ آیتم سبز شدند، «تمام» بگو.
+8. **🛡️ 19DQG — Nineteen-Dimension Quality Gate** — آخرین دروازه قبل از «تمام». ۱۹ بُعد: [D1] کد نوشته شد · [D2] وابستگی‌ها · [D3] امنیت · [D4] sync front/back · [D5] قوانین پروژه · [D6] کامل/clean · [D7] internet-first · [D8] یکپارچگی · [D9] best practice 2026 · [D10] performance · [D11] a11y · [D12] responsive/dark · [D13] UI craft · [D14] DB safety · [D15] cleanup/observability · [D16] هر خطا fix شد · [D17] reuse-first · [D18] dated websearch+AGENTS patch · **[D19] بخش‌های دیگر پروژه آپدیت شدند**. هر [ ] باقی ماند → fix → از D1 شروع کن.
 
 ## Critical conventions (always-on)
 
@@ -165,18 +168,270 @@ When the task is explicitly a redesign / restyle / "test the redesign":
 6. **Show** the user; iterate on "fix" / "good".
 
 ### Definition of Done (before you say a task is complete)
-- [ ] **Craft Bar (§3.6) passed** — output is billion-dollar caliber (depth, motion, hierarchy, micro-interaction, restraint, a signature "wow", premium detail). "Ordinary but correct" = NOT done.
-- [ ] **Comfortable Density (§3.7) passed** — feels like 100% zoom (breathing room, generous spacing), NOT 125% (cramped). "Technically right but tight" = NOT done.
-- [ ] Component reuse checked (no duplicate component/system created).
-- [ ] Token usage checked (no hardcoded hex, no new px spacing, no new `--color-*`).
-- [ ] All required states handled (loading / empty / error / disabled / success).
-- [ ] Keyboard + visible focus + 44px touch targets.
-- [ ] RTL logical properties; no `left/right`.
-- [ ] Mobile (375) + desktop (1024/1440) verified.
-- [ ] No `any` / `@ts-ignore` / `console.log` / stub / TODO.
-- [ ] `npx tsc --noEmit` passes; `npm run lint` passes.
-- [ ] Reference files (DESIGN.md / COMPONENTS.md) compared; deviations listed.
-- [ ] Temporary/duplicated styles removed.
+
+> **⚡ این لیست با `§15DQG` هماهنگ است.** برای هر آیتم زیر، بُعد مرتبط از 15DQG در پرانتز ذکر شده. اگر 15DQG اجرا شده، این لیست به‌خودی‌خود پوشش داده می‌شود.
+
+- [ ] **Craft Bar (§3.6) passed** (→ D13) — billion-dollar caliber: depth, motion, hierarchy, micro-interaction, restraint, wow. "Ordinary" = NOT done.
+- [ ] **Comfortable Density (§3.7) passed** (→ D13) — 100% zoom feel (breathing room), NOT 125% cramped.
+- [ ] Component reuse checked — no duplicate created (→ D8).
+- [ ] Token usage: no hardcoded hex, no new px spacing, no `--color-*` (→ D5).
+- [ ] All required states handled: loading / empty / error / disabled / success (→ D4, D13).
+- [ ] Keyboard + visible focus + 44px touch targets (→ D11).
+- [ ] RTL logical properties; no `left/right` (→ D5).
+- [ ] Mobile (375) + desktop (1024/1440) verified (→ D12).
+- [ ] No `any` / `@ts-ignore` / `console.log` / stub / TODO (→ D5, D6).
+- [ ] `npx tsc --noEmit` passes; `npm run lint` passes (→ D5).
+- [ ] Reference files (DESIGN.md / COMPONENTS.md) compared; deviations listed (→ D8).
+- [ ] Temporary/duplicated styles removed (→ D6, D15).
+- [ ] **19DQG fully run** — all 19 dimensions [D1–D19] checked or marked N/A with reason.
+
+### 🔁 Task Completion Loop — ادامه تا تمام شدن (اجباری — learned 2026-07)
+
+**قبل از هر اعلام «تمام»، این checklist را یک‌به‌یک اجرا کن. اگر هر آیتم قرمز بود، همان لحظه fix کن و دوباره چک کن — متوقف نشو.**
+
+```
+TASK COMPLETION CHECKLIST (run before every "done" declaration)
+═══════════════════════════════════════════════════════════════
+[ ] 1. تمام فایل‌های وعده‌داده‌شده نوشته شدند (نه فقط بعضی)
+[ ] 2. هر تغییر که در چت گفتم اما ننوشتم → الان بنویس
+[ ] 3. npx tsc --noEmit → سبز (بدون خطا)
+[ ] 4. npm run lint (biome check) → سبز روی فایل‌های تغییر یافته
+[ ] 5. هر خطای lint/tsc (حتی pre-existing) → همان لحظه fix شد (نه «بعداً»)
+[ ] 6. هر خطای خارج‌از‌scope → صریح به کاربر اعلام شد + در post-task ثبت شد
+[ ] 7. هیچ TODO / placeholder / console.log در کد ما نیست
+[ ] 8. Post-task Report (§Post-task Report) نوشته شد
+[ ] 9. Nineteen-Dimension Quality Gate (§19DQG زیر) کامل اجرا شد
+═══════════════════════════════════════════════════════════════
+اگر هر آیتم [ ] باقی ماند → کد را fix کن → checklist را دوباره اجرا کن
+فقط وقتی همه [x] شدند → اعلام «تمام» مجاز است
+```
+
+**قانون توقف‌ناپذیری — learned 2026-07 (اجباری، بلا استثنا):**
+هر خطایی که در هر فایل پروژه دیدی — چه مربوط به تغییرات باشد چه نباشد — **همان لحظه fix کن و ادامه بده.** هرگز «این خطا مربوط به ما نیست» یا «pre-existing است» را بهانه برای رد شدن قرار نده. تنها استثنا: اگر fix آن خطا از scope تسک کاملاً خارج و مستلزم یک PR مجزا است → صریح به کاربر اعلام کن **و** یک آیتم در گزارش post-task ثبت کن.
+
+**قانون loop:** هر بار که یک fix جدید انجام دادی، checklist را از ابتدا re-run کن تا مطمئن شوی fix جدید چیزی نشکسته.
+
+---
+
+## 🛡️ Nineteen-Dimension Quality Gate (19DQG) — دروازهٔ نوزده‌بُعدی (اجباری — learned 2026-07)
+
+> **قانون متوقف‌نشو:** هر بُعدی که [ ] باقی ماند = همان لحظه fix کن → از بُعد D1 دوباره شروع کن. «بعداً» یا «N/A بدون دلیل» وجود ندارد.
+> اگر یک بُعد واقعاً خارج از scope تسک است → **صریح بنویس «N/A — [دلیل دقیق]»**.
+
+```
+🛡️ NINETEEN-DIMENSION QUALITY GATE — 19DQG
+════════════════════════════════════════════════════════════════════════════
+
+【D1】 کد واقعی نوشته شد؟ (نه فقط تحلیل — Anti-pattern §Analysis≠Done)
+      [ ] کد واقعی نوشته یا ویرایش شد (نه فقط توضیح در چت)
+      [ ] تمام فایل‌های وعده‌داده‌شده موجودند (نه partial/stub)
+      [ ] هیچ بخشی در همین چت قول داده شد ولی skip شد
+      ─────────────────────────────────────────
+      ❌ اگر [ ] → همین لحظه بنویس — «بعداً» وجود ندارد
+
+【D2】 وابستگی‌ها و cascade کامل شدند؟
+      [ ] همه callers/importers فایل‌های تغییریافته grep و بررسی شدند
+      [ ] Interface/type تغییر کرد → همه call sites سازگارند
+      [ ] Symbol جدید → registry + seed + هر mapping موجود آپدیت شد
+      [ ] Cron/job جدید → vercel.json / scheduler config آپدیت شد
+      [ ] Env var جدید → AGENTS.env.md + .env.example آپدیت شد
+      [ ] Domain/image جدید → next.config.ts CSP + remotePatterns آپدیت شد
+      ─────────────────────────────────────────
+      Ref: §Directive1"Dependency audit" + anti-failure #20, #26
+
+【D3】 امنیت رعایت شده؟
+      [ ] هیچ secret/token در client bundle یا NEXT_PUBLIC_* نیست
+      [ ] هر API route جدید محافظت‌شده (requireUser/requireRole/requireAdmin)
+      [ ] هر input کاربر با Zod validate شده (هرگز raw req.body به DB)
+      [ ] Error shape استاندارد { success:false, error:{ code, message } }
+      [ ] هیچ stack trace / raw DB error به کاربر نمی‌رسد
+      [ ] Rate-limit برای mutating/auth endpoints بررسی شد
+      [ ] عملیات مالی → idempotency-key + ledger-based (نه فقط DB write)
+      [ ] داده حساس (شناسه ملی، کارت) → رمزنگاری at-rest (AES-256)
+      ─────────────────────────────────────────
+      Ref: pdk/security.md + pdk/constitution.md §C7 + anti-failure #9, #27
+
+【D4】 هماهنگی بک‌اند ↔ فرانت‌اند برقرار است؟
+      [ ] فرانت‌اند از API shape { success, data/error } استفاده می‌کند
+      [ ] Prisma schema تغییر کرد → همه query + handler آپدیت شدند
+      [ ] Cache tags بعد از هر write revalidate می‌شوند (از @/lib/revalidate)
+      [ ] همه UI states پیاده شده: loading / error / empty / success / disabled
+      [ ] هیچ hardcoded URL یا magic number بین front/back نیست
+      [ ] Server Actions ← error handling با try/catch + شکل استاندارد
+      ─────────────────────────────────────────
+      Ref: §Critical conventions + anti-failure #8, #28
+
+【D5】 قوانین پروژه رعایت شده؟
+      [ ] RTL: فقط logical props (ps-/pe-/ms-/me-/inset-inline-)، هرگز left/right
+      [ ] TypeScript strict: no any، no @ts-ignore، no TODO/FIXME/placeholder
+      [ ] CSS: هیچ قانون جدید به globals.css / dashboard.css اضافه نشده
+      [ ] Tokens: فقط --ds-* و --nova-*؛ هیچ hex hardcode نشده
+      [ ] Prisma import فقط از @/lib/db؛ هرگز new PrismaClient()
+      [ ] revalidateTag فقط از @/lib/revalidate؛ هرگز next/cache مستقیم
+      [ ] npx tsc --noEmit → سبز
+      [ ] npm run lint → سبز روی فایل‌های تغییریافته
+      ─────────────────────────────────────────
+      Ref: §Critical conventions + §Directives + anti-failure #29
+
+【D6】 کد کامل است (نه stub/ناقص)?
+      [ ] هیچ console.log / debugger / alert در کد نیست
+      [ ] هیچ handler با return null یا throw new Error("TODO") نیست
+      [ ] هیچ شاخهٔ نیمه‌کاره وجود ندارد
+      [ ] Unused imports حذف شدند (grep برای import‌های بلا استفاده)
+      [ ] Dead code / commented-out blocks حذف شدند
+      [ ] temp/debug فایل‌ها حذف شدند
+      ─────────────────────────────────────────
+      Ref: anti-failure #25, #30 + §Directive2"No stubs" + pdk/coding-standards.md §5.6
+
+【D7】 راهکار بهتری وجود داشت؟ (internet-first mandatory)
+      [ ] 🔍 Research block قبل از کد در همین پیام نوشته شد
+      [ ] داک رسمی 2026 بررسی شد (Next.js/Prisma/MDN/TypeScript)
+      [ ] اگر راهکار بهتری هست → در همان پیام به کاربر گفته شد
+      [ ] node_modules برای کتابخانهٔ موجود بررسی شد (قبل از نوشتن helper)
+      [ ] اگر AGENTS.md با best practice 2026 تضاد داشت → به کاربر گفته + AGENTS patch شد
+      ─────────────────────────────────────────
+      Ref: §Pre-code Research Gate + §Internet-first + anti-failure #31, #34
+
+【D8】 پروژه یکپارچه است و conflict ندارد؟
+      [ ] تغییر جدید با بخش‌های دیگر پروژه conflict ایجاد نمی‌کند
+      [ ] Data pipeline تغییر کرد → assembler.ts/registry.ts/seed هماهنگند
+      [ ] Cron تغییر کرد → vercel.json + cron-auth.ts + comments هماهنگند
+      [ ] منابع موازی داده بررسی شدند (refresh-market-rates vs sync-bazaar)
+      [ ] Component جدید → COMPONENTS.md بررسی شد، تکراری نیست
+      ─────────────────────────────────────────
+      Ref: §Data Pipeline + anti-failure #4, #32
+
+【D9】 Best practice 2026 رعایت شده؟
+      [ ] Next.js 16+ patterns: use cache، Server Actions، App Router
+      [ ] هیچ deprecated API (unstable_ prefix بررسی شد)
+      [ ] TypeScript strict (no implicit any، no cast بی‌دلیل)
+      [ ] React: hooks rules، no memory leaks، proper cleanup in useEffect
+      [ ] Prisma: select fields explicit (no select *)، transaction برای multi-write
+      [ ] API: idempotent، Retry-After در 429، HTTP status codes درست
+      ─────────────────────────────────────────
+      Ref: §Pre-code Research Gate + pdk/references.md + anti-failure #33
+
+【D10】 Performance رعایت شده؟
+      [ ] هیچ N+1 query (Prisma include/select هدفمند)
+      [ ] داده‌های پرتکرار با unstable_cache + tag درست cache شده‌اند
+      [ ] تصاویر با next/image (نه <img>)؛ فونت با next/font
+      [ ] Component سنگین با dynamic import + ssr:false lazy-load شده
+      [ ] هیچ unbounded DB read (pagination اضافه شد)
+      [ ] هیچ blocking load در critical path (Suspense/streaming بررسی شد)
+      ─────────────────────────────────────────
+      Ref: anti-failure #7 + pdk/database.md §6.4
+
+【D11】 Accessibility / a11y رعایت شده؟
+      [ ] Semantic HTML + Radix primitives (نه div soup)
+      [ ] هر interactive element label یا aria-label دارد
+      [ ] Keyboard navigation کامل (Tab/Enter/Esc/Arrow)
+      [ ] Focus ring دیدنی (outline نپوشانده)
+      [ ] Touch target ≥ 44px × 44px
+      [ ] کنتراست ≥ 4.5:1 برای متن؛ ≥ 7:1 برای اعداد مالی
+      [ ] هیچ info صرفاً با رنگ منتقل نمی‌شود (+ آیکون یا متن)
+      [ ] prefers-reduced-motion global clamp در tokens.css کافی است (per-component نساز)
+      ─────────────────────────────────────────
+      Ref: WCAG 2.2 AA + anti-failure #11 + pdk/anti-failure.md §a11y
+
+【D12】 Responsive / Dark mode تست شده؟ (فقط تسک‌های UI)
+      [ ] موبایل 375px: هیچ overflow، هیچ text کوچک‌تر از 12px
+      [ ] دسکتاپ 1024px + 1440px: layout طبق طرح
+      [ ] dark mode: همه رنگ‌ها از token (--ds-*) — هیچ hardcode که در dark شکسته
+      [ ] RTL: هیچ المان جابه‌جا شده یا اشتباه flip نشده
+      ─────────────────────────────────────────
+      Ref: §Definition of Done + pdk/anti-failure.md §طراحی
+
+【D13】 UI Design Quality Gate (فقط تسک‌های UI/بصری)
+      [ ] Craft Bar §3.6 رد شد: عمق / motion / typography / micro-interaction / restraint / wow / detail
+      [ ] Comfortable Density §3.7: حس زوم 100٪ (نه 125٪ چسبیده)
+      [ ] AI-Slop Rubric (pdk/design-cycle.md §9.3): 0 مردود، ≤2 بازبینی
+      [ ] Component reuse چک شد (Component Decision Protocol §Directive2)
+      [ ] همه states پیاده شده: loading/empty/error/disabled/success
+      ─────────────────────────────────────────
+      Ref: §3.6 Craft Bar + §3.7 Density + pdk/design-cycle.md + anti-failure #35
+
+【D14】 Database Safety (فقط تسک‌های DB/migration)
+      [ ] Migration reversible است (rollback plan موجود)
+      [ ] هرگز ستون populated را DROP نکن بدون backup
+      [ ] Index روی FK + filtered columns اضافه شد
+      [ ] Soft-delete (deletedAt) برای موجودیت‌های مالی
+      [ ] پول با Decimal type (هرگز float)
+      [ ] Timezone یکپارچه: UTC در DB، نمایش با timezone کاربر
+      [ ] Migration اجرا شد و بدون خطا تمام شد
+      ─────────────────────────────────────────
+      Ref: pdk/database.md §6.5 + anti-failure #10
+
+【D15】 Cleanup & Observability
+      [ ] هیچ unused import / dead variable (biome بررسی کرد)
+      [ ] هیچ temp file / debug artifact باقی نمانده
+      [ ] git status: فقط فایل‌های مرتبط تغییر کرده (نه git add -A)
+      [ ] عملیات حساس (login، transfer، admin action) در audit log ثبت می‌شود
+      [ ] خطاهای server بدون ردپا نمانده (logger یا Sentry — نه فقط console.log)
+      [ ] هیچ کد dead/commented-out بدون توضیح باقی نمانده
+      ─────────────────────────────────────────
+      Ref: anti-failure #13 + pdk/constitution.md §C10 + pdk/security.md §4.4
+
+【D16】 هر خطا — چه مرتبط چه غیرمرتبط — fix شد؟
+      [ ] هر خطای tsc/lint که دیده شد (حتی pre-existing) → همان لحظه fix شد
+      [ ] اگر fix خارج از scope بود → صریح به کاربر گزارش داد + در post-task ثبت شد
+      [ ] هیچ خطایی با «مربوط به ما نیست» رد نشد بدون گزارش
+      [ ] بعد از هر fix جدید، checklist از D1 دوباره اجرا شد
+      ─────────────────────────────────────────
+      Ref: §قانون توقف‌ناپذیری (بالا) + anti-failure #42
+
+【D17】 از کدهای موجود (Reuse-first) استفاده شد؟
+      [ ] قبل از نوشتن هر component/util/hook، repo با grep بررسی شد
+      [ ] Component Decision Protocol اجرا شد: reuse → extend → compose → create
+      [ ] هیچ implementation موازی ساخته نشد (duplicate Modal/Button/EmptyState/...)
+      [ ] اگر کد موجود reuse شد → در component map مستند شد
+      [ ] lib/ و hooks/ برای helper جدید grep شدند (قبل از نوشتن)
+      ─────────────────────────────────────────
+      Ref: §Directive2 "Component Decision Protocol" + anti-failure #3 + pdk/constitution.md §C12
+
+【D18】 از اینترنت با تاریخ امروز استفاده شد؟ + آیا AGENTS.md نیاز به آپدیت دارد؟
+      [ ] websearch با تاریخ امروز (نه فقط «2026» کلی) انجام شد
+            فرمت query: "[موضوع] site:nextjs.org OR site:prisma.io 2026" یا "[pattern] best practice July 2026"
+      [ ] نتیجه تحقیق در 🔍 Research block با منبع + تاریخ ذکر شد
+      [ ] اگر یک الگوی deprecated/بهتر پیدا شد → به کاربر گفته شد (نه ساکت ادامه)
+      [ ] آیا AGENTS.md / AGENTS.anti-failure.md نیاز به آپدیت دارد؟
+            - اگر اشتباه تکراری جدید رخ داد → Rule Failure Loop فعال + AGENTS patch شد
+            - اگر best practice جدیدی کشف شد → §Pre-code Research Gate آپدیت شد
+            - اگر راهکار بهتری برای قانون موجود وجود داشت → قانون مرتبط آپدیت شد
+      [ ] AGENTS.md patch در همین سشن نوشته شد (نه «در آینده»)
+      ─────────────────────────────────────────
+      Ref: §Pre-code Research Gate + §Rule Failure Loop + anti-failure #43, #45
+
+【D19】 آیا بخش‌های دیگر پروژه نیاز به آپدیت دارند؟
+      [ ] همه فایل‌هایی که از فایل تغییریافته import می‌کنند grep شدند و بررسی شدند
+      [ ] صفحات/کامپوننت‌هایی که به feature/data مرتبطند بررسی شدند
+      [ ] اگر type یا interface تغییر کرد → همه consumer ها (UI + API + Server Action) آپدیت شدند
+      [ ] اگر feature جدید است → navigation/sidebar/menu/sitemap آپدیت شد
+      [ ] اگر env/config/vercel.json تغییر کرد → AGENTS.env.md + مستندات مرتبط آپدیت شد
+      [ ] اگر داده یا رفتار public API تغییر کرد → همه caller های خارجی اطلاع یافتند
+      [ ] هیچ بخشی از پروژه با تغییر جدید stale/ناهماهنگ نمانده
+      ─────────────────────────────────────────
+      Ref: anti-failure #4, #20, #46 + §Directive1"Dependency audit" + §Parallel data sources rule
+
+════════════════════════════════════════════════════════════════════════════
+قانون متوقف‌نشو: اگر هر [ ] باقی ماند → fix کن → از D1 دوباره شروع کن
+فقط وقتی همه 19 بُعد [✓] یا [N/A — دلیل] شدند → اعلام «تمام» مجاز است
+════════════════════════════════════════════════════════════════════════════
+```
+
+### قانون «بهتر وجود داشت؟ → دستورالعمل آپدیت شو» — learned 2026-07
+اگر در بُعد D7 یا D18 مشخص شد که راهکار بهتری وجود داشت **و** به کاربر گفته نشد، این شکست در دو سطح است:
+1. **Immediate:** همان لحظه به کاربر اطلاع بده + راهکار بهتر پیشنهاد بده
+2. **Systemic:** `§Pre-code Research Gate` را با مثال واقعی آن موضوع آپدیت کن — Rule Failure Loop را فعال کن
+
+> «ساکت ادامه دادن» = نقض مستقیم Directive 0 (Internet-first) + Rule Failure Loop.
+
+### قانون «هر خطا باید fix شود» — learned 2026-07
+هیچ خطایی در پروژه «نادیده گرفتنی» نیست. تنها مقیاس تصمیم:
+- **در scope:** fix کن همان لحظه
+- **خارج از scope ولی کوچک:** fix کن همان لحظه (یک‌خطی نباید مانع شود)
+- **خارج از scope و بزرگ:** صریح گزارش بده + در post-task «⚠️ ناقص» ثبت کن
+
+قانون قدیمی «pre-existing errors → فقط گزارش» **لغو شده** — گزارش بدون fix = تکرار همان خطا در آینده.
 
 ## Data Pipeline conventions (market-rates specific — always-on)
 
