@@ -1,20 +1,962 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows", "debian-openssl-3.0.x", "rhel-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
+}
+
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
-generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "windows", "debian-openssl-3.0.x", "rhel-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
+model User {
+  id                  String                @id @default(cuid())
+  name                String?
+  email               String                @unique
+  role                Role                  @default(USER)
+  status              String                @default("Active")
+  password            String?
+  emailVerified       DateTime?
+  phoneNumber         String?
+  image               String?
+  imageWidth          Int?
+  imageHeight         Int?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  nationalIdHash      String?
+  kycSubmittedAt      DateTime?
+  kycReviewedAt       DateTime?
+  kycRejectReason     String?
+  kycDocUrl           String?
+  twoFactorEnabled    Boolean               @default(false)
+  twoFactorSecret     String?
+  twoFactorSecretEnc  String?
+  exchangePartnerId   String?
+  tokenVersion        Int                   @default(0)
+  accounts            Account[]
+  activity            Activity[]
+  activities          ActivityLog[]
+  Beneficiary         Beneficiary[]
+  BillingAddress      BillingAddress?
+  comments            Comment[]
+  Customer            Customer?
+  ExchangeStaff       ExchangeStaff[]
+  KycRecord           KycRecord?
+  likes               Like[]
+  newsletter          Newsletter?
+  notifications       Notification[]
+  posts               Post[]
+  profile             Profile?
+  savedPosts          SavedPost[]
+  serviceRequests     ServiceRequest[]
+  sessions            Session[]
+  tasks               Task[]
+  TwoFactorBackupCode TwoFactorBackupCode[]
+  VirtualCard         VirtualCard[]
+
+  @@index([status])
+  @@index([role, status])
+  @@index([phoneNumber])
+  @@index([exchangePartnerId])
+}
+
+model Account {
+  id                String   @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+  deviceId     String?
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([deviceId])
+}
+
+model VerificationToken {
+  id       String   @id @default(cuid())
+  email    String
+  token    String   @unique
+  expires  DateTime
+  attempts Int      @default(0)
+  intent   String   @default("register")
+
+  @@unique([email, intent])
+  @@unique([email, token])
+  @@index([email])
+  @@index([expires])
+}
+
+model Profile {
+  id            String  @id @default(cuid())
+  bio           String?
+  avatar        String?
+  bgImage       String?
+  avatarWidth   Int?
+  avatarHeight  Int?
+  bgImageWidth  Int?
+  bgImageHeight Int?
+  jobName       String?
+  company       String?
+  userId        String  @unique
+  user          User    @relation(fields: [userId], references: [id])
+}
+
+model Post {
+  id                  String      @id @default(cuid())
+  title               String
+  content             String
+  excerpt             String?
+  slug                String      @unique
+  isFeatured          Boolean     @default(false)
+  status              PostStatus  @default(DRAFT)
+  featuredImage       String?
+  featuredImageWidth  Int?
+  featuredImageHeight Int?
+  galleryImages       String[]    @default([])
+  postType            PostType    @default(STANDARD)
+  videoUrl            String?
+  audioUrl            String?
+  authorId            String
+  viewCount           Int         @default(0)
+  readingTime         Int         @default(0)
+  scheduledAt         DateTime?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  comments            Comment[]
+  likes               Like[]
+  author              User        @relation(fields: [authorId], references: [id])
+  savedBy             SavedPost[]
+  views               View[]
+  categories          Category[]  @relation("CategoryToPost")
+  tags                Tag[]       @relation("PostToTag")
+
+  @@index([status])
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([isFeatured])
+  @@index([scheduledAt])
+  @@index([status, createdAt(sort: Desc)])
+  @@index([status, viewCount(sort: Desc)])
+  @@index([status, isFeatured, createdAt(sort: Desc)])
+  @@index([authorId, status, createdAt(sort: Desc)])
+  @@index([title])
+}
+
+model View {
+  id        String   @id @default(cuid())
+  postId    String
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  post      Post     @relation(fields: [postId], references: [id])
+
+  @@index([postId])
+  @@index([createdAt])
+}
+
+model Comment {
+  id        String    @id @default(cuid())
+  content   String
+  postId    String
+  authorId  String
+  parentId  String?
+  approved  Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  author    User      @relation(fields: [authorId], references: [id])
+  parent    Comment?  @relation("CommentToComment", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentToComment")
+  post      Post      @relation(fields: [postId], references: [id])
+  likes     Like[]
+
+  @@index([postId])
+  @@index([authorId])
+  @@index([approved])
+  @@index([postId, approved, createdAt(sort: Desc)])
+  @@index([authorId, createdAt(sort: Desc)])
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String?
+  commentId String?
+  createdAt DateTime @default(now())
+  comment   Comment? @relation(fields: [commentId], references: [id])
+  post      Post?    @relation(fields: [postId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, postId])
+  @@unique([userId, commentId])
+  @@index([postId, createdAt(sort: Desc)])
+  @@index([commentId, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+model Category {
+  id              String     @id @default(cuid())
+  name            String
+  slug            String     @unique
+  thumbnail       String?
+  thumbnailWidth  Int?
+  thumbnailHeight Int?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  Category_A      Category[] @relation("CategoryToParent")
+  Category_B      Category[] @relation("CategoryToParent")
+  posts           Post[]     @relation("CategoryToPost")
+}
+
+model Tag {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  slug            String   @unique
+  thumbnail       String?
+  thumbnailWidth  Int?
+  thumbnailHeight Int?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  posts           Post[]   @relation("PostToTag")
+}
+
+model SavedPost {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, postId])
+  @@index([createdAt(sort: Desc)])
+  @@index([postId, createdAt(sort: Desc)])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  message   String
+  userId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([createdAt])
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+model Advertisement {
+  id               String     @id @default(cuid())
+  title            String
+  description      String?
+  imageUrl         String
+  linkUrl          String
+  startDate        DateTime
+  endDate          DateTime
+  isActive         Boolean    @default(true)
+  size             AdSize     @default(MEDIUM)
+  position         AdPosition @default(IN_CONTENT)
+  customPosition   String?
+  order            Int        @default(0)
+  customDimensions Json?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  @@index([isActive, startDate, endDate])
+  @@index([position, order])
+}
+
+model ExchangeRate {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  currency      String
+  symbol        String?  @unique
+  displayNameFa String?
+  group         String?
+  unit          String?
+  divisor       Int      @default(1)
+  decimals      Int      @default(0)
+  priority      Int      @default(99)
+  provider      String   @default("auto")
+  tgjuKey       String?
+  active        Boolean  @default(true)
+  rateType      RateType @default(BUY_SELL)
+  buyRate       String?
+  sellRate      String?
+  singleRate    String?
+  bulkRate      String?
+  description   String?
+  imageUrl      String?
+  manualNote    String?
+  marginPercent Float    @default(0)
+  showInSlider  Boolean  @default(false)
+  updatedAt     DateTime @updatedAt
+  createdAt     DateTime @default(now())
+
+  @@index([createdAt(sort: Desc)])
+  @@index([active, priority])
+  @@index([symbol])
+}
+
+model RateList {
+  id        String   @id @default(cuid())
+  title     String
+  rates     Json
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, createdAt(sort: Desc)])
+}
+
+model PageView {
+  id        String   @id @default(cuid())
+  page      String
+  views     Int
+  date      DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([page, date])
+  @@index([date])
+}
+
+model Newsletter {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  isActive  Boolean  @default(true)
+  userId    String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User?    @relation(fields: [userId], references: [id])
+}
+
+model SystemSettings {
+  id              String   @id @default(cuid())
+  siteName        String?
+  siteDescription String?
+  logoUrl         String?
+  maintenanceMode Boolean  @default(false)
+  cacheEnabled    Boolean  @default(true)
+  smtpServer      String?
+  smtpPort        String?
+  smtpUsername    String?
+  smtpPassword    String?
+  telegram        String?
+  instagram       String?
+  whatsapp        String?
+  twitter         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model SystemLog {
+  id        String   @id @default(cuid())
+  level     String
+  message   String
+  source    String
+  timestamp DateTime @default(now())
+
+  @@index([timestamp])
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  details   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  details   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model CurrencyPattern {
+  id        String   @id @default(cuid())
+  type      String
+  pattern   String
+  value     Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([type, pattern])
+}
+
+model SocialLink {
+  id         String         @id @default(cuid())
+  name       String
+  url        String
+  icon       String?
+  iconWidth  Int?
+  iconHeight Int?
+  color      String?
+  order      Int            @default(0)
+  isActive   Boolean        @default(true)
+  type       SocialLinkType @default(SOCIAL)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  @@index([type, isActive, order])
+}
+
+model ServiceRequest {
+  id                    String                    @id @default(cuid())
+  trackingCode          String                    @unique
+  fullName              String
+  phone                 String
+  email                 String?
+  serviceType           ServiceType
+  amount                String
+  currency              String
+  description           String?
+  urgency               RequestUrgency            @default(NORMAL)
+  contactMethod         String
+  status                ServiceRequestStatus      @default(PENDING)
+  adminNotes            String?
+  ipAddress             String?
+  userAgent             String?
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+  userId                String?
+  metadata              Json?
+  estimatedCompletionAt DateTime?
+  externalTxId          String?
+  phoneVerified         Boolean                   @default(false)
+  emailVerified         Boolean                   @default(false)
+  idempotencyKey        String?                   @unique
+  user                  User?                     @relation(fields: [userId], references: [id])
+  statusLogs            ServiceRequestStatusLog[]
+
+  @@index([trackingCode])
+  @@index([phone])
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId])
+  @@index([idempotencyKey])
+  @@index([phone, amount, currency, createdAt])
+  @@index([status, createdAt(sort: Desc)])
+}
+
+model ServiceRequestStatusLog {
+  id         String         @id @default(cuid())
+  requestId  String
+  fromStatus String?
+  toStatus   String
+  changedBy  String
+  note       String?
+  createdAt  DateTime       @default(now())
+  request    ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([requestId, createdAt(sort: Desc)])
+}
+
+/// 2026-06-14: تبلیغ باریک بالای هدر.
+/// فقط یک ردیف فعال در لحظه (singleton).
+/// کاربر می‌تواند با دکمه × آن را برای session ببندد
+/// (کوکی client-side — در سرور نگه‌داری نمی‌شود).
+model HeaderAd {
+  id        String          @id @default(cuid())
+  text      String
+  subtext   String?
+  ctaLabel  String?
+  ctaHref   String?
+  imageUrl  String?
+  href      String?
+  variant   HeaderAdVariant @default(TEXT)
+  theme     HeaderAdTheme   @default(PRIMARY)
+  isActive  Boolean         @default(false)
+  priority  Int             @default(0)
+  startDate DateTime?
+  endDate   DateTime?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@index([isActive, startDate, endDate])
+  @@index([priority])
+}
+
+model Task {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  status      TaskStatus   @default(PENDING)
+  priority    TaskPriority @default(MEDIUM)
+  dueDate     DateTime?
+  userId      String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  user        User         @relation(fields: [userId], references: [id])
+
+  @@index([userId, status, createdAt(sort: Desc)])
+  @@index([userId, dueDate])
+  @@index([status, dueDate])
+}
+
+model TransferProvider {
+  id            String       @id @default(cuid())
+  slug          String       @unique
+  name          String
+  kind          TransferKind
+  spreadPercent Float        @default(0)
+  flatFeeToman  Int          @default(0)
+  speedMinutes  Int          @default(0)
+  features      String[]     @default([])
+  active        Boolean      @default(true)
+  order         Int          @default(100)
+  description   String?
+  logoUrl       String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([active, order])
+}
+
+model AuditLog {
+  id         String    @id
+  exchangeId String?
+  actorId    String?
+  actorRole  String?
+  action     String
+  entityType String?
+  entityId   String?
+  ip         String?
+  deviceId   String?
+  beforeHash String?
+  afterHash  String?
+  meta       Json?
+  createdAt  DateTime  @default(now())
+  Exchange   Exchange? @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+
+  @@index([action])
+  @@index([actorId])
+  @@index([createdAt(sort: Desc)])
+  @@index([entityType, entityId])
+  @@index([exchangeId])
+}
+
+model Beneficiary {
+  id         String   @id
+  userId     String
+  name       String
+  identifier String
+  note       String?
+  createdAt  DateTime @default(now())
+  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, identifier])
+  @@index([userId, createdAt])
+}
+
+model BillingAddress {
+  id            String   @id
+  userId        String   @unique
+  country       String   @default("af")
+  province      String?
+  city          String?
+  address       String?
+  postalCode    String?
+  recipientName String?
+  phoneNumber   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime
+  User          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ContactSubmission {
+  id        String   @id
+  name      String
+  email     String
+  subject   String?
+  message   String
+  userId    String?
+  status    String   @default("NEW")
+  ipAddress String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+
+  @@index([createdAt(sort: Desc)])
+  @@index([status])
+}
+
+model Customer {
+  id              String            @id
+  exchangeId      String
+  userId          String?           @unique
+  fullName        String
+  fatherName      String?
+  nationalId      String?
+  passportNo      String?
+  phone           String
+  email           String?
+  address         String?
+  city            String?
+  status          CustomerStatus    @default(PROSPECT)
+  kycLevel        KycLevel          @default(NONE)
+  kycStatus       KycStatus         @default(NOT_STARTED)
+  personalLimitAf BigInt?
+  riskScore       Int               @default(0)
+  notes           String?
+  createdById     String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime
+  Exchange        Exchange          @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  User            User?             @relation(fields: [userId], references: [id])
+  Device          Device[]
+  FintechAccount  FintechAccount[]
+  FraudReview     FraudReview[]
+  KycVerification KycVerification[]
+  LedgerEntry     LedgerEntry[]
+  Transaction     Transaction[]
+  Wallet          Wallet[]
+
+  @@index([createdAt(sort: Desc)])
+  @@index([exchangeId])
+  @@index([exchangeId, status])
+  @@index([kycStatus])
+  @@index([nationalId])
+  @@index([phone])
+}
+
+model Device {
+  id          String       @id
+  exchangeId  String?
+  userId      String?
+  customerId  String?
+  fingerprint String
+  userAgent   String?
+  ip          String?
+  status      DeviceStatus @default(UNVERIFIED)
+  lastSeenAt  DateTime     @default(now())
+  createdAt   DateTime     @default(now())
+  Customer    Customer?    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  Exchange    Exchange?    @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@index([exchangeId])
+  @@index([fingerprint])
+  @@index([userId])
+}
+
+model Exchange {
+  id              String            @id
+  name            String
+  slug            String            @unique
+  licenseNo       String?
+  city            String?
+  address         String?
+  phone           String?
+  email           String?
+  logoUrl         String?
+  status          ExchangeStatus    @default(PENDING)
+  dailyLimitAf    BigInt            @default(0)
+  platformFee     Float             @default(0)
+  requireKyc      Boolean           @default(true)
+  createdById     String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime
+  AuditLog        AuditLog[]
+  Customer        Customer[]
+  Device          Device[]
+  ExchangeStaff   ExchangeStaff[]
+  FintechAccount  FintechAccount[]
+  FraudReview     FraudReview[]
+  KycVerification KycVerification[]
+  LedgerEntry     LedgerEntry[]
+  Transaction     Transaction[]
+  Wallet          Wallet[]
+
+  @@index([city])
+  @@index([createdAt(sort: Desc)])
+  @@index([slug])
+  @@index([status])
+}
+
+model ExchangeStaff {
+  id          String            @id
+  exchangeId  String
+  userId      String
+  role        ExchangeStaffRole @default(STAFF)
+  title       String?
+  permissions String[]          @default([])
+  invitedBy   String?
+  joinedAt    DateTime          @default(now())
+  revokedAt   DateTime?
+  Exchange    Exchange          @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  User        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([exchangeId, userId])
+  @@index([exchangeId])
+  @@index([role])
+  @@index([userId])
+}
+
+model FintechAccount {
+  id          String        @id
+  exchangeId  String
+  customerId  String
+  type        AccountType   @default(WALLET)
+  label       String?
+  currency    String        @default("AFN")
+  status      AccountStatus @default(PENDING)
+  balance     BigInt        @default(0)
+  frozenUntil DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime
+  Customer    Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  Exchange    Exchange      @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  LedgerEntry LedgerEntry[]
+  Transaction Transaction[]
+  Wallet      Wallet?
+
+  @@index([customerId])
+  @@index([customerId, status])
+  @@index([exchangeId])
+  @@index([type, status])
+}
+
+model FraudReview {
+  id           String       @id
+  exchangeId   String
+  txnId        String?
+  customerId   String?
+  reason       String
+  riskScore    Int          @default(0)
+  status       String       @default("OPEN")
+  assignedToId String?
+  resolution   String?
+  createdAt    DateTime     @default(now())
+  resolvedAt   DateTime?
+  Customer     Customer?    @relation(fields: [customerId], references: [id])
+  Exchange     Exchange     @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  Transaction  Transaction? @relation(fields: [txnId], references: [id])
+
+  @@index([exchangeId, status])
+  @@index([riskScore])
+  @@index([status])
+}
+
+model KycAttempt {
+  id             String           @id
+  userId         String
+  step           Int              @default(1)
+  status         KycAttemptStatus @default(STARTED)
+  nationalIdHash String?
+  phoneVerified  Boolean          @default(false)
+  docUrl         String?
+  selfieUrl      String?
+  rejectReason   String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+}
+
+model KycRecord {
+  id             String    @id
+  userId         String    @unique
+  fullName       String?
+  nationalIdHash String?   @unique
+  selfieUrl      String?
+  docFrontUrl    String?
+  docBackUrl     String?
+  rejectedReason String?
+  submittedAt    DateTime?
+  reviewedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime
+  User           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model KycVerification {
+  id            String    @id
+  exchangeId    String
+  customerId    String
+  level         KycLevel  @default(LEVEL_1)
+  status        KycStatus @default(PENDING)
+  docType       String
+  docNumber     String?
+  fileUrl       String?
+  fileHash      String?
+  encryptedData String?
+  reviewedById  String?
+  reviewedAt    DateTime?
+  rejectReason  String?
+  expiresAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime
+  Customer      Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  Exchange      Exchange  @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+
+  @@index([customerId, level])
+  @@index([customerId, status])
+  @@index([exchangeId])
+  @@index([status])
+}
+
+model LedgerEntry {
+  id             String          @id
+  exchangeId     String
+  accountId      String
+  customerId     String
+  txnId          String?
+  direction      LedgerDirection
+  amount         BigInt
+  currency       String          @default("AFN")
+  runningBalance BigInt
+  description    String?
+  createdById    String?
+  createdAt      DateTime        @default(now())
+  FintechAccount FintechAccount  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  Customer       Customer        @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  Exchange       Exchange        @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  Transaction    Transaction?    @relation(fields: [txnId], references: [id])
+
+  @@index([accountId, createdAt(sort: Desc)])
+  @@index([customerId, createdAt(sort: Desc)])
+  @@index([exchangeId])
+  @@index([txnId])
+}
+
+model Permission {
+  id          String   @id
+  key         String
+  description String?
+  createdAt   DateTime @default(now())
+}
+
+model RolePermission {
+  id           String   @id
+  role         Role
+  permissionId String
+  createdAt    DateTime @default(now())
+}
+
+model Transaction {
+  id             String            @id
+  exchangeId     String
+  customerId     String
+  accountId      String
+  kind           TransactionKind
+  status         TransactionStatus @default(PENDING)
+  amount         BigInt
+  currency       String            @default("AFN")
+  rate           Float?
+  fee            BigInt            @default(0)
+  destAmount     BigInt?
+  destCurrency   String?
+  idempotencyKey String?           @unique
+  externalRef    String?
+  counterparty   String?
+  note           String?
+  meta           Json?
+  createdById    String?
+  reviewedById   String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime
+  FraudReview    FraudReview[]
+  LedgerEntry    LedgerEntry[]
+  FintechAccount FintechAccount    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  Customer       Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  Exchange       Exchange          @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@index([customerId, createdAt(sort: Desc)])
+  @@index([exchangeId])
+  @@index([kind, status])
+  @@index([status])
+}
+
+model TwoFactorBackupCode {
+  id        String    @id
+  userId    String
+  codeHash  String
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  User      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VirtualCard {
+  id        String         @id
+  walletId  String
+  userId    String
+  label     String?
+  last4     String
+  brand     String         @default("VISA")
+  status    CardStatus     @default(ACTIVE)
+  balance   BigInt         @default(0)
+  currency  WalletCurrency @default(USD)
+  expiresAt DateTime
+  createdAt DateTime       @default(now())
+  updatedAt DateTime
+  User      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([walletId])
+}
+
+model Wallet {
+  id             String         @id
+  exchangeId     String
+  customerId     String
+  accountId      String         @unique
+  currency       String         @default("AFN")
+  balance        BigInt         @default(0)
+  locked         BigInt         @default(0)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime
+  FintechAccount FintechAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  Customer       Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  Exchange       Exchange       @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@index([exchangeId])
 }
 
 enum Role {
   USER
   AUTHOR
-  SUPPORT
   ADMIN
   OWNER
+  TEST_CUSTOMER
+  CUSTOMER
+  MERCHANT
+  EXCHANGE
+  SUPPORT
+  SUPERADMIN
 }
 
 enum PostType {
@@ -27,8 +969,6 @@ enum PostType {
 enum PostStatus {
   DRAFT
   PENDING_REVIEW
-  // 2026-07-04: وضعیت جدید برای پست‌هایی که زمان انتشار آینده دارند.
-  // توسط owner/admin تنظیم می‌شود (AUTHOR → PENDING_REVIEW).
   SCHEDULED
   PUBLISHED
 }
@@ -54,490 +994,6 @@ enum RateType {
   SINGLE_BULK
 }
 
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  role          Role      @default(USER)
-  status        String    @default("Active")
-  password      String?
-  emailVerified DateTime?
-  phoneNumber   String?
-  image         String?
-  // 2026-06-21: ابعاد تصویر پروفایل برای CLS-safe رندر + انتخاب variant
-  imageWidth    Int?
-  imageHeight   Int?
-
-  accounts         Account[]
-  sessions         Session[]
-  posts            Post[]
-  comments         Comment[]
-  likes            Like[]
-  savedPosts       SavedPost[]
-  profile          Profile?
-  notifications    Notification[]
-  newsletter       Newsletter[]
-  activities       ActivityLog[]
-  activity         Activity[]
-  tasks            Task[]
-  serviceRequests  ServiceRequest[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // 2026-06-14: hot paths — system reports filters by status (Active),
-  // dashboard user lists filter by role + status, and full-text
-  // searches fall back to these without an index. Each one was a
-  // seq scan before.
-  @@index([status])
-  @@index([role, status])
-  @@index([phoneNumber])
-}
-
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
-
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([provider, providerAccountId])
-  @@index([userId])
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-// 2026-06-23: unified OTP model.
-// Token is a 6-digit string ("472938") — used by all auth flows:
-// register / login (passwordless OAuth-only users) / reverify / recover.
-// UUID v4 token flow has been retired.
-model VerificationToken {
-  id       String   @id @default(cuid())
-  email    String
-  token    String   @unique
-  expires  DateTime
-  // Brute-force counter — max 5 attempts before the token is invalidated.
-  // Lets us send a refreshing code while keeping attempt-budget per code.
-  attempts Int      @default(0)
-  // Why this code was issued. Drives both server-side effects after a
-  // successful verify (set emailVerified, create user, etc.) and the
-  // email copy. Keep values in sync with VerificationEmailIntent in
-  // src/lib/tokens.ts.
-  intent   String   @default("register")
-
-  // 2026-06-24: enforce at most one active OTP per (email, intent).
-  // Without this, a race could mint two 'register' tokens for the same
-  // email and consumeOtpToken couldn't tell which was authoritative.
-  // The (email, token) unique is kept as a defense-in-depth so the
-  // same 6-digit code can't be issued twice under the same email.
-  @@unique([email, intent])
-  @@unique([email, token])
-  @@index([email])
-  @@index([expires])
-}
-
-model Profile {
-  id            String  @id @default(cuid())
-  bio           String?
-  avatar        String?
-  bgImage       String?
-  // 2026-06-21: ابعاد تصاویر پروفایل برای CLS-safe رندر
-  avatarWidth   Int?
-  avatarHeight  Int?
-  bgImageWidth  Int?
-  bgImageHeight Int?
-  jobName       String?
-  company       String?
-  userId        String  @unique
-  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model Post {
-  id                  String     @id @default(cuid())
-  title               String
-  content             String
-  excerpt             String?
-  slug                String     @unique
-  isFeatured          Boolean    @default(false)
-  status              PostStatus @default(DRAFT)
-  featuredImage       String?
-  // 2026-06-21: ابعاد تصویر شاخص برای CLS-safe رندر + انتخاب variant responsive
-  featuredImageWidth  Int?
-  featuredImageHeight Int?
-  galleryImages       String[]   @default([])
-  postType            PostType   @default(STANDARD)
-  videoUrl            String?
-  audioUrl            String?
-  authorId            String
-  viewCount           Int        @default(0)
-  readingTime         Int        @default(0)
-  // 2026-07-04: تاریخ/زمان انتشار برنامه‌ریزی‌شده. null یعنی بدون برنامه.
-  // تقویم انتشار (`AtelierMonthCalendar`) از این فیلد برای bucketing
-  // استفاده می‌کند؛ اگر null باشد، `createdAt` جایگزین می‌شود.
-  scheduledAt         DateTime?
-
-  author     User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  comments   Comment[]
-  categories Category[]
-  tags       Tag[]
-  likes      Like[]
-  savedBy    SavedPost[]
-  views      View[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([status])
-  @@index([authorId])
-  @@index([createdAt])
-  @@index([isFeatured])
-  // 2026-07-04: برای کوئری‌های تقویم انتشار (پنجرهٔ گسترده روی scheduledAt).
-  @@index([scheduledAt])
-  // 2026-06-14: composite indexes for the hot read paths.
-  // The archive page + home always filter by status, then sort by
-  // createdAt (or likes count) — single-column indexes force the
-  // planner to either filter or sort, never both. The (status, createdAt)
-  // and (status, viewCount) pairs let Postgres do an index-only scan.
-  @@index([status, createdAt(sort: Desc)])
-  @@index([status, viewCount(sort: Desc)])
-  @@index([status, isFeatured, createdAt(sort: Desc)])
-  // For author-scoped listings (e.g. dashboard AUTHOR role).
-  @@index([authorId, status, createdAt(sort: Desc)])
-  // For full-text search later (pg_trgm or tsvector).
-  @@index([title])
-}
-
-model View {
-  id        String  @id @default(cuid())
-  postId    String
-  post      Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
-  ip        String?
-  userAgent String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([postId])
-  @@index([createdAt])
-}
-
-model Comment {
-  id       String  @id @default(cuid())
-  content  String
-  postId   String
-  authorId String
-  parentId String?
-  approved Boolean @default(false)
-
-  post    Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
-  author  User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  parent  Comment?  @relation("CommentToComment", fields: [parentId], references: [id], onDelete: Cascade)
-  replies Comment[] @relation("CommentToComment")
-  likes   Like[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([postId])
-  @@index([authorId])
-  @@index([approved])
-  // 2026-06-14: composite index for the per-post approved-comments list
-  // (rendered in the comments section of single post pages).
-  @@index([postId, approved, createdAt(sort: Desc)])
-  // For the dashboard activity log (latest comments by a user).
-  @@index([authorId, createdAt(sort: Desc)])
-}
-
-model Like {
-  id        String  @id @default(cuid())
-  userId    String
-  postId    String?
-  commentId String?
-
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post    Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
-  comment Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-
-  // Partial uniques: a user may like a post OR a comment, but not the same
-  // one twice. Postgres treats NULLs as distinct in a single composite
-  // unique, so we split into two uniques keyed by the non-null target.
-  @@unique([userId, postId])
-  @@unique([userId, commentId])
-  // 2026-06-14: per-post like counts are sorted on the archive (محبوب‌ترین)
-  // and home sections. Without these, Postgres falls back to a seq scan
-  // + groupBy, which is O(n) on every archive page load.
-  @@index([postId, createdAt(sort: Desc)])
-  @@index([commentId, createdAt(sort: Desc)])
-  @@index([userId, createdAt(sort: Desc)])
-}
-
-model Category {
-  id               String     @id @default(cuid())
-  name             String
-  slug             String     @unique
-  thumbnail        String?
-  // 2026-06-21: ابعاد thumbnail برای CLS-safe رندر
-  thumbnailWidth   Int?
-  thumbnailHeight  Int?
-  posts            Post[]
-  parentCategories Category[] @relation("CategoryToParent")
-  childCategories  Category[] @relation("CategoryToParent")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Tag {
-  id              String  @id @default(cuid())
-  name            String  @unique
-  slug            String  @unique
-  thumbnail       String?
-  // 2026-06-21: ابعاد thumbnail برای CLS-safe رندر
-  thumbnailWidth  Int?
-  thumbnailHeight Int?
-  posts           Post[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model SavedPost {
-  id     String @id @default(cuid())
-  userId String
-  postId String
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-
-  @@unique([userId, postId])
-  // 2026-06-14: used by getStats() weekly groupBy and by user profile pages.
-  @@index([createdAt(sort: Desc)])
-  @@index([postId, createdAt(sort: Desc)])
-}
-
-model Notification {
-  id        Int      @id @default(autoincrement())
-  message   String
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-
-  @@index([createdAt])
-}
-
-model Advertisement {
-  id               String     @id @default(cuid())
-  title            String
-  description      String?
-  imageUrl         String
-  linkUrl          String
-  startDate        DateTime
-  endDate          DateTime
-  isActive         Boolean    @default(true)
-  size             AdSize     @default(MEDIUM)
-  position         AdPosition @default(IN_CONTENT)
-  customPosition   String?
-  order            Int        @default(0)
-  customDimensions Json?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // 2026-06-14: getActiveAdvertisements filters on (isActive, startDate, endDate)
-  // and orders by (position, order). Postgres needs the composite to
-  // use an index-only scan; before this it was a full scan + filter.
-  @@index([isActive, startDate, endDate])
-  @@index([position, order])
-}
-
-model ExchangeRate {
-  id            String  @id @default(cuid())
-  name          String  @unique
-  currency      String
-  // 2026-06-20: اضافه شدن فیلدهای registry — symbol, displayNameFa, group, unit,
-  // divisor, decimals, priority, provider, tgjuKey, active
-  symbol        String? @unique
-  displayNameFa String?
-  group         String?
-  unit          String?
-  divisor       Int     @default(1)
-  decimals      Int     @default(0)
-  priority      Int     @default(99)
-  provider      String  @default("auto")
-  tgjuKey       String?
-  active        Boolean @default(true)
-
-  rateType    RateType @default(BUY_SELL)
-  buyRate     String?
-  sellRate    String?
-  singleRate  String?
-  bulkRate    String?
-  description String?
-  imageUrl    String?
-  manualNote  String?
-  updatedAt   DateTime @updatedAt
-  createdAt   DateTime @default(now())
-
-  @@index([createdAt(sort: Desc)])
-  @@index([active, priority])
-  @@index([symbol])
-}
-
-model RateList {
-  id        String   @id @default(cuid())
-  title     String
-  rates     Json // Array of { title: string, value: string }
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // 2026-06-14: dashboard rate-list page filters on isActive and
-  // sorts by createdAt. The composite lets it run as an index scan
-  // without an extra sort step.
-  @@index([isActive, createdAt(sort: Desc)])
-}
-
-model PageView {
-  id    String   @id @default(cuid())
-  page  String
-  views Int
-  date  DateTime @default(now())
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // 2026-07-04: switch the uniqueness key from `[page]` to `[page, date]`
-  // so /api/pageview can upsert a single daily bucket per URL. The
-  // previous `[page]` unique forced every page into one row, which made
-  // `groupBy({by: ['date']})` in getViewStatsByPeriod return only the
-  // seed rows (8 buckets) — leaving 30d/90d charts effectively empty
-  // and breaking `todayViews` which relied on `createdAt >= today`.
-  //
-  // With `[page, date]` the upsert becomes `where: { page_date: { page, date } }`
-  // and each day gets its own row. The `@@index([date])` keeps the
-  // groupBy-by-date query an index scan.
-  @@unique([page, date])
-  @@index([date])
-}
-
-model Newsletter {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  isActive  Boolean  @default(true)
-  userId    String?  @unique
-  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model SystemSettings {
-  id              String   @id @default(cuid())
-  siteName        String?
-  siteDescription String?
-  logoUrl         String?
-  maintenanceMode Boolean  @default(false)
-  cacheEnabled    Boolean  @default(true)
-  smtpServer      String?
-  smtpPort        String?
-  smtpUsername    String?
-  smtpPassword    String?
-  telegram        String?
-  instagram       String?
-  whatsapp        String?
-  twitter         String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-}
-
-model SystemLog {
-  id        String   @id @default(cuid())
-  level     String // ERROR, WARNING, INFO
-  message   String   @db.Text
-  source    String
-  timestamp DateTime @default(now())
-
-  @@index([timestamp])
-}
-
-model ActivityLog {
-  id        String   @id @default(cuid())
-  userId    String
-  action    String
-  details   String
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // 2026-06-28: composite index for user-scoped activity feeds sorted by time.
-  // Replaces separate indexes; covers userId filters + createdAt ordering.
-  @@index([userId, createdAt])
-}
-
-model Activity {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  action    String
-  details   String
-  createdAt DateTime @default(now())
-
-  @@index([userId])
-}
-
-model CurrencyPattern {
-  id        String   @id @default(cuid())
-  type      String // نوع الگو: currency, format, prefix, suffix, separator, multiplier
-  pattern   String // الگوی ذخیره شده
-  value     Float? // برای multiplier استفاده می‌شود
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([type, pattern])
-}
-
-model SocialLink {
-  id         String         @id @default(cuid())
-  name       String
-  url        String
-  icon       String?
-  // 2026-06-21: ابعاد آیکون برای CLS-safe رندر
-  iconWidth  Int?
-  iconHeight Int?
-  color      String?
-  order      Int            @default(0)
-  isActive   Boolean        @default(true)
-  type       SocialLinkType @default(SOCIAL)
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
-
-  // 2026-06-14: header/footer always render
-  //   where: { type, isActive: true }, orderBy: { order: 'asc' }
-  // The composite covers both the filter and the sort in one pass.
-  @@index([type, isActive, order])
-}
-
 enum SocialLinkType {
   SOCIAL
   SUPPORT
@@ -556,15 +1012,13 @@ enum ServiceType {
   TUITION_PAYMENT
   FREELANCE_INCOME
   SOFTWARE_PURCHASE
-  // 2026-07-10: gift card purchasing service
-  GIFT_CARD
-  // 2026-07-14: currency exchange services
-  CURRENCY_BUY      // خرید ارز فیزیکی
-  CURRENCY_SELL     // فروش ارز فیزیکی
-  CRYPTO_BUY        // خرید ارز دیجیتال
-  CRYPTO_SELL       // فروش ارز دیجیتال
-  PAYPAL_TRANSFER   // پی‌پال / اسکریل / پیمنت سرویس‌ها
   OTHER
+  GIFT_CARD
+  CURRENCY_BUY
+  CURRENCY_SELL
+  CRYPTO_BUY
+  CRYPTO_SELL
+  PAYPAL_TRANSFER
 }
 
 enum RequestUrgency {
@@ -572,80 +1026,9 @@ enum RequestUrgency {
   URGENT
 }
 
-model ServiceRequest {
-  id            String               @id @default(cuid())
-  trackingCode  String               @unique
-  fullName      String
-  phone         String
-  email         String?
-  serviceType   ServiceType
-  amount        String
-  currency      String
-  description   String?
-  urgency       RequestUrgency       @default(NORMAL)
-  contactMethod String // telegram or whatsapp
-  status        ServiceRequestStatus @default(PENDING)
-  adminNotes    String?
-  ipAddress     String?
-  userAgent     String?
-
-  // 2026-07-07: link to registered user (optional — guest orders still allowed)
-  userId        String?
-  user          User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  // 2026-07-07: service-specific metadata (JSON bag — universityName, bankName, etc.)
-  metadata      Json?
-
-  // 2026-07-07: admin-settable ETA and external transaction reference
-  estimatedCompletionAt DateTime?
-  externalTxId          String?
-
-  // 2026-07-10: Progressive Capture — email/phone verified via OTP after submission
-  phoneVerified         Boolean  @default(false)
-  emailVerified         Boolean  @default(false)
-
-  // 2026-07-10: idempotency key — client-generated UUID prevents duplicate submissions
-  // on network retries. Format: UUIDv4 string.
-  idempotencyKey        String?  @unique
-
-  statusLogs    ServiceRequestStatusLog[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([trackingCode])
-  @@index([phone])
-  @@index([status])
-  @@index([createdAt])
-  @@index([userId])
-  @@index([idempotencyKey])
-  // 2026-06-14: composite for the duplicate-check window
-  @@index([phone, amount, currency, createdAt])
-  // 2026-06-14: dashboard's status-grouped counts + recent-list
-  @@index([status, createdAt(sort: Desc)])
-}
-
-// 2026-07-07: immutable audit trail of every status transition.
-model ServiceRequestStatusLog {
-  id         String   @id @default(cuid())
-  requestId  String
-  request    ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
-  fromStatus String?
-  toStatus   String
-  changedBy  String   // admin email or "system"
-  note       String?
-
-  createdAt  DateTime @default(now())
-
-  @@index([requestId, createdAt(sort: Desc)])
-}
-
 enum HeaderAdVariant {
-  // متن ساده + دکمه CTA (سفارشی)
   TEXT
-  // تصویر بنر + لینک
   IMAGE
-  // ترکیبی: متن + تصویر
   MIXED
 }
 
@@ -655,53 +1038,6 @@ enum HeaderAdTheme {
   NEUTRAL
   DARK
   GRADIENT
-}
-
-/// 2026-06-14: تبلیغ باریک بالای هدر.
-/// فقط یک ردیف فعال در لحظه (singleton).
-/// کاربر می‌تواند با دکمه × آن را برای session ببندد
-/// (کوکی client-side — در سرور نگه‌داری نمی‌شود).
-model HeaderAd {
-  id       String          @id @default(cuid())
-  text     String // متن اصلی تبلیغ (فارسی)
-  subtext  String? // متن فرعی اختیاری
-  ctaLabel String? // متن دکمه CTA (مثلاً «بیشتر بدانید»)
-  ctaHref  String? // لینک CTA
-  imageUrl String? // اختیاری: لوگو/آیکن
-  href     String? // اختیاری: لینک کل بنر
-  variant  HeaderAdVariant @default(TEXT)
-  theme    HeaderAdTheme   @default(PRIMARY)
-  isActive Boolean         @default(false) // singleton: فقط یکی فعال باشد
-  priority Int             @default(0) // برای ترتیب نمایش در آینده
-
-  startDate DateTime?
-  endDate   DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([isActive, startDate, endDate])
-  @@index([priority])
-}
-
-model Task {
-  id          String       @id @default(cuid())
-  title       String
-  description String?
-  status      TaskStatus   @default(PENDING)
-  priority    TaskPriority @default(MEDIUM)
-  dueDate     DateTime?
-  userId      String
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-
-  // User dashboard — filter by status, sort by recency
-  @@index([userId, status, createdAt(sort: Desc)])
-  // User tasks sorted by due date (deadline views)
-  @@index([userId, dueDate])
-  // Overdue task queries (admin/cron)
-  @@index([status, dueDate])
 }
 
 enum TaskStatus {
@@ -718,38 +1054,172 @@ enum TaskPriority {
   URGENT
 }
 
-// 2026-07-05: Transfer provider registry برای صفحه‌ی money-transfer.
-// قبلاً لیست hardcode شده در `lib/money-transfer/providers.ts` بود؛
-// حالا از DB خوانده می‌شود تا ادمین بتواند بدون deploy نرخ‌ها را به‌روز کند.
 enum TransferKind {
-  SARAJI // صرافی (مرجع / سنتی)
-  ONLINE // سرویس آنلاین (Wise، Remitly و …)
-  BANK // بانک
-  CRYPTO // رمزارز
+  SARAJI
+  ONLINE
+  BANK
+  CRYPTO
 }
 
-model TransferProvider {
-  id            String       @id @default(cuid())
-  // slug یکتا — به‌عنوان providerId در API/UI استفاده می‌شود (مثل 'wise').
-  slug          String       @unique
-  name          String // نام فارسی (مثل «Wise»)
-  kind          TransferKind
-  // درصد markup روی نرخ بازار (مثلاً 0.7 یعنی ۰.۷٪ بالاتر از بازار)
-  spreadPercent Float        @default(0)
-  // کارمزد ثابت به تومان
-  flatFeeToman  Int          @default(0)
-  // سرعت تقریبی انتقال (دقیقه)
-  speedMinutes  Int          @default(0)
-  // پرچم قابلیت‌ها — مقادیر در `TransferFeature` (به‌صورت app-level enforced)
-  features      String[]     @default([])
-  active        Boolean      @default(true)
-  // ترتیب نمایش در جدول مقایسه (کوچک‌تر = بالاتر)
-  order         Int          @default(100)
-  description   String? // توضیح کوتاه (اختیاری)
-  logoUrl       String? // لوگو (اختیاری، برای آینده)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+enum AccountStatus {
+  PENDING
+  ACTIVE
+  FROZEN
+  CLOSED
+}
 
-  // کوئری صفحه‌ی money-transfer همیشه active=true و sort by order است
-  @@index([active, order])
+enum AccountType {
+  WALLET
+  CASH
+  BANK
+  CRYPTO
+}
+
+enum CardStatus {
+  ACTIVE
+  FROZEN
+  BLOCKED
+  EXPIRED
+}
+
+enum CustomerStatus {
+  PROSPECT
+  ACTIVE
+  FROZEN
+  CLOSED
+}
+
+enum DeviceStatus {
+  TRUSTED
+  UNVERIFIED
+  REVOKED
+}
+
+enum ExchangeAccountStatus {
+  ACTIVE
+  FROZEN
+  CLOSED
+}
+
+enum ExchangeAccountType {
+  CASH_AFN
+  CASH_USD
+  CASH_IRR
+  BANK
+  DIGITAL_WALLET
+}
+
+enum ExchangeCustomerStatus {
+  ACTIVE
+  PENDING
+  SUSPENDED
+  CLOSED
+}
+
+enum ExchangeStaffRole {
+  OWNER
+  MANAGER
+  STAFF
+  VIEWER
+}
+
+enum ExchangeStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  CLOSED
+}
+
+enum KycAttemptStatus {
+  STARTED
+  CODE_SENT
+  VERIFIED
+  REJECTED
+}
+
+enum KycLevel {
+  NONE
+  LEVEL_1
+  LEVEL_2
+  LEVEL_3
+}
+
+enum KycStatus {
+  NOT_STARTED
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+enum LedgerDirection {
+  DEBIT
+  CREDIT
+}
+
+enum PartnerStaffRole {
+  ADMIN
+  STAFF
+  VIEWER
+}
+
+enum PartnerStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum TransactionDirection {
+  CREDIT
+  DEBIT
+}
+
+enum TransactionKind {
+  DEPOSIT
+  WITHDRAWAL
+  TRANSFER
+  EXCHANGE
+  FEE
+  SETTLEMENT
+  ADJUSTMENT
+}
+
+enum TransactionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REVERSED
+  CANCELLED
+}
+
+enum TransactionType {
+  TRANSFER_IN
+  TRANSFER_OUT
+  DEPOSIT
+  WITHDRAWAL
+  PAYMENT
+  REFUND
+  FEE
+  ADJUSTMENT
+}
+
+enum WalletCurrency {
+  AFN
+  USD
+  EUR
+  IRR
+}
+
+enum WalletStatus {
+  ACTIVE
+  FROZEN
+  CLOSED
+  PENDING_VERIFICATION
 }

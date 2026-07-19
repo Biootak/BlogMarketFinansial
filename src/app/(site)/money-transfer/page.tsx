@@ -1,9 +1,11 @@
+import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
 import { getMarketRates } from '@/actions/market-rates';
 import { getRateLists } from '@/actions/rate-lists';
 import TransferRequestCTA from '@/components/money-transfer/TransferRequestCTA';
 import type { MarketRateItem } from '@/lib/market-rates';
 import {
   type HeroPair,
+  buildCryptoPairs,
   buildHeroPairs,
   computeSpreadStats,
   formatFaNumber,
@@ -91,8 +93,22 @@ async function loadMarketRates(): Promise<{
 // this here (and not inside the client component) keeps the client bundle
 // smaller and avoids redundant work on every render.
 async function buildHeroInitial(rates: ExchangeRateData[]): Promise<HeroInitial> {
-  const [providers] = await Promise.all([loadActiveTransferProviders()]);
-  const pairs = buildHeroPairs(rates);
+  const [providers, cryptoResult] = await Promise.all([
+    loadActiveTransferProviders(),
+    fetchCryptoTickerRates(),
+  ]);
+
+  // ارزهای صرافی (forex + afghan) از DB/TGJU
+  const fiatPairs = buildHeroPairs(rates);
+
+  // ارزهای دیجیتال از Exir — pivot: USDT/تومان
+  const usdtPair = fiatPairs.find((p) => p.code === 'USD');
+  const usdtToman = usdtPair?.buy ?? 0;
+  const cryptoPairs = cryptoResult.success && cryptoResult.data && cryptoResult.data.length > 0
+    ? buildCryptoPairs(cryptoResult.data, usdtToman)
+    : [];
+
+  const pairs = [...fiatPairs, ...cryptoPairs];
   const spreadStats = computeSpreadStats(pairs);
 
   // «بهترین» provider بر مبنای کمترین spread.

@@ -16,7 +16,7 @@
  * ----------------------------------------------------------------------------
  */
 
-import type { ExchangeRateData } from '@/types/types';
+import type { CryptoTickerRate, ExchangeRateData } from '@/types/types';
 
 export type HeroCategory = 'forex' | 'afghan' | 'gold' | 'crypto';
 
@@ -37,6 +37,15 @@ export interface HeroPair {
   sell: number;
   /** زمان آخرین به‌روزرسانی */
   updatedAt: Date;
+  /**
+   * واحد ارز — "toman" | "usd" | "afn" | ... (B2-fix 2026-07)
+   * برای تعیین تعداد رقم اعشار در نمایش نتیجه تبدیل.
+   */
+  unit: string;
+  /**
+   * تعداد ارقام اعشار پیش‌فرض برای نمایش (B2-fix 2026-07).
+   */
+  decimals: number;
 }
 
 /** استخراج کد کوتاه از symbol. مثلاً "IRAN_USD" → "USD". */
@@ -61,7 +70,7 @@ export function parseLocaleNumber(raw: string | number | null | undefined): numb
     .map((c) => faMap[c] ?? c)
     .join('')
     .replace(/[^\d.\-]/g, '');
-  return parseFloat(normalized);
+  return Number.parseFloat(normalized);
 }
 
 /** تبدیل عدد به رشته‌ی ارقام فارسی برای UI. اگه NaN، dash بر می‌گرداند. */
@@ -90,10 +99,11 @@ export function toEnglishDigits(raw: string): string {
  * Categories:
  *   forex  → iran-forex (دلار، یورو، درهم، ...)
  *   afghan → afghan (دلار هرات، افغانی)
- *   gold   → iran-coin + iran-gold (سکه، طلا ۱۸ عیار)
- *   crypto → IRAN_USD/USDT با symbol شروع با CRYPTO_ یا تگ crypto
+ *   crypto → از buildCryptoPairs جداگانه می‌آید
  *
  * Fallback: BUY_SELL یا SINGLE_BULK با singleRate (mid rate، spread=0).
+ *
+ * نکته: gold/سکه از calculator حذف شده (2026-07) — فقط در جداول نمایش داده می‌شود.
  */
 export function buildHeroPairs(rates: ExchangeRateData[]): HeroPair[] {
   const pairs: HeroPair[] = [];
@@ -104,15 +114,15 @@ export function buildHeroPairs(rates: ExchangeRateData[]): HeroPair[] {
     const sym = (r.symbol ?? '').toUpperCase();
 
     let category: HeroCategory | null = null;
-    if (group === 'iran-forex') category = 'forex';
+    // minor group هم به forex اضافه شد (2026-07) تا JPY, RUB, INR, PKR, SAR, ... در calculator باشند
+    if (group === 'iran-forex' || group === 'minor') category = 'forex';
     else if (group === 'afghan' && !sym.startsWith('SARA_')) category = 'afghan';
-    else if (group === 'iran-coin' || group === 'iran-gold') category = 'gold';
-    else if (sym.startsWith('CRYPTO_') || sym.startsWith('USDT')) category = 'crypto';
+    // gold/coin: حذف از calculator — فقط در ExchangeRateTableView نمایش می‌یابد
     else continue;
 
     const divisor = r.divisor && r.divisor > 0 ? r.divisor : 1;
-    let buy = NaN;
-    let sell = NaN;
+    let buy = Number.NaN;
+    let sell = Number.NaN;
 
     if (r.rateType === 'BUY_SELL' && r.buyRate && r.sellRate) {
       buy = parseLocaleNumber(r.buyRate) / divisor;
@@ -140,6 +150,9 @@ export function buildHeroPairs(rates: ExchangeRateData[]): HeroPair[] {
       buy,
       sell,
       updatedAt: r.updatedAt,
+      // B2-fix 2026-07: unit + decimals برای نمایش درست در HeroConverter
+      unit: r.unit ?? 'toman',
+      decimals: r.decimals ?? 0,
     });
   }
   // Sort by code (Latin alphabet) for predictable dropdown order in RTL.
@@ -213,4 +226,78 @@ export function computeSpreadStats(pairs: HeroPair[]): SpreadStat {
     highest,
     average: sum / spreads.length,
   };
+}
+
+/**
+ * نام فارسی ارزهای دیجیتال — برای نمایش در CurrencyPicker.
+ * فقط رایج‌ترین‌ها که Exir پشتیبانی می‌کند.
+ */
+const CRYPTO_FA_NAMES: Record<string, string> = {
+  BTC:  'بیت‌کوین',
+  ETH:  'اتریوم',
+  USDT: 'تتر',
+  XRP:  'ریپل',
+  SOL:  'سولانا',
+  DOGE: 'دوج‌کوین',
+  ADA:  'کاردانو',
+  AVAX: 'آوالانچ',
+  DOT:  'پولکادات',
+  LINK: 'چین‌لینک',
+  LTC:  'لایت‌کوین',
+  TRX:  'ترون',
+  UNI:  'یونی‌سواپ',
+  MATIC:'ماتیک',
+  BNB:  'بایننس‌کوین',
+};
+
+/**
+ * تبدیل CryptoTickerRate[] (از Exir) به HeroPair[] برای تب رمزارز.
+ *
+ * pivot = USDT (نه تومان): همه ارزهای دیجیتال در USDT قیمت‌گذاری می‌شوند.
+ * چون ماشین‌حساب IRT-pivot است، یک «USDT مجازی» با mid=usdtToman ساخته می‌شود
+ * و بقیه از طریق آن convert می‌شوند.
+ *
+ * نکته: buy=sell=mid چون Exir نرخ bid/ask جداگانه نمی‌دهد.
+ */
+export function buildCryptoPairs(
+  cryptoRates: CryptoTickerRate[],
+  usdtToman: number,
+): HeroPair[] {
+  if (!Number.isFinite(usdtToman) || usdtToman <= 0) return [];
+
+  const now = new Date();
+  const pairs: HeroPair[] = [];
+
+  for (const r of cryptoRates) {
+    const sym = r.symbol.toUpperCase();
+    // irrPrice از Exir به ریال است → ÷10 = تومان
+    const toman = r.irrPrice > 0 ? r.irrPrice / 10 : r.usdtPrice * usdtToman;
+    if (!Number.isFinite(toman) || toman <= 0) continue;
+
+    pairs.push({
+      id: `crypto-${sym}`,
+      code: sym,
+      fullCode: `CRYPTO_${sym}`,
+      name: CRYPTO_FA_NAMES[sym] ?? sym,
+      category: 'crypto',
+      buy: toman,
+      sell: toman,
+      updatedAt: now,
+      unit: 'toman',
+      decimals: 0,
+    });
+  }
+
+  // BTC, ETH, USDT اول — بقیه alphabetical
+  const priority = ['BTC', 'ETH', 'USDT', 'XRP', 'SOL', 'DOGE'];
+  pairs.sort((a, b) => {
+    const ai = priority.indexOf(a.code);
+    const bi = priority.indexOf(b.code);
+    if (ai >= 0 && bi >= 0) return ai - bi;
+    if (ai >= 0) return -1;
+    if (bi >= 0) return 1;
+    return a.code.localeCompare(b.code);
+  });
+
+  return pairs;
 }

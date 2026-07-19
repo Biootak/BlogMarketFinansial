@@ -29,7 +29,6 @@ import {
   ArrowDown,
   ArrowLeftRight,
   Send,
-  Sparkles,
   TrendingUp,
   Wallet,
   Coins,
@@ -41,7 +40,7 @@ import styles from './HeroConverter.module.css';
 import {
   buildHeroPairs,
   convertViaIRT,
-  computeSpreadStats,
+  type computeSpreadStats,
   formatFaNumber,
   inverseRate,
   parseLocaleNumber,
@@ -71,7 +70,8 @@ interface HeroConverterProps {
   freshnessAnchor: Date | null;
 }
 
-type CategoryId = 'forex' | 'afghan' | 'gold' | 'crypto';
+// gold از calculator حذف شد (2026-07) — فقط در ExchangeRateTableView نمایش می‌یابد.
+type CategoryId = 'forex' | 'afghan' | 'crypto';
 
 interface CategoryMeta {
   id: CategoryId;
@@ -82,14 +82,17 @@ interface CategoryMeta {
 }
 
 const CATEGORIES: readonly CategoryMeta[] = [
-  { id: 'forex', label: 'ارز', icon: Wallet, enabled: true },
-  { id: 'afghan', label: 'افغانی', icon: Coins, enabled: true },
-  { id: 'gold', label: 'طلا و سکه', icon: Sparkles, enabled: false },
-  { id: 'crypto', label: 'رمزارز', icon: Bitcoin, enabled: false },
+  { id: 'forex',  label: 'ارز',     icon: Wallet,  enabled: true },
+  { id: 'afghan', label: 'افغانی',  icon: Coins,   enabled: true },
+  { id: 'crypto', label: 'رمزارز',  icon: Bitcoin, enabled: true },
 ];
 
-// presets مبلغ — برای صرفه‌جویی در تایپ در موبایل
-const AMOUNT_PRESETS: readonly number[] = [100, 500, 1_000, 5_000, 10_000];
+// presets مبلغ — dynamic بر اساس دسته‌ی انتخاب‌شده
+const PRESETS_BY_CATEGORY: Record<CategoryId, readonly number[]> = {
+  forex:  [100, 500, 1_000, 5_000, 10_000],
+  afghan: [1_000, 5_000, 10_000, 50_000, 100_000],
+  crypto: [10, 50, 100, 500, 1_000],
+};
 
 const DEFAULT_AMOUNT_STR = '1000';
 
@@ -133,14 +136,17 @@ export default function HeroConverter({
     }
     // اطمینان از این‌که selection هنوز در filteredPairs است
     if (!filteredPairs.some((p) => p.id === fromId)) {
-      // تلاش برای انتخاب sensible default: USD-like یا اوّلین
+      // default مبدا: USD برای forex، AFN/اوّلین برای افغانی
       const preferredFrom =
         filteredPairs.find((p) => p.code === 'USD') ?? filteredPairs[0];
       setFromId(preferredFrom.id);
     }
     if (!filteredPairs.some((p) => p.id === toId)) {
+      // B3-fix 2026-07: IRT هرگز در HeroPairs نیست (extractShortCode آن را حذف می‌کند).
+      // default مقصد: AED (خاورمیانه) → EUR → دومین → اوّلین
       const preferredTo =
-        filteredPairs.find((p) => p.code === 'IRT' || p.code === 'EUR') ??
+        filteredPairs.find((p) => p.code === 'AED') ??
+        filteredPairs.find((p) => p.code === 'EUR') ??
         filteredPairs[1] ??
         filteredPairs[0];
       setToId(preferredTo.id);
@@ -187,6 +193,9 @@ export default function HeroConverter({
     setFromId(newFrom.id);
     setToId(newTo.id);
   }, [fromPair, toPair]);
+
+  // M1-fix 2026-07: presets بر اساس category فعلی
+  const activePresets = PRESETS_BY_CATEGORY[category];
 
   const handlePreset = (value: number) => {
     setAmountRaw(new Intl.NumberFormat('fa-IR', { useGrouping: false }).format(value));
@@ -311,10 +320,20 @@ export default function HeroConverter({
                     disabled={!cat.enabled}
                     type="button"
                     onClick={() => cat.enabled && setCategory(cat.id)}
+                    // M3-fix 2026-07: tooltip "به زودی" برای disabled chips
+                    title={!cat.enabled ? 'به زودی' : undefined}
                     className={`mt-hero__chip ${isActive ? 'mt-hero__chip--active' : ''}`}
                   >
                     <Icon className="size-3.5" aria-hidden />
                     <span>{cat.label}</span>
+                    {!cat.enabled && (
+                      <span
+                        style={{ fontSize: '0.6rem', opacity: 0.65, marginInlineStart: '0.2rem' }}
+                        aria-hidden
+                      >
+                        زودا
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -418,7 +437,7 @@ export default function HeroConverter({
                   </div>
                   {/* presets */}
                   <div className="mt-calc__presets">
-                    {AMOUNT_PRESETS.map((preset) => {
+                    {activePresets.map((preset) => {
                       const formatted = new Intl.NumberFormat('fa-IR', {
                         useGrouping: false,
                       }).format(preset);
@@ -452,7 +471,8 @@ export default function HeroConverter({
                 </button>
 
                 {/* TO — prominent received-amount result (the key number) */}
-                <div className={styles.result} aria-live="polite">
+                {/* B2-fix + P-aria fix 2026-07: aria-live assertive + atomic؛ decimals از unit/decimals */}
+                <div className={styles.result} aria-live="assertive" aria-atomic="true">
                   <span className={styles.resultLabel}>
                     <ArrowDown className="size-3.5" aria-hidden />
                     دریافت می‌کنم
@@ -460,14 +480,10 @@ export default function HeroConverter({
                   <span className={styles.resultValue}>
                     {Number.isFinite(converted) ? (
                       new Intl.NumberFormat('fa-IR', {
-                        minimumFractionDigits:
-                          toPair && toPair.code !== 'IRT' && toPair.code !== 'IRR'
-                            ? 2
-                            : 0,
-                        maximumFractionDigits:
-                          toPair && toPair.code !== 'IRT' && toPair.code !== 'IRR'
-                            ? 2
-                            : 0,
+                        // B2-fix: unit=toman → 0 رقم اعشار؛ بقیه از toPair.decimals
+                        minimumFractionDigits: toPair?.unit === 'toman' ? 0 : (toPair?.decimals ?? 2),
+                        maximumFractionDigits: toPair?.unit === 'toman' ? 0 : (toPair?.decimals ?? 2),
+                        useGrouping: true,
                       }).format(converted)
                     ) : (
                       '—'
@@ -506,10 +522,19 @@ export default function HeroConverter({
                     <span className="mt-calc__rate-eq"> = </span>
                     <strong>
                       {Number.isFinite(inverse)
-                        ? formatFaNumber(inverse, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 4,
-                          })
+                        ? (() => {
+                            // M6-fix 2026-07: برای اعداد خیلی کوچک یا بزرگ از significantDigits استفاده می‌کنیم
+                            const abs = Math.abs(inverse);
+                            if (abs < 0.01 || abs >= 100_000) {
+                              return new Intl.NumberFormat('fa-IR', {
+                                maximumSignificantDigits: 4,
+                              }).format(inverse);
+                            }
+                            return formatFaNumber(inverse, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 4,
+                            });
+                          })()
                         : '—'}
                     </strong>
                     {' '}
@@ -517,17 +542,24 @@ export default function HeroConverter({
                   </span>
                 </div>
 
-                {/* Transparency — explicit market spread (no hidden cost) */}
+                {/* Transparency — explicit market spread (no hidden cost)
+                    M4-fix 2026-07: وقتی spread=0 (SINGLE_BULK / mid rate)، متن توضیحی نمایش می‌دهیم
+                    P3-fix: ضریب نوار را نرمال کردیم تا بالای ۱۲٪ هم درست scale شود */}
                 <div className={styles.fee}>
-                  <span className={styles.feeLabel}>کارمزد ضمنی (اسپرد بازار)</span>
+                  <span className={styles.feeLabel}>
+                    {Number.isFinite(marketSpreadPct) && marketSpreadPct === 0
+                      ? 'نرخ واحد (مستقیم از بازار)'
+                      : 'کارمزد ضمنی (اسپرد بازار)'}
+                  </span>
                   <span className={styles.feeBar} aria-hidden>
                     <span
                       className={styles.feeBarFill}
                       style={{
+                        // P3-fix: clamp نرمال — max spread معنادار ~15٪، scale به ۱۰۰٪
                         inlineSize: `${Math.min(
                           100,
-                          Number.isFinite(marketSpreadPct)
-                            ? marketSpreadPct * 8
+                          Number.isFinite(marketSpreadPct) && marketSpreadPct > 0
+                            ? (marketSpreadPct / 15) * 100
                             : 0,
                         )}%`,
                       }}
@@ -535,7 +567,9 @@ export default function HeroConverter({
                   </span>
                   <span className={styles.feeVal}>
                     {Number.isFinite(marketSpreadPct)
-                      ? `${fmtSpreadPct(marketSpreadPct)}٪`
+                      ? marketSpreadPct === 0
+                        ? 'بدون اسپرد'
+                        : `${fmtSpreadPct(marketSpreadPct)}٪`
                       : '—'}
                   </span>
                 </div>
@@ -602,8 +636,9 @@ function CurrencyPicker({
         aria-label={ariaLabel}
       >
         {pairs.map((p) => (
+          // M5-fix 2026-07: نام فارسی اول — خواناتر در native picker موبایل
           <option key={p.id} value={p.id}>
-            {p.code} · {p.name}
+            {p.name} ({p.code})
           </option>
         ))}
       </select>
@@ -615,7 +650,8 @@ function CurrencyPicker({
           className="mt-calc__picker-caret"
           viewBox="0 0 12 12"
           fill="none"
-          aria-hidden
+          aria-hidden="true"
+          role="presentation"
         >
           <path
             d="M3 4.5L6 7.5L9 4.5"
@@ -635,7 +671,7 @@ function CurrencyPicker({
 // ----------------------------------------------------------------------------
 function CalculatorSkeleton() {
   return (
-    <div className="mt-calc mt-calc--empty" role="status" aria-live="polite">
+    <output className="mt-calc mt-calc--empty" aria-live="polite">
       <div className="mt-calc__skeleton">
         <span className="mt-calc__skeleton-bar mt-calc__skeleton-bar--lg" />
         <span className="mt-calc__skeleton-bar" />
@@ -646,6 +682,6 @@ function CalculatorSkeleton() {
       <p className="mt-calc__loading">
         منتظر دریافت نرخ‌های زنده…
       </p>
-    </div>
+    </output>
   );
 }
