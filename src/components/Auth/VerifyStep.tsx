@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useRef, useState, useTransition } from 'react';
 
 import { resendOtp, verifyOtp } from '@/actions/auth-actions';
@@ -14,11 +14,6 @@ import {
   formatCooldown,
 } from './flow-shared';
 
-/**
- * 2026-06-24: P2 — own dynamic chunk. Pulls OtpDialPad + the verify
- * server actions on demand. This is the largest step (3 server
- * actions + OTP UI) so lazy-loading it is the biggest perf win.
- */
 export default function VerifyStep({
   email,
   intent,
@@ -44,6 +39,10 @@ export default function VerifyStep({
   const otpRef = useRef<OtpDialPadHandle>(null);
   const [otpCode, setOtpCode] = useState('');
   const canSubmitOtp = otpCode.length === 6 && !isPending;
+
+  // Countdown progress percentage (100% = full cooldown, 0% = ready)
+  const cooldownPct = Math.round((cooldownMs / RESEND_COOLDOWN_MS) * 100);
+  const cooldownSec = Math.max(0, Math.ceil(cooldownMs / 1000));
 
   const submitCode = (code: string) => {
     startTransition(async () => {
@@ -81,26 +80,27 @@ export default function VerifyStep({
 
   return (
     <form noValidate onSubmit={(event) => event.preventDefault()} className="auth-stage-form">
-      <button type="button" className="auth-back" onClick={onBack}>
-        <ArrowRight aria-hidden="true" />
-        بازگشت
-      </button>
-
+      {/* Email destination summary */}
       <div className="auth-verify-summary">
         <span className="auth-verify-chip">{INTENT_LABEL[intent]}</span>
         <p className="auth-helper">
-          کد برای{' '}
+          کد به{' '}
           <span dir="ltr" className="auth-inline-email">
             {email}
           </span>{' '}
-          ارسال شده است.
+          ارسال شده است.{' '}
+          <button type="button" className="auth-context-link" onClick={onBack}>
+            تغییر ایمیل
+          </button>
         </p>
       </div>
 
+      {/* OTP input */}
       <div className="auth-fieldset">
-        <label htmlFor="otp-input" className="auth-label">
+        {/* OtpDialPad generates its own id via useId; label links via htmlFor the otp-label id */}
+        <p id="otp-label" className="auth-label" aria-hidden="true">
           کد یک‌بارمصرف
-        </label>
+        </p>
         <OtpDialPad
           ref={otpRef}
           onComplete={submitCode}
@@ -119,6 +119,7 @@ export default function VerifyStep({
       </div>
 
       <div className="auth-verify-actions">
+        {/* Primary: confirm */}
         <button
           type="button"
           className="auth-cta"
@@ -130,15 +131,47 @@ export default function VerifyStep({
           {isPending ? 'در حال تأیید…' : 'تأیید و ادامه'}
         </button>
 
+        {/* Secondary: resend with countdown visual */}
         <button
           type="button"
-          className="auth-cta-secondary"
+          className="auth-resend-btn"
           onClick={handleResend}
           disabled={isPending || cooldownMs > 0}
           aria-busy={isPending || undefined}
+          aria-live="polite"
         >
-          {isPending ? <Loader2 className="animate-spin" aria-hidden="true" /> : null}
-          {cooldownMs > 0 ? `ارسال مجدد در ${formatCooldown(cooldownMs)} ثانیه` : 'ارسال دوباره کد'}
+          {cooldownMs > 0 ? (
+            <>
+              {/* Countdown arc */}
+              <svg className="auth-resend-countdown" viewBox="0 0 24 24" aria-hidden="true">
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="9"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  opacity="0.18"
+                />
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="9"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeDasharray={`${2 * Math.PI * 9}`}
+                  strokeDashoffset={`${2 * Math.PI * 9 * (1 - cooldownPct / 100)}`}
+                  strokeLinecap="round"
+                  transform="rotate(-90 12 12)"
+                  style={{ transition: 'stroke-dashoffset 0.9s linear' }}
+                />
+              </svg>
+              ارسال مجدد در {formatCooldown(cooldownSec * 1000)} ثانیه
+            </>
+          ) : (
+            'ارسال دوباره کد'
+          )}
         </button>
       </div>
     </form>

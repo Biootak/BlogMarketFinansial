@@ -16,6 +16,32 @@ import {
 } from '@/lib/email/templates';
 import { isPhoneValid, normalizeToE164 } from '@/lib/phone-validation';
 
+// ─── getUserProfile ─────────────────────────────────────────────────────────── //
+// اطلاعات کاربر لاگین‌شده را برای pre-fill + auto-fill درخواست سرویس می‌آورد.
+export async function getUserServiceProfile(): Promise<{
+  success: true;
+  name: string;
+  phone: string | null;
+  phoneVerified: boolean;
+  email: string;
+} | { success: false; error: 'UNAUTHENTICATED' }> {
+  const session = await auth();
+  if (!session?.user?.id) return { success: false, error: 'UNAUTHENTICATED' };
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { name: true, phoneNumber: true, email: true },
+  });
+  if (!user) return { success: false, error: 'UNAUTHENTICATED' };
+  return {
+    success: true,
+    name: user.name ?? '',
+    phone: user.phoneNumber ?? null,
+    // phoneVerified: شماره در DB ثبت شده → کافی است (تأیید SMS در آینده)
+    phoneVerified: !!user.phoneNumber,
+    email: user.email,
+  };
+}
+
 // ─── Service type labels ──────────────────────────────────────────────────── //
 const serviceTypeLabels: Record<string, string> = {
   INTERNATIONAL_TRANSFER: 'حواله بین‌المللی',
@@ -78,14 +104,17 @@ async function trySendEmail(fn: () => Promise<void>): Promise<void> {
 
 // ─── Validation schema ───────────────────────────────────────────────────── //
 const ServiceRequestInputSchema = z.object({
-  fullName: z.string().min(3).max(100).transform(sanitizeInput),
-  // 2026-07-10: libphonenumber-js — normalize to E.164 for storage
+  // 2026-07-19: fullName/phone/email/contactMethod از session می‌آیند نه از فرم.
+  // برای backward compat با callers قدیمی هنوز optional هستند؛
+  // اگه session داشتیم مقادیر session override می‌کند.
+  fullName: z.string().min(3).max(100).transform(sanitizeInput).optional(),
   phone: z
     .string()
-    .min(1)
-    .refine((val) => isPhoneValid(val), { message: 'شماره تماس معتبر نیست' })
-    .transform((val) => normalizeToE164(val)),
+    .optional()
+    .refine((val) => !val || isPhoneValid(val), { message: 'شماره تماس معتبر نیست' })
+    .transform((val) => (val ? normalizeToE164(val) : val)),
   email: z.string().email().optional().or(z.literal('')).transform((val) => val || null),
+  contactMethod: z.enum(['telegram', 'whatsapp']).optional(),
   // 2026-07-10: client-generated UUIDv4 for idempotency (prevents duplicate on retry)
   idempotencyKey: z.string().uuid().optional().nullable(),
   serviceType: z.enum([
@@ -120,10 +149,39 @@ const ServiceRequestInputSchema = z.object({
   giftCardRegion: z.string().optional().transform((val) => val || null),
   description: z.string().max(500).optional().transform((val) => (val ? sanitizeInput(val) : null)),
   urgency: z.enum(['NORMAL', 'URGENT']).default('NORMAL'),
-  contactMethod: z.enum(['telegram', 'whatsapp']),
 });
 
 export type ServiceRequestInput = z.infer<typeof ServiceRequestInputSchema>;
+
+/** نوع ورودی برای caller‌های کلاینت — backward-compat: null یا undefined هر دو قبول */
+export type ServiceRequestClientInput = {
+  serviceType: ServiceRequestInput['serviceType'];
+  amount: string;
+  currency: string;
+  urgency?: 'NORMAL' | 'URGENT';
+  idempotencyKey?: string | null;
+  // اطلاعات تماس — اختیاری، از session گرفته می‌شود
+  fullName?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  contactMethod?: 'telegram' | 'whatsapp';
+  // فیلدهای شرطی (هر دو null و undefined قبول)
+  destinationCountry?: string | null;
+  bankName?: string | null;
+  walletAddress?: string | null;
+  cryptoNetwork?: string | null;
+  platformName?: string | null;
+  platformUsername?: string | null;
+  softwareName?: string | null;
+  subscriptionType?: string | null;
+  giftCardBrand?: string | null;
+  giftCardRegion?: string | null;
+  websiteUrl?: string | null;
+  productName?: string | null;
+  universityName?: string | null;
+  studentId?: string | null;
+  description?: string | null;
+};
 
 export interface ServiceRequestResult {
   success: boolean;
@@ -133,7 +191,7 @@ export interface ServiceRequestResult {
 }
 
 // ─── createServiceRequest ─────────────────────────────────────────────────── //
-export async function createServiceRequest(input: ServiceRequestInput): Promise<ServiceRequestResult> {
+export async function createServiceRequest(input: ServiceRequestClientInput): Promise<ServiceRequestResult> {
   try {
     const headersList = await headers();
     const ip =
@@ -202,9 +260,45 @@ export async function createServiceRequest(input: ServiceRequestInput): Promise<
 
     const trackingCode = generateTrackingCode();
 
-    // 2026-07-07: collect userId if a session exists (optional — guest orders allowed)
+    // 2026-07-19: اطلاعات کاربر از session (اگر لاگین باشد)
     const session = await auth();
     const userId = session?.user?.id ?? null;
+
+    let resolvedFullName = data.fullName ?? '';
+    let resolvedPhone = data.phone ?? '';
+    let resolvedEmail = data.email ?? null;
+    // contactMethod default: telegram
+    const resolvedContactMethod = data.contactMethod ?? 'telegram';
+
+    if (userId) {
+      const userRow = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true, phoneNumber: true, email: true },
+      });
+      if (userRow) {
+        if (userRow.name) resolvedFullName = userRow.name;
+        if (userRow.phoneNumber) resolvedPhone = normalizeToE164(userRow.phoneNumber);
+        if (userRow.email) resolvedEmail = userRow.email;
+      }
+    }
+
+    // اگر کاربر لاگین است ولی شماره موبایل ندارد، درخواست رد می‌شود
+    if (userId && !resolvedPhone) {
+      return {
+        success: false,
+        message: 'برای ثبت درخواست باید شماره موبایل خود را در پروفایل تأیید کنید.',
+        error: 'PHONE_REQUIRED',
+      };
+    }
+
+    // اگر کاربر لاگین نیست، fullName و phone از input باید موجود باشند
+    if (!userId && (!resolvedFullName || !resolvedPhone)) {
+      return {
+        success: false,
+        message: 'نام و شماره تماس الزامی است.',
+        error: 'MISSING_CONTACT',
+      };
+    }
 
     // 2026-07-07: gather service-specific fields into metadata JSON
     const metadata: Record<string, string | null> = {
@@ -229,15 +323,15 @@ export async function createServiceRequest(input: ServiceRequestInput): Promise<
     const serviceRequest = await prisma.serviceRequest.create({
       data: {
         trackingCode,
-        fullName: data.fullName,
-        phone: data.phone,
-        email: data.email,
+        fullName: resolvedFullName,
+        phone: resolvedPhone,
+        email: resolvedEmail,
         serviceType: data.serviceType,
         amount: data.amount,
         currency: data.currency,
         description: data.description,
         urgency: data.urgency,
-        contactMethod: data.contactMethod,
+        contactMethod: resolvedContactMethod,
         ipAddress: ip,
         userAgent: userAgent.substring(0, 500),
         userId,
@@ -265,14 +359,14 @@ ${data.description ? `توضیحات: ${data.description}` : ''}
 
     await sendTelegramNotification(notificationMessage);
 
-    // 2026-07-07: send confirmation email to user (fire-and-forget)
-    if (data.email) {
+    // 2026-07-19: send confirmation email to user (fire-and-forget)
+    if (resolvedEmail) {
       await trySendEmail(async () => {
         const provider = await getEmailProviderAsync();
         await provider.send(
           serviceRequestConfirmationEmail({
-            to: data.email as string,
-            fullName: data.fullName,
+            to: resolvedEmail as string,
+            fullName: resolvedFullName,
             trackingCode,
             serviceType: data.serviceType,
             amount: data.amount,

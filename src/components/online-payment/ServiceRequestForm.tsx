@@ -45,7 +45,7 @@ import {
 } from 'lucide-react';
 import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
 import { ServiceRequestSchema, type ServiceRequestFormData } from '@/schemas';
-import { createServiceRequest, type ServiceRequestInput } from '@/actions/serviceRequestActions';
+import { createServiceRequest, type ServiceRequestClientInput, type ServiceRequestInput } from '@/actions/serviceRequestActions';
 import { issueServiceOtp, verifyServiceOtpAndLink } from '@/actions/progressive-capture';
 import s from './ServiceRequestForm.module.css';
 
@@ -297,8 +297,8 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
     setSubmitting(true);
     setResult({ status: 'idle' });
     try {
-      const payload: ServiceRequestInput = {
-        ...(data as ServiceRequestInput),
+      const payload: ServiceRequestClientInput = {
+        ...(data as ServiceRequestClientInput),
         idempotencyKey: idempotencyKeyRef.current,
       };
       const res = await createServiceRequest(payload);

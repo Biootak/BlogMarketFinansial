@@ -23,7 +23,7 @@ export async function updateProfile(formData: FormData): Promise<ActionResult<vo
       Object.fromEntries(formData),
     ) as UpdateProfileInput;
 
-    const updateData: Partial<UpdateProfileInput & { password?: string; emailVerified?: Date | null }> = {};
+    const updateData: Partial<UpdateProfileInput & { password?: string; emailVerified?: Date | null; phoneNumber?: string }> = {};
     if (validatedFields.name) updateData.name = validatedFields.name;
     if (validatedFields.email) {
       // M15 fix: changing email must require re-verification. Reset the
@@ -31,6 +31,10 @@ export async function updateProfile(formData: FormData): Promise<ActionResult<vo
       // until confirmed. (A full re-verify email should be triggered here.)
       updateData.email = validatedFields.email;
       updateData.emailVerified = null;
+    }
+    // 2026-07-19: ذخیره شماره موبایل برای سرویس‌های مالی
+    if (validatedFields.phoneNumber !== undefined) {
+      updateData.phoneNumber = validatedFields.phoneNumber || undefined;
     }
 
     // Profile update data - همیشه فیلدها رو آپدیت کن حتی اگه خالی باشن
@@ -80,7 +84,6 @@ export async function updateProfile(formData: FormData): Promise<ActionResult<vo
     revalidatePath('/edit-profile');
     return { success: true, message: 'پروفایل با موفقیت بروزرسانی شد', variant: 'success' };
   } catch (error) {
-    console.error('Error updating profile:', error);
     if (error instanceof ZodError) {
       return { success: false, message: error.errors[0].message, variant: 'destructive' };
     }

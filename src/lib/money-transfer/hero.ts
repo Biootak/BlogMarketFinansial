@@ -61,10 +61,26 @@ function extractShortCode(symbol: string | null | undefined, fallback: string): 
 export function parseLocaleNumber(raw: string | number | null | undefined): number {
   if (raw === null || raw === undefined) return Number.NaN;
   const faMap: Record<string, string> = {
-    '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4',
-    '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9',
-    '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
-    '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9',
+    '۰': '0',
+    '۱': '1',
+    '۲': '2',
+    '۳': '3',
+    '۴': '4',
+    '۵': '5',
+    '۶': '6',
+    '۷': '7',
+    '۸': '8',
+    '۹': '9',
+    '٠': '0',
+    '١': '1',
+    '٢': '2',
+    '٣': '3',
+    '٤': '4',
+    '٥': '5',
+    '٦': '6',
+    '٧': '7',
+    '٨': '8',
+    '٩': '9',
   };
   const normalized = String(raw)
     .split('')
@@ -75,10 +91,7 @@ export function parseLocaleNumber(raw: string | number | null | undefined): numb
 }
 
 /** تبدیل عدد به رشته‌ی ارقام فارسی برای UI. اگه NaN، dash بر می‌گرداند. */
-export function formatFaNumber(
-  value: number,
-  options: Intl.NumberFormatOptions = {},
-): string {
+export function formatFaNumber(value: number, options: Intl.NumberFormatOptions = {}): string {
   if (!Number.isFinite(value)) return '—';
   return new Intl.NumberFormat('fa-IR', options).format(value);
 }
@@ -86,12 +99,31 @@ export function formatFaNumber(
 /** حذف ارقام فارسی از ورودی کاربر (برای ذخیره سازگار با schema) */
 export function toEnglishDigits(raw: string): string {
   const faMap: Record<string, string> = {
-    '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4',
-    '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9',
-    '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
-    '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9',
+    '۰': '0',
+    '۱': '1',
+    '۲': '2',
+    '۳': '3',
+    '۴': '4',
+    '۵': '5',
+    '۶': '6',
+    '۷': '7',
+    '۸': '8',
+    '۹': '9',
+    '٠': '0',
+    '١': '1',
+    '٢': '2',
+    '٣': '3',
+    '٤': '4',
+    '٥': '5',
+    '٦': '6',
+    '٧': '7',
+    '٨': '8',
+    '٩': '9',
   };
-  return raw.split('').map((c) => faMap[c] ?? c).join('');
+  return raw
+    .split('')
+    .map((c) => faMap[c] ?? c)
+    .join('');
 }
 
 /**
@@ -107,7 +139,23 @@ export function toEnglishDigits(raw: string): string {
  * نکته: gold/سکه از calculator حذف شده (2026-07) — فقط در جداول نمایش داده می‌شود.
  */
 export function buildHeroPairs(rates: ExchangeRateData[]): HeroPair[] {
-  const pairs: HeroPair[] = [];
+  // تومان (IRT) pivot است — به عنوان اولین ارز در لیست forex اضافه می‌شود
+  // تا کاربر بتواند «USD → تومان» یا «EUR → تومان» را مستقیم انتخاب کند.
+  // buy=sell=1 چون تومان خودش واحد مرجع است.
+  const pairs: HeroPair[] = [
+    {
+      id: 'IRT',
+      code: 'IRT',
+      fullCode: 'IRAN_IRT',
+      name: 'تومان',
+      category: 'forex',
+      buy: 1,
+      sell: 1,
+      updatedAt: new Date(),
+      unit: 'toman',
+      decimals: 0,
+    },
+  ];
   for (const r of rates) {
     if (!r.active) continue;
 
@@ -118,20 +166,25 @@ export function buildHeroPairs(rates: ExchangeRateData[]): HeroPair[] {
     // minor group هم به forex اضافه شد (2026-07) تا JPY, RUB, INR, PKR, SAR, ... در calculator باشند
     // AFGHANI_USD (دلار هرات با pivot تومان) هم به forex می‌رود تا کنار سایر ارزهای تومانی باشد
     if (group === 'iran-forex' || group === 'minor') category = 'forex';
-    else if (group === 'afghan' && (sym === 'AFGHANI_USD' || sym === 'AFGHANI_AFN')) category = 'forex';
+    else if (group === 'afghan' && (sym === 'AFGHANI_USD' || sym === 'AFGHANI_AFN'))
+      category = 'forex';
     // SARA_* از buildSarafiPairs جداگانه می‌آیند (unit=afn، تب افغانی)
     else continue;
 
-    const divisor = r.divisor && r.divisor > 0 ? r.divisor : 1;
+    // ⚠️ divisor نباید اینجا اعمال شود!
+    // مقادیر buyRate/sellRate/singleRate از rateItemToExchangeRate می‌آیند که
+    // assembler قبلاً rawValue/divisor را حساب کرده — پس مقادیر اینجا
+    // **قبلاً به تومان تبدیل شده‌اند**.
+    // اعمال مجدد divisor → double-division → نرخ ۱۰× کمتر از واقعی (باگ ۲۰۲۶-۰۷).
     let buy = Number.NaN;
     let sell = Number.NaN;
 
     if (r.rateType === 'BUY_SELL' && r.buyRate && r.sellRate) {
-      buy = parseLocaleNumber(r.buyRate) / divisor;
-      sell = parseLocaleNumber(r.sellRate) / divisor;
+      buy = parseLocaleNumber(r.buyRate);
+      sell = parseLocaleNumber(r.sellRate);
     } else if (r.rateType === 'SINGLE_BULK' && r.singleRate) {
-      // Fallback برای snapshot: فقط mid rate موجود است → دو طرف یکی.
-      const mid = parseLocaleNumber(r.singleRate) / divisor;
+      // mid rate — assembler قبلاً نرمال کرده
+      const mid = parseLocaleNumber(r.singleRate);
       buy = mid;
       sell = mid;
     } else {
@@ -170,11 +223,7 @@ export function buildHeroPairs(rates: ExchangeRateData[]): HeroPair[] {
  *     2) می‌فروشد TO به user در TO.sell    (صرافی بالاتر می‌فروشه)
  *     → pivot: toman؛  result: (amount × from.buy) / to.sell
  */
-export function convertViaIRT(
-  amount: number,
-  from: HeroPair,
-  to: HeroPair,
-): number {
+export function convertViaIRT(amount: number, from: HeroPair, to: HeroPair): number {
   if (!Number.isFinite(amount) || amount <= 0) return Number.NaN;
   if (from.id === to.id) return amount;
   return (amount * from.buy) / to.sell;
@@ -183,6 +232,63 @@ export function convertViaIRT(
 /** inverse rate برای نمایش 1 TO = X FROM در calculator */
 export function inverseRate(rate: number): number {
   return Number.isFinite(rate) && rate > 0 ? 1 / rate : Number.NaN;
+}
+
+/**
+ * formatRate — فرمت‌بندی unit-aware نرخ برای نمایش در calculator.
+ *
+ * قوانین:
+ *   - اگه مقصد تومان (unit='toman') است → 0 اعشار، جداکننده هزار
+ *   - اگه مقصد ارز خارجی با decimals مشخص → از decimals pair استفاده
+ *   - اعداد خیلی کوچک (abs < 0.001) → significantDigits برای خوانایی
+ *     مثال: ۱ IRT = 0.0000517 USD → «۰٫۰۰۰۰۵۱۷۴» خوانا نیست،
+ *     پس significantDigits=4 استفاده می‌کنیم که «۵٫۱۷۴ × ۱۰⁻⁵» نمی‌دهد
+ *     بلکه «۰٫۰۰۰۰۵۱۷» می‌دهد — اما با maxFractionDigits محدود می‌شود.
+ *   - اعداد خیلی بزرگ (≥ 100_000) → بدون اعشار + جداکننده هزار
+ *
+ * این تابع single source of truth برای فرمت نرخ در calculator است.
+ * هر جایی که نرخ نمایش می‌دهید از این استفاده کنید نه inline.
+ */
+export function formatRate(value: number, targetPair: HeroPair | null): string {
+  if (!Number.isFinite(value)) return '—';
+  if (!targetPair) return formatFaNumber(value, { maximumFractionDigits: 4 });
+
+  const abs = Math.abs(value);
+
+  // تومان: همیشه 0 اعشار
+  if (targetPair.unit === 'toman' || targetPair.unit === 'IRT') {
+    return new Intl.NumberFormat('fa-IR', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+      useGrouping: true,
+    }).format(value);
+  }
+
+  // اعداد خیلی بزرگ (مثل تبدیل IRT به JPY/RUB) → بدون اعشار
+  if (abs >= 100_000) {
+    return new Intl.NumberFormat('fa-IR', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+      useGrouping: true,
+    }).format(value);
+  }
+
+  // اعداد خیلی کوچک (مثل IRT → USD): نمایش معنادار با significant digits
+  // مثال: 0.00005174 → ۰٫۰۰۰۰۵۱۷۴ با sig=4 می‌شود ۰٫۰۰۰۰۵۱۷۴ — کافی است
+  if (abs > 0 && abs < 0.01) {
+    return new Intl.NumberFormat('fa-IR', {
+      maximumSignificantDigits: 4,
+      useGrouping: false,
+    }).format(value);
+  }
+
+  // حالت عادی: از decimals pair استفاده می‌کنیم
+  const dec = targetPair.decimals ?? 2;
+  return new Intl.NumberFormat('fa-IR', {
+    minimumFractionDigits: dec,
+    maximumFractionDigits: Math.max(dec, 4),
+    useGrouping: true,
+  }).format(value);
 }
 
 /** شاخص freshness از updatedAt — زمان نسبی فارسی */
@@ -288,21 +394,21 @@ export function buildSarafiPairs(marketItems: MarketRateItem[]): HeroPair[] {
  * فقط رایج‌ترین‌ها که Exir پشتیبانی می‌کند.
  */
 const CRYPTO_FA_NAMES: Record<string, string> = {
-  BTC:  'بیت‌کوین',
-  ETH:  'اتریوم',
+  BTC: 'بیت‌کوین',
+  ETH: 'اتریوم',
   USDT: 'تتر',
-  XRP:  'ریپل',
-  SOL:  'سولانا',
+  XRP: 'ریپل',
+  SOL: 'سولانا',
   DOGE: 'دوج‌کوین',
-  ADA:  'کاردانو',
+  ADA: 'کاردانو',
   AVAX: 'آوالانچ',
-  DOT:  'پولکادات',
+  DOT: 'پولکادات',
   LINK: 'چین‌لینک',
-  LTC:  'لایت‌کوین',
-  TRX:  'ترون',
-  UNI:  'یونی‌سواپ',
-  MATIC:'ماتیک',
-  BNB:  'بایننس‌کوین',
+  LTC: 'لایت‌کوین',
+  TRX: 'ترون',
+  UNI: 'یونی‌سواپ',
+  MATIC: 'ماتیک',
+  BNB: 'بایننس‌کوین',
 };
 
 /**
@@ -314,10 +420,7 @@ const CRYPTO_FA_NAMES: Record<string, string> = {
  *
  * نکته: buy=sell=mid چون Exir نرخ bid/ask جداگانه نمی‌دهد.
  */
-export function buildCryptoPairs(
-  cryptoRates: CryptoTickerRate[],
-  usdtToman: number,
-): HeroPair[] {
+export function buildCryptoPairs(cryptoRates: CryptoTickerRate[], usdtToman: number): HeroPair[] {
   if (!Number.isFinite(usdtToman) || usdtToman <= 0) return [];
 
   const now = new Date();

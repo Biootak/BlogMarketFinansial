@@ -1,11 +1,14 @@
 'use client';
 
-// 2026-06-24: P2 lazy-load helpers shared between AuthFlow.redesign
-// and each extracted step component. Keeping these in a single file
-// means a step's dynamic chunk only has to import the small shared
-// bag (this file) plus its own deps, not the whole 1100-line flow.
-
-import { AlertCircle, CheckCircle2, Eye, EyeOff, KeyRound, Mail } from 'lucide-react';
+import {
+  AlertCircle,
+  AtSign,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  Info,
+  Pencil,
+} from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { FieldValues, Path, useForm } from 'react-hook-form';
 
@@ -14,135 +17,111 @@ import type { VerificationEmailIntent } from '@/lib/tokens';
 
 export type { AuthResult };
 
-export type InternalStep = 'email' | 'register' | 'login' | 'verify' | 'recover' | 'set-password';
+export type InternalStep =
+  | 'email'
+  | 'register'
+  | 'login'
+  | 'verify'
+  | 'recover'
+  | 'set-password';
 
-export type FlowIntent = VerificationEmailIntent;
-export type NoticeTone = 'error' | 'success' | 'info';
-
-export type AuthNotice = {
-  tone: NoticeTone;
-  message: string;
-};
+export type FlowIntent   = VerificationEmailIntent;
+export type NoticeTone   = 'error' | 'success' | 'info';
+export type AuthNotice   = { tone: NoticeTone; message: string };
 
 type StepCopy = {
-  eyebrow: string;
-  title: string;
+  eyebrow:  string;
+  title:    string;
   subtitle: string;
-  aside: string;
-  help?: string;
+  aside:    string;
+  help?:    string;
 };
 
 export const RESEND_COOLDOWN_MS = 60_000;
 
 export const STEP_COPY: Record<InternalStep, StepCopy> = {
   email: {
-    eyebrow: 'ورود یا ساخت حساب',
-    title: 'با ایمیل یا حساب اجتماعی ادامه دهید',
-    subtitle: 'ایمیل‌تان را وارد کنید تا سریع‌ترین مسیر مناسب حسابتان را ببینید.',
-    aside:
-      'اگر قبلاً با گوگل یا گیت‌هاب ثبت‌نام کرده‌اید، می‌توانید همان‌جا ادامه دهید یا ایمیل را وارد کنید تا مسیر درست برایتان باز شود.',
+    eyebrow:  'ورود یا ساخت حساب',
+    title:    'با ایمیل ادامه دهید',
+    subtitle: 'ایمیل‌تان را وارد کنید تا مناسب‌ترین مسیر باز شود.',
+    aside:    '',
   },
   register: {
-    eyebrow: 'ساخت حساب',
-    title: 'حساب جدیدتان را تکمیل کنید',
-    subtitle: 'یک نام نمایشی و رمز عبور امن انتخاب کنید تا حساب‌تان آماده شود.',
-    aside: 'بعد از ثبت اطلاعات، یک کد شش‌رقمی برای تأیید ایمیل دریافت می‌کنید.',
+    eyebrow:  'ساخت حساب',
+    title:    'حساب جدید بسازید',
+    subtitle: 'اطلاعات پایه‌تان را وارد کنید تا حساب آماده شود.',
+    aside:    '',
   },
   login: {
-    eyebrow: 'ورود',
-    title: 'به حساب خود برگردید',
-    subtitle: 'رمز عبور را وارد کنید یا با ارائه‌دهنده اجتماعی وارد شوید.',
-    aside:
-      'اگر این حساب قبلاً فقط با گوگل یا گیت‌هاب ساخته شده باشد، ورود با کد ایمیلی برایتان فعال می‌شود.',
+    eyebrow:  'ورود',
+    title:    'خوش برگشتید',
+    subtitle: 'رمز عبور را وارد کنید یا با یک ارائه‌دهنده اجتماعی ادامه دهید.',
+    aside:    '',
   },
   verify: {
-    eyebrow: 'تأیید ایمیل',
-    title: 'کد شش‌رقمی را بررسی و تأیید کنید',
-    subtitle:
-      'کد ارسال‌شده به ایمیل‌تان را وارد کنید. پس از کامل شدن کد، دکمه تأیید برای ادامه فعال می‌شود.',
-    aside:
-      'اگر کدی دریافت نکردید، چند ثانیه صبر کنید و سپس دوباره ارسال را بزنید. پوشه spam را هم بررسی کنید.',
-    help: 'کد را دقیق وارد کنید؛ بعد از کامل شدن، با دکمه «تأیید و ادامه» مسیرتان تکمیل می‌شود.',
+    eyebrow:  'تأیید ایمیل',
+    title:    'کد ایمیل را وارد کنید',
+    subtitle: 'کد ۶ رقمی ارسال‌شده را وارد کنید.',
+    aside:    '',
+    help:     'کد را وارد کنید؛ بعد از کامل شدن، با دکمه «تأیید» ادامه دهید.',
   },
   recover: {
-    eyebrow: 'بازیابی رمز عبور',
-    title: 'دسترسی به حساب را برگردانید',
-    subtitle: 'ایمیل حساب را وارد کنید تا در صورت وجود، کد بازیابی برایتان ارسال شود.',
-    aside: 'برای حفظ حریم خصوصی، نتیجه این مرحله برای همه ایمیل‌ها مشابه نمایش داده می‌شود.',
+    eyebrow:  'بازیابی رمز عبور',
+    title:    'رمز عبور را بازیابی کنید',
+    subtitle: 'کد بازیابی به ایمیل‌تان ارسال می‌شود.',
+    aside:    '',
   },
   'set-password': {
-    eyebrow: 'رمز عبور جدید',
-    title: 'یک رمز عبور تازه تعریف کنید',
-    subtitle: 'رمزی انتخاب کنید که استفاده روزانه و امنیت مناسب را هم‌زمان پوشش دهد.',
-    aside: 'پس از ثبت رمز جدید، بلافاصله می‌توانید وارد داشبورد شوید.',
+    eyebrow:  'رمز عبور جدید',
+    title:    'رمز جدید بسازید',
+    subtitle: 'یک رمز امن انتخاب کنید.',
+    aside:    '',
   },
 };
 
 export const INTENT_LABEL: Record<FlowIntent, string> = {
-  register: 'فعال‌سازی حساب',
-  login: 'ورود امن',
-  reverify: 'تأیید مجدد ایمیل',
-  recover: 'بازیابی رمز عبور',
+  register:         'فعال‌سازی حساب',
+  login:            'ورود امن',
+  reverify:         'تأیید مجدد ایمیل',
+  recover:          'بازیابی رمز عبور',
   'service-verify': 'تأیید درخواست خدمات',
 };
 
-export const SECURITY_POINTS = [
-  'اگر قبلاً با گوگل یا گیت‌هاب حساب ساخته‌اید، از همان دکمه‌ها یا ایمیل اصلی‌تان استفاده کنید.',
-  'اگر کد به دستتان نرسید، spam را بررسی کنید و پس از پایان شمارش، ارسال مجدد را بزنید.',
-  'تمام عملیات حساس روی سرور انجام می‌شود و کدها زمان انقضا و محدودیت تلاش دارند.',
-] as const;
-
-export function scorePassword(password: string): { score: 0 | 1 | 2 | 3 | 4; label: string } {
-  if (!password) return { score: 0, label: '' };
-
-  let points = 0;
-  if (password.length >= 8) points += 1;
-  if (password.length >= 12) points += 1;
-  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) points += 1;
-  if (/\d/.test(password)) points += 1;
-  if (/[^A-Za-z0-9]/.test(password)) points += 1;
-
-  const score = Math.min(4, Math.max(0, points - 1)) as 0 | 1 | 2 | 3 | 4;
-  const labels = ['', 'ضعیف', 'قابل قبول', 'خوب', 'عالی'];
-  return { score, label: labels[score] };
+export function scorePassword(pw: string): { score: 0 | 1 | 2 | 3 | 4; label: string } {
+  if (!pw) return { score: 0, label: '' };
+  let p = 0;
+  if (pw.length >= 8)  p++;
+  if (pw.length >= 12) p++;
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) p++;
+  if (/\d/.test(pw)) p++;
+  if (/[^A-Za-z0-9]/.test(pw)) p++;
+  const score = Math.min(4, Math.max(0, p - 1)) as 0 | 1 | 2 | 3 | 4;
+  return { score, label: ['', 'ضعیف', 'قابل قبول', 'خوب', 'عالی'][score] };
 }
 
 export function formatCooldown(ms: number): string {
-  const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
-  return totalSeconds.toLocaleString('fa-IR');
+  return Math.max(0, Math.ceil(ms / 1000)).toLocaleString('fa-IR');
 }
 
-export function readInitialStep(step: string | null, intent: string | null): InternalStep {
-  const allowedSteps: InternalStep[] = [
-    'email',
-    'register',
-    'login',
-    'verify',
-    'recover',
-    'set-password',
+export function readInitialStep(
+  step: string | null,
+  intent: string | null,
+): InternalStep {
+  const allowed: InternalStep[] = [
+    'email', 'register', 'login', 'verify', 'recover', 'set-password',
   ];
-
-  if (step && allowedSteps.includes(step as InternalStep)) {
-    return step as InternalStep;
-  }
-
-  switch (intent) {
-    case 'register':
-      return 'register';
-    case 'login':
-      return 'login';
-    case 'recover':
-      return 'recover';
-    default:
-      return 'email';
-  }
+  if (step && allowed.includes(step as InternalStep)) return step as InternalStep;
+  if (intent === 'register') return 'register';
+  if (intent === 'login')    return 'login';
+  if (intent === 'recover')  return 'recover';
+  return 'email';
 }
 
-/**
- * Reusable password field with eye-toggle + optional strength meter.
- * Generic over the form's FieldValues so it can be used inside any
- * react-hook-form form without a wrapper component.
- */
+/* ────────────────────────────────────────────────────────────────────────── */
+/*  Shared UI primitives                                                      */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+/** Password field with eye-toggle + optional strength bar */
 export function PasswordField<TFieldValues extends FieldValues>({
   name,
   id,
@@ -151,43 +130,42 @@ export function PasswordField<TFieldValues extends FieldValues>({
   error,
   registration,
   showStrength = false,
+  autoFocus    = false,
 }: {
-  name: Path<TFieldValues>;
-  id: string;
-  label: string;
-  autoComplete: string;
-  error?: string;
-  registration: ReturnType<typeof useForm<TFieldValues>>['register'];
+  name:          Path<TFieldValues>;
+  id:            string;
+  label:         string;
+  autoComplete:  string;
+  error?:        string;
+  registration:  ReturnType<typeof useForm<TFieldValues>>['register'];
   showStrength?: boolean;
+  autoFocus?:    boolean;
 }) {
   const [visible, setVisible] = useState(false);
-  const [value, setValue] = useState('');
+  const [value,   setValue]   = useState('');
   const strength = useMemo(() => scorePassword(value), [value]);
-  const field = registration(name);
+  const field    = registration(name);
 
   return (
     <div className="auth-fieldset">
-      <label htmlFor={id} className="auth-label">
-        {label}
-      </label>
+      <label htmlFor={id} className="auth-label">{label}</label>
       <div className="auth-input-wrap">
         <input
           id={id}
           type={visible ? 'text' : 'password'}
           autoComplete={autoComplete}
+          // biome-ignore lint/a11y/noAutofocus: intentional per-field focus
+          autoFocus={autoFocus}
           aria-invalid={Boolean(error) || undefined}
           className={`auth-input auth-input--with-action${error ? ' auth-input--invalid' : ''}`}
           dir="ltr"
           {...field}
-          onChange={(event) => {
-            field.onChange(event);
-            setValue(event.target.value);
-          }}
+          onChange={(e) => { field.onChange(e); setValue(e.target.value); }}
         />
         <button
           type="button"
           className="auth-input-action"
-          onClick={() => setVisible((current) => !current)}
+          onClick={() => setVisible((v) => !v)}
           aria-label={visible ? 'مخفی کردن رمز عبور' : 'نمایش رمز عبور'}
           aria-pressed={visible}
         >
@@ -198,11 +176,11 @@ export function PasswordField<TFieldValues extends FieldValues>({
       {showStrength && value ? (
         <div className="auth-strength" aria-live="polite">
           <div className="auth-strength-track" aria-hidden="true">
-            {[1, 2, 3, 4].map((segment) => (
+            {[1, 2, 3, 4].map((s) => (
               <span
-                key={segment}
+                key={s}
                 className={
-                  strength.score >= segment
+                  strength.score >= s
                     ? `auth-strength-seg auth-strength-seg--on-${strength.score}`
                     : 'auth-strength-seg'
                 }
@@ -216,65 +194,66 @@ export function PasswordField<TFieldValues extends FieldValues>({
   );
 }
 
-/**
- * Notice banner — wrapper around the success/error/info pills used
- * across every step. `key` is set on the consumer side so each
- * re-mount forces a fresh aria-live announcement.
- */
+/** Locked email chip — shows confirmed email with a change button */
+export function LockedEmailChip({
+  email,
+  onChangeEmail,
+  label = 'ادامه به عنوان',
+}: {
+  email:          string;
+  onChangeEmail:  () => void;
+  label?:         string;
+}) {
+  return (
+    <div className="auth-email-chip" aria-label={`${label}: ${email}`}>
+      <span className="auth-email-chip__icon" aria-hidden="true">
+        <AtSign />
+      </span>
+      <span className="auth-email-chip__content">
+        <span className="auth-email-chip__label">{label}</span>
+        <span className="auth-email-chip__address" dir="ltr">{email}</span>
+      </span>
+      <button
+        type="button"
+        className="auth-email-chip__change"
+        onClick={onChangeEmail}
+        aria-label={`تغییر ایمیل — اکنون: ${email}`}
+      >
+        <Pencil aria-hidden="true" />
+        تغییر
+      </button>
+    </div>
+  );
+}
+
+/** Notice / alert banner */
 export function NoticeBanner({ notice }: { notice: AuthNotice | null }) {
   if (!notice) return null;
-
-  const toneClass =
-    notice.tone === 'error'
-      ? 'auth-alert'
-      : notice.tone === 'success'
-        ? 'auth-notice auth-notice--success'
-        : 'auth-notice';
-
+  const cls =
+    notice.tone === 'error'   ? 'auth-alert'
+    : notice.tone === 'success' ? 'auth-notice auth-notice--success'
+    : 'auth-notice';
   const Icon =
-    notice.tone === 'error' ? AlertCircle : notice.tone === 'success' ? CheckCircle2 : Mail;
-
+    notice.tone === 'error'   ? AlertCircle
+    : notice.tone === 'success' ? CheckCircle2
+    : Info;
   return (
-    <p className={toneClass} aria-live="polite">
+    <p className={cls} aria-live="polite">
       <Icon aria-hidden="true" />
       <span>{notice.message}</span>
     </p>
   );
 }
 
-/**
- * Status banner above the active step — tells the user what the flow
- * is currently doing. Pure presentational; the parent owns the step.
- */
+/** Context summary — kept for backward compat but hidden via CSS */
 export function ContextSummary({
-  step,
-  email,
-  intent,
+  step: _step,
+  email: _email,
+  intent: _intent,
 }: {
-  step: InternalStep;
-  email: string;
+  step:   InternalStep;
+  email:  string;
   intent: FlowIntent;
 }) {
-  const summary =
-    step === 'email'
-      ? 'ایمیل را وارد کنید یا مستقیماً با گوگل و گیت‌هاب ادامه دهید.'
-      : step === 'register'
-        ? 'تنها چند اطلاعات پایه مانده تا حسابتان ساخته شود.'
-        : step === 'login'
-          ? 'اگر رمز عبور یادتان نیست، همین‌جا مسیر بازیابی را باز کنید.'
-          : step === 'recover'
-            ? 'پس از دریافت کد، می‌توانید رمز عبور جدید تعریف کنید.'
-            : step === 'set-password'
-              ? 'بعد از ثبت رمز جدید، ورود شما بلافاصله تکمیل می‌شود.'
-              : `کد برای ${email ? `ایمیل ${email}` : 'ایمیل شما'} ارسال شده و برای ${INTENT_LABEL[intent]} استفاده می‌شود.`;
-
-  return (
-    <div className="auth-context" aria-live="polite">
-      <span className="auth-context-badge">
-        <KeyRound aria-hidden="true" />
-        وضعیت فعلی
-      </span>
-      <p className="auth-context-copy">{summary}</p>
-    </div>
-  );
+  return null;
 }

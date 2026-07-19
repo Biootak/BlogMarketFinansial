@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowRight, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useTransition } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 import type { z } from 'zod';
@@ -9,13 +9,8 @@ import type { z } from 'zod';
 import { registerUser } from '@/actions/auth-actions';
 import { RegisterSchema } from '@/schemas';
 
-import type { AuthResult } from './flow-shared';
-import { PasswordField } from './flow-shared';
+import { type AuthResult, LockedEmailChip, PasswordField } from './flow-shared';
 
-/**
- * 2026-06-24: P2 — own dynamic chunk. Pulled react-hook-form, the
- * RegisterSchema, and PasswordField from the shared bag.
- */
 export default function RegisterStep({
   initialEmail,
   onResult,
@@ -51,10 +46,8 @@ export default function RegisterStep({
 
   return (
     <form noValidate onSubmit={form.handleSubmit(onSubmit)} className="auth-stage-form">
-      <button type="button" className="auth-back" onClick={onBack}>
-        <ArrowRight aria-hidden="true" />
-        بازگشت و تغییر ایمیل
-      </button>
+      {/* Locked email chip */}
+      <LockedEmailChip email={initialEmail} onChangeEmail={onBack} label="ثبت‌نام برای" />
 
       <div className="auth-fieldset">
         <label htmlFor="register-name" className="auth-label">
@@ -64,6 +57,8 @@ export default function RegisterStep({
           id="register-name"
           type="text"
           autoComplete="name"
+          // biome-ignore lint/a11y/noAutofocus: name field should auto-focus when email is pre-filled
+          autoFocus
           aria-invalid={Boolean(form.formState.errors.name) || undefined}
           className={`auth-input${form.formState.errors.name ? ' auth-input--invalid' : ''}`}
           {...form.register('name')}
@@ -73,24 +68,16 @@ export default function RegisterStep({
         ) : null}
       </div>
 
-      <div className="auth-fieldset">
-        <label htmlFor="register-email" className="auth-label">
-          ایمیل
-        </label>
-        <input
-          id="register-email"
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          dir="ltr"
-          aria-invalid={Boolean(form.formState.errors.email) || undefined}
-          className={`auth-input${form.formState.errors.email ? ' auth-input--invalid' : ''}`}
-          {...form.register('email')}
-        />
-        {form.formState.errors.email?.message ? (
-          <span className="auth-error">{form.formState.errors.email.message}</span>
-        ) : null}
-      </div>
+      {/* Hidden email for password-manager autofill */}
+      <input
+        type="email"
+        autoComplete="username email"
+        value={initialEmail}
+        readOnly
+        aria-hidden="true"
+        tabIndex={-1}
+        style={{ display: 'none' }}
+      />
 
       <PasswordField<Values>
         name="password"

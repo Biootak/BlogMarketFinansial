@@ -16,7 +16,7 @@ import ImageUploadDialog from './ImageUpload/ImageUploadDialog';
 import Loading from './Button/Loading';
 import {
   Camera, User, Mail, Briefcase, FileText, Lock, KeyRound, Check,
-  ImageIcon, Shield, Eye, EyeOff, ChevronDown, Lightbulb,
+  ImageIcon, Shield, Eye, EyeOff, ChevronDown, Lightbulb, Phone,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -35,11 +35,15 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // 2026-07-19: آیا شماره موبایل ثبت شده؟ (برای badge هشدار سرویس‌های مالی)
+  const hasPhone = !!initialData.phoneNumber;
+
   const { register, handleSubmit, formState: { errors }, setValue } = useForm<UpdateProfileInput>({
     resolver: zodResolver(UpdateProfileSchema),
     defaultValues: {
       name: initialData.name ?? '',
       email: initialData.email ?? '',
+      phoneNumber: initialData.phoneNumber ?? '',
       bio: initialData.profile?.bio ?? '',
       jobName: initialData.profile?.jobName ?? '',
       bgImage: initialData.profile?.bgImage ?? '',
@@ -64,6 +68,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
       const formData = new FormData();
       formData.append('name', data.name || '');
       formData.append('email', data.email || '');
+      formData.append('phoneNumber', data.phoneNumber || '');
       formData.append('bio', data.bio || '');
       formData.append('jobName', data.jobName || '');
       formData.append('imageUrl', avatarPreview || '');
@@ -78,8 +83,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
         description: result.success ? 'پروفایل با موفقیت بروزرسانی شد' : result.message,
         variant: result.success ? 'success' : 'destructive',
       });
-    } catch (error) {
-      console.error('Error updating profile:', error);
+    } catch {
       toast({ title: 'خطا', description: 'خطا در بروزرسانی پروفایل', variant: 'destructive' });
     } finally {
       setIsSubmitting(false);
@@ -115,6 +119,19 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
       </div>
       <div className="h-8" />
 
+      {/* بنر هشدار — اگر موبایل ثبت نشده */}
+      {!hasPhone && (
+        <div className="flex items-start gap-3 p-4 rounded-xl border border-amber-200/70 dark:border-amber-700/50 bg-amber-50/60 dark:bg-amber-900/20">
+          <Shield className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">شماره موبایل تأیید نشده</p>
+            <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5 leading-relaxed">
+              برای استفاده از خدمات مالی (حواله، خرید ارز، رمزارز) باید شماره موبایل خود را در پایین وارد کنید.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Form Fields */}
       <div className="space-y-6">
         <div className="group">
@@ -126,6 +143,23 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
           <Label htmlFor="email" className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"><Mail className="w-4 h-4 text-slate-400" />ایمیل</Label>
           <Input id="email" {...register('email')} type="email" dir="ltr" className="w-full h-12 px-4 bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-xl text-left" placeholder="email@example.com" />
           {errors.email && <p className="text-red-500 text-xs mt-2">{errors.email.message}</p>}
+        </div>
+        {/* شماره موبایل */}
+        <div className="group">
+          <Label htmlFor="phoneNumber" className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            <Phone className="w-4 h-4 text-slate-400" />
+            شماره موبایل
+            <span className="text-xs font-normal text-amber-600 dark:text-amber-400">(لازم برای خدمات مالی)</span>
+          </Label>
+          <Input
+            id="phoneNumber"
+            {...register('phoneNumber')}
+            type="tel"
+            dir="ltr"
+            className="w-full h-12 px-4 bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 rounded-xl text-left"
+            placeholder="07X-XXXXXXX یا +93XXXXXXXXX"
+          />
+          {errors.phoneNumber && <p className="text-red-500 text-xs mt-2">{errors.phoneNumber.message}</p>}
         </div>
         <div className="group">
           <Label htmlFor="jobName" className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"><Briefcase className="w-4 h-4 text-slate-400" />شغل</Label>

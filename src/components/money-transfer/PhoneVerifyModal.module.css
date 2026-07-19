@@ -1,0 +1,335 @@
+/**
+ * PhoneVerifyModal — CSS Module
+ * توکن‌های ds-* / nova-* — بدون هاردکد hex
+ */
+
+/* ── Backdrop ──────────────────────────────────────────────────────────── */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: oklch(0% 0 0 / 0.52);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ds-space-4);
+  backdrop-filter: blur(3px);
+  animation: backdropIn 0.18s ease;
+}
+
+@keyframes backdropIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Modal panel ─────────────────────────────────────────────────────── */
+/* <dialog> reset */
+.modal[open] { display: block; }
+.modal {
+  /* reset native dialog styles */
+  margin: 0;
+  padding: 0;
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  background: var(--ds-bg-surface);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-xl, 14px);
+  box-shadow: 0 8px 32px oklch(0% 0 0 / 0.14), 0 2px 8px oklch(0% 0 0 / 0.06);
+  animation: modalIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.93) translateY(10px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+
+/* ── Header ──────────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4) var(--ds-space-5);
+  border-block-end: 1px solid var(--ds-border-default);
+  background: var(--ds-bg-muted, var(--ds-bg-surface));
+}
+
+.iconWrap {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--ds-brand-100, oklch(94% 0.05 265));
+  color: var(--ds-brand-600, oklch(46% 0.18 265));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.headerText { flex: 1; min-width: 0; }
+
+.title {
+  margin: 0;
+  font-size: var(--ds-text-sm, 0.875rem);
+  font-weight: 600;
+  color: var(--ds-text-primary);
+  line-height: 1.4;
+}
+
+.subtitle {
+  margin: var(--ds-space-1) 0 0;
+  font-size: var(--ds-text-xs, 0.75rem);
+  color: var(--ds-text-secondary);
+  line-height: 1.5;
+}
+
+.closeBtn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--ds-text-muted);
+  border-radius: var(--ds-radius-sm, 4px);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  margin-inline-start: auto;
+}
+.closeBtn:hover { background: var(--ds-bg-hover); color: var(--ds-text-primary); }
+.closeBtn:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: 2px;
+}
+
+/* ── Body ────────────────────────────────────────────────────────────── */
+.body {
+  padding: var(--ds-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+/* field label */
+.fieldLabel {
+  display: block;
+  font-size: var(--ds-text-xs, 0.75rem);
+  font-weight: 500;
+  color: var(--ds-text-secondary);
+  margin-block-end: var(--ds-space-1);
+}
+
+/* phone input row */
+.phoneRow { display: flex; gap: var(--ds-space-2); }
+
+.phoneInput {
+  flex: 1;
+  height: 42px;
+  padding-inline: var(--ds-space-3);
+  background: var(--ds-bg-input, var(--ds-bg-surface));
+  border: 1.5px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-md, 8px);
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-sm);
+  font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+}
+.phoneInput::placeholder { color: var(--ds-text-muted); }
+.phoneInput:focus {
+  border-color: var(--ds-brand-500);
+  box-shadow: 0 0 0 3px oklch(from var(--ds-brand-500) l c h / 0.15);
+}
+.phoneInput:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* OTP input */
+.otpInput {
+  width: 100%;
+  height: 52px;
+  padding-inline: var(--ds-space-4);
+  background: var(--ds-bg-input, var(--ds-bg-surface));
+  border: 1.5px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-md, 8px);
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-lg, 1.125rem);
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+}
+.otpInput::placeholder { color: var(--ds-text-muted); letter-spacing: 0.15em; font-weight: 400; }
+.otpInput:focus {
+  border-color: var(--ds-brand-500);
+  box-shadow: 0 0 0 3px oklch(from var(--ds-brand-500) l c h / 0.15);
+}
+.otpInput:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* shared error border */
+.inputErr { border-color: oklch(60% 0.18 20) !important; }
+
+/* field error */
+.fieldErr {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  font-size: var(--ds-text-xs);
+  color: oklch(52% 0.18 20);
+  margin: 0;
+}
+
+/* hint */
+.hint {
+  margin: 0;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+}
+
+/* OTP description */
+.otpDesc {
+  margin: 0;
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-secondary);
+  line-height: 1.6;
+}
+
+/* DEV code badge */
+.devCodeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-1) var(--ds-space-3);
+  background: oklch(98% 0.03 90);
+  border: 1px dashed oklch(75% 0.1 90);
+  border-radius: var(--ds-radius-sm);
+  font-size: var(--ds-text-xs);
+}
+.devLabel {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: oklch(55% 0.12 90);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.devCode {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: oklch(40% 0.12 90);
+  letter-spacing: 0.2em;
+}
+
+/* resend row */
+.resendRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+  margin-block-start: var(--ds-space-1);
+}
+
+.countdownText {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+}
+
+.resendBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--ds-text-xs);
+  font-weight: 500;
+  color: var(--ds-brand-600);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.15s;
+}
+.resendBtn:hover { opacity: 0.7; }
+.resendBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.changePhoneBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+}
+.changePhoneBtn:hover { color: var(--ds-text-secondary); }
+
+/* ── Footer ──────────────────────────────────────────────────────────── */
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-4) var(--ds-space-5);
+  border-block-start: 1px solid var(--ds-border-default);
+}
+
+/* primary action button */
+.primaryBtn {
+  width: 100%;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  background: var(--ds-brand-500, oklch(54% 0.22 265));
+  color: var(--ds-color-white, oklch(100% 0 0));
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  border: none;
+  border-radius: var(--ds-radius-md, 8px);
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.15s;
+}
+.primaryBtn:hover:not(:disabled) { filter: brightness(1.07); transform: translateY(-1px); }
+.primaryBtn:active:not(:disabled) { transform: scale(0.98); }
+.primaryBtn:disabled { opacity: 0.55; cursor: not-allowed; }
+.primaryBtn:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: 3px;
+}
+
+/* cancel button */
+.cancelBtn {
+  width: 100%;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-text-sm);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-md, 8px);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.cancelBtn:hover { background: var(--ds-bg-hover); color: var(--ds-text-primary); }
+.cancelBtn:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: 2px;
+}
+
+/* ── Spinner ──────────────────────────────────────────────────────────── */
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid oklch(100% 0 0 / 0.4);
+  border-block-start-color: oklch(100% 0 0);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }

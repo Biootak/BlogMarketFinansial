@@ -161,6 +161,13 @@ export const UpdateProfileSchema = z
   .object({
     name: z.string().min(2, 'نام باید حداقل 2 حرف باشد').optional().or(z.literal('')),
     email: z.string().email('ایمیل نامعتبر است').optional().or(z.literal('')),
+    // 2026-07-19: شماره موبایل برای سرویس‌های مالی (حواله، خرید ارز)
+    phoneNumber: z
+      .string()
+      .max(20, 'شماره موبایل نمی‌تواند بیشتر از 20 رقم باشد')
+      .refine((v) => !v || isPhoneValid(v), { message: 'شماره موبایل معتبر نیست (مثال: ۰۷۰۱۲۳۴۵۶۷)' })
+      .optional()
+      .or(z.literal('')),
     bio: z
       .string()
       .max(500, 'بیوگرافی نمی‌تواند بیشتر از 500 کاراکتر باشد')

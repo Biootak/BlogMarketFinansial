@@ -1,55 +1,47 @@
-﻿import type { Metadata, Viewport } from 'next';
-import Image from 'next/image';
+import type { Metadata, Viewport } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
 
 import AuthFlow from '@/components/Auth/AuthFlow.redesign';
-
-// Auth pages read cookies via the (auth) layout, so they render dynamically
-// (never statically prerendered).
+import LogoSvg from '@/components/Logo/LogoSvg';
+import { getSiteIdentity } from '@/lib/site-identity';
 
 export const metadata: Metadata = {
-  title: 'ورود و ثبت‌نام امن — Financial Market',
-  description: 'ورود، ثبت‌نام و بازیابی رمز عبور در یک مسیر یکپارچه و امن برای کاربران Financial Market.',
+  title: 'ورود — Financial Market',
+  description: 'ورود، ثبت‌نام و بازیابی رمز عبور امن.',
   robots: { index: false, follow: false },
-  openGraph: {
-    title: 'ورود و ثبت‌نام امن — Financial Market',
-    description: 'دسترسی ایمن به داشبورد، تحلیل‌ها و امکانات اختصاصی Financial Market.',
-    type: 'website',
-  },
 };
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f7f8fa' },
-    { media: '(prefers-color-scheme: dark)', color: '#14171f' },
+    { media: '(prefers-color-scheme: light)', color: '#f4f8f5' },
+    { media: '(prefers-color-scheme: dark)', color: '#090f0b' },
   ],
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
 };
 
-
 export default async function AuthPage() {
+  const { siteName, logoUrl } = await getSiteIdentity();
+
   return (
     <main className="auth-page-root" dir="rtl">
       <div className="auth-aurora" aria-hidden="true" />
 
       <header className="auth-page-header">
-        <Link href="/" className="auth-brand" aria-label="Financial Market — صفحه اصلی">
+        <Link href="/" className="auth-brand" aria-label={`${siteName} — صفحه اصلی`}>
           <span className="auth-brand-mark" aria-hidden="true">
-            <Image
-              src="/favicon.svg"
-              alt=""
-              width={36}
-              height={36}
-              priority
-              className="auth-brand-logo"
-            />
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt={siteName} className="auth-brand-logo-svg" />
+            ) : (
+              <LogoSvg className="auth-brand-logo-svg" />
+            )}
           </span>
           <span className="auth-brand-copy">
-            <span className="auth-brand-name">Financial Market</span>
-            <span className="auth-brand-tagline">احراز هویت یکپارچه و امن</span>
+            <span className="auth-brand-name">{siteName}</span>
+            <span className="auth-brand-tagline">دسترسی امن</span>
           </span>
         </Link>
       </header>
@@ -57,7 +49,7 @@ export default async function AuthPage() {
       <div className="auth-card-shell">
         <Suspense
           fallback={
-            <div className="auth-card" aria-busy="true" style={{ minHeight: '32rem' }}>
+            <div className="auth-card" aria-busy="true" style={{ minHeight: '28rem' }}>
               <div className="auth-card-inner" />
             </div>
           }
