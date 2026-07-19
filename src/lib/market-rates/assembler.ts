@@ -2,8 +2,10 @@
 // تنها جایی که نرخ‌های بازار خوانده/محاسبه می‌شود (single source of truth).
 
 import prisma from '@/lib/db';
+import { crossRateToToman, fetchBonbastRates } from './bonbast';
 import { getGlobalFxRates } from './fx';
 import { SYMBOL_REGISTRY_MAP } from './registry';
+import { fetchSarafiRates } from './sarafi';
 import { fetchAllTgjuPages } from './tgju';
 import { CANONICAL_KEY_TO_SOURCES, type SymbolSource } from './tgjuKeys';
 import type { MarketRateGroup, MarketRateItem, MarketRateProvider, MarketRateUnit } from './types';
@@ -44,10 +46,12 @@ export async function assembleMarketRates(): Promise<MarketRateItem[]> {
     orderBy: { priority: 'asc' },
   });
 
-  const [allPages, usdt, fx] = await Promise.all([
+  const [allPages, usdt, fx, bonbast, sarafi] = await Promise.all([
     fetchAllTgjuPages(),
     getUsdtRate(),
     getGlobalFxRates(),
+    fetchBonbastRates(),
+    fetchSarafiRates(),
   ]);
 
   // ساخت tgjuMap: کلید lookup = `pageId:tgjuKey` (مثلاً 'homepage:price_dollar_rl')
@@ -68,7 +72,7 @@ export async function assembleMarketRates(): Promise<MarketRateItem[]> {
   for (const row of dbRows) {
     const symbol = row.symbol ?? row.currency;
     const registry = SYMBOL_REGISTRY_MAP.get(symbol);
-    const item = assembleFromRow(row, tgjuMap, usdt, fx, registry);
+    const item = assembleFromRow(row, tgjuMap, usdt, fx, bonbast, sarafi, registry);
     if (item) out.push(item);
   }
   return out;
@@ -79,6 +83,8 @@ function assembleFromRow(
   tgjuMap: Map<string, TgjuRate>,
   usdt: Awaited<ReturnType<typeof getUsdtRate>>,
   fx: Awaited<ReturnType<typeof getGlobalFxRates>>,
+  bonbast: Awaited<ReturnType<typeof fetchBonbastRates>>,
+  sarafi: Awaited<ReturnType<typeof fetchSarafiRates>>,
   registry?: RegistryEntry,
 ): MarketRateItem | null {
   const symbol = row.symbol ?? row.currency;
@@ -155,7 +161,16 @@ function assembleFromRow(
     let found = tgjuMap.get(tgjuKey);
     if (!found) {
       // سپس با prefix هر صفحه امتحان کن (برای کلیدهای مثل 'sekee', 'ons', 'geram18')
-      const pagePrefixes = ['coin_', 'global_', 'sana_', 'transfer_', 'currency_', 'bank_', 'minor_', 'local_'];
+      const pagePrefixes = [
+        'coin_',
+        'global_',
+        'sana_',
+        'transfer_',
+        'currency_',
+        'bank_',
+        'minor_',
+        'local_',
+      ];
       for (const prefix of pagePrefixes) {
         if (!tgjuKey.startsWith(prefix)) {
           found = tgjuMap.get(prefix + tgjuKey);
@@ -169,14 +184,44 @@ function assembleFromRow(
     }
   }
 
-  // Priority 3: USDT-derived برای IRAN_USD
+  // Priority 3: sarafi.af — برای SARA_* symbols (سرای شاهزاده — نرخ AFN واقعی با buy/sell)
+  if (rawValue === null && symbol.startsWith('SARA_') && sarafi) {
+    const fxCode = symbol.replace('SARA_', '').toUpperCase();
+    const entry = sarafi.rates[fxCode];
+    if (entry) {
+      // نرخ‌ها در AFN هستند — divisor=1 انتظار داریم
+      buyValue = entry.buyRate * divisor;
+      sellValue = entry.sellRate * divisor;
+      rawValue = ((entry.buyRate + entry.sellRate) / 2) * divisor;
+      changePercent = 0;
+    }
+  }
+
+  // Priority 3b: bonbast.com — برای BONBAST_* و HERAT_* symbols
+  if (rawValue === null && bonbast) {
+    let fxCode: string | null = null;
+    if (symbol.startsWith('BONBAST_')) {
+      fxCode = symbol.replace('BONBAST_', '');
+    } else if (symbol.startsWith('HERAT_')) {
+      fxCode = symbol.replace('HERAT_', '');
+    }
+    if (fxCode) {
+      const crossRate = bonbast.crossRates[fxCode.toUpperCase()];
+      if (crossRate && crossRate > 0) {
+        rawValue = crossRateToToman(crossRate, bonbast.irrPerEur) * divisor;
+        changePercent = 0;
+      }
+    }
+  }
+
+  // Priority 4: USDT-derived برای IRAN_USD
   if (rawValue === null && symbol === 'IRAN_USD' && usdt) {
     const premium = getUsdtPremiumPercent();
     rawValue = usdt.toman * (1 + premium / 100) * 10;
     changePercent = usdt.change;
   }
 
-  // Priority 4: FX-derived (از USDT × نرخ فارکس جهانی)
+  // Priority 5: FX-derived (از USDT × نرخ فارکس جهانی)
   // changePercent = usdt.change — بهترین تقریب موجود برای این ارزها
   if (rawValue === null && usdt && fx && symbol.startsWith('IRAN_')) {
     const fxCode = symbol.replace('IRAN_', '').slice(0, 3);
@@ -184,6 +229,27 @@ function assembleFromRow(
     if (perUsd && perUsd > 0) {
       rawValue = (usdt.toman / perUsd) * 10;
       changePercent = usdt.change;
+    }
+  }
+
+  // Priority 6: bonbast fallback برای هر symbol که هنوز null است
+  // (مثلاً BANK_AFN که TGJU داده‌ای ندارد)
+  if (rawValue === null && bonbast) {
+    // حذف prefix‌های شناخته‌شده برای پیدا کردن کد ارز
+    const prefixes = ['BANK_', 'TRANSFER_', 'IRAN_', 'AFGHANI_', 'GLOBAL_', 'CURRENCY_', 'MINOR_', 'SARA_'];
+    let fxCode: string | null = null;
+    for (const p of prefixes) {
+      if (symbol.startsWith(p)) {
+        fxCode = symbol.slice(p.length);
+        break;
+      }
+    }
+    if (fxCode && fxCode.length >= 3) {
+      const crossRate = bonbast.crossRates[fxCode.toUpperCase().slice(0, 3)];
+      if (crossRate && crossRate > 0) {
+        rawValue = crossRateToToman(crossRate, bonbast.irrPerEur) * divisor;
+        changePercent = 0;
+      }
     }
   }
 

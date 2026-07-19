@@ -9,6 +9,7 @@
 /* Signature gradient ring — drawn via mask so it never touches layout.
  * This is the "wow": a thin self-illuminating accent that reads as trust/fintech
  * without heavy glow or excessive glass (per AGENTS.ui-design.md). */
+/* Calculator card shell — gradient ring + hover lift */
 .card {
   position: relative;
   isolation: isolate;

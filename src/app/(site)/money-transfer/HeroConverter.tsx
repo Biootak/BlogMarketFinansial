@@ -256,7 +256,7 @@ export default function HeroConverter({
     <section
       dir={dir}
       aria-labelledby="hero-converter-title"
-      className="mt-hero"
+      className="mt-hero dark"
     >
       <div className="mt-hero__grid" aria-hidden />
       <div className="mt-hero__spotlight" aria-hidden />
@@ -464,7 +464,10 @@ export default function HeroConverter({
                           toPair && toPair.code !== 'IRT' && toPair.code !== 'IRR'
                             ? 2
                             : 0,
-                        maximumFractionDigits: 4,
+                        maximumFractionDigits:
+                          toPair && toPair.code !== 'IRT' && toPair.code !== 'IRR'
+                            ? 2
+                            : 0,
                       }).format(converted)
                     ) : (
                       '—'
@@ -490,7 +493,7 @@ export default function HeroConverter({
                       {Number.isFinite(rate)
                         ? formatFaNumber(rate, {
                             minimumFractionDigits: 2,
-                            maximumFractionDigits: 6,
+                            maximumFractionDigits: 4,
                           })
                         : '—'}
                     </strong>
@@ -505,7 +508,7 @@ export default function HeroConverter({
                       {Number.isFinite(inverse)
                         ? formatFaNumber(inverse, {
                             minimumFractionDigits: 2,
-                            maximumFractionDigits: 6,
+                            maximumFractionDigits: 4,
                           })
                         : '—'}
                     </strong>

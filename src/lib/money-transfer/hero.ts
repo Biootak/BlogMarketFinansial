@@ -18,7 +18,7 @@
 
 import type { ExchangeRateData } from '@/types/types';
 
-export type HeroCategory = 'forex' | 'afghan';
+export type HeroCategory = 'forex' | 'afghan' | 'gold' | 'crypto';
 
 export interface HeroPair {
   /** Prisma id */
@@ -86,19 +86,14 @@ export function toEnglishDigits(raw: string): string {
 
 /**
  * تبدیل رکوردهای خام DB به HeroPair برای calculator.
- * فیلتر خودکار:
- *   - فقط نرخ‌های فعال
- *   - BUY_SELL (صرافی ملی) یا SINGLE_BULK با singleRate معتبر
- *   - فقط forex و افغانی (coin/gold/global در calculator معنا ندارند)
- *   - فقط نرخ‌هایی با مقادیر عددی معتبر
  *
- * نکته (2026-07-06): snapshot JSON فقط `value` (mid rate) دارد، نه buyValue/sellValue.
- *   اگه این تابع فقط BUY_SELL قبول کند، pairs در dev خالی می‌ماند. بنابراین
- *   SINGLE_BULK با singleRate به‌عنوان fallback هم پذیرفته می‌شود، با
- *   `buy = sell = mid` (spread=0). این در UI به‌صورت spread صفر نمایش داده
- *   می‌شود — نه جعلی، فقط informational که دو طرف یکی‌اند.
+ * Categories:
+ *   forex  → iran-forex (دلار، یورو، درهم، ...)
+ *   afghan → afghan (دلار هرات، افغانی)
+ *   gold   → iran-coin + iran-gold (سکه، طلا ۱۸ عیار)
+ *   crypto → IRAN_USD/USDT با symbol شروع با CRYPTO_ یا تگ crypto
  *
- * نتیجه‌ی sort: بر اساس کد (الفبایی، الفبای لاتین برای پایداری)
+ * Fallback: BUY_SELL یا SINGLE_BULK با singleRate (mid rate، spread=0).
  */
 export function buildHeroPairs(rates: ExchangeRateData[]): HeroPair[] {
   const pairs: HeroPair[] = [];
@@ -106,10 +101,14 @@ export function buildHeroPairs(rates: ExchangeRateData[]): HeroPair[] {
     if (!r.active) continue;
 
     const group = (r.group ?? '').toLowerCase();
+    const sym = (r.symbol ?? '').toUpperCase();
+
     let category: HeroCategory | null = null;
     if (group === 'iran-forex') category = 'forex';
-    else if (group === 'afghan') category = 'afghan';
-    else continue; // coin, gold, global — out of scope
+    else if (group === 'afghan' && !sym.startsWith('SARA_')) category = 'afghan';
+    else if (group === 'iran-coin' || group === 'iran-gold') category = 'gold';
+    else if (sym.startsWith('CRYPTO_') || sym.startsWith('USDT')) category = 'crypto';
+    else continue;
 
     const divisor = r.divisor && r.divisor > 0 ? r.divisor : 1;
     let buy = NaN;

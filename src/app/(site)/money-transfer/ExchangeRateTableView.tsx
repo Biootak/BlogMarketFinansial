@@ -48,8 +48,14 @@ interface TabId {
 }
 
 export function ExchangeRateTableView({ rates }: Props) {
-  // فقط آیتم‌های معتبر
-  const valid = rates.filter((r) => Number.isFinite(r.value) && r.value > 0);
+  // فقط آیتم‌های معتبر — آیتم‌هایی که buy/sell دارند به RateListGrid رفتند
+  const valid = rates.filter(
+    (r) =>
+      Number.isFinite(r.value) &&
+      r.value > 0 &&
+      r.buyValue == null &&
+      r.sellValue == null,
+  );
 
   // محاسبه تب‌ها بر اساس گروه‌های موجود
   const groupCounts = new Map<MarketRateGroup, number>();
