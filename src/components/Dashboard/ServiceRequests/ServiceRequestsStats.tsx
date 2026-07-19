@@ -10,17 +10,17 @@
  * approximation).
  */
 
+import { getServiceRequestStats } from '@/actions/serviceRequestActions';
+import CountUp from '@/components/Dashboard/primitives/CountUp';
 import { useEffect, useMemo, useState } from 'react';
 import {
-  HiLightningBolt,
   HiCalendar,
   HiCheckCircle,
   HiClock,
   HiCollection,
   HiExclamationCircle,
+  HiLightningBolt,
 } from 'react-icons/hi';
-import CountUp from '@/components/Dashboard/primitives/CountUp';
-import { getServiceRequestStats } from '@/actions/serviceRequestActions';
 
 interface Stats {
   total: number;
@@ -72,10 +72,7 @@ const CELLS: CellDef[] = [
     label: 'در حال انجام',
     Icon: HiLightningBolt,
     tone: 'violet',
-    sub: (s) =>
-      s.total > 0
-        ? `${Math.round((s.inProgress / s.total) * 100)}٪ سهم`
-        : '—',
+    sub: (s) => (s.total > 0 ? `${Math.round((s.inProgress / s.total) * 100)}٪ سهم` : '—'),
     barRatio: (s) => (s.total > 0 ? s.inProgress / s.total : 0),
   },
   {
@@ -87,8 +84,7 @@ const CELLS: CellDef[] = [
       s.total - s.cancelled > 0
         ? `${Math.round((s.completed / (s.total - s.cancelled)) * 100)}٪ نرخ`
         : '—',
-    barRatio: (s) =>
-      s.total - s.cancelled > 0 ? s.completed / (s.total - s.cancelled) : 0,
+    barRatio: (s) => (s.total - s.cancelled > 0 ? s.completed / (s.total - s.cancelled) : 0),
   },
   {
     key: 'urgent',
@@ -107,9 +103,7 @@ const CELLS: CellDef[] = [
     Icon: HiCalendar,
     tone: 'emerald',
     sub: (s) =>
-      s.total > 0
-        ? `${Math.round((s.todayCount / Math.max(s.total, 1)) * 100)}٪ کل`
-        : '—',
+      s.total > 0 ? `${Math.round((s.todayCount / Math.max(s.total, 1)) * 100)}٪ کل` : '—',
     // no barRatio — the renderer skips the bar for todayCount (see render below)
   },
 ];
@@ -118,12 +112,11 @@ interface ServiceRequestsStatsProps {
   refreshKey?: number;
 }
 
-export default function ServiceRequestsStats({
-  refreshKey = 0,
-}: ServiceRequestsStatsProps) {
+export default function ServiceRequestsStats({ refreshKey = 0 }: ServiceRequestsStatsProps) {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: refreshKey is an intentional external signal prop
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -162,9 +155,9 @@ export default function ServiceRequestsStats({
   return (
     <section className="at-tile at-srq-stats" aria-label="خلاصه آمار درخواست‌ها">
       {loading
-        ? Array.from({ length: 6 }).map((_, i) => (
+        ? [0, 1, 2, 3, 4, 5].map((i) => (
             <div
-              key={i}
+              key={`sk-stats-${i}`}
               className="at-srq-stats__cell"
               style={{
                 background: 'var(--at-bg-elevated)',
@@ -195,9 +188,7 @@ export default function ServiceRequestsStats({
           : CELLS.map((cell) => {
               const value = stats[cell.key];
               const ratio =
-                cell.key !== 'todayCount' && cell.barRatio
-                  ? cell.barRatio(stats)
-                  : null;
+                cell.key !== 'todayCount' && cell.barRatio ? cell.barRatio(stats) : null;
               return (
                 <div key={cell.key} className="at-srq-stats__cell">
                   <div className="at-srq-stats__head">
@@ -216,9 +207,7 @@ export default function ServiceRequestsStats({
                   <p className={valueClass(cell)}>
                     <CountUp value={value} duration={500} />
                   </p>
-                  {cell.sub && stats && (
-                    <p className="at-srq-stats__sub">{cell.sub(stats)}</p>
-                  )}
+                  {cell.sub && stats && <p className="at-srq-stats__sub">{cell.sub(stats)}</p>}
                   {ratio !== null && (
                     <div className="at-srq-stats__bar" aria-hidden>
                       <div

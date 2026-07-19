@@ -1,0 +1,27 @@
+/**
+ * ServiceRequestsTable — co-located CSS module
+ * Badge classes for notes + attachments count (2026-07-09)
+ * Uses only --at-* tokens; no hex literals.
+ */
+
+/* ── Note/Attachment count badge ──────────────────────────────────────────── */
+:global(.at-srq-badge) {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: color-mix(in oklch, var(--at-accent-fg) 10%, var(--at-bg));
+  border: 1px solid color-mix(in oklch, var(--at-accent-fg) 20%, transparent);
+  color: var(--at-accent-fg);
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+:global(.at-srq-badge.is-attach) {
+  background: color-mix(in oklch, var(--at-gold) 10%, var(--at-bg));
+  border-color: color-mix(in oklch, var(--at-gold) 25%, transparent);
+  color: color-mix(in oklch, var(--at-gold) 75%, var(--at-fg));
+}

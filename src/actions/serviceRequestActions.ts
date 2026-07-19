@@ -1,30 +1,32 @@
 'use server';
 
-import prisma from '@/lib/db';
-import { headers } from 'next/headers';
 import { randomBytes } from 'node:crypto';
-import { z } from 'zod';
 import { auth } from '@/auth';
-import { revalidatePath } from 'next/cache';
-import { unstable_cache } from 'next/cache';
-import { checkRateLimit } from '@/lib/rate-limiter';
+import prisma from '@/lib/db';
 import { getEmailProviderAsync } from '@/lib/email';
 import {
   serviceRequestConfirmationEmail,
-  serviceRequestStatusEmail,
   serviceRequestReceiptEmail,
+  serviceRequestStatusEmail,
 } from '@/lib/email/templates';
 import { isPhoneValid, normalizeToE164 } from '@/lib/phone-validation';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { revalidatePath, unstable_cache } from 'next/cache';
+import { headers } from 'next/headers';
+import { z } from 'zod';
 
 // ─── getUserProfile ─────────────────────────────────────────────────────────── //
 // اطلاعات کاربر لاگین‌شده را برای pre-fill + auto-fill درخواست سرویس می‌آورد.
-export async function getUserServiceProfile(): Promise<{
-  success: true;
-  name: string;
-  phone: string | null;
-  phoneVerified: boolean;
-  email: string;
-} | { success: false; error: 'UNAUTHENTICATED' }> {
+export async function getUserServiceProfile(): Promise<
+  | {
+      success: true;
+      name: string;
+      phone: string | null;
+      phoneVerified: boolean;
+      email: string;
+    }
+  | { success: false; error: 'UNAUTHENTICATED' }
+> {
   const session = await auth();
   if (!session?.user?.id) return { success: false, error: 'UNAUTHENTICATED' };
   const user = await prisma.user.findUnique({
@@ -69,7 +71,11 @@ function generateTrackingCode(): string {
 
 // ─── Sanitize input ───────────────────────────────────────────────────────── //
 function sanitizeInput(input: string): string {
-  return input.replace(/[<>]/g, '').replace(/javascript:/gi, '').replace(/on\w+=/gi, '').trim();
+  return input
+    .replace(/[<>]/g, '')
+    .replace(/javascript:/gi, '')
+    .replace(/on\w+=/gi, '')
+    .trim();
 }
 
 // ─── Telegram admin notification ─────────────────────────────────────────── //
@@ -113,7 +119,12 @@ const ServiceRequestInputSchema = z.object({
     .optional()
     .refine((val) => !val || isPhoneValid(val), { message: 'شماره تماس معتبر نیست' })
     .transform((val) => (val ? normalizeToE164(val) : val)),
-  email: z.string().email().optional().or(z.literal('')).transform((val) => val || null),
+  email: z
+    .string()
+    .email()
+    .optional()
+    .or(z.literal(''))
+    .transform((val) => val || null),
   contactMethod: z.enum(['telegram', 'whatsapp']).optional(),
   // 2026-07-10: client-generated UUIDv4 for idempotency (prevents duplicate on retry)
   idempotencyKey: z.string().uuid().optional().nullable(),
@@ -134,20 +145,60 @@ const ServiceRequestInputSchema = z.object({
   amount: z.string().min(1).max(50).transform(sanitizeInput),
   currency: z.string().min(1).max(10),
   // service-specific fields collected as loose strings
-  destinationCountry: z.string().optional().transform((val) => val || null),
-  bankName: z.string().optional().transform((val) => val || null),
-  websiteUrl: z.string().optional().transform((val) => val || null),
-  productName: z.string().optional().transform((val) => val || null),
-  universityName: z.string().optional().transform((val) => val || null),
-  studentId: z.string().optional().transform((val) => val || null),
-  platformName: z.string().optional().transform((val) => val || null),
-  platformUsername: z.string().optional().transform((val) => val || null),
-  softwareName: z.string().optional().transform((val) => val || null),
-  subscriptionType: z.string().optional().transform((val) => val || null),
+  destinationCountry: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  bankName: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  websiteUrl: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  productName: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  universityName: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  studentId: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  platformName: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  platformUsername: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  softwareName: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  subscriptionType: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
   // Gift Card fields
-  giftCardBrand: z.string().optional().transform((val) => val || null),
-  giftCardRegion: z.string().optional().transform((val) => val || null),
-  description: z.string().max(500).optional().transform((val) => (val ? sanitizeInput(val) : null)),
+  giftCardBrand: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  giftCardRegion: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  description: z
+    .string()
+    .max(500)
+    .optional()
+    .transform((val) => (val ? sanitizeInput(val) : null)),
   urgency: z.enum(['NORMAL', 'URGENT']).default('NORMAL'),
 });
 
@@ -191,7 +242,9 @@ export interface ServiceRequestResult {
 }
 
 // ─── createServiceRequest ─────────────────────────────────────────────────── //
-export async function createServiceRequest(input: ServiceRequestClientInput): Promise<ServiceRequestResult> {
+export async function createServiceRequest(
+  input: ServiceRequestClientInput,
+): Promise<ServiceRequestResult> {
   try {
     const headersList = await headers();
     const ip =
@@ -229,7 +282,11 @@ export async function createServiceRequest(input: ServiceRequestClientInput): Pr
         select: { trackingCode: true },
       });
       if (existing) {
-        return { success: true, trackingCode: existing.trackingCode, message: 'درخواست قبلاً ثبت شده است.' };
+        return {
+          success: true,
+          trackingCode: existing.trackingCode,
+          message: 'درخواست قبلاً ثبت شده است.',
+        };
       }
     }
 
@@ -320,7 +377,7 @@ export async function createServiceRequest(input: ServiceRequestClientInput): Pr
       Object.entries(metadata).filter(([, v]) => v !== null),
     ) as Record<string, string>;
 
-    const serviceRequest = await prisma.serviceRequest.create({
+    const _serviceRequest = await prisma.serviceRequest.create({
       data: {
         trackingCode,
         fullName: resolvedFullName,
@@ -428,7 +485,7 @@ export async function getServiceRequestByTrackingCode(trackingCode: string) {
     }
 
     // 2026-07-07: mask sensitive data — only first letter of name is shown
-    const maskedName = request.fullName.charAt(0) + '***';
+    const maskedName = `${request.fullName.charAt(0)}***`;
 
     return {
       success: true,
@@ -477,6 +534,9 @@ export async function getServiceRequests(params?: {
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
+        include: {
+          _count: { select: { notes: true, attachments: true } },
+        },
       }),
       prisma.serviceRequest.count({ where }),
     ]);
@@ -556,16 +616,16 @@ export async function updateServiceRequestStatus(
     // ولی پیام status change را با اطلاعات کاربر برای ادمین ارسال می‌کنیم
     // تا بتواند سریع با کاربر تماس بگیرد.
     const statusEmoji: Record<string, string> = {
-      PENDING:     '⏳',
+      PENDING: '⏳',
       IN_PROGRESS: '🔄',
-      COMPLETED:   '✅',
-      CANCELLED:   '❌',
+      COMPLETED: '✅',
+      CANCELLED: '❌',
     };
     const statusFa: Record<string, string> = {
-      PENDING:     'در انتظار بررسی',
+      PENDING: 'در انتظار بررسی',
       IN_PROGRESS: 'در حال انجام',
-      COMPLETED:   'تکمیل شده',
-      CANCELLED:   'لغو شده',
+      COMPLETED: 'تکمیل شده',
+      CANCELLED: 'لغو شده',
     };
 
     const pushMsg = `${statusEmoji[status] ?? '📋'} *تغییر وضعیت درخواست*
@@ -850,7 +910,7 @@ export async function exportServiceRequestsCsv(params?: {
       CANCELLED: 'لغو شده',
     };
 
-    const escape = (val: unknown): string => {
+    const escapeCsv = (val: unknown): string => {
       const s = val === null || val === undefined ? '' : String(val);
       if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
       return s;
@@ -860,22 +920,22 @@ export async function exportServiceRequestsCsv(params?: {
     for (const r of rows) {
       csvRows.push(
         [
-          escape(r.trackingCode),
-          escape(r.fullName),
-          escape(r.phone),
-          escape(r.email),
-          escape(serviceLabel[r.serviceType] ?? r.serviceType),
-          escape(r.amount),
-          escape(r.currency),
-          escape(r.urgency === 'URGENT' ? 'فوری' : 'عادی'),
-          escape(r.contactMethod === 'telegram' ? 'تلگرام' : 'واتساپ'),
-          escape(statusLabel[r.status] ?? r.status),
-          escape(r.createdAt.toISOString()),
+          escapeCsv(r.trackingCode),
+          escapeCsv(r.fullName),
+          escapeCsv(r.phone),
+          escapeCsv(r.email),
+          escapeCsv(serviceLabel[r.serviceType] ?? r.serviceType),
+          escapeCsv(r.amount),
+          escapeCsv(r.currency),
+          escapeCsv(r.urgency === 'URGENT' ? 'فوری' : 'عادی'),
+          escapeCsv(r.contactMethod === 'telegram' ? 'تلگرام' : 'واتساپ'),
+          escapeCsv(statusLabel[r.status] ?? r.status),
+          escapeCsv(r.createdAt.toISOString()),
         ].join(','),
       );
     }
 
-    return { success: true, data: '\uFEFF' + csvRows.join('\n') };
+    return { success: true, data: `\uFEFF${csvRows.join('\n')}` };
   } catch {
     return { success: false, message: 'خطا در ساخت فایل خروجی.' };
   }
@@ -903,7 +963,12 @@ export async function getServiceRequestStats() {
       }),
     ]);
 
-    const counts: Record<string, number> = { PENDING: 0, IN_PROGRESS: 0, COMPLETED: 0, CANCELLED: 0 };
+    const counts: Record<string, number> = {
+      PENDING: 0,
+      IN_PROGRESS: 0,
+      COMPLETED: 0,
+      CANCELLED: 0,
+    };
     let total = 0;
     for (const row of byStatus) {
       counts[row.status] = row._count._all;
@@ -1116,7 +1181,176 @@ export async function claimGuestRequest(trackingCode: string): Promise<{
   }
 }
 
+// ─── Admin: Get full request detail (with notes + attachments + statusLogs) ── //
+export async function getServiceRequestDetail(id: string) {
+  const session = await auth();
+  if (!session?.user || !['ADMIN', 'OWNER', 'SUPPORT'].includes(session.user.role as string)) {
+    return { success: false as const, message: 'دسترسی غیرمجاز' };
+  }
 
+  try {
+    const request = await prisma.serviceRequest.findUnique({
+      where: { id },
+      include: {
+        statusLogs: {
+          orderBy: { createdAt: 'desc' },
+        },
+        notes: {
+          orderBy: { createdAt: 'desc' },
+        },
+        attachments: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    if (!request) return { success: false as const, message: 'درخواست یافت نشد.' };
+    return { success: true as const, data: request };
+  } catch {
+    return { success: false as const, message: 'خطایی رخ داد.' };
+  }
+}
+
+// ─── Admin: Add note to a service request ────────────────────────────────── //
+// Append-only — notes are immutable after creation to prevent evidence tampering.
+export async function addServiceRequestNote(
+  requestId: string,
+  content: string,
+  isPrivate = true,
+): Promise<{ success: boolean; message: string }> {
+  const session = await auth();
+  if (!session?.user || !['ADMIN', 'OWNER', 'SUPPORT'].includes(session.user.role as string)) {
+    return { success: false, message: 'دسترسی غیرمجاز' };
+  }
+
+  const trimmed = content.trim().replace(/[<>]/g, '');
+  if (!trimmed || trimmed.length < 2 || trimmed.length > 2000) {
+    return { success: false, message: 'متن یادداشت باید بین ۲ تا ۲۰۰۰ کاراکتر باشد.' };
+  }
+
+  try {
+    const req = await prisma.serviceRequest.findUnique({
+      where: { id: requestId },
+      select: { id: true },
+    });
+    if (!req) return { success: false, message: 'درخواست یافت نشد.' };
+
+    await prisma.serviceRequestNote.create({
+      data: {
+        requestId,
+        authorId: session.user.id ?? session.user.email ?? 'unknown',
+        content: trimmed,
+        isPrivate,
+      },
+    });
+
+    await prisma.systemLog.create({
+      data: {
+        level: 'INFO',
+        message: `Note added to service request ${requestId} by ${session.user.email}`,
+        source: 'ServiceRequest',
+      },
+    });
+
+    revalidatePath('/dashboard/service-requests');
+    return { success: true, message: 'یادداشت ثبت شد.' };
+  } catch {
+    return { success: false, message: 'خطا در ثبت یادداشت.' };
+  }
+}
+
+// ─── Admin: Register an attachment URL for a service request ─────────────── //
+// File is already uploaded to storage by the client; this action only records metadata.
+export async function addServiceRequestAttachment(input: {
+  requestId: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  url: string;
+  fileHash?: string;
+  label?: string;
+}): Promise<{ success: boolean; message: string }> {
+  const session = await auth();
+  if (!session?.user || !['ADMIN', 'OWNER', 'SUPPORT'].includes(session.user.role as string)) {
+    return { success: false, message: 'دسترسی غیرمجاز' };
+  }
+
+  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
+  if (!ALLOWED_TYPES.includes(input.fileType)) {
+    return { success: false, message: 'نوع فایل مجاز نیست. فقط تصویر یا PDF قابل پیوست است.' };
+  }
+  const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+  if (input.fileSize > MAX_SIZE) {
+    return { success: false, message: 'حجم فایل بیش از ۱۰ مگابایت است.' };
+  }
+
+  try {
+    const req = await prisma.serviceRequest.findUnique({
+      where: { id: input.requestId },
+      select: { id: true },
+    });
+    if (!req) return { success: false, message: 'درخواست یافت نشد.' };
+
+    await prisma.serviceRequestAttachment.create({
+      data: {
+        requestId: input.requestId,
+        uploadedById: session.user.id ?? session.user.email ?? 'unknown',
+        fileName: input.fileName.substring(0, 255),
+        fileType: input.fileType,
+        fileSize: input.fileSize,
+        url: input.url,
+        fileHash: input.fileHash ?? null,
+        label: input.label?.substring(0, 100) ?? null,
+      },
+    });
+
+    await prisma.systemLog.create({
+      data: {
+        level: 'INFO',
+        message: `Attachment added to service request ${input.requestId} by ${session.user.email}: ${input.fileName}`,
+        source: 'ServiceRequest',
+      },
+    });
+
+    revalidatePath('/dashboard/service-requests');
+    return { success: true, message: 'فایل پیوست شد.' };
+  } catch {
+    return { success: false, message: 'خطا در ثبت پیوست.' };
+  }
+}
+
+// ─── Admin: Delete an attachment ─────────────────────────────────────────── //
+export async function deleteServiceRequestAttachment(
+  attachmentId: string,
+): Promise<{ success: boolean; message: string }> {
+  const session = await auth();
+  if (!session?.user || !['ADMIN', 'OWNER'].includes(session.user.role as string)) {
+    return { success: false, message: 'فقط ادمین یا مالک می‌توانند پیوست را حذف کنند.' };
+  }
+
+  try {
+    const att = await prisma.serviceRequestAttachment.findUnique({
+      where: { id: attachmentId },
+      select: { id: true, requestId: true, fileName: true },
+    });
+    if (!att) return { success: false, message: 'پیوست یافت نشد.' };
+
+    await prisma.serviceRequestAttachment.delete({ where: { id: attachmentId } });
+
+    await prisma.systemLog.create({
+      data: {
+        level: 'INFO',
+        message: `Attachment ${att.fileName} deleted from request ${att.requestId} by ${session.user.email}`,
+        source: 'ServiceRequest',
+      },
+    });
+
+    revalidatePath('/dashboard/service-requests');
+    return { success: true, message: 'پیوست حذف شد.' };
+  } catch {
+    return { success: false, message: 'خطا در حذف پیوست.' };
+  }
+}
 
 // ─── Support links (cached) ───────────────────────────────────────────────── //
 const _getCachedSupportLinks = unstable_cache(

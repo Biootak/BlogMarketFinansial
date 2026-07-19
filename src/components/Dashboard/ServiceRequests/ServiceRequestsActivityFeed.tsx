@@ -14,6 +14,7 @@
  * navigation; this is just a side audit log).
  */
 
+import { getServiceRequestRecentActivity } from '@/actions/serviceRequestActions';
 import { useEffect, useMemo, useState } from 'react';
 import {
   HiOutlineBolt,
@@ -24,7 +25,6 @@ import {
   HiOutlinePencil,
   HiOutlineXCircle,
 } from 'react-icons/hi2';
-import { getServiceRequestRecentActivity } from '@/actions/serviceRequestActions';
 
 type Activity =
   | {
@@ -58,17 +58,17 @@ const STATUS_LABEL: Record<string, string> = {
 
 const SERVICE_LABEL: Record<string, string> = {
   INTERNATIONAL_TRANSFER: 'حواله بین‌المللی',
-  ONLINE_PAYMENT:         'پرداخت آنلاین',
-  TUITION_PAYMENT:        'پرداخت شهریه',
-  FREELANCE_INCOME:       'نقد کردن درآمد',
-  SOFTWARE_PURCHASE:      'خرید نرم‌افزار',
-  GIFT_CARD:              'گیفت کارت',
-  CURRENCY_BUY:           'خرید ارز',
-  CURRENCY_SELL:          'فروش ارز',
-  CRYPTO_BUY:             'خرید ارز دیجیتال',
-  CRYPTO_SELL:            'فروش ارز دیجیتال',
-  PAYPAL_TRANSFER:        'پی‌پال / اسکریل',
-  OTHER:                  'سایر',
+  ONLINE_PAYMENT: 'پرداخت آنلاین',
+  TUITION_PAYMENT: 'پرداخت شهریه',
+  FREELANCE_INCOME: 'نقد کردن درآمد',
+  SOFTWARE_PURCHASE: 'خرید نرم‌افزار',
+  GIFT_CARD: 'گیفت کارت',
+  CURRENCY_BUY: 'خرید ارز',
+  CURRENCY_SELL: 'فروش ارز',
+  CRYPTO_BUY: 'خرید ارز دیجیتال',
+  CRYPTO_SELL: 'فروش ارز دیجیتال',
+  PAYPAL_TRANSFER: 'پی‌پال / اسکریل',
+  OTHER: 'سایر',
 };
 
 function getTone(item: Activity): Tone {
@@ -121,9 +121,7 @@ function groupByDay(items: Activity[], now: Date): Group[] {
         tone = 'yesterday';
         label = 'دیروز';
       } else {
-        const dayDiff = Math.floor(
-          (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24),
-        );
+        const dayDiff = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
         if (dayDiff < 7) {
           tone = 'week';
           label = 'این هفته';
@@ -173,6 +171,7 @@ export default function ServiceRequestsActivityFeed({
     return () => window.clearInterval(t);
   }, []);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: refreshKey is an intentional external signal prop
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -189,10 +188,7 @@ export default function ServiceRequestsActivityFeed({
     };
   }, [refreshKey]);
 
-  const grouped = useMemo(
-    () => (now ? groupByDay(items, now) : []),
-    [items, now],
-  );
+  const grouped = useMemo(() => (now ? groupByDay(items, now) : []), [items, now]);
   const total = items.length;
 
   return (
@@ -216,17 +212,14 @@ export default function ServiceRequestsActivityFeed({
       {loading ? (
         <div className="at-srq-activity__list">
           <ul className="at-srq-activity__items">
-            {Array.from({ length: 4 }).map((_, i) => (
+            {[0, 1, 2, 3].map((i) => (
               <li
-                key={i}
+                key={`sk-act-${i}`}
                 className="at-srq-activity__item"
                 aria-hidden
                 style={{ opacity: 0.6 }}
               >
-                <span
-                  className="at-srq-activity__dot"
-                  style={{ background: 'var(--at-line)' }}
-                />
+                <span className="at-srq-activity__dot" style={{ background: 'var(--at-line)' }} />
                 <div className="at-srq-activity__body">
                   <span
                     className="block h-3 rounded"
@@ -257,21 +250,13 @@ export default function ServiceRequestsActivityFeed({
         <ol className="at-srq-activity__list">
           {grouped.map((group) => (
             <li key={`${group.tone}-${group.label}`} className="at-srq-activity__group">
-              <p
-                className={`at-srq-activity__group-label is-${group.tone}`}
-              >
+              <p className={`at-srq-activity__group-label is-${group.tone}`}>
                 <span>{group.label}</span>
-                <span className="tabular-nums">
-                  {group.items.length.toLocaleString('fa-IR')}
-                </span>
+                <span className="tabular-nums">{group.items.length.toLocaleString('fa-IR')}</span>
               </p>
               <ol className="at-srq-activity__items">
                 {group.items.map((item) => (
-                  <ActivityRow
-                    key={item.id}
-                    item={item}
-                    now={now ?? new Date()}
-                  />
+                  <ActivityRow key={item.id} item={item} now={now ?? new Date()} />
                 ))}
               </ol>
             </li>
@@ -313,17 +298,14 @@ function ActivityRow({ item, now }: { item: Activity; now: Date }) {
               ) : null}{' '}
               ثبت کرد
               {item.serviceType ? (
-                <>
-                  {' '}
-                  برای «{SERVICE_LABEL[item.serviceType] ?? item.serviceType}»
-                </>
+                <> برای «{SERVICE_LABEL[item.serviceType] ?? item.serviceType}»</>
               ) : null}
             </>
           ) : (
             <>
               <HiOutlineBolt className="w-3 h-3 inline-block ml-1 align-middle opacity-70" />
-              <strong>{item.updatedBy.split('@')[0]}</strong> وضعیت درخواست{' '}
-              را به «{STATUS_LABEL[item.toStatus] ?? item.toStatus}» تغییر داد
+              <strong>{item.updatedBy.split('@')[0]}</strong> وضعیت درخواست را به «
+              {STATUS_LABEL[item.toStatus] ?? item.toStatus}» تغییر داد
             </>
           )}
         </p>

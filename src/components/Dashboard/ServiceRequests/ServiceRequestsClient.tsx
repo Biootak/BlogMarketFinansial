@@ -11,17 +11,12 @@
  */
 
 import { useCallback, useState } from 'react';
+import ServiceRequestsActivityFeed from './ServiceRequestsActivityFeed';
 import ServiceRequestsCommandBar from './ServiceRequestsCommandBar';
 import ServiceRequestsStats from './ServiceRequestsStats';
 import ServiceRequestsTable from './ServiceRequestsTable';
-import ServiceRequestsActivityFeed from './ServiceRequestsActivityFeed';
 
-export type StatusFilter =
-  | 'ALL'
-  | 'PENDING'
-  | 'IN_PROGRESS'
-  | 'COMPLETED'
-  | 'CANCELLED';
+export type StatusFilter = 'ALL' | 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 
 export default function ServiceRequestsClient() {
   const [filter, setFilter] = useState<StatusFilter>('ALL');

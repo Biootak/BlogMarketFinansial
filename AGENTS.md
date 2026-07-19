@@ -60,6 +60,48 @@ Only write a brief analysis (not a long plan) for: DB / migration / auth / secur
 ## Mandatory declaration (start of every task)
 
 > "AGENTS.md و PDK.md را خواندم — مستقیم می‌سازم (Build → Show → Improve)."
+>
+> ⚠️ **این اعلام کافی نیست** — باید **PRE-CODE GATE** را هم در همان پیام پر کنی (ر.ک بخش بعدی).
+
+---
+
+## 🚦 PRE-CODE GATE — دروازهٔ قبل از کد (اجباری، visible در هر پیام)
+
+> **⛔ قانون سختگیر — learned 2026-07:** این گیت باید **به صورت markdown table** در همان پیام، **قبل از اولین tool call کدنویسی** نوشته شود. نوشتن کد بدون این table = نقض مستقیم.
+
+> **⛔ قانون COMPLETE ANSWERS — learned 2026-07-09:** هر سطر جدول باید پاسخ **کامل و واقعی** داشته باشد. نوشتن «بررسی می‌شود»، «باید grep شود»، یا هر placeholder دیگر = نقض مستقیم. این جدول باید **بعد از تحقیق واقعی** نوشته شود، نه قبل از آن. اگر هنوز grep نکردی، اول grep کن، بعد جدول را پر کن.
+
+هر تسک غیر-trivial باید این جدول را در پیام داشته باشد (قبل از کد):
+
+```
+| چک | سؤال | پاسخ |
+|---|---|---|
+| 🔍 Research | آیا best practice 2026 از داک‌های رسمی بررسی شد؟ | [نتیجه واقعی + منبع — نه "بررسی می‌شود"] |
+| 🌐 Internet-first | آیا از اینترنت/داک رسمی 2026 استفاده شد؟ | [URL یا منبع واقعی — نه "بله"] |
+| 🔁 Reuse | آیا کامپوننت/util مشابه در repo وجود دارد؟ | [نتیجه grep واقعی — نه "باید grep شود"] |
+| 📐 Scope | چه فایل‌هایی تغییر می‌کنند؟ | [لیست دقیق فایل‌ها] |
+| 🔗 Dependencies | آیا وابستگی‌های این فایل‌ها هم آپدیت می‌شوند؟ | [لیست callers/importers grep شده] |
+| 🔒 Security | آیا auth/validation/rate-limit لازم است؟ | [پاسخ کامل: چه چک‌هایی اضافه می‌شود] |
+| 🔄 Front↔Back sync | آیا فرانت و بک‌اند هماهنگند؟ | [API shape، cache tags، UI states] |
+| 📏 Rules | آیا قوانین پروژه رعایت می‌شود؟ | [RTL/TSstrict/no-hex/Prisma-singleton] |
+| ✅ Complete | آیا کد کامل است؟ | [نه stub/TODO/console.log] |
+| 🗄️ DB | آیا schema/migration لازم است؟ | [پاسخ کامل با rollback plan] |
+| 🧩 Integration | آیا با بخش‌های دیگر پروژه هماهنگ است؟ | [grep callers، sidebar، nav، sitemap] |
+| 💡 Better way? | آیا راهکار بهتری وجود داشت؟ | [اگر بله → همین لحظه به کاربر بگو] |
+```
+
+> **⚠️ قانون «راهکار بهتر» — learned 2026-07-09:** اگر در ردیف «Better way?» پاسخ «بله» است، **قبل از نوشتن اولین خط کد** باید به کاربر گفته شود و تأیید گرفته شود. ساکت پیش رفتن = نقض مستقیم Directive 0.
+
+**ترتیب اجباری (قبل از کد):**
+1. ابزارهای grep/read_file را اجرا کن
+2. داک‌های رسمی/اینترنت را چک کن
+3. جدول را با پاسخ‌های واقعی پر کن — هیچ placeholder مجاز نیست
+4. اگر «راهکار بهتر» وجود دارد → به کاربر بگو و تأیید بگیر
+5. بعد اولین tool call کدنویسی را بزن
+
+اگر تسک trivial (یک‌خطی) است → صریح بنویس: `PRE-CODE GATE: N/A — [دلیل]`
+
+---
 
 ## SELF-ENFORCING LOOP (بلا استثنا — حتی وسط چت)
 
@@ -73,6 +115,18 @@ Only write a brief analysis (not a long plan) for: DB / migration / auth / secur
 6. **Definition of Done** (پایین) را یک‌به‌یک چک کن پیش از اعلام پایان.
 7. **🔁 Task Completion Loop** — قبل از اعلام «تمام»، چک‌لیست `§Task Completion Loop` را اجرا کن. اگر هر آیتم ناقص بود، **همان لحظه fix کن و ادامه بده — متوقف نشو.** فقط وقتی همه ۹ آیتم سبز شدند، «تمام» بگو.
 8. **🛡️ 19DQG — Nineteen-Dimension Quality Gate** — آخرین دروازه قبل از «تمام». ۱۹ بُعد: [D1] کد نوشته شد · [D2] وابستگی‌ها · [D3] امنیت · [D4] sync front/back · [D5] قوانین پروژه · [D6] کامل/clean · [D7] internet-first · [D8] یکپارچگی · [D9] best practice 2026 · [D10] performance · [D11] a11y · [D12] responsive/dark · [D13] UI craft · [D14] DB safety · [D15] cleanup/observability · [D16] هر خطا fix شد · [D17] reuse-first · [D18] dated websearch+AGENTS patch · **[D19] بخش‌های دیگر پروژه آپدیت شدند**. هر [ ] باقی ماند → fix → از D1 شروع کن.
+
+> **⚠️ قانون VISIBLE — learned 2026-07:** صرفاً «19DQG را خواندم» کافی نیست. باید نتیجهٔ هر بُعد را **در همان پیام** به صورت یک خط بنویسی: `[D1] ✅ کد نوشته شد / [D3] ✅ auth چک شد / [D14] N/A — بدون DB`. اگر نوشتی «تمام» ولی 19DQG visible نبود، تسک complete نیست.
+
+> **⚠️ قانون ۸ سؤال کاربر — learned 2026-07-09:** قبل از «تمام»، این ۸ سؤال را صریحاً جواب بده:
+> 1. آیا **وابستگی‌ها** آپدیت شدند؟
+> 2. آیا **امنیت** درست است؟
+> 3. آیا **هماهنگی front↔back** برقرار است؟
+> 4. آیا **قوانین پروژه** رعایت شدند؟
+> 5. آیا **کد کامل** است (نه stub/ناقص)?
+> 6. آیا **راهکار بهتری** وجود داشت؟ اگر بله — **چرا قبلاً نگفتی؟** → AGENTS patch اجباری است
+> 7. آیا از **اینترنت/داک رسمی 2026** استفاده شد؟ منبع ذکر شد؟
+> 8. آیا **پروژه با بخش‌های دیگر هماهنگ** است؟
 
 ## Critical conventions (always-on)
 
@@ -187,23 +241,78 @@ When the task is explicitly a redesign / restyle / "test the redesign":
 
 ### 🔁 Task Completion Loop — ادامه تا تمام شدن (اجباری — learned 2026-07)
 
-**قبل از هر اعلام «تمام»، این checklist را یک‌به‌یک اجرا کن. اگر هر آیتم قرمز بود، همان لحظه fix کن و دوباره چک کن — متوقف نشو.**
+**قبل از هر اعلام «تمام»، این checklist را یک‌به‌یک اجرا کن و نتیجه را در پیام بنویس. اگر هر آیتم قرمز بود، همان لحظه fix کن و دوباره چک کن — متوقف نشو.**
+
+> **⛔ قانون VISIBLE OUTPUT — learned 2026-07:** این چک‌لیست باید **در پیام پایانی** به کاربر نشان داده شود — نه «در ذهن اجرا شود». بدون visible checklist = تسک complete نیست. Agent نباید بنویسد «checklist را اجرا کردم» — باید بنویسد `[x] 1. تمام فایل‌ها نوشته شدند` به صورت visible.
 
 ```
-TASK COMPLETION CHECKLIST (run before every "done" declaration)
-═══════════════════════════════════════════════════════════════
-[ ] 1. تمام فایل‌های وعده‌داده‌شده نوشته شدند (نه فقط بعضی)
-[ ] 2. هر تغییر که در چت گفتم اما ننوشتم → الان بنویس
-[ ] 3. npx tsc --noEmit → سبز (بدون خطا)
-[ ] 4. npm run lint (biome check) → سبز روی فایل‌های تغییر یافته
-[ ] 5. هر خطای lint/tsc (حتی pre-existing) → همان لحظه fix شد (نه «بعداً»)
-[ ] 6. هر خطای خارج‌از‌scope → صریح به کاربر اعلام شد + در post-task ثبت شد
-[ ] 7. هیچ TODO / placeholder / console.log در کد ما نیست
-[ ] 8. Post-task Report (§Post-task Report) نوشته شد
-[ ] 9. Nineteen-Dimension Quality Gate (§19DQG زیر) کامل اجرا شد
-═══════════════════════════════════════════════════════════════
+TASK COMPLETION CHECKLIST (run before every "done" declaration — MUST be visible in message)
+════════════════════════════════════════════════════════════════════════════════════════
+
+─── ۱. کد واقعی و کامل ──────────────────────────────────────────────────────────────
+[ ] 1.  تمام فایل‌های وعده‌داده‌شده نوشته شدند — هیچ‌کدام skip نشد
+[ ] 2.  هر تغییری که در چت گفتم اما ننوشتم → الان بنویس
+[ ] 3.  کد ناقص نیست: هیچ TODO / placeholder / console.log / stub / debugger وجود ندارد
+[ ] 4.  هیچ تابع/API ساختگی (hallucinated) نوشته نشده — هر API ناآشنا در داک تأیید شد (anti-failure #17)
+[ ] 5.  هر فایل تغییریافته قبل از ویرایش re-read شد — ویرایش روی نسخه stale نیست (anti-failure #2)
+[ ] 6.  comment ها با کد واقعی مطابقت دارند — comment دروغ = بدترین bug (anti-failure #23)
+[ ] 7.  فایل‌های بزرگ‌تر از ~400 خط split شدند — یک concern per file (Directive §2)
+
+─── ۲. وابستگی‌ها و cascade ─────────────────────────────────────────────────────────
+[ ] 8.  همه callers/importers فایل‌های تغییریافته grep شدند و هماهنگند (D2)
+[ ] 9.  اگر type/interface تغییر کرد → همه consumer ها (UI+API+Action) آپدیت شدند
+[ ] 10. Env var جدید → AGENTS.env.md + .env.example آپدیت شد
+[ ] 11. Domain/image جدید → next.config.ts CSP + remotePatterns آپدیت شد
+[ ] 12. Cron/job جدید → vercel.json + scheduler config آپدیت شد
+
+─── ۳. امنیت ───────────────────────────────────────────────────────────────────────
+[ ] 13. auth check (requireUser/requireRole) در هر Server Action/API route جدید (D3)
+[ ] 14. هر input با Zod validate شده — هیچ raw req.body به DB نمی‌رسد
+[ ] 15. هیچ secret/token در client bundle یا NEXT_PUBLIC_* نیست
+[ ] 16. هیچ stack trace / raw DB error به کاربر برنمی‌گردد
+[ ] 17. rate-limit برای هر endpoint mutating/auth بررسی شد
+[ ] 18. عملیات مالی → idempotency-key + audit log ثبت شد (fintech requirement)
+
+─── ۴. هماهنگی Front ↔ Back ────────────────────────────────────────────────────────
+[ ] 19. فرانت از API shape { success, data } / { success:false, error:{code,message} } استفاده می‌کند
+[ ] 20. Prisma schema تغییر کرد → همه query + handler + UI آپدیت شدند
+[ ] 21. Cache tags بعد از هر write revalidate شدند (از @/lib/revalidate — نه next/cache مستقیم)
+[ ] 22. همه UI states پیاده شده: loading / error / empty / success / disabled
+
+─── ۵. قوانین پروژه ────────────────────────────────────────────────────────────────
+[ ] 23. npx tsc --noEmit → سبز روی فایل‌های ما (D5)
+[ ] 24. npm run lint (biome check --write) → سبز روی فایل‌های تغییریافته
+[ ] 25. RTL: فقط logical props (ps-/pe-/ms-/me-) — هرگز left/right
+[ ] 26. Tokens: فقط --ds-* و --at-* — هیچ #hex hardcode نشده
+[ ] 27. CSS: هیچ قانون جدید به globals.css / dashboard.css اضافه نشده
+[ ] 28. Prisma import فقط از @/lib/db — هرگز new PrismaClient()
+
+─── ۶. کیفیت منطق (logic correctness) ─────────────────────────────────────────────
+[ ] 29. هر محاسبه مالی یک مثال عددی در comment دارد (anti-failure #18 — silent logic error)
+[ ] 30. هر regex روی حداقل ۳ نمونه واقعی از داده تست شده (anti-failure #22)
+[ ] 31. هر ادعای فاکتوال درباره رفتار third-party با websearch/فایل واقعی تأیید شده (anti-failure #21)
+
+─── ۷. راهکار بهتر / داک رسمی 2026 ───────────────────────────────────────────────
+[ ] 32. داک‌های رسمی 2026 بررسی شد (Next.js/Prisma/MDN) — URL/منبع ذکر شد (D7/D18)
+[ ] 33. هیچ deprecated API (unstable_ / getServerSideProps / pages/api) بدون جایگزین
+[ ] 34. اگر راهکار بهتری وجود داشت → **قبل از کد** به کاربر گفته شد — نه بعد (anti-failure #31)
+[ ] 35. اگر AGENTS.md نیاز به patch داشت → همین سشن نوشته شد
+
+─── ۸. یکپارچگی و سلامت پروژه ──────────────────────────────────────────────────────
+[ ] 36. هر خطای lint/tsc (حتی pre-existing) → همان لحظه fix شد یا گزارش شد (D16)
+[ ] 37. هر خطای خارج‌از‌scope → صریح به کاربر اعلام شد + در post-task ثبت شد
+[ ] 38. بخش‌های دیگر پروژه (nav/sidebar/sitemap/COMPONENTS.md) بررسی شدند (D19)
+[ ] 39. git status: فقط فایل‌های مرتبط تغییر کرده — هرگز git add -A (D15)
+[ ] 40. هیچ unused import / dead code / temp file باقی نمانده (D15)
+
+─── ۹. گزارش نهایی ────────────────────────────────────────────────────────────────
+[ ] 41. Post-task Report (§Post-task Report) نوشته شد
+[ ] 42. Nineteen-Dimension Quality Gate (§19DQG) به صورت VISIBLE اجرا شد
+[ ] 43. پاسخ ۸ سؤال کاربر (§قانون ۸ سؤال) در پیام نوشته شد
+
+════════════════════════════════════════════════════════════════════════════════════════
 اگر هر آیتم [ ] باقی ماند → کد را fix کن → checklist را دوباره اجرا کن
-فقط وقتی همه [x] شدند → اعلام «تمام» مجاز است
+فقط وقتی همه [x] یا [N/A — دلیل] شدند → اعلام «تمام» مجاز است
 ```
 
 **قانون توقف‌ناپذیری — learned 2026-07 (اجباری، بلا استثنا):**
@@ -217,6 +326,31 @@ TASK COMPLETION CHECKLIST (run before every "done" declaration)
 
 > **قانون متوقف‌نشو:** هر بُعدی که [ ] باقی ماند = همان لحظه fix کن → از بُعد D1 دوباره شروع کن. «بعداً» یا «N/A بدون دلیل» وجود ندارد.
 > اگر یک بُعد واقعاً خارج از scope تسک است → **صریح بنویس «N/A — [دلیل دقیق]»**.
+>
+> **⛔ قانون VISIBLE RESULT — learned 2026-07 (ریشه مشکل واقعی):**
+> نوشتن `19DQG را اجرا کردم` در چت **ممنوع** است. باید نتیجهٔ هر بُعد را به صورت یک خط در پیام بنویسی:
+> ```
+> [D1] ✅ — کد نوشته شد (4 فایل)
+> [D2] ✅ — callers grep شدند، سازگار است
+> [D3] ✅ — auth + ownership check + rate-limit
+> [D4] ✅ — front/back sync: include attachments در query
+> [D5] ✅ — tsc+biome سبز، logical props، no hex
+> [D6] ✅ — بدون console.log/TODO/stub
+> [D7] ✅ — Prisma cascade + Next.js App Router best practice 2026
+> [D8] ✅ — schema + actions + UI همگی آپدیت شدند
+> [D9] ✅ — Server Actions، Prisma cascade، no implicit any
+> [D10] ✅ — N+1 ندارد، explicit select، rate-limited
+> [D11] ✅ — aria-label، focus-visible، touch target ≥44px
+> [D12] ✅ — RTL logical props، tokens بدون hex
+> [D13] N/A — تسک backend/data بود، UI صرفاً extend شد
+> [D14] ✅ — migration با db push، cascade delete، onDelete تنظیم
+> [D15] ✅ — بدون temp file، بدون unused import
+> [D16] ✅ — خطاهای pre-existing گزارش داده شدند
+> [D17] ✅ — upload infrastructure موجود reuse شد
+> [D18] ✅ — تاریخ: 29/4/1404، Prisma cascade داک رسمی §Relations
+> [D19] ✅ — page.tsx آپدیت شد، getMyServiceRequests آپدیت شد
+> ```
+> اگر این خروجی را ننوشتی، تسک را تمام نکرده‌ای — حتی اگر کد درست باشد.
 
 ```
 🛡️ NINETEEN-DIMENSION QUALITY GATE — 19DQG
@@ -415,6 +549,9 @@ TASK COMPLETION CHECKLIST (run before every "done" declaration)
 ════════════════════════════════════════════════════════════════════════════
 قانون متوقف‌نشو: اگر هر [ ] باقی ماند → fix کن → از D1 دوباره شروع کن
 فقط وقتی همه 19 بُعد [✓] یا [N/A — دلیل] شدند → اعلام «تمام» مجاز است
+
+⛔ VISIBLE OUTPUT REQUIRED: نتیجه هر D را در پیام بنویس (فرمت نمونه بالا را ببین)
+نوشتن «19DQG انجام شد» بدون خروجی = نقض قانون VISIBLE RESULT
 ════════════════════════════════════════════════════════════════════════════
 ```
 

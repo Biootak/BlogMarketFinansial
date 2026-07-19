@@ -218,17 +218,17 @@ model Like {
 }
 
 model Category {
-  id              String     @id @default(cuid())
-  name            String
-  slug            String     @unique
-  thumbnail       String?
-  thumbnailWidth  Int?
-  thumbnailHeight Int?
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-  Category_A      Category[] @relation("CategoryToParent")
-  Category_B      Category[] @relation("CategoryToParent")
-  posts           Post[]     @relation("CategoryToPost")
+  id               String     @id @default(cuid())
+  name             String
+  slug             String     @unique
+  thumbnail        String?
+  thumbnailWidth   Int?
+  thumbnailHeight  Int?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  childCategories  Category[] @relation("CategoryToParent")
+  parentCategories Category[] @relation("CategoryToParent")
+  posts            Post[]     @relation("CategoryToPost")
 }
 
 model Tag {
@@ -457,8 +457,10 @@ model ServiceRequest {
   phoneVerified         Boolean                   @default(false)
   emailVerified         Boolean                   @default(false)
   idempotencyKey        String?                   @unique
-  user                  User?                     @relation(fields: [userId], references: [id])
+  user                  User?                       @relation(fields: [userId], references: [id])
   statusLogs            ServiceRequestStatusLog[]
+  notes                 ServiceRequestNote[]
+  attachments           ServiceRequestAttachment[]
 
   @@index([trackingCode])
   @@index([phone])
@@ -481,6 +483,41 @@ model ServiceRequestStatusLog {
   request    ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
 
   @@index([requestId, createdAt(sort: Desc)])
+}
+
+/// 2026-07-09: یادداشت داخلی ادمین/پشتیبانی روی هر درخواست خدمات.
+/// غیرقابل ویرایش پس از ثبت (append-only) — برای جلوگیری از دستکاری مدارک.
+model ServiceRequestNote {
+  id        String         @id @default(cuid())
+  requestId String
+  authorId  String
+  content   String
+  isPrivate Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  request   ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([requestId, createdAt(sort: Desc)])
+  @@index([authorId])
+}
+
+/// 2026-07-09: مدارک پیوست معامله (تصویر رسید، اسکن فاکتور و غیره).
+/// url: آدرس ذخیره‌شده در storage (UploadThing / local).
+/// fileHash: SHA-256 محتوا برای تشخیص دستکاری.
+model ServiceRequestAttachment {
+  id           String         @id @default(cuid())
+  requestId    String
+  uploadedById String
+  fileName     String
+  fileType     String
+  fileSize     Int
+  url          String
+  fileHash     String?
+  label        String?
+  createdAt    DateTime       @default(now())
+  request      ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([requestId, createdAt(sort: Desc)])
+  @@index([uploadedById])
 }
 
 /// 2026-06-14: تبلیغ باریک بالای هدر.

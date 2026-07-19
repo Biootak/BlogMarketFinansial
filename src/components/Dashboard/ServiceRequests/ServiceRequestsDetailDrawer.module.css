@@ -1,0 +1,458 @@
+/**
+ * ServiceRequestsDetailDrawer — co-located CSS module
+ * New classes for tabs, notes, attachments (2026-07-09)
+ * Uses only --at-* tokens from dashboard.css; no hex literals.
+ */
+
+/* ── Tabs bar ───────────────────────────────────────────────────────────── */
+:global(.at-srq-drawer__tabs) {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--at-line);
+  background: var(--at-bg-deep);
+}
+
+:global(.at-srq-drawer__tab) {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 16px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--at-fg-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color var(--at-duration) var(--at-ease);
+  flex-shrink: 0;
+}
+
+:global(.at-srq-drawer__tab:hover) {
+  color: var(--at-fg);
+}
+
+:global(.at-srq-drawer__tab.is-active) {
+  color: var(--at-accent-fg);
+}
+
+:global(.at-srq-drawer__tab.is-active::after) {
+  content: "";
+  position: absolute;
+  inset-inline: 8px;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--at-accent-fg);
+}
+
+:global(.at-srq-drawer__tab-badge) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding-inline: 4px;
+  border-radius: 9px;
+  background: var(--at-accent-soft);
+  color: var(--at-accent-fg);
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Timeline ───────────────────────────────────────────────────────────── */
+:global(.at-srq-drawer__timeline) {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+:global(.at-srq-drawer__timeline-item) {
+  display: flex;
+  gap: 10px;
+  position: relative;
+  padding-bottom: 12px;
+}
+
+:global(.at-srq-drawer__timeline-item:last-child) {
+  padding-bottom: 0;
+}
+
+:global(.at-srq-drawer__timeline-item::before) {
+  content: "";
+  position: absolute;
+  inset-inline-start: 7px;
+  top: 20px;
+  bottom: 0;
+  width: 1px;
+  background: var(--at-line);
+}
+
+:global(.at-srq-drawer__timeline-item:last-child::before) {
+  display: none;
+}
+
+:global(.at-srq-drawer__timeline-dot) {
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  border-radius: 999px;
+  border: 2px solid var(--at-accent-fg);
+  background: var(--at-bg);
+  margin-top: 2px;
+}
+
+:global(.at-srq-drawer__timeline-body) {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+:global(.at-srq-drawer__timeline-status) {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--at-fg);
+}
+
+:global(.at-srq-drawer__timeline-by) {
+  font-size: 11px;
+  color: var(--at-fg-muted);
+  direction: ltr;
+  text-align: start;
+}
+
+:global(.at-srq-drawer__timeline-note) {
+  font-size: 11.5px;
+  color: var(--at-fg-subtle);
+  font-style: italic;
+  white-space: pre-wrap;
+}
+
+:global(.at-srq-drawer__timeline-time) {
+  font-size: 10.5px;
+  color: var(--at-fg-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Notes tab ──────────────────────────────────────────────────────────── */
+:global(.at-srq-drawer__note-info) {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 10px 13px;
+  border-radius: 10px;
+  background: color-mix(in oklch, var(--at-info) 8%, var(--at-bg));
+  border: 1px solid color-mix(in oklch, var(--at-info) 20%, transparent);
+  font-size: 11.5px;
+  color: var(--at-fg-muted);
+  line-height: 1.5;
+}
+
+:global(.at-srq-drawer__note-compose) {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--at-bg-deep);
+  border: 1px solid var(--at-line);
+}
+
+:global(.at-srq-drawer__textarea) {
+  width: 100%;
+  resize: vertical;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--at-line);
+  background: var(--at-bg);
+  color: var(--at-fg);
+  font-size: 13px;
+  font-family: inherit;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color var(--at-duration) var(--at-ease);
+  direction: rtl;
+}
+
+:global(.at-srq-drawer__textarea:focus) {
+  border-color: var(--at-accent-fg);
+}
+
+:global(.at-srq-drawer__note-compose-foot) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+:global(.at-srq-drawer__checkbox-label) {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--at-fg-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+:global(.at-srq-drawer__checkbox) {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  accent-color: var(--at-accent-fg);
+}
+
+:global(.at-srq-drawer__btn-primary) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding-inline: 14px;
+  border-radius: 8px;
+  border: none;
+  background: var(--at-accent-fg);
+  color: var(--at-bg);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity var(--at-duration) var(--at-ease);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+:global(.at-srq-drawer__btn-primary:disabled),
+:global(.at-srq-drawer__btn-primary.is-disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+:global(.at-srq-drawer__btn-primary:hover:not(:disabled)) {
+  opacity: 0.85;
+}
+
+:global(.at-srq-drawer__msg) {
+  font-size: 12px;
+  color: var(--at-fg-muted);
+  margin: 0;
+}
+
+:global(.at-srq-drawer__empty-hint) {
+  text-align: center;
+  font-size: 13px;
+  color: var(--at-fg-muted);
+  padding: 24px 0;
+  margin: 0;
+}
+
+:global(.at-srq-drawer__note) {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--at-line);
+  background: var(--at-bg-deep);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+:global(.at-srq-drawer__note.is-private) {
+  border-color: color-mix(in oklch, var(--at-gold) 25%, var(--at-line));
+  background: color-mix(in oklch, var(--at-gold) 5%, var(--at-bg-deep));
+}
+
+:global(.at-srq-drawer__note-head) {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+:global(.at-srq-drawer__note-author) {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--at-fg-subtle);
+  direction: ltr;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:global(.at-srq-drawer__note-tag) {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 20px;
+  background: color-mix(in oklch, var(--at-gold) 18%, var(--at-bg));
+  border: 1px solid color-mix(in oklch, var(--at-gold) 30%, transparent);
+  font-size: 10px;
+  font-weight: 700;
+  color: color-mix(in oklch, var(--at-gold) 70%, var(--at-fg));
+}
+
+:global(.at-srq-drawer__note-time) {
+  font-size: 10.5px;
+  color: var(--at-fg-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+:global(.at-srq-drawer__note-content) {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--at-fg);
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+/* ── Attachments tab ────────────────────────────────────────────────────── */
+:global(.at-srq-drawer__upload-area) {
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--at-bg-deep);
+  border: 1px dashed var(--at-line-strong);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+:global(.at-srq-drawer__upload-label-row) {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+:global(.at-srq-drawer__input) {
+  flex: 1;
+  height: 34px;
+  padding-inline: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--at-line);
+  background: var(--at-bg);
+  color: var(--at-fg);
+  font-size: 12.5px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color var(--at-duration) var(--at-ease);
+  direction: rtl;
+}
+
+:global(.at-srq-drawer__input:focus) {
+  border-color: var(--at-accent-fg);
+}
+
+:global(.at-srq-drawer__upload-hint) {
+  font-size: 11px;
+  color: var(--at-fg-muted);
+  margin: 0;
+}
+
+:global(.at-srq-drawer__attachment) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--at-line);
+  background: var(--at-bg-deep);
+  min-width: 0;
+}
+
+:global(.at-srq-drawer__attachment-icon) {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--at-accent-soft);
+  color: var(--at-accent-fg);
+}
+
+:global(.at-srq-drawer__attachment-info) {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+:global(.at-srq-drawer__attachment-name) {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--at-fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:global(.at-srq-drawer__attachment-meta) {
+  font-size: 10.5px;
+  color: var(--at-fg-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  text-align: start;
+}
+
+:global(.at-srq-drawer__attachment-actions) {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+:global(.at-srq-drawer__attachment-action) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: 1px solid var(--at-line);
+  background: var(--at-bg);
+  color: var(--at-fg-muted);
+  cursor: pointer;
+  transition: background var(--at-duration) var(--at-ease);
+  text-decoration: none;
+}
+
+:global(.at-srq-drawer__attachment-action:hover) {
+  background: var(--at-bg-elevated);
+  color: var(--at-fg);
+}
+
+:global(.at-srq-drawer__attachment-action.is-danger) {
+  border-color: color-mix(in oklch, var(--at-danger) 25%, var(--at-line));
+  color: var(--at-danger);
+}
+
+:global(.at-srq-drawer__attachment-action.is-danger:hover) {
+  background: var(--at-danger-soft);
+}
+
+:global(.at-srq-drawer__attachment-action:disabled) {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Meta grid for service-specific fields ──────────────────────────────── */
+:global(.at-srq-drawer__meta-grid) {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}

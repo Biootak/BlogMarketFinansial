@@ -1,15 +1,14 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { auth } from '@/auth';
+import { logActivity } from '@/lib/activity-logger';
 import prisma from '@/lib/db';
-import { hash } from 'bcryptjs';
+import { requireUser } from '@/lib/require-auth';
 import type { ActionResult, UserWithProfile } from '@/types/types';
 import type { Prisma } from '@prisma/client';
 import { Role } from '@prisma/client';
-import { requireUser } from '@/lib/require-auth';
-import { auth } from '@/auth';
-import { logActivity } from '@/lib/activity-logger';
-
+import { hash } from 'bcryptjs';
+import { revalidatePath } from 'next/cache';
 
 // 2026-06-23: role hierarchy for ownership/permission checks.
 // OWNER (4) > ADMIN (3) > AUTHOR (2) > USER (1).
@@ -20,6 +19,12 @@ const ROLE_HIERARCHY: Record<Role, number> = {
   SUPPORT: 2,
   AUTHOR: 2,
   USER: 1,
+  // fintech/exchange roles — treat as USER in blog permission checks
+  TEST_CUSTOMER: 1,
+  CUSTOMER: 1,
+  MERCHANT: 1,
+  EXCHANGE: 1,
+  SUPERADMIN: 4,
 };
 
 type GetUsersParams = {
@@ -44,7 +49,7 @@ export async function getUsers({
     }
 
     const currentUserRole = session.user.role;
-    
+
     // Filter users based on role hierarchy
     const where: Prisma.UserWhereInput = {
       OR: search
@@ -62,7 +67,7 @@ export async function getUsers({
     if (currentUserRole !== 'OWNER') {
       if (currentUserRole === 'ADMIN') {
         const requestedRole = where.role;
-        delete where.role;
+        where.role = undefined;
         where.AND = [
           { role: { not: { in: [Role.OWNER, Role.ADMIN] } } },
           ...(requestedRole ? [{ role: requestedRole }] : []),
@@ -127,7 +132,7 @@ export async function createUser(data: CreateUserData): Promise<ActionResult<Use
     }
 
     const currentUserRole = session.user.role;
-// Check if user has permission to create users with the specified role
+    // Check if user has permission to create users with the specified role
     if (ROLE_HIERARCHY[currentUserRole] <= ROLE_HIERARCHY[data.role]) {
       return { success: false, message: 'شما مجوز ایجاد کاربر با این نقش را ندارید' };
     }
@@ -154,7 +159,10 @@ export async function createUser(data: CreateUserData): Promise<ActionResult<Use
     revalidatePath('/users');
 
     // ثبت فعالیت
-    await logActivity('ایجاد کاربر', `کاربر "${newUser.name || newUser.email}" با نقش "${data.role}" ایجاد شد`);
+    await logActivity(
+      'ایجاد کاربر',
+      `کاربر "${newUser.name || newUser.email}" با نقش "${data.role}" ایجاد شد`,
+    );
 
     // Never serialize the password hash to the client.
     const { password: _password, ...newUserSafe } = newUser;
@@ -192,13 +200,18 @@ export async function updateUser(
     if (!targetUser) {
       return { success: false, message: 'کاربر یافت نشد' };
     }
-// Check if user has permission to update this user
+    // Check if user has permission to update this user
     if (ROLE_HIERARCHY[currentUserRole] <= ROLE_HIERARCHY[targetUser.role]) {
       return { success: false, message: 'شما مجوز ویرایش این کاربر را ندارید' };
     }
 
     // Check if user has permission to assign the new role
-    if (data.role && (ROLE_HIERARCHY[currentUserRole] <= ROLE_HIERARCHY[data.role] || (targetUser.id === session.user.id && ROLE_HIERARCHY[data.role] >= ROLE_HIERARCHY[currentUserRole]))) {
+    if (
+      data.role &&
+      (ROLE_HIERARCHY[currentUserRole] <= ROLE_HIERARCHY[data.role] ||
+        (targetUser.id === session.user.id &&
+          ROLE_HIERARCHY[data.role] >= ROLE_HIERARCHY[currentUserRole]))
+    ) {
       return { success: false, message: 'شما مجوز تغییر به این نقش را ندارید' };
     }
 
@@ -260,7 +273,7 @@ export async function updateUserRole(userId: string, newRole: Role) {
     }
 
     // Check role hierarchy
-if (ROLE_HIERARCHY[currentUserRole] <= ROLE_HIERARCHY[targetUser.role]) {
+    if (ROLE_HIERARCHY[currentUserRole] <= ROLE_HIERARCHY[targetUser.role]) {
       return { success: false, message: 'شما مجوز تغییر نقش این کاربر را ندارید' };
     }
 
@@ -283,7 +296,10 @@ if (ROLE_HIERARCHY[currentUserRole] <= ROLE_HIERARCHY[targetUser.role]) {
     });
 
     // ثبت فعالیت
-    await logActivity('تغییر نقش کاربر', `نقش کاربر "${targetUser.name || targetUser.email}" به "${newRole}" تغییر کرد`);
+    await logActivity(
+      'تغییر نقش کاربر',
+      `نقش کاربر "${targetUser.name || targetUser.email}" به "${newRole}" تغییر کرد`,
+    );
 
     // Never serialize the password hash to the client (unlike updateUser,
     // this mutation returned the full row incl. `password` before).
@@ -311,13 +327,13 @@ export async function deleteUser(id: string): Promise<ActionResult> {
     if (!targetUser) {
       return { success: false, message: 'کاربر یافت نشد' };
     }
-// Check if user has permission to delete this user
+    // Check if user has permission to delete this user
     if (ROLE_HIERARCHY[currentUserRole] <= ROLE_HIERARCHY[targetUser.role]) {
       return { success: false, message: 'شما مجوز حذف این کاربر را ندارید' };
     }
 
     const userName = targetUser.name || targetUser.email;
-    
+
     await prisma.user.delete({
       where: { id },
     });

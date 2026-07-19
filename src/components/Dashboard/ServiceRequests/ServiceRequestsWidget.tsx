@@ -22,18 +22,18 @@
  *   └────────────────────────────────────────────────────────────┘
  */
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { getServiceRequestStats, getServiceRequests } from '@/actions/serviceRequestActions';
+import CountUp from '@/components/Dashboard/primitives/CountUp';
 import { motion } from '@/lib/motion-shim';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import {
+  HiOutlineArrowLeft,
+  HiOutlineBolt,
+  HiOutlineCalendarDays,
   HiOutlineClipboardDocumentList,
   HiOutlineClock,
-  HiOutlineCalendarDays,
-  HiOutlineBolt,
-  HiOutlineArrowLeft,
 } from 'react-icons/hi2';
-import CountUp from '@/components/Dashboard/primitives/CountUp';
-import { getServiceRequests, getServiceRequestStats } from '@/actions/serviceRequestActions';
 
 interface ServiceRequest {
   id: string;
@@ -57,17 +57,17 @@ interface Stats {
 
 const serviceTypeLabels: Record<string, string> = {
   INTERNATIONAL_TRANSFER: 'حواله',
-  ONLINE_PAYMENT:         'پرداخت آنلاین',
-  TUITION_PAYMENT:        'شهریه',
-  FREELANCE_INCOME:       'فریلنس',
-  SOFTWARE_PURCHASE:      'نرم‌افزار',
-  GIFT_CARD:              'گیفت کارت',
-  CURRENCY_BUY:           'خرید ارز',
-  CURRENCY_SELL:          'فروش ارز',
-  CRYPTO_BUY:             'کریپتو خرید',
-  CRYPTO_SELL:            'کریپتو فروش',
-  PAYPAL_TRANSFER:        'پی‌پال',
-  OTHER:                  'سایر',
+  ONLINE_PAYMENT: 'پرداخت آنلاین',
+  TUITION_PAYMENT: 'شهریه',
+  FREELANCE_INCOME: 'فریلنس',
+  SOFTWARE_PURCHASE: 'نرم‌افزار',
+  GIFT_CARD: 'گیفت کارت',
+  CURRENCY_BUY: 'خرید ارز',
+  CURRENCY_SELL: 'فروش ارز',
+  CRYPTO_BUY: 'کریپتو خرید',
+  CRYPTO_SELL: 'کریپتو فروش',
+  PAYPAL_TRANSFER: 'پی‌پال',
+  OTHER: 'سایر',
 };
 
 const statusLabels: Record<string, string> = {
@@ -143,10 +143,7 @@ export default function ServiceRequestsWidget() {
   // ----- Loading skeleton ---------------------------------------------------
   if (loading) {
     return (
-      <section
-        className="at-tile at-srq-widget"
-        aria-label="درخواست‌های خدمات"
-      >
+      <section className="at-tile at-srq-widget" aria-label="درخواست‌های خدمات">
         <div className="at-srq-widget__head">
           <div className="flex items-center gap-3">
             <span
@@ -221,14 +218,8 @@ export default function ServiceRequestsWidget() {
           <div className="min-w-0">
             <p className="at-head__title-text">درخواست‌های خدمات</p>
             <p className="at-head__sub">
-              <span className="tabular-nums">
-                {pending.toLocaleString('fa-IR')}
-              </span>{' '}
-              در انتظار ·{' '}
-              <span className="tabular-nums">
-                {todayCount.toLocaleString('fa-IR')}
-              </span>{' '}
-              امروز
+              <span className="tabular-nums">{pending.toLocaleString('fa-IR')}</span> در انتظار ·{' '}
+              <span className="tabular-nums">{todayCount.toLocaleString('fa-IR')}</span> امروز
             </p>
           </div>
         </div>
@@ -272,9 +263,7 @@ export default function ServiceRequestsWidget() {
       {/* ----- Body list -------------------------------------------------- */}
       <div className="at-srq-widget__body">
         {requests.length === 0 ? (
-          <div className="at-srq-widget__empty">
-            درخواست در انتظاری وجود ندارد
-          </div>
+          <div className="at-srq-widget__empty">درخواست در انتظاری وجود ندارد</div>
         ) : (
           requests.map((request) => {
             const statusKey = request.status as keyof typeof statusClass;
@@ -299,9 +288,7 @@ export default function ServiceRequestsWidget() {
                   <span className="at-srq-widget__row-meta">
                     <span>{serviceTypeLabels[request.serviceType] ?? request.serviceType}</span>
                     <span aria-hidden>·</span>
-                    <span className="font-mono tracking-tight">
-                      {request.trackingCode}
-                    </span>
+                    <span className="font-mono tracking-tight">{request.trackingCode}</span>
                   </span>
                 </div>
                 <span className="at-srq-widget__row-amount">
@@ -312,13 +299,8 @@ export default function ServiceRequestsWidget() {
                     {request.currency}
                   </span>
                 </span>
-                <span
-                  className={`at-srq-widget__row-status ${statusModifier}`}
-                >
-                  <span
-                    className="at-srq-widget__row-status__dot"
-                    aria-hidden
-                  />
+                <span className={`at-srq-widget__row-status ${statusModifier}`}>
+                  <span className="at-srq-widget__row-status__dot" aria-hidden />
                   {statusLabel}
                 </span>
               </Link>
@@ -329,10 +311,7 @@ export default function ServiceRequestsWidget() {
 
       {/* ----- Footer ----------------------------------------------------- */}
       <div className="at-srq-widget__foot">
-        <Link
-          href="/dashboard/service-requests"
-          className="at-srq-widget__link"
-        >
+        <Link href="/dashboard/service-requests" className="at-srq-widget__link">
           مشاهده همه درخواست‌ها
           <HiOutlineArrowLeft className="w-3.5 h-3.5" />
         </Link>

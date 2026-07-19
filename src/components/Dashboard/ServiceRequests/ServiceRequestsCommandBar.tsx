@@ -20,8 +20,12 @@
  *   └──────────────────────────────────────────────────────────────┘
  */
 
-import { useEffect, useState, useTransition } from 'react';
+import { exportServiceRequestsCsv, getServiceRequestStats } from '@/actions/serviceRequestActions';
+import AtelierPulse from '@/components/Dashboard/DashboardPage/atelier/tiles/AtelierPulse';
+import { persianLongDate } from '@/components/Dashboard/DashboardPage/atelier/utils';
+import CountUp from '@/components/Dashboard/primitives/CountUp';
 import { motion } from '@/lib/motion-shim';
+import { useEffect, useState, useTransition } from 'react';
 import {
   HiOutlineArrowDownTray,
   HiOutlineArrowPath,
@@ -33,13 +37,6 @@ import {
   HiOutlineSparkles,
   HiOutlineXCircle,
 } from 'react-icons/hi2';
-import AtelierPulse from '@/components/Dashboard/DashboardPage/atelier/tiles/AtelierPulse';
-import CountUp from '@/components/Dashboard/primitives/CountUp';
-import {
-  exportServiceRequestsCsv,
-  getServiceRequestStats,
-} from '@/actions/serviceRequestActions';
-import { persianLongDate } from '@/components/Dashboard/DashboardPage/atelier/utils';
 
 interface Stats {
   total: number;
@@ -52,12 +49,7 @@ interface Stats {
   pendingUrgent: number;
 }
 
-export type StatusFilter =
-  | 'ALL'
-  | 'PENDING'
-  | 'IN_PROGRESS'
-  | 'COMPLETED'
-  | 'CANCELLED';
+export type StatusFilter = 'ALL' | 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 
 interface ServiceRequestsCommandBarProps {
   activeFilter: StatusFilter;
@@ -119,10 +111,10 @@ export default function ServiceRequestsCommandBar({
     });
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: refreshKey signal + loadStats is stable
   useEffect(() => {
     setNow(new Date());
     loadStats();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshKey]);
 
   const handleExport = () => {
@@ -146,15 +138,22 @@ export default function ServiceRequestsCommandBar({
   const pendingTotal = stats?.total ?? 1;
   const pendingRatio = stats ? stats.pending / Math.max(pendingTotal, 1) : 0;
   const closedTotal = (stats?.completed ?? 0) + (stats?.cancelled ?? 0);
-  const conversionRate = stats && pendingTotal - (stats?.cancelled ?? 0) > 0
-    ? Math.round((stats.completed / (pendingTotal - stats.cancelled)) * 100)
-    : 0;
+  const conversionRate =
+    stats && pendingTotal - (stats?.cancelled ?? 0) > 0
+      ? Math.round((stats.completed / (pendingTotal - stats.cancelled)) * 100)
+      : 0;
 
   return (
     <section className="at-tile at-srq-hero" aria-label="نوار فرماندهی درخواست‌ها">
       {/* Brand mark — eight-point star like the dashboard at-hero */}
       <div className="at-srq-hero__mark" aria-hidden>
-        <svg viewBox="0 0 200 200" className="at-srq-hero__mark-svg">
+        <svg
+          viewBox="0 0 200 200"
+          className="at-srq-hero__mark-svg"
+          role="presentation"
+          aria-hidden="true"
+        >
+          <title>{'decorative'}</title>
           <defs>
             <radialGradient id="at-srq-mark-grad" cx="50%" cy="50%" r="50%">
               <stop offset="0%" stopColor="var(--at-accent)" stopOpacity="0.16" />
@@ -179,9 +178,7 @@ export default function ServiceRequestsCommandBar({
                 <HiOutlineBolt className="w-3 h-3" aria-hidden />
                 <span>عملیات · {now ? persianLongDate(now) : persianLongDate()}</span>
               </span>
-              <span className="at-srq-hero__title">
-                مرکز عملیات درخواست‌ها
-              </span>
+              <span className="at-srq-hero__title">مرکز عملیات درخواست‌ها</span>
             </h2>
             <p className="at-head__sub">
               {stats
@@ -201,9 +198,7 @@ export default function ServiceRequestsCommandBar({
             className="at-head__btn"
             aria-label="به‌روزرسانی"
           >
-            <HiOutlineArrowPath
-              className={`w-3.5 h-3.5 ${isPending ? 'animate-spin' : ''}`}
-            />
+            <HiOutlineArrowPath className={`w-3.5 h-3.5 ${isPending ? 'animate-spin' : ''}`} />
             <span>به‌روزرسانی</span>
           </button>
           <button
@@ -239,9 +234,7 @@ export default function ServiceRequestsCommandBar({
             {stats && (
               <>
                 <span
-                  className={`at-hero__delta ${
-                    stats.pendingUrgent > 0 ? 'is-down' : 'is-flat'
-                  }`}
+                  className={`at-hero__delta ${stats.pendingUrgent > 0 ? 'is-down' : 'is-flat'}`}
                 >
                   {stats.pendingUrgent > 0 ? (
                     <>
@@ -259,17 +252,12 @@ export default function ServiceRequestsCommandBar({
                 </span>
                 <span aria-hidden>·</span>
                 <span>
-                  از{' '}
-                  <strong className="tabular-nums">
-                    {stats.total.toLocaleString('fa-IR')}
-                  </strong>{' '}
+                  از <strong className="tabular-nums">{stats.total.toLocaleString('fa-IR')}</strong>{' '}
                   کل درخواست‌ها
                 </span>
                 <span aria-hidden>·</span>
                 <span>
-                  <strong className="tabular-nums">
-                    {closedTotal.toLocaleString('fa-IR')}
-                  </strong>{' '}
+                  <strong className="tabular-nums">{closedTotal.toLocaleString('fa-IR')}</strong>{' '}
                   بسته شده
                 </span>
               </>
@@ -292,11 +280,7 @@ export default function ServiceRequestsCommandBar({
       {/* Divider + segmented filter */}
       <div className="at-srq-hero__divider" aria-hidden />
       <div className="at-srq-hero__filter">
-        <div
-          role="tablist"
-          aria-label="فیلتر وضعیت"
-          className="at-srq-hero__segmented"
-        >
+        <div role="tablist" aria-label="فیلتر وضعیت" className="at-srq-hero__segmented">
           {(Object.keys(STATUS_META) as Array<StatusFilter>).map((key) => {
             const meta = STATUS_META[key];
             const isActive = activeFilter === key;
