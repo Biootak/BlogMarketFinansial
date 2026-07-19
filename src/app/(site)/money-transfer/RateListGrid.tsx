@@ -10,11 +10,15 @@
  * - "Show more" expands cards in-place.
  *
  * 2026-07-05: rewritten — replaced blue-gradient header with flat title bar.
+ * 2026-07: liveRates prop — when DB has no active lists, show buy/sell items
+ *          from WebScraper (MarketRateItem[]) grouped by category.
  */
 
-import { useState } from 'react';
+import type { MarketRateItem } from '@/lib/market-rates';
+import { formatWithUnit } from '@/lib/market-rates/format';
 import { parseRateItem } from '@/lib/rateItem';
 import { ArrowRight, ChevronDown } from 'lucide-react';
+import { useState } from 'react';
 
 interface Rate {
   title: string;
@@ -31,6 +35,8 @@ interface RateList {
 
 interface Props {
   rateLists: RateList[];
+  /** آیتم‌های زنده از WebScraper — فقط وقتی rateLists خالی باشد نمایش داده می‌شود */
+  liveRates?: MarketRateItem[];
   initialCount?: number;
 }
 
@@ -48,11 +54,94 @@ const isSingleRateList = (rates: Rate[]) => {
   return !rates.some((rate) => String(rate.value).includes('|'));
 };
 
-export default function RateListGrid({ rateLists, initialCount = 9 }: Props) {
+/**
+ * تبدیل MarketRateItem[] به سه لیست جداگانه:
+ *   1. صرافی ملی (SANA_*) — خرید/فروش رسمی از tgju.org/sana
+ *   2. نرخ حواله (TRANSFER_*) — نرخ انتقال بین‌المللی از tgju.org/transfer
+ *   3. نرخ بانکی (BANK_*) — نرخ رسمی بانک از tgju.org/bank
+ *
+ * لیست اول و سوم: buy|sell pair — لیست دوم: تک‌نرخی
+ */
+function buildLiveRateLists(items: MarketRateItem[]): RateList[] {
+  const makePairRow = (r: MarketRateItem): Rate => ({
+    title: r.displayNameFa,
+    value: `${formatWithUnit((r.buyValue ?? 0) / r.divisor, r.unit, r.decimals)}|${formatWithUnit((r.sellValue ?? 0) / r.divisor, r.unit, r.decimals)}`,
+  });
+
+  const now = new Date();
+
+  // ۱. صرافی ملی — آیتم‌های SANA_ که هر دو buy+sell دارند
+  const sanaItems = items
+    .filter(
+      (r) =>
+        r.symbol.startsWith('SANA_') && r.buyValue != null && r.sellValue != null && r.value > 0,
+    )
+    .sort((a, b) => a.priority - b.priority);
+
+  // ۲. نرخ حواله — آیتم‌های TRANSFER_ (تک‌نرخی)
+  const transferItems = items
+    .filter((r) => r.symbol.startsWith('TRANSFER_') && Number.isFinite(r.value) && r.value > 0)
+    .sort((a, b) => a.priority - b.priority);
+
+  // ۳. نرخ بانکی — آیتم‌های BANK_ (تک‌نرخی رسمی)
+  const bankItems = items
+    .filter((r) => r.symbol.startsWith('BANK_') && Number.isFinite(r.value) && r.value > 0)
+    .sort((a, b) => a.priority - b.priority);
+
+  const lists: RateList[] = [];
+
+  if (sanaItems.length > 0) {
+    lists.push({
+      id: 'live-sana',
+      title: 'صرافی ملی',
+      isActive: true,
+      updatedAt: sanaItems[0]?.updatedAt ?? now,
+      rates: sanaItems.map(makePairRow),
+    });
+  }
+
+  if (transferItems.length > 0) {
+    lists.push({
+      id: 'live-transfer',
+      title: 'نرخ حواله',
+      isActive: true,
+      updatedAt: transferItems[0]?.updatedAt ?? now,
+      rates: transferItems.map((r) => ({
+        title: r.displayNameFa,
+        value: formatWithUnit(r.value, r.unit, r.decimals),
+      })),
+    });
+  }
+
+  if (bankItems.length > 0) {
+    lists.push({
+      id: 'live-bank',
+      title: 'سرای شاهزاده',
+      isActive: true,
+      updatedAt: bankItems[0]?.updatedAt ?? now,
+      rates: bankItems.map((r) => ({
+        title: r.displayNameFa,
+        value: formatWithUnit(r.value, r.unit, r.decimals),
+      })),
+    });
+  }
+
+  return lists;
+}
+
+export default function RateListGrid({ rateLists, liveRates, initialCount = 9 }: Props) {
   const [displayCount, setDisplayCount] = useState(initialCount);
   const [expandedCards, setExpandedCards] = useState<Record<string, number>>({});
 
-  const hasMore = displayCount < rateLists.length;
+  // اگه DB لیست فعال نداره، از داده‌های زنده با خرید/فروش استفاده کن
+  const effectiveLists =
+    rateLists.length > 0
+      ? rateLists
+      : liveRates && liveRates.length > 0
+        ? buildLiveRateLists(liveRates)
+        : [];
+
+  const hasMore = displayCount < effectiveLists.length;
   const perCardDefault = 6;
 
   const handleExpand = (rateListId: string, total: number) => {
@@ -62,7 +151,7 @@ export default function RateListGrid({ rateLists, initialCount = 9 }: Props) {
     }));
   };
 
-  if (rateLists.length === 0) {
+  if (effectiveLists.length === 0) {
     return (
       <div className="py-10 text-center text-sm text-slate-500 dark:text-slate-400">
         لیست نرخی برای نمایش موجود نیست.
@@ -80,7 +169,7 @@ export default function RateListGrid({ rateLists, initialCount = 9 }: Props) {
             : 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3'
       }`}
     >
-      {rateLists.slice(0, displayCount).map((list) => {
+      {effectiveLists.slice(0, displayCount).map((list) => {
         const isSingle = isSingleRateList(list.rates);
         const shown = expandedCards[list.id] || perCardDefault;
         const hasMoreRates = shown < list.rates.length;
@@ -126,9 +215,7 @@ export default function RateListGrid({ rateLists, initialCount = 9 }: Props) {
                           <span className="mt-card__rate-value mt-card__rate-value--buy tabular-nums text-sm">
                             {buy}
                           </span>
-                          <span className="text-slate-300 dark:text-slate-600">
-                            /
-                          </span>
+                          <span className="text-slate-300 dark:text-slate-600">/</span>
                           <span className="mt-card__rate-value mt-card__rate-value--sell tabular-nums text-sm">
                             {sell}
                           </span>
@@ -156,10 +243,7 @@ export default function RateListGrid({ rateLists, initialCount = 9 }: Props) {
                   <ChevronDown className="w-3 h-3" />
                 </button>
               ) : (
-                <a
-                  href={`/money-transfer?list=${list.id}#contact`}
-                  className="mt-card__action"
-                >
+                <a href={`/money-transfer?list=${list.id}#contact`} className="mt-card__action">
                   <span>درخواست</span>
                   <ArrowRight className="w-3 h-3" />
                 </a>
@@ -179,7 +263,7 @@ export default function RateListGrid({ rateLists, initialCount = 9 }: Props) {
           >
             <span>نمایش لیست‌های بیشتر</span>
             <span className="text-xs font-bold opacity-70">
-              +{rateLists.length - displayCount}
+              +{effectiveLists.length - displayCount}
             </span>
           </button>
         </div>

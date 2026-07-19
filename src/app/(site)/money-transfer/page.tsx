@@ -165,7 +165,7 @@ export default async function MoneyTransferPage() {
         {/* Rate Lists Section */}
         <ScrollReveal>
           <section className="mt-section">
-            <RateListGrid rateLists={activeRateLists} initialCount={10} />
+            <RateListGrid rateLists={activeRateLists} liveRates={market.items} initialCount={10} />
           </section>
         </ScrollReveal>
 

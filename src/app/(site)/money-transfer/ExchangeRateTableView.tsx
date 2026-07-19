@@ -136,7 +136,6 @@ export function ExchangeRateTableView({ rates }: Props) {
           {displayed.map((rate) => {
             const isUp = rate.changePercent >= 0;
             const changeFmt = formatChangePercent(rate.changePercent);
-            const hasTwoSided = rate.buyValue != null && rate.sellValue != null;
 
             return (
               <div key={rate.symbol} className="mt-table__row">
@@ -160,14 +159,6 @@ export function ExchangeRateTableView({ rates }: Props) {
                   <span className="mt-table__price-val" dir="ltr">
                     {formatWithUnit(rate.value, rate.unit, rate.decimals)}
                   </span>
-                  {/* برای دوطرفه: خرید و فروش زیر نرخ اصلی */}
-                  {hasTwoSided && rate.buyValue != null && rate.sellValue != null && (
-                    <span className="text-[10px] opacity-60 tabular-nums" dir="ltr">
-                      خ: {formatWithUnit(rate.buyValue / rate.divisor, rate.unit, rate.decimals)}
-                      {' · '}
-                      ف: {formatWithUnit(rate.sellValue / rate.divisor, rate.unit, rate.decimals)}
-                    </span>
-                  )}
                 </div>
 
                 {/* Change percent — واقعی از TGJU */}
