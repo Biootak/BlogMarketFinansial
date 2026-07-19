@@ -36,6 +36,7 @@ import {
   Lock,
 } from 'lucide-react';
 import { useDirection } from '@/hooks/useDirection';
+import { CurrencySelect } from '@/components/ui/CurrencySelect';
 import styles from './HeroConverter.module.css';
 import {
   buildHeroPairs,
@@ -161,6 +162,12 @@ export default function HeroConverter({
 
   const fromPair = filteredPairs.find((p) => p.id === fromId) ?? null;
   const toPair = filteredPairs.find((p) => p.id === toId) ?? null;
+
+  // Map pairs → CurrencyItem for CurrencySelect
+  const currencyItems = useMemo(
+    () => filteredPairs.map((p) => ({ value: p.id, code: p.code, label: p.name })),
+    [filteredPairs],
+  );
 
   // ===========================================================================
   // CONVERSION — pivot تومان
@@ -434,11 +441,12 @@ export default function HeroConverter({
                       autoComplete="off"
                       dir="ltr"
                     />
-                    <CurrencyPicker
+                    <CurrencySelect
                       value={fromId}
-                      pairs={filteredPairs}
+                      items={currencyItems}
                       onChange={setFromId}
                       ariaLabel="ارز مبدا"
+                      size="compact"
                     />
                   </div>
                   {/* presets */}
@@ -497,11 +505,12 @@ export default function HeroConverter({
                     <span className={styles.resultUnit}>{toPair?.code ?? '—'}</span>
                   </span>
                   <div className={styles.resultFoot}>
-                    <CurrencyPicker
+                    <CurrencySelect
                       value={toId}
-                      pairs={filteredPairs}
+                      items={currencyItems}
                       onChange={setToId}
                       ariaLabel="ارز مقصد"
+                      size="compact"
                     />
                   </div>
                 </div>
@@ -609,66 +618,6 @@ export default function HeroConverter({
           </div>
         </div>
       </section>
-  );
-}
-
-// ----------------------------------------------------------------------------
-// CurrencyPicker — native <select> with code chip overlay.
-// استفاده از native select به جای custom dropdown:
-//   - keyboard / screen reader accessibility built-in
-//   - iOS/Android OS picker ux بهتر از listbox flat
-//   - size کوچک‌تر بدون نیاز به popper/trap focus
-// ----------------------------------------------------------------------------
-interface CurrencyPickerProps {
-  value: string;
-  pairs: HeroPair[];
-  onChange: (next: string) => void;
-  ariaLabel: string;
-}
-
-function CurrencyPicker({
-  value,
-  pairs,
-  onChange,
-  ariaLabel,
-}: CurrencyPickerProps) {
-  const selected = pairs.find((p) => p.id === value);
-  return (
-    <div className="mt-calc__picker">
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="mt-calc__picker-select"
-        aria-label={ariaLabel}
-      >
-        {pairs.map((p) => (
-          // M5-fix 2026-07: نام فارسی اول — خواناتر در native picker موبایل
-          <option key={p.id} value={p.id}>
-            {p.name} ({p.code})
-          </option>
-        ))}
-      </select>
-      <span className="mt-calc__picker-flag" aria-hidden>
-        <span className="mt-calc__picker-flag-code">
-          {selected?.code ?? '•••'}
-        </span>
-        <svg
-          className="mt-calc__picker-caret"
-          viewBox="0 0 12 12"
-          fill="none"
-          aria-hidden="true"
-          role="presentation"
-        >
-          <path
-            d="M3 4.5L6 7.5L9 4.5"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </span>
-    </div>
   );
 }
 

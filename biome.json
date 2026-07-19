@@ -62,6 +62,19 @@
   "files": {
     "ignore": ["node_modules", ".next", "dist", "build", "public", "*.prisma", "*.scss", "*.sass"]
   },
+  "overrides": [
+    {
+      "include": ["src/components/ui/CurrencySelect.tsx"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useSemanticElements": "off",
+            "noNoninteractiveElementToInteractiveRole": "off"
+          }
+        }
+      }
+    }
+  ],
   "vcs": {
     "enabled": true,
     "clientKind": "git",

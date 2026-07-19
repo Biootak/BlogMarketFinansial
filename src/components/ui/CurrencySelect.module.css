@@ -1,0 +1,275 @@
+/*
+ * CurrencySelect.module.css
+ * Shared premium currency dropdown — used across the entire site.
+ * Tokens only. Logical properties. RTL-first.
+ * Craft bar §3.6: depth, spring motion, hierarchy, restraint.
+ */
+
+/* ── Wrapper ────────────────────────────────────────────── */
+.wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* ── Trigger ────────────────────────────────────────────── */
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  border: 1.5px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-surface);
+  color: var(--ds-text-primary);
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    border-color 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    background 150ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 140ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  white-space: nowrap;
+  outline: none;
+  position: relative;
+}
+
+/* Size: compact (inside calculator chip) */
+.trigger[data-size="compact"] {
+  height: 2.25rem;
+  padding-inline: var(--ds-space-3);
+  border-radius: var(--ds-radius-md);
+  background: oklch(60% 0.15 165);
+  border-color: transparent;
+  color: oklch(98% 0 0);
+}
+
+/* Size: default (standalone form field) */
+.trigger[data-size="default"] {
+  height: 2.875rem;
+  padding-inline: var(--ds-space-4);
+}
+
+/* Size: wide (shows full currency name) */
+.trigger[data-size="wide"] {
+  height: 2.875rem;
+  padding-inline: var(--ds-space-4);
+  min-inline-size: 9rem;
+}
+
+.trigger:hover {
+  border-color: var(--ds-border-strong);
+  background: var(--ds-surface-elevated);
+}
+
+.trigger[data-size="compact"]:hover {
+  background: oklch(58% 0.16 165);
+  border-color: transparent;
+}
+
+.trigger[data-open="true"],
+.trigger:focus-visible {
+  border-color: var(--ds-brand-500);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 18%, transparent);
+}
+
+.trigger[data-size="compact"][data-open="true"],
+.trigger[data-size="compact"]:focus-visible {
+  border-color: transparent;
+  box-shadow: 0 0 0 3px oklch(60% 0.15 165 / 0.35);
+}
+
+/* Spring press */
+.trigger:active {
+  transform: scale(0.97);
+}
+
+/* ── Code badge inside trigger ──────────────────────────── */
+.code {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+  min-inline-size: 2.4ch;
+  text-align: start;
+}
+
+/* ── Currency name inside trigger (wide mode) ────────────── */
+.name {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ds-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-inline-size: 8rem;
+}
+
+/* ── Chevron ─────────────────────────────────────────────── */
+.chevron {
+  color: inherit;
+  opacity: 0.7;
+  flex-shrink: 0;
+  transition: transform 240ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.trigger[data-size="compact"] .chevron {
+  opacity: 0.85;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+/* ── Dropdown panel ─────────────────────────────────────── */
+.panel {
+  position: absolute;
+  inset-block-start: calc(100% + 6px);
+  inset-inline-end: 0;
+  min-inline-size: 15rem;
+  max-inline-size: 22rem;
+  max-block-size: 21rem;
+  overflow: hidden;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-xl);
+  box-shadow:
+    0 0 0 1px var(--ds-border-subtle),
+    0 4px 8px -2px oklch(0% 0 0 / 0.06),
+    0 16px 40px -8px oklch(0% 0 0 / 0.14);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  animation: panelIn 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Search ──────────────────────────────────────────────── */
+.search {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-block-end: 1px solid var(--ds-border-subtle);
+  flex-shrink: 0;
+}
+
+.searchIcon {
+  color: var(--ds-text-muted);
+  flex-shrink: 0;
+}
+
+.searchInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-primary);
+  line-height: 1.4;
+  min-inline-size: 0;
+}
+
+.searchInput::placeholder {
+  color: var(--ds-text-muted);
+  font-weight: 400;
+}
+
+/* ── Scrollable list ─────────────────────────────────────── */
+.list {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  flex: 1;
+  padding: var(--ds-space-2) 0;
+  list-style: none;
+  margin: 0;
+}
+
+/* ── Group label ─────────────────────────────────────────── */
+.groupLabel {
+  padding: var(--ds-space-2) var(--ds-space-4) var(--ds-space-1);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ds-text-muted);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Option row ──────────────────────────────────────────── */
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-2) var(--ds-space-4);
+  cursor: pointer;
+  transition: background 120ms;
+  outline: none;
+}
+
+.option:hover,
+.option:focus-visible {
+  background: var(--ds-surface-elevated);
+}
+
+.optionSelected {
+  background: color-mix(in oklch, var(--ds-brand-500) 8%, transparent);
+}
+
+.optionSelected:hover,
+.optionSelected:focus-visible {
+  background: color-mix(in oklch, var(--ds-brand-500) 13%, transparent);
+}
+
+/* ── Code badge inside option ───────────────────────────── */
+.optBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 2rem;
+  block-size: 1.625rem;
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-surface-elevated);
+  border: 1px solid var(--ds-border-subtle);
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--ds-brand-600);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+/* ── Option label ────────────────────────────────────────── */
+.optLabel {
+  flex: 1;
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-primary);
+  line-height: 1.3;
+  text-align: start;
+}
+
+/* ── Check mark ──────────────────────────────────────────── */
+.optCheck {
+  color: var(--ds-brand-600);
+  flex-shrink: 0;
+}
+
+/* ── Empty state ─────────────────────────────────────────── */
+.empty {
+  padding: var(--ds-space-6) var(--ds-space-4);
+  text-align: center;
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-muted);
+}

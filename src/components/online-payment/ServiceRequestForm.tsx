@@ -18,7 +18,8 @@
  *  - Auto-expanding textarea
  */
 
-import { type FC, useState, useCallback, useMemo, useEffect, useRef, useId } from 'react';
+import { type FC, useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { CurrencySelect, type CurrencyGroup } from '@/components/ui/CurrencySelect';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -40,7 +41,6 @@ import {
   Mail,
   KeyRound,
   RotateCcw,
-  ChevronDown,
   UserPlus,
 } from 'lucide-react';
 import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
@@ -454,9 +454,12 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
                     aria-label="مبلغ"
                   />
                 </div>
-                <CurrencyPicker
+                <CurrencySelect
                   value={selectedCurrency}
+                  groups={CURRENCY_SELECT_GROUPS}
                   onChange={(v) => setValue('currency', v, { shouldValidate: false })}
+                  ariaLabel="ارز انتخابی"
+                  size="default"
                 />
               </div>
 
@@ -1005,139 +1008,30 @@ function ConditionalSection({
   );
 }
 
-// ─── Currency groups for CurrencyPicker ───────────────────────────────────── //
-const CURRENCY_GROUPS: { label: string; items: CurrencyOption[] }[] = [
+// ─── Currency groups for CurrencySelect ───────────────────────────────────── //
+const CURRENCY_SELECT_GROUPS: CurrencyGroup[] = [
   {
     label: 'ارزهای منطقه‌ای',
-    items: CURRENCIES.filter((c) =>
-      ['AFN', 'USD', 'AED', 'PKR', 'IRR', 'TRY'].includes(c.value),
-    ),
+    items: CURRENCIES
+      .filter((c) => ['AFN', 'USD', 'AED', 'PKR', 'IRR', 'TRY'].includes(c.value))
+      .map((c) => ({ value: c.value, code: c.value, label: c.label })),
   },
   {
     label: 'ارزهای بین‌المللی',
-    items: CURRENCIES.filter(
-      (c) =>
-        c.type === 'fiat' &&
-        !['AFN', 'USD', 'AED', 'PKR', 'IRR', 'TRY', 'OTHER'].includes(c.value),
-    ),
+    items: CURRENCIES
+      .filter((c) => c.type === 'fiat' && !['AFN', 'USD', 'AED', 'PKR', 'IRR', 'TRY', 'OTHER'].includes(c.value))
+      .map((c) => ({ value: c.value, code: c.value, label: c.label })),
   },
   {
     label: 'رمزارز',
-    items: CURRENCIES.filter((c) => c.type === 'crypto'),
+    items: CURRENCIES
+      .filter((c) => c.type === 'crypto')
+      .map((c) => ({ value: c.value, code: c.value, label: c.label })),
   },
   {
     label: 'سایر',
-    items: CURRENCIES.filter((c) => c.value === 'OTHER'),
+    items: CURRENCIES
+      .filter((c) => c.value === 'OTHER')
+      .map((c) => ({ value: c.value, code: c.value, label: c.label })),
   },
 ];
-
-// ─── CurrencyPicker — Wise-grade custom dropdown ──────────────────────────── //
-function CurrencyPicker({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  const [open, setOpen]   = useState(false);
-  const wrapRef           = useRef<HTMLDivElement>(null);
-  const listRef           = useRef<HTMLUListElement>(null);
-  const triggerId         = useId();
-  const listId            = useId();
-
-  const selected = useMemo(
-    () => CURRENCIES.find((c) => c.value === value) ?? CURRENCIES[0],
-    [value],
-  );
-
-  // Close on outside click
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [open]);
-
-  // Close on Escape; arrow-key navigation
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') { setOpen(false); return; }
-    if (!open && (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown')) {
-      e.preventDefault(); setOpen(true); return;
-    }
-    if (open && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
-      e.preventDefault();
-      const items = listRef.current?.querySelectorAll<HTMLLIElement>('[role="option"]');
-      if (!items) return;
-      const arr   = Array.from(items);
-      const focus = document.activeElement as HTMLElement;
-      const idx   = arr.indexOf(focus as HTMLLIElement);
-      const next  = e.key === 'ArrowDown' ? Math.min(idx + 1, arr.length - 1) : Math.max(idx - 1, 0);
-      (arr[next] as HTMLElement).focus();
-    }
-  };
-
-  const pick = (v: string) => { onChange(v); setOpen(false); };
-
-  return (
-    <div
-      ref={wrapRef}
-      className={s.cpWrap}
-      onKeyDown={handleKeyDown}
-    >
-      {/* Trigger */}
-      <button
-        id={triggerId}
-        type="button"
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-controls={listId}
-        aria-label={`ارز انتخابی: ${selected.label}`}
-        className={`${s.cpTrigger} ${open ? s.cpTriggerOpen : ''}`}
-        onClick={() => setOpen((p) => !p)}
-      >
-        <span className={s.cpSymbol} dir="ltr">{selected.value}</span>
-        <ChevronDown size={14} className={`${s.cpChevron} ${open ? s.cpChevronOpen : ''}`} aria-hidden="true" />
-      </button>
-
-      {/* Dropdown list */}
-      {open && (
-        <ul
-          id={listId}
-          ref={listRef}
-          role="listbox"
-          aria-labelledby={triggerId}
-          aria-activedescendant={`cp-opt-${value}`}
-          className={s.cpList}
-        >
-          {CURRENCY_GROUPS.map((group) => (
-            <li key={group.label} role="presentation">
-              <div className={s.cpGroupLabel}>{group.label}</div>
-              <ul role="group" aria-label={group.label} style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                {group.items.map((c) => (
-                  <li
-                    key={c.value}
-                    id={`cp-opt-${c.value}`}
-                    role="option"
-                    aria-selected={c.value === value}
-                    tabIndex={0}
-                    className={`${s.cpOption} ${c.value === value ? s.cpOptionSelected : ''}`}
-                    onClick={() => pick(c.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(c.value); } }}
-                  >
-                    <span className={s.cpOptSymbol} dir="ltr">{c.value}</span>
-                    <span className={s.cpOptLabel}>{c.label}</span>
-                    {c.value === value && <Check size={13} className={s.cpOptCheck} aria-hidden="true" />}
-                  </li>
-                ))}
-              </ul>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
