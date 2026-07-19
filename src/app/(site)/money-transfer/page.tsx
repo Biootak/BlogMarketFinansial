@@ -7,6 +7,7 @@ import {
   type HeroPair,
   buildCryptoPairs,
   buildHeroPairs,
+  buildSarafiPairs,
   computeSpreadStats,
   formatFaNumber,
 } from '@/lib/money-transfer/hero';
@@ -92,13 +93,16 @@ async function loadMarketRates(): Promise<{
 // Async server-side pre-computation of the stats the hero depends on. Doing
 // this here (and not inside the client component) keeps the client bundle
 // smaller and avoids redundant work on every render.
-async function buildHeroInitial(rates: ExchangeRateData[]): Promise<HeroInitial> {
+async function buildHeroInitial(
+  rates: ExchangeRateData[],
+  marketItems: MarketRateItem[],
+): Promise<HeroInitial> {
   const [providers, cryptoResult] = await Promise.all([
     loadActiveTransferProviders(),
     fetchCryptoTickerRates(),
   ]);
 
-  // ارزهای صرافی (forex + afghan) از DB/TGJU
+  // ارزهای forex+minor از DB/TGJU (تومان-based)
   const fiatPairs = buildHeroPairs(rates);
 
   // ارزهای دیجیتال از Exir — pivot: USDT/تومان
@@ -108,7 +112,10 @@ async function buildHeroInitial(rates: ExchangeRateData[]): Promise<HeroInitial>
     ? buildCryptoPairs(cryptoResult.data, usdtToman)
     : [];
 
-  const pairs = [...fiatPairs, ...cryptoPairs];
+  // ارزهای سرای شاهزاده (sarafi.af) — تب افغانی، واحد AFN
+  const sarafiPairs = buildSarafiPairs(marketItems);
+
+  const pairs = [...fiatPairs, ...cryptoPairs, ...sarafiPairs];
   const spreadStats = computeSpreadStats(pairs);
 
   // «بهترین» provider بر مبنای کمترین spread.
@@ -131,7 +138,7 @@ async function buildHeroInitial(rates: ExchangeRateData[]): Promise<HeroInitial>
 // opts the whole (site) tree out of static generation (see (home)/page.tsx).
 export default async function MoneyTransferPage() {
   const [market, rateLists] = await Promise.all([loadMarketRates(), getRateLists()]);
-  const hero = await buildHeroInitial(market.rates);
+  const hero = await buildHeroInitial(market.rates, market.items);
   const activeRateLists = rateLists.filter((list) => list.isActive);
 
   return (

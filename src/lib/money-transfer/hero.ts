@@ -16,6 +16,7 @@
  * ----------------------------------------------------------------------------
  */
 
+import type { MarketRateItem } from '@/lib/market-rates/types';
 import type { CryptoTickerRate, ExchangeRateData } from '@/types/types';
 
 export type HeroCategory = 'forex' | 'afghan' | 'gold' | 'crypto';
@@ -115,9 +116,10 @@ export function buildHeroPairs(rates: ExchangeRateData[]): HeroPair[] {
 
     let category: HeroCategory | null = null;
     // minor group هم به forex اضافه شد (2026-07) تا JPY, RUB, INR, PKR, SAR, ... در calculator باشند
+    // AFGHANI_USD (دلار هرات با pivot تومان) هم به forex می‌رود تا کنار سایر ارزهای تومانی باشد
     if (group === 'iran-forex' || group === 'minor') category = 'forex';
-    else if (group === 'afghan' && !sym.startsWith('SARA_')) category = 'afghan';
-    // gold/coin: حذف از calculator — فقط در ExchangeRateTableView نمایش می‌یابد
+    else if (group === 'afghan' && (sym === 'AFGHANI_USD' || sym === 'AFGHANI_AFN')) category = 'forex';
+    // SARA_* از buildSarafiPairs جداگانه می‌آیند (unit=afn، تب افغانی)
     else continue;
 
     const divisor = r.divisor && r.divisor > 0 ? r.divisor : 1;
@@ -226,6 +228,59 @@ export function computeSpreadStats(pairs: HeroPair[]): SpreadStat {
     highest,
     average: sum / spreads.length,
   };
+}
+
+/**
+ * تبدیل MarketRateItem[] (SARA_* از sarafi.af) به HeroPair[] برای تب افغانی.
+ *
+ * واحد: AFN (افغانی). هر دو طرف buy/sell به AFN هستند.
+ * pivot تبدیل = AFN (نه IRT) — فرمول convertViaIRT یکسان است چون
+ * هر دو from و to از یک منبع (AFN) می‌آیند.
+ *
+ * نمایش نتیجه: «۱ USD = X AFN» — مستقیم از سرای شاهزاده.
+ */
+export function buildSarafiPairs(marketItems: MarketRateItem[]): HeroPair[] {
+  const pairs: HeroPair[] = [];
+
+  for (const r of marketItems) {
+    if (!r.symbol.startsWith('SARA_')) continue;
+    // buy/sell باید موجود باشند (سرای شاهزاده همیشه هر دو را می‌دهد)
+    if (r.buyValue == null || r.sellValue == null) continue;
+    if (!Number.isFinite(r.buyValue) || !Number.isFinite(r.sellValue)) continue;
+    if (r.buyValue <= 0 || r.sellValue <= 0) continue;
+
+    const code = r.symbol.replace('SARA_', '');
+    // نرخ‌ها raw هستند — اگر divisor دارد تقسیم می‌کنیم
+    const divisor = r.divisor > 0 ? r.divisor : 1;
+    const buy = r.buyValue / divisor;
+    const sell = r.sellValue / divisor;
+
+    pairs.push({
+      id: `sara-${code}`,
+      code,
+      fullCode: r.symbol,
+      name: r.displayNameFa,
+      category: 'afghan',
+      buy,
+      sell,
+      updatedAt: r.updatedAt,
+      unit: 'afn',
+      decimals: r.decimals,
+    });
+  }
+
+  // ترتیب: USD, EUR, AED اول — بقیه alphabetical
+  const priority = ['USD', 'EUR', 'AED', 'GBP', 'SAR', 'TRY', 'CNY', 'CAD', 'AUD'];
+  pairs.sort((a, b) => {
+    const ai = priority.indexOf(a.code);
+    const bi = priority.indexOf(b.code);
+    if (ai >= 0 && bi >= 0) return ai - bi;
+    if (ai >= 0) return -1;
+    if (bi >= 0) return 1;
+    return a.code.localeCompare(b.code);
+  });
+
+  return pairs;
 }
 
 /**

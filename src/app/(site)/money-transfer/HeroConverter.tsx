@@ -82,15 +82,16 @@ interface CategoryMeta {
 }
 
 const CATEGORIES: readonly CategoryMeta[] = [
-  { id: 'forex',  label: 'ارز',     icon: Wallet,  enabled: true },
-  { id: 'afghan', label: 'افغانی',  icon: Coins,   enabled: true },
-  { id: 'crypto', label: 'رمزارز',  icon: Bitcoin, enabled: true },
+  { id: 'forex',  label: 'ارز',              icon: Wallet,  enabled: true },
+  { id: 'afghan', label: 'صراف افغانستان',  icon: Coins,   enabled: true },
+  { id: 'crypto', label: 'رمزارز',           icon: Bitcoin, enabled: true },
 ];
 
 // presets مبلغ — dynamic بر اساس دسته‌ی انتخاب‌شده
+// تب افغانی: واحد AFN — مبالغ معمول صراف کابل
 const PRESETS_BY_CATEGORY: Record<CategoryId, readonly number[]> = {
   forex:  [100, 500, 1_000, 5_000, 10_000],
-  afghan: [1_000, 5_000, 10_000, 50_000, 100_000],
+  afghan: [100, 500, 1_000, 5_000, 10_000],
   crypto: [10, 50, 100, 500, 1_000],
 };
 
@@ -136,22 +137,27 @@ export default function HeroConverter({
     }
     // اطمینان از این‌که selection هنوز در filteredPairs است
     if (!filteredPairs.some((p) => p.id === fromId)) {
-      // default مبدا: USD برای forex، AFN/اوّلین برای افغانی
+      // default مبدا: USD برای همه دسته‌ها
       const preferredFrom =
         filteredPairs.find((p) => p.code === 'USD') ?? filteredPairs[0];
       setFromId(preferredFrom.id);
     }
     if (!filteredPairs.some((p) => p.id === toId)) {
-      // B3-fix 2026-07: IRT هرگز در HeroPairs نیست (extractShortCode آن را حذف می‌کند).
-      // default مقصد: AED (خاورمیانه) → EUR → دومین → اوّلین
+      // تب افغانی: مقصد default = AFN (افغانی — واحد اصلی بازار کابل)
+      // تب forex/crypto: AED → EUR → دومین
       const preferredTo =
-        filteredPairs.find((p) => p.code === 'AED') ??
-        filteredPairs.find((p) => p.code === 'EUR') ??
-        filteredPairs[1] ??
-        filteredPairs[0];
+        category === 'afghan'
+          ? (filteredPairs.find((p) => p.code === 'AFN') ??
+             filteredPairs.find((p) => p.code === 'USD') ??
+             filteredPairs[1] ??
+             filteredPairs[0])
+          : (filteredPairs.find((p) => p.code === 'AED') ??
+             filteredPairs.find((p) => p.code === 'EUR') ??
+             filteredPairs[1] ??
+             filteredPairs[0]);
       setToId(preferredTo.id);
     }
-  }, [filteredPairs, fromId, toId]);
+  }, [filteredPairs, fromId, toId, category]);
 
   const fromPair = filteredPairs.find((p) => p.id === fromId) ?? null;
   const toPair = filteredPairs.find((p) => p.id === toId) ?? null;
