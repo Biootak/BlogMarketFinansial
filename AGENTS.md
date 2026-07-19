@@ -71,6 +71,8 @@ Only write a brief analysis (not a long plan) for: DB / migration / auth / secur
 
 > **⛔ قانون COMPLETE ANSWERS — learned 2026-07-09:** هر سطر جدول باید پاسخ **کامل و واقعی** داشته باشد. نوشتن «بررسی می‌شود»، «باید grep شود»، یا هر placeholder دیگر = نقض مستقیم. این جدول باید **بعد از تحقیق واقعی** نوشته شود، نه قبل از آن. اگر هنوز grep نکردی، اول grep کن، بعد جدول را پر کن.
 
+> **⛔ قانون UI-DESIGN GATE — learned 2026-07-28:** برای هر تسک UI/بصری، دو ردیف آخر جدول (`🎨 UI Design Check` و `🏗️ Component Map`) **اجباری** هستند و باید **قبل از نوشتن اولین خط کد** پر شوند — نه بعد از آن. «UIDQG را بعد اجرا می‌کنم» = نقض مستقیم. ترتیب صحیح: **۱. UQ1–UQ22 را مرور کن → ۲. component map را بساز → ۳. بعد کد بنویس → ۴. قبل از Show دوباره UIDQG کامل اجرا کن.**
+
 هر تسک غیر-trivial باید این جدول را در پیام داشته باشد (قبل از کد):
 
 ```
@@ -88,16 +90,21 @@ Only write a brief analysis (not a long plan) for: DB / migration / auth / secur
 | 🗄️ DB | آیا schema/migration لازم است؟ | [پاسخ کامل با rollback plan] |
 | 🧩 Integration | آیا با بخش‌های دیگر پروژه هماهنگ است؟ | [grep callers، sidebar، nav، sitemap] |
 | 💡 Better way? | آیا راهکار بهتری وجود داشت؟ | [اگر بله → همین لحظه به کاربر بگو] |
+| 🎨 UI Design Check | (فقط تسک UI) آیا UQ1–UQ22 مرور شد؟ کدام UQ ها ریسک دارند؟ | [N/A اگر تسک UI نیست — وگرنه: UQ ریسک‌دار فهرست شود] |
+| 🏗️ Component Map | (فقط تسک UI) component map پر شده؟ | [N/A اگر تسک UI نیست — وگرنه: \| element \| existing impl \| decision \|] |
 ```
 
 > **⚠️ قانون «راهکار بهتر» — learned 2026-07-09:** اگر در ردیف «Better way?» پاسخ «بله» است، **قبل از نوشتن اولین خط کد** باید به کاربر گفته شود و تأیید گرفته شود. ساکت پیش رفتن = نقض مستقیم Directive 0.
 
+> **⚠️ قانون UI-DESIGN GATE — learned 2026-07-28:** ردیف‌های `🎨 UI Design Check` و `🏗️ Component Map` فقط برای تسک‌های UI اجباری هستند. برای تسک‌های pure backend/DB → صریح بنویس `N/A`. «بعداً چک می‌کنم» = نقض مستقیم. هدف: ریسک‌های طراحی را **قبل از نوشتن کد** شناسایی کن، نه بعد از آن.
+
 **ترتیب اجباری (قبل از کد):**
 1. ابزارهای grep/read_file را اجرا کن
 2. داک‌های رسمی/اینترنت را چک کن
-3. جدول را با پاسخ‌های واقعی پر کن — هیچ placeholder مجاز نیست
-4. اگر «راهکار بهتر» وجود دارد → به کاربر بگو و تأیید بگیر
-5. بعد اولین tool call کدنویسی را بزن
+3. اگر تسک UI است → UQ1–UQ22 را سریع مرور کن، ریسک‌ها را یادداشت کن
+4. جدول را با پاسخ‌های واقعی پر کن — هیچ placeholder مجاز نیست
+5. اگر «راهکار بهتر» وجود دارد → به کاربر بگو و تأیید بگیر
+6. بعد اولین tool call کدنویسی را بزن
 
 اگر تسک trivial (یک‌خطی) است → صریح بنویس: `PRE-CODE GATE: N/A — [دلیل]`
 
@@ -111,7 +118,12 @@ Only write a brief analysis (not a long plan) for: DB / migration / auth / secur
 2. **به انگلیسی فکر کن، از منابع خارجی تحقیق کن** (internet-first). فارسی فقط در متن کاربر‑محور.
 3. **Build → `npm run verify` → Show.** تسک تا وقتی `npm run verify` سبز نشده «تمام» نیست (tsc + biome + اسکن آنتی‌پترن).
 4. **اگر verify قرمز شد، تا سبز شدن درستش کن.** هرگز با چک قرمز «تمام» نگو.
-5. **CRAFT GATE (اجباری — سقف، نه کف):** خروجی باید استاندارد «بیلیون‌دلاری» را در `DESIGN.md §Craft & Composition` + `AGENTS.ui-design.md` رد کند. این سایت محصول فین‌تک در کلاس Stripe/Wise/Linear/Vercel است — «درسته ولی معمولی/کسل‌کننده/بی‌هویت» یک **شکست** است، نه یک خروجیِ ایمن. عبور از دروازه فقط با tsc نیست؛ با سطح کرفت است. قبل از اعلام پایان، چک‌لیست کرفت (Directives §3.6) را یک‌به‌یک رد کن و در پیامت ثابت کن که عبور کرده‌ای.
+5. **CRAFT GATE (اجباری — سقف، نه کف):** خروجی باید استاندارد «بیلیون‌دلاری» را در `DESIGN.md §Craft & Composition` + `AGENTS.ui-design.md` رد کند. این سایت محصول فین‌تک در کلاس Stripe/Wise/Linear/Vercel است — «درسته ولی معمولی/کسل‌کننده/بی‌هویت» یک **شکست** است، نه یک خروجیِ ایمن. عبور از دروازه فقط با tsc نیست؛ با سطح کرفت است. قبل از اعلام پایان، **UIDQG (§UI Design Quality Gate) را اجرا کن** — هر ❌ = همان لحظه fix کن.
+5.5. **UIDQG GATE — دو مرحله‌ای (اجباری — هر تسک UI):**
+  - **مرحله اول (قبل از کد — در PRE-CODE GATE):** ردیف‌های `🎨 UI Design Check` + `🏗️ Component Map` را پر کن. UQ ریسک‌دار را شناسایی کن. این مرحله در PRE-CODE GATE جدول اجباری است.
+  - **مرحله دوم (قبل از Show/Done):** UIDQG کامل (UQ1–UQ22) را اجرا کن و نتیجه را به صورت visible بنویس. هر ❌ = همان لحظه fix کن.
+  - **⛔ «یک‌بار آخر چک می‌کنم» = نقض مستقیم.** چک باید دو بار باشد: یک‌بار قبل از کد، یک‌بار قبل از Show.
+  - ر.ک §UIDQG برای فرمت کامل.
 6. **Definition of Done** (پایین) را یک‌به‌یک چک کن پیش از اعلام پایان.
 7. **🔁 Task Completion Loop** — قبل از اعلام «تمام»، چک‌لیست `§Task Completion Loop` را اجرا کن. اگر هر آیتم ناقص بود، **همان لحظه fix کن و ادامه بده — متوقف نشو.** فقط وقتی همه ۹ آیتم سبز شدند، «تمام» بگو.
 8. **🛡️ 19DQG — Nineteen-Dimension Quality Gate** — آخرین دروازه قبل از «تمام». ۱۹ بُعد: [D1] کد نوشته شد · [D2] وابستگی‌ها · [D3] امنیت · [D4] sync front/back · [D5] قوانین پروژه · [D6] کامل/clean · [D7] internet-first · [D8] یکپارچگی · [D9] best practice 2026 · [D10] performance · [D11] a11y · [D12] responsive/dark · [D13] UI craft · [D14] DB safety · [D15] cleanup/observability · [D16] هر خطا fix شد · [D17] reuse-first · [D18] dated websearch+AGENTS patch · **[D19] بخش‌های دیگر پروژه آپدیت شدند**. هر [ ] باقی ماند → fix → از D1 شروع کن.
@@ -214,12 +226,215 @@ When the task is explicitly a redesign / restyle / "test the redesign":
 - این مورد بخشی از **Craft Bar (§3.6)** است: خروجی که بزرگ/نزدیک (حس ۱۲۵٪) است حتی با تکنیک‌های درست، **شکست** محسوب می‌شود.
 
 ### Workflow: Build a UI screen (repeatable)
+0. **⛔ UIDQG Pre-scan (قبل از هر چیز — اجباری):** UQ1–UQ22 را سریع مرور کن. کدام سؤال‌ها برای این تسک ریسک دارند؟ پاسخ را در PRE-CODE GATE ردیف `🎨 UI Design Check` بنویس. این گام قبل از grep و قبل از کد است.
 1. **Audit** existing components for the elements you need (grep `COMPONENTS.md` + repo).
-2. **Map** elements → existing component → decision (reuse/extend/compose/create). Flag any new component/token/pattern.
+2. **Map** elements → existing component → decision (reuse/extend/compose/create). Flag any new component/token/pattern. → **ردیف `🏗️ Component Map` در PRE-CODE GATE را پر کن.**
 3. **Research** (internet-first rule) if the surface is non-trivial.
 4. **Build** with tokens + canonical components; handle ALL states (loading / empty / error / disabled / success).
 5. **Self-check** against `COMPONENTS.md` + `DESIGN.md` anti-patterns + Definition of Done. Run `npx tsc --noEmit` + `npm run lint`.
-6. **Show** the user; iterate on "fix" / "good".
+6. **Run UIDQG کامل (§UI Design Quality Gate)** — قبل از Show اجباری است. هر ❌ = همان لحظه fix کن.
+7. **Show** the user; iterate on "fix" / "good".
+
+---
+
+## 🎨 UIDQG — UI Design Quality Gate (دروازهٔ بیست‌ودوسؤالهٔ طراحی — اجباری)
+
+> **⛔ قانون VISIBLE OUTPUT:** این gate باید **قبل از هر Show/Done** به صورت visible در پیام نوشته شود. نوشتن «UIDQG را اجرا کردم» بدون خروجی = نقض مستقیم.
+>
+> **چه موقع اجرا می‌شود؟** هر تسک که UI/صفحه/کامپوننت بصری ایجاد یا ویرایش می‌کند — بدون استثنا.
+>
+> **فرمت پاسخ:** هر سؤال را با `✅ بله` / `❌ خیر` / `⚠️ جزئی` / `N/A` جواب بده + یک جمله توضیح. هر `❌` = همان لحظه fix کن.
+
+```
+🎨 UIDQG — UI DESIGN QUALITY GATE
+════════════════════════════════════════════════════════════════════════════════
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔥 بلاک A — هویت و استراتژی بصری (Vision)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[UQ1] آیا طراحی «بیلیون‌دلاری» است یا «معمولی/کسل‌کننده»؟
+      → مقایسه کن با Wise/Linear/Stripe: اگر آن‌ها آن را منتشر نمی‌کردند = شکست.
+      → «درست است ولی ordinary» = شکست.
+      پاسخ: [ ]
+
+[UQ2] آیا یک «لحظهٔ واو» (Signature Moment) وجود دارد؟
+      → حداقل یک جزء به‌یادماندنی: ambient SVG stroke / System-breath / view-transition / stagger choreography.
+      → هیچ‌چیز = شکست.
+      پاسخ: [ ]
+
+[UQ3] آیا هویت بصری از «منطق دامنه» (domain semantics) برمی‌خیزد؟
+      → فرم از semantics مالی (نرخ/اعتماد/سرعت) می‌آید، نه کپی سطح‌بصری رقیب.
+      → سایت مالی افغانستان/ایران باید ذاتاً خودش باشد، نه clone Stripe.
+      پاسخ: [ ]
+
+[UQ4] آیا با رفرنس‌های اینترنتی (2026) تحقیق شده؟
+      → آیا حداقل یک UI reference معتبر (shadcn، Layered-UI، Supabase، Linear) مطالعه شده؟
+      → تاریخ و منبع تحقیق باید visible باشد.
+      پاسخ: [ ]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚙️ بلاک B — معماری و ساختار (Architecture)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[UQ5] آیا معماری درستی انتخاب شده؟
+      → Server Component vs Client Component: آیا data-fetching روی server است؟
+      → آیا Suspense / Streaming برای heavy sections بررسی شد؟
+      → آیا layout/page structure با App Router best practice 2026 هماهنگ است؟
+      پاسخ: [ ]
+
+[UQ6] آیا می‌توان صفحه را جوری دیگر نوشت که کاربر راحت‌تر باشد؟
+      → آیا task flow کاربر (user journey) بررسی شد؟ «کمترین click» برای هر عمل؟
+      → آیا information architecture منطقی است (مهم‌ترین چیز اول، پنهان‌ترین آخر)?
+      → آیا جایگزین بهتری (مثلاً inline edit به‌جای modal، یا split-view به‌جای tab) بررسی شد؟
+      پاسخ: [ ]
+
+[UQ7] آیا کارایی (Functionality) لازم دارد که پیاده نشده؟
+      → تمام use-case های ممکن کاربر لیست شوند (CRUD + edge cases + error paths).
+      → آیا هر حالتی که کاربر انتظار دارد handle شده؟ (loading / empty / error / success / disabled / partial)
+      پاسخ: [ ]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎭 بلاک C — پیچیدگی خوش و طراحی ممتاز (Craft)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[UQ8] آیا چیدمان و المان‌ها پیچیدهٔ خوش دارند (نه یکنواخت مثل سایت‌های معمولی)?
+      → سلسله‌مراتب بصری واضح: بزرگ/کوچک/متن/عنوان/badge ترکیب شده‌اند.
+      → گرید یا layout بدون تنوع = شکست.
+      → حداقل ۲ سطح visual weight در هر section.
+      پاسخ: [ ]
+
+[UQ9] آیا عمق (Depth) وجود دارد؟
+      → hairline border + elevation tiers (--ds-shadow-*) + لایه‌بندی.
+      → صفحهٔ کاملاً تخت و بدون shadow/border hierarchy = شکست.
+      پاسخ: [ ]
+
+[UQ10] آیا کُرئوگرافی حرکت (Motion Choreography) دارد؟
+       → spring micro-interactions + stagger (گام ۴۰ms) + enter/exit animation.
+       → صفحهٔ کاملاً ایستا = شکست.
+       → فقط opacity/transform/filter — نه width/height/top/left.
+       پاسخ: [ ]
+
+[UQ11] آیا میکرو‑اینترکشن‌ها پیاده شده‌اند؟
+       → hover: translateY(-1px) + brighten border (بدون جهش رنگ).
+       → press: spring tap (scale 0.97).
+       → focus: visible focus ring (outline dashed یا glow hairline).
+       → هیچ interactive element بدون feedback بصری نباشد.
+       پاسخ: [ ]
+
+[UQ12] آیا Restraint رعایت شده (بدون ۲۰۲۶‑slop)?
+       → بدون: neon / loud color / heavy glow / excessive glass / ۳ کارت یکسان گرد / cubic-bezier-only مکانیکی.
+       → هر المان دلیل وجودی دارد — decoration بی‌معنی حذف شده.
+       پاسخ: [ ]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎨 بلاک D — سیستم طراحی و توکن‌ها (Design System)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[UQ13] آیا رنگ‌های غالب سایت استفاده شده‌اند؟
+       → فقط --ds-* (site) / --at-* (dashboard) / --nova-* (dashboard) توکن‌ها.
+       → هیچ hex hardcode نشده.
+       → رنگ accent، warning، danger، success از توکن می‌آیند نه از دل کد.
+       پاسخ: [ ]
+
+[UQ14] آیا از کامپوننت‌های موجود استفاده شده (نه duplicate)?
+       → Component Decision Protocol: reuse → extend → compose → create.
+       → COMPONENTS.md چک شد؟ هیچ Modal/Button/Card/Table/EmptyState جدید بی‌دلیل نساخته‌ام.
+       → component map: `| element | existing impl | decision |` پر شده؟
+       پاسخ: [ ]
+
+[UQ15] آیا تایپوگرافی سلسله‌مراتب ادیتوریال دارد؟
+       → مقیاس/وزن/leading مشخص — یک نقطهٔ کانونی (focal point) در هر section.
+       → tabular-nums برای اعداد مالی.
+       → هیچ دو heading هم‌سایز پشت هم نباشند.
+       پاسخ: [ ]
+
+[UQ16] آیا Comfortable Density رعایت شده (حس زوم ۱۰۰٪ — نه ۱۲۵٪)?
+       → فضای منفی ارزشمند: از ریتم بخش‌ها (space-8…space-10) بین section‌ها.
+       → عناصر compact، حاشیه در layout — نه padding چاق.
+       → max-width راحت: محتوا تمام عرض را پر نمی‌کند.
+       پاسخ: [ ]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔗 بلاک E — وابستگی‌ها و یکپارچگی (Dependencies)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[UQ17] آیا Server Component / Server Action نوشته شده؟
+       → data fetching روی server (نه client fetch/useEffect برای initial load).
+       → Server Actions برای mutations.
+       → هیچ secret در client bundle نیست.
+       پاسخ: [ ]
+
+[UQ18] آیا زیر‌کامپوننت‌ها (sub-components) آپدیت/بازطراحی شده‌اند؟
+       → اگر parent redesign شد، تمام children که در صفحه نمایش داده می‌شوند بررسی شده‌اند.
+       → اگر یک child هنوز طرح قدیمی دارد و visible است = شکست.
+       → لیست children که بررسی شده‌اند باید visible باشد.
+       پاسخ: [ ]
+
+[UQ19] آیا صفحات/کامپوننت‌های مرتبط (related pages) آپدیت شده‌اند؟
+       → navigation/sidebar/breadcrumb که به این صفحه لینک می‌دهند.
+       → صفحات parent/child که data مشترک دارند.
+       → هر جایی که این feature نمایش داده می‌شود (widget، dashboard tile، list view).
+       پاسخ: [ ]
+
+[UQ20] آیا وابستگی‌ها (dependencies) آپدیت شده‌اند؟
+       → type/interface تغییر کرد → همه consumer‌ها grep شده‌اند.
+       → action تغییر کرد → همه caller‌های client+server چک شده‌اند.
+       → cache tag تغییر کرد → revalidation همه‌جا هماهنگ است.
+       پاسخ: [ ]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 بلاک F — ارزیابی نهایی (Final Verdict)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[UQ21] آیا ایرادهای طراحی که با این چک‌لیست نمی‌خوانند در این صفحه/صفحات مرتبط وجود دارد؟
+       → مرور کامل صفحهٔ موجود (نه فقط بخش جدید) با همین سؤالات.
+       → هر ایراد که الان fix نمی‌شود باید در post-task ثبت شود.
+       → لیست ایرادها (اگر وجود دارد): [ ]
+       پاسخ: [ ]
+
+[UQ22] آیا این صفحه بازطراحی می‌خواهد یا باید از نو نوشته شود؟
+       → اگر بیشتر از ۴۰٪ کد باید تغییر کند = از نو بنویس.
+       → اگر طراحی موجود با §3.6/§3.7 تضاد اساسی دارد = بازطراحی اجباری.
+       → اگر component structure غلط است (همه در یک فایل بزرگ) = refactor + redesign.
+       → verdict: [reuse / redesign / rewrite] + دلیل.
+       پاسخ: [ ]
+
+════════════════════════════════════════════════════════════════════════════════
+قانون: هر [UQ] که ❌ دارد → همان لحظه fix کن → از UQ1 دوباره شروع کن
+فقط وقتی همه ✅ یا N/A (با دلیل) شدند → اعلام Show/Done مجاز است
+
+⛔ VISIBLE OUTPUT REQUIRED: پاسخ هر UQ را در پیام بنویس
+نوشتن «UIDQG انجام شد» بدون خروجی = نقض قانون VISIBLE RESULT
+════════════════════════════════════════════════════════════════════════════════
+```
+
+**نحوهٔ گزارش UIDQG (فرمت اجباری):**
+```
+🎨 UIDQG Result:
+[UQ1]  ✅ — Stripe-level depth + stagger animation
+[UQ2]  ✅ — System-breath SVG در hero section
+[UQ3]  ✅ — فرم از نرخ‌های مالی می‌آید
+[UQ4]  ✅ — تاریخ 15/4/1404، رفرنس: Linear dashboard + shadcn DataTable
+[UQ5]  ✅ — Server Component با Suspense، client فقط برای interactive parts
+[UQ6]  ⚠️ — inline edit بهتر بود ولی scope بزرگ‌تر از تسک — ثبت در post-task
+[UQ7]  ✅ — همه 6 state: loading/empty/error/success/disabled/partial
+[UQ8]  ✅ — 3 سطح visual weight، grid 12col با span متغیر
+[UQ9]  ✅ — elevation tiers از --ds-shadow-sm تا --ds-shadow-lg
+[UQ10] ✅ — spring stagger 40ms، enter/exit با framer-motion
+[UQ11] ✅ — hover/press/focus روی همه interactive elements
+[UQ12] ✅ — بدون neon/glow — فقط hairline + elevation
+[UQ13] ✅ — فقط --at-* و --ds-* tokens، بدون hex
+[UQ14] ✅ — DataTable از primitives، Dialog از shadcn، EmptyState از موجود
+[UQ15] ✅ — h1 32px/700، h2 18px/600، body 14px/400، tabular-nums روی اعداد
+[UQ16] ✅ — space-8 بین sections، max-width 1200px، عناصر compact
+[UQ17] ✅ — Server Component برای list، Server Actions برای mutations
+[UQ18] ✅ — DetailDrawer + StatusBadge + CountBadge همه آپدیت شدند
+[UQ19] ✅ — sidebar link موجود، widget tile آپدیت شد
+[UQ20] ✅ — ServiceRequest type grep شد، 5 consumer چک شدند
+[UQ21] ⚠️ — CommandBar هنوز skeleton قدیمی دارد — ثبت در post-task
+[UQ22] ✅ — redesign (نه rewrite): ساختار کلی خوب، فقط visual layer آپدیت شد
+```
 
 ### Definition of Done (before you say a task is complete)
 
@@ -476,13 +691,18 @@ TASK COMPLETION CHECKLIST (run before every "done" declaration — MUST be visib
       Ref: §Definition of Done + pdk/anti-failure.md §طراحی
 
 【D13】 UI Design Quality Gate (فقط تسک‌های UI/بصری)
+      ⚡ این بُعد با §UIDQG هماهنگ است — اجرای UIDQG این بُعد را کاملاً پوشش می‌دهد.
+      [ ] UIDQG کامل اجرا شد (همه UQ1–UQ22 پاسخ گرفتند)
       [ ] Craft Bar §3.6 رد شد: عمق / motion / typography / micro-interaction / restraint / wow / detail
       [ ] Comfortable Density §3.7: حس زوم 100٪ (نه 125٪ چسبیده)
       [ ] AI-Slop Rubric (pdk/design-cycle.md §9.3): 0 مردود، ≤2 بازبینی
       [ ] Component reuse چک شد (Component Decision Protocol §Directive2)
       [ ] همه states پیاده شده: loading/empty/error/disabled/success
+      [ ] رفرنس‌های اینترنتی 2026 بررسی شدند (UQ4)
+      [ ] وابستگی‌های UI آپدیت شدند: sub-components + related pages (UQ18/UQ19/UQ20)
+      [ ] صفحه verdict: reuse / redesign / rewrite (UQ22)
       ─────────────────────────────────────────
-      Ref: §3.6 Craft Bar + §3.7 Density + pdk/design-cycle.md + anti-failure #35
+      Ref: §UIDQG (UQ1–UQ22) + §3.6 Craft Bar + §3.7 Density + pdk/design-cycle.md + anti-failure #35
 
 【D14】 Database Safety (فقط تسک‌های DB/migration)
       [ ] Migration reversible است (rollback plan موجود)

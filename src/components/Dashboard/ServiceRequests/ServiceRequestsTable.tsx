@@ -1,20 +1,29 @@
 'use client';
 
 /**
- * ServiceRequestsTable — 2026-07-04 redesign
+ * ServiceRequestsTable — 2026-07-04 redesign · 2026-07-28 QA pass
  *
  * Aligned with the at-* dashboard design language: hairline borders,
  * hairline-only selection chips, no glassmorphism, no neon glow.
  *
+ * 2026-07-28 improvements:
+ *   - Replace native alert() with ConfirmDialog (primitives)
+ *   - Add total row count to pagination footer
+ *   - Improve skeleton rows proportions
+ *   - Add hover translateY micro-interaction on rows
+ *   - Improve CheckBox indeterminate visual (dash line)
+ *   - Empty state: contextual icon (filter vs empty)
+ *   - Stagger animation on initial load rows
+ *
  * Layout:
  *   ┌────────────────────────────────────────────────┐
- *   │  toolbar (search · refresh)                    │
+ *   │  toolbar (search · refresh · count badge)      │
  *   ├────────────────────────────────────────────────┤
  *   │  bulk-action-bar (when rows selected)          │
  *   ├────────────────────────────────────────────────┤
  *   │  table                                         │
  *   ├────────────────────────────────────────────────┤
- *   │  pagination                                    │
+ *   │  pagination  (prev · page/total · next)        │
  *   └────────────────────────────────────────────────┘
  */
 
@@ -25,6 +34,7 @@ import {
   getServiceRequests,
   updateServiceRequestStatus,
 } from '@/actions/serviceRequestActions';
+import { ConfirmDialog } from '@/components/Dashboard/primitives/ConfirmDialog';
 import { AnimatePresence, motion } from '@/lib/motion-shim';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
@@ -41,6 +51,7 @@ import {
   HiGlobe,
   HiOutlineAnnotation,
   HiOutlineExclamationCircle,
+  HiOutlineInbox,
   HiOutlinePaperClip,
   HiRefresh,
   HiSearch,
@@ -99,21 +110,56 @@ interface ServiceRequestsTableProps {
   onDataChanged?: () => void;
 }
 
-/** Skeleton loader rows — index keys are safe here (static, no reorder) */
+/** Skeleton loader rows — static widths give a realistic shimmer pattern */
 function SkeletonRows() {
+  // Width patterns per column: trackingCode, customer, service, amount, status, date, actions
+  const colWidths = [
+    ['60%', '45%'], // tracking code + badge
+    ['70%', '50%'], // name + phone
+    ['65%', ''], // service
+    ['55%', ''], // amount
+    ['75%', ''], // status pill
+    ['50%', ''], // date
+    ['40%', ''], // actions
+  ];
   return (
     <>
       {[0, 1, 2, 3, 4, 5].map((i) => (
         <tr key={`sk-r-${i}`} style={{ borderBlockEnd: '1px solid var(--at-line)' }}>
-          {[0, 1, 2, 3, 4, 5, 6, 7].map((j) => (
+          {/* checkbox */}
+          <td className="px-4 py-4 w-10">
+            <div
+              className="rounded"
+              style={{
+                width: 16,
+                height: 16,
+                background: 'var(--at-bg-elevated)',
+              }}
+            />
+          </td>
+          {colWidths.map((widths, j) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: skeleton rows are static and never reordered
             <td key={`sk-c-${i}-${j}`} className="px-4 py-4">
-              <div
-                className="h-3 rounded"
-                style={{
-                  background: 'var(--at-bg-elevated)',
-                  width: `${60 + ((i + j) % 4) * 8}%`,
-                }}
-              />
+              <div className="flex flex-col gap-1.5">
+                <div
+                  className="h-3 rounded"
+                  style={{
+                    background: 'var(--at-bg-elevated)',
+                    width: widths[0],
+                    opacity: 0.7 + (i % 3) * 0.1,
+                  }}
+                />
+                {widths[1] && (
+                  <div
+                    className="h-2.5 rounded"
+                    style={{
+                      background: 'var(--at-bg-elevated)',
+                      width: widths[1],
+                      opacity: 0.5,
+                    }}
+                  />
+                )}
+              </div>
             </td>
           ))}
         </tr>
@@ -133,7 +179,15 @@ export default function ServiceRequestsTable({
   const [selectedRequest, setSelectedRequest] = useState<ServiceRequest | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // ConfirmDialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [bulkErrorMsg, setBulkErrorMsg] = useState<string | null>(null);
+  const [bulkErrorOpen, setBulkErrorOpen] = useState(false);
 
   const statusFilter = externalFilter;
 
@@ -148,6 +202,7 @@ export default function ServiceRequestsTable({
     if (result.success && result.data) {
       setRequests(result.data as ServiceRequest[]);
       setTotalPages(result.pagination?.totalPages || 1);
+      setTotalCount(result.pagination?.total || 0);
       setSelectedIds(new Set());
     }
     setLoading(false);
@@ -169,14 +224,26 @@ export default function ServiceRequestsTable({
     }
   };
 
-  const handleDelete = async (id: string) => {
-    const result = await deleteServiceRequest(id);
+  /** Opens confirmation dialog before delete */
+  const requestDelete = (id: string) => {
+    setDeleteTargetId(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTargetId) return;
+    setDeleteLoading(true);
+    const result = await deleteServiceRequest(deleteTargetId);
+    setDeleteLoading(false);
+    setDeleteDialogOpen(false);
+    setDeleteTargetId(null);
     if (result.success) {
       setSelectedRequest(null);
       fetchRequests();
       onDataChanged?.();
     } else {
-      alert(result.message || 'خطا در حذف');
+      setBulkErrorMsg(result.message || 'خطا در حذف درخواست');
+      setBulkErrorOpen(true);
     }
   };
 
@@ -188,7 +255,8 @@ export default function ServiceRequestsTable({
       fetchRequests();
       onDataChanged?.();
     } else {
-      alert(result.message || 'خطا در به‌روزرسانی گروهی');
+      setBulkErrorMsg(result.message || 'خطا در به‌روزرسانی گروهی');
+      setBulkErrorOpen(true);
     }
   };
 
@@ -217,6 +285,8 @@ export default function ServiceRequestsTable({
     () => selectedIds.size > 0 && selectedIds.size < requests.length,
     [requests.length, selectedIds.size],
   );
+
+  const hasSearch = search.trim().length > 0;
 
   return (
     <>
@@ -290,8 +360,15 @@ export default function ServiceRequestsTable({
                 setPage(1);
               }}
               className="at-srq-table__input"
+              aria-label="جستجو در درخواست‌ها"
             />
           </div>
+          {/* Total count badge */}
+          {!loading && totalCount > 0 && (
+            <span className="at-srq-table__count-badge" aria-live="polite">
+              {totalCount.toLocaleString('fa-IR')} مورد
+            </span>
+          )}
           <button
             type="button"
             onClick={() => {
@@ -309,7 +386,7 @@ export default function ServiceRequestsTable({
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full" aria-label="جدول درخواست‌های خدمات">
             <thead>
               <tr
                 style={{
@@ -325,16 +402,25 @@ export default function ServiceRequestsTable({
                     ariaLabel="انتخاب همه"
                   />
                 </th>
-                {['کد پیگیری', 'مشتری', 'نوع خدمات', 'مبلغ', 'وضعیت', 'تاریخ', 'عملیات'].map(
-                  (label) => (
-                    <th
-                      key={label}
-                      className="px-4 py-3 text-right text-[11px] font-bold text-[var(--at-fg-muted)] uppercase tracking-wider"
-                    >
-                      {label}
-                    </th>
-                  ),
-                )}
+                {(
+                  [
+                    { label: 'کد پیگیری', cls: '' },
+                    { label: 'مشتری', cls: '' },
+                    { label: 'نوع خدمات', cls: '' },
+                    { label: 'مبلغ', cls: 'hidden md:table-cell' },
+                    { label: 'وضعیت', cls: '' },
+                    { label: 'تاریخ', cls: 'hidden md:table-cell' },
+                    { label: 'عملیات', cls: '' },
+                  ] as Array<{ label: string; cls: string }>
+                ).map(({ label, cls }) => (
+                  <th
+                    key={label}
+                    className={`px-4 py-3 text-right text-[11px] font-bold text-[var(--at-fg-muted)] uppercase tracking-wider${cls ? ` ${cls}` : ''}`}
+                    scope="col"
+                  >
+                    {label}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -345,17 +431,25 @@ export default function ServiceRequestsTable({
                   <td colSpan={8} className="px-4 py-20">
                     <div className="at-srq-empty">
                       <span className="at-srq-empty__ico">
-                        <HiSearch className="w-7 h-7" />
+                        {hasSearch ? (
+                          <HiSearch className="w-7 h-7" aria-hidden />
+                        ) : (
+                          <HiOutlineInbox className="w-7 h-7" aria-hidden />
+                        )}
                       </span>
-                      <p className="text-sm font-semibold">درخواستی یافت نشد</p>
+                      <p className="text-sm font-semibold">
+                        {hasSearch ? 'نتیجه‌ای یافت نشد' : 'درخواستی ثبت نشده'}
+                      </p>
                       <p className="text-xs text-[var(--at-fg-subtle)]">
-                        فیلتر یا جستجوی فعلی نتیجه‌ای ندارد.
+                        {hasSearch
+                          ? 'عبارت جستجو یا فیلتر فعلی نتیجه‌ای ندارد.'
+                          : 'هنوز هیچ درخواست خدماتی دریافت نشده است.'}
                       </p>
                     </div>
                   </td>
                 </tr>
               ) : (
-                requests.map((request) => {
+                requests.map((request, idx) => {
                   const status =
                     STATUS_META[request.status as keyof typeof STATUS_META] ?? STATUS_META.PENDING;
                   const service = SERVICE_META[request.serviceType] ?? {
@@ -368,6 +462,9 @@ export default function ServiceRequestsTable({
                     <motion.tr
                       key={request.id}
                       layout
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2, delay: Math.min(idx * 0.03, 0.3) }}
                       className={`at-srq-table-row ${isSelected ? 'is-selected' : ''}`}
                       style={{ borderBlockEnd: '1px solid var(--at-line)' }}
                     >
@@ -419,7 +516,13 @@ export default function ServiceRequestsTable({
                       </td>
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <span className="at-srq-avatar">{request.fullName.charAt(0)}</span>
+                          <span
+                            className="at-srq-avatar"
+                            data-persona={request.fullName.charCodeAt(0) % 5}
+                            aria-hidden="true"
+                          >
+                            {request.fullName.charAt(0)}
+                          </span>
                           <div className="min-w-0">
                             <p className="text-[13px] font-semibold text-[var(--at-fg)] truncate">
                               {request.fullName}
@@ -432,11 +535,14 @@ export default function ServiceRequestsTable({
                       </td>
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-1.5 min-w-0">
-                          <ServiceIcon className="w-3.5 h-3.5 text-[var(--at-fg-subtle)] shrink-0" />
+                          <ServiceIcon
+                            className="w-3.5 h-3.5 text-[var(--at-fg-subtle)] shrink-0"
+                            aria-hidden
+                          />
                           <span className="text-[12.5px] text-[var(--at-fg)]">{service.label}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3.5 whitespace-nowrap">
+                      <td className="hidden md:table-cell px-4 py-3.5 whitespace-nowrap">
                         <span className="font-mono text-[12.5px] font-semibold text-[var(--at-fg)] tabular-nums">
                           {Number(request.amount).toLocaleString('fa-IR')}{' '}
                           <span
@@ -453,7 +559,7 @@ export default function ServiceRequestsTable({
                           {status.label}
                         </span>
                       </td>
-                      <td className="px-4 py-3.5 whitespace-nowrap">
+                      <td className="hidden md:table-cell px-4 py-3.5 whitespace-nowrap">
                         <span className="text-[12px] text-[var(--at-fg-muted)] tabular-nums">
                           {new Date(request.createdAt).toLocaleDateString('fa-IR', {
                             year: 'numeric',
@@ -469,7 +575,7 @@ export default function ServiceRequestsTable({
                             onClick={() => setSelectedRequest(request)}
                             className="at-srq-table__iconbtn"
                             title="مشاهده جزئیات"
-                            aria-label="مشاهده جزئیات"
+                            aria-label={`مشاهده جزئیات ${request.trackingCode}`}
                           >
                             <HiEye className="w-4 h-4" />
                           </button>
@@ -483,12 +589,18 @@ export default function ServiceRequestsTable({
                             rel="noopener noreferrer"
                             className="at-srq-table__iconbtn"
                             title="ارسال پیام"
-                            aria-label="ارسال پیام"
+                            aria-label={`ارسال پیام به ${request.fullName}`}
                           >
                             {request.contactMethod === 'telegram' ? (
-                              <FaTelegram className="w-4 h-4 text-[#0088cc]" />
+                              <FaTelegram
+                                className="w-4 h-4"
+                                style={{ color: 'var(--at-telegram)' }}
+                              />
                             ) : (
-                              <FaWhatsapp className="w-4 h-4 text-[#25D366]" />
+                              <FaWhatsapp
+                                className="w-4 h-4"
+                                style={{ color: 'var(--at-whatsapp)' }}
+                              />
                             )}
                           </a>
                         </div>
@@ -509,13 +621,14 @@ export default function ServiceRequestsTable({
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
               className="at-srq-pagination__page"
+              aria-label="صفحه قبلی"
             >
               <HiChevronRight className="w-4 h-4" />
               قبلی
             </button>
-            <span className="at-srq-pagination__indicator tabular-nums">
-              {page.toLocaleString('fa-IR')}
-              <span>از</span>
+            <span className="at-srq-pagination__indicator tabular-nums" aria-live="polite">
+              صفحه {page.toLocaleString('fa-IR')}
+              <span className="at-srq-pagination__indicator-sep">از</span>
               {totalPages.toLocaleString('fa-IR')}
             </span>
             <button
@@ -523,6 +636,7 @@ export default function ServiceRequestsTable({
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
               className="at-srq-pagination__page"
+              aria-label="صفحه بعدی"
             >
               بعدی
               <HiChevronLeft className="w-4 h-4" />
@@ -531,11 +645,37 @@ export default function ServiceRequestsTable({
         )}
       </motion.div>
 
+      {/* Detail drawer */}
       <ServiceRequestsDetailDrawer
         request={selectedRequest}
         onClose={() => setSelectedRequest(null)}
         onStatusChange={handleStatusChange}
-        onDelete={handleDelete}
+        onDelete={requestDelete}
+      />
+
+      {/* Delete confirmation dialog */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="حذف درخواست"
+        description="آیا از حذف این درخواست اطمینان دارید؟ این عمل قابل بازگشت نیست."
+        confirmLabel="بله، حذف شود"
+        cancelLabel="انصراف"
+        variant="danger"
+        loading={deleteLoading}
+        onConfirm={confirmDelete}
+      />
+
+      {/* Bulk operation error dialog */}
+      <ConfirmDialog
+        open={bulkErrorOpen}
+        onOpenChange={setBulkErrorOpen}
+        title="خطا در عملیات"
+        description={bulkErrorMsg ?? 'یک خطا رخ داده است.'}
+        confirmLabel="باشه"
+        cancelLabel=""
+        variant="default"
+        onConfirm={() => setBulkErrorOpen(false)}
       />
     </>
   );
@@ -563,7 +703,7 @@ function CheckBox({
         }}
         onChange={onChange}
       />
-      <span className="at-srq-check__icon">
+      <span className="at-srq-check__icon" aria-hidden="true">
         {checked && !indeterminate && (
           <svg
             className="w-3 h-3"
@@ -571,10 +711,8 @@ function CheckBox({
             stroke="currentColor"
             strokeWidth={3}
             viewBox="0 0 24 24"
-            role="presentation"
             aria-hidden="true"
           >
-            <title>{'checked'}</title>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         )}
@@ -585,10 +723,8 @@ function CheckBox({
             stroke="currentColor"
             strokeWidth={3}
             viewBox="0 0 24 24"
-            role="presentation"
             aria-hidden="true"
           >
-            <title>{'indeterminate'}</title>
             <path strokeLinecap="round" d="M5 12h14" />
           </svg>
         )}

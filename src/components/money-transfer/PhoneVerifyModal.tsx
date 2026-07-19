@@ -14,6 +14,7 @@
 import { sendPhoneOtp, verifyPhoneOtp } from '@/actions/phone-verify';
 import { AlertCircle, ArrowRight, KeyRound, Phone, RotateCcw, ShieldCheck, X } from 'lucide-react';
 import { type FC, useCallback, useEffect, useId, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import s from './PhoneVerifyModal.module.css';
 
 interface Props {
@@ -112,7 +113,8 @@ const PhoneVerifyModal: FC<Props> = ({ onVerified, onClose }) => {
     setCountdown(60);
   }, [countdown, loading, phone]);
 
-  return (
+  if (typeof document === 'undefined') return null;
+  return createPortal(
     /* backdrop */
     <div
       className={s.backdrop}
@@ -312,7 +314,8 @@ const PhoneVerifyModal: FC<Props> = ({ onVerified, onClose }) => {
           </button>
         </div>
       </dialog>
-    </div>
+    </div>,
+    document.body,
   );
 };
 

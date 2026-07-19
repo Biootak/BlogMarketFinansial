@@ -22,8 +22,10 @@ import {
   deleteServiceRequestAttachment,
   getServiceRequestDetail,
 } from '@/actions/serviceRequestActions';
+import { ConfirmDialog } from '@/components/Dashboard/primitives/ConfirmDialog';
 import { AnimatePresence, motion } from '@/lib/motion-shim';
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
+import { createPortal } from 'react-dom';
 import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
 import {
   HiOutlineAnnotation,
@@ -74,7 +76,8 @@ interface DetailData {
   }>;
   notes: Array<{
     id: string;
-    content: string;
+    body?: string | null;
+    content: string | null;
     authorId: string;
     isPrivate: boolean;
     createdAt: string | Date;
@@ -160,6 +163,11 @@ export default function ServiceRequestsDetailDrawer({
   const [detail, setDetail] = useState<DetailData | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
+  // Attachment delete confirm state
+  const [deleteAttachDialogOpen, setDeleteAttachDialogOpen] = useState(false);
+  const [deleteAttachTargetId, setDeleteAttachTargetId] = useState<string | null>(null);
+  const [deleteAttachLoading, setDeleteAttachLoading] = useState(false);
+
   // Notes tab state
   const [noteText, setNoteText] = useState('');
   const [notePrivate, setNotePrivate] = useState(true);
@@ -186,8 +194,10 @@ export default function ServiceRequestsDetailDrawer({
     if (!request) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    document.body.dataset.drawerOpen = 'true';
     return () => {
       document.body.style.overflow = prev;
+      delete document.body.dataset.drawerOpen;
     };
   }, [request]);
 
@@ -303,13 +313,20 @@ export default function ServiceRequestsDetailDrawer({
     });
   };
 
-  const handleDeleteAttachment = (attachmentId: string) => {
-    if (!request || !confirm('حذف این پیوست؟')) return;
-    startAttachTransition(async () => {
-      const res = await deleteServiceRequestAttachment(attachmentId);
-      setAttachMsg(res.message);
-      if (res.success) loadDetail(request.id);
-    });
+  const requestDeleteAttachment = (attachmentId: string) => {
+    setDeleteAttachTargetId(attachmentId);
+    setDeleteAttachDialogOpen(true);
+  };
+
+  const confirmDeleteAttachment = async () => {
+    if (!request || !deleteAttachTargetId) return;
+    setDeleteAttachLoading(true);
+    const res = await deleteServiceRequestAttachment(deleteAttachTargetId);
+    setDeleteAttachLoading(false);
+    setDeleteAttachDialogOpen(false);
+    setDeleteAttachTargetId(null);
+    setAttachMsg(res.message);
+    if (res.success) loadDetail(request.id);
   };
 
   const openMessenger = (req: ServiceRequest) => {
@@ -328,7 +345,7 @@ export default function ServiceRequestsDetailDrawer({
     { id: 'attachments', label: 'مدارک', count: detail?.attachments.length },
   ];
 
-  return (
+  const content = (
     <AnimatePresence>
       {request && (
         <>
@@ -623,7 +640,7 @@ export default function ServiceRequestsDetailDrawer({
                         {note.isPrivate && <span className="at-srq-drawer__note-tag">داخلی</span>}
                         <time className="at-srq-drawer__note-time">{fmt(note.createdAt)}</time>
                       </div>
-                      <p className="at-srq-drawer__note-content">{note.content}</p>
+                      <p className="at-srq-drawer__note-content">{note.body ?? note.content}</p>
                     </div>
                   ))}
                 </div>
@@ -706,7 +723,7 @@ export default function ServiceRequestsDetailDrawer({
                           <button
                             type="button"
                             className="at-srq-drawer__attachment-action is-danger"
-                            onClick={() => handleDeleteAttachment(att.id)}
+                            onClick={() => requestDeleteAttachment(att.id)}
                             aria-label="حذف پیوست"
                             title="حذف"
                             disabled={attachPending}
@@ -737,9 +754,7 @@ export default function ServiceRequestsDetailDrawer({
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  if (confirm('آیا از حذف این درخواست اطمینان دارید؟')) onDelete(request.id);
-                }}
+                onClick={() => onDelete(request.id)}
                 className="at-srq-drawer__foot-danger"
                 title="حذف"
                 aria-label="حذف درخواست"
@@ -750,6 +765,22 @@ export default function ServiceRequestsDetailDrawer({
           </motion.aside>
         </>
       )}
+
+      {/* Attachment delete confirmation */}
+      <ConfirmDialog
+        open={deleteAttachDialogOpen}
+        onOpenChange={setDeleteAttachDialogOpen}
+        title="حذف پیوست"
+        description="آیا از حذف این پیوست اطمینان دارید؟ این عمل قابل بازگشت نیست."
+        confirmLabel="بله، حذف شود"
+        cancelLabel="انصراف"
+        variant="danger"
+        loading={deleteAttachLoading}
+        onConfirm={confirmDeleteAttachment}
+      />
     </AnimatePresence>
   );
+
+  if (typeof document === 'undefined') return null;
+  return createPortal(content, document.body);
 }

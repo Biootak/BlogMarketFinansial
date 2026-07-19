@@ -491,7 +491,8 @@ model ServiceRequestNote {
   id        String         @id @default(cuid())
   requestId String
   authorId  String
-  content   String
+  body      String
+  content   String?
   isPrivate Boolean        @default(true)
   createdAt DateTime       @default(now())
   request   ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)

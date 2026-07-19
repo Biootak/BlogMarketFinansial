@@ -1,13 +1,15 @@
 'use client';
 
 /**
- * ServiceRequestsStats — 2026-07-04 redesign
+ * ServiceRequestsStats — 2026-07-04 redesign · 2026-07-28 QA pass
  *
  * Compact KPI grid that follows the at-kpi pattern from the Atelier 2026
  * dashboard system. Six cells, hairline borders, no glassmorphism.
  * Pulls a refined payload from `getServiceRequestStats` that now
  * includes the real `urgent` and `pendingUrgent` counts (not just an
  * approximation).
+ *
+ * 2026-07-28: stagger animation on bar-fill via CSS custom property delay.
  */
 
 import { getServiceRequestStats } from '@/actions/serviceRequestActions';
@@ -185,7 +187,7 @@ export default function ServiceRequestsStats({ refreshKey = 0 }: ServiceRequests
           ))
         : !stats
           ? null
-          : CELLS.map((cell) => {
+          : CELLS.map((cell, idx) => {
               const value = stats[cell.key];
               const ratio =
                 cell.key !== 'todayCount' && cell.barRatio ? cell.barRatio(stats) : null;
@@ -205,7 +207,7 @@ export default function ServiceRequestsStats({ refreshKey = 0 }: ServiceRequests
                     </span>
                   </div>
                   <p className={valueClass(cell)}>
-                    <CountUp value={value} duration={500} />
+                    <CountUp value={value} duration={500 + idx * 60} />
                   </p>
                   {cell.sub && stats && <p className="at-srq-stats__sub">{cell.sub(stats)}</p>}
                   {ratio !== null && (
@@ -215,6 +217,8 @@ export default function ServiceRequestsStats({ refreshKey = 0 }: ServiceRequests
                         style={{
                           width: `${Math.min(100, Math.max(0, ratio * 100))}%`,
                           background: toneColor[cell.tone],
+                          /* Stagger the bar animation — each cell starts 80ms later */
+                          transitionDelay: `${idx * 80}ms`,
                         }}
                       />
                     </div>

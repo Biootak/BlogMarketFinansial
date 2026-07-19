@@ -1239,18 +1239,21 @@ export async function addServiceRequestNote(
       data: {
         requestId,
         authorId: session.user.id ?? session.user.email ?? 'unknown',
-        content: trimmed,
+        body: trimmed,
         isPrivate,
       },
     });
 
-    await prisma.systemLog.create({
-      data: {
-        level: 'INFO',
-        message: `Note added to service request ${requestId} by ${session.user.email}`,
-        source: 'ServiceRequest',
-      },
-    });
+    // systemLog is fire-and-forget — do NOT let it block or abort the main operation
+    prisma.systemLog
+      .create({
+        data: {
+          level: 'INFO',
+          message: `Note added to service request ${requestId} by ${session.user.email}`,
+          source: 'ServiceRequest',
+        },
+      })
+      .catch(() => {/* non-critical */});
 
     revalidatePath('/dashboard/service-requests');
     return { success: true, message: 'یادداشت ثبت شد.' };

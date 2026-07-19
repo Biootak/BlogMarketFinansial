@@ -2,6 +2,7 @@
 
 import type React from 'react';
 import { useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { parseISO } from 'date-fns-jalali';
 import { Button } from '@/components/ui/button';
@@ -62,7 +63,8 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, selectedDate, posts }) =
     );
   });
 
-  return (
+  if (typeof document === 'undefined') return null;
+  return createPortal(
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="dash-panel p-4 sm:p-6 w-full max-w-lg rtl max-h-[90vh] overflow-y-auto">
         <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-primary-600 dark:text-primary-400">
@@ -116,7 +118,8 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, selectedDate, posts }) =
           بستن
         </Button>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 

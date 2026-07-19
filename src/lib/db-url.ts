@@ -14,12 +14,12 @@
  */
 function getDefaultConnectionLimit(): string {
   // Supabase session-mode pooler (port 5432) limits concurrent sessions to 15
-  // on the free/small tier. In dev a single Next.js process with connection_limit=10
-  // easily saturates that, causing EMAXCONNSESSION. Keep dev to 3 to leave headroom
-  // for the Prisma shadow DB, migrations, and any other tools hitting the same pooler.
-  // Production keeps 10 (not 30) for the same reason — Prisma's pool multiplies by
-  // worker count under load.
-  return process.env.NODE_ENV === 'production' ? '10' : '3';
+  // on the free/small tier. In dev a single Next.js process can easily saturate
+  // that because Turbopack spawns multiple RSC workers, each holding its own
+  // Prisma singleton. Keep dev at 1 so the entire Next.js process never occupies
+  // more than 1 connection, leaving ample headroom for migrations, prisma studio,
+  // and any parallel tooling. Production keeps 5 (not 10) for the same reason.
+  return process.env.NODE_ENV === 'production' ? '5' : '1';
 }
 
 export function buildDatabaseUrl(): string {

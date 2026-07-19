@@ -29,6 +29,7 @@ import {
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from '@/lib/motion-shim';
 import { useRouter } from 'next/navigation';
 import {
@@ -392,52 +393,33 @@ export default function CommandPalette({ role }: CommandPaletteProps) {
     }
   };
 
-  return (
-    <>
-      {/* Floating trigger */}
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label="باز کردن جستجوی سریع"
-        className="fixed bottom-5 left-5 z-30 inline-flex items-center gap-2 px-3 h-10 rounded-full bg-white/90 dark:bg-slate-900/90 ring-1 ring-slate-200/70 dark:ring-slate-700/70 backdrop-blur-md text-slate-700 dark:text-slate-200 text-sm font-medium shadow-lg hover:shadow-xl transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70 print:hidden"
-      >
-        <HiOutlineMagnifyingGlass className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-        <span>جستجو</span>
-        <kbd className="hidden sm:inline-flex items-center gap-0.5 text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400">
-          <span className="rounded border border-slate-300/70 dark:border-slate-600/70 px-1.5 py-0.5">
-            ⌘
-          </span>
-          <span className="rounded border border-slate-300/70 dark:border-slate-600/70 px-1.5 py-0.5">
-            K
-          </span>
-        </kbd>
-      </button>
-
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            key="cmd-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            onClick={close}
-            className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm"
-            aria-hidden="true"
-          />
-        )}
-        {open && (
-          <motion.div
-            key="cmd-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="cmd-palette-title"
-            initial={{ opacity: 0, scale: 0.96, y: -8 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: -8 }}
-            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-x-0 top-0 sm:top-24 z-50 mx-auto w-[min(640px,92vw)]"
-          >
+  const overlayAndDialog = typeof document !== 'undefined'
+    ? createPortal(
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              key="cmd-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              onClick={close}
+              className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm"
+              aria-hidden="true"
+            />
+          )}
+          {open && (
+            <motion.div
+              key="cmd-dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="cmd-palette-title"
+              initial={{ opacity: 0, scale: 0.96, y: -8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: -8 }}
+              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              className="fixed inset-x-0 top-0 sm:top-24 z-50 mx-auto w-[min(640px,92vw)]"
+            >
             <div
               className={cn(
                 'overflow-hidden rounded-2xl',
@@ -577,9 +559,34 @@ export default function CommandPalette({ role }: CommandPaletteProps) {
                 <span className="hidden sm:inline">{flatResults.length} نتیجه</span>
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body,
+      )
+    : null;
+
+  return (
+    <>
+      {/* Floating trigger */}
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label="باز کردن جستجوی سریع"
+        className="fixed bottom-5 left-5 z-30 inline-flex items-center gap-2 px-3 h-10 rounded-full bg-white/90 dark:bg-slate-900/90 ring-1 ring-slate-200/70 dark:ring-slate-700/70 backdrop-blur-md text-slate-700 dark:text-slate-200 text-sm font-medium shadow-lg hover:shadow-xl transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70 print:hidden"
+      >
+        <HiOutlineMagnifyingGlass className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+        <span>جستجو</span>
+        <kbd className="hidden sm:inline-flex items-center gap-0.5 text-[10px] font-mono font-semibold text-slate-500 dark:text-slate-400">
+          <span className="rounded border border-slate-300/70 dark:border-slate-600/70 px-1.5 py-0.5">
+            ⌘
+          </span>
+          <span className="rounded border border-slate-300/70 dark:border-slate-600/70 px-1.5 py-0.5">
+            K
+          </span>
+        </kbd>
+      </button>
+      {overlayAndDialog}
     </>
   );
 }
