@@ -18,35 +18,37 @@
  *  - Auto-expanding textarea
  */
 
-import { type FC, useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { CurrencySelect, type CurrencyGroup } from '@/components/ui/CurrencySelect';
-import { useForm } from 'react-hook-form';
+import { issueServiceOtp, verifyServiceOtpAndLink } from '@/actions/progressive-capture';
+import {
+  type ServiceRequestClientInput,
+  type ServiceRequestInput,
+  createServiceRequest,
+} from '@/actions/serviceRequestActions';
+import { type CurrencyGroup, CurrencySelect } from '@/components/ui/CurrencySelect';
+import { type ServiceRequestFormData, ServiceRequestSchema } from '@/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  Gift,
-  CreditCard,
-  GraduationCap,
-  Wallet,
-  ShoppingBag,
-  Sparkles,
-  ArrowRight,
+  AlertCircle,
   ArrowLeft,
-  Clock,
-  Zap,
-  ShieldCheck,
+  ArrowRight,
+  Check,
   CheckCircle2,
   Copy,
-  Check,
-  AlertCircle,
-  Mail,
+  CreditCard,
+  Gift,
+  GraduationCap,
   KeyRound,
+  Mail,
   RotateCcw,
+  ShieldCheck,
+  ShoppingBag,
+  Sparkles,
   UserPlus,
+  Wallet,
 } from 'lucide-react';
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
-import { ServiceRequestSchema, type ServiceRequestFormData } from '@/schemas';
-import { createServiceRequest, type ServiceRequestClientInput, type ServiceRequestInput } from '@/actions/serviceRequestActions';
-import { issueServiceOtp, verifyServiceOtpAndLink } from '@/actions/progressive-capture';
 import s from './ServiceRequestForm.module.css';
 
 // ─── Constants ────────────────────────────────────────────────────────────── //
@@ -67,34 +69,49 @@ interface CurrencyOption {
 }
 
 const SERVICE_TYPES: ServiceOption[] = [
-  { value: 'ONLINE_PAYMENT',    label: 'پرداخت آنلاین',    icon: CreditCard,   color: 'oklch(55% 0.17 290)' },
-  { value: 'GIFT_CARD',         label: 'گیفت کارت',        icon: Gift,         color: 'oklch(58% 0.18 340)' },
-  { value: 'TUITION_PAYMENT',   label: 'پرداخت شهریه',    icon: GraduationCap,color: 'oklch(55% 0.17 155)' },
-  { value: 'FREELANCE_INCOME',  label: 'نقد کردن درآمد',  icon: Wallet,       color: 'oklch(60% 0.15 70)'  },
-  { value: 'SOFTWARE_PURCHASE', label: 'خرید نرم‌افزار',  icon: ShoppingBag,  color: 'oklch(58% 0.18 15)'  },
-  { value: 'OTHER',             label: 'سایر خدمات',      icon: Sparkles,     color: 'var(--ds-brand-600)' },
+  {
+    value: 'ONLINE_PAYMENT',
+    label: 'پرداخت آنلاین',
+    icon: CreditCard,
+    color: 'oklch(55% 0.17 290)',
+  },
+  { value: 'GIFT_CARD', label: 'گیفت کارت', icon: Gift, color: 'oklch(58% 0.18 340)' },
+  {
+    value: 'TUITION_PAYMENT',
+    label: 'پرداخت شهریه',
+    icon: GraduationCap,
+    color: 'oklch(55% 0.17 155)',
+  },
+  { value: 'FREELANCE_INCOME', label: 'نقد کردن درآمد', icon: Wallet, color: 'oklch(60% 0.15 70)' },
+  {
+    value: 'SOFTWARE_PURCHASE',
+    label: 'خرید نرم‌افزار',
+    icon: ShoppingBag,
+    color: 'oklch(58% 0.18 15)',
+  },
+  { value: 'OTHER', label: 'سایر خدمات', icon: Sparkles, color: 'var(--ds-brand-600)' },
 ];
 
 const CURRENCIES: CurrencyOption[] = [
   // ── ارزهای منطقه‌ای (اولویت برای کاربران افغان) ──────────────────────────
-  { value: 'AFN',   label: 'افغانی',          type: 'fiat'   },
-  { value: 'USD',   label: 'دلار آمریکا',     type: 'fiat'   },
-  { value: 'AED',   label: 'درهم امارات',     type: 'fiat'   },
-  { value: 'PKR',   label: 'روپیه پاکستان',  type: 'fiat'   },
-  { value: 'IRR',   label: 'ریال ایران',      type: 'fiat'   },
-  { value: 'TRY',   label: 'لیر ترکیه',      type: 'fiat'   },
+  { value: 'AFN', label: 'افغانی', type: 'fiat' },
+  { value: 'USD', label: 'دلار آمریکا', type: 'fiat' },
+  { value: 'AED', label: 'درهم امارات', type: 'fiat' },
+  { value: 'PKR', label: 'روپیه پاکستان', type: 'fiat' },
+  { value: 'IRR', label: 'ریال ایران', type: 'fiat' },
+  { value: 'TRY', label: 'لیر ترکیه', type: 'fiat' },
   // ── ارزهای بین‌المللی ────────────────────────────────────────────────────
-  { value: 'EUR',   label: 'یورو',            type: 'fiat'   },
-  { value: 'GBP',   label: 'پوند انگلیس',    type: 'fiat'   },
-  { value: 'CAD',   label: 'دلار کانادا',    type: 'fiat'   },
-  { value: 'AUD',   label: 'دلار استرالیا',  type: 'fiat'   },
-  { value: 'CHF',   label: 'فرانک سوئیس',   type: 'fiat'   },
+  { value: 'EUR', label: 'یورو', type: 'fiat' },
+  { value: 'GBP', label: 'پوند انگلیس', type: 'fiat' },
+  { value: 'CAD', label: 'دلار کانادا', type: 'fiat' },
+  { value: 'AUD', label: 'دلار استرالیا', type: 'fiat' },
+  { value: 'CHF', label: 'فرانک سوئیس', type: 'fiat' },
   // ── رمزارز ────────────────────────────────────────────────────────────────
-  { value: 'USDT',  label: 'تتر',            type: 'crypto' },
-  { value: 'BTC',   label: 'بیت‌کوین',       type: 'crypto' },
-  { value: 'ETH',   label: 'اتریوم',         type: 'crypto' },
-  { value: 'TRX',   label: 'ترون',           type: 'crypto' },
-  { value: 'OTHER', label: 'سایر ارزها',    type: 'fiat'   },
+  { value: 'USDT', label: 'تتر', type: 'crypto' },
+  { value: 'BTC', label: 'بیت‌کوین', type: 'crypto' },
+  { value: 'ETH', label: 'اتریوم', type: 'crypto' },
+  { value: 'TRX', label: 'ترون', type: 'crypto' },
+  { value: 'OTHER', label: 'سایر ارزها', type: 'fiat' },
 ];
 
 // Countries ordered by relevance for Afghan users:
@@ -104,34 +121,34 @@ const CURRENCIES: CurrencyOption[] = [
 // 4. Other global destinations
 const COUNTRIES = [
   // ── افغانستان ──────────────────────────────────────────────
-  { value: 'afghanistan',   label: 'افغانستان'     },
+  { value: 'afghanistan', label: 'افغانستان' },
   // ── همسایگان ──────────────────────────────────────────────
-  { value: 'iran',          label: 'ایران'          },
-  { value: 'pakistan',      label: 'پاکستان'        },
-  { value: 'tajikistan',    label: 'تاجیکستان'      },
-  { value: 'uzbekistan',    label: 'ازبکستان'       },
-  { value: 'turkmenistan',  label: 'ترکمنستان'      },
-  { value: 'china',         label: 'چین'            },
+  { value: 'iran', label: 'ایران' },
+  { value: 'pakistan', label: 'پاکستان' },
+  { value: 'tajikistan', label: 'تاجیکستان' },
+  { value: 'uzbekistan', label: 'ازبکستان' },
+  { value: 'turkmenistan', label: 'ترکمنستان' },
+  { value: 'china', label: 'چین' },
   // ── مقصدهای اصلی مهاجران افغان ───────────────────────────
-  { value: 'uae',           label: 'امارات'         },
-  { value: 'turkey',        label: 'ترکیه'          },
-  { value: 'germany',       label: 'آلمان'          },
-  { value: 'usa',           label: 'آمریکا'         },
-  { value: 'canada',        label: 'کانادا'         },
-  { value: 'australia',     label: 'استرالیا'       },
-  { value: 'uk',            label: 'انگلستان'       },
-  { value: 'sweden',        label: 'سوئد'           },
-  { value: 'norway',        label: 'نروژ'           },
-  { value: 'netherlands',   label: 'هلند'           },
-  { value: 'denmark',       label: 'دنمارک'         },
-  { value: 'france',        label: 'فرانسه'         },
+  { value: 'uae', label: 'امارات' },
+  { value: 'turkey', label: 'ترکیه' },
+  { value: 'germany', label: 'آلمان' },
+  { value: 'usa', label: 'آمریکا' },
+  { value: 'canada', label: 'کانادا' },
+  { value: 'australia', label: 'استرالیا' },
+  { value: 'uk', label: 'انگلستان' },
+  { value: 'sweden', label: 'سوئد' },
+  { value: 'norway', label: 'نروژ' },
+  { value: 'netherlands', label: 'هلند' },
+  { value: 'denmark', label: 'دنمارک' },
+  { value: 'france', label: 'فرانسه' },
   // ── سایر ─────────────────────────────────────────────────
-  { value: 'malaysia',      label: 'مالزی'          },
-  { value: 'qatar',         label: 'قطر'            },
-  { value: 'kuwait',        label: 'کویت'           },
-  { value: 'saudi_arabia',  label: 'عربستان سعودی'  },
-  { value: 'switzerland',   label: 'سوئیس'          },
-  { value: 'other',         label: 'سایر کشورها'    },
+  { value: 'malaysia', label: 'مالزی' },
+  { value: 'qatar', label: 'قطر' },
+  { value: 'kuwait', label: 'کویت' },
+  { value: 'saudi_arabia', label: 'عربستان سعودی' },
+  { value: 'switzerland', label: 'سوئیس' },
+  { value: 'other', label: 'سایر کشورها' },
 ];
 
 const STEP_LABELS = ['مبلغ و خدمات', 'اطلاعات شما', 'تأیید و ارسال', 'تأیید ایمیل'];
@@ -152,27 +169,27 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
   telegramLink,
   whatsappLink,
 }) => {
-  const [step, setStep]             = useState(1);
-  const [dir, setDir]               = useState<'fwd' | 'back'>('fwd');
-  const [submitting, setSubmitting]  = useState(false);
-  const [result, setResult]         = useState<{
+  const [step, setStep] = useState(1);
+  const [dir, setDir] = useState<'fwd' | 'back'>('fwd');
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState<{
     status: 'idle' | 'success' | 'error';
     message?: string;
     trackingCode?: string;
   }>({ status: 'idle' });
-  const [copied, setCopied]         = useState(false);
+  const [copied, setCopied] = useState(false);
   const [submitShake, setSubmitShake] = useState(false);
-  const textareaRef                  = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // ── OTP / Progressive Capture state ────────────────────────────────────── //
   const [trackingCodeForOtp, setTrackingCodeForOtp] = useState('');
-  const [otpCode, setOtpCode]           = useState('');
-  const [otpSending, setOtpSending]     = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpSending, setOtpSending] = useState(false);
   const [otpVerifying, setOtpVerifying] = useState(false);
-  const [otpError, setOtpError]         = useState('');
-  const [otpSent, setOtpSent]           = useState(false);
+  const [otpError, setOtpError] = useState('');
+  const [_otpSent, setOtpSent] = useState(false);
   const [otpResendTimer, setOtpResendTimer] = useState(0);
-  const [otpResult, setOtpResult]       = useState<{
+  const [otpResult, setOtpResult] = useState<{
     accountCreated?: boolean;
     loginHint?: string;
   } | null>(null);
@@ -191,36 +208,35 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
     resolver: zodResolver(ServiceRequestSchema),
     mode: 'onBlur', // Stripe pattern: validate on blur, not on keystroke
     defaultValues: {
-      serviceType:       defaultServiceType,
-      currency:          'USD',
-      urgency:           'NORMAL',
-      contactMethod:     'telegram',
-      fullName:          '',
-      phone:             '',
-      email:             '',
-      amount:            '',
-      description:       '',
-      destinationCountry:'',
-      bankName:          '',
-      websiteUrl:        '',
-      productName:       '',
-      universityName:    '',
-      studentId:         '',
-      platformName:      '',
-      platformUsername:  '',
-      softwareName:      '',
-      subscriptionType:  '',
-      giftCardBrand:     '',
-      giftCardRegion:    '',
+      serviceType: defaultServiceType,
+      currency: 'USD',
+      urgency: 'NORMAL',
+      contactMethod: 'telegram',
+      fullName: '',
+      phone: '',
+      email: '',
+      amount: '',
+      description: '',
+      destinationCountry: '',
+      bankName: '',
+      websiteUrl: '',
+      productName: '',
+      universityName: '',
+      studentId: '',
+      platformName: '',
+      platformUsername: '',
+      softwareName: '',
+      subscriptionType: '',
+      giftCardBrand: '',
+      giftCardRegion: '',
     },
   });
 
-  const serviceType      = watch('serviceType');
+  const serviceType = watch('serviceType');
   const selectedCurrency = watch('currency');
-  const amount           = watch('amount');
-  const fullName         = watch('fullName');
-  const phone            = watch('phone');
-  const urgency          = watch('urgency');
+  const amount = watch('amount');
+  const fullName = watch('fullName');
+  const phone = watch('phone');
 
   // URL params prefill — preserves ?currency=USD&type=...&amount=... links
   useEffect(() => {
@@ -242,8 +258,14 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
     }
   }, [setValue]);
 
-  const selectedService      = useMemo(() => SERVICE_TYPES.find((s) => s.value === serviceType), [serviceType]);
-  const selectedCurrencyInfo = useMemo(() => CURRENCIES.find((c) => c.value === selectedCurrency), [selectedCurrency]);
+  const selectedService = useMemo(
+    () => SERVICE_TYPES.find((s) => s.value === serviceType),
+    [serviceType],
+  );
+  const selectedCurrencyInfo = useMemo(
+    () => CURRENCIES.find((c) => c.value === selectedCurrency),
+    [selectedCurrency],
+  );
 
   const copyCode = useCallback(async () => {
     if (!result.trackingCode) return;
@@ -257,7 +279,7 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = 'auto';
-    el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+    el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
   };
 
   // ── OTP resend countdown ────────────────────────────────────────────────── //
@@ -283,13 +305,18 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
 
   const goNext = async () => {
     const fields: (keyof ServiceRequestFormData)[] =
-      step === 1 ? ['amount', 'currency', 'serviceType'] :
-      step === 2 ? ['fullName', 'phone'] : [];
+      step === 1 ? ['amount', 'currency', 'serviceType'] : step === 2 ? ['fullName', 'phone'] : [];
     const valid = await trigger(fields);
-    if (valid) { setDir('fwd'); setStep((p) => p + 1); }
+    if (valid) {
+      setDir('fwd');
+      setStep((p) => p + 1);
+    }
   };
 
-  const goBack = () => { setDir('back'); setStep((p) => p - 1); };
+  const goBack = () => {
+    setDir('back');
+    setStep((p) => p - 1);
+  };
 
   // Step 3 → submit form, get tracking code, then move to OTP step
   const onSubmit = async (data: ServiceRequestFormData) => {
@@ -376,28 +403,40 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
   if (result.status === 'success' && result.trackingCode) {
     return (
       <div className={s.successWrap}>
-        <div className={s.successIcon} aria-hidden="true"><CheckCircle2 size={28} /></div>
+        <div className={s.successIcon} aria-hidden="true">
+          <CheckCircle2 size={28} />
+        </div>
         <h3 className={s.successTitle}>درخواست شما ثبت شد!</h3>
 
         {/* Progressive Capture badge */}
         {otpResult?.accountCreated && (
           <div className={s.pcBadge}>
             <UserPlus size={14} />
-            <span>حساب کاربری برای شما ساخته شد. می‌توانید از طریق «فراموشی رمز» رمز تنظیم کنید.</span>
+            <span>
+              حساب کاربری برای شما ساخته شد. می‌توانید از طریق «فراموشی رمز» رمز تنظیم کنید.
+            </span>
           </div>
         )}
 
         <p className={s.successSub}>کد پیگیری:</p>
         <div className={s.trackingCodeBox}>
-          <span className={s.trackingCode} dir="ltr">{result.trackingCode}</span>
-          <button type="button" onClick={copyCode} className={s.copyBtn}
-            aria-label={copied ? 'کپی شد' : 'کپی کد پیگیری'}>
+          <span className={s.trackingCode} dir="ltr">
+            {result.trackingCode}
+          </span>
+          <button
+            type="button"
+            onClick={copyCode}
+            className={s.copyBtn}
+            aria-label={copied ? 'کپی شد' : 'کپی کد پیگیری'}
+          >
             {copied ? <Check size={13} /> : <Copy size={13} />}
           </button>
         </div>
         <p className={s.successNote}>این کد را برای پیگیری درخواست نگه دارید</p>
         <div className={s.successActions}>
-          <button type="button" onClick={resetForm} className={s.btnReset}>ثبت درخواست جدید</button>
+          <button type="button" onClick={resetForm} className={s.btnReset}>
+            ثبت درخواست جدید
+          </button>
           <a
             href={result.trackingCode ? `/track/${result.trackingCode}` : '/dashboard/my-requests'}
             className={s.btnDashboard}
@@ -409,14 +448,22 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
           <div className={s.supportLinks}>
             <span className={s.supportLabel}>برای پیگیری سریع‌تر با پشتیبانی تماس بگیرید:</span>
             {telegramLink && (
-              <a href={telegramLink} target="_blank" rel="noopener noreferrer"
-                className={`${s.supportBtn} ${s.btnTelegram}`}>
+              <a
+                href={telegramLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${s.supportBtn} ${s.btnTelegram}`}
+              >
                 <FaTelegram size={15} /> تلگرام
               </a>
             )}
             {whatsappLink && (
-              <a href={whatsappLink} target="_blank" rel="noopener noreferrer"
-                className={`${s.supportBtn} ${s.btnWhatsapp}`}>
+              <a
+                href={whatsappLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${s.supportBtn} ${s.btnWhatsapp}`}
+              >
                 <FaWhatsapp size={15} /> واتساپ
               </a>
             )}
@@ -434,7 +481,6 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
 
       {/* Step panels — keyed for slide animation */}
       <div key={step} className={dir === 'fwd' ? s.panel : s.panelBack}>
-
         {/* ── STEP 1: Amount + currency + service type ──────────────────── */}
         {step === 1 && (
           <div>
@@ -470,8 +516,10 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
                   <div>
                     <div className={s.rateStripText}>
                       پرداخت{' '}
-                      <strong dir="ltr">{amount} {selectedCurrencyInfo.value}</strong>
-                      {' '}— نرخ دقیق توسط کارشناس تأیید می‌شود
+                      <strong dir="ltr">
+                        {amount} {selectedCurrencyInfo.value}
+                      </strong>{' '}
+                      — نرخ دقیق توسط کارشناس تأیید می‌شود
                     </div>
                     <div className={s.rateStripNote}>پاسخگویی در کمتر از ۳۰ دقیقه</div>
                   </div>
@@ -479,7 +527,9 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
               )}
 
               {errors.amount && (
-                <p className={s.fieldError} role="alert">{errors.amount.message}</p>
+                <p className={s.fieldError} role="alert">
+                  {errors.amount.message}
+                </p>
               )}
             </div>
 
@@ -488,28 +538,30 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
             <div className={s.serviceGrid} role="radiogroup" aria-label="نوع خدمات">
               {SERVICE_TYPES.map((svc) => {
                 const Icon = svc.icon;
-                const sel  = serviceType === svc.value;
+                const sel = serviceType === svc.value;
                 return (
-                  <button
+                  <label
                     key={svc.value}
-                    type="button"
-                    role="radio"
-                    aria-checked={sel}
-                    onClick={() => setValue('serviceType', svc.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        setValue('serviceType', svc.value);
-                      }
-                    }}
                     className={`${s.serviceBtn} ${sel ? s.serviceBtnSelected : ''}`}
                   >
-                    {sel && <span className={s.serviceCheckmark} aria-hidden="true"><Check size={9} /></span>}
+                    <input
+                      type="radio"
+                      name="serviceType"
+                      value={svc.value}
+                      checked={sel}
+                      onChange={() => setValue('serviceType', svc.value)}
+                      className={s.srOnly}
+                    />
+                    {sel && (
+                      <span className={s.serviceCheckmark} aria-hidden="true">
+                        <Check size={9} />
+                      </span>
+                    )}
                     <div className={s.serviceIcon} style={{ color: svc.color }}>
                       <Icon size={17} />
                     </div>
                     <span className={s.serviceName}>{svc.label}</span>
-                  </button>
+                  </label>
                 );
               })}
             </div>
@@ -523,11 +575,14 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
 
             <div className={s.fieldRow}>
               <Field
-                id="fullName" label="نام و نام خانوادگی" required
+                id="fullName"
+                label="نام و نام خانوادگی"
+                required
                 error={errors.fullName?.message}
               >
                 <input
-                  id="fullName" type="text"
+                  id="fullName"
+                  type="text"
                   {...register('fullName')}
                   className={`${s.input} ${errors.fullName ? s.inputError : ''}`}
                   placeholder="نام کامل"
@@ -536,12 +591,15 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
               </Field>
 
               <Field
-                id="phone" label="شماره تماس" required
+                id="phone"
+                label="شماره تماس"
+                required
                 error={errors.phone?.message}
                 hint="با ۰ یا ۹۸ شروع کنید"
               >
                 <input
-                  id="phone" type="tel"
+                  id="phone"
+                  type="tel"
                   {...register('phone')}
                   className={`${s.input} ${errors.phone ? s.inputError : ''}`}
                   placeholder="09123456789"
@@ -553,7 +611,8 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
 
             <Field id="email" label="ایمیل" hint="اختیاری — برای دریافت تأییدیه">
               <input
-                id="email" type="email"
+                id="email"
+                type="email"
                 {...register('email')}
                 className={s.input}
                 placeholder="example@email.com"
@@ -568,15 +627,28 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
               <div className={s.fieldRow}>
                 <Field id="destinationCountry" label="کشور مقصد">
                   <div className={s.selectWrap}>
-                    <select id="destinationCountry" {...register('destinationCountry')} className={s.select}>
+                    <select
+                      id="destinationCountry"
+                      {...register('destinationCountry')}
+                      className={s.select}
+                    >
                       <option value="">انتخاب کنید</option>
-                      {COUNTRIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+                      {COUNTRIES.map((c) => (
+                        <option key={c.value} value={c.value}>
+                          {c.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </Field>
                 <Field id="bankName" label="نام بانک مقصد">
-                  <input id="bankName" type="text" {...register('bankName')}
-                    className={s.input} placeholder="نام بانک گیرنده" />
+                  <input
+                    id="bankName"
+                    type="text"
+                    {...register('bankName')}
+                    className={s.input}
+                    placeholder="نام بانک گیرنده"
+                  />
                 </Field>
               </div>
             </ConditionalSection>
@@ -585,12 +657,23 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
               <Divider label="اطلاعات خرید (اختیاری)" />
               <div className={s.fieldRow}>
                 <Field id="websiteUrl" label="آدرس سایت">
-                  <input id="websiteUrl" type="text" {...register('websiteUrl')}
-                    className={s.input} placeholder="https://example.com" dir="ltr" />
+                  <input
+                    id="websiteUrl"
+                    type="text"
+                    {...register('websiteUrl')}
+                    className={s.input}
+                    placeholder="https://example.com"
+                    dir="ltr"
+                  />
                 </Field>
                 <Field id="productName" label="نام محصول">
-                  <input id="productName" type="text" {...register('productName')}
-                    className={s.input} placeholder="نام محصول یا خدمات" />
+                  <input
+                    id="productName"
+                    type="text"
+                    {...register('productName')}
+                    className={s.input}
+                    placeholder="نام محصول یا خدمات"
+                  />
                 </Field>
               </div>
             </ConditionalSection>
@@ -600,20 +683,39 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
               <div className={s.fieldRow}>
                 <Field id="tuitionCountry" label="کشور مقصد">
                   <div className={s.selectWrap}>
-                    <select id="tuitionCountry" {...register('destinationCountry')} className={s.select}>
+                    <select
+                      id="tuitionCountry"
+                      {...register('destinationCountry')}
+                      className={s.select}
+                    >
                       <option value="">انتخاب کنید</option>
-                      {COUNTRIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+                      {COUNTRIES.map((c) => (
+                        <option key={c.value} value={c.value}>
+                          {c.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </Field>
                 <Field id="universityName" label="نام دانشگاه">
-                  <input id="universityName" type="text" {...register('universityName')}
-                    className={s.input} placeholder="نام دانشگاه" />
+                  <input
+                    id="universityName"
+                    type="text"
+                    {...register('universityName')}
+                    className={s.input}
+                    placeholder="نام دانشگاه"
+                  />
                 </Field>
               </div>
               <Field id="studentId" label="شماره دانشجویی" hint="اختیاری">
-                <input id="studentId" type="text" {...register('studentId')}
-                  className={s.input} placeholder="شماره دانشجویی" dir="ltr" />
+                <input
+                  id="studentId"
+                  type="text"
+                  {...register('studentId')}
+                  className={s.input}
+                  placeholder="شماره دانشجویی"
+                  dir="ltr"
+                />
               </Field>
             </ConditionalSection>
 
@@ -621,12 +723,23 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
               <Divider label="اطلاعات پلتفرم (اختیاری)" />
               <div className={s.fieldRow}>
                 <Field id="platformName" label="نام پلتفرم">
-                  <input id="platformName" type="text" {...register('platformName')}
-                    className={s.input} placeholder="Upwork، Fiverr، ..." />
+                  <input
+                    id="platformName"
+                    type="text"
+                    {...register('platformName')}
+                    className={s.input}
+                    placeholder="Upwork، Fiverr، ..."
+                  />
                 </Field>
                 <Field id="platformUsername" label="نام کاربری">
-                  <input id="platformUsername" type="text" {...register('platformUsername')}
-                    className={s.input} placeholder="username" dir="ltr" />
+                  <input
+                    id="platformUsername"
+                    type="text"
+                    {...register('platformUsername')}
+                    className={s.input}
+                    placeholder="username"
+                    dir="ltr"
+                  />
                 </Field>
               </div>
             </ConditionalSection>
@@ -635,12 +748,21 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
               <Divider label="اطلاعات نرم‌افزار (اختیاری)" />
               <div className={s.fieldRow}>
                 <Field id="softwareName" label="نام نرم‌افزار">
-                  <input id="softwareName" type="text" {...register('softwareName')}
-                    className={s.input} placeholder="Adobe، Microsoft 365، ..." />
+                  <input
+                    id="softwareName"
+                    type="text"
+                    {...register('softwareName')}
+                    className={s.input}
+                    placeholder="Adobe، Microsoft 365، ..."
+                  />
                 </Field>
                 <Field id="subscriptionType" label="نوع اشتراک">
                   <div className={s.selectWrap}>
-                    <select id="subscriptionType" {...register('subscriptionType')} className={s.select}>
+                    <select
+                      id="subscriptionType"
+                      {...register('subscriptionType')}
+                      className={s.select}
+                    >
                       <option value="">انتخاب کنید</option>
                       <option value="monthly">ماهانه</option>
                       <option value="yearly">سالانه</option>
@@ -674,7 +796,11 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
                 </Field>
                 <Field id="giftCardRegion" label="ریجن / منطقه">
                   <div className={s.selectWrap}>
-                    <select id="giftCardRegion" {...register('giftCardRegion')} className={s.select}>
+                    <select
+                      id="giftCardRegion"
+                      {...register('giftCardRegion')}
+                      className={s.select}
+                    >
                       <option value="">انتخاب کنید</option>
                       <option value="us">آمریکا (US)</option>
                       <option value="eu">اروپا (EU)</option>
@@ -694,22 +820,26 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
           <div>
             {/* Summary */}
             <div className={s.summaryCard}>
-              {selectedService && (() => {
-                const Icon = selectedService.icon;
-                return (
-                  <div className={s.summaryHeader}>
-                    <div className={s.summaryServiceIcon} style={{ color: selectedService.color }}>
-                      <Icon size={20} />
+              {selectedService &&
+                (() => {
+                  const Icon = selectedService.icon;
+                  return (
+                    <div className={s.summaryHeader}>
+                      <div
+                        className={s.summaryServiceIcon}
+                        style={{ color: selectedService.color }}
+                      >
+                        <Icon size={20} />
+                      </div>
+                      <div>
+                        <p className={s.summaryServiceTitle}>{selectedService.label}</p>
+                        <p className={s.summaryServiceDesc}>
+                          {amount} {selectedCurrencyInfo?.value ?? ''} — {fullName || '—'}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className={s.summaryServiceTitle}>{selectedService.label}</p>
-                      <p className={s.summaryServiceDesc}>
-                        {amount} {selectedCurrencyInfo?.value ?? ''} — {fullName || '—'}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })()}
+                  );
+                })()}
               <div className={s.summaryGrid}>
                 <div className={s.summaryCell}>
                   <div className={s.summaryCellLabel}>مبلغ</div>
@@ -719,41 +849,23 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
                 </div>
                 <div className={s.summaryCell}>
                   <div className={s.summaryCellLabel}>شماره تماس</div>
-                  <div className={s.summaryCellValue} dir="ltr">{phone || '—'}</div>
+                  <div className={s.summaryCellValue} dir="ltr">
+                    {phone || '—'}
+                  </div>
                 </div>
               </div>
-            </div>
-
-            {/* Urgency */}
-            <Divider label="اولویت پردازش" />
-            <div className={s.urgencyRow}>
-              <label className={s.urgencyLabel}>
-                <input type="radio" value="NORMAL" {...register('urgency')} className={s.urgencyRadio} />
-                <div className={s.urgencyCard}>
-                  <div className={s.urgencyCardIcon}><Clock size={15} /></div>
-                  <div>
-                    <div className={s.urgencyCardTitle}>عادی</div>
-                    <div className={s.urgencyCardSub}>پردازش تا ۲۴ ساعت</div>
-                  </div>
-                </div>
-              </label>
-              <label className={s.urgencyLabel}>
-                <input type="radio" value="URGENT" {...register('urgency')} className={s.urgencyRadio} />
-                <div className={s.urgencyCard}>
-                  <div className={s.urgencyCardIcon}><Zap size={15} /></div>
-                  <div>
-                    <div className={s.urgencyCardTitle}>فوری</div>
-                    <div className={s.urgencyCardSub}>پردازش اولویت‌دار</div>
-                  </div>
-                </div>
-              </label>
             </div>
 
             {/* Contact method */}
             <Divider label="روش تماس ترجیحی" />
             <div className={s.contactRow}>
               <label className={s.contactLabel}>
-                <input type="radio" value="telegram" {...register('contactMethod')} className={s.contactRadio} />
+                <input
+                  type="radio"
+                  value="telegram"
+                  {...register('contactMethod')}
+                  className={s.contactRadio}
+                />
                 <div className={s.contactCard}>
                   <div className={s.contactIconWrap} style={{ color: 'oklch(61% 0.17 218)' }}>
                     <FaTelegram size={16} />
@@ -762,7 +874,12 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
                 </div>
               </label>
               <label className={s.contactLabel}>
-                <input type="radio" value="whatsapp" {...register('contactMethod')} className={s.contactRadio} />
+                <input
+                  type="radio"
+                  value="whatsapp"
+                  {...register('contactMethod')}
+                  className={s.contactRadio}
+                />
                 <div className={s.contactCard}>
                   <div className={s.contactIconWrap} style={{ color: 'oklch(71% 0.18 155)' }}>
                     <FaWhatsapp size={16} />
@@ -779,7 +896,11 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
                 id="description"
                 {...register('description')}
                 ref={(el) => {
-                  (register('description') as unknown as { ref: (el: HTMLTextAreaElement | null) => void }).ref(el);
+                  (
+                    register('description') as unknown as {
+                      ref: (el: HTMLTextAreaElement | null) => void;
+                    }
+                  ).ref(el);
                   (textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = el;
                 }}
                 rows={2}
@@ -788,7 +909,9 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
                 onInput={autoResize}
               />
               {errors.description && (
-                <p className={s.fieldError} role="alert">{errors.description.message}</p>
+                <p className={s.fieldError} role="alert">
+                  {errors.description.message}
+                </p>
               )}
             </div>
           </div>
@@ -802,13 +925,10 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
             </div>
             <h3 className={s.otpTitle}>تأیید ایمیل</h3>
             <p className={s.otpDesc}>
-              کد ۶ رقمی به{' '}
-              <strong dir="ltr">{watch('email')}</strong>{' '}
-              ارسال شد. لطفاً کد را وارد کنید.
+              کد ۶ رقمی به <strong dir="ltr">{watch('email')}</strong> ارسال شد. لطفاً کد را وارد
+              کنید.
             </p>
-            {otpSending && (
-              <p className={s.otpHint}>در حال ارسال کد...</p>
-            )}
+            {otpSending && <p className={s.otpHint}>در حال ارسال کد...</p>}
             {otpError && (
               <div className={s.errorAlert} role="alert">
                 <AlertCircle size={14} />
@@ -838,17 +958,21 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
                 className={s.btnSubmit}
               >
                 {otpVerifying ? (
-                  <><span className={s.spinner} aria-hidden="true" /><span>در حال تأیید...</span></>
+                  <>
+                    <span className={s.spinner} aria-hidden="true" />
+                    <span>در حال تأیید...</span>
+                  </>
                 ) : (
-                  <><KeyRound size={15} /><span>تأیید کد</span></>
+                  <>
+                    <KeyRound size={15} />
+                    <span>تأیید کد</span>
+                  </>
                 )}
               </button>
             </div>
             <div className={s.otpFooter}>
               {otpResendTimer > 0 ? (
-                <span className={s.otpTimer}>
-                  ارسال مجدد در {otpResendTimer} ثانیه
-                </span>
+                <span className={s.otpTimer}>ارسال مجدد در {otpResendTimer} ثانیه</span>
               ) : (
                 <button
                   type="button"
@@ -886,34 +1010,42 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
 
       {/* Navigation — hidden on step 4 (OTP has its own buttons) */}
       {step !== 4 && (
-      <div className={s.navRow}>
-        {step > 1 ? (
-          <button type="button" onClick={goBack} className={s.btnBack}>
-            <ArrowRight size={15} />
-            <span>قبلی</span>
-          </button>
-        ) : <div />}
+        <div className={s.navRow}>
+          {step > 1 ? (
+            <button type="button" onClick={goBack} className={s.btnBack}>
+              <ArrowRight size={15} />
+              <span>قبلی</span>
+            </button>
+          ) : (
+            <div />
+          )}
 
-        {step < 3 ? (
-          <button type="button" onClick={goNext} className={s.btnNext}>
-            <span>بعدی</span>
-            <ArrowLeft size={15} />
-          </button>
-        ) : (
-          <button
-            type="button"
-            disabled={submitting}
-            onClick={handleSubmit(onSubmit)}
-            className={`${s.btnSubmit} ${submitShake ? s.btnSubmitError : ''}`}
-          >
-            {submitting ? (
-              <><span className={s.spinner} aria-hidden="true" /><span>در حال ارسال...</span></>
-            ) : (
-              <><CheckCircle2 size={15} /><span>ثبت درخواست</span></>
-            )}
-          </button>
-        )}
-      </div>
+          {step < 3 ? (
+            <button type="button" onClick={goNext} className={s.btnNext}>
+              <span>بعدی</span>
+              <ArrowLeft size={15} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled={submitting}
+              onClick={handleSubmit(onSubmit)}
+              className={`${s.btnSubmit} ${submitShake ? s.btnSubmitError : ''}`}
+            >
+              {submitting ? (
+                <>
+                  <span className={s.spinner} aria-hidden="true" />
+                  <span>در حال ارسال...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 size={15} />
+                  <span>ثبت درخواست</span>
+                </>
+              )}
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
@@ -929,7 +1061,7 @@ function StepProgress({ step }: { step: number }) {
   const fillPct = ((step - 1) / (TOTAL_STEPS - 1)) * 100;
 
   return (
-    <div className={s.progress} role="list" aria-label="مراحل فرم">
+    <ol className={s.progress} aria-label="مراحل فرم">
       {/* Animated filled track */}
       <div
         className={s.progressTrackFill}
@@ -938,11 +1070,11 @@ function StepProgress({ step }: { step: number }) {
       />
 
       {STEP_LABELS.map((label, idx) => {
-        const num    = idx + 1;
-        const done   = step > num;
+        const num = idx + 1;
+        const done = step > num;
         const active = step === num;
         return (
-          <div key={label} className={s.progressStep} role="listitem">
+          <li key={label} className={s.progressStep}>
             <div
               className={`${s.progressDot} ${active ? s.progressDotActive : ''} ${done ? s.progressDotDone : ''}`}
               aria-current={active ? 'step' : undefined}
@@ -954,10 +1086,10 @@ function StepProgress({ step }: { step: number }) {
             >
               {label}
             </span>
-          </div>
+          </li>
         );
       })}
-    </div>
+    </ol>
   );
 }
 
@@ -985,11 +1117,19 @@ function Field({ id, label, required, hint, error, children }: FieldProps) {
     <div className={s.fieldGroup}>
       <label className={s.label} htmlFor={id}>
         {label}
-        {required && <span className={s.required} aria-hidden="true">*</span>}
+        {required && (
+          <span className={s.required} aria-hidden="true">
+            *
+          </span>
+        )}
       </label>
       {children}
       {hint && !error && <span className={s.fieldHint}>{hint}</span>}
-      {error && <p className={s.fieldError} role="alert">{error}</p>}
+      {error && (
+        <p className={s.fieldError} role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -1012,26 +1152,31 @@ function ConditionalSection({
 const CURRENCY_SELECT_GROUPS: CurrencyGroup[] = [
   {
     label: 'ارزهای منطقه‌ای',
-    items: CURRENCIES
-      .filter((c) => ['AFN', 'USD', 'AED', 'PKR', 'IRR', 'TRY'].includes(c.value))
-      .map((c) => ({ value: c.value, code: c.value, label: c.label })),
+    items: CURRENCIES.filter((c) =>
+      ['AFN', 'USD', 'AED', 'PKR', 'IRR', 'TRY'].includes(c.value),
+    ).map((c) => ({ value: c.value, code: c.value, label: c.label })),
   },
   {
     label: 'ارزهای بین‌المللی',
-    items: CURRENCIES
-      .filter((c) => c.type === 'fiat' && !['AFN', 'USD', 'AED', 'PKR', 'IRR', 'TRY', 'OTHER'].includes(c.value))
-      .map((c) => ({ value: c.value, code: c.value, label: c.label })),
+    items: CURRENCIES.filter(
+      (c) =>
+        c.type === 'fiat' && !['AFN', 'USD', 'AED', 'PKR', 'IRR', 'TRY', 'OTHER'].includes(c.value),
+    ).map((c) => ({ value: c.value, code: c.value, label: c.label })),
   },
   {
     label: 'رمزارز',
-    items: CURRENCIES
-      .filter((c) => c.type === 'crypto')
-      .map((c) => ({ value: c.value, code: c.value, label: c.label })),
+    items: CURRENCIES.filter((c) => c.type === 'crypto').map((c) => ({
+      value: c.value,
+      code: c.value,
+      label: c.label,
+    })),
   },
   {
     label: 'سایر',
-    items: CURRENCIES
-      .filter((c) => c.value === 'OTHER')
-      .map((c) => ({ value: c.value, code: c.value, label: c.label })),
+    items: CURRENCIES.filter((c) => c.value === 'OTHER').map((c) => ({
+      value: c.value,
+      code: c.value,
+      label: c.label,
+    })),
   },
 ];

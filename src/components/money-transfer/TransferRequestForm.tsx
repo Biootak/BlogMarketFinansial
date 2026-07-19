@@ -18,6 +18,7 @@ import {
   CONVERTER_PREFILL_KEY,
   type ConverterPrefill,
 } from '@/app/(site)/money-transfer/HeroConverter';
+import { CurrencySelect } from '@/components/ui/CurrencySelect';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   AlertCircle,
@@ -29,7 +30,6 @@ import {
   Check,
   ChevronDown,
   CircleAlert,
-  Clock,
   Copy,
   CreditCard,
   DollarSign,
@@ -43,7 +43,6 @@ import {
   TrendingUp,
   User,
   Wallet,
-  Zap,
 } from 'lucide-react';
 import { type FC, useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -159,27 +158,27 @@ const DESTINATION_COUNTRIES = [
 ];
 
 const FIAT_CURRENCIES = [
-  { value: 'USD', label: 'USD', name: 'دلار آمریکا', symbol: '$' },
-  { value: 'AED', label: 'AED', name: 'درهم امارات', symbol: 'د.إ' },
-  { value: 'EUR', label: 'EUR', name: 'یورو', symbol: '€' },
-  { value: 'GBP', label: 'GBP', name: 'پوند', symbol: '£' },
-  { value: 'CAD', label: 'CAD', name: 'دلار کانادا', symbol: 'C$' },
-  { value: 'AUD', label: 'AUD', name: 'دلار استرالیا', symbol: 'A$' },
-  { value: 'TRY', label: 'TRY', name: 'لیر ترکیه', symbol: '₺' },
-  { value: 'AFN', label: 'AFN', name: 'افغانی', symbol: '؋' },
-  { value: 'IRR', label: 'IRR', name: 'ریال ایران', symbol: '﷼' },
-  { value: 'OTHER', label: 'دیگر', name: 'سایر ارز', symbol: '¤' },
+  { value: 'USD', code: 'USD', label: 'دلار آمریکا', symbol: '$' },
+  { value: 'AED', code: 'AED', label: 'درهم امارات', symbol: 'د.إ' },
+  { value: 'EUR', code: 'EUR', label: 'یورو', symbol: '€' },
+  { value: 'GBP', code: 'GBP', label: 'پوند', symbol: '£' },
+  { value: 'CAD', code: 'CAD', label: 'دلار کانادا', symbol: 'C$' },
+  { value: 'AUD', code: 'AUD', label: 'دلار استرالیا', symbol: 'A$' },
+  { value: 'TRY', code: 'TRY', label: 'لیر ترکیه', symbol: '₺' },
+  { value: 'AFN', code: 'AFN', label: 'افغانی', symbol: '؋' },
+  { value: 'IRR', code: 'IRR', label: 'ریال ایران', symbol: '﷼' },
+  { value: 'OTHER', code: '···', label: 'سایر ارز', symbol: '¤' },
 ];
 
 const CRYPTO_CURRENCIES = [
-  { value: 'USDT', label: 'USDT', name: 'تتر', symbol: '₮' },
-  { value: 'BTC', label: 'BTC', name: 'بیت‌کوین', symbol: '₿' },
-  { value: 'ETH', label: 'ETH', name: 'اتریوم', symbol: 'Ξ' },
-  { value: 'BNB', label: 'BNB', name: 'بایننس کوین', symbol: 'B' },
-  { value: 'TRX', label: 'TRX', name: 'ترون', symbol: '♦' },
-  { value: 'TON', label: 'TON', name: 'تون', symbol: '◎' },
-  { value: 'USDC', label: 'USDC', name: 'یو‌اس‌دی‌سی', symbol: '$' },
-  { value: 'OTHER', label: 'دیگر', name: 'سایر کوین', symbol: '¤' },
+  { value: 'USDT', code: 'USDT', label: 'تتر', symbol: '₮' },
+  { value: 'BTC', code: 'BTC', label: 'بیت‌کوین', symbol: '₿' },
+  { value: 'ETH', code: 'ETH', label: 'اتریوم', symbol: 'Ξ' },
+  { value: 'BNB', code: 'BNB', label: 'بایننس کوین', symbol: 'B' },
+  { value: 'TRX', code: 'TRX', label: 'ترون', symbol: '♦' },
+  { value: 'TON', code: 'TON', label: 'تون', symbol: '◎' },
+  { value: 'USDC', code: 'USDC', label: 'یو‌اس‌دی‌سی', symbol: '$' },
+  { value: 'OTHER', code: '···', label: 'سایر کوین', symbol: '¤' },
 ];
 
 const DIGITAL_PAYMENT_PLATFORMS = [
@@ -310,7 +309,6 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
   const amount = watch('amount');
   const currency = watch('currency');
   const destination = watch('destinationCountry');
-  const urgency = watch('urgency');
   const platform = watch('platformName');
 
   const svcType = selectedService ?? 'INTERNATIONAL_TRANSFER';
@@ -479,6 +477,7 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
     setSelectedService(null);
     setTrackingCode('');
     setFormError('');
+    setPanelDir('fwd');
     idempotencyKey.current = crypto.randomUUID();
     reset();
   };
@@ -644,23 +643,13 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
                     aria-describedby={errors.amount ? `${formId}-err-amount` : undefined}
                     autoComplete="off"
                   />
-                  <div className={s.currencyPill}>
-                    <span className={s.currencySymbol} aria-hidden="true">
-                      {currencyMeta.symbol}
-                    </span>
-                    <select
-                      {...register('currency')}
-                      className={s.currencySelect}
-                      aria-label="واحد ارز"
-                    >
-                      {currencyList.map((c) => (
-                        <option key={c.value} value={c.value}>
-                          {c.label}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown size={13} className={s.currencyChevron} aria-hidden="true" />
-                  </div>
+                  <CurrencySelect
+                    items={currencyList}
+                    value={currency}
+                    onChange={(v) => setValue('currency', v, { shouldValidate: true })}
+                    ariaLabel="واحد ارز"
+                    size="compact"
+                  />
                 </div>
                 {errors.amount && (
                   <p id={`${formId}-err-amount`} className={s.fieldError} role="alert">
@@ -831,37 +820,6 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
                 </>
               )}
 
-              {/* فوریت */}
-              <fieldset className={s.fieldset}>
-                <legend className={s.fieldLabel}>اولویت</legend>
-                <div className={s.segmentRow}>
-                  <label className={`${s.segment} ${urgency === 'NORMAL' ? s.segmentActive : ''}`}>
-                    <input
-                      type="radio"
-                      value="NORMAL"
-                      {...register('urgency')}
-                      className={s.srOnly}
-                    />
-                    <Clock size={13} aria-hidden="true" />
-                    <span>عادی</span>
-                    <small>تا ۲۴ ساعت</small>
-                  </label>
-                  <label
-                    className={`${s.segment} ${s.segmentUrgent} ${urgency === 'URGENT' ? s.segmentActive : ''}`}
-                  >
-                    <input
-                      type="radio"
-                      value="URGENT"
-                      {...register('urgency')}
-                      className={s.srOnly}
-                    />
-                    <Zap size={13} aria-hidden="true" />
-                    <span>فوری</span>
-                    <small>اولویت‌دار</small>
-                  </label>
-                </div>
-              </fieldset>
-
               {/* توضیحات */}
               <div className={s.fieldGroup}>
                 <label className={s.fieldLabel} htmlFor={`${formId}-desc`}>
@@ -894,8 +852,9 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
                 </div>
                 <div className={s.invoiceRow}>
                   <dt className={s.invoiceKey}>مبلغ</dt>
-                  <dd className={s.invoiceValBig} dir="ltr">
-                    {amount} <span className={s.invoiceCurrency}>{currencyMeta.label}</span>
+                  <dd className={s.invoiceValBig}>
+                    <span dir="ltr">{amount}</span>
+                    <span className={s.invoiceCurrency}>{currencyMeta.label}</span>
                   </dd>
                 </div>
                 {destination && countryMeta && (
@@ -906,20 +865,6 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
                     </dd>
                   </div>
                 )}
-                <div className={s.invoiceRow}>
-                  <dt className={s.invoiceKey}>اولویت</dt>
-                  <dd className={s.invoiceVal}>
-                    {urgency === 'URGENT' ? (
-                      <>
-                        <Zap size={11} aria-hidden="true" /> فوری
-                      </>
-                    ) : (
-                      <>
-                        <Clock size={11} aria-hidden="true" /> عادی
-                      </>
-                    )}
-                  </dd>
-                </div>
               </dl>
 
               {/* اطلاعات کاربر — از session، نه از فرم */}

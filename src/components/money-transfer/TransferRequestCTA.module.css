@@ -10,7 +10,17 @@
   position: relative;
   isolation: isolate;
   padding-block: var(--ds-space-10);
+  /* NO overflow:hidden here — it would clip position:absolute dropdowns (z-index:60).
+     Glows are clipped inside .glowLayer instead. */
+}
+
+/* Glow layer — clips the decorative orbs without clipping dropdowns */
+.glowLayer {
+  position: absolute;
+  inset: 0;
   overflow: hidden;
+  pointer-events: none;
+  z-index: -1;
 }
 
 /* Ambient background glows — subtle, non-neon */
@@ -26,8 +36,6 @@
     color-mix(in oklch, var(--ds-brand-600) 8%, transparent) 0%,
     transparent 70%
   );
-  pointer-events: none;
-  z-index: -1;
 }
 
 .glowB {
@@ -42,8 +50,6 @@
     color-mix(in oklch, var(--ds-accent-emerald) 6%, transparent) 0%,
     transparent 70%
   );
-  pointer-events: none;
-  z-index: -1;
 }
 
 /* ─── Inner grid ───────────────────────────────────────────────────────────── */
@@ -95,8 +101,15 @@
 }
 
 @keyframes breath {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.5; transform: scale(0.8); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
 }
 
 /* Headline */
@@ -116,7 +129,7 @@
 
 /* Subtle underline on accent word */
 .titleAccent::after {
-  content: '';
+  content: "";
   position: absolute;
   inset-block-end: -2px;
   inset-inline-start: 0;
@@ -139,6 +152,9 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--ds-space-3);
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .statCard {
@@ -150,13 +166,13 @@
   border: 1px solid var(--ds-border-subtle);
   border-radius: var(--ds-radius-md);
   /* Hairline elevation tier — Craft Bar depth */
-  box-shadow:
-    0 1px 3px -1px oklch(20% 0 0 / 0.06),
-    inset 0 1px 0 oklch(100% 0 0 / 0.6);
+  box-shadow: 0 1px 3px -1px oklch(20% 0 0 / 0.06), inset 0 1px 0 oklch(100% 0 0 / 0.6);
   transition: transform var(--ds-duration-fast) cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.statCard:hover { transform: translateY(-2px); }
+.statCard:hover {
+  transform: translateY(-2px);
+}
 
 .statValue {
   font-size: var(--ds-text-xl);
@@ -227,7 +243,7 @@
 }
 
 .formCard::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
@@ -238,8 +254,7 @@
     color-mix(in oklch, var(--ds-brand-600) 60%, var(--ds-accent-emerald)) 50%,
     transparent 100%
   );
-  -webkit-mask:
-    linear-gradient(var(--ds-text-inverse, white) 0 0) content-box,
+  -webkit-mask: linear-gradient(var(--ds-text-inverse, white) 0 0) content-box,
     linear-gradient(var(--ds-text-inverse, white) 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -249,7 +264,9 @@
   transition: opacity var(--ds-duration-slow);
 }
 
-.formCard:hover::before { opacity: 0.9; }
+.formCard:hover::before {
+  opacity: 0.9;
+}
 
 .formCardInner {
   position: relative;
@@ -257,9 +274,7 @@
   background: var(--ds-surface);
   border-radius: var(--ds-radius-2xl);
   padding: clamp(1.25rem, 4vw, 2rem);
-  box-shadow:
-    0 4px 24px -6px oklch(20% 0 0 / 0.10),
-    0 1px 4px -1px oklch(20% 0 0 / 0.06);
+  box-shadow: 0 4px 24px -6px oklch(20% 0 0 / 0.1), 0 1px 4px -1px oklch(20% 0 0 / 0.06);
 }
 
 /* Form internal header */

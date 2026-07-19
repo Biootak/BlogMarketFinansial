@@ -15,6 +15,7 @@
 
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
+import { revalidatePath } from 'next/cache';
 import { isPhoneValid, normalizeToE164 } from '@/lib/phone-validation';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { sendSms } from '@/lib/sms';
@@ -142,6 +143,9 @@ export async function verifyPhoneOtp(args: {
       where: { id: session.user.id },
       data: { phoneNumber: e164 },
     });
+
+    // sync داشبورد — صفحه مدیریت کاربران را revalidate کن
+    revalidatePath('/dashboard/users');
 
     return { success: true, message: 'شماره موبایل با موفقیت تأیید شد.' };
   } catch {

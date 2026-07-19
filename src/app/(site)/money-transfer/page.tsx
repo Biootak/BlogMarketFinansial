@@ -108,9 +108,10 @@ async function buildHeroInitial(
   // ارزهای دیجیتال از Exir — pivot: USDT/تومان
   const usdtPair = fiatPairs.find((p) => p.code === 'USD');
   const usdtToman = usdtPair?.buy ?? 0;
-  const cryptoPairs = cryptoResult.success && cryptoResult.data && cryptoResult.data.length > 0
-    ? buildCryptoPairs(cryptoResult.data, usdtToman)
-    : [];
+  const cryptoPairs =
+    cryptoResult.success && cryptoResult.data && cryptoResult.data.length > 0
+      ? buildCryptoPairs(cryptoResult.data, usdtToman)
+      : [];
 
   // ارزهای سرای شاهزاده (sarafi.af) — تب افغانی، واحد AFN
   const sarafiPairs = buildSarafiPairs(marketItems);
@@ -142,7 +143,7 @@ export default async function MoneyTransferPage() {
   const activeRateLists = rateLists.filter((list) => list.isActive);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       {/* Hero + Live Converter (one cohesive unit) */}
       <HeroConverter
         pairs={hero.pairs}

@@ -4,20 +4,20 @@
  * Signature: ambient gradient ring + animated stats
  */
 import { getSupportContactLinks } from '@/actions/serviceRequestActions';
-import TransferRequestForm from './TransferRequestForm';
 import s from './TransferRequestCTA.module.css';
+import TransferRequestForm from './TransferRequestForm';
 
 const TRUST_STATS = [
-  { value: '۲,۵۰۰+', label: 'تراکنش ماهانه',   detail: 'موفق در خدمات ارزی' },
-  { value: '۹۸٪',    label: 'رضایت مشتریان',  detail: 'بر اساس نظرسنجی' },
-  { value: '۳۰ دقیقه', label: 'زمان پاسخ',     detail: 'حداکثر در ساعات کاری' },
-  { value: '۱۲,۰۰۰+', label: 'مشتری فعال',     detail: 'از سرتاسر جهان' },
+  { value: '۲,۵۰۰+', label: 'تراکنش ماهانه', detail: 'موفق در خدمات ارزی' },
+  { value: '۹۸٪', label: 'رضایت مشتریان', detail: 'بر اساس نظرسنجی' },
+  { value: '۳۰ دقیقه', label: 'زمان پاسخ', detail: 'حداکثر در ساعات کاری' },
+  { value: '۱۲,۰۰۰+', label: 'مشتری فعال', detail: 'از سرتاسر جهان' },
 ];
 
 const FEATURES = [
-  { title: 'نرخ لحظه‌ای',       body: 'نرخ‌های ما هر ۱۵ دقیقه بروز می‌شوند.' },
-  { title: 'بدون هزینه پنهان',  body: 'تمام کارمزدها پیش از پرداخت اعلام می‌شود.' },
-  { title: 'پشتیبانی ۷/۲۴',    body: 'تیم ما از طریق تلگرام و واتساپ همیشه در دسترس است.' },
+  { title: 'نرخ لحظه‌ای', body: 'نرخ‌های ما هر ۱۵ دقیقه بروز می‌شوند.' },
+  { title: 'بدون هزینه پنهان', body: 'تمام کارمزدها پیش از پرداخت اعلام می‌شود.' },
+  { title: 'پشتیبانی ۷/۲۴', body: 'تیم ما از طریق تلگرام و واتساپ همیشه در دسترس است.' },
 ];
 
 export default async function TransferRequestCTA() {
@@ -25,16 +25,16 @@ export default async function TransferRequestCTA() {
 
   return (
     <section className={s.section} id="contact" aria-labelledby="transfer-cta-title">
-
-      {/* ── Ambient background glow (non-interactive) ── */}
-      <div className={s.glowA} aria-hidden="true" />
-      <div className={s.glowB} aria-hidden="true" />
+      {/* ── Ambient background glows — clipped inside their own layer so the
+           section itself stays overflow:visible, letting dropdowns escape ── */}
+      <div className={s.glowLayer} aria-hidden="true">
+        <div className={s.glowA} />
+        <div className={s.glowB} />
+      </div>
 
       <div className={s.inner}>
-
         {/* ── Info column ──────────────────────────────────────────── */}
         <div className={s.infoCol}>
-
           {/* Eyebrow */}
           <p className={s.eyebrow}>
             <span className={s.eyebrowDot} aria-hidden="true" />
@@ -48,29 +48,28 @@ export default async function TransferRequestCTA() {
           </h2>
 
           <p className={s.subtitle}>
-            حواله، خرید و فروش ارز، ارز دیجیتال، پی‌پال و بیشتر — بدون مراجعه حضوری.
-            کارشناسان ما در کمتر از ۳۰ دقیقه با شما تماس می‌گیرند.
+            حواله، خرید و فروش ارز، ارز دیجیتال، پی‌پال و بیشتر — بدون مراجعه حضوری. کارشناسان ما در
+            کمتر از ۳۰ دقیقه با شما تماس می‌گیرند.
           </p>
 
           {/* Stats grid */}
-          <div className={s.statsGrid} role="list" aria-label="آمار خدمات">
+          <ul className={s.statsGrid} aria-label="آمار خدمات">
             {TRUST_STATS.map(({ value, label, detail }) => (
-              <div key={label} className={s.statCard} role="listitem">
+              <li key={label} className={s.statCard}>
                 <span className={s.statValue}>{value}</span>
                 <span className={s.statLabel}>{label}</span>
                 <span className={s.statDetail}>{detail}</span>
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
 
           {/* Feature bullets */}
-          <ul className={s.features} role="list">
+          <ul className={s.features}>
             {FEATURES.map(({ title, body }) => (
-              <li key={title} className={s.feature} role="listitem">
+              <li key={title} className={s.feature}>
                 <span className={s.featureDot} aria-hidden="true" />
                 <span>
-                  <strong className={s.featureTitle}>{title}</strong>
-                  {' '}{body}
+                  <strong className={s.featureTitle}>{title}</strong> {body}
                 </span>
               </li>
             ))}
@@ -94,7 +93,6 @@ export default async function TransferRequestCTA() {
             </div>
           </div>
         </div>
-
       </div>
     </section>
   );
