@@ -1,32 +1,32 @@
 'use client';
 
-import s from './MyRequestsClient.module.css';
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { issueServiceOtp, verifyServiceOtpAndLink } from '@/actions/progressive-capture';
 import {
-  Clock,
-  CheckCircle2,
-  XCircle,
-  RefreshCw,
-  ChevronDown,
-  ChevronUp,
-  PackageSearch,
-  AlertCircle,
-  Zap,
-  History,
-  MessageSquare,
-  CalendarClock,
-  Ban,
-  Link2,
-  KeyRound,
-  RotateCcw,
-  ArrowRight,
-} from 'lucide-react';
-import {
-  getMyServiceRequests,
   cancelMyServiceRequest,
   claimGuestRequest,
+  getMyServiceRequests,
 } from '@/actions/serviceRequestActions';
-import { issueServiceOtp, verifyServiceOtpAndLink } from '@/actions/progressive-capture';
+import {
+  AlertCircle,
+  ArrowRight,
+  Ban,
+  CalendarClock,
+  CheckCircle2,
+  ChevronDown,
+  Clock,
+  History,
+  KeyRound,
+  Link2,
+  MessageSquare,
+  PackageSearch,
+  Plus,
+  RefreshCw,
+  RotateCcw,
+  XCircle,
+  Zap,
+} from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import s from './MyRequestsClient.module.css';
 
 // ─── Types ─────────────────────────────────────────────────────────────────── //
 
@@ -58,35 +58,43 @@ const STATUS_META: Record<
   string,
   { label: string; icon: React.ComponentType<{ size?: number }>; color: string }
 > = {
-  PENDING:     { label: 'در انتظار بررسی', icon: Clock,        color: 'oklch(60% 0.18 75)'   },
-  IN_PROGRESS: { label: 'در حال انجام',    icon: RefreshCw,    color: 'oklch(52% 0.18 240)'  },
-  COMPLETED:   { label: 'تکمیل شده',       icon: CheckCircle2, color: 'oklch(50% 0.18 155)'  },
-  CANCELLED:   { label: 'لغو شده',         icon: XCircle,      color: 'oklch(52% 0.18 15)'   },
+  PENDING: { label: 'در انتظار بررسی', icon: Clock, color: 'oklch(60% 0.18 75)' },
+  IN_PROGRESS: { label: 'در حال انجام', icon: RefreshCw, color: 'oklch(52% 0.18 240)' },
+  COMPLETED: { label: 'تکمیل شده', icon: CheckCircle2, color: 'oklch(50% 0.18 155)' },
+  CANCELLED: { label: 'لغو شده', icon: XCircle, color: 'oklch(52% 0.18 15)' },
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  PENDING:     'در انتظار بررسی',
+  PENDING: 'در انتظار بررسی',
   IN_PROGRESS: 'در حال انجام',
-  COMPLETED:   'تکمیل شده',
-  CANCELLED:   'لغو شده',
+  COMPLETED: 'تکمیل شده',
+  CANCELLED: 'لغو شده',
 };
 
 const SERVICE_LABELS: Record<string, string> = {
   INTERNATIONAL_TRANSFER: 'حواله بین‌المللی',
-  ONLINE_PAYMENT:         'پرداخت آنلاین',
-  TUITION_PAYMENT:        'پرداخت شهریه',
-  FREELANCE_INCOME:       'نقد کردن درآمد',
-  SOFTWARE_PURCHASE:      'خرید نرم‌افزار',
-  GIFT_CARD:              'گیفت کارت',
-  CURRENCY_BUY:           'خرید ارز',
-  CURRENCY_SELL:          'فروش ارز',
-  CRYPTO_BUY:             'خرید ارز دیجیتال',
-  CRYPTO_SELL:            'فروش ارز دیجیتال',
-  PAYPAL_TRANSFER:        'پی‌پال / اسکریل',
-  OTHER:                  'سایر خدمات',
+  ONLINE_PAYMENT: 'پرداخت آنلاین',
+  TUITION_PAYMENT: 'پرداخت شهریه',
+  FREELANCE_INCOME: 'نقد کردن درآمد',
+  SOFTWARE_PURCHASE: 'خرید نرم‌افزار',
+  GIFT_CARD: 'گیفت کارت',
+  CURRENCY_BUY: 'خرید ارز',
+  CURRENCY_SELL: 'فروش ارز',
+  CRYPTO_BUY: 'خرید ارز دیجیتال',
+  CRYPTO_SELL: 'فروش ارز دیجیتال',
+  PAYPAL_TRANSFER: 'پی‌پال / اسکریل',
+  OTHER: 'سایر خدمات',
 };
 
 // ─── RequestRow ──────────────────────────────────────────────────────────── //
+
+// status → CSS custom property for accent bar + icon bg
+const STATUS_ACCENT: Record<string, string> = {
+  PENDING: 'oklch(60% 0.18 75)',
+  IN_PROGRESS: 'oklch(52% 0.18 240)',
+  COMPLETED: 'oklch(50% 0.18 155)',
+  CANCELLED: 'oklch(52% 0.18 15)',
+};
 
 function RequestRow({
   req,
@@ -95,19 +103,23 @@ function RequestRow({
   req: MyRequest;
   onCancelled: (trackingCode: string) => void;
 }) {
-  const [expanded, setExpanded]     = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [cancelling, setCancelling] = useState(false);
-  const [cancelErr, setCancelErr]   = useState('');
+  const [cancelErr, setCancelErr] = useState('');
   const [cancelDone, setCancelDone] = useState(false);
   const [localStatus, setLocalStatus] = useState(req.status);
 
-  const meta       = STATUS_META[localStatus] ?? STATUS_META.PENDING;
+  const meta = STATUS_META[localStatus] ?? STATUS_META.PENDING;
   const StatusIcon = meta.icon;
+  const accentColor = STATUS_ACCENT[localStatus] ?? STATUS_ACCENT.PENDING;
 
   // کانترِ مهلت لغو — تعداد دقیقه مانده
   const [cancelMinsLeft, setCancelMinsLeft] = useState<number | null>(null);
   useEffect(() => {
-    if (localStatus !== 'PENDING') { setCancelMinsLeft(null); return; }
+    if (localStatus !== 'PENDING') {
+      setCancelMinsLeft(null);
+      return;
+    }
     const created = new Date(req.createdAt).getTime();
     const deadline = created + 30 * 60 * 1000;
     const update = () => {
@@ -137,7 +149,7 @@ function RequestRow({
   };
 
   return (
-    <li className={s.row}>
+    <li className={s.row} style={{ '--row-accent': accentColor } as React.CSSProperties}>
       {/* Summary */}
       <button
         type="button"
@@ -146,23 +158,29 @@ function RequestRow({
         aria-expanded={expanded}
         aria-controls={`detail-${req.id}`}
       >
-        <span className={s.statusIcon} style={{ color: meta.color }}>
+        <span className={s.statusIcon}>
           <StatusIcon size={16} />
         </span>
         <div className={s.summaryBody}>
-          <span className={s.tracking} dir="ltr">{req.trackingCode}</span>
+          <span className={s.tracking} dir="ltr">
+            {req.trackingCode}
+          </span>
           <span className={s.service}>{SERVICE_LABELS[req.serviceType] ?? req.serviceType}</span>
         </div>
         <div className={s.summaryEnd}>
-          <span className={s.amount} dir="ltr">{req.amount} {req.currency}</span>
+          <span className={s.amount} dir="ltr">
+            {req.amount} {req.currency}
+          </span>
           <span className={s.badge} data-status={localStatus.toLowerCase()}>
             {meta.label}
           </span>
           {req.urgency === 'URGENT' && (
-            <span className={s.urgentTag} title="فوری"><Zap size={11} /></span>
+            <span className={s.urgentTag} title="فوری">
+              <Zap size={11} />
+            </span>
           )}
-          <span className={s.toggleIcon} aria-hidden>
-            {expanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+          <span className={`${s.toggleIcon} ${expanded ? s.toggleIconOpen : ''}`} aria-hidden>
+            <ChevronDown size={15} />
           </span>
         </div>
       </button>
@@ -174,21 +192,30 @@ function RequestRow({
           <div className={s.dates}>
             <span className={s.dateItem}>
               <Clock size={12} />
-              ثبت: {new Date(req.createdAt).toLocaleDateString('fa-IR', {
-                year: 'numeric', month: 'long', day: 'numeric',
+              ثبت:{' '}
+              {new Date(req.createdAt).toLocaleDateString('fa-IR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
               })}
             </span>
             <span className={s.dateItem}>
               <RefreshCw size={12} />
-              آخرین بروزرسانی: {new Date(req.updatedAt).toLocaleDateString('fa-IR', {
-                year: 'numeric', month: 'long', day: 'numeric',
+              آخرین بروزرسانی:{' '}
+              {new Date(req.updatedAt).toLocaleDateString('fa-IR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
               })}
             </span>
             {req.estimatedCompletionAt && (
               <span className={`${s.dateItem} ${s.dateEta}`}>
                 <CalendarClock size={12} />
-                زمان تخمینی: {new Date(req.estimatedCompletionAt).toLocaleDateString('fa-IR', {
-                  year: 'numeric', month: 'long', day: 'numeric',
+                زمان تخمینی:{' '}
+                {new Date(req.estimatedCompletionAt).toLocaleDateString('fa-IR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
                 })}
               </span>
             )}
@@ -214,17 +241,21 @@ function RequestRow({
               </div>
               <ol className={s.historyList}>
                 {req.statusLogs.map((log, i) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: status logs have no stable id
                   <li key={i} className={s.historyItem}>
                     <span className={s.historyDot} />
                     <div>
                       <span className={s.historyStatus}>
-                        {log.fromStatus ? `${STATUS_LABELS[log.fromStatus] ?? log.fromStatus} ← ` : ''}
+                        {log.fromStatus
+                          ? `${STATUS_LABELS[log.fromStatus] ?? log.fromStatus} ← `
+                          : ''}
                         {STATUS_LABELS[log.toStatus] ?? log.toStatus}
                       </span>
                       {log.note && <span className={s.historyNote}>{log.note}</span>}
                       <time className={s.historyTime}>
                         {new Date(log.createdAt).toLocaleDateString('fa-IR', {
-                          month: 'short', day: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
                         })}
                       </time>
                     </div>
@@ -254,10 +285,15 @@ function RequestRow({
                     disabled={cancelling}
                     className={s.btnCancel}
                   >
-                    {cancelling
-                      ? <><span className={s.spinnerSm} aria-hidden="true" /> در حال لغو…</>
-                      : <><Ban size={12} /> لغو سفارش</>
-                    }
+                    {cancelling ? (
+                      <>
+                        <span className={s.spinnerSm} aria-hidden="true" /> در حال لغو…
+                      </>
+                    ) : (
+                      <>
+                        <Ban size={12} /> لغو سفارش
+                      </>
+                    )}
                   </button>
                 </div>
               ) : localStatus === 'PENDING' ? (
@@ -269,9 +305,9 @@ function RequestRow({
           )}
 
           {cancelDone && (
-            <p className={s.cancelSuccess} role="status">
+            <output className={s.cancelSuccess}>
               <CheckCircle2 size={13} /> سفارش لغو شد.
-            </p>
+            </output>
           )}
 
           {/* Track link */}
@@ -293,18 +329,18 @@ function RequestRow({
 // ─── ClaimGuestPanel ─────────────────────────────────────────────────────── //
 
 function ClaimGuestPanel({ onClaimed }: { onClaimed: () => void }) {
-  const [open, setOpen]           = useState(false);
-  const [code, setCode]           = useState('');
-  const [loading, setLoading]     = useState(false);
-  const [msg, setMsg]             = useState('');
-  const [isErr, setIsErr]         = useState(false);
+  const [open, setOpen] = useState(false);
+  const [code, setCode] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState('');
+  const [isErr, setIsErr] = useState(false);
   // OTP phase
-  const [needsOtp, setNeedsOtp]   = useState(false);
-  const [otpEmail, setOtpEmail]   = useState('');
-  const [otpCode, setOtpCode]     = useState('');
+  const [needsOtp, setNeedsOtp] = useState(false);
+  const [otpEmail, setOtpEmail] = useState('');
+  const [otpCode, setOtpCode] = useState('');
   const [otpSending, setOtpSending] = useState(false);
   const [otpVerifying, setOtpVerifying] = useState(false);
-  const [otpTimer, setOtpTimer]   = useState(0);
+  const [otpTimer, setOtpTimer] = useState(0);
   const [trackingForOtp, setTrackingForOtp] = useState('');
 
   useEffect(() => {
@@ -317,8 +353,13 @@ function ClaimGuestPanel({ onClaimed }: { onClaimed: () => void }) {
     setOtpSending(true);
     const res = await issueServiceOtp({ email: otpEmail, trackingCode: trackingForOtp });
     setOtpSending(false);
-    if (res.success) { setOtpTimer(60); setMsg(''); }
-    else { setMsg(res.message); setIsErr(true); }
+    if (res.success) {
+      setOtpTimer(60);
+      setMsg('');
+    } else {
+      setMsg(res.message);
+      setIsErr(true);
+    }
   };
 
   const handleClaim = async () => {
@@ -329,41 +370,63 @@ function ClaimGuestPanel({ onClaimed }: { onClaimed: () => void }) {
     const res = await claimGuestRequest(code.trim());
     setLoading(false);
     if (!res.success) {
-      setMsg(res.message); setIsErr(true); return;
+      setMsg(res.message);
+      setIsErr(true);
+      return;
     }
     if (res.requiresOtp && res.email) {
       setNeedsOtp(true);
       setOtpEmail(res.email);
       setTrackingForOtp(code.trim().toUpperCase());
-      setMsg(res.message); setIsErr(false);
+      setMsg(res.message);
+      setIsErr(false);
       // auto-send OTP
-      const otpRes = await issueServiceOtp({ email: res.email, trackingCode: code.trim().toUpperCase() });
+      const otpRes = await issueServiceOtp({
+        email: res.email,
+        trackingCode: code.trim().toUpperCase(),
+      });
       if (otpRes.success) setOtpTimer(60);
       return;
     }
     // directly claimed
-    setMsg(res.message); setIsErr(false);
-    setTimeout(() => { setOpen(false); onClaimed(); }, 1200);
+    setMsg(res.message);
+    setIsErr(false);
+    setTimeout(() => {
+      setOpen(false);
+      onClaimed();
+    }, 1200);
   };
 
   const handleVerifyOtp = async () => {
     if (otpCode.length !== 6) return;
     setOtpVerifying(true);
     setMsg('');
-    const res = await verifyServiceOtpAndLink({ email: otpEmail, code: otpCode, trackingCode: trackingForOtp });
+    const res = await verifyServiceOtpAndLink({
+      email: otpEmail,
+      code: otpCode,
+      trackingCode: trackingForOtp,
+    });
     setOtpVerifying(false);
     if (res.success) {
       setMsg('سفارش با موفقیت به حساب شما اضافه شد!');
       setIsErr(false);
-      setTimeout(() => { setOpen(false); onClaimed(); }, 1200);
+      setTimeout(() => {
+        setOpen(false);
+        onClaimed();
+      }, 1200);
     } else {
-      setMsg(res.message); setIsErr(true);
+      setMsg(res.message);
+      setIsErr(true);
     }
   };
 
   const reset = () => {
-    setCode(''); setMsg(''); setIsErr(false);
-    setNeedsOtp(false); setOtpCode(''); setOtpTimer(0);
+    setCode('');
+    setMsg('');
+    setIsErr(false);
+    setNeedsOtp(false);
+    setOtpCode('');
+    setOtpTimer(0);
   };
 
   return (
@@ -371,7 +434,10 @@ function ClaimGuestPanel({ onClaimed }: { onClaimed: () => void }) {
       <button
         type="button"
         className={s.claimToggle}
-        onClick={() => { setOpen((p) => !p); reset(); }}
+        onClick={() => {
+          setOpen((p) => !p);
+          reset();
+        }}
         aria-expanded={open}
       >
         <Link2 size={13} />
@@ -403,10 +469,7 @@ function ClaimGuestPanel({ onClaimed }: { onClaimed: () => void }) {
                   disabled={loading || !code.trim()}
                   className={s.claimBtn}
                 >
-                  {loading
-                    ? <span className={s.spinnerSm} aria-hidden="true" />
-                    : 'اضافه کن'
-                  }
+                  {loading ? <span className={s.spinnerSm} aria-hidden="true" /> : 'اضافه کن'}
                 </button>
               </div>
             </>
@@ -426,7 +489,6 @@ function ClaimGuestPanel({ onClaimed }: { onClaimed: () => void }) {
                   placeholder="_ _ _ _ _ _"
                   dir="ltr"
                   aria-label="کد تأیید"
-                  autoFocus
                 />
                 <button
                   type="button"
@@ -434,28 +496,30 @@ function ClaimGuestPanel({ onClaimed }: { onClaimed: () => void }) {
                   disabled={otpVerifying || otpCode.length !== 6}
                   className={s.claimBtn}
                 >
-                  {otpVerifying
-                    ? <span className={s.spinnerSm} aria-hidden="true" />
-                    : <><KeyRound size={12} /> تأیید</>
-                  }
+                  {otpVerifying ? (
+                    <span className={s.spinnerSm} aria-hidden="true" />
+                  ) : (
+                    <>
+                      <KeyRound size={12} /> تأیید
+                    </>
+                  )}
                 </button>
               </div>
               <div className={s.otpFooter}>
-                {otpTimer > 0
-                  ? <span className={s.otpTimer} aria-live="polite">
-                      ارسال مجدد در {otpTimer.toLocaleString('fa-IR')} ثانیه
-                    </span>
-                  : (
-                    <button
-                      type="button"
-                      onClick={sendOtp}
-                      disabled={otpSending}
-                      className={s.otpResend}
-                    >
-                      <RotateCcw size={11} /> ارسال مجدد
-                    </button>
-                  )
-                }
+                {otpTimer > 0 ? (
+                  <span className={s.otpTimer} aria-live="polite">
+                    ارسال مجدد در {otpTimer.toLocaleString('fa-IR')} ثانیه
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={sendOtp}
+                    disabled={otpSending}
+                    className={s.otpResend}
+                  >
+                    <RotateCcw size={11} /> ارسال مجدد
+                  </button>
+                )}
               </div>
             </>
           )}
@@ -475,10 +539,10 @@ function ClaimGuestPanel({ onClaimed }: { onClaimed: () => void }) {
 // ─── Main Component ───────────────────────────────────────────────────────── //
 
 export default function MyRequestsClient() {
-  const [requests, setRequests]     = useState<MyRequest[]>([]);
-  const [loading, setLoading]       = useState(true);
-  const [error, setError]           = useState<string | null>(null);
-  const [page, setPage]             = useState(1);
+  const [requests, setRequests] = useState<MyRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const pageRef = useRef(page);
   pageRef.current = page;
@@ -496,12 +560,22 @@ export default function MyRequestsClient() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetchRequests(page); }, [fetchRequests, page]);
+  useEffect(() => {
+    fetchRequests(page);
+  }, [fetchRequests, page]);
 
   const handleCancelled = useCallback(() => {
     // Re-fetch to get updated status log
     fetchRequests(pageRef.current);
   }, [fetchRequests]);
+
+  // stats از requests محاسبه می‌شه
+  const stats = {
+    total: requests.length,
+    pending: requests.filter((r) => r.status === 'PENDING').length,
+    inProgress: requests.filter((r) => r.status === 'IN_PROGRESS').length,
+    completed: requests.filter((r) => r.status === 'COMPLETED').length,
+  };
 
   return (
     <section className={s.page}>
@@ -511,8 +585,45 @@ export default function MyRequestsClient() {
           <h1 className={s.title}>درخواست‌های من</h1>
           <p className={s.subtitle}>وضعیت و تاریخچه تمام سفارش‌های شما</p>
         </div>
-        <a href="/online-payment" className={s.newBtn}>+ درخواست جدید</a>
+        <a href="/money-transfer" className={s.newBtn}>
+          <Plus size={14} aria-hidden="true" />
+          درخواست جدید
+        </a>
       </header>
+
+      {/* Stats bar */}
+      {!loading && !error && requests.length > 0 && (
+        <div className={s.statsBar} aria-label="آمار درخواست‌ها">
+          <div
+            className={s.statCard}
+            style={{ '--stat-color': 'var(--ds-text-primary)' } as React.CSSProperties}
+          >
+            <span className={s.statCount}>{stats.total.toLocaleString('fa-IR')}</span>
+            <span className={s.statLabel}>همه</span>
+          </div>
+          <div
+            className={s.statCard}
+            style={{ '--stat-color': 'oklch(55% 0.16 75)' } as React.CSSProperties}
+          >
+            <span className={s.statCount}>{stats.pending.toLocaleString('fa-IR')}</span>
+            <span className={s.statLabel}>در انتظار</span>
+          </div>
+          <div
+            className={s.statCard}
+            style={{ '--stat-color': 'oklch(48% 0.16 240)' } as React.CSSProperties}
+          >
+            <span className={s.statCount}>{stats.inProgress.toLocaleString('fa-IR')}</span>
+            <span className={s.statLabel}>در انجام</span>
+          </div>
+          <div
+            className={s.statCard}
+            style={{ '--stat-color': 'oklch(44% 0.16 155)' } as React.CSSProperties}
+          >
+            <span className={s.statCount}>{stats.completed.toLocaleString('fa-IR')}</span>
+            <span className={s.statLabel}>تکمیل شده</span>
+          </div>
+        </div>
+      )}
 
       {/* Claim guest panel */}
       <ClaimGuestPanel onClaimed={() => fetchRequests(1)} />
@@ -521,6 +632,7 @@ export default function MyRequestsClient() {
       {loading && (
         <ul className={s.list} aria-busy="true">
           {Array.from({ length: 3 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders
             <li key={i} className={s.skeleton} aria-hidden />
           ))}
         </ul>
@@ -539,10 +651,10 @@ export default function MyRequestsClient() {
         <div className={s.empty}>
           <PackageSearch size={36} className={s.emptyIcon} />
           <p className={s.emptyTitle}>هنوز درخواستی ثبت نکرده‌اید</p>
-          <p className={s.emptySub}>
-            درخواست‌های جدید از صفحه خدمات آنلاین ثبت می‌شوند.
-          </p>
-          <a href="/online-payment" className={s.cta}>ثبت درخواست جدید</a>
+          <p className={s.emptySub}>درخواست‌های جدید از صفحه خدمات آنلاین ثبت می‌شوند.</p>
+          <a href="/online-payment" className={s.cta}>
+            ثبت درخواست جدید
+          </a>
         </div>
       )}
 

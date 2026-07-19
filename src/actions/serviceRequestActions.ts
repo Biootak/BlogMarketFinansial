@@ -233,11 +233,11 @@ export async function createServiceRequest(input: ServiceRequestClientInput): Pr
       }
     }
 
-    // Server-side duplicate guard — catches cases where the client didn't
-    // send an idempotency key (page reload, back-button resubmit, etc.).
-    // A request with the same phone + amount + currency within 5 minutes
-    // is considered a duplicate and the existing tracking code is returned.
-    {
+    // Server-side duplicate guard — only when client didn't send an idempotency key
+    // (page reload, back-button resubmit, etc.).
+    // When a fresh idempotencyKey is present the user intentionally made a new request
+    // (e.g. clicked "new request") so we must NOT block it.
+    if (!data.idempotencyKey) {
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
       const recentDuplicate = await prisma.serviceRequest.findFirst({
         where: {
