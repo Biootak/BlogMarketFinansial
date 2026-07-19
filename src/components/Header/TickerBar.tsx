@@ -36,14 +36,14 @@ export function TickerBar({ items, className, speed = -30 }: TickerBarProps) {
             <span className="text-[10px] font-medium uppercase tracking-[0.04em] text-neutral-500 dark:text-neutral-400">
               {item.name}
             </span>
-            {item.symbol && (
-              <span className="text-[10px] tracking-wide text-neutral-400 dark:text-neutral-500">
-                {item.symbol}
-              </span>
-            )}
             <span className="text-[11px] font-semibold tabular-nums text-neutral-900 dark:text-neutral-100">
               {item.value}
             </span>
+            {item.symbol && (
+              <span className="text-[10px] tracking-wide text-neutral-400 dark:text-neutral-500 ps-0.5">
+                {item.symbol}
+              </span>
+            )}
             {typeof item.change === 'number' && item.change !== 0 && (
               <span
                 className={cn(

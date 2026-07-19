@@ -2,7 +2,7 @@
 
 import type { MarketRateUnit } from './types';
 
-const UNIT_LABELS: Record<MarketRateUnit, string> = {
+export const UNIT_LABELS: Record<MarketRateUnit, string> = {
   toman: 'تومان',
   rial: 'ریال',
   usd: 'دلار',
@@ -12,29 +12,27 @@ const UNIT_LABELS: Record<MarketRateUnit, string> = {
 };
 
 /**
- * فرمت عدد + واحد پولی.
- *
- * Source order: «${value} ${unit}» (عدد قبل از واحد)
- * در container با dir="rtl"، BiDi algorithm این ترتیب را به صورت
- * بصری «${unit} ${value}» نمایش می‌دهد (واحد سمت چپ، عدد سمت راست).
- *
- * مثال: formatWithUnit(161500, 'toman', 0)
- *   source: '۱۶۱٬۵۰۰ تومان'
- *   visual: 'تومان ۱۶۱٬۵۰۰'
- *
- * مثال: formatWithUnit(4160.26, 'usd', 2)
- *   source: '۴٬۱۶۰٫۲۶ دلار'
- *   visual: 'دلار ۴٬۱۶۰٫۲۶'
+ * فقط عدد فرمت‌شده، بدون واحد.
+ * برای استفاده در کامپوننت‌هایی که واحد را در span جداگانه می‌خواهند.
  */
-export function formatWithUnit(value: number, unit: MarketRateUnit, decimals: number): string {
+export function formatValueOnly(value: number, decimals: number): string {
   if (!Number.isFinite(value) || value <= 0) return '—';
-
-  const formatted = new Intl.NumberFormat('fa-IR', {
+  return new Intl.NumberFormat('fa-IR', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   }).format(value);
+}
 
-  return `${formatted} ${UNIT_LABELS[unit]}`;
+/**
+ * فرمت عدد + واحد به صورت string — فقط برای aria-label و متون غیر-HTML.
+ * در رندر HTML از formatValueOnly + UNIT_LABELS استفاده کنید.
+ *
+ * مثال: formatWithUnit(161500, 'toman', 0)  →  '۱۶۱٬۵۰۰ تومان'
+ */
+export function formatWithUnit(value: number, unit: MarketRateUnit, decimals: number): string {
+  const v = formatValueOnly(value, decimals);
+  if (v === '—') return '—';
+  return `${v} ${UNIT_LABELS[unit]}`;
 }
 
 /**

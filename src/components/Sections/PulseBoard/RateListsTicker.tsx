@@ -509,6 +509,9 @@ function RatePill({
         <Icon className="h-2.5 w-2.5" strokeWidth={2.5} aria-hidden />
         <span className="hidden xs:inline sm:inline">{label}</span>
       </span>
+      {suffix && (
+        <span className="text-[9px] sm:text-[10px] opacity-60 leading-none">{suffix}</span>
+      )}
       <span
         className="text-[12px] sm:text-[14px] font-bold leading-none"
         dir="ltr"
@@ -516,9 +519,6 @@ function RatePill({
       >
         {text}
       </span>
-      {suffix && (
-        <span className="text-[9px] sm:text-[10px] opacity-60 leading-none">{suffix}</span>
-      )}
     </div>
   );
 }

@@ -30,7 +30,7 @@
 import Ticker from '@/components/Ticker';
 import { TickerShell } from '@/components/TickerShell';
 import type { MarketRateItem } from '@/lib/market-rates';
-import { formatChangePercent, formatWithUnit } from '@/lib/market-rates/format';
+import { UNIT_LABELS, formatChangePercent, formatValueOnly, formatWithUnit } from '@/lib/market-rates/format';
 import { cn } from '@/lib/utils';
 import { memo, useEffect, useMemo, useState } from 'react';
 
@@ -190,14 +190,19 @@ function MarketRatesTickerImpl({
                   <span className="font-bold text-neutral-900 dark:text-neutral-100 whitespace-nowrap">
                     {rate.displayNameFa}
                   </span>
-                  <span
-                    dir="ltr"
-                    className={cn(
-                      'font-semibold tabular-nums text-neutral-700 dark:text-neutral-300',
-                      valueTextSize,
-                    )}
-                  >
-                    {formatWithUnit(rate.value, rate.unit, rate.decimals)}
+                  {/* واحد + عدد در دو span جداگانه داخل ltr container */}
+                  <span className="inline-flex items-baseline gap-0.5" dir="ltr">
+                    <span className="text-[10px] sm:text-[11px] text-neutral-500 dark:text-neutral-400">
+                      {UNIT_LABELS[rate.unit]}
+                    </span>
+                    <span
+                      className={cn(
+                        'font-semibold tabular-nums text-neutral-700 dark:text-neutral-300',
+                        valueTextSize,
+                      )}
+                    >
+                      {formatValueOnly(rate.value, rate.decimals)}
+                    </span>
                   </span>
                   {/*
                     همیشه TrendBadge رندر می‌شود تا کاربر برای همه‌ی نمادها

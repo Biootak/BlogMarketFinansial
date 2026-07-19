@@ -87,7 +87,7 @@ export function CryptoTickerCard({ rate }: CryptoTickerCardProps) {
         </span>
 
         <span className="text-[10px] text-neutral-500 dark:text-neutral-400 tabular-nums whitespace-nowrap">
-          {formattedToman} تومان
+          تومان {formattedToman}
         </span>
 
         <span
