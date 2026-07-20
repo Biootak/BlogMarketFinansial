@@ -1,7 +1,6 @@
 /* ============================================================================
-   HeroSection.module.css — Home landing hero (2026)
-   دقیقاً همان design language صفحه حواله:
-   glass morphism واقعی | layered ambient bg | floating 3D cards | tokens only
+   HeroSection.module.css — Home landing hero (2026 redesign)
+   billion-dollar fintech hero: ambient SVG stroke | stats bar | 3 CTAs | tokens
    ============================================================================ */
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -9,7 +8,7 @@
    ────────────────────────────────────────────────────────────────────────── */
 .root {
   position: relative;
-  min-height: clamp(620px, 88vh, 940px);
+  min-height: clamp(560px, 78vh, 820px);
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
   align-items: center;
@@ -34,7 +33,17 @@
     var(--ds-canvas);
 }
 
-/* SVG grid — همان grid صفحه حواله */
+/* ── Ambient SVG stroke — signature wow moment ──────────────────── */
+.ambientStroke {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* SVG grid */
 .grid {
   position: absolute;
   inset: 0;
@@ -182,7 +191,17 @@
   margin-bottom: var(--ds-space-5);
 }
 
-/* ── Pills — همان heroPills صفحه حواله ─────────────────────── */
+.subBreak {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .subBreak {
+    display: block;
+  }
+}
+
+/* ── Pills */
 .pills {
   display: flex;
   flex-wrap: wrap;
@@ -210,7 +229,58 @@
   background: oklch(100% 0 0 / 0.75);
 }
 
-/* ── CTAs — همان ctaMain/ctaGhost صفحه حواله ───────────────── */
+/* ── Stats bar — mini stats درون hero ─────────────────────────── */
+.statsBar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: var(--ds-space-6);
+  border-radius: var(--ds-radius-xl);
+  border: 1px solid var(--ds-border-subtle);
+  background: oklch(100% 0 0 / 0.45);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  list-style: none;
+  padding: 0;
+}
+
+.statItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px var(--ds-space-3);
+  border-inline-end: 1px solid var(--ds-border-subtle);
+  min-width: 0;
+}
+
+.statItem:last-child {
+  border-inline-end: none;
+}
+
+.statVal {
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-bold);
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 10px;
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-text-muted);
+  white-space: nowrap;
+}
+
+:global(.dark) .statsBar {
+  background: oklch(22% 0.015 250 / 0.5);
+  border-color: oklch(30% 0.015 250 / 0.5);
+}
+
+/* ── CTAs ─────────────────────────────────────────────────────── */
 .ctas {
   display: flex;
   align-items: center;
@@ -276,6 +346,39 @@
 
 .arrowIcon {
   transform: scaleX(-1); /* RTL mirror */
+}
+
+/* دکمه سوم — حواله (accent amber) */
+.ctaAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 22px;
+  border-radius: var(--ds-radius-lg);
+  background: oklch(72% 0.13 70 / 0.14);
+  border: 1px solid oklch(72% 0.13 70 / 0.35);
+  color: oklch(52% 0.13 70);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  min-height: 48px;
+  transition: background var(--ds-duration-fast), border-color var(--ds-duration-fast),
+    transform var(--ds-duration-fast) var(--ds-ease-spring);
+}
+
+.ctaAction:hover {
+  background: oklch(72% 0.13 70 / 0.22);
+  border-color: oklch(72% 0.13 70 / 0.55);
+  transform: translateY(-2px);
+}
+
+.ctaAction:active {
+  transform: scale(0.97);
+}
+
+:global(.dark) .ctaAction {
+  color: oklch(80% 0.13 70);
+  background: oklch(72% 0.13 70 / 0.08);
+  border-color: oklch(72% 0.13 70 / 0.25);
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -478,12 +581,52 @@
   margin-block: var(--ds-space-2);
 }
 
+/* Card header with live dot */
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--ds-space-2);
+}
+
+.cardLiveDot {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-accent-emerald);
+  letter-spacing: 0.05em;
+}
+
+.cardLiveDot span {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  background: var(--ds-accent-emerald);
+  animation: livePulse 2s ease-in-out infinite;
+}
+
 /* Rate rows */
 .rateRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding-block: 4px;
+}
+
+.rateRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rateChange {
+  font-size: 9px;
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
 }
 
 .rateName {
@@ -497,6 +640,49 @@
   font-weight: var(--ds-weight-semibold);
   font-variant-numeric: tabular-nums;
   color: var(--ds-text-primary);
+}
+
+/* Card CTA button */
+.cardCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: var(--ds-space-3);
+  padding: 7px 14px;
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-brand-500);
+  color: var(--ds-text-inverse);
+  font-size: 11px;
+  font-weight: var(--ds-weight-semibold);
+  width: 100%;
+  justify-content: center;
+  transition: background var(--ds-duration-fast);
+}
+
+.cardCta:hover {
+  background: var(--ds-brand-600);
+}
+
+/* Uptime bar */
+.uptimeBar {
+  margin-top: var(--ds-space-3);
+  height: 4px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-border-subtle);
+  overflow: hidden;
+}
+
+.uptimeFill {
+  height: 100%;
+  width: 99.9%;
+  border-radius: var(--ds-radius-full);
+  background: linear-gradient(to left, var(--ds-accent-emerald), oklch(60% 0.1 165 / 0.4));
+  animation: uptimeGrow 1.5s var(--ds-ease-out-quart) 0.8s both;
+}
+
+@keyframes uptimeGrow {
+  from { width: 0; }
+  to { width: 99.9%; }
 }
 
 .trendUp {
@@ -569,6 +755,11 @@
   .visual {
     display: none;
   }
+
+  .statsBar {
+    max-width: 480px;
+    margin-inline: auto;
+  }
 }
 
 @media (max-width: 480px) {
@@ -579,7 +770,17 @@
   }
 
   .ctaPrimary,
-  .ctaSecondary {
+  .ctaSecondary,
+  .ctaAction {
     justify-content: center;
+  }
+
+  .statsBar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .statItem:nth-child(2) {
+    border-inline-end: none;
   }
 }

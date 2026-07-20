@@ -1,0 +1,201 @@
+/* ============================================================================
+   TrustSection.module.css — بخش اعتماد + آمار کلیدی
+   ============================================================================ */
+
+.root {
+  position: relative;
+  padding-block: var(--ds-space-8);
+  overflow: hidden;
+}
+
+/* ── Background — subtle ambient ────────────────────────────── */
+.bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 60% 100% at 50% 50%,
+    var(--ds-brand-50) 0%,
+    transparent 70%
+  );
+  z-index: 0;
+}
+
+:global(.dark) .bg {
+  background: radial-gradient(
+    ellipse 60% 100% at 50% 50%,
+    oklch(52% 0.14 162 / 0.05) 0%,
+    transparent 70%
+  );
+}
+
+.inner {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+/* ── Tag line ────────────────────────────────────────────────── */
+.tagline {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ds-text-muted);
+  margin-bottom: var(--ds-space-8);
+}
+
+/* ── Stats grid ─────────────────────────────────────────────── */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--ds-space-4);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  margin-bottom: var(--ds-space-8);
+}
+
+@media (max-width: 900px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .statsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-5);
+  border-radius: var(--ds-radius-2xl);
+  border: 1px solid var(--ds-border-subtle);
+  background: var(--ds-surface-elevated);
+  transition:
+    border-color var(--ds-duration-fast),
+    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart),
+    transform var(--ds-duration-base) var(--ds-ease-out-quart);
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--ds-shadow-md);
+  border-color: var(--ds-border-default);
+}
+
+:global(.dark) .statCard {
+  background: oklch(20% 0.015 250 / 0.5);
+  border-color: oklch(28% 0.02 255 / 0.6);
+}
+
+.statIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-brand-50);
+  color: var(--ds-brand-600);
+  border: 1px solid var(--ds-brand-100);
+}
+
+:global(.dark) .statIcon {
+  background: oklch(52% 0.14 162 / 0.1);
+  border-color: oklch(52% 0.14 162 / 0.2);
+  color: oklch(70% 0.12 162);
+}
+
+.statValue {
+  font-size: var(--ds-text-3xl);
+  font-weight: var(--ds-weight-extrabold);
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-text-primary);
+  line-height: 1;
+}
+
+.statSuffix {
+  font-size: var(--ds-text-xl);
+  font-weight: var(--ds-weight-bold);
+  color: var(--ds-brand-600);
+}
+
+.statLabel {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-text-muted);
+  text-align: center;
+}
+
+/* ── Divider ─────────────────────────────────────────────────── */
+.divider {
+  height: 1px;
+  background: var(--ds-border-subtle);
+  margin-bottom: var(--ds-space-8);
+}
+
+/* ── Features list ───────────────────────────────────────────── */
+.features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--ds-space-6);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+@media (max-width: 720px) {
+  .features {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+    margin-inline: auto;
+  }
+}
+
+.featureItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-3);
+  text-align: start;
+}
+
+.featureIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-brand-50);
+  color: var(--ds-brand-600);
+  border: 1px solid var(--ds-brand-100);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+:global(.dark) .featureIcon {
+  background: oklch(52% 0.14 162 / 0.08);
+  border-color: oklch(52% 0.14 162 / 0.18);
+  color: oklch(70% 0.12 162);
+}
+
+.featureText h3 {
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-primary);
+  margin-bottom: var(--ds-space-1);
+}
+
+.featureText p {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-secondary);
+  line-height: var(--ds-leading-normal);
+  margin: 0;
+}

@@ -13,6 +13,8 @@ import SectionMagazine7 from '@/components/Sections/SectionMagazine7';
 import { TopAuthorsSection } from '@/components/TopAuthorsSection';
 import HeroSection from './HeroSection';
 import SectionLargeSlider from './SectionLargeSlider';
+import ServicesSection from './ServicesSection';
+import TrustSection from './TrustSection';
 import DeferredAdStrip from './deferred/DeferredAdStrip';
 import DeferredTrending from './deferred/DeferredTrending';
 
@@ -64,9 +66,14 @@ export default async function Home() {
     <div className="nc-HomePage relative">
       {lcpImage ? <link rel="preload" as="image" href={lcpImage} /> : null}
 
-      {/* ── 3D Hero Section ─────────────────────────────── */}
+      {/* ── Hero Section ────────────────────────────────── */}
       <div className="container relative">
         <HeroSection />
+      </div>
+
+      {/* ── Services Section ────────────────────────────── */}
+      <div className="container relative mt-6 lg:mt-8">
+        <ServicesSection />
       </div>
 
       {/* ── Market Tickers ──────────────────────────────── */}
@@ -131,6 +138,11 @@ export default async function Home() {
           <TopAuthorsSection className="" authors={topAuthors} />
         </div>
       )}
+
+      {/* ── Trust & Stats Section ───────────────────────── */}
+      <div className="container relative mt-4 lg:mt-6">
+        <TrustSection />
+      </div>
 
       <div className="container relative mt-4 lg:mt-6 mb-8 lg:mb-12">
         <SectionSubscribe2 className="" />

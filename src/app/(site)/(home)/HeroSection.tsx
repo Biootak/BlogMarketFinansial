@@ -1,25 +1,33 @@
-﻿'use client';
+'use client';
 
 /**
- * HeroSection — Home landing hero (2026)
+ * HeroSection — Home landing hero (2026 redesign)
  *
- * دقیقاً همان design language صفحه online-payment:
- *  - همان glassCard با backdrop-filter + layered box-shadow + signature gradient ring
- *  - همان floating card animations (floatA/B/C keyframes)
- *  - همان rAF-based 3D tilt (useGlassTilt)
- *  - همان staggered entrance روی content children
- *  - همان liveBadge + pill pattern
- *  - RTL-safe — logical properties only
- *  - prefers-reduced-motion رعایت شده
+ * بازطراحی کامل برای تجربه میلیارد‌دلاری:
+ *  - headline دو‌خطی قوی با focal point واضح
+ *  - سه CTA (نرخ‌ها / تحلیل‌ها / حواله)
+ *  - کارت‌های glass با محتوای غنی‌تر
+ *  - stats bar کوچک درون hero
+ *  - signature ambient SVG stroke animation
+ *  - رعایت کامل RTL، tokens، WCAG 2.2 AA
  */
 
-import { ArrowLeft, BarChart2, Globe, Shield, TrendingDown, TrendingUp, Zap } from 'lucide-react';
+import {
+  ArrowLeft,
+  BarChart2,
+  Globe,
+  SendHorizonal,
+  Shield,
+  TrendingDown,
+  TrendingUp,
+  Zap,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import s from './HeroSection.module.css';
 
 /* ─────────────────────────────────────────────────────────────────────────
-   HOOK: useGlassTilt — دقیقاً همان hook صفحه حواله
+   HOOK: useGlassTilt
    ───────────────────────────────────────────────────────────────────────── */
 
 function useGlassTilt(strength = 5) {
@@ -74,6 +82,16 @@ function useGlassTilt(strength = 5) {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
+   HERO STATS — اعداد اعتماد‌ساز inline در hero
+   ───────────────────────────────────────────────────────────────────────── */
+const HERO_STATS = [
+  { value: '+۵۰۰۰', label: 'کاربر فعال' },
+  { value: '+۲', label: 'کشور' },
+  { value: '۲۴/۷', label: 'پشتیبانی' },
+  { value: '۹۹.۹٪', label: 'آپتایم' },
+] as const;
+
+/* ─────────────────────────────────────────────────────────────────────────
    MAIN COMPONENT
    ───────────────────────────────────────────────────────────────────────── */
 
@@ -83,7 +101,7 @@ export default function HeroSection() {
 
   return (
     <section className={s.root} aria-label="صفحه اصلی — پلتفرم مالی">
-      {/* ── Ambient layered background — همان صفحه حواله ─────────────── */}
+      {/* ── Ambient layered background ─────────────────────────────── */}
       <div className={s.bg} aria-hidden>
         <svg className={s.grid} role="presentation" focusable="false">
           <defs>
@@ -92,6 +110,68 @@ export default function HeroSection() {
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#homeGrid)" />
+        </svg>
+
+        {/* Signature ambient SVG stroke — لحظه واو */}
+        <svg
+          className={s.ambientStroke}
+          viewBox="0 0 900 600"
+          aria-hidden
+          focusable="false"
+          role="presentation"
+        >
+          <path
+            d="M 50 300 Q 225 100 450 280 T 850 250"
+            fill="none"
+            stroke="url(#strokeGrad)"
+            strokeWidth="1.5"
+            strokeDasharray="1200"
+            strokeDashoffset="1200"
+          >
+            <animate
+              attributeName="stroke-dashoffset"
+              from="1200"
+              to="0"
+              dur="2.8s"
+              begin="0.4s"
+              fill="freeze"
+              calcMode="spline"
+              keySplines="0.22 1 0.36 1"
+            />
+          </path>
+          <path
+            d="M 100 400 Q 300 200 520 360 T 870 310"
+            fill="none"
+            stroke="url(#strokeGrad2)"
+            strokeWidth="0.8"
+            strokeDasharray="900"
+            strokeDashoffset="900"
+            opacity="0.5"
+          >
+            <animate
+              attributeName="stroke-dashoffset"
+              from="900"
+              to="0"
+              dur="3.2s"
+              begin="0.8s"
+              fill="freeze"
+              calcMode="spline"
+              keySplines="0.22 1 0.36 1"
+            />
+          </path>
+          <defs>
+            <linearGradient id="strokeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="oklch(58% 0.12 165)" stopOpacity="0" />
+              <stop offset="30%" stopColor="oklch(58% 0.12 165)" stopOpacity="0.6" />
+              <stop offset="70%" stopColor="oklch(58% 0.13 290)" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="oklch(58% 0.13 290)" stopOpacity="0" />
+            </linearGradient>
+            <linearGradient id="strokeGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="oklch(72% 0.13 70)" stopOpacity="0" />
+              <stop offset="50%" stopColor="oklch(72% 0.13 70)" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="oklch(72% 0.13 70)" stopOpacity="0" />
+            </linearGradient>
+          </defs>
         </svg>
       </div>
 
@@ -103,22 +183,24 @@ export default function HeroSection() {
           پلتفرم مالی معتمد افغانستان ۱۴۰۴
         </div>
 
-        {/* Headline */}
+        {/* Headline — دو‌خطی قوی با focal point */}
         <h1 className={s.headline}>
-          <span className={s.headlineMain}>Financial Market</span>
+          <span className={s.headlineMain}>نرخ‌ها، حواله، تحلیل —</span>
           <br />
-          <span className={s.headlineAccent}>در کنار شما</span>
+          <span className={s.headlineAccent}>همه در یک پلتفرم</span>
         </h1>
 
         {/* Sub */}
         <p className={s.sub}>
-          نرخ ارز لحظه‌ای، انتقال پول امن، و تحلیل‌های تخصصی بازار — همه در یک پلتفرم
+          نرخ ارز لحظه‌ای، انتقال پول امن، و تحلیل‌های تخصصی بازار
+          <br className={s.subBreak} />
+          برای کاربران افغانستان، ایران و فراتر از آن.
         </p>
 
-        {/* Trust pills — همان heroPills صفحه حواله */}
+        {/* Trust pills */}
         <ul className={s.pills} aria-label="ویژگی‌های کلیدی">
           {[
-            { icon: Globe, text: '۲ کشور' },
+            { icon: Globe, text: 'افغانستان + ایران' },
             { icon: Zap, text: 'نرخ لحظه‌ای' },
             { icon: Shield, text: 'انتقال امن' },
           ].map(({ icon: Icon, text }) => (
@@ -129,18 +211,32 @@ export default function HeroSection() {
           ))}
         </ul>
 
-        {/* CTAs */}
+        {/* CTAs — سه دکمه */}
         <div className={s.ctas}>
           <Link href="/money-transfer" className={s.ctaPrimary}>
             <TrendingUp size={16} strokeWidth={1.75} />
             مشاهده نرخ‌ها
           </Link>
+          <Link href="/money-transfer#send" className={s.ctaAction}>
+            <SendHorizonal size={16} strokeWidth={1.75} />
+            ارسال حواله
+          </Link>
           <Link href="/archive" className={s.ctaSecondary}>
             <BarChart2 size={16} strokeWidth={1.5} />
-            آخرین تحلیل‌ها
+            تحلیل‌ها
             <ArrowLeft size={15} strokeWidth={1.5} className={s.arrowIcon} />
           </Link>
         </div>
+
+        {/* Mini stats bar */}
+        <ul className={s.statsBar} aria-label="آمار پلتفرم">
+          {HERO_STATS.map((stat) => (
+            <li key={stat.label} className={s.statItem}>
+              <span className={s.statVal}>{stat.value}</span>
+              <span className={s.statLabel}>{stat.label}</span>
+            </li>
+          ))}
+        </ul>
       </div>
 
       {/* ── Visual column: floating glass cards ─────────────────────── */}
@@ -158,35 +254,46 @@ export default function HeroSection() {
           style={{ transition: 'transform 80ms ease-out' }}
         >
           <div className={s.cardInner}>
-            <div className={s.cardLabel}>نرخ لحظه‌ای</div>
+            <div className={s.cardHeader}>
+              <div className={s.cardLabel}>نرخ لحظه‌ای</div>
+              <div className={s.cardLiveDot}>
+                <span />
+                زنده
+              </div>
+            </div>
             <div className={s.cardAmount}>
               ۷۹٬۵۰۰
               <span className={s.cardUnit}>IRR</span>
             </div>
             <div className={s.cardDivider} />
             {[
-              { name: 'دلار / ریال', val: '۷۹٬۵۰۰', trend: 'up' as const },
-              { name: 'دلار / افغانی', val: '۷۲٬۸', trend: 'down' as const },
-              { name: 'یورو / دلار', val: '۱.۰۸', trend: 'up' as const },
+              { name: 'دلار / ریال', val: '۷۹٬۵۰۰', change: '+۰.۳٪', trend: 'up' as const },
+              { name: 'دلار / افغانی', val: '۷۲٬۸', change: '-۰.۱٪', trend: 'down' as const },
+              { name: 'یورو / دلار', val: '۱.۰۸', change: '+۰.۵٪', trend: 'up' as const },
             ].map((r) => (
               <div key={r.name} className={s.rateRow}>
                 <span className={s.rateName}>{r.name}</span>
-                <span className={`${s.rateVal} ${r.trend === 'up' ? s.trendUp : s.trendDown}`}>
-                  {r.trend === 'up' ? (
-                    <TrendingUp
-                      size={9}
-                      strokeWidth={2}
-                      style={{ display: 'inline', marginInlineEnd: 3 }}
-                    />
-                  ) : (
-                    <TrendingDown
-                      size={9}
-                      strokeWidth={2}
-                      style={{ display: 'inline', marginInlineEnd: 3 }}
-                    />
-                  )}
-                  {r.val}
-                </span>
+                <div className={s.rateRight}>
+                  <span className={`${s.rateChange} ${r.trend === 'up' ? s.trendUp : s.trendDown}`}>
+                    {r.change}
+                  </span>
+                  <span className={`${s.rateVal} ${r.trend === 'up' ? s.trendUp : s.trendDown}`}>
+                    {r.trend === 'up' ? (
+                      <TrendingUp
+                        size={9}
+                        strokeWidth={2}
+                        style={{ display: 'inline', marginInlineEnd: 3 }}
+                      />
+                    ) : (
+                      <TrendingDown
+                        size={9}
+                        strokeWidth={2}
+                        style={{ display: 'inline', marginInlineEnd: 3 }}
+                      />
+                    )}
+                    {r.val}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
@@ -201,20 +308,28 @@ export default function HeroSection() {
           style={{ transition: 'transform 80ms ease-out' }}
         >
           <div className={s.cardInner}>
-            <div className={s.cardLabel}>مبلغ ارسال</div>
+            <div className={s.cardLabel}>محاسبه حواله</div>
             <div className={s.cardAmount}>
               ۱٬۰۰۰
               <span className={s.cardUnit}>USD</span>
             </div>
             <div className={s.cardDivider} />
             <div className={s.rateRow}>
-              <span className={s.rateName}>دریافتی</span>
+              <span className={s.rateName}>دریافتی (ریال)</span>
               <span className={`${s.rateVal} ${s.trendUp}`}>۷۹٬۲۰۰٬۰۰۰</span>
             </div>
+            <div className={s.rateRow}>
+              <span className={s.rateName}>کارمزد</span>
+              <span className={s.rateVal}>رایگان</span>
+            </div>
+            <Link href="/money-transfer" className={s.cardCta}>
+              ارسال حواله
+              <ArrowLeft size={11} strokeWidth={2} />
+            </Link>
           </div>
         </div>
 
-        {/* Card 3: وضعیت — background */}
+        {/* Card 3: وضعیت سرویس — background */}
         <div className={`${s.glassCard} ${s.cardThird}`}>
           <div className={s.cardInner}>
             <div className={s.statusBadge}>
@@ -226,6 +341,9 @@ export default function HeroSection() {
               <br />
               هر ۵ دقیقه به‌روز می‌شوند
             </p>
+            <div className={s.uptimeBar}>
+              <div className={s.uptimeFill} />
+            </div>
           </div>
         </div>
       </div>

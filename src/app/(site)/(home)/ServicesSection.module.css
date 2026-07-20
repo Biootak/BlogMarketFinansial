@@ -1,0 +1,246 @@
+/* ============================================================================
+   ServicesSection.module.css — سه سرویس اصلی پلتفرم
+   tokens only | hover elevation | accent per-card | RTL logical props
+   ============================================================================ */
+
+.root {
+  position: relative;
+  padding-block: var(--ds-space-8);
+}
+
+/* ── Section header ─────────────────────────────────────────── */
+.header {
+  text-align: center;
+  margin-bottom: var(--ds-space-8);
+}
+
+.eyebrow {
+  display: inline-block;
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ds-brand-600);
+  margin-bottom: var(--ds-space-3);
+  padding: 4px 14px;
+  border-radius: var(--ds-radius-full);
+  border: 1px solid var(--ds-brand-100);
+  background: var(--ds-brand-50);
+}
+
+:global(.dark) .eyebrow {
+  background: oklch(52% 0.14 162 / 0.1);
+  border-color: oklch(52% 0.14 162 / 0.25);
+  color: oklch(70% 0.12 162);
+}
+
+.title {
+  font-size: var(--ds-text-3xl);
+  font-weight: var(--ds-weight-extrabold);
+  line-height: var(--ds-leading-tight);
+  letter-spacing: -0.03em;
+  color: var(--ds-text-primary);
+  margin-bottom: var(--ds-space-3);
+}
+
+.titleAccent {
+  color: var(--ds-brand-600);
+}
+
+.subtitle {
+  font-size: var(--ds-text-base);
+  color: var(--ds-text-secondary);
+  line-height: var(--ds-leading-normal);
+  max-width: 520px;
+  margin-inline: auto;
+}
+
+/* ── Grid ───────────────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--ds-space-4);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+    margin-inline: auto;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: none;
+  }
+}
+
+/* ── Card ───────────────────────────────────────────────────── */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-6);
+  border-radius: var(--ds-radius-2xl);
+  border: 1px solid var(--ds-border-subtle);
+  background: var(--ds-surface-elevated);
+  overflow: hidden;
+  cursor: default;
+  transition:
+    border-color var(--ds-duration-base) var(--ds-ease-out-quart),
+    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart),
+    transform var(--ds-duration-base) var(--ds-ease-out-quart);
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--ds-shadow-lg);
+}
+
+:global(.dark) .card {
+  background: oklch(20% 0.015 250 / 0.6);
+  border-color: oklch(28% 0.02 255 / 0.7);
+}
+
+/* Hover glow overlay */
+.cardGlow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ds-duration-base);
+}
+
+.card:hover .cardGlow {
+  opacity: 1;
+}
+
+/* ── Accent variants ────────────────────────────────────────── */
+/* emerald */
+.accent_emerald .iconWrap {
+  background: oklch(60% 0.1 165 / 0.12);
+  color: var(--ds-accent-emerald);
+  border-color: oklch(60% 0.1 165 / 0.25);
+}
+.accent_emerald:hover {
+  border-color: oklch(60% 0.1 165 / 0.4);
+}
+.accent_emerald .cardGlow {
+  background: radial-gradient(ellipse 80% 60% at 50% 100%, oklch(60% 0.1 165 / 0.08) 0%, transparent 70%);
+}
+.accent_emerald .cardTitle {
+  color: var(--ds-text-primary);
+}
+
+/* amber */
+.accent_amber .iconWrap {
+  background: oklch(72% 0.13 70 / 0.12);
+  color: var(--ds-accent-amber);
+  border-color: oklch(72% 0.13 70 / 0.25);
+}
+.accent_amber:hover {
+  border-color: oklch(72% 0.13 70 / 0.4);
+}
+.accent_amber .cardGlow {
+  background: radial-gradient(ellipse 80% 60% at 50% 100%, oklch(72% 0.13 70 / 0.08) 0%, transparent 70%);
+}
+
+/* violet */
+.accent_violet .iconWrap {
+  background: oklch(58% 0.13 290 / 0.1);
+  color: var(--ds-accent-violet);
+  border-color: oklch(58% 0.13 290 / 0.22);
+}
+.accent_violet:hover {
+  border-color: oklch(58% 0.13 290 / 0.38);
+}
+.accent_violet .cardGlow {
+  background: radial-gradient(ellipse 80% 60% at 50% 100%, oklch(58% 0.13 290 / 0.08) 0%, transparent 70%);
+}
+
+/* ── Icon ───────────────────────────────────────────────────── */
+.iconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--ds-radius-xl);
+  border: 1px solid;
+  flex-shrink: 0;
+  transition: transform var(--ds-duration-fast) var(--ds-ease-spring);
+}
+
+.card:hover .iconWrap {
+  transform: scale(1.06) rotate(-3deg);
+}
+
+/* ── Stat badge ─────────────────────────────────────────────── */
+.statBadge {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-text-secondary);
+  padding: 3px 10px;
+  border-radius: var(--ds-radius-full);
+  border: 1px solid var(--ds-border-subtle);
+  background: var(--ds-surface-recessed);
+  letter-spacing: 0.02em;
+}
+
+/* ── Card text ──────────────────────────────────────────────── */
+.cardTitle {
+  font-size: var(--ds-text-lg);
+  font-weight: var(--ds-weight-bold);
+  line-height: var(--ds-leading-tight);
+  color: var(--ds-text-primary);
+  margin: 0;
+}
+
+.cardDesc {
+  font-size: var(--ds-text-sm);
+  line-height: var(--ds-leading-relaxed);
+  color: var(--ds-text-secondary);
+  flex: 1;
+  margin: 0;
+}
+
+/* ── CTA ────────────────────────────────────────────────────── */
+.cardCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-brand-600);
+  padding-block: var(--ds-space-1);
+  transition: gap var(--ds-duration-fast) var(--ds-ease-spring);
+  text-decoration: none;
+}
+
+.cardCta:hover {
+  gap: 10px;
+}
+
+:global(.dark) .cardCta {
+  color: oklch(70% 0.12 162);
+}
+
+.ctaArrow {
+  transform: scaleX(-1);
+  transition: transform var(--ds-duration-fast) var(--ds-ease-spring);
+}
+
+.cardCta:hover .ctaArrow {
+  transform: scaleX(-1) translateX(3px);
+}
