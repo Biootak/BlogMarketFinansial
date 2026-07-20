@@ -89,8 +89,8 @@
   background-image:
     radial-gradient(circle, oklch(45% 0.02 250 / 0.08) 1px, transparent 1px);
   background-size: 28px 28px;
-  mask-image: radial-gradient(ellipse at 60% 0%, #000 0%, transparent 65%);
-  -webkit-mask-image: radial-gradient(ellipse at 60% 0%, #000 0%, transparent 65%);
+  mask-image: radial-gradient(ellipse at 60% 0%, black 0%, transparent 65%);
+  -webkit-mask-image: radial-gradient(ellipse at 60% 0%, black 0%, transparent 65%);
 }
 
 /* ── Inner layout ────────────────────────────────────────────────────────── */
@@ -301,11 +301,11 @@
 
 /* FIX #2: متن نام داخل railCard روی hover */
 .railCard:hover .railCardName {
-  color: var(--color-primary-600);
+  color: var(--ds-primary);
 }
 
 :global(.dark) .railCard:hover .railCardName {
-  color: var(--color-primary-300);
+  color: var(--ds-primary-light, var(--ds-primary));
 }
 
 @keyframes railCardIn {

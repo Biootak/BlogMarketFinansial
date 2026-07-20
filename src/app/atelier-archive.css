@@ -168,7 +168,7 @@
     text-wrap: balance;
   }
   .atl-title__accent {
-    background: linear-gradient(120deg, var(--ds-brand-500), var(--ds-accent-violet));
+    background: linear-gradient(120deg, var(--ds-brand-500), var(--ds-brand-700));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;

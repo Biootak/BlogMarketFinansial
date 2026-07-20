@@ -7647,13 +7647,13 @@ p {
     box-shadow: 0 1px 0 oklch(100% 0 0 / 0.03) inset;
   }
   .arc-search-field-v4:focus-within {
-    border-color: oklch(60% 0.1 220 / 0.65);
+    border-color: color-mix(in oklch, var(--ds-brand-500), transparent 40%);
     background: oklch(100% 0 0 / 0.96);
-    box-shadow: 0 0 0 4px oklch(60% 0.1 220 / 0.12), 0 1px 0 oklch(100% 0 0 / 0.6) inset;
+    box-shadow: 0 0 0 4px color-mix(in oklch, var(--ds-brand-500), transparent 88%), 0 1px 0 oklch(100% 0 0 / 0.6) inset;
   }
   .dark .arc-search-field-v4:focus-within {
     background: oklch(20% 0.01 250 / 0.9);
-    box-shadow: 0 0 0 4px oklch(60% 0.1 220 / 0.18), 0 1px 0 oklch(100% 0 0 / 0.04) inset;
+    box-shadow: 0 0 0 4px color-mix(in oklch, var(--ds-brand-500), transparent 82%), 0 1px 0 oklch(100% 0 0 / 0.04) inset;
   }
   .arc-search-field-v4__icon {
     position: absolute;
@@ -7714,7 +7714,7 @@ p {
   }
   .arc-cmd-trigger-v4:hover {
     transform: translateY(-1px);
-    border-color: oklch(60% 0.1 220 / 0.6);
+    border-color: color-mix(in oklch, var(--ds-brand-500), transparent 50%);
     color: oklch(20% 0.01 240);
     background: oklch(100% 0 0 / 0.92);
   }
@@ -7735,7 +7735,7 @@ p {
     align-items: center;
     justify-content: center;
     color: oklch(98% 0.005 240);
-    background: linear-gradient(135deg, oklch(60% 0.1 220), oklch(50% 0.1 240));
+    background: linear-gradient(135deg, var(--ds-brand-500), var(--ds-brand-700));
     flex-shrink: 0;
   }
   .arc-cmd-trigger-v4__icon--emerald {
