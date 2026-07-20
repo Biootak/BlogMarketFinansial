@@ -80,7 +80,7 @@
       oklch(70% 0.16 255 / 0.6) 75%,
       oklch(70% 0.16 255 / 0) 100%
     );
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask: linear-gradient(black 0 0) content-box, linear-gradient(black 0 0);
     -webkit-mask-composite: xor;
             mask-composite: exclude;
     opacity: 0;
@@ -97,7 +97,7 @@
   @keyframes dash-spin {
     to { --dash-angle: 360deg; }
   }
-  @supports not (background: conic-gradient(from var(--dash-angle), #000, #000)) {
+  @supports not (background: conic-gradient(from var(--dash-angle), black, black)) {
     .dash-glow:hover::before { opacity: 1; animation: none; }
   }
 
@@ -344,8 +344,8 @@
       linear-gradient(oklch(85% 0.02 250 / 0.05) 1px, transparent 1px),
       linear-gradient(90deg, oklch(85% 0.02 250 / 0.05) 1px, transparent 1px);
     background-size: 48px 48px;
-    -webkit-mask-image: radial-gradient(120% 90% at 100% 0%, #000 0%, transparent 70%);
-            mask-image: radial-gradient(120% 90% at 100% 0%, #000 0%, transparent 70%);
+    -webkit-mask-image: radial-gradient(120% 90% at 100% 0%, black 0%, transparent 70%);
+            mask-image: radial-gradient(120% 90% at 100% 0%, black 0%, transparent 70%);
     pointer-events: none;
   }
 
@@ -362,7 +362,7 @@
       oklch(65% 0.14 165 / 0.2) 50%,
       oklch(70% 0.16 280 / 0.3) 100%
     );
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask: linear-gradient(black 0 0) content-box, linear-gradient(black 0 0);
     -webkit-mask-composite: xor;
             mask-composite: exclude;
     pointer-events: none;
@@ -1546,7 +1546,7 @@
     transform: translateY(-2px);
     border-color: rgba(255, 255, 255, 0.90);
   }
-  /* Dark: Obsidian Glass — dark:#131926/40 dark:border-slate-700/30 dark:shadow-[0_12px_40px_rgba(0,0,0,0.5)] */
+  /* Dark: Obsidian Glass — dark:midnight-40 dark:border-slate-700/30 dark:shadow-[0_12px_40px_oklch(0%_0_0/0.5)] */
   .dark .dash-pane {
     background: rgba(19, 25, 38, 0.40);
     border-color: rgba(51, 65, 85, 0.30);
@@ -1836,8 +1836,8 @@
       linear-gradient(oklch(85% 0.02 250 / 0.05) 1px, transparent 1px),
       linear-gradient(90deg, oklch(85% 0.02 250 / 0.05) 1px, transparent 1px);
     background-size: 48px 48px;
-    -webkit-mask-image: radial-gradient(120% 90% at 100% 0%, #000 0%, transparent 70%);
-            mask-image: radial-gradient(120% 90% at 100% 0%, #000 0%, transparent 70%);
+    -webkit-mask-image: radial-gradient(120% 90% at 100% 0%, black 0%, transparent 70%);
+            mask-image: radial-gradient(120% 90% at 100% 0%, black 0%, transparent 70%);
     pointer-events: none;
   }
   /* Animated border glow — premium accent */
@@ -1853,7 +1853,7 @@
       oklch(65% 0.14 165 / 0.2) 50%,
       oklch(70% 0.16 280 / 0.3) 100%
     );
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask: linear-gradient(black 0 0) content-box, linear-gradient(black 0 0);
     -webkit-mask-composite: xor;
             mask-composite: exclude;
     pointer-events: none;
@@ -3614,8 +3614,8 @@
       linear-gradient(oklch(85% 0.02 250 / 0.05) 1px, transparent 1px),
       linear-gradient(90deg, oklch(85% 0.02 250 / 0.05) 1px, transparent 1px);
     background-size: 48px 48px;
-    -webkit-mask-image: radial-gradient(120% 90% at 100% 0%, #000 0%, transparent 70%);
-            mask-image: radial-gradient(120% 90% at 100% 0%, #000 0%, transparent 70%);
+    -webkit-mask-image: radial-gradient(120% 90% at 100% 0%, black 0%, transparent 70%);
+            mask-image: radial-gradient(120% 90% at 100% 0%, black 0%, transparent 70%);
   }
   .dash-atlas__hero-main::after {
     content: '';
@@ -3629,7 +3629,7 @@
       oklch(65% 0.14 165 / 0.2) 50%,
       oklch(70% 0.16 280 / 0.3) 100%
     );
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask: linear-gradient(black 0 0) content-box, linear-gradient(black 0 0);
     -webkit-mask-composite: xor;
             mask-composite: exclude;
     pointer-events: none;
@@ -4498,8 +4498,8 @@
     position: relative;
     display: flex;
     align-items: center;
-    mask-image: linear-gradient(90deg, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
-    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, black 24px, black calc(100% - 24px), transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, black 24px, black calc(100% - 24px), transparent 100%);
   }
   .tide-ticker__track {
     display: inline-flex;
@@ -4584,8 +4584,8 @@
       linear-gradient(90deg, var(--tide-line) 1px, transparent 1px);
     background-size: 56px 56px;
     opacity: 0.18;
-    mask-image: radial-gradient(120% 100% at 0% 50%, #000 0%, transparent 65%);
-    -webkit-mask-image: radial-gradient(120% 100% at 0% 50%, #000 0%, transparent 65%);
+    mask-image: radial-gradient(120% 100% at 0% 50%, black 0%, transparent 65%);
+    -webkit-mask-image: radial-gradient(120% 100% at 0% 50%, black 0%, transparent 65%);
     pointer-events: none;
   }
   .tide-cover__inner {
@@ -6000,8 +6000,8 @@
       oklch(68% 0.14 285 / 0.32)
     );
     -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
+      linear-gradient(black 0 0) content-box,
+      linear-gradient(black 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     pointer-events: none;
@@ -6373,56 +6373,56 @@
    avoid collisions with `nova-*`, `dash-*`, and `cc-*` utilities above.
    ============================================================================ */
 @layer utilities {
-  /* ---------- Tokens ---------- */
+  /* ---------- Tokens (oklch — no hex) ---------- */
   :root {
-    --ec-bg: #ffffff;
-    --ec-bg-elevated: #f7f8fa;
-    --ec-surface: #ffffff;
-    --ec-surface-hover: #f7f8fa;
-    --ec-line: #eceef2;
-    --ec-line-strong: #d8dce3;
-    --ec-fg: #0f172a;
-    --ec-fg-muted: #475569;
-    --ec-fg-subtle: #94a3b8;
-    --ec-fg-faint: #cbd5e1;
-    --ec-accent: #059669;
-    --ec-accent-soft: #ecfdf5;
-    --ec-accent-fg: #047857;
-    --ec-danger: #dc2626;
-    --ec-danger-soft: #fef2f2;
-    --ec-warning: #d97706;
-    --ec-info: #2563eb;
+    --ec-bg: oklch(100% 0 0);
+    --ec-bg-elevated: oklch(97% 0.005 240);
+    --ec-surface: oklch(100% 0 0);
+    --ec-surface-hover: oklch(97% 0.005 240);
+    --ec-line: oklch(93% 0.008 245);
+    --ec-line-strong: oklch(88% 0.01 245);
+    --ec-fg: oklch(18% 0.02 255);
+    --ec-fg-muted: oklch(44% 0.02 250);
+    --ec-fg-subtle: oklch(63% 0.015 250);
+    --ec-fg-faint: oklch(82% 0.01 248);
+    --ec-accent: oklch(56% 0.14 162);
+    --ec-accent-soft: oklch(97% 0.03 165);
+    --ec-accent-fg: oklch(48% 0.13 162);
+    --ec-danger: oklch(53% 0.22 25);
+    --ec-danger-soft: oklch(97% 0.02 20);
+    --ec-warning: oklch(62% 0.17 60);
+    --ec-info: oklch(52% 0.22 265);
     --ec-radius-sm: 6px;
     --ec-radius: 10px;
     --ec-radius-lg: 14px;
     --ec-radius-xl: 20px;
-    --ec-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
-    --ec-shadow: 0 1px 0 rgba(15, 23, 42, 0.02), 0 1px 3px rgba(15, 23, 42, 0.06);
-    --ec-shadow-hover: 0 1px 0 rgba(15, 23, 42, 0.03), 0 6px 16px rgba(15, 23, 42, 0.08);
+    --ec-shadow-sm: 0 1px 2px oklch(18% 0.02 255 / 0.04);
+    --ec-shadow: 0 1px 0 oklch(18% 0.02 255 / 0.02), 0 1px 3px oklch(18% 0.02 255 / 0.06);
+    --ec-shadow-hover: 0 1px 0 oklch(18% 0.02 255 / 0.03), 0 6px 16px oklch(18% 0.02 255 / 0.08);
     --ec-ease: cubic-bezier(0.22, 1, 0.36, 1);
     --ec-duration: 200ms;
   }
   .dark {
-    --ec-bg: #070b14;
-    --ec-bg-elevated: #111827;
-    --ec-surface: #0f172a;
-    --ec-surface-hover: #1a2333;
-    --ec-line: rgba(255, 255, 255, 0.07);
-    --ec-line-strong: rgba(255, 255, 255, 0.14);
-    --ec-fg: #f1f5f9;
-    --ec-fg-muted: #94a3b8;
-    --ec-fg-subtle: #64748b;
-    --ec-fg-faint: #475569;
-    --ec-accent: #34d399;
-    --ec-accent-soft: rgba(16, 185, 129, 0.12);
-    --ec-accent-fg: #6ee7b7;
-    --ec-danger: #f87171;
-    --ec-danger-soft: rgba(239, 68, 68, 0.10);
-    --ec-warning: #fbbf24;
-    --ec-info: #60a5fa;
-    --ec-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-    --ec-shadow: 0 1px 0 rgba(255, 255, 255, 0.03), 0 1px 3px rgba(0, 0, 0, 0.45);
-    --ec-shadow-hover: 0 1px 0 rgba(255, 255, 255, 0.05), 0 6px 18px rgba(0, 0, 0, 0.55);
+    --ec-bg: oklch(10% 0.02 255);
+    --ec-bg-elevated: oklch(18% 0.02 255);
+    --ec-surface: oklch(18% 0.02 255);
+    --ec-surface-hover: oklch(22% 0.022 255);
+    --ec-line: oklch(100% 0 0 / 0.07);
+    --ec-line-strong: oklch(100% 0 0 / 0.14);
+    --ec-fg: oklch(96% 0.006 245);
+    --ec-fg-muted: oklch(63% 0.015 250);
+    --ec-fg-subtle: oklch(52% 0.015 250);
+    --ec-fg-faint: oklch(44% 0.02 250);
+    --ec-accent: oklch(76% 0.14 162);
+    --ec-accent-soft: oklch(56% 0.14 162 / 0.12);
+    --ec-accent-fg: oklch(86% 0.1 162);
+    --ec-danger: oklch(68% 0.18 22);
+    --ec-danger-soft: oklch(53% 0.22 25 / 0.1);
+    --ec-warning: oklch(80% 0.16 68);
+    --ec-info: oklch(68% 0.16 260);
+    --ec-shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.3);
+    --ec-shadow: 0 1px 0 oklch(100% 0 0 / 0.03), 0 1px 3px oklch(0% 0 0 / 0.45);
+    --ec-shadow-hover: 0 1px 0 oklch(100% 0 0 / 0.05), 0 6px 18px oklch(0% 0 0 / 0.55);
   }
 
   /* ---------- Canvas ---------- */
@@ -7161,78 +7161,78 @@
    --at-info       blue
    ============================================================================ */
 @layer utilities {
-  /* ---------- Tokens ---------- */
+  /* ---------- Tokens (oklch — no hex) ---------- */
   :root {
-    --at-bg: #ffffff;
-    --at-bg-elevated: #f7f8fa;
-    --at-bg-deep: #fafbfc;
-    --at-surface: #ffffff;
-    --at-surface-hover: #f7f8fa;
-    --at-line: #eceef2;
-    --at-line-strong: #d8dce3;
-    --at-fg: #0f172a;
-    --at-fg-muted: #475569;
-    --at-fg-subtle: #94a3b8;
-    --at-fg-faint: #cbd5e1;
-    --at-accent: #059669;
-    --at-accent-soft: #ecfdf5;
-    --at-accent-fg: #047857;
-    --at-gold: #c08a3e;
-    --at-gold-soft: #fef7e6;
-    --at-gold-fg: #92651a;
-    --at-danger: #dc2626;
-    --at-danger-soft: #fef2f2;
-    --at-warning: #d97706;
-    --at-info: #2563eb;
-    --at-violet: #7c3aed;
-    --at-telegram: #0088cc;
-    --at-whatsapp: #25d366;
+    --at-bg: oklch(100% 0 0);
+    --at-bg-elevated: oklch(97% 0.005 240);
+    --at-bg-deep: oklch(98.5% 0.003 240);
+    --at-surface: oklch(100% 0 0);
+    --at-surface-hover: oklch(97% 0.005 240);
+    --at-line: oklch(93% 0.008 245);
+    --at-line-strong: oklch(88% 0.01 245);
+    --at-fg: oklch(18% 0.02 255);
+    --at-fg-muted: oklch(44% 0.02 250);
+    --at-fg-subtle: oklch(63% 0.015 250);
+    --at-fg-faint: oklch(82% 0.01 248);
+    --at-accent: oklch(56% 0.14 162);
+    --at-accent-soft: oklch(97% 0.03 165);
+    --at-accent-fg: oklch(48% 0.13 162);
+    --at-gold: oklch(62% 0.12 72);
+    --at-gold-soft: oklch(97% 0.04 80);
+    --at-gold-fg: oklch(50% 0.11 70);
+    --at-danger: oklch(53% 0.22 25);
+    --at-danger-soft: oklch(97% 0.02 20);
+    --at-warning: oklch(62% 0.17 60);
+    --at-info: oklch(52% 0.22 265);
+    --at-violet: oklch(48% 0.22 290);
+    --at-telegram: oklch(56% 0.16 240);
+    --at-whatsapp: oklch(72% 0.18 145);
     --at-fg-inv: oklch(98% 0.005 240);
     --at-accent-on: oklch(98% 0.005 160);
-    --at-warning-fg: #b45309;
-    --at-danger-fg: #b91c1c;
+    --at-warning-fg: oklch(52% 0.14 62);
+    --at-danger-fg: oklch(48% 0.2 25);
     --at-radius-sm: 6px;
     --at-radius: 10px;
     --at-radius-lg: 14px;
     --at-radius-xl: 20px;
-    --at-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
-    --at-shadow: 0 1px 0 rgba(15, 23, 42, 0.02), 0 1px 3px rgba(15, 23, 42, 0.06);
-    --at-shadow-hover: 0 1px 0 rgba(15, 23, 42, 0.03), 0 6px 16px rgba(15, 23, 42, 0.08);
+    --at-shadow-sm: 0 1px 2px oklch(18% 0.02 255 / 0.04);
+    --at-shadow: 0 1px 0 oklch(18% 0.02 255 / 0.02), 0 1px 3px oklch(18% 0.02 255 / 0.06);
+    --at-shadow-hover: 0 1px 0 oklch(18% 0.02 255 / 0.03), 0 6px 16px oklch(18% 0.02 255 / 0.08);
     --at-ease: cubic-bezier(0.22, 1, 0.36, 1);
     --at-duration: 220ms;
   }
   .dark {
-    --at-bg: #070b14;
-    --at-bg-elevated: #111827;
-    --at-bg-deep: #0a0f1d;
-    --at-surface: #0f172a;
-    --at-surface-hover: #1a2333;
-    --at-line: rgba(255, 255, 255, 0.07);
-    --at-line-strong: rgba(255, 255, 255, 0.14);
-    --at-fg: #f1f5f9;
-    --at-fg-muted: #94a3b8;
-    --at-fg-subtle: #64748b;
-    --at-fg-faint: #475569;
-    --at-accent: #34d399;
-    --at-accent-soft: rgba(16, 185, 129, 0.12);
-    --at-accent-fg: #6ee7b7;
-    --at-gold: #d4a574;
-    --at-gold-soft: rgba(212, 165, 116, 0.12);
-    --at-gold-fg: #e7c89a;
-    --at-danger: #f87171;
-    --at-danger-soft: rgba(239, 68, 68, 0.10);
-    --at-warning: #fbbf24;
-    --at-info: #60a5fa;
-    --at-violet: #a78bfa;
-    --at-telegram: #29b6f6;
-    --at-whatsapp: #4cdc79;
+    --at-bg: oklch(10% 0.02 255);
+    --at-bg-elevated: oklch(18% 0.02 255);
+    --at-bg-deep: oklch(12% 0.02 255);
+    --at-surface: oklch(18% 0.02 255);
+    --at-surface-hover: oklch(22% 0.022 255);
+    --at-line: oklch(100% 0 0 / 0.07);
+    --at-line-strong: oklch(100% 0 0 / 0.14);
+    --at-fg: oklch(96% 0.006 245);
+    --at-fg-muted: oklch(63% 0.015 250);
+    --at-fg-subtle: oklch(52% 0.015 250);
+    --at-fg-faint: oklch(44% 0.02 250);
+    --at-accent: oklch(76% 0.14 162);
+    --at-accent-soft: oklch(56% 0.14 162 / 0.12);
+    --at-accent-fg: oklch(86% 0.1 162);
+    --at-gold: oklch(73% 0.1 72);
+    --at-gold-soft: oklch(62% 0.12 72 / 0.12);
+    --at-gold-fg: oklch(83% 0.08 72);
+    --at-danger: oklch(68% 0.18 22);
+    --at-danger-soft: oklch(53% 0.22 25 / 0.1);
+    --at-warning: oklch(80% 0.16 68);
+    --at-info: oklch(68% 0.16 260);
+    --at-violet: oklch(68% 0.17 290);
+    --at-telegram: oklch(72% 0.14 232);
+    --at-whatsapp: oklch(75% 0.18 148);
     --at-fg-inv: oklch(15% 0.01 250);
     --at-accent-on: oklch(12% 0.05 160);
-    --at-warning-fg: #fbbf24;
-    --at-danger-fg: #fca5a5;
-    --at-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-    --at-shadow: 0 1px 0 rgba(255, 255, 255, 0.03), 0 1px 3px rgba(0, 0, 0, 0.45);
-    --at-shadow-hover: 0 1px 0 rgba(255, 255, 255, 0.05), 0 6px 18px rgba(0, 0, 0, 0.55);
+    --at-warning-fg: oklch(80% 0.16 68);
+    --at-danger-fg: oklch(75% 0.13 22);
+    --at-shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.3);
+    --at-shadow: 0 1px 0 oklch(100% 0 0 / 0.03), 0 1px 3px oklch(0% 0 0 / 0.45);
+    --at-shadow-hover: 0 1px 0 oklch(100% 0 0 / 0.05), 0 6px 18px oklch(0% 0 0 / 0.55);
   }
 
   /* ---------- Canvas + a11y ---------- */
