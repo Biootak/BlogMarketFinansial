@@ -7,7 +7,6 @@ import { Suspense } from 'react';
 
 import SectionSubscribe2 from '@/components/SectionSubscribe2/SectionSubscribe2';
 import CryptoTickerSection from '@/components/Sections/CryptoTickerSection';
-import MarketRatesTickerSection from '@/components/Sections/MarketRatesTickerSection';
 import PulseSection from '@/components/Sections/PulseBoard/PulseSection';
 import SectionMagazine7 from '@/components/Sections/SectionMagazine7';
 import { TopAuthorsSection } from '@/components/TopAuthorsSection';
@@ -81,9 +80,6 @@ export default async function Home() {
         <Suspense fallback={<Skeleton className="h-28 rounded-2xl" />}>
           <CryptoTickerSection />
         </Suspense>
-
-        {/* نوار زنده‌ی نرخ‌های بازار — زیر نوار کریپتو، با سرعت متفاوت */}
-        <MarketRatesTickerSection />
 
         <Suspense fallback={<CardLarge1Skeleton />}>
           <SectionLargeSlider />

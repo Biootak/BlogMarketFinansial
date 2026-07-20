@@ -52,11 +52,11 @@ const MOCK_RATES: CryptoTickerRate[] = [
 ];
 
 const logger = {
-  error: (message: string, error?: unknown) => {
-    console.error(`[ExirCryptoRates Error] ${message}`, error);
+  error: (_message: string, _error?: unknown) => {
+    // silenced — use server-side logging if needed
   },
-  info: (message: string) => {
-    console.info(`[ExirCryptoRates Info] ${message}`);
+  info: (_message: string) => {
+    // silenced — use server-side logging if needed
   },
 };
 
@@ -105,10 +105,14 @@ async function fetchWithRetry(
       }
       return response;
     } catch (error) {
-      if (i === 0) {
-        logger.error(`API request failed (will retry ${retries - 1} more times)`, error);
+      // 4xx (غیر از 429) قابل retry نیست — فوری throw کن
+      const statusMatch = error instanceof Error && error.message.match(/status: (\d+)/);
+      const statusCode = statusMatch ? Number(statusMatch[1]) : 0;
+      const isNonRetryable = statusCode >= 400 && statusCode < 500 && statusCode !== 429;
+
+      if (isNonRetryable || i === retries - 1) {
+        throw error;
       }
-      if (i === retries - 1) throw error;
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
@@ -233,7 +237,14 @@ export const getExirCryptoRates = cache(async (): Promise<CryptoTickerResult> =>
       message: 'نرخ‌ها با موفقیت دریافت شد',
     };
   } catch (error) {
-    logger.error('Error in getExirCryptoRates:', error);
+    // 403/4xx = Exir این سرور را block کرده — خطای شناخته‌شده، نه باگ
+    // لاگ نزن تا console پر از noise نشود
+    const statusMatch = error instanceof Error && error.message.match(/status: (\d+)/);
+    const statusCode = statusMatch ? Number(statusMatch[1]) : 0;
+    const isKnownBlock = statusCode >= 400 && statusCode < 500;
+    if (!isKnownBlock) {
+      logger.error('Error in getExirCryptoRates:', error);
+    }
 
     if (USE_MOCK_ON_FAILURE) {
       logger.info('Using mock data due to API failure');

@@ -4,16 +4,20 @@
  * Structure:
  *  - HeaderAdBar (h-8/9, optional) — admin-controlled narrow ad at the very top
  *  - MainNav (h-12 mobile / h-14 desktop) — logo, navigation, actions
+ *  - MarketRatesTicker — نوار زنده‌ی نرخ‌های بازار، همیشه زیر هدر
  *  - sticky + backdrop-blur
  *  - three-column symmetric layout: Logo | Navigation (center) | Actions
  *  - server component, no framer-motion
  *
  * 2026-06-14: ticker bar removed — live rates are no longer rendered here.
  *  The ad bar remains as the topmost element when active.
+ * 2026-07-20: MarketRatesTicker بازگشت — به عنوان نوار دائمی زیر MainNav،
+ *  در همه صفحات site همراه هدر sticky می‌ماند.
  *
  * 2026-06-17: لیست‌های فعال RateList از سرور برای مگامنوی «بازار» در MainNav
  *  پاس داده می‌شه. منبع داده یک‌تا و مشترک با PulseBoard است.
  */
+import MarketRatesTickerSection from '@/components/Sections/MarketRatesTickerSection';
 import type { RateListData } from '@/types/types';
 import HeaderAdBar from './HeaderAdBar';
 import MainNav from './MainNav';
@@ -49,7 +53,7 @@ const Header = ({ activeRateLists = [] }: { activeRateLists?: RateListData[] }) 
         "
       />
 
-      {/* Bottom hairline divider */}
+      {/* Bottom hairline divider — below ticker now */}
       <div
         aria-hidden
         className="
@@ -60,6 +64,9 @@ const Header = ({ activeRateLists = [] }: { activeRateLists?: RateListData[] }) 
       />
 
       <MainNav activeRateLists={activeRateLists} />
+
+      {/* نوار زنده‌ی نرخ‌های بازار — همیشه زیر MainNav، sticky همراه هدر */}
+      <MarketRatesTickerSection />
     </header>
   );
 };

@@ -4,9 +4,10 @@
 import prisma from '@/lib/db';
 import {
   type BonbastBuySellRates,
+  type BonbastRates,
   crossRateToToman,
   fetchBonbastBuySell,
-  fetchBonbastRates,
+  fetchBonbastRatesFromBuySell,
 } from './bonbast';
 import { getGlobalFxRates } from './fx';
 import { SYMBOL_REGISTRY_MAP } from './registry';
@@ -53,14 +54,16 @@ export async function assembleMarketRates(): Promise<MarketRateItem[]> {
     orderBy: { priority: 'asc' },
   });
 
-  const [allPages, usdt, fx, bonbast, bonbastBS, sarafi] = await Promise.all([
+  // bonbastBS را یک بار fetch می‌کنیم؛ bonbast (mid) را از همان نتیجه derive می‌کنیم
+  // تا دو scrape جداگانه به bonbast.com نزنیم.
+  const [allPages, usdt, fx, bonbastBS, sarafi] = await Promise.all([
     fetchAllTgjuPages(),
     getUsdtRate(),
     getGlobalFxRates(),
-    fetchBonbastRates(),
     fetchBonbastBuySell(),
     fetchSarafiRates(),
   ]);
+  const bonbast: BonbastRates | null = bonbastBS ? fetchBonbastRatesFromBuySell(bonbastBS) : null;
 
   // ساخت tgjuMap: کلید lookup = `pageId:tgjuKey` (مثلاً 'homepage:price_dollar_rl')
   // یا canonical key (مثلاً 'bubble_emami') اگه از coin page با override اومده باشه.
@@ -91,7 +94,7 @@ function assembleFromRow(
   tgjuMap: Map<string, TgjuRate>,
   usdt: Awaited<ReturnType<typeof getUsdtRate>>,
   fx: Awaited<ReturnType<typeof getGlobalFxRates>>,
-  bonbast: Awaited<ReturnType<typeof fetchBonbastRates>>,
+  bonbast: BonbastRates | null,
   bonbastBS: BonbastBuySellRates | null,
   sarafi: Awaited<ReturnType<typeof fetchSarafiRates>>,
   registry?: RegistryEntry,
@@ -158,6 +161,29 @@ function assembleFromRow(
       rawValue = buyValue;
     } else if (sellValue !== null) {
       rawValue = sellValue;
+    }
+  }
+
+  // Priority 2c: bonbast buy/sell برای IRAN_* ارزها که TGJU فقط mid داد.
+  // بعد از اینکه rawValue از TGJU پر شد ولی buyValue/sellValue هنوز null هستند،
+  // از bonbast.com صفحه اصلی نرخ خرید/فروش واقعی بازار تهران می‌گیریم.
+  // مثال: IRAN_USD → bonbastBS.rates['USD'].buy / .sell (هر دو به تومان)
+  if (rawValue !== null && buyValue === null && sellValue === null && bonbastBS) {
+    let fxCode: string | null = null;
+    if (symbol.startsWith('IRAN_')) {
+      fxCode = symbol.replace('IRAN_', '');
+    } else if (symbol.startsWith('AFGHANI_')) {
+      fxCode = symbol.replace('AFGHANI_', '');
+    }
+    if (fxCode) {
+      const bsEntry = bonbastBS.rates[fxCode.toUpperCase()];
+      if (bsEntry && bsEntry.buy > 0 && bsEntry.sell > 0) {
+        // bonbast مقادیر را به تومان می‌دهد — برای consistency با بقیه rawValue ها
+        // که ریال هستند، ضرب در divisor می‌کنیم.
+        buyValue = bsEntry.buy * divisor;
+        sellValue = bsEntry.sell * divisor;
+        // rawValue را از bonbast override نمی‌کنیم — TGJU دقیق‌تر است برای mid
+      }
     }
   }
 

@@ -8,7 +8,7 @@
    ────────────────────────────────────────────────────────────────────────── */
 .root {
   position: relative;
-  min-height: clamp(560px, 78vh, 820px);
+  min-height: clamp(620px, 85vh, 860px);
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
   align-items: center;
@@ -345,7 +345,12 @@
 }
 
 .arrowIcon {
-  transform: scaleX(-1); /* RTL mirror */
+  /* ArrowLeft در RTL نشانگر «رفتن به جلو» است — نیازی به flip ندارد */
+}
+
+/* SendHorizonal در RTL باید flip شود (پیکان به سمت چپ = ارسال رو به جلو) */
+.sendIcon {
+  transform: scaleX(-1);
 }
 
 /* دکمه سوم — حواله (accent amber) */
@@ -388,7 +393,7 @@
 .visual {
   position: relative;
   z-index: 2;
-  height: clamp(360px, 44vw, 520px);
+  height: clamp(480px, 60vw, 660px);
   padding-inline-end: clamp(20px, 5vw, 60px);
   animation: staggerUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
 }
@@ -613,7 +618,42 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-block: 4px;
+  padding-block: 3px;
+}
+
+/* خرید/فروش زیر هر ردیف نرخ */
+.buySellRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-block: 1px 4px;
+  padding-inline-start: 4px;
+}
+
+.buySellItem {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+
+.buySellLabel {
+  color: var(--ds-text-muted);
+  font-weight: var(--ds-weight-medium);
+}
+
+.buySellVal {
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-secondary);
+}
+
+.buySellBuy {
+  color: var(--ds-accent-emerald);
+}
+
+.buySellSell {
+  color: var(--ds-accent-rose);
 }
 
 .rateRight {
@@ -640,6 +680,60 @@
   font-weight: var(--ds-weight-semibold);
   font-variant-numeric: tabular-nums;
   color: var(--ds-text-primary);
+}
+
+/* ── Mini-calculator: input + select row ─────────────────────────────── */
+.calcRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: var(--ds-space-2);
+}
+
+.calcInput {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: var(--ds-radius-md);
+  border: 1px solid var(--ds-border);
+  background: var(--ds-surface-raised);
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  text-align: start;
+  transition: border-color var(--ds-duration-fast);
+  outline: none;
+}
+
+.calcInput:focus {
+  border-color: var(--ds-brand-500);
+  box-shadow: 0 0 0 2px oklch(58% 0.12 165 / 0.15);
+}
+
+.calcSelect {
+  height: 36px;
+  padding: 0 6px;
+  border-radius: var(--ds-radius-md);
+  border: 1px solid var(--ds-border);
+  background: var(--ds-surface-raised);
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  cursor: pointer;
+  outline: none;
+  transition: border-color var(--ds-duration-fast);
+}
+
+.calcSelect:focus {
+  border-color: var(--ds-brand-500);
+}
+
+:global(.dark) .calcInput,
+:global(.dark) .calcSelect {
+  background: oklch(20% 0.01 250 / 0.6);
+  border-color: oklch(30% 0.015 250 / 0.6);
 }
 
 /* Card CTA button */
@@ -690,6 +784,12 @@
 }
 .trendDown {
   color: var(--ds-accent-rose);
+}
+
+/* نتیجه تومان در calculator — کمرنگ‌تر از AFN */
+.resultTomanMuted {
+  color: var(--ds-text-secondary);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Status badge — همان statusBadge صفحه حواله */
@@ -783,4 +883,40 @@
   .statItem:nth-child(2) {
     border-inline-end: none;
   }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   SKELETON — empty state هنگامی که داده موجود نیست
+   ────────────────────────────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.cardAmountSkeleton {
+  height: 28px;
+  width: 70%;
+  border-radius: var(--ds-radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--ds-border-subtle) 25%,
+    var(--ds-border) 50%,
+    var(--ds-border-subtle) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  margin-bottom: var(--ds-space-2);
+}
+
+.rateRowSkeleton {
+  height: 20px;
+  border-radius: var(--ds-radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--ds-border-subtle) 25%,
+    var(--ds-border) 50%,
+    var(--ds-border-subtle) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
 }
