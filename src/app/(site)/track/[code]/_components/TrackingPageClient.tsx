@@ -126,9 +126,7 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
       <div className={s.header}>
         <div className={s.codeRow}>
           <span className={s.codeLabel}>کد پیگیری</span>
-          <span className={s.code} dir="ltr">
-            {code}
-          </span>
+          <span className={s.code} dir="ltr">{code}</span>
         </div>
         <div className={s.headerActions}>
           <button
@@ -156,39 +154,40 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
       {/* ── Error state ── */}
       {error && !data && (
         <div className={s.errorBox} role="alert">
-          <AlertCircle size={15} />
+          <AlertCircle size={16} />
           <span>{error}</span>
         </div>
       )}
 
-      {/* ── Result ── */}
+      {/* ── Result card ── */}
       {data && (
         <div className={s.card}>
-          {/* Status badge */}
-          {status && StatusIcon && (
-            <div className={`${s.statusBadge} ${status.cls}`}>
-              <StatusIcon size={14} />
-              <span>{status.label}</span>
-            </div>
-          )}
+
+          {/* Card header: status badge + service type */}
+          <div className={s.cardHead}>
+            {status && StatusIcon && (
+              <div className={`${s.statusBadge} ${status.cls}`}>
+                <StatusIcon size={13} />
+                <span>{status.label}</span>
+              </div>
+            )}
+            <span className={s.serviceChip}>
+              {SERVICE_LABELS[data.serviceType] ?? data.serviceType}
+            </span>
+          </div>
+
+          {/* Amount row — prominent display */}
+          <div className={s.amountRow}>
+            <span className={s.amountLabel}>مبلغ</span>
+            <span className={s.amountValue} dir="ltr">{data.amount}</span>
+            <span className={s.amountCurrency}>{data.currency}</span>
+          </div>
 
           {/* Core info */}
           <dl className={s.infoList}>
             <div className={s.infoRow}>
               <dt className={s.infoLabel}>نام</dt>
               <dd className={s.infoValue}>{data.fullName}</dd>
-            </div>
-            <div className={s.infoRow}>
-              <dt className={s.infoLabel}>نوع خدمات</dt>
-              <dd className={s.infoValue}>
-                {SERVICE_LABELS[data.serviceType] ?? data.serviceType}
-              </dd>
-            </div>
-            <div className={s.infoRow}>
-              <dt className={s.infoLabel}>مبلغ</dt>
-              <dd className={s.infoValue} dir="ltr">
-                {data.amount} {data.currency}
-              </dd>
             </div>
             <div className={s.infoRow}>
               <dt className={s.infoLabel}>تاریخ ثبت</dt>
@@ -203,7 +202,7 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
             {data.estimatedCompletionAt && (
               <div className={s.infoRow}>
                 <dt className={s.infoLabel}>
-                  <CalendarClock size={12} style={{ display: 'inline', marginLeft: 4 }} />
+                  <CalendarClock size={12} aria-hidden />
                   زمان تخمینی تکمیل
                 </dt>
                 <dd className={s.infoValue}>
@@ -218,12 +217,10 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
             {data.externalTxId && (
               <div className={s.infoRow}>
                 <dt className={s.infoLabel}>
-                  <Hash size={12} style={{ display: 'inline', marginLeft: 4 }} />
+                  <Hash size={12} aria-hidden />
                   شناسه تراکنش
                 </dt>
-                <dd className={s.infoValue} dir="ltr">
-                  {data.externalTxId}
-                </dd>
+                <dd className={s.infoValue} dir="ltr">{data.externalTxId}</dd>
               </div>
             )}
           </dl>
@@ -232,28 +229,28 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
           {data.adminNotes && (
             <div className={s.noteBox}>
               <div className={s.noteHeader}>
-                <MessageSquare size={13} />
+                <MessageSquare size={13} aria-hidden />
                 <span>یادداشت تیم</span>
               </div>
               <p className={s.noteText}>{data.adminNotes}</p>
             </div>
           )}
 
-          {/* Status history */}
+          {/* Status history — vertical timeline */}
           {data.statusLogs.length > 0 && (
             <div className={s.history}>
               <div className={s.historyHeader}>
-                <History size={13} />
+                <History size={13} aria-hidden />
                 <span>تاریخچه وضعیت</span>
               </div>
               <ol className={s.historyList}>
                 {data.statusLogs.map((log, i) => (
                   <li key={i} className={s.historyItem}>
-                    <span className={s.historyDot} />
+                    <span className={s.historyDot} aria-hidden />
                     <div className={s.historyBody}>
                       <span className={s.historyStatus}>
                         {log.fromStatus
-                          ? `${STATUS_LABELS[log.fromStatus] ?? log.fromStatus} → `
+                          ? `${STATUS_LABELS[log.fromStatus] ?? log.fromStatus} ← `
                           : ''}
                         {STATUS_LABELS[log.toStatus] ?? log.toStatus}
                       </span>
@@ -273,13 +270,14 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
             </div>
           )}
 
-          {/* CTA — submit new request */}
+          {/* CTA */}
           <div className={s.cta}>
             <a href="/online-payment#contact" className={s.ctaLink}>
               <span>ثبت درخواست جدید</span>
-              <ArrowUpRight size={14} />
+              <ArrowUpRight size={15} />
             </a>
           </div>
+
         </div>
       )}
     </div>

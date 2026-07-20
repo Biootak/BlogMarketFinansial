@@ -615,6 +615,12 @@ async function seedExchangesAndProviders() {
     ? cuid2.createId
     : () => require('crypto').randomBytes(12).toString('hex');
 
+  // صرافی‌هایی که باید در جدول مقایسه نشان داده شوند
+  const SHOW_IN_COMPARISON_SLUGS = new Set([
+    'nobitex', 'exir', 'bitpin', 'bit24',
+    'sara-herat', 'abantether', 'wallex',
+  ]);
+
   const EXCHANGES = [
     // ── ایران — صرافی‌های آنلاین ─────────────────────────────────────────────
     {
@@ -989,6 +995,7 @@ async function seedExchangesAndProviders() {
     // ── upsert Exchange ──────────────────────────────────────────────────────
     const existingEx = await p.exchange.findFirst({ where: { slug: ex.slug } });
     let exchangeRecord;
+    const shouldShowInComparison = SHOW_IN_COMPARISON_SLUGS.has(ex.slug);
     if (existingEx) {
       exchangeRecord = await p.exchange.update({
         where: { id: existingEx.id },
@@ -999,6 +1006,7 @@ async function seedExchangesAndProviders() {
           email: ex.email,
           status: ex.status,
           requireKyc: ex.requireKyc,
+          showInComparison: shouldShowInComparison,
           updatedAt: new Date(),
         },
       });
@@ -1014,6 +1022,7 @@ async function seedExchangesAndProviders() {
           email: ex.email,
           status: ex.status,
           requireKyc: ex.requireKyc,
+          showInComparison: shouldShowInComparison,
           updatedAt: new Date(),
         },
       });

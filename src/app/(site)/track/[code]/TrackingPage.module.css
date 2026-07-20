@@ -1,117 +1,363 @@
 /**
- * TrackingPage.module.css — tokens only, RTL logical properties
+ * TrackingPage.module.css — DL-* deal tracking
+ * Redesign 2026: Status hero + stepper timeline + details card
+ * RTL logical properties · tokens only · no hex
  */
 
+/* ─── Root ─── */
+
 .root {
-  min-block-size: 60vh;
-  padding-block: var(--ds-space-10) var(--ds-space-12);
-  background: var(--ds-surface-0, var(--ds-bg));
+  min-block-size: 100dvh;
+  background: var(--ds-canvas);
+  padding-block: var(--ds-space-8) var(--ds-space-10);
+  padding-inline: var(--ds-space-4);
 }
 
 .container {
-  max-inline-size: 600px;
+  max-inline-size: 580px;
   margin-inline: auto;
-  padding-inline: var(--ds-space-4);
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-5);
+  animation: pageEnter var(--ds-duration-slow) var(--ds-ease-out-quart) both;
 }
 
-/* ─── Header ─── */
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
-.header {
+/* ─── Top breadcrumb / back hint ─── */
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  margin-block-end: var(--ds-space-1);
+}
+
+.breadcrumb svg { flex-shrink: 0; }
+
+/* ─── Hero status section ─── */
+
+.hero {
+  position: relative;
+  border-radius: var(--ds-radius-xl);
+  padding: var(--ds-space-6);
+  overflow: hidden;
+  border: 1px solid var(--ds-border-default);
+  background: var(--ds-surface);
+  animation: cardEnter var(--ds-duration-base) var(--ds-ease-out-quart) 60ms both;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 3px;
+  border-radius: var(--ds-radius-xl) var(--ds-radius-xl) 0 0;
+  background: var(--ds-border-subtle);
+  transition: background var(--ds-duration-base);
+}
+
+.hero--success::before  { background: var(--ds-status-success-fg); }
+.hero--warning::before  { background: var(--ds-status-pending-fg); }
+.hero--error::before    { background: var(--ds-status-error-fg); }
+.hero--info::before     { background: var(--ds-status-progress-fg); }
+
+@keyframes cardEnter {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.heroInner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-4);
+}
+
+/* Status icon ring */
+.statusRing {
+  flex-shrink: 0;
+  inline-size: 52px;
+  block-size: 52px;
+  border-radius: var(--ds-radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--ds-border-default);
+  background: var(--ds-surface-elevated);
+  color: var(--ds-text-muted);
+  transition: transform var(--ds-duration-base) var(--ds-ease-spring);
+  position: relative;
+}
+
+.hero--success .statusRing {
+  background: color-mix(in oklch, var(--ds-status-success-fg) 10%, var(--ds-surface));
+  border-color: var(--ds-status-success-border);
+  color: var(--ds-status-success-fg);
+}
+.hero--warning .statusRing {
+  background: color-mix(in oklch, var(--ds-status-pending-fg) 10%, var(--ds-surface));
+  border-color: var(--ds-status-pending-border);
+  color: var(--ds-status-pending-fg);
+}
+.hero--error .statusRing {
+  background: color-mix(in oklch, var(--ds-status-error-fg) 10%, var(--ds-surface));
+  border-color: var(--ds-status-error-border);
+  color: var(--ds-status-error-fg);
+}
+.hero--info .statusRing {
+  background: color-mix(in oklch, var(--ds-status-progress-fg) 10%, var(--ds-surface));
+  border-color: var(--ds-status-progress-border);
+  color: var(--ds-status-progress-fg);
+}
+
+/* Pulse ring animation for active states */
+.hero--warning .statusRing::after,
+.hero--info .statusRing::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: var(--ds-radius-full);
+  border: 1.5px solid currentColor;
+  opacity: 0;
+  animation: ringPulse 2s var(--ds-ease-out-quart) infinite;
+}
+
+@keyframes ringPulse {
+  0%   { opacity: 0.5; transform: scale(1); }
+  100% { opacity: 0;   transform: scale(1.4); }
+}
+
+.heroContent {
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-1);
+  flex: 1;
+  min-inline-size: 0;
 }
 
-.title {
-  font-size: var(--ds-text-2xl, 1.5rem);
+.heroStatusLabel {
+  font-size: var(--ds-text-xl);
   font-weight: 700;
-  color: var(--ds-text-1);
-  margin: 0;
+  color: var(--ds-text-primary);
+  line-height: var(--ds-leading-snug);
 }
 
-.trackingCode {
+.heroStatusDesc {
   font-size: var(--ds-text-sm);
-  font-family: monospace;
-  color: var(--ds-text-3);
-  letter-spacing: 0.08em;
-  margin: 0;
+  color: var(--ds-text-secondary);
+  line-height: var(--ds-leading-normal);
 }
 
-/* ─── Status card ─── */
+.heroCode {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  margin-block-start: var(--ds-space-3);
+  padding: var(--ds-space-1) var(--ds-space-3);
+  background: var(--ds-surface-recessed);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-full);
+  font-family: "Menlo", "Consolas", monospace;
+  font-size: var(--ds-text-xs);
+  letter-spacing: 0.07em;
+  color: var(--ds-text-muted);
+  max-inline-size: fit-content;
+}
 
-.statusCard {
+/* ─── Progress stepper ─── */
+
+.stepper {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0;
+  padding: var(--ds-space-5);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-xl);
+  animation: cardEnter var(--ds-duration-base) var(--ds-ease-out-quart) 120ms both;
+}
+
+.stepItem {
   display: flex;
-  align-items: flex-start;
-  gap: var(--ds-space-3);
-  padding: var(--ds-space-4) var(--ds-space-5);
-  border-radius: var(--ds-radius-lg, 12px);
-  border: 1px solid var(--ds-border);
-  background: var(--ds-surface-1);
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  gap: var(--ds-space-2);
 }
 
-.statusCard--success {
-  background: color-mix(in srgb, var(--ds-success) 8%, var(--ds-surface-1));
-  border-color: color-mix(in srgb, var(--ds-success) 30%, transparent);
-}
-.statusCard--warning {
-  background: color-mix(in srgb, var(--ds-warning) 8%, var(--ds-surface-1));
-  border-color: color-mix(in srgb, var(--ds-warning) 30%, transparent);
-}
-.statusCard--error {
-  background: color-mix(in srgb, var(--ds-error) 8%, var(--ds-surface-1));
-  border-color: color-mix(in srgb, var(--ds-error) 30%, transparent);
-}
-.statusCard--info {
-  background: color-mix(in srgb, var(--ds-accent, var(--ds-primary)) 8%, var(--ds-surface-1));
-  border-color: color-mix(in srgb, var(--ds-accent, var(--ds-primary)) 30%, transparent);
+/* Connector line between steps */
+.stepItem:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 14px;
+  /* RTL: go from center outward */
+  inset-inline-start: 50%;
+  inline-size: 100%;
+  block-size: 1.5px;
+  background: var(--ds-border-default);
+  z-index: 0;
+  transition: background var(--ds-duration-slow) var(--ds-ease-out-quart);
 }
 
-.statusDot {
-  flex-shrink: 0;
-  margin-block-start: 4px;
-  inline-size: 10px;
-  block-size: 10px;
-  border-radius: 50%;
-  background: var(--ds-text-3);
-}
-.statusCard--success .statusDot { background: var(--ds-success); }
-.statusCard--warning .statusDot { background: var(--ds-warning); animation: pulse 1.5s ease infinite; }
-.statusCard--error .statusDot { background: var(--ds-error); }
-.statusCard--info .statusDot { background: var(--ds-accent, var(--ds-primary)); animation: pulse 1.5s ease infinite; }
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.2); }
+.stepItem--done:not(:last-child)::after {
+  background: var(--ds-status-success-fg);
 }
 
-.statusLabel {
-  font-size: var(--ds-text-base);
+.stepDot {
+  position: relative;
+  z-index: 1;
+  inline-size: 28px;
+  block-size: 28px;
+  border-radius: var(--ds-radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--ds-border-default);
+  background: var(--ds-canvas);
+  color: var(--ds-text-muted);
+  font-size: 10px;
   font-weight: 700;
-  color: var(--ds-text-1);
+  transition: all var(--ds-duration-base) var(--ds-ease-spring);
 }
-.statusDesc {
-  font-size: var(--ds-text-sm);
-  color: var(--ds-text-2);
-  margin-block-start: 2px;
+
+.stepItem--done .stepDot {
+  background: var(--ds-status-success-fg);
+  border-color: var(--ds-status-success-fg);
+  color: white;
 }
+
+.stepItem--active .stepDot {
+  background: var(--ds-surface);
+  border-color: var(--ds-status-progress-fg);
+  color: var(--ds-status-progress-fg);
+  box-shadow: 0 0 0 4px color-mix(in oklch, var(--ds-status-progress-fg) 15%, transparent);
+  animation: stepGlow 2s var(--ds-ease-out-quart) infinite;
+}
+
+@keyframes stepGlow {
+  0%, 100% { box-shadow: 0 0 0 4px color-mix(in oklch, var(--ds-status-progress-fg) 15%, transparent); }
+  50%       { box-shadow: 0 0 0 7px color-mix(in oklch, var(--ds-status-progress-fg) 6%, transparent); }
+}
+
+.stepItem--error .stepDot {
+  background: var(--ds-status-error-bg);
+  border-color: var(--ds-status-error-fg);
+  color: var(--ds-status-error-fg);
+}
+
+.stepLabel {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--ds-text-muted);
+  text-align: center;
+  line-height: 1.3;
+  transition: color var(--ds-duration-base);
+}
+
+.stepItem--done .stepLabel  { color: var(--ds-status-success-fg); font-weight: 600; }
+.stepItem--active .stepLabel{ color: var(--ds-status-progress-fg); font-weight: 700; }
+.stepItem--error .stepLabel { color: var(--ds-status-error-fg); font-weight: 600; }
 
 /* ─── Details card ─── */
 
 .detailsCard {
   padding: var(--ds-space-5);
-  border-radius: var(--ds-radius-lg, 12px);
-  border: 1px solid var(--ds-border);
-  background: var(--ds-surface-1);
+  border-radius: var(--ds-radius-xl);
+  border: 1px solid var(--ds-border-subtle);
+  background: var(--ds-surface);
+  animation: cardEnter var(--ds-duration-base) var(--ds-ease-out-quart) 180ms both;
 }
 
 .sectionTitle {
-  font-size: var(--ds-text-base);
-  font-weight: 600;
-  color: var(--ds-text-1);
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  color: var(--ds-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
   margin: 0 0 var(--ds-space-4);
+}
+
+/* Exchange highlight row at top */
+.exchangeHighlight {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding-block-end: var(--ds-space-4);
+  margin-block-end: var(--ds-space-4);
+  border-block-end: 1px solid var(--ds-border-subtle);
+}
+
+.exchangeAvatar {
+  inline-size: 40px;
+  block-size: 40px;
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-brand-50);
+  border: 1px solid var(--ds-brand-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ds-brand-600);
+  font-weight: 800;
+  font-size: var(--ds-text-base);
+  flex-shrink: 0;
+}
+
+.exchangeName {
+  font-size: var(--ds-text-base);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+}
+.exchangeCity {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  margin-block-start: 1px;
+}
+
+/* Currency flow */
+.currencyFlow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+  background: var(--ds-canvas-subtle);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
+  margin-block-end: var(--ds-space-4);
+}
+
+.currencyBlock {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.currencyCode {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.currencyAmount {
+  font-size: var(--ds-text-lg);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.flowArrow {
+  flex-shrink: 0;
+  color: var(--ds-text-muted);
+  display: flex;
+  align-items: center;
 }
 
 .grid {
@@ -127,37 +373,43 @@
   justify-content: space-between;
   gap: var(--ds-space-3);
   padding-block: var(--ds-space-2);
-  border-block-end: 1px solid var(--ds-border-muted, var(--ds-border));
+  border-block-end: 1px solid var(--ds-border-subtle);
 }
 .row:last-child {
   border-block-end: none;
 }
 
 .label {
-  font-size: var(--ds-text-sm);
-  color: var(--ds-text-3);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
   flex-shrink: 0;
 }
 
 .value {
   font-size: var(--ds-text-sm);
-  color: var(--ds-text-1);
+  color: var(--ds-text-primary);
   font-weight: 500;
   text-align: end;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ─── Footer ─── */
 
 .footer {
-  text-align: center;
-  color: var(--ds-text-3);
-  font-size: var(--ds-text-sm);
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-1);
+  align-items: center;
+  gap: var(--ds-space-2);
+  text-align: center;
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+  padding-block-start: var(--ds-space-2);
+  animation: cardEnter var(--ds-duration-base) var(--ds-ease-out-quart) 280ms both;
 }
 .footer p { margin: 0; }
+
 .footNote {
-  font-size: 12px;
   opacity: 0.7;
+  max-inline-size: 40ch;
+  line-height: var(--ds-leading-normal);
 }

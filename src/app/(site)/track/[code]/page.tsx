@@ -11,6 +11,18 @@
 import { getDealByTracking } from '@/actions/currency-deals';
 import { getServiceRequestByTrackingCode } from '@/actions/serviceRequestActions';
 import type { Metadata } from 'next';
+import {
+  ArrowLeft,
+  ArrowLeftRight,
+  BadgeCheck,
+  Ban,
+  CheckCircle2,
+  Clock,
+  Loader2,
+  RefreshCw,
+  RotateCcw,
+  Wallet,
+} from 'lucide-react';
 import { notFound } from 'next/navigation';
 import TrackingPageClient from './_components/TrackingPageClient';
 import s from './TrackingPage.module.css';
@@ -35,41 +47,59 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-const STATUS_MAP: Record<string, { label: string; color: string; desc: string }> = {
+// ─── Status metadata ────────────────────────────────────────────────────────
+
+type StatusColor = 'success' | 'warning' | 'error' | 'info';
+
+interface StatusInfo {
+  label: string;
+  color: StatusColor;
+  desc: string;
+  Icon: React.ElementType;
+}
+
+const STATUS_MAP: Record<string, StatusInfo> = {
   PENDING: {
     label: 'در انتظار تایید',
     color: 'warning',
     desc: 'معامله شما ثبت شده و منتظر تایید صرافی است.',
+    Icon: Clock,
   },
   CONFIRMED: {
     label: 'تایید شد',
     color: 'info',
     desc: 'صرافی معامله را تایید کرده — در حال پردازش.',
+    Icon: BadgeCheck,
   },
   PROCESSING: {
     label: 'در حال انجام',
     color: 'info',
     desc: 'معامله در حال پردازش است.',
+    Icon: Loader2,
   },
   COMPLETED: {
-    label: 'تکمیل شد',
+    label: 'معامله تکمیل شد',
     color: 'success',
-    desc: 'معامله با موفقیت انجام شد.',
+    desc: 'مبلغ با موفقیت منتقل شد.',
+    Icon: CheckCircle2,
   },
   CANCELLED: {
     label: 'لغو شد',
     color: 'error',
     desc: 'این معامله لغو شده است.',
+    Icon: Ban,
   },
   DISPUTED: {
     label: 'در اختلاف',
     color: 'error',
     desc: 'این معامله دارای اختلاف است — با پشتیبانی تماس بگیرید.',
+    Icon: RefreshCw,
   },
   REFUNDED: {
     label: 'بازگشت داده شد',
     color: 'success',
     desc: 'مبلغ شما بازگشت داده شده است.',
+    Icon: RotateCcw,
   },
 };
 
@@ -78,6 +108,28 @@ const CHANNEL_LABEL: Record<string, string> = {
   INPERSON: 'حضوری',
   PHONE: 'تلفنی',
 };
+
+// ─── Stepper config ─────────────────────────────────────────────────────────
+
+const STEPS: { key: string; label: string }[] = [
+  { key: 'PENDING',    label: 'ثبت' },
+  { key: 'CONFIRMED',  label: 'تایید' },
+  { key: 'PROCESSING', label: 'پردازش' },
+  { key: 'COMPLETED',  label: 'انجام شد' },
+];
+
+// Map each status to stepper progress index (0-based)
+const STATUS_STEP: Record<string, number> = {
+  PENDING:    0,
+  CONFIRMED:  1,
+  PROCESSING: 2,
+  COMPLETED:  3,
+  CANCELLED:  -1, // error state
+  DISPUTED:   -1,
+  REFUNDED:   3,
+};
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function formatFa(n: string | number): string {
   const num = typeof n === 'string' ? Number.parseFloat(n) : n;
@@ -100,89 +152,156 @@ function formatDate(d: Date): string {
   }).format(d);
 }
 
+// ─── Page ────────────────────────────────────────────────────────────────────
+
 export default async function TrackingPage({ params }: Props) {
   const { code } = await params;
   const upper = code.trim().toUpperCase();
 
-  // ── ServiceRequest (BT-*) → کامپوننت قدیمی ──────────────────────────────────
+  // ── ServiceRequest (BT-*) ──────────────────────────────────────────────────
   if (IS_SERVICE(upper)) {
     if (!/^BT-[A-F0-9]{8}-[A-F0-9]{6}$/i.test(upper)) notFound();
     const res = await getServiceRequestByTrackingCode(upper);
     return (
-      <main style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 'clamp(24px,5vw,56px) 16px' }}>
-        <TrackingPageClient
-          code={upper}
-          initialData={res.success && res.data ? res.data : null}
-          initialError={!res.success ? (res.message ?? 'خطا') : null}
-        />
+      <main className={s.root}>
+        <div className={s.container}>
+          <div className={s.breadcrumb}>
+            <ArrowLeft size={12} />
+            <span>پیگیری درخواست</span>
+          </div>
+          <TrackingPageClient
+            code={upper}
+            initialData={res.success && res.data ? res.data : null}
+            initialError={!res.success ? (res.message ?? 'خطا') : null}
+          />
+        </div>
       </main>
     );
   }
 
-  // ── CurrencyDeal (DL-*) → صفحه جدید ─────────────────────────────────────────
+  // ── CurrencyDeal (DL-*) ────────────────────────────────────────────────────
   if (!IS_DEAL(upper) || !/^DL-[A-Z0-9]+-[A-Z0-9]+$/i.test(upper)) notFound();
 
   const deal = await getDealByTracking(upper);
   if (!deal) notFound();
 
-  const statusInfo = STATUS_MAP[deal.status] ?? {
+  const statusInfo: StatusInfo = STATUS_MAP[deal.status] ?? {
     label: deal.status,
-    color: 'default',
+    color: 'info' as StatusColor,
     desc: '',
+    Icon: Wallet,
   };
+
+  const activeStep = STATUS_STEP[deal.status] ?? 0;
+  const isTerminal = deal.status === 'CANCELLED' || deal.status === 'DISPUTED';
+
+  // First letter(s) of exchange name for avatar
+  const avatarInitial = deal.exchangeName
+    ? deal.exchangeName.trim().charAt(0)
+    : '?';
+
+  const { Icon: StatusIcon } = statusInfo;
 
   return (
     <main className={s.root}>
       <div className={s.container}>
-        {/* Header */}
-        <header className={s.header}>
-          <h1 className={s.title}>پیگیری معامله</h1>
-          <p className={s.trackingCode} aria-label={`کد پیگیری: ${deal.trackingCode}`}>
-            {deal.trackingCode}
-          </p>
-        </header>
 
-        {/* Status card */}
-        <div className={`${s.statusCard} ${s[`statusCard--${statusInfo.color}`]}`}>
-          <div className={s.statusDot} aria-hidden />
-          <div>
-            <div className={s.statusLabel}>{statusInfo.label}</div>
-            {statusInfo.desc && <div className={s.statusDesc}>{statusInfo.desc}</div>}
-          </div>
+        {/* ── Breadcrumb ── */}
+        <div className={s.breadcrumb} aria-label="مسیر ناوبری">
+          <ArrowLeft size={12} aria-hidden />
+          <span>پیگیری معامله</span>
         </div>
 
-        {/* Deal details */}
+        {/* ── Hero status ── */}
+        <section
+          className={`${s.hero} ${s[`hero--${statusInfo.color}`]}`}
+          aria-label={`وضعیت: ${statusInfo.label}`}
+        >
+          <div className={s.heroInner}>
+            <div className={s.statusRing} aria-hidden>
+              <StatusIcon size={22} strokeWidth={1.75} />
+            </div>
+            <div className={s.heroContent}>
+              <h1 className={s.heroStatusLabel}>{statusInfo.label}</h1>
+              {statusInfo.desc && (
+                <p className={s.heroStatusDesc}>{statusInfo.desc}</p>
+              )}
+              <div className={s.heroCode} dir="ltr" aria-label={`کد پیگیری: ${deal.trackingCode}`}>
+                {deal.trackingCode}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Progress stepper (فقط برای states فعال) ── */}
+        {!isTerminal && (
+          <nav className={s.stepper} aria-label="مراحل پیشرفت معامله">
+            {STEPS.map((step, idx) => {
+              const isDone   = idx < activeStep;
+              const isActive = idx === activeStep;
+              const cls = isDone
+                ? s['stepItem--done']
+                : isActive
+                  ? s['stepItem--active']
+                  : '';
+              return (
+                <div
+                  key={step.key}
+                  className={`${s.stepItem} ${cls}`}
+                  aria-current={isActive ? 'step' : undefined}
+                >
+                  <div className={s.stepDot} aria-hidden>
+                    {isDone ? <CheckCircle2 size={13} strokeWidth={2.5} /> : idx + 1}
+                  </div>
+                  <span className={s.stepLabel}>{step.label}</span>
+                </div>
+              );
+            })}
+          </nav>
+        )}
+
+        {/* ── Deal details ── */}
         <section className={s.detailsCard} aria-label="جزئیات معامله">
           <h2 className={s.sectionTitle}>جزئیات معامله</h2>
-          <dl className={s.grid}>
-            <div className={s.row}>
-              <dt className={s.label}>صرافی</dt>
-              <dd className={s.value}>{deal.exchangeName ?? '—'}</dd>
-            </div>
-            {deal.exchangeCity && (
-              <div className={s.row}>
-                <dt className={s.label}>شهر</dt>
-                <dd className={s.value}>{deal.exchangeCity}</dd>
+
+          {/* Exchange highlight */}
+          {deal.exchangeName && (
+            <div className={s.exchangeHighlight}>
+              <div className={s.exchangeAvatar} aria-hidden>{avatarInitial}</div>
+              <div>
+                <div className={s.exchangeName}>{deal.exchangeName}</div>
+                {deal.exchangeCity && (
+                  <div className={s.exchangeCity}>{deal.exchangeCity}</div>
+                )}
               </div>
-            )}
-            <div className={s.row}>
-              <dt className={s.label}>ارز مبدأ</dt>
-              <dd className={s.value + ' tabular-nums'}>
-                {formatFa(deal.fromAmount)} {deal.fromCurrency}
-              </dd>
             </div>
-            <div className={s.row}>
-              <dt className={s.label}>ارز مقصد</dt>
-              <dd className={s.value + ' tabular-nums'}>
+          )}
+
+          {/* Currency flow widget */}
+          <div className={s.currencyFlow} aria-label="جریان ارز">
+            <div className={s.currencyBlock}>
+              <span className={s.currencyCode}>{deal.fromCurrency}</span>
+              <span className={s.currencyAmount}>{formatFa(deal.fromAmount)}</span>
+            </div>
+            <div className={s.flowArrow} aria-hidden>
+              <ArrowLeftRight size={16} strokeWidth={1.75} />
+            </div>
+            <div className={s.currencyBlock} style={{ textAlign: 'end' }}>
+              <span className={s.currencyCode}>{deal.toCurrency}</span>
+              <span className={s.currencyAmount}>
                 {deal.toAmount && Number(deal.toAmount) > 0
-                  ? `${formatFa(deal.toAmount)} ${deal.toCurrency}`
-                  : `${deal.toCurrency} — در انتظار تایید نرخ`}
-              </dd>
+                  ? formatFa(deal.toAmount)
+                  : '—'}
+              </span>
             </div>
+          </div>
+
+          {/* Secondary details */}
+          <dl className={s.grid}>
             {deal.appliedRate && Number(deal.appliedRate) > 0 && (
               <div className={s.row}>
                 <dt className={s.label}>نرخ اعمال‌شده</dt>
-                <dd className={s.value + ' tabular-nums'}>{formatFa(deal.appliedRate)}</dd>
+                <dd className={s.value}>{formatFa(deal.appliedRate)}</dd>
               </div>
             )}
             <div className={s.row}>
@@ -195,7 +314,7 @@ export default async function TrackingPage({ params }: Props) {
             </div>
             <div className={s.row}>
               <dt className={s.label}>شماره تماس</dt>
-              <dd className={s.value + ' tabular-nums'}>{maskPhone(deal.customerPhone)}</dd>
+              <dd className={s.value}>{maskPhone(deal.customerPhone)}</dd>
             </div>
             <div className={s.row}>
               <dt className={s.label}>تاریخ ثبت</dt>
@@ -216,13 +335,14 @@ export default async function TrackingPage({ params }: Props) {
           </dl>
         </section>
 
-        {/* Help */}
+        {/* ── Footer ── */}
         <footer className={s.footer}>
           <p>برای پیگیری بیشتر با صرافی مربوطه تماس بگیرید.</p>
           <p className={s.footNote}>
             کد پیگیری خود را نزد خود نگه دارید. این اطلاعات فقط با ارائه کد قابل مشاهده است.
           </p>
         </footer>
+
       </div>
     </main>
   );
