@@ -12,6 +12,12 @@ const s3Client = new S3Client({
     accessKeyId: process.env.LIARA_ACCESS_KEY as string,
     secretAccessKey: process.env.LIARA_SECRET_KEY as string,
   },
+  forcePathStyle: true,
+  maxAttempts: 1,
+  requestHandler: {
+    requestTimeout: 2000,
+    connectionTimeout: 3000,
+  },
 });
 
 // 2026-06-23: lock the presigned-URL helper behind authentication and a
@@ -68,7 +74,6 @@ export async function getPresignedUrl(
     const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
     return { success: true, url: presignedUrl, key };
   } catch (error) {
-    console.error('خطا در ایجاد Presigned URL:', error);
     return {
       success: false,
       message: 'ایجاد Presigned URL با خطا مواجه شد.',

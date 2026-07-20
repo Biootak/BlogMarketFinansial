@@ -74,7 +74,7 @@ export default async function MainNav({
             <div className="flex lg:hidden items-center gap-1">
               {!session?.user ? (
                 <Link
-                  href="/signin"
+                  href="/auth"
                   className="
                     group flex items-center justify-center
                     size-10 rounded-xl
@@ -143,7 +143,7 @@ export default async function MainNav({
               {!session?.user && (
                 <div className="flex items-center gap-2 me-1">
                   <Link
-                    href="/signin"
+                    href="/auth"
                     className="
                       group relative inline-flex items-center justify-center gap-1.5
                       h-10 px-5

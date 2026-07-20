@@ -65,7 +65,7 @@ export interface SystemLog {
   timestamp: Date;
 }
 
-export interface ActionResult<T = any> {
+export interface ActionResult<T = unknown> {
   success: boolean;
   data?: T;
   message?: string;

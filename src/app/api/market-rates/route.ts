@@ -20,8 +20,10 @@
 import { getMarketRates } from '@/actions/market-rates';
 import { NextResponse } from 'next/server';
 
+// force-dynamic: the header reads auth() to personalise, but market-rates is
+// public. Cache-Control header on the response is the actual CDN cache signal
+// (s-maxage=60). The `revalidate` export only applies to static/ISR routes.
 export const dynamic = 'force-dynamic';
-export const revalidate = 60;
 export const maxDuration = 30;
 
 interface SerializedRate {

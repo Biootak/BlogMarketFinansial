@@ -1,15 +1,15 @@
-import { NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
-import type { NextRequest } from 'next/server';
 import {
+  adminRoutes,
   apiAuthPrefix,
-  publicRoutes,
   authRoutes,
   authorRoutes,
-  adminRoutes,
-  superAdminRoutes,
   baseDashboardRoutes,
+  publicRoutes,
+  superAdminRoutes,
 } from '@/config/routes';
+import { getToken } from 'next-auth/jwt';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 // Cookie name for secure environments (production)
 const SECURE_COOKIE_NAME = '__Secure-authjs.session-token';
@@ -57,18 +57,18 @@ const compileRoute = (pattern: string): CompiledRoute => {
     const base = pattern.split('/[...')[0];
     return {
       pattern,
-      test: (p) => p === base || p.startsWith(base + '/'),
+      test: (p) => p === base || p.startsWith(`${base}/`),
     };
   }
   if (pattern.includes('[[...')) {
     const base = pattern.split('/[[...')[0];
     return {
       pattern,
-      test: (p) => p === base || p.startsWith(base + '/'),
+      test: (p) => p === base || p.startsWith(`${base}/`),
     };
   }
   const regexPattern = pattern.replace(/\[.*?\]/g, '[^/]+').replace(/\//g, '\\/');
-  const regex = new RegExp('^' + regexPattern + '$', 'i');
+  const regex = new RegExp(`^${regexPattern}$`, 'i');
   return { pattern, test: (p) => regex.test(p) };
 };
 
@@ -86,10 +86,7 @@ const checkApiAccess = (pathname: string, role?: string): boolean => {
   if (pathname.startsWith(apiAuthPrefix)) return true;
   if (!role) return false;
   if (role === 'OWNER') return true;
-  if (
-    (role === 'ADMIN' || role === 'OWNER') &&
-    adminApiRoutes.some((r) => pathname.startsWith(r))
-  )
+  if ((role === 'ADMIN' || role === 'OWNER') && adminApiRoutes.some((r) => pathname.startsWith(r)))
     return true;
   if (
     ['AUTHOR', 'ADMIN', 'OWNER'].includes(role) &&
@@ -108,7 +105,13 @@ const isStaticPath = (pathname: string): boolean => {
   if (pathname.startsWith('/_next/')) return true;
   if (pathname.startsWith('/uploads/')) return true;
   if (pathname.startsWith('/api/uploads/')) return true;
-  if (pathname === '/favicon.ico' || pathname === '/robots.txt' || pathname === '/manifest.json' || pathname === '/site.webmanifest') return true;
+  if (
+    pathname === '/favicon.ico' ||
+    pathname === '/robots.txt' ||
+    pathname === '/manifest.json' ||
+    pathname === '/site.webmanifest'
+  )
+    return true;
   if (pathname.includes('.')) return true;
   return false;
 };
@@ -120,15 +123,8 @@ const isPublicApi = (pathname: string): boolean => {
 const checkDashboardAccess = (pathname: string, role?: string) => {
   if (matchesAny(pathname, compiledBaseDashboard)) return true;
   if (role === 'OWNER' && matchesAny(pathname, compiledSuperAdmin)) return true;
-  if (
-    (role === 'ADMIN' || role === 'OWNER') &&
-    matchesAny(pathname, compiledAdmin)
-  )
-    return true;
-  if (
-    ['AUTHOR', 'ADMIN', 'OWNER'].includes(role || '') &&
-    matchesAny(pathname, compiledAuthor)
-  )
+  if ((role === 'ADMIN' || role === 'OWNER') && matchesAny(pathname, compiledAdmin)) return true;
+  if (['AUTHOR', 'ADMIN', 'OWNER'].includes(role || '') && matchesAny(pathname, compiledAuthor))
     return true;
   return false;
 };
@@ -153,21 +149,13 @@ export async function middleware(req: NextRequest) {
 
   // Debug logging for dashboard routes
   if (DEBUG_MODE && pathname.startsWith('/dashboard')) {
-    console.log('[Middleware Debug]', {
-      pathname,
-      isProduction,
-      cookieName,
-      hasToken: !!token,
-      tokenRole: token?.role,
-      hasSecret: !!process.env.AUTH_SECRET,
-    });
+    // debug output suppressed — set DEBUG_MODE=true to enable tracing via server logs
   }
 
   // Check token expiration
   if (token?.exp && Date.now() / 1000 > token.exp) {
-    if (DEBUG_MODE) console.log('[Middleware] Token expired, redirecting to signin');
     return NextResponse.redirect(
-      new URL('/signin?callbackUrl=' + encodeURIComponent(pathname), nextUrl)
+      new URL(`/auth?callbackUrl=${encodeURIComponent(pathname)}`, nextUrl),
     );
   }
 
@@ -185,10 +173,9 @@ export async function middleware(req: NextRequest) {
 
   // Dashboard routes - require login
   if (!isLoggedIn && pathname.startsWith('/dashboard')) {
-    if (DEBUG_MODE) console.log('[Middleware] Not logged in, redirecting to signin');
     const callbackUrl = pathname + search;
     return NextResponse.redirect(
-      new URL('/signin?callbackUrl=' + encodeURIComponent(callbackUrl), nextUrl)
+      new URL(`/auth?callbackUrl=${encodeURIComponent(callbackUrl)}`, nextUrl),
     );
   }
 
@@ -201,7 +188,6 @@ export async function middleware(req: NextRequest) {
   // Dashboard routes - check role access
   if (pathname.startsWith('/dashboard')) {
     const hasAccess = checkDashboardAccess(pathname, role);
-    if (DEBUG_MODE) console.log('[Middleware] Dashboard access check:', { pathname, role, hasAccess });
     if (hasAccess) return NextResponse.next();
     return NextResponse.redirect(new URL('/dashboard', nextUrl));
   }
@@ -227,6 +213,7 @@ export const config = {
   // The matcher deliberately does NOT include /api — see note above.
   matcher: [
     '/dashboard/:path*',
+    '/auth',
     '/signin',
     '/signup',
     '/verify-request',

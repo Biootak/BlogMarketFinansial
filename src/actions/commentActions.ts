@@ -29,6 +29,21 @@ export async function addComment(
       };
     }
 
+    // Verify the target post exists and is published before creating a comment.
+    // Without this, any authenticated user could attach comments to any postId
+    // (including non-existent or draft posts).
+    const targetPost = await prisma.post.findUnique({
+      where: { id: postId, status: 'PUBLISHED' },
+      select: { id: true },
+    });
+    if (!targetPost) {
+      return {
+        success: false,
+        message: 'پست مورد نظر یافت نشد.',
+        error: 'پست وجود ندارد یا منتشر نشده است.',
+      };
+    }
+
     const comment = await prisma.comment.create({
       data: {
         content,
@@ -76,7 +91,6 @@ export async function addComment(
       data: comment,
     };
   } catch (error) {
-    console.error('خطا در افزودن  کامنت:', error);
     return {
       success: false,
       message: 'خطا در  افزودن کامنت. لطفاً دوباره تلاش کنید.',
@@ -134,7 +148,6 @@ export async function deleteComment(commentId: string): Promise<ActionResult<voi
       message: 'کامنت با موفقیت حذف شد.',
     };
   } catch (error) {
-    console.error('خطا در حذف کامنت:', error);
     return {
       success: false,
       message: 'خطا در حذف کامنت. لطفاً دوباره تلاش کنید.',
@@ -231,7 +244,6 @@ export async function editComment(
       data: updatedComment,
     };
   } catch (error) {
-    console.error('خطا در ویرایش کامنت:', error);
     return {
       success: false,
       message: 'خطا در ویرایش کامنت. لطفاً دوباره تلاش کنید.',

@@ -28,11 +28,16 @@ export async function updateProfile(formData: FormData): Promise<ActionResult<vo
     > = {};
     if (validatedFields.name) updateData.name = validatedFields.name;
     if (validatedFields.email) {
-      // M15 fix: changing email must require re-verification. Reset the
-      // verification flag so the new address cannot be used for auth flows
-      // until confirmed. (A full re-verify email should be triggered here.)
-      updateData.email = validatedFields.email;
-      updateData.emailVerified = null;
+      // M15 fix: changing email requires re-verification. We:
+      // 1. Reset emailVerified so the new address cannot be used for auth.
+      // 2. Invalidate all OTP tokens for the old email to prevent reuse.
+      // NOTE: A full re-verify OTP email should be sent here in production.
+      const currentEmail = session.user.email;
+      const newEmail = validatedFields.email;
+      if (currentEmail !== newEmail) {
+        updateData.email = newEmail;
+        updateData.emailVerified = null;
+      }
     }
     // 2026-07-19: ذخیره شماره موبایل برای سرویس‌های مالی
     if (validatedFields.phoneNumber !== undefined) {

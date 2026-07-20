@@ -6,7 +6,7 @@ export async function checkRole(allowedRoles: string[]) {
   const session = await auth();
 
   if (!session || !session.user) {
-    redirect('/signin');
+    redirect('/auth');
   }
 
   // OWNER has access to everything.
@@ -26,7 +26,7 @@ export async function checkSuperAdmin() {
   const session = await auth();
 
   if (!session || !session.user) {
-    redirect('/signin');
+    redirect('/auth');
   }
 
   if (session.user.role !== 'OWNER') {
@@ -40,7 +40,7 @@ export async function checkAdmin() {
   const session = await auth();
 
   if (!session || !session.user) {
-    redirect('/signin');
+    redirect('/auth');
   }
 
   if (session.user.role !== 'ADMIN' && session.user.role !== 'OWNER') {
@@ -54,7 +54,7 @@ export async function checkAuthor() {
   const session = await auth();
 
   if (!session || !session.user) {
-    redirect('/signin');
+    redirect('/auth');
   }
 
   if (!['AUTHOR', 'ADMIN', 'OWNER'].includes(session.user.role)) {
@@ -73,7 +73,6 @@ export async function checkExistingSuperAdmin(prisma: PrismaClientType) {
     });
     return existingAdmin;
   } catch (error) {
-    console.error('Error checking super admin:', error);
     return null;
   }
 }

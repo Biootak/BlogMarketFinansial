@@ -1,4 +1,5 @@
 import { auth } from '@/auth';
+import { getTrustedClientIp } from '@/lib/client-ip';
 import { assertSameOrigin } from '@/lib/csrf';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { Role } from '@prisma/client';
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     // M1 fix: rate-limit revalidation to prevent a loop from hammering the DB/upstream.
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'anon';
+    const ip = getTrustedClientIp(request);
     const rl = await checkRateLimit(`revalidate:${ip}`, 'api');
     if (!rl.success) {
       return NextResponse.json(
@@ -68,7 +69,6 @@ export async function POST(request: NextRequest) {
     revalidatePath(path);
     return NextResponse.json({ success: true, data: { revalidated: true, now: Date.now() } });
   } catch (error) {
-    console.error('Revalidate error:', error);
     return NextResponse.json(
       { success: false, error: { code: 'INTERNAL_ERROR', message: 'خطا در پاکسازی کش' } },
       { status: 500 },

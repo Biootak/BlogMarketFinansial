@@ -6,7 +6,10 @@ export async function GET() {
   try {
     const session = await auth();
     if (!session?.user || session.user.role !== 'OWNER') {
-      return new NextResponse('Unauthorized', { status: 401 });
+      return NextResponse.json(
+        { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } },
+        { status: 403 },
+      );
     }
 
     const activities = await db.activityLog.findMany({
@@ -33,9 +36,11 @@ export async function GET() {
     }));
 
     return NextResponse.json({ success: true, data: formattedActivities });
-  } catch (error) {
-    console.error('[ACTIVITY_LOG_GET]', error);
-    return new NextResponse('Internal Error', { status: 500 });
+  } catch {
+    return NextResponse.json(
+      { success: false, error: { code: 'INTERNAL_ERROR', message: 'خطای داخلی سرور' } },
+      { status: 500 },
+    );
   }
 }
 
@@ -75,8 +80,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ success: true, data: activity });
-  } catch (error) {
-    console.error('[ACTIVITY_LOG_POST]', error);
+  } catch {
     return NextResponse.json(
       { success: false, error: { code: 'INTERNAL_ERROR', message: 'Internal Error' } },
       { status: 500 },

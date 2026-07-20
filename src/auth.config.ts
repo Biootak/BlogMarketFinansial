@@ -17,8 +17,8 @@ export default {
   ],
 
   pages: {
-    signIn: '/signin',
-    newUser: '/signup',
+    signIn: '/auth',
+    newUser: '/auth?step=register',
     error: '/error',
     verifyRequest: '/verify-request',
   },

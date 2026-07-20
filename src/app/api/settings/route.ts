@@ -8,8 +8,8 @@ export async function GET() {
 
     if (!session?.user || session.user.role !== 'OWNER') {
       return NextResponse.json(
-        { success: false, message: 'شما دسترسی لازم را ندارید' },
-        { status: 401 },
+        { success: false, error: { code: 'FORBIDDEN', message: 'شما دسترسی لازم را ندارید' } },
+        { status: 403 },
       );
     }
 
@@ -20,8 +20,7 @@ export async function GET() {
       return NextResponse.json({ success: true, data: safeSettings });
     }
     return NextResponse.json({ success: true, data: settings });
-  } catch (error) {
-    console.error('Settings API [GET] - Error:', error);
+  } catch {
     return NextResponse.json({ success: false, message: 'خطای داخلی سرور' }, { status: 500 });
   }
 }
@@ -32,8 +31,8 @@ export async function POST(req: Request) {
 
     if (!session?.user || session.user.role !== 'OWNER') {
       return NextResponse.json(
-        { success: false, message: 'شما دسترسی لازم را ندارید' },
-        { status: 401 },
+        { success: false, error: { code: 'FORBIDDEN', message: 'شما دسترسی لازم را ندارید' } },
+        { status: 403 },
       );
     }
 
@@ -97,15 +96,13 @@ export async function POST(req: Request) {
           return safe;
         })(),
       });
-    } catch (dbError) {
-      console.error('Settings API [POST] - Database error:', dbError);
+    } catch {
       return NextResponse.json(
         { success: false, message: 'خطا در ذخیره تنظیمات در دیتابیس' },
         { status: 500 },
       );
     }
-  } catch (error) {
-    console.error('Settings API [POST] - Error:', error);
+  } catch {
     return NextResponse.json({ success: false, message: 'خطای داخلی سرور' }, { status: 500 });
   }
 }

@@ -82,11 +82,10 @@ async function SetupContent({ siteName, logoUrl }: { siteName: string; logoUrl: 
   let existingAdmin: Awaited<ReturnType<typeof checkExistingSuperAdmin>> = null;
   try {
     existingAdmin = await checkExistingSuperAdmin(prisma);
-  } catch (error) {
+  } catch {
     // Fail open: if the DB query fails we still render the wizard so the
     // operator can recover. The server action will be the authoritative
     // gate and will refuse the duplicate if it materialises.
-    console.error('[setup] Failed to probe super-admin existence:', error);
   }
 
   return (
@@ -107,7 +106,7 @@ async function SetupContent({ siteName, logoUrl }: { siteName: string; logoUrl: 
             <ShieldCheckGlyph className="setup-page__topnav-badge-glyph" />
             <span>مالک</span>
           </span>
-          <Link href="/signin" className="setup-page__topnav-link">
+          <Link href="/auth" className="setup-page__topnav-link">
             <ArrowLeftGlyph className="setup-page__topnav-glyph" />
             <span>ورود</span>
           </Link>
@@ -187,7 +186,7 @@ function AlreadyConfigured({ email }: { email: string }) {
         </p>
       ) : null}
       <div className="setup-already__actions">
-        <Link href="/signin" className="setup-already__cta">
+        <Link href="/auth" className="setup-already__cta">
           رفتن به صفحه‌ی ورود
         </Link>
       </div>

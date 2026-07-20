@@ -94,7 +94,7 @@ export async function createPost(data: CreatePostInput): Promise<ActionResult<Po
 
     // Invalidate paths
     revalidatePath('/');
-    revalidatePath(`/blog/${post.id}`);
+    revalidatePath(`/single/${post.slug}`);
     // 2026-06-14: also bust the new unstable_cache wrappers (post-slug, archive, dashboard-stats).
     revalidateTag(`post-${post.id}`);
     revalidateTag('post-slug');
@@ -116,7 +116,6 @@ export async function createPost(data: CreatePostInput): Promise<ActionResult<Po
       data: post,
     };
   } catch (error) {
-    console.error('خطا در ایجاد پست:', error);
     return {
       success: false,
       message: 'خطا در ایجاد پست. لطفاً دوباره تلاش کنید.',
@@ -255,7 +254,7 @@ export async function updatePost(
 
     // Invalidate paths
     revalidatePath('/');
-    revalidatePath(`/blog/${post.id}`);
+    revalidatePath(`/single/${post.slug}`);
     revalidateTag(`post-${post.id}`);
     revalidateTag('post-slug');
     revalidateTag('archive');
@@ -271,7 +270,6 @@ export async function updatePost(
       data: post,
     };
   } catch (error) {
-    console.error('خطا در به‌روزرسانی پست:', error);
     return {
       success: false,
       message: 'خطا در به‌روزرسانی پست. لطفاً دوباره تلاش کنید.',
@@ -359,7 +357,7 @@ export async function updatePostStatus(
 
     // Invalidate paths
     revalidatePath('/');
-    revalidatePath(`/blog/${updatedPost.id}`);
+    revalidatePath(`/single/${updatedPost.slug}`);
     revalidateTag(`post-${updatedPost.id}`);
     revalidateTag('post-slug');
     revalidateTag('archive');
@@ -386,7 +384,6 @@ export async function updatePostStatus(
       data: updatedPost,
     };
   } catch (error) {
-    console.error('خطا در به‌روزرسانی وضعیت پست:', error);
     return {
       success: false,
       message: 'خطا در به‌روزرسانی وضعیت پست. لطفاً دوباره تلاش کنید.',
@@ -406,12 +403,10 @@ export async function updatePostStatusAndInvalidate(
     if (result.success) {
       // Invalidate paths
       revalidatePath('/');
-      revalidatePath(`/blog/${postId}`);
     }
 
     return result;
   } catch (error) {
-    console.error('Error updating post status:', error);
     return {
       success: false,
       message: 'خطا در بروزرسانی وضعیت پست',
@@ -477,7 +472,6 @@ export async function getPostStatusCounts(): Promise<ActionResult<PostStatusCoun
 
     return { success: true, message: 'شمارنده‌ها با موفقیت محاسبه شدند.', data: counts };
   } catch (error) {
-    console.error('خطا در شمارش وضعیت پست‌ها:', error);
     return {
       success: false,
       message: 'خطا در دریافت شمارنده‌ها.',
@@ -577,7 +571,6 @@ export async function duplicatePost(postId: string): Promise<ActionResult<PostWi
 
     return { success: true, message: 'پست با موفقیت تکرار شد.', data: post as PostWithRelations };
   } catch (error) {
-    console.error('خطا در تکرار پست:', error);
     return {
       success: false,
       message: 'خطا در تکرار پست. لطفاً دوباره تلاش کنید.',
@@ -644,7 +637,6 @@ export async function deletePost(postId: string): Promise<ActionResult> {
       message: 'پست با موفقیت حذف شد.',
     };
   } catch (error) {
-    console.error('خطا در حذف پست:', error);
     return {
       success: false,
       message: 'خطا در حذف پست. لطفاً دوباره تلاش کنید.',
@@ -666,7 +658,6 @@ export async function deletePostAndInvalidate(postId: string): Promise<ActionRes
 
     return result;
   } catch (error) {
-    console.error('Error deleting post:', error);
     return {
       success: false,
       message: 'خطا در حذف پست',
@@ -740,7 +731,6 @@ export async function getPostById(postId: string): Promise<ActionResult<PostWith
       data: post as unknown as PostWithRelations,
     };
   } catch (error) {
-    console.error('خطا در بازیابی پست:', error);
     return {
       success: false,
       message: 'خطا در بازیابی پست. لطفاً دوباره تلاش کنید.',
@@ -1007,7 +997,6 @@ export async function listAllPosts(
       data: { posts: posts as unknown as PostWithRelations[], total, pages },
     };
   } catch (error) {
-    console.error('خطا در بازیابی پست‌ها:', error);
     return {
       success: false,
       message: 'خطا در بازیابی پست‌ها. لطفاً دوباره تلاش کنید.',
@@ -1177,7 +1166,6 @@ async function fetchArchivePostsRaw(
       },
     };
   } catch (error) {
-    console.error('خطا در بازیابی پست‌ها:', error);
     return {
       success: false,
       message: 'خطا در بازیابی پست‌ها. لطفاً دوباره تلاش کنید.',
@@ -1239,7 +1227,6 @@ export async function likeItem(
     revalidatePath(path);
     return { success: true, message: 'وضعیت لایک با موفقیت به‌روزرسانی شد.' };
   } catch (error) {
-    console.error('خطا در به‌روزرسانی وضعیت لایک:', error);
     return {
       success: false,
       message: 'خطا در به‌روزرسانی وضعیت لایک. لطفاً دوباره تلاش کنید.',
@@ -1286,7 +1273,6 @@ export async function savePost(postId: string): Promise<ActionResult> {
       message: existingSave ? 'پست از لیست ذخیره‌ها حذف شد.' : 'پست با موفقیت ذخیره شد.',
     };
   } catch (error) {
-    console.error('خطا در ذخیره/حذف پست:', error);
     return {
       success: false,
       message: 'عملیات با خطا مواجه شد. لطفاً دوباره تلاش کنید.',
@@ -1465,7 +1451,6 @@ async function fetchStatsRaw(roleScope: { authorId?: string }): Promise<
       },
     };
   } catch (error) {
-    console.error('خطا در بازیابی آمار:', error);
     return {
       success: false,
       message: 'خطا در بازیابی آمار. لطفاً دوباره تلاش کنید.',
@@ -1574,7 +1559,6 @@ export async function getScheduledPosts(): Promise<ActionResult<PostWithRelation
       data: posts as unknown as PostWithRelations[],
     };
   } catch (error) {
-    console.error('Error in getScheduledPosts:', error);
     return {
       success: false,
       message: 'خطا در دریافت پست‌های پنجرهٔ تقویم',
