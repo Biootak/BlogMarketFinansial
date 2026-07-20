@@ -84,19 +84,15 @@ const SingleCommentForm: FC<SingleCommentFormProps> = ({
         border transition-all duration-300
         ${
           isFocused
-            ? 'border-primary-300 dark:border-primary-700 shadow-[0_8px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.3)]'
+            ? 'shadow-[0_8px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.3)]'
             : 'border-neutral-200/80 dark:border-neutral-700/80 shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.2)]'
         }
       `}
       >
         {/* Decorative Gradient */}
         <div
-          className={`
-          absolute inset-0 bg-gradient-to-br from-primary-50/50 via-transparent to-violet-50/30 
-          dark:from-primary-950/30 dark:via-transparent dark:to-violet-950/20 
-          pointer-events-none transition-opacity duration-300
-          ${isFocused ? 'opacity-100' : 'opacity-0'}
-        `}
+          className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${isFocused ? 'opacity-100' : 'opacity-0'}`}
+          style={{background: 'linear-gradient(135deg, oklch(96% 0.03 165 / 0.5), transparent, oklch(92% 0.05 165 / 0.2))'}}
         />
 
         {/* Textarea */}
@@ -154,12 +150,10 @@ const SingleCommentForm: FC<SingleCommentFormProps> = ({
               className="
                 flex items-center gap-2 px-5 py-2 rounded-xl
                 text-sm font-semibold text-white
-                bg-gradient-to-l from-primary-600 to-violet-600
-                hover:from-primary-500 hover:to-violet-500
-                shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40
-                disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-primary-500/25
+                disabled:opacity-50 disabled:cursor-not-allowed
                 transition-all duration-300
               "
+              style={{background: 'var(--ds-brand-600)', boxShadow: '0 4px 16px -4px oklch(52% 0.14 162 / 0.35)'}}
             >
               {isLoading ? (
                 <>
@@ -178,11 +172,8 @@ const SingleCommentForm: FC<SingleCommentFormProps> = ({
 
         {/* Bottom Accent */}
         <div
-          className={`
-          h-0.5 bg-gradient-to-l from-primary-500 via-violet-500 to-rose-500
-          transition-opacity duration-300
-          ${isFocused ? 'opacity-100' : 'opacity-0'}
-        `}
+          className={`h-0.5 transition-opacity duration-300 ${isFocused ? 'opacity-100' : 'opacity-0'}`}
+          style={{background: 'linear-gradient(to left, var(--ds-brand-700), var(--ds-brand-500), var(--ds-brand-100))'}}
         />
       </div>
     </form>

@@ -177,7 +177,7 @@ const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(
           hover:shadow-lg hover:shadow-neutral-200/30 dark:hover:shadow-neutral-900/30
           transition-all duration-200
           active:scale-95
-          ${isActive ? 'bg-primary-50 text-primary-600 border-primary-200 dark:bg-primary-900/30 dark:text-primary-400 dark:border-primary-700' : ''}
+          ${isActive ? 'border-neutral-300 dark:border-neutral-600' : ''}
           ${className}
         `}
         title={tooltip}
@@ -241,10 +241,11 @@ function BookmarkButton({ postId, initialBookmarked }: BookmarkButtonProps) {
         ${isPending ? 'opacity-50 cursor-not-allowed' : ''}
         ${
           isBookmarked
-            ? 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/40 dark:to-indigo-900/40 text-blue-600 dark:text-blue-400 border-blue-200/60 dark:border-blue-700/60 shadow-lg shadow-blue-200/30 dark:shadow-blue-900/30'
+            ? 'text-white border-transparent shadow-lg'
             : 'bg-white/80 dark:bg-neutral-800/80 text-neutral-600 dark:text-neutral-300 border-neutral-200/60 dark:border-neutral-700/60 hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:text-neutral-900 dark:hover:text-white hover:border-neutral-300 dark:hover:border-neutral-600 hover:shadow-lg hover:shadow-neutral-200/30 dark:hover:shadow-neutral-900/30'
         }
       `}
+      style={isBookmarked ? {background: 'var(--ds-brand-600)', boxShadow: '0 4px 16px -4px oklch(52% 0.14 162 / 0.4)'} : undefined}
       title={isBookmarked ? 'حذف از علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها'}
     >
       <AnimatePresence mode="wait">
