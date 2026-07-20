@@ -2,9 +2,11 @@
 
 import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
 import prisma from '@/lib/db';
+import { fetchBonbastBuySell } from '@/lib/market-rates/bonbast';
+import { bonbastToRateItems } from '@/lib/market-rates/bonbast-rate-items';
 import { authFailureToActionResult, requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
-import { safeCache } from '@/lib/safe-cache';
+import { safeCache, safeRevalidateTag } from '@/lib/safe-cache';
 import type { ActionResult, RateItem, RateListData } from '@/types/types';
 import { revalidatePath } from 'next/cache';
 
@@ -53,27 +55,6 @@ export const getRateLists = safeCache(
   },
 );
 
-/* ============================================================================
-   Crypto symbol → فارسی  — همان نگاشت موجود در marketTickerActions
-   ============================================================================ */
-const _CRYPTO_NAMES: Record<string, string> = {
-  BTC: 'بیت‌کوین',
-  ETH: 'اتریوم',
-  USDT: 'تتر',
-  XRP: 'ریپل',
-  LTC: 'لایت‌کوین',
-  BCH: 'بیت‌کوین کش',
-  SOL: 'سولانا',
-  ADA: 'کاردانو',
-  DOGE: 'دوج‌کوین',
-  AVAX: 'آوالانچ',
-  TRX: 'ترون',
-  DOT: 'پولکادات',
-  LINK: 'چین‌لینک',
-  MATIC: 'پالیگان',
-  UNI: 'یونی‌سواپ',
-};
-
 /**
  * نرمال‌سازی title — برای dedupe (case-insensitive، حذف فاصله و کاراکتر ZWNJ).
  * چند ردیف DB می‌تونه یک عنوان داشته باشه (rateType متفاوت، یا ورود دستی).
@@ -103,25 +84,14 @@ function dedupeByTitle(items: RateItem[]): RateItem[] {
   return out;
 }
 
-/**
- * ساخت یک RateListData مجازی برای ارزهای دیجیتال.
- * فقط زمانی فراخوانی می‌شه که DB هیچ لیست فعالی نداشته باشه
- * (یعنی admin هنوز لیستی ثبت نکرده) — در این صورت crypto از Exir
- * جایگزین می‌شه تا نوار چرخشی هیچ‌وقت خالی نباشه.
- */
-function buildCryptoFallbackList(): RateListData {
-  // فچ sync در این context مشکل‌ساز نیست چون cached wrapper داره
-  // و در SSR قبل از ارسال به کلاینت resolve می‌شه. اگه فچ شکست
-  // بخوره، لیست خالی برمی‌گرده و strip مخفی می‌شه.
-  // (sync wrap مجاز نیست — پس این تابع فقط در حالت cached فراخوانی می‌شه)
-  return {
-    id: '__crypto_fallback__',
-    title: 'ارزهای دیجیتال',
-    rates: [],
-    isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
+async function loadBonbastRatesAsync(): Promise<RateItem[]> {
+  try {
+    const bs = await fetchBonbastBuySell();
+    if (!bs || Object.keys(bs.rates).length === 0) return [];
+    return bonbastToRateItems(bs);
+  } catch {
+    return [];
+  }
 }
 
 async function loadCryptoRatesAsync(): Promise<RateItem[]> {
@@ -183,16 +153,35 @@ export const getActiveRateListsOrCryptoFallback = safeCache(
       rates: dedupeByTitle(l.rates ?? []),
     }));
 
-    // اگه DB لیست فعال نداره (یا اصلاً در دسترس نیست)، فقط لیست crypto
-    // رو به‌عنوان fallback برگردون
+    // اگه DB لیست فعال نداره، از bonbast buy/sell به‌عنوان fallback استفاده کن.
+    // bonbast نرخ‌های خرید/فروش بازار آزاد تهران را می‌دهد که برای اسلایدر
+    // مناسب‌تر از کریپتو است. اگر bonbast هم در دسترس نبود، crypto را امتحان کن.
     if (dedupedActive.length === 0) {
+      const bonbastItems = await loadBonbastRatesAsync();
+      if (bonbastItems.length > 0) {
+        return [
+          {
+            id: '__bonbast_fallback__',
+            title: 'نرخ بازار آزاد تهران',
+            rates: bonbastItems,
+            isActive: true,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ];
+      }
+      // bonbast در دسترس نبود → crypto از Exir را امتحان کن
       try {
         const cryptoItems = await loadCryptoRatesAsync();
         if (cryptoItems.length === 0) return [];
         return [
           {
-            ...buildCryptoFallbackList(),
+            id: '__crypto_fallback__',
+            title: 'ارزهای دیجیتال',
             rates: cryptoItems,
+            isActive: true,
+            createdAt: new Date(),
+            updatedAt: new Date(),
           },
         ];
       } catch {
@@ -208,7 +197,7 @@ export const getActiveRateListsOrCryptoFallback = safeCache(
   [],
   {
     key: 'active-rate-lists-or-crypto-fallback',
-    ttl: 300,
+    ttl: 60,
     tags: ['rate-lists', 'ticker', 'exchange-rates'],
   },
 );
@@ -232,6 +221,7 @@ export async function createRateList(
 
     revalidatePath('/dashboard/exchange-rates');
     revalidateTag('rate-lists');
+    safeRevalidateTag('rate-lists');
 
     return {
       success: true,
@@ -241,10 +231,7 @@ export async function createRateList(
         rates: Array.isArray(data.rates) ? data.rates : [],
       },
     };
-  } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error creating rate list:', error);
-    }
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در ایجاد لیست نرخ',
@@ -272,6 +259,7 @@ export async function updateRateList(
 
     revalidatePath('/dashboard/exchange-rates');
     revalidateTag('rate-lists');
+    safeRevalidateTag('rate-lists');
 
     return {
       success: true,
@@ -281,10 +269,7 @@ export async function updateRateList(
         rates: normalizeRates(rateList.rates),
       },
     };
-  } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error updating rate list:', error);
-    }
+  } catch (_error) {
     return {
       success: false,
       message: 'خطا در به‌روزرسانی لیست نرخ',
@@ -299,18 +284,17 @@ export async function deleteRateList(id: string): Promise<ActionResult> {
     await prisma.rateList.delete({ where: { id } });
     revalidatePath('/dashboard/exchange-rates');
     revalidateTag('rate-lists');
+    safeRevalidateTag('rate-lists');
     return {
       success: true,
       variant: 'success',
       message: 'لیست نرخ با موفقیت حذف شد',
     };
-  } catch (error) {
-    console.error('Error deleting rate list:', error);
+  } catch (_error) {
     return {
       success: false,
       variant: 'destructive',
       message: 'خطا در حذف لیست نرخ',
-      error: error instanceof Error ? error.message : String(error),
     };
   }
 }

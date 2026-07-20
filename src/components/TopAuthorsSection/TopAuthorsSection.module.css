@@ -1,0 +1,367 @@
+/* =============================================================================
+   TopAuthorsSection — بازطراحی ۲۰۲۶
+   همه‌ی rules از tokens موجود (--ds-*, OKLCH). بدون hex.
+   ============================================================================= */
+
+/* ── Wrapper ─────────────────────────────────────────────────────────────── */
+.root {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: var(--ds-radius-2xl);
+  border: 1px solid oklch(92% 0.005 240 / 0.65);
+  background: linear-gradient(
+    160deg,
+    oklch(99% 0.004 240) 0%,
+    oklch(97.5% 0.006 240) 55%,
+    oklch(96% 0.008 200 / 0.6) 100%
+  );
+  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.65) inset,
+    0 24px 64px -32px oklch(45% 0.08 250 / 0.28);
+  padding: var(--ds-space-5) var(--ds-space-5) var(--ds-space-6);
+}
+
+/* FIX #3: dark mode باید از :global(.dark) استفاده کنه */
+:global(.dark) .root {
+  background: linear-gradient(
+    160deg,
+    oklch(18% 0.012 250) 0%,
+    oklch(15% 0.01 250) 55%,
+    oklch(13% 0.01 200) 100%
+  );
+  border-color: oklch(28% 0.012 250 / 0.7);
+  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.04) inset,
+    0 28px 72px -32px oklch(0% 0 0 / 0.6);
+}
+
+@media (min-width: 640px) {
+  .root {
+    padding: var(--ds-space-6) var(--ds-space-6) var(--ds-space-8);
+  }
+}
+
+@media (min-width: 1024px) {
+  .root {
+    padding: var(--ds-space-8) var(--ds-space-8) var(--ds-space-10);
+  }
+}
+
+/* ── Aurora blobs ────────────────────────────────────────────────────────── */
+.aurora {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(72px);
+  will-change: transform;
+}
+
+.auroraA {
+  inset-block-start: -20%;
+  inset-inline-start: 5%;
+  width: 45%;
+  aspect-ratio: 1;
+  background: radial-gradient(closest-side, oklch(65% 0.1 200 / 0.22), transparent 70%);
+  animation: auroraFloat 28s ease-in-out infinite;
+}
+
+.auroraB {
+  inset-block-end: -15%;
+  inset-inline-end: 2%;
+  width: 38%;
+  aspect-ratio: 1;
+  background: radial-gradient(closest-side, oklch(72% 0.13 70 / 0.18), transparent 70%);
+  animation: auroraFloat 36s ease-in-out infinite;
+  animation-delay: -8s;
+}
+
+@keyframes auroraFloat {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(3%, -4%, 0) scale(1.07); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+/* hairline dot-grid overlay */
+.dotGrid {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, oklch(45% 0.02 250 / 0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse at 60% 0%, #000 0%, transparent 65%);
+  -webkit-mask-image: radial-gradient(ellipse at 60% 0%, #000 0%, transparent 65%);
+}
+
+/* ── Inner layout ────────────────────────────────────────────────────────── */
+.inner {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Feature author card (rank 1 — wide hero-style) ─────────────────────── */
+/* FIX #1 + #5: flex-row ثابت — rank، avatar، copy، stat هر کدام مستقل */
+.feature {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: var(--ds-space-3);
+  align-items: center;
+  margin-block-end: var(--ds-space-5);
+  padding: var(--ds-space-4);
+  border-radius: var(--ds-radius-xl);
+  background: oklch(100% 0 0 / 0.55);
+  border: 1px solid oklch(92% 0.005 240 / 0.7);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.8) inset, var(--ds-shadow-md);
+  text-decoration: none;
+  color: inherit;
+  animation: featureReveal 560ms var(--ds-ease-out-expo) both;
+  animation-delay: 60ms;
+  transition: transform 360ms var(--ds-ease-out-quart),
+    box-shadow 360ms var(--ds-ease-out-quart),
+    border-color 280ms ease;
+}
+
+.feature:hover {
+  transform: translate3d(0, -2px, 0);
+  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.8) inset, var(--ds-shadow-lg);
+  border-color: oklch(72% 0.13 200 / 0.35);
+}
+
+.feature:focus-visible {
+  outline: 2px dashed oklch(65% 0.1 200);
+  outline-offset: 3px;
+}
+
+/* FIX #3 */
+:global(.dark) .feature {
+  background: oklch(22% 0.012 250 / 0.55);
+  border-color: oklch(32% 0.012 250 / 0.7);
+  box-shadow: 0 1px 0 oklch(100% 0 0 / 0.05) inset, var(--ds-shadow-lg);
+}
+
+@media (min-width: 640px) {
+  .feature {
+    gap: var(--ds-space-5);
+    padding: var(--ds-space-5) var(--ds-space-6);
+    margin-block-end: var(--ds-space-6);
+  }
+}
+
+@keyframes featureReveal {
+  from { opacity: 0; transform: translate3d(0, 14px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+/* CTA «مشاهده پروفایل» — روی hover از feature نمایش پیدا می‌کند */
+.featureCta {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: oklch(55% 0.15 250);
+  opacity: 0;
+  translate: 4px 0;
+  transition: opacity 280ms var(--ds-ease-out-quart),
+    translate 280ms var(--ds-ease-out-quart);
+}
+
+:global(.dark) .featureCta {
+  color: oklch(70% 0.14 250);
+}
+
+@media (min-width: 640px) {
+  .featureCta {
+    display: inline-flex;
+  }
+}
+
+.feature:hover .featureCta {
+  opacity: 1;
+  translate: 0 0;
+}
+
+/* ── Feature card internals ──────────────────────────────────────────────── */
+/* rank + avatar container */
+.featureAvatarGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  flex-shrink: 0;
+}
+
+/* copy section — grows */
+.featureBody {
+  flex: 1;
+  min-width: 0;
+}
+
+/* stat + CTA column */
+.featureStat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--ds-space-2);
+  flex-shrink: 0;
+}
+
+/* ── Rank badge (gold — rank 1) ──────────────────────────────────────────── */
+.rank1 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, oklch(82% 0.14 72) 0%, oklch(70% 0.16 60) 100%);
+  box-shadow: 0 2px 8px oklch(70% 0.16 60 / 0.45);
+  flex-shrink: 0;
+}
+
+/* ── Cards grid / scroll rail (rank 2+) ─────────────────────────────────── */
+/* FIX #4: grid auto-fill روی همه عرض‌ها — scroll فقط وقتی لازم باشد */
+.rail {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: var(--ds-space-3);
+  /* اگر تعداد کارت‌ها از جا بیشتر شد → scroll */
+  overflow-x: auto;
+  overflow-y: visible;
+  padding-block: var(--ds-space-1);
+  padding-inline: 2px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.rail::-webkit-scrollbar { display: none; }
+
+/* روی موبایل: ردیف افقی scroll‌دار */
+@media (max-width: 639px) {
+  .rail {
+    display: flex;
+    flex-wrap: nowrap;
+    scroll-snap-type: x mandatory;
+  }
+}
+
+/* ── Individual rail card ────────────────────────────────────────────────── */
+/* FIX #2: group class اینجا نیست — hover را مستقیم روی .railCard می‌زنیم */
+/* FIX #6: min-height برای یکنواختی */
+.railCard {
+  /* موبایل: عرض ثابت در flex */
+  flex: 0 0 auto;
+  width: clamp(148px, 32vw, 185px);
+  scroll-snap-align: start;
+
+  min-height: 168px;
+  border-radius: var(--ds-radius-xl);
+  border: 1px solid oklch(92% 0.005 240 / 0.65);
+  background: oklch(100% 0 0 / 0.6);
+  padding: var(--ds-space-4) var(--ds-space-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--ds-space-2);
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+  transition: transform 360ms var(--ds-ease-out-quart),
+    box-shadow 360ms var(--ds-ease-out-quart),
+    border-color 280ms ease;
+  animation: railCardIn 480ms var(--ds-ease-out-expo) both;
+}
+
+/* روی دسکتاپ: کارت‌ها width طبیعی از grid می‌گیرند */
+@media (min-width: 640px) {
+  .railCard {
+    width: 100%; /* grid cell را پر کن */
+    flex: unset;
+    scroll-snap-align: unset;
+  }
+}
+
+:global(.dark) .railCard {
+  background: oklch(21% 0.012 250 / 0.6);
+  border-color: oklch(32% 0.012 250 / 0.65);
+}
+
+/* FIX #2: hover مستقیم روی railCard — نیازی به group نیست */
+.railCard:hover {
+  transform: translate3d(0, -3px, 0);
+  box-shadow: var(--ds-shadow-lg);
+  border-color: oklch(72% 0.13 200 / 0.45);
+}
+
+.railCard:focus-visible {
+  outline: 2px dashed oklch(65% 0.1 200);
+  outline-offset: 3px;
+}
+
+/* FIX #2: متن نام داخل railCard روی hover */
+.railCard:hover .railCardName {
+  color: var(--color-primary-600);
+}
+
+:global(.dark) .railCard:hover .railCardName {
+  color: var(--color-primary-300);
+}
+
+@keyframes railCardIn {
+  from { opacity: 0; transform: translate3d(0, 10px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+/* stagger delay — 40ms gap */
+.railCard:nth-child(1) { animation-delay: 120ms; }
+.railCard:nth-child(2) { animation-delay: 160ms; }
+.railCard:nth-child(3) { animation-delay: 200ms; }
+.railCard:nth-child(4) { animation-delay: 240ms; }
+.railCard:nth-child(5) { animation-delay: 280ms; }
+.railCard:nth-child(6) { animation-delay: 320ms; }
+
+/* ── Rail card text elements ────────────────────────────────────────────── */
+.railCardName {
+  font-size: clamp(12px, 2.5vw, 14px);
+  font-weight: 700;
+  color: oklch(20% 0.01 240);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+  transition: color 200ms ease;
+}
+
+:global(.dark) .railCardName {
+  color: oklch(95% 0.005 240);
+}
+
+.railCardJob {
+  font-size: 11px;
+  color: oklch(55% 0.01 240);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+:global(.dark) .railCardJob {
+  color: oklch(60% 0.01 240);
+}
+
+/* ── Rail card rank badge ─────────────────────────────────────────────────── */
+.rankBadge {
+  position: absolute;
+  top: 0.5rem;
+  inset-inline-end: 0.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}

@@ -12,7 +12,7 @@ import s from './TrustSection.module.css';
 
 const STATS = [
   { icon: Users, value: '+۵', suffix: 'هزار', label: 'کاربر فعال ماهانه' },
-  { icon: Globe, value: '+۲', suffix: 'کشور', label: 'پوشش جغرافیایی' },
+  { icon: Globe, value: '+۱۰', suffix: 'کشور', label: 'پوشش جغرافیایی' },
   { icon: TrendingUp, value: '+۱۸', suffix: 'ارز', label: 'پوشش داده می‌شود' },
   { icon: Zap, value: '۹۹.۹', suffix: '٪', label: 'آپتایم سرویس' },
 ] as const;
@@ -41,7 +41,7 @@ export default function TrustSection() {
       <div className={s.bg} aria-hidden />
 
       <div className={s.inner}>
-        <p className={s.tagline}>اعتماد هزاران کاربر افغانستانی و ایرانی</p>
+        <p className={s.tagline}>اعتماد هزاران کاربر افغانستانی</p>
 
         {/* Stats */}
         <ul className={s.statsGrid} aria-label="آمار پلتفرم">

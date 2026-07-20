@@ -129,17 +129,28 @@ export interface GroupedRateItems {
   }>;
 }
 
+/** Normalize a title for cross-list dedupe (same logic as dedupeByTitle in rate-lists.ts). */
+function normTitle(s: string): string {
+  return s.replace(/\s+/g, '').replace(/[‌]/g, '').toLowerCase();
+}
+
 export function groupRateItems(
   lists: Array<{ id: string; title: string; rates: RateItem[] }>,
 ): GroupedRateItems {
   const flat: GroupedRateItems['flat'] = [];
   const byList: GroupedRateItems['byList'] = [];
+  // Cross-list dedupe: if the same item title appears in multiple lists,
+  // only the first occurrence (highest-priority list) is kept in flat.
+  const seenTitles = new Set<string>();
 
   for (const list of lists) {
     if (!list.rates || list.rates.length === 0) continue;
     const parsed = list.rates.map(parseRateItem);
     byList.push({ id: list.id, title: list.title, items: parsed });
     for (const item of parsed) {
+      const key = normTitle(item.title);
+      if (key && seenTitles.has(key)) continue;
+      if (key) seenTitles.add(key);
       flat.push({ ...item, sourceListId: list.id, sourceListTitle: list.title });
     }
   }

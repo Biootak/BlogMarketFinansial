@@ -101,16 +101,18 @@ async function fetchWithRetry(
       clearTimeout(timeoutId);
 
       if (!response.ok) {
+        // error را با status code بساز — catch block می‌تواند آن را parse کند
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       return response;
     } catch (error) {
-      // 4xx (غیر از 429) قابل retry نیست — فوری throw کن
-      const statusMatch = error instanceof Error && error.message.match(/status: (\d+)/);
-      const statusCode = statusMatch ? Number(statusMatch[1]) : 0;
-      const isNonRetryable = statusCode >= 400 && statusCode < 500 && statusCode !== 429;
+      // 4xx (غیر از 429) = block یا auth error — retry بی‌فایده‌ست
+      const isKnown4xx =
+        error instanceof Error &&
+        /status: 4\d\d/.test(error.message) &&
+        !/status: 429/.test(error.message);
 
-      if (isNonRetryable || i === retries - 1) {
+      if (isKnown4xx || i === retries - 1) {
         throw error;
       }
       await new Promise((resolve) => setTimeout(resolve, delay));

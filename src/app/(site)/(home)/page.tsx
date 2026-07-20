@@ -66,7 +66,7 @@ export default async function Home() {
       {lcpImage ? <link rel="preload" as="image" href={lcpImage} /> : null}
 
       {/* ── Hero Section ────────────────────────────────── */}
-      <div className="container relative">
+      <div className="container relative pt-6 sm:pt-8">
         <HeroSection />
       </div>
 

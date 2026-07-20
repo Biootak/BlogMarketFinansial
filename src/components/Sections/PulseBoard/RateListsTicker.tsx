@@ -370,22 +370,6 @@ function RateListsTicker({
 
           <button
             type="button"
-            onClick={goPrev}
-            className={cn(
-              'inline-flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg',
-              'text-neutral-500 dark:text-neutral-400',
-              'hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-white',
-              'transition-colors duration-200',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50',
-              'cursor-pointer',
-            )}
-            aria-label="نرخ قبلی"
-          >
-            <ChevronRight className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />
-          </button>
-
-          <button
-            type="button"
             onClick={goNext}
             className={cn(
               'inline-flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg',
@@ -398,6 +382,22 @@ function RateListsTicker({
             aria-label="نرخ بعدی"
           >
             <ChevronLeft className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />
+          </button>
+
+          <button
+            type="button"
+            onClick={goPrev}
+            className={cn(
+              'inline-flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg',
+              'text-neutral-500 dark:text-neutral-400',
+              'hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-white',
+              'transition-colors duration-200',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50',
+              'cursor-pointer',
+            )}
+            aria-label="نرخ قبلی"
+          >
+            <ChevronRight className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />
           </button>
 
           <button

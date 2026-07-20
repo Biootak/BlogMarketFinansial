@@ -2,9 +2,8 @@ import { getActiveAdvertisements } from '@/actions/advertisementActions';
 import { getLatestPostCategories } from '@/actions/getLatestPostCategories';
 import { getLatestPosts, getPublishedPostCount } from '@/actions/getLatestPosts';
 import { getCryptoTickerData } from '@/actions/marketTickerActions';
-import { getActiveRateListsOrCryptoFallback } from '@/actions/rate-lists';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { Advertisement, PostWithRelations, RateListData } from '@/types/types';
+import type { Advertisement, PostWithRelations } from '@/types/types';
 import LatestArticles from './LatestArticles';
 
 /* ---------- Helpers ---------- */
@@ -33,14 +32,12 @@ export default async function PulseSection({ className = '' }: PulseSectionProps
   // uncached `prisma.post.count` بود — یعنی هر رندر home دو round-trip
   // اضافه به DB (Neon cross-region) می‌زد. حالا categories از قبل cached
   // است و totalCount از `getPublishedPostCount` (unstable_cache) میاد.
-  const [tickerData, adsResult, latestPosts, totalCount, rateLists, categoriesData] =
+  const [tickerData, adsResult, latestPosts, totalCount, categoriesData] =
     await Promise.all([
       getCryptoTickerData(),
-      getActiveAdvertisements({ limit: 2, size: 'MEDIUM' }),
+      getActiveAdvertisements({ limit: 5 }),
       getLatestPosts({ count: INITIAL, skip: 0 }),
       getPublishedPostCount(),
-      // dedup داخل لیست + fallback به crypto از Exir در صورت خالی بودن DB
-      getActiveRateListsOrCryptoFallback(),
       getLatestPostCategories(),
     ]);
 
@@ -51,7 +48,6 @@ export default async function PulseSection({ className = '' }: PulseSectionProps
 
   const posts: PostWithRelations[] = dedupeById(latestPosts);
   const initialAds: Advertisement[] = adsResult.success ? (adsResult.data ?? []) : [];
-  const activeRateLists: RateListData[] = (rateLists ?? []).filter((l) => l.isActive);
 
   // 2026-06-20: getCryptoTickerData فقط crypto برمی‌گردونه، پس فیلتر
   // دیگر لازم نیست. نام مستعار برای خوانایی مصرف‌کننده پایین نگه داشته شد.
@@ -65,7 +61,6 @@ export default async function PulseSection({ className = '' }: PulseSectionProps
         initialAds={initialAds}
         initialTickerData={cryptoTickerData}
         totalCount={totalCount}
-        rateLists={activeRateLists}
       />
     </div>
   );

@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/refresh-market-rates",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/sync-rate-lists",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/publish-scheduled-posts",
+      "schedule": "*/10 * * * *"
+    }
+  ]
+}

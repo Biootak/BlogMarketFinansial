@@ -70,6 +70,13 @@ export default async function PageAuthor({
   const name = payload.author.name?.trim() || 'نویسنده';
   const related = topAuthors.filter((a) => a.id !== payload.author?.id).slice(0, 4);
 
+  // Aggregate stats for the 4-column hero grid
+  const categoryCount = Array.from(
+    new Set(payload.posts.flatMap((p) => p.categories.map((c) => c.id))),
+  ).length;
+  const commentCount = payload.posts.reduce((s, p) => s + (p._count?.comments ?? 0), 0);
+  const likeCount = payload.posts.reduce((s, p) => s + (p._count?.likes ?? 0), 0);
+
   // JSON-LD: Person + ItemList of blog posts
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -115,6 +122,9 @@ export default async function PageAuthor({
             profile: payload.author.profile,
             _count: payload.author._count,
           }}
+          categoryCount={categoryCount}
+          commentCount={commentCount}
+          likeCount={likeCount}
         />
 
         <AuthorPostsGrid posts={payload.posts} />

@@ -25,7 +25,7 @@ import { getCategoryAccent } from '@/components/Sections/effects/categoryAccent'
 import { getPostLink } from '@/lib/getPostLink';
 import { motion, useInView, useReducedMotion } from '@/lib/motion-shim';
 import { cn, formatNumber, toPersianNumber } from '@/lib/utils';
-import type { Advertisement, PostWithRelations, RateListData } from '@/types/types';
+import type { Advertisement, PostWithRelations } from '@/types/types';
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -45,7 +45,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
-import RateListsTicker from './RateListsTicker';
 
 interface CategoryItem {
   name: string;
@@ -58,8 +57,6 @@ interface LatestArticlesProps {
   initialAds: Advertisement[];
   initialTickerData?: MarketTickerItem[];
   totalCount: number;
-  /** لیست‌های فعال RateList — به نوار بالایی داده می‌شه */
-  rateLists?: RateListData[];
 }
 
 const MAX_VISIBLE_FILTERS = 6;
@@ -146,7 +143,6 @@ function LatestArticles({
   initialAds,
   initialTickerData = [],
   totalCount,
-  rateLists = [],
 }: LatestArticlesProps) {
   const _reduce = useReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -264,14 +260,11 @@ function LatestArticles({
   const archiveHref = activeCategory === 'همه' ? '/archive' : `/archive/category/${categorySlug}`;
 
   /* ---------- Ads (small embedded) ---------- */
-  const adForYou = initialAds[0];
   const adSpot = initialAds[1] ?? initialAds[0];
+  const firstAdId = initialAds[0]?.id;
 
   return (
     <section ref={containerRef} dir="rtl" className="relative isolate" aria-label="تازه‌های بازار">
-      {/* RateLists Ticker — نوار چرخشی نرخ‌های بازار (RateList از DB) */}
-      {rateLists.length > 0 && <RateListsTicker rateLists={rateLists} className="mb-3 sm:mb-4" />}
-
       {/* Live Market Ticker */}
       {initialTickerData.length > 0 && (
         <MarketTicker
@@ -557,10 +550,10 @@ function LatestArticles({
               </div>
 
               {/* ============================================================== */}
-              {/*  EDITORIAL DIVIDER + AD STRIP (one small ad)                   */}
+              {/*  EDITORIAL DIVIDER + AD STRIP (4-5 ads grid)                   */}
               {/* ============================================================== */}
-              {adForYou && (
-                <EditorialAdStrip ad={adForYou} accentColor={accent.color} eyebrow="پیشنهاد ویژه" />
+              {initialAds.length > 0 && (
+                <EditorialAdStrip ads={initialAds} accentColor={accent.color} />
               )}
 
               {/* ============================================================== */}
@@ -639,7 +632,7 @@ function LatestArticles({
               {/* ============================================================== */}
               {/*  SECOND AD — compact inline banner                              */}
               {/* ============================================================== */}
-              {adSpot && adSpot.id !== adForYou?.id && (
+              {adSpot && adSpot.id !== firstAdId && (
                 <InlineAdBanner ad={adSpot} accentColor={accent.color} />
               )}
             </div>
@@ -1129,123 +1122,112 @@ function ListItem({
 }
 
 /* ============================================================================
-   EditorialAdStrip — نوار افقی جمع‌وجور برای آگهی (بجای ۱ تبلیغ بزرگ، ۲-۳ جمع‌وجور)
+   EditorialAdStrip — گرید ۴-۵ کارت تبلیغاتی کنار هم (بدون برچسب AD/پیشنهاد)
+   موبایل: horizontal scroll-snap
+   دسکتاپ: grid 4-5 ستون متساوی
    ============================================================================ */
 function EditorialAdStrip({
-  ad,
+  ads,
   accentColor,
-  eyebrow,
 }: {
-  ad: Advertisement;
+  ads: Advertisement[];
   accentColor: string;
-  eyebrow: string;
 }) {
+  const items = ads.filter(Boolean).slice(0, 5);
+  if (items.length === 0) return null;
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-60px' }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="group/ad relative"
+      aria-label="تبلیغات"
+    >
+      {/* همیشه scroll-snap افقی — در همه breakpointها */}
+      <div
+        className="flex gap-3 overflow-x-auto pb-1 snap-x snap-mandatory scrollbar-none"
+        style={{ '--ad-accent': accentColor } as React.CSSProperties}
+      >
+        {items.map((ad, i) => (
+          <SingleAdTile key={ad.id} ad={ad} accentColor={accentColor} index={i} />
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+/* ============================================================================
+   SingleAdTile — یک کارت تبلیغاتی تمیز بدون برچسب
+   ============================================================================ */
+function SingleAdTile({
+  ad,
+  accentColor,
+  index,
+}: {
+  ad: Advertisement;
+  accentColor: string;
+  index: number;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.35, delay: index * 0.055, ease: [0.22, 1, 0.36, 1] }}
+      className="w-[55vw] sm:w-[260px] md:w-[220px] lg:w-[200px] shrink-0 snap-start"
     >
       <Link
         href={ad.linkUrl}
         target="_blank"
         rel="noopener noreferrer sponsored"
-        aria-label={`تبلیغ: ${ad.title}`}
+        aria-label={ad.title}
         className={cn(
-          'relative flex items-stretch overflow-hidden rounded-2xl',
+          'group/tile relative flex flex-col overflow-hidden rounded-xl',
           'border border-[color:var(--hairline)]',
-          'bg-white/70 dark:bg-neutral-900/55 backdrop-blur-md',
-          'min-h-[88px] sm:min-h-[100px]',
-          'transition-shadow duration-300',
-          'hover:shadow-[0_12px_32px_-12px_rgba(94,106,230,0.35)]',
+          'bg-white/75 dark:bg-neutral-900/60 backdrop-blur-md',
+          'transition-all duration-300',
+          'hover:-translate-y-0.5',
+          'hover:shadow-[0_8px_24px_-8px_rgba(94,106,230,0.3)]',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/50',
         )}
-        style={{ ['--ad-accent' as string]: accentColor } as React.CSSProperties}
       >
-        {/* Accent strip */}
-        <div
-          className="relative w-1 sm:w-1.5 shrink-0 overflow-hidden"
-          aria-hidden
-          style={{
-            background: `linear-gradient(180deg, ${accentColor}aa, ${accentColor}33)`,
-          }}
+        {/* تصویر — ambient: کل فضا پر + تصویر کامل بدون crop (مثل YouTube) */}
+        <SafeImage
+          src={ad.imageUrl}
+          alt={ad.title}
+          fill
+          sizes="(min-width: 1024px) 20vw, (min-width: 640px) 25vw, 72vw"
+          containerClassName="relative aspect-[4/3] shrink-0 overflow-hidden"
+          className="transition-transform duration-500 ease-out group-hover/tile:scale-[1.04]"
+          variant="thumbnail"
+          ratio="4/3"
+          fillMode="ambient"
         />
 
-        <div className="relative flex flex-1 items-center gap-3 sm:gap-4 p-3 sm:p-4">
-          {/* Thumbnail */}
+        {/* محتوا */}
+        <div className="flex flex-col gap-1 p-2.5 sm:p-3">
+          <h4 className="text-[11.5px] sm:text-[12.5px] font-semibold leading-snug text-neutral-900 dark:text-white line-clamp-2 text-balance">
+            {ad.title}
+          </h4>
+          {/* CTA */}
           <div
-            className={cn(
-              'relative h-12 w-16 sm:h-14 sm:w-20 shrink-0 overflow-hidden rounded-lg sm:rounded-xl',
-              'border border-[color:var(--hairline)]',
-            )}
-          >
-            {ad.imageUrl ? (
-              <SafeImage
-                src={ad.imageUrl}
-                alt={ad.title}
-                fill
-                sizes="100px"
-                containerClassName="absolute inset-0"
-                className="object-cover transition-transform duration-500 ease-out group-hover/ad:scale-110"
-                variant="thumbnail"
-                ratio="4/3"
-              />
-            ) : (
-              <div
-                className="absolute inset-0 flex items-center justify-center text-white/80"
-                style={{
-                  background: `linear-gradient(135deg, ${accentColor}40, ${accentColor}10)`,
-                }}
-                aria-hidden
-              >
-                <Sparkles className="h-5 w-5" strokeWidth={1.75} />
-              </div>
-            )}
-          </div>
-
-          {/* Content */}
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 mb-0.5">
-              <span
-                className={cn(
-                  'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md',
-                  'text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.18em]',
-                  'text-neutral-500 dark:text-neutral-400',
-                  'bg-neutral-100/80 dark:bg-neutral-800/80',
-                  'border border-[color:var(--hairline)]',
-                )}
-              >
-                <Sparkles className="h-2 w-2" strokeWidth={2.5} aria-hidden />
-                <span>AD · {eyebrow}</span>
-              </span>
-            </div>
-            <h4 className="text-[12.5px] sm:text-[14px] font-semibold leading-snug text-neutral-900 dark:text-white line-clamp-1 sm:line-clamp-2 text-balance">
-              {ad.title}
-            </h4>
-            {ad.description && (
-              <p className="mt-0.5 hidden sm:block text-[11px] leading-relaxed text-neutral-500 dark:text-neutral-400 line-clamp-1">
-                {ad.description}
-              </p>
-            )}
-          </div>
-
-          {/* CTA pill */}
-          <div
-            className={cn(
-              'hidden sm:inline-flex shrink-0 items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold',
-              'transition-all duration-300 group-hover/ad:gap-1.5',
-            )}
-            style={{
-              backgroundColor: `${accentColor}1a`,
-              color: accentColor,
-            }}
+            className="mt-0.5 inline-flex items-center gap-0.5 text-[10px] sm:text-[10.5px] font-medium transition-all duration-300 group-hover/tile:gap-1"
+            style={{ color: accentColor }}
           >
             <span>مشاهده</span>
-            <ArrowUpRight className="h-3 w-3" strokeWidth={2.5} aria-hidden />
+            <ArrowUpRight className="h-2.5 w-2.5" strokeWidth={2.5} aria-hidden />
           </div>
         </div>
+
+        {/* خط accent پایین */}
+        <div
+          className="pointer-events-none absolute bottom-0 inset-x-0 h-px"
+          style={{
+            background: `linear-gradient(90deg, transparent, ${accentColor}55, transparent)`,
+          }}
+          aria-hidden
+        />
       </Link>
     </motion.div>
   );
