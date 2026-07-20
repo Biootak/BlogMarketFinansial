@@ -108,7 +108,7 @@ const SingleMetaAction2: FC<SingleMetaAction2Props> = ({ className = '', post })
                 <span className="font-medium text-neutral-700 dark:text-neutral-200">
                   {isCopied ? 'لینک کپی شد!' : 'کپی لینک'}
                 </span>
-                {isCopied && <Icon name="Check" className="size-4 text-emerald-500 mr-auto" />}
+                {isCopied && <Icon name="Check" className="size-4 text-emerald-500 ms-auto" />}
               </DropdownMenuItem>
 
               {!isOwnPost && (

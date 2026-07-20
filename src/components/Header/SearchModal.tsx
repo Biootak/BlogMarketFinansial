@@ -70,8 +70,8 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
         setCategories(result.data.categories as CategoryWithPostCount[]);
         setAuthors(result.data.authors as UserWithProfile[]);
       }
-    } catch (error) {
-      console.error('Search error:', error);
+    } catch {
+      // silent failure — search UI handles empty state gracefully
     } finally {
       setIsLoading(false);
     }
@@ -180,7 +180,7 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                   <div className="relative border-b border-neutral-100 dark:border-neutral-800">
                     <div
                       className="
-                        absolute right-5 top-1/2 -translate-y-1/2
+                        absolute end-5 top-1/2 -translate-y-1/2
                         w-10 h-10 rounded-xl
                         flex items-center justify-center
                         bg-gradient-to-br from-primary-50 to-primary-100/80
@@ -195,17 +195,17 @@ const SearchModal: FC<Props> = ({ renderTrigger }) => {
                     <Combobox.Input
                       className="
                         h-16 w-full border-0 bg-transparent
-                        pr-20 pl-6
+                        pe-20 ps-6
                         text-neutral-900 dark:text-white
                         placeholder:text-neutral-400 dark:placeholder:text-neutral-500
-                        focus:ring-0 text-base text-right
+                        focus:ring-0 text-base text-end
                       "
                       placeholder="جستجوی پست، دسته‌بندی یا نویسنده..."
                       onChange={(event) => setRawQuery(event.target.value)}
                       autoComplete="off"
                     />
                     {isLoading && (
-                      <div className="absolute left-5 top-1/2 -translate-y-1/2">
+                      <div className="absolute start-5 top-1/2 -translate-y-1/2">
                         <div className="w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
                       </div>
                     )}

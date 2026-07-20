@@ -216,7 +216,6 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
         }));
       }
     } catch (err) {
-      console.error('Error loading more posts:', err);
       setError(err as Error);
     } finally {
       isLoadingRef.current = false;
@@ -325,7 +324,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
                   </div>
                 </motion.div>
 
-                <div className="min-w-0 flex-1 sm:flex-none sm:ml-5">
+                <div className="min-w-0 flex-1 sm:flex-none sm:ms-5">
                   <div className="flex items-center gap-2">
                     <h2 className="text-base sm:text-xl @md/csp:text-2xl @xl/csp:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white break-words text-balance">
                       آخرین مقالات

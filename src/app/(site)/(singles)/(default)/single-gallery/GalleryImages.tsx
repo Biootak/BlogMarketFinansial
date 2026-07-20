@@ -135,18 +135,18 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
             />
           </div>
 
-          {/* HUD Overlay - Bottom Right (RTL) - Stats Counter */}
-          <div className="absolute bottom-4 right-4 z-20 flex items-center gap-3 px-3 py-1.5 rounded-full bg-neutral-950/70 backdrop-blur-md border border-neutral-800 text-xs text-neutral-300 select-none font-medium transition-opacity duration-300">
+          {/* HUD Overlay - Bottom End (RTL) - Stats Counter */}
+          <div className="absolute bottom-4 end-4 z-20 flex items-center gap-3 px-3 py-1.5 rounded-full bg-neutral-950/70 backdrop-blur-md border border-neutral-800 text-xs text-neutral-300 select-none font-medium transition-opacity duration-300">
             <span dir="ltr" className="unicode-bidi-isolate">
               {toPersianNumber(currentImageIndex + 1)} / {toPersianNumber(IMAGES_GALLERY.length)}
             </span>
           </div>
 
-          {/* HUD Overlay - Bottom Left (RTL) - Zoom Trigger */}
+          {/* HUD Overlay - Bottom Start (RTL) - Zoom Trigger */}
           <button
             type="button"
             onClick={() => handleOpenModalImageGallery(currentImageIndex)}
-            className="absolute bottom-4 left-4 z-20 flex items-center justify-center p-2 rounded-full bg-neutral-950/70 backdrop-blur-md border border-neutral-800 text-neutral-300 hover:text-white hover:bg-neutral-900 transition-all cursor-pointer"
+            className="absolute bottom-4 start-4 z-20 flex items-center justify-center p-2 rounded-full bg-neutral-950/70 backdrop-blur-md border border-neutral-800 text-neutral-300 hover:text-white hover:bg-neutral-900 transition-all cursor-pointer"
             aria-label="Open Fullscreen View"
           >
             <Maximize2 className="w-4 h-4" />

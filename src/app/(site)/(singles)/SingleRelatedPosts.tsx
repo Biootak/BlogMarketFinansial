@@ -50,7 +50,7 @@ const SingleRelatedPosts: React.FC<SingleRelatedPostsProps> = ({
                 </p>
               </div>
               {/* Decorative Line */}
-              <div className="hidden sm:block flex-1 h-px bg-gradient-to-l from-transparent via-neutral-200 dark:via-neutral-700 to-transparent mr-4" />
+              <div className="hidden sm:block flex-1 h-px bg-gradient-to-l from-transparent via-neutral-200 dark:via-neutral-700 to-transparent me-4" />
             </div>
 
             {/* Cards Grid */}
@@ -85,7 +85,7 @@ const SingleRelatedPosts: React.FC<SingleRelatedPostsProps> = ({
                 </p>
               </div>
               {/* Decorative Line */}
-              <div className="hidden sm:block flex-1 h-px bg-gradient-to-l from-transparent via-neutral-200 dark:via-neutral-700 to-transparent mr-4" />
+              <div className="hidden sm:block flex-1 h-px bg-gradient-to-l from-transparent via-neutral-200 dark:via-neutral-700 to-transparent me-4" />
             </div>
 
             {/* Cards Grid */}

@@ -96,7 +96,7 @@ const Card11: React.FC<Card11Props> = ({
         </Link>
 
         <div className="mt-auto pt-4 border-t border-neutral-100 dark:border-neutral-800/50 relative">
-          <div className="absolute top-0 right-0 w-12 h-px bg-gradient-to-l from-primary-500 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute top-0 end-0 w-12 h-px bg-gradient-to-l from-primary-500 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
           <Link
             href={postLink}

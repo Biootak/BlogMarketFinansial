@@ -64,9 +64,9 @@ const NotifyDropdown = memo(({ className = 'hidden sm:block' }: Props) => {
         `}
       >
         {/* Unread indicator */}
-        <span className="absolute right-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-sm shadow-blue-500/30" />
+        <span className="absolute end-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-sm shadow-blue-500/30" />
 
-        <div className="relative mr-2">
+        <div className="relative ms-2">
           <Avatar sizeClass="w-10 h-10" radius="rounded-xl" />
         </div>
 
@@ -107,7 +107,7 @@ const NotifyDropdown = memo(({ className = 'hidden sm:block' }: Props) => {
               {solutions.length > 0 && (
                 <span
                   className="
-                  absolute -top-0.5 -left-0.5 w-4 h-4
+                  absolute -top-0.5 -start-0.5 w-4 h-4
                   flex items-center justify-center
                   text-[10px] font-bold text-white
                   bg-gradient-to-br from-blue-500 to-blue-600

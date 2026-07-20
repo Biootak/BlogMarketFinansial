@@ -51,7 +51,7 @@ export default async function AvatarDropdown() {
                   sizeClass="h-12 w-12"
                   radius="rounded-xl"
                 />
-                <span className="absolute -bottom-0.5 -left-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white dark:border-neutral-900" />
+                <span className="absolute -bottom-0.5 -end-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white dark:border-neutral-900" />
               </div>
               <div className="flex-grow text-right min-w-0">
                 <h4 className="font-semibold text-sm text-neutral-900 dark:text-white truncate">

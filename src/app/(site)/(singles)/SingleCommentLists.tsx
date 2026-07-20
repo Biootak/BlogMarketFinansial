@@ -25,14 +25,14 @@ const SingleCommentLists: FC<SingleCommentListsProps> = ({ comments }) => {
           key={comment.id}
           className={`
             relative
-            ${depth > 0 ? 'mr-8 sm:mr-12' : ''}
+            ${depth > 0 ? 'me-8 sm:me-12' : ''}
             opacity-0 animate-[fadeInUp_0.4s_ease-out_forwards]
           `}
           style={{ animationDelay: `${index * 80}ms` }}
         >
           {/* Connector Line for Nested Comments */}
           {depth > 0 && (
-            <div className="absolute -right-4 sm:-right-6 top-0 bottom-0 w-px" style={{background: 'linear-gradient(to bottom, oklch(92% 0.05 165 / 0.8), oklch(58% 0.12 165 / 0.3), transparent)'}} />
+            <div className="absolute -end-4 sm:-end-6 top-0 bottom-0 w-px" style={{background: 'linear-gradient(to bottom, oklch(92% 0.05 165 / 0.8), oklch(58% 0.12 165 / 0.3), transparent)'}} />
           )}
           <CommentCard comment={comment} />
         </li>

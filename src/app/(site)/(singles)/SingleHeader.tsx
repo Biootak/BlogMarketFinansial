@@ -25,8 +25,8 @@ const SingleHeader: React.FC<SingleHeaderProps> = ({ post, titleMainClass, class
       <div className="relative overflow-hidden rounded-2xl lg:rounded-3xl bg-white/90 dark:bg-neutral-900/90 backdrop-blur-2xl border border-white/50 dark:border-neutral-800/50 shadow-[0_20px_70px_-15px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_70px_-15px_rgba(0,0,0,0.5)]">
         {/* Decorative Gradient Background */}
         <div className="absolute inset-0 pointer-events-none" style={{background: 'linear-gradient(135deg, oklch(96% 0.03 165 / 0.4) 0%, transparent 50%, oklch(92% 0.05 165 / 0.15) 100%)'}} />
-        <div className="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl pointer-events-none" style={{background: 'oklch(58% 0.12 165 / 0.07)'}} />
-        <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full blur-3xl pointer-events-none" style={{background: 'oklch(58% 0.12 165 / 0.05)'}} />
+        <div className="absolute top-0 end-0 w-96 h-96 rounded-full blur-3xl pointer-events-none" style={{background: 'oklch(58% 0.12 165 / 0.07)'}} />
+        <div className="absolute bottom-0 start-0 w-64 h-64 rounded-full blur-3xl pointer-events-none" style={{background: 'oklch(58% 0.12 165 / 0.05)'}} />
 
         {/* Content */}
         <div className="relative p-6 sm:p-8 lg:p-10 space-y-6">
@@ -61,7 +61,7 @@ const SingleHeader: React.FC<SingleHeaderProps> = ({ post, titleMainClass, class
           {/* Divider with Gradient */}
           <div className="relative h-px">
             <div className="absolute inset-0 bg-gradient-to-l from-transparent via-neutral-200 dark:via-neutral-700 to-transparent" />
-            <div className="absolute right-0 w-24 h-px" style={{background: 'linear-gradient(to left, var(--ds-brand-500), var(--ds-brand-100))'}} />
+            <div className="absolute end-0 w-24 h-px" style={{background: 'linear-gradient(to left, var(--ds-brand-500), var(--ds-brand-100))'}} />
           </div>
 
           {/* Meta & Actions Row */}

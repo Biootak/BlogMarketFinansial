@@ -93,9 +93,9 @@ const SingleContentClient = ({ post, commentCount, inContentAd }: SingleContentC
           {/* Content Card */}
           <div className="relative">
             {/* Decorative Side Line */}
-            <div className="absolute right-0 top-8 bottom-8 w-1 bg-gradient-to-b from-[--ds-brand-500]/50 via-[--ds-brand-500]/20 to-transparent rounded-full hidden lg:block" />
+            <div className="absolute end-0 top-8 bottom-8 w-1 bg-gradient-to-b from-[--ds-brand-500]/50 via-[--ds-brand-500]/20 to-transparent rounded-full hidden lg:block" />
 
-            <div className="lg:pr-8">
+            <div className="lg:pe-8">
               {post.content ? (
                 (() => {
                   const content = post.content as string;

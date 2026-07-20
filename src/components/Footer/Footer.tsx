@@ -50,9 +50,9 @@ const Footer = ({ footerAd, siteName = 'Financila Market' }: FooterProps) => {
     <footer className="relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-slate-100 to-slate-200 dark:from-neutral-900 dark:via-neutral-950 dark:to-black" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(99,102,241,0.15),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(99,102,241,0.1),transparent)]" />
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl" />
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent" />
+      <div className="absolute top-0 start-1/4 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 end-1/4 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl" />
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent" />
 
       {footerAd && (
         <div className="relative z-10 pt-10 pb-2">
@@ -214,7 +214,7 @@ const Footer = ({ footerAd, siteName = 'Financila Market' }: FooterProps) => {
           transition={{ duration: 0.5, delay: 0.5 }}
           className="relative"
         >
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent" />
+          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent" />
 
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-sm text-slate-500 dark:text-slate-500">

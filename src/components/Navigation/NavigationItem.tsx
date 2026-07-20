@@ -67,12 +67,12 @@ const NavigationItem: FC<NavigationItemProps> = ({ menuItem }) => {
             >
               {menu.name}
               <HiChevronDown
-                className={`mr-1 h-4 w-4 transition-transform duration-200 ${
+                className={`ms-1 h-4 w-4 transition-transform duration-200 ${
                   isOpen ? 'rotate-180' : ''
                 }`}
               />
               {menu.isNew && (
-                <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full mr-2">
+                <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full ms-2">
                   جدید
                 </span>
               )}
@@ -104,7 +104,7 @@ const NavigationItem: FC<NavigationItemProps> = ({ menuItem }) => {
                                 >
                                   {i.name}
                                   {i.isNew && (
-                                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full mr-2">
+                                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full ms-2">
                                       جدید
                                     </span>
                                   )}
@@ -186,12 +186,12 @@ const NavigationItem: FC<NavigationItemProps> = ({ menuItem }) => {
           >
             {menuDropdown.name}
             <HiChevronDown
-              className={`mr-1 h-4 w-4 transition-transform duration-200 ${
+              className={`ms-1 h-4 w-4 transition-transform duration-200 ${
                 isOpen ? 'rotate-180' : ''
               }`}
             />
             {menuDropdown.isNew && (
-              <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full mr-2">
+              <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full ms-2">
                 جدید
               </span>
             )}
@@ -219,7 +219,7 @@ const NavigationItem: FC<NavigationItemProps> = ({ menuItem }) => {
                       >
                         {item.name}
                         {item.isNew && (
-                          <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full mr-2">
+                          <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full ms-2">
                             جدید
                           </span>
                         )}
@@ -249,7 +249,7 @@ const NavigationItem: FC<NavigationItemProps> = ({ menuItem }) => {
         >
           {menuItem.name}
           {menuItem.isNew && (
-            <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full mr-2">جدید</span>
+            <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full ms-2">جدید</span>
           )}
         </Link>
       );

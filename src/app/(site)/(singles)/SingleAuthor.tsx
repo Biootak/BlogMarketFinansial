@@ -25,7 +25,7 @@ const SingleAuthor: React.FC<SingleAuthorProps> = ({ author }) => {
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-white/90 to-neutral-50/90 dark:from-neutral-900/90 dark:to-neutral-800/90 backdrop-blur-xl border border-neutral-200/50 dark:border-neutral-700/50 shadow-[0_8px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.3)] transition-all duration-500 hover:shadow-[0_20px_60px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
         {/* Decorative Background */}
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{background: 'linear-gradient(135deg, oklch(58% 0.12 165 / 0.06), transparent)'}} />
-        <div className="absolute top-0 right-0 w-40 h-40 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{background: 'oklch(58% 0.12 165 / 0.09)'}} />
+        <div className="absolute top-0 end-0 w-40 h-40 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{background: 'oklch(58% 0.12 165 / 0.09)'}} />
 
         {/* Content */}
         <div className="relative p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-5 sm:gap-6">
