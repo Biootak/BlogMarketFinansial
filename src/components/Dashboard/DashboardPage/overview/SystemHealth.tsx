@@ -345,7 +345,7 @@ export default function SystemHealth() {
           return (
             <li
               key={row.key}
-              className="flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 bg-white/75 dark:bg-[#1e293b]/50 border-[0.5px] border-white/90 dark:border-slate-600/20"
+              className="flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 bg-white/75 dark:bg-[--nova-surface-2]/50 border-[0.5px] border-white/90 dark:border-white/10"
             >
               <span className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200 min-w-0">
                 <span

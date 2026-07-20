@@ -12,7 +12,7 @@
   position: fixed;
   inset: 0;
   z-index: 40;
-  background: rgba(0, 0, 0, 0.4);
+  background: oklch(0% 0 0 / 0.4);
   backdrop-filter: blur(1px);
 }
 
@@ -38,7 +38,7 @@
     inset-block: 0;
     inset-inline-end: 0;
     transform: translateX(100%);
-    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.12);
+    box-shadow: -8px 0 24px oklch(0% 0 0 / 0.12);
   }
   .sidebarOpen {
     transform: translateX(0);

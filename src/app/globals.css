@@ -357,22 +357,22 @@ p {
 @layer utilities {
   .scrollbar-custom {
     scrollbar-width: thin;
-    scrollbar-color: rgba(94, 106, 230, 0.5) rgba(46, 52, 68, 0.5);
+    scrollbar-color: var(--ds-accent-violet) var(--ds-canvas-subtle);
   }
   .scrollbar-custom::-webkit-scrollbar {
     width: 8px;
   }
   .scrollbar-custom::-webkit-scrollbar-track {
-    background: rgba(46, 52, 68, 0.5);
+    background: var(--ds-canvas-subtle);
     border-radius: 4px;
   }
   .scrollbar-custom::-webkit-scrollbar-thumb {
-    background-color: rgba(94, 106, 230, 0.5);
+    background-color: var(--ds-accent-violet);
     border-radius: 4px;
-    border: 2px solid rgba(46, 52, 68, 0.5);
+    border: 2px solid var(--ds-canvas-subtle);
   }
   .scrollbar-custom::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(76, 86, 200, 0.7);
+    background-color: oklch(50% 0.13 290);
   }
 
   /* Hide scrollbar but allow scroll (for nav scroll-fade) */
@@ -924,11 +924,11 @@ p {
 @keyframes liveclock-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+    box-shadow: 0 0 0 0 var(--ds-accent-emerald);
     opacity: 1;
   }
   50% {
-    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0);
+    box-shadow: 0 0 0 4px oklch(60% 0.1 165 / 0);
     opacity: 0.7;
   }
 }

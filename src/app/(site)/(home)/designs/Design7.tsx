@@ -436,7 +436,7 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
                       {/* Comments Cell — تعداد نظرات (مکمل — تعامل کاربران) */}
                       {typeof mainPost._count?.comments === 'number' &&
                         mainPost._count.comments > 0 && (
-                          <div className="flex flex-col items-start justify-center gap-0.5 px-3 py-2 border-l border-white/10 min-w-[80px]">
+                          <div className="flex flex-col items-start justify-center gap-0.5 px-3 py-2 border-inline-start border-white/10 min-w-[80px]">
                             <span className="text-[9px] uppercase tracking-wider text-white/50 font-bold flex items-center gap-1">
                               <MessageCircle className="w-2.5 h-2.5" /> نظرات
                             </span>
@@ -447,7 +447,7 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
                         )}
 
                       {/* Published Time Cell — زمان نسبی انتشار (مکمل تاریخ مطلق meta) */}
-                      <div className="flex flex-col items-start justify-center gap-0.5 px-3 py-2 border-l border-white/10 min-w-[90px]">
+                      <div className="flex flex-col items-start justify-center gap-0.5 px-3 py-2 border-inline-start border-white/10 min-w-[90px]">
                         <span className="text-[9px] uppercase tracking-wider text-white/50 font-bold flex items-center gap-1">
                           <Calendar className="w-2.5 h-2.5" /> پیش
                         </span>
@@ -457,7 +457,7 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
                       </div>
 
                       {/* Slide Progress Cell — موقعیت اسلاید فعال (مربوط به خود اسلایدر) */}
-                      <div className="flex flex-col items-start justify-center gap-0.5 px-3 py-2 border-l border-white/10 min-w-[100px]">
+                      <div className="flex flex-col items-start justify-center gap-0.5 px-3 py-2 border-inline-start border-white/10 min-w-[100px]">
                         <span className="text-[9px] uppercase tracking-wider text-white/50 font-bold flex items-center gap-1">
                           <Activity className="w-2.5 h-2.5" /> اسلاید
                         </span>

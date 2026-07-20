@@ -9,8 +9,14 @@ const BgGlassmorphism: FC<BgGlassmorphismProps> = ({
 }) => {
   return (
     <div className={`nc-BgGlassmorphism ${className}`} data-nc-id="BgGlassmorphism">
-      <span className="bg-[#ef233c] w-80 h-80 rounded-full mix-blend-multiply filter blur-3xl opacity-20 lg:w-96 lg:h-9w-96" />
-      <span className="bg-[#04868b] w-80 h-80 ms-10 -mt-10 rounded-full mix-blend-multiply filter blur-3xl opacity-20 lg:w-96 lg:h-9w-96 nc-animation-delay-2000" />
+      <span
+        className="w-80 h-80 rounded-full mix-blend-multiply filter blur-3xl opacity-20 lg:w-96 lg:h-96"
+        style={{ background: 'var(--ds-accent-rose)' }}
+      />
+      <span
+        className="w-80 h-80 ms-10 -mt-10 rounded-full mix-blend-multiply filter blur-3xl opacity-20 lg:w-96 lg:h-96 nc-animation-delay-2000"
+        style={{ background: 'var(--ds-accent-emerald)' }}
+      />
     </div>
   );
 };

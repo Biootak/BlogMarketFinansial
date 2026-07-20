@@ -165,7 +165,7 @@ const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(
         type="button"
         className={`
           group relative flex items-center justify-center
-          h-9 w-9 sm:h-10 sm:w-10
+          h-11 w-11
           rounded-xl
           bg-white/80 dark:bg-neutral-800/80
           backdrop-blur-sm
@@ -233,7 +233,7 @@ function BookmarkButton({ postId, initialBookmarked }: BookmarkButtonProps) {
       whileTap={{ scale: 0.95 }}
       className={`
         group relative flex items-center justify-center
-        h-9 w-9 sm:h-10 sm:w-10
+        h-11 w-11
         rounded-xl
         backdrop-blur-sm
         border

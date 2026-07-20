@@ -39,8 +39,8 @@ function LoadingSkeleton() {
   return (
     <div className="flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory px-2 sm:px-3 lg:px-4 scroll-px-2 sm:scroll-px-3 lg:scroll-px-4">
       {[...Array(8)].map((_, i) => (
-        <div key={i} className="w-[180px] sm:w-[200px] lg:w-[220px] shrink-0 snap-start">
-          <Skeleton className="h-[72px] sm:h-[84px] lg:h-[96px] rounded-xl sm:rounded-2xl" />
+        <div key={i} className="w-[140px] sm:w-[180px] lg:w-[220px] shrink-0 snap-start">
+          <Skeleton className="h-[64px] sm:h-[72px] lg:h-[84px] rounded-xl sm:rounded-2xl" />
         </div>
       ))}
     </div>

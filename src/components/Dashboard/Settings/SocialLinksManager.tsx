@@ -360,10 +360,10 @@ export default function SocialLinksManager() {
         </div>
       ) : (
         <div className="flex items-center gap-4 p-4">
-          <GripVertical className="w-5 h-5 text-gray-400 cursor-grab" />
+          <GripVertical className="w-5 h-5 text-neutral-400 cursor-grab" />
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden"
-            style={{ backgroundColor: `${link.color}20` || '#f3f4f6' }}
+            style={{ backgroundColor: link.color ? `${link.color}20` : 'var(--ds-canvas-subtle)' }}
           >
             {isValidIconSrc(link.icon) ? (
               <Image
@@ -374,7 +374,10 @@ export default function SocialLinksManager() {
                 className="object-contain"
               />
             ) : (
-              <span className="font-bold text-lg" style={{ color: link.color || '#666' }}>
+              <span
+                className="font-bold text-lg"
+                style={{ color: link.color ?? 'var(--ds-text-secondary)' }}
+              >
                 {link.name.charAt(0).toUpperCase()}
               </span>
             )}

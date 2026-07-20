@@ -1175,7 +1175,7 @@ function SingleAdTile({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-40px' }}
       transition={{ duration: 0.35, delay: index * 0.055, ease: [0.22, 1, 0.36, 1] }}
-      className="w-[55vw] sm:w-[260px] md:w-[220px] lg:w-[200px] shrink-0 snap-start"
+      className="w-[80vw] xs:w-[65vw] sm:w-[260px] md:w-[220px] lg:w-[200px] shrink-0 snap-start"
     >
       <Link
         href={ad.linkUrl}

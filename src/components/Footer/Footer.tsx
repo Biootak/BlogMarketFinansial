@@ -57,7 +57,7 @@ const Footer = ({ footerAd, siteName = 'Financila Market' }: FooterProps) => {
       {footerAd && (
         <div className="relative z-10 pt-10 pb-2">
           <div className="container max-w-4xl">
-            <div className="relative group rounded-3xl overflow-hidden shadow-lg hover:shadow-[0_20px_50px_rgba(99,102,241,0.15)] transition-all duration-500 border border-slate-200/40 dark:border-neutral-800/80 bg-white/30 dark:bg-neutral-900/30 backdrop-blur-xl">
+            <div className="relative group rounded-3xl overflow-hidden shadow-lg hover:shadow-[0_20px_50px_-10px_var(--ds-accent-violet)] transition-all duration-500 border border-slate-200/40 dark:border-neutral-800/80 bg-white/30 dark:bg-neutral-900/30 backdrop-blur-xl">
               <div className="absolute inset-0 bg-gradient-to-tr from-primary-500/5 via-transparent to-violet-500/5 opacity-40 pointer-events-none" />
               <div className="absolute inset-0 border border-primary-500/0 group-hover:border-primary-500/20 rounded-3xl transition-colors duration-500 pointer-events-none" />
               <BannerAds

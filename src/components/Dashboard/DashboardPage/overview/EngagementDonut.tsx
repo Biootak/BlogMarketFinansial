@@ -246,8 +246,8 @@ export default function EngagementDonut({ slices, range, caption }: EngagementDo
                     className={cn(
                       'w-full text-start flex items-center justify-between gap-2 rounded-lg px-3 py-2 transition-colors',
                       active
-                        ? 'bg-white/75 dark:bg-[#1e293b]/50 border-[0.5px] border-white/90 dark:border-slate-600/20'
-                        : 'hover:bg-white/60 dark:hover:bg-[#1e293b]/30',
+                        ? 'bg-white/75 dark:bg-[--nova-surface-2]/50 border-[0.5px] border-white/90 dark:border-white/10'
+                        : 'hover:bg-white/60 dark:hover:bg-[--nova-surface-2]/30',
                     )}
                     aria-label={`${slice.label}: ${slice.values[range].toLocaleString('fa-IR')} (${pct.toFixed(0)}٪)`}
                   >

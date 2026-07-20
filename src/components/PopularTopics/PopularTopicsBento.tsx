@@ -116,7 +116,8 @@ const PopularTopicsBento: FC<PopularTopicsBentoProps> = ({
       <div className="absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
         {/* Blob 1 — purple/violet */}
         <motion.div
-          className="absolute -top-32 -right-32 h-[400px] w-[400px] rounded-full bg-gradient-to-br from-violet-500/30 via-fuchsia-400/20 to-transparent blur-3xl"
+          className="absolute h-[400px] w-[400px] rounded-full bg-gradient-to-br from-violet-500/30 via-fuchsia-400/20 to-transparent blur-3xl"
+          style={{ insetInlineEnd: '-8rem', top: '-8rem' }}
           animate={{
             x: [0, 60, 0],
             y: [0, 40, 0],
@@ -130,7 +131,8 @@ const PopularTopicsBento: FC<PopularTopicsBentoProps> = ({
         />
         {/* Blob 2 — blue/cyan */}
         <motion.div
-          className="absolute -bottom-32 -left-32 h-[350px] w-[350px] rounded-full bg-gradient-to-tr from-blue-500/25 via-cyan-400/15 to-transparent blur-3xl"
+          className="absolute h-[350px] w-[350px] rounded-full bg-gradient-to-tr from-blue-500/25 via-cyan-400/15 to-transparent blur-3xl"
+          style={{ insetInlineStart: '-8rem', bottom: '-8rem' }}
           animate={{
             x: [0, -50, 0],
             y: [0, -30, 0],
@@ -144,7 +146,8 @@ const PopularTopicsBento: FC<PopularTopicsBentoProps> = ({
         />
         {/* Blob 3 — pink/rose (مرکز) */}
         <motion.div
-          className="absolute top-1/2 left-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-rose-500/20 via-pink-400/10 to-transparent blur-3xl"
+          className="absolute top-1/2 h-[300px] w-[300px] rounded-full bg-gradient-to-br from-rose-500/20 via-pink-400/10 to-transparent blur-3xl"
+          style={{ insetInlineStart: '50%', transform: 'translate(-50%, -50%)' }}
           animate={{
             x: ['-50%', '-30%', '-50%'],
             y: ['-50%', '-70%', '-50%'],
